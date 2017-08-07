@@ -12,6 +12,7 @@
 <translation id="1044777062731150180">Niciun antet</translation>
 <translation id="106222400312645156">antet rând</translation>
 <translation id="1065552602950927991">Intrare nevalidă</translation>
+<translation id="1080471004309605942">Finalul textului cursiv</translation>
 <translation id="1082209053475788238">Nu există un titlu de nivel 6 anterior.</translation>
 <translation id="1088219014394087294">Nu există titluri.</translation>
 <translation id="1106741348836243114">Activați/dezactivați feedbackul sonor (semnalele audio).</translation>
@@ -121,6 +122,7 @@
 <translation id="225732394367814946">Creșteți viteza de vorbire</translation>
 <translation id="2267945578749931355">Caracterul următor</translation>
 <translation id="2281234842553884450">Glisorul anterior</translation>
+<translation id="2294136146931447363">Începutul textului cursiv</translation>
 <translation id="2318372665160196757">Principal</translation>
 <translation id="2329324941084714723">Panou file</translation>
 <translation id="2344193891939537199">Comandă pentru dată/oră</translation>
@@ -343,6 +345,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="4039983576244166038">Antet de rând gol</translation>
 <translation id="4042843249978639960">Nu există un titlu de nivel 2 următor.</translation>
 <translation id="4043348641337972076">Nu există un reper ARIA anterior.</translation>
+<translation id="4045764028670444336">Începutul cuvântului scris greșit</translation>
 <translation id="4047216625641135770">Marcaj</translation>
 <translation id="404803211695627272"><ph name="V1" /> – <ph name="V2" /></translation>
 <translation id="4054936709456751127">stare</translation>
@@ -397,6 +400,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="4532633738839459153">{COUNT,plural, =1{bară oblică spre dreapta}few{# bare oblice spre dreapta}other{# de bare oblice spre dreapta}}</translation>
 <translation id="4547556996012970016">Titlul de nivel 5 următor</translation>
 <translation id="4562381607973973258">Antet</translation>
+<translation id="4570424871453628777">Finalul cuvântului scris greșit</translation>
 <translation id="4591507479202817876">, selectat</translation>
 <translation id="4597532268155981612">formular</translation>
 <translation id="4597896406374528575">Aprilie</translation>
@@ -423,6 +427,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="4827410568042294688">neselectat</translation>
 <translation id="4842108708071771135">Nu există un blockquote următor.</translation>
 <translation id="4844625982113518938">Apasă pe orice tastă pentru a afla numele acesteia. Combinația Ctrl + W va închide modul de învățare.</translation>
+<translation id="4846487886195635104">Finalul textului tăiat cu o linie</translation>
 <translation id="4848993367330139335">temporizator</translation>
 <translation id="4850023505158945298">Elementul similar anterior.</translation>
 <translation id="485011152882364255">În ChromeVox Next, tasta de căutare este tasta de modificare. Majoritatea comenzilor rapide ChromeVox încep cu tasta de căutare. Vei folosi și tastele săgeată pentru navigare.</translation>
@@ -449,7 +454,6 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="5000760171916499057">Nu există formulare.</translation>
 <translation id="5005670136041063723">Nu mai există elemente similare.</translation>
 <translation id="501473567976723023">Ianuarie</translation>
-<translation id="5040591161308540832">Tabelul $1, $2 pe $3</translation>
 <translation id="5041394372352067729">Deplasează afișajul Braille în partea de sus a paginii</translation>
 <translation id="5042770794184672516">Creșteți volumul vocii</translation>
 <translation id="5050015258024679800">Titlul de nivel 4 anterior</translation>
@@ -577,6 +581,8 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{bară oblică inversă}few{# bare oblice inverse}other{# de bare oblice inverse}}</translation>
 <translation id="6037602951055904232">Deplasează înainte</translation>
 <translation id="6044160928851315051">Dezactivează ecranul</translation>
+<translation id="605761629541007221">Finalul textului aldin</translation>
+<translation id="6065293622157674001">Începutul erorii gramaticale</translation>
 <translation id="6082768461603900813">Navigarea de bază</translation>
 <translation id="6092707270915298410">Finalul linkului</translation>
 <translation id="611827076493383239">accesat</translation>
@@ -668,6 +674,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="712735679809149106">ecou cuvânt</translation>
 <translation id="713824876195128146">Citatul următor</translation>
 <translation id="7143034430156387447">Comută între braille cu 6 și 8 puncte</translation>
+<translation id="7161425887892204659">Finalul potrivirii de text</translation>
 <translation id="7161771961008409533">Buton pop-up</translation>
 <translation id="7165714724802225287">Stilul de afișare actual este intercalat.</translation>
 <translation id="7167657087543110">ecou caracter</translation>
@@ -699,6 +706,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{semn de legătură}few{# semne de legătură}other{# de semne de legătură}}</translation>
 <translation id="737396357417333429">pe care se poate da clic</translation>
 <translation id="7374104575779636480">Se iese din tabel.</translation>
+<translation id="7392145451309930991">Începutul potrivirii de text</translation>
 <translation id="739763518212184081">Rândul anterior</translation>
 <translation id="7400575256015741911">Greșeală de scriere detectată</translation>
 <translation id="7408482676469142474">tabel</translation>
@@ -730,7 +738,9 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="7685589220304187312">bară de instrumente</translation>
 <translation id="7693840228159394336">Butonul radio anterior</translation>
 <translation id="7701196182766842984">completare automată listă</translation>
+<translation id="7712273827621319827">Începutul textului subliniat</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, casetă text pentru parolă</translation>
+<translation id="7773125101284285285">Finalul textului subliniat</translation>
 <translation id="7776293189010177726">Deschide meniurile ChromeVox</translation>
 <translation id="7805247615045262757">navigare prestabilită</translation>
 <translation id="7805768142964895445">Stare</translation>
@@ -760,6 +770,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="8065607967589909823">Selecția este</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">File</translation>
+<translation id="8091452896542422286">Spațiu</translation>
 <translation id="8104178626892949749">Apasă pe ChromeVox o, n pentru a afla mai multe despre ChromeVox Next.</translation>
 <translation id="8110647606445335195">Nu există repere ARIA.</translation>
 <translation id="8153880621934657047">Nu vă aflați în interiorul tabelului.</translation>
@@ -781,6 +792,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="8374154622594089836">lună</translation>
 <translation id="8378855320830505539">Regiune</translation>
 <translation id="8382679411218029383">Completare automată inline și listă</translation>
+<translation id="8384907037845425279">Începutul textului aldin</translation>
 <translation id="8428603554127842284">nivelul <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">Nu există un titlu de nivel 3 următor.</translation>
 <translation id="8430049249787218991">bară meniu</translation>
@@ -792,6 +804,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="8476408756881832830">Întrerupe redarea când ChromeVox vorbește</translation>
 <translation id="8476508772960940536">prezentarea ferestrei</translation>
 <translation id="8503360654911991865">Scădeți granularitatea de navigare</translation>
+<translation id="8504695234784218301">Finalul erorii gramaticale</translation>
 <translation id="8520472399088452386">Buton numeric</translation>
 <translation id="8538744478902126321">Faceți o încercare la antetul rândului pentru celula curentă</translation>
 <translation id="8540054775867439484">Încadrare sus</translation>
@@ -869,4 +882,5 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="962913030769097253">Titlul de nivel 1 următor</translation>
 <translation id="973955474346881951">Activează/dezactivează modul taste persistente</translation>
 <translation id="976849232629612000">Niciun element.</translation>
+<translation id="995852680044449248">Începutul textului tăiat cu o linie</translation>
 </translationbundle>

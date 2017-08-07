@@ -329,7 +329,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="2312134445771258233">Omogoča, da nastavite strani, ki se naložijo pri zagonu.
 
       Vsebina seznama »URL-ji, ki naj se odprejo ob zagonu« se prezre, razen če v možnosti »Dejanje ob zagonu« izberete »Odpri seznam URL-jev«.</translation>
-<translation id="23323722127921515">Pokaže ikono za Google Cast v orodni vrstici</translation>
 <translation id="2337466621458842053">Omogoča nastavitev seznama vzorcev URL-jev, s katerim se določijo, ki lahko prikazujejo slike.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultImagesSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
@@ -419,7 +418,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če je ta pravilnik nastavljen na »False«, se namesto poziva za konfiguracijo omrežja prikaže sporočilo o napaki.</translation>
 <translation id="2498238926436517902">Vedno samodejno skrij polico</translation>
-<translation id="2503514368596117142">Konfiguriranje pravilnikov za Google Cast – to je funkcija, ki uporabnikom omogoča predvajanje vsebine zavihkov, spletnih mest ali namizja iz brskalnika na oddaljene zaslone ali zvočne sisteme.</translation>
 <translation id="2514328368635166290">Določa URL ikone priljubljene strani privzetega ponudnika iskanja.
 
           Ta pravilnik je izbiren. Če ni nastavljen, ikona za ponudnika iskanja ne bo prikazana.
@@ -436,9 +434,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2529880111512635313">Konfiguriranje seznama vsiljenih namestitev aplikacij in razširitev</translation>
 <translation id="253135976343875019">Časovni zamik opozorila o nedejavnosti ob napajanju iz električnega omrežja</translation>
 <translation id="2552966063069741410">Časovni pas</translation>
-<translation id="2558917182010914102">Če je ta pravilnik omogočen ali ni nastavljen, bo Google Cast omogočen in uporabniki ga bodo lahko zagnali iz menija aplikacije, priročnih menijev na straneh, s kontrolniki za predstavnosti na spletnih mestih, ki podpirajo Google Cast, in ikone za Google Cast v orodni vrstici.
-
-          Če je ta pravilnik onemogočen, bo Google Cast onemogočen.</translation>
 <translation id="2562339630163277285">Določa URL iskalnika, ki se uporablja za prikaz rezultatov dinamičnega iskanja. URL mora vsebovati niz »<ph name="SEARCH_TERM_MARKER" />«, ki ga bo ob času poizvedbe nadomestilo besedilo, ki ga je uporabnik vnesel do takrat.
 
           Ta pravilnik je izbiren. Če ni nastavljen, ne bo prikazan noben rezultat dinamičnega iskanja.
@@ -566,6 +561,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3001534538097271560">Če onemogočite ta pravilnik, uporabnikom preprečite, da bi pošiljali nekatere informacije o sistemu in vsebino strani v Googlove strežnike. Če je ta nastavitev omogočena ali ni nastavljena, je uporabnikom dovoljeno pošiljati nekatere informacije o sistemu in vsebino strani Varnemu brskanju zaradi hitrejšega zaznavanja nevarnih aplikacij in spletnih mest.
 
       Več informacij o Varnem brskanju je na voljo na https://developers.google.com/safe-browsing.</translation>
+<translation id="3016255526521614822">Uvrščanje aplikacij za zapiske, ki so omogočene na zaklenjenem zaslonu sistema <ph name="PRODUCT_OS_NAME" />, na seznam dovoljenih</translation>
 <translation id="3021409116652377124">Onemogoči iskalnik vtičnikov</translation>
 <translation id="3030000825273123558">Omogoči pošiljanje podatkov</translation>
 <translation id="3034580675120919256">Omogoča nastavitev, ali lahko spletna mesta izvajajo JavaScript. Izvajanje JavaScripta je lahko dovoljeno ali zavrnjeno za vsa spletna mesta.
@@ -916,6 +912,16 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       »1412.24.34«: posodobitev samo na to različico
 
       Opozorilo: ni priporočljivo, da določite omejitve različice, saj tako uporabniki morda ne bodo prejemali posodobitev programske opreme in nujnih varnostnih popravkov. Če posodobitve omejite na določeno predpono različice, so uporabniki morda ogroženi.</translation>
+<translation id="4298509794364745131">Določa seznam aplikacij, ki jih je mogoče omogočiti kot aplikacije za zapiske na zaklenjenem zaslonu sistema <ph name="PRODUCT_OS_NAME" />.
+
+      Če je prednostna aplikacija za zapiske omogočena na zaklenjenem zaslonu, je na njem element uporabniškega vmesnika za zagon te aplikacije.
+      Aplikacija bo lahko po zagonu ustvarila svoje okno na zaklenjenem zaslonu ter ustvarila podatkovne elemente (zapiske) v kontekstu zaklenjenega zaslona. Lahko bo uvozila ustvarjene zapiske v sejo primarnega uporabnika, ko je seja odklenjena. Na zaklenjenem zaslonu so za zdaj podprte samo aplikacije za zapiske za Chrome.
+
+      Če je pravilnik nastavljen, lahko uporabnik omogoči aplikacijo na zaklenjenem zaslonu samo, če je ID razširitve aplikacije vsebovan v vrednosti seznama pravilnika.
+      Če ta pravilnik nastavite na prazen seznam, bo zato v celoti onemogočeno ustvarjanje zapiskov na zaklenjenem zaslonu.
+      Če pravilnik vsebuje ID aplikacije, še ne pomeni, da lahko uporabnik omogoči aplikacijo kot aplikacijo za zapiske na zaklenjenem zaslonu – v Chromu 61 skupino razpoložljivih aplikacij na primer dodatno omejuje okolje.
+
+      Če pravilnik ni nastavljen, ni omejitev pravilnika za skupino aplikacij, ki jih uporabnik lahko omogoči na zaklenjenem zaslonu.</translation>
 <translation id="4309640770189628899">Ali so v protokolu TLS omogočene šifrirne zbirke DHE</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ali novejši</translation>
 <translation id="4322842393287974810">Dovoli samodejno zagnani aplikaciji za kiosk brez zamika nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1341,7 +1347,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če to nastavitev omogočite, je Google Varno iskanje v Iskanju Google vedno aktivno.
 
       Če to nastavitev onemogočite ali ne nastavite vrednosti, Google Varno iskanje v Iskanju Google ni uveljavljeno.</translation>
-<translation id="5940306398763671235">Omogoči Google Cast</translation>
 <translation id="5946082169633555022">Preskusna različica</translation>
 <translation id="5950205771952201658">Ker mehko preverjanje preklica ne zagotavlja dodatne varnosti, je v brskalniku <ph name="PRODUCT_NAME" /> različice 19 ali novejšem privzeto onemogočeno. Če ta pravilnik nastavite na »true«, se obnovijo prejšnje nastavitve in se izvajajo spletna preverjanja OCSP/CRL.
 
@@ -1692,13 +1697,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Ta pravilnik velja le, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="7302043767260300182">Časovni zamik zaklepa zaslona, če se napaja iz električnega omrežja</translation>
-<translation id="7309839952828354215">Določa, kako naj deluje naprava, ki je bila dobavljena z ecryptfs in mora preiti na šifriranje ext4.
-
-      Če ta pravilnik nastavite na »DisallowArc«, bodo aplikacije za Android onemogočene za vse uporabnike naprave (vključno s tistimi, ki že imajo šifriranje ext4) in nobenemu uporabniku ne bo ponujena selitev s šifriranja ecryptfs na ext4.
-
-      Če ta pravilnik nastavite na »AllowMigration«, bo uporabnikom z domačimi imeniki ecryptfs po potrebi ponujena selitev na šifriranje ext4 (trenutno, ko je za napravo na voljo Android N).
-
-      Če ta pravilnik ni nastavljen, bo naprava delovala, kot da bi bila izbrana možnost »DisallowArc«.</translation>
 <translation id="7311458740754205918">Če je ta pravilnik omogočen ali ni nastavljen, bodo na strani »Nov zavihek« morda prikazani predlogi vsebine na podlagi uporabnikove zgodovine brskanja, zanimanj ali lokacije.
 
       Če je ta pravilni onemogočen, samodejno ustvarjeni predlogi vsebine ne bodo prikazani na strani »Nov zavihek«.</translation>
@@ -1783,7 +1781,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če to nastavitev omogočite, <ph name="PRODUCT_NAME" /> uporabi nastavljene območne nastavitve. Če nastavljene območne nastavitve niso podprte, bo uporabljena nastavitev »en-US«.
 
      Če to nastavitev onemogočite ali je ne nastavite, <ph name="PRODUCT_NAME" /> uporabi prednostne območne nastavitve, ki jih izbere uporabnik (če so nastavljene), sistemske območne nastavitve ali rezervne območne nastavitve (»en-US«).</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Določa, ali je podatkovno gostovanje za napravo omogočeno. Če je pravilnik omogočen, je podatkovno gostovanje omogočeno. Če ni nastavljen ali je onemogočen, podatkovno gostovanje ni na voljo.</translation>
 <translation id="7683777542468165012">Dinamična osvežitev pravilnika</translation>
 <translation id="7694807474048279351">Načrtovanje samodejnega vnovičnega zagona po namestitvi posodobitve za <ph name="PRODUCT_OS_NAME" />.
@@ -1904,6 +1901,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če je ta nastavitev onemogočena in izhodne povezave UDP filtrira požarni zid, se bo lahko ta računalnik povezal samo z gostiteljskimi računalniki znotraj lokalnega omrežja.</translation>
 <translation id="7980227303582973781">Ni posebnih omejitev</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Sukanje zaslona za 0 stopinj</translation>
 <translation id="8044493735196713914">Pošiljanje podatkov o načinu zagona naprave</translation>
 <translation id="8050080920415773384">Izvorno tiskanje</translation>

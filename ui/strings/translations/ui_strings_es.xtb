@@ -4,14 +4,17 @@
 <translation id="111910763555783249">Configuración de notificaciones</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Hace 1 día}other{Hace # días}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Hace 1 minuto}other{Hace # minutos}}</translation>
+<translation id="1169783199079129864">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="1190609913194133056">Centro de notificaciones</translation>
 <translation id="1243314992276662751">Subir</translation>
 <translation id="1293699935367580298">Esc</translation>
+<translation id="1306549533752902673">APLICACIONES RECOMENDADAS</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1413622004203049571">Inhabilitar notificaciones de <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto y }other{# minutos y }}</translation>
 <translation id="1643823602425662293">Notificación</translation>
 <translation id="1685967565548146460">HATS</translation>
+<translation id="1710340000377843106">ahora</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuto}other{# minutos}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Periodo</translation>
@@ -21,7 +24,9 @@
 <translation id="1842960171412779397">seleccionar</translation>
 <translation id="1860796786778352021">Cerrar notificación</translation>
 <translation id="1871244248791675517">Insert</translation>
+<translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Seleccionar &amp;todo</translation>
+<translation id="2141853158323869627">{DAYS,plural, =1{1 día}other{# días}}</translation>
 <translation id="2148716181193084225">Hoy</translation>
 <translation id="2168039046890040389">Retroceder página</translation>
 <translation id="2190355936436201913">(vacío)</translation>
@@ -33,7 +38,7 @@
 <translation id="252373100621549798">Pantalla desconocida</translation>
 <translation id="2583543531130364912">Calibra la pantalla táctil</translation>
 <translation id="2666092431469916601">Superior</translation>
-<translation id="2743387203779672305">Copiar al portapapeles</translation>
+<translation id="2743387203779672305">Copiar en el portapapeles</translation>
 <translation id="2803313416453193357">Abrir carpeta</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Hace 1 año}other{Hace # años}}</translation>
 <translation id="2931838996092594335">hacer clic</translation>
@@ -61,6 +66,7 @@
 <translation id="4316910396681052118">TODAS LAS APLICACIONES</translation>
 <translation id="4320177379694898372">No hay conexión a Internet</translation>
 <translation id="4588090240171750605">Desplazar a la derecha</translation>
+<translation id="4730374152663651037">UTILIZADAS CON FRECUENCIA</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Queda 1 mes}other{Quedan # meses}}</translation>
 <translation id="4820616160060340806">Comando+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 segundo}other{# segundos}}</translation>
@@ -71,9 +77,11 @@
 <translation id="5120799197269191491">Buscar+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5153297660536091054">Función de desbloqueo con PIN</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
+<translation id="5266161281976477809">Triángulo de expansión</translation>
 <translation id="528468243742722775">Fin</translation>
 <translation id="5329858601952122676">&amp;Suprimir</translation>
 <translation id="5476505524087279545">desmarcar</translation>
+<translation id="5574202486608032840">Sistema <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Tecla de retroceso</translation>
 <translation id="5613020302032141669">Flecha izquierda</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
@@ -89,6 +97,7 @@
 <translation id="6135826906199951471">Supr</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6264365405983206840">Seleccionar &amp;todo</translation>
+<translation id="6351032674660237738">SUGERENCIAS DE APLICACIONES</translation>
 <translation id="6364916375976753737">Desplazar hacia la izquierda</translation>
 <translation id="6394627529324717982">Coma</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Hace 1 s}other{Hace # s}}</translation>
@@ -109,10 +118,12 @@
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="7052633198403197513">F1</translation>
+<translation id="7130207228079676353">MÁS PROBABLES</translation>
 <translation id="7135556860107312402">Permitir notificaciones de:</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Queda 1 min}other{Quedan # min}}</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Hace 1 min}other{Hace # min}}</translation>
+<translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Queda 1 minuto}other{Quedan # minutos}}</translation>
 <translation id="7457942297256758195">Borrar todo</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
@@ -138,8 +149,11 @@
 <translation id="8394908167088220973">Pausar/Reproducir contenido multimedia</translation>
 <translation id="8400147561352026160">Mayús+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8428213095426709021">Ajustes</translation>
+<translation id="8458811141851741261">{YEARS,plural, =1{1 año}other{# años}}</translation>
 <translation id="8602707065186045623">Archivo <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8725488761726303204"><ph name="NUMBER" /> más</translation>
+<translation id="8772073294905169192">{HOURS,plural, =1{1 h}other{# h}}</translation>
 <translation id="8806053966018712535">Carpeta <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Anotar imagen</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

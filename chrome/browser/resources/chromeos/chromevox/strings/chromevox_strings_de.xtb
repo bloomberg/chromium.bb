@@ -12,6 +12,7 @@
 <translation id="1044777062731150180">Keine Überschriften</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Ungültige Eingabe</translation>
+<translation id="1080471004309605942">Ende kursiver Text</translation>
 <translation id="1082209053475788238">Keine vorherige Überschrift der Ebene 6</translation>
 <translation id="1088219014394087294">Keine Überschriften</translation>
 <translation id="1106741348836243114">Akustisches Feedback (Earcons) aktivieren bzw. deaktivieren</translation>
@@ -120,6 +121,7 @@
 <translation id="225732394367814946">Sprechgeschwindigkeit erhöhen</translation>
 <translation id="2267945578749931355">Nächstes Zeichen</translation>
 <translation id="2281234842553884450">Vorheriger Schieberegler</translation>
+<translation id="2294136146931447363">Anfang kursiver Text</translation>
 <translation id="2318372665160196757">Hauptinhalt</translation>
 <translation id="2329324941084714723">Tabsteuerfeld</translation>
 <translation id="2344193891939537199">Steuerung für Uhrzeit/Datum</translation>
@@ -318,7 +320,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3716845769494773620">Mehrzeilig</translation>
 <translation id="3731746171184829332">Keine vorherige Überschrift</translation>
 <translation id="3735039640698208086">Bei der Wiedergabe von Audio…</translation>
-<translation id="3755561384917041694">Aktivieren Sie die Bildschirmtastatur unter der Statusleiste, die Bedienungshilfe zur Verwendung der erweiterten Braille-Befehle.</translation>
+<translation id="3755561384917041694">Um die erweiterten Braille-Befehle zu verwenden, aktivieren Sie die Bildschirmtastatur über "Statusleiste", "Einstellungen", "Bedienungshilfen".</translation>
 <translation id="3762198587642264450">Zum Ende der aktuellen Zeile gehen</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">Dialogfeld geschlossen</translation>
@@ -342,6 +344,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4039983576244166038">Zeilenüberschrift leer</translation>
 <translation id="4042843249978639960">Keine nächste Überschrift der Ebene 2</translation>
 <translation id="4043348641337972076">Keine vorherige ARIA-Markierung</translation>
+<translation id="4045764028670444336">Anfang Rechtschreibfehler</translation>
 <translation id="4047216625641135770">Mark-Element</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
@@ -396,6 +399,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4532633738839459153">{COUNT,plural, =1{Schrägstrich}other{# Schrägstriche}}</translation>
 <translation id="4547556996012970016">Nächste Überschrift der Ebene 5</translation>
 <translation id="4562381607973973258">Header-Element</translation>
+<translation id="4570424871453628777">Ende Rechtschreibfehler</translation>
 <translation id="4591507479202817876">, ausgewählt</translation>
 <translation id="4597532268155981612">Formular</translation>
 <translation id="4597896406374528575">April</translation>
@@ -422,6 +426,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4827410568042294688">nicht ausgewählt</translation>
 <translation id="4842108708071771135">Kein nächstes blockquote-Element</translation>
 <translation id="4844625982113518938">Drücken Sie eine beliebige Taste, um ihren Namen zu erfahren. Mit "Strg + W" können Sie den Lernmodus schließen.</translation>
+<translation id="4846487886195635104">Ende durchgestrichener Text</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Vorheriges ähnliches Element</translation>
 <translation id="485011152882364255">In ChromeVox Next ist die Suchtaste die Modifikatortaste. Die meisten Tastenkombinationen in ChromeVox beginnen mit der Suchtaste. Außerdem werden auch die Pfeiltasten für die Navigation verwendet.</translation>
@@ -448,7 +453,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="5000760171916499057">Keine Formulare</translation>
 <translation id="5005670136041063723">Keine weiteren ähnlichen Elemente</translation>
 <translation id="501473567976723023">Januar</translation>
-<translation id="5040591161308540832">Tabelle: $1, $2 bis $3</translation>
 <translation id="5041394372352067729">Braillezeile an den Seitenanfang verschieben</translation>
 <translation id="5042770794184672516">Sprachlautstärke erhöhen</translation>
 <translation id="5050015258024679800">Vorherige Überschrift der Ebene 4</translation>
@@ -576,6 +580,8 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{umgekehrter Schrägstrich}other{# umgekehrte Schrägstriche}}</translation>
 <translation id="6037602951055904232">Nach vorn verschieben</translation>
 <translation id="6044160928851315051">Bildschirm abdunkeln</translation>
+<translation id="605761629541007221">Ende fetter Text</translation>
+<translation id="6065293622157674001">Anfang Grammatikfehler</translation>
 <translation id="6082768461603900813">Grundlegende Navigation</translation>
 <translation id="6092707270915298410">Ende des Links</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -667,6 +673,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="712735679809149106">Wortecho</translation>
 <translation id="713824876195128146">Nächstes Blockzitat</translation>
 <translation id="7143034430156387447">Zwischen 6- und 8-Punkt-Braille wechseln</translation>
+<translation id="7161425887892204659">Ende Textübereinstimmung</translation>
 <translation id="7161771961008409533">Pop-up-Schaltfläche</translation>
 <translation id="7165714724802225287">Die aktuelle Displaydarstellung ist "Überlappen".</translation>
 <translation id="7167657087543110">Zeichenecho</translation>
@@ -698,6 +705,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{Und-Zeichen}other{# Und-Zeichen}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Tabelle wird verlassen.</translation>
+<translation id="7392145451309930991">Anfang Textübereinstimmung</translation>
 <translation id="739763518212184081">Vorherige Zeile</translation>
 <translation id="7400575256015741911">Rechtschreibfehler gefunden</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -729,7 +737,9 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Vorheriges Optionsfeld</translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7712273827621319827">Anfang unterstrichener Text</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, Passwort-Textfeld "<ph name="NAME" />"</translation>
+<translation id="7773125101284285285">Ende unterstrichener Text</translation>
 <translation id="7776293189010177726">ChromeVox-Menüs öffnen</translation>
 <translation id="7805247615045262757">Standardnavigation</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -759,6 +769,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8065607967589909823">Ausgewählt ist</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">Tabs</translation>
+<translation id="8091452896542422286">Leertaste</translation>
 <translation id="8104178626892949749">Drücken Sie ChromeVox "O" und "N", um weitere Informationen zu ChromeVox Next zu erhalten.</translation>
 <translation id="8110647606445335195">Keine ARIA-Markierungen</translation>
 <translation id="8153880621934657047">Nicht in der Tabelle</translation>
@@ -780,6 +791,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8374154622594089836">Monat</translation>
 <translation id="8378855320830505539">Region</translation>
 <translation id="8382679411218029383">Inline-Autovervollständigung und Liste</translation>
+<translation id="8384907037845425279">Anfang fetter Text</translation>
 <translation id="8428603554127842284">Ebene <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">Keine nächste Überschrift der Ebene 3</translation>
 <translation id="8430049249787218991">mnubr</translation>
@@ -791,6 +803,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8476408756881832830">Wiedergabe pausieren, wenn eine Sprachausgabe durch ChromeVox stattfindet</translation>
 <translation id="8476508772960940536">Fensterübersicht</translation>
 <translation id="8503360654911991865">Navigationsgenauigkeit verringern</translation>
+<translation id="8504695234784218301">Ende Grammatikfehler</translation>
 <translation id="8520472399088452386">Drehfeld</translation>
 <translation id="8538744478902126321">Zeilenüberschrift für aktuelle Zelle vorschlagen</translation>
 <translation id="8540054775867439484">Umbruch am Seitenanfang</translation>
@@ -868,4 +881,5 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="962913030769097253">Nächste Überschrift der Ebene 1</translation>
 <translation id="973955474346881951">Fixierten Modus aktivieren/deaktivieren</translation>
 <translation id="976849232629612000">Keine Elemente.</translation>
+<translation id="995852680044449248">Anfang durchgestrichener Text</translation>
 </translationbundle>

@@ -134,6 +134,8 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="3474649192738347024">Formularerne er udfyldt.</translation>
 <translation id="3478058380795961209">Udløbsmåned:</translation>
 <translation id="3482959374254649722">Synkroniserer dine faner...</translation>
+<translation id="3487093336331957349">Søge- og websiteforslag</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /> om anbefalet indhold</translation>
 <translation id="3494788280727468875">Bekræft rydning af browserdata</translation>
 <translation id="3519193562722059437">Åbn en fane for at søge på nettet.</translation>
 <translation id="3527085408025491307">Mappe</translation>
@@ -143,7 +145,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="3603009562372709545">Kopiér linkets webadresse</translation>
 <translation id="360480449234699036">Få oplysninger om emner på websites uden at forlade siden. "Tryk for at søge" sender et ord og ordets kontekst til Google Søgning og giver dig definitioner, billeder, søgeresultater og andre oplysninger.
 
-Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgrænse din søgning ved at skyde panelet hele vejen op og trykke på søgefeltet.</translation>
+Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgrænse din søgning ved at skyde panelet hele vejen op og trykke i søgefeltet.</translation>
 <translation id="3607167657931203000">AutoFyld-data</translation>
 <translation id="3608436266458100337">Læser-tilstand</translation>
 <translation id="3628119975092896051">Din læseliste er tilgængelig offline. Du kan føje en side til din læseliste ved at trykke på <ph name="SHARE_OPENING_ICON" />.</translation>
@@ -151,6 +153,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3691593122358196899">Bogmærket er gemt i <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tryk for at søge</translation>
 <translation id="3771033907050503522">Inkognitofaner</translation>
+<translation id="3779810277399252432">Ingen internetforbindelse.</translation>
 <translation id="3783017676699494206">Gem billede</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -173,6 +176,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4281844954008187215">Servicevilkår</translation>
 <translation id="430793432425771671">Synkroniser alt</translation>
 <translation id="4359125752503270327">Denne side åbner i en anden app.</translation>
+<translation id="4375040482473363939">Søgning efter QR-kode</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Erklæring om privatliv</translation>
 <translation id="4508750114462689118">Luk loginkampagne</translation>
@@ -262,7 +266,6 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="6196207969502475924">Talesøgning</translation>
 <translation id="6254066287920239840">Åbn links i appen i stedet for i browseren.</translation>
 <translation id="6255097610484507482">Rediger kreditkort</translation>
-<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">Dette giver dig mulighed for at tage og uploade billeder.</translation>
 <translation id="6314335155547195432">Generér adgangskode</translation>
 <translation id="6324528485781869530">Skift synkroniseringskonto</translation>
@@ -365,7 +368,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="842017693807136194">Logget ind med</translation>
 <translation id="8428045167754449968">By</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
-<translation id="8433678324664858900">Vis forslag</translation>
 <translation id="8458397775385147834">1 bogmærke blev slettet</translation>
 <translation id="8487700953926739672">Tilgængelig offline</translation>
 <translation id="8503813439785031346">Brugernavn</translation>

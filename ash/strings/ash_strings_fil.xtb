@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">USB-C device (port sa harap)</translation>
 <translation id="1013923882670373915">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares. Pakilagay ang PIN na ito sa device na iyon: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">Awtomatikong itago ang shelf</translation>
-<translation id="1127238861555034875">Magnifying glass mode</translation>
 <translation id="1153356358378277386">Mga nakapares na device</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="1247372569136754018">Mikropono (internal)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> na lang ang natitira</translation>
 <translation id="1698760176351776263">IPv6 address: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Ang device na ito ay pinamamahalaan ng enterprise</translation>
+<translation id="1746730358044914197">Isinasaayos ng iyong administrator ang mga pamamaraan sa pag-input.</translation>
 <translation id="1747827819627189109">Naka-enable ang on-screen na keyboard</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Naka-off ang Wi-Fi.</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">Napalitan na ang shortcut para sa pagbubukas sa task manager. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Mga awtomatikong pag-click</translation>
 <translation id="1942830294380034169">Button na overflow</translation>
+<translation id="1951012854035635156">Assistant</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">Pinamamahalaan ng <ph name="DOMAIN" /> ang device na ito.</translation>
 <translation id="2050339315714019657">Portrait</translation>
+<translation id="2067602449040652523">Liwanag ng keyboard</translation>
 <translation id="207439088875642105">Isa itong account para sa mga bata na pinamamahalaan nina <ph name="FIRST_PARENT_EMAIL" /> at <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Ihinto ang pag-cast ng <ph name="TAB_NAME" /> sa <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Low-power charger</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">I-sign out ang lahat</translation>
 <translation id="2292698582925480719">Scale ng display</translation>
 <translation id="2303600792989757991">I-toggle ang window ng pangkalahatang-ideya</translation>
+<translation id="2338501278241028356">I-on ang Bluetooth upang tuklasin ang mga kalapit na device</translation>
 <translation id="2352467521400612932">Mga setting ng stylus</translation>
 <translation id="2354174487190027830">Ina-activate ang <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">Data sa mobile</translation>
 <translation id="3236488194889173876">Walang available na mobile network</translation>
 <translation id="3294437725009624529">Bisita</translation>
-<translation id="3335772982573114336">Bagong tala</translation>
 <translation id="3364721542077212959">Mga stylus tool</translation>
 <translation id="3368922792935385530">Nakakonekta</translation>
 <translation id="3371140690572404006">USB-C device (port sa kanang bahagi sa harap)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">Na-disable ng iyong administrator ang kakayahang kumuha ng mga screenshot.</translation>
 <translation id="397105322502079400">Kinakalkula...</translation>
 <translation id="3995138139523574647">USB-C device (port sa kanang bahagi sa likod)</translation>
+<translation id="4017989525502048489">Laser pointer</translation>
 <translation id="4279490309300973883">Nagmi-mirror</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">Magnifying glass</translation>
 <translation id="4378551569595875038">Kumokonekta...</translation>
 <translation id="4421231901400348175">Pagbabahagi ng kontrol sa iyong screen gamit ang <ph name="HELPER_NAME" /> sa pamamagitan ng Remote Assistance.</translation>
 <translation id="4430019312045809116">Volume</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">Na-disable ng iyong administrator ang network na ito.</translation>
 <translation id="7067196344162293536">Awtomatikong pag-rotate</translation>
 <translation id="7098389117866926363">USB-C device (kaliwang port sa likod)</translation>
-<translation id="7129360219436193655">Laser pointer mode</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Magre-revert sa lumang resolution sa loob ng <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7199454189089571166">Assistant mode</translation>
 <translation id="7246339268451149667">I-enable ang Pag-unlock gamit ang fingerprint?</translation>
 <translation id="7256634071279256947">Mikropono sa likod</translation>
 <translation id="7348093485538360975">Nasa screen na keyboard</translation>
@@ -253,6 +255,7 @@
 <translation id="8185286464235484130">Ipaalam sa amin kung ano ang iyong palagay sa ginagawa namin sa pamamagitan ng pagsagot sa ilang tanong.</translation>
 <translation id="8190698733819146287">I-customize ang mga wika at input...</translation>
 <translation id="8308637677604853869">Nakaraang menu</translation>
+<translation id="8351131234907093545">Gumawa ng tala</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8433186206711564395">Mga setting ng network</translation>
 <translation id="8433977262951327081">Napalitan na ang shortcut para sa pagpapakita ng bubble na menu ng mga opsyon sa input sa shelf. Pakigamit ang <ph name="NEW_SHORTCUT" /> sa halip na <ph name="OLD_SHORTCUT" />.</translation>

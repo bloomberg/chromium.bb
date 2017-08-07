@@ -134,6 +134,8 @@
 <translation id="3474649192738347024">表单已填好。</translation>
 <translation id="3478058380795961209">到期月份</translation>
 <translation id="3482959374254649722">正在同步您的标签页…</translation>
+<translation id="3487093336331957349">搜索和网站建议</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />推荐内容</translation>
 <translation id="3494788280727468875">确认清除浏览数据</translation>
 <translation id="3519193562722059437">打开一个标签页即可浏览网络。</translation>
 <translation id="3527085408025491307">文件夹</translation>
@@ -151,6 +153,7 @@
 <translation id="3691593122358196899">已将书签添加到“<ph name="FOLDER_TITLE" />”</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
 <translation id="3771033907050503522">隐身标签页</translation>
+<translation id="3779810277399252432">无互联网连接。</translation>
 <translation id="3783017676699494206">保存图片</translation>
 <translation id="385051799172605136">后退</translation>
 <translation id="3897092660631435901">菜单</translation>
@@ -173,6 +176,7 @@
 <translation id="4281844954008187215">服务条款</translation>
 <translation id="430793432425771671">同步所有内容</translation>
 <translation id="4359125752503270327">此页面将在其他应用中打开。</translation>
+<translation id="4375040482473363939">QR 码搜索</translation>
 <translation id="4378154925671717803">电话</translation>
 <translation id="441868831736628555">隐私权声明</translation>
 <translation id="4508750114462689118">关闭登录推广元素</translation>
@@ -262,7 +266,6 @@
 <translation id="6196207969502475924">语音搜索</translation>
 <translation id="6254066287920239840">在应用（而非浏览器）中打开链接。</translation>
 <translation id="6255097610484507482">修改信用卡</translation>
-<translation id="6273258929211277933">标题：<ph name="TITLE" />；发布者：<ph name="PUBLISHER_INFORMATION" />；发布日期：<ph name="PUBLICATION_DATE" />；状态：<ph name="STATE" /></translation>
 <translation id="6308436439357671616">这样，您就可以拍摄并上传照片。</translation>
 <translation id="6314335155547195432">生成密码</translation>
 <translation id="6324528485781869530">切换同步帐号</translation>
@@ -365,7 +368,6 @@
 <translation id="842017693807136194">所用登录身份</translation>
 <translation id="8428045167754449968">市/镇</translation>
 <translation id="8428213095426709021">设置</translation>
-<translation id="8433678324664858900">显示建议</translation>
 <translation id="8458397775385147834">删除了1项</translation>
 <translation id="8487700953926739672">可离线查看</translation>
 <translation id="8503813439785031346">用户名</translation>

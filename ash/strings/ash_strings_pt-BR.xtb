@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">Dispositivo USB-C (porta frontal)</translation>
 <translation id="1013923882670373915">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Digite este código PIN no dispositivo: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">Ocultar estante automaticamente</translation>
-<translation id="1127238861555034875">Modo de lupa</translation>
 <translation id="1153356358378277386">Dispositivos pareados</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="1247372569136754018">Microfone (interno)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
 <translation id="1698760176351776263">Endereço IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Este dispositivo é gerenciado por uma empresa</translation>
+<translation id="1746730358044914197">Os métodos de entrada são configurados pelo administrador.</translation>
 <translation id="1747827819627189109">Teclado na tela ativado</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">O Wi-Fi está desligado.</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">O atalho para abrir o gerenciador de tarefas foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
 <translation id="1942830294380034169">Botão de estouro</translation>
+<translation id="1951012854035635156">Assistente</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl+Pesquisa+H</translation>
 <translation id="2049639323467105390">Este dispositivo é gerenciado por <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Retrato</translation>
+<translation id="2067602449040652523">Brilho do teclado</translation>
 <translation id="207439088875642105">Esta é uma conta para as crianças gerenciada por <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Parar de transmitir <ph name="TAB_NAME" /> para <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Carregador de baixa potência</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">Desconectar todos</translation>
 <translation id="2292698582925480719">Escala de exibição</translation>
 <translation id="2303600792989757991">Visão geral da janela de alternância</translation>
+<translation id="2338501278241028356">Ativar o Bluetooth para descobrir dispositivos nas proximidades</translation>
 <translation id="2352467521400612932">Configurações da stylus</translation>
 <translation id="2354174487190027830">Ativando <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">Dados do celular</translation>
 <translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
 <translation id="3294437725009624529">Visitante</translation>
-<translation id="3335772982573114336">Nova nota</translation>
 <translation id="3364721542077212959">Ferramentas da stylus</translation>
 <translation id="3368922792935385530">Conectado</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal da direita)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">A capacidade de fazer capturas de tela foi desativada pelo seu administrador.</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira da direita)</translation>
+<translation id="4017989525502048489">Apontador laser</translation>
 <translation id="4279490309300973883">Espelhamento</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">Lupa</translation>
 <translation id="4378551569595875038">Conectando...</translation>
 <translation id="4421231901400348175">Compartilhando o controle da sua tela com <ph name="HELPER_NAME" /> via Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">Esta rede foi desativada pelo seu administrador.</translation>
 <translation id="7067196344162293536">Rotação automática</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta traseira da esquerda)</translation>
-<translation id="7129360219436193655">Modo de caneta laser</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Revertendo para resolução anterior em <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7199454189089571166">Modo Assistente</translation>
 <translation id="7246339268451149667">Ativar desbloqueio com impressão digital?</translation>
 <translation id="7256634071279256947">Microfone traseiro</translation>
 <translation id="7348093485538360975">Teclado virtual</translation>
@@ -253,6 +255,7 @@
 <translation id="8185286464235484130">Responda a algumas perguntas para que possamos saber como estamos nos saindo.</translation>
 <translation id="8190698733819146287">Personalizar idiomas e entrada...</translation>
 <translation id="8308637677604853869">Menu anterior</translation>
+<translation id="8351131234907093545">Criar nota</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8433186206711564395">Configurações de rede</translation>
 <translation id="8433977262951327081">O atalho para mostrar o balão de menu de opções de entrada na estante foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>

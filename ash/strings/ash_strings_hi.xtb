@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">USB-C डिवाइस (सामने वाला पोर्ट)</translation>
 <translation id="1013923882670373915">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. कृपया उस डिवाइस पर यह पिन कोड डालें: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">अलमारी को स्वत: छिपाएं</translation>
-<translation id="1127238861555034875">आवर्धक ग्लास मोड</translation>
 <translation id="1153356358378277386">युग्‍मित डिवाइस</translation>
 <translation id="1195412055398077112">ओवरस्कैन</translation>
 <translation id="1247372569136754018">माइक्रोफ़ोन (आंतरिक)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> शेष</translation>
 <translation id="1698760176351776263">IPv6 पता: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">यह डिवाइस एंटरप्राइज़ द्वारा प्रबंधित है</translation>
+<translation id="1746730358044914197">इनपुट विधियों को आपका व्यवस्थापक कॉन्फ़िगर करता है.</translation>
 <translation id="1747827819627189109">ऑन-स्‍क्रीन कीबोर्ड सक्षम है</translation>
 <translation id="1823873187264960516">ईथरनेट: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">वाई-फ़ाई  बंद है.</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">काम के प्रबंधक को खोलने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
 <translation id="1923539912171292317">स्वत: क्‍लिक</translation>
 <translation id="1942830294380034169">ओवरफ़्लो बटन</translation>
+<translation id="1951012854035635156">सहायक</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">यह डिवाइस <ph name="DOMAIN" /> द्वारा प्रबंधित है.</translation>
 <translation id="2050339315714019657">पोर्ट्रेट</translation>
+<translation id="2067602449040652523">कीबोर्ड की रोशनी</translation>
 <translation id="207439088875642105">यह बच्‍चों के लिए बनाया गया खाता है जिसे <ph name="FIRST_PARENT_EMAIL" /> और <ph name="SECOND_PARENT_EMAIL" /> द्वारा प्रबंधित किया जाता है</translation>
 <translation id="2122028596993374965"><ph name="RECEIVER_NAME" /> को <ph name="TAB_NAME" /> कास्ट करना बंद करें</translation>
 <translation id="2127372758936585790">कम-शक्ति वाला चार्जर</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">सभी प्रस्थान करें</translation>
 <translation id="2292698582925480719">प्रदर्शन पैमाना</translation>
 <translation id="2303600792989757991">टॉगल विंडो का संक्षिप्त विवरण</translation>
+<translation id="2338501278241028356">आस-पास के डिवाइस खोजने के लिए ब्लूटूथ चालू करें</translation>
 <translation id="2352467521400612932">स्टाइलस की सेटिंग</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> सक्रिय हो रहा है</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">मोबाइल डेटा</translation>
 <translation id="3236488194889173876">कोई मोबाइल नेटवर्क उपलब्ध नहीं</translation>
 <translation id="3294437725009624529">अतिथि</translation>
-<translation id="3335772982573114336">नया नोट</translation>
 <translation id="3364721542077212959">स्टाइलस टूल</translation>
 <translation id="3368922792935385530">कनेक्टेड</translation>
 <translation id="3371140690572404006">USB-C डिवाइस (दायां सामने वाला पोर्ट)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">स्क्रीनशॉट लेने की क्षमता को आपके व्यवस्थापक द्वारा अक्षम कर दिया गया है.</translation>
 <translation id="397105322502079400">गणना की जा रही है...</translation>
 <translation id="3995138139523574647">USB-C डिवाइस (दायां पिछला पोर्ट)</translation>
+<translation id="4017989525502048489">लेज़र पॉइंटर</translation>
 <translation id="4279490309300973883">मिरर करना</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">आवर्धक ग्लास</translation>
 <translation id="4378551569595875038">कनेक्ट हो रहा है...</translation>
 <translation id="4421231901400348175">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायक के द्वारा <ph name="HELPER_NAME" /> से साझा किया जा रहा है.</translation>
 <translation id="4430019312045809116">मात्रा</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">यह नेटवर्क आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
 <translation id="7067196344162293536">स्वत: घुमाएं</translation>
 <translation id="7098389117866926363">USB-C डिवाइस (पीछे बायां पोर्ट)</translation>
-<translation id="7129360219436193655">लेज़र पॉइंटर मोड</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> में पुराने रिज़ॉल्यूशन में वापस लौट रहा है</translation>
-<translation id="7199454189089571166">Assistant मोड</translation>
 <translation id="7246339268451149667">फ़िंगरप्रिंट अनलॉक सक्षम करें?</translation>
 <translation id="7256634071279256947">पीछे वाला माइक्रोफ़ोन</translation>
 <translation id="7348093485538360975">ऑन-स्‍क्रीन कीबोर्ड</translation>
@@ -253,6 +255,7 @@
 <translation id="8185286464235484130">कुछ प्रश्नों के उत्तर देकर हमें बताएं कि हमारा प्रदर्शन कैसा है.</translation>
 <translation id="8190698733819146287">भाषाएं और इनपुट कस्टमाइज़ करें...</translation>
 <translation id="8308637677604853869">पिछला मेनू</translation>
+<translation id="8351131234907093545">नोट बनाएं</translation>
 <translation id="8428213095426709021">सेटिंग्स</translation>
 <translation id="8433186206711564395">नेटवर्क सेटिंग</translation>
 <translation id="8433977262951327081">शेल्फ़ में इनपुट विकल्पों का मेनू बबल दिखाने वाला शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>

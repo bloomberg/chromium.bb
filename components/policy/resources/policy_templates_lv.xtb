@@ -330,7 +330,6 @@
 <translation id="2312134445771258233">Ļauj konfigurēt lapas, kas tiek ielādētas startēšanas brīdī.
 
       Saraksta vietrāžu URL, kas jāatver startēšanas brīdī, saturs tiek ignorēts, ja vien iestatījumam Darbība startēšanas brīdī tiek atlasīts iestatījums Atvērt URL sarakstu.</translation>
-<translation id="23323722127921515">Tiek rādīta Google Cast rīkjoslas ikona</translation>
 <translation id="2337466621458842053">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts attēlot attēlus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultImagesSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
@@ -419,7 +418,6 @@
 
       Ja šai politikai ir norādīta vērtība “False”, tiks rādīts kļūdas ziņojums, nevis tīkla konfigurācijas uzvedne.</translation>
 <translation id="2498238926436517902">Vienmēr automātiski slēpt plauktu</translation>
-<translation id="2503514368596117142">Konfigurējiet Google Cast politikas. Izmantojot funkciju Google Cast, lietotāji pārlūkprogrammas atvērtajās cilnēs, vietnēs vai darbvirsmā redzamo saturu var pārsūtīt uz attāliem displejiem un skaņas sistēmām.</translation>
 <translation id="2514328368635166290">Norāda noklusējuma meklētājprogrammas iecienītās ikonas URL.
 
           Šī politika ir neobligāta. Ja tā nav iestatīta, meklētājprogrammas ikona netiks rādīta.
@@ -436,9 +434,6 @@
 <translation id="2529880111512635313">Konfigurēt piespiedu kārtā instalēto lietotņu un paplašinājumu sarakstu</translation>
 <translation id="253135976343875019">Aizkave līdz dīkstāves brīdinājumam, ja ierīce darbojas ar maiņstrāvu</translation>
 <translation id="2552966063069741410">Laika josla</translation>
-<translation id="2558917182010914102">Ja politikai tiks iestatīta vērtība “True” vai politika netiks iestatīta, funkcija Google Cast tiks iespējota, kā arī lietotāji varēs palaist to, izmantojot lietotnes izvēlni, lapas kontekstizvēlnes un multivides vadīklas vietnēs, kurās ir iespējota funkcija Google Cast, un (ja būs redzama) Cast rīkjoslu ikonu.
-
-          Ja politikai tiks iestatīta vērtība “False”, funkcija Google Cast tiks atspējota.</translation>
 <translation id="2562339630163277285">Norāda tās meklētājprogrammas vietrādi URL, kas tiek izmantota dinamiskās meklēšanas rezultātu iegūšanai. Vietrādī URL ir jābūt virknei <ph name="SEARCH_TERM_MARKER" />, kas vaicājuma ievadīšanas brīdī tiks aizvietota ar lietotāja ievadīto tekstu.
 
           Šī politika nav obligāta. Ja tā nav iestatīta, netiks nodrošināti dinamiskās meklēšanas rezultāti.
@@ -567,6 +562,7 @@
 <translation id="3001534538097271560">Ja šai politikai ir iestatīta vērtība “False”, lietotājiem tiek liegta iespēja nosūtīt sistēmas informāciju un lapu saturu Google serveriem. Ja šī vērtība ir “True” vai nav konfigurēta, lietotāji varēs nosūtīt sistēmas informāciju un lapu saturu funkcijai Droša pārlūkošana, lai palīdzētu noteikt bīstamas lietotnes un vietnes.
 
       Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.</translation>
+<translation id="3016255526521614822">Baltajā sarakstā iekļautas piezīmju lietotnes, kas ir atļautas <ph name="PRODUCT_OS_NAME" /> bloķēšanas ekrānā</translation>
 <translation id="3021409116652377124">Atspējo spraudņu meklētāju</translation>
 <translation id="3030000825273123558">Iespējot metrikas ziņošanu</translation>
 <translation id="3034580675120919256">Ļauj iestatīt, vai vietnēm ir atļauts izpildīt JavaScript. JavaScript izpilde var tikt atļauta visām vietnēm vai noraidīta visām vietnēm.
@@ -912,6 +908,16 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       “1412.24.34”: atjaunināt tikai uz šo konkrēto versiju.
 
       Brīdinājums: nav ieteicams konfigurēt versiju ierobežojumus, jo lietotāji var nesaņemt programmatūras atjauninājumus un kritiskus drošības labojumus. Atjauninājumu ierobežošana ar noteiktas versijas prefiksu var apdraudēt lietotājus.</translation>
+<translation id="4298509794364745131">Nosaka lietotņu sarakstu, kuras var iespējot kā piezīmju lietotnes <ph name="PRODUCT_OS_NAME" /> bloķēšanas ekrānā.
+
+      Ja bloķēšanas ekrānā ir iespējota vēlamā piezīmju lietotne, bloķēšanas ekrānā būs lietotāja saskarnes elements, ar ko varēs palaist vēlamo piezīmju lietotni.
+      Palaista lietotne varēs bloķēšanas ekrāna augšdaļā izveidot lietotnes logu un datu vienumus (piezīmes), kamēr bloķēšanas ekrāns ir iespējots. Lietotne varēs importēt izveidotās piezīmes galvenajā lietotāja sesijā, kad tā būs atbloķēta. Pašlaik bloķēšanas ekrānā tiek atbalstītas tikai Chrome piezīmju lietotnes.
+
+      Kad politika ir iestatīta, lietotājam ir atļauts iespējot lietotni bloķēšanas ekrānā tikai tad, ja attiecīgās lietotnes paplašinājuma ID ir iekļauts politikas saraksta vērtībā.
+      Tādējādi, iestatot šo politiku tukšā sarakstā, piezīmju izveidošana bloķēšanas ekrānā tiks pilnībā atspējota.
+      Ņemiet vērā: ja politika satur lietotnes ID, tas nenozīmē, ka lietotājs noteikti var iespējot bloķēšanas ekrānā šo lietotni kā piezīmju lietotni. Piemēram, pārlūkā Chrome 61 ir papildu pieejamo lietotņu ierobežojumi.
+
+      Ja politika nav iestatīta, attiecībā uz lietotnēm, kuras lietotājs var iespējot bloķēšanas ekrānā, nav nekādu politikā noteiktu ierobežojumu.</translation>
 <translation id="4309640770189628899">DHE šifra komplektu iespējošana standartā TLS</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 vai jaunāka versija</translation>
 <translation id="4322842393287974810">Atļaut kioska lietotnei, kas tiek automātiski palaista ar nulles aizkavi, kontrolēt <ph name="PRODUCT_OS_NAME" /> versiju</translation>
@@ -1340,7 +1346,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja iespējosiet šo iestatījumu, filtrs Droša meklēšana pakalpojumā Google meklēšana vienmēr būs aktīvs.
 
       Ja atspējosiet šo iestatījumu vai neiestatīsiet vērtību, filtrs Droša meklēšana pakalpojumā Google meklēšana netiks izmantots piespiedu kārtā.</translation>
-<translation id="5940306398763671235">Iespējo Google Cast</translation>
 <translation id="5946082169633555022">Beta versija</translation>
 <translation id="5950205771952201658">Ņemot vērā to, ka pastāvīgas atteices atsaukšanas pārbaudes tiešsaistē nenodrošina nevienu efektīvu drošības priekšrocību, tās pēc noklusējuma tiek atspējotas pārlūkā <ph name="PRODUCT_NAME" /> 19 vai jaunākā versijā. Ja šai politikai ir iestatīta vērtība Patiesa, tiek atjaunota iepriekšējā darbība un tiek veiktas OCSP/CRL pārbaudes tiešsaistē.
 
@@ -1688,13 +1693,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
           Šī politika tiek lietota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="7302043767260300182">Aizkave līdz ekrāna bloķēšanai, ja ierīce darbojas ar maiņstrāvu</translation>
-<translation id="7309839952828354215">Norāda ierīces darbību gadījumos, kad tajā uzstādīta sistēma eCryptfs un jāpāriet uz ext4 šifrēšanu.
-
-      Ja politikai iestatīsiet vērtību “DisallowArc”, visiem lietotājiem ierīcē būs atspējotas Android lietotnes (tostarp tiem lietotājiem, kuri jau izmanto ext4 šifrēšanu) un lietotājiem netiks piedāvāta migrēšana no eCryptfs uz ext4 šifrēšanu.
-
-      Ja politikai iestatīsiet vērtību “AllowMigration”, lietotājiem ar eCryptfs sākumdirektorijiem nepieciešamības gadījumā tiks piedāvāts migrēt uz ext4 šifrēšanu (kad ierīcē būs pieejama operētājsistēma Android N).
-
-      Ja politika netiks iestatīta, ierīce darbosies tā, it kā būtu izvēlēta vērtība “DisallowArc”.</translation>
 <translation id="7311458740754205918">Ja šai politikai ir iestatīta vērtība “Patiesa” vai tā nav iestatīta, lapā “Jauna cilne” var tikt rādīti satura ieteikumi, pamatojoties uz lietotāja pārlūkošanas vēsturi, interesēm vai atrašanās vietu.
 
       Ja šai politikai ir iestatīta vērtība “Nepatiesa”, lapā “Jauna cilne” netiek rādīti automātiski veidoti satura ieteikumi.</translation>
@@ -1779,7 +1777,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> lieto norādīto lokalizāciju. Ja konfigurētā lokalizācija netiek atbalstīta, tiek lietota lokalizācija en-US.
 
       Ja šis iestatījums ir atspējots vai nav iestatīts, <ph name="PRODUCT_NAME" /> lieto lietotāja vēlamo lokalizāciju (ja tā ir konfigurēta), sistēmas lokalizāciju vai atkāpšanās lokalizāciju en-US.</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Nosaka, vai datu viesabonēšana ir jāiespējo ierīcei. Ja politika ir iestatīta uz Patiesa, datu viesabonēšana ir atļauta. Ja politika nav konfigurēta vai iestatīta uz Aplama, datu viesabonēšana nav atļauta.</translation>
 <translation id="7683777542468165012">Dinamiskā politikas atsvaidzināšana</translation>
 <translation id="7694807474048279351">Plānojiet automātisku atkārtotu palaišanu pēc <ph name="PRODUCT_OS_NAME" /> atjauninājuma piemērošanas.
@@ -1901,6 +1898,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
           Ja šis iestatījums ir atspējots un ugunsmūris filtrē izejošos UDP savienojumus, dators var izveidot savienojumus tikai ar lokālā tīkla saimniekdatoriem.</translation>
 <translation id="7980227303582973781">Nav specifisku ierobežojumu</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Pagriezt ekrānu par 0 grādiem</translation>
 <translation id="8044493735196713914">Ziņot par ierīces sāknēšanas režīmu</translation>
 <translation id="8050080920415773384">Vietējā drukāšana</translation>

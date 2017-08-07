@@ -213,6 +213,7 @@
 <translation id="7196020411877309443">למה אני רואה את הדף הזה?</translation>
 <translation id="7242029209006116544">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Google Chrome. הנתונים שלך ב-Chrome, כגון יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. תוכל למחוק את הנתונים האלה באמצעות לוח הבקרה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">‏בקרוב מחשב זה יפסיק לקבל עדכונים ל-Google Chrome בשל הפסקת התמיכה במערכות ההפעלה Windows XP ו-Windows Vista.</translation>
+<translation id="7330164299247909639">‏אישור האימות נכשל. עליך להיכנס שוב לחשבונך ב-Google Chrome בשם המשתמש <ph name="USER_NAME" /> או לפנות למנהל המערכת שלך לקבלת מידע נוסף. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">חלון חדש</translation>
 <translation id="7369650938475876456">‏השתמש בסיסמה חזקה שנוצרה על-ידי Chrome</translation>
 <translation id="7398801000654795464">‏היית מחובר ל-Chrome כ-<ph name="USER_EMAIL_ADDRESS" />. השתמש באותו חשבון כדי להיכנס שוב.</translation>
@@ -276,6 +277,7 @@
 <translation id="8914504000324227558">‏הפעל מחדש את Chrome</translation>
 <translation id="9026991721384951619">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="9067395829937117663">‏כדי להשתמש ב-Google Chrome יש צורך ב-Windows מגירסה 7 ואילך.</translation>
+<translation id="9084668267983921457">‏אישור האימות נכשל. עליך להיכנס שוב לחשבונך ב-Google Chrome או לפנות למנהל המערכת שלך לקבלת מידע נוסף. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="9107728822479888688">‏<ph name="BEGIN_BOLD" />אזהרה:<ph name="END_BOLD" /> ‏‏Google Chrome‏ אינו יכול למנוע מתוספים לתעד את היסטוריית הגלישה שלך. כדי להשבית תוסף זה במצב גלישה פרטית, בטל אפשרות זו.</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
 <translation id="919706545465235479">‏עדכן את Chrome כדי להתחיל את הסנכרון</translation>

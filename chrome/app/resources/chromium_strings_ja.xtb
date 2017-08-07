@@ -146,6 +146,7 @@
 <translation id="5862307444128926510">Chromium へようこそ</translation>
 <translation id="5877064549588274448">チャンネルが変更されました。変更を適用するには、デバイスを再起動してください。</translation>
 <translation id="5895138241574237353">再起動</translation>
+<translation id="5902536751647951209">認証証明書でエラーが発生しました。Chromium にログインし直すか、管理者に詳細をお問い合わせください。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">端末を再起動して更新を完了してください。</translation>
 <translation id="5942520288919337908">「<ph name="EXTENSION_NAME" />」を Chromium に追加しました。</translation>
 <translation id="59625444380784159">連絡先から詳細を取得すると、Chromium でのフォームの記入が楽になります。</translation>
@@ -219,6 +220,7 @@
 <translation id="7745317241717453663">この端末から閲覧データを削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
 <translation id="7756122083761163394">この操作を行うと、このユーザーの閲覧データがこの端末から削除されます。データを復元するには、$2 として Chrome にログインしてください。</translation>
+<translation id="7774736947049807614">認証証明書でエラーが発生しました。<ph name="USER_NAME" /> として Chromium にログインし直すか、管理者に詳細をお問い合わせください。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7937630085815544518">Chromium に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
 <translation id="795025003224538582">再起動しない</translation>
 <translation id="7962572577636132072">Chromium は自動的に更新されるため、常に最新版をご利用になれます。</translation>

@@ -4,14 +4,17 @@
 <translation id="111910763555783249">Paziņojumu iestatījumi</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Pirms 1 dienas}zero{Pirms # dienām}one{Pirms # dienas}other{Pirms # dienām}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Pirms 1 minūtes}zero{Pirms # minūtēm}one{Pirms # minūtes}other{Pirms # minūtēm}}</translation>
+<translation id="1169783199079129864">{MINUTES,plural, =1{1 min}zero{# min}one{# min}other{# min}}</translation>
 <translation id="1190609913194133056">Paziņojumu centrs</translation>
 <translation id="1243314992276662751">Augšupielādēt</translation>
 <translation id="1293699935367580298">Atsolis</translation>
+<translation id="1306549533752902673">IETEIKTĀS LIETOTNES</translation>
 <translation id="1398853756734560583">Maksimizēt</translation>
 <translation id="1413622004203049571">Atspējot paziņojumu saņemšanu no: <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minūte un }zero{# minūtes un }one{# minūte un }other{# minūtes un }}</translation>
 <translation id="1643823602425662293">Paziņojums</translation>
 <translation id="1685967565548146460">Hats</translation>
+<translation id="1710340000377843106">tagad</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minūte}zero{# minūtes}one{# minūte}other{# minūtes}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Periods</translation>
@@ -21,7 +24,9 @@
 <translation id="1842960171412779397">Atlasiet</translation>
 <translation id="1860796786778352021">Paziņojuma aizvēršana</translation>
 <translation id="1871244248791675517">Iespraušana</translation>
+<translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Izvēlēties visus</translation>
+<translation id="2141853158323869627">{DAYS,plural, =1{1 d.}zero{# d.}one{# d.}other{# d.}}</translation>
 <translation id="2148716181193084225">Šodien</translation>
 <translation id="2168039046890040389">Augšup</translation>
 <translation id="2190355936436201913">(tukšs)</translation>
@@ -61,6 +66,7 @@
 <translation id="4316910396681052118">VISAS LIETOTNES</translation>
 <translation id="4320177379694898372">Nav interneta savienojuma.</translation>
 <translation id="4588090240171750605">Ritināt pa labi</translation>
+<translation id="4730374152663651037">BIEŽI IZMANTOTĀS</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Atlicis 1 mēnesis}zero{Atlikuši # mēneši}one{Atlicis # mēnesis}other{Atlikuši # mēneši}}</translation>
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunde}zero{# sekundes}one{# sekunde}other{# sekundes}}</translation>
@@ -71,9 +77,11 @@
 <translation id="5120799197269191491">Meklēšanas taustiņš + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5153297660536091054">PIN atbloķēšanas funkcija</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
+<translation id="5266161281976477809">Atklāšanas trijstūris</translation>
 <translation id="528468243742722775">Beigas</translation>
 <translation id="5329858601952122676">Dzēst</translation>
 <translation id="5476505524087279545">neprbaudt</translation>
+<translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> sistēma</translation>
 <translation id="5583640892426849032">Atkāpšanās taustiņš</translation>
 <translation id="5613020302032141669">Kreisā bulta</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}zero{# min}one{# min}other{# min}}</translation>
@@ -89,6 +97,7 @@
 <translation id="6135826906199951471">Dzēst</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6264365405983206840">&amp;Atlasīt visu</translation>
+<translation id="6351032674660237738">LIETOTŅU IETEIKUMI</translation>
 <translation id="6364916375976753737">Ritināt pa kreisi</translation>
 <translation id="6394627529324717982">Komats</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Pirms 1 s}zero{Pirms # s}one{Pirms # s}other{Pirms # s}}</translation>
@@ -109,10 +118,12 @@
 <translation id="6945221475159498467">Atlasīt</translation>
 <translation id="6965382102122355670">Labi</translation>
 <translation id="7052633198403197513">taustiņš F1</translation>
+<translation id="7130207228079676353">VISTICAMĀK</translation>
 <translation id="7135556860107312402">Atļaut paziņojumu saņemšanu no:</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Atlikusi 1 min}zero{Atlikušas # min}one{Atlikusi # min}other{Atlikušas # min}}</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Pirms 1 min}zero{Pirms # min}one{Pirms # min}other{Pirms # min}}</translation>
+<translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Atlikusi 1 minūte}zero{Atlikušas # minūtes}one{Atlikusi # minūte}other{Atlikušas # minūtes}}</translation>
 <translation id="7457942297256758195">Notīrīt visu</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
@@ -138,8 +149,11 @@
 <translation id="8394908167088220973">Multivide — atskaņot/apturēt</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
+<translation id="8458811141851741261">{YEARS,plural, =1{1 g.}zero{# g.}one{# g.}other{# g.}}</translation>
 <translation id="8602707065186045623">Fails <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8725488761726303204">vēl <ph name="NUMBER" /></translation>
+<translation id="8772073294905169192">{HOURS,plural, =1{1 h}zero{# h}one{# h}other{# h}}</translation>
 <translation id="8806053966018712535">Mape <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Anotēt attēlu</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

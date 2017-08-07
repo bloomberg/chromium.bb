@@ -134,6 +134,8 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="3474649192738347024">Formulieren ingevuld.</translation>
 <translation id="3478058380795961209">Vervalmaand</translation>
 <translation id="3482959374254649722">Je tabbladen synchroniseren…</translation>
+<translation id="3487093336331957349">Zoek- en sitesuggesties</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /> over voorgestelde content</translation>
 <translation id="3494788280727468875">Wissen van browsegegevens bevestigen</translation>
 <translation id="3519193562722059437">Open een tabblad om op internet te surfen.</translation>
 <translation id="3527085408025491307">Map</translation>
@@ -151,6 +153,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="3691593122358196899">Bladwijzer gemaakt in <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tikken om te zoeken</translation>
 <translation id="3771033907050503522">Incognitotabbladen</translation>
+<translation id="3779810277399252432">Geen internetverbinding.</translation>
 <translation id="3783017676699494206">Afbeelding opslaan</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -173,6 +176,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4281844954008187215">Servicevoorwaarden</translation>
 <translation id="430793432425771671">Alles synchroniseren</translation>
 <translation id="4359125752503270327">Deze pagina wordt geopend in een andere app.</translation>
+<translation id="4375040482473363939">Zoeken naar QR-code</translation>
 <translation id="4378154925671717803">Telefoon</translation>
 <translation id="441868831736628555">Privacybeleid</translation>
 <translation id="4508750114462689118">Inlogpromo sluiten</translation>
@@ -262,7 +266,6 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="6196207969502475924">Gesproken zoekopdrachten</translation>
 <translation id="6254066287920239840">Open links in de app in plaats van in de browser.</translation>
 <translation id="6255097610484507482">Creditcard bewerken</translation>
-<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">Hiermee kun je foto's maken en uploaden.</translation>
 <translation id="6314335155547195432">Wachtwoord genereren</translation>
 <translation id="6324528485781869530">Synchronisatieaccount wisselen</translation>
@@ -365,7 +368,6 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="842017693807136194">Ingelogd met</translation>
 <translation id="8428045167754449968">Stad/plaats</translation>
 <translation id="8428213095426709021">Instellingen</translation>
-<translation id="8433678324664858900">Suggesties weergeven</translation>
 <translation id="8458397775385147834">1 item verwijderd</translation>
 <translation id="8487700953926739672">Offline beschikbaar</translation>
 <translation id="8503813439785031346">Gebruikersnaam</translation>

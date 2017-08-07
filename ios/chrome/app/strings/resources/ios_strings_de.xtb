@@ -134,6 +134,8 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="3474649192738347024">Formulare ausgefüllt</translation>
 <translation id="3478058380795961209">Ablaufmonat</translation>
 <translation id="3482959374254649722">Tabs werden synchronisiert...</translation>
+<translation id="3487093336331957349">Vorschläge für Suchbegriffe und für Websites</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> zu vorgeschlagenen Inhalten</translation>
 <translation id="3494788280727468875">Löschen der Browserdaten bestätigen</translation>
 <translation id="3519193562722059437">Öffnet einen Tab zum Surfen im Web</translation>
 <translation id="3527085408025491307">Ordner</translation>
@@ -151,6 +153,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3691593122358196899">Als Lesezeichen in "<ph name="FOLDER_TITLE" />" gespeichert</translation>
 <translation id="3738139272394829648">Zum Suchen tippen</translation>
 <translation id="3771033907050503522">Inkognito-Tabs</translation>
+<translation id="3779810277399252432">Keine Internetverbindung</translation>
 <translation id="3783017676699494206">Bild speichern</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3897092660631435901">Menü</translation>
@@ -173,6 +176,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4281844954008187215">Nutzungsbedingungen</translation>
 <translation id="430793432425771671">Alles synchronisieren</translation>
 <translation id="4359125752503270327">Diese Seite wird in einer anderen Anwendung geöffnet.</translation>
+<translation id="4375040482473363939">QR-Code-Suche</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Datenschutzhinweise</translation>
 <translation id="4508750114462689118">Anmeldeangebot schließen</translation>
@@ -262,7 +266,6 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="6196207969502475924">Sprachsuche</translation>
 <translation id="6254066287920239840">Links in der App statt im Browser öffnen.</translation>
 <translation id="6255097610484507482">Kreditkarte bearbeiten</translation>
-<translation id="6273258929211277933"><ph name="TITLE" /> – <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">Dadurch können Sie Fotos aufnehmen und hochladen.</translation>
 <translation id="6314335155547195432">Passwort erstellen</translation>
 <translation id="6324528485781869530">Synchronisiertes Konto wechseln</translation>
@@ -365,7 +368,6 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="842017693807136194">Angemeldet mit</translation>
 <translation id="8428045167754449968">Stadt/Ort</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
-<translation id="8433678324664858900">Vorschläge anz.</translation>
 <translation id="8458397775385147834">1 Lesezeichen gelöscht</translation>
 <translation id="8487700953926739672">Offline verfügbar</translation>
 <translation id="8503813439785031346">Nutzername</translation>

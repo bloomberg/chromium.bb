@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">USB-C-enhet (porten foran)</translation>
 <translation id="1013923882670373915">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Skriv inn denne PIN-koden på den aktuelle enheten: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">Skjul hyllen automatisk</translation>
-<translation id="1127238861555034875">Forstørrelsesglassmodus</translation>
 <translation id="1153356358378277386">Tilkoblede enheter</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="1247372569136754018">Mikrofon (intern)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> igjen</translation>
 <translation id="1698760176351776263">IPv6-adresse: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Denne enheten er administrert av en bedrift</translation>
+<translation id="1746730358044914197">Inndatametoder konfigureres av administratoren din.</translation>
 <translation id="1747827819627189109">Skjermtastaturet er aktivert</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi er slått av.</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">Snarveien for å åpne oppgavebehandlingen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatiske klikk</translation>
 <translation id="1942830294380034169">Overflyt-knapp</translation>
+<translation id="1951012854035635156">Assistent</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl + Søk + H</translation>
 <translation id="2049639323467105390">Denne enheten administreres av <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Stående</translation>
+<translation id="2067602449040652523">Lysstyrke på tastaturet</translation>
 <translation id="207439088875642105">Dette er en konto for barn, som administreres av <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Slutt å caste <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Lading med lav effekt</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">Logg alle av</translation>
 <translation id="2292698582925480719">Visningsskala</translation>
 <translation id="2303600792989757991">Vis eller skjul vindusoversikten</translation>
+<translation id="2338501278241028356">Slå på Bluetooth for å finne enheter i nærheten</translation>
 <translation id="2352467521400612932">Innstillinger for pekepenn</translation>
 <translation id="2354174487190027830">Aktiverer <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3236488194889173876">Ingen mobilnettverk er tilgjengelige</translation>
 <translation id="3294437725009624529">Gjest</translation>
-<translation id="3335772982573114336">Nytt notat</translation>
 <translation id="3364721542077212959">Pekepennverktøy</translation>
 <translation id="3368922792935385530">Tilkoblet</translation>
 <translation id="3371140690572404006">USB-C-enhet (porten foran på høyre side)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">Muligheten til å ta skjermdumper er deaktivert av administratoren.</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3995138139523574647">USB-C-enhet (porten bak på høyre side)</translation>
+<translation id="4017989525502048489">Laserpeker</translation>
 <translation id="4279490309300973883">Speiling</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">Forstørrelsesglass</translation>
 <translation id="4378551569595875038">Kobler til …</translation>
 <translation id="4421231901400348175">Deler kontroll av skjermen med <ph name="HELPER_NAME" /> via fjernhjelp.</translation>
 <translation id="4430019312045809116">Volum</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">Administratoren din har slått av dette nettverket.</translation>
 <translation id="7067196344162293536">Automatisk retning</translation>
 <translation id="7098389117866926363">USB-C-enhet (venstre port på baksiden)</translation>
-<translation id="7129360219436193655">Laserpekermodus</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Går tilbake til den gamle oppløsningen om <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7199454189089571166">Assistentmodus</translation>
 <translation id="7246339268451149667">Vil du slå på opplåsing med fingeravtrykk?</translation>
 <translation id="7256634071279256947">Mikrofon bak</translation>
 <translation id="7348093485538360975">Skjermtastatur</translation>
@@ -253,6 +255,7 @@
 <translation id="8185286464235484130">Svar på noen spørsmål for å fortelle oss hva du synes om oss.</translation>
 <translation id="8190698733819146287">Tilpass språk og inndata</translation>
 <translation id="8308637677604853869">Forrige meny</translation>
+<translation id="8351131234907093545">Opprett et notat</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8433186206711564395">Nettverksinnstillinger</translation>
 <translation id="8433977262951327081">Hurtigtasten for å vise boblen med menyen for valg av inndataalternativer på hyllen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>

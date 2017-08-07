@@ -298,7 +298,6 @@
 <translation id="2299220924812062390">指定已启用插件的列表</translation>
 <translation id="2309390639296060546">默认地理位置设置</translation>
 <translation id="2312134445771258233">允许您配置在启动时加载的页面。除非您在“启动时的操作”中选择“打开网址列表”，否则系统会忽略“启动时打开的网址”列表中的内容。</translation>
-<translation id="23323722127921515">显示 Google Cast 工具栏图标</translation>
 <translation id="2337466621458842053">可让您设置网址格式的列表，这些网址格式用于指定允许显示图片的网站。在未设置此政策的情况下，如果设置了“DefaultImagesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="2372547058085956601">公用自助终端自动登录延迟。
 
@@ -383,7 +382,6 @@
 
       如果该政策设置为False，那么系统将显示错误消息，而不是网络配置提示。</translation>
 <translation id="2498238926436517902">始终自动隐藏任务栏</translation>
-<translation id="2503514368596117142">配置针对 Google Cast 的相关政策。借助 Google Cast 这项功能，用户可以将标签页、网站或桌面中的内容从浏览器发送到远程显示器和音响系统。</translation>
 <translation id="2514328368635166290">指定默认搜索服务提供商的首选图标网址。此政策是可选的，如果未设置，搜索服务提供商就不会显示任何图标。要实施此政策，必须启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="2516600974234263142">在 <ph name="PRODUCT_NAME" /> 中启用打印功能，并禁止用户更改此设置。
 
@@ -396,9 +394,6 @@
 <translation id="2529880111512635313">配置强制安装的应用和扩展程序的列表</translation>
 <translation id="253135976343875019">使用交流电源供电时的闲置警告延迟时间</translation>
 <translation id="2552966063069741410">时区</translation>
-<translation id="2558917182010914102">如果此政策设为 true 或未设置，系统将启用 Google Cast，并且用户将能够通过以下途径启动这项功能：应用菜单、页面上下文菜单、支持 Cast 的网站上的媒体控件，以及（如果显示的话）Cast 工具栏图标。
-
-          如果此政策设为 false，系统将停用 Google Cast。</translation>
 <translation id="2562339630163277285">指定用于提供即搜即得结果的搜索引擎网址。该网址应包含字符串“<ph name="SEARCH_TERM_MARKER" />”，系统会在用户进行查询时将该字符串替换为用户输入的文字。
 
           此政策是可选的，如果未设置，系统将不会提供任何即搜即得结果。
@@ -521,6 +516,7 @@
 <translation id="3001534538097271560">如果此政策设为 false，用户将无法选择向 Google 服务器发送一些系统信息和网页内容。如果此设置设为 true 或未配置，用户将能够向安全浏览服务发送一些系统信息和网页内容，以帮助检测危险应用和网站。
 
       要详细了解安全浏览功能，请访问 https://developers.google.com/safe-browsing。</translation>
+<translation id="3016255526521614822">允许在 <ph name="PRODUCT_OS_NAME" />锁定屏幕启用加入白名单的备注应用</translation>
 <translation id="3021409116652377124">停用插件查找器</translation>
 <translation id="3030000825273123558">启用指标报告</translation>
 <translation id="3034580675120919256">可让您设置是否允许网站运行 JavaScript。可以针对所有网站允许或拒绝运行 JavaScript。如果未设置此政策，系统将使用“AllowJavaScript”并允许用户更改此设置。</translation>
@@ -843,6 +839,16 @@
       “1412.24.34”：仅更新到此特定版本
 
       警告：建议您不要配置版本限制，因为这可能会阻止用户接收软件更新和重要的安全修补程序。限制更新到特定版本前缀可能会将用户置于风险之中。</translation>
+<translation id="4298509794364745131">指定可以在 <ph name="PRODUCT_OS_NAME" />锁定屏幕上作为备注应用启用的应用列表。
+
+      如果在锁定屏幕上启用首选备注应用，则锁定屏幕将包含用于启动该首选备注应用的界面元素。
+      在启动时，该应用将能够在锁定屏幕顶部创建一个应用窗口，并在锁定屏幕环境中创建数据项（备注）。在主用户会话解锁后，该应用能够将所创建的备注导入到该会话中。目前，系统仅支持在锁定屏幕上启用 Chrome 备注应用。
+
+      如果设置了此政策，则只有当政策的列表值中包含某个应用的扩展程序 ID 时，用户才可以在锁定屏幕上启用该应用。
+      因此，将此政策设置为空列表便会在锁定屏幕上完全停用备注功能。
+      请注意，即使此政策包含某个应用 ID，也不意味着用户一定可以在锁定屏幕上将该应用作为备注应用启用；例如，在 Chrome 61 上，可启用哪些应用要遵循该平台的额外限制。
+
+      如果未设置此政策，则此政策不会限制用户可以在锁定屏幕上启用哪些应用。</translation>
 <translation id="4309640770189628899">是否在 TLS 中启用 DHE 加密套件</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更高版本</translation>
 <translation id="4322842393287974810">允许自动启动零延迟的自助服务终端应用控制 <ph name="PRODUCT_OS_NAME" />版本</translation>
@@ -1222,7 +1228,6 @@
       如果您启用此设置，Google 搜索中的安全搜索将始终处于激活状态。
 
       如果您停用此设置或未设置值，将不会执行 Google 搜索中的安全搜索。</translation>
-<translation id="5940306398763671235">启用 Google Cast</translation>
 <translation id="5946082169633555022">测试版</translation>
 <translation id="5950205771952201658">鉴于软故障在线撤消检查并不具备有效的安全优势，在 19 版及更高版本的 <ph name="PRODUCT_NAME" /> 中，这些功能默认处于停用状态。此政策设为 true 时，系统会恢复先前的行为并执行在线 OCSP/CRL 检查。
 
@@ -1543,13 +1548,6 @@
 
           要实施此策略，必须启用“DefaultSearchProviderEnabled”策略。</translation>
 <translation id="7302043767260300182">使用交流电源供电时的屏幕锁定延迟时间</translation>
-<translation id="7309839952828354215">用于指定内置了 ecryptfs 且需要转换为采用 ext4 加密功能的设备的行为方式。
-
-      如果您将此政策设为“DisallowArc”，相应设备将会禁止所有用户（包括已采用 ext4 加密功能的用户）在其上使用 Android 应用，且不会主动为任何用户提供从 ecryptfs 到 ext4 加密功能的迁移服务。
-
-      如果您将此政策设为“AllowMigration”，相应设备便会在必要时（目前是指可在该设备上使用 Android N 时）主动向使用 ecryptfs 主目录的用户提供将这些主目录改为采用 ext4 加密功能的服务。
-
-      如果此政策未设置，相应设备则会具有与将此政策设为“DisallowArc”时相同的行为方式。</translation>
 <translation id="7311458740754205918">如果此政策设为 true 或未设置，“打开新的标签页”页面可能会根据用户的浏览记录、兴趣或位置信息显示内容建议。
 
       如果此政策设为 false，“打开新的标签页”页面上不会显示自动生成的内容建议。</translation>
@@ -1626,7 +1624,6 @@
 <translation id="7625444193696794922">指定该设备应锁定到的发布渠道。</translation>
 <translation id="7632724434767231364">GSSAPI 库名称</translation>
 <translation id="7635471475589566552">在 <ph name="PRODUCT_NAME" />中配置应用的语言区域，并禁止用户更改语言区域。如果您启用了此设置，<ph name="PRODUCT_NAME" />就会使用指定的语言区域。如果配置的语言区域不受支持，就会改用“en-US”。如果已停用或未配置此设置，<ph name="PRODUCT_NAME" />就会使用由用户指定的首选语言区域（如果已配置）、系统语言区域或备用语言区域“en-US”。</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">确定是否应为设备启用数据漫游。如果将此政策设置为 true，数据漫游就可以使用。如果未配置此政策或将其设置为 false，数据漫游就无法使用。</translation>
 <translation id="7683777542468165012">动态政策刷新</translation>
 <translation id="7694807474048279351">安排在应用 <ph name="PRODUCT_OS_NAME" />更新后自动重启。
@@ -1741,6 +1738,7 @@
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">此政策已不再受支持。在连接到远程客户端时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。</translation>
 <translation id="7980227303582973781">无特殊限制</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">将屏幕旋转 0 度</translation>
 <translation id="8044493735196713914">报告设备引导模式</translation>
 <translation id="8050080920415773384">本机打印</translation>

@@ -4,14 +4,17 @@
 <translation id="111910763555783249">Mipangilio ya arifa</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Siku 1 iliyopita}other{Siku # zilizopita}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Dakika 1 iliyopita}other{Dakika # zilizopita}}</translation>
+<translation id="1169783199079129864">{MINUTES,plural, =1{Dak 1}other{Dak #}}</translation>
 <translation id="1190609913194133056">Kituo cha Arifa</translation>
 <translation id="1243314992276662751">Pakia</translation>
 <translation id="1293699935367580298">Esc</translation>
+<translation id="1306549533752902673">PROGRAMU ZINAZOPENDEKEZWA</translation>
 <translation id="1398853756734560583">Tanua</translation>
 <translation id="1413622004203049571">Zima arifa kutoka <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Dakika 1 na }other{Dakika # na }}</translation>
 <translation id="1643823602425662293">Arifa</translation>
 <translation id="1685967565548146460">Kofia</translation>
+<translation id="1710340000377843106">sasa</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{Dakika 1}other{Dakika #}}</translation>
 <translation id="1761785978543082658">B <ph name="QUANTITY" /></translation>
 <translation id="1801827354178857021">Muda</translation>
@@ -21,7 +24,9 @@
 <translation id="1842960171412779397">chagua</translation>
 <translation id="1860796786778352021">Funga arifa</translation>
 <translation id="1871244248791675517">Ins</translation>
+<translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Chagua &amp;yote</translation>
+<translation id="2141853158323869627">{DAYS,plural, =1{Siku 1}other{Siku #}}</translation>
 <translation id="2148716181193084225">Leo</translation>
 <translation id="2168039046890040389">Ukurasa mmoja juu</translation>
 <translation id="2190355936436201913">(tupu)</translation>
@@ -61,6 +66,7 @@
 <translation id="4316910396681052118">PROGRAMU ZOTE</translation>
 <translation id="4320177379694898372">Hakuna muunganisho wa intaneti</translation>
 <translation id="4588090240171750605">Sogeza Kulia</translation>
+<translation id="4730374152663651037">ZINAZOTUMIKA SANA</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Umesalia mwezi 1}other{Imesalia miezi #}}</translation>
 <translation id="4820616160060340806">Amri+ <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{Sekunde 1}other{Sekunde #}}</translation>
@@ -71,9 +77,11 @@
 <translation id="5120799197269191491">Utafutaji+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5153297660536091054">Kipengele cha Kufungua kwa Kutumia PIN</translation>
 <translation id="520299402983819650">PB <ph name="QUANTITY" /></translation>
+<translation id="5266161281976477809">Pembe tatu ya ufumbuzi</translation>
 <translation id="528468243742722775">Mwisho</translation>
 <translation id="5329858601952122676">&amp;Futa</translation>
 <translation id="5476505524087279545">toa tiki</translation>
+<translation id="5574202486608032840">Mfumo wa <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Mshale Kushoto</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{Dakika 1}other{Dakika #}}</translation>
@@ -89,6 +97,7 @@
 <translation id="6135826906199951471">Futa</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6264365405983206840">Chagua &amp;Zote</translation>
+<translation id="6351032674660237738">MAPENDEKEZO YA PROGRAMU</translation>
 <translation id="6364916375976753737">Sogeza Kushoto</translation>
 <translation id="6394627529324717982">Koma</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Sekunde 1 iliyopita}other{Sekunde # zilizopita}}</translation>
@@ -109,10 +118,12 @@
 <translation id="6945221475159498467">Chagua</translation>
 <translation id="6965382102122355670">Sawa</translation>
 <translation id="7052633198403197513">F1</translation>
+<translation id="7130207228079676353">UNAZOWEZA KUBOFYA SANA</translation>
 <translation id="7135556860107312402">Ruhusu arifa kutoka kwa:</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Imesalia dakika 1}other{Zimesalia dakika #}}</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Dakika 1 iliyopita}other{Dakika # zilizopita}}</translation>
+<translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Imesalia dakika 1}other{Zimesalia dakika #}}</translation>
 <translation id="7457942297256758195">Futa Zote</translation>
 <translation id="7460907917090416791">TB <ph name="QUANTITY" /></translation>
@@ -138,8 +149,11 @@
 <translation id="8394908167088220973">Cheza Media/Sitisha</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8428213095426709021">Mipangilio</translation>
+<translation id="8458811141851741261">{YEARS,plural, =1{Mwaka 1}other{Miaka #}}</translation>
 <translation id="8602707065186045623">Faili ya <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8725488761726303204">+<ph name="NUMBER" /> zaidi</translation>
+<translation id="8772073294905169192">{HOURS,plural, =1{Saa 1}other{Saa #}}</translation>
 <translation id="8806053966018712535">Folda ya <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Eleza kuhusu picha</translation>
 <translation id="8901569739625249689">KB <ph name="QUANTITY" /></translation>

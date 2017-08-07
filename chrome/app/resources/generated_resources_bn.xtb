@@ -71,6 +71,7 @@
 <translation id="1110772031432362678">কোনও নেটওয়ার্কের খোঁজ পাওয়া যায়নি৷</translation>
 <translation id="1114202307280046356">ডায়মন্ড</translation>
 <translation id="1114335938027186412">আপনার কম্পিউটারে একটি  বিশ্বস্ত প্ল্যাটফর্ম মডিউল (TPM) নিরাপত্তা ডিভাইস রয়েছে, যা Chrome OS এ অনেকগুলি জটিল সুরক্ষা বৈশিষ্ট্য প্রয়োগ করতে ব্যবহৃত হয়। আরো জানতে Chromebook সহায়তা কেন্দ্রে : https://support.google.com/chromebook/?p=tpm যান</translation>
+<translation id="1114525161406758033">ঢাকনা বন্ধ থাকলে স্লীপ মোডে চলে যাবে</translation>
 <translation id="1114901192629963971">এই বর্তমান নেটওয়ার্কে আপনার পাসওয়ার্ড যাচাই করা যাবে না৷ দয়া করে অন্য নেটওয়ার্ক নির্বাচন করুন৷</translation>
 <translation id="1115018219887494029">Chromebook এর জন্য Smart Lock (বিটা)</translation>
 <translation id="1116694919640316211">সম্পর্কে</translation>
@@ -87,12 +88,12 @@
 <translation id="1128591060186966949">সার্চ ইঞ্জিন সম্পাদনা করুন</translation>
 <translation id="1128987120443782698">সঞ্চয় ডিভাইসের <ph name="DEVICE_CAPACITY" /> ক্ষমতা আছে৷ দয়া করে কমপক্ষে 4GB ক্ষমতাসম্পন্ন কোন SD কার্ড অথবা USB মেমোরি স্টিক ঢোকান৷</translation>
 <translation id="1131167343343087859">Google Payments ব্যবহার করে এমন ক্রেডিট কার্ড ও ঠিকানাগুলি।</translation>
+<translation id="1134009406053225289">ছদ্মবেশী উইন্ডোতে খুলুন</translation>
 <translation id="1140351953533677694">আপনার ব্লুটুথ এবং সিরিয়াল ডিভাইসগুলি অ্যাক্সেস করুন</translation>
 <translation id="114140604515785785">এক্সটেনশন রুট ডিরেক্টরি:</translation>
 <translation id="1143142264369994168">শংসাপত্র স্বাক্ষরকারী</translation>
 <translation id="1145292499998999162">প্লাগ ইন অবরুদ্ধ রয়েছে</translation>
 <translation id="1146204723345436916">HTML ফাইল থেকে বুকমার্কগুলি আমদানি করুন...</translation>
-<translation id="1148624853678088576">আপনার সমস্ত সেট আছে!</translation>
 <translation id="1149401351239820326">মেয়াদ শেষের মাস</translation>
 <translation id="1153356358378277386">যুক্ত করা ডিভাইসগুলি</translation>
 <translation id="1154228249304313899">এই পৃষ্ঠাটি খুলুন:</translation>
@@ -123,9 +124,9 @@
 <translation id="1189418886587279221">আপনার ডিভাইসের ব্যবহার আরো সহজ করতে অ্যাক্সেসযোগ্যতার বৈশিষ্ট্যগুলি সক্ষম করুন৷</translation>
 <translation id="1190144681599273207">এই ফাইল আনয়ন করতে আনুমানিক মোবাইল ডেটার <ph name="FILE_SIZE" /> ব্যবহার করবে৷</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{আপনার কম্পিউটারে সঞ্চিত একটি ফাইল অ্যাক্সেস করে}one{আপনার কম্পিউটারে সঞ্চিত #টি ফাইল অ্যাক্সেস করে}other{আপনার কম্পিউটারে সঞ্চিত #টি ফাইল অ্যাক্সেস করে}}</translation>
+<translation id="1195076408729068893">Smart Lock শুরু করতে আপনার পাসওয়ার্ড লিখুন। পরের বার আপনার <ph name="DEVICE_TYPE" /> আনলক করতে নিজের ফোন ব্যবহার করতে পারবেন।</translation>
 <translation id="1195447618553298278">অজানা ত্রুটি৷</translation>
 <translation id="1196338895211115272">ব্যক্তিগত কী রপ্তানি করতে ব্যর্থ৷</translation>
-<translation id="1197199342062592414">আসুন শুরু করা যাক</translation>
 <translation id="119738088725604856">স্ক্রীনশট উইন্ডো</translation>
 <translation id="1197979282329025000"><ph name="PRINTER_NAME" /> মুদ্রকের মুদ্রক দক্ষতা পুনরুদ্ধারের সময় একটি ত্রুটি ঘটেছে৷ এই মুদ্রক <ph name="CLOUD_PRINT_NAME" />-এর সাথে নিবন্ধভুক্ত করা যাবে না৷</translation>
 <translation id="1198271701881992799">আসুন শুরু করি</translation>
@@ -135,6 +136,7 @@
 <translation id="1202596434010270079">কিয়স্ক অ্যাপ্লিকেশান আপডেট করা হয়েছে৷ দয়া করে USB স্টিকটি সরান৷</translation>
 <translation id="120368089816228251">সুর সঙ্কেত</translation>
 <translation id="1205489148908752564">পরিচ্ছন্ন তালিকাতে যুক্ত ব্যবহারকারিদের পড়ুন এবং পরিবর্তন করুন</translation>
+<translation id="1206407435587370571">আপনার Chromebook এর বৈশিষ্ট্যগুলি জানুন</translation>
 <translation id="1209796539517632982">স্বয়ংক্রিয় নাম সার্ভার</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" />টি আঙ্গুলের ছাপের সেট আপ</translation>
 <translation id="1215411991991485844">নতুন পটভূমি অ্যাপ্লিকেশন জোড়া হয়েছে</translation>
@@ -169,8 +171,8 @@
 <translation id="1249250836236328755">প্রকার</translation>
 <translation id="1252987234827889034">প্রোফাইল ত্রুটি ঘটেছে</translation>
 <translation id="1254593899333212300">সরাসরি ইন্টারনেট সংযোগ</translation>
-<translation id="1257390253112646227">বাজান, সম্পাদনা করুন, শেয়ার করুন, কাজগুলি সম্পন্ন করুন৷</translation>
 <translation id="1259724620062607540">তাকের আইটেম নম্বর ৭</translation>
+<translation id="1259832254221278963">সহায়ক চালু করুন</translation>
 <translation id="1260240842868558614">দেখান:</translation>
 <translation id="126710816202626562">অনুবাদের ভাষা:</translation>
 <translation id="1268125225034560697">AppleScript এর মাধ্যমে JavaScript নির্বাহ করা আর সমর্থিত নেই।</translation>
@@ -195,6 +197,7 @@
 <translation id="1303101771013849280">HTML ফাইল বুকমার্ক করে</translation>
 <translation id="1303319084542230573">একটি মুদ্রক জুড়ুন</translation>
 <translation id="1303671224831497365">কোনো ব্লুটুথ ডিভাইস পাওয়া যায়নি</translation>
+<translation id="1306606229401759371">সেটিংস পরিবর্তন করুন</translation>
 <translation id="1307398858972670978">যে কোনো ডিভাইস থেকে <ph name="SAVED_PASSWORDS_LINK" /> এ গিয়ে আপনার পাসওয়ার্ডগুলি অ্যাক্সেস করুন</translation>
 <translation id="1307559529304613120">ওহো! সিস্টেমটি এই ডিভাইসের জন্য দীর্ঘমেয়াদি API অ্যাক্সেস টোকেন সঞ্চয় করতে ব্যর্থ হয়েছে৷</translation>
 <translation id="1313405956111467313">স্বয়ংক্রিয় প্রক্সি কনফিগারেশন</translation>
@@ -224,7 +227,6 @@
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" /> : <ph name="NETWORK_NAME" /></translation>
 <translation id="1353966721814789986">প্রারম্ভ পৃষ্ঠা</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" /> অবরুদ্ধ করা রয়েছে</translation>
-<translation id="1355542767438520308">একটি সমস্যা হয়েছে৷ কিছু আইটেম নাও মুছে ফেলা হতে পারে৷</translation>
 <translation id="1357589289913453911">এক্সটেনশান Id</translation>
 <translation id="1358735829858566124">ফাইল বা ডিরেক্টরি ব্যবহারযোগ্য নয়৷</translation>
 <translation id="1358741672408003399">বানান এবং ব্যাকরণ</translation>
@@ -232,8 +234,6 @@
 <translation id="1361655923249334273">অব্যবহৃত</translation>
 <translation id="136180453919764941">ব্যাটারি - <ph name="STATUS" /></translation>
 <translation id="1363028406613469049">ট্র্যাক</translation>
-<translation id="1364639026564874341">যখন আপনার ফোন আনলক থাকে এবং কাছাকাছি থাকে তখন আপনার <ph name="DEVICE_TYPE" /> আনলক করে রাখুন।
-      মনে রাখবেন, <ph name="USER_DISPLAY_EMAIL" /> এর জন সামঞ্জস্যপূর্ণ ডিভাইসগুলির সবগুলিতে ব্লুটুথ চালু হবে এবং কিছু হার্ডওয়্যার তথ্য Google এ পাঠানো হবে। &lt;a&gt;আরো জানুন&lt;/a&gt;</translation>
 <translation id="13649080186077898">স্বতঃপূর্ণ সেটিংস পরিচালনা করুন</translation>
 <translation id="1367951781824006909">একটি ফাইল বেছে নিন</translation>
 <translation id="136802136832547685">এই ডিভাইসটিতে যোগ করার মতো কোনো তত্ত্বাবধানে থাকা ব্যবহারকারী নেই৷</translation>
@@ -250,7 +250,6 @@
 <translation id="1383861834909034572">সম্পন্ন হলে খোলে</translation>
 <translation id="1383876407941801731">অনুসন্ধান</translation>
 <translation id="1386387014181100145">আপনি কেমন আছেন৷</translation>
-<translation id="1386830813511981192">আপনার <ph name="DEVICE_TYPE" /> এ এখন দশ লক্ষেরও বেশি অ্যাপ্লিকেশান এবং গেম পাবেন</translation>
 <translation id="138784436342154190">ডিফল্ট শুরুর পৃষ্ঠা পুনরুদ্ধার করবেন?</translation>
 <translation id="1389297115360905376">এটি কেবলমাত্র <ph name="CHROME_WEB_STORE" /> থেকে ইনস্টল জোড়া যেতে পারে৷</translation>
 <translation id="1390548061267426325">নিয়মিত ট্যাব রূপে খুলুন</translation>
@@ -272,7 +271,6 @@
 <translation id="1408789165795197664">উন্নত...</translation>
 <translation id="1409390508152595145">তত্ত্বাবধানে থাকা ব্যবহারকারী তৈরি করুন</translation>
 <translation id="1410616244180625362">আপনার ক্যামেরা অ্যাক্সেস করতে <ph name="HOST" /> এর মঞ্জুরি অবিরত রাখুন</translation>
-<translation id="1413372529771027206">আপনার ফোনের জন্য Smart Lock পরিবর্তন হয়েছে। এই ডিভাইসে Chromebook এর জন্য Smart Lock আপডেট করতে আপনার পাসওয়ার্ড লিখুন। পরবর্তী সময়, আপনি শুধু আপনার ছবিতে ক্লিক করে ঢুকতে পারবেন।</translation>
 <translation id="1414648216875402825">আপনি <ph name="PRODUCT_NAME" /> এর অস্থায়ী সংস্করণে আপডেট হচ্ছেন, এটিতে থাকা বৈশিষ্টগুলি প্রগতিতে রয়েছে৷ ক্র্যাশ এবং অপ্রত্যাশিত ত্রুটিগুলি ঘটবে৷ দয়া করে সাবধানতার সাথে এগিয়ে যান৷</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (এক্সটেনশান ID " <ph name="EXTENSION_ID" /> ") এই ধরনের সেশনে অনুমোদিত নয়৷</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -281,7 +279,6 @@
 <translation id="1420920093772172268">যুক্ত হওয়ার জন্য  <ph name="TURN_ON_BLUETOOTH_LINK" /> কে অনুমতি দিতে</translation>
 <translation id="1425734930786274278">নিম্নোক্ত কুকিগুলি অবরুদ্ধ আছে (প্রত্যাশা ছাড়াই তৃতীয়-পক্ষ কুকিগুলি অবরুদ্ধ হচ্ছে):</translation>
 <translation id="1426410128494586442">হ্যাঁ</translation>
-<translation id="1427049173708736891">আপনার Android ফোন আনলক এবং আশেপাশে থাকাকালীন আপনার  <ph name="DEVICE_TYPE" /> আনলক করে রাখুন-আপনার পাসওয়ার্ড টাইপ করার দরকার নেই৷</translation>
 <translation id="142758023928848008">sticky কীগুলি সক্ষম করুন (ক্রমানুসারে সেগুলিকে টাইপ করে কীবোর্ড শর্টকাটগুলির কার্য-সম্পাদনা করতে)</translation>
 <translation id="1429740407920618615">সংকেত ক্ষমতা:</translation>
 <translation id="143027896309062157">আপনার কম্পিউটারে সব ডেটা এবং আপনার পরিদর্শন করা ওয়েবসাইটগুলি পড়ুন এবং পরিবর্তন করুন</translation>
@@ -317,6 +314,7 @@
 <translation id="1476949146811612304"><ph name="BEGIN_LINK" />বহূউপযোগী ক্ষেত্র<ph name="END_LINK" />.
 থেকে অনুসন্ধানের সময় কোন অনুসন্ধান ইঞ্জিন ব্যবহার করা হবে তা সেট করুন৷</translation>
 <translation id="1477301030751268706">পরিচয় API টোকেন ক্যাশে</translation>
+<translation id="1478233201128522094">পরের বার, নতুন ফোন এই <ph name="DEVICE_TYPE" /> আনলক করতে পারবে। সেটিংসে গিয়ে Smart Lock বন্ধ করুন।</translation>
 <translation id="1478340334823509079">বিবরণ: <ph name="FILE_NAME" /></translation>
 <translation id="1482124012545051544"><ph name="FILE_COUNT" />টি নতুন ফটোর ব্যাকআপ নিতে প্রস্তুত</translation>
 <translation id="1483493594462132177">পাঠান</translation>
@@ -341,10 +339,10 @@
 <translation id="1507705801791187716">চমৎকার, কোনো ত্রুটি নেই!</translation>
 <translation id="1508491105858779599">ডিভাইসটি আনলক করতে আঙ্গুলের ছাপ নেওয়ার সেন্সরে আপনার আঙ্গুল রাখুন।</translation>
 <translation id="1509281256533087115">USB এর মাধ্যমে যেকোনো <ph name="DEVICE_NAME_AND_VENDOR" /> অ্যাক্সেস করুন</translation>
-<translation id="1509446621602590389">শেয়ার করার বিকল্পগুলি</translation>
 <translation id="150962533380566081">অবৈধ PUK।</translation>
 <translation id="1510030919967934016">এই পৃষ্ঠাটি আপনার অবস্থান নির্ণয় করা থেকে অবরুদ্ধ করা আছে৷</translation>
 <translation id="1510200760579344855"><ph name="SAML_DOMAIN" /> এর প্রশাসক এই ডিভাইসটি লক করেছিল৷</translation>
+<translation id="1510238584712386396">লঞ্চার</translation>
 <translation id="1510785804673676069">যদি আপনি একটি প্রক্সি সার্ভার ব্যবহার করেন, তাহলে আপনার প্রক্সি সেটিংস পরীক্ষা করুন 
 অথবা প্রক্সি সার্ভারটি কাজ করছে কিনা সে বিষয়ে নিশ্চিত হতে আপনার নেটওয়ার্ক 
 প্রশাসকের সাথে যোগাযোগ করুন৷ যদি আপনি বিশ্বাস না করেন যে আপনি একটি প্রক্সি সার্ভার
@@ -359,7 +357,6 @@
 <translation id="1520635877184409083">সামঞ্জস্য করুন...</translation>
 <translation id="1521442365706402292">শংসাপত্রগুলি পরিচালনা করুন</translation>
 <translation id="152234381334907219">কখনও সংরক্ষিত হয়নি</translation>
-<translation id="1523350272063152305">মিটিংয়ের জন্য Chromebox ডিভাইস সেট আপের জন্য প্রস্তুত৷</translation>
 <translation id="1524152555482653726">চলচ্চিত্র</translation>
 <translation id="1524430321211440688">কীবোর্ড</translation>
 <translation id="1525835343380843286">সার্ভারে যোগাযোগ করতে ত্রুটি</translation>
@@ -378,7 +375,6 @@
 <translation id="1545177026077493356">স্বয়ংক্রিয় Kiosk মোড</translation>
 <translation id="1545786162090505744">কোয়্যারীর স্থানে %s সহ URL</translation>
 <translation id="1546280085599573572">আপনি হোম বোতাম ক্লিক করলে কোন পৃষ্ঠা দেখানো হবে তা এই এক্সটেনশানটি দ্বারা পরিবর্তন করা করেছে।</translation>
-<translation id="1546795794523394272">মিটিংয়ের জন্য Chromebox এ স্বাগতম!</translation>
 <translation id="1547572086206517271">রিফ্রেশ করা প্রয়োজন</translation>
 <translation id="1548132948283577726">যে সাইটগুলি কখনও পাসওয়ার্ড সংরক্ষণ করে না সেগুলি এখানে উপস্থিত হবে৷</translation>
 <translation id="1549045574060481141">ডাউনলোড নিশ্চিত করুন</translation>
@@ -446,6 +442,7 @@
 <translation id="1643072738649235303">SHA-1 সহ X9.62 ECDSA স্বাক্ষর</translation>
 <translation id="1644574205037202324">ইতিহাস</translation>
 <translation id="1645228020260124617"><ph name="PRECENTAGE" /> %</translation>
+<translation id="1645516838734033527">আপনার <ph name="DEVICE_TYPE" /> সুরক্ষিত রাখতে, আপনার ফোনের Smart Lock এর স্ক্রিন লক প্রয়োজন।</translation>
 <translation id="1646102270785326155">একবার এই ব্যবহারকারীকে সরানো হলে এর সঙ্গে সংশ্লিষ্ট সমস্ত ফাইল এবং স্থানীয় ডেটা স্থায়ীভাবে মুছে ফেলা হবে। এরপরও $1 পরে সাইন ইন করতে পারবেন।</translation>
 <translation id="1646982517418478057">এই শংসাপত্রটি এনক্রিপ্ট করতে দয়া করে একটি পাসওয়ার্ড লিখুন</translation>
 <translation id="164814987133974965">আপনার নির্দেশনার মাধ্যমে একজন ব্যবহারকারী ওয়েবে এক্সপ্লোর করতে পারেন৷ একজন তত্ত্বাবধানে থাকা ব্যবহারকারীর পরিচালক হিসাবে আপনি,
@@ -467,7 +464,6 @@
 <translation id="16620462294541761">দুঃখিত, আপনার পাসওয়ার্ড যাচাই করা যায়নি৷ দয়া করে আবার চেষ্টা করুন৷</translation>
 <translation id="166278006618318542">বিষয় সর্বজনীন কী অ্যালগারিদম</translation>
 <translation id="1662837784918284394">(কিছুই নয়)</translation>
-<translation id="1663298465081438178">নির্ঝঞ্ঝাটে জেনে নেওয়া৷</translation>
 <translation id="1665611772925418501">ফাইল সংশোধন করা যায়নি৷</translation>
 <translation id="1665770420914915777">নতুন ট্যাব পৃষ্ঠাটি ব্যবহার করুন</translation>
 <translation id="1666058115165804494">যে সময় তৈরি করা হয়েছে</translation>
@@ -538,6 +534,7 @@
 <translation id="1772267994638363865">এটি করতে হলে, আপনাকে ভয়েস ও অডিও কার্যকলাপ সক্ষম করতে হবে এবং আপনার <ph name="DEVICE_TYPE" /> কে নিম্নোল্লিখিত ধাপগুলির মাধ্যমে প্রশিক্ষিত করতে হবে।</translation>
 <translation id="1773212559869067373">স্থানীয়ভাবে প্রমাণীকরণ শংসাপত্র প্রত্যাখ্যান করা হয়েছে</translation>
 <translation id="177336675152937177">হোস্ট করা অ্যাপ্লিকেশান ডেটা</translation>
+<translation id="1774349594977710164">আপনার ফোন অন্য <ph name="DEVICE_TYPE" /> গুলি আনলক করতে পারবে এগুলি নিজে থেকেই একে অপরের সাথে সিঙ্ক করা হয়েছে।</translation>
 <translation id="1774833706453699074">খোলা পৃষ্ঠাগুলি বুকমার্ক করুন...</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="177694132944350798">আপনার Google পাসওয়ার্ডের মাধ্যমে <ph name="TIME" /> এ আপনার ডেটা এনক্রিপটেড হয়েছে। সিঙ্ক শুরু করার জন্য এটি লিখুন।</translation>
@@ -572,6 +569,7 @@
 <translation id="1815579292149538864">CUPS প্রিন্টার সেট-আপ বা পরিচালনা করুন।</translation>
 <translation id="181577467034453336">আরো <ph name="NUMBER_OF_VIEWS" />টি...</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />সতর্কতা:<ph name="END_BOLD" /> এই ফাইলগুলি অস্থায়ী এবং ডিস্ক স্থান মুক্ত করতে স্বয়ংক্রিয়ভাবে মুছে ফেলা হতে পারে৷ <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" /></translation>
+<translation id="1817310072033858383">আপনার <ph name="DEVICE_TYPE" /> এর জন্য Smart Lock সেট আপ করুন</translation>
 <translation id="1817871734039893258">Microsoft  ফাইল পুনরুদ্ধার</translation>
 <translation id="1818196664359151069">রেজোলিউশন:</translation>
 <translation id="1825832322945165090">ডিভাইসে পর্যাপ্ত জায়গা নেই</translation>
@@ -592,6 +590,7 @@
 <translation id="184456654378801210">(দেশীয়)</translation>
 <translation id="1844692022597038441">এই ফাইলটি অফলাইনে উপলব্ধ নয়৷</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" /> চালানোর জন্য Control-ক্লিক করুন</translation>
+<translation id="1848219224579402567">যখন ঢাকনাটি বন্ধ থাকবে তখন সাইন আউট করুন</translation>
 <translation id="1849186935225320012">এই পৃষ্ঠাটির MIDI ডিভাইসগুলির উপর সম্পূর্ণ নিয়ন্ত্রণ আছে৷</translation>
 <translation id="1850508293116537636">&amp;ঘড়ির কাঁটার দিকে ঘোরান</translation>
 <translation id="1852799913675865625"><ph name="ERROR_TEXT" /> ফাইলটি পড়ার চেষ্টা করার সময় একটি ত্রুটি ঘটেছিল৷</translation>
@@ -628,7 +627,6 @@
 <translation id="1903219944620007795">পাঠ্য ইনপুট করতে,উপলভ্য ইনপুট পদ্ধতি দেখার জন্য একটি ভাষা নির্বাচন করুন৷</translation>
 <translation id="1905710495812624430">সর্বোচ্চ অনুমোদিত প্রচেষ্টা ছাড়িয়ে গেছে।</translation>
 <translation id="1909880997794698664">আপনি কি এই ডিভাইসটিকে কিয়স্ক মোডে স্থায়ীভাবে রাখার বিষয়ে নিশ্চিত?</translation>
-<translation id="1910572251697014317">Google এই ফোনে একটি বিজ্ঞপ্তি পাঠিয়েছে। খেয়াল করুন যে, ব্লুটুথ এর মাধ্যমে আপনি আপনার <ph name="DEVICE_TYPE" />-কে ১০০ ফুট দূর থেকে আনলক করে রাখতে পারেন। এটি কোনো ধরনের সমস্যার কারণ হলে, আপনি &lt;a&gt;সাময়িকভাবে এই বৈশিষ্ট্যটি অক্ষমিত করতে পারেন&lt;/a&gt;।</translation>
 <translation id="1910721550319506122">স্বাগতম!</translation>
 <translation id="1916502483199172559">ডিফল্ট লাল রঙের অবতার</translation>
 <translation id="191688485499383649">"<ph name="DEVICE_NAME" />" এর সাথে সংযুক্ত হওয়ার সময় একটি অজানা ত্রুটি ঘটেছে৷</translation>
@@ -666,8 +664,10 @@
 <translation id="1975841812214822307">সরান...</translation>
 <translation id="1976150099241323601">সুরক্ষা ডিভাইসে সাইন করুন</translation>
 <translation id="1976323404609382849">একাধিক সাইট থেকে কুকিজ অবরুদ্ধ৷</translation>
+<translation id="1977965994116744507">আপনার <ph name="DEVICE_TYPE" /> আনলক করতে আপনার ফোন কাছাকাছি আনুন।</translation>
 <translation id="1979280758666859181"><ph name="PRODUCT_NAME" /> এর পুরানো সংস্করণ দিয়ে একটি চ্যানেলে পরিবর্তন করছেন৷ যখন আপনার ডিভাইসে বর্তমানে ইনস্টল করা সংস্করণের সঙ্গে চ্যানেলের সংস্করণটি মিলে যাবে তখনই চ্যানেল পরিবর্তন প্রযুক্ত হবে৷</translation>
 <translation id="1979718561647571293">আপনি কি এই পৃষ্ঠাটিকে শুরুর পৃষ্টা হিসেবে আশা করছিলেন?</translation>
+<translation id="1981115145845865539">আপনার <ph name="DEVICE_TYPE" /> নিজে থেকে আনলক করুন</translation>
 <translation id="1983959805486816857">আপনার দ্বারা একটি নতুন তত্ত্বাবধানে থাকা ব্যবহারকারী তৈরি হয়ে গেলে, আপনি যেকোনো ডিভাইস থেকে যেকোনো সময়ে <ph name="MANAGEMENT_URL" /> এ সেটিংস পরিচালনা করতে পারেন৷</translation>
 <translation id="1984642098429648350">উইন্ডো ডান দিকে রাখুন</translation>
 <translation id="1985136186573666099">নেটওয়ার্কে সংযোগ করর জন্য <ph name="PRODUCT_NAME" /> আপনার কম্পিউটারের সিস্টেম প্রক্সি সেটিংস ব্যবহার করছে৷</translation>
@@ -693,6 +693,7 @@
 <translation id="203574396658008164">লক স্ক্রিন থেকেই নোট নেওয়া সক্ষম করুন</translation>
 <translation id="2039623879703305659">আঙ্গুল অতি দ্রুত সরানো হয়েছে</translation>
 <translation id="2040460856718599782">ওহো! আপনাকে প্রমাণীকরণ করতে চেষ্টা করার সময় কিছু ত্রুটি হয়েছিল৷  দয়া করে আপনার লগ-ইন শংসাপত্রাদি আবার পরীক্ষা করে আবার চেষ্টা করুন৷</translation>
+<translation id="2043818754674261542">এই <ph name="DEVICE_TYPE" /> আনলক করার জন্য দূরত্ব প্রয়োজন</translation>
 <translation id="204497730941176055">Microsoft শংসাপত্র টেম্পলেট নাম</translation>
 <translation id="2045969484888636535">কুকিজ অবরুদ্ধ করা চালিয়ে যান</translation>
 <translation id="204622017488417136">আপনার ডিভাইসটি পূর্বে ইনস্টল করা Chrome এর সংস্করণে নিয়ে যাওয়া হবে। সকল ব্যবহারকারীর অ্যাকাউন্ট এবং স্থানীয় ডেটা মুছে ফেলা হবে। এটিকে পূর্বাবস্থায় ফেরানো যাবে না।</translation>
@@ -701,7 +702,7 @@
 <translation id="204914487372604757">শর্টকাট তৈরি করুন</translation>
 <translation id="2050339315714019657">প্রতিকৃতি</translation>
 <translation id="2053312383184521053">নিষ্ক্রিয় অবস্থার ডেটা</translation>
-<translation id="2058632120927660550">একটি ত্রুটি ঘটেছে৷ দয়া করে আপনার মুদ্রকটি পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
+<translation id="205560151218727633">Google সহায়ক লোগো</translation>
 <translation id="2065405795449409761">স্বয়ংক্রিয় পরীক্ষার সফ্টওয়্যার দ্বারা Chrome নিয়ন্ত্রিত হচ্ছে।</translation>
 <translation id="2068054174185416762">ফ্রেম রেট</translation>
 <translation id="2070909990982335904">ডট দিয়ে শুরু নমাগুলি সিস্টেমের জন্য সংরক্ষিত৷ দয়া করে অন্য নাম চয়ন করুন৷</translation>
@@ -785,6 +786,7 @@
 <translation id="2165722503303595908">মাত্রা</translation>
 <translation id="2166369534954157698">বিষণ্ণ ঔদাসীন্যে ঊষাবৌদি বাংলাভাষায় প্রচলিত ঈশপের নিখুঁত গল্পটির ডালপালা অর্ধেক ছড়াতেই ঋতু ভুঁইঞা আর ঐন্দ্রিলা ধড়ফড়িয়ে দারুণ হৈ-হৈ করে উঠল-- ওঃ, ব্যাস্ এবার থামো তো, বুঝেছি বড্ডো পুরানো ঢঙের কেমন এক গল্প যার নীতিবাক্য হল,“মূঢ় আড়ম্বর ও আত্মশ্লাঘার ফল জীবনে বিঘ্ন ও বৃহৎ ক্ষতি”-- তাই না, এ্যাঁ?</translation>
 <translation id="2169062631698640254">যেকোনো প্রকারে প্রবেশ করুন</translation>
+<translation id="2173801458090845390">এই ডিভাইসে অনুরোধ করার আইডি যোগ করুন</translation>
 <translation id="2175042898143291048">সর্বদা এটিই করুন</translation>
 <translation id="2175607476662778685">দ্রুত প্রবর্তন দণ্ড</translation>
 <translation id="2177950615300672361">ছদ্মবেশী ট্যাব: <ph name="TAB_NAME" /></translation>
@@ -798,7 +800,9 @@
 <translation id="2190469909648452501">কমান</translation>
 <translation id="2192505247865591433">এর থেকে:</translation>
 <translation id="2193365732679659387">বিশ্বস্ততার সেটিংস</translation>
+<translation id="2193512228430320736">সম্পর্কিত তথ্য, অ্যাপ এবং অ্যাকশন দেখানোর জন্য সহায়ককে সক্ষম করে।</translation>
 <translation id="2195729137168608510">ইমেল সুরক্ষা</translation>
+<translation id="219905428774326614">লঞ্চার, সমস্ত অ্যাপ</translation>
 <translation id="219985413780390209">বিপজ্জনক সাইটগুলি থেকে  আপনাকে এবং আপনার ডিভাইসকে রক্ষা করুন</translation>
 <translation id="220138918934036434">বোতাম লুকান</translation>
 <translation id="2202898655984161076">মুদ্রকগুলি তালিকাকরণে একটি সমস্যা ছিল৷ আপনার মুদ্রকগুলির মধ্যে কয়েকটি সফলভাবে <ph name="CLOUD_PRINT_NAME" />তে নিবন্ধীকৃত নাও থাকতে পারে৷</translation>
@@ -855,7 +859,6 @@
 <translation id="225614027745146050">স্বাগতম</translation>
 <translation id="225692081236532131">সক্রিয়করণ স্থিতি</translation>
 <translation id="2262477216570151239">পুনরাবৃত্তির আগের বিলম্ব</translation>
-<translation id="226269835214688456">আপনি Chromebook এর জন্য Smart Lock বন্ধ করলে, আপনি আপনার ফোন ব্যবহার করে Chrome ডিভিইসগুলি আনলক করতে পারবেন না। আপনাকে আপনার পাসওয়ার্ড লিখতে হবে।</translation>
 <translation id="2263189956353037928">বেরিয়ে আসুন এবং আবার প্রবেশ করুন</translation>
 <translation id="2263497240924215535">(অক্ষম)</translation>
 <translation id="2266168284394154563">স্ক্রিন জুম পুনরায় সেট করুন</translation>
@@ -876,7 +879,6 @@
 <translation id="2282155092769082568">স্বতঃকনফিগারেশান URL:</translation>
 <translation id="2283117145434822734">F6</translation>
 <translation id="2286841657746966508">বিলিং ঠিকানা</translation>
-<translation id="2286950485307333924">আপনি এখন Chrome এ প্রবেশ করেছেন</translation>
 <translation id="2287590536030307392">সব বেতার সংযোগ বন্ধ করুন৷</translation>
 <translation id="2288735659267887385">অ্যাক্সেসযোগ্যতার সেটিংস</translation>
 <translation id="2291643155573394834">পরবর্তী ট্যাব</translation>
@@ -902,7 +904,6 @@
 <translation id="2326606747676847821">ছদ্মবেশে যান</translation>
 <translation id="2326931316514688470">&amp;অ্যাপ্লিকেশান আবার লোড করুন</translation>
 <translation id="2327492829706409234">অ্যাপ্লিকেশন সক্ষম করুন</translation>
-<translation id="2328054044222305089">এটি আপনার ডিভাইসে সঞ্চিত যেকোনো ডেটা <ph name="SITE" /> মুছে ফেলবে এবং আপনি  চলার মঞ্জুরি দিয়েছেন এমন যেকোনো অনুমতি আবার সেট করবে। আপনি কি চালিয়ে যেতে চান?</translation>
 <translation id="2329597144923131178">আপনার সকল ডিভাইসে আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস পেতে প্রবেশ করুন।</translation>
 <translation id="2332131598580221120">দোকানে দেখুন</translation>
 <translation id="2332742915001411729">ডিফল্টে আবার সেট করুন</translation>
@@ -926,7 +927,6 @@
 <translation id="2357949918965361754">আপনি আপনার টিভি বা অন্যান্য ডিভাইসে Chrome থেকে সামগ্রী প্রদর্শন করার জন্য এই বৈশিষ্ট্যটি ব্যবহার করতে পারেন।</translation>
 <translation id="2359345697448000899">সরঞ্জাম মেনুতে এক্সটেনশান ক্লিক করে আপনার এক্সটেনশানগুলি পরিচালনা করুন৷</translation>
 <translation id="2359808026110333948">অবিরত</translation>
-<translation id="236128817791440714">প্রস্তাবিত: Android এর জন্য Smart Lock সেট আপ করুন</translation>
 <translation id="236141728043665931">মাইক্রোফোনের অ্যাক্সেস সর্বদা অবরুদ্ধ রাখুন</translation>
 <translation id="2367972762794486313">অ্যাপ্লিকেশানগুলি দেখান</translation>
 <translation id="2371076942591664043">&amp;সম্পন্ন হলে খুলুন</translation>
@@ -985,12 +985,12 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> যোগ করা হয়েছে</translation>
 <translation id="246335896104539386">বুকমার্কগুলি আমদানি করুন</translation>
 <translation id="2464089476039395325">HTTP প্রক্সী</translation>
+<translation id="2468902267404883140">আপনার ফোন সংযুক্ত করা যাচ্ছে না। নিশ্চিত করুন আপনার একটি উপযুক্ত Android ফোন আছে যেটি চালু রয়েছে এবং সহজে ব্যবহার করা যায়। &lt;a&gt;আরও জানুন&lt;/a&gt;</translation>
 <translation id="2470702053775288986">অসমর্থিত এক্সটেনশানগুলি নিষ্ক্রিয় করা আছে</translation>
 <translation id="2473195200299095979">এই পৃষ্ঠাটি অনুবাদ করুন</translation>
 <translation id="2475982808118771221">একটি ত্রুটি ঘটেছে</translation>
 <translation id="2476578072172137802">সাইটের সেটিংস</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" এর জন্য মিডিয়া-ফাইলের অনুমতি</translation>
-<translation id="2478830106132467213">আপনার ফোন এক হাত দূরত্বের মধ্যে থাকলে শুধুমাত্র তখনই এই <ph name="DEVICE_TYPE" /> আনলক হয়৷</translation>
 <translation id="247949520305900375">অডিও ভাগ করুন</translation>
 <translation id="2479780645312551899">এই মুহূর্তে সকল প্ল্যাগ ইন চালু করুন</translation>
 <translation id="2480868415629598489">আপনি যে ডেটা কপি করে আটকান তা সংশোধন করুন</translation>
@@ -999,6 +999,7 @@
 <translation id="2485056306054380289">সার্ভার CA শংসাপত্র:</translation>
 <translation id="2485422356828889247">আনইনস্টল</translation>
 <translation id="2487067538648443797">নতুন বুকমার্ক যোগ করুন</translation>
+<translation id="248861575772995840">আপনার ফোন খুঁজে পাওয়া যাচ্ছে না। নিশ্চিত করুন আপনার <ph name="DEVICE_TYPE" /> এর ব্লুটুথ চালু আছে। &lt;a&gt;আরও জানুন&lt;/a&gt;</translation>
 <translation id="2489316678672211764">একটি প্লাগ ইন <ph name="PLUGIN_NAME" /> কোনো প্রতিক্রিয়া করছে না৷</translation>
 <translation id="2489428929217601177">বিগত দিন</translation>
 <translation id="2489435327075806094">পয়েন্টারের গতি:</translation>
@@ -1006,6 +1007,7 @@
 <translation id="249113932447298600">দুঃখিত, <ph name="DEVICE_LABEL" /> ডিভাইসটি এই মুহুর্তে সমর্থিত নয়৷</translation>
 <translation id="2493021387995458222">"একসাথে একটি শব্দ" নির্বাচন করুন</translation>
 <translation id="249303669840926644">নিবন্ধন সম্পূর্ণ করতে পারেনি</translation>
+<translation id="2495777824269688114">আরও বৈশিষ্ট্যের বিষয়ে জানুন অথবা উত্তর পান। সহায়তার জন্য "?" বোতামটি বেছে নিন।</translation>
 <translation id="2496180316473517155">ব্রাউজিং ইতিহাস</translation>
 <translation id="2496540304887968742">ডিভাইসটিতে অবশ্যই 4GB বা তদ্বুর্ধ্ব ধারণক্ষমতা থাকতে হবে৷</translation>
 <translation id="2497229222757901769">মাউসের গতি</translation>
@@ -1021,6 +1023,7 @@
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{স্ক্রীন #}one{স্ক্রীন #}other{স্ক্রীন #}}</translation>
 <translation id="2505402373176859469"><ph name="TOTAL_SIZE" />-এর <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="2505993325121092464">Google Play পরিষেবার শর্তাবলি</translation>
+<translation id="2508428939232952663">Google Play স্টোর অ্যাকাউন্ট</translation>
 <translation id="2509495747794740764">স্কেলের মাপকে অবশ্যই ১০ থেকে ১০০ এর মধ্যের একটি সংখ্যা হতে হবে।</translation>
 <translation id="2510708650472996893">রঙ প্রোফাইল:</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -1028,6 +1031,7 @@
 <translation id="2518024842978892609">আপনার ক্লায়েন্ট শংসাপত্র ব্যবহার করুন</translation>
 <translation id="2520644704042891903">উপলব্ধ সকেটের জন্য অপেক্ষা করা হচ্ছে...</translation>
 <translation id="252219247728877310">কম্পোনেন্ট আপডেট করা নেই</translation>
+<translation id="2522791476825452208">খুবই কাছে</translation>
 <translation id="2523966157338854187">একটি সুনির্দিষ্ট পৃষ্ঠা বা পৃষ্ঠাগুলির একটি সেট খুলুন৷</translation>
 <translation id="2525250408503682495">ক্রিপ্টোনিট! kiosk অ্যাপ্লিকেশানটির জন্য ক্রিপ্টোহোম মাউন্ট করা যাবে না৷</translation>
 <translation id="2526590354069164005">ডেস্কটপ</translation>
@@ -1056,6 +1060,7 @@
 <translation id="2562685439590298522">দস্তাবেজ</translation>
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" />-এ প্রবেশ করেননি</translation>
 <translation id="2563856802393254086">অভিনন্দন! আপনার '<ph name="NAME" />' ডেটা পরিষেবা সক্রিয় করা হয়েছে এবং ব্যবহার করার জন্য প্রস্তুত৷</translation>
+<translation id="2564980044983637068">স্মার্ট লক বন্ধ করবেন?</translation>
 <translation id="2565670301826831948">Touchpadএর গতি:</translation>
 <translation id="2566124945717127842">আপনার <ph name="IDS_SHORT_PRODUCT_NAME" /> ডিভাইস নতুনের মত আবার সেট করতে পাওয়ারওয়াশ করুন।</translation>
 <translation id="2568774940984945469">তথ্যবার ধারক</translation>
@@ -1066,7 +1071,9 @@
 <translation id="2573269395582837871">একটি ছবি ও নাম বেছে নিন</translation>
 <translation id="2574102660421949343"><ph name="DOMAIN" />-এর থেকে কুকিজ মঞ্জুরিপ্রাপ্ত৷</translation>
 <translation id="2575247648642144396">এই আইকনটি দৃশ্যমান হবে যখন এক্সটেনশন বর্তমান পৃষ্ঠার উপর কাজ করতে পারবে৷ আইকনে ক্লিক করে বা <ph name="EXTENSION_SHORTCUT" /> টিপে এই এক্সটেনশন ব্যবহার করুন৷</translation>
+<translation id="2575268751393592580">আপনার ফোন খুঁজে পাওয়া যাচ্ছে না। আপনার <ph name="DEVICE_TYPE" /> ওয়াই-ফাই বা মোবাইল নেটওয়ার্কের সাথে সংযুক্ত আছে সেটি নিশ্চিত করুন। &lt;a&gt;আরও জানুন&lt;/a&gt;</translation>
 <translation id="2576842806987913196">এই নামের একটি CRX ফাইল ইতিমধ্যে বিদ্যমান আছে৷</translation>
+<translation id="257779572837908839">মিটিংয়ের জন্য Chromebox সেট আপ করুন</translation>
 <translation id="2579575372772932244">প্রোফাইল পুনরায় তৈরি করা হচ্ছে, দয়া করে অপেক্ষা করুন...</translation>
 <translation id="2580889980133367162">একাধিক ফাইল ডাউনলোড করতে <ph name="HOST" /> কে সর্বদা অনুমতি দিন</translation>
 <translation id="2580924999637585241">মোট: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
@@ -1162,6 +1169,8 @@
 <translation id="2706892089432507937">USB ডিভাইসগুলি</translation>
 <translation id="2707024448553392710">কম্পোনেন্ট ডাউনলোড হচ্ছে</translation>
 <translation id="270921614578699633">এর উপর গড়</translation>
+<translation id="2709453993673701466">চালু করার আগেই সিঙ্ক এবং ব্যক্তিগতকরণ পরিচালনা করতে চান?
+<ph name="BEGIN_LINK" />সেটিংসে<ph name="END_LINK" /> দেখুন।</translation>
 <translation id="2709516037105925701">স্বয়ংপূরণ</translation>
 <translation id="271033894570825754">নতুন</translation>
 <translation id="2713008223070811050">প্রদর্শন পরিচালনা করুন</translation>
@@ -1184,6 +1193,7 @@
 <translation id="2733364097704495499">আপনি কি Google মেঘ মুদ্রণে মুদ্রকটিকে <ph name="PRINTER_NAME" /> নিবন্ধিত করতে চান?</translation>
 <translation id="2735712963799620190">সময়সূচি</translation>
 <translation id="2737363922397526254">সঙ্কুচিত করুন...</translation>
+<translation id="2737492745329609575">সেটআপ শুরু করুন</translation>
 <translation id="2738771556149464852">এরপরে নয়</translation>
 <translation id="2739191690716947896">ডিবাগ</translation>
 <translation id="2739240477418971307">আপনার অ্যাক্সেসযোগ্যতার সেটিংস পরিবর্তন করুন</translation>
@@ -1209,7 +1219,6 @@
 <translation id="2783298271312924866">ডাউনলোড হয়েছে</translation>
 <translation id="2783661497142353826">kiosk অ্যাপ্লিকেশানগুলি পরিচালনা করুন</translation>
 <translation id="2784407158394623927">আপনার মোবাইল ডেটা পরিষেবাকে সক্রিয় করা হচ্ছে</translation>
-<translation id="2784556410206159845">আপনার <ph name="DEVICE_TYPE" /> নিরাপদ রাখতে Chromebook এর জন্য Smart Lock এর চাহিদা মোতাবেক আপনার ফোনে একটি স্ক্রীন লক লাগবে।</translation>
 <translation id="2785530881066938471">বর্তমান স্ক্রিপ্টটির জন্য <ph name="RELATIVE_PATH" /> ফাইলটি লোড করতে পারা যায়নি৷ এটি UTF-8 এনকোড হওয়া নেই৷</translation>
 <translation id="2785873697295365461">ফাইল বর্ণনাকারী</translation>
 <translation id="2787047795752739979">মূল লেখা পুনর্লিখন করুন</translation>
@@ -1248,7 +1257,6 @@
 <translation id="2807517655263062534">ডাউনলোড করা ফাইল এখানে দেখা যাবে</translation>
 <translation id="2809346626032021864">পড়াশোনা</translation>
 <translation id="2809586584051668049">এবং আরো <ph name="NUMBER_ADDITIONAL_DISABLED" />টি</translation>
-<translation id="2810731435681289055">পরবর্তী সময় যখন আপনি এই <ph name="DEVICE_TYPE" /> আনলক করবেন, Smart Lock আপডেট করা হবে তাই আপনি আপনার ছবিতে শুধু ক্লিক করার মাধ্যমে লিখতে সক্ষম হবেন৷</translation>
 <translation id="281133045296806353">বিদ্যমান ব্রাউজার সেশনে নতুন উইন্ডো তৈরি হয়েছে৷</translation>
 <translation id="2812944337881233323">সাইন আউট করে আবার ফিরে এসে দেখুন</translation>
 <translation id="2812989263793994277">কোনও চিত্র দেখাবেন না</translation>
@@ -1300,6 +1308,7 @@
 <translation id="2881966438216424900">অন্তিমবার অ্যক্সেস করা হয়েছে:</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> আবার চালু হবে এবং তাৎক্ষণিকভাবে আবার সেট হবে</translation>
 <translation id="2885378588091291677">কার্য পরিচালক</translation>
+<translation id="2886771036282400576">• <ph name="PERMISSION" /></translation>
 <translation id="2887525882758501333">PDF দস্তাবেজ</translation>
 <translation id="2888807692577297075">&lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt; এর সাথে কোনো আইটেম মেলেনি</translation>
 <translation id="2889064240420137087">এর সাথে লিঙ্ক খুলুন...</translation>
@@ -1333,7 +1342,6 @@
 <translation id="2925966894897775835">পত্রকগুলি</translation>
 <translation id="2927017729816812676">ক্যাশে সঞ্চয় স্থান</translation>
 <translation id="2927657246008729253">পরিবর্তন...</translation>
-<translation id="2928526264833629376">Hangouts এ অবিরত থাকুন</translation>
 <translation id="2930644991850369934">পুনরুদ্ধার চিত্র ডাউনলোড করার সময় একটি সমস্যা হয়েছে৷ নেটওয়ার্ক সংযোগ বিচ্ছিন্ন হয়েছে৷</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (শিশুদের জন্য অ্যাকাউন্ট)</translation>
 <translation id="2932483646085333864">সিঙ্ক করা শুরু করতে সাইন আউট করে আবার সাইন ইন করুন</translation>
@@ -1365,6 +1373,7 @@
 <translation id="2972557485845626008">ফার্মওয়্যার</translation>
 <translation id="2972581237482394796">&amp;পুনরায় করুন</translation>
 <translation id="297870353673992530">DNS সার্ভার:</translation>
+<translation id="2979639724566107830">নতুন উইন্ডোতে খুলুন</translation>
 <translation id="2981113813906970160">বড় মাউস কার্সার দেখান</translation>
 <translation id="2982970937345031">নাম ছাড়া প্রতিবেদন করুন</translation>
 <translation id="2984337792991268709">আজ <ph name="TODAY_DAYTIME" /></translation>
@@ -1399,7 +1408,6 @@
 <translation id="3020990233660977256">ক্রমিক সংখ্যা: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021678814754966447">ফ্রেম উৎস &amp;দেখুন</translation>
 <translation id="3024374909719388945">24-ঘন্টার ঘড়ি ব্যবহার করুন</translation>
-<translation id="3026050830483105579">সমস্ত কিছুই এখানে রয়েছে৷</translation>
 <translation id="302781076327338683">ক্যাশে বাইপাস করা আবার লোড করুন</translation>
 <translation id="3030243755303701754">একজন তত্ত্বাবধানে থাকা ব্যবহারকারী আপনার নির্দেশনা অনুযায়ী ওয়েব ঘুরে দেখতে পারে। Chrome এ একজন তত্ত্বাবধানে থাকা ব্যবহারকারীর পরিচালক হিসাবে, আপনি:
 • নির্দিষ্ট কিছু ওয়েবসাইটকে মঞ্জুরি দিতে বা নিষিদ্ধ করতে পারেন,
@@ -1426,11 +1434,11 @@
 <translation id="3057861065630527966">আপনার ফটো ও ভিডিওগুলির ব্যাকআপ নিন</translation>
 <translation id="3058212636943679650">আপনার যদি কখনও নিজের কম্পিউটারের অপারেটিং সিস্টেম পুনরুদ্ধারের দরকার হয় তাহলে আপনার একটি পুনরুদ্ধার SD কার্ড অথবা USB মেমোরি স্টিকের দরকার হবে৷</translation>
 <translation id="3060379269883947824">শোনার জন্য বেছে নেওয়া সক্ষম করুন</translation>
-<translation id="3063844757726132584">এই সহজে ব্যবহারযোগ্য লঞ্চারটির মাধ্যমে আপনার সমস্ত অ্যাপ্লিকেশান অ্যাক্সেস করুন৷ গেম খেলুন, ভিডিও চ্যাট করুন, সংগীত শুনুন, দস্তাবেজ সম্পাদনা করুন, অথবা আরো অ্যাপ্লিকেশান পান৷</translation>
 <translation id="3064410671692449875">অপর্যাপ্ত ডেটা</translation>
 <translation id="3065041951436100775">ট্যাব নষ্ট হওয়ার প্রতিক্রিয়া।</translation>
 <translation id="3065140616557457172">অনুসন্ধানের জন্য টাইপ করুন অথবা সমস্তকিছু ঠিকঠাক কাজ করছে - তা নেভিগেট করা জন্য একটি URL প্রবেশ করান৷</translation>
 <translation id="3067198360141518313">এই প্লাগ ইনটি চালনা করুন</translation>
+<translation id="3074037959626057712">আপনি সাইন ইন করেছেন এবং সিঙ্ক চালু করেছেন</translation>
 <translation id="3075874217500066906">পাওয়ারওয়াশ প্রক্রিয়া শুরু করতে রিস্টার্ট করার প্রয়োজন৷ রিস্টার্ট করার পরে আপনার প্রক্রিয়া করার সম্মতি চাওয়া হবে৷</translation>
 <translation id="3076677906922146425">সকলকে Chrome এ কোনো ব্যক্তিকে যোগ করার অনুমতি দিন</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
@@ -1458,6 +1466,7 @@
 <translation id="3101709781009526431">তারিখ এবং সময়</translation>
 <translation id="3108967419958202225">বেছে নিন...</translation>
 <translation id="3112378005171663295">সঙ্কুচিত করুন</translation>
+<translation id="3115128645424181617">আপনার ফোন খুঁজে পাওয়া যায়নি। এটি সহজে ব্যবহার করা যায় এবং বুলুটুথ চালু রয়েছে সেটি নিশ্চিত করুন।</translation>
 <translation id="3115147772012638511">ক্যাশের অপেক্ষা করা হচ্ছে...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> সহায়তা</translation>
 <translation id="3120430004221004537">এখানে একটি নির্দিষ্ট ক্রিয়াকলাপের জন্য অপর্যাপ্ত এনক্রিপশান: "<ph name="DEVICE_NAME" />"।</translation>
@@ -1500,7 +1509,6 @@
 <translation id="3160041952246459240">আপনার ফাইলগুলিতে এমন শংসাপত্রগুলি রয়েছে যা এই সার্ভারগুলিকে শনাক্ত করে:</translation>
 <translation id="316125635462764134">অ্যাপ্লিকেশান সরান</translation>
 <translation id="3161522574479303604">সকল ভাষা</translation>
-<translation id="3162559335345991374">আপনি যে Wi-Fiটি ব্যবহার করছেন সেটির জন্য অপনাকে এটির লগ ইন পৃষ্ঠাতে যেতে হতে পরে৷</translation>
 <translation id="316307797510303346"><ph name="CUSTODIAN_EMAIL" /> থেকে এই ব্যক্তির পরিদর্শন করা ওয়েবসাইটগুলি নিয়ন্ত্রণ করুন এবং দেখুন৷
   আপনার অ্যাকাউন্ট সাইন-ইনের বিশদ বিবরণ পুরানো হয়ে গেছে৷</translation>
 <translation id="3165390001037658081">কিছু পরিষেবা প্রদানকারী এই বৈশিষ্ট্যকে অবরুদ্ধ করতে পারে।</translation>
@@ -1520,9 +1528,7 @@
 <translation id="3191308084656429858">{NUM_POPUPS,plural, =1{১টি পপ-আপ অবরুদ্ধ করা হয়েছে}one{#টি পপ-আপ অবরুদ্ধ করা হয়েছে}other{#টি পপ-আপ অবরুদ্ধ করা হয়েছে}}</translation>
 <translation id="3192947282887913208">অডিও ফাইলসমূহ</translation>
 <translation id="3193734264051635522">গতি:</translation>
-<translation id="3195445837372719522">মিটিংয়ের জন্য Chromebox এটি কোন ডোমেনের তা জানতে চায়৷ এটির জন্য আপনাকে আপনার অ্যাকাউন্টে প্রবেশ করতে হবে৷</translation>
 <translation id="3199127022143353223">সার্ভারসমূহ</translation>
-<translation id="3200025317479269283">মজা করুন! আমরা আপনার জন্য এখানে রয়েছি৷</translation>
 <translation id="3202131003361292969">পাথ</translation>
 <translation id="3202173864863109533">এই ট্যাবের অডিও নিঃশব্দ করা হচ্ছে৷</translation>
 <translation id="3204741654590142272">চ্যানেল পরিবর্তন পরে প্রয়োগ করা হবে৷</translation>
@@ -1546,6 +1552,7 @@
 <translation id="3242765319725186192">প্রাক্‌-অংশীদারী করা কী:</translation>
 <translation id="3244621381664913240">একটি ভয়েস অনুসন্ধান শুরু করতে "Ok Google" সক্ষম করুন৷</translation>
 <translation id="3245321423178950146">অজানা শিল্পী</translation>
+<translation id="3246097286174000800">Smart Lock ব্যবহার করে দেখুন</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - নেটওয়ার্ক ত্রুটি</translation>
 <translation id="3251759466064201842">&lt;শংসাপত্রের অংশ নয়&gt;</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> ফাইলের জন্য ডিফল্ট অ্যাপ্লিকেশন বেছে নিন:</translation>
@@ -1625,6 +1632,8 @@
 <translation id="335581015389089642">স্পিচ</translation>
 <translation id="3355936511340229503">সংযোগ ত্রুটি</translation>
 <translation id="3356580349448036450">সম্পূর্ণ</translation>
+<translation id="3356797067524893661">Hangouts Meet ব্যবহার চালিয়ে যেতে আপনি প্রস্তুত</translation>
+<translation id="3358935496594837302">আপনার ফোন খুঁজে পাওয়া যায়নি৷ নিশ্চিত করুন আপনার একটি উপযুক্ত Android ফোন আছে যেটি চালু রয়েছে এবং সহজে ব্যবহার করা যায়।&lt;a&gt;আরও জানুন/a&gt;</translation>
 <translation id="3359256513598016054">শংসাপত্র নীতি বাধ্যবাধকতা</translation>
 <translation id="335985608243443814">ব্রাউজ করুন...</translation>
 <translation id="3360297538363969800">প্রিন্ট করা গেল না৷ দয়া করে আপনার মুদ্রকটি পরীক্ষা করে আবার চেষ্টা করুন৷</translation>
@@ -1663,6 +1672,7 @@
 <translation id="342383653005737728">এই ডিভাইসের জন্য মালিক Google কে ডায়গনস্টিক এবং ব্যবহারের ডেটা পাঠানোর বিষয়টি চয়ন করতে পারেন। আপনি এই <ph name="BEGIN_LINK1" />সেটিংটি<ph name="END_LINK1" /> এখানে দেখতে পারেন। <ph name="BEGIN_LINK2" />আরো জানুন<ph name="END_LINK2" /></translation>
 <translation id="3423858849633684918">দয়া করে <ph name="PRODUCT_NAME" />-কে পুনঃলঞ্চ করুন</translation>
 <translation id="3424969259347320884">ট্যাবটি ক্র্যাশ হওয়ার সময় আপনি কি করছিলেন তা বর্ণনা করুন</translation>
+<translation id="3427092606871434483">মঞ্জুরি দিন (ডিফল্ট)</translation>
 <translation id="3429599832623003132">$১টি আইটেম</translation>
 <translation id="3432227430032737297">দেখানো সবগুলি সরান</translation>
 <translation id="3432757130254800023">স্থানীয় নেটওয়ার্কের প্রদর্শনগুলিতে অডিও এবং ভিডিও পাঠান</translation>
@@ -1688,6 +1698,7 @@
 <translation id="3454157711543303649">সক্রিয়করণ সমাপ্ত</translation>
 <translation id="345693547134384690">&amp;ছবি নতুন ট্যাবে খুলুন</translation>
 <translation id="3459509316159669723">মুদ্রণ হচ্ছে</translation>
+<translation id="3459697287128633276">আপনার অ্যাকাউন্ট থেকে Google Play স্টোর অ্যাক্সেস করার জন্য অনুগ্রহ করে পরিচয় প্রদানকারীর মাধ্যমে প্রমাণীকরণ দিন।</translation>
 <translation id="3459774175445953971">সর্বশেষ সংশোধিত:</translation>
 <translation id="3462413494201477527">অ্যাকাউন্ট সেট আপ বাতিল করবেন?</translation>
 <translation id="346431825526753">এইটি হল বাচ্চাদের জন্য <ph name="CUSTODIAN_EMAIL" /> এর দ্বারা পরিচালিত একটি অ্যাকাউন্ট৷</translation>
@@ -1719,6 +1730,7 @@
 <translation id="3493881266323043047">বৈধতা</translation>
 <translation id="3494769164076977169">যখন একটি সাইট প্রথম ফাইলের পর স্বয়ংক্রিয়ভাবে ফাইলগুলি ডাউনলোড করতে চেষ্টা করে তখন জিজ্ঞাসা করবে (প্রস্তাবিত)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" />টি ত্রুটি৷</translation>
+<translation id="3495660573538963482">Google সহায়ক সেটিংস</translation>
 <translation id="3496213124478423963">জুম কমান</translation>
 <translation id="3504135463003295723">গোষ্ঠী নাম:</translation>
 <translation id="3505030558724226696">ডিভাইসের অ্যাক্সেস প্রত্যাহার করুন</translation>
@@ -1746,7 +1758,6 @@
 <translation id="3541661933757219855">Ctrl+Alt+/ টাইপ করুন অথবা লুকাতে Escape</translation>
 <translation id="3543393733900874979">আপডেট ব্যর্থ হয়েছে (ত্রুটি: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="3543597750097719865">SHA-512 সহ X9.62 ECDSA স্বাক্ষর</translation>
-<translation id="3544347428588533940">Smart Lock প্রায় প্রস্তুত</translation>
 <translation id="354602065659584722">ক্ষতিকর সফ্টওয়্যার সরানো হয়েছে</translation>
 <translation id="3547495624659668105">PRL সংস্করণ</translation>
 <translation id="3547954654003013442">প্রক্সি সেটিংস</translation>
@@ -1853,7 +1864,6 @@
 <translation id="3697100740575341996">আপনার IT প্রশাসক আপনার ডিভাইসের জন্য Chrome গুডিজগুলিকে অক্ষম করেছে৷ <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">ইমেল ঠিকানা</translation>
 <translation id="3702500414347826004"><ph name="URL" /> অন্তর্ভুক্ত করতে আপনার শুরুর পৃষ্ঠাগুলি পরিবর্তন করা হয়েছে।</translation>
-<translation id="3704162925118123524">আপনি যে নেটওয়ার্কটি ব্যবহার করছেন সেটির জন্য অপনাকে এটির লগ ইন পৃষ্ঠাতে যেতে হতে পরে৷</translation>
 <translation id="3704331259350077894">ক্রিয়াকলাপের বিরতি</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">লোড হচ্ছে...</translation>
@@ -1865,7 +1875,6 @@
 <translation id="3712897371525859903">এ&amp;ইভাবে পৃষ্ঠা সংরক্ষণ করুন...</translation>
 <translation id="371300529209814631">পিছনে/সামনে</translation>
 <translation id="3714633008798122362">ওয়েব ক্যালেন্ডার</translation>
-<translation id="3715597595485130451">ওয়াই-ফাই তে সংযোগ স্থাপন করুন</translation>
 <translation id="3718288130002896473">আচরণ</translation>
 <translation id="3719826155360621982">হোমপেজ</translation>
 <translation id="3722396466546931176">ভাষা যুক্ত করুন ও সেগুলিকে আপনার পছন্দের ভিত্তিতে সাজাতে ড্র্যাগ করুন৷</translation>
@@ -1923,6 +1932,7 @@
 <translation id="379082410132524484">আপনার কার্ডের মেয়াদ শেষ হয়ে গেছে</translation>
 <translation id="3790909017043401679">সিম কার্ড পিন লিখুন</translation>
 <translation id="3792890930871100565">প্রিন্টার সংযোগ বিচ্ছিন্ন করুন</translation>
+<translation id="379422718204375917">আপনার অ্যাকাউন্টে সাইন ইন করার জন্য Smart Lock ব্যবহার করুন</translation>
 <translation id="3796648294839530037">পছন্দসই নেটওয়ার্কগুলি:</translation>
 <translation id="3797900183766075808"><ph name="SEARCH_ENGINE" /> এ “<ph name="SEARCH_TERMS" />” এর &amp;অনুসন্ধান করুন</translation>
 <translation id="3798325802885154040">আপনাকে ক্লিক করতে হালকা চাপ দেওয়া সক্ষম/অক্ষম করতে অনুমতি দেয়</translation>
@@ -1976,8 +1986,10 @@
 <translation id="3855676282923585394">বুকমার্কস এবং সেটিংস আমদানি করুন...</translation>
 <translation id="3856800405688283469">সময় অঞ্চল নির্বাচন করুন</translation>
 <translation id="3856921555429624101">ডেটা ব্যবহার পরিমাপ শেষ হয়েছে</translation>
+<translation id="3857228364945137633">আপনার ফোন আশেপাশে থাকলে Smart Lock ব্যবহার করে <ph name="DEVICE_TYPE" /> আনলক করতে পারবেন।</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3859360505208332355"><ph name="HOST" />-এ সর্বদা এই প্ল্যাগ ইনগুলিকে মঞ্জুর করুন</translation>
+<translation id="3860381078714302691">Hangouts Meet এ স্বাগতম</translation>
 <translation id="3862134173397075045">Chrome এ কাস্ট অভিজ্ঞতা নিতে স্বাগতম!</translation>
 <translation id="3865414814144988605">রেসুলিউশান</translation>
 <translation id="386548886866354912"><ph name="EXTENSION_NAME" /> দিয়ে প্যাক করুন</translation>
@@ -1988,6 +2000,7 @@
 <translation id="3869917919960562512">ভুল সূচি৷</translation>
 <translation id="3872991219937722530">ডিস্কে জায়গা খালি করুন, নাহলে ডিভাইস সাড়া দিবে না।</translation>
 <translation id="3878840326289104869">তত্ত্বাবধানে থাকা ব্যবহারকারী তৈরি করা হচ্ছে</translation>
+<translation id="3879748587602334249">ডাউনলোড ম্যানেজার</translation>
 <translation id="388485010393668001">সম্পূর্ণতা উপলব্ধ: <ph name="COMPLETION_TEXT" /></translation>
 <translation id="3892414795099177503">উম্মুক্ত VPN/L2TP যোগ করুন...</translation>
 <translation id="3893536212201235195">আপনার অ্যাক্সেসিবিলিটি সেটিংস পড়ুন ও পরিবর্তন করুন</translation>
@@ -2008,6 +2021,7 @@
 <translation id="3911824782900911339">নতুন ট্যাব পৃষ্ঠা</translation>
 <translation id="3915280005470252504">ভয়েস দ্বারা অনুসন্ধান করুন</translation>
 <translation id="3916445069167113093"> এই প্রকারের ফাইল আপনার কম্পিউটারের ক্ষতি করতে পারে৷ আপনি কি যেকোনো ভাবে <ph name="FILE_NAME" /> রাখতে চান?</translation>
+<translation id="3918972485393593704">Google এ বিশদে অভিযোগ করুন</translation>
 <translation id="3920504717067627103">শংসাপত্রের নীতিসমূহ</translation>
 <translation id="392089482157167418">ChromeVox (কথ্য প্রতিক্রিয়া) সক্ষম করুন</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2016,6 +2030,7 @@
 <translation id="3925842537050977900">তাক থেকে আনপিন করুন</translation>
 <translation id="3926002189479431949">Smart Lock ফোন পরিবর্তিত হয়েছে</translation>
 <translation id="3927932062596804919">অস্বীকার</translation>
+<translation id="3928994486545789273">নেটওয়ার্ক বেছে নিন</translation>
 <translation id="3930521966936686665">এতে প্লে করুন</translation>
 <translation id="3936390757709632190">অডিও নতুন ট্যাবে &amp;খুলুন</translation>
 <translation id="3936768791051458634">চ্যানেল পরিবর্তন করুন...</translation>
@@ -2032,6 +2047,7 @@
 <translation id="3946471364541867667">TalkBack সেটিংস</translation>
 <translation id="3947376313153737208">কোনও নির্বাচন নেই</translation>
 <translation id="3948116654032448504">&amp;চিত্রের জন্য <ph name="SEARCH_ENGINE" /> অনুসন্ধান করুন</translation>
+<translation id="3949371968208420848">Hangouts Meet এ স্বাগতম!</translation>
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">IE থেকে আমাদানি করা</translation>
 <translation id="3950820424414687140">প্রবেশ করুন</translation>
@@ -2060,6 +2076,7 @@
 <translation id="3989635538409502728">প্রস্থান করুন</translation>
 <translation id="399179161741278232">আমদানিকৃত</translation>
 <translation id="3991936620356087075">আপনি অনেকবার ভুল পিন আনলকিং কী লিখেছেন৷ আপনার সিম কার্ড স্থায়ীভাবে অক্ষম হয়েছে৷</translation>
+<translation id="3994374631886003300">আপনার ফোন আনলক করুন এবং <ph name="DEVICE_TYPE" /> আনলক করতে কাছাকাছি আনুন।</translation>
 <translation id="3994878504415702912">&amp;জুম</translation>
 <translation id="3995964755286119116">Adobe Flash Player ক্যামেরা সেটিংস ভিন্ন।</translation>
 <translation id="39964277676607559">সামগ্রী স্ক্রিপ্টের জন্য '<ph name="RELATIVE_PATH" />' লোড করা যায়নি৷</translation>
@@ -2093,7 +2110,7 @@
 <translation id="4058720513957747556">অ্যাপ্লিকেশান সকেট (TCP/IP)</translation>
 <translation id="4058793769387728514">এখন দস্তাবেজ চেক করুন</translation>
 <translation id="406070391919917862">পৃষ্ঠভূমি অ্যাপ্লিকেশান</translation>
-<translation id="4062251648694601778">আপনার <ph name="SHORT_PRODUCT_NAME" /> এর মজা নিন৷ কোনো প্রশ্ন আছে? আপনি যখন খুশি স্থিতি ট্রেতে থাকা "?" এ ক্লিক করে সহায়তা নিতে পারেন৷</translation>
+<translation id="4063283930106169759">আপনার ফোন কাছাকাছি সেটি নিশ্চিত করুন। আপনার ফোন খুঁজতে সব ডিভাইসে যেখানে আপনার অ্যাকাউন্ট আছে সেখানে ব্লুটুথ চালু করুন। &lt;a&gt;আরও জানুন/a&gt;</translation>
 <translation id="4065876735068446555">আপনি যে নেটওয়ার্কটি <ph name="NETWORK_ID" /> ব্যবহার করছেন সেটির জন্য অপনাকে এটির লগ ইন পৃষ্ঠাতে যেতে হতে পরে৷</translation>
 <translation id="4068506536726151626">এই পৃষ্ঠাতে নিম্নলিখিত সাইটগুলি থেকে এমন উপাদান রয়েছে যা আপনার অবস্থান নির্ধারণ করে:</translation>
 <translation id="4068776064906523561">সংরক্ষিত আঙ্গুলের ছাপগুলি</translation>
@@ -2103,6 +2120,7 @@
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> কে কাস্ট করা যায়নি।</translation>
 <translation id="4077917118009885966">এই সাইটে বিজ্ঞাপন ব্লক করা হয়েছে</translation>
 <translation id="4081242589061676262">ফাইলটি কাস্ট করতে অক্ষম।</translation>
+<translation id="4084099073048755074">Google Play থেকে অ্যাপ এবং গেম ইনস্টল করুন</translation>
 <translation id="4084682180776658562">বুকমার্ক</translation>
 <translation id="4084835346725913160"><ph name="TAB_NAME" /> বন্ধ করুন</translation>
 <translation id="4085298594534903246">এই পৃষ্ঠাতে JavaScript ব্লক করা হয়েছে৷</translation>
@@ -2169,6 +2187,7 @@
 <translation id="4195643157523330669">নতুন ট্যাবে খুলুন</translation>
 <translation id="4195814663415092787">আপনি যেখানে ছেডেছেন সেখান থেকে চালিয়ে যান</translation>
 <translation id="4197674956721858839">জিপ নির্বাচন</translation>
+<translation id="4198146608511578238">আপনার Google সহায়কের সাথে কথা বলতে লঞ্চার আইকনটি টিপে ধরে রাখুন।</translation>
 <translation id="4200689466366162458">কাস্টম শব্দগুলি</translation>
 <translation id="4200983522494130825">নতুন &amp;ট্যাব</translation>
 <translation id="4206144641569145248">ভিনগ্রহবাসী</translation>
@@ -2189,7 +2208,6 @@
 <translation id="4235813040357936597"><ph name="PROFILE_NAME" /> এর জন্য অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="4235965441080806197">সাইন ইন বাতিল করুন</translation>
 <translation id="4237016987259239829">নেটওয়ার্ক  সংযোগ ত্রুটি</translation>
-<translation id="4237682350741091554"><ph name="BEGIN_LINK" />সেটিংস<ph name="END_LINK" /> থেকে Chrome সিঙ্ক এবং ব্যক্তিগতকরণ পরিচালনা করুন</translation>
 <translation id="4240069395079660403"><ph name="PRODUCT_NAME" /> এই ভাষাতে প্রদর্শিত হবে না</translation>
 <translation id="4240511609794012987">ভাগকরা মেমরি</translation>
 <translation id="4242533952199664413">সেটিংস খুলুন</translation>
@@ -2202,6 +2220,7 @@
 <translation id="4250229828105606438">স্ক্রীনশট</translation>
 <translation id="4250680216510889253">না</translation>
 <translation id="4252996741873942488"><ph name="WINDOW_TITLE" /> - ট্যাব সামগ্রী শেয়ার করা হয়েছে</translation>
+<translation id="4253515443406306926">লঞ্চার, সম্পূর্ণ স্ক্রিন অনুসন্ধান ফলাফল</translation>
 <translation id="4254813446494774748">অনুবাদের ভাষা:</translation>
 <translation id="425573743389990240">ওয়াটে ব্যাটারি ডিসচার্জের হার (ঋণাত্মক মানের অর্থ হল ব্যাটারি চার্জ হচ্ছে)</translation>
 <translation id="4256316378292851214">এইরূপে ভিডিও সংর&amp;ক্ষণ করুন...</translation>
@@ -2218,10 +2237,10 @@
 <translation id="4270393598798225102">সংস্করণ <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">কোনো মিল নেই</translation>
 <translation id="4275830172053184480">আপনার ডিভাইস বন্ধ করে চালু করুন</translation>
-<translation id="4276796043975446927">মিটিংয়ের জন্য Chromebox এ স্বাগতম</translation>
 <translation id="4278390842282768270">মঞ্জুরিপ্রাপ্ত</translation>
 <translation id="4279490309300973883">অনুকরণ করা হচ্ছে</translation>
 <translation id="4281844954008187215">পরিষেবার শর্তাদি</translation>
+<translation id="4282196459431406533">Smart Lock চালু আছে</translation>
 <translation id="4284105660453474798">আপনি কি "$1" মুছতে চান?</translation>
 <translation id="4285498937028063278">আনপিন</translation>
 <translation id="428565720843367874">এই ফাইলটি স্ক্যান করার সময় এন্টি ভাইরাস সফ্টওয়্যার অপ্রত্যাশিতভাবে ব্যর্থ হয়েছে৷</translation>
@@ -2239,6 +2258,7 @@
 <translation id="4307281933914537745">সিস্টেম পুনরুদ্ধার সম্পর্কে আরো জানুন</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K লাইভ)</translation>
 <translation id="431076611119798497">&amp;বিশদ বিবরণ</translation>
+<translation id="4312866146174492540">অবরুদ্ধ করুন (ডিফল্ট)</translation>
 <translation id="4315548163539304064">আপনার মিডিয়া ডিভাইস স্ক্যান করা হচ্ছে...
 ....<ph name="LINE_BREAK1" />
 ....<ph name="FILE_COUNT" />টি নতুন ফটো খুঁজে পাওয়া গেছে</translation>
@@ -2281,6 +2301,7 @@
 <translation id="4377363674125277448">সার্ভারের শংসাপত্রে একটি সমস্যা হয়েছে।</translation>
 <translation id="4378154925671717803">ফোন</translation>
 <translation id="4378551569595875038">সংযুক্ত হচ্ছে...</translation>
+<translation id="4378556263712303865">ডিভাইসের অনুরোধ</translation>
 <translation id="4381849418013903196">কোলন</translation>
 <translation id="4384312707950789900">পছন্দের তালিকায় জুড়ুন</translation>
 <translation id="4384652540891215547">এক্সটেনশন সক্রিয় করুন</translation>
@@ -2344,7 +2365,6 @@
 <translation id="450099669180426158">বিস্ময়বোধক চিহ্ন আইকন</translation>
 <translation id="4501530680793980440">সরানো নিশ্চিত করুন</translation>
 <translation id="4504940961672722399">এই আইকনে ক্লিক করে বা <ph name="EXTENSION_SHORTCUT" /> টিপে এই এক্সটেনশনটি ব্যবহার করুন৷</translation>
-<translation id="4505051713979988367">যখন আপনার Android আনলক অবস্থায় কাছাকাছি থাকবে তখন আপনার <ph name="DEVICE_TYPE" /> আনলক হবে৷</translation>
 <translation id="4508265954913339219">সক্রিয়করণ ব্যর্থ</translation>
 <translation id="4508765956121923607">উ&amp;ত্স দেখুন</translation>
 <translation id="4509017836361568632">ফটো বাতিল করুন</translation>
@@ -2402,7 +2422,6 @@
 <translation id="4589268276914962177">নতুন টার্মিনাল</translation>
 <translation id="4590324241397107707">ডেটাবেস সঞ্চয়স্থান</translation>
 <translation id="4593021220803146968">&amp;এখানে যান <ph name="URL" /></translation>
-<translation id="4594109696316595112">এককালীন সক্রিয়করণ: <ph name="DEVICE_TYPE" /> এ Smart Lock সক্ষম করতে আপনার পাসওয়ার্ড লিখুন। Smart Lock এর মাধ্যমে আপনার ফোন এই ডিভাইসকে আনলক করবে—কোনো পাসওয়ার্ড ছাড়াই। এই বৈশিষ্ট্যটি পরিবর্তন বা বন্ধ করতে আপনার <ph name="DEVICE_TYPE" /> এর সেটিংসে যান।</translation>
 <translation id="4595560905247879544">অ্যাপ্লিকেশান এবং এক্সটেনশানগুলি শুধুমাত্র পরিচালক (<ph name="CUSTODIAN_NAME" />) দ্বারা পরিবর্তন করা যাবে।</translation>
 <translation id="4596295440756783523">আপনার ফাইলে এমন শংসাপত্রগুলি রয়েছে যা এই সার্ভারগুলিকে শনাক্ত করে</translation>
 <translation id="4598556348158889687">সঞ্চয়স্থান ব্যবস্থাপনা</translation>
@@ -2425,7 +2444,6 @@
 <translation id="4628314759732363424">পরিবর্তন করুন...</translation>
 <translation id="4628757576491864469">ডিভাইস</translation>
 <translation id="4628948037717959914">ফটো</translation>
-<translation id="462965295757338707">প্রবেশ করতে আপনার <ph name="DEVICE_TYPE" />-এর কাছাকাছি আনুন।</translation>
 <translation id="4630590996962964935">অবৈধ অক্ষর: $1</translation>
 <translation id="4631110328717267096">সিস্টেম আপডেট ব্যর্থ হয়েছে৷</translation>
 <translation id="4631887759990505102">শিল্পী</translation>
@@ -2445,6 +2463,7 @@
 <translation id="465499440663162826">Chrome ওয়েব দোকানে সংযোগ করতে পারেনি।</translation>
 <translation id="4656293982926141856">এই কম্পিউটার</translation>
 <translation id="4657031070957997341">সর্বদা <ph name="HOST" />-এ প্ল্যাগ ইনগুলি মঞ্জুর করুন</translation>
+<translation id="4658312088164718891">Smart Lock চালু করতে পাসওয়ার্ড লিখুন। পরের বার, আপনার ফোন থেকে <ph name="DEVICE_TYPE" /> আনলক করতে পারবেন। সেটিংসে গিয়ে Smart Lock বন্ধ করুন।</translation>
 <translation id="4662788913887017617">এই বুকমার্কটি আপনার iPhone এর সাথে শেয়ার করুন</translation>
 <translation id="4664482161435122549">PKCS #12 রপ্তানি  ত্রুটি</translation>
 <translation id="466481852929361583">নিরাপদ মডিউলটি সেট আপ করা হচ্ছে। কয়েক মিনিট সময় লাগতে পারে, অনুগ্রহ করে অপেক্ষা করুন।</translation>
@@ -2456,6 +2475,7 @@
 <translation id="4669606053856530811">এই আইটেমগুলি '<ph name="SOURCE_NAME" />' এর সদস্যদের সাথে শেয়ার না করলে তারা সেগুলি অ্যাক্সেস করতে পারবে না।</translation>
 <translation id="4672657274720418656">পৃষ্ঠা পাতন করুন</translation>
 <translation id="4673442866648850031">লেখনী সরানো হলে লেখনী সরঞ্জামগুলি খুলুন</translation>
+<translation id="4677692029604506169">আপনার <ph name="DEVICE_TYPE" /> আনলক করার জন্য যে ফোন আপনি ব্যবহার করছেন সেটির নিরাপত্তার জন্য স্ক্রিন লক প্রয়োজন। সাধারণত, এটি একটি পিন, প্যাটার্ন, বা পাসওয়ার্ড। আগে থেকেই স্ক্রিন লক আছে? যাচাই করতে এবং চালিয়ে যেতে আবার দেখুন বেছে নিন।</translation>
 <translation id="4677772697204437347">GPU মেমোরি</translation>
 <translation id="4681930562518940301">নতুন ট্যাবে আসল চিত্রটি খুলুন</translation>
 <translation id="4682551433947286597">প্রবেশ করা স্ক্রিনে ওয়ালপেপার প্রদর্শিত হবে৷</translation>
@@ -2595,7 +2615,6 @@
 <translation id="4876273079589074638">এই ক্র্যাশ বা সমস্যাটির বিষয়ে অনুসন্ধান করে সেটি ঠিক করতে আমাদের ইঞ্জিনিয়ারদের সাহায্য করুন। কোনও বিবরণ যত ছোটই হোক না কেন সেটি গুরুত্বপূর্ণ!</translation>
 <translation id="4876895919560854374">স্ক্রীণ লক ও আনলক করুন</translation>
 <translation id="4877017884043316611">Chromebox এর সাথে যুক্ত করা</translation>
-<translation id="487829747011038481">ভয়েস ইন্টারঅ্যাকশন শুরু করুন</translation>
 <translation id="4880214202172289027">ভলিউম স্লাইডার</translation>
 <translation id="4880328057631981605">অ্যাক্সেস পয়েন্ট নাম</translation>
 <translation id="4880520557730313061">স্বতঃ-ফিক্স</translation>
@@ -2613,7 +2632,6 @@
 <translation id="4891089016822695758">বিটা ফোরাম</translation>
 <translation id="4893336867552636863">এটি স্থায়ীভাবে এই ডিভাইস থেকে আপনার ব্রাউজিং ডেটা মুছে ফেলবে।</translation>
 <translation id="4898011734382862273">"<ph name="CERTIFICATE_NAME" />" শংসাপত্রটি একটি শংসাকরণ কর্তৃপক্ষের প্রতিনিধিত্ব করে</translation>
-<translation id="4899376560703610051">আপনার <ph name="DEVICE_TYPE" /> নিজ হাতে লক করা হয়েছে৷ প্রবেশ করতে আপনাকে আপনার পাসওয়ার্ড লিখতে হবে৷</translation>
 <translation id="489985760463306091">ক্ষতিকারক সফ্টওয়্যার সরানোর প্রক্রিয়া সম্পূর্ণ করতে কম্পিউটার বন্ধ করে আবার চালু করুন</translation>
 <translation id="4900392736118574277">আপনার শুরুর পৃষ্ঠা <ph name="URL" /> এ পরিবর্তন করা হয়েছে।</translation>
 <translation id="490074449735753175">বানান ত্রুটিগুলি সমাধানে সহায়তা করতে একটি ওয়েব পরিষেবা ব্যবহার করুন</translation>
@@ -2655,10 +2673,12 @@
 <translation id="496226124210045887">আপনার নির্বাচিত ফোল্ডারে সংবেদনশীল ফাইল রয়েছে৷ "$1" কে এই ফোল্ডারে স্থায়ী পড়ার অ্যাক্সেস মঞ্জুর করার ব্যাপারে আপনি কি নিশ্চিত?</translation>
 <translation id="4964455510556214366">সাজানোর ব্যবস্থা</translation>
 <translation id="4964673849688379040">চেক করা হচ্ছে...</translation>
+<translation id="4965808351167763748">Hangouts Meet চালাতে আপনি এই ডিভাইস সেট আপ করতে চান?</translation>
 <translation id="4967749818080339523">একটি অ্যাকাউন্ট নির্বাচন করুন</translation>
 <translation id="496888482094675990">Google ড্রাইভ, বহিরাগত সঞ্চয়স্থান অথবা আপনার Chrome OS ডিভাইসে আপনি যে ফাইলগুলি সংরক্ষণ করেছেন ফাইল অ্যাপ্লিকেশান সেগুলিতে দ্রুত অ্যাক্সেস প্রদান করে।</translation>
 <translation id="4969785127455456148">অ্যালবাম</translation>
 <translation id="4971412780836297815">সম্পন্ন হলে খুলুন</translation>
+<translation id="4972129977812092092">প্রিন্টার এডিট করুন</translation>
 <translation id="4973307593867026061">প্রিন্টার জুড়ুন</translation>
 <translation id="4973698491777102067">এখান থেকে নিম্নোক্ত আইটেমগুলি নিশ্চিহ্ন করুন:</translation>
 <translation id="497421865427891073">অগ্রবর্তী করুন</translation>
@@ -2687,6 +2707,7 @@
 <translation id="5011739343823725107">সিঙ্ক ব্যাকএণ্ড সূচনা করতে ব্যর্থ হয়েছে</translation>
 <translation id="5015344424288992913">প্রক্সি স্থির করা হচ্ছে...</translation>
 <translation id="5015762597229892204">একটি প্রিন্টার ড্রাইভার অ্যাপ্লিকেশান নির্বাচন করুন</translation>
+<translation id="5016049845330225051">অনুসন্ধান বক্সের টেক্সট সাফ করার বোতাম</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">স্টার্ট-আপের পৃষ্ঠাগুলি পরিচালনা করুন</translation>
 <translation id="5023943178135355362">অস্ট্রেলিয়ান স্ক্রলিং <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" /></translation>
@@ -2705,10 +2726,8 @@
 <translation id="5039512255859636053">$১ TB</translation>
 <translation id="5039804452771397117">অনুমতি দিন</translation>
 <translation id="5045550434625856497">ভুল পাসওয়ার্ড</translation>
-<translation id="5046747760454685637">Flash চালানোর জন্য সাইটকে অনুমতি দেওয়ার আগে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
 <translation id="5052499409147950210">সাইট সম্পাদনা করুন</translation>
 <translation id="5053604404986157245">অনিয়মিতভাবে তৈরি TPM পাসওয়ার্ড উপলব্ধ নয়৷ এটি একটি পাওয়ারওয়াশের পরে স্বাভাবিক হয়৷</translation>
-<translation id="5061188462607594407">চালিয়ে যেতে আপনার <ph name="PHONE_TYPE" /> সুরক্ষিত করুন</translation>
 <translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{এই ফোল্ডারটিতে একটি বুকমার্ক আছে। এটা মুছে ফেলার বিষয়ে আপনি কি নিশ্চিত?}one{এই ফোল্ডারটিতে #টি বুকমার্ক আছে। এটা মুছে ফেলার বিষয়ে আপনি কি নিশ্চিত?}other{এই ফোল্ডারটিতে #টি বুকমার্ক আছে। এটা মুছে ফেলার বিষয়ে আপনি কি নিশ্চিত?}}</translation>
 <translation id="5061708541166515394">তুলনা</translation>
 <translation id="5062930723426326933">প্রবেশ করুন ব্যর্থ হয়েছে, দয়া করে ইন্টারনেটের সাথে সংযোগ স্থাপন করুন এবং আবার চেষ্টা করুন৷</translation>
@@ -2735,8 +2754,8 @@
 <translation id="5097002363526479830">'<ph name="NAME" />': <ph name="DETAILS" /> নেটওয়ার্কে সংযোগ করা গেল না </translation>
 <translation id="5098647635849512368">প্যাক করার জন্য ডিরেক্টরির সঠিক পথটি খুঁজে পাওয়া যাবে না৷</translation>
 <translation id="5099354524039520280">উপরে</translation>
-<translation id="5099890666199371110">আপনার ফোন খুঁজে পাওয়া যাচ্ছে না। আপনার <ph name="DEVICE_TYPE" />-এ ব্লুটুথ চালু আছে কিনা নিশ্চিত করুন৷ &lt;a&gt;আরো জানুন&lt;/a&gt;</translation>
 <translation id="5100114659116077956">সর্বশেষ বৈশিষ্ট্যগুলি আপনার কাছে নিয়ে আসতে, আপনার Chromebox আপডেট করতে হবে৷</translation>
+<translation id="5101042277149003567">সকল বুকমার্ক খুলুন</translation>
 <translation id="5105855035535475848">ট্যাবগুলি পিন করুন</translation>
 <translation id="5108967062857032718">সেটিংস - Android অ্যাপ্লিকেশানগুলি সরান</translation>
 <translation id="5109044022078737958">মিয়া</translation>
@@ -2799,7 +2818,6 @@
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />"-এর নতুনতম সংস্করনটি অক্ষম হয়েছে কারণ এটির আরো বেশি অনুমতির প্রয়োজন৷</translation>
 <translation id="5186650237607254032">আপনার ফোনের স্ক্রীন লক আপডেট করুন, যাতে করে আপনি যখন কাছাকাছি থাকবেন তখন এটি বন্ধ হয়৷ আপনি দ্রুত ফোনটি আনলক করবেন, এবং আপনার <ph name="DEVICE_TYPE" /> এ আরো ভালো Smart Lock-এর অভিজ্ঞতা উপভোগ করতে পারবেন৷</translation>
 <translation id="5187295959347858724">আপনি এখন <ph name="SHORT_PRODUCT_NAME" />এ প্রবেশ করেছেন৷ আপনার বুকমার্ক, ইতিহাস এবং অন্য সেটিংস আপনার Google অ্যাকাউন্টে সমন্বিত করা হচ্ছে৷</translation>
-<translation id="5187729186893265531">শুধুমাত্র গুরুত্বপূর্ণ Flash সামগ্রী সনাক্ত করুন এবং চালান (প্রস্তাবিত)</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5189060859917252173">"<ph name="CERTIFICATE_NAME" />" শংসাপত্রটি একটি শংসাকরণ কর্তৃপক্ষের প্রতিনিধিত্ব করে৷</translation>
 <translation id="5197680270886368025">সিঙ্ক সম্পূর্ণ৷</translation>
@@ -2809,6 +2827,7 @@
 <translation id="5209320130288484488">কোনো ডিভাইস খুঁজে পাওয়া যায়নি</translation>
 <translation id="5209518306177824490">SHA-1 আঙুলের ছাপ</translation>
 <translation id="5210365745912300556">ট্যাব বন্ধ করুন</translation>
+<translation id="5211866059911729164">আপনার স্ক্রিনে যা থাকবে তা সহায়ককে ব্যবহার করার অনুমতি দিন</translation>
 <translation id="5212461935944305924">কুকি ও সাইট ডেটা ব্যতিক্রমসমূহ</translation>
 <translation id="5213891612754844763">প্রক্সি সেটিংস দেখুন</translation>
 <translation id="521582610500777512">ফটো বাতিল হয়েছে</translation>
@@ -2828,6 +2847,7 @@
 <translation id="5233736638227740678">&amp;প্রতিলেপন</translation>
 <translation id="5234764350956374838">খারিজ</translation>
 <translation id="5235050375939235066">অ্যাপ আনইনস্টল করবেন?</translation>
+<translation id="5235750401727657667">নতুন ট্যাব খোলার সময় যে পৃষ্ঠাটি আপনি দেখেন সেটি বদলে দিন</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" অ্যাপ্লিকেশন স্বয়ংক্রিয়ভাবে সরানো হয়েছে৷</translation>
 <translation id="5238369540257804368">সুযোগগুলি</translation>
 <translation id="5241128660650683457">আপনার দেখা ওয়েবসাইটগুলির সমস্ত ডেটা পড়ে</translation>
@@ -2890,7 +2910,6 @@
 <translation id="5316716239522500219">আয়না মনিটর</translation>
 <translation id="5317780077021120954">সংরক্ষণ করুন</translation>
 <translation id="5319359161174645648">Google Chrome ব্যবহার করার সুপারিশ করে</translation>
-<translation id="5319748504063551568">আপনার অ্যাকাউন্ট থেকে Google Play স্টোর অ্যাক্সেস করার জন্য আপনাকে পরিচয় প্রদানকারীর মাধ্যমে প্রমাণীকরণ করতে হবে। এগিয়ে যেতে 'পরবর্তী'তে ক্লিক করুন।</translation>
 <translation id="532247166573571973">সার্ভারে সংযোগ নাও হতে পারে। পরে আবার চেষ্টা করুন।</translation>
 <translation id="532360961509278431">"$1": $2 খুলতে অক্ষম</translation>
 <translation id="5324780743567488672">আপনার অবস্থান ব্যবহার করে স্বয়ংক্রিয়ভাবে সময় অঞ্চল সেট করুন</translation>
@@ -2911,7 +2930,6 @@
 <translation id="5338503421962489998">স্থানীয় সঞ্চয়স্থান</translation>
 <translation id="5340217413897845242">তাকের আইটেম নম্বর ৬</translation>
 <translation id="5342091991439452114">পিন অবশ্যই কমপক্ষে <ph name="MINIMUM" /> সংখ্যার হতে হবে</translation>
-<translation id="5342451237681332106"><ph name="PHONE_NAME" /> ব্যবহার করুন</translation>
 <translation id="534916491091036097">বাঁ বন্ধ</translation>
 <translation id="5350965906220856151">উহ-ওহ!</translation>
 <translation id="5352033265844765294">Time Stamping</translation>
@@ -2991,6 +3009,7 @@
 <translation id="5457113250005438886">অবৈধ</translation>
 <translation id="5457459357461771897">আপনার কম্পিউটার থেকে ফটো, সঙ্গীত ও অন্যান্য মিডিয়া পড়ুন এবং মুছুন</translation>
 <translation id="5457599981699367932">অতিথি হিসাবে ব্রাউজ করুন</translation>
+<translation id="5458998536542739734">লক স্ক্রিন নোট</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" />-এর সূচী</translation>
 <translation id="5463856536939868464">গোপন বুকমার্কগুলি সমন্বিত মেনু</translation>
 <translation id="5464632865477611176">এখন চালান</translation>
@@ -3001,6 +3020,7 @@
 <translation id="5480254151128201294">এই ডিভাইসটি মালিকের দ্বারা লক করা ছিল৷</translation>
 <translation id="5481941284378890518">আশেপাশের প্রিন্টারগুলি যোগ করুন</translation>
 <translation id="5483785310822538350">ফাইল এবং ডিভাইসের অ্যাক্সেস প্রত্যাহার করুন</translation>
+<translation id="5485080380723335835">আপনার <ph name="DEVICE_TYPE" /> নিরাপত্তার জন্য লক করা হয়েছে। চালিয়ে যেতে আপনার পাসওয়ার্ড লিখুন।</translation>
 <translation id="5485102783864353244">অ্যাপ্লিকেশান যোগ করুন</translation>
 <translation id="5485754497697573575">সকল ট্যাব পুনরুদ্ধার করুন</translation>
 <translation id="5486261815000869482">পাসওয়ার্ড নিশ্চিত করুন</translation>
@@ -3019,6 +3039,7 @@
 <translation id="549673810209994709">এই পৃষ্ঠাটির অনুবাদ করা যাবে না৷</translation>
 <translation id="5499313591153584299">এই ফাইলটি আপনার কম্পিউটারের জন্য ক্ষতিকারক হতে পারে৷</translation>
 <translation id="5502500733115278303">Firefox থেকে আমদানি করা</translation>
+<translation id="5505095961735225576">Hangouts Meet এটি কোন ডোমেনের তা জানতে চায়। এটির জন্য আপনাকে আপনার অ্যাকাউন্টে সাইন ইন করতে হবে৷</translation>
 <translation id="5507756662695126555">অ-অস্বীকৃতি</translation>
 <translation id="5509693895992845810">এই &amp;রূপে সংরক্ষণ করুন...</translation>
 <translation id="5509914365760201064">ইস্যুকারী: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3086,6 +3107,7 @@
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">অ্যাপ্লিকেশানগুলি লোড হচ্ছে...</translation>
 <translation id="5592595402373377407">এখনও যথেষ্ট ডেটা উপলব্ধ নেই৷</translation>
+<translation id="5595152862129936745">অনেক দূরে</translation>
 <translation id="5595485650161345191">ঠিকানা সম্পাদনা করুন</translation>
 <translation id="5600706100022181951">আপডেটটি ডাউনলোড করতে <ph name="UPDATE_SIZE_MB" /> MB মোবাইল ডেটা খরচ হবে। ডাউনলোড করতে চান?</translation>
 <translation id="5601503069213153581">পিন</translation>
@@ -3125,6 +3147,7 @@
 <translation id="5649768706273821470">শুনুন</translation>
 <translation id="5653140146600257126">"$1" নামের ফোল্ডার ইতিমধ্যেই বিদ্যমান৷ দয়া করে একটি ভিন্ন নাম চয়ন করুন৷</translation>
 <translation id="5657667036353380798">বাহ্যিক এক্সটেনশানটির জন্য chrome এর <ph name="MINIMUM_CHROME_VERSION" /> সংস্করণ বা তার পরবর্তী সংস্করণ ইনস্টল থাকা প্রয়োজন৷</translation>
+<translation id="5658415415603568799">অতিরিক্ত নিরাপত্তার জন্য, ২০ ঘণ্টা পরে Smart Lock আপনাকে পাসওয়ার্ড দিতে বলবে।</translation>
 <translation id="5659593005791499971">ইমেল</translation>
 <translation id="5661272705528507004">এই সিম কর্ডটি অক্ষম আছে ও ব্যবহার করা যাবে না৷ প্রতিস্থাপনের জন্য দয়া করে আপনার পরিষেবা প্রদাণকারীর সঙ্গে যোগাযোগ করুন৷ </translation>
 <translation id="5669267381087807207">সক্রিয় করা হচ্ছে</translation>
@@ -3152,6 +3175,7 @@
 <translation id="5711983031544731014">আনলক করতে অক্ষম৷ আপনার পাসওয়ার্ড লিখুন৷</translation>
 <translation id="5715711091495208045">প্লাগ ইন ব্রোকার: <ph name="PLUGIN_NAME" /></translation>
 <translation id="5719603411793408026">ডিফল্ট সার্চ ইঞ্জিনগুলি</translation>
+<translation id="572155275267014074">Android সেটিংস</translation>
 <translation id="572328651809341494">সাম্প্রতিক ট্যাবগুলি</translation>
 <translation id="5723508132121499792">কোনো পৃষ্ঠভূমি অ্যাপ্লিকেশান চলছে না</translation>
 <translation id="572392919096807438">আমার সিদ্ধান্ত মনে রাখুন</translation>
@@ -3173,6 +3197,7 @@
 <translation id="5747785204778348146">বিকাশকারী - অস্থায়ী</translation>
 <translation id="5749483996735055937">পুনরুদ্ধারের চিত্রটি ডিভাইসে অনুলিপি করার সময় একটি ত্রুটি ঘটেছিল৷</translation>
 <translation id="5749861707650047230">{NUM_DOWNLOAD,plural, =1{ডাউনলোড বাতিল করুন}one{ডাউনলোডগুলি বাতিল করুন}other{ডাউনলোডগুলি বাতিল করুন}}</translation>
+<translation id="5750324801516359607">দূরে</translation>
 <translation id="5751545372099101699">তাকের আইটেম নম্বর ৪</translation>
 <translation id="5752162773804266219">আপনার <ph name="DEVICE_TYPE" /> কে আপনার প্রতি এবং ভয়েস অনুসন্ধানে নির্ভরযোগ্য ও সহজ অ্যাক্সেসের জন্য সাড়া দেওয়ার কাজে সহায়তা করতে, Google কে আপনার ভয়েস শেখানোর প্রয়োজন।</translation>
 <translation id="5752453871435543420">Chrome OS ক্লাউড ব্যাকআপ</translation>
@@ -3211,6 +3236,7 @@
 <translation id="5801568494490449797">অভিরুচিসমূহ</translation>
 <translation id="5804241973901381774">অনুমতিগুলি</translation>
 <translation id="580571955903695899">শিরোনাম অনুসারে পুনঃক্রম করুন</translation>
+<translation id="5807290661599647102">একটি স্ক্রিন লক সেট করুন</translation>
 <translation id="580961539202306967">যখন কোনো সাইট আমাকে পুশ বার্তা পাঠাতে চায়, তখন আমাকে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
 <translation id="5814126672212206791">সংযোগের প্রকার</translation>
 <translation id="5815645614496570556">X.400 ঠিকানা</translation>
@@ -3252,8 +3278,8 @@
 <translation id="5855773610748894548">নিরাপদ মডিউল তৈরি করতে ত্রুটি হয়েছে।</translation>
 <translation id="5856721540245522153">ডিবাগিং বৈশিষ্ট্যাবলী সক্ষম করুন</translation>
 <translation id="5857090052475505287">নতুন ফোল্ডার</translation>
-<translation id="5859272821192576954">আপনি Hangouts ব্যবহার করার জন্য একদম তৈরি</translation>
 <translation id="5860033963881614850">বন্ধ করুন</translation>
+<translation id="5860154621968450536">বর্তমানে আপনার অঞ্চলে Google সহায়ক সমর্থিত নয়।</translation>
 <translation id="5860209693144823476">ট্যাব ৩</translation>
 <translation id="5860491529813859533">চালু করুন</translation>
 <translation id="5860494867054883682">আপনার ডিভাইস <ph name="CHANNEL_NAME" /> চ্যানেলে আপডেট করা হচ্ছে (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -3312,6 +3338,7 @@
 <translation id="5948205789991352045">খুলবেন না</translation>
 <translation id="5948544841277865110">ব্যক্তিগত নেটওয়ার্ক যুক্ত করুন</translation>
 <translation id="5949544233750246342">ফাইল বিশ্লেষণ করতে অক্ষম</translation>
+<translation id="5950993829859400777">আপনি Smart Lock বন্ধ করলে, আপনার ফোন ব্যবহার করে Chrome ডিভিইস আনলক করতে পারবেন না। আপনাকে নিজের পাসওয়ার্ড লিখতে হবে।</translation>
 <translation id="5951823343679007761">কোনও ব্যাটারি নেই</translation>
 <translation id="5955282598396714173">আপনার পাসওয়ার্ডের মেয়াদ শেষ হয়ে গেছে। পাসওয়ার্ড পাল্টানোর জন্য সাইন-আউট করে আবার সাইন-ইন করুন।</translation>
 <translation id="5956585768868398362">আপনি কি এই পৃষ্ঠাটিকে অনুসন্ধান পৃষ্টা হিসেবে আশা করছিলেন?</translation>
@@ -3364,6 +3391,7 @@
 <translation id="604001903249547235">ক্লাউড ব্যাকআপ</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6040852767465482106">নামহীন পরিচয়</translation>
+<translation id="6041155700700864984">সম্পূর্ণ স্ক্রীন থেকে বেরিয়ে আসুন</translation>
 <translation id="604124094241169006">স্বয়ংক্রিয়</translation>
 <translation id="6042169520002885235">প্রিন্টার প্রস্তুতকারক এবং মডেল বেছে নিন</translation>
 <translation id="6042308850641462728">আরো</translation>
@@ -3373,6 +3401,7 @@
 <translation id="6051354611314852653">ওহো! সিস্টেমটি এই ডিভাইসের জন্য API অ্যাক্সেস অনুমোদন করতে ব্যর্থ হয়েছে৷</translation>
 <translation id="6052976518993719690">SSL শংসাপত্র কর্তৃপক্ষ</translation>
 <translation id="6053401458108962351">&amp;ব্রাউজিং ডেটা সাফ করুন...</translation>
+<translation id="6054663654428587993">আপনার অ্যাকাউন্টের জন্য Google সহায়ক সক্ষম করা হয়নি।</translation>
 <translation id="6055171183283175969">আপনার লেখা পাসওয়ার্ডটি ভুল৷</translation>
 <translation id="6055392876709372977">RSA এনক্রিপশানের সাথে PKCS #1 SHA-256</translation>
 <translation id="6056710589053485679">সাধারণ পুনঃলোড</translation>
@@ -3381,6 +3410,7 @@
 <translation id="6059925163896151826">USB ডিভাইসগুলি</translation>
 <translation id="6064217302520318294">স্ক্রীন লক</translation>
 <translation id="6065289257230303064">শংসাপত্র বিষয় নির্দেশিকা গুণাবলী</translation>
+<translation id="6068338049763724728">দূর থেকে যোগ করা সক্ষম করুন</translation>
 <translation id="6071181508177083058">পাসওয়ার্ড নিশ্চিত করুন</translation>
 <translation id="6073903501322152803">অ্যাক্সেসযোগ্যতার বৈশিষ্ট্যগুলি যোগ করুন</translation>
 <translation id="6074825444536523002">Google ফর্ম</translation>
@@ -3433,11 +3463,11 @@
 <translation id="6151771661215463137">ফাইলটি আগে থেকেই আপনার ডাউনলোড ফোল্ডারে রয়েছে।</translation>
 <translation id="615436196126345398">প্রোটোকল</translation>
 <translation id="6154697846084421647">বর্তমানে প্রবেশ করুন আছে</translation>
+<translation id="6156262341071374681">সমস্ত অ্যাপ দেখুন</translation>
 <translation id="6156323911414505561">বুকমার্ক দণ্ড দেখান</translation>
 <translation id="6156863943908443225">স্ক্রিপ্ট  ক্যাশে</translation>
 <translation id="6156960295318603523">ভাষা সেটিংস</translation>
 <translation id="6160625263637492097">প্রমাণীকরণের জন্য শংসাপত্র সরবরাহ করুন</translation>
-<translation id="6162157842722615167">Chromebook এর জন্য Smart Lock</translation>
 <translation id="6163363155248589649">&amp;সাধারণ</translation>
 <translation id="6163522313638838258">সবকিছু বিস্তার করুন...</translation>
 <translation id="6164005077879661055">একবার এই তত্ত্বাবধানে থাকা ব্যবহারকারী সরানো হলে এর সঙ্গে সংশ্লিষ্ট সমস্ত ফাইল এবং
@@ -3448,6 +3478,7 @@
 <translation id="6171948306033499786">মুদ্রণে বিরাম দিন</translation>
 <translation id="6175314957787328458">Microsoft Domain GUID</translation>
 <translation id="6178664161104547336">একটি শংসাপত্র নির্বাচন করুন</translation>
+<translation id="6180288788882902869">আপনার <ph name="DEVICE_TYPE" /> এ Google Play</translation>
 <translation id="6181431612547969857">ডাউনলোড অবরুদ্ধ রয়েছে</translation>
 <translation id="6185132558746749656">ডিভাইসের অবস্থান</translation>
 <translation id="6185696379715117369">পৃষ্ঠায় উপরের দিকে যান</translation>
@@ -3470,6 +3501,7 @@
 <translation id="6219616557885484178">Google Play থেকে ইনস্টল করতে এবং আপনার <ph name="DEVICE_TYPE" /> এ ব্যবহার করতে লাখ লাখের বেশি অ্যাপ্লিকেশান ও গেম থেকে বেছে নিন</translation>
 <translation id="6220413761270491930">এক্সটেনশান লোড হওয়ার সময় ত্রুটি</translation>
 <translation id="6223447490656896591">কাস্টম চিত্র:</translation>
+<translation id="6223747324484398595">ঝটপট টিথারিং চালু করতে ব্লুটুথ চালু করুন</translation>
 <translation id="62243461820985415">Chrome এই ওয়ালপেপারে ডাউনলোড করতে পারছে না৷</translation>
 <translation id="6224481128663248237">বিন্যাসন সফলভাবে সম্পূর্ণ</translation>
 <translation id="6225378837831321064"><ph name="DEVICE_NAME" />: সংযুক্ত হচ্ছে...</translation>
@@ -3519,7 +3551,6 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> সাধারণভাবে ডাউনলোড করা হয় না এবং এটি বিপজ্জনক হতে পারে।</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{আপনার নেটওয়ার্কে নতুন প্রিন্টারটি}one{আপনার নেটওয়ার্কে নতুন প্রিন্টারগুলি}other{আপনার নেটওয়ার্কে নতুন প্রিন্টারগুলি}}</translation>
-<translation id="6285395082104474418">স্থিতি ট্রে আপনাকে আপনার নেটওয়ার্ক, ব্যাটারি এবং অন্যান্য জিনিসগুলির অবস্থা দেখায়৷</translation>
 <translation id="6286684120317096255">ডেটা ব্যবহার পরিমাপ করা হচ্ছে</translation>
 <translation id="6286708577777130801">সংরক্ষিত পাসওয়ার্ডের বিশদ বিবরণ</translation>
 <translation id="6287852322318138013">এই ফাইলটি খোলার জন্য একটি অ্যাপ্লিকেশান নির্বাচন করুন</translation>
@@ -3545,7 +3576,6 @@
 <translation id="6316806695097060329">আপনার কাছে ওয়েব ব্যবহারকে সবদিক থেকে উন্নত করে তুলতে সাহায্য করার জন্য এই <ph name="SHORT_PRODUCT_NAME" /> ডিজাইন করা হয়েছে৷</translation>
 <translation id="6317369057005134371">অ্যাপ্লিকেশন উইন্ডোর জন্য অপেক্ষা করা হচ্ছে...</translation>
 <translation id="6322279351188361895">ব্যক্তিগত কী-টি পড়তে ব্যর্থ৷</translation>
-<translation id="6324839205543480136">আপনার ফোন খুঁজে পাওয়া যায়নি৷ নিশ্চিত করুন যে এটি হাতের নাগালেই আছে এবং ব্লুটুথ চালু আছে৷</translation>
 <translation id="6325191661371220117">স্বয়ংক্রিয় লঞ্চ অক্ষম করুন</translation>
 <translation id="6326175484149238433">Chrome থেকে সরান</translation>
 <translation id="6326855256003666642">সক্রিয়-রাখার সংখ্যা</translation>
@@ -3577,6 +3607,7 @@
 <translation id="6370021412472292592">ম্যানিফেস্ট লোড করা যাবে না।</translation>
 <translation id="637062427944097960">এই ফাইলটি একটি আলাদা ডেস্কটপে খোলা রয়েছে৷ এটিকে দেখতে <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) এ সরান৷</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
+<translation id="6374108032506706911">Android এর জন্য Smart Lock সেট আপ করুন</translation>
 <translation id="6374469231428023295">আবার চেষ্টা করুন</translation>
 <translation id="6380143666419481200">স্বীকার ও চালিয়ে যান</translation>
 <translation id="6380224340023442078">সামগ্রী সেটিংস...</translation>
@@ -3644,6 +3675,7 @@
 <translation id="6452181791372256707">প্রত্যাখ্যান</translation>
 <translation id="6455348477571378046">শংসাপত্রের প্রকার:</translation>
 <translation id="6456394469623773452">ভাল</translation>
+<translation id="6456631036739229488">Smart Lock ফোন পরিবর্তিত হয়েছে। Smart Lock আপডেট করতে আপনার পাসওয়ার্ড লিখুন। পরের বার আপনার ফোন আপনার <ph name="DEVICE_TYPE" /> আনলক করবে। সেটিংসে গিয়ে Smart Lock বন্ধ করুন।</translation>
 <translation id="645705751491738698">JavaScript ব্লক করা চালিয়ে যান</translation>
 <translation id="6458308652667395253">JavaScript ব্লক করা পরিচালনা করুন...</translation>
 <translation id="6459488832681039634">খোঁজার জন্য নির্বাচন ব্যবহার করুন</translation>
@@ -3677,7 +3709,6 @@
     এটা অন্যান্য ডিভাইসের অ্যাপ্লিকেশান বা সামগ্রীকে প্রভাবিত করে না।</translation>
 <translation id="6499143127267478107">প্রক্সি স্ক্রিপ্টের মধ্যে হোস্ট পুনসমাধান করুন..</translation>
 <translation id="6503077044568424649">সর্বাধিক দেখা</translation>
-<translation id="6503521261542448765">পাসওয়ার্ডগুলি লিখতে লিখতে ক্লান্ত হয়ে গেছেন? আপনার <ph name="DEVICE_TYPE" /> আনলক করতে আপনার ফোন ব্যবহার করুন—কোনো পাসওয়ার্ডের প্রয়োজন নেই৷</translation>
 <translation id="6504611359718185067">একটি প্রিন্টার যোগ করার জন্য ইন্টারনেটের সাথে সংযোগ করুন</translation>
 <translation id="650584126816009598">আপনার মুদ্রকটি প্রস্তুত আছে৷</translation>
 <translation id="6506374932220792071">SHA-256 সহ X9.62 ECDSA স্বাক্ষর</translation>
@@ -3793,6 +3824,7 @@
 <translation id="667517062706956822">আপনি কি চান যে Google এই পৃষ্ঠাটি <ph name="SOURCE_LANGUAGE" /> থেকে <ph name="TARGET_LANGUAGE" /> এ অনুবাদ করুক?</translation>
 <translation id="6675665718701918026">পয়েন্টিং ডিভাইস সংযুক্ত হয়েছে</translation>
 <translation id="6677037229676347494">প্রত্যাশিত ID "<ph name="EXPECTED_ID" />", কিন্তু ID হল "<ph name="NEW_ID" />"৷</translation>
+<translation id="6678312694238602710">Chrome OS থেকে "Ok Google" ভয়েস অনুসন্ধান সরানো হয়েছে</translation>
 <translation id="6678717876183468697">কুয়েরি URL</translation>
 <translation id="6680028776254050810">ব্যবহারকারী স্যুইচ করুন</translation>
 <translation id="6680442031740878064">খালি জায়গা: <ph name="AVAILABLE_SPACE" /></translation>
@@ -3830,9 +3862,6 @@
 <translation id="672609503628871915">নতুন কী আছে দেখুন</translation>
 <translation id="6727005317916125192">পূর্ববর্তী ফলক</translation>
 <translation id="6731320427842222405">এটি কয়েক মিনিট সময় নিতে পারে</translation>
-<translation id="6732586201820838268">আপনার ফোনের সঙ্গে একটি সংযোগ স্থাপন করা যায়নি৷এটি নিশ্চিত করুন য়ে 
-আপনি একটি সামঞ্জস্যপূর্ণ Android ফোন ব্যবহার করছেন যেটা চালু এবং হাতের 
-নাগালের মধ্যেই রয়েছে৷ &lt;a&gt;আরো জানুন&lt;/a&gt;</translation>
 <translation id="6732801395666424405">শংসাপত্র লোড হয়নি</translation>
 <translation id="6735304988756581115">কুকিজ এবং অন্য সাইট ডেটা দেখান...</translation>
 <translation id="6736045498964449756">ওহো, পাসওয়ার্ডগুলি মিলছে না!</translation>
@@ -3956,6 +3985,7 @@
 <translation id="6943176775188458830">মুদ্রণ বাতিল করুন</translation>
 <translation id="6943836128787782965">HTTP ব্যর্থ হয়েছে</translation>
 <translation id="6945221475159498467">নির্বাচন</translation>
+<translation id="6948064128393024347">লঞ্চার, অনুসন্ধান ফলাফল</translation>
 <translation id="6949306908218145636">খোলা পৃষ্ঠাগুলিকে বুকমার্ক করুন...</translation>
 <translation id="6955446738988643816">পপআপ সংবীক্ষণ</translation>
 <translation id="695755122858488207">অনির্বাচিত রেডিও বোতাম</translation>
@@ -3996,6 +4026,7 @@
 <translation id="699220179437400583">স্বয়ংক্রিয়ভাবে Google এ নিরাপত্তার সম্ভাব্য লঙ্ঘনের ঘটনাগুলির বিস্তারিত বিবরণ অভিযোগ করুন।</translation>
 <translation id="6996946928646015361">নিরাপদ মডিউল নেই, অথবা অক্ষম করা আছে।</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" />টি ফোল্ডার নির্বাচিত</translation>
+<translation id="6998793565256476099">ভিডিও কনফারেন্সিংয়ের জন্য ডিভাইস যোগ করুন</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{নিম্নলিখিত পৃষ্ঠাটি প্রতিক্রিয়াবিহীন হয়ে উঠেছে৷ আপনি এটি প্রতিক্রিয়াশীল হওয়ার জন্য অপেক্ষা করতে পারেন বা এটিকে বন্ধ করুন৷}one{নিম্নলিখিত পৃষ্ঠাগুলি প্রতিক্রিয়াবিহীন হয়ে উঠেছে৷ আপনি সেইগুলি প্রতিক্রিয়াশীল হওয়ার জন্য অপেক্ষা করতে পারেন বা সেগুলি বন্ধ করুন৷}other{নিম্নলিখিত পৃষ্ঠাগুলি প্রতিক্রিয়াবিহীন হয়ে উঠেছে৷ আপনি সেইগুলি প্রতিক্রিয়াশীল হওয়ার জন্য অপেক্ষা করতে পারেন বা সেগুলি বন্ধ করুন৷}}</translation>
 <translation id="7002055706763150362">Chromebook এর জন্য Smart Lock সেট আপ করার জন্য Google এর এটি নিশ্চিত হওয়া প্রয়োজন যে—শুরু করতে আপনিই আপনার পাসওয়ার্ড লিখেছেন।</translation>
 <translation id="7002454948392136538">এই তত্ত্বাবধান করা ব্যবহারকারীর জন্য পরিচালক চয়ন করুন</translation>
@@ -4028,8 +4059,10 @@
 <translation id="7029809446516969842">পাসওয়ার্ড</translation>
 <translation id="7030031465713069059">পাসওয়ার্ড সংরক্ষণ করুন</translation>
 <translation id="7031962166228839643">TPM প্রস্তুত করা হচ্ছে, দয়া করে অপেক্ষা করুন (এটি কয়েক মিনিট সময় নিতে পারে)...</translation>
+<translation id="7035437538340499453">Smart Lock প্রস্তুত</translation>
 <translation id="7039326228527141150">USB ডিভাইসগুলি <ph name="VENDOR_NAME" /> থেকে অ্যাক্সেস করুন</translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
+<translation id="7040138676081995583">এর মাধ্যমে খুলুন...</translation>
 <translation id="7040230719604914234">অপারেটর</translation>
 <translation id="7042418530779813870">প্রতি&amp;লেপন এবং অনুসন্ধান করুন</translation>
 <translation id="7043253066477231465">মোবাইল ডেটা সক্রিয় হয়েছে</translation>
@@ -4052,7 +4085,6 @@
 <translation id="7066944511817949584">"<ph name="DEVICE_NAME" />"-এর সাথে সংযোগ করতে ব্যর্থ৷</translation>
 <translation id="7067725467529581407">এটি আর কখনো দেখাবেন না।</translation>
 <translation id="7072010813301522126">শর্টকাটের নাম</translation>
-<translation id="7073555242265688099">যদি আপনার অন্য Chrome ডিভাইসগুলি থাকে, সেগুলি স্বয়ংক্রিয়ভাবে সিঙ্ক হবে, যাতে করে ফোন সেগুলিকেও আনলক করতে পারে৷</translation>
 <translation id="707392107419594760">আপনার কীবোর্ড নির্বাচন করুন:</translation>
 <translation id="7075513071073410194">RSA এনক্রিপশান সহ PKCS #1 MD5</translation>
 <translation id="7075625805486468288">HTTPS/SSL শংসাপত্র এবং সেটিংস পরিচালনা করুন</translation>
@@ -4068,9 +4100,7 @@
 <translation id="7092106376816104">পপ-আও ব্যতিক্রম</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921"><ph name="HOSTNAMES" />: নামের্ ডিভাইসসমূহের সাথে ডেটা বিনিময় করুন</translation>
-<translation id="7096082900368329802">আরো অসাধারণ সব বৈশিষ্ট্য আবিষ্কার করতে চান?</translation>
 <translation id="7096108453481049031">তত্ত্বাবধানে থাকা ব্যবহারকারী আমদানি করা যায়নি৷ দয়া করে আপনার নেটওয়ার্ক সংযোগটি পরীক্ষা করে দেখুন এবং পরে আবার চেষ্টা করুন৷</translation>
-<translation id="7097411490633210585">Smart Lock থাকলে আপনাকে প্রতি ২০ ঘণ্টা অন্তর আপনাকে অন্তত একবার পাসওয়ার্ড লিখতে হবে।</translation>
 <translation id="7098447629416471489">অন্যান্য সংরক্ষিত সার্চ ইঞ্জিন এখানে দেখা যাবে</translation>
 <translation id="7100897339030255923"><ph name="COUNT" />টি আইটেম নির্বাচিত</translation>
 <translation id="7102687220333134671">স্বয়ংক্রিয় আপডেট চালু করা হয়েছে</translation>
@@ -4079,7 +4109,6 @@
 <translation id="7108668606237948702">লিখুন</translation>
 <translation id="7113502843173351041">আপনার ইমেল ঠিকানা জানুন</translation>
 <translation id="7114054701490058191">পাসওয়ার্ডগুলি মিলছে না</translation>
-<translation id="7115051913071512405">এটি চেষ্টা করে দেখুন</translation>
 <translation id="7117247127439884114">আবার প্রবেশ করুন...</translation>
 <translation id="711840821796638741">পরিচালিত বুকমার্কগুলি দেখান</translation>
 <translation id="711902386174337313">আপনার সাইন-ইন করা ডিভাইসগুলির তালিকা পড়ুন</translation>
@@ -4090,7 +4119,6 @@
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;ড্রাইভে অনুসন্ধান করুন&lt;/em&gt;</translation>
 <translation id="7127980134843952133">ইতিহাস ডাউনলোড করুন</translation>
 <translation id="7129050975168763580">পৃষ্ঠা সংখ্যা</translation>
-<translation id="7130666834200497454">আপনার <ph name="DEVICE_TYPE" /> নিরাপদ রাখতে Chromebook এর জন্য Smart Lock এর চাহিদা মোতাবেক আপনার ফোনে একটি স্ক্রীন লক প্রয়োজন যার মাধ্যমে ফোনটি আনলক করা যাবে। ইতোমধ্যে আপনার ফোন সুরক্ষিত করেছেন? যাচাই করতে "আবার পরীক্ষা করুন" ক্লিক করে সেট আপ অব্যাহত রাখুন।</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, এবং <ph name="WEBSITE_3" />-এ আপনার ডেটা পড়ে</translation>
 <translation id="713122686776214250">&amp;পৃষ্ঠা জুড়ুন...</translation>
 <translation id="7134098520442464001">পাঠ্যকে আরো ছোট করুন</translation>
@@ -4117,11 +4145,9 @@
 <translation id="7175353351958621980">এখান থেকে লোড হয়েছে:</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
 <translation id="7180865173735832675">কাস্টমাইজ করুন</translation>
-<translation id="7181387261278441780">সাইট সাফ করে আবার সেট করুন</translation>
 <translation id="7186088072322679094">সরঞ্জাম দণ্ডের মধ্যে রাখুন</translation>
 <translation id="7191454237977785534">ফাইল এই রূপে সংরক্ষণ করুন</translation>
 <translation id="7196835305346730603">কাছাকাছি থাকা Chromeboxগুলির অনুসন্ধান করা হচ্ছে...</translation>
-<translation id="7198197644913728186">এই <ph name="DEVICE_TYPE" /> এ ব্লুটুথ বন্ধ করা আছে৷ লিখতে আপনার পাসওয়ার্ড টাইপ করুন, এবং ব্লুটুথ চালু করুন৷</translation>
 <translation id="7199158086730159431">সহায়তা পান</translation>
 <translation id="7201354769043018523">ডান বন্ধ.</translation>
 <translation id="7205869271332034173">SSID:</translation>
@@ -4160,6 +4186,7 @@
 <translation id="7254554697254365959">এই পৃষ্ঠাটির অনুবাদ করা যায়নি।</translation>
 <translation id="7254951428499890870">আপনি কি ডায়গনিস্টিক মোডে "<ph name="APP_NAME" />" লঞ্চ করার বিষয়ে নিশ্চিত?</translation>
 <translation id="7255220508626648026">কাস্ট করছে: <ph name="ROUTETITLE" /></translation>
+<translation id="7255733607359211052">সার্চ ইঞ্জিন এবং Google সহায়ক</translation>
 <translation id="7255935316994522020">প্রয়োগ করুন</translation>
 <translation id="7256405249507348194">অস্বীকৃত ত্রুটি: <ph name="DESC" /></translation>
 <translation id="7256710573727326513">একটি ট্যাবে খুলুন</translation>
@@ -4280,7 +4307,9 @@
 <translation id="7439964298085099379">আপনার উচ্চ বৈশাদৃশ্য মোড সক্ষম করা আছে৷ আপনি কি আমাদের উচ্চ বৈশাদৃশ্য এক্সটেনশান এবং একটি অন্ধকার থিম ইনস্টল করতে চান?</translation>
 <translation id="7441570539304949520">JavaScript ব্যতিক্রম</translation>
 <translation id="7441830548568730290">অন্যান্য ব্যবহারকারী</translation>
+<translation id="7442465037756169001">আপনার Hangouts Meet হার্ডওয়্যার সেট আপ করার জন্য প্রস্তুত।</translation>
 <translation id="744341768939279100">একটি নতুন প্রোফাইল তৈরি করুন</translation>
+<translation id="7444726222535375658">Hangouts Meet চালিয়ে যেতে</translation>
 <translation id="7444983668544353857">অক্ষম <ph name="NETWORKDEVICE" /></translation>
 <translation id="7445786591457833608">এই ভাষাটি অনুবাদ করা যাবে না</translation>
 <translation id="7447657194129453603">নেটওয়ার্ক স্থিতি:</translation>
@@ -4328,7 +4357,6 @@
 <translation id="7506541170099744506">আপনার <ph name="DEVICE_TYPE" /> এন্টারপ্রাইজ পরিচালনার জন্য সফলভাবে নথিভুক্ত হয়েছে।</translation>
 <translation id="7507930499305566459">স্থিতি প্রতিক্রিয়া শংসাপত্র</translation>
 <translation id="7508545000531937079">স্লাইডশো</translation>
-<translation id="7511955381719512146">আপনি যে ওয়াই-ফাই-টি ব্যবহার করছেন সেটির জন্য অপনাকে <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />-তে যেতে হতে পারে৷</translation>
 <translation id="7513029293694390567">সঞ্চিত শংসাপত্রগুলি ব্যবহার করে ওয়েবসাইটগুলিতে স্বয়ংক্রিয়ভাবে প্রবেশ করুন। এটি অক্ষম করা থাকলে, প্রতিবারই একটি ওয়েবসাইটে প্রবেশ করার সময় আপনাকে যাচাইকরণের জন্য বলা হবে।</translation>
 <translation id="7515670329462166359">সুরক্ষিত কন্টেন্ট প্লে করতে <ph name="URL" /> আপনার ডিভাইসকে স্বতন্ত্র ভাবে সনাক্ত করতে চায়।</translation>
 <translation id="7517569744831774757">সেটিংসকে তাদের মূল ডিফল্টে পুনঃস্থাপন করুন।</translation>
@@ -4377,6 +4405,7 @@
 <translation id="7573172247376861652">ব্যাটারি চার্জ</translation>
 <translation id="7576032389798113292">৬x৪</translation>
 <translation id="7576690715254076113">ক্রমসজ্জিত</translation>
+<translation id="7580139917303152582">নতুন অ্যাপ এবং কার্যকলাপগুলি দ্রুত চালু করতে লঞ্চার ব্যবহার করুন।</translation>
 <translation id="7580671184200851182">সব স্পিকারে একই অডিও বাজান (মনো অডিও)</translation>
 <translation id="7581462281756524039">একটি পরিষ্কারের সরঞ্জাম</translation>
 <translation id="7582582252461552277">এই নেটওয়ার্কটিকে অগ্রাধিকার দিন</translation>
@@ -4397,6 +4426,7 @@
 <translation id="7606992457248886637">কর্তৃপক্ষ</translation>
 <translation id="7607002721634913082">বিরাম দেওয়া</translation>
 <translation id="7607274158153386860">ট্যাবলেট সাইট অনুরোধ করুন</translation>
+<translation id="7611008212562900400">আপনার ডিভাইস, অ্যাপ, ওয়েব খুঁজুন...</translation>
 <translation id="7615851733760445951">&lt;কোনও কুকি নির্বাচিত নেই&gt;</translation>
 <translation id="7615910377284548269">আনস্যান্ডবক্সড প্লাগ ইনগুলি অবরুদ্ধ করা পরিচালনা করুন...</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" এ সংযুক্ত হচ্ছে</translation>
@@ -4485,11 +4515,11 @@
 <translation id="7766807826975222231">একবার ঘুরে দেখুন</translation>
 <translation id="7766838926148951335">অনুমতিগুলি স্বীকার করুন</translation>
 <translation id="7767646430896201896">বিকল্পগুলি:</translation>
-<translation id="7769353642898261262">ফোনটিকে কিভাবে নিরাপদ করবেন</translation>
 <translation id="7769672763586021400">মডেল আইডি</translation>
 <translation id="7771452384635174008">লেআউট</translation>
 <translation id="7772032839648071052">পাসফ্রেজ নিশ্চিত করুন</translation>
 <translation id="7772127298218883077"><ph name="PRODUCT_NAME" /> সম্বন্ধে</translation>
+<translation id="7772773261844472235">আপনার Chromebook স্টেটাস দেখে নিন</translation>
 <translation id="7773726648746946405">সেশন সঞ্চয়স্থান</translation>
 <translation id="7781335840981796660">সব ব্যবহারকারী অ্যাকাউন্ট ও স্থানীয় ডেটা সরানো হবে।</translation>
 <translation id="7782102568078991263">Google থেকে আর কোনো পরামর্শ নেই</translation>
@@ -4528,7 +4558,6 @@
 <translation id="7819857487979277519">PSK (WPA বা RSN)</translation>
 <translation id="782057141565633384">ভি&amp;ডিও ঠিকানা কপি করুন</translation>
 <translation id="782590969421016895">বর্তমান পৃষ্ঠাগুলি ব্যবহার করুন</translation>
-<translation id="782886543891417279">আপনি যে (<ph name="WIFI_NAME" />) Wi-Fiটি ব্যবহার করছেন সেটির জন্য অপনাকে এটির লগ ইন পৃষ্ঠাতে যেতে হতে পরে৷</translation>
 <translation id="7829298379596169484">অডিও ইনপুট অ্যাক্সেস করা হচ্ছে</translation>
 <translation id="7831368056091621108">আপনার সমস্ত ডিভাইসে এই এক্সটেনশান, আপনার ইতিহাস, এবং Chrome সেটিংস পেতে৷</translation>
 <translation id="7831493768366098287">Google মুদ্রণ</translation>
@@ -4544,6 +4573,7 @@
 <translation id="7846076177841592234">নির্বাচন বাতিল করুন</translation>
 <translation id="7846634333498149051">কীবোর্ড</translation>
 <translation id="7847212883280406910"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> এ স্যুইচ করার জন্য Ctrl + Alt + S টিপুন</translation>
+<translation id="7847644661628718598">দ্রুত যোগ করার জন্য বুটস্ট্র্যাপিং অ্যাপ ব্যবহার করুন</translation>
 <translation id="7849264908733290972">&amp;চিত্র নতুন ট্যাবে খুলুন</translation>
 <translation id="7850851215703745691">এই ড্রাইভ ফাইলগুলি এখনো শেয়ার করা হয়নি</translation>
 <translation id="7851457902707056880">শুধুমাত্র মালিক অ্যাকউন্টে প্রবেশ সীমাবদ্ধ করা হয়েছে৷ দয়া করে পুনরায় বুট করে মালিক অ্যাকউন্ট দিয়ে প্রবেশ করুন৷ মেশিনটি 30 সেকেন্ডের মধ্যে স্বয়ংক্রিয় ভাবে পুনরায় বুট হবে৷</translation>
@@ -4571,12 +4601,12 @@
 <translation id="7889966925761734854">খুঁজে নিন</translation>
 <translation id="7892100671754994880">পরবর্তী ব্যবহারকারী</translation>
 <translation id="7893008570150657497">আপনার কম্পিউটার থেকে ফটো, সঙ্গীত ও অন্য মিডিয়াতে অ্যাক্সেস করুন</translation>
+<translation id="7893153962594818789"><ph name="DEVICE_TYPE" /> এ ব্লুটুথ বন্ধ করা আছে৷ আপনার পাসওয়ার্ড লিখুন এবং ব্লুটুথ চালু করুন৷</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (ডিফল্ট)</translation>
 <translation id="78957024357676568">বাঁ</translation>
 <translation id="7897900149154324287">ভবিষ্যতে, আপনার সরানোযোগ্য ডিভাইসটিকে আনপ্লাগ করার আগে ফাইল অ্যাপ্লিকেশান থেকে এটি যে বের করে নেওয়া হয়েছে সেই বিষয়ে নিশ্চিত হয়ে নিন। অন্যথায় আপনি হয়তো ডেটা হারাতে পারেন।</translation>
 <translation id="7898627924844766532">সরঞ্জাম দণ্ডের মধ্যে রাখুন</translation>
 <translation id="7898725031477653577">সর্বদা অনুবাদ করুন</translation>
-<translation id="7899177175067029110">আপনার ফোন খুঁজে পাওয়া যাচ্ছে না। আপনার <ph name="DEVICE_TYPE" /> ইন্টারনেটের সঙ্গ যুক্ত ছিল কিনা নিশ্চিত করুন৷ &lt;a&gt;আরো জানুন&lt;/a&gt;</translation>
 <translation id="790040513076446191">গোপনীয়তা-সংক্রান্ত সেটিংস নিপূণভাবে ব্যবহার করুন</translation>
 <translation id="7900476766547206086">যেহেতু এক বা একাধিক ব্যবহারকারীর এই সেটিংটি চালু রয়েছে তাই প্রবেশ করুন থাকা ব্যবহারকারীদের জন্য পাসওয়ার্ডগুলির প্রয়োজন হয়৷</translation>
 <translation id="7903128267494448252">এই ব্যক্তিকে মুছে দিন</translation>
@@ -4598,13 +4628,13 @@
 <translation id="79312157130859720"><ph name="APP_NAME" /> আপনার স্ক্রীন এবং অডিও শেয়ার করছে।</translation>
 <translation id="7931318309563332511">অজানা</translation>
 <translation id="7938594894617528435">বর্তমানে অফলাইন</translation>
+<translation id="7939062555109487992">অগ্রণী বিকল্পসমূহ</translation>
 <translation id="7939412583708276221">যে কোনও অবস্থাতেই রাখুন</translation>
 <translation id="7939997691108949385">পরিচালক <ph name="MANAGEMENT_URL" /> এ এই তত্ত্বাবধানে থাকা ব্যবহারকারীর জন্য বিধিনিষেধ এবং সেটিংস কনফিগার করতে সক্ষম হবেন৷</translation>
 <translation id="7943837619101191061">অবস্থান যোগ করুন...</translation>
 <translation id="7945031593909029181">"<ph name="CHROME_EXTENSION_NAME" />" এদের সাথে সংযোগ স্থাপন করতে চায়</translation>
 <translation id="794676567536738329">অনুমতিগুলি নিশ্চিত করুন</translation>
 <translation id="7947962633355574091">ভি&amp;ডিও ঠিকানা কপি করুন</translation>
-<translation id="7949686702102054831">সাফ করে আবার সেট করুন</translation>
 <translation id="7950040156882184764">ইন্টারনেট মুদ্রণ প্রটোকল (HTTP)</translation>
 <translation id="7953739707111622108">এই ডিভাইসটি ফাইল সিস্টেমটি স্বীকৃত না হওয়ার কারণে খুলতে পারা যায়না৷</translation>
 <translation id="7953955868932471628">শর্টকাটগুলি পরিচালনা করুন</translation>
@@ -4635,7 +4665,6 @@
 <translation id="7986295104073916105">সংরক্ষিত পাসওয়ার্ড সেটিংস পড়ুন ও পরিবর্তন করুন</translation>
 <translation id="798749371774946697">মেশিনের নামটি খুব বেশি বড়</translation>
 <translation id="7988355189918024273">অ্যাক্সেসযোগ্যতার বৈশিষ্ট্যগুলি সক্ষম করুন</translation>
-<translation id="7988930390477596403">পরবর্তী সময়ে আপনি যখন এই <ph name="DEVICE_TYPE" /> আনলক করবেন তখন এটি সক্রিয় হবে৷ Smart Lock-এর সাথে, আপনার ফোন এই ডিভাইসটিকে আনলক করবে-কোনো পাসওয়ার্ড ছাড়াই৷ Smart Lock সক্ষম করতে ব্লুটুথ চালু করতে হবে৷</translation>
 <translation id="7994370417837006925">একাধিক সাইন-ইন</translation>
 <translation id="7994702968232966508">EAP পদ্ধতি</translation>
 <translation id="799547531016638432">ডেস্কটপ সরান</translation>
@@ -4677,6 +4706,7 @@
 <translation id="8032244173881942855">ট্যাব কাস্ট করতে অক্ষম৷</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{সবগুলি &amp;ছদ্মবেশী উইন্ডোতে খুলুন}=1{&amp;ছদ্মবেশী উইন্ডোতে খুলুন}one{সবগুলিকে (#টি) &amp;ছদ্মবেশী উইন্ডোতে খুলুন}other{সবগুলিকে (#টি) &amp;ছদ্মবেশী উইন্ডোতে খুলুন}}</translation>
 <translation id="8037117027592400564">সিন্থেসাইজড স্পিচ ব্যবহার করে কথিত সব পাঠ্য পড়ুন</translation>
+<translation id="8037357227543935929">জিজ্ঞাসা করুন (ডিফল্ট)</translation>
 <translation id="803771048473350947">ফাইল</translation>
 <translation id="8038111231936746805">(ডিফল্ট)</translation>
 <translation id="8041535018532787664">kiosk অ্যাপ্লিকেশান যোগ করুন:</translation>
@@ -4714,9 +4744,7 @@
 <translation id="8088137642766812908">সাবধান, এই বৈশিষ্ট্যটি খারাপ হতে পারে</translation>
 <translation id="8090234456044969073">আপনার সবচেয়ে ঘন ঘন পরিদর্শিত ওয়েবসাইটের একটি তালিকা পড়ুন</translation>
 <translation id="8093832608898425674">সুরক্ষিত কন্টেন্টের উন্নত প্লেব্যাকের জন্য যোগ্যতা নির্ধারণ করতে, <ph name="DOMAIN" /> Google এর মাধ্যমে আপনার ডিভাইসের পরিচয় যাচাই করিয়ে নিতে চায়। <ph name="LEARN_MORE" />।</translation>
-<translation id="8094917007353911263">আপনি যে নেটওয়ার্কটি ব্যবহার করছেন সেটির জন্য অপনাকে <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />-তে যেতে হতে পারে৷</translation>
 <translation id="80974698889265265">পিন মিলছে না</translation>
-<translation id="8098975406164436557">আপনার <ph name="DEVICE_TYPE" /> আনলক করার জন্য এই ফোনটি ব্যবহার করবেন?</translation>
 <translation id="810066391692572978">স্বতঃপূর্ণ ভবিষ্যত্‌বাণী দেখান</translation>
 <translation id="8101987792947961127">পরবর্তী রিবুটে পাওয়ারওয়াশ প্রয়োজন</translation>
 <translation id="8102535138653976669"><ph name="PRODUCT_NAME" /> নিরাপপদভাবে আপনার ডেটাকে আপনার Google অ্যাকাউন্টের সাথে সিঙ্ক করে৷ সবকিছুকে সিঙ্ক করুন অথবা সিঙ্ক করা ডেটার প্রকার এবং এনক্রিপশন সেটিংস কাস্টমাইজ করুন৷</translation>
@@ -4746,7 +4774,6 @@
 <translation id="8141725884565838206">আপনার পাসওয়ার্ডগুলি পরিচালনা করুন</translation>
 <translation id="8142699993796781067">ব্যক্তিগত নেটওয়ার্ক</translation>
 <translation id="8142732521333266922">ঠিক আছে, সবকিছু সমন্বয় করুন</translation>
-<translation id="8144022414479088182">আপনি কি এই ডিভাইসটিকে একটি Chromebox মিটিং ডিভাইস হিসেবে সেট আপ করার বিষয়ে নিশ্চিত?</translation>
 <translation id="8146177459103116374">আপনি যদি এই ডিভাইসে ইতিমধ্যেই নিবন্ধন করে থাকনে, তাহলে আপনি <ph name="LINK2_START" />একজন বিদ্যমান ব্যবহারকারী হিসাবে প্রবেশ করতে পারেন<ph name="LINK2_END" />৷</translation>
 <translation id="8146793085009540321">প্রবেশ করুন ব্যর্থ হয়েছে। দয়া করে আপনার প্রশাসকের সাথে যোগাযোগ করুন অথবা আবার চেষ্টা করুন।</translation>
 <translation id="8148913456785123871">লঞ্চারে Google Now কার্ডগুলি দেখান</translation>
@@ -4786,7 +4813,6 @@
 <translation id="8195739004487400241">আপনার হোমপেজ <ph name="URL" /> এ পরিবর্তন করা হয়েছে। যেসব অ্যাপ্লিকেশান আপনার হোমপেজের পরিবর্তন ঘটায় সেগুলিকে অক্ষম করতে ‘পুনরুদ্ধার করুন’ এ ক্লিক করুন।</translation>
 <translation id="8200772114523450471">পুনঃসূচনা</translation>
 <translation id="8202160505685531999">অাপনার <ph name="DEVICE_TYPE" /> প্রোফাইল আপডেট করার জন্য দয়া করে পুনরায় আপনার পাসওয়ার্ড লিখুন।</translation>
-<translation id="8204484782770036444">• <ph name="PERMISSION" /></translation>
 <translation id="8206354486702514201">এই সেটিংটি আপনার প্রশাসক দ্বারা কার্যকরী করা হয়েছে৷</translation>
 <translation id="8206745257863499010">ব্লুজস</translation>
 <translation id="8209677645716428427">একজন তত্ত্বাবধানে থাকা ব্যবহারকারী আপনার নির্দেশিকার সাহায্যে ওয়েব এক্সপ্লোর করতে পারে৷ Chrome এ একজন তত্ত্বাবধানে থাকা ব্যবহারকারীর পরিচালক হিসাবে, আপনি এসব করতে পারেন:</translation>
@@ -4801,6 +4827,7 @@
 <translation id="8226742006292257240">আপনার কম্পিউটারে অ্যাসাইন করা হয়েছে এমন এলোমেলোভাবে জেনারেট হওয়া TPM পাসওয়ার্ডটি নিচে:</translation>
 <translation id="8227119283605456246">ফাইল সংযুক্ত করুন</translation>
 <translation id="8234795456569844941">এই সমস্যাটির সমাধান করতে আমাদের ইঞ্জিনিয়ারদের সাহায্য করুন। আমাদের জানান, ঠিক কি ঘটার পরে এই প্রোফাইল ত্রুটির মেসেজটি দেখেছিলেন:</translation>
+<translation id="8234989666557591529">আপনার <ph name="DEVICE_TYPE" /> আনলক করার জন্য একটি ফোন নম্বর বেছে নিন।</translation>
 <translation id="8238649969398088015">সহায়তা  টিপ</translation>
 <translation id="8240697550402899963">ক্লাসিক থিম ব্যবহার করুন</translation>
 <translation id="8241040075392580210">ছায়াদায়ক</translation>
@@ -4843,7 +4870,6 @@
 <translation id="8274924778568117936">আপডেটটি সম্পূর্ণ না হওয়া পর্যন্ত <ph name="DEVICE_TYPE" />টি বন্ধ করবেন না। ইনস্টলেশন হয়ে গেলে <ph name="DEVICE_TYPE" />টি নিজে থেকেই রিস্টার্ট হবে।</translation>
 <translation id="8275038454117074363">আমদানি</translation>
 <translation id="8276560076771292512">ক্যাশে খালি করুন ও কষ্টসাধ্য পুনঃলোড</translation>
-<translation id="8279986815001244679">Smart Lock থাকলে আপনাকে প্রথমবার সাইন-ইন করার জন্য পাসওয়ার্ড লিখতে হবে। তারপর আপনার ফোন থেকেই আপনার <ph name="DEVICE_TYPE" /> ডিভাইস আনলক করতে পারবেন।</translation>
 <translation id="8281886186245836920">ছেড়ে যান</translation>
 <translation id="8282947398454257691">আপনার অনন্য ডিভাইস সনাক্তকারীকে জানুন</translation>
 <translation id="8283475148136688298">"<ph name="DEVICE_NAME" />" এর সাথে সংযুক্ত হওয়ার সময়ে প্রমাণীকরণ কোড প্রত্যাখ্যাত হয়েছে৷</translation>
@@ -4852,9 +4878,7 @@
 <translation id="8291967909914612644">হোম পরিষেবা প্রদানকারী দেশ</translation>
 <translation id="8294431847097064396">উৎস</translation>
 <translation id="8297006494302853456">দুর্বল</translation>
-<translation id="8298115750975731693">আপনি যে (<ph name="WIFI_NAME" />) Wi-Fiটি ব্যবহার করছেন সেটির জন্য অপনাকে <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> তে যেতে হতে পারে৷</translation>
 <translation id="8299319456683969623">আপনি বর্তমানে অফলাইনে আছেন৷</translation>
-<translation id="8300607741108698921">১-মিনিটের সেটআপ</translation>
 <translation id="8300849813060516376">OTASP ব্যর্থ</translation>
 <translation id="8307376264102990850">চার্জ হচ্ছে
 সম্পূর্ণ হওয়া পর্যন্ত সময় গণনা করা হচ্ছে</translation>
@@ -4876,6 +4900,7 @@
 <translation id="8338952601723052325">বিকাশকারী ওয়েবসাইট</translation>
 <translation id="8339012082103782726">সাইটগুলিকে আপনার মাইক্রোফোন অ্যাক্সেস করতে দেবেন না</translation>
 <translation id="8339059274628563283"><ph name="SITE" /> স্থানীয়ভাবে ডেটা সংরক্ষণ করেছে</translation>
+<translation id="834205140959175756">স্টেটাস ট্রে থেকে সংযোগ, আপডেট এবং সেটিংস পরিচালনা করুন।</translation>
 <translation id="8342318071240498787">একই নাম সহ ফাইল অথবা একটি নির্দেশিকা ইতিমধ্যেই বিদ্যমান আছে৷</translation>
 <translation id="8351419472474436977">এই এক্সটেনশান আপনার প্রক্সি সেটিংস নিয়ন্ত্রণ করছে, যার মানে হল আপনি অনলাইনে যাই করুন না কেন এটি তার পরিবর্তন, নষ্ট বা লুকিয়ে দেখতে পারবে। আপনি যদি বুঝতে না পারেন কেন এই পরিবর্তনটি হয়েছে তাহলে আপনি সম্ভবত এটি চাইছেন না।</translation>
 <translation id="8352772353338965963">একাধিক প্রবেশ করুন এ একটি অ্যাকাউন্ট যোগ করুন৷ সমস্ত প্রবেশ করুন থাকা অ্যাকাউন্টগুলি কোনো পাসওয়ার্ড ছাড়াই অ্যাক্সেস করা যাবে, তাই এই বৈশিষ্ট্যটি শুধুমাত্র বিশ্বস্ত অ্যাকাউন্টগুলির সাথে ব্যবহার করা উচিৎ৷</translation>
@@ -4886,6 +4911,7 @@
 <translation id="8358685469073206162">পৃষ্ঠাগুলি পুনরুদ্ধার করবেন?</translation>
 <translation id="8363095875018065315">স্থায়ী</translation>
 <translation id="8366396658833131068">আপনার নেটওয়ার্ক সংযোগের পুনঃস্থাপন করা হয়েছে৷ আপনার কিয়স্ক অ্যাপ্লিকেশান লঞ্চ করার জন্য দয়া করে একটি ভিন্ন নেটওয়ার্ক নির্বাচন করুন অথবা নীচের 'অবিরত থাকুন' বোতাম টিপুন৷</translation>
+<translation id="8366947248864804596">আপনার ফোন কাছাকাছি আনলক করা থাকলে আনলক বেছে নিন। অথবা আপনার পাসওয়ার্ড বা পিন লিখুন।</translation>
 <translation id="8368859634510605990">&amp;সকল বুকমার্ক খুলুন</translation>
 <translation id="8372369524088641025">খারাপ WEP কী</translation>
 <translation id="8373360586245335572">বিজ্ঞপ্তিগুলি দেখানোর জন্য সমস্ত সাইটকে অনুমতি দিন</translation>
@@ -4920,6 +4946,7 @@
 <translation id="8425755597197517046">আট&amp;কান এবং অনুসন্ধান করুন</translation>
 <translation id="8426519927982004547">HTTPS/SSL</translation>
 <translation id="8426713856918551002">সক্ষম করা হচ্ছে</translation>
+<translation id="8427292751741042100">অন্য কোনও হোস্টে এম্বেড করা হয়েছে</translation>
 <translation id="8427933533533814946">এর চিত্র</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8431909052837336408">সিম পিন পরিবর্তন করুন</translation>
@@ -4969,13 +4996,14 @@
 <translation id="8498214519255567734">এটি ব্যবহার করলে আপনি কম আলোতেও স্বচ্ছন্দে স্ক্রিনের দিকে তাকাতে বা পড়তে পারবেন</translation>
 <translation id="8498716162437226120">ব্লুটুথ ডিভাইস যোগ করুন</translation>
 <translation id="8503813439785031346">ব্যবহারকারীর নাম</translation>
-<translation id="8506101089619487946">Chromebook এর জন্য Smart Lock বন্ধ করবেন?</translation>
+<translation id="8508332354695141900">লঞ্চার, প্রস্তাবিত অ্যাপ</translation>
 <translation id="8509646642152301857">বানান পরীক্ষক অভিধান ডাউনলোড ব্যর্থ হয়েছে৷</translation>
 <translation id="8512476990829870887">প্রক্রিয়া সমাপ্ত করুন</translation>
 <translation id="851263357009351303">চিত্রগুলি দেখানোর জন্য সর্বদা <ph name="HOST" />-কে অনুমতি দিন </translation>
 <translation id="8513191386157529469">"<ph name="CLIENT_NAME" />" এই ট্যাবটিকে ডিবাগ করছে৷</translation>
 <translation id="8513974249124254369">ChromeVox (কথ্য প্রতিক্রিয়া) সক্ষম রয়েছে৷ অক্ষম করার জন্য Ctrl+Alt+Z টিপুন৷</translation>
 <translation id="8520687380519886411">ঐতিহ্যবাহি স্ক্রলিং</translation>
+<translation id="8521475323816527629">আপনার অ্যাপগুলি দ্রুত চালু করুন</translation>
 <translation id="852269967951527627">বিজ্ঞপ্তিগুলি দেখানোর জন্য কোনো সাইটকে মঞ্জুরি দেবেন না</translation>
 <translation id="8523493869875972733">পরিবর্তনগুলি সংরক্ষণ করুন</translation>
 <translation id="8523849605371521713">নীতির মাধ্যমে যোগ করা হয়েছে</translation>
@@ -4983,6 +5011,7 @@
 <translation id="8525306231823319788">পূর্ণ স্ক্রীণ</translation>
 <translation id="8528074251912154910">ভাষা যোগ করুন</translation>
 <translation id="8528962588711550376">প্রবেশ করুন হচ্ছে৷</translation>
+<translation id="8529026713753283969">এই ফোনে একটি বিজ্ঞপ্তি আসবে তাই ফোনটি কাছাকাছি রাখুন।</translation>
 <translation id="8529925957403338845">ঝটপট টিথারিং সংযোগ কাজ করছে না</translation>
 <translation id="8534656636775144800">ওহো! ডোমেনটি যোগ করার সময় কোনও সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।</translation>
 <translation id="8535005006684281994">Netscape শংসাপত্র পুনর্নবীকরণ URL</translation>
@@ -5106,7 +5135,6 @@
 <translation id="8708671767545720562">&amp;আরো তথ্য</translation>
 <translation id="8710187907779883426">অল্প সময় (১সে.)</translation>
 <translation id="8711402221661888347">আচার</translation>
-<translation id="8711453844311572806">আপনার ফোন আনলক এবং আশেপাশে থাকাকালীন, লিখতে শুধু ক্লিক করুন৷ অন্যথায়, আপনি একটি লক প্রতিকৃতি দেখতে পাবেন এবং আপনাকে পাসওয়ার্ড টাইপ করতে হবে৷</translation>
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1" />সিস্টেমের তথ্য<ph name="END_LINK1" /> পাঠান</translation>
 <translation id="871476437400413057">Google এর সংরক্ষিত পাসওয়ার্ডগুলি</translation>
 <translation id="8714838604780058252">পটভূমির গ্রাফিক্স</translation>
@@ -5144,11 +5172,14 @@
 <translation id="8767621466733104912">সকল ব্যবহারকারীর জন্য স্বয়ংক্রিয়ভাবে Chrome আপডেট করুন</translation>
 <translation id="8770406935328356739">এক্সটেনশান রুট ডিরেক্টরি</translation>
 <translation id="8770507190024617908">ব্যক্তিগণকে পরিচালনা করুন</translation>
+<translation id="8773975913699077944">একটি মোবাইল নেটওয়ার্ক বেছে নিন</translation>
 <translation id="8774934320277480003">শীর্ষ মার্জিন</translation>
+<translation id="8775144690796719618">অবৈধ URL</translation>
 <translation id="8775404590947523323">আপনার সম্পাদনাগুলি স্বয়ংক্রিয়ভাবে সংরক্ষিত হয়৷ আসল চিত্রের একটি কপি রাখতে <ph name="BREAKS" /> করুন , "মূল লেখা পুনর্লিখন করুন" চিহ্ন মুছে দিন</translation>
 <translation id="8777218413579204310">সামগ্রী সনাক্ত করুন</translation>
 <translation id="8777628254805677039">রুট পাসওয়ার্ড</translation>
 <translation id="878069093594050299">এই শংসাপত্রটি নিম্নলিখিত ব্যবহারগুলির জন্য যাচাইকৃত:</translation>
+<translation id="8781980678064919987">যখন ঢাকনাটি বন্ধ থাকবে তখন বন্ধ করুন</translation>
 <translation id="8782565991310229362">Kiosk অ্যাপ্লিকেশান লঞ্চ বাতিল হয়েছে৷</translation>
 <translation id="8783093612333542422">আপনার সাথে &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; একটি মুদ্রক শেয়ার করতে চান &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;৷</translation>
 <translation id="8784626084144195648">হাজার প্রতি গড়</translation>
@@ -5182,6 +5213,7 @@
 <translation id="8820961991571528294">পরীক্ষা করছে</translation>
 <translation id="8821045908425223359">IP ঠিকানা স্বয়ংক্রিয়ভাবে কনফিগার করুন</translation>
 <translation id="8822012246577321911">তৃতীয় পক্ষ</translation>
+<translation id="882204272221080310">নিরাপত্তা আরও সুরক্ষার জন্য ফার্মওয়্যার আপডেট করুন।</translation>
 <translation id="8823514049557262177">লিঙ্ক পাঠ্য কপি করুন</translation>
 <translation id="8824701697284169214">&amp;পৃষ্ঠা যোগ করুন...</translation>
 <translation id="8828933418460119530">DNS নাম</translation>
@@ -5196,7 +5228,6 @@
 <translation id="8846141544112579928">কীবোর্ডের জন্য অনুসন্ধান করা হচ্ছে...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8856844195561710094">ব্লুটুথ ডিভাইস আবিষ্কার বন্ধ করতে ব্যর্থ৷</translation>
-<translation id="8856939286556828596">সাইটের বিশদ বিবরণ</translation>
 <translation id="8858798938034909167">যেকোনো ডিভাইস থেকে <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> এ গিয়ে আপনার পাসওয়ার্ডগুলি অ্যাক্সেস করুন</translation>
 <translation id="8859057652521303089">আপনার ভাষা নির্বাচন করুন:</translation>
 <translation id="8859174528519900719">সাবফ্রেম: <ph name="SUBFRAME_SITE" /></translation>
@@ -5239,6 +5270,7 @@
 <translation id="8915370057835397490">লোড করার প্রস্তাব</translation>
 <translation id="8916476537757519021">ছদ্মবেশী সাবফ্রেম: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8919034266226953085">PWG রাস্টার রূপান্তর</translation>
+<translation id="8921624153894383499">Google সহায়ক এই ভাষায় কথা বলে না।</translation>
 <translation id="89217462949994770">আপনি অনেকবার ভুল পিন লিখেছেন৷ একটি নতুন 8-ডিজিটের পিন আনলকিং কী সংগ্রহ করতে দয়া করে <ph name="CARRIER_ID" />-এ যোগাযোগ করুন৷</translation>
 <translation id="8922013791253848639">এই সাইটে সবসময় বিজ্ঞাপন দেখানোর অনুমতি দিন</translation>
 <translation id="8925458182817574960">&amp;সেটিংস</translation>
@@ -5263,7 +5295,6 @@
 <translation id="895347679606913382">শুরু হচ্ছে...</translation>
 <translation id="8954952943849489823">স্থানান্তরণ ব্যর্থ হয়েছে, অপ্রত্যাশিত ত্রুটি: $1</translation>
 <translation id="895586998699996576">$ 1 চিত্র</translation>
-<translation id="8957210676456822347">ক্যাপটিভ পোর্টাল অনুমোদন</translation>
 <translation id="8957423540740801332">ডান</translation>
 <translation id="8958084571232797708">একটি স্বয়ংক্রিয় কনফিগার করা URL ব্যবহার করুন</translation>
 <translation id="895944840846194039">JavaScript মেমোরি</translation>
@@ -5287,11 +5318,11 @@
 <translation id="8986362086234534611">ভুলে যান</translation>
 <translation id="8986494364107987395">ব্যবহারের পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদনগুলি স্বয়ংক্রিয়ভাবে Google-এ পাঠান</translation>
 <translation id="8987927404178983737">মাস</translation>
+<translation id="8989308628569556420">বর্তমানে আপনার অ্যাকাউন্টে Google সহায়ক ব্যবহার করা যায় না।</translation>
 <translation id="899403249577094719">Netscape শংসাপত্র ভিত্তি URL</translation>
 <translation id="8995603266996330174">পরিচালনা করেছেন <ph name="DOMAIN" /> </translation>
 <translation id="8996526648899750015">অ্যাকাউন্ট যোগ করুন...</translation>
 <translation id="8997135628821231"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (<ph name="DEVICE" />)</translation>
-<translation id="9000649589621199759">আপনার ফোন খুঁজে পাওয়া যায়নি৷ এটি নিশ্চিত করুন য়ে আপনি একটি সামঞ্জস্যপূর্ণ Android ফোন ব্যবহার করছেন যেটা চালু এবং হাতের নাগালের মধ্যেই রয়েছে৷ &lt;a&gt;আরো জানুন&lt;/a&gt;</translation>
 <translation id="9003647077635673607">সমস্ত ওয়েবসাইটে অনুমতি দিন</translation>
 <translation id="9003677638446136377">আবার পরীক্ষা করে দেখুন</translation>
 <translation id="9003704114456258138">ফ্রিকোয়েন্সি</translation>
@@ -5325,6 +5356,7 @@
 <translation id="9035012421917565900">আইটেমগুলিকে '<ph name="DESTINATION_NAME" />' এ ফিরিয়ে নেওয়া যাবে না, তাই আপনি এই কাজটি আর পূর্বাবস্থায় ফেরাতে পারবেন না।</translation>
 <translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">প্রকৃত রূপ দেখান</translation>
+<translation id="9038430547971207796">পরের বার, আপনার ফোন থেকে নিজের <ph name="DEVICE_TYPE" /> আনলক করতে পারবেন। সেটিংসে গিয়ে Smart Lock বন্ধ করুন।</translation>
 <translation id="9038649477754266430">পৃষ্ঠা আরো দ্রুত লোড করার জন্য কোনো পূর্বাভাষ পরিষেবা ব্যবহার করুন</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9039890312082871605">ট্যাবগুলি নিঃশব্দ করুন</translation>
@@ -5400,6 +5432,7 @@
 <translation id="9138978632494473300">নিম্নল্লিখিত স্থানগুলিতে শর্টকাটগুলি যোগ করুন:</translation>
 <translation id="9147392381910171771">&amp;বিকল্পসমূহ</translation>
 <translation id="9148058034647219655">প্রস্থান করুন</translation>
+<translation id="9148116311817999634">নিরাপত্তার জন্য একটি স্ক্রিন লক সেট করুন</translation>
 <translation id="9148126808321036104">আবার প্রবেশ করুন</translation>
 <translation id="9149866541089851383">সম্পাদনা...</translation>
 <translation id="9150045010208374699">আপনার ক্যামেরা ব্যবহার করুন</translation>
@@ -5423,7 +5456,6 @@
 <translation id="9186729806195986201">এছাড়াও <ph name="IDS_SHORT_PRODUCT_NAME" /> এর পূর্বে ইনস্টল করা সংস্করণ ফিরিয়ে আনুন৷</translation>
 <translation id="9187210477874601037">ডোমেনে মেশিন যোগ করতে ব্যর্থ হয়েছে। সার্ভারে আপনার অ্যাকাউন্টের জন্য অপর্যাপ্ত সুবিধার কারণে এমনটি হতে পারে।</translation>
 <translation id="9188441292293901223">এই <ph name="DEVICE_TYPE" /> আনলক করতে দয়া করে আপনার ফোনকে একটি আরো নতুন সংস্করণের Android এ আপডেট করুন৷</translation>
-<translation id="9189690067274055051">আপনার ফোন আনলক করুন এবং প্রবেশ করতে আপনার <ph name="DEVICE_TYPE" />-এর কাছাকাছি আনুন।</translation>
 <translation id="9190063653747922532">L2TP/IPসেকে + পূর্বে-শেয়ার করা কী</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> এ অনুসন্ধান করুন</translation>
 <translation id="9201220332032049474">স্ক্রিন লক এর বিকল্পগুলি</translation>
@@ -5470,6 +5502,7 @@
 <translation id="973473557718930265">প্রস্থান করুন</translation>
 <translation id="974555521953189084">সিঙ্ক শুরু করার জন্য আপনার পাসফ্রেজ লিখুন</translation>
 <translation id="981121421437150478">অফলাইন</translation>
+<translation id="983511809958454316">এই বৈশিষ্ট্য VR এ সমর্থিত নয়</translation>
 <translation id="98515147261107953">ল্যান্ডস্কেপ</translation>
 <translation id="988978206646512040">পাসফ্রেজ ফাঁকা রাখা চলবে না</translation>
 <translation id="992032470292211616">এক্সটেনশান, অ্যাপ্লিকেশান এবং থিমগুলি আপনার  ডিভাইসের ক্ষতি করতে পারে৷ আপনি কি অবিরত রাখতে চাওয়ার ব্যাপারে নিশ্চিত?</translation>

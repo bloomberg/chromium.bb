@@ -316,7 +316,6 @@
 <translation id="2299220924812062390">Adja meg az engedélyezett bővítmények listáját</translation>
 <translation id="2309390639296060546">Helymeghatározás alapértelmezett beállítása</translation>
 <translation id="2312134445771258233">Lehetővé teszi az induláskor betöltött lapok beállítását. Az "Indításkor betöltendő URL-ek" listájának tartalmát figyelmen kívül hagyja, hacsak a "Teendő indításkor" részben nem az "URL-ek listájának megnyitása" lehetőséget választja.</translation>
-<translation id="23323722127921515">Megjeleníti a Google Cast-eszköztár ikonját</translation>
 <translation id="2337466621458842053">Lehetővé teszi az olyan webhelyeket meghatározó URL-minták listájának összeállítását, amelyek esetében engedélyezett a képek megjelenítése. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultImagesSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="2372547058085956601">A nyilvános munkamenet automatikus bejelentkezési késleltetése.
 
@@ -401,7 +400,6 @@
 
       Ha a házirend értéke Hamis, akkor a hálózati konfigurációval kapcsolatos értesítés helyett hibaüzenet jelenik meg.</translation>
 <translation id="2498238926436517902">A polc automatikus elrejtése minden esetben</translation>
-<translation id="2503514368596117142">Beállítja a Google Castra vonatkozó házirendeket. Ez a funkció lehetővé teszi a felhasználók számára, hogy a böngészőből továbbítsák a lapok, a webhelyek vagy az asztal tartalmát a távoli kijelzők és hangrendszerek felé.</translation>
 <translation id="2514328368635166290">Megadja az alapértelmezett keresési szolgáltató kedvenc ikonjának URL-jét. Nem kötelező házirend. Ha nincs beállítva, akkor a keresési szolgáltatónak nem jelenik meg ikonja. Ez a házirend csak akkor teljesül, ha a "DefaultSearchProviderEnabled" házirend engedélyezve van.</translation>
 <translation id="2516600974234263142">Engedélyezi a nyomtatást a(z) <ph name="PRODUCT_NAME" /> programban, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
 
@@ -414,9 +412,6 @@
 <translation id="2529880111512635313">Állítsa be a kényszerített telepítésű alkalmazások és bővítmények listáját</translation>
 <translation id="253135976343875019">Tétlenségi figyelmeztetés késleltetése hálózati áramról való működés során</translation>
 <translation id="2552966063069741410">Időzóna</translation>
-<translation id="2558917182010914102">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a rendszer engedélyezi a Google Cast használatát, amelyet a felhasználók az alkalmazás menüjéből, az adott oldal helyi menüiből, a Cast-kompatibilis webhelyeken található médiavezérlőkből, vagy ha megjelenik, a Cast-eszköztár ikonjából indíthatnak majd el.
-
-          Ha a házirend értéke hamis, akkor a rendszer letiltja a Google Cast használatát.</translation>
 <translation id="2562339630163277285">Megadja az azonnali eredményekhez használt keresőmotor URL-jét. Az URL-nek tartalmaznia kell a <ph name="SEARCH_TERM_MARKER" /> karakterláncot, amelynek helyébe a lekérdezés időpontjában a felhasználó által addig megadott szöveg lép.
 
           Nem kötelező házirend. Ha nincs beállítva, nem jelennek meg azonnali keresési eredmények.
@@ -539,6 +534,7 @@
 <translation id="3001534538097271560">Ha ennek a házirendnek az értéke hamis, akkor a felhasználók nem dönthetik el, hogy elküldjenek-e bizonyos rendszer-információkat és oldaltartalmakat a Google szervereinek. Ha a beállítás értéke igaz, vagy ha nincs megadva, akkor a felhasználók elküldhetnek bizonyos rendszer-információkat és oldaltartalmakat a Biztonságos Böngészés szolgáltatásnak, hogy segítsék a veszélyes alkalmazások és webhelyek észlelését.
 
       Ha további információt szeretne kapni a Biztonságos Böngészésről, látogasson el a https://developers.google.com/safe-browsing oldalra.</translation>
+<translation id="3016255526521614822">A(z) <ph name="PRODUCT_OS_NAME" /> lezárási képernyőjén engedélyezett jegyzetkészítő alkalmazások engedélyezőlistára tétele</translation>
 <translation id="3021409116652377124">Bővítménykereső letiltása</translation>
 <translation id="3030000825273123558">Mutatók jelentéseinek engedélyezése</translation>
 <translation id="3034580675120919256">Meghatározhatja, hogy a webhelyek futtathatnak-e JavaScriptet. A JavaScript futtatását engedélyezheti vagy letilthatja minden webhely számára. Ha a házirend beállítatlanul marad, a rendszer az "AllowJavaScript" értéket használja, amelyet a felhasználó módosíthat.</translation>
@@ -864,6 +860,16 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       "1412.24.34": frissítés csak erre a konkrét verzióra
 
       Figyelem: Nem ajánlott verziókorlátozásokat beállítani, ez ugyanis megakadályozhatja, hogy a felhasználók megkapják a szoftverfrissítéseket és a kritikus biztonsági javításokat. A konkrét verzióelőtagra korlátozás kockázatot jelenthet a felhasználók számára.</translation>
+<translation id="4298509794364745131">Olyan alkalmazásokból álló listát ad meg, amelyek jegyzetkészítő alkalmazásként engedélyezhetők a(z) <ph name="PRODUCT_OS_NAME" /> lezárási képernyőjén.
+
+      Ha az előnyben részesített jegyzetkészítő alkalmazás engedélyezve van a lezárási képernyőn, akkor ezen a képernyőn szerepel majd az előnyben részesített jegyzetkészítő alkalmazás indítására szolgáló kezelőfelület-elem.
+      Indítás után az alkalmazás a lezárási képernyő tetején alkalmazásablakot, míg a lezárási képernyő felületén adatelemeket (jegyzeteket) tud létrehozni. Az alkalmazás létrehozott jegyzeteket importál az elsődleges felhasználói munkamenetbe, ha a munkamenet zárolása fel van oldva. Jelenleg csak a Chrome jegyzetkészítő alkalmazásai támogatottak a lezárási képernyőn.
+
+      Ha a házirend be van állítva, a felhasználó csak akkor engedélyezhet alkalmazást a lezárási képernyőn, ha a házirend listaértékei közt szerepel az alkalmazás bővítményazonosítója.
+      A házirend üres listára való beállítása ennek következtében teljesen letiltja a lezárási képernyőn való jegyzetkészítést.
+      Felhívjuk figyelmét, hogy az alkalmazásazonosítót tartalmazó házirend nem jelenti feltétlenül azt, hogy a felhasználó jegyzetkészítő alkalmazásként tudja majd engedélyezni az alkalmazást a lezárási képernyőn. Chrome 61-en például a platform tovább korlátozza a rendelkezésre álló alkalmazások készletét.
+
+      Ha nem állítja be ezt a házirendet, akkor a házirend által előírt korlátozások nem vonatkoznak majd a felhasználó által a lezárási képernyőn engedélyezhető alkalmazások készletére.</translation>
 <translation id="4309640770189628899">Engedélyezve vannak-e a DHE rejtjelezési csomagok a TLS protokollban</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 vagy újabb</translation>
 <translation id="4322842393287974810">Annak engedélyezése, hogy a <ph name="PRODUCT_OS_NAME" /> verziójának ellenőrzését a késés nélkül, automatikusan indított kioszkalkalmazás végezze.</translation>
@@ -1249,7 +1255,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
      Ha engedélyezi a beállítást, akkor a Google Keresésben a Biztonságos Keresés mindig aktív.
 
       Ha letiltja ezt a beállítást, vagy nem állít be hozzá értéket, akkor a Google Keresésben a Biztonságos Keresést nem kényszeríti ki a rendszer.</translation>
-<translation id="5940306398763671235">Engedélyezi a Google Cast használatát</translation>
 <translation id="5946082169633555022">Béta csatorna</translation>
 <translation id="5950205771952201658">Tekintettel arra, hogy a hibatűrő, online visszavonási ellenőrzések nem nyújtanak biztonsági előnyöket, a <ph name="PRODUCT_NAME" /> 19-es és újabb verzióiban ezek alapértelmezés szerint ki vannak kapcsolva. A házirend igaz értékre állításával visszaállítható a korábbi viselkedés, és a böngésző online OCSP-/CRL-ellenőrzéseket végez.
 
@@ -1572,13 +1577,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Az alkalmazás csak akkor veszi figyelembe ezt a házirendet, ha a „DefaultSearchProviderEnabled” házirend is engedélyezve van.</translation>
 <translation id="7302043767260300182">Képernyőzár késleltetése hálózati áramról való működés során</translation>
-<translation id="7309839952828354215">Meghatározza, hogy hogyan viselkedjenek az olyan eszközök, amelyek ecryptfs titkosítással rendelkeznek, és amelyeket át kell ültetni ext4 titkosításra.
-
-      Ha a házirend beállítása „DisallowArc”, akkor az Android-alkalmazások az eszköz összes felhasználója számára le lesznek tiltva (beleértve azokat is, akik már rendelkeznek ext4 titkosítással), és a rendszer nem ajánlja fel a felhasználóknak az ecryptfs titkosításról az ext4 titkosításra történő migrációt.
-
-      Ha a házirend beállítása „AllowMigration”, a rendszer felajánlja az ecryptfs kezdőkönyvtárakkal rendelkező felhasználóknak, hogy ezeket szükség esetén ext4 titkosításra migrálja (jelenleg akkor, amikor az Android N hozzáférhetővé válik az eszközön.
-
-      Ha nincs beállítva a házirend, az eszköz úgy viselkedik, mintha a „DisallowArc” lenne kiválasztva.</translation>
 <translation id="7311458740754205918">Ha igazra van állítva, vagy ha nincs beállítva, az Új lap oldalon megjelenhetnek javaslatok a felhasználó böngészési előzményei, érdeklődési körei vagy tartózkodási helye alapján.
 
       Ha a beállítás hamis, akkor nem jelennek meg automatikusan generált tartalomjavaslatok az Új lap oldalon.</translation>
@@ -1655,7 +1653,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7625444193696794922">Azt a kiadási csatornát határozza meg, amelyhez az eszközt hozzá kell kötni.</translation>
 <translation id="7632724434767231364">GSSAPI könyvtár neve</translation>
 <translation id="7635471475589566552">Beállítja az alkalmazás nyelv- és országkódját a következőben: <ph name="PRODUCT_NAME" />, és megakadályozza, hogy a felhasználók megváltoztassák a kódot. Ha engedélyezi ezt a beállítást, a(z) <ph name="PRODUCT_NAME" /> a megadott nyelv- és országkódot fogja használni. Ha a megadott nyelv- és országkód nem támogatott, az "en-US" lehetőséget használja helyette. Ha ez a beállítás ki van kapcsolva, vagy nincs beállítva, a(z) <ph name="PRODUCT_NAME" /> vagy a felhasználó által meghatározott nyelv- és országkódot használja (ha konfigurálva van), vagy a tartalék "en-US" lehetőséget.</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Meghatározza, hogy engedélyezett legyen-e az adatbarangolás az eszköz esetében. Ha a beállítás igaz, akkor az adatbarangolás engedélyezett. Ha nincs beállítva, vagy a beállítás hamis, akkor az adatbarangolás nem érhető el.</translation>
 <translation id="7683777542468165012">Szabályok dinamikus frissítése</translation>
 <translation id="7694807474048279351">Automatikus újraindítás ütemezése egy <ph name="PRODUCT_OS_NAME" />-frissítés alkalmazása után.
@@ -1770,6 +1767,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ez a házirend már nem támogatott. Távoli ügyfélhez való csatlakozáskor lehetővé teszi a STUN és továbbítószerverek használatát. Ha ez a beállítás engedélyezett, akkor ez a gép láthatja a távoli szervereket, és csatlakozni is tud hozzájuk, még akkor is, ha tűzfal választja el őket. Amennyiben ez a lehetőség ki van kapcsolva, és a tűzfal szűri a kimenő UDP-kapcsolatokat, akkor ez a gép csak a helyi hálózaton belül található szerverekhez tud csatlakozni.</translation>
 <translation id="7980227303582973781">Speciális korlátozás nélkül</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Képernyő elforgatása 0 fokkal</translation>
 <translation id="8044493735196713914">Az eszköz indítási módjának jelentése</translation>
 <translation id="8050080920415773384">Natív nyomtatás</translation>

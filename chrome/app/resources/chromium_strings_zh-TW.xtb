@@ -146,6 +146,7 @@
 <translation id="5862307444128926510">歡迎使用 Chromium</translation>
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
 <translation id="5895138241574237353">重新啟動</translation>
+<translation id="5902536751647951209">驗證憑證無效，請重新登入 Chromium 或向你的管理員洽詢詳情。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">即將更新為最新版本！重新啟動您的裝置即可完成更新程序。</translation>
 <translation id="5942520288919337908">已將「<ph name="EXTENSION_NAME" />」加到 Chromium。</translation>
 <translation id="59625444380784159">利用你的通訊錄詳細資料，快速在 Chromium 中填寫表單。</translation>
@@ -219,6 +220,7 @@ Chromium 無法復原你的設定。</translation>
 <translation id="7745317241717453663">登出後，系統會將你的瀏覽資料從這個裝置上刪除。日後如要重新取得你的資料，請以 <ph name="USER_EMAIL" /> 身分登入 Chromium。</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟體。</translation>
 <translation id="7756122083761163394">這位使用者的瀏覽資料將從這個裝置上刪除。如要還原資料，請以「$2」的身分登入 Chrome。</translation>
+<translation id="7774736947049807614">驗證憑證無效，請以<ph name="USER_NAME" />身分重新登入 Chromium 或向你的管理員洽詢詳情。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7937630085815544518">你使用了 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入 Chromium，請使用相同帳戶重新登入。</translation>
 <translation id="795025003224538582">不要重新啟動</translation>
 <translation id="7962572577636132072">Chromium 會自動更新，隨時讓你使用最新版本。</translation>

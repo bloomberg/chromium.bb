@@ -329,7 +329,6 @@
 <translation id="2312134445771258233">Leidžiama konfigūruoti paleidžiant įkeliamus puslapius.
 
       Jei skiltyje „Veiksmai paleidžiant“ nepasirinksite „Atidaryti URL sąrašą“, sąrašo „Paleidžiant atidaromi URL“ turinio bus nepaisoma.</translation>
-<translation id="23323722127921515">Rodoma „Google Cast“ įrankių juostos piktograma</translation>
 <translation id="2337466621458842053">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama pateikti vaizdų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis vaizdų nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
@@ -418,7 +417,6 @@
 
       Jei ši politika nustatyta į „False“, pateikiamas klaidos pranešimas vietoje tinklo konfigūracijos raginimo.</translation>
 <translation id="2498238926436517902">Visada automatiškai paslėpti lentyną</translation>
-<translation id="2503514368596117142">Konfigūruojama „Google Cast“ – funkcijos, kurią naudodami naudotojai gali siųsti skirtukų, svetainių ar darbalaukio turinį iš naršyklės į nuotolinius ekranus ir garso sistemas, politika.</translation>
 <translation id="2514328368635166290">Nurodomas numatytojo paieškos teikėjo mėgstamiausios piktogramos URL.
 
           Ši politika pasirenkama. Nenustačius jos, jokia piktograma nebus pateikta paieškos teikėjui.
@@ -435,9 +433,6 @@
 <translation id="2529880111512635313">Konfigūruoti programų ir plėtinių, kuriuos įdiegti privaloma, sąrašą</translation>
 <translation id="253135976343875019">Neveikos įspėjimo delsa, kai naudojama kintamosios srovės energija</translation>
 <translation id="2552966063069741410">Laiko juosta</translation>
-<translation id="2558917182010914102">Jei ši politika bus nustatyta į „true“ arba nebus nustatyta, „Google Cast“ bus įgalinta ir naudotojai galės paleisti ją iš programos meniu, puslapio kontekstinių meniu, naudodami medijos valdiklius su „Cast“ suderinamose svetainėse bei naudodami „Cast“ įrankių juostos piktogramą (jei rodoma).
-
-          Jei ši politika bus nustatyta į „false“, „Google Cast“ bus išjungta.</translation>
 <translation id="2562339630163277285">Nurodomas paieškos variklio, naudoto tiesioginiams rezultatams teikti, URL. URL turi būti eilutė <ph name="SEARCH_TERM_MARKER" />, kuri pateikiant užklausą bus pakeista naudotojo jau įvestu tekstu.
 
           Ši politika pasirenkama. Jos nenustačius nebus pateikta jokių tiesioginių paieškos rezultatų.
@@ -566,6 +561,7 @@
 <translation id="3001534538097271560">Nustačius šią politiką į „False“ naudotojai nebegalės pasirinkti siųsti tam tikros sistemos informacijos ir puslapių turinio į „Google“ serverius. Jei šis nustatymas nustatytas į „True“ arba nesukonfigūruotas, naudotojai galės siųsti tam tikrą sistemos informaciją ir puslapių turinį Saugaus naršymo funkcijai, kad padėtų aptikti pavojingas programas ir svetaines.
 
       Daugiau informacijos apie Saugų naršymą rasite adresu https://developers.google.com/safe-browsing.</translation>
+<translation id="3016255526521614822">Įtraukti į baltąjį sąrašą užrašų programas, kurios leidžiamos „<ph name="PRODUCT_OS_NAME" />“ užrakinimo ekrane</translation>
 <translation id="3021409116652377124">Neleisti papildinių ieškiklio</translation>
 <translation id="3030000825273123558">Įgalinti metrikos ataskaitų teikimą</translation>
 <translation id="3034580675120919256">Leidžiama nustatyti, ar svetainėse leidžiama paleisti „JavaScript“. Gali būti leidžiama arba draudžiama paleisti „JavaScript“ visose svetainėse.
@@ -916,6 +912,16 @@
       "1412.24.34": atnaujinti tik į šią konkrečią versiją
 
       Įspėjimas: nerekomenduojama konfigūruoti versijos apribojimų, nes dėl jų naudotojai gali negauti programinės įrangos naujinių ir svarbių saugos pataisų. Apribojus, kad būtų įdiegti tik konkrečios versijos priešdėlio naujiniai, gali kilti grėsmė naudotojų saugai.</translation>
+<translation id="4298509794364745131">Nurodomas programų, kurias galite įgalinti kaip užrašų programas „<ph name="PRODUCT_OS_NAME" />“ užrakinimo ekrane, sąrašas.
+
+      Jei pageidaujama užrašų programa įgalinta užrakinimo ekrane, jame bus NS elementas pageidaujamai užrašų programai paleisti.
+      Kai programa paleista, ji gali atidaryti programos langą užrakinimo ekrane ir kurti jame duomenų elementus (užrašus). Programa galės importuoti sukurtus užrašus į pagrindinę naudotojo sesiją, kai sesija bus atrakinta. Šiuo metu tik „Chrome“ užrašų programos palaikomos užrakinimo ekrane.
+
+      Jei politika nustatyta, naudotojui bus leidžiama įgalinti programą užrakinimo ekrane, tik jei programos plėtinio ID bus pateiktas politikos sąrašo vertėje.
+      Todėl šią politiką nustačius kaip tuščią sąrašą užrašai bus visiškai išjungti užrakinimo ekrane.
+      Atminkite, kad politika su programos ID nebūtinai reiškia, kad naudotojas galės įgalinti programą kaip užrašų programą užrakinimo ekrane (pvz., 61 versijos „Chrome“ platforma papildomai apriboja pasiekiamų programų rinkinį).
+
+      Jei politika nenustatyta, nebus taikoma jokių programų, kurias naudotojas gali įgalinti užrakinimo ekrane, rinkinio apribojimų.</translation>
 <translation id="4309640770189628899">Ar įgalinti DHE šifruotieji programų komplektai TLS</translation>
 <translation id="4320376026953250541">„Microsoft Windows XP“ SP2 arba naujesnė versija</translation>
 <translation id="4322842393287974810">Leisti automatiškai be delsos paleistai viešojo terminalo programai valdyti „<ph name="PRODUCT_OS_NAME" />“ versiją</translation>
@@ -1341,7 +1347,6 @@
       Jei įgalinsite šį nustatymą, saugi paieška „Google“ paieškoje bus visada aktyvi.
 
       Jei šio nustatymo neleisite arba nenustatysite vertės, saugi paieška „Google“ paieškoje nebus vykdoma.</translation>
-<translation id="5940306398763671235">Įgalinama „Google Cast“</translation>
 <translation id="5946082169633555022">Beta versijos kanalas</translation>
 <translation id="5950205771952201658">Jei įvyksta laikinoji klaida, atlikus internetinius panaikinimo patikrinimus sauga nėra užtikrinama efektyviai, todėl jie išjungiami pagal numatytuosius nustatymus naudojant 19 ar naujesnę „<ph name="PRODUCT_NAME" />“ versiją. Nustačius šios politikos reikšmę į „true“, atkuriama ankstesnė elgsena ir internete atliekami OCSP / CRL patikrinimai.
 
@@ -1692,13 +1697,6 @@
 
           Ši politika taikoma, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
 <translation id="7302043767260300182">Ekrano užrakto delsa, kai naudojama kintamosios srovės energija</translation>
-<translation id="7309839952828354215">Nurodoma, kokie veiksmai turi būti atliekami įrenginyje, kuris buvo pristatytas su failų sistema „eCryptfs“ ir kuriame reikia pereiti į „ext4“ šifruotę.
-
-      Jei nustatysite šią politiką į „DisallowArc“, „Android“ programos bus išjungtos visiems naudotojams įrenginyje (įskaitant tuos, kurie jau turi „ext4“ šifruotę) ir jokiems naudotojams nebus siūloma perkelti iš „eCryptfs“ į „ext4“ šifruotę.
-
-      Jei nustatysite šią politiką į „AllowMigration“, naudotojams, turintiems „eCryptfs“ pagrindinius katalogus, bus siūloma perkelti juos į „ext4“ šifruotę, jei reikia (šiuo metu tai atliekama, kai „Android N“ tampa pasiekiama įrenginyje).
-
-      Jei nenustatysite šios politikos, įrenginys veiks taip, kaip pasirinkus „DisallowArc“.</translation>
 <translation id="7311458740754205918">Jei ši politika nustatyta kaip „true“ arba nenustatyta, naujo skirtuko puslapyje gali būti rodomi turinio pasiūlymai pagal naudotojo naršymo istoriją, pomėgius ir vietovę.
 
       Jei ši politika nustatyta kaip „false“, automatiškai sugeneruoti turinio pasiūlymai naujo skirtuko puslapyje nerodomi.</translation>
@@ -1783,7 +1781,6 @@
       Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ naudos nurodytą lokalę. Jei sukonfigūruota lokalė nebus palaikoma, bus naudojama „en-US“.
 
       Jei šio nustatymo neleisite arba nekonfigūruosite, „<ph name="PRODUCT_NAME" />“ naudos naudotojo nurodytą pageidaujamą lokalę (jei ji sukonfigūruota), sistemos lokalę arba atsarginę lokalę „en-US“.</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Nustatoma, ar įrenginyje turėtų būti įgalintas duomenų tarptinklinis ryšys. Jei nustatyta į „true“ (tiesa), leidžiamas duomenų tarptinklinis ryšys. Jei nesukonfigūruojama ar nustatoma į „false“, duomenų tarptinklinis ryšys nepasiekiamas.</translation>
 <translation id="7683777542468165012">Dinaminis politikos atnaujinimas</translation>
 <translation id="7694807474048279351">Suplanuoti automatinį operacinės sistemos įkėlimą, kai pritaikytas „<ph name="PRODUCT_OS_NAME" />“ naujinys.
@@ -1905,6 +1902,7 @@
 
            Jei šis nustatymas neleidžiamas ir išeinantys UDP ryšiai filtruojami taikant užkardą, šis įrenginys gali prisijungti tik prie prieglobos įrenginių vietiniame tinkle.</translation>
 <translation id="7980227303582973781">Nėra specialių apribojimų</translation>
+<translation id="7985242821674907985">„<ph name="PRODUCT_NAME" />“</translation>
 <translation id="802147957407376460">Pasukti ekraną 0 laipsnių kampu</translation>
 <translation id="8044493735196713914">Pranešti įrenginio operacinės sistemos paleidimo būseną</translation>
 <translation id="8050080920415773384">Vietinis spausdinimas</translation>

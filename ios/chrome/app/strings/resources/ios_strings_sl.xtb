@@ -134,6 +134,8 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="3474649192738347024">Forms filled.</translation>
 <translation id="3478058380795961209">Expiration Month</translation>
 <translation id="3482959374254649722">Syncing your tabs...</translation>
+<translation id="3487093336331957349">Predlogi za iskanje in spletna mesta</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Preberite več<ph name="END_LINK" /> o predlagani vsebini</translation>
 <translation id="3494788280727468875">Potrditev izbrisa podatkov brskanja</translation>
 <translation id="3519193562722059437">Open a tab to browse the web.</translation>
 <translation id="3527085408025491307">Mapa</translation>
@@ -262,7 +264,6 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6196207969502475924">Glasovno iskanje</translation>
 <translation id="6254066287920239840">Povezave namesto v brskalniku odpri v aplikaciji.</translation>
 <translation id="6255097610484507482">Urejanje kreditne kartice</translation>
-<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">S tem je mogoče fotografirati in nalagati fotografije.</translation>
 <translation id="6314335155547195432">Generate Password</translation>
 <translation id="6324528485781869530">Preklop med računi za sinhronizacijo</translation>
@@ -365,7 +366,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="842017693807136194">Prijava z/s</translation>
 <translation id="8428045167754449968">Mesto</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
-<translation id="8433678324664858900">Prikaži predloge</translation>
 <translation id="8458397775385147834">1 element izbrisan</translation>
 <translation id="8487700953926739672">Na voljo brez povezave</translation>
 <translation id="8503813439785031346">Uporabniško ime</translation>

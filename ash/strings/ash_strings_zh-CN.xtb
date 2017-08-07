@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">USB-C 设备（前方端口）</translation>
 <translation id="1013923882670373915">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。请在该设备上输入以下PIN码：<ph name="PINCODE" /></translation>
 <translation id="112308213915226829">自动隐藏任务栏</translation>
-<translation id="1127238861555034875">放大镜模式</translation>
 <translation id="1153356358378277386">已配对的设备</translation>
 <translation id="1195412055398077112">过扫描</translation>
 <translation id="1247372569136754018">麦克风（内部）</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478">电量尚余 <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 地址：<ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">此设备是受企业管理的设备</translation>
+<translation id="1746730358044914197">输入法是由您的管理员配置的。</translation>
 <translation id="1747827819627189109">屏幕键盘已启用</translation>
 <translation id="1823873187264960516">以太网：<ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi 已关闭。</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">用于打开任务管理器的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
 <translation id="1923539912171292317">自动点击</translation>
 <translation id="1942830294380034169">溢出按钮</translation>
+<translation id="1951012854035635156">智能助理</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl+搜索键+H</translation>
 <translation id="2049639323467105390">此设备由 <ph name="DOMAIN" /> 管理。</translation>
 <translation id="2050339315714019657">纵向</translation>
+<translation id="2067602449040652523">键盘亮度</translation>
 <translation id="207439088875642105">此帐号是由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理的未成年人帐号</translation>
 <translation id="2122028596993374965">停止将<ph name="TAB_NAME" />投射到“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">全部退出</translation>
 <translation id="2292698582925480719">显示比例</translation>
 <translation id="2303600792989757991">“切换窗口”概述</translation>
+<translation id="2338501278241028356">开启蓝牙以发现附近的设备</translation>
 <translation id="2352467521400612932">触控笔设置</translation>
 <translation id="2354174487190027830">正在激活“<ph name="NAME" />”</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">移动数据</translation>
 <translation id="3236488194889173876">没有可用的移动网络</translation>
 <translation id="3294437725009624529">访客</translation>
-<translation id="3335772982573114336">新建记事</translation>
 <translation id="3364721542077212959">触控笔工具</translation>
 <translation id="3368922792935385530">已连接</translation>
 <translation id="3371140690572404006">USB-C 设备（右侧前端端口）</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">您的管理员已停用屏幕截图功能。</translation>
 <translation id="397105322502079400">正在计算...</translation>
 <translation id="3995138139523574647">USB-C 设备（右侧后端端口）</translation>
+<translation id="4017989525502048489">激光笔</translation>
 <translation id="4279490309300973883">正在镜像</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">放大镜</translation>
 <translation id="4378551569595875038">正在连接…</translation>
 <translation id="4421231901400348175">正在通过远程协助与<ph name="HELPER_NAME" />共享您屏幕的控制权限。</translation>
 <translation id="4430019312045809116">音量</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">您的管理员已禁用此网络。</translation>
 <translation id="7067196344162293536">自动旋转</translation>
 <translation id="7098389117866926363">USB-C 设备（背面左侧端口）</translation>
-<translation id="7129360219436193655">激光笔模式</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />秒后恢复到原分辨率</translation>
-<translation id="7199454189089571166">智能助理模式</translation>
 <translation id="7246339268451149667">启用指纹解锁功能？</translation>
 <translation id="7256634071279256947">后置麦克风</translation>
 <translation id="7348093485538360975">屏幕键盘</translation>
@@ -253,6 +255,7 @@
 <translation id="8185286464235484130">请回答几个问题，让我们了解您的满意度。</translation>
 <translation id="8190698733819146287">自定义语言和输入法...</translation>
 <translation id="8308637677604853869">上一菜单</translation>
+<translation id="8351131234907093545">创建记事</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8433186206711564395">网络设置</translation>
 <translation id="8433977262951327081">用于在任务栏中显示输入法选项菜单气泡的快捷键已更改。请使用<ph name="NEW_SHORTCUT" />（而不是 <ph name="OLD_SHORTCUT" />）。</translation>

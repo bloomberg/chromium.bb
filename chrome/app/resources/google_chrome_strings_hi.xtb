@@ -215,6 +215,7 @@
 <translation id="7196020411877309443">मैं यह क्यों देख रहा/रही हूं?</translation>
 <translation id="7242029209006116544">आप प्रबंधित खाते से प्रवेश कर रहे हैं और उसके व्यवस्थापक को अपनी Google Chrome प्रोफ़ाइल पर नियंत्रण दे रहे हैं. आपका Chrome डेटा, जैसे आपके ऐप्स , बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग <ph name="USER_NAME" /> से स्थायी रूप से जुड़ जाएंगी. आप Google खाता डैशबोर्ड से इस डेटा को हटा सकेंगे, लेकिन आप किसी अन्य खाते से इस डेटा को संबद्ध नहीं कर सकेंगे. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">यह कंप्‍यूटर जल्‍दी ही Google Chrome के अपडेट प्राप्‍त करना बंद कर देगा क्‍योंकि Windows XP और Windows Vista अब समर्थित नहीं रहेंगे.</translation>
+<translation id="7330164299247909639">प्रमाणीकरण प्रमाणपत्र विफल रहा. कृपया Google Chrome में <ph name="USER_NAME" /> के रूप में फिर से प्रवेश करें या अधिक जानकारी के लिए अपने व्यवस्थापक से संपर्क करें. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">नई विंडो</translation>
 <translation id="7369650938475876456">Chrome की ओर से जनरेट किए गए सशक्त पासवर्ड का उपयोग करें</translation>
 <translation id="7398801000654795464">आप Chrome में <ph name="USER_EMAIL_ADDRESS" /> के रूप में प्रवेश थे. पुन: प्रवेश करने के लिए कृपया उसी खाते का उपयोग करें.</translation>
@@ -278,6 +279,7 @@
 <translation id="8914504000324227558">Chrome को पुन: लॉन्‍च करें</translation>
 <translation id="9026991721384951619">Chrome OS आपका डेटा समन्वयित नहीं कर सका क्योंकि आपके खाता प्रवेश विवरण पुराने हो चुके हैं.</translation>
 <translation id="9067395829937117663">Google Chrome के लिए Windows 7 या उसके बाद के वर्शन की आवश्यकता होती है.</translation>
+<translation id="9084668267983921457">प्रमाणीकरण प्रमाणपत्र विफल रहा. कृपया Google Chrome में फिर से प्रवेश करें या अधिक जानकारी के लिए अपने व्यवस्थापक से संपर्क करें. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />चेतावनी:<ph name="END_BOLD" /> Google Chrome एक्‍सटेंशन को आपका ब्राउज़िंग इतिहास रिकॉर्ड करने से रोक नहीं सकता. गुप्त मोड में यह एक्‍सटेंशन अक्षम करने के लिए, इस विकल्प को ना चनें.</translation>
 <translation id="911206726377975832">अपने ब्राउज़िंग डेटा भी हटाएं?</translation>
 <translation id="919706545465235479">सिंक शुरू करने के लिए Chrome अपडेट करें</translation>

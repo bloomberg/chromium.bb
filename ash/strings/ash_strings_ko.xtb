@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">USB-C 기기(전면 포트)</translation>
 <translation id="1013923882670373915">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 기기에서 다음 PIN 코드를 입력하세요. <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">실행기 자동 숨김</translation>
-<translation id="1127238861555034875">돋보기 모드</translation>
 <translation id="1153356358378277386">페어링된 기기</translation>
 <translation id="1195412055398077112">오버스캔</translation>
 <translation id="1247372569136754018">마이크(내부)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> 남음</translation>
 <translation id="1698760176351776263">IPv6 주소: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">기업에서 관리하는 기기입니다.</translation>
+<translation id="1746730358044914197">입력 방법은 관리자가 설정합니다.</translation>
 <translation id="1747827819627189109">터치 키보드 사용 설정됨</translation>
 <translation id="1823873187264960516">이더넷: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi가 꺼져 있습니다.</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">작업 관리자를 여는 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
 <translation id="1923539912171292317">자동 클릭</translation>
 <translation id="1942830294380034169">오버플로 버튼</translation>
+<translation id="1951012854035635156">어시스턴트</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />(USB)</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">기기는 <ph name="DOMAIN" />에서 관리합니다.</translation>
 <translation id="2050339315714019657">세로 방향</translation>
+<translation id="2067602449040652523">키보드 밝기</translation>
 <translation id="207439088875642105"><ph name="FIRST_PARENT_EMAIL" />님과 <ph name="SECOND_PARENT_EMAIL" />님이 관리하는 어린이용 계정입니다.</translation>
 <translation id="2122028596993374965"><ph name="RECEIVER_NAME" />에 <ph name="TAB_NAME" /> 전송 중지</translation>
 <translation id="2127372758936585790">저출력 충전기</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">모두 로그아웃</translation>
 <translation id="2292698582925480719">디스플레이 배율</translation>
 <translation id="2303600792989757991">창 전환 개요</translation>
+<translation id="2338501278241028356">블루투스를 사용 설정하여 근처 기기 탐색</translation>
 <translation id="2352467521400612932">스타일러스 설정</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> 활성화 중</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">모바일 데이터</translation>
 <translation id="3236488194889173876">사용할 수 있는 모바일 네트워크 없음</translation>
 <translation id="3294437725009624529">손님</translation>
-<translation id="3335772982573114336">새 메모</translation>
 <translation id="3364721542077212959">스타일러스 도구</translation>
 <translation id="3368922792935385530">연결됨</translation>
 <translation id="3371140690572404006">USB-C 기기(우측 전면 포트)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">관리자가 스크린샷 캡쳐 기능을 사용 중지했습니다.</translation>
 <translation id="397105322502079400">계산 중...</translation>
 <translation id="3995138139523574647">USB-C 기기(우측 후면 포트)</translation>
+<translation id="4017989525502048489">레이저 포인터</translation>
 <translation id="4279490309300973883">미러링</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">돋보기</translation>
 <translation id="4378551569595875038">연결 중...</translation>
 <translation id="4421231901400348175">원격 지원을 통해 <ph name="HELPER_NAME" />와(과) 화면 제어 공유</translation>
 <translation id="4430019312045809116">볼륨</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">관리자가 사용 중지한 네트워크입니다.</translation>
 <translation id="7067196344162293536">자동 회전</translation>
 <translation id="7098389117866926363">USB-C 기기(좌측 후면 포트)</translation>
-<translation id="7129360219436193655">레이저 포인터 모드</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />초 후 기존 해상도로 돌아갑니다.</translation>
-<translation id="7199454189089571166">어시스턴트 모드</translation>
 <translation id="7246339268451149667">지문 잠금 해제를 사용하시겠습니까?</translation>
 <translation id="7256634071279256947">후면 마이크</translation>
 <translation id="7348093485538360975">터치 키보드</translation>
@@ -253,6 +255,7 @@
 <translation id="8185286464235484130">몇 가지 질문에 답하여 개선할 점이나 격려하고 싶은 점을 알려주세요.</translation>
 <translation id="8190698733819146287">언어 및 입력 설정...</translation>
 <translation id="8308637677604853869">이전 메뉴</translation>
+<translation id="8351131234907093545">메모 만들기</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8433186206711564395">네트워크 설정</translation>
 <translation id="8433977262951327081">실행기에서 입력 옵션 메뉴 도움말 풍선을 표시하는 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>

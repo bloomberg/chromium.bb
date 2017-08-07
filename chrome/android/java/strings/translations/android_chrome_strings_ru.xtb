@@ -107,11 +107,11 @@
 <translation id="1994173015038366702">Адрес сайта</translation>
 <translation id="2000271276660256125">По соображениям безопасности необходимо разблокировать экран, чтобы получить доступ к паролю.</translation>
 <translation id="200815880754187296">Другие приложения: <ph name="KILOBYTES" /> КБ</translation>
+<translation id="2011013297378343166">Продолжая работу с приложением, вы принимаете <ph name="BEGIN_LINK1" />Условия использования Chrome<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />Примечание о конфиденциальности<ph name="END_LINK2" /> и <ph name="BEGIN_LINK3" />Примечание о конфиденциальности для аккаунтов Google, созданных в сервисе Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2017836877785168846">Удаление истории и вариантов автозаполнения в адресной строке</translation>
 <translation id="2020525020270327736">Копировать сайт</translation>
 <translation id="2038563949887743358">Включить полную версию сайта</translation>
 <translation id="2045104531052923016">Другие приложения: <ph name="GIGABYTES" /> ГБ</translation>
-<translation id="2073732792864401646">Сбросить статистику</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" />, всего <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2095887075102408547">Если вы включите эту функцию, серверы Google начнут сжимать данные перед показом веб-страниц в Chrome. Это не касается данных, полученных по протоколу HTTPS и в режиме инкогнито.</translation>
@@ -129,7 +129,6 @@
 <translation id="219985413780390209">Защитить устройство от опасных сайтов</translation>
 <translation id="2206488550163399966">Приложение "<ph name="APP_NAME" />" (<ph name="APP_URL" />)</translation>
 <translation id="2227444325776770048">Продолжить как <ph name="USER_FULL_NAME" /></translation>
-<translation id="2246961355222023276">Использовано:</translation>
 <translation id="2268044343513325586">Уточнить</translation>
 <translation id="2286841657746966508">Платежный адрес</translation>
 <translation id="2315043854645842844">Сертификат, выбранный клиентом, не поддерживается операционной системой.</translation>
@@ -144,7 +143,6 @@
 <translation id="2369533728426058518">открыть вкладки</translation>
 <translation id="2385560268894525395">прошлую неделю</translation>
 <translation id="2387895666653383613">Масштабирование текста</translation>
-<translation id="238909021488141516">Во время скачивания произошла ошибка.</translation>
 <translation id="2414886740292270097">Темный</translation>
 <translation id="2416359993254398973">Для этого сайта Chrome запрашивает разрешение на доступ к камере.</translation>
 <translation id="2433507940547922241">Внешний вид</translation>
@@ -211,6 +209,7 @@
 <translation id="3115898365077584848">Показать информацию</translation>
 <translation id="3137521801621304719">Выключить режим инкогнито</translation>
 <translation id="3148434565183091099">Чтобы получить доступ к закладкам на всех ваших устройствах, войдите в Chrome.</translation>
+<translation id="3157842584138209013">Чтобы узнать, сколько трафика вы сэкономили, нажмите кнопку "Ещё"</translation>
 <translation id="3166827708714933426">Работа с вкладками и окнами</translation>
 <translation id="3177909033752230686">Язык страницы:</translation>
 <translation id="3190152372525844641">Разрешения для Chrome можно предоставить в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
@@ -231,13 +230,13 @@
 <translation id="3319792846664697699">Панель навигации</translation>
 <translation id="3321222012623826478">Этот сервис должен анонимно отправить данный веб-адрес на серверы Google для проверки.</translation>
 <translation id="3328801116991980348">Информация о сайте</translation>
+<translation id="3341058695485821946">Узнайте, сколько трафика вы сэкономили</translation>
 <translation id="3350687908700087792">Закрыть все вкладки инкогнито</translation>
 <translation id="3365671512111106261">Недоступно, если включена функция "Экономия трафика"</translation>
 <translation id="3367813778245106622">Чтобы начать синхронизацию, снова войдите в аккаунт</translation>
 <translation id="3384347053049321195">Поделиться изображением</translation>
 <translation id="3386292677130313581">Запрашивать разрешение на доступ к данным о местоположении (рекомендуется)</translation>
 <translation id="3387650086002190359">Не удалось скачать файл <ph name="FILE_NAME" /> из-за ошибок файловой системы.</translation>
-<translation id="3391904733075904777">Чтобы просматривать и копировать пароли, нужно задать блокировку устройства в настройках безопасности.</translation>
 <translation id="339329030417445648">На сайте может быть много навязчивой рекламы</translation>
 <translation id="3398320232533725830">Открыть диспетчер закладок</translation>
 <translation id="3414952576877147120">Размер:</translation>
@@ -331,6 +330,7 @@
 <translation id="42981349822642051">Развернуть</translation>
 <translation id="4300272766492248925">Открыть приложение</translation>
 <translation id="4307992518367153382">Основные</translation>
+<translation id="4334425495413014985">При первом запуске приложения "<ph name="APP_NAME" />" требуется подключение к Интернету</translation>
 <translation id="4351244548802238354">Закрыть</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4384468725000734951">Sogou используется как поисковая система по умолчанию</translation>
@@ -491,12 +491,14 @@
 <translation id="583891442612896534">Не удалось подключиться к серверам Google для сжатия данных. Объем трафика может увеличиться.</translation>
 <translation id="5858741533101922242">Не удалось включить адаптер Bluetooth</translation>
 <translation id="5860033963881614850">Выкл.</translation>
+<translation id="5867841422488265304">Введите адрес или поисковый запрос</translation>
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
 <translation id="5878455346526065919">Блокировать объявления на сайтах, на которых много навязчивой рекламы</translation>
 <translation id="5902828464777634901">Все данные этого веб-сайта, включая файлы cookie, будут удалены.</translation>
 <translation id="5911030830365207728">Google Переводчик</translation>
 <translation id="5916664084637901428">ВКЛ</translation>
 <translation id="5919204609460789179">Обновите <ph name="PRODUCT_NAME" />, чтобы начать синхронизацию</translation>
+<translation id="5923939907038835197">Ищите новости, рецепты, прогнозы погоды…</translation>
 <translation id="5939518447894949180">Сбросить</translation>
 <translation id="5942872142862698679">Google используется как поисковая система по умолчанию</translation>
 <translation id="5956665950594638604">Открыть Справочный центр Chrome в новой вкладке</translation>
@@ -673,6 +675,7 @@
 <translation id="7596558890252710462">Операционная система</translation>
 <translation id="7600965453749440009">Никогда не переводить <ph name="LANGUAGE" /></translation>
 <translation id="7605594153474022051">Ошибка синхронизации</translation>
+<translation id="7607552448134703340">Введите поисковый запрос</translation>
 <translation id="7612619742409846846">Вы вошли в аккаунт</translation>
 <translation id="7619072057915878432">Не удалось скачать файл <ph name="FILE_NAME" /> из-за сбоев сети.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Справка<ph name="END_LINK1" /> или <ph name="BEGIN_LINK2" />повторное сканирование<ph name="END_LINK2" /></translation>
@@ -827,7 +830,6 @@
 <translation id="9188680907066685419">Выход из управляемого аккаунта</translation>
 <translation id="9204836675896933765">Остался 1 файл</translation>
 <translation id="9206873250291191720">А</translation>
-<translation id="9216841883364897953">Статистика по расходу трафика</translation>
 <translation id="9219103736887031265">Картинки</translation>
 <translation id="932327136139879170">Главная страница</translation>
 <translation id="932599481871055447">Просматривайте веб-страницы быстрее и экономьте трафик</translation>
@@ -838,7 +840,6 @@
 <translation id="969096075394517431">Изменить языки</translation>
 <translation id="970715775301869095">Осталось <ph name="MINUTES" /> мин.</translation>
 <translation id="974555521953189084">Чтобы начать синхронизацию, введите кодовую фразу</translation>
-<translation id="977929483582859929">Сэкономлено:</translation>
 <translation id="981121421437150478">Офлайн</translation>
 <translation id="982182592107339124">Будут удалены данные всех сайтов, в том числе:</translation>
 <translation id="983192555821071799">Закрыть все вкладки</translation>

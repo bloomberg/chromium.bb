@@ -134,6 +134,8 @@
 <translation id="3474649192738347024">ফর্মগুলি পূরণ করা হয়েছে৷</translation>
 <translation id="3478058380795961209">মেয়াদপূর্তির মাস</translation>
 <translation id="3482959374254649722">আপনার ট্যাবগুলি সিঙ্ক করা হচ্ছে ...</translation>
+<translation id="3487093336331957349">অনুসন্ধান এবং সাইটের পরামর্শগুলি</translation>
+<translation id="3493531032208478708">প্রস্তাবিত সামগ্রী সম্পর্কে <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" /></translation>
 <translation id="3494788280727468875">ব্রাউস করা ডেটা সাফ করার বিষয়টি নিশ্চিত করুন</translation>
 <translation id="3519193562722059437">ওয়েব ব্রাউজ করার জন্য একটি ট্যাব খুলুন।</translation>
 <translation id="3527085408025491307">ফোল্ডার</translation>
@@ -151,6 +153,7 @@
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> এ বুকমার্ক করা হয়েছে</translation>
 <translation id="3738139272394829648">স্পর্শের মাধ্যমে অনুসন্ধান</translation>
 <translation id="3771033907050503522">ছদ্মবেশী ট্যাবগুলি</translation>
+<translation id="3779810277399252432">কোনও ইন্টারনেট সংযোগ নেই৷</translation>
 <translation id="3783017676699494206">চিত্র সংরক্ষণ করুন</translation>
 <translation id="385051799172605136">ফিরুন</translation>
 <translation id="3897092660631435901">মেনু</translation>
@@ -173,6 +176,7 @@
 <translation id="4281844954008187215">পরিষেবার শর্তাদি</translation>
 <translation id="430793432425771671">সবকিছু সিঙ্ক করুন</translation>
 <translation id="4359125752503270327">এই পৃষ্ঠাটি আরেকটি অ্যাপ্লিকেশানে খুলবে।</translation>
+<translation id="4375040482473363939">QR কোড অনুসন্ধান করুন</translation>
 <translation id="4378154925671717803">ফোন</translation>
 <translation id="441868831736628555">গোপনীয়তা বিজ্ঞপ্তি</translation>
 <translation id="4508750114462689118">সাইন-ইন প্রচার বন্ধ করুন</translation>
@@ -263,7 +267,6 @@
 <translation id="6196207969502475924">ভয়েস অনুসন্ধান</translation>
 <translation id="6254066287920239840">ব্রাউজারের পরিবর্তে অ্যাপটিতে লিঙ্কগুলি খুলুন।</translation>
 <translation id="6255097610484507482">ক্রেডিট কার্ড সম্পাদনা করুন</translation>
-<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">এটি আপনাকে ফটো তুলতে এবং আপলোড করতে দেয়।</translation>
 <translation id="6314335155547195432">পাসওয়ার্ড তৈরি করুন</translation>
 <translation id="6324528485781869530">সিঙ্ক অ্যাকাউন্ট পাল্টান</translation>
@@ -366,7 +369,6 @@
 <translation id="842017693807136194">এটি দিয়ে সাইন-ইন করেছেন</translation>
 <translation id="8428045167754449968">নগর / ছোট শহর</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
-<translation id="8433678324664858900">পরামর্শগুলি দেখান</translation>
 <translation id="8458397775385147834">১টি আইটেম মোছা হয়েছে</translation>
 <translation id="8487700953926739672">অফলাইনে উপলব্ধ</translation>
 <translation id="8503813439785031346">ব্যবহারকারীর নাম</translation>

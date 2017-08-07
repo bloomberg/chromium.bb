@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">Thiết bị USB-C (cổng phía trước)</translation>
 <translation id="1013923882670373915">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Vui lòng nhập mã PIN này trên thiết bị đó: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">Tự động ẩn giá</translation>
-<translation id="1127238861555034875">Chế độ kính lúp</translation>
 <translation id="1153356358378277386">Thiết bị được ghép nối</translation>
 <translation id="1195412055398077112">quét quá mức</translation>
 <translation id="1247372569136754018">Micrô (bên trong)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478">Còn <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Địa chỉ IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Thiết bị này do doanh nghiệp quản lý</translation>
+<translation id="1746730358044914197">Các phương thức nhập do quản trị viên của bạn định cấu hình.</translation>
 <translation id="1747827819627189109">Đã bật bàn phím ảo</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi đang tắt.</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">Phím tắt để mở trình quản lý tác vụ đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay vì <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Nhấp chuột tự động</translation>
 <translation id="1942830294380034169">Nút tràn</translation>
+<translation id="1951012854035635156">Trợ lý</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">Thiết bị này được <ph name="DOMAIN" /> quản lý.</translation>
 <translation id="2050339315714019657">Khổ dọc</translation>
+<translation id="2067602449040652523">Độ sáng bàn phím</translation>
 <translation id="207439088875642105">Đây là tài khoản cho trẻ em được <ph name="FIRST_PARENT_EMAIL" /> và <ph name="SECOND_PARENT_EMAIL" /> quản lý</translation>
 <translation id="2122028596993374965">Dừng truyền <ph name="TAB_NAME" /> sang <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Bộ sạc công suất thấp</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">Đăng xuất tất cả</translation>
 <translation id="2292698582925480719">Tỷ lệ hiển thị</translation>
 <translation id="2303600792989757991">Tổng quan về chuyển đổi cửa sổ</translation>
+<translation id="2338501278241028356">Bật Bluetooth để khám phá các thiết bị lân cận</translation>
 <translation id="2352467521400612932">Cài đặt bút cảm ứng</translation>
 <translation id="2354174487190027830">Kích hoạt <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">Dữ liệu di động</translation>
 <translation id="3236488194889173876">Không có mạng di động nào</translation>
 <translation id="3294437725009624529">Khách</translation>
-<translation id="3335772982573114336">Ghi chú mới</translation>
 <translation id="3364721542077212959">Công cụ bút cảm ứng</translation>
 <translation id="3368922792935385530">Đã kết nối</translation>
 <translation id="3371140690572404006">Thiết bị USB-C (cổng phía trước, bên phải)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">Quản trị viên của bạn đã tắt tính năng chụp ảnh màn hình.</translation>
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="3995138139523574647">Thiết bị USB-C (cổng phía sau, bên phải)</translation>
+<translation id="4017989525502048489">Con trỏ laser</translation>
 <translation id="4279490309300973883">Đang phản chiếu</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">Kính lúp</translation>
 <translation id="4378551569595875038">Đang kết nối…</translation>
 <translation id="4421231901400348175">Chia sẻ quyền kiểm soát màn hình của bạn với <ph name="HELPER_NAME" /> qua Trợ giúp từ xa.</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">Mạng này bị quản trị viên của bạn tắt.</translation>
 <translation id="7067196344162293536">Tự động xoay</translation>
 <translation id="7098389117866926363">Thiết bị USB-C (cổng bên trái ở phía sau)</translation>
-<translation id="7129360219436193655">Chế độ con trỏ laser</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7199454189089571166">Chế độ Trợ lý</translation>
 <translation id="7246339268451149667">Bật mở khóa bằng vân tay?</translation>
 <translation id="7256634071279256947">Micrô mặt sau</translation>
 <translation id="7348093485538360975">Bàn phím ảo</translation>
@@ -236,7 +238,7 @@
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7692480393933218409">Đang sạc thiết bị USB-C được kết nối</translation>
 <translation id="776344839111254542">Nhấp để xem chi tiết cập nhật</translation>
-<translation id="7798302898096527229">Nhấn Search hoặc Shift để hủy.</translation>
+<translation id="7798302898096527229">Nhấn phím Search hoặc Shift để hủy.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> và <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Ngôn ngữ đã chuyển từ "<ph name="FROM_LOCALE" />" thành "<ph name="TO_LOCALE" />" sau khi đồng bộ hóa cài đặt của bạn.</translation>
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>
@@ -253,12 +255,13 @@
 <translation id="8185286464235484130">Hãy cho chúng tôi biết tình hình hoạt động của chúng tôi bằng cách trả lời một vài câu hỏi.</translation>
 <translation id="8190698733819146287">Tùy chỉnh ngôn ngữ và dữ liệu nhập...</translation>
 <translation id="8308637677604853869">Menu trước</translation>
+<translation id="8351131234907093545">Tạo ghi chú</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8433186206711564395">Cài đặt mạng</translation>
 <translation id="8433977262951327081">Phím tắt để hiển thị bong bóng menu tùy chọn nhập trong giá đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay cho <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi đang bật.</translation>
 <translation id="847056008324733326">Cài đặt tỷ lệ hiển thị</translation>
-<translation id="8477270416194247200">Nhấn Alt+Search hoặc Shift để hủy.</translation>
+<translation id="8477270416194247200">Nhấn phím Alt+Search hoặc Shift để hủy.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Đang kết nối lại...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> của bạn có thể không sạc khi được bật.</translation>
 <translation id="8639760480004882931">Còn <ph name="PERCENTAGE" /></translation>

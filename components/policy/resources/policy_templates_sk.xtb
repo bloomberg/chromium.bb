@@ -317,7 +317,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2299220924812062390">Určiť zoznam povolených doplnkov</translation>
 <translation id="2309390639296060546">Predvolené nastavenie geolokácie</translation>
 <translation id="2312134445771258233">Umožňuje konfigurovať stránky, ktoré sa načítavajú pri spustení. Ak ste v časti „Akcie pri spustení“ nezvolili možnosť „Otvoriť zoznam webových adries“, položky v zozname „Webové adresy otvárané pri spustení“ sa ignorujú.</translation>
-<translation id="23323722127921515">Zobrazí na paneli s nástrojmi ikonu Google Cast</translation>
 <translation id="2337466621458842053">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, na ktorých sa môžu zobrazovať obrázky.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultImagesSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
@@ -410,7 +409,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak je hodnota pravidla nastavená na False, namiesto výzvy na konfiguráciu siete sa zobrazí chybové hlásenie.</translation>
 <translation id="2498238926436517902">Poličku vždy skrývať automaticky</translation>
-<translation id="2503514368596117142">Konfiguruje pravidlá pre funkciu Google Cast, ktorá používateľom umožňuje odosielať obsah kariet, webov alebo plochy z prehliadača na vzdialené obrazovky a do vzdialených zvukových systémov.</translation>
 <translation id="2514328368635166290">Určuje webovú adresu ikony predvoleného poskytovateľa vyhľadávania.
 
           Toto pravidlo je voliteľné. Ak nebude nastavené, pri poskytovateľovi vyhľadávania sa nezobrazí žiadna ikona.
@@ -427,9 +425,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2529880111512635313">Konfigurácia zoznamu vynútene nainštalovaných aplikácií a rozšírení</translation>
 <translation id="253135976343875019">Oneskorenie upozornenia na nečinnosť pri napájaní zo siete</translation>
 <translation id="2552966063069741410">Časové pásmo</translation>
-<translation id="2558917182010914102">Ak je toto pravidlo nastavené na hodnotu True alebo nie je nastavené vôbec, bude funkcia Google Cast povolená a používatelia ju budú môcť spustiť z ponuky aplikácií, kontextových ponúk stránok, ovládacích prvkov médií na weboch, ktoré podporujú technológiu Cast, a pomocou ikony Cast na paneli s nástrojmi (ak sa zobrazuje).
-
-          Ak je toto pravidlo nastavené na hodnotu False, funkcia Google Cast bude zakázaná.</translation>
 <translation id="2562339630163277285">Určuje webovú adresu vyhľadávača, ktorý poskytuje výsledky dynamického vyhľadávania. Webová adresa by mala obsahovať reťazec <ph name="SEARCH_TERM_MARKER" />, ktorý bude počas posielania dopytu nahradený textom zadávaným používateľom.
 
           Toto pravidlo je voliteľné. Ak ho nenastavíte, nebudú sa vám zobrazovať žiadne výsledky dynamického vyhľadávania.
@@ -558,6 +553,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3001534538097271560">Nastavením tohto pravidla na možnosť False zabránite používateľom odosielať niektoré systémové informácie a obsah stránok na servery Google. Ak je nastavené na možnosť True alebo nie je nakonfigurované, používatelia budú môcť odosielať niektoré systémové informácie a obsah stránok do Bezpečného prehliadania a pomôcť tak rozpoznať nebezpečné aplikácie a weby.
 
       Ďalšie informácie o Bezpečnom prehliadaní získate na adrese https://developers.google.com/safe-browsing.</translation>
+<translation id="3016255526521614822">Pridať na bielu listinu aplikácie na písanie poznámok, ktoré sú povolené na uzamknutej obrazovke systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021409116652377124">Zakázať nástroj na hľadanie doplnkov</translation>
 <translation id="3030000825273123558">Povoliť hlásenia o metrikách</translation>
 <translation id="3034580675120919256">Umožní nastaviť, či môžu webové stránky spúšťať kód JavaScript. Spúšťanie kódu JavaScript sa dá pre všetky webové stránky buď umožniť, alebo naopak zamietnuť.
@@ -901,6 +897,16 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       "1412.24.34": aktualizácia iba na túto konkrétnu verziu
 
       Upozornenie: Neodporúča sa konfigurovať obmedzenia verzií, pretože to môže používateľom zabrániť získavať aktualizácie softvéru a kritické opravy chýb zabezpečenia. Obmedzenie aktualizácií na konkrétnu predponu verzie môže používateľov vystaviť riziku.</translation>
+<translation id="4298509794364745131">Špecifikuje zoznam aplikácií, ktoré môžu byť na uzamknutej obrazovke systému <ph name="PRODUCT_OS_NAME" /> povolené ako aplikácie na písanie poznámok.
+
+      Ak je na uzamknutej obrazovke povolená preferovaná aplikácia na písanie poznámok, na uzamknutej obrazovke bude prvok používateľského rozhrania na spustenie preferovanej aplikácie na písanie poznámok.
+      Po spustení bude táto aplikácia môcť otvoriť okno aplikácie na uzamknutej obrazovke a vytvárať dátové položky (poznámky) v kontexte uzamknutej obrazovky. Aplikácia bude môcť vytvorené poznámky importovať do primárnej používateľskej relácie (keď bude odomknutá). Na uzamknutej obrazovke sú momentálne podporované iba aplikácie na písanie poznámok prehliadača Chrome.
+
+      Ak je toto pravidlo nastavené, používateľ bude môcť povoliť aplikáciu na uzamknutej obrazovke iba v prípade, ak bude ID rozšírenia aplikácie zahrnuté ako hodnota v zozname pravidla.
+      Preto ak nastavíte toto pravidlo na prázdny zoznam, písanie poznámok bude na uzamknutej obrazovke úplne zakázané.
+      Upozorňujeme, že pravidlo zahrnujúce ID aplikácie automaticky neznamená, že používateľ bude môcť na uzamknutej obrazovke povoliť príslušnú aplikáciu ako aplikáciu na písanie poznámok – v systéme Chrome 61 je napríklad skupina dostupných aplikácií ďalej obmedzená platformou.
+
+      Ak pravidlo ponecháte nenastavené, nebudú existovať žiadne obmedzenia skupiny aplikácií, ktoré používateľ môže povoliť na uzamknutej obrazovke na základe tohto pravidla.</translation>
 <translation id="4309640770189628899">Ovláda, či sú v protokole TLS povolené šifrovacie súpravy DHE</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 alebo novší</translation>
 <translation id="4322842393287974810">Povoliť verejnej aplikácii, ktorá sa spúšťa automaticky s nulovým oneskorením, ovládať verziu systému <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1325,7 +1331,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Ak toto nastavenie povolíte, Bezpečné vyhľadávanie bude vo Vyhľadávaní Google vždy aktívne.
 
       Ak toto nastavenie zakážete alebo nenastavíte žiadnu hodnotu, Bezpečné vyhľadávanie vo Vyhľadávaní Google vynucované nebude.</translation>
-<translation id="5940306398763671235">Povoľuje Google Cast</translation>
 <translation id="5946082169633555022">Verzia beta</translation>
 <translation id="5950205771952201658">Vzhľadom na to, že kontroly online odvolania s príznakom soft-fail neposkytujú žiadne účinné bezpečnostné výhody, sú v predvolenom nastavení aplikácie <ph name="PRODUCT_NAME" /> verzie 19 alebo vyššej deaktivované. Ak toto pravidlo nastavíte na hodnotu true, predchádzajúce správanie sa obnoví a budú sa vykonávať kontroly online OCSP/CRL.
 
@@ -1675,13 +1680,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
           Toto pravidlo sa použije iba v prípade, že je povolené pravidlo DefaultSearchProviderEnabled.</translation>
 <translation id="7302043767260300182">Oneskorenie uzamknutia obrazovky pri používaní napájacieho zdroja</translation>
-<translation id="7309839952828354215">Umožňuje určiť, ako sa má správať zariadenie, ktoré bolo dodané so šifrovaním ecryptfs a ktoré potrebuje prejsť na šifrovanie ext4.
-
-      Ak toto pravidlo nastavíte na možnosť DisallowArc, aplikácie pre Android budú zakázané pre všetkých používateľov daného zariadenia (vrátane tých, ktorí sú pripravení prejsť na šifrovanie ext4) a nikomu nebude ponúknutá možnosť migrácie zo šifrovania ecryptfs na ext4.
-
-      Ak toto pravidlo nastavíte na možnosť AllowMigration, používatelia s domácimi adresármi ecryptfs získajú v prípade potreby možnosť migrovať na šifrovanie ext4 (momentálne vtedy, keď je v zariadení sprístupnený Android N).
-
-      Ak toto pravidlo nenastavíte, zariadenie sa bude správať, akoby bola vybraná možnosť DisallowArc.</translation>
 <translation id="7311458740754205918">Ak toto pravidlo nastavíte na hodnotu True alebo ho nenastavíte, na stránke na novej karte sa môžu zobrazovať návrhy obsahu na základe používateľovej histórie prehliadania, záujmov alebo polohy.
 
       Ak toto pravidlo nastavíte na možnosť False, automaticky generované návrhy obsahu sa na stránke na novej karte nezobrazujú.</translation>
@@ -1766,7 +1764,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Ak toto nastavenie povolíte, prehliadač <ph name="PRODUCT_NAME" /> bude používať zvolené miestne nastavenie. Ak nebude nakonfigurované miestne nastavenie podporované, prehliadač namiesto toho použije nastavenie en-US.
 
       Ak je toto nastavenie zakázané alebo nenastavené, prehliadač <ph name="PRODUCT_NAME" /> použije preferované miestne nastavenie určené používateľom (ak je nakonfigurované) alebo miestne nastavenie systému alebo záložné nastavenie en-US.</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Určuje, či bude v zariadení povolený roaming pre dátové prenosy. Ak je pravidlo nastavené na hodnotu true, roaming pre dátové prenosy bude povolený. Ak ho ponecháte nenakonfigurované alebo ho nastavíte na hodnotu false, roaming pre dátové prenosy nebude k dispozícii.</translation>
 <translation id="7683777542468165012">Obnovenie dynamického pravidla</translation>
 <translation id="7694807474048279351">Naplánuje automatické reštartovanie po použití aktualizácie systému <ph name="PRODUCT_OS_NAME" />.
@@ -1889,6 +1886,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
           Ak je toto nastavenie zakázané a brána firewall filtruje odchádzajúce pripojenia cez protokol UDP, môže sa tento počítač pripojiť len k počítačom hostiteľa v rámci miestnej siete.</translation>
 <translation id="7980227303582973781">Žiadne špeciálne obmedzenia</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Otočiť obrazovku o 0 stupňov</translation>
 <translation id="8044493735196713914">Hlásiť režim spustenia zariadenia</translation>
 <translation id="8050080920415773384">Natívna tlač</translation>

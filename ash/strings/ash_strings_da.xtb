@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">USB-C-enhed (port foran)</translation>
 <translation id="1013923882670373915">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Indtast denne pinkode på den pågældende enhed: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">Skjul hylde automatisk</translation>
-<translation id="1127238861555034875">Forstørrelsesglastilstand</translation>
 <translation id="1153356358378277386">Parrede enheder</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="1247372569136754018">Mikrofon (indbygget)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> tilbage</translation>
 <translation id="1698760176351776263">IPv6-adresse: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Denne enhed er virksomhedsadministreret</translation>
+<translation id="1746730358044914197">Indtastningsmetoder konfigureres af din administrator.</translation>
 <translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">Genvejen til at åbne Jobliste er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatiske klik</translation>
 <translation id="1942830294380034169">Knappen Overflow</translation>
+<translation id="1951012854035635156">Assistent</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl+Søg+H</translation>
 <translation id="2049639323467105390">Denne enhed administreres af <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Stående</translation>
+<translation id="2067602449040652523">Lysstyrke for tastatur</translation>
 <translation id="207439088875642105">Dette er en børnekonto, som administreres af <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Stop med at caste <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">Log alle ud</translation>
 <translation id="2292698582925480719">Visningsskala</translation>
 <translation id="2303600792989757991">Skift vinduesoversigt</translation>
+<translation id="2338501278241028356">Slå Bluetooth til for at opdage enheder i nærheden</translation>
 <translation id="2352467521400612932">Penneindstillinger</translation>
 <translation id="2354174487190027830">Aktiverer <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3236488194889173876">Der er ingen tilgængelige mobilnetværk</translation>
 <translation id="3294437725009624529">Gæst</translation>
-<translation id="3335772982573114336">Ny note</translation>
 <translation id="3364721542077212959">Penneværktøjer</translation>
 <translation id="3368922792935385530">Tilsluttet</translation>
 <translation id="3371140690572404006">USB-C-enhed (porten foran i højre side)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">Din administrator har deaktiveret muligheden for at tage screenshots.</translation>
 <translation id="397105322502079400">Beregner...</translation>
 <translation id="3995138139523574647">USB-C-enhed (porten bagpå i højre side)</translation>
+<translation id="4017989525502048489">Laserpegepind</translation>
 <translation id="4279490309300973883">Spejling</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">Forstørrelsesglas</translation>
 <translation id="4378551569595875038">Opretter forbindelse...</translation>
 <translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME" /> via Fjernsupport.</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">Din administrator har deaktiveret dette netværk.</translation>
 <translation id="7067196344162293536">Automatisk rotering</translation>
 <translation id="7098389117866926363">USB-C-enhed (porten bagpå i venstre side)</translation>
-<translation id="7129360219436193655">Laserpentilstand</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS" /> sekunder.</translation>
-<translation id="7199454189089571166">Assistenttilstand</translation>
 <translation id="7246339268451149667">Vil du aktivere oplåsning med fingeraftryk?</translation>
 <translation id="7256634071279256947">Mikrofon på bagsiden</translation>
 <translation id="7348093485538360975">Skærmtastatur</translation>
@@ -253,6 +255,7 @@
 <translation id="8185286464235484130">Fortæl os, hvordan vi klarer os, ved at svare på et par spørgsmål.</translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
 <translation id="8308637677604853869">Forrige menu</translation>
+<translation id="8351131234907093545">Opret note</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8433186206711564395">Netværksindstillinger</translation>
 <translation id="8433977262951327081">Genvejen til menuboblen med indtastningsmuligheder på hylden har ændret sig. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>

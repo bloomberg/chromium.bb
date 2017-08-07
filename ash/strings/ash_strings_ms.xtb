@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">Peranti USB-C (port depan)</translation>
 <translation id="1013923882670373915">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan. Sila masukkan kod PIN ini pada peranti tersebut: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">Autosembunyi rak</translation>
-<translation id="1127238861555034875">Mod kanta pembesar</translation>
 <translation id="1153356358378277386">Peranti digandingkan</translation>
 <translation id="1195412055398077112">imbas lampau</translation>
 <translation id="1247372569136754018">Mikrofon (dalaman)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478">Berbaki <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Alamat IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Peranti ini diurus perusahaan</translation>
+<translation id="1746730358044914197">Kaedah masukan dikonfigurasi oleh pentadbir anda.</translation>
 <translation id="1747827819627189109">Papan kekunci pada skrin didayakan</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi dimatikan.</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">Pintasan untuk membuka pengurus tugas telah berubah. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Klik automatik</translation>
 <translation id="1942830294380034169">Butang limpahan</translation>
+<translation id="1951012854035635156">Pembantu</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl+Cari+H</translation>
 <translation id="2049639323467105390">Peranti ini diuruskan oleh <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Potret</translation>
+<translation id="2067602449040652523">Kecerahan papan kekunci</translation>
 <translation id="207439088875642105">Ini ialah akaun kanak-kanak yang diurus oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Berhenti menghantar <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Pengecas berkuasa rendah</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">Log keluar semua</translation>
 <translation id="2292698582925480719">Skala paparan</translation>
 <translation id="2303600792989757991">Togol gambaran keseluruhan tetingkap</translation>
+<translation id="2338501278241028356">Hidupkan Bluetooth untuk menemui peranti berdekatan</translation>
 <translation id="2352467521400612932">Tetapan stilus</translation>
 <translation id="2354174487190027830">Mengaktifkan <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">Data mudah alih</translation>
 <translation id="3236488194889173876">Tiada rangkaian mudah alih tersedia</translation>
 <translation id="3294437725009624529">Tetamu</translation>
-<translation id="3335772982573114336">Nota baharu</translation>
 <translation id="3364721542077212959">Alatan stilus</translation>
 <translation id="3368922792935385530">Disambungkan</translation>
 <translation id="3371140690572404006">Peranti USB-C (port depan sebelah kanan)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">Keupayaan untuk mengambil tangkapan skrin telah dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="397105322502079400">Mengira...</translation>
 <translation id="3995138139523574647">Peranti USB-C (port belakang sebelah kanan)</translation>
+<translation id="4017989525502048489">Penuding laser</translation>
 <translation id="4279490309300973883">Pencerminan</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">Kanta pembesar</translation>
 <translation id="4378551569595875038">Menyambung...</translation>
 <translation id="4421231901400348175">Berkongsi kawalan skrin anda dengan <ph name="HELPER_NAME" /> melalui Bantuan Jauh.</translation>
 <translation id="4430019312045809116">Kelantangan</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">Rangkaian ini dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="7067196344162293536">Auto putar</translation>
 <translation id="7098389117866926363">Peranti USB-C (port kiri di belakang)</translation>
-<translation id="7129360219436193655">Mod penunjuk laser</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Kembali kepada peleraian lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7199454189089571166">Mod pembantu</translation>
 <translation id="7246339268451149667">Dayakan buka kunci menggunakan Cap Jari?</translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
 <translation id="7348093485538360975">Papan kekunci pada skrin</translation>
@@ -253,6 +255,7 @@
 <translation id="8185286464235484130">Beritahu kami tentang prestasi kami dengan menjawab beberapa soalan.</translation>
 <translation id="8190698733819146287">Sesuaikan bahasa dan input...</translation>
 <translation id="8308637677604853869">Menu sebelumnya</translation>
+<translation id="8351131234907093545">Buat nota</translation>
 <translation id="8428213095426709021">Tetapan</translation>
 <translation id="8433186206711564395">Tetapan rangkaian</translation>
 <translation id="8433977262951327081">Pintasan untuk menunjukkan gelembung menu pilihan input dalam rak telah berubah. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>

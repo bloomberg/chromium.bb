@@ -327,7 +327,6 @@
 <translation id="2299220924812062390">사용 설정한 플러그인 목록 지정</translation>
 <translation id="2309390639296060546">기본 위치정보 설정</translation>
 <translation id="2312134445771258233">시작 시 로드되는 페이지를 설정할 수 있습니다. '시작 시 동작'에서 'URL 목록 열기'를 선택하지 않으면 '시작 시 열리는 URL' 목록의 콘텐츠는 무시됩니다.</translation>
-<translation id="23323722127921515">Google Cast 툴바 아이콘 표시</translation>
 <translation id="2337466621458842053">이미지 표시가 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'DefaultImagesSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
@@ -416,7 +415,6 @@
 
       이 정책이 False로 설정된 경우 네트워크 설정 프롬프트 대신 오류 메시지가 표시됩니다.</translation>
 <translation id="2498238926436517902">항상 실행기 자동 숨김</translation>
-<translation id="2503514368596117142">사용자가 탭, 사이트, 데스크톱의 콘텐츠를 브라우저에서 다른 디스플레이와 사운드 시스템으로 전송하도록 해 주는 기능인 Google Cast의 정책을 설정합니다.</translation>
 <translation id="2514328368635166290">기본 검색 공급자의 즐겨찾기 아이콘 URL을 지정합니다.
 
           이 정책은 선택사항입니다. 설정하지 않으면 검색 공급자에 대한 아이콘이 표시되지 않습니다.
@@ -433,9 +431,6 @@
 <translation id="2529880111512635313">강제로 설치된 앱과 확장 프로그램 목록 구성</translation>
 <translation id="253135976343875019">AC 전원으로 실행할 때 유휴 경고 지연</translation>
 <translation id="2552966063069741410">시간대</translation>
-<translation id="2558917182010914102">이 정책을 'true'로 설정하거나 설정하지 않으면 Google Cast가 사용 설정되며 사용자는 앱 메뉴, 페이지 컨텍스트 메뉴, Cast 지원 웹사이트의 미디어 컨트롤, Cast 툴바 아이콘(표시되는 경우)을 통해 Google Cast를 실행할 수 있습니다.
-
-          이 정책을 'false'로 설정하면 Google Cast가 사용 중지됩니다.</translation>
 <translation id="2562339630163277285">순간 검색결과를 제공하는 데 사용되는 검색 엔진의 URL을 지정합니다. URL에는 <ph name="SEARCH_TERM_MARKER" /> 문자열이 포함되어야 하며 이 문자열은 검색 시 사용자가 지금까지 입력한 내용으로 대체됩니다.
 
           이 정책은 선택사항입니다. 설정하지 않으면 순간 검색결과가 제공되지 않습니다.
@@ -564,6 +559,7 @@
 <translation id="3001534538097271560">이 정책을 false로 설정하면 사용자가 일부 시스템 정보 및 페이지 콘텐츠를 Google 서버로 전송하지 못하지 못하게 됩니다. 이 설정이 true로 설정되거나 설정되지 않으면 사용자는 위험한 앱 및 사이트를 감지하기 위해 일부 시스템 정보와 페이지 콘텐츠를 세이프 브라우징으로 전송할 수 있습니다.
 
       세이프 브라우징에 관해 자세히 알아보려면 https://developers.google.com/safe-browsing을 참조하세요.</translation>
+<translation id="3016255526521614822"><ph name="PRODUCT_OS_NAME" /> 잠금 화면에서 사용 설정된 메모 앱을 허용 목록에 추가</translation>
 <translation id="3021409116652377124">플러그인 Finder 사용 중지</translation>
 <translation id="3030000825273123558">통계 보고 사용</translation>
 <translation id="3034580675120919256">웹사이트에서 자바스크립트를 실행하도록 허용할지 여부를 설정할 수 있습니다. 자바스크립트 실행은 모든 웹사이트에서 허용 또는 거부하도록 할 수 있습니다.
@@ -909,6 +905,16 @@
 
 
       경고: 버전 제한을 설정하면 사용자가 소프트웨어 업데이트 및 주요 보안 수정사항을 받지 못하게 될 수 있으므로 권장하지 않습니다. 특정 버전 프리픽스로 업데이트를 제한하면 사용자가 위험에 처할 수 있습니다.</translation>
+<translation id="4298509794364745131"><ph name="PRODUCT_OS_NAME" /> 잠금 화면에서 사용할 수 있는 메모 앱의 목록을 지정합니다.
+
+      선호하는 메모 앱을 잠금 화면에서 사용 설정하면 잠금 화면에 해당 메모 앱을 실행하기 위한 UI 요소가 표시됩니다.
+      앱을 실행하면 잠금 화면 상단에 앱 창이 표시되고 잠금 화면 컨텍스트에서 데이터 항목(메모)이 생성됩니다. 세션이 잠금 해제되면 앱에서는 생성된 메모를 기본 사용자 세션으로 가져올 수 있습니다. 현재 잠금 화면에서는 Chrome 메모 앱만 지원됩니다.
+
+      정책이 설정되면 사용자는 앱의 확장 프로그램 ID가 정책 목록 값에 포함되어 있는 경우에만 앱을 잠금 화면에서 사용 설정할 수 있습니다.
+      따라서 이 정책을 빈 목록으로 설정하면 잠금 화면에서 메모 기능이 완전히 사용 중지됩니다.
+      정책에 앱 ID가 포함되어 있다고 해서 반드시 사용자가 잠금 화면에서 메모 앱을 사용 설정할 수 있는 것은 아닙니다. 예를 들어, Chrome 61에서는 사용 가능한 앱 집합이 플랫폼에서 추가로 제한됩니다.
+
+      정책을 설정하지 않은 상태로 두면 사용자가 잠금 화면에서 사용 설정할 수 있는 앱 집합에 이 정책에 따른 제한이 적용되지 않습니다.</translation>
 <translation id="4309640770189628899">TLS DHE 암호화 기술 사용 설정 여부</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 이상</translation>
 <translation id="4322842393287974810">지연 없이 자동 실행된 키오스크 앱에서 <ph name="PRODUCT_OS_NAME" /> 버전을 제어하도록 허용합니다.</translation>
@@ -1332,7 +1338,6 @@
       이 설정을 사용하면 Google 검색에서 세이프서치가 항상 활성화됩니다.
 
       이 설정을 사용중지하거나 값을 설정하지 않으면 Google 검색에 세이프서치가 적용되지 않습니다.</translation>
-<translation id="5940306398763671235">Google Cast 사용</translation>
 <translation id="5946082169633555022">베타 채널</translation>
 <translation id="5950205771952201658">소프트 페일(soft-fail), 온라인 인증서 해지 검사가 보안 혜택을 제공하지 않는다는 점을 고려하여 기본적으로 <ph name="PRODUCT_NAME" /> 버전 19 이상에서는 사용 중지됩니다. 이 정책을 true로 설정하면 이전 작업이 복원되며 온라인 OCSP/CRL 검사가 수행됩니다.
 
@@ -1683,13 +1688,6 @@
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용 설정한 경우에만 적용됩니다.</translation>
 <translation id="7302043767260300182">AC 전원으로 실행할 때 화면 잠금 지연</translation>
-<translation id="7309839952828354215">기기에 ecryptfs가 탑재되고 ext4 암호화로 전환되어야 하는 경우 기기 작동 방식을 지정합니다.
-
-      이 정책을 'DisallowArc'로 설정하면 기기의 모든 사용자에게 Android 앱이 사용 중지되며(이미 ext4 암호화가 포함된 앱 포함) 어느 사용자에게도 ecryptfs에서 ext4 암호화로 이전하는 기능이 제공되지 않습니다.
-
-      이 정책을 'AllowMigration'으로 설정하면 ecryptfs 홈 디렉토리가 있는 사용자에게 해당 디렉토리를 필요에 따라 ext4 암호화로 이전할 수 있는 기능을 제공합니다(현재 기기에서 Android N을 사용할 수 있게 되는 경우).
-
-      이 정책을 설정하지 않으면 기기는 'DisallowArc'를 선택한 경우와 동일하게 작동합니다.</translation>
 <translation id="7311458740754205918">true로 설정되거나 설정되지 않으면 새 탭 페이지에서 사용자의 방문 기록, 관심분야 또는 위치를 기반으로 콘텐츠 추천을 표시할 수 있습니다.
 
       false로 설정되어 있다면 자동 생성 콘텐츠 추천이 새 탭 페이지에 표시되지 않습니다.</translation>
@@ -1774,7 +1772,6 @@
       이 설정을 사용하면 <ph name="PRODUCT_NAME" />이(가) 지정된 언어를 사용합니다. 설정한 언어가 지원되지 않으면 'en-US'가 대신 사용됩니다.
 
       이 설정을 사용 중지하거나 설정하지 않으면 <ph name="PRODUCT_NAME" />은(는) 사용자가 지정한 기본 언어(설정한 경우)나 시스템 언어 또는 대체 언어인 'en-US'를 사용합니다.</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">데이터 로밍을 기기에 사용할 지 여부를 결정합니다. true로 설정하면 데이터 로밍이 허용됩니다. 구성하지 않거나 false로 설정하면 데이터 로밍은 사용할 수 없습니다.</translation>
 <translation id="7683777542468165012">동적 정책 새로고침</translation>
 <translation id="7694807474048279351"><ph name="PRODUCT_OS_NAME" /> 업데이트가 적용된 후 자동 재부팅을 예약합니다.
@@ -1896,6 +1893,7 @@
 
           이 설정을 사용 중지하고 발신 UDP 연결이 방화벽에 의해 필터링되는 경우 이 컴퓨터는 로컬 네트워크 내에 있는 호스트 컴퓨터에만 연결할 수 있습니다.</translation>
 <translation id="7980227303582973781">특별한 제한 없음</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">화면을 0도 회전</translation>
 <translation id="8044493735196713914">기기 부팅 모드 보고</translation>
 <translation id="8050080920415773384">기본 인쇄</translation>

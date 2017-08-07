@@ -134,6 +134,8 @@
 <translation id="3474649192738347024">Формулярите са попълнени.</translation>
 <translation id="3478058380795961209">Месец на валидност</translation>
 <translation id="3482959374254649722">Разделите ви се синхронизират...</translation>
+<translation id="3487093336331957349">Предложения за търсене и сайтове</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /> за предложеното съдържание</translation>
 <translation id="3494788280727468875">Потвърждаване на изчистването на данните за сърфирането</translation>
 <translation id="3519193562722059437">Отворете раздел, за да сърфирате в мрежата.</translation>
 <translation id="3527085408025491307">Папка</translation>
@@ -151,6 +153,7 @@
 <translation id="3691593122358196899">Отметката бе запазена в/ъв „<ph name="FOLDER_TITLE" />“</translation>
 <translation id="3738139272394829648">Търсене чрез докосване</translation>
 <translation id="3771033907050503522">Раздели „инкогнито“</translation>
+<translation id="3779810277399252432">Няма връзка с интернет.</translation>
 <translation id="3783017676699494206">Запазване на изобрaжението</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3897092660631435901">Меню</translation>
@@ -173,6 +176,7 @@
 <translation id="4281844954008187215">Условия за ползване</translation>
 <translation id="430793432425771671">Синхронизиране на всичко</translation>
 <translation id="4359125752503270327">Тази страница ще се отвори в друго приложение.</translation>
+<translation id="4375040482473363939">Търсене по код за бърза реакция</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Съобщение за поверителност</translation>
 <translation id="4508750114462689118">Затваряне на подканата за вход</translation>
@@ -262,7 +266,6 @@
 <translation id="6196207969502475924">Гласово търсене</translation>
 <translation id="6254066287920239840">Отваряне на връзките в приложението вместо в браузъра.</translation>
 <translation id="6255097610484507482">Редактиране на кредитната карта</translation>
-<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">Това ви позволява да правите и качвате снимки.</translation>
 <translation id="6314335155547195432">Генериране на парола</translation>
 <translation id="6324528485781869530">Превключване на профила за синхронизиране</translation>
@@ -365,7 +368,6 @@
 <translation id="842017693807136194">Влезли сте със:</translation>
 <translation id="8428045167754449968">Град/селище</translation>
 <translation id="8428213095426709021">Настройки</translation>
-<translation id="8433678324664858900">Предложения</translation>
 <translation id="8458397775385147834">Изтрихте 1 елемент</translation>
 <translation id="8487700953926739672">Налице офлайн</translation>
 <translation id="8503813439785031346">Потребителско име</translation>
