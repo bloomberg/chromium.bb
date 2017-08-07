@@ -257,6 +257,9 @@
                   '|third_party/WebKit/public/platform/.*Drag' \
                   '|third_party/WebKit/public/web/.*Drag',
     },
+    'blink_controller': {
+      'filepath': 'third_party/WebKit/Source/controller',
+    },
     'blink_css': {
       'filepath': 'third_party/WebKit/Source/core/css',
     },
@@ -1724,6 +1727,7 @@
                        'junov@chromium.org'],
     'blink_client_hints': ['yoav@yoav.ws'],
     'blink_clipboard': ['dcheng@chromium.org'],
+    'blink_controller': ['haraken@chromium.org'],
     'blink_css': ['alexis.menard@intel.com',
                   'apavlov+blink@chromium.org',
                   'blink-reviews-css@chromium.org',
