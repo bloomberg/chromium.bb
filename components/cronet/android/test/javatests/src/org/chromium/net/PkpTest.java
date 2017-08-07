@@ -216,6 +216,7 @@ public class PkpTest extends CronetTestBase {
         sendRequestAndWaitForResult();
 
         assertErrorResponse();
+        shutdownCronetEngine();
     }
 
     /**
@@ -234,6 +235,7 @@ public class PkpTest extends CronetTestBase {
         sendRequestAndWaitForResult();
 
         assertSuccessfulResponse();
+        shutdownCronetEngine();
     }
 
     /**
@@ -410,6 +412,7 @@ public class PkpTest extends CronetTestBase {
     private void shutdownCronetEngine() {
         if (mCronetEngine != null) {
             mCronetEngine.shutdown();
+            mCronetEngine = null;
         }
     }
 

@@ -959,6 +959,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         checkRequestCaching(cronetEngine, url, true);
         NativeTestServer.shutdownNativeTestServer();
         checkRequestCaching(cronetEngine, url, true);
+        cronetEngine.shutdown();
     }
 
     @SmallTest
@@ -1010,6 +1011,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         assertNotNull(callback.mError);
         assertContains("Exception in CronetUrlRequest: net::ERR_CONNECTION_REFUSED",
                 callback.mError.getMessage());
+        cronetEngine.shutdown();
     }
 
     @SmallTest
@@ -1027,6 +1029,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         cronetEngine.shutdown();
         cronetEngine = enableDiskCache(new CronetEngine.Builder(getContext())).build();
         checkRequestCaching(cronetEngine, url, true);
+        cronetEngine.shutdown();
     }
 
     @SmallTest
