@@ -13,10 +13,9 @@ class CSSParserContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIAnimationName::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext& local_context) const {
+    const CSSParserLocalContext& local_context) {
   // Allow quoted name if this is an alias property.
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
       CSSPropertyAnimationNameUtils::ConsumeAnimationName, range, context,

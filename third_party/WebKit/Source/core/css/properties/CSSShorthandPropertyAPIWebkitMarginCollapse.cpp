@@ -12,12 +12,11 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIWebkitMarginCollapse::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     bool,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSProperty, 256>& properties) {
   CSSValueID id = range.ConsumeIncludingWhitespace().Id();
   if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
           CSSPropertyWebkitMarginBeforeCollapse, id, context.Mode()))

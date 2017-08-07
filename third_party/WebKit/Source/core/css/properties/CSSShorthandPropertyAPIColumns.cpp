@@ -12,12 +12,11 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIColumns::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext&,
     bool,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSProperty, 256>& properties) {
   CSSValue* column_width = nullptr;
   CSSValue* column_count = nullptr;
   if (!CSSPropertyColumnUtils::ConsumeColumnWidthOrCount(range, column_width,

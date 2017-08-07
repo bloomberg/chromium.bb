@@ -10,10 +10,9 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIScrollSnapAlign::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   CSSValueID x_id = range.Peek().Id();
   if (x_id != CSSValueNone && x_id != CSSValueStart && x_id != CSSValueEnd &&
       x_id != CSSValueCenter)

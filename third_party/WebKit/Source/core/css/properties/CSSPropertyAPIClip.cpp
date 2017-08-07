@@ -25,10 +25,9 @@ CSSValue* ConsumeClipComponent(CSSParserTokenRange& range,
 }  // namespace
 
 const CSSValue* CSSPropertyAPIClip::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   if (range.Peek().Id() == CSSValueAuto)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
 

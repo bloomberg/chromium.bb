@@ -11,12 +11,11 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIGridTemplate::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     bool use_legacy_parsing,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSProperty, 256>& properties) {
   CSSValue* template_rows = nullptr;
   CSSValue* template_columns = nullptr;
   CSSValue* template_areas = nullptr;

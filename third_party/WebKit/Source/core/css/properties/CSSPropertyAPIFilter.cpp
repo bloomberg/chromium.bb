@@ -79,10 +79,9 @@ static CSSFunctionValue* ConsumeFilterFunction(
 }  // namespace
 
 const CSSValue* CSSPropertyAPIFilter::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   if (range.Peek().Id() == CSSValueNone)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
 

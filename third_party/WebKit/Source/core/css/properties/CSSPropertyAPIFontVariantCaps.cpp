@@ -11,10 +11,9 @@ class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIFontVariantCaps::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   return CSSPropertyParserHelpers::ConsumeIdent<
       CSSValueNormal, CSSValueSmallCaps, CSSValueAllSmallCaps,
       CSSValuePetiteCaps, CSSValueAllPetiteCaps, CSSValueUnicase,

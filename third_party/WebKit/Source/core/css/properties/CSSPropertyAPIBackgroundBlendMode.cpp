@@ -9,10 +9,9 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIBackgroundBlendMode::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext&,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
       CSSPropertyBackgroundUtils::ConsumeBackgroundBlendMode, range);
 }

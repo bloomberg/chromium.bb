@@ -12,12 +12,11 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIBorderRadius::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     bool use_alias_parsing,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSProperty, 256>& properties) {
   CSSValue* horizontal_radii[4] = {0};
   CSSValue* vertical_radii[4] = {0};
 

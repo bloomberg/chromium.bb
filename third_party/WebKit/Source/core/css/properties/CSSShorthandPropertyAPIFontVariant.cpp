@@ -12,12 +12,11 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIFontVariant::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext&,
-    bool use_legacy_parsing,
-    HeapVector<CSSProperty, 256>& properties) const {
+    bool,
+    HeapVector<CSSProperty, 256>& properties) {
   if (CSSPropertyParserHelpers::IdentMatches<CSSValueNormal, CSSValueNone>(
           range.Peek().Id())) {
     CSSPropertyParserHelpers::AddProperty(

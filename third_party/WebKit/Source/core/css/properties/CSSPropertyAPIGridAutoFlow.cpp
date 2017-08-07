@@ -13,10 +13,9 @@ class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIGridAutoFlow::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   CSSIdentifierValue* row_or_column_value =
       CSSPropertyParserHelpers::ConsumeIdent<CSSValueRow, CSSValueColumn>(

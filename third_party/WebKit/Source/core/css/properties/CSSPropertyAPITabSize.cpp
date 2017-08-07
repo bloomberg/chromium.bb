@@ -11,10 +11,9 @@ class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPITabSize::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   CSSPrimitiveValue* parsed_value =
       CSSPropertyParserHelpers::ConsumeInteger(range, 0);
   if (parsed_value)

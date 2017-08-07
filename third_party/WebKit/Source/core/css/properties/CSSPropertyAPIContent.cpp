@@ -71,10 +71,9 @@ CSSValue* ConsumeCounterContent(CSSParserTokenRange args, bool counters) {
 }  // namespace
 
 const CSSValue* CSSPropertyAPIContent::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   if (CSSPropertyParserHelpers::IdentMatches<CSSValueNone, CSSValueNormal>(
           range.Peek().Id()))
     return CSSPropertyParserHelpers::ConsumeIdent(range);

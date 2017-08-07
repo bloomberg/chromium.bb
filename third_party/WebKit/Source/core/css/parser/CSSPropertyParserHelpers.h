@@ -128,7 +128,8 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID,
 const CSSValue* ParseLonghandViaAPI(CSSPropertyID unresolved_property,
                                     CSSPropertyID current_shorthand,
                                     const CSSParserContext&,
-                                    CSSParserTokenRange&);
+                                    CSSParserTokenRange&,
+                                    bool& needs_legacy_parsing);
 
 bool ConsumeShorthandVia2LonghandAPIs(const StylePropertyShorthand&,
                                       bool important,
