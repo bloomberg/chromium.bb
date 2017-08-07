@@ -256,6 +256,9 @@ class QUIC_EXPORT_PRIVATE QuicStream : public StreamNotifierInterface {
       const QuicReferenceCountedPointer<QuicAckListenerInterface>&
           ack_listener) {}
 
+  // True if buffered data in send buffer is below buffered_data_threshold_.
+  bool CanWriteNewData() const;
+
   // Called when upper layer can write new data.
   virtual void OnCanWriteNewData() {}
 
@@ -388,6 +391,9 @@ class QUIC_EXPORT_PRIVATE QuicStream : public StreamNotifierInterface {
   // Send buffer of this stream. Send buffer is cleaned up when data gets acked
   // or discarded.
   QuicStreamSendBuffer send_buffer_;
+
+  // Latched value of FLAGS_quic_buffered_data_threshold.
+  const QuicByteCount buffered_data_threshold_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicStream);
 };

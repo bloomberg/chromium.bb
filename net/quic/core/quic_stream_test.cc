@@ -61,6 +61,7 @@ class TestStream : public QuicStream {
 
   MOCK_METHOD0(OnCanWriteNewData, void());
 
+  using QuicStream::CanWriteNewData;
   using QuicStream::WriteOrBufferData;
   using QuicStream::WritevData;
   using QuicStream::CloseWriteSide;
@@ -930,6 +931,7 @@ TEST_F(QuicStreamTest, WriteBufferedData) {
     return;
   }
   string data(1024, 'a');
+  EXPECT_TRUE(stream_->CanWriteNewData());
 
   // Testing WriteOrBufferData.
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
@@ -946,6 +948,7 @@ TEST_F(QuicStreamTest, WriteBufferedData) {
   EXPECT_CALL(*stream_, OnCanWriteNewData()).Times(0);
   stream_->OnCanWrite();
   EXPECT_EQ(3 * data.length() - 200, stream_->queued_data_bytes());
+  EXPECT_FALSE(stream_->CanWriteNewData());
 
   // Send buffered data to make buffered data size < threshold.
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
@@ -958,6 +961,8 @@ TEST_F(QuicStreamTest, WriteBufferedData) {
   stream_->OnCanWrite();
   EXPECT_EQ(GetQuicFlag(FLAGS_quic_buffered_data_threshold) - 1u,
             stream_->queued_data_bytes());
+  EXPECT_TRUE(stream_->CanWriteNewData());
+
   // Flush all buffered data.
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
       .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
@@ -965,6 +970,7 @@ TEST_F(QuicStreamTest, WriteBufferedData) {
   stream_->OnCanWrite();
   EXPECT_EQ(0u, stream_->queued_data_bytes());
   EXPECT_FALSE(stream_->HasBufferedData());
+  EXPECT_TRUE(stream_->CanWriteNewData());
 
   // Testing Writev.
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
@@ -976,6 +982,7 @@ TEST_F(QuicStreamTest, WriteBufferedData) {
   EXPECT_EQ(data.length(), consumed.bytes_consumed);
   EXPECT_FALSE(consumed.fin_consumed);
   EXPECT_EQ(data.length(), stream_->queued_data_bytes());
+  EXPECT_FALSE(stream_->CanWriteNewData());
 
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _)).Times(0);
   consumed = stream_->WritevData(&iov, 1, false, nullptr);
@@ -991,6 +998,7 @@ TEST_F(QuicStreamTest, WriteBufferedData) {
   stream_->OnCanWrite();
   EXPECT_EQ(GetQuicFlag(FLAGS_quic_buffered_data_threshold) - 1,
             stream_->queued_data_bytes());
+  EXPECT_TRUE(stream_->CanWriteNewData());
 
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _)).Times(0);
   // All data can be consumed as buffered data is below upper limit.
@@ -999,6 +1007,7 @@ TEST_F(QuicStreamTest, WriteBufferedData) {
   EXPECT_FALSE(consumed.fin_consumed);
   EXPECT_EQ(data.length() + GetQuicFlag(FLAGS_quic_buffered_data_threshold) - 1,
             stream_->queued_data_bytes());
+  EXPECT_FALSE(stream_->CanWriteNewData());
 }
 
 }  // namespace
