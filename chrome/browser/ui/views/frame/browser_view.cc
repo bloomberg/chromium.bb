@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/accessibility/invert_bubble_view.h"
@@ -1598,40 +1599,10 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
       browser_->GetWindowTitleForTab(include_app_name, index);
   const TabRendererData& data = tabstrip_->tab_at(index)->data();
 
-  // Tab has crashed.
-  if (data.IsCrashed()) {
-    return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_CRASHED_FORMAT,
-                                      window_title);
-  }
-  // Network error interstitial.
-  if (data.network_state == TabRendererData::NETWORK_STATE_ERROR) {
-    return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_NETWORK_ERROR_FORMAT,
-                                      window_title);
-  }
-  // Alert tab states.
-  switch (data.alert_state) {
-    case TabAlertState::AUDIO_PLAYING:
-      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_AUDIO_PLAYING_FORMAT,
-                                        window_title);
-    case TabAlertState::USB_CONNECTED:
-      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_USB_CONNECTED_FORMAT,
-                                        window_title);
-    case TabAlertState::BLUETOOTH_CONNECTED:
-      return l10n_util::GetStringFUTF16(
-          IDS_TAB_AX_LABEL_BLUETOOTH_CONNECTED_FORMAT, window_title);
-    case TabAlertState::MEDIA_RECORDING:
-      return l10n_util::GetStringFUTF16(
-          IDS_TAB_AX_LABEL_MEDIA_RECORDING_FORMAT, window_title);
-    case TabAlertState::AUDIO_MUTING:
-      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_AUDIO_MUTING_FORMAT,
-                                        window_title);
-    case TabAlertState::TAB_CAPTURING:
-      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_TAB_CAPTURING_FORMAT,
-                                        window_title);
-    case TabAlertState::NONE:
-      return window_title;
-  }
-  return base::string16();
+  return chrome::AssembleTabAccessibilityLabel(
+      window_title, data.IsCrashed(),
+      data.network_state == TabRendererData::NETWORK_STATE_ERROR,
+      data.alert_state);
 }
 
 void BrowserView::NativeThemeUpdated(const ui::NativeTheme* theme) {

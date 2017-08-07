@@ -10,6 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/mac/bundle_locations.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
@@ -475,6 +476,16 @@ static const CGFloat kTabElementYOrigin = 6;
   if (theme && !titleColor)
     titleColor = theme->GetNSColor(ThemeProperties::COLOR_TAB_TEXT);
   [[self tabView] setTitleColor:titleColor ? titleColor : [NSColor textColor]];
+}
+
+- (NSString*)accessibilityTitle {
+  // TODO(ellyjones): the Cocoa tab strip code doesn't keep track of network
+  // error state, so it can't get surfaced here. It should, and then this could
+  // pass in the network error state.
+  return base::SysUTF16ToNSString(chrome::AssembleTabAccessibilityLabel(
+      base::SysNSStringToUTF16([self title]),
+      [self loadingState] == kTabCrashed, false,
+      [[self alertIndicatorButton] showingAlertState]));
 }
 
 - (void)themeChangedNotification:(NSNotification*)notification {
