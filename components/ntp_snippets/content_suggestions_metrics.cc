@@ -78,7 +78,6 @@ enum HistogramCategories {
   FOREIGN_TABS,
   ARTICLES,
   READING_LIST,
-  BREAKING_NEWS,
   CONTEXTUAL,
   // Insert new values here!
   COUNT
@@ -109,8 +108,6 @@ HistogramCategories GetHistogramCategory(Category category) {
       return HistogramCategories::ARTICLES;
     case KnownCategories::READING_LIST:
       return HistogramCategories::READING_LIST;
-    case KnownCategories::BREAKING_NEWS:
-      return HistogramCategories::BREAKING_NEWS;
     case KnownCategories::CONTEXTUAL:
       return HistogramCategories::CONTEXTUAL;
     case KnownCategories::LOCAL_CATEGORIES_COUNT:
@@ -143,8 +140,6 @@ std::string GetCategorySuffix(Category category) {
       return "Experimental";
     case HistogramCategories::READING_LIST:
       return "ReadingList";
-    case HistogramCategories::BREAKING_NEWS:
-      return "BreakingNews";
     case HistogramCategories::CONTEXTUAL:
       return "Contextual";
     case HistogramCategories::COUNT:

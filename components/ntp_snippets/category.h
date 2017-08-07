@@ -54,15 +54,13 @@ enum class KnownCategories {
   // Articles for you.
   ARTICLES = 10001,
 
-  // Categories 10002-10007 are defined on the server.
+  // Categories 10002-10008 are defined on the server.
 
-  // Breaking News
-  BREAKING_NEWS = 10008,
   // ****************** INSERT NEW REMOTE CATEGORIES HERE! ******************
   // Update the list on the server first. Here specify the ID explicitly.
 
   // Tracks the last known remote category
-  LAST_KNOWN_REMOTE_CATEGORY = BREAKING_NEWS,
+  LAST_KNOWN_REMOTE_CATEGORY = ARTICLES,
 };
 
 // A category groups ContentSuggestions which belong together. Use the

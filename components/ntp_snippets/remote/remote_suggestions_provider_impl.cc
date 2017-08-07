@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/image_fetcher/core/image_fetcher.h"
+#include "components/ntp_snippets/breaking_news/breaking_news_listener.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
@@ -253,7 +254,8 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
     std::unique_ptr<RemoteSuggestionsDatabase> database,
     std::unique_ptr<RemoteSuggestionsStatusService> status_service,
-    std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker)
+    std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker,
+    std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider)
     : RemoteSuggestionsProvider(observer),
       state_(State::NOT_INITED),
       pref_service_(pref_service),
@@ -270,7 +272,9 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
       fetch_when_ready_interactive_(false),
       clear_history_dependent_state_when_initialized_(false),
       clock_(base::MakeUnique<base::DefaultClock>()),
-      prefetched_pages_tracker_(std::move(prefetched_pages_tracker)) {
+      prefetched_pages_tracker_(std::move(prefetched_pages_tracker)),
+      breaking_news_raw_data_provider_(
+          std::move(breaking_news_raw_data_provider)) {
   RestoreCategoriesFromPrefs();
   // The articles category always exists. Add it if we didn't get it from prefs.
   // TODO(treib): Rethink this.
@@ -280,6 +284,12 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
   // Tell the observer about all the categories.
   for (const auto& entry : category_contents_) {
     observer->OnCategoryStatusChanged(this, entry.first, entry.second.status);
+  }
+
+  if (breaking_news_raw_data_provider_) {
+    breaking_news_raw_data_provider_->StartListening(
+        base::Bind(&RemoteSuggestionsProviderImpl::PrependArticleSuggestion,
+                   base::Unretained(this)));
   }
 
   if (database_->IsErrorState()) {
@@ -299,7 +309,11 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
                  base::Unretained(this)));
 }
 
-RemoteSuggestionsProviderImpl::~RemoteSuggestionsProviderImpl() = default;
+RemoteSuggestionsProviderImpl::~RemoteSuggestionsProviderImpl() {
+  if (breaking_news_raw_data_provider_) {
+    breaking_news_raw_data_provider_->StopListening();
+  }
+}
 
 // static
 void RemoteSuggestionsProviderImpl::RegisterProfilePrefs(

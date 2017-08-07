@@ -43,6 +43,7 @@ class ImageFetcher;
 
 namespace ntp_snippets {
 
+class BreakingNewsListener;
 class CategoryRanker;
 class RemoteSuggestionsDatabase;
 class RemoteSuggestionsScheduler;
@@ -68,7 +69,8 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
       std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
       std::unique_ptr<RemoteSuggestionsDatabase> database,
       std::unique_ptr<RemoteSuggestionsStatusService> status_service,
-      std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker);
+      std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker,
+      std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider);
 
   ~RemoteSuggestionsProviderImpl() override;
 
@@ -420,6 +422,10 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
 
   // Prefetched pages tracker to query which urls have been prefetched.
   std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker_;
+
+  // Listens for BreakingNews updates (e.g. through GCM) and notifies the
+  // provider.
+  std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsProviderImpl);
 };

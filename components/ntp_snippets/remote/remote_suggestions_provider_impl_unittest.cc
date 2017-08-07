@@ -33,6 +33,7 @@
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_delegate.h"
 #include "components/image_fetcher/core/request_metadata.h"
+#include "components/ntp_snippets/breaking_news/breaking_news_listener.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
@@ -340,7 +341,8 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         std::move(image_fetcher), std::move(database),
         base::MakeUnique<RemoteSuggestionsStatusService>(
             utils_.fake_signin_manager(), utils_.pref_service(), std::string()),
-        std::move(prefetched_pages_tracker));
+        std::move(prefetched_pages_tracker),
+        /*breaking_news_raw_data_provider=*/nullptr);
   }
 
   std::unique_ptr<RemoteSuggestionsProviderImpl>
