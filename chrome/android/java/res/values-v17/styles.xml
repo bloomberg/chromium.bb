@@ -359,8 +359,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:gravity">center</item>
         <item name="android:lineSpacingMultiplier">1.4</item>
-        <item name="android:textColor">@color/fre_title_color</item>
-        <item name="android:textSize">@dimen/fre_title_text_size</item>
+        <item name="android:textAppearance">@style/BlackHeadline1</item>
     </style>
 
     <!-- Web Notifications -->
@@ -463,7 +462,7 @@
         <item name="android:includeFontPadding">false</item>
         <item name="android:singleLine">true</item>
         <item name="android:textColor">#000</item>
-        <item name="android:textSize">@dimen/overlay_panel_text_size</item>
+        <item name="android:textSize">@dimen/text_size_large</item>
     </style>
     <style name="ContextualSearchContextTextView">
         <item name="android:layout_width">0dp</item>
@@ -476,7 +475,7 @@
         <item name="android:requiresFadingEdge">horizontal</item>
         <item name="android:singleLine">true</item>
         <item name="android:textColor">#CCC</item>
-        <item name="android:textSize">@dimen/overlay_panel_text_size</item>
+        <item name="android:textSize">@dimen/text_size_large</item>
     </style>
     <style name="ContextualSearchCaptionTextView">
         <item name="android:layout_width">match_parent</item>
@@ -488,8 +487,7 @@
         <item name="android:ellipsize">end</item>
         <item name="android:includeFontPadding">false</item>
         <item name="android:singleLine">true</item>
-        <item name="android:textColor">#444</item>
-        <item name="android:textSize">@dimen/contextual_search_caption_text_size</item>
+        <item name="android:textAppearance">@style/BlackBody</item>
     </style>
 
     <!-- Physical Web styles -->
