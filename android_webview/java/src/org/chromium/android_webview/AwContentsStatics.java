@@ -94,16 +94,6 @@ public class AwContentsStatics {
         nativeSetSafeBrowsingEnabledByManifest(enable);
     }
 
-    // TODO(ntfschr): remove this when downstream no longer depends on it
-    public static boolean getSafeBrowsingEnabled() {
-        return getSafeBrowsingEnabledByManifest();
-    }
-
-    // TODO(ntfschr): remove this when downstream no longer depends on it
-    public static void setSafeBrowsingEnabled(boolean enable) {
-        setSafeBrowsingEnabledByManifest(enable);
-    }
-
     @CalledByNative
     private static void safeBrowsingWhitelistAssigned(
             ValueCallback<Boolean> callback, boolean success) {
