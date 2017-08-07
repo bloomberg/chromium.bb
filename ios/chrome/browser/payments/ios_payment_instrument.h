@@ -58,8 +58,9 @@ class IOSPaymentInstrument : public PaymentInstrument {
   base::string16 GetSublabel() const override;
   bool IsValidForModifier(
       const std::vector<std::string>& supported_methods,
+      const std::vector<std::string>& supported_networks,
       const std::set<autofill::CreditCard::CardType>& supported_types,
-      const std::vector<std::string>& supported_networks) const override;
+      bool supported_types_specified) const override;
 
   // Given that the icon for the iOS payment instrument can only be determined
   // at run-time, the icon is obtained using this UIImage object rather than
