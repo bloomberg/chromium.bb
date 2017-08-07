@@ -238,6 +238,7 @@ Bug(none) external/wpt/content-security-policy/media-src/media-src-7_3.sub.html 
 Bug(none) external/wpt/content-security-policy/media-src/media-src-7_3_2.sub.html [ Failure Timeout Failure ]
 Bug(none) external/wpt/content-security-policy/media-src/media-src-blocked.sub.html [ Failure Timeout ]
 Bug(none) external/wpt/content-security-policy/media-src/media-src-redir-bug.sub.html [ Failure Timeout ]
+Bug(none) external/wpt/content-security-policy/navigation/javascript-url-navigation-inherits-csp.html [ Failure ]
 Bug(none) external/wpt/content-security-policy/script-src/script-src-1_1.html [ Failure Timeout ]
 Bug(none) external/wpt/content-security-policy/script-src/script-src-1_10_1.html [ Failure Timeout ]
 Bug(none) external/wpt/content-security-policy/script-src/script-src-1_2.html [ Failure Timeout ]
