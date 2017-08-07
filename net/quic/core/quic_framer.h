@@ -336,6 +336,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Returns true if data_producer_ is not null.
   bool HasDataProducer() const { return data_producer_ != nullptr; }
 
+  // Returns true if data with |offset| of stream |id| starts with 'CHLO'.
+  bool StartsWithChlo(QuicStreamId id, QuicStreamOffset offset) const;
+
   // Returns byte order to read/write integers and floating numbers.
   Endianness endianness() const;
 
@@ -548,8 +551,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // The diversification nonce from the last received packet.
   DiversificationNonce last_nonce_;
 
-  // If not null, framer asks data_producer_ to save and write stream frame
-  // data. Not owned.
+  // If not null, framer asks data_producer_ to write stream frame data. Not
+  // owned.
   QuicStreamFrameDataProducer* data_producer_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicFramer);

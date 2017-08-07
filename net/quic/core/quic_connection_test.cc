@@ -230,7 +230,11 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
 
   QuicRandom* GetRandomGenerator() override { return random_generator_; }
 
-  QuicBufferAllocator* GetBufferAllocator() override {
+  QuicBufferAllocator* GetStreamFrameBufferAllocator() override {
+    return &buffer_allocator_;
+  }
+
+  QuicBufferAllocator* GetStreamSendBufferAllocator() override {
     return &buffer_allocator_;
   }
 

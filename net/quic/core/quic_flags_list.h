@@ -147,9 +147,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_stream_notifier2, false)
 // When true, defaults to BBR congestion control instead of Cubic.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_to_bbr, false)
 
-// If true, stream sent data is saved in streams rather than stream frames.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_stream_owns_data, false)
-
 // Allow a new rate based recovery in QUIC BBR to be enabled via connection
 // option.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_rate_recovery, false)
@@ -191,6 +188,18 @@ QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_header_list_size, false)
 // When true, allows the LRTT connection option to cause QUIC BBR to exit
 // STARTUP when in recovery and there has been no bandwidth increase for 1RTT.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_exit_startup_on_loss, false)
+
+// If true, application data is saved before consumption in QUIC.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_save_data_before_consumption,
+          false)
+
+// If buffered data in QUIC stream is less than this threshold, buffers all
+// provided data or asks upper layer for more data.
+QUIC_FLAG(uint32_t, FLAGS_quic_buffered_data_threshold, 8192u)
+
+// Max size of data slice in bytes for QUIC stream send buffer.
+QUIC_FLAG(uint32_t, FLAGS_quic_send_buffer_max_data_slice_size, 4096u)
 
 // Enables the BBR1 and BBR2 QUIC connection options, which enable two forms of
 // ack aggregation that prevent persistent standing queues.

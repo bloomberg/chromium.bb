@@ -28,7 +28,6 @@
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
-#include "net/quic/test_tools/simple_data_producer.h"
 #include "net/test/gtest_util.h"
 #include "net/tools/quic/quic_per_connection_packet_writer.h"
 #include "net/tools/quic/test_tools/mock_quic_session_visitor.h"
@@ -307,7 +306,8 @@ class MockQuicConnectionHelper : public QuicConnectionHelperInterface {
   ~MockQuicConnectionHelper() override;
   const QuicClock* GetClock() const override;
   QuicRandom* GetRandomGenerator() override;
-  QuicBufferAllocator* GetBufferAllocator() override;
+  QuicBufferAllocator* GetStreamFrameBufferAllocator() override;
+  QuicBufferAllocator* GetStreamSendBufferAllocator() override;
   void AdvanceTime(QuicTime::Delta delta);
 
  private:
@@ -512,15 +512,6 @@ class MockQuicSession : public QuicSession {
       const QuicReferenceCountedPointer<QuicAckListenerInterface>&
           ack_listener);
 
-  QuicConsumedData ConsumeAndSaveAllData(
-      QuicStream* stream,
-      QuicStreamId id,
-      const QuicIOVector& data,
-      QuicStreamOffset offset,
-      StreamSendingState state,
-      const QuicReferenceCountedPointer<QuicAckListenerInterface>&
-          ack_listener);
-
  private:
   std::unique_ptr<QuicCryptoStream> crypto_stream_;
 
@@ -641,15 +632,6 @@ class MockQuicSpdySession : public QuicSpdySession {
   bool QuicSpdySessionShouldCreateOutgoingDynamicStream2() {
     return QuicSpdySession::ShouldCreateOutgoingDynamicStream2();
   }
-
-  QuicConsumedData ConsumeAndSaveAllData(
-      QuicStream* stream,
-      QuicStreamId id,
-      const QuicIOVector& data,
-      QuicStreamOffset offset,
-      StreamSendingState state,
-      const QuicReferenceCountedPointer<QuicAckListenerInterface>&
-          ack_listener);
 
   using QuicSession::ActivateStream;
 
