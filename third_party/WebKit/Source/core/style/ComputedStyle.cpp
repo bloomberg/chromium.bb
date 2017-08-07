@@ -57,10 +57,12 @@
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/SaturatedArithmetic.h"
 #include "platform/wtf/SizeAssertions.h"
+#include "public/platform/WebScrollBoundaryBehavior.h"
 
 namespace blink {
 
@@ -2059,5 +2061,13 @@ int AdjustForAbsoluteZoom(int value, float zoom_factor) {
 
   return RoundForImpreciseConversion<int>(fvalue / zoom_factor);
 }
+
+STATIC_ASSERT_ENUM(WebScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeAuto,
+                   EScrollBoundaryBehavior::kAuto);
+STATIC_ASSERT_ENUM(
+    WebScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeContain,
+    EScrollBoundaryBehavior::kContain);
+STATIC_ASSERT_ENUM(WebScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeNone,
+                   EScrollBoundaryBehavior::kNone);
 
 }  // namespace blink

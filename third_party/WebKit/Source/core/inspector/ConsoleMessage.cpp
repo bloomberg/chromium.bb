@@ -5,7 +5,9 @@
 #include "core/inspector/ConsoleMessage.h"
 
 #include "bindings/core/v8/SourceLocation.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/CurrentTime.h"
+#include "public/web/WebConsoleMessage.h"
 
 namespace blink {
 
@@ -93,5 +95,10 @@ const String& ConsoleMessage::WorkerId() const {
 }
 
 DEFINE_TRACE(ConsoleMessage) {}
+
+STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelVerbose, kVerboseMessageLevel);
+STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelInfo, kInfoMessageLevel);
+STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelWarning, kWarningMessageLevel);
+STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelError, kErrorMessageLevel);
 
 }  // namespace blink

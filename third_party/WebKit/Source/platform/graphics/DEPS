@@ -15,4 +15,5 @@ include_rules = [
     "+gpu/command_buffer/common/mailbox.h",
     "+gpu/command_buffer/common/sync_token.h",
     "+services/viz/public/interfaces/compositing",
+    "+public/web/WebSettings.h",
 ]

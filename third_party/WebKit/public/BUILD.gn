@@ -22,7 +22,6 @@ group("blink") {
     "//third_party/WebKit/Source/core",
     "//third_party/WebKit/Source/modules",
     "//third_party/WebKit/Source/platform",
-    "//third_party/WebKit/Source/web",
   ]
 }
 
@@ -46,7 +45,6 @@ group("all_blink") {
     "//third_party/WebKit/Source/platform:blink_platform_unittests",
     "//third_party/WebKit/Source/platform/heap:blink_heap_unittests",
     "//third_party/WebKit/Source/platform/wtf:wtf_unittests",
-    "//third_party/WebKit/Source/web",
     "//third_party/WebKit/Source/web:webkit_unit_tests",
   ]
 }
