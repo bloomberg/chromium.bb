@@ -89,14 +89,14 @@ suite('ChromeCleanupHandler', function() {
     assertTrue(!!actionButton);
     MockInteractions.tap(actionButton);
     ChromeCleanupProxy.whenCalled('startCleanup').then(
-      function(logsUploadEnabled) {
-        assertFalse(logsUploadEnabled);
-        cr.webUIListenerCallback('chrome-cleanup-on-cleaning', false);
-        Polymer.dom.flush();
+        function(logsUploadEnabled) {
+          assertFalse(logsUploadEnabled);
+          cr.webUIListenerCallback('chrome-cleanup-on-cleaning', false);
+          Polymer.dom.flush();
 
-        var spinner = chromeCleanupPage.$$('#cleaning-spinner');
-        assertTrue(spinner.active);
-      })
+          var spinner = chromeCleanupPage.$$('#cleaning-spinner');
+          assertTrue(spinner.active);
+        });
   });
 
   test('rebootFromRebootRequired', function() {
@@ -140,18 +140,21 @@ suite('ChromeCleanupHandler', function() {
         'chrome-cleanup-on-infected', ['file 1', 'file 2', 'file 3']);
     Polymer.dom.flush();
 
-    var control = chromeCleanupPage.$$('#chromeCleanupLogsUploadControl');
-    assertTrue(!!control);
+    var logsControl = chromeCleanupPage.$$('#chromeCleanupLogsUploadControl');
+    assertTrue(!!logsControl);
 
     cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', true);
     Polymer.dom.flush();
-    assertTrue(control.checked);
+    assertTrue(logsControl.checked);
 
     cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', false);
     Polymer.dom.flush();
-    assertFalse(control.checked);
+    assertFalse(logsControl.checked);
 
-    // TODO(proberge): Mock tapping on |control| and verify that
-    // |setLogsUploadPermission| is called with the right argument.
+    MockInteractions.tap(logsControl.$.control);
+    return ChromeCleanupProxy.whenCalled('setLogsUploadPermission').then(
+        function(logsUploadEnabled) {
+          assertTrue(logsUploadEnabled);
+        });
   });
 });
