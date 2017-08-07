@@ -36,8 +36,7 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
             .SetAvailableSize({available_width, NGSizeIndefinite})
             .ToConstraintSpace(NGWritingMode::kHorizontalTopBottom);
 
-    NGFragmentBuilder container_builder(
-        NGPhysicalFragment::NGFragmentType::kFragmentBox, node);
+    NGFragmentBuilder container_builder(node);
     container_builder.SetBfcOffset(NGLogicalOffset{LayoutUnit(), LayoutUnit()});
 
     Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats;

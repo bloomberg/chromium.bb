@@ -369,7 +369,7 @@ RefPtr<NGLayoutResult> NGBlockNode::RunOldLayout(
                                         box_->LayoutOverflowRect().Height());
   NGLogicalSize overflow_size =
       overflow_physical_size.ConvertToLogical(writing_mode);
-  NGFragmentBuilder builder(NGPhysicalFragment::kFragmentBox, *this);
+  NGFragmentBuilder builder(*this);
   builder.SetSize(box_size)
       .SetDirection(box_->StyleRef().Direction())
       .SetWritingMode(writing_mode)
