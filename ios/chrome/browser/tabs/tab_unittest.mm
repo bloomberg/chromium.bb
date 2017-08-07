@@ -17,11 +17,13 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#import "ios/chrome/browser/snapshots/snapshot_manager.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
@@ -70,6 +72,10 @@ const char kContentDispositionWithoutFilename[] =
 const char kInvalidFilenameUrl[] = "http://www.hostname.com/";
 const char kValidFilenameUrl[] = "http://www.hostname.com/filename.pdf";
 }  // namespace
+
+@interface Tab (Testing)
+@property(nonatomic, strong) SnapshotManager* snapshotManager;
+@end
 
 @interface ArrayTabModel : TabModel {
  @private
@@ -400,6 +406,21 @@ TEST_F(TabTest, GetSuggestedFilenameFromDefaultName) {
   web_state_impl_->OnHttpResponseHeadersReceived(headers.get(), url);
   BrowseTo(url, url, [NSString string]);
   EXPECT_NSEQ(@"Document.pdf", [[tab_ openInController] suggestedFilename]);
+}
+
+TEST_F(TabTest, SnapshotIsNotRemovedDuringShutdown) {
+  GetApplicationContext()->SetIsShuttingDown();
+  id mockSnapshotManager = OCMClassMock([SnapshotManager class]);
+  tab_.snapshotManager = mockSnapshotManager;
+  [[mockSnapshotManager reject] removeImageWithSessionID:[OCMArg any]];
+  web_state_impl_.reset();
+}
+
+TEST_F(TabTest, ClosingWebStateRemovesSnapshot) {
+  id mockSnapshotManager = OCMClassMock([SnapshotManager class]);
+  tab_.snapshotManager = mockSnapshotManager;
+  web_state_impl_.reset();
+  [[mockSnapshotManager verify] removeImageWithSessionID:[OCMArg any]];
 }
 
 }  // namespace
