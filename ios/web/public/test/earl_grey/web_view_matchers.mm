@@ -90,37 +90,6 @@ UIImage* LoadImage(const GURL& image_url) {
   return image;
 }
 
-// Helper function for matching web views containing or not containing |text|,
-// depending on the value of |should_contain_text|.
-id<GREYMatcher> WebViewWithText(std::string text,
-                                web::WebState* web_state,
-                                bool should_contain_text) {
-  MatchesBlock matches = ^BOOL(WKWebView*) {
-    return WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
-      std::unique_ptr<base::Value> value =
-          web::test::ExecuteJavaScript(web_state, kGetDocumentBodyJavaScript);
-      std::string body;
-      if (value && value->GetAsString(&body)) {
-        BOOL contains_text = body.find(text) != std::string::npos;
-        return contains_text == should_contain_text;
-      }
-      return false;
-    });
-  };
-
-  DescribeToBlock describe = ^(id<GREYDescription> description) {
-    [description appendText:should_contain_text ? @"web view containing "
-                                                : @"web view not containing "];
-    [description appendText:base::SysUTF8ToNSString(text)];
-  };
-
-  return grey_allOf(
-      WebViewInWebState(web_state),
-      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                           descriptionBlock:describe],
-      nil);
-}
-
 // Matcher for WKWebView containing loaded or blocked image with |image_id|.
 // Pass IMAGE_STATE_LOADED |image_state| to match fully loaded image and
 // IMAGE_STATE_BLOCKED to match fully blocked image.
@@ -213,10 +182,6 @@ id<GREYMatcher> WebViewInWebState(WebState* web_state) {
 
   return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
                                               descriptionBlock:describe];
-}
-
-id<GREYMatcher> WebViewContainingText(std::string text, WebState* web_state) {
-  return WebViewWithText(text, web_state, true);
 }
 
 id<GREYMatcher> WebViewContainingBlockedImage(std::string image_id,
