@@ -54,7 +54,6 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   AppListModel* GetModel() override;
   SpeechUIModel* GetSpeechUI() override;
   void StartSearch() override {}
-  void StopSearch() override {}
   void OpenSearchResult(SearchResult* result,
                         bool auto_launch,
                         int event_flags) override;
