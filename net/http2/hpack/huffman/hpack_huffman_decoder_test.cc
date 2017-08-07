@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/http2/hpack/huffman/http2_hpack_huffman_decoder.h"
+#include "net/http2/hpack/huffman/hpack_huffman_decoder.h"
 
 // Tests of HpackHuffmanDecoder and HuffmanBitBuffer.
 
