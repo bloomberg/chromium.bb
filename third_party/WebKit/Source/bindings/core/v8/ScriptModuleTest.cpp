@@ -279,6 +279,7 @@ TEST(ScriptModuleTest, Evaluate) {
   EXPECT_EQ("bar", ToCoreString(v8::Local<v8::String>::Cast(value)));
   EXPECT_EQ(ScriptModuleState::kEvaluated,
             module.Status(scope.GetScriptState()));
+  EXPECT_FALSE(module.V8Namespace(scope.GetIsolate()).IsEmpty());
 }
 
 }  // namespace

@@ -91,6 +91,8 @@ class CORE_EXPORT ScriptModule final {
 
   bool IsNull() const { return !module_ || module_->IsEmpty(); }
 
+  v8::Local<v8::Value> V8Namespace(v8::Isolate*);
+
  private:
   // ModuleScript instances store their record as
   // TraceWrapperV8Reference<v8::Module>, and reconstructs ScriptModule from it.
