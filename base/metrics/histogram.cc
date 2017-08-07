@@ -365,24 +365,30 @@ uint32_t Histogram::FindCorruption(const HistogramSamples& samples) const {
   return inconsistencies;
 }
 
+const BucketRanges* Histogram::bucket_ranges() const {
+  return unlogged_samples_->bucket_ranges();
+}
+
 Sample Histogram::declared_min() const {
-  if (bucket_ranges_->bucket_count() < 2)
+  const BucketRanges* ranges = bucket_ranges();
+  if (ranges->bucket_count() < 2)
     return -1;
-  return bucket_ranges_->range(1);
+  return ranges->range(1);
 }
 
 Sample Histogram::declared_max() const {
-  if (bucket_ranges_->bucket_count() < 2)
+  const BucketRanges* ranges = bucket_ranges();
+  if (ranges->bucket_count() < 2)
     return -1;
-  return bucket_ranges_->range(bucket_ranges_->bucket_count() - 1);
+  return ranges->range(ranges->bucket_count() - 1);
 }
 
 Sample Histogram::ranges(uint32_t i) const {
-  return bucket_ranges_->range(i);
+  return bucket_ranges()->range(i);
 }
 
 uint32_t Histogram::bucket_count() const {
-  return static_cast<uint32_t>(bucket_ranges_->bucket_count());
+  return static_cast<uint32_t>(bucket_ranges()->bucket_count());
 }
 
 // static
@@ -548,10 +554,10 @@ bool Histogram::ValidateHistogramContents(bool crash_if_invalid,
   };
 
   uint32_t bad_fields = 0;
-  if (!bucket_ranges_)
-    bad_fields |= 1 << kBucketRangesField;
   if (!unlogged_samples_)
     bad_fields |= 1 << kUnloggedSamplesField;
+  else if (!bucket_ranges())
+    bad_fields |= 1 << kBucketRangesField;
   if (!logged_samples_)
     bad_fields |= 1 << kLoggedSamplesField;
   else if (logged_samples_->id() == 0)
@@ -593,7 +599,7 @@ Histogram::Histogram(const std::string& name,
                      Sample minimum,
                      Sample maximum,
                      const BucketRanges* ranges)
-    : HistogramBase(name), bucket_ranges_(ranges) {
+    : HistogramBase(name) {
   // TODO(bcwhite): Make this a DCHECK once crbug/734049 is resolved.
   CHECK(ranges) << name << ": " << minimum << "-" << maximum;
   unlogged_samples_.reset(new SampleVector(HashMetricName(name), ranges));
@@ -608,7 +614,7 @@ Histogram::Histogram(const std::string& name,
                      const DelayedPersistentAllocation& logged_counts,
                      HistogramSamples::Metadata* meta,
                      HistogramSamples::Metadata* logged_meta)
-    : HistogramBase(name), bucket_ranges_(ranges) {
+    : HistogramBase(name) {
   // TODO(bcwhite): Make this a DCHECK once crbug/734049 is resolved.
   CHECK(ranges) << name << ": " << minimum << "-" << maximum;
   unlogged_samples_.reset(
