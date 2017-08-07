@@ -44,7 +44,7 @@ class ArcTracingBridge
   void OnInstanceReady() override;
 
   // content::ArcTracingAgent::Delegate overrides:
-  void StartTracing(const base::trace_event::TraceConfig& trace_config,
+  bool StartTracing(const base::trace_event::TraceConfig& trace_config,
                     base::ScopedFD write_fd,
                     const StartTracingCallback& callback) override;
   void StopTracing(const StopTracingCallback& callback) override;
