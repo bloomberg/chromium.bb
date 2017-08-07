@@ -76,9 +76,9 @@ bool SelfRegWorkItem::RegisterDll(bool do_register) {
         int error_code = 0;
         HRESULT unmuxed_hr = UnMuxHRESULTErrorCode(hr, &error_code);
         LOG(ERROR) << "Failed to " << (do_register ? "register" : "unregister")
-                   << " DLL at " << dll_path_.c_str() << ", hr="
-                   << base::StringPrintf(" 0x%08X", unmuxed_hr) << ", code="
-                   << error_code;
+                   << " DLL at " << dll_path_.c_str()
+                   << ", hr=" << base::StringPrintf(" 0x%08lX", unmuxed_hr)
+                   << ", code=" << error_code;
       }
     } else {
       LOG(ERROR) << "COM registration export function not found";
