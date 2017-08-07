@@ -203,6 +203,14 @@ void InspectorResourceContentLoader::DidCommitLoadForLocalFrame(
     Stop();
 }
 
+Resource* InspectorResourceContentLoader::ResourceForURL(const KURL& url) {
+  for (const auto& resource : resources_) {
+    if (resource->Url() == url)
+      return resource;
+  }
+  return nullptr;
+}
+
 void InspectorResourceContentLoader::Dispose() {
   Stop();
 }

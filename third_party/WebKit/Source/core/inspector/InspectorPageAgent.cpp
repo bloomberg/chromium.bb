@@ -121,6 +121,31 @@ String ScheduledNavigationReasonToProtocol(ScheduledNavigation::Reason reason) {
   return ReasonEnum::Reload;
 }
 
+Resource* CachedResource(LocalFrame* frame,
+                         const KURL& url,
+                         InspectorResourceContentLoader* loader) {
+  Document* document = frame->GetDocument();
+  if (!document)
+    return nullptr;
+  Resource* cached_resource = document->Fetcher()->CachedResource(url);
+  if (!cached_resource) {
+    HeapVector<Member<Document>> all_imports =
+        InspectorPageAgent::ImportsForFrame(frame);
+    for (Document* import : all_imports) {
+      cached_resource = import->Fetcher()->CachedResource(url);
+      if (cached_resource)
+        break;
+    }
+  }
+  if (!cached_resource) {
+    cached_resource = GetMemoryCache()->ResourceForURL(
+        url, document->Fetcher()->GetCacheIdentifier());
+  }
+  if (!cached_resource)
+    cached_resource = loader->ResourceForURL(url);
+  return cached_resource;
+}
+
 }  // namespace
 
 static bool PrepareResourceBuffer(Resource* cached_resource,
@@ -304,27 +329,6 @@ InspectorPageAgent* InspectorPageAgent::Create(
     v8_inspector::V8InspectorSession* v8_session) {
   return new InspectorPageAgent(inspected_frames, client,
                                 resource_content_loader, v8_session);
-}
-
-Resource* InspectorPageAgent::CachedResource(LocalFrame* frame,
-                                             const KURL& url) {
-  Document* document = frame->GetDocument();
-  if (!document)
-    return nullptr;
-  Resource* cached_resource = document->Fetcher()->CachedResource(url);
-  if (!cached_resource) {
-    HeapVector<Member<Document>> all_imports =
-        InspectorPageAgent::ImportsForFrame(frame);
-    for (Document* import : all_imports) {
-      cached_resource = import->Fetcher()->CachedResource(url);
-      if (cached_resource)
-        break;
-    }
-  }
-  if (!cached_resource)
-    cached_resource = GetMemoryCache()->ResourceForURL(
-        url, document->Fetcher()->GetCacheIdentifier());
-  return cached_resource;
 }
 
 String InspectorPageAgent::ResourceTypeJson(
@@ -595,8 +599,8 @@ void InspectorPageAgent::GetResourceContentAfterResourcesContentLoaded(
   String content;
   bool base64_encoded;
   if (InspectorPageAgent::CachedResourceContent(
-          InspectorPageAgent::CachedResource(frame,
-                                             KURL(kParsedURLString, url)),
+          CachedResource(frame, KURL(kParsedURLString, url),
+                         inspector_resource_content_loader_),
           &content, &base64_encoded))
     callback->sendSuccess(content, base64_encoded);
   else
@@ -635,8 +639,8 @@ void InspectorPageAgent::SearchContentAfterResourcesContentLoaded(
   String content;
   bool base64_encoded;
   if (!InspectorPageAgent::CachedResourceContent(
-          InspectorPageAgent::CachedResource(frame,
-                                             KURL(kParsedURLString, url)),
+          CachedResource(frame, KURL(kParsedURLString, url),
+                         inspector_resource_content_loader_),
           &content, &base64_encoded)) {
     callback->sendFailure(Response::Error("No resource with given URL found"));
     return;
