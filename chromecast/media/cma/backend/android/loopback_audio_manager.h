@@ -42,7 +42,7 @@ class LoopbackAudioManager {
   void RunLoopback();
   void CalibrateTimestamp(int64_t frame_position);
   int64_t GetInterpolatedTimestamp(int64_t frame_position);
-  void GetI2sFlags(char* i2s_name, AI2sEncoding* i2s_encoding);
+  void GetI2sFlags(std::string* i2s_name, AI2sEncoding* i2s_encoding);
 
   std::vector<CastMediaShlib::LoopbackAudioObserver*> loopback_observers_;
 
@@ -63,6 +63,7 @@ class LoopbackAudioManager {
   // calls made on this thread are blocking.
   base::Thread feeder_thread_;
   bool loopback_running_;
+  bool loopback_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(LoopbackAudioManager);
 };
