@@ -8,7 +8,12 @@ namespace search_provider_logos {
 namespace switches {
 
 // Overrides the URL used to fetch the current Google Doodle.
+// Example: https://www.google.com/async/ddljson
 const char kGoogleDoodleUrl[] = "google-doodle-url";
+
+// Use a static URL for the logo of the default search engine.
+// Example: https://www.google.com/branding/logo.png
+const char kSearchProviderLogoURL[] = "search-provider-logo-url";
 
 }  // namespace switches
 }  // namespace search_provider_logos

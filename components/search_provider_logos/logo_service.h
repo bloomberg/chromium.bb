@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_LOGO_SERVICE_H_
-#define CHROME_BROWSER_ANDROID_LOGO_SERVICE_H_
+#ifndef COMPONENTS_SEARCH_PROVIDER_LOGOS_ANDROID_LOGO_SERVICE_H_
+#define COMPONENTS_SEARCH_PROVIDER_LOGOS_ANDROID_LOGO_SERVICE_H_
 
 #include <memory>
 
@@ -23,9 +23,9 @@ class URLRequestContextGetter;
 }  // namespace net
 
 namespace search_provider_logos {
+
 class LogoTracker;
 class LogoObserver;
-}  // namespace search_provider_logos
 
 // Provides the logo for a profile's default search provider.
 //
@@ -63,4 +63,6 @@ class LogoService : public KeyedService {
   DISALLOW_COPY_AND_ASSIGN(LogoService);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_LOGO_SERVICE_H_
+}  // namespace search_provider_logos
+
+#endif  // COMPONENTS_SEARCH_PROVIDER_LOGOS_ANDROID_LOGO_SERVICE_H_

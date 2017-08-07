@@ -2,26 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/logo_service.h"
+#include "components/search_provider_logos/logo_service.h"
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_provider_logos/fixed_logo_api.h"
 #include "components/search_provider_logos/google_logo_api.h"
 #include "components/search_provider_logos/logo_tracker.h"
+#include "components/search_provider_logos/switches.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/gfx/image/image.h"
 
 using search_provider_logos::LogoDelegate;
 using search_provider_logos::LogoTracker;
 
+namespace search_provider_logos {
 namespace {
 
 const int kDecodeLogoTimeoutSeconds = 30;
@@ -155,3 +156,5 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
 
   logo_tracker_->GetLogo(observer);
 }
+
+}  // namespace search_provider_logos

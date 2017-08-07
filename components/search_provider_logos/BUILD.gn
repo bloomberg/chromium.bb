@@ -14,6 +14,8 @@ static_library("search_provider_logos") {
     "logo_cache.h",
     "logo_common.cc",
     "logo_common.h",
+    "logo_service.cc",
+    "logo_service.h",
     "logo_tracker.cc",
     "logo_tracker.h",
     "switches.cc",
@@ -27,6 +29,9 @@ static_library("search_provider_logos") {
 
   deps = [
     "//components/data_use_measurement/core",
+    "//components/image_fetcher/core",
+    "//components/keyed_service/core",
+    "//components/search_engines",
     "//net",
     "//ui/gfx",
     "//url",

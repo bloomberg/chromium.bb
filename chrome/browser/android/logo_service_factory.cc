@@ -6,12 +6,14 @@
 
 #include "base/feature_list.h"
 #include "chrome/browser/android/chrome_feature_list.h"
-#include "chrome/browser/android/logo_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/search_provider_logos/logo_service.h"
 #include "net/url_request/url_request_context_getter.h"
+
+using search_provider_logos::LogoService;
 
 namespace {
 
