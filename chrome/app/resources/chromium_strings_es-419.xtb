@@ -144,6 +144,7 @@
 <translation id="5862307444128926510">Bienvenido a Chromium</translation>
 <translation id="5877064549588274448">Se cambió el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
+<translation id="5902536751647951209">Se produjo un error en el certificado de autenticación. Vuelve a acceder a tu cuenta en Chromium o comunícate con tu administrador para obtener más información. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> se agregó a Chromium.</translation>
 <translation id="59625444380784159">Los detalles de tus contactos pueden ayudar a completar los formularios de forma más rápida en Chromium.</translation>
@@ -213,6 +214,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="7745317241717453663">Esta acción borrará tus datos de navegación de este dispositivo. Si más adelante deseas recuperarlos, accede a tu cuenta en Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">El instalador no pudo crear un directorio temporal. Verifique si hay espacio disponible en el disco y cuenta con permiso para instalar software.</translation>
 <translation id="7756122083761163394">Los datos de navegación de esta persona se borrarán de este dispositivo. Para recuperarlos, accede a Chrome como $2.</translation>
+<translation id="7774736947049807614">Se produjo un error en el certificado de autenticación. Vuelve a acceder a tu cuenta en Chromium como <ph name="USER_NAME" /> o comunícate con tu administrador para obtener más información. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7937630085815544518">Accediste a Chromium con <ph name="USER_EMAIL_ADDRESS" />. Usa la misma cuenta para volver a acceder.</translation>
 <translation id="795025003224538582">No reiniciar</translation>
 <translation id="7962572577636132072">Chromium se actualiza automáticamente para que siempre tengas la versión más reciente.</translation>

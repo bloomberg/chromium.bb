@@ -321,7 +321,7 @@
 <translation id="3716845769494773620">బహుళ పంక్తి</translation>
 <translation id="3731746171184829332">మునుపటి శీర్షిక లేదు.</translation>
 <translation id="3735039640698208086">ఆడియో ప్లే చేస్తున్నప్పుడు...</translation>
-<translation id="3755561384917041694">దయచేసి పొడిగించిన బ్రెయిలీ ఆదేశాలను ఉపయోగించడానికి స్థితి ట్రేలో ఉన్న స్క్రీన్‌పై కీబోర్డ్‌, ప్రాప్యతను ఆరంభించండి.</translation>
+<translation id="3755561384917041694">దయచేసి పొడిగించిన బ్రెయిలీ ఆదేశాలను ఉపయోగించడానికి స్థితి ట్రే, ప్రాప్యతలో స్క్రీన్‌పై కీబోర్డ్‌‌ను ఆరంభించండి.</translation>
 <translation id="3762198587642264450">ప్రస్తుత అడ్డు వరుస యొక్క చివరకు వెళ్లండి</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">నిష్క్రమణ డైలాగ్.</translation>
@@ -454,7 +454,6 @@
 <translation id="5000760171916499057">ఫారమ్‌లు లేవు.</translation>
 <translation id="5005670136041063723">మరిన్ని సారూప్య మూలకాలు లేవు.</translation>
 <translation id="501473567976723023">జనవరి</translation>
-<translation id="5040591161308540832">పట్టిక $1, $2 X $3</translation>
 <translation id="5041394372352067729">బ్రెయిలీ డిస్‌ప్లేను పేజీ పైకి తరలించండి</translation>
 <translation id="5042770794184672516">ప్రసంగ వాల్యూమ్‌ను పెంచండి</translation>
 <translation id="5050015258024679800">మునుపటి స్థాయి 4 శీర్షిక</translation>
@@ -771,6 +770,7 @@ Chrome బ్రౌజర్ మెనును తెరవడానికి, 
 <translation id="8065607967589909823">ఎంచుకున్నది</translation>
 <translation id="8066678206530322333">బ్యానర్</translation>
 <translation id="8076492880354921740">ట్యాబ్‌లు</translation>
+<translation id="8091452896542422286">ఖాళీ</translation>
 <translation id="8104178626892949749">ChromeVox Next గురించి మరింత తెలుసుకోవడానికి ChromeVox o, n నొక్కండి.</translation>
 <translation id="8110647606445335195">ARIA మైలురాళ్లు లేవు.</translation>
 <translation id="8153880621934657047">లోపల పట్టిక కాదు.</translation>

@@ -134,6 +134,8 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="3474649192738347024">Formulaires remplis.</translation>
 <translation id="3478058380795961209">Mois d'expiration</translation>
 <translation id="3482959374254649722">Synchronisation de vos onglets en cours…</translation>
+<translation id="3487093336331957349">Suggestions de recherches et de sites</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> sur le contenu suggéré</translation>
 <translation id="3494788280727468875">Confirmer la suppression des données de navigation</translation>
 <translation id="3519193562722059437">Ouvrez un onglet pour naviguer sur le Web.</translation>
 <translation id="3527085408025491307">Dossier</translation>
@@ -151,6 +153,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3691593122358196899">Ajouté aux favoris dans "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
 <translation id="3771033907050503522">Ongl. navig. priv.</translation>
+<translation id="3779810277399252432">Aucune connexion Internet.</translation>
 <translation id="3783017676699494206">Enregistrer l'image</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -173,6 +176,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4281844954008187215">Conditions d'utilisation</translation>
 <translation id="430793432425771671">Tout synchroniser</translation>
 <translation id="4359125752503270327">Cette page va s'ouvrir dans une autre application.</translation>
+<translation id="4375040482473363939">Rechercher via un code QR</translation>
 <translation id="4378154925671717803">Téléphone</translation>
 <translation id="441868831736628555">Avis de confidentialité</translation>
 <translation id="4508750114462689118">Fermer la promo de connexion</translation>
@@ -262,7 +266,6 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="6196207969502475924">Recherche vocale</translation>
 <translation id="6254066287920239840">Ouvrir les liens dans l'application et non dans le navigateur.</translation>
 <translation id="6255097610484507482">Modifier la carte de paiement</translation>
-<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">Cela vous permet de prendre et d'importer des photos.</translation>
 <translation id="6314335155547195432">Générer mot de passe</translation>
 <translation id="6324528485781869530">Changer de compte pour synchro</translation>
@@ -365,7 +368,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="842017693807136194">Connecté avec</translation>
 <translation id="8428045167754449968">Ville</translation>
 <translation id="8428213095426709021">Paramètres</translation>
-<translation id="8433678324664858900">Aff. suggestions</translation>
 <translation id="8458397775385147834">1 élément supprimé.</translation>
 <translation id="8487700953926739672">Disponible hors connexion</translation>
 <translation id="8503813439785031346">Nom d'utilisateur</translation>

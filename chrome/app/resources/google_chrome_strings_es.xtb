@@ -221,6 +221,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7196020411877309443">¿Por qué aparece este mensaje?</translation>
 <translation id="7242029209006116544">Vas a iniciar sesión con una cuenta gestionada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Google Chrome. Tus datos de Chrome como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME" />. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociar estos datos a otra cuenta. De forma opcional, puedes crear un nuevo perfil para mantener separados tus datos de Chrome. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Este ordenador pronto dejará de recibir actualizaciones de Google Chrome porque Windows XP y Windows Vista dejarán de ser compatibles.</translation>
+<translation id="7330164299247909639">No se ha podido autenticar el certificado. Vuelve a iniciar sesión en Google Chrome como <ph name="USER_NAME" /> o ponte en contacto con tu administrador para obtener más información. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="7369650938475876456">Utiliza una contraseña segura generada por Chrome</translation>
 <translation id="7398801000654795464">Habías iniciado sesión en Chrome como <ph name="USER_EMAIL_ADDRESS" />. Utiliza la misma cuenta para volver a iniciar sesión.</translation>
@@ -284,6 +285,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="8914504000324227558">Volver a iniciar Chrome</translation>
 <translation id="9026991721384951619">Chrome OS no ha podido sincronizar los datos porque la información de inicio de sesión de tu cuenta está obsoleta.</translation>
 <translation id="9067395829937117663">Google Chrome requiere Windows 7 o una versión posterior.</translation>
+<translation id="9084668267983921457">No se ha podido autenticar el certificado. Vuelve a iniciar sesión en Google Chrome o ponte en contacto con tu administrador para obtener más información. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Advertencia:<ph name="END_BOLD" /> Google Chrome no puede evitar que las extensiones registren el historial de búsquedas . Para inhabilitar la ejecución de la extensión en modo incógnito, desactiva la casilla correspondiente a esta opción.</translation>
 <translation id="911206726377975832">¿Quieres borrar también los datos de navegación?</translation>
 <translation id="919706545465235479">Actualiza Chrome para iniciar la sincronización</translation>

@@ -148,6 +148,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5862307444128926510">Welcome to Chromium</translation>
 <translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
 <translation id="5895138241574237353">Restart</translation>
+<translation id="5902536751647951209">Authentication certificate failed. Please sign in to Chromium again or contact your administrator for more information. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Nearly up to date! Restart your device to finish updating.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> has been added to Chromium.</translation>
 <translation id="59625444380784159">Details from your contacts can help you fill out forms more quickly in Chromium.</translation>
@@ -221,6 +222,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="7745317241717453663">This will delete your browsing data from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
 <translation id="7756122083761163394">This person's browsing data will be deleted from this device. To recover the data, sign in to Chrome as $2.</translation>
+<translation id="7774736947049807614">Authentication certificate failed. Please sign in to Chromium again as <ph name="USER_NAME" /> or contact your administrator for more information. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7937630085815544518">You were signed in to Chromium as <ph name="USER_EMAIL_ADDRESS" />. Please use the same account to sign in again.</translation>
 <translation id="795025003224538582">Don't restart</translation>
 <translation id="7962572577636132072">Chromium updates automatically so you always have the freshest version.</translation>

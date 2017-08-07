@@ -9,6 +9,7 @@
 <translation id="1050038467049342496">Andere apps sluiten</translation>
 <translation id="1055184225775184556">&amp;Toevoegen ongedaan maken</translation>
 <translation id="10614374240317010">Nooit opgeslagen</translation>
+<translation id="1066396345355680611">Mogelijk heb je geen toegang meer tot beveiligde content van <ph name="SITE" /> en sommige andere sites.</translation>
 <translation id="106701514854093668">Desktopbladwijzers</translation>
 <translation id="1074497978438210769">Niet veilig</translation>
 <translation id="1080116354587839789">Aanpassen aan breedte</translation>
@@ -167,6 +168,7 @@
 <translation id="2282872951544483773">Onbeschikbare experimenten</translation>
 <translation id="2292556288342944218">Je toegang tot internet wordt geblokkeerd</translation>
 <translation id="230155334948463882">Nieuwe kaart?</translation>
+<translation id="2316887270356262533">Hiermee wordt minder dan 1 MB vrijgemaakt. Sommige sites kunnen langzamer worden geladen wanneer je ze weer bezoekt.</translation>
 <translation id="2317259163369394535">Voor <ph name="DOMAIN" /> zijn een gebruikersnaam en een wachtwoord vereist.</translation>
 <translation id="2317583587496011522">Betaalpassen worden geaccepteerd.</translation>
 <translation id="2337852623177822836">Instelling beheerd door je beheerder</translation>
@@ -242,6 +244,7 @@
 <translation id="2916038427272391327">Andere programma's sluiten</translation>
 <translation id="2922350208395188000">Het servercertificaat kan niet worden gecontroleerd.</translation>
 <translation id="2928905813689894207">Factuuradres</translation>
+<translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="2941952326391522266">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is afkomstig van <ph name="DOMAIN2" />. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="2948083400971632585">Via de instellingenpagina kun je proxyservers uitschakelen die voor een verbinding zijn geconfigureerd.</translation>
 <translation id="2955913368246107853">Zoekbalk sluiten</translation>
@@ -275,6 +278,7 @@
 <translation id="3150653042067488994">Tijdelijke serverfout</translation>
 <translation id="3154506275960390542">Deze pagina bevat een formulier dat mogelijk niet beveiligd wordt verzonden. Gegevens die je verzendt, kunnen tijdens de overdracht worden bekeken door anderen of kunnen worden aangepast door een aanvaller om te wijzigen wat de server ontvangt.</translation>
 <translation id="3157931365184549694">Herstellen</translation>
+<translation id="3162559335345991374">Het is mogelijk dat je de inlogpagina moet bezoeken van het wifi-netwerk dat je gebruikt.</translation>
 <translation id="3167968892399408617">De pagina's die je op incognitotabbladen weergeeft, worden niet bewaard in je browsergeschiedenis, cookie-opslag of zoekgeschiedenis nadat je al je incognitotabbladen hebt gesloten. Alle bestanden die je hebt gedownload of bladwijzers die je hebt gemaakt, blijven behouden.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Eiland</translation>
@@ -345,7 +349,7 @@
 <translation id="3586931643579894722">Details verbergen</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3615877443314183785">Geef een geldige vervaldatum op</translation>
-<translation id="36224234498066874">Wis browsegegevens...</translation>
+<translation id="36224234498066874">Browsegegevens wissen...</translation>
 <translation id="362276910939193118">Volledige geschiedenis weergeven</translation>
 <translation id="3623476034248543066">Waarde weergeven</translation>
 <translation id="3630155396527302611">Als dit programma al wordt vermeld als een programma dat toegang heeft tot het netwerk, kun je proberen het uit de lijst te verwijderen en het opnieuw toe te voegen.</translation>
@@ -358,10 +362,12 @@
 <translation id="3679803492151881375">Crashrapport vastgelegd op <ph name="CRASH_TIME" />, geüpload op <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Certificaatgegevens</translation>
 <translation id="3690164694835360974">Inloggen niet veilig</translation>
+<translation id="3704162925118123524">Het is mogelijk dat je de inlogpagina moet bezoeken van het netwerk dat je gebruikt.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Bezig met laden...</translation>
 <translation id="3712624925041724820">Licenties zijn verbruikt</translation>
 <translation id="3714780639079136834">Schakel mobiele data of wifi in</translation>
+<translation id="3715597595485130451">Verbinding maken met wifi</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Controleer de proxy, firewall en DNS-configuratie<ph name="END_LINK" /></translation>
 <translation id="3736520371357197498">Als je de beveiligingsrisico's begrijpt, kun je <ph name="BEGIN_LINK" />deze onveilige site bezoeken<ph name="END_LINK" /> voordat de gevaarlijke programma's zijn verwijderd.</translation>
 <translation id="3739623965217189342">Link die je hebt gekopieerd</translation>
@@ -369,6 +375,7 @@
 <translation id="3748148204939282805">Cybercriminelen op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> proberen je mogelijk te misleiden om iets gevaarlijks te doen, zoals software installeren of je persoonlijke gegevens bekendmaken (bijvoorbeeld wachtwoorden, telefoonnummers of creditcardgegevens). <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Het vertalen is mislukt wegens een serverfout.</translation>
 <translation id="3759461132968374835">Je hebt geen onlangs gemelde crashes. Crashes die zich voordeden toen de crashrapportage was uitgeschakeld, worden hier niet weergegeven.</translation>
+<translation id="3765032636089507299">De Safe Browsing-pagina is in aanbouw.</translation>
 <translation id="3778403066972421603">Wil je deze kaart opslaan in je Google-account en op dit apparaat?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Verloopt: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -413,6 +420,7 @@
 <translation id="4165986682804962316">Site-instellingen</translation>
 <translation id="4169947484918424451">Wil je dat Chromium deze kaart opslaat?</translation>
 <translation id="4171400957073367226">Onjuiste verificatiehandtekening</translation>
+<translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Nog <ph name="ITEM_COUNT" /> item}other{Nog <ph name="ITEM_COUNT" /> items}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4196861286325780578">&amp;Opnieuw verplaatsen</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Controleer firewall- en antivirusconfiguraties<ph name="END_LINK" /></translation>
@@ -507,6 +515,7 @@
 <translation id="5045550434625856497">Onjuist wachtwoord</translation>
 <translation id="5056549851600133418">Artikelen voor jou</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Het proxy-adres controleren<ph name="END_LINK" /></translation>
+<translation id="5086888986931078152">Mogelijk heb je geen toegang meer tot beveiligde content van bepaalde sites.</translation>
 <translation id="5087286274860437796">Het servercertificaat is momenteel niet geldig.</translation>
 <translation id="5087580092889165836">Kaart toevoegen</translation>
 <translation id="5089810972385038852">Staat</translation>
@@ -537,6 +546,7 @@
     <ph name="END_LIST" /></translation>
 <translation id="5297526204711817721">Je verbinding met deze site is niet privé. Je kunt de VR-modus op elk gewenst moment afsluiten door de headset af te zetten en op Terug te drukken.</translation>
 <translation id="5299298092464848405">Fout bij het parseren van het beleid</translation>
+<translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="5308689395849655368">Crashrapportage is uitgeschakeld.</translation>
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="5327248766486351172">Naam</translation>
@@ -552,6 +562,7 @@
 <translation id="5452270690849572955">Deze pagina op <ph name="HOST_NAME" /> kan niet worden gevonden</translation>
 <translation id="5455374756549232013">Onjuist tijdstempel van beleid</translation>
 <translation id="5457113250005438886">Ongeldig</translation>
+<translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Opnieuw bewerken</translation>
 <translation id="5481076368049295676">Deze content probeert mogelijk gevaarlijke software op je apparaat te installeren die je gegevens steelt of verwijdert. <ph name="BEGIN_LINK" />Toch weergeven<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Voeg een geldig adres toe</translation>
@@ -652,6 +663,7 @@
 <translation id="6321917430147971392">Controleer je DNS-instellingen</translation>
 <translation id="6328639280570009161">Probeer netwerkvoorspelling uit te schakelen</translation>
 <translation id="6328786501058569169">Deze site is misleidend</translation>
+<translation id="6337133576188860026">Hiermee wordt minder dan <ph name="SIZE" /> vrijgemaakt. Sommige sites kunnen langzamer worden geladen wanneer je ze weer bezoekt.</translation>
 <translation id="6337534724793800597">Beleid filteren op naam</translation>
 <translation id="6342069812937806050">Zojuist</translation>
 <translation id="6355080345576803305">Overschrijving voor openbare sessie</translation>
@@ -733,7 +745,9 @@
 <translation id="7129409597930077180">Kan niet verzenden naar dit adres. Selecteer een ander adres.</translation>
 <translation id="7138472120740807366">Bezorgingsmethode</translation>
 <translation id="7139724024395191329">Emiraat</translation>
+<translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7155487117670177674">Betalen niet veilig</translation>
+<translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7179921470347911571">Nu opnieuw starten</translation>
 <translation id="7180611975245234373">Vernieuwen</translation>
 <translation id="7182878459783632708">Geen beleid ingesteld</translation>
@@ -771,6 +785,7 @@
 <translation id="7481312909269577407">Vooruit</translation>
 <translation id="7485870689360869515">Geen gegevens gevonden.</translation>
 <translation id="7508255263130623398">Geretourneerde apparaat-ID voor beleid is leeg of komt niet overeen met de huidige apparaat-ID</translation>
+<translation id="7511955381719512146">Het is mogelijk dat je <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> moet bezoeken van het wifi-netwerk dat je gebruikt.</translation>
 <translation id="7514365320538308">Downloaden</translation>
 <translation id="7518003948725431193">Er is geen webpagina gevonden voor het webadres: <ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -826,6 +841,7 @@
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Formuliersuggestie verwijderen uit Chrome?</translation>
 <translation id="7815407501681723534"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> gevonden voor '<ph name="SEARCH_STRING" />'</translation>
+<translation id="782886543891417279">Het is mogelijk dat je de inlogpagina moet bezoeken van het wifi-netwerk (<ph name="WIFI_NAME" />) dat je gebruikt.</translation>
 <translation id="785549533363645510">Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiedenis niet verborgen voor je werkgever, je internetprovider of de websites die je bezoekt.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">Betaalpassen en prepaidkaarten worden geaccepteerd.</translation>
@@ -849,6 +865,7 @@
 <translation id="8041940743680923270">Algemene standaardinstelling gebruiken (Vragen)</translation>
 <translation id="8088680233425245692">Kan artikel niet bekijken.</translation>
 <translation id="8091372947890762290">Activering is in behandeling op de server</translation>
+<translation id="8094917007353911263">Het is mogelijk dat je <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> moet bezoeken van het netwerk dat je gebruikt.</translation>
 <translation id="8118489163946903409">Betaalmethode</translation>
 <translation id="8131740175452115882">Bevestigen</translation>
 <translation id="8134994873729925007">Het <ph name="BEGIN_ABBR" />DNS-adres<ph name="END_ABBR" /> van de server van <ph name="HOST_NAME" /> kan niet worden gevonden.</translation>
@@ -872,6 +889,7 @@
 <translation id="8289355894181816810">Neem contact op met je netwerkbeheerder als je niet zeker weet wat dit betekent.</translation>
 <translation id="8293206222192510085">Bladwijzer toevoegen</translation>
 <translation id="8294431847097064396">Bron</translation>
+<translation id="8298115750975731693">Het is mogelijk dat je <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> moet bezoeken van het wifi-netwerk (<ph name="WIFI_NAME" />) dat je gebruikt.</translation>
 <translation id="8306404619377842860">Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van je apparaat (<ph name="DATE_AND_TIME" />) onjuist zijn. <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">De vertaling is mislukt omdat er een probleem is opgetreden met de netwerkverbinding.</translation>
 <translation id="8332188693563227489">Toegang tot <ph name="HOST_NAME" /> is geweigerd</translation>
@@ -895,6 +913,7 @@
 <translation id="8498891568109133222">Het duurt te lang voordat <ph name="HOST_NAME" /> reageert.</translation>
 <translation id="8503813439785031346">Gebruikersnaam</translation>
 <translation id="8543181531796978784">Je kunt <ph name="BEGIN_ERROR_LINK" />een detectieprobleem melden<ph name="END_ERROR_LINK" />. Als je de veiligheidsrisico's begrijpt, kun je ook <ph name="BEGIN_LINK" />deze onveilige site bezoeken<ph name="END_LINK" />.</translation>
+<translation id="8543556556237226809">Vragen? Neem contact op met de persoon die je profiel beheert.</translation>
 <translation id="8553075262323480129">De vertaling is mislukt omdat de taal van de pagina niet kan worden bepaald.</translation>
 <translation id="8571890674111243710">Pagina wordt vertaald in het <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Telnr. toevoegen</translation>
@@ -930,6 +949,7 @@
 <translation id="8931333241327730545">Wil je deze kaart opslaan in je Google-account?</translation>
 <translation id="8932102934695377596">Je klok loopt achter</translation>
 <translation id="8938939909778640821">Geaccepteerde creditcards en prepaidkaarten</translation>
+<translation id="8957210676456822347">Autorisatie van captive portal</translation>
 <translation id="8971063699422889582">Het servercertificaat is verlopen.</translation>
 <translation id="8986494364107987395">Automatisch gebruiksstatistieken en crashrapporten naar Google verzenden</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -937,6 +957,7 @@
 <translation id="8997023839087525404">De server heeft een certificaat gepresenteerd dat niet openbaar bekend is gemaakt via het beleid voor Certificaattransparantie. Dit is voor bepaalde certificaten een vereiste om er zeker van te zijn dat ze betrouwbaar zijn en bescherming bieden tegen aanvallers.</translation>
 <translation id="9001074447101275817">Voor de proxy <ph name="DOMAIN" /> zijn een gebruikersnaam en wachtwoord vereist.</translation>
 <translation id="9005998258318286617">Kan pdf-document niet laden</translation>
+<translation id="9008201768610948239">Negeren</translation>
 <translation id="901974403500617787">Markeringen die op het hele systeem van toepassing zijn, kunnen alleen worden ingesteld door de eigenaar: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020200922353704812">Factuuradres voor creditcard vereist</translation>
 <translation id="9020542370529661692">Deze pagina is vertaald naar het <ph name="TARGET_LANGUAGE" /></translation>
@@ -951,6 +972,7 @@
 <translation id="9076283476770535406">De site kan content voor volwassenen bevatten</translation>
 <translation id="9078964945751709336">Meer informatie vereist</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Chromium deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit gebeurt wanneer een aanvaller probeert zich als <ph name="SITE" /> voor te doen of wanneer een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds veilig omdat Chromium de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
+<translation id="9128870381267983090">Verbinding maken met netwerk</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="9137248913990643158">Start Chrome en log in voordat je deze app gebruikt.</translation>
 <translation id="9148507642005240123">&amp;Bewerken ongedaan maken</translation>

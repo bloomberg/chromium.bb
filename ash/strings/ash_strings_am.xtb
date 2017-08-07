@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">USB-C መሣሪያ (የፊት ወደብ)</translation>
 <translation id="1013923882670373915">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል። እባክዎ ይህን የፒን ኮድ በዚህ መሣሪያ ላይ ያስገቡ፦ <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">መደርደሪያን በራስ ሰር ደብቅ</translation>
-<translation id="1127238861555034875">የማጉያ መነጽር ሁነታ</translation>
 <translation id="1153356358378277386">የተጣመሩ መሣሪያዎች</translation>
 <translation id="1195412055398077112">ትርፍ ቅኝት</translation>
 <translation id="1247372569136754018">ማይክሮፎን (ውስጣዊ)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> ቀርቷል</translation>
 <translation id="1698760176351776263">የIPv6 አድራሻ፦ <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">ይህ መሣሪያ በድርጅት የሚቀናበር ነው</translation>
+<translation id="1746730358044914197">የግቤት ስልቶች በእርስዎ አስተዳዳሪ ይዋቀራሉ።</translation>
 <translation id="1747827819627189109">በማያ ገጽ ላይ የቁልፍ ሰሌዳ ነቅቷል</translation>
 <translation id="1823873187264960516">ኤተርኔት፦ <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi ጠፍቷል።</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">የተግባር መሪው የሚከፈትበት አቋራጭ ተቀይሯል። እባክዎ ከ<ph name="OLD_SHORTCUT" /> ይልቅ <ph name="NEW_SHORTCUT" />ን ይጠቀሙ።</translation>
 <translation id="1923539912171292317">ራስ-ሰር ጠቅታዎች</translation>
 <translation id="1942830294380034169">የትርፍ ፍሰት አዝራር</translation>
+<translation id="1951012854035635156">ረዳት</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">ይህ መሣሪያ በ<ph name="DOMAIN" /> ነው የሚቀናበረው።</translation>
 <translation id="2050339315714019657">በቁመት</translation>
+<translation id="2067602449040652523">የቁልፍ ሰሌዳ ብሩህነት</translation>
 <translation id="207439088875642105">ይሄ በ<ph name="FIRST_PARENT_EMAIL" /> እና <ph name="SECOND_PARENT_EMAIL" /> የሚቀናበር የህጻናት መለያ ነው</translation>
 <translation id="2122028596993374965"><ph name="TAB_NAME" />ን ወደ <ph name="RECEIVER_NAME" /> Cast ማድረግ አስቁም</translation>
 <translation id="2127372758936585790">አነስተኛ ኃይል ያለው ባትሪ መሙያ</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">ሁሉንም ዘግተህ ውጣ</translation>
 <translation id="2292698582925480719">ልኬትን አሳይ</translation>
 <translation id="2303600792989757991">የመስኮት አጠቃላይ እይታን ቀያይር</translation>
+<translation id="2338501278241028356">በአቅራቢያ ያሉ መሣሪያዎችን ለማግኘት ብሉቱዝን ያብሩ</translation>
 <translation id="2352467521400612932">የስቲለስ ቅንብሮች</translation>
 <translation id="2354174487190027830"><ph name="NAME" />ን በማግበር ላይ</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">የተንቀሳቃሽ ስልክ ውሂብ</translation>
 <translation id="3236488194889173876">ምንም የተንቀሳቃሽ ስልክ አውታረ መረብ የለም</translation>
 <translation id="3294437725009624529">እንግዳ</translation>
-<translation id="3335772982573114336">አዲስ ማስታወሻ</translation>
 <translation id="3364721542077212959">የስቲለስ መሣሪያዎች</translation>
 <translation id="3368922792935385530">ተያይዟል</translation>
 <translation id="3371140690572404006">የUSB-C መሣሪያ (የቀኝ ጎን የፊት ወደብ)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">ቅጽበታዊ-ገጽ እይታዎችን የማንሳት ችሎታ በአስተዳዳሪዎ ተሰናክሏል።</translation>
 <translation id="397105322502079400">በማስላት ላይ...</translation>
 <translation id="3995138139523574647">የUSB-C መሣሪያ (የቀኝ ጎን የኋላ ወደብ)</translation>
+<translation id="4017989525502048489">የሌዘር ጨረር</translation>
 <translation id="4279490309300973883">በማንጸባረቅ ላይ</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">ማጉያ መነጽር</translation>
 <translation id="4378551569595875038">በመገናኘት ላይ...</translation>
 <translation id="4421231901400348175">የማያ ገጽዎን ቁጥጥር በርቀት እርዳታ በኩል ለ<ph name="HELPER_NAME" /> በማጋራት ላይ።</translation>
 <translation id="4430019312045809116">ድምፅ</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">ይህ አውታረ መረብ በአስተዳዳሪዎ ነው የተሰናከለው።</translation>
 <translation id="7067196344162293536">በራስ-አሽከርክር</translation>
 <translation id="7098389117866926363">USB-C መሣሪያ (የግራ ወደብ ከኋላ በኩል)</translation>
-<translation id="7129360219436193655">የሌዘር ጨረር ጠቋሚ ሁነታ</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">በ<ph name="TIMEOUT_SECONDS" /> ውስጥ ወደ ቀድሞው ጥራት በመመለስ ላይ</translation>
-<translation id="7199454189089571166">የረዳት ሁነታ</translation>
 <translation id="7246339268451149667">የጣት አሻራ መክፈቻ ይንቃ?</translation>
 <translation id="7256634071279256947">የኋላ ማይክሮፎን</translation>
 <translation id="7348093485538360975">የታይታ የቁልፍ ሰሌዳ</translation>
@@ -253,6 +255,7 @@
 <translation id="8185286464235484130">ለጥቂት ጥያቄዎች መልስ በመስጠት እኛ እንዴት እያደረግን እንዳለን ያሳውቁን።</translation>
 <translation id="8190698733819146287">ቋንቋዎችን እና ግብአቶችን አብጅ...</translation>
 <translation id="8308637677604853869">ቀዳሚ ምናሌ</translation>
+<translation id="8351131234907093545">ማስታወሻን ይፍጠሩ</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
 <translation id="8433186206711564395">የአውታረ መረብ ቅንብሮች</translation>
 <translation id="8433977262951327081">በመደርደሪያው ውስጥ የግቤት አማራጮች ምናሌ አረፋን ለማሳየት የሚሆነው አቋራጭ ተለውጧል። እባክዎ በ<ph name="OLD_SHORTCUT" /> ምትክ <ph name="NEW_SHORTCUT" />ን ይጠቀሙ።</translation>

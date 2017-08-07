@@ -134,6 +134,8 @@
 <translation id="3474649192738347024">Οι φόρμες συμπληρώθηκαν.</translation>
 <translation id="3478058380795961209">Μήνας λήξης</translation>
 <translation id="3482959374254649722">Συγχρονισμός των καρτελών σας…</translation>
+<translation id="3487093336331957349">Προτάσεις αναζήτησης και ιστοτόπων</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /> σχετικά με το προτεινόμενο περιεχόμενο</translation>
 <translation id="3494788280727468875">Επιβεβαίωση διαγραφής δεδομένων περιήγησης</translation>
 <translation id="3519193562722059437">Άνοιγμα καρτέλας για περιήγηση στον ιστό</translation>
 <translation id="3527085408025491307">Φάκελος</translation>
@@ -151,6 +153,7 @@
 <translation id="3691593122358196899">Ο σελιδοδείκτης είναι στο "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3738139272394829648">Αγγίξτε για αναζήτηση</translation>
 <translation id="3771033907050503522">Καρτ.αν.περιήγ.</translation>
+<translation id="3779810277399252432">Δεν υπάρχει σύνδεση στο διαδίκτυο.</translation>
 <translation id="3783017676699494206">Αποθήκευση εικόνας</translation>
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="3897092660631435901">Μενού</translation>
@@ -173,6 +176,7 @@
 <translation id="4281844954008187215">Όροι Παροχής Υπηρεσιών</translation>
 <translation id="430793432425771671">Συγχρονισμός όλων</translation>
 <translation id="4359125752503270327">Αυτή η σελίδα θα ανοίξει σε άλλη εφαρμογή.</translation>
+<translation id="4375040482473363939">Αναζήτηση κωδικού QR</translation>
 <translation id="4378154925671717803">Τηλέφωνο</translation>
 <translation id="441868831736628555">Σημείωση απορρήτου</translation>
 <translation id="4508750114462689118">Κλείσιμο προσφοράς σύνδεσης</translation>
@@ -262,7 +266,6 @@
 <translation id="6196207969502475924">Φωνητική αναζήτηση</translation>
 <translation id="6254066287920239840">Άνοιγμα συνδέσμων στην εφαρμογή αντί για το πρόγραμμα περιήγησης.</translation>
 <translation id="6255097610484507482">Επεξεργασία πιστωτικής κάρτας</translation>
-<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">Σας επιτρέπει να κάνετε λήψη και μεταφόρτωση φωτογραφιών.</translation>
 <translation id="6314335155547195432">Δημ.κωδ.πρόσβασης</translation>
 <translation id="6324528485781869530">Εναλλαγή λογαριασμού συγχρονισμού</translation>
@@ -365,7 +368,6 @@
 <translation id="842017693807136194">Σε σύνδεση με</translation>
 <translation id="8428045167754449968">Πόλη / Κωμόπολη</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
-<translation id="8433678324664858900">Εμφάνιση προτάσεων</translation>
 <translation id="8458397775385147834">Διαγράφηκε 1 στοιχείο</translation>
 <translation id="8487700953926739672">Διαθέσιμο εκτός σύνδεσης</translation>
 <translation id="8503813439785031346">Όνομα χρήστη</translation>

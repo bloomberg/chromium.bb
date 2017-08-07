@@ -323,7 +323,6 @@
 <translation id="2299220924812062390">Angi en liste over aktiverte programtillegg</translation>
 <translation id="2309390639296060546">Standardinnstilling for geoposisjonering</translation>
 <translation id="2312134445771258233">Lar deg konfigurere sidene som lastes inn ved oppstart. Innholdet i listen «Nettadresser som skal åpnes ved oppstart» ignoreres, med mindre du velger «Åpne en liste over nettadresser» i «Handling ved oppstart».</translation>
-<translation id="23323722127921515">Viser verktøyradikonet for Google Cast</translation>
 <translation id="2337466621458842053">Gjør at du kan angi en liste over nettadressemønstre for nettsteder som kan vise bilder. Hvis denne retningslinjen ikke angis, blir den globale standardverdien brukt for alle nettsteder, enten fra retningslinjen DefaultImagesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
 <translation id="2372547058085956601">Tid før automatisk pålogging til offentlig økt.
 
@@ -408,7 +407,6 @@
 
       Hvis denne innstillingen angis som False, vises en feilmelding i stedet for meldingen om nettverkskonfigurasjon.</translation>
 <translation id="2498238926436517902">Alltid skjul hyllen automatisk</translation>
-<translation id="2503514368596117142">Konfigurerer regler for Google Cast – en funksjon som gjør det mulig for brukere å sende skrivebords-, nettsteds- og faneinnhold fra nettleseren til eksterne skjermer og lydanlegg.</translation>
 <translation id="2514328368635166290">Angir nettadresse til favorittikonet til standard søkeleverandør.
 
           Denne retningslinjen er valgfri. Hvis den ikke angis, presenteres ikke noe ikon for søkeleverandøren.
@@ -425,9 +423,6 @@
 <translation id="2529880111512635313">Konfigurer listen over tvangsinstallerte programmer og utvidelser</translation>
 <translation id="253135976343875019">Forsinkelse for advarsel om inaktivitet når enheten kjører på AC-strøm</translation>
 <translation id="2552966063069741410">Tidssone</translation>
-<translation id="2558917182010914102">Hvis denne regelen angis som «true» (sann) eller ikke angis, slås Google Cast på, og brukere kan starte den fra appmenyen, kontekstuelle menyer på sider, mediekontroller på Cast-kompatible nettsteder og (hvis det vises) verktøyradikonet for Cast.
-
-          Hvis denne regelen angis som «false» (usann), slås Google Cast av.</translation>
 <translation id="2562339630163277285">Spesifiserer nettadressen for søkemotoren som brukes, for å gi umiddelbare resultater. Nettadressen må inneholde strengen <ph name="SEARCH_TERM_MARKER" />, som erstattes med teksten brukeren har skrevet inn hittil, når søket utføres.
 
           Denne regelen er ikke valgfri. Hvis den ikke angis, kommer det ikke opp noen umiddelbare søkeresultater.
@@ -554,6 +549,7 @@
 <translation id="3001534538097271560">Hvis denne regelen settes til «false» (usann), kan ikke brukerne velge å sende enkelte typer systeminformasjon og sideinnhold til Google-tjenere. Hvis denne regelen settes til «true» (sann) eller ikke konfigureres, kan brukerne sende enkelte typer systeminformasjon og sideinnhold til Safe Browsing for å bidra til å oppdage farlige apper og nettsteder.
 
       Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
+<translation id="3016255526521614822">Godkjenn notatapper for å tillate dem på låseskjermen for <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021409116652377124">Deaktiver programtilleggssøk</translation>
 <translation id="3030000825273123558">Aktiver rapportering av beregninger</translation>
 <translation id="3034580675120919256">Gjør at du kan angi om nettsteder får kjøre JavaScript. Kjøring av JavaScript kan tillates for alle nettsteder, eller nektes for alle nettsteder.
@@ -888,6 +884,16 @@
       "1412.24.34": Oppdater bare til denne spesifikke versjonen
 
       Advarsel: Det er ikke anbefalt å konfigurere versjonsbegrensninger, siden de kan hindre brukere i å motta programvareoppdateringer og kritiske sikkerhetsløsninger. Hvis oppdateringer begrenses til prefikset for en spesifikk versjon, kan brukerne bli utsatt for risiko.</translation>
+<translation id="4298509794364745131">Angir en liste over apper som kan aktiveres som notatapper på låseskjermen for <ph name="PRODUCT_OS_NAME" />.
+
+      Hvis den foretrukne notatappen er aktivert på låseskjermen, inneholder låseskjermen et UI-element for å starte den aktuelle appen.
+      Når appen er startet, kan den opprette et appvindu øverst på låseskjermen og opprette dataelementer (notater) når skjermen er låst. Appen kan også importere opprettede notater til den primære brukerøkten når den aktuelle økten er låst opp. For øyeblikket støttes bare Chrome-notatapper på låseskjermen.
+
+      Når regelen er angitt, kan brukeren bare aktivere en app på låseskjermen hvis utvidelses-ID-en til den aktuelle appen er oppført i listeverdien for regelen.
+      Dette betyr at hvis en tom liste angis for regelen, blir notater på startskjermen fullstendig deaktivert.
+      Vær oppmerksom på at selv når regelen inneholder en app-ID, er det ikke sikkert at brukeren kan aktivere den aktuelle appen som en notatapp på låseskjermen. I Chrome 61 er for eksempel settet med tilgjengelige apper også begrenset av plattformen.
+
+    Hvis regelen ikke angis, innfører den ikke noen begrensinger for hvilke apper brukeren kan aktivere på låseskjermen.</translation>
 <translation id="4309640770189628899">Definerer om DHE-chifferserier i TLS er slått på</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller nyere</translation>
 <translation id="4322842393287974810">La den automatisk startede kioskappen uten forsinkelse kontrollere <ph name="PRODUCT_OS_NAME" />-versjonen</translation>
@@ -1305,7 +1311,6 @@
       Hvis du aktiverer denne innstillingen, er Sikkert Søk i Google Søk alltid aktivert.
 
       Hvsi du deaktiverer denne innstillingen, eller ikke angir noen verdi, blir ikke Sikkert Søk i Google Søk iverksatt.</translation>
-<translation id="5940306398763671235">Slår på Google Cast</translation>
 <translation id="5946082169633555022">Betakanal</translation>
 <translation id="5950205771952201658">Som et resultat av at nettbaserte opphevelsekontroller for «soft-fail» ikke gir noen effektiv sikkerhetsfordel, er de avslått som standard i <ph name="PRODUCT_NAME" /> versjon 19 og nyere. Hvis denne regelen settes til true (sann), gjenopprettes tidligere atferd. I tillegg blir OCSP/CRL-kontroller på nettet utført.
 
@@ -1651,13 +1656,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
          Denne retningslinjen gjelder bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="7302043767260300182">Skjermlåsforsinkelse når du bruker strømadapteren</translation>
-<translation id="7309839952828354215">Spesifiserer hvordan enheter som har blitt levert med eCryptfs, og som må gå over til ext4-kryptering, bør oppføre seg.
-
-      Hvis du angir denne innstillingen som «DisallowArc», blir Android-apper deaktivert for alle brukere av enheten (inkludert brukerne som allerede har ext4-kryptering), og ingen brukere får muligheten til å overføre fra eCryptfs til ext4-kryptering.
-
-      Hvis du angir denne innstillingen som «AllowMigration», har brukere med eCryptfs-hjemmekataloger muligheten til å overføre disse til ext4-kryptering der det er nødvendig (for øyeblikket når Android N blir tilgjengelig på enheten).
-
-      Hvis denne innstillingen ikke angis, oppfører enheten seg som om «DisallowArc» er valgt.</translation>
 <translation id="7311458740754205918">Hvis denne regelen er angitt som «true» (sann) eller ikke er angitt, kan nye faner vise innholdsforslag som er basert på brukerens nettleserlogg, interesser eller steder.
 
       Hvis den er angitt som «false» (usann), vises ikke automatisk genererte innholdsforslag på nye faner.</translation>
@@ -1742,7 +1740,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis du aktiverer denne innstillingen, bruker <ph name="PRODUCT_NAME" /> det angitte språket. Hvis det konfigurerte språket ikke håndteres, brukes språket en-US i stedet.
 
       Hvis denne innstillingen er deakivert eller ikke angis, bruker <ph name="PRODUCT_NAME" /> enten det brukerspesifikke foretrukne språket (hvis dette er konfiguert), systemspråket eller, som siste mulighet, en-US.</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Avgjør om datastreifing skal aktiveres for enheten. Hvis innstillingen er angitt som Sann, tillates datastreifing. Hvis innstillingen er angitt som Usann eller ikke er konfigurert, blir ikke datastreifing tilgjengelig.</translation>
 <translation id="7683777542468165012">Dynamisk oppdatering av retningslinje</translation>
 <translation id="7694807474048279351">Angi en automatisk omstart etter en oppdatering for <ph name="PRODUCT_OS_NAME" /> er lagt til.
@@ -1859,6 +1856,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Denne retningslinjen støttes ikke lenger. Aktiverer bruk av STUN og relétjenere ved tilkobling til en ekstern klient. Hvis denne innstillingen er aktivert, kan maskinen oppdage og koble seg til eksterne vertsmaskiner selv om de er adskilt av en brannmur. Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres av brannmuren, kan denne maskinen bare koble seg til vertsmaskiner i det lokale nettverket.</translation>
 <translation id="7980227303582973781">Ingen spesielle begrensninger</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotér skjermen 0 grader</translation>
 <translation id="8044493735196713914">Rapportering av oppstartsmodus for enhet</translation>
 <translation id="8050080920415773384">Integrert utskrift</translation>

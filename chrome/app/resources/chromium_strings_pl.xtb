@@ -144,6 +144,7 @@
 <translation id="5862307444128926510">Chromium – witamy!</translation>
 <translation id="5877064549588274448">Kanał został zmieniony. Aby zastosować zmiany, uruchom ponownie urządzenie.</translation>
 <translation id="5895138241574237353">Uruchom ponownie</translation>
+<translation id="5902536751647951209">Błąd certyfikatu uwierzytelniania. Jeszcze raz zaloguj się w Chromium lub skontaktuj się z administratorem, by uzyskać więcej informacji. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Już prawie gotowe. Uruchom ponownie urządzenie, by zakończyć aktualizację.</translation>
 <translation id="5942520288919337908">Rozszerzenie <ph name="EXTENSION_NAME" /> zostało dodane do Chromium.</translation>
 <translation id="59625444380784159">Informacje z Twoich kontaktów pomogą Ci szybciej wypełniać formularze w Chromium.</translation>
@@ -217,6 +218,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="7745317241717453663">Spowoduje to usunięcie danych przeglądania z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chromium jako <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Instalator nie mógł utworzyć katalogu tymczasowego. Sprawdź, czy na dysku jest dość wolnego miejsca oraz sprawdź, czy posiadasz uprawnienia do instalowania programów.</translation>
 <translation id="7756122083761163394">Dane przeglądania tej osoby zostaną usunięte z tego urządzenia. Aby je odzyskać, zaloguj się w Chrome jako $2.</translation>
+<translation id="7774736947049807614">Błąd certyfikatu uwierzytelniania. Jeszcze raz zaloguj się w Chromium jako <ph name="USER_NAME" /> lub skontaktuj się z administratorem, by uzyskać więcej informacji. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7937630085815544518">Byłeś zalogowany w Chromium jako <ph name="USER_EMAIL_ADDRESS" />. Zaloguj się ponownie, korzystając z tego samego konta.</translation>
 <translation id="795025003224538582">Nie uruchamiaj ponownie</translation>
 <translation id="7962572577636132072">Chromium aktualizuje się automatycznie, więc zawsze masz najnowszą wersję.</translation>

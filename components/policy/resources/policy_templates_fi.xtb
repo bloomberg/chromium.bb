@@ -317,7 +317,6 @@
 <translation id="2299220924812062390">Määritä käytössä olevat laajennukset</translation>
 <translation id="2309390639296060546">Maantieteellisen sijainnin oletusasetus</translation>
 <translation id="2312134445771258233">Voit määrittää käynnistettäessä avattavat sivut. Käynnistettäessä avattavat sivut -luettelo ohitetaan, jos et valitse Toiminto käynnistettäessä -asetukseksi vaihtoehtoa Avaa seuraavat sivut:.</translation>
-<translation id="23323722127921515">Näyttää Google Cast ‑yläpalkkikuvakkeen.</translation>
 <translation id="2337466621458842053">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat näyttää kuvia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultImagesSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="2372547058085956601">Julkisen istunnon automaattisen kirjautumisen viive.
 
@@ -402,7 +401,6 @@
 
       Jos käytännöksi on asetettu False, virheviesti näytetään verkon määrityskehotteen sijasta.</translation>
 <translation id="2498238926436517902">Piilota hylly aina automaattisesti</translation>
-<translation id="2503514368596117142">Määrittää käytäntöjä Google Castia varten. Ominaisuuden avulla välilehtien, sivustojen tai työpöydän sisältö voidaan lähettää selaimesta ulkoisiin näyttöihin ja äänentoistolaitteisiin.</translation>
 <translation id="2514328368635166290">Määrittää oletushakupalvelun suosikkikuvakkeen URL-osoitteen. Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, hakupalvelulle ei käytetä kuvaketta. Käytäntö on voimassa vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
 <translation id="2516600974234263142">Sallii tulostuksen tuotteesta <ph name="PRODUCT_NAME" /> ja estää käyttäjiä muuttamasta tätä asetusta.
 
@@ -415,9 +413,6 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="2529880111512635313">Määritä sovellukset ja laajennukset, joiden asennus pakotetaan.</translation>
 <translation id="253135976343875019">Käyttämättömyysvaroituksen viive käytettäessä laitetta verkkovirralla</translation>
 <translation id="2552966063069741410">Aikavyöhyke</translation>
-<translation id="2558917182010914102">Jos tämän käytännön arvo on Tosi tai sitä ei ole määritetty, Google Cast on käytössä, ja käyttäjät voivat käynnistää sen sovellusvalikosta, sivujen kontekstivalikoista, Cast-yhteensopivien sivustojen mediasäätimillä tai Cast-yläpalkkikuvakkeella (jos se on näkyvissä).
-
-          Jos käytännön arvo on Epätosi, Google Cast ei ole käytössä.</translation>
 <translation id="2562339630163277285">Määrittää Instant-hakuihin käytettävän hakukoneen URL-osoitteen. Osoitteen on sisällettävä merkkijono <ph name="SEARCH_TERM_MARKER" />, joka korvataan kyselyn aikana käyttäjän kirjoittamalla tekstillä.
 
           Tämä käytäntö on valinnainen. Jos sitä ei ole asetettu, Instant-hakutuloksia ei tarjota.
@@ -540,6 +535,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="3001534538097271560">Jos tämän käytännön arvo on epätosi, käyttäjät eivät voi valita, lähetetäänkö Googlen palvelimille joitain järjestelmätietoja ja joidenkin sivujen sisältöä. Jos asetuksen arvo on tosi tai sitä ei ole määritetty, käyttäjät voivat lähettää joitain järjestelmätietoja ja joidenkin sivujen sisältöä Selaussuojalle auttaakseen vaarallisten sovellusten ja sivustojen havaitsemisessa.
 
       Voit lukea lisää Selaussuojasta osoitteessa https://developers.google.com/safe-browsing.</translation>
+<translation id="3016255526521614822">Luo luettelo sallituista muistiinpanosovelluksista, jotka <ph name="PRODUCT_OS_NAME" /> voi näyttää lukitusnäytöllä.</translation>
 <translation id="3021409116652377124">Poista laajennuksien haku käytöstä</translation>
 <translation id="3030000825273123558">Ota tilastoraportit käyttöön</translation>
 <translation id="3034580675120919256">Voit määrittää, saavatko sivustot suorittaa JavaScriptiä. JavaScriptin suorittaminen voidaan joko sallia kaikille sivustoille tai kieltää kaikilta sivustoilta. Jos tätä käytäntöä ei ole asetettu, käytetään AllowJavaScript-määritystä, ja käyttäjä voi muuttaa sitä.</translation>
@@ -871,6 +867,16 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       "1412.24.34": päivitetään vain tähän versioon
 
       Varoitus: emme suosittele määrittämään versiorajoituksia, sillä tämä voi estää laitetta saamasta ohjelmistopäivityksiä ja kriittisiä tietoturvapäivityksiä. Päivitysten rajoittaminen tiettyyn etuliiteversioon voi vaarantaa käyttäjät.</translation>
+<translation id="4298509794364745131">Määrittää luettelon sovelluksia, jotka <ph name="PRODUCT_OS_NAME" /> voi näyttää lukitusnäytöllä muistiinpanosovelluksina.
+
+      Jos ensisijainen muistiinpanosovellus on käytettävissä lukitusnäytöllä, näytöllä näkyy sovelluksen käynnistävä käyttöliittymäelementti.
+      Kun sovellus on käynnistetty, se voi luoda lukitusnäytön päälle sovellusikkunan ja luoda muistiinpanoja lukitusnäytöltä. Sovellus voi tuoda nämä muistiinpanot ensisijaisen käyttäjän käyttökertaan, jos se on avattu. Tällä hetkellä lukitusnäytöllä voi olla vain Chromen muistiinpanosovelluksia.
+
+      Jos käytännölle on määritetty arvo, käyttäjä voi valita sovelluksen käytön lukitusnäytöllä vain, jos sovelluksen tunnus on luettelossa, joka on käytännön arvo.
+      Jos käytännön arvo on tyhjä luettelo, muistiinpanojen tekeminen lukitusnäytöltä poistetaan siis kokonaan käytöstä.
+      Huomaa, ettei käyttäjä voi välttämättä lisätä muistiinpanosovellusta lukitusnäytölle, vaikka sen tunnus olisi käytännön arvossa. Esimerkiksi Chromen versiossa 61 käyttöympäristö rajoittaa sovellusvaihtoehtojen määrää.
+
+      Jos käytännölle ei ole määritetty arvoa, se ei rajoita käyttäjän lukitusnäytölle lisäämiä sovelluksia millään tavalla.</translation>
 <translation id="4309640770189628899">TLS:n DHE-salaustekniikoiden käyttöönotto</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 tai uudempi</translation>
 <translation id="4322842393287974810">Salli automaattisesti ilman viivettä käynnistettävän kioskisovelluksen hallinnoida käyttöjärjestelmän <ph name="PRODUCT_OS_NAME" /> versiota</translation>
@@ -1255,7 +1261,6 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
 Jos tämä asetus on käytössä, SafeSearch on aina käytössä Google-haussa.
 
 Jos tämä asetus ei ole käytössä tai jos sitä ei määritetä, SafeSearchia ei pakoteta käyttöön Google-haussa.</translation>
-<translation id="5940306398763671235">Ottaa Google Castin käyttöön.</translation>
 <translation id="5946082169633555022">Betaversio</translation>
 <translation id="5950205771952201658">OCSP- ja CRL-tarkistukset eivät tarjoa merkittävää suojaushyötyä, joten ne ovat oletuksena poissa käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 19 lähtien. Jos tämän käytännön arvoksi asetetaan tosi, aikaisempi toiminnallisuus palautetaan ja OCSP- ja CRL-tarkistukset suoritetaan.
 
@@ -1576,13 +1581,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Tätä käytäntöä noudatetaan vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
 <translation id="7302043767260300182">Ruudun lukituksen viive käytettäessä laitetta verkkovirralla</translation>
-<translation id="7309839952828354215">Määrittää laitteen toiminnan, jos se toimitettiin ecryptfs-salauksen kanssa mutta on siirrettävä ext4-salaukseen.
-
-      Jos käytännön arvoksi määritetään DisallowArc, Android-sovellukset poistetaan kaikkien laitteen käyttäjien (myös niiden, joilla on jo ext4-salaus) käytöstä eikä käyttäjille tarjota lainkaan ecryptfs–ext4-siirtymistä.
-
-      Jos käytännön arvoksi määritetään AllowMigration, ext4-salaukseen siirtymistä tarjotaan tarvittaessa (tällä hetkellä Android N:n tullessa käyttöön laitteella), jos käyttäjän kotihakemisto käyttää ecryptfs-salausta.
-
-      Jos tätä käytäntöä ei määritetä, toiminta vastaa DisallowArc-valintaa.</translation>
 <translation id="7311458740754205918">Jos tämän käytännön arvo on tosi tai sitä ei ole määritetty, Uusi välilehti ‑sivulla voidaan näyttää sisältöehdotuksia käyttäjän historian, kiinnostuksen kohteiden tai sijainnin perusteella.
 
       Jos tämän käytännön arvo on epätosi, Uusi välilehti ‑sivulla ei näytetä automaattisesti luotuja sisältöehdotuksia.</translation>
@@ -1659,7 +1657,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7625444193696794922">Määrittää julkaisuversion, jota tämän laitteen tulee käyttää.</translation>
 <translation id="7632724434767231364">GSSAPI-kirjaston nimi</translation>
 <translation id="7635471475589566552">Määrittää tuotteen <ph name="PRODUCT_NAME" /> sovelluksen kielen ja estää käyttäjiä muuttamasta sitä. Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> käyttää määritettyä kieltä. Jos tätä kieltä ei tueta, käytetään kieltä en-US. Jos asetus poistetaan käytöstä tai valintaa ei tehdä, <ph name="PRODUCT_NAME" /> käyttää joko käyttäjän määrittämää kieltä (jos valittu), järjestelmän kieltä tai kieltä en-US, jos näitä kieliä ei tueta.</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Määrittää, onko mobiilitiedonsiirto roaming-tilassa käytössä laitteessa. Jos arvo on tosi, mobiilitiedonsiirto roaming-tilassa on sallittu. Jos arvoa ei määritetä tai määritetty arvo on epätosi, mobiilitiedonsiirto roaming-tilassa ei ole käytettävissä.</translation>
 <translation id="7683777542468165012">Dynaaminen käytännön päivitys</translation>
 <translation id="7694807474048279351">Ajoita automaattinen uudelleenkäynnistys, kun tuotteen <ph name="PRODUCT_OS_NAME" /> päivitys on otettu käyttöön.
@@ -1774,6 +1771,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Tätä käytäntöä ei enää tueta. Ottaa käyttöön STUN- ja relay-palvelimet, kun muodostetaan yhteyttä etäasiakkaaseen. Jos tämä asetus on käytössä, tämä kone voi löytää etäasiakkaan ja muodostaa yhteyden, vaikka asiakkaat olisivat palomuurin takana. Jos asetus ei ole käytössä ja lähtevät UDP-yhteydet menevät palomuurin kautta, tämä kone hyväksyy vain paikallisessa verkossa olevien isäntäkoneiden yhteydet.</translation>
 <translation id="7980227303582973781">Ei erikoisrajoituksia</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Kierrä näyttöä 0 astetta.</translation>
 <translation id="8044493735196713914">Ilmoita laitteen tila uudelleenkäynnistyksen yhteydessä</translation>
 <translation id="8050080920415773384">Natiivitulostus</translation>

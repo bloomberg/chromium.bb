@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">USB-C ডিভাইস (সামনের পোর্ট)</translation>
 <translation id="1013923882670373915">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। দয়া করে ডিভাইসটিতে এই পিন কোড প্রবেশ করুন: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">তাককে স্বয়ংক্রিয়ভাবে লুকান</translation>
-<translation id="1127238861555034875">বিবর্ধক কাচ মোড</translation>
 <translation id="1153356358378277386">যুক্ত করা ডিভাইসগুলি</translation>
 <translation id="1195412055398077112">ওভারস্ক্যান</translation>
 <translation id="1247372569136754018">মাইক্রোফোন (অভ্যন্তরীণ)</translation>
@@ -36,11 +35,13 @@
 <translation id="1919743966458266018">কার্য পরিচালক খোলার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
 <translation id="1923539912171292317">স্বয়ংক্রিয় ক্লিকগুলি</translation>
 <translation id="1942830294380034169">ওভারফ্লো বোতাম</translation>
+<translation id="1951012854035635156">সহায়ক</translation>
 <translation id="1957803754585243749">০°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">এই ডিভাইস <ph name="DOMAIN" /> দ্বারা পরিচালিত হয়৷</translation>
 <translation id="2050339315714019657">প্রতিকৃতি</translation>
+<translation id="2067602449040652523">কীবোর্ডের উজ্জ্বলতা</translation>
 <translation id="207439088875642105"><ph name="FIRST_PARENT_EMAIL" /> এবং <ph name="SECOND_PARENT_EMAIL" /> দ্বারা পরিচালিত এটি একটি বাচ্চাদের অ্যাকাউন্ট</translation>
 <translation id="2122028596993374965"><ph name="TAB_NAME" /> কে <ph name="RECEIVER_NAME" /> এ কাস্ট করা বন্ধ করুন</translation>
 <translation id="2127372758936585790">নিম্ন শক্তির চার্জার</translation>
@@ -51,6 +52,7 @@
 <translation id="2268813581635650749">সবগুলি প্রস্থান করুন</translation>
 <translation id="2292698582925480719">স্কেল প্রদর্শন করুন</translation>
 <translation id="2303600792989757991">উইন্ডোর ওভারভিউ টগল করুন</translation>
+<translation id="2338501278241028356">আশেপাশের ডিভাইস খুঁজে পেতে ব্লুটুথ চালু করুন</translation>
 <translation id="2352467521400612932">স্টাইলাস সেটিংস</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> সক্রিয় করা হচ্ছে</translation>
 <translation id="2391579633712104609">১৮০°</translation>
@@ -87,7 +89,6 @@
 <translation id="315116470104423982">মোবাইল ডেটা</translation>
 <translation id="3236488194889173876">কোনো মোবাইল নেটওয়ার্ক উপলব্ধ নেই</translation>
 <translation id="3294437725009624529">অতিথি</translation>
-<translation id="3335772982573114336">নতুন টীকা</translation>
 <translation id="3364721542077212959">লেখনী সরঞ্জামগুলি</translation>
 <translation id="3368922792935385530">সংযুক্ত</translation>
 <translation id="3371140690572404006">USB-C ডিভাইস (ডান দিকের সামনের পোর্ট)</translation>
@@ -119,8 +120,10 @@
 <translation id="3967919079500697218">স্ক্রীনশট নেওয়ার ক্ষমতা আপনার প্রশাসক দ্বারা অক্ষম করা হয়েছে৷</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
 <translation id="3995138139523574647">USB-C ডিভাইস (ডান দিকের পিছনের পোর্ট)</translation>
+<translation id="4017989525502048489">লেজার পয়েন্টার</translation>
 <translation id="4279490309300973883">অনুকরণ করা হচ্ছে</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">আতস কাচ</translation>
 <translation id="4378551569595875038">সংযুক্ত হচ্ছে...</translation>
 <translation id="4421231901400348175">রিমোট সহায়কের মাধ্যমে <ph name="HELPER_NAME" />-এর সাথে আপনার স্ক্রীন নিয়ন্ত্রন ভাগ করুন৷</translation>
 <translation id="4430019312045809116">ভলিউম</translation>
@@ -215,11 +218,9 @@
 <translation id="7066646422045619941">এই নেটওয়ার্কটি আপনার প্রশাসকের দ্বারা অক্ষম করা হয়েছে৷</translation>
 <translation id="7067196344162293536">স্বতঃ ঘূর্ণন</translation>
 <translation id="7098389117866926363">USB-C ডিভাইস (পিছনের বাঁ পোর্ট)</translation>
-<translation id="7129360219436193655">লেজার পয়েন্টার মোড</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> এ পুরানো রেসুলিউশানে ফেরানো হচ্ছে</translation>
-<translation id="7199454189089571166">সহায়ক মোড</translation>
 <translation id="7246339268451149667">আঙ্গুলের ছাপ দিয়ে আনলক সক্ষম করবেন?</translation>
 <translation id="7256634071279256947">পেছনের মাইক্রোফোন</translation>
 <translation id="7348093485538360975">অন-স্ক্রীণ কীবোর্ড</translation>
@@ -254,6 +255,7 @@
 <translation id="8185286464235484130">আসুন, কয়েকটি প্রশ্নের উত্তর দিয়ে আমরা বুঝি যে আমরা কেমন আছি।</translation>
 <translation id="8190698733819146287">ভাষা এবং ইনপুট কাস্টমাইজ করুন...</translation>
 <translation id="8308637677604853869">পূর্ববর্তী মেনু</translation>
+<translation id="8351131234907093545">নোট তৈরি করুন</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8433186206711564395">নেটওয়ার্ক সেটিংস</translation>
 <translation id="8433977262951327081">শেল্ফে ইনপুট বিকল্পের মেনুর বুদবুদ দেখানোর শর্টকাটটি পরিবর্তন করা হয়েছে। অনুগ্রহ করে <ph name="OLD_SHORTCUT" /> এর পরিবর্তে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>

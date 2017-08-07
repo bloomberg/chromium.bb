@@ -6,6 +6,7 @@
 <translation id="1152528166145813711">تحديد…</translation>
 <translation id="1199593201721843963">تعطيل الاتصالات عن بُعد</translation>
 <translation id="1291443878853470558">‏يجب تمكين الاتصالات عن بُعد إذا كنت تريد استخدام تطبيق التوافق مع نظام التشغيل Chrome للدخول إلى هذا الكمبيوتر.</translation>
+<translation id="1297009705180977556">حدث خطأ أثناء الاتصال بـ <ph name="HOSTNAME" /></translation>
 <translation id="1300633907480909701">‏استمتع بدخول آمن إلى أجهزة الكمبيوتر من خلال جهاز Android.
 
 • على كل جهاز كمبيوتر، يمكنك إعداد إمكانية الدخول عن بُعد باستخدام تطبيق سطح المكتب البعيد من Chrome المتوفر على سوق Chrome الإلكتروني: https://chrome.google.com/remotedesktop
@@ -65,12 +66,14 @@
 <translation id="228809120910082333">‏يُرجى التأكيد على حسابك ورقم تعريفك الشخصي أدناه للسماح بالدخول من خلال التوافق مع نظام التشغيل Chrome.</translation>
 <translation id="2314101195544969792">جلسة تطبيقك <ph name="APPLICATION_NAME" /> كانت غير نشطة لفترة من الوقت وسيتم إلغاء ربطها قريبًا.</translation>
 <translation id="2317666076142640974">‏اطلع على لمحة سريعة عن <ph name="LINK_BEGIN" />التطبيق الجديد لسطح المكتب البعيد من Chrome على الويب<ph name="LINK_END" />. نود معرفة تعليقاتك.</translation>
+<translation id="2320166752086256636">إخفاء لوحة المفاتيح</translation>
 <translation id="2353140552984634198">‏يمكنك الدخول بأمان إلى هذا الكمبيوتر باستخدام تطبيق التوافق مع نظام التشغيل Chrome.</translation>
 <translation id="2359808026110333948">المتابعة</translation>
 <translation id="2366718077645204424">يتعذر الوصول إلى المضيف. ربما يرجع ذلك إلى تهيئة الشبكة التي تستخدمها.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  شوهد متصلاً آخر مرة <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">‏لم يعد هذا التطبيق مدعومًا. للتأكد من حصولك على آخر تحديثات الأمان والميزات، يُرجى استخدام <ph name="LINK_BEGIN" />تطبيق سطح المكتب البعيد من Chrome على الويب<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">‏ساعدنا في تحسين سطح المكتب البعيد من Chrome من خلال السماح لنا بتجميع إحصاءات الاستخدام وتقارير الأعطال.</translation>
+<translation id="2509394361235492552">متصل بـ <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">‏ملاحظة: للتأكد من توفر كل اختصارات لوحة المفاتيح، يمكنك تهيئة ميزة سطح المكتب البعيد من Chrome على "فتح كنافذة".</translation>
 <translation id="2540992418118313681">هل ترغب في مشاركة هذا الكمبيوتر مع مستخدم آخر للمشاهدة والتحكم؟</translation>
 <translation id="2599300881200251572">‏تمكن هذه الخدمة الاتصالات الواردة من عملاء سطح المكتب البعيد من Chrome.</translation>
@@ -78,9 +81,9 @@
 <translation id="2676780859508944670">جارٍ العمل…</translation>
 <translation id="2699970397166997657">‏التوافق مع نظام التشغيل Chrome</translation>
 <translation id="2747641796667576127">يتم عادةً إجراء تحديثات البرامج تلقائيًا، لكنها قد تخفق في بعض الحالات النادرة. من المفترض ألا يستغرق تحديث البرامج أكثر من بضع دقائق، كما يمكن إجراؤه أثناء الاتصال بالكمبيوتر عن بُعد.</translation>
+<translation id="2803375539583399270">أدخل رقم التعريف الشخصي</translation>
 <translation id="2841013758207633010">الوقت</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
-<translation id="2855866366045322178">غير متصل</translation>
 <translation id="2888969873284818612">حدث خطأ في الشبكة. سنعيد تشغيل التطبيق عندما يتصل جهازك بالإنترنت مرة أخرى.</translation>
 <translation id="2894654864775534701">تتم مشاركة جهاز الكمبيوتر هذا حاليًا ضمن حساب مختلف.</translation>
 <translation id="2919669478609886916">أنت تشارك هذا الجهاز حاليًا مع مستخدم آخر. هل تريد فعلًا متابعة المشاركة؟</translation>
@@ -153,12 +156,15 @@
 <translation id="4573676252416618192">‏مضيف سطح المكتب
 البعيد من Chrome</translation>
 <translation id="4619978527973181021">قبول وتثبيت</translation>
+<translation id="4635770493235256822">الأجهزة عن بُعد</translation>
+<translation id="4660011489602794167">عرض لوحة المفاتيح</translation>
 <translation id="4703302905453407178">توقف مكوّن مطلوب عن العمل. يُرجى إبلاغ هذه المشكلة إلى مطوري البرامج.</translation>
 <translation id="4703799847237267011">‏انتهت جلسة تطبيق التوافق مع نظام التشغيل Chrome.</translation>
 <translation id="4736223761657662401">سجل الاتصالات</translation>
 <translation id="4741792197137897469">‏أخفقت المصادقة،يُرجى تسجيل الدخول إلى Chrome مرة أخرى.</translation>
 <translation id="477305884757156764">التطبيق بطيء للغاية.</translation>
 <translation id="4795786176190567663">ليس لديك إذن لتنفيذ هذا الإجراء.</translation>
+<translation id="4798680868612952294">خيارات الماوس</translation>
 <translation id="4804818685124855865">قطع الاتصال</translation>
 <translation id="4808503597364150972">الرجاء إدخال رقم التعريف الشخصي التابع لك لـ <ph name="HOSTNAME" />.</translation>
 <translation id="4812684235631257312">المضيف</translation>
@@ -167,6 +173,7 @@
 <translation id="4918086044614829423">قبول</translation>
 <translation id="492843737083352574">أواجه مشكلات مع لوحة المفاتيح أو الماوس.</translation>
 <translation id="4973800994433240357">‏من خلال تنزيل أداة تثبيت مضيف التوافق مع نظام التشغيل Chrome، توافق على <ph name="LINK_BEGIN" />بنود خدمة<ph name="LINK_END" /> Google.</translation>
+<translation id="4974476491460646149">تم إغلاق الاتصال بـ <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">تحتاج أولاً إلى إعداد جهاز الكمبيوتر لإتاحة الدخول عن بُعد</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (في وضع عدم اتصال)</translation>
 <translation id="5070121137485264635">‏يتطلب منك المضيف البعيد مصادقة موقع ويب لجهة خارجية. للمتابعة، يجب منح تطبيق سطح المكتب البعيد من Chrome أذونات إضافية للدخول إلى هذا العنوان:</translation>
@@ -174,6 +181,7 @@
 <translation id="5156271271724754543">الرجاء إدخال رقم التعريف الشخصي نفسه في كلا المربعين.</translation>
 <translation id="5170982930780719864">رقم تعريف المضيف غير صالح.</translation>
 <translation id="518094545883702183">ولا تستخدم هذه المعلومات سوى لتشخيص المشكلة التي قدمت عنها التقرير، كما أنها غير متاحة إلا للشخص الذي يحقق في تقريرك، ويتم الاحتفاظ بها لمدة لا تتجاوز 30 يومًا.</translation>
+<translation id="5204575267916639804">الأسئلة الشائعة</translation>
 <translation id="5222676887888702881">الخروج</translation>
 <translation id="5254120496627797685">‏ستؤدي مغادرة هذه الصفحة إلى إنهاء جلسة سطح المكتب البعيد من Chrome.</translation>
 <translation id="5308380583665731573">اتصال</translation>
@@ -182,6 +190,7 @@
 <translation id="5379087427956679853">‏يسمح لك سطح المكتب البعيد من Chrome بمشاركة جهاز الكمبيوتر التابع لك بشكل آمن عبر الويب. ويجب أن يشغّل كلا المستخدمَين تطبيق سطح المكتب البعيد من Chrome، والذي يمكن العثور عليه على <ph name="URL" />.</translation>
 <translation id="5397086374758643919">‏أداة إزالة مضيف سطح المكتب البعيد من Chrome</translation>
 <translation id="5419185025274123272">تعذر إعادة ضبط التطبيق. لا يزال بإمكانك إرسال تقرير للإبلاغ عن خلل.</translation>
+<translation id="5419418238395129586">آخر اتصال بالإنترنت: <ph name="DATE" /></translation>
 <translation id="544077782045763683">تم إيقاف تشغيل المضيف.</translation>
 <translation id="5510035215749041527">إلغاء الربط الآن</translation>
 <translation id="5537725057119320332">إرسال</translation>
@@ -193,18 +202,22 @@
 <translation id="5708869785009007625">تتم مشاركة سطح المكتب حاليًا مع <ph name="USER" />.</translation>
 <translation id="5773590752998175013">تاريخ الإقران</translation>
 <translation id="579702532610384533">إعادة الاتصال</translation>
+<translation id="5841343754884244200">خيارات العرض</translation>
 <translation id="5843054235973879827">ما سبب تمتع هذه العملية بالأمان؟</translation>
 <translation id="5859141382851488196">نافذة جديدة…</translation>
 <translation id="5885438903806970186">متصل.</translation>
 <translation id="6001953797859482435">‏تفضيلات مضيف سطح المكتب البعيد من Chrome</translation>
 <translation id="6011539954251327702">‏يسمح لك تطبيق التوافق مع نظام التشغيل Chrome بمشاركة جهاز الكمبيوتر التابع لك بشكل آمن عبر الويب. ويجب أن يشغّل كلا المستخدمَين تطبيق التوافق مع نظام التشغيل Chrome، والذي يمكن العثور عليه على <ph name="URL" />.</translation>
+<translation id="6033507038939587647">خيارات لوحة المفاتيح</translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="6062854958530969723">فشلت تهيئة المضيف.</translation>
 <translation id="6091564239975589852">إرسال مفاتيح</translation>
 <translation id="6099500228377758828">‏خدمة سطح المكتب البعيد من Chrome</translation>
+<translation id="6122191549521593678">متصل</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="6173536234069435147">‏لا أستطيع فتح ملفات Google Drive.</translation>
 <translation id="6178645564515549384">مضيف الرسائل الأصلي للمساعدة عن بُعد</translation>
+<translation id="618120821413932081">تحديث الدقة عن بُعد لملاءمة النافذة</translation>
 <translation id="6193698048504518729">الاتصال بـ <ph name="HOSTNAME" /></translation>
 <translation id="6198252989419008588">تغيير رقم التعريف الشخصي</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (قديم)</translation>
@@ -222,8 +235,8 @@
 <translation id="6550675742724504774">خيارات</translation>
 <translation id="6570205395680337606">إعادة ضبط التطبيق. ستفقد أيّ عمل لم يتم حفظه.</translation>
 <translation id="6572345186230665992">‏لنظام التشغيل Mac‏ (OS X Mavericks 10.9 والإصدارات الأحدث)</translation>
+<translation id="6583902294974160967">الدعم</translation>
 <translation id="6612717000975622067">‏إرسال Ctrl-Alt-Del</translation>
-<translation id="6640610550128933069">آخر مرة على الإنترنت <ph name="DATE" /></translation>
 <translation id="6668065415969892472">تم تحديث رقم التعريف الشخصي.</translation>
 <translation id="6681800064886881394">‏حقوق الطبع والنشر لعام 2013 لشركة Google Inc. جميع الحقوق محفوظة.</translation>
 <translation id="6705482892455291412">عند إدخال الرمز، ستتم مطالبتك بقبول الاتصال وبدء جلسة المشاركة.</translation>
@@ -254,6 +267,7 @@
 <translation id="7526139040829362392">تغيير حساب</translation>
 <translation id="7589941250119944644">‏سينتقل سطح المكتب البعيد من Chrome إلى مكان جديد على الويب. جرّب <ph name="LINK_BEGIN" />تطبيق الويب<ph name="LINK_END" />—فهو سريع ومجاني، ويتضمن جميع الميزات السابقة نفسها.</translation>
 <translation id="7606912958770842224">تمكين الاتصالات عن بُعد</translation>
+<translation id="7628469622942688817">تذكّر رقم التعريف الشخصي التابع لي على هذا الجهاز.</translation>
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7665369617277396874">إضافة حساب</translation>
@@ -270,6 +284,8 @@
 <translation id="7981525049612125370">انتهت صلاحية الجلسة البعيدة.</translation>
 <translation id="8041089156583427627">إرسال تعليقات</translation>
 <translation id="8041721485428375115">‏من خلال تنزيل أداة تثبيت مضيف سطح المكتب البعيد من Chrome، توافق على <ph name="LINK_BEGIN" />بنود خدمة<ph name="LINK_END" /> Google.</translation>
+<translation id="8060029310790625334">مركز المساعدة</translation>
+<translation id="806699900641041263">جارٍ الاتصال بـ <ph name="HOSTNAME" /></translation>
 <translation id="8073845705237259513">‏لاستخدام سطح المكتب البعيد من Chrome، يجب إضافة حساب في Google إلى جهازك.</translation>
 <translation id="80739703311984697">‏يتطلب منك المضيف البعيد مصادقة موقع ويب لجهة خارجية. للمتابعة، يجب منح عملية التوافق مع نظام التشغيل Chrome أذونات إضافية للدخول إلى هذا العنوان:</translation>
 <translation id="809687642899217504">أجهزة الكمبيوتر الخاصة بي</translation>
@@ -285,6 +301,7 @@
 <translation id="837021510621780684">من هذا الكمبيوتر</translation>
 <translation id="8383794970363966105">‏لاستخدام التوافق مع نظام التشغيل Chrome، يجب إضافة حساب في Google إلى جهازك.</translation>
 <translation id="8386846956409881180">‏تمت تهيئة المضيف بواسطة بيانات اعتماد OAuth غير صالحة.</translation>
+<translation id="8428213095426709021">إعدادات</translation>
 <translation id="8445362773033888690">‏عرض في متجر Google Play</translation>
 <translation id="8509907436388546015">عملية دمج سطح المكتب</translation>
 <translation id="8513093439376855948">مضيف الرسائل الأصلي لإدارة المضيف عن بُعد</translation>
@@ -303,12 +320,14 @@
 <translation id="9016232822027372900">الاتصال على أي حال</translation>
 <translation id="906458777597946297">تكبير النافذة</translation>
 <translation id="9126115402994542723">عدم المطالبة برقم التعريف الشخصي مرة أخرى عند الاتصال بهذا المضيف من هذا الجهاز.</translation>
+<translation id="9149580767411232853">إظهار سطح المكتب البعيد بالكامل</translation>
 <translation id="9149992051684092333">لبدء مشاركة سطح المكتب، امنح رمز الدخول أدناه للشخص الذي سيساعدك.</translation>
 <translation id="9188433529406846933">تفويض</translation>
 <translation id="9213184081240281106">تهيئة المضيف غير صالحة.</translation>
 <translation id="951991426597076286">رفض</translation>
 <translation id="962733587145768554">يُرجى تحديد '<ph name="SHARE" />' في مربع حوار الاتصال لاستكمال العملية.</translation>
 <translation id="979100198331752041">‏ميزة سطح المكتب البعيد من Chrome على <ph name="HOSTNAME" /> قديمة ويلزم تحديثها.</translation>
+<translation id="981121421437150478">بلا اتصال</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (آخر دخول على الإنترنت في تمام <ph name="DATE_OR_TIME" />)</translation>
 </translationbundle>

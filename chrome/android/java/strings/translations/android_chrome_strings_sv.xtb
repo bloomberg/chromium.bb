@@ -107,11 +107,11 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1994173015038366702">Webbadress</translation>
 <translation id="2000271276660256125">Av säkerhetsskäl måste du bekräfta skärmlåset för att komma åt lösenordet.</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kB används av övriga appar</translation>
+<translation id="2011013297378343166">Genom att använda den här appen godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" /> samt <ph name="BEGIN_LINK3" />sekretessmeddelandet för Google-konton som har skapats i Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2017836877785168846">Rensar historik och autoslutföranden i adressfältet.</translation>
 <translation id="2020525020270327736">Kopiera webbplats</translation>
 <translation id="2038563949887743358">Aktivera begäran av skrivbordsversion</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB används av övriga appar</translation>
-<translation id="2073732792864401646">Återställ statistik</translation>
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2095887075102408547">När den här funktionen är aktiverad komprimerar Chrome sidor som du besöker med hjälp av Googles servrar innan de laddas ned. Sidor som öppnas via privata anslutningar (HTTPS) eller i inkognitoflikar varken optimeras eller visas av Google.</translation>
@@ -129,7 +129,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="219985413780390209">Skydda dig själv och enheten från farliga webbplatser</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webbapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Fortsätt som <ph name="USER_FULL_NAME" /></translation>
-<translation id="2246961355222023276">Använd data:</translation>
 <translation id="2268044343513325586">Finjustera</translation>
 <translation id="2286841657746966508">Faktureringsadress</translation>
 <translation id="2315043854645842844">Val av certifikat på klienten stöds inte av operativsystemet.</translation>
@@ -144,7 +143,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2369533728426058518">öppna flikar</translation>
 <translation id="2385560268894525395">den senaste veckan</translation>
 <translation id="2387895666653383613">Textskalning</translation>
-<translation id="238909021488141516">Ett fel uppstod när innehållet skulle laddas ned.</translation>
 <translation id="2414886740292270097">Mörk</translation>
 <translation id="2416359993254398973">Du behöver ge Chrome behörighet att använda kameran på den här webbplatsen.</translation>
 <translation id="2433507940547922241">Utseende</translation>
@@ -211,6 +209,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="3115898365077584848">Visa info</translation>
 <translation id="3137521801621304719">Inaktivera inkognitoläge</translation>
 <translation id="3148434565183091099">Logga in i Chrome om du vill få tillgång till samma bokmärken på alla enheter.</translation>
+<translation id="3157842584138209013">Under Fler alternativ kan du se hur mycket data du har sparat</translation>
 <translation id="3166827708714933426">Kortkommandon för flikar och fönster</translation>
 <translation id="3177909033752230686">Sidans språk:</translation>
 <translation id="3190152372525844641">Aktivera behörigheter för Chrome i <ph name="BEGIN_LINK" />Android-inställningar<ph name="END_LINK" />.</translation>
@@ -231,13 +230,13 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="3319792846664697699">Navigeringspanel</translation>
 <translation id="3321222012623826478">Den här webbadressen måste skickas anonymt till Google-servrar för att verifieras i tjänsten.</translation>
 <translation id="3328801116991980348">Platsinformation</translation>
+<translation id="3341058695485821946">Se hur mycket data du har sparat</translation>
 <translation id="3350687908700087792">Stäng alla inkognitoflikar</translation>
 <translation id="3365671512111106261">Inte tillgängligt när Databesparing är aktiverat</translation>
 <translation id="3367813778245106622">Logga in igen om du vill påbörja synkroniseringen</translation>
 <translation id="3384347053049321195">Dela bild</translation>
 <translation id="3386292677130313581">Fråga innan webbplatser tillåts att veta var du befinner dig (rekommenderas)</translation>
 <translation id="3387650086002190359">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av filsystemfel.</translation>
-<translation id="3391904733075904777">Du måste konfigurera ett enhetslås i enhetens säkerhetsinställningar för att visa och kopiera lösenord.</translation>
 <translation id="339329030417445648">Den här webbplatsen brukar visa påträngande annonser</translation>
 <translation id="3398320232533725830">Öppna bokmärkeshanteraren</translation>
 <translation id="3414952576877147120">Storlek:</translation>
@@ -331,6 +330,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="42981349822642051">Expandera</translation>
 <translation id="4300272766492248925">Öppna appen</translation>
 <translation id="4307992518367153382">Grunderna</translation>
+<translation id="4334425495413014985">Du behöver vara ansluten till internet när du använder <ph name="APP_NAME" /> första gången</translation>
 <translation id="4351244548802238354">Stäng dialogrutan</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Du söker med Sogou</translation>
@@ -491,12 +491,14 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="583891442612896534">Chrome kan inte nå Googles servrar för datakomprimeringen. Du kanske inte sparar data i någon större utsträckning.</translation>
 <translation id="5858741533101922242">Det gick inte att aktivera Bluetooth-adaptern i Chrome</translation>
 <translation id="5860033963881614850">Av</translation>
+<translation id="5867841422488265304">Skriv en sökning eller en webbadress</translation>
 <translation id="5869522115854928033">Sparade lösenord</translation>
 <translation id="5878455346526065919">Blockera annonser från webbplatser som brukar visa påträngande annonser</translation>
 <translation id="5902828464777634901">All data som sparats lokalt av webbplatsen tas bort, inklusive cookies.</translation>
 <translation id="5911030830365207728">Google Översätt</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="5919204609460789179">Uppdatera <ph name="PRODUCT_NAME" /> för att starta synkronisering</translation>
+<translation id="5923939907038835197">Sök efter nyheter, recept, vädret …</translation>
 <translation id="5939518447894949180">Återställ</translation>
 <translation id="5942872142862698679">Du söker med Google</translation>
 <translation id="5956665950594638604">Öppna hjälpcentret för Chrome på en ny flik</translation>
@@ -673,6 +675,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7600965453749440009">Översätt aldrig från <ph name="LANGUAGE" /></translation>
 <translation id="7605594153474022051">Det går inte att synkronisera</translation>
+<translation id="7607552448134703340">Skriv vad du letar efter</translation>
 <translation id="7612619742409846846">Inloggad i Google som</translation>
 <translation id="7619072057915878432">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av nätverksfel.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Få hjälp<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />sök igen<ph name="END_LINK2" /></translation>
@@ -827,7 +830,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="9188680907066685419">Logga ut från hanterat konto</translation>
 <translation id="9204836675896933765">1 fil återstår</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9216841883364897953">Dataanvändningsanalys</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="932327136139879170">Startsida</translation>
 <translation id="932599481871055447">Spara data och bläddra snabbare</translation>
@@ -838,7 +840,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="969096075394517431">Ändra språk</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> minuter kvar</translation>
 <translation id="974555521953189084">Ange lösenfrasen för att starta synkroniseringen</translation>
-<translation id="977929483582859929">Data som har sparats:</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="982182592107339124">Åtgärden raderar data för alla webbplatser, inklusive:</translation>
 <translation id="983192555821071799">Stäng alla flikar</translation>

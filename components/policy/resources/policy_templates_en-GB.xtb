@@ -329,7 +329,6 @@
 <translation id="2312134445771258233">Allows you to configure the pages that are loaded on start-up.
 
 The contents of the list 'URLs to open at start-up' are ignored unless you select 'Open a list of URLs' in 'Action on start-up'.</translation>
-<translation id="23323722127921515">Shows the Google Cast toolbar icon</translation>
 <translation id="2337466621458842053">Allows you to set a list of url patterns that specify sites which are allowed to display images.
 
           If this policy is left unset, the global default value will be used for all sites either from the 'DefaultImagesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -418,7 +417,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is set to False, an error message will be displayed instead of the network configuration prompt.</translation>
 <translation id="2498238926436517902">Always auto-hide the shelf</translation>
-<translation id="2503514368596117142">Configure policies for Google Cast, a feature that allows users to send the contents of tabs, sites or the desktop from the browser to remote displays and sound systems.</translation>
 <translation id="2514328368635166290">Specifies the favourite icon URL of the default search provider.
 
           This policy is optional. If not set, no icon will be present for the search provider.
@@ -435,9 +433,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2529880111512635313">Configure the list of force-installed apps and extensions</translation>
 <translation id="253135976343875019">Idle warning delay when running on AC power</translation>
 <translation id="2552966063069741410">Timezone</translation>
-<translation id="2558917182010914102">If this policy is set to true or is not set, Google Cast will be enabled, and users will be able to launch it from the app menu, page context menus, media controls on Cast-enabled websites and (if shown) the Cast toolbar icon.
-
-          If this policy is set to false, Google Cast will be disabled.</translation>
 <translation id="2562339630163277285">Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER" />, which will be replaced at query time by the text the user has entered so far.
 
           This policy is optional. If not set, no instant search results will be provided.
@@ -566,6 +561,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3001534538097271560">Setting this policy to false stops users from choosing to send some system information and page content to Google servers. If this setting is true or not configured, users will be allowed to send some system information and page content to Safe Browsing to help detect dangerous apps and sites.
 
       See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
+<translation id="3016255526521614822">Whitelist note-taking apps allowed on the <ph name="PRODUCT_OS_NAME" /> lock screen</translation>
 <translation id="3021409116652377124">Disable plug-in finder</translation>
 <translation id="3030000825273123558">Enable metrics reporting</translation>
 <translation id="3034580675120919256">Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.
@@ -916,6 +912,16 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       "1412.24.34": update to this specific version only
 
       Warning: It is not recommended to configure version restrictions as they may prevent users from receiving software updates and critical security fixes. Restricting updates to a specific version prefix might leave users at risk.</translation>
+<translation id="4298509794364745131">Specifies list of apps that can be enabled as a note-taking app on the <ph name="PRODUCT_OS_NAME" /> lock screen.
+
+      If the preferred note-taking app is enabled on the lock screen, the lock screen will contain UI element for launching the preferred note taking app.
+      When launched, the app will be able to create an app window on top of the lock screen and create data items (notes) in the lock screen context. The app will be able to import created notes to the primary user session, when the session is unlocked. Currently, only Chrome note-taking apps are supported on the lock screen.
+
+      If the policy is set, the user will be allowed to enable an app on the lock screen only if the app's extension ID is contained in the policy list value.
+      As a consequence, setting this policy to an empty list will disable note-taking on the lock screen entirely.
+      Note that the policy containing an app ID does not necessarily mean that the user will be able to enable the app as a note-taking app on the lock screen - for example, on Chrome 61, the set of available apps is additionally restricted by the platform.
+
+      If the policy is left unset, there will be no restrictions on the set of apps the user can enable on the lock screen imposed by the policy.</translation>
 <translation id="4309640770189628899">Whether DHE cipher suites in TLS are enabled</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 or later</translation>
 <translation id="4322842393287974810">Allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME" /> version</translation>
@@ -1343,7 +1349,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If you enable this setting, SafeSearch in Google Search is always active.
 
       If you disable this setting or do not set a value, SafeSearch in Google Search is not enforced.</translation>
-<translation id="5940306398763671235">Enables Google Cast</translation>
 <translation id="5946082169633555022">Beta channel</translation>
 <translation id="5950205771952201658">In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME" /> version 19 and later. By setting this policy to true, the previous behaviour is restored and online OCSP/CRL checks will be performed.
 
@@ -1690,13 +1695,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="7302043767260300182">Screen lock delay when running on AC power</translation>
-<translation id="7309839952828354215">Specifies how a device should behave that shipped with eCryptfs and needs to transition to ext4 encryption.
-
-      If you set this policy to 'DisallowArc', Android apps will be disabled for all users on the device (including those that have ext4 encryption already) and no migration from eCryptfs to ext4 encryption will be offered to any users.
-
-      If you set this policy to 'AllowMigration', users with eCryptfs home directories will be offered to migrate these to ext4 encryption as necessary (currently when Android N becomes available on the device).
-
-      If this policy is left unset, the device will behave as if 'DisallowArc' was chosen.</translation>
 <translation id="7311458740754205918">If this is set to true or not set, the New Tab page may show content suggestions based on the user's browsing history, interests or location.
 
       If this is set to false, automatically-generated content suggestions are not shown on the New Tab page.</translation>
@@ -1781,7 +1779,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If you enable this setting, <ph name="PRODUCT_NAME" /> uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.
 
       If this setting is disabled or not set, <ph name="PRODUCT_NAME" /> uses either the user-specified preferred locale (if configured), the system locale or the default locale 'en-US'.</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Determines whether data roaming should be enabled for the device. If set to true, data roaming is allowed. If left unconfigured or set to false, data roaming will be unavailable.</translation>
 <translation id="7683777542468165012">Dynamic Policy Refresh</translation>
 <translation id="7694807474048279351">Schedule an automatic reboot after a <ph name="PRODUCT_OS_NAME" /> update has been applied.
@@ -1903,6 +1900,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine can only connect to host machines within the local network.</translation>
 <translation id="7980227303582973781">No special restrictions</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotate screen by 0 degrees</translation>
 <translation id="8044493735196713914">Report device boot mode</translation>
 <translation id="8050080920415773384">Native Printing</translation>

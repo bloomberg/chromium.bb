@@ -119,7 +119,7 @@
 <translation id="3244271242291266297">ดด</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> จาก <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">แท็บที่เปิดอยู่</translation>
-<translation id="3277021493514034324">คัดลอกที่อยู่ไซต์แล้ว</translation>
+<translation id="3277021493514034324">คัดลอกที่อยู่เว็บไซต์แล้ว</translation>
 <translation id="3324193307694657476">ที่อยู่ 2</translation>
 <translation id="3329904751041170572">ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์</translation>
 <translation id="3335947283844343239">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
@@ -132,6 +132,8 @@
 <translation id="3474649192738347024">กรอกฟอร์มแล้ว</translation>
 <translation id="3478058380795961209">เดือนที่หมดอายุ</translation>
 <translation id="3482959374254649722">กำลังซิงค์แท็บ...</translation>
+<translation id="3487093336331957349">คำแนะนำการค้นหาและเว็บไซต์</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" />เกี่ยวกับเนื้อหาที่แนะนำ</translation>
 <translation id="3494788280727468875">ยืนยันการล้างข้อมูลการท่องเว็บ</translation>
 <translation id="3519193562722059437">เปิดแท็บเพื่อท่องเว็บ</translation>
 <translation id="3527085408025491307">โฟลเดอร์</translation>
@@ -149,6 +151,7 @@
 <translation id="3691593122358196899">เพิ่มบุ๊กมาร์กไปยัง <ph name="FOLDER_TITLE" /> แล้ว</translation>
 <translation id="3738139272394829648">แตะเพื่อค้นหา</translation>
 <translation id="3771033907050503522">แท็บที่ไม่ระบุตัวตน</translation>
+<translation id="3779810277399252432">ไม่มีการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="3783017676699494206">บันทึกภาพ</translation>
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3897092660631435901">เมนู</translation>
@@ -171,6 +174,7 @@
 <translation id="4281844954008187215">ข้อกำหนดในการให้บริการ</translation>
 <translation id="430793432425771671">ซิงค์ทุกอย่าง</translation>
 <translation id="4359125752503270327">หน้านี้จะเปิดในแอปพลิเคชันอื่น</translation>
+<translation id="4375040482473363939">ค้นหาโค้ด QR</translation>
 <translation id="4378154925671717803">โทรศัพท์</translation>
 <translation id="441868831736628555">ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว</translation>
 <translation id="4508750114462689118">ปิดโปรโมชันการลงชื่อเข้าใช้</translation>
@@ -260,7 +264,6 @@
 <translation id="6196207969502475924">การค้นหาด้วยเสียง</translation>
 <translation id="6254066287920239840">เปิดลิงก์ในแอปแทนเบราว์เซอร์</translation>
 <translation id="6255097610484507482">แก้ไขบัตรเครดิต</translation>
-<translation id="6273258929211277933"><ph name="TITLE" /> <ph name="PUBLISHER_INFORMATION" /> <ph name="PUBLICATION_DATE" /> <ph name="STATE" /></translation>
 <translation id="6308436439357671616">ช่วยให้คุณถ่ายและอัปโหลดรูปภาพได้</translation>
 <translation id="6314335155547195432">สร้างรหัสผ่าน</translation>
 <translation id="6324528485781869530">เปลี่ยนบัญชีที่จะซิงค์</translation>
@@ -363,7 +366,6 @@
 <translation id="842017693807136194">ลงชื่อเข้าใช้ด้วย</translation>
 <translation id="8428045167754449968">เมือง/จังหวัด</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
-<translation id="8433678324664858900">แสดงคำแนะนำ</translation>
 <translation id="8458397775385147834">ลบแล้ว 1 รายการ</translation>
 <translation id="8487700953926739672">ใช้งานแบบออฟไลน์ได้</translation>
 <translation id="8503813439785031346">ชื่อผู้ใช้</translation>

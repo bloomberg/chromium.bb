@@ -107,11 +107,11 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="1994173015038366702">URL ng site</translation>
 <translation id="2000271276660256125">Para sa seguridad, kailangan mong kumpirmahin ang iyong lock ng screen upang ma-access ang password mo.</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB na iba pang mga app</translation>
+<translation id="2011013297378343166">Sa pamamagitan ng paggamit ng application na ito, sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />Notification ng Privacy<ph name="END_LINK2" /> ng Chrome, at <ph name="BEGIN_LINK3" />Notification sa Privacy para sa Mga Google Account na Ginawa sa Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2017836877785168846">Kini-clear ang history at mga awtomatikong pagkumpleto sa address bar.</translation>
 <translation id="2020525020270327736">Kopyahin ang site</translation>
 <translation id="2038563949887743358">I-on ang Hilingin ang site sa desktop</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB na iba pang mga app</translation>
-<translation id="2073732792864401646">I-reset ang Mga Istatistika</translation>
 <translation id="2079545284768500474">I-undo</translation>
 <translation id="2082238445998314030">Resulta <ph name="RESULT_NUMBER" /> sa <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2095887075102408547">Kapag naka-on ang feature na ito, gagamitin ng Chrome ang mga server ng Google upang i-compress ang mga page na bibisitahin mo bago i-download ang mga ito. Ang mga page na ina-access gamit ang mga pribadong koneksyon (HTTPS) o sa mga tab na Incognito ay hindi mao-optimize o makikita ng Google.</translation>
@@ -129,7 +129,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="219985413780390209">Protektahan ang iyong sarili at ang iyong device mula sa mga mapanganib na site</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Magpatuloy bilang si <ph name="USER_FULL_NAME" /></translation>
-<translation id="2246961355222023276">Nagamit na Data:</translation>
 <translation id="2268044343513325586">Pinuhin</translation>
 <translation id="2286841657746966508">Billing address</translation>
 <translation id="2315043854645842844">Hindi sinusuportahan ng operating system ang pagpipilian ng certificate sa panig ng kliyente.</translation>
@@ -144,7 +143,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2369533728426058518">magbukas ng mga tab</translation>
 <translation id="2385560268894525395">nakalipas na linggo</translation>
 <translation id="2387895666653383613">Pag-scale ng text</translation>
-<translation id="238909021488141516">Nagkaroon ng error habang dina-download ang content.</translation>
 <translation id="2414886740292270097">Madilim</translation>
 <translation id="2416359993254398973">Kailangan ng Chrome ng pahintulot na i-access ang iyong camera para sa site na ito.</translation>
 <translation id="2433507940547922241">Hitsura</translation>
@@ -211,6 +209,7 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="3115898365077584848">Ipakita ang Impormasyon</translation>
 <translation id="3137521801621304719">Umalis sa mode na incognito</translation>
 <translation id="3148434565183091099">Upang mailagay ang iyong mga bookmark sa lahat ng iyong device, mag-sign in sa Chrome.</translation>
+<translation id="3157842584138209013">Tingnan kung gaano karaming data ang iyong natipid sa button ng Higit Pang Opsyon</translation>
 <translation id="3166827708714933426">Mga shortcut ng tab at window</translation>
 <translation id="3177909033752230686">Wika ng Page:</translation>
 <translation id="3190152372525844641">I-on ang mga pahintulot para sa Chrome sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
@@ -231,13 +230,13 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="3319792846664697699">Panel ng navigation</translation>
 <translation id="3321222012623826478">Kailangang ipadala nang anonymous ng serbisyong ito ang address ng website na ito sa mga server ng Google para sa pag-verify.</translation>
 <translation id="3328801116991980348">Impormasyon ng site</translation>
+<translation id="3341058695485821946">Tingnan kung gaano karaming data ang iyong natipid</translation>
 <translation id="3350687908700087792">Isara ang lahat ng incognito na tab</translation>
 <translation id="3365671512111106261">Hindi available kapag naka-on ang Data Saver</translation>
 <translation id="3367813778245106622">Mag-sign in muli upang simulan ang pag-sync</translation>
 <translation id="3384347053049321195">Magbahagi ng larawan</translation>
 <translation id="3386292677130313581">Magtanong bago payagan ang mga site na malaman ang iyong lokasyon (inirerekomenda)</translation>
 <translation id="3387650086002190359">Hindi na-download ang <ph name="FILE_NAME" /> dahil sa mga error sa file system.</translation>
-<translation id="3391904733075904777">Upang matingnan at makopya ang mga password, dapat kang mag-set up ng lock ng device sa mga setting ng seguridad ng iyong device.</translation>
 <translation id="339329030417445648">Malamang na magpakita ang site na ito ng mga nakakasagabal na ad</translation>
 <translation id="3398320232533725830">Buksan ang bookmarks manager</translation>
 <translation id="3414952576877147120">Laki:</translation>
@@ -331,6 +330,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="42981349822642051">Palawakin</translation>
 <translation id="4300272766492248925">Buksan ang app</translation>
 <translation id="4307992518367153382">Mga Pangunahing Kaalaman</translation>
+<translation id="4334425495413014985">Upang magamit ang <ph name="APP_NAME" /> sa unang pagkakataon, kumonekta sa Internet</translation>
 <translation id="4351244548802238354">Isara ang dialog</translation>
 <translation id="4378154925671717803">Telepono</translation>
 <translation id="4384468725000734951">Ginagamit ang Sogou para sa paghahanap</translation>
@@ -491,12 +491,14 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="583891442612896534">Hindi magawa ng Chrome na makipag-ugnayan sa mga server ng Google para sa pag-compress ng data. Maaaring limitado lang ang matipid mo sa data.</translation>
 <translation id="5858741533101922242">Hindi ma-on ng Chrome ang Bluetooth adapter</translation>
 <translation id="5860033963881614850">Naka-off</translation>
+<translation id="5867841422488265304">Maghanap o mag-type ng web address</translation>
 <translation id="5869522115854928033">Mga naka-save na password</translation>
 <translation id="5878455346526065919">I-block ang mga ad mula sa mga site na malamang na magpakita ng mga nakakasagabal na ad</translation>
 <translation id="5902828464777634901">Made-delete ang lahat ng lokal na data na inimbak ng website na ito, kasama ang cookies.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">Naka-on</translation>
 <translation id="5919204609460789179">I-update ang <ph name="PRODUCT_NAME" /> upang simulan ang pag-sync</translation>
+<translation id="5923939907038835197">Maghanap ng mga balita, recipe, lagay ng panahon...</translation>
 <translation id="5939518447894949180">I-reset</translation>
 <translation id="5942872142862698679">Ginagamit ang Google para sa paghahanap</translation>
 <translation id="5956665950594638604">Buksan ang Help Center ng Chrome sa bagong tab</translation>
@@ -673,6 +675,7 @@ Maaaring mayroong ibang mga uri ng history ng pagba-browse ang iyong Google acco
 <translation id="7596558890252710462">Operating system</translation>
 <translation id="7600965453749440009">Huwag isalin kailanman ang <ph name="LANGUAGE" /></translation>
 <translation id="7605594153474022051">Hindi gumagana ang pag-sync</translation>
+<translation id="7607552448134703340">I-type ang hinahanap mo</translation>
 <translation id="7612619742409846846">Naka-sign in sa Google bilang</translation>
 <translation id="7619072057915878432">Hindi na-download ang <ph name="FILE_NAME" /> dahil sa mga problema sa network.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Humingi ng tulong<ph name="END_LINK1" /> o <ph name="BEGIN_LINK2" />muling mag-scan<ph name="END_LINK2" /></translation>
@@ -827,7 +830,6 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="9188680907066685419">Mag-sign out sa pinamamahalaang account</translation>
 <translation id="9204836675896933765">1 file ang natitira</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9216841883364897953">Breakdown ng Paggamit ng Data</translation>
 <translation id="9219103736887031265">Mga Larawan</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="932599481871055447">Makatipid ng data at mag-browse nang mas mabilis</translation>
@@ -838,7 +840,6 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="969096075394517431">Palitan ang mga wika</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> (na) minuto na lang ang natitira</translation>
 <translation id="974555521953189084">Ilagay ang iyong passphrase upang simulan ang pag-sync</translation>
-<translation id="977929483582859929">Natipid na Data:</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="982182592107339124">Iki-clear nito ang data para sa lahat ng site, kabilang ang:</translation>
 <translation id="983192555821071799">Isara ang lahat ng tab</translation>

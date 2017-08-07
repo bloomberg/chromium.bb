@@ -107,11 +107,11 @@
 <translation id="1994173015038366702">網站網址</translation>
 <translation id="2000271276660256125">為了安全起見，你必須解除螢幕鎖定才能存取密碼。</translation>
 <translation id="200815880754187296">其他應用程式佔 <ph name="KILOBYTES" /> KB</translation>
+<translation id="2011013297378343166">使用這個應用程式即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》，以及《<ph name="BEGIN_LINK3" />透過 Family Link 建立的 Google 帳戶所適用的隱私權聲明<ph name="END_LINK3" />》。</translation>
 <translation id="2017836877785168846">將歷史紀錄和自動即時查詢從網址列中清除。</translation>
 <translation id="2020525020270327736">複製網站</translation>
 <translation id="2038563949887743358">開啟「要求電腦版網站」</translation>
 <translation id="2045104531052923016">其他應用程式佔 <ph name="GIGABYTES" /> GB</translation>
-<translation id="2073732792864401646">重設統計資料</translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 個結果，共 <ph name="TOTAL_RESULTS" /> 個</translation>
 <translation id="2095887075102408547">啟用這項功能後，Chrome 會先使用 Google 伺服器壓縮您要造訪的網頁資料，然後再下載這些網頁。使用私人連線 (HTTPS) 或無痕式分頁存取網頁時，Google 不會對這些網頁進行最佳化處理，也不會偵測到這些網頁。</translation>
@@ -129,7 +129,6 @@
 <translation id="219985413780390209">保護您和您的裝置不受危險網站攻擊</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，網路應用程式。<ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">以<ph name="USER_FULL_NAME" />的身分繼續使用</translation>
-<translation id="2246961355222023276">數據用量：</translation>
 <translation id="2268044343513325586">修正搜尋</translation>
 <translation id="2286841657746966508">帳單地址</translation>
 <translation id="2315043854645842844">作業系統不允許您在用戶端選取憑證。</translation>
@@ -144,7 +143,6 @@
 <translation id="2369533728426058518">開啟的分頁</translation>
 <translation id="2385560268894525395">過去 1 週</translation>
 <translation id="2387895666653383613">文字大小</translation>
-<translation id="238909021488141516">下載這項內容時發生錯誤。</translation>
 <translation id="2414886740292270097">深色</translation>
 <translation id="2416359993254398973">Chrome 需要相關權限，才能讓這個網站使用你的攝影機。</translation>
 <translation id="2433507940547922241">外觀</translation>
@@ -211,6 +209,7 @@
 <translation id="3115898365077584848">顯示資訊</translation>
 <translation id="3137521801621304719">離開無痕模式</translation>
 <translation id="3148434565183091099">如要在所有裝置上使用您的書籤，請登入 Chrome。</translation>
+<translation id="3157842584138209013">如要查看節省的數據用量，請點選 [更多選項] 按鈕</translation>
 <translation id="3166827708714933426">分頁與視窗快速鍵</translation>
 <translation id="3177909033752230686">網頁語言：</translation>
 <translation id="3190152372525844641">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 Chrome 啟用這些權限。</translation>
@@ -231,13 +230,13 @@
 <translation id="3319792846664697699">導覽面板</translation>
 <translation id="3321222012623826478">這項服務需要匿名傳送這個網址到 Google 伺服器，加以驗證。</translation>
 <translation id="3328801116991980348">網站資訊</translation>
+<translation id="3341058695485821946">查看節省的數據用量</translation>
 <translation id="3350687908700087792">關閉所有無痕式分頁</translation>
 <translation id="3365671512111106261">開啟 Data Saver 時無法使用這項設定</translation>
 <translation id="3367813778245106622">如要開始同步處理，請重新登入</translation>
 <translation id="3384347053049321195">分享圖片</translation>
 <translation id="3386292677130313581">允許網站存取您的位置資訊前，必須先詢問您 (建議)</translation>
 <translation id="3387650086002190359">檔案系統發生錯誤，因此無法下載 <ph name="FILE_NAME" />。</translation>
-<translation id="3391904733075904777">如要查看及複製密碼，請在裝置的安全性設定中設置裝置鎖。</translation>
 <translation id="339329030417445648">這個網站經常顯示侵入式廣告</translation>
 <translation id="3398320232533725830">開啟書籤管理員</translation>
 <translation id="3414952576877147120">空間大小：</translation>
@@ -331,6 +330,7 @@
 <translation id="42981349822642051">展開</translation>
 <translation id="4300272766492248925">開啟應用程式</translation>
 <translation id="4307992518367153382">基本選項</translation>
+<translation id="4334425495413014985">初次使用「<ph name="APP_NAME" />」時請連線至網際網路</translation>
 <translation id="4351244548802238354">關閉對話方塊</translation>
 <translation id="4378154925671717803">電話</translation>
 <translation id="4384468725000734951">現已使用 Sogou 搜尋</translation>
@@ -491,12 +491,14 @@
 <translation id="583891442612896534">Chrome 無法連上 Google 的伺服器進行資料壓縮，這可能會導致您無法節省某些數據流量。</translation>
 <translation id="5858741533101922242">Chrome 無法開啟藍牙轉接器</translation>
 <translation id="5860033963881614850">關閉</translation>
+<translation id="5867841422488265304">搜尋或輸入網址</translation>
 <translation id="5869522115854928033">已儲存的密碼</translation>
 <translation id="5878455346526065919">如果網站經常顯示侵入式廣告，就封鎖廣告</translation>
 <translation id="5902828464777634901">即將刪除這個網站儲存的所有本機資料 (包括 Cookie 在內)。</translation>
 <translation id="5911030830365207728">Google 翻譯</translation>
 <translation id="5916664084637901428">開啟</translation>
 <translation id="5919204609460789179">更新 <ph name="PRODUCT_NAME" /> 即可開始同步處理</translation>
+<translation id="5923939907038835197">尋找新聞、食譜、氣象資訊…</translation>
 <translation id="5939518447894949180">重設</translation>
 <translation id="5942872142862698679">現已使用 Google 搜尋</translation>
 <translation id="5956665950594638604">在新分頁中開啟 Chrome 說明中心</translation>
@@ -673,6 +675,7 @@
 <translation id="7596558890252710462">作業系統</translation>
 <translation id="7600965453749440009">一律不翻譯<ph name="LANGUAGE" /></translation>
 <translation id="7605594153474022051">同步處理功能無法正常運作</translation>
+<translation id="7607552448134703340">輸入你要尋找的項目</translation>
 <translation id="7612619742409846846">已使用下列帳戶登入 Google：</translation>
 <translation id="7619072057915878432">無法連上網路，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />查看說明<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />重新掃描<ph name="END_LINK2" /></translation>
@@ -827,7 +830,6 @@
 <translation id="9188680907066685419">登出受管理的帳戶</translation>
 <translation id="9204836675896933765">還剩 1 個檔案</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9216841883364897953">數據用量解析</translation>
 <translation id="9219103736887031265">圖片</translation>
 <translation id="932327136139879170">首頁</translation>
 <translation id="932599481871055447">節省數據用量，加快瀏覽速度</translation>
@@ -838,7 +840,6 @@
 <translation id="969096075394517431">變更語言</translation>
 <translation id="970715775301869095">還剩 <ph name="MINUTES" /> 分鐘</translation>
 <translation id="974555521953189084">如要開始同步處理，請輸入你的通關密語</translation>
-<translation id="977929483582859929">節省的流量：</translation>
 <translation id="981121421437150478">離線</translation>
 <translation id="982182592107339124">這會清除所有網站的資料，包括：</translation>
 <translation id="983192555821071799">關閉所有分頁</translation>

@@ -6,6 +6,7 @@
 <translation id="1152528166145813711">चुनें…</translation>
 <translation id="1199593201721843963">दूरस्‍थ कनेक्‍शन अक्षम करें</translation>
 <translation id="1291443878853470558">यदि आप इस कंप्यूटर पर पहुंचने के लिए Chromoting का उपयोग करना चाहते हैं, तो आपको दूरस्थ कनेक्शन सक्षम करने होंगे.</translation>
+<translation id="1297009705180977556"><ph name="HOSTNAME" /> से कनेक्ट करने में गड़बड़ी</translation>
 <translation id="1300633907480909701">अपने Android डिवाइस से सुरक्षित रूप से अपने कंप्यूटर एक्सेस करें.
 
 • अपने प्रत्येक कंप्यूटर पर, Chrome वेब स्टोर से Chrome दूरस्थ डेस्कटॉप ऐप्स का उपयोग करके दूरस्थ एक्सेस सेट करें : https://chrome.google.com/remotedesktop
@@ -65,12 +66,14 @@
 <translation id="228809120910082333">Chromoting द्वारा एक्सेस की अनुमति देने के लिए कृपया नीचे अपने खाते और PIN की दोबारा पुष्टि करें.</translation>
 <translation id="2314101195544969792">आपका <ph name="APPLICATION_NAME" /> सत्र कुछ समय से निष्‍क्रिय है और जल्‍दी ही डिस्‍कनेक्‍ट कर दिया जाएगा.</translation>
 <translation id="2317666076142640974">नए <ph name="LINK_BEGIN" />Chrome दूरस्थ डेस्कटॉप वेब ऐप्लिकेशन<ph name="LINK_END" /> पर एक नज़र डालें. हमें आपका फ़ीडबैक पाकर खुशी होगी.</translation>
+<translation id="2320166752086256636">कीबोर्ड छिपाएं</translation>
 <translation id="2353140552984634198">आप Chromoting का उपयोग करके सुरक्षित रूप से इस कंप्यूटर पर पहुंच सकते हैं.</translation>
 <translation id="2359808026110333948">जारी रखें</translation>
 <translation id="2366718077645204424">होस्‍ट तक पहुंचने में असमर्थ. यह संभवत: आपके द्वारा उपयोग किए जाने वाले नेटवर्क के कॉन्फ़िगरेशन के कारण है.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  पिछली बार <ph name="RELATIVE_TIMESTAMP" /> ऑनलाइन दिखाई दिया.</translation>
 <translation id="2405928220797050937">पुराना होने के कारण अब यह ऐप्लिकेशन नहीं चलता है. यह सुनिश्चित करने के लिए कि आपको सबसे नई सुविधाएं और सुरक्षा अपडेट मिलते रहें, कृपया <ph name="LINK_BEGIN" />Chrome दूरस्थ डेस्कटॉप वेब ऐप्लिकेशन<ph name="LINK_END" /> का उपयोग करें.</translation>
 <translation id="2499160551253595098">हमें उपयोग आंकड़े और क्रैश रिपोर्ट एकत्रित करने की अनुमति देते हुए Chrome दूरस्थ डेस्कटॉप को सुधारने में हमारी सहायता करें.</translation>
+<translation id="2509394361235492552"><ph name="HOSTNAME" /> से कनेक्‍ट है</translation>
 <translation id="2512228156274966424">ध्यान दें: सभी कीबोर्ड शॉर्टकट की उपलब्धता सुनिश्चित करने के लिए, आप Chrome रिमोट डेस्कटॉप को ‘विंडो के रूप में खोलें’ पर कॉन्फ़िगर कर सकते हैं.</translation>
 <translation id="2540992418118313681">क्‍या आप किसी अन्‍य उपयोगकर्ता द्वारा देखने और नियंत्रित करने के लिए इस कंप्‍यूटर को साझा करना चाहते हैं?</translation>
 <translation id="2599300881200251572">यह सेवा Chrome दूरस्थ डेस्कटॉप क्लाइंट के इनकमिंग कनेक्शन सक्षम करती है.</translation>
@@ -78,9 +81,9 @@
 <translation id="2676780859508944670">कार्य कर रहा है…</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">सॉफ़्टवेयर अपडेट आमतौर पर स्वचालित रूप से ही होते हैं, लेकिन कुछ दुर्लभ मामलों में वे असफल भी हो सकते हैं. सॉफ़्टवेयर को अपडेट होने में कुछ ही मिनट लगेंगे और इसे अपने कंप्यूटर से दूरस्थ रूप से कनेक्ट रहते हुए भी पूर्ण किया जा सकता है.</translation>
+<translation id="2803375539583399270">पिन डालें</translation>
 <translation id="2841013758207633010">समय</translation>
 <translation id="2851754573186462851">क्रोमियम ऐप स्‍ट्रीमिंग</translation>
-<translation id="2855866366045322178">ऑफ़लाइन</translation>
 <translation id="2888969873284818612">नेटवर्क गड़बड़ी हुई. आपके डिवाइस के फिर से ऑन-लाइन होने पर हम ऐप को पुनः प्रारंभ करेंगे.</translation>
 <translation id="2894654864775534701">यह कंप्‍यूटर वर्तमान में किसी भिन्‍न खाते के अंतर्गत साझा किया गया है.</translation>
 <translation id="2919669478609886916">आप वर्तमान में किसी अन्य उपयोगकर्ता के साथ इस मशीन को साझा कर रहे हैं. क्या आप साझाकरण जारी रखना चाहते हैं?</translation>
@@ -151,12 +154,15 @@
 <translation id="4573676252416618192">Chrome दूरस्थ
 डेस्कटॉप होस्ट</translation>
 <translation id="4619978527973181021">स्वीकार करें और इंस्टॉल करें</translation>
+<translation id="4635770493235256822">रिमोट डिवाइस</translation>
+<translation id="4660011489602794167">कीबोर्ड दिखाएं</translation>
 <translation id="4703302905453407178">किसी आवश्यक घटक ने काम करना बंद कर दिया है. कृपया इस समस्या की रिपोर्ट डेवलपर से करें.</translation>
 <translation id="4703799847237267011">आपका Chromoting सत्र समाप्त हो गया है.</translation>
 <translation id="4736223761657662401">कनेक्शन इतिहास</translation>
 <translation id="4741792197137897469">प्रमाणीकरण विफल रहा. कृपया Chrome में पुन: प्रवेश करें.</translation>
 <translation id="477305884757156764">ऐप्लिकेशन बहुत धीमा है.</translation>
 <translation id="4795786176190567663">आपको यह कार्यवाही करने की अनुमति नहीं है.</translation>
+<translation id="4798680868612952294">माउस के विकल्प</translation>
 <translation id="4804818685124855865">डिसकनेक्ट करें</translation>
 <translation id="4808503597364150972">कृपया <ph name="HOSTNAME" /> के लिए अपना पिन दर्ज करें.</translation>
 <translation id="4812684235631257312">होस्ट</translation>
@@ -165,6 +171,7 @@
 <translation id="4918086044614829423">स्वीकार करें</translation>
 <translation id="492843737083352574">मुझे अपने कीबोर्ड या माउस के साथ समस्या आ रही है.</translation>
 <translation id="4973800994433240357">Chromoting होस्ट इंस्टॉलर को डाउनलोड करके, आप Google की <ph name="LINK_BEGIN" />सेवा की शर्तों<ph name="LINK_END" /> से सहमत होते हैं.</translation>
+<translation id="4974476491460646149"><ph name="HOSTNAME" /> का कनेक्शन बंद है</translation>
 <translation id="4985296110227979402">आपको सबसे पहले अपने कंप्यूटर को दूरस्थ एक्सेस के लिए सेट करना होगा</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ऑफ़लाइन)</translation>
 <translation id="5070121137485264635">दूरस्थ होस्ट के लिए आवश्यक है कि आप किसी तृतीय-पक्ष की वेबसाइट प्रमाणीकृत करें. जारी रखने के लिए, आपको Chrome दूरस्थ डेस्कटॉप को इस पते को एक्सेस करने के लिए अतिरिक्त अनुमतियां देनी होंगी:</translation>
@@ -172,6 +179,7 @@
 <translation id="5156271271724754543">कृपया दोनों बॉक्‍स में समान पिन दर्ज करें.</translation>
 <translation id="5170982930780719864">अमान्‍य होस्‍ट आईडी.</translation>
 <translation id="518094545883702183">इस जानकारी का उपयोग आपके द्वारा रिपोर्ट की जा रही समस्‍या का निदान करने के लिए ही किया जाता है, यह आपकी रिपोर्ट की जांच कर रहे व्‍यक्‍ति के लिए ही उपलब्‍ध होती है, और इसे 30 दिन से अधिक समय तक नहीं रखा जाता.</translation>
+<translation id="5204575267916639804">FAQ</translation>
 <translation id="5222676887888702881">प्रस्थान करें</translation>
 <translation id="5254120496627797685">इस पेज को छोड़ देने पर आपका Chrome दूरस्थ डेस्कटॉप सत्र समाप्त हो जाएगा.</translation>
 <translation id="5308380583665731573">कनेक्ट करें</translation>
@@ -180,6 +188,7 @@
 <translation id="5379087427956679853">Chrome दूरस्थ डेस्कटॉप आपको वेब पर आपका कंप्‍यूटर सुरक्षित रूप से साझा करने देता है. दोनों उपयोगकर्ताओं के पास Chrome दूरस्थ डेस्कटॉप ऐप्स अवश्‍य चलना चाहिए, जो कि <ph name="URL" /> पर मिल सकता है.</translation>
 <translation id="5397086374758643919">Chrome दूरस्थ डेस्कटॉप होस्ट अनइंस्टॉलर</translation>
 <translation id="5419185025274123272">ऐप्‍लिकेशन को रीसेट नहीं किया जा सका. फिर भी आप बग रिपोर्ट भेज सकते हैं.</translation>
+<translation id="5419418238395129586">पिछली बार ऑनलाइन: <ph name="DATE" /></translation>
 <translation id="544077782045763683">होस्‍ट बंद हो गया है.</translation>
 <translation id="5510035215749041527">अभी डिस्‍कनेक्‍ट करें</translation>
 <translation id="5537725057119320332">कास्‍ट करें</translation>
@@ -191,18 +200,22 @@
 <translation id="5708869785009007625">आपका डेस्कटॉप वर्तमान में <ph name="USER" /> के साथ साझा किया गया है.</translation>
 <translation id="5773590752998175013">युग्मन दिनांक</translation>
 <translation id="579702532610384533">पुन: कनेक्‍ट करें</translation>
+<translation id="5841343754884244200">प्रदर्शन विकल्प</translation>
 <translation id="5843054235973879827">यह सुरक्षित क्यों है?</translation>
 <translation id="5859141382851488196">नई विंडो...</translation>
 <translation id="5885438903806970186">ऑनलाइन.</translation>
 <translation id="6001953797859482435">Chrome दूरस्थ डेस्कटॉप होस्ट प्राथमिकताएं</translation>
 <translation id="6011539954251327702">Chromoting आपको अपने कंप्यूटर को वेब पर सुरक्षित रूप से साझा करने देता है. दोनों उपयोगकर्ताओं को क्रोमोटिंग ऐप्स  चलाना चाहिए, जिसे <ph name="URL" /> पर ढूंढा जा सके.</translation>
+<translation id="6033507038939587647">कीबोर्ड विकल्प</translation>
 <translation id="6040143037577758943">बंद करें</translation>
 <translation id="6062854958530969723">होस्‍ट आरंभ करना विफल रहा.</translation>
 <translation id="6091564239975589852">भेजें कुंजियां</translation>
 <translation id="6099500228377758828">Chrome दूरस्‍थ डेस्‍कटॉप सेवा</translation>
+<translation id="6122191549521593678">ऑनलाइन</translation>
 <translation id="6167788864044230298">Chrome ऐप स्‍ट्रीमिंग</translation>
 <translation id="6173536234069435147">मैं अपनी Google डिस्क फ़ाइलें नहीं खोल सकता/सकती.</translation>
 <translation id="6178645564515549384">दूरस्थ सहायता के लिए स्थानीय संदेश सेवा होस्ट</translation>
+<translation id="618120821413932081">विंडो से मिलान के लिए दूरस्थ रिज़ॉल्यूशन अपडेट करें</translation>
 <translation id="6193698048504518729"><ph name="HOSTNAME" /> से कनेक्ट करें</translation>
 <translation id="6198252989419008588">पिन बदलें</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (पुराना)</translation>
@@ -220,8 +233,8 @@
 <translation id="6550675742724504774">विकल्प</translation>
 <translation id="6570205395680337606">ऐप्‍लिकेशन को रीसेट करें. आप किसी भी नहीं सहेजे गए कार्य को खो देंगे.</translation>
 <translation id="6572345186230665992">Mac के लिए (OS X Mavericks 10.9 और बाद वाले वर्शन)</translation>
+<translation id="6583902294974160967">सहायता</translation>
 <translation id="6612717000975622067">Ctrl-Alt-Del भेजें</translation>
-<translation id="6640610550128933069">पिछली बार <ph name="DATE" /> को ऑनलाइन था</translation>
 <translation id="6668065415969892472">आपका पिन अपडेट कर दिया गया है.</translation>
 <translation id="6681800064886881394">कॉपीराइट 2013 Google Inc. सर्वाधिकार सुरक्षित.</translation>
 <translation id="6705482892455291412">कोड डालने के बाद, आपको कनेक्शन स्वीकार करने और साझाकरण सत्र प्रारंभ करने के लिए संकेत दिया जाएगा.</translation>
@@ -252,6 +265,7 @@
 <translation id="7526139040829362392">खाता बदलें</translation>
 <translation id="7589941250119944644">Chrome दूरस्थ डेस्कटॉप, वेब पर एक नई जगह पर जा रहा है. हमारा <ph name="LINK_BEGIN" />वेब ऐप्लिकेशन<ph name="LINK_END" /> आज़माएं, यह तेज़ और मुफ़्त है, साथ ही इसमें पहले जैसी सभी सुविधाएं मौजूद हैं.</translation>
 <translation id="7606912958770842224">दूरस्‍थ कनेक्‍शन सक्षम करें</translation>
+<translation id="7628469622942688817">इस डिवाइस पर मेरा पिन याद रखें.</translation>
 <translation id="7649070708921625228">सहायता</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7665369617277396874">खाता जोड़ें</translation>
@@ -268,6 +282,8 @@
 <translation id="7981525049612125370">दूरस्थ सत्र समाप्त हो चुका है.</translation>
 <translation id="8041089156583427627">सुझाव भेजें</translation>
 <translation id="8041721485428375115">Chrome दूरस्थ डेस्कटॉप होस्ट इंस्टॉलर को डाउनलोड करके, आप Google की <ph name="LINK_BEGIN" />सेवा की शर्तों<ph name="LINK_END" /> से सहमत होते हैं.</translation>
+<translation id="8060029310790625334">सहायता केंद्र</translation>
+<translation id="806699900641041263"><ph name="HOSTNAME" /> से कनेक्ट हो रहा है</translation>
 <translation id="8073845705237259513">Chrome दूरस्थ डेस्कटॉप का उपयोग करने के लिए, आपको अपने डिवाइस में Google खाता जोड़ना होगा.</translation>
 <translation id="80739703311984697">दूरस्थ होस्ट के लिए आवश्यक है कि आप किसी तृतीय-पक्ष वेबसाइट को प्रमाणीकृत करें. जारी रखने के लिए, आपको Chromoting को इस पते को एक्सेस करने के लिए अतिरिक्त अनुमतियां देनी होंगी:</translation>
 <translation id="809687642899217504">मेरे कंप्यूटर</translation>
@@ -283,6 +299,7 @@
 <translation id="837021510621780684">इस कंप्यूटर से</translation>
 <translation id="8383794970363966105">Chromoting का उपयोग करने के लिए, आपको अपने डिवाइस में Google खाता जोड़ना होगा.</translation>
 <translation id="8386846956409881180">होस्‍ट को अमान्‍य OAuth प्रमाणिकता से कॉन्‍फ़िगर किया गया है.</translation>
+<translation id="8428213095426709021">सेटिंग्स</translation>
 <translation id="8445362773033888690">Google Play - स्टोर में देखें</translation>
 <translation id="8509907436388546015">डेस्कटॉप एकीकरण प्रोसेस</translation>
 <translation id="8513093439376855948">होस्ट प्रबंधन को दूरस्थ बनाने के लिए स्थानीय संदेश सेवा होस्ट</translation>
@@ -300,12 +317,14 @@
 <translation id="9016232822027372900">किसी भी तरह कनेक्ट करें</translation>
 <translation id="906458777597946297">विंडो को बड़ा करें</translation>
 <translation id="9126115402994542723">इस डिवाइस से इस होस्ट को कनेक्ट करते समय दोबारा पिन न मांगें.</translation>
+<translation id="9149580767411232853">पूरा दूरस्थ डेस्कटॉप दृश्यमान रखें</translation>
 <translation id="9149992051684092333">अपने डेस्कटॉप को साझा करना प्रारंभ करने के लिए, नीचे दिया गया पहुंच कोड आपकी सहायता करने वाले व्यक्ति को दें.</translation>
 <translation id="9188433529406846933">अधिकृत करें</translation>
 <translation id="9213184081240281106">अमान्‍य होस्‍ट कॉन्‍फ़िगरेशन.</translation>
 <translation id="951991426597076286">अस्वीकार करें</translation>
 <translation id="962733587145768554">कृपया प्रक्रिया पूरी करने के लिए कनेक्शन संवाद बॉक्स पर दिए '<ph name="SHARE" />' को चुनें.</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME" /> पर Chrome दूरस्थ डेस्कटॉप पुराना हो गया है और इसे अपडेट किया जाना आवश्यक है.</translation>
+<translation id="981121421437150478">ऑफ़लाइन</translation>
 <translation id="985602178874221306">क्रोमियम लेखक</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (पिछली बार <ph name="DATE_OR_TIME" /> को ऑनलाइन)</translation>
 </translationbundle>

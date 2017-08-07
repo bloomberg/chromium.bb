@@ -107,11 +107,11 @@
 <translation id="1994173015038366702">URL ของเว็บไซต์</translation>
 <translation id="2000271276660256125">เพื่อความปลอดภัย คุณต้องยืนยันการล็อกหน้าจอจึงจะเข้าถึงรหัสผ่านของคุณได้</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB จากแอปอื่นๆ</translation>
+<translation id="2011013297378343166">การใช้แอปพลิเคชันนี้หมายความว่าคุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" />ของ Chrome และ<ph name="BEGIN_LINK3" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวของบัญชี Google ที่สร้างใน Family Link<ph name="END_LINK3" /></translation>
 <translation id="2017836877785168846">ล้างประวัติการเข้าชมและการเติมข้อความอัตโนมัติในแถบที่อยู่เว็บ</translation>
 <translation id="2020525020270327736">คัดลอกเว็บไซต์</translation>
 <translation id="2038563949887743358">เปิดการขอเว็บไซต์เดสก์ท็อป</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB จากแอปอื่นๆ</translation>
-<translation id="2073732792864401646">รีเซ็ตสถิติ</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="2082238445998314030">ผลลัพธ์ <ph name="RESULT_NUMBER" /> จาก <ph name="TOTAL_RESULTS" /> รายการ</translation>
 <translation id="2095887075102408547">เมื่อเปิดฟีเจอร์นี้ Chrome จะใช้เซิร์ฟเวอร์ของ Google ในการบีบอัดหน้าเว็บที่คุณเข้าชมก่อนที่จะดาวน์โหลดหน้าเหล่านั้น Google จะมองไม่เห็นและไม่เพิ่มประสิทธิภาพหน้าที่เข้าถึงโดยใช้การเชื่อมต่อส่วนตัว (HTTPS) หรือแท็บไม่ระบุตัวตน</translation>
@@ -129,7 +129,6 @@
 <translation id="219985413780390209">ปกป้องคุณและอุปกรณ์ของคุณจากเว็บไซต์อันตราย</translation>
 <translation id="2206488550163399966">เว็บแอป <ph name="APP_NAME" />, <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">ดำเนินการต่อในชื่อ <ph name="USER_FULL_NAME" /></translation>
-<translation id="2246961355222023276">ใช้อินเทอร์เน็ตไป:</translation>
 <translation id="2268044343513325586">ปรับแต่ง</translation>
 <translation id="2286841657746966508">ที่อยู่สำหรับเรียกเก็บเงิน</translation>
 <translation id="2315043854645842844">ระบบปฏิบัติการไม่สนับสนุนการเลือกใบรับรองฝั่งลูกค้า</translation>
@@ -144,7 +143,6 @@
 <translation id="2369533728426058518">แท็บที่เปิดอยู่</translation>
 <translation id="2385560268894525395">สัปดาห์ที่ผ่านมา</translation>
 <translation id="2387895666653383613">อัตราส่วนข้อความ</translation>
-<translation id="238909021488141516">เกิดข้อผิดพลาดขณะดาวน์โหลดเนื้อหานี้</translation>
 <translation id="2414886740292270097">มืด</translation>
 <translation id="2416359993254398973">Chrome ต้องการสิทธิ์เข้าถึงกล้องถ่ายรูปของคุณสำหรับไซต์นี้</translation>
 <translation id="2433507940547922241">ลักษณะที่ปรากฏ</translation>
@@ -211,6 +209,7 @@
 <translation id="3115898365077584848">แสดงข้อมูล</translation>
 <translation id="3137521801621304719">ออกจากโหมดไม่ระบุตัวตน</translation>
 <translation id="3148434565183091099">ลงชื่อเข้าใช้ Chrome เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
+<translation id="3157842584138209013">ดูอินเทอร์เน็ตที่คุณประหยัดได้จากปุ่มตัวเลือกเพิ่มเติม</translation>
 <translation id="3166827708714933426">แป้นพิมพ์ลัดสำหรับแท็บและหน้าต่าง</translation>
 <translation id="3177909033752230686">ภาษาหน้าเว็บ:</translation>
 <translation id="3190152372525844641">เปิดการใช้สิทธิ์สำหรับ Chrome ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
@@ -231,13 +230,13 @@
 <translation id="3319792846664697699">แผงการนำทาง</translation>
 <translation id="3321222012623826478">บริการนี้ต้องส่งที่อยู่เว็บไซต์นี้แบบไม่ระบุตัวตนไปยังเซิร์ฟเวอร์ของ Google เพื่อการยืนยัน</translation>
 <translation id="3328801116991980348">ข้อมูลไซต์</translation>
+<translation id="3341058695485821946">ดูอินเทอร์เน็ตที่คุณประหยัดได้</translation>
 <translation id="3350687908700087792">ปิดแท็บไม่ระบุตัวตนทั้งหมด</translation>
 <translation id="3365671512111106261">ใช้งานไม่ได้เมื่อเปิดโปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="3367813778245106622">ลงชื่อเข้าใช้อีกครั้งเพื่อเริ่มซิงค์</translation>
 <translation id="3384347053049321195">แชร์รูปภาพ</translation>
 <translation id="3386292677130313581">ถามก่อนจะอนุญาตให้เว็บไซต์ทราบตำแหน่งของคุณ (แนะนำ)</translation>
 <translation id="3387650086002190359">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะเกิดข้อผิดพลาดกับระบบไฟล์</translation>
-<translation id="3391904733075904777">คุณต้องตั้งค่าการล็อกอุปกรณ์ในการตั้งค่าความปลอดภัยของอุปกรณ์ก่อน จึงจะดูและคัดลอกรหัสผ่านได้</translation>
 <translation id="339329030417445648">ไซต์นี้มักแสดงโฆษณาที่แทรก</translation>
 <translation id="3398320232533725830">เปิดตัวจัดการบุ๊กมาร์ก</translation>
 <translation id="3414952576877147120">ขนาด:</translation>
@@ -331,6 +330,7 @@
 <translation id="42981349822642051">ขยาย</translation>
 <translation id="4300272766492248925">เปิดแอป</translation>
 <translation id="4307992518367153382">พื้นฐาน</translation>
+<translation id="4334425495413014985">โปรดเชื่อมต่ออินเทอร์เน็ตเพื่อใช้ <ph name="APP_NAME" /> เป็นครั้งแรก</translation>
 <translation id="4351244548802238354">ปิดหน้าต่างโต้ตอบ</translation>
 <translation id="4378154925671717803">โทรศัพท์</translation>
 <translation id="4384468725000734951">กำลังใช้ Sogou ในการค้นหา</translation>
@@ -491,12 +491,14 @@
 <translation id="583891442612896534">Chrome ไม่สามารถเข้าถึงเซิร์ฟเวอร์ Google เพื่อบีบอัดข้อมูล การประหยัดอินเทอร์เน็ตของคุณอาจมีข้อจำกัด</translation>
 <translation id="5858741533101922242">Chrome ไม่สามารถเปิดอะแดปเตอร์บลูทูธ</translation>
 <translation id="5860033963881614850">ปิด</translation>
+<translation id="5867841422488265304">ค้นหาหรือพิมพ์ที่อยู่เว็บ</translation>
 <translation id="5869522115854928033">รหัสผ่านที่บันทึกไว้</translation>
 <translation id="5878455346526065919">บล็อกโฆษณาจากไซต์ที่มักแสดงโฆษณาที่แทรก</translation>
 <translation id="5902828464777634901">ระบบจะลบข้อมูลในเครื่องทั้งหมดที่เว็บไซต์นี้จัดเก็บ รวมถึงคุกกี้</translation>
 <translation id="5911030830365207728">Google แปลภาษา</translation>
 <translation id="5916664084637901428">เปิด</translation>
 <translation id="5919204609460789179">อัปเดต <ph name="PRODUCT_NAME" /> เพื่อเริ่มซิงค์</translation>
+<translation id="5923939907038835197">ค้นหาข่าวสาร สูตรอาหาร สภาพอากาศ...</translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
 <translation id="5942872142862698679">กำลังใช้ Google ในการค้นหา</translation>
 <translation id="5956665950594638604">เปิดศูนย์ช่วยเหลือของ Chrome ในแท็บใหม่</translation>
@@ -673,6 +675,7 @@
 <translation id="7596558890252710462">ระบบปฏิบัติการ</translation>
 <translation id="7600965453749440009">ไม่ต้องแปลภาษา<ph name="LANGUAGE" /></translation>
 <translation id="7605594153474022051">การซิงค์ไม่ทำงาน</translation>
+<translation id="7607552448134703340">พิมพ์สิ่งที่คุณต้องการค้นหา</translation>
 <translation id="7612619742409846846">ลงชื่อเข้าใช้ Google ด้วย</translation>
 <translation id="7619072057915878432">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะเครือข่ายขัดข้อง</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />รับความช่วยเหลือ<ph name="END_LINK1" />หรือ<ph name="BEGIN_LINK2" />สแกนใหม่<ph name="END_LINK2" /></translation>
@@ -827,7 +830,6 @@
 <translation id="9188680907066685419">ออกจากระบบบัญชีที่มีการจัดการ</translation>
 <translation id="9204836675896933765">เหลืออีก 1 ไฟล์</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9216841883364897953">รายละเอียดปริมาณการใช้อินเทอร์เน็ต</translation>
 <translation id="9219103736887031265">ภาพ</translation>
 <translation id="932327136139879170">หน้าแรก</translation>
 <translation id="932599481871055447">ประหยัดเน็ตมือถือและท่องเว็บได้เร็วขึ้น</translation>
@@ -838,7 +840,6 @@
 <translation id="969096075394517431">เปลี่ยนภาษา</translation>
 <translation id="970715775301869095">เหลือ <ph name="MINUTES" /> นาที</translation>
 <translation id="974555521953189084">ป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
-<translation id="977929483582859929">ประหยัดอินเทอร์เน็ตได้:</translation>
 <translation id="981121421437150478">ออฟไลน์</translation>
 <translation id="982182592107339124">การดำเนินการนี้จะล้างข้อมูลสำหรับทุกเว็บไซต์ รวมถึง:</translation>
 <translation id="983192555821071799">ปิดแท็บทั้งหมด</translation>

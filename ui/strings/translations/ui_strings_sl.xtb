@@ -7,6 +7,7 @@
 <translation id="1190609913194133056">Središče za obvestila</translation>
 <translation id="1243314992276662751">Prenesi</translation>
 <translation id="1293699935367580298">Esc</translation>
+<translation id="1306549533752902673">PRIPOROČENE APLIKACIJE</translation>
 <translation id="1398853756734560583">Povečaj</translation>
 <translation id="1413622004203049571">Izklop obvestil za <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 min in }one{# min in }two{# min in }few{# min in }other{# min in }}</translation>
@@ -61,6 +62,7 @@
 <translation id="4316910396681052118">VSE APLIKACIJE</translation>
 <translation id="4320177379694898372">Ni internetne povezave</translation>
 <translation id="4588090240171750605">Pomik desno</translation>
+<translation id="4730374152663651037">POGOSTO UPORABLJENE</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Še 1 mesec}one{Še # mesec}two{Še # meseca}few{Še # mesece}other{Še # mesecev}}</translation>
 <translation id="4820616160060340806">Command + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 s}one{# s}two{# s}few{# s}other{# s}}</translation>
@@ -89,6 +91,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6264365405983206840">Izberi &amp;vse</translation>
+<translation id="6351032674660237738">PREDLOGI ZA APLIKACIJE</translation>
 <translation id="6364916375976753737">Pomik levo</translation>
 <translation id="6394627529324717982">Vejica</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Pred 1 s}one{Pred # s}two{Pred # s}few{Pred # s}other{Pred # s}}</translation>
@@ -109,6 +112,7 @@
 <translation id="6945221475159498467">Izberi</translation>
 <translation id="6965382102122355670">V redu</translation>
 <translation id="7052633198403197513">F1</translation>
+<translation id="7130207228079676353">NAJVERJETNEJŠE</translation>
 <translation id="7135556860107312402">Omogočanje obvestil teh aplikacij:</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Še 1 min}one{Še # min}two{Še # min}few{Še # min}other{Še # min}}</translation>

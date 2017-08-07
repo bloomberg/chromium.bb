@@ -12,6 +12,7 @@
 <translation id="1044777062731150180">ไม่มีส่วนหัว</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">อินพุตไม่ถูกต้อง</translation>
+<translation id="1080471004309605942">สิ้นสุดส่วนที่เป็นตัวเอียง</translation>
 <translation id="1082209053475788238">ไม่มีส่วนหัวระดับ 6 ก่อนหน้า</translation>
 <translation id="1088219014394087294">ไม่มีส่วนหัว</translation>
 <translation id="1106741348836243114">เปิดหรือปิดเสียงความคิดเห็น (earcons)</translation>
@@ -120,6 +121,7 @@
 <translation id="225732394367814946">เพิ่มอัตราการพูด</translation>
 <translation id="2267945578749931355">อักขระถัดไป</translation>
 <translation id="2281234842553884450">แถบเลื่อนก่อนหน้า</translation>
+<translation id="2294136146931447363">เริ่มส่วนที่เป็นตัวเอียง</translation>
 <translation id="2318372665160196757">หลัก</translation>
 <translation id="2329324941084714723">แผงแท็บ</translation>
 <translation id="2344193891939537199">การควบคุมวันที่และเวลา</translation>
@@ -317,7 +319,7 @@
 <translation id="3716845769494773620">หลายบรรทัด</translation>
 <translation id="3731746171184829332">ไม่มีส่วนหัวก่อนหน้า</translation>
 <translation id="3735039640698208086">เมื่อเล่นเสียง...</translation>
-<translation id="3755561384917041694">โปรดเปิดใช้แป้นพิมพ์บนหน้าจอใต้ถาดสถานะในส่วนการเข้าถึงพิเศษเพื่อใช้ตัวควบคุมอักษรเบรลล์แบบขยาย</translation>
+<translation id="3755561384917041694">โปรดเปิดใช้แป้นพิมพ์บนหน้าจอใต้ถาดสถานะในส่วนการเข้าถึงพิเศษ เพื่อใช้ตัวควบคุมอักษรเบรลล์แบบขยาย</translation>
 <translation id="3762198587642264450">ไปที่ด้านล่างของแถวปัจจุบัน</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">ออกจากช่องโต้ตอบแล้ว</translation>
@@ -341,6 +343,7 @@
 <translation id="4039983576244166038">ส่วนหัวของแถวว่างเปล่า</translation>
 <translation id="4042843249978639960">ไม่มีส่วนหัวระดับ 2 ถัดไป</translation>
 <translation id="4043348641337972076">ไม่มีจุดสังเกต ARIA ก่อนหน้า</translation>
+<translation id="4045764028670444336">เริ่มส่วนที่สะกดผิด</translation>
 <translation id="4047216625641135770">เครื่องหมาย</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4054936709456751127">สถานะ</translation>
@@ -395,6 +398,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{เครื่องหมายทับ}other{# เครื่องหมายทับ}}</translation>
 <translation id="4547556996012970016">ส่วนหัวระดับ 5 ถัดไป</translation>
 <translation id="4562381607973973258">ส่วนหัว</translation>
+<translation id="4570424871453628777">สิ้นสุดส่วนที่สะกดผิด</translation>
 <translation id="4591507479202817876">, เลือกไว้</translation>
 <translation id="4597532268155981612">ฟอร์ม</translation>
 <translation id="4597896406374528575">เมษายน</translation>
@@ -421,6 +425,7 @@
 <translation id="4827410568042294688">ไม่ได้เลือก</translation>
 <translation id="4842108708071771135">ไม่มีข้อความที่ยกมาถัดไป</translation>
 <translation id="4844625982113518938">กดปุ่มใดก็ได้เพื่อเรียนรู้ชื่อของปุ่มนั้น Ctrl+W จะปิดโหมดการเรียนรู้</translation>
+<translation id="4846487886195635104">สิ้นสุดส่วนที่ขีดฆ่า</translation>
 <translation id="4848993367330139335">เครื่องตั้งเวลา</translation>
 <translation id="4850023505158945298">เอลิเมนต์ที่คล้ายกันก่อนหน้า</translation>
 <translation id="485011152882364255">ใน ChromeVox Next ปุ่ม Search คือคีย์ตัวปรับแต่ง ซึ่งแป้นพิมพ์ลัด ChromeVox ส่วนใหญ่จะเริ่มต้นด้วยปุ่ม Search และใช้ปุ่มลูกศรสำหรับการนำทาง</translation>
@@ -447,7 +452,6 @@
 <translation id="5000760171916499057">ไม่มีฟอร์ม</translation>
 <translation id="5005670136041063723">ไม่มีเอลิเมนต์ที่คล้ายกันเพิ่มเติม</translation>
 <translation id="501473567976723023">มกราคม</translation>
-<translation id="5040591161308540832">ตาราง $1, $2 คูณ $3</translation>
 <translation id="5041394372352067729">เลื่อนการแสดงผลเบรลล์ไปที่ด้านบนของหน้า</translation>
 <translation id="5042770794184672516">เพิ่มความดังเสียงพูด</translation>
 <translation id="5050015258024679800">ส่วนหัวระดับ 4 ก่อนหน้า</translation>
@@ -575,6 +579,8 @@
 <translation id="6006064078185310784">{COUNT,plural, =1{เครื่องหมายแบ็คสแลช}other{# เครื่องหมายแบ็คสแลช}}</translation>
 <translation id="6037602951055904232">เลื่อนไปข้างหน้า</translation>
 <translation id="6044160928851315051">ปิดแสงหน้าจอ</translation>
+<translation id="605761629541007221">สิ้นสุดส่วนที่เป็นตัวหนา</translation>
+<translation id="6065293622157674001">เริ่มข้อผิดพลาดทางไวยากรณ์</translation>
 <translation id="6082768461603900813">การนำทางเบื้องต้น</translation>
 <translation id="6092707270915298410">ส่วนท้ายของลิงก์</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -666,6 +672,7 @@
 <translation id="712735679809149106">พูดคำ</translation>
 <translation id="713824876195128146">ข้อความอ้างอิงถัดไป</translation>
 <translation id="7143034430156387447">สลับไปมาระหว่างอักษรเบรลล์ 6 และ 8 จุด</translation>
+<translation id="7161425887892204659">สิ้นสุดข้อความที่ตรงกัน</translation>
 <translation id="7161771961008409533">ปุ่มป๊อปอัป</translation>
 <translation id="7165714724802225287">รูปแบบการแสดงผลปัจจุบันคือข้อความแทรก</translation>
 <translation id="7167657087543110">พูดอักขระ</translation>
@@ -697,6 +704,7 @@
 <translation id="7370432716629432284">{COUNT,plural, =1{เครื่องหมายแอมเปอร์แซนด์}other{# เครื่องหมายแอมเปอร์แซนด์}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">ออกจากตาราง</translation>
+<translation id="7392145451309930991">เริ่มข้อความที่ตรงกัน</translation>
 <translation id="739763518212184081">บรรทัดก่อนหน้า</translation>
 <translation id="7400575256015741911">ตรวจพบข้อผิดพลาดในการสะกด</translation>
 <translation id="7408482676469142474">ตาราง</translation>
@@ -728,7 +736,9 @@
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">ปุ่มตัวเลือกก่อนหน้า</translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7712273827621319827">เริ่มส่วนที่ขีดเส้นใต้</translation>
 <translation id="7770823902658038748">ช่องข้อความรหัสผ่าน <ph name="NAME" /> <ph name="VALUE" /></translation>
+<translation id="7773125101284285285">สิ้นสุดส่วนที่ขีดเส้นใต้</translation>
 <translation id="7776293189010177726">เปิดเมนู ChromeVox</translation>
 <translation id="7805247615045262757">การนำทางที่เป็นค่าเริ่มต้น</translation>
 <translation id="7805768142964895445">สถานะ</translation>
@@ -758,6 +768,7 @@
 <translation id="8065607967589909823">รายการที่เลือกคือ</translation>
 <translation id="8066678206530322333">แบนเนอร์</translation>
 <translation id="8076492880354921740">แท็บ</translation>
+<translation id="8091452896542422286">ช่องว่าง</translation>
 <translation id="8104178626892949749">กด ChromeVox o, n เพื่อเรียนรู้เพิ่มเติมเกี่ยวกับ ChromeVox Next</translation>
 <translation id="8110647606445335195">ไม่มีจุดสังเกต ARIA</translation>
 <translation id="8153880621934657047">ไม่ได้อยู่ในตาราง</translation>
@@ -779,6 +790,7 @@
 <translation id="8374154622594089836">เดือน</translation>
 <translation id="8378855320830505539">ภูมิภาค</translation>
 <translation id="8382679411218029383">การเติมข้อความอัตโนมัติแบบในบรรทัดและเป็นรายการ</translation>
+<translation id="8384907037845425279">เริ่มส่วนที่เป็นตัวหนา</translation>
 <translation id="8428603554127842284">ระดับ <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">ไม่มีส่วนหัวระดับ 3 ถัดไป</translation>
 <translation id="8430049249787218991">mnubr</translation>
@@ -790,6 +802,7 @@
 <translation id="8476408756881832830">หยุดเล่นชั่วคราวเมื่อ ChromeVox กำลังพูด</translation>
 <translation id="8476508772960940536">ภาพรวมหน้าต่าง</translation>
 <translation id="8503360654911991865">ลดความละเอียดในการนำทาง</translation>
+<translation id="8504695234784218301">สิ้นสุดข้อผิดพลาดทางไวยากรณ์</translation>
 <translation id="8520472399088452386">ปุ่มหมุน</translation>
 <translation id="8538744478902126321">เดาส่วนหัวของแถวของเซลล์ปัจจุบัน</translation>
 <translation id="8540054775867439484">ข้ามไปด้านบน</translation>
@@ -867,4 +880,5 @@
 <translation id="962913030769097253">ส่วนหัวระดับ 1 ถัดไป</translation>
 <translation id="973955474346881951">เปิด/ปิดโหมดติดหนึบ</translation>
 <translation id="976849232629612000">ไม่มีรายการ</translation>
+<translation id="995852680044449248">เริ่มส่วนที่ขีดฆ่า</translation>
 </translationbundle>

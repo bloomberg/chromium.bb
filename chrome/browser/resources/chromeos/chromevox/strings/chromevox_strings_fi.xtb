@@ -12,6 +12,7 @@
 <translation id="1044777062731150180">Ei otsikoita</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Virheellinen syöte</translation>
+<translation id="1080471004309605942">Kursiivin loppu</translation>
 <translation id="1082209053475788238">Ei edellisiä tason 6 otsikoita.</translation>
 <translation id="1088219014394087294">Ei otsikoita.</translation>
 <translation id="1106741348836243114">Ota äänipalaute (earcon-äänimerkit) käyttöön tai poista se käytöstä.</translation>
@@ -121,6 +122,7 @@
 <translation id="225732394367814946">Lisää puhenopeutta</translation>
 <translation id="2267945578749931355">Seuraava merkki</translation>
 <translation id="2281234842553884450">Edellinen liukusäädin</translation>
+<translation id="2294136146931447363">Kursiivin alku</translation>
 <translation id="2318372665160196757">Ensisijainen</translation>
 <translation id="2329324941084714723">Välilehtipaneeli</translation>
 <translation id="2344193891939537199">Päivämäärän ja ajan valinta</translation>
@@ -343,6 +345,7 @@ Jos haluat poistua opetusohjelmasta, siirry ChromeVox-komennoilla Sulje-painikke
 <translation id="4039983576244166038">Tyhjä rivin otsikko</translation>
 <translation id="4042843249978639960">Ei seuraavia tason 2 otsikoita.</translation>
 <translation id="4043348641337972076">Ei edellisiä ARIA-maamerkkejä.</translation>
+<translation id="4045764028670444336">Kirjoitusvirheen alku</translation>
 <translation id="4047216625641135770">Merkintä</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4054936709456751127">tila</translation>
@@ -397,6 +400,7 @@ Jos haluat poistua opetusohjelmasta, siirry ChromeVox-komennoilla Sulje-painikke
 <translation id="4532633738839459153">{COUNT,plural, =1{kauttaviiva}other{# kauttaviivaa}}</translation>
 <translation id="4547556996012970016">Seuraava tason 5 otsikko</translation>
 <translation id="4562381607973973258">Otsikko</translation>
+<translation id="4570424871453628777">Kirjoitusvirheen loppu</translation>
 <translation id="4591507479202817876">, valittu</translation>
 <translation id="4597532268155981612">lomake</translation>
 <translation id="4597896406374528575">huhtikuu</translation>
@@ -423,6 +427,7 @@ Jos haluat poistua opetusohjelmasta, siirry ChromeVox-komennoilla Sulje-painikke
 <translation id="4827410568042294688">ei valittu</translation>
 <translation id="4842108708071771135">Ei seuraavia lainauksia.</translation>
 <translation id="4844625982113518938">Opi nimi painamalla mitä tahansa näppäintä. Ctrl + W sulkee opettelutilan.</translation>
+<translation id="4846487886195635104">Yliviivauksen loppu</translation>
 <translation id="4848993367330139335">ajast.</translation>
 <translation id="4850023505158945298">Edellinen samankaltainen elementti.</translation>
 <translation id="485011152882364255">ChromeVox Nextin hakunäppäin on myös sen muokkausnäppäin. Haku aloittaa useimmat ChromeVoxin pikanäppäinyhdistelmät. Voit käyttää siirtymiseen myös nuolia.</translation>
@@ -449,7 +454,6 @@ Jos haluat poistua opetusohjelmasta, siirry ChromeVox-komennoilla Sulje-painikke
 <translation id="5000760171916499057">Ei lomakkeita.</translation>
 <translation id="5005670136041063723">Ei muita samanlaisia ​​elementtejä.</translation>
 <translation id="501473567976723023">tammikuu</translation>
-<translation id="5040591161308540832">Tekijän $3 taulukko $1, $2</translation>
 <translation id="5041394372352067729">Siirrä pistekirjoitusnäyttö sivun yläreunaan</translation>
 <translation id="5042770794184672516">Lisää puheen äänenvoimakkuutta</translation>
 <translation id="5050015258024679800">Edellinen tason 4 otsikko</translation>
@@ -577,6 +581,8 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{kenoviiva}other{# kenoviivaa}}</translation>
 <translation id="6037602951055904232">Panoroi eteenpäin</translation>
 <translation id="6044160928851315051">Tummenna näyttö</translation>
+<translation id="605761629541007221">Lihavoinnin loppu</translation>
+<translation id="6065293622157674001">Kielioppivirheen alku</translation>
 <translation id="6082768461603900813">Siirtymisen perustoiminnot</translation>
 <translation id="6092707270915298410">Linkin loppu</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -668,6 +674,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="712735679809149106">sanojen puhuminen</translation>
 <translation id="713824876195128146">Seuraava estoviittaus</translation>
 <translation id="7143034430156387447">Vaihda 6 ja 8 pisteen pistekirjoituksen välillä</translation>
+<translation id="7161425887892204659">Tekstivastaavuuden loppu</translation>
 <translation id="7161771961008409533">Ponnahduspainike</translation>
 <translation id="7165714724802225287">Tämänhetkinen näyttötyyli on lomittainen.</translation>
 <translation id="7167657087543110">merkkien puhuminen</translation>
@@ -699,6 +706,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{et-merkki}other{# et-merkkiä}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Poistutaan taulukosta.</translation>
+<translation id="7392145451309930991">Tekstivastaavuuden alku</translation>
 <translation id="739763518212184081">Edellinen rivi</translation>
 <translation id="7400575256015741911">Oikeinkirjoitusvirhe havaittu</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -730,7 +738,9 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Edellinen valintanappi</translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7712273827621319827">Alleviivauksen alku</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, salasanan tekstikenttä</translation>
+<translation id="7773125101284285285">Alleviivauksen loppu</translation>
 <translation id="7776293189010177726">Avaa ChromeVox-valikot.</translation>
 <translation id="7805247615045262757">oletusnavigointi</translation>
 <translation id="7805768142964895445">Tila</translation>
@@ -760,6 +770,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="8065607967589909823">Valinta on</translation>
 <translation id="8066678206530322333">Banneri</translation>
 <translation id="8076492880354921740">Välilehdet</translation>
+<translation id="8091452896542422286">Välilyönti</translation>
 <translation id="8104178626892949749">Lue lisää ChromeVox Nextistä painamalla ChromeVox + O + N.</translation>
 <translation id="8110647606445335195">Ei ARIA-maamerkkejä.</translation>
 <translation id="8153880621934657047">Et ole taulukossa.</translation>
@@ -781,6 +792,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="8374154622594089836">kuukausi</translation>
 <translation id="8378855320830505539">Alue</translation>
 <translation id="8382679411218029383">Ennakoiva tekstin syöttö upotettuna ja luettelona</translation>
+<translation id="8384907037845425279">Lihavoinnin alku</translation>
 <translation id="8428603554127842284">taso <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">Ei seuraavia tason 3 otsikoita.</translation>
 <translation id="8430049249787218991">mnubr</translation>
@@ -792,6 +804,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="8476408756881832830">Keskeytä toisto, kun ChromeVox puhuu.</translation>
 <translation id="8476508772960940536">Ota ikkunoiden yleiskatsaustila käyttöön tai poista se käytöstä.</translation>
 <translation id="8503360654911991865">Vähennä siirtymisen rakeisuutta</translation>
+<translation id="8504695234784218301">Kielioppivirheen loppu</translation>
 <translation id="8520472399088452386">Pyörityspainike</translation>
 <translation id="8538744478902126321">Arvioi nykyisen solun rivin otsikossa</translation>
 <translation id="8540054775867439484">Sijoitettu yläreunaan</translation>
@@ -869,4 +882,5 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="962913030769097253">Seuraava tason 1 otsikko</translation>
 <translation id="973955474346881951">Kiinnitystilan ottaminen käyttöön / poistaminen käytöstä</translation>
 <translation id="976849232629612000">Ei kohteita</translation>
+<translation id="995852680044449248">Yliviivauksen alku</translation>
 </translationbundle>

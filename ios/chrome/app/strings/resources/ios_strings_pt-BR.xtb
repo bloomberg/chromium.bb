@@ -135,6 +135,8 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="3474649192738347024">Formulários preenchidos.</translation>
 <translation id="3478058380795961209">Mês de vencimento</translation>
 <translation id="3482959374254649722">Sincronizando suas guias...</translation>
+<translation id="3487093336331957349">Sugestões de pesquisa e sites</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /> sobre o conteúdo sugerido</translation>
 <translation id="3494788280727468875">Confirmar limpeza de dados de navegação</translation>
 <translation id="3519193562722059437">Abra uma guia para navegar na Web.</translation>
 <translation id="3527085408025491307">Pasta</translation>
@@ -151,6 +153,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="3691593122358196899">Adicionado como favorito em <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3771033907050503522">Guias anônimas</translation>
+<translation id="3779810277399252432">Sem conexão com a Internet.</translation>
 <translation id="3783017676699494206">Salvar imagem</translation>
 <translation id="385051799172605136">Voltar</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -173,6 +176,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4281844954008187215">Termos de Serviço</translation>
 <translation id="430793432425771671">Sincronizar tudo</translation>
 <translation id="4359125752503270327">Esta página será aberta em outro aplicativo.</translation>
+<translation id="4375040482473363939">Pesquisa por código QR</translation>
 <translation id="4378154925671717803">Telefone</translation>
 <translation id="441868831736628555">Aviso de privacidade</translation>
 <translation id="4508750114462689118">Fechar promoção de login</translation>
@@ -262,7 +266,6 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6196207969502475924">Pesquisa por voz</translation>
 <translation id="6254066287920239840">Abrir links no app em vez de abrir no navegador.</translation>
 <translation id="6255097610484507482">Editar cartão de crédito</translation>
-<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">Isso permite que você tire fotos e faça upload delas.</translation>
 <translation id="6314335155547195432">Gerar senha</translation>
 <translation id="6324528485781869530">Mudar conta de sincronização</translation>
@@ -365,7 +368,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="842017693807136194">Conectado com</translation>
 <translation id="8428045167754449968">Cidade</translation>
 <translation id="8428213095426709021">Configurações</translation>
-<translation id="8433678324664858900">Mostrar sugestões</translation>
 <translation id="8458397775385147834">1 item excluído</translation>
 <translation id="8487700953926739672">Disponível off-line</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>

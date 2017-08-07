@@ -134,6 +134,8 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="3474649192738347024">Se han rellenado formularios.</translation>
 <translation id="3478058380795961209">Mes de caducidad</translation>
 <translation id="3482959374254649722">Sincronizando tus pestañas...</translation>
+<translation id="3487093336331957349">Sugerencias de búsqueda y sitios web</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> sobre el contenido sugerido</translation>
 <translation id="3494788280727468875">Confirma que quieres borrar los datos de navegación</translation>
 <translation id="3519193562722059437">Abre una pestaña para navegar por la Web.</translation>
 <translation id="3527085408025491307">Carpeta</translation>
@@ -151,6 +153,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3691593122358196899">Marcador añadido a <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tocar para Buscar</translation>
 <translation id="3771033907050503522">Pestañas incógnito</translation>
+<translation id="3779810277399252432">No hay conexión a Internet.</translation>
 <translation id="3783017676699494206">Guardar imagen</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3897092660631435901">Menú</translation>
@@ -173,6 +176,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4281844954008187215">Condiciones del servicio</translation>
 <translation id="430793432425771671">Sincronizar todo</translation>
 <translation id="4359125752503270327">Esta página se abrirá en otra aplicación.</translation>
+<translation id="4375040482473363939">Búsqueda mediante códigos QR</translation>
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="441868831736628555">Aviso de privacidad</translation>
 <translation id="4508750114462689118">Cierra el inicio de sesión en la promoción</translation>
@@ -262,7 +266,6 @@ Handoff también debe estar habilitado en la sección General de Ajustes, y los 
 <translation id="6196207969502475924">Búsqueda por voz</translation>
 <translation id="6254066287920239840">Abrir enlaces en la aplicación en lugar de en el navegador.</translation>
 <translation id="6255097610484507482">Editar tarjeta de crédito</translation>
-<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">Esto te permite hacer fotos y subirlas.</translation>
 <translation id="6314335155547195432">Generar contraseña</translation>
 <translation id="6324528485781869530">Cambiar cuenta de sincronización</translation>
@@ -365,7 +368,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="842017693807136194">Has iniciado sesión como</translation>
 <translation id="8428045167754449968">Ciudad/Localidad</translation>
 <translation id="8428213095426709021">Ajustes</translation>
-<translation id="8433678324664858900">Mostrar sugerencias</translation>
 <translation id="8458397775385147834">1 elemento eliminado</translation>
 <translation id="8487700953926739672">Disponible sin conexión</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>

@@ -134,6 +134,8 @@
 <translation id="3474649192738347024">양식 작성이 완료되었습니다.</translation>
 <translation id="3478058380795961209">만료 월</translation>
 <translation id="3482959374254649722">탭을 동기화하는 중...</translation>
+<translation id="3487093336331957349">검색 및 사이트 제안</translation>
+<translation id="3493531032208478708">추천 콘텐츠에 대해 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="3494788280727468875">인터넷 사용 기록 삭제 확인</translation>
 <translation id="3519193562722059437">새 탭을 열어 웹을 탐색하세요.</translation>
 <translation id="3527085408025491307">폴더</translation>
@@ -151,6 +153,7 @@
 <translation id="3691593122358196899">북마크를 <ph name="FOLDER_TITLE" />에 추가함</translation>
 <translation id="3738139272394829648">터치하여 검색</translation>
 <translation id="3771033907050503522">시크릿 탭</translation>
+<translation id="3779810277399252432">인터넷에 연결되어 있지 않습니다.</translation>
 <translation id="3783017676699494206">이미지 저장</translation>
 <translation id="385051799172605136">뒤로</translation>
 <translation id="3897092660631435901">메뉴</translation>
@@ -173,6 +176,7 @@
 <translation id="4281844954008187215">서비스 약관</translation>
 <translation id="430793432425771671">모두 동기화</translation>
 <translation id="4359125752503270327">이 페이지는 다른 애플리케이션에서 열립니다.</translation>
+<translation id="4375040482473363939">QR 코드 검색</translation>
 <translation id="4378154925671717803">휴대전화</translation>
 <translation id="441868831736628555">개인정보 보호정책</translation>
 <translation id="4508750114462689118">로그인 프로모션 닫기</translation>
@@ -262,7 +266,6 @@
 <translation id="6196207969502475924">음성 검색</translation>
 <translation id="6254066287920239840">브라우저 대신 앱에서 링크 열기</translation>
 <translation id="6255097610484507482">신용카드 수정</translation>
-<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">액세스를 허용하면 사진을 찍고 업로드할 수 있습니다.</translation>
 <translation id="6314335155547195432">비밀번호 생성</translation>
 <translation id="6324528485781869530">동기화 계정 전환</translation>
@@ -365,7 +368,6 @@
 <translation id="842017693807136194">다음을 사용하여 로그인함</translation>
 <translation id="8428045167754449968">시/군/구</translation>
 <translation id="8428213095426709021">설정</translation>
-<translation id="8433678324664858900">추천 보기</translation>
 <translation id="8458397775385147834">1개 항목 삭제함</translation>
 <translation id="8487700953926739672">오프라인으로 사용 가능</translation>
 <translation id="8503813439785031346">사용자이름</translation>

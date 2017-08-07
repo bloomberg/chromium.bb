@@ -313,7 +313,6 @@
 <translation id="2299220924812062390">Especifica uma lista de plug-ins ativados</translation>
 <translation id="2309390639296060546">Configuração padrão de geolocalização</translation>
 <translation id="2312134445771258233">Permite configurar as páginas que são carregadas na inicialização. O conteúdo da lista "URLs que devem ser abertos na inicialização" é ignorado, a menos que você selecione "Abrir uma lista de URLs" em "Ação na inicialização".</translation>
-<translation id="23323722127921515">Mostra o ícone do Google Cast na barra de ferramentas</translation>
 <translation id="2337466621458842053">Permite que você defina uma lista de padrões URL para especificar os sites autorizados a exibir imagens. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultImagesSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="2372547058085956601">O período de espera para login automático na sessão pública.
 
@@ -397,7 +396,6 @@
 
       Se esta política for definida como Falsa, uma mensagem de erro será exibida no lugar do prompt de configuração de rede.</translation>
 <translation id="2498238926436517902">Sempre ocultar automaticamente a estante</translation>
-<translation id="2503514368596117142">Configurar políticas para o Google Cast, um recurso que permite que os usuários enviem o conteúdo de guias, sites ou a área de trabalho do navegador para telas e sistemas de som remotos.</translation>
 <translation id="2514328368635166290">Especifica o URL do ícone favorito do provedor de pesquisa padrão. Esta política é opcional. Se for deixada sem definição, nenhum ícone será exibido para o provedor de pesquisa. Esta política só é respeitada se a política de "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="2516600974234263142">Permite a impressão em <ph name="PRODUCT_NAME" /> e impede os usuários de alterarem esta configuração.
 
@@ -410,9 +408,6 @@
 <translation id="2529880111512635313">Configurar a lista de extensões e aplicativos instalados forçadamente</translation>
 <translation id="253135976343875019">Intervalo da advertência de inatividade no funcionamento com alimentação CA</translation>
 <translation id="2552966063069741410">Fuso horário</translation>
-<translation id="2558917182010914102">Se esta política for definida como true ou não for configurada, o Google Cast ficará ativado e os usuários poderão iniciá-lo no menu de apps, nos menus de contexto da página, em controles de mídia em websites compatíveis com o Google Cast e no ícone do Google Cast na barra de ferramentas (quando exibido).
-
-          Se esta política for definida como false, o Google Cast será desativado.</translation>
 <translation id="2562339630163277285">Especifica o URL do mecanismo de pesquisa usado para fornecer resultados instantâneos. O URL deve conter a string <ph name="SEARCH_TERM_MARKER" />, que será substituída no instante da consulta pelo texto que o usuário digitou até o momento.
 
           Esta política é opcional. Se ela não for definida, nenhum resultado de pesquisa instantânea será fornecido.
@@ -535,6 +530,7 @@
 <translation id="3001534538097271560">A configuração desta política como False impede que os usuários optem por enviar informações do sistema e conteúdo de páginas aos servidores do Google. Se essa configuração for definida como True ou não for configurada, os usuários terão permissão para enviar informações do sistema e conteúdo de página ao recurso "Navegação segura" para ajudar a detectar apps e sites perigosos.
 
       Consulte https://developers.google.com/safe-browsing (em inglês) para ver mais informações sobre o recurso "Navegação segura".</translation>
+<translation id="3016255526521614822">Colocar na lista de permissões os apps de anotação permitidos na tela de bloqueio do <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3021409116652377124">Desativar localizador de plug-ins</translation>
 <translation id="3030000825273123558">Ativa relatórios de métricas</translation>
 <translation id="3034580675120919256">Permite que você defina se os websites estão autorizados a executar JavaScript. O JavaScript em execução pode ser permitido ou negado para todos os websites. Se esta política for deixada sem definição, a política "AllowJavaScript" será utilizada, podendo ser modificada pelo usuário.</translation>
@@ -863,6 +859,16 @@
       "1412.24.34": atualiza somente para esta versão específica
 
       Aviso: não é recomendado configurar restrições de versão, pois elas podem impedir que os usuários recebam atualizações de software e correções de segurança críticas. Atualizações de restrição para um prefixo de versão específico podem colocar os usuários em risco.</translation>
+<translation id="4298509794364745131">Especifica uma lista de apps que podem ser ativados como apps de anotação na tela de bloqueio do <ph name="PRODUCT_OS_NAME" />.
+
+      Se o app de anotação preferencial for permitido na tela de bloqueio, essa tela mostrará o elemento de IU para abrir o app de anotação preferencial.
+      Quando aberto, o app poderá criar uma janela de app na parte superior da tela de bloqueio e criar itens de dados (anotações) no contexto da tela de bloqueio. O app poderá importar anotações criadas para a sessão do usuário principal quando a sessão estiver desbloqueada. Atualmente, apenas apps de anotação do Chrome funcionam na tela de bloqueio.
+
+      Se a política for definida, o usuário poderá ativar o app na tela de bloqueio apenas se o código da extensão do app estiver contido no valor da lista da política.
+      Como consequência, a configuração desta política para uma lista vazia desativará completamente o app de anotações na tela de bloqueio.
+      Observe que a política que contém um código de app não significa necessariamente que o usuário poderá ativar o app como um app de anotações na tela de bloqueio. Por exemplo, no Chrome 61, o conjunto de apps disponíveis é ainda mais restrito pela plataforma.
+
+      Se a política for deixada sem definição, não haverá restrições no conjunto de apps que o usuário pode ativar na tela de bloqueio impostas pela política.</translation>
 <translation id="4309640770189628899">Se os pacotes de criptografia DHE em TLS estão ativados ou não</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ou posterior</translation>
 <translation id="4322842393287974810">Permitir que o app em Kiosk aberto automaticamente com zero de atraso controle a versão do <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1241,7 +1247,6 @@
       Se você ativar esta configuração, o SafeSearch estará sempre ativo na Pesquisa Google.
 
       Se você desativar esta configuração ou não definir nenhum valor, o SafeSearch não será aplicado na Pesquisa Google.</translation>
-<translation id="5940306398763671235">Ativa o Google Cast</translation>
 <translation id="5946082169633555022">Canal Beta</translation>
 <translation id="5950205771952201658">Considerando que as verificações de revogação on-line de sistemas tolerantes a falhas (soft-fail) não fornecem benefícios de segurança efetivos, elas são desativadas por padrão nas versões 19 e posteriores do <ph name="PRODUCT_NAME" />. Quando essa política é configurada como "true", o comportamento anterior é restaurado, e as verificações on-line de OCSP/CRL são realizadas.
 
@@ -1562,13 +1567,6 @@
 
           Esta política será respeitada apenas se a política 'DefaultSearchProviderEnabled' estiver ativada.</translation>
 <translation id="7302043767260300182">Intervalo de bloqueio da tela no funcionamento com alimentação CA</translation>
-<translation id="7309839952828354215">Especifica como um dispositivo deve se comportar com diretórios criptografados por eCryptfs que precisam de transição para a criptografia ext4.
-
-      Se você definir esta política como "DisallowArc", os apps do Android serão desativados para todos os usuários no dispositivo (incluindo aqueles que já têm criptografia ext4) e não será oferecida migração de eCryptfs para ext4 a nenhum usuário.
-
-      Se você definir esta política como "AllowMigration", os usuários com diretórios iniciais criptografados por eCryptfs poderão migrar esses diretórios para a criptografia ext4 conforme necessário (atualmente, quando o Android N fica disponível no dispositivo).
-
-      Se esta política não for definida, o dispositivo se comportará como se a opção "DisallowArc" tivesse sido escolhida.</translation>
 <translation id="7311458740754205918">Se a política é definida como true ou não é configurada, a página "Nova guia" pode mostrar sugestões de conteúdo com base no histórico de navegação, nos interesses ou no local do usuário.
 
       Se a política for definida como false, as sugestões de conteúdo geradas automaticamente não serão mostradas na página "Nova guia".</translation>
@@ -1645,7 +1643,6 @@
 <translation id="7625444193696794922">Especifica o canal de liberação ao qual este dispositivo deve ser vinculado.</translation>
 <translation id="7632724434767231364">Nome da biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Configura a localidade do aplicativo em <ph name="PRODUCT_NAME" /> e impede que os usuários a alterem. Se ativar esta configuração, <ph name="PRODUCT_NAME" /> utilizará a localidade especificada. Se a localidade configurada não for compatível, "pt-BR" será utilizada. Se esta configuração for desativada ou não for configurada, <ph name="PRODUCT_NAME" /> utilizará a localidade preferida especificada pelo usuário (se configurada), a localidade do sistema ou a localidade padrão "pt-BR".</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Determina se o roaming de dados deve ser ativado para o dispositivo. Se configurado para true, o roaming de dados será permitido. Se não for configurado ou for configurado como false, o roaming de dados não estará disponível.</translation>
 <translation id="7683777542468165012">Atualização de política dinâmica</translation>
 <translation id="7694807474048279351">Agendar uma reinicialização automática após a aplicação de uma atualização do <ph name="PRODUCT_OS_NAME" /> 
@@ -1760,6 +1757,7 @@
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política não é mais suportada. Ativa o uso de servidores STUN e de retransmissão ao estabelecer conexão a um cliente remoto. Se esta configuração estiver ativada, este computador pode descobrir e conectar-se a computadores host remotos mesmo se separados por um firewall. Se esta configuração estiver desativada e conexões de UDP enviadas forem filtradas pelo firewall, este computador só poderá estabelecer conexões a computadores host na rede local.</translation>
 <translation id="7980227303582973781">Nenhuma restrição especial</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Girar tela em 0 graus</translation>
 <translation id="8044493735196713914">Informar modo de inicialização do dispositivo</translation>
 <translation id="8050080920415773384">Impressão nativa</translation>

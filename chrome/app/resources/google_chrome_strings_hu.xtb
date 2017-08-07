@@ -213,6 +213,7 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="7196020411877309443">Miért jelenik meg ez az üzenet?</translation>
 <translation id="7242029209006116544">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Google Chrome-profiljához. Chrome-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. Létrehozhat egy új profilt is meglévő Chrome-adatainak külön tárolásához. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Ez a számítógép hamarosan nem fog több Google Chrome-frissítést kapni, mert a böngésző nem fogja támogatni a Windows XP és Windows Vista rendszereket.</translation>
+<translation id="7330164299247909639">A hitelesítési tanúsítvány nem használható. Jelentkezzen be újra a Google Chrome-ba a(z) <ph name="USER_NAME" /> felhasználónévvel, vagy kérjen további információt a rendszergazdájától. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Új ablak</translation>
 <translation id="7369650938475876456">A Chrome által generált erős jelszó használata</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS" /> néven volt bejelentkezve a Chrome-ba. Kérjük, ugyanazzal a fiókkal jelentkezzen be újra.</translation>
@@ -276,6 +277,7 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="8914504000324227558">A Chrome újraindítása</translation>
 <translation id="9026991721384951619">A Chrome OS nem tudta szinkronizálni az adatokat, mert a fiók bejelentkezési adatai elavultak.</translation>
 <translation id="9067395829937117663">A Google Chrome futtatásához Windows 7 vagy újabb verzió szükséges.</translation>
+<translation id="9084668267983921457">A hitelesítési tanúsítvány nem használható. Jelentkezzen be újra a Google Chrome-ba, vagy kérjen további információt a rendszergazdájától. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Figyelmeztetés:<ph name="END_BOLD" /> A Google Chrome nem tudja megakadályozni, hogy a bővítmények rögzítsék a böngészési előzményeit. A bővítmény inkognitómódban való használatának letiltásához törölje e lehetőség bejelölését.</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
 <translation id="919706545465235479">Frissítse a Chrome-ot a szinkronizálás megkezdéséhez</translation>

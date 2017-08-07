@@ -134,6 +134,8 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="3474649192738347024">Forms filled.</translation>
 <translation id="3478058380795961209">Month of Expiry</translation>
 <translation id="3482959374254649722">Syncing your tabs...</translation>
+<translation id="3487093336331957349">Search and site suggestions</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /> about suggested content</translation>
 <translation id="3494788280727468875">Confirm Clear Browsing Data</translation>
 <translation id="3519193562722059437">Open a tab to browse the web.</translation>
 <translation id="3527085408025491307">Folder</translation>
@@ -151,6 +153,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3691593122358196899">Bookmarked to <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Touch to Search</translation>
 <translation id="3771033907050503522">Incognito Tabs</translation>
+<translation id="3779810277399252432">No Internet connection.</translation>
 <translation id="3783017676699494206">Save Image</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -173,6 +176,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4281844954008187215">Terms of Service</translation>
 <translation id="430793432425771671">Sync Everything</translation>
 <translation id="4359125752503270327">This page will open in another application.</translation>
+<translation id="4375040482473363939">QR code Search</translation>
 <translation id="4378154925671717803">Phone</translation>
 <translation id="441868831736628555">Privacy Notice</translation>
 <translation id="4508750114462689118">Close sign-in promo</translation>
@@ -262,7 +266,6 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6196207969502475924">Voice Search</translation>
 <translation id="6254066287920239840">Open links in the app instead of the browser.</translation>
 <translation id="6255097610484507482">Edit Credit Card</translation>
-<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">This lets you take and upload photos.</translation>
 <translation id="6314335155547195432">Generate Password</translation>
 <translation id="6324528485781869530">Switch Sync Account</translation>
@@ -365,7 +368,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="842017693807136194">Signed in with</translation>
 <translation id="8428045167754449968">City / Town</translation>
 <translation id="8428213095426709021">Settings</translation>
-<translation id="8433678324664858900">Show Suggestions</translation>
 <translation id="8458397775385147834">1 item deleted</translation>
 <translation id="8487700953926739672">Available offline</translation>
 <translation id="8503813439785031346">Username</translation>

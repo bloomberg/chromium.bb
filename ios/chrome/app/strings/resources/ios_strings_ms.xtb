@@ -13,7 +13,7 @@
 <translation id="1165039591588034296">Ralat</translation>
 <translation id="1172898394251786223">Medan seterusnya</translation>
 <translation id="1176932207622159128">Gagal Simpan Imej</translation>
-<translation id="1181037720776840403">Buang</translation>
+<translation id="1181037720776840403">Alih keluar</translation>
 <translation id="1201530049782216880">Tab Inkognito Baharu</translation>
 <translation id="1209206284964581585">Sorok sementara</translation>
 <translation id="1219674500290482172">Tidak dapat menyambung ke Internet.</translation>
@@ -134,6 +134,8 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="3474649192738347024">Borang diisi.</translation>
 <translation id="3478058380795961209">Bulan Tamat Tempoh</translation>
 <translation id="3482959374254649722">Menyegerakkan tab anda...</translation>
+<translation id="3487093336331957349">Cadangan carian dan tapak</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /> tentang kandungan yang disyorkan</translation>
 <translation id="3494788280727468875">Sahkan Kosongkan Data Semakan Imbas.</translation>
 <translation id="3519193562722059437">Buka tab untuk menyemak imbas web.</translation>
 <translation id="3527085408025491307">Folder</translation>
@@ -151,6 +153,7 @@ Untuk membetulkan istilah carian anda, tekan lama untuk memilih. Untuk memperhal
 <translation id="3691593122358196899">Ditandai halaman ke <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Sentuh untuk Cari</translation>
 <translation id="3771033907050503522">Tab Inkognito</translation>
+<translation id="3779810277399252432">Tiada sambungan Internet.</translation>
 <translation id="3783017676699494206">Simpan Imej</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -173,6 +176,7 @@ Untuk membetulkan istilah carian anda, tekan lama untuk memilih. Untuk memperhal
 <translation id="4281844954008187215">Syarat Perkhidmatan</translation>
 <translation id="430793432425771671">Segerakkan Semua</translation>
 <translation id="4359125752503270327">Halaman ini akan dibuka dalam aplikasi lain.</translation>
+<translation id="4375040482473363939">Carian kod QR</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Notis Privasi</translation>
 <translation id="4508750114462689118">Tutup promosi log masuk</translation>
@@ -262,7 +266,6 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="6196207969502475924">Carian Suara</translation>
 <translation id="6254066287920239840">Buka pautan dalam Apl dan bukannya penyemak imbas.</translation>
 <translation id="6255097610484507482">Edit Kad Kredit</translation>
-<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">Langkah ini membolehkan anda mengambil dan memuat naik foto.</translation>
 <translation id="6314335155547195432">Jana Kata Laluan</translation>
 <translation id="6324528485781869530">Tukar Akaun Segerak</translation>
@@ -365,7 +368,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="842017693807136194">Dilog Masuk dengan</translation>
 <translation id="8428045167754449968">Bandar / Pekan</translation>
 <translation id="8428213095426709021">Tetapan</translation>
-<translation id="8433678324664858900">Paparkan Cadangan</translation>
 <translation id="8458397775385147834">1 item dipadamkan</translation>
 <translation id="8487700953926739672">Tersedia di luar talian</translation>
 <translation id="8503813439785031346">Nama pengguna</translation>

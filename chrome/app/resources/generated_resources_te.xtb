@@ -71,6 +71,7 @@
 <translation id="1110772031432362678">ఏ నెట్‌వర్క్‌లు కనుగొనబడలేదు.</translation>
 <translation id="1114202307280046356">చతుర్భుజం</translation>
 <translation id="1114335938027186412">మీ కంప్యూటర్ ట్రస్టెడ్ ప్లాట్‌ఫారమ్ మాడ్యూల్ (TPM) భద్రతా పరికరాన్ని కలిగి ఉంది, ఇది Chrome OSలో అనేక కీలకమైన భద్రతా లక్షణాలను అమలు చేయడానికి ఉపయోగించబడుతుంది. మరింత తెలుసుకోవడానికి Chromebook సహాయ కేంద్రాన్ని సందర్శించండి: https://support.google.com/chromebook/?p=tpm</translation>
+<translation id="1114525161406758033">మూత మూసి ఉన్నప్పుడు స్లీప్ స్థితికి వెళ్లు</translation>
 <translation id="1114901192629963971">మీ పాస్‌వర్డ్ ప్రస్తుత నెట్‌వర్క్‌లో ధృవీకరించబడలేదు. దయచేసి వేరొక నెట్‌వర్క్‌ని ఎంచుకోండి.</translation>
 <translation id="1115018219887494029">Chromebook కోసం Smart Lock (బీటా)</translation>
 <translation id="1116694919640316211">గురించి</translation>
@@ -87,12 +88,12 @@
 <translation id="1128591060186966949">శోధన ఇంజిన్‌ని సవరించండి</translation>
 <translation id="1128987120443782698">నిల్వ చేసే పరికరం <ph name="DEVICE_CAPACITY" /> సామర్థ్యాన్ని కలిగి ఉంది. దయచేసి కనీసం 4GB సామర్థ్యంతో ఉన్న SD కార్డ్ లేదా USB మెమరీ స్టిక్‌ని ఇన్‌సర్ట్ చెయ్యండి.</translation>
 <translation id="1131167343343087859">Google చెల్లింపులను ఉపయోగించే క్రెడిట్ కార్డ్‌లు మరియు చిరునామాలు.</translation>
+<translation id="1134009406053225289">అజ్ఞాత విండోలో తెరువు</translation>
 <translation id="1140351953533677694">మీ బ్లూటూత్ మరియు క్రమానుసార పరికరాలను ప్రాప్యత చేయడం</translation>
 <translation id="114140604515785785">పొడిగింపు మూలం డైరెక్టరీ:</translation>
 <translation id="1143142264369994168">సర్టిఫికెట్ సంతకందారు</translation>
 <translation id="1145292499998999162">ప్లగిన్ బ్లాక్ చేయబడింది</translation>
 <translation id="1146204723345436916">HTML ఫైల్ నుండి బుక్‌మార్క్‌లను దిగుమతి చేయి...</translation>
-<translation id="1148624853678088576">మీరు అంతా పూర్తి చేశారు!</translation>
 <translation id="1149401351239820326">గడువు ముగింపు నెల</translation>
 <translation id="1153356358378277386">జత చేసిన పరికరాలు</translation>
 <translation id="1154228249304313899">ఈ పేజీని తెరువు:</translation>
@@ -123,9 +124,9 @@
 <translation id="1189418886587279221">మీ పరికరాన్ని సులభంగా ఉపయోగించడానికి ప్రాప్యత లక్షణాలను ప్రారంభించండి.</translation>
 <translation id="1190144681599273207">ఈ ఫైల్‌ను పొందడానికి మొబైల్ డేటాలో సుమారుగా <ph name="FILE_SIZE" /> ఉపయోగించబడుతుంది.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{మీ కంప్యూటర్‌లో నిల్వ చేసిన ఫైల్‌ను ప్రాప్యత చేయండి}other{మీ కంప్యూటర్‌లో నిల్వ చేసిన # ఫైల్‌లను ప్రాప్యత చేయండి}}</translation>
+<translation id="1195076408729068893">Smart Lockను ప్రారంభించడానికి, మీ పాస్‌వర్డ్‌ను నమోదు చేయండి. తదుపరిసారి, మీ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేయడానికి మీరు మీ ఫోన్‌ను ఉపయోగించవచ్చు.</translation>
 <translation id="1195447618553298278">తెలియని లోపం.</translation>
 <translation id="1196338895211115272">ప్రైవేట్ కీని ఎగుమతి చేయడానికి విఫలమైంది.</translation>
-<translation id="1197199342062592414">ప్రారంభించండి</translation>
 <translation id="119738088725604856">స్క్రీన్‌షాట్ విండో</translation>
 <translation id="1197979282329025000">ముద్రకం <ph name="PRINTER_NAME" />కి ముద్రకం సామర్థ్యాలను తిరిగి పొందడంలో లోపం సంభవించింది. ఈ ముద్రకాన్ని <ph name="CLOUD_PRINT_NAME" />తో నమోదు చెయ్యడం సాధ్యం కాలేదు.</translation>
 <translation id="1198271701881992799">ఇప్పుడు ప్రారంభించండి</translation>
@@ -135,6 +136,7 @@
 <translation id="1202596434010270079">కియోస్క్ అనువర్తనం నవీకరించబడింది. దయచేసి USB స్టిక్‌ను తీసివేయండి.</translation>
 <translation id="120368089816228251">సంగీత స్వరం</translation>
 <translation id="1205489148908752564">అనుమతి జాబితాలోని వినియోగదారులను చదవండి మరియు మార్చండి</translation>
+<translation id="1206407435587370571">మీ Chromebookను పరిశీలించండి</translation>
 <translation id="1209796539517632982">స్వయంచాలక పేరు సర్వర్‌లు</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> వేలిముద్రలు సెటప్ చేయబడ్డాయి</translation>
 <translation id="1215411991991485844">క్రొత్త నేపథ్య అనువర్తనం జోడించబడింది</translation>
@@ -169,8 +171,8 @@
 <translation id="1249250836236328755">కళా ప్రక్రియ</translation>
 <translation id="1252987234827889034">ప్రొఫైల్ లోపం సంభవించింది</translation>
 <translation id="1254593899333212300">ప్రత్యక్ష ఇంటర్నెట్ కనెక్షన్</translation>
-<translation id="1257390253112646227">ప్లే చేయండి, సవరించండి, భాగస్వామ్యం చేయండి, ఇందులో చేయాల్సిన పనులను పూర్తి చేయండి.</translation>
 <translation id="1259724620062607540">అర అంశం 7</translation>
+<translation id="1259832254221278963">సహాయకాన్ని ప్రారంభించండి</translation>
 <translation id="1260240842868558614">వీటిని చూపు:</translation>
 <translation id="126710816202626562">అనువాద భాష:</translation>
 <translation id="1268125225034560697">AppleScript ద్వారా జావాస్క్రిప్ట్‌ని అమలు చేయడానికి ఇప్పుడు మద్దతు లేదు.</translation>
@@ -195,6 +197,7 @@
 <translation id="1303101771013849280">HTML ఫైల్‌ని బుక్‌మార్క్ చేస్తుంది</translation>
 <translation id="1303319084542230573">ప్రింటర్‌ను జోడించు</translation>
 <translation id="1303671224831497365">బ్లూటూత్ పరికరాలు ఏవీ కనుగొనబడలేదు</translation>
+<translation id="1306606229401759371">సెట్టింగ్‌లను మార్చు</translation>
 <translation id="1307398858972670978"><ph name="SAVED_PASSWORDS_LINK" />లో ఏ డివైజ్ నుండైనా మీ పాస్‌వర్డ్‌లను ఆక్సెస్ చేయండి</translation>
 <translation id="1307559529304613120">అయ్యో!  సిస్టమ్ ఈ పరికరం కోసం దీర్ఘకాల API ప్రాప్యత టోకెన్‌ను నిల్వ చేయడంలో విఫలమైంది.</translation>
 <translation id="1313405956111467313">స్వయంచాలక ప్రాక్సీ కాన్ఫిగరేషన్</translation>
@@ -224,7 +227,6 @@
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1353966721814789986">స్టార్ట్‌అప్ పేజీలు</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" /> బ్లాక్ చేయబడింది</translation>
-<translation id="1355542767438520308">లోపం సంభవించింది. కొన్ని అంశాలు తొలగించబడకపోవచ్చు.</translation>
 <translation id="1357589289913453911">పొడిగింపు Id</translation>
 <translation id="1358735829858566124">ఈ ఫైల్ లేదా డైరెక్టరీ ఉపయోగించబడదు.</translation>
 <translation id="1358741672408003399">అక్షరక్రమం మరియు వ్యాకరణం</translation>
@@ -232,8 +234,6 @@
 <translation id="1361655923249334273">ఉపయోగించనిది</translation>
 <translation id="136180453919764941">బ్యాటరీ - <ph name="STATUS" /></translation>
 <translation id="1363028406613469049">ట్రాక్ చేయండి</translation>
-<translation id="1364639026564874341">మీ ఫోన్ అన్‌లాక్ చేయబడి, సమీపంలో ఉన్నప్పుడు మీ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ అయ్యేలా చేయండి.
-        అన్ని <ph name="USER_DISPLAY_EMAIL" /> అనుకూల పరికరాలకు బ్లూటూత్ ఆన్ చేయబడుతుందని మరియు కొంత హార్డ్‌వేర్ సమాచారం Googleకి పంపబడుతుందని గుర్తుంచుకోండి. &lt;a&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
 <translation id="13649080186077898">స్వీయపూర్తి సెట్టింగ్‌లను నిర్వహించండి</translation>
 <translation id="1367951781824006909">ఒక ఫైల్‌ని ఎంచుకోండి</translation>
 <translation id="136802136832547685">ఈ పరికరానికి జోడించేందుకు పర్యవేక్షిత వినియోగదారులు ఎవరూ లేరు.</translation>
@@ -250,7 +250,6 @@
 <translation id="1383861834909034572">పూర్తి అయిన తర్వాత తెరవబడుతుంది</translation>
 <translation id="1383876407941801731">శోధించు</translation>
 <translation id="1386387014181100145">హాయ్.</translation>
-<translation id="1386830813511981192">ఇప్పుడు మీ <ph name="DEVICE_TYPE" />లో మిలియన్‌కు పైగా అనువర్తనాలు మరియు గేమ్‌లు అందుబాటులో ఉన్నాయి.</translation>
 <translation id="138784436342154190">డిఫాల్ట్ ప్రారంభ పేజీని పునరుద్ధరించాలా?</translation>
 <translation id="1389297115360905376">ఇది <ph name="CHROME_WEB_STORE" /> నుండి మాత్రమే జోడించబడుతుంది.</translation>
 <translation id="1390548061267426325">సాధారణ ట్యాబ్‌ వలె తెరువు</translation>
@@ -272,7 +271,6 @@
 <translation id="1408789165795197664">అధునాతన...</translation>
 <translation id="1409390508152595145">పర్యవేక్షించబడే వినియోగదారుని సృష్టించు</translation>
 <translation id="1410616244180625362">మీ కెమెరాను ప్రాప్యత చేయడానికి <ph name="HOST" />కు అనుమతిని కొనసాగించండి</translation>
-<translation id="1413372529771027206">Smart Lock కోసం ఉపయోగించే మీ ఫోన్ మారింది. ఈ పరికరంలో Chromebook కోసం Smart Lockని నవీకరించడానికి మీ పాస్‌వర్డ్‌ను టైప్ చేయండి. తదుపరి సారి, మీరు ప్రవేశించడానికి కేవలం మీ చిత్రాన్ని క్లిక్ చేస్తే సరిపోతుంది.</translation>
 <translation id="1414648216875402825">మీరు <ph name="PRODUCT_NAME" /> యొక్క అస్థిర సంస్కరణకు నవీకరిస్తున్నారు, ఇది పురోగతిలో ఉన్న లక్షణాలను కలిగి ఉంటుంది. క్రాష్‌లు మరియు ఊహించని బగ్‌లు సంభవించవచ్చు. దయచేసి జాగ్రత్తగా కొనసాగండి.</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (పొడిగింపు ID "<ph name="EXTENSION_ID" />") ఈ రకమైన సెషన్‌లో అనుమతించబడదు.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -281,7 +279,6 @@
 <translation id="1420920093772172268">జత చేయడాన్ని అనుమతించడానికి <ph name="TURN_ON_BLUETOOTH_LINK" /></translation>
 <translation id="1425734930786274278">ఈ క్రింది కుక్కీలు నిరోధించబడ్డాయి (మూడవ-పార్టీ కుక్కీలు మినహాయింపు లేకుండా నిరోధించబడుతున్నాయి):</translation>
 <translation id="1426410128494586442">అవును</translation>
-<translation id="1427049173708736891">మీ Android ఫోన్ అన్‌లాక్ చేయబడి, సమీపంలో ఉంటే మీ <ph name="DEVICE_TYPE" /> అన్‌లాక్ అయ్యేలా చేయండి, అప్పుడు మీ పాస్‌వర్డ్‌ను టైప్ చేయాల్సిన అవసరం ఉండదు.</translation>
 <translation id="142758023928848008">స్టిక్కీ కీలను ప్రారంభించు (క్రమానుసారంగా కీబోర్డ్ సత్వరమార్గాలను టైప్ చేయడం ద్వారా వాటిని అమలు చేయడానికి)</translation>
 <translation id="1429740407920618615">సంకేత సామర్థ్యం:</translation>
 <translation id="143027896309062157">మీ కంప్యూటర్‌లో మరియు మీరు సందర్శించే వెబ్‌సైట్‌ల్లో మీ మొత్తం డేటాను చదవడం మరియు మార్చడం</translation>
@@ -316,6 +313,7 @@
 <translation id="1476607407192946488">&amp;భాష సెట్టింగ్‌లు</translation>
 <translation id="1476949146811612304"><ph name="BEGIN_LINK" />ఓమ్నిపెట్టె<ph name="END_LINK" /> నుండి శోధించినప్పుడు ఉపయోగించవల్సిన శోధన ఇంజిన్‌ను సెట్ చేయండి.</translation>
 <translation id="1477301030751268706">గుర్తింపు API టోకెన్ కాష్</translation>
+<translation id="1478233201128522094">తదుపరిసారి, ఈ <ph name="DEVICE_TYPE" />ని ఒక కొత్త ఫోన్ అన్‌లాక్ చేస్తుంది. సెట్టింగ్‌లలో Smart Lockని ఆఫ్ చేయండి.</translation>
 <translation id="1478340334823509079">వివరాలు: <ph name="FILE_NAME" /></translation>
 <translation id="1482124012545051544"><ph name="FILE_COUNT" /> కొత్త ఫోటోలను బ్యాకప్ చేయడానికి సిద్ధంగా ఉంది</translation>
 <translation id="1483493594462132177">పంపు</translation>
@@ -340,10 +338,10 @@
 <translation id="1507705801791187716">అద్భుతం, లోపాలు లేవు!</translation>
 <translation id="1508491105858779599">పరికరాన్ని అన్‌లాక్ చేయడానికి వేలిముద్ర సెన్సార్‌పై మీ వేలిని ఉంచండి.</translation>
 <translation id="1509281256533087115">ఏ <ph name="DEVICE_NAME_AND_VENDOR" />ని అయినా USB ద్వారా ప్రాప్యత చేయడానికి అనుమతి</translation>
-<translation id="1509446621602590389">ఎంపికలను భాగస్వామ్యం చేయండి</translation>
 <translation id="150962533380566081">PUK చెల్లదు.</translation>
 <translation id="1510030919967934016">మీ స్థానాన్ని ట్రాక్ చెయ్యకుండా ఈ పేజీ బ్లాక్ చెయ్యబడింది.</translation>
 <translation id="1510200760579344855">ఈ పరికరాన్ని <ph name="SAML_DOMAIN" /> నిర్వాహకుడు లాక్ చేసారు.</translation>
+<translation id="1510238584712386396">లాంచర్</translation>
 <translation id="1510785804673676069">మీరు ప్రాక్సీ సర్వర్‌ను ఉపయోగిస్తుంటే, ప్రాక్సీ సర్వర్ పని చేస్తోందని
     తనిఖీ చేయడానికి మీ ప్రాక్సీ సెట్టింగ్‌లను తనిఖీ చేయండి లేదా మీ నెట్‌వర్క్
     నిర్వాహకుడిని సంప్రదించండి. మీరు ప్రాక్సీ సర్వర్‌ను ఉపయోగిస్తున్నారని
@@ -358,7 +356,6 @@
 <translation id="1520635877184409083">సర్దుబాటు చేయి...</translation>
 <translation id="1521442365706402292">సర్టిఫికెట్‌లను నిర్వహించు</translation>
 <translation id="152234381334907219">ఎప్పటికి సేవ్ చెయ్యబడవు</translation>
-<translation id="1523350272063152305">సమావేశాల కోసం Chromebox పరికరం సెటప్ చేయడానికి సిద్ధంగా ఉంది.</translation>
 <translation id="1524152555482653726">చలన చిత్రం</translation>
 <translation id="1524430321211440688">కీబోర్డ్</translation>
 <translation id="1525835343380843286">సర్వర్ కమ్యూనికేషన్ లోపం ఏర్పడింది</translation>
@@ -377,7 +374,6 @@
 <translation id="1545177026077493356">స్వయంచాలక కియోస్క్ మోడ్</translation>
 <translation id="1545786162090505744">ప్రశ్న యొక్క ప్రదేశంలో %sతో URL</translation>
 <translation id="1546280085599573572">ఈ పొడిగింపు మీరు హోమ్ బటన్‌ను క్లిక్ చేసినప్పుడు చూపబడే పేజీని మార్చింది.</translation>
-<translation id="1546795794523394272">సమావేశాల కోసం Chromeboxకి స్వాగతం!</translation>
 <translation id="1547572086206517271">రిఫ్రెష్ చేయడం అవసరం</translation>
 <translation id="1548132948283577726">పాస్‌వర్డ్‌లు సేవ్ చెయ్యని సైట్‌లు ఇక్కడ కనిపిస్తాయి.</translation>
 <translation id="1549045574060481141">డౌన్‌లోడ్‌ను నిర్ధారించండి</translation>
@@ -445,6 +441,7 @@
 <translation id="1643072738649235303">SHA-1తో X9.62 ECDSA సంతకం</translation>
 <translation id="1644574205037202324">చరిత్ర</translation>
 <translation id="1645228020260124617"><ph name="PRECENTAGE" />%</translation>
+<translation id="1645516838734033527">మీ <ph name="DEVICE_TYPE" />ని సురక్షితంగా ఉంచడానికి, మీ ఫోన్‌లో Smart Lockకు స్క్రీన్ లాక్ అవసరం.</translation>
 <translation id="1646102270785326155">ఈ వినియోగదారును తీసివేస్తే, వీరికి చెందిన అన్ని ఫైల్‌లు మరియు స్థానిక డేటా శాశ్వతంగా తొలగించబడతాయి. అయినప్పటికీ, $1 తర్వాత సైన్ ఇన్ చేయగలరు.</translation>
 <translation id="1646982517418478057">దయచేసి ఈ ప్రమాణపత్రాన్ని గుప్తీకరించడానికి పాస్‌వర్డ్‌ని నమోదు చేయండి</translation>
 <translation id="164814987133974965">పర్యవేక్షించబడే వినియోగదారు మీ మార్గదర్శకత్వంలో వెబ్‌ను విశ్లేషించగలరు. పర్యవేక్షించబడే వినియోగదారు యొక్క నిర్వాహకునిగా, మీరు వీటిని చేయగలరు
@@ -467,7 +464,6 @@
 <translation id="16620462294541761">క్షమించండి, మీ పాస్‌వర్డ్ ధృవీకరించబడలేదు. దయచేసి మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="166278006618318542">విషయం పబ్లిక్ కీ అల్గారిథం</translation>
 <translation id="1662837784918284394">(ఏదీకాదు)</translation>
-<translation id="1663298465081438178">అవాంతర-రహిత ఉత్తమం.</translation>
 <translation id="1665611772925418501">ఫైల్‌ను సవరించడం సాధ్యపడదు.</translation>
 <translation id="1665770420914915777">క్రొత్త టాబ్ పేజీని ఉపయోగించండి</translation>
 <translation id="1666058115165804494">సృష్టించిన సమయం</translation>
@@ -538,6 +534,7 @@
 <translation id="1772267994638363865">దీన్ని చేయడానికి, మీరు వాయిస్ &amp; ఆడియో కార్యాచరణను ప్రారంభించి, క్రింది దశల్లో మీ <ph name="DEVICE_TYPE" />కి శిక్షణనివ్వాలి.</translation>
 <translation id="1773212559869067373">ప్రామాణీకరణ ప్రమాణపత్రం స్థానికంగా తిరస్కరించబడింది</translation>
 <translation id="177336675152937177">హోస్ట్ చేసిన అనువర్తన డేటా</translation>
+<translation id="1774349594977710164">స్వయంచాలకంగా సింక్ జరగడం వలన మీ ఫోన్ మీ ఇతర <ph name="DEVICE_TYPE" />లను కూడా అన్‌లాక్ చేస్తుంది.</translation>
 <translation id="1774833706453699074">తెరిచి ఉన్న పేజీలను బుక్‌మార్క్ చేయి...</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="177694132944350798">మీ డేటా <ph name="TIME" />కి మీ Google పాస్‌వర్డ్‌తో గుప్తీకరించబడింది. సమకాలీకరణను ప్రారంభించడానికి దాన్ని నమోదు చేయండి.</translation>
@@ -572,6 +569,7 @@
 <translation id="1815579292149538864">CUPS ప్రింటర్‌లను సెటప్ చేయండి లేదా నిర్వహించండి.</translation>
 <translation id="181577467034453336">మరో <ph name="NUMBER_OF_VIEWS" />...</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />హెచ్చరిక:<ph name="END_BOLD" /> ఈ ఫైల్‌లు తాత్కాలికమైనవి, డిస్క్ స్పేస్‌ను పెంచడం కోసం స్వయంచాలకంగా తొలగించబడవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
+<translation id="1817310072033858383">మీ <ph name="DEVICE_TYPE" />కి Smart Lock సెటప్ చేయండి</translation>
 <translation id="1817871734039893258">Microsoft File Recovery</translation>
 <translation id="1818196664359151069">రిజల్యూషన్:</translation>
 <translation id="1825832322945165090">పరికరంలో తగినంత స్థలం లేదు</translation>
@@ -592,6 +590,7 @@
 <translation id="184456654378801210">(స్థానికం)</translation>
 <translation id="1844692022597038441">ఈ ఫైల్ ఆఫ్‌లైన్‌లో అందుబాటులో లేదు.</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" />ని అమలు చేయడానికి కంట్రోల్ నొక్కి, క్లిక్ చేయండి</translation>
+<translation id="1848219224579402567">మూత మూసి ఉన్నప్పుడు సైన్ అవుట్ చేయండి</translation>
 <translation id="1849186935225320012">ఈ పేజీ MIDI పరికరాలకు పూర్తి నియంత్రణను కలిగి ఉంది.</translation>
 <translation id="1850508293116537636">&amp;సవ్యదిశలో తిప్పు</translation>
 <translation id="1852799913675865625">ఫైల్‌ను చదవడానికి ప్రయత్నించడంలో లోపం ఉంది: <ph name="ERROR_TEXT" />.</translation>
@@ -628,7 +627,6 @@
 <translation id="1903219944620007795">టెక్స్ట్ ఇన్‌పుట్ కోసం, అందుబాటులో ఉన్న ఇన్‌పుట్ విధానాలను చూడటానికి భాషను ఎంచుకోండి.</translation>
 <translation id="1905710495812624430">అనుమతించిన గరిష్ట ప్రయత్నాలు మించిపోయారు.</translation>
 <translation id="1909880997794698664">మీరు ఖచ్చితంగా ఈ పరికరాన్ని శాశ్వతంగా కియోస్క్ మోడ్‌లో ఉంచాలనుకుంటున్నారా?</translation>
-<translation id="1910572251697014317">Google ఈ ఫోన్‌కు నోటిఫికేషన్ పంపింది. బ్లూటూత్‌ను ఉపయోగించి మీ ఫోన్ మీ <ph name="DEVICE_TYPE" />ని సుమారు 100 అడుగుల దూరం నుండి అన్‌లాక్ చేసి ఉంచుతుందని గుర్తుంచుకోండి. ఇది సమస్య అయిన సందర్భాల్లో, మీరు &lt;a&gt;ఈ లక్షణాన్ని తాత్కాలితంగా నిలిపివేయవచ్చు&lt;/a&gt;.</translation>
 <translation id="1910721550319506122">స్వాగతం!</translation>
 <translation id="1916502483199172559">డిఫాల్ట్ ఎరుపు రంగు అవతార్</translation>
 <translation id="191688485499383649">"<ph name="DEVICE_NAME" />"కు కనెక్ట్ చేయడానికి ప్రయత్నిస్తున్నప్పుడు తెలియని లోపం సంభవించింది.</translation>
@@ -666,8 +664,10 @@
 <translation id="1975841812214822307">తీసివేయి...</translation>
 <translation id="1976150099241323601">భద్రతా పరికరానికి సైన్ ఇన్ చెయ్యండి</translation>
 <translation id="1976323404609382849">బహుళ సైట్‌ల నుండి కుకీలు బ్లాక్ చేయబడ్డాయి.</translation>
+<translation id="1977965994116744507">మీ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేయడానికి మీ ఫోన్‌ని సమీపంలోకి తీసుకురండి.</translation>
 <translation id="1979280758666859181">మీరు <ph name="PRODUCT_NAME" /> యొక్క పాత సంస్కరణను కలిగి ఉన్న ఛానెల్‌కు మారుతున్నారు. ఛానెల్ సంస్కరణ మీ పరికరంలో ప్రస్తుతం ఇన్‌స్టాల్ చేయబడిన సంస్కరణకు సరిపోలినప్పుడు ఛానెల్ మార్పు వర్తిస్తుంది.</translation>
 <translation id="1979718561647571293">మీరు ఆశిస్తున్న ప్రారంభ పేజీ ఇదేనా?</translation>
+<translation id="1981115145845865539">మీ <ph name="DEVICE_TYPE" />ని స్వయంచాలకంగా అన్‌లాక్ చేయండి</translation>
 <translation id="1983959805486816857">మీరు క్రొత్త పర్యవేక్షించబడే వినియోగదారును సృష్టించిన తర్వాత, ఏ సమయంలో అయినా ఏ పరికరం నుండి అయినా <ph name="MANAGEMENT_URL" />లో సెట్టింగ్‌లను నిర్వహించవచ్చు.</translation>
 <translation id="1984642098429648350">విండోను కుడివైపుకు డాక్ చేయి</translation>
 <translation id="1985136186573666099">నెట్‌వర్క్‌కు కనెక్ట్ చెయ్యడానికి <ph name="PRODUCT_NAME" /> మీ కంప్యూటర్ యొక్క ప్రాక్సీ సెట్టింగ్‌లను ఉపయోగిస్తూ ఉంది.</translation>
@@ -693,6 +693,7 @@
 <translation id="203574396658008164">లాక్ స్క్రీన్ నుండి విషయ సేకరణను ప్రారంభించండి</translation>
 <translation id="2039623879703305659">వేలిని చాలా వేగంగా కదిలించారు</translation>
 <translation id="2040460856718599782">అయ్యో!  మిమ్మల్ని ప్రామాణీకరించడానికి ప్రయత్నిస్తున్నప్పుడు ఏదో తప్పు జరిగింది.  దయచేసి మీ సైన్-ఇన్ ప్రమాణాలను ఒకటికి రెండుసార్లు తనిఖీ చేసుకుని మళ్లీ ప్రయత్నించండి.</translation>
+<translation id="2043818754674261542">ఈ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేయడానికి ఫోన్‌ను ఉంచాల్సిన దూరం</translation>
 <translation id="204497730941176055">Microsoft సర్టిఫికెట్ టెంప్లేట్ పేరు</translation>
 <translation id="2045969484888636535">కుకీలను నిరోధించడాన్ని కొనసాగించండి</translation>
 <translation id="204622017488417136">మీ పరికరం మునుపు ఇన్‌స్టాల్ చేసిన Chrome సంస్కరణకు తిరిగి మార్చబడింది. అన్ని వినియోగదారు ఖాతాలు మరియు స్థానిక డేటా తీసివేయబడుతుంది. దీన్ని రద్దు చేయడం సాధ్యపడదు.</translation>
@@ -701,7 +702,7 @@
 <translation id="204914487372604757">సత్వరమార్గాన్ని సృష్టించు</translation>
 <translation id="2050339315714019657">నిలువు</translation>
 <translation id="2053312383184521053">నిష్క్రియ స్థితి డేటా</translation>
-<translation id="2058632120927660550">లోపం సంభవించింది. దయచేసి మీ ప్రింటర్‌ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.</translation>
+<translation id="205560151218727633">Google సహాయకం లోగో</translation>
 <translation id="2065405795449409761">Chrome స్వయంచాలక పరీక్ష సాఫ్ట్‌వేర్ ద్వారా నియంత్రించబడుతోంది.</translation>
 <translation id="2068054174185416762">ఫ్రేమ్ రేట్</translation>
 <translation id="2070909990982335904">డాట్‌తో ప్రారంభమయ్యే పేర్లు సిస్టమ్ కోసం ప్రత్యేకించబడినవి. దయచేసి మరొక పేరును ఎంచుకోండి.</translation>
@@ -785,6 +786,7 @@
 <translation id="2165722503303595908">కొలతలు</translation>
 <translation id="2166369534954157698">దేశ భాషలందు తెలుగు లెస్స</translation>
 <translation id="2169062631698640254">ఏదేమైనా సైన్ ఇన్ చేయి</translation>
+<translation id="2173801458090845390">ఈ పరికరానికి అభ్యర్థన IDను జోడించండి</translation>
 <translation id="2175042898143291048">ఎల్లప్పుడూ దీన్ని చేయి</translation>
 <translation id="2175607476662778685">శీఘ్ర ప్రాయోగిక పట్టీ</translation>
 <translation id="2177950615300672361">అజ్ఞాత ట్యాబ్: <ph name="TAB_NAME" /></translation>
@@ -798,7 +800,9 @@
 <translation id="2190469909648452501">తగ్గించు</translation>
 <translation id="2192505247865591433">నుండి:</translation>
 <translation id="2193365732679659387">విశ్వసనీయత సెట్టింగ్‌లు</translation>
+<translation id="2193512228430320736">మీకు సంబంధిత సమాచారం, యాప్‌లు మరియు చర్యలను చూపించడానికి సహాయకాన్ని ఆరంభిస్తుంది.</translation>
 <translation id="2195729137168608510">ఇమెయిల్ రక్షణ</translation>
+<translation id="219905428774326614">లాంచర్, అన్ని యాప్‌లు</translation>
 <translation id="219985413780390209">ప్రమాదకరమైన సైట్‌ల నుండి మిమ్మల్ని మరియు మీ పరికరాన్ని రక్షించండి</translation>
 <translation id="220138918934036434">బటన్‌ని దాచిపెట్టు</translation>
 <translation id="2202898655984161076">ముద్రణలను జాబితా చెయ్యడంలో సమస్య ఉంది. <ph name="CLOUD_PRINT_NAME" />తో మీ ముద్రణలలో కొన్ని విజయవంతంగా నమోదు చెయ్యబడకపోయి ఉండవచ్చు.</translation>
@@ -855,7 +859,6 @@
 <translation id="225614027745146050">స్వాగతం</translation>
 <translation id="225692081236532131">క్రియాశీలత స్థితి</translation>
 <translation id="2262477216570151239">పునరావృతానికి ముందు జాప్యం</translation>
-<translation id="226269835214688456">మీరు Chromebook కోసం Smart Lockని ఆఫ్ చేస్తే, మీ ఫోన్‌ను ఉపయోగించి మీ Chrome పరికరాలను అన్‌లాక్ చేయలేరు. మీరు మీ పాస్‌వర్డ్‌ను టైప్ చేయాల్సి ఉంటుంది.</translation>
 <translation id="2263189956353037928">సైన్ అవుట్ చేసి, తిరిగి సైన్ ఇన్ చేయి</translation>
 <translation id="2263497240924215535">(ఆపివేయబడింది)</translation>
 <translation id="2266168284394154563">స్క్రీన్ జూమ్‌ను రీసెట్ చేయండి</translation>
@@ -876,7 +879,6 @@
 <translation id="2282155092769082568">స్వయంచాలక కాన్ఫిగరేషన్ URL:</translation>
 <translation id="2283117145434822734">F6</translation>
 <translation id="2286841657746966508">బిల్లింగ్ చిరునామా</translation>
-<translation id="2286950485307333924">మీరు ఇప్పుడు Chromeకి సైన్ ఇన్ చేసారు</translation>
 <translation id="2287590536030307392">అన్ని వైర్‌లెస్ కనెక్షన్‌లను ఆపివేయండి.</translation>
 <translation id="2288735659267887385">ప్రాప్యత సెట్టింగ్‌లు</translation>
 <translation id="2291643155573394834">తదుపరి ట్యాబ్</translation>
@@ -902,7 +904,6 @@
 <translation id="2326606747676847821">అజ్ఞాతంలోకి వెళ్లు</translation>
 <translation id="2326931316514688470">అనువర్తనాన్ని &amp;మళ్లీ లోడ్ చేయి</translation>
 <translation id="2327492829706409234">అనువర్తనాన్ని ప్రారంభించు</translation>
-<translation id="2328054044222305089">ఇది <ph name="SITE" /> మీ పరికరంలో నిల్వ చేసిన ఏ డేటాను అయినా తొలగిస్తుంది మరియు మీరు అమలు చేయడానికి మంజూరు చేసిన ఏవైనా అనుమతులను రీసెట్ చేస్తుంది. మీరు కొనసాగించదలిచారా?</translation>
 <translation id="2329597144923131178">మీ బుక్‌మార్క్‌లు, చరిత్ర, పాస్‌వర్డ్‌లు, ఇతర సెట్టింగ్‌లను మీ అన్ని పరికరాల్లో పొందడానికి సైన్ ఇన్ చేయండి.</translation>
 <translation id="2332131598580221120">స్టోర్‌లో వీక్షించండి</translation>
 <translation id="2332742915001411729">డిఫాల్ట్‌కు రీసెట్ చేయి</translation>
@@ -926,7 +927,6 @@
 <translation id="2357949918965361754">మీరు మీ టీవీ లేదా ఇతర పరికరాల్లో Chrome నుండి కంటెంట్‌ను ప్రదర్శించడానికి ఈ లక్షణాన్ని ఉపయోగించవచ్చు.</translation>
 <translation id="2359345697448000899">సాధనాలు మెనులోని పొడిగింపులను క్లిక్ చేయడం ద్వారా మీ పొడిగింపులను నిర్వహించండి.</translation>
 <translation id="2359808026110333948">కొనసాగు</translation>
-<translation id="236128817791440714">సిఫార్సు చేయబడింది: Android కోసం Smart Lockను సెటప్ చేయండి</translation>
 <translation id="236141728043665931">ఎల్లప్పుడూ మైక్రోఫోన్ ప్రాప్యతను బ్లాక్ చేయి</translation>
 <translation id="2367972762794486313">అనువర్తనాలను చూపు</translation>
 <translation id="2371076942591664043">&amp;పూర్తవగానే తెరువు</translation>
@@ -985,12 +985,12 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> జోడించబడింది</translation>
 <translation id="246335896104539386">బుక్‌మార్క్‌లను దిగుమతి చేయి</translation>
 <translation id="2464089476039395325">HTTP ప్రాక్సీ</translation>
+<translation id="2468902267404883140">మీ ఫోన్‌కు కనెక్ట్ కావటంలేదు. మీరు ఆన్ చేసి ఉన్న అనుకూల Android ఫోన్‌ని ఉపయోగిస్తున్నారని మరియు అది చేతికి అందేంత దగ్గర్లో ఉందని నిర్ధారించుకోండి. &lt;a&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
 <translation id="2470702053775288986">మద్దతు లేని పొడిగింపులు నిలిపివేయబడ్డాయి</translation>
 <translation id="2473195200299095979">ఈ పేజీని అనువదించండి</translation>
 <translation id="2475982808118771221">ఒక లోపం సంభవించింది</translation>
 <translation id="2476578072172137802">సైట్ సెట్టింగ్‌లు</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" కోసం మీడియా-ఫైల్ అనుమతులు</translation>
-<translation id="2478830106132467213">మీ ఫోన్ చేతికి అందే దూరంలో ఉన్నప్పుడు మాత్రమే ఈ <ph name="DEVICE_TYPE" />ని అన్‌‍‍లాక్ చేయండి.</translation>
 <translation id="247949520305900375">ఆడియోను భాగస్వామ్యం చేయి</translation>
 <translation id="2479780645312551899">ఈ సమయంలో అన్ని ప్లగిన్‌లను అమలు చేయి</translation>
 <translation id="2480868415629598489">మీరు కాపీ చేసి, అతికించే డేటాను సవరించడం</translation>
@@ -999,6 +999,7 @@
 <translation id="2485056306054380289">సర్వర్ CA యోగ్యతాపత్రం:</translation>
 <translation id="2485422356828889247">వ్యవస్థాపనను తీసివెయ్యి</translation>
 <translation id="2487067538648443797">కొత్త బుక్‌మార్క్‌ను జోడించు</translation>
+<translation id="248861575772995840">మీ ఫోన్‌ను కనుగొనలేము. మీ <ph name="DEVICE_TYPE" /> యొక్క బ్లూటూత్ ఆన్ చేసి ఉన్నట్లు నిర్ధారించుకోండి. &lt;a&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
 <translation id="2489316678672211764">ప్లగిన్ (<ph name="PLUGIN_NAME" />) ప్రతిస్పందించడం లేదు.</translation>
 <translation id="2489428929217601177">గత రోజు</translation>
 <translation id="2489435327075806094">పాయింటర్ వేగం:</translation>
@@ -1006,6 +1007,7 @@
 <translation id="249113932447298600">క్షమించండి, ఈ సమయంలో <ph name="DEVICE_LABEL" /> పరికరానికి మద్దతు లేదు.</translation>
 <translation id="2493021387995458222">"ఒకసారికి ఒక పదం"ని ఎంచుకోండి</translation>
 <translation id="249303669840926644">నమోదు పూర్తి చేయడం కుదరలేదు</translation>
+<translation id="2495777824269688114">మరిన్ని ఫీచర్‌లను కనుగొనండి లేదా సమాధానాలను పొందండి. సహాయం కోసం "?" ఎంచుకోండి.</translation>
 <translation id="2496180316473517155">బ్రౌజింగ్ చరిత్ర</translation>
 <translation id="2496540304887968742">పరికరం ఖచ్చితంగా 4GB లేదా అంతకన్నా ఎక్కువ సామర్థాన్ని కలిగి ఉండాలి.</translation>
 <translation id="2497229222757901769">మౌస్ వేగం</translation>
@@ -1021,6 +1023,7 @@
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{స్క్రీన్ #}other{స్క్రీన్ #}}</translation>
 <translation id="2505402373176859469"><ph name="TOTAL_SIZE" />లో <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="2505993325121092464">Google Play సేవా నిబంధనలు</translation>
+<translation id="2508428939232952663">Google Play స్టోర్ ఖాతా</translation>
 <translation id="2509495747794740764">స్కేల్ ప్రమాణం తప్పనిసరిగా 10 మరియు 200 మధ్య ఉండే సంఖ్య అయ్యి ఉండాలి.</translation>
 <translation id="2510708650472996893">రంగు ప్రొఫైల్:</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -1028,6 +1031,7 @@
 <translation id="2518024842978892609">మీ క్లయింట్ ప్రమాణపత్రాలను ఉపయోగించడానికి అనుమతి</translation>
 <translation id="2520644704042891903">అందుబాటులో ఉన్న సాకెట్ కోసం వేచి ఉంది...</translation>
 <translation id="252219247728877310">అంశం నవీకరించబడలేదు</translation>
+<translation id="2522791476825452208">చాలా దగ్గరగా ఉండాలి</translation>
 <translation id="2523966157338854187">నిర్దిష్ట పేజీని లేదా పేజీల యొక్క సెట్‌ను తెరువు.</translation>
 <translation id="2525250408503682495">క్రిప్టోనైట్! కియోస్క్ అనువర్తనం కోసం క్రిప్టోహోమ్ మౌంట్ చేయబడలేదు.</translation>
 <translation id="2526590354069164005">డెస్క్‌టాప్</translation>
@@ -1056,6 +1060,7 @@
 <translation id="2562685439590298522">డాక్స్</translation>
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" />కు సైన్ ఇన్ చేయలేదు</translation>
 <translation id="2563856802393254086">అభినందనలు! మీ '<ph name="NAME" />' డేటా సేవ సక్రియం చేయబడింది మరియు పని చేయడానికి సిద్ధంగా ఉంది.</translation>
+<translation id="2564980044983637068">Smart Lockను ఆఫ్ చేయాలా?</translation>
 <translation id="2565670301826831948">టచ్‌ప్యాడ్ వేగం:</translation>
 <translation id="2566124945717127842">మీ <ph name="IDS_SHORT_PRODUCT_NAME" /> పరికరాన్ని కొత్త దాని వలె రీసెట్ చేయడానికి పవర్‌వాష్ చేయండి.</translation>
 <translation id="2568774940984945469">సమాచారబార్ కంటైనర్</translation>
@@ -1066,7 +1071,9 @@
 <translation id="2573269395582837871">చిత్రం మరియు పేరును ఎంచుకోండి</translation>
 <translation id="2574102660421949343"><ph name="DOMAIN" /> నుండి కుక్కీలు అనుమతించబడ్డాయి.</translation>
 <translation id="2575247648642144396">ప్రస్తుత పేజీలో పొడిగింపును అమలు చేయగలిగినప్పుడు ఈ చిహ్నం కనిపిస్తుంది. చిహ్నంపై క్లిక్ చేయడం ద్వారా లేదా <ph name="EXTENSION_SHORTCUT" />ను నొక్కడం ద్వారా ఈ పొడిగింపును ఉపయోగించండి.</translation>
+<translation id="2575268751393592580">మీ ఫోన్‌ను కనుగొనలేము. మీ <ph name="DEVICE_TYPE" />, Wi-Fi లేదా మొబైల్ నెట్‌వర్క్‌కి కనెక్ట్ చేసి ఉన్నట్లు నిర్ధారించుకోండి. &lt;a&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
 <translation id="2576842806987913196">ఈ పేరుతో ఇప్పటికే CRX ఫైల్ ఉంది.</translation>
+<translation id="257779572837908839">సమావేశాల కోసం Chromebox వలె సెటప్ చేయండి</translation>
 <translation id="2579575372772932244">ప్రొఫైల్‌ను పునఃసృష్టిస్తోంది, దయచేసి వేచి ఉండండి...</translation>
 <translation id="2580889980133367162">బహుళ ఫైల్‌లను డౌన్‌లోడ్ చేయడానికి <ph name="HOST" />ని ఎల్లప్పుడూ అనుమతించు</translation>
 <translation id="2580924999637585241">మొత్తం: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
@@ -1161,6 +1168,7 @@
 <translation id="2706892089432507937">USB పరికరాలు</translation>
 <translation id="2707024448553392710">అంశాన్ని డౌన్‌లోడ్ చేస్తోంది</translation>
 <translation id="270921614578699633">మొత్తం సగటు</translation>
+<translation id="2709453993673701466">అవి ఆన్ చేసే ముందు సింక్ మరియు వ్యక్తిగతీకరణను నిర్వహించాలనుకుంటున్నారా? <ph name="BEGIN_LINK" />సెట్టింగ్<ph name="END_LINK" />లను సందర్శించండి.</translation>
 <translation id="2709516037105925701">స్వయంపూర్తి</translation>
 <translation id="271033894570825754">కొత్తది</translation>
 <translation id="2713008223070811050">ప్రదర్శనలను నిర్వహించండి</translation>
@@ -1183,6 +1191,7 @@
 <translation id="2733364097704495499">మీరు <ph name="PRINTER_NAME" /> ప్రింటర్‌ను Google మేఘ ముద్రణకు నమోదు చేయాలనుకుంటున్నారా?</translation>
 <translation id="2735712963799620190">షెడ్యూల్</translation>
 <translation id="2737363922397526254">కుదించు...</translation>
+<translation id="2737492745329609575">సెటప్‌ను ప్రారంభించు</translation>
 <translation id="2738771556149464852">తరువాత కాదు</translation>
 <translation id="2739191690716947896">డీబగ్</translation>
 <translation id="2739240477418971307">మీ ప్రాప్యత సెట్టింగ్‌లను మార్చడం</translation>
@@ -1208,7 +1217,6 @@
 <translation id="2783298271312924866">డౌన్‌లోడ్ చేయబడింది</translation>
 <translation id="2783661497142353826">కియోస్క్ అనువర్తనాలను నిర్వహించండి</translation>
 <translation id="2784407158394623927">మీ మొబైల్ డేటా సేవ సక్రియం చెయ్యబడుతుంది</translation>
-<translation id="2784556410206159845">మీ <ph name="DEVICE_TYPE" />ని సురక్షితంగా ఉంచడానికి, Chromebook కోసం Smart Lockకి మీ ఫోన్‌లో స్క్రీన్ లాక్ ఉండటం అవసరం.</translation>
 <translation id="2785530881066938471">కంటెంట్ స్క్రిప్ట్ కోసం '<ph name="RELATIVE_PATH" />' ఫైల్‌ను లోడ్ చేయలేకపోయింది. ఇది ఎన్‌కోడ్ చేయబడిన UTF-8 కాదు.</translation>
 <translation id="2785873697295365461">ఫైల్ వివరణలు</translation>
 <translation id="2787047795752739979">అసలును భర్తీ చేయి</translation>
@@ -1247,7 +1255,6 @@
 <translation id="2807517655263062534">మీరు డౌన్‌లోడ్ చేసిన ఫైల్‌లు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="2809346626032021864">చదవడం</translation>
 <translation id="2809586584051668049">ఇంకా మరో <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
-<translation id="2810731435681289055">మీరు ఈ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేసే తదుపరిసారి, మీరు మీ చిత్రంపై క్లిక్ చేసి ప్రవేశించగలిగేలా Smart Lock నవీకరించబడుతుంది.</translation>
 <translation id="281133045296806353">ఇప్పటికే ఉన్న బ్రౌజర్ సెషన్లో క్రొత్త విండో సృష్టించబడింది.</translation>
 <translation id="2812944337881233323">సైన్ అవుట్ చేసి, తిరిగి సైన్ ఇన్ చేయడం ప్రయత్నించండి</translation>
 <translation id="2812989263793994277">ఏ చిత్రాలనూ చూపించవద్దు</translation>
@@ -1299,6 +1306,7 @@
 <translation id="2881966438216424900">చివరగా ప్రాప్తి చేసింది:</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> పునఃప్రారంభించబడుతుంది మరియు కొద్దిసేపట్లో రీసెట్ చేయబడుతుంది</translation>
 <translation id="2885378588091291677">విధి సంచాలకులు</translation>
+<translation id="2886771036282400576">• <ph name="PERMISSION" /></translation>
 <translation id="2887525882758501333">PDF పత్రం</translation>
 <translation id="2888807692577297075">&lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;కు అంశాలు సరిపోలలేదు</translation>
 <translation id="2889064240420137087">దీనితో లింక్ తెరువు...</translation>
@@ -1332,7 +1340,6 @@
 <translation id="2925966894897775835">షీట్‌లు</translation>
 <translation id="2927017729816812676">కాష్ నిల్వ</translation>
 <translation id="2927657246008729253">మార్చు...</translation>
-<translation id="2928526264833629376">Hangoutsకు కొనసాగించు</translation>
 <translation id="2930644991850369934">రికవరీ చిత్రం డౌన్‌లోన్ చేస్తున్నప్పుడు లోపం సంభవించింది. నెట్‌వర్క్ కనెక్షన్‌ని కోల్పోయింది.</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (పిల్లల ఖాతా)</translation>
 <translation id="2932483646085333864">సమకాలీకరణను ప్రారంభించడానికి సైన్ అవుట్ చేసి, ఆపై సైన్ ఇన్ చేయండి</translation>
@@ -1364,6 +1371,7 @@
 <translation id="2972557485845626008">ఫిర్మ్‌వేర్</translation>
 <translation id="2972581237482394796">&amp;పునరావృతం</translation>
 <translation id="297870353673992530">DNS సర్వర్:</translation>
+<translation id="2979639724566107830">క్రొత్త విండోలో తెరువు</translation>
 <translation id="2981113813906970160">పెద్ద మౌస్ కర్సర్‌ను చూపు</translation>
 <translation id="2982970937345031">అనామకంగా నివేదించు</translation>
 <translation id="2984337792991268709">ఈ రోజు <ph name="TODAY_DAYTIME" /></translation>
@@ -1398,7 +1406,6 @@
 <translation id="3020990233660977256">క్రమ సంఖ్య: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021678814754966447">ఫ్రేమ్ మూలాన్ని &amp;వీక్షించండి</translation>
 <translation id="3024374909719388945">24-గంటల గడియారాన్ని ఉపయోగించండి</translation>
-<translation id="3026050830483105579">అంతా ఇక్కడ ఉంది.</translation>
 <translation id="302781076327338683">దాటవేసే కాష్‌ని మళ్లీ లోడ్ చేయండి</translation>
 <translation id="3030243755303701754">పర్యవేక్షించబడే వినియోగదారు మీ మార్గదర్శకత్వంతో వెబ్‌లో అన్వేషించగలరు. Chromeలో పర్యవేక్షించబడే వినియోగదారుని నిర్వాహకుడిగా, మీరు:
 
@@ -1426,11 +1433,11 @@
 <translation id="3057861065630527966">మీ ఫోటోలను మరియు వీడియోలను బ్యాకప్ చేయండి</translation>
 <translation id="3058212636943679650">మీరు మీ కంప్యూటర్ యొక్క ఆపరేటింగ్ సిస్టమ్‌ని రీస్టోర్ చెయ్యాలనుకుంటే, మీకు రికవరీ SD కార్డ్ లేదా USB మెమరీ స్టిక్ అవసరం.</translation>
 <translation id="3060379269883947824">మాట్లాడటానికి-ఎంచుకోండిని ప్రారంభించు</translation>
-<translation id="3063844757726132584">ఈ నిర్వాహక లాంచర్ నుండి మీ అన్ని అనువర్తనాలను ప్రాప్యత చేయండి. గేమ్‌లను ఆడండి, వీడియో చాట్ చేయండి, సంగీతం వినండి, పత్రాలను సవరించండి లేదా మరిన్ని అనువర్తనాలను పొందండి.</translation>
 <translation id="3064410671692449875">తగినంత డేటా లేదు</translation>
 <translation id="3065041951436100775">ట్యాబ్ మూసివేత అభిప్రాయం.</translation>
 <translation id="3065140616557457172">శోధించడానికి టైప్ చెయ్యండి లేదా నావిగేట్ చెయ్యడానికి URLను ఎంటర్ చెయ్యండి – ప్రతిది చక్కగా పని చేస్తుంది.</translation>
 <translation id="3067198360141518313">ఈ ప్లగ్ఇన్‌ని అమలు చెయ్యి</translation>
+<translation id="3074037959626057712">మీరు సైన్ ఇన్ చేసి, సింక్‌ను ఆన్ చేసారు</translation>
 <translation id="3075874217500066906">పవర్‌వాష్ ప్రక్రియను మొదలుపెట్టడానికి పునఃప్రారంభించడం అవసరం. పునఃప్రారంభించిన తర్వాత మీరు కొనసాగించాలనుకుంటున్నారో లేదో నిర్ధారించమని మిమ్మల్ని అడగడం జరుగుతుంది.</translation>
 <translation id="3076677906922146425">Chromeకి వ్యక్తిని జోడించడానికి ఎవరినైనా అనుమతించు</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
@@ -1458,6 +1465,7 @@
 <translation id="3101709781009526431">తేదీ మరియు సమయం</translation>
 <translation id="3108967419958202225">ఎంచుకోండి...</translation>
 <translation id="3112378005171663295">కుదించు</translation>
+<translation id="3115128645424181617">మీ ఫోన్‌ను కనుగొనలేము. అది చేతికి అందేంత దగ్గర్లో ఉందని మరియు బ్లూటూత్ ఆన్ చేసి ఉన్నట్లు నిర్ధారించుకోండి.</translation>
 <translation id="3115147772012638511">కాష్ కోసం వేచి ఉంది...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> సహాయం</translation>
 <translation id="3120430004221004537">దీనిలో నిర్దిష్ట చర్య కోసం తగిన గుప్తీకరణ లేదు: "<ph name="DEVICE_NAME" />".</translation>
@@ -1500,7 +1508,6 @@
 <translation id="3160041952246459240">ఈ వ్యక్తులను గుర్తించే ఫైల్‌లో మీకు సర్టిఫికెట్‌లు ఉన్నాయి:</translation>
 <translation id="316125635462764134">అనువర్తనాన్ని తీసివేయి</translation>
 <translation id="3161522574479303604">అన్ని భాషలు</translation>
-<translation id="3162559335345991374">మీరు ఉపయోగిస్తున్న Wi-Fiకి మీరు దాని లాగిన్ పేజీని సందర్శించడం అవసరం.</translation>
 <translation id="316307797510303346">ఈ వ్యక్తి <ph name="CUSTODIAN_EMAIL" /> నుండి సందర్శించే వెబ్‌సైట్‌లను నియంత్రించండి మరియు వీక్షించండి.
     మీ ఖాతా సైన్-ఇన్ వివరాలు చాలా పాతవి.</translation>
 <translation id="3165390001037658081">కొన్ని క్యారియర్‌లు ఈ లక్షణాన్ని బ్లాక్ చేయవచ్చు.</translation>
@@ -1520,9 +1527,7 @@
 <translation id="3191308084656429858">{NUM_POPUPS,plural, =1{ఒక పాప్-అప్ బ్లాక్ చేయబడింది}other{# పాప్-అప్‌లు బ్లాక్ చేయబడ్డాయి}}</translation>
 <translation id="3192947282887913208">ఆడియో  ఫైళ్ళు</translation>
 <translation id="3193734264051635522">వేగం:</translation>
-<translation id="3195445837372719522">సమావేశాల కోసం Chromeboxకి ఇది ఏ డొమైన్‌కి సంబంధించిందో తెలియాలి. అందువలన మీరు మీ ఖాతాకి సైన్ ఇన్ చేయడం అవసరం.</translation>
 <translation id="3199127022143353223">సర్వర్‌లు</translation>
-<translation id="3200025317479269283">వినోదం పొందండి! మేము మీ కోసం ఇక్కడ ఉన్నాము.</translation>
 <translation id="3202131003361292969">పథం</translation>
 <translation id="3202173864863109533">ఈ ట్యాబ్ ఆడియో మ్యూట్ చేయబడుతోంది.</translation>
 <translation id="3204741654590142272">ఛానెల్ మార్పు తర్వాత వర్తింపజేయబడుతుంది.</translation>
@@ -1546,6 +1551,7 @@
 <translation id="3242765319725186192">ముందే-భాగస్వామ్యించిన కీ:</translation>
 <translation id="3244621381664913240">వాయిస్ శోధనను ప్రారంభించడానికి "Ok Google"ని ప్రారంభించండి.</translation>
 <translation id="3245321423178950146">తెలియని కళాకారుడు</translation>
+<translation id="3246097286174000800">Smart Lockను ప్రయత్నించండి</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - నెట్‌వర్క్ లోపం</translation>
 <translation id="3251759466064201842">&lt;సర్టిఫికెట్‌లో భాగం కాదు&gt;</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> ఫైల్‌ల కోసం డిఫాల్ట్ అనువర్తనాన్ని ఎంచుకోండి:</translation>
@@ -1629,6 +1635,8 @@
 <translation id="335581015389089642">ప్రసంగం</translation>
 <translation id="3355936511340229503">కనెక్షన్ లోపం</translation>
 <translation id="3356580349448036450">పూర్తయింది</translation>
+<translation id="3356797067524893661">మీరు Hangouts సమావేశానికి కొనసాగడానికి అంతా పూర్తి చేశారు</translation>
+<translation id="3358935496594837302">మీ ఫోన్‌ను కనుగొనలేము. మీరు ఆన్ చేసి ఉన్న అనుకూల Android ఫోన్‌ని ఉపయోగిస్తున్నారని మరియు అది చేతికి అందేంత దగ్గర్లో ఉందని నిర్ధారించుకోండి. &lt;a&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
 <translation id="3359256513598016054">సర్టిఫికెట్ విధాన పరిమితులు</translation>
 <translation id="335985608243443814">బ్రౌజ్ చెయ్యి...</translation>
 <translation id="3360297538363969800">ముద్రణ విఫలమైంది. దయచేసి మీ ప్రింటర్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.</translation>
@@ -1667,6 +1675,7 @@
 <translation id="342383653005737728">యజమాని ఈ పరికరం యొక్క విశ్లేషణ మరియు వినియోగ డేటాను Googleకి పంపాలో లేదో నిర్ణయించవచ్చు. మీరు ఈ <ph name="BEGIN_LINK1" />సెట్టింగ్<ph name="END_LINK1" />ని ఇక్కడ వీక్షించవచ్చు. <ph name="BEGIN_LINK2" />మరింత తెలుసుకోండి<ph name="END_LINK2" /></translation>
 <translation id="3423858849633684918">దయచేసి  <ph name="PRODUCT_NAME" />ని తిరిగి ప్రారంభించండి</translation>
 <translation id="3424969259347320884">ట్యాబ్ క్రాష్ అయిన సమయంలో మీరు ఏం చేస్తున్నారో వివరించండి</translation>
+<translation id="3427092606871434483">అనుమతించు (డిఫాల్ట్)</translation>
 <translation id="3429599832623003132">$1 అంశాలు</translation>
 <translation id="3432227430032737297">చూపుతున్నవన్నీ తీసివేయి</translation>
 <translation id="3432757130254800023">స్థానిక నెట్‌వర్క్‌లో డిస్‌ప్లేలకు ఆడియో మరియు వీడియోను పంపడం</translation>
@@ -1692,6 +1701,7 @@
 <translation id="3454157711543303649">సక్రియం చేయడం పూర్తయింది</translation>
 <translation id="345693547134384690">క్రొత్త టాబ్‌లో &amp;చిత్రాన్ని తెరువు</translation>
 <translation id="3459509316159669723">ముద్రిస్తోంది</translation>
+<translation id="3459697287128633276">మీ ఖాతాలో Google Play స్టోర్ యాక్సెస్‌ని ఆరంభించాలంటే, దయచేసి మీ గుర్తింపు ప్రదాతతో ప్రమాణీకరించండి.</translation>
 <translation id="3459774175445953971">చివరగా సవరించబడింది:</translation>
 <translation id="3462413494201477527">ఖాతా సెటప్‌ను రద్దు చేయాలా?</translation>
 <translation id="346431825526753">ఇది <ph name="CUSTODIAN_EMAIL" /> నిర్వహించే చిన్నపిల్లల ఖాతా.</translation>
@@ -1723,6 +1733,7 @@
 <translation id="3493881266323043047">చెల్లుబాటు</translation>
 <translation id="3494769164076977169">సైట్ మొదటి ఫైల్ తర్వాత స్వయంచాలకంగా ఫైల్‌లను డౌన్‌లోడ్ చేయడానికి ప్రయత్నించేటప్పుడు అడగాలి (సిఫార్సు చేయబడింది)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> లోపాలు.</translation>
+<translation id="3495660573538963482">Google సహాయకం సెట్టింగ్‌లు</translation>
 <translation id="3496213124478423963">దూరంగా జూమ్ చెయ్యి</translation>
 <translation id="3504135463003295723">సమూహం పేరు:</translation>
 <translation id="3505030558724226696">పరికర ప్రాప్యతను ఉపసంహరించు</translation>
@@ -1750,7 +1761,6 @@
 <translation id="3541661933757219855">Ctrl+Alt+/ టైప్ చెయ్యండి లేదా దాచిపెట్టడానికి Escape చెయ్యండి</translation>
 <translation id="3543393733900874979">నవీకరించడం విఫలమైంది (లోపం: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="3543597750097719865">SHA-512తో X9.62 ECDSA సంతకం</translation>
-<translation id="3544347428588533940">Smart Lock దాదాపు సిద్ధమైంది</translation>
 <translation id="354602065659584722">హానికరమైన సాఫ్ట్‌వేర్ తీసివేయబడింది</translation>
 <translation id="3547495624659668105">PRL సంస్కరణ</translation>
 <translation id="3547954654003013442">ప్రాక్సీ సెట్టింగ్‌లు</translation>
@@ -1857,7 +1867,6 @@
 <translation id="3697100740575341996">మీ పరికరం కోసం మీ IT నిర్వాహకుడు Chrome కానుకలను నిలిపివేసారు. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">ఇమెయిల్ చిరునామా</translation>
 <translation id="3702500414347826004">మీ ప్రారంభ పేజీలు <ph name="URL" />ని చేర్చేలా మార్చబడ్డాయి.</translation>
-<translation id="3704162925118123524">మీరు ఉపయోగించే నెట్‌వర్క్‌కి మీరు దాని లాగిన్ పేజీని సందర్శించడం అవసరం కావచ్చు.</translation>
 <translation id="3704331259350077894">ఆపరేషన్ రద్దు</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">లోడ్ అవుతోంది...</translation>
@@ -1869,7 +1878,6 @@
 <translation id="3712897371525859903">&amp;లాగ పేజీని సేవ్ చెయ్యి</translation>
 <translation id="371300529209814631">వెనుకకు/ముందుకు</translation>
 <translation id="3714633008798122362">వెబ్ క్యాలెండర్</translation>
-<translation id="3715597595485130451">Wi-Fiకి కనెక్ట్ చేయండి</translation>
 <translation id="3718288130002896473">ప్రవర్తన</translation>
 <translation id="3719826155360621982">హోమ్‌పేజీ</translation>
 <translation id="3722396466546931176">భాషలను జోడించి, మీ ప్రాధాన్యతపై ఆధారపడి వాటిని క్రమం చెయ్యడానికి లాగండి.</translation>
@@ -1927,6 +1935,7 @@
 <translation id="379082410132524484">మీ కార్డ్ గడువు ముగిసింది</translation>
 <translation id="3790909017043401679">SIM కార్డ్ PINని నమోదు చేయండి</translation>
 <translation id="3792890930871100565">ముద్రకాలను డిస్‌కనెక్ట్ చేయి</translation>
+<translation id="379422718204375917">మీ ఖాతాలోకి సైన్ ఇన్ చేయడానికి Smart Lockని ఉపయోగించండి</translation>
 <translation id="3796648294839530037">ఇష్టమైన నెట్‌వర్క్‌లు:</translation>
 <translation id="3797900183766075808">“<ph name="SEARCH_TERMS" />” కోసం <ph name="SEARCH_ENGINE" />లో &amp;శోధించండి</translation>
 <translation id="3798325802885154040">క్లిక్ చేయడానికి నొక్కే లక్షణం ప్రారంభించడానికి/నిలిపివేయడానికి మిమ్మల్ని అనుమతిస్తుంది</translation>
@@ -1980,8 +1989,10 @@
 <translation id="3855676282923585394">బుక్‌మార్క్‌లు మరియు సెట్టింగ్‌లను దిగుమతి చెయ్యి...</translation>
 <translation id="3856800405688283469">సమయ మండలిని ఎంచుకోండి</translation>
 <translation id="3856921555429624101">డేటా వినియోగాన్ని గణించడం ముగిసింది</translation>
+<translation id="3857228364945137633">మీ ఫోన్ సమీపంలో ఉన్నప్పుడు మీ <ph name="DEVICE_TYPE" />ని పాస్‌వర్డ్‌ లేకుండా అన్‌లాక్ చేయడానికి Smart Lockను ప్రయత్నించండి.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3859360505208332355">ఎల్లప్పుడూ <ph name="HOST" />లో ఈ ప్లగిన్‌లను అనుమతించు</translation>
+<translation id="3860381078714302691">Hangouts సమావేశానికి స్వాగతం</translation>
 <translation id="3862134173397075045">Chromeలో Cast అనుభవానికి స్వాగతం!</translation>
 <translation id="3865414814144988605">రిజల్యూషన్</translation>
 <translation id="386548886866354912"><ph name="EXTENSION_NAME" /> గల ప్యాక్</translation>
@@ -1992,6 +2003,7 @@
 <translation id="3869917919960562512">తప్పుడు సూచిక.</translation>
 <translation id="3872991219937722530">డిస్క్ స్థలాన్ని ఖాళీ చేయండి, లేదంటే పరికరం ప్రతిస్పందనరహితం అవుతుంది.</translation>
 <translation id="3878840326289104869">పర్యవేక్షించబడే వినియోగదారుని సృష్టిస్తోంది</translation>
+<translation id="3879748587602334249">డౌన్‌లోడ్ నిర్వాహికి</translation>
 <translation id="388485010393668001">సంపూర్ణమైనది అందుబాటులో ఉంది: <ph name="COMPLETION_TEXT" /></translation>
 <translation id="3892414795099177503">OpenVPN / L2TPని జోడించు...</translation>
 <translation id="3893536212201235195">మీ ప్రాప్యత సౌలభ్య సెట్టింగ్‌లను చదవడానికి మరియు మార్చడానికి అనుమతి</translation>
@@ -2012,6 +2024,7 @@
 <translation id="3911824782900911339">క్రొత్త ట్యాబ్ పేజీ</translation>
 <translation id="3915280005470252504">వాయిస్ ద్వారా శోధించు</translation>
 <translation id="3916445069167113093">ఈ రకం ఫైల్‌ మీ కంప్యూటర్‌కు హాని చేయవచ్చు. అయినా సరే <ph name="FILE_NAME" /> ఉంచాలని అనుకుంటున్నారా?</translation>
+<translation id="3918972485393593704">Googleకు వివరాలను నివేదించండి</translation>
 <translation id="3920504717067627103">సర్టిఫికెట్ విధానాలు</translation>
 <translation id="392089482157167418">ChromeVox (చదవబడే అభిప్రాయం)ని ప్రారంభించు</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2020,6 +2033,7 @@
 <translation id="3925842537050977900">అర నుండి అన్‌పిన్ చేయి</translation>
 <translation id="3926002189479431949">Smart Lock ఫోన్ మార్చబడింది</translation>
 <translation id="3927932062596804919">తిరస్కరించు</translation>
+<translation id="3928994486545789273">నెట్‌వర్క్‌ను ఎంచుకోండి</translation>
 <translation id="3930521966936686665">దీనిలో ప్లే చేయండి</translation>
 <translation id="3936390757709632190">&amp;ఆడియోని క్రొత్త టాబ్లో తెరువు</translation>
 <translation id="3936768791051458634">ఛానెల్‌ను మార్చు...</translation>
@@ -2037,6 +2051,7 @@
 <translation id="3946471364541867667">TalkBack సెట్టింగ్‌లు</translation>
 <translation id="3947376313153737208">ఎంపిక లేదు</translation>
 <translation id="3948116654032448504">చిత్రం కోసం <ph name="SEARCH_ENGINE" />లో &amp;శోధించండి</translation>
+<translation id="3949371968208420848">Hangouts సమావేశానికి స్వాగతం!</translation>
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">IE నుండి దిగుమతి చెయ్యబడింది</translation>
 <translation id="3950820424414687140">సైన్ ఇన్</translation>
@@ -2065,6 +2080,7 @@
 <translation id="3989635538409502728">సైన్ ఔట్</translation>
 <translation id="399179161741278232">దిగుమతి అయ్యింది</translation>
 <translation id="3991936620356087075"> మీరు సరి కానటువంటి PIN అన్‌లాకింగ్ కీను చాలాసార్లు ఎంటర్ చేశారు. మీ SIM కార్డు శాశ్వతంగా నిలిపివెయ్యబడింది.</translation>
+<translation id="3994374631886003300">మీ ఫోన్‌ను అన్‌లాక్ చేయండి మరియు మీ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేయడానికి దాన్ని సమీపంలోకి తీసుకురండి.</translation>
 <translation id="3994878504415702912">&amp;జూమ్ చెయ్యి</translation>
 <translation id="3995964755286119116">Adobe Flash Player కెమెరా సెట్టింగ్‌లు భిన్నమైనవి.</translation>
 <translation id="39964277676607559">కంటెంట్ స్క్రిప్ట్‌ కోసం javascript '<ph name="RELATIVE_PATH" />' లోడ్ చేయబడలేదు.</translation>
@@ -2098,7 +2114,7 @@
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">పత్రాన్ని ఇప్పుడు తనిఖీ చేయి</translation>
 <translation id="406070391919917862">నేపథ్య అనువర్తనాలు</translation>
-<translation id="4062251648694601778">మీ <ph name="SHORT_PRODUCT_NAME" /> పరికరాన్ని ఆస్వాదించండి. సందేహాలు ఉన్నాయా? మీరు స్థితి ట్రేలోని "?"ని క్లిక్ చేయడం ద్వారా ఎల్లవేళలా సహాయం పొందవచ్చు.</translation>
+<translation id="4063283930106169759">మీ ఫోన్ సమీపంలో ఉన్నట్లు నిర్దారించుకోండి. మీ ఫోన్‌ను కనుగొనడానికి, మీ ఖాతా కలిగి ఉన్న అన్ని పరికరాలకు బ్లూటూత్ ఆన్ అవుతుంది. &lt;a&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
 <translation id="4065876735068446555">మీరు ఉపయోగిస్తున్న నెట్‌వర్క్ (<ph name="NETWORK_ID" />)కి మీరు దాని లాగిన్ పేజీని సందర్శించడం అవసరం కావచ్చు.</translation>
 <translation id="4068506536726151626">ఈ పేజీలో మీ స్థానాన్ని ట్రాక్ చేస్తున్న క్రింది సైట్‌ల ఎలిమెంట్‌లు ఉన్నాయి:</translation>
 <translation id="4068776064906523561">సేవ్ చేయబడిన వేలిముద్రలు</translation>
@@ -2108,6 +2124,7 @@
 <translation id="4075639477629295004"><ph name="FILE_NAME" />ని ప్రసారం చేయడం సాధ్యపడలేదు.</translation>
 <translation id="4077917118009885966">ఈ సైట్‌లో ప్రకటనలు బ్లాక్ చేయబడ్డాయి</translation>
 <translation id="4081242589061676262">ఫైల్‌ని ప్రసారం చేయడం సాధ్యపడలేదు.</translation>
+<translation id="4084099073048755074">Google Play నుండి యాప్‌లు మరియు గేమ్‌లను ఇన్‌స్టాల్ చేయండి</translation>
 <translation id="4084682180776658562">బుక్‌మార్క్ చెయ్యి</translation>
 <translation id="4084835346725913160"><ph name="TAB_NAME" />ని మూసివేయి</translation>
 <translation id="4085298594534903246">ఈ పేజీపై JavaScript నిరోధించబడింది.</translation>
@@ -2174,6 +2191,7 @@
 <translation id="4195643157523330669">క్రొత్త టాబ్‌లో తెరువు</translation>
 <translation id="4195814663415092787">మీరు నిష్క్రమించిన చోటు నుండే కొనసాగించండి</translation>
 <translation id="4197674956721858839">జిప్ ఎంపిక</translation>
+<translation id="4198146608511578238">మీ Google సహాయకంతో మాట్లాడటానికి లాంచర్ చిహ్నాన్ని నొక్కి, ఉంచండి.</translation>
 <translation id="4200689466366162458">అనుకూల పదాలు</translation>
 <translation id="4200983522494130825">క్రొత్త &amp;టాబ్</translation>
 <translation id="4206144641569145248">గ్రహాంతరవాసి</translation>
@@ -2194,7 +2212,6 @@
 <translation id="4235813040357936597"><ph name="PROFILE_NAME" /> కోసం ఖాతాను జోడించు</translation>
 <translation id="4235965441080806197">సైన్ ఇన్‌ని రద్దు చేయి</translation>
 <translation id="4237016987259239829">నెట్‌వర్క్ కనెక్షన్ లోపం</translation>
-<translation id="4237682350741091554"><ph name="BEGIN_LINK" />సెట్టింగ్‌లు<ph name="END_LINK" />లో Chrome సమకాలీకరణ మరియు వ్యక్తిగతీకరణను నిర్వహించండి</translation>
 <translation id="4240069395079660403"><ph name="PRODUCT_NAME" /> ఈ భాషలో ప్రదర్శించబడదు</translation>
 <translation id="4240511609794012987">భాగస్వామ్యం చేయబడిన మెమరీ</translation>
 <translation id="4242533952199664413">సెట్టింగ్‌లను తెరువు</translation>
@@ -2207,6 +2224,7 @@
 <translation id="4250229828105606438">స్క్రీన్‌షాట్</translation>
 <translation id="4250680216510889253">కాదు</translation>
 <translation id="4252996741873942488"><ph name="WINDOW_TITLE" /> - ట్యాబ్ కంటెంట్ భాగస్వామ్యం చేయబడింది</translation>
+<translation id="4253515443406306926">లాంచర్, పూర్తి స్క్రీన్ శోధన ఫలితాలు</translation>
 <translation id="4254813446494774748">అనువాద భాష:</translation>
 <translation id="425573743389990240">వాట్‌లలో బ్యాటరీ తరుగుదల రేట్ (రుణాత్మక విలువ ఉందంటే బ్యాటరీ ఛార్జ్ అవుతోందని అర్థం)</translation>
 <translation id="4256316378292851214">వీడియోను ఇలా సే&amp;వ్ చెయ్యి...</translation>
@@ -2223,10 +2241,10 @@
 <translation id="4270393598798225102">సంస్కరణ <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">సరిపోలికలు లేవు</translation>
 <translation id="4275830172053184480">మీ పరికరాన్ని పునఃప్రారంభించండి</translation>
-<translation id="4276796043975446927">సమావేశాల కోసం Chromeboxకి స్వాగతం</translation>
 <translation id="4278390842282768270">అనుమతించబడింది</translation>
 <translation id="4279490309300973883">ప్రతిబింబిస్తుంది</translation>
 <translation id="4281844954008187215">సేవా నిబంధనలు</translation>
+<translation id="4282196459431406533">Smart Lock ఆన్‌లో ఉంది</translation>
 <translation id="4284105660453474798">మీరు "$1"ను ఖచ్చితంగా తొలగించాలనుకుంటున్నారా?</translation>
 <translation id="4285498937028063278">అన్‌పిన్ చేయి</translation>
 <translation id="428565720843367874">ఈ ఫైల్‌ను స్కాన్ చేస్తున్నప్పుడు ఊహించని విధంగా యాంటీ-వైరస్ సాఫ్ట్‌వేర్ విఫలమైంది.</translation>
@@ -2244,6 +2262,7 @@
 <translation id="4307281933914537745">సిస్టమ్ రికవరీ గురించి మరింత తెలుసుకోండి</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K ప్రత్యక్షంగా)</translation>
 <translation id="431076611119798497">&amp;వివరాలు</translation>
+<translation id="4312866146174492540">బ్లాక్ చేయి (డిఫాల్ట్)</translation>
 <translation id="4315548163539304064">మీ మీడియా పరికరాన్ని స్కాన్ చేస్తోంది...
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> కొత్త ఫోటోలు కనుగొనబడ్డాయి</translation>
@@ -2287,6 +2306,7 @@
 <translation id="4377363674125277448">సర్వర్ ప్రమాణపత్రంతో సమస్య ఏర్పడింది.</translation>
 <translation id="4378154925671717803">ఫోన్</translation>
 <translation id="4378551569595875038">కనెక్ట్ అవుతోంది...</translation>
+<translation id="4378556263712303865">పరికరం అభ్యర్థన</translation>
 <translation id="4381849418013903196">కోలన్</translation>
 <translation id="4384312707950789900">ప్రాధాన్య నెట్‌వర్క్‌లకు జోడించు</translation>
 <translation id="4384652540891215547">పొడిగింపును సక్రియం చేయండి</translation>
@@ -2350,7 +2370,6 @@
 <translation id="450099669180426158">ఆశ్చర్యార్థక గుర్తు చిహ్నం</translation>
 <translation id="4501530680793980440">తీసివేతను నిర్ధారించండి</translation>
 <translation id="4504940961672722399">ఈ చిహ్నంపై క్లిక్ చేయడం ద్వారా లేదా <ph name="EXTENSION_SHORTCUT" />ను నొక్కడం ద్వారా ఈ పొడిగింపును ఉపయోగించండి.</translation>
-<translation id="4505051713979988367">మీ Android ఫోన్ అన్‌లాక్ చేయబడి, సమీపంలో ఉన్నప్పుడు మీ <ph name="DEVICE_TYPE" /> అన్‌లాక్ చేయబడుతుంది.</translation>
 <translation id="4508265954913339219">సక్రియం  చేయడం విఫలమైంది</translation>
 <translation id="4508765956121923607">&amp;మూలాన్ని చూడండి</translation>
 <translation id="4509017836361568632">ఫోటోను విస్మరించు</translation>
@@ -2408,7 +2427,6 @@
 <translation id="4589268276914962177">క్రొత్త టెర్మినల్</translation>
 <translation id="4590324241397107707">డేటాబేస్ నిల్వ</translation>
 <translation id="4593021220803146968"><ph name="URL" />కు &amp;వెళ్ళండి</translation>
-<translation id="4594109696316595112">ఒక-పర్యాయ సక్రియం: ఈ <ph name="DEVICE_TYPE" />లో Smart Lockని సక్రియం చేయడానికి మీ పాస్‌వర్డ్‌ను టైప్ చేయండి. Smart Lockతో, మీ ఫోన్ ఈ పరికరాన్ని పాస్‌వర్డ్ లేకుండానే అన్‌లాక్ చేస్తుంది. ఈ లక్షణాన్ని మార్చడానికి లేదా ఆఫ్ చేయడానికి, మీ <ph name="DEVICE_TYPE" /> సెట్టింగ్‌లను సందర్శించండి.</translation>
 <translation id="4595560905247879544">అనువర్తనాలు మరియు పొడిగింపులను నిర్వాహకుడు (<ph name="CUSTODIAN_NAME" />) మాత్రమే సవరించగలరు.</translation>
 <translation id="4596295440756783523">మీకు ఫైల్‌లో ఈ సర్వర్‌లను గుర్తించే ప్రమాణపత్రాలు ఉన్నాయి</translation>
 <translation id="4598556348158889687">నిల్వ నిర్వహణ</translation>
@@ -2431,7 +2449,6 @@
 <translation id="4628314759732363424">మార్చు...</translation>
 <translation id="4628757576491864469">పరికరాలు</translation>
 <translation id="4628948037717959914">ఫోటో</translation>
-<translation id="462965295757338707">నమోదు చేయడానికి మీ ఫోన్‌ని <ph name="DEVICE_TYPE" /> సమీపంలోకి తీసుకురండి.</translation>
 <translation id="4630590996962964935">చెల్లని అక్షరం: $1</translation>
 <translation id="4631110328717267096">సిస్టమ్ నవీకరణ విఫలమైంది.</translation>
 <translation id="4631887759990505102">చిత్రకారుడు</translation>
@@ -2451,6 +2468,7 @@
 <translation id="465499440663162826">Chrome వెబ్ స్టోర్‌కి కనెక్ట్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="4656293982926141856">ఈ కంప్యూటర్</translation>
 <translation id="4657031070957997341">ఎల్లప్పుడూ <ph name="HOST" />లో ప్లగిన్‌లను అనుమతించు</translation>
+<translation id="4658312088164718891">Smart Lockని ఆన్ చేయడానికి మీ పాస్‌వర్డ్‌‌ను నమోదు చేయండి. తదుపరిసారి, మీ ఫోన్ మీ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేస్తుంది. సెట్టింగ్‌లలో Smart Lockని ఆఫ్ చేయండి.</translation>
 <translation id="4662788913887017617">ఈ బుక్‌మార్క్‌ని మీ iPhoneతో భాగస్వామ్యం చేయండి</translation>
 <translation id="4664482161435122549">PKCS #12 ఎగుమతి లోపం</translation>
 <translation id="466481852929361583">సురక్షిత మాడ్యూల్ సెటప్ చేయబడుతోంది. దయచేసి వేచి ఉండండి; ఇందుకు కొన్ని నిమిషాలు పట్టవచ్చు.</translation>
@@ -2462,6 +2480,7 @@
 <translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' యొక్క సభ్యులతో ఈ అంశాలను భాగస్వామ్యం చేస్తే మినహా వారు ప్రాప్యతను కోల్పోతారు.</translation>
 <translation id="4672657274720418656">పేజీని డిస్టిల్ చేయి</translation>
 <translation id="4673442866648850031">స్టైలస్‌ను బయటకు తీసినప్పుడు స్టైలస్ సాధనాలను తెరుస్తుంది</translation>
+<translation id="4677692029604506169">మీ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేయడానికి మీరు ఉపయోగించిన ఫోన్‌కి, భద్రత కోసం స్క్రీన్ లాక్ అవసరం. సాధారణంగా అది పిన్, నమూనా లేదా పాస్‌వర్డ్‌. ఇప్పటికే స్క్రీన్ లాక్ ఉందా? సెటప్‌ను ధృవీకరించి కొనసాగించడానికి, మళ్లీ తనిఖీ చేయి ఎంచుకోండి.</translation>
 <translation id="4677772697204437347">GPU మెమరీ</translation>
 <translation id="4681930562518940301">అసలు &amp;చిత్రాన్ని కొత్త ట్యాబ్‌లో తెరువు</translation>
 <translation id="4682551433947286597">వాల్‌పేపర్‌లు సైన్ ఇన్ స్క్రీన్‌లో కనిపిస్తాయి.</translation>
@@ -2602,7 +2621,6 @@
 <translation id="4876273079589074638">క్రాష్ ఎందుకు జరిగిందన్నది తెలుసుకోవడానికి మరియు పరిష్కరించడానికి మా ఇంజినీర్‌లకు సహాయం చేయండి. మీకు సాధ్యమైతే విషయాన్ని క్రమ పద్ధతిలో దశల వారీగా పేర్కొనండి. వివరణ ఏదీ మరీ చిన్నగా ఉండకూడదు!</translation>
 <translation id="4876895919560854374">స్క్రీన్‌ను లాక్ చేయండి మరియు అన్‌లాక్ చేయండి</translation>
 <translation id="4877017884043316611">Chromeboxతో జత చేయండి</translation>
-<translation id="487829747011038481">వాయిస్ పరస్పర చర్యను ప్రారంభించండి</translation>
 <translation id="4880214202172289027">వాల్యూమ్ స్లయిడర్</translation>
 <translation id="4880328057631981605">ప్రాప్యత స్థానం పేరు</translation>
 <translation id="4880520557730313061">స్వీయ పరిష్కరణ</translation>
@@ -2620,7 +2638,6 @@
 <translation id="4891089016822695758">బీటా ఫోరమ్</translation>
 <translation id="4893336867552636863">దీని వలన మీ బ్రౌజింగ్ డేటా ఈ పరికరం నుండి శాశ్వతంగా తొలగించబడుతుంది.</translation>
 <translation id="4898011734382862273">ప్రమాణపత్రం "<ph name="CERTIFICATE_NAME" />" ప్రమాణపత్రాలను మంజూరు చేసే సంస్థను సూచిస్తోంది</translation>
-<translation id="4899376560703610051">మీ <ph name="DEVICE_TYPE" /> మాన్యువల్‌గా లాక్ చేయబడింది. మీరు ప్రవేశించడానికి మీ పాస్‌వర్డ్‌ను టైప్ చేయాలి.</translation>
 <translation id="489985760463306091">హానికరమైన సాఫ్ట్‌వేర్ తొలగింపును పూర్తి చేసేందుకు, మీ కంప్యూటర్‌ను పునఃప్రారంభించాలి</translation>
 <translation id="4900392736118574277">మా ప్రారంభ పేజీ <ph name="URL" />కి మార్చబడింది.</translation>
 <translation id="490074449735753175">అక్షరక్రమ లోపాలను పరిష్కరించడానికి సహాయం కోసం వెబ్ సేవను ఉపయోగించండి</translation>
@@ -2662,10 +2679,12 @@
 <translation id="496226124210045887">మీరు ఎంచుకున్న ఫోల్డర్‌లో ముఖ్యమైన ఫైల్‌లు ఉన్నాయి. మీరు ఖచ్చితంగా ఈ ఫోల్డర్ కోసం "$1"కు శాశ్వతంగా చదవగల ప్రాప్యతను మంజూరు చేయాలనుకుంటున్నారా?</translation>
 <translation id="4964455510556214366">అమరిక</translation>
 <translation id="4964673849688379040">తనిఖీ చేస్తోంది...</translation>
+<translation id="4965808351167763748">మీరు Hangouts సమావేశాన్ని అమలు చేయడానికి ఈ పరికరాన్ని ఖచ్చితంగా సెటప్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="4967749818080339523">ఖాతాను ఎంచుకోండి</translation>
 <translation id="496888482094675990">ఫైల్‌ల అనువర్తనం మీరు Google డిస్క్, బాహ్య నిల్వ లేదా మీ Chrome OS పరికరంలో సేవ్ చేసిన ఫైల్‌లకు శీఘ్ర ప్రాప్యతను అందిస్తుంది.</translation>
 <translation id="4969785127455456148">ఆల్బమ్</translation>
 <translation id="4971412780836297815">పూర్తవగానే తెరువు</translation>
+<translation id="4972129977812092092">ప్రింటర్‌ను సవరించండి</translation>
 <translation id="4973307593867026061">ముద్రకాలను జోడించు</translation>
 <translation id="4973698491777102067">దీని నుండి ఈ క్రింది అంశాలను తుడిచివెయ్యి:</translation>
 <translation id="497421865427891073">ముందుకు వెళ్ళు</translation>
@@ -2695,6 +2714,7 @@
 <translation id="5011739343823725107">బ్యాక్ఎండ్ సమకాలీకరణను ప్రారంభించడం విఫలమైంది</translation>
 <translation id="5015344424288992913">ప్రాక్సీని పరిష్కరిస్తోంది...</translation>
 <translation id="5015762597229892204">ప్రింటర్ డ్రైవర్ అనువర్తనాన్ని ఎంచుకోండి</translation>
+<translation id="5016049845330225051">శోధన పెట్టె వచనం బటన్‌ను క్లియర్ చేస్తుంది</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">ప్రారంభ పేజీలపై నిర్వహించు</translation>
 <translation id="5023943178135355362">ఆస్ట్రేలియన్ స్క్రోలింగ్ <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
@@ -2713,10 +2733,8 @@
 <translation id="5039512255859636053">$1 TB</translation>
 <translation id="5039804452771397117">అనుమతించు</translation>
 <translation id="5045550434625856497">సరికాని పాస్‌వర్డ్</translation>
-<translation id="5046747760454685637">Flash అమలు చేయడానికి సైట్‌లను అనుమతించే ముందు అడుగుతుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="5052499409147950210">సైట్‌ను సవరించండి</translation>
 <translation id="5053604404986157245">యాదృచ్చికంగా రూపొందించబడిన TPM పాస్‌వర్డ్ అందుబాటులో లేదు. ఇది పవర్‌వాష్ తర్వాత సర్వసాధారణం.</translation>
-<translation id="5061188462607594407">కొనసాగించడానికి మీ <ph name="PHONE_TYPE" />ని లాక్ చేయడం ద్వారా సురక్షితంగా ఉంచండి</translation>
 <translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{ఈ ఫోల్డర్ ఒక బుక్‌మార్క్‌ను కలిగి ఉంది. మీరు ఈ ఫోల్డర్‌ను ఖచ్చితంగా తొలగించాలనుకుంటున్నారా?}other{ఈ ఫోల్డర్ # బుక్‌మార్క్‌లను కలిగి ఉంది. మీరు ఈ ఫోల్డర్‌ను ఖచ్చితంగా తొలగించాలనుకుంటున్నారా?}}</translation>
 <translation id="5061708541166515394">వ్యత్యాసం</translation>
 <translation id="5062930723426326933">సైన్-ఇన్ విఫలమైంది, దయచేసి ఇంటర్నెట్‌కు కనెక్ట్ చేసి మళ్లీ ప్రయత్నించండి.</translation>
@@ -2743,8 +2761,8 @@
 <translation id="5097002363526479830">'<ph name="NAME" />'కు నెట్‌వర్క్‌కు కనెక్ట్ చేయడానికి విఫలమైంది: <ph name="DETAILS" /></translation>
 <translation id="5098647635849512368">పాక్ చెయ్యడానికి డైరెక్టరీకు సరైన మార్గంను కనుగొనలేకపోయాము.</translation>
 <translation id="5099354524039520280">పైకి</translation>
-<translation id="5099890666199371110">మీ ఫోన్‌ను కనుగొనలేము. మీ <ph name="DEVICE_TYPE" />లో బ్లూటూత్ ప్రారంభించబడిందని నిర్ధారించుకోండి. &lt;a&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
 <translation id="5100114659116077956">మీకు తాజా లక్షణాలను అందించడానికి, మీ Chromeboxని నవీకరించడం అవసరం.</translation>
+<translation id="5101042277149003567">అన్ని బుక్‌మార్క్‌లను తెరువు</translation>
 <translation id="5105855035535475848">పిన్ టాబ్‌లు</translation>
 <translation id="5108967062857032718">సెట్టింగ్‌లు - Android అనువర్తనాలను తీసివేయి</translation>
 <translation id="5109044022078737958">మియా</translation>
@@ -2807,7 +2825,6 @@
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />"యొక్క క్రొత్త సంస్కరణ ఆపివెయ్యబడింది ఎందుకంటే దానికి మరిన్ని అనుమతులు అవసరం.</translation>
 <translation id="5186650237607254032">మీ ఫోన్ స్క్రీన్ లాక్‌ను మీరు సమీపంలో ఉంటే ఆఫ్ అయ్యేలా నవీకరించండి. దానివల్ల మీరు మీ ఫోన్‌ను వేగంగా అన్‌లాక్ చేయగలరు మరియు మీ <ph name="DEVICE_TYPE" />లో ఉత్తమ Smart Lock అనుభవాన్ని ఆస్వాదించగలరు.</translation>
 <translation id="5187295959347858724"><ph name="SHORT_PRODUCT_NAME" />కు మీరు ఇప్పుడు సైన్‌ఇన్ చేశారు. మీ బుక్‌మార్క్‌లు, చరిత్ర, మరియు ఇతర సెట్టింగ్‌లు మీ Google ఖాతాకు సమకాలీకరించబడతాయి.</translation>
-<translation id="5187729186893265531">కేవలం ముఖ్యమైన Flash కంటెంట్‌ను గుర్తిస్తుంది మరియు అమలు చేస్తుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5189060859917252173">ప్రమాణపత్రం "<ph name="CERTIFICATE_NAME" />" ప్రమాణపత్రం అధికారికి ప్రాతినిధ్యం వహిస్తుంది.</translation>
 <translation id="5197680270886368025">సమకాలీకరణ పూర్తయింది.</translation>
@@ -2817,6 +2834,7 @@
 <translation id="5209320130288484488">పరికరాలు కనుగొనబడలేదు</translation>
 <translation id="5209518306177824490">SHA-1 వేలిముద్ర</translation>
 <translation id="5210365745912300556">ట్యాబ్‌ను మూసివేయి</translation>
+<translation id="5211866059911729164">మీ స్క్రీన్‌పై ఉన్న వాటిని ఉపయోగించడానికి సహాయకాన్ని అనుమతించండి</translation>
 <translation id="5212461935944305924">కుక్కీ మరియు సైట్ డేటా మినహాయింపులు</translation>
 <translation id="5213891612754844763">ప్రాక్సీ సెట్టింగ్‌లను చూపు</translation>
 <translation id="521582610500777512">ఫోటో విస్మరించబడింది</translation>
@@ -2836,6 +2854,7 @@
 <translation id="5233736638227740678">&amp;అతికించు</translation>
 <translation id="5234764350956374838">తొలగించు</translation>
 <translation id="5235050375939235066">అనువర్తనాన్ని అన్‌ఇన్‌స్టాల్ చేయాలా?</translation>
+<translation id="5235750401727657667">కొత్త ట్యాబ్‌ను తెరిచేటప్పుడు మీరు చూసే పేజీని భర్తీ చేయండి</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" అనువర్తనం స్వయంచాలకంగా తీసివేయబడింది.</translation>
 <translation id="5238369540257804368">పరిధులు</translation>
 <translation id="5241128660650683457">మీరు సందర్శించే వెబ్‌సైట్‌ల్లోని మీ మొత్తం డేటాను చదవండి</translation>
@@ -2899,7 +2918,6 @@
 <translation id="5316716239522500219">మానిటర్‌లను ప్రతిబింబించు</translation>
 <translation id="5317780077021120954">సేవ్ చేయి</translation>
 <translation id="5319359161174645648">Chromeను Google సిఫార్సు చేస్తోంది</translation>
-<translation id="5319748504063551568">మీ ఖాతాలో Google Play స్టోర్ యాక్సెస్‌ని ప్రారంభించాలంటే, మీరు గుర్తింపు ప్రదాతతో ప్రమాణీకరించండి. దయచేసి కొనసాగించడం కోసం తదుపరి ఎంపికను క్లిక్ చేయండి.</translation>
 <translation id="532247166573571973">సర్వర్ అందుబాటులో లేకపోవచ్చు. తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="532360961509278431">"$1"ని తెరవడం సాధ్యం కాలేదు: $2</translation>
 <translation id="5324780743567488672">మీ స్థానాన్ని ఉపయోగించి సమయ మండలిని స్వయంచాలకంగా సెట్ చేయండి</translation>
@@ -2920,7 +2938,6 @@
 <translation id="5338503421962489998">స్థానిక నిల్వ</translation>
 <translation id="5340217413897845242">అర అంశం 6</translation>
 <translation id="5342091991439452114">PIN తప్పనిసరిగా కనీసం <ph name="MINIMUM" /> అంకెలు ఉండాలి</translation>
-<translation id="5342451237681332106"><ph name="PHONE_NAME" />ని ఉపయోగించు</translation>
 <translation id="534916491091036097">ఎడమ బ్రాకెట్</translation>
 <translation id="5350965906220856151">అయ్యో!</translation>
 <translation id="5352033265844765294">టైమ్ స్టాంపింగ్</translation>
@@ -3000,6 +3017,7 @@
 <translation id="5457113250005438886">చెల్లదు</translation>
 <translation id="5457459357461771897">మీ కంప్యూటర్‌లోని ఫోటోలు, సంగీతం మరియు ఇతర మీడియాను చదవడం మరియు తొలగించడం</translation>
 <translation id="5457599981699367932">అతిథి వలె బ్రౌజ్ చెయ్యండి</translation>
+<translation id="5458998536542739734">లాక్ స్క్రీన్ గమనికలు</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" /> యొక్క స్థానం</translation>
 <translation id="5463856536939868464">దాచిపెట్టిన బుక్‌మార్క్‌లు ఉన్న మెను</translation>
 <translation id="5464632865477611176">ఈ సమయాన్ని అమలు చెయ్యి</translation>
@@ -3010,6 +3028,7 @@
 <translation id="5480254151128201294">ఈ పరికరాన్ని యజమాని లాక్ చేసారు.</translation>
 <translation id="5481941284378890518">సమీప ప్రింటర్‌లను జోడించు</translation>
 <translation id="5483785310822538350">ఫైల్ మరియు పరికర ప్రాప్యతను ఉపసంహరించు</translation>
+<translation id="5485080380723335835">భద్రత కోసం మీ <ph name="DEVICE_TYPE" /> లాక్ అయింది. కొనసాగించడానికి మీ పాస్‌వర్డ్‌‌ను మాన్యువల్‌గా నమోదు చేయండి.</translation>
 <translation id="5485102783864353244">అనువర్తనాన్ని జోడించు</translation>
 <translation id="5485754497697573575">అన్ని ట్యాబ్‌లను పునరుద్ధరించు</translation>
 <translation id="5486261815000869482">పాస్‌వర్డ్‌ని నిర్ధారించండి</translation>
@@ -3028,6 +3047,7 @@
 <translation id="549673810209994709">ఈ పేజీని అనువదించడం సాధ్యపడలేదు.</translation>
 <translation id="5499313591153584299">ఈ ఫైల్ మీ కంప్యూటర్‌కు హానికరం కావచ్చు.</translation>
 <translation id="5502500733115278303">Firefox నుండి దిగుమతి చెయ్యబడింది</translation>
+<translation id="5505095961735225576">Hangouts సమావేశానికి, అది ఏ డొమైన్‌కి సంబంధించిందో తెలియాలి. అందువలన మీరు మీ ఖాతాకి సైన్ ఇన్ చేయడం అవసరం.</translation>
 <translation id="5507756662695126555">అంగీకరించడం</translation>
 <translation id="5509693895992845810">ఇలా &amp;సేవ్ చేయి...</translation>
 <translation id="5509914365760201064">జారీచేసినవారు: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3095,6 +3115,7 @@
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">అనువర్తనాలను లోడ్ చేస్తోంది...</translation>
 <translation id="5592595402373377407">ఇంకా తగినంత డేటా అందుబాటులో లేదు.</translation>
+<translation id="5595152862129936745">చాలా దూరంగా ఉండాలి</translation>
 <translation id="5595485650161345191">చిరునామాను సవరించు</translation>
 <translation id="5600706100022181951"><ph name="UPDATE_SIZE_MB" /> MB మొబైల్ డేటాను ఉపయోగించి నవీకరణ డౌన్‌లోడ్ చేయబడుతుంది. మీరు కొనసాగాలనుకుంటున్నారా?</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -3125,7 +3146,7 @@
 <translation id="5637476008227280525">మొబైల్ డేటాను ప్రారంభించు</translation>
 <translation id="5638497698949808140"><ph name="HOURS" />గంటల క్రితం నవీకరించబడింది</translation>
 <translation id="5639549361331209298">ఈ పేజీని మళ్లీ లోడ్ చేయండి, మరిన్ని ఎంపికలను చూడటానికి దీనిపై కర్సర్ ఉంచండి</translation>
-<translation id="5641461229021317093">మీ Chromebookలో కొత్త వచన సందేశాలకు నోటిఫికేషన్‌లను పొందండి</translation>
+<translation id="5641461229021317093">కొత్త వచన సందేశాలకు మీ Chromebookలో నోటిఫికేషన్‌లను పొందండి</translation>
 <translation id="5642508497713047">CRL సైన్ చేసినవారు</translation>
 <translation id="5646376287012673985">స్థానం</translation>
 <translation id="5646558797914161501">వ్యాపారవేత్త</translation>
@@ -3133,6 +3154,7 @@
 <translation id="5649768706273821470">వినండి</translation>
 <translation id="5653140146600257126">"$1" పేరుతో ఫోల్డర్ ఇప్పటికే ఉంది. దయచేసి వేరొక పేరుని ఎంచుకోండి.</translation>
 <translation id="5657667036353380798">బాహ్య పొడిగింపుకి chrome సంస్కరణ <ph name="MINIMUM_CHROME_VERSION" /> లేదా అంతకంటే అధిక సంస్కరణను ఇన్‌స్టాల్ చేయడం అవసరం.</translation>
+<translation id="5658415415603568799">అదనపు భద్రత కోసం, 20 గంటల తర్వాత మీ పాస్‌వర్డ్‌‌ను నమోదు చేయమని మీ Smart Lock అడుగుతుంది.</translation>
 <translation id="5659593005791499971">ఇమెయిల్</translation>
 <translation id="5661272705528507004">ఈ SIM కార్డ్ నిలిపివెయ్యబడింది మరియు ఉపయోగించకూడనిది. దయచేసి తిరిగి భర్తీ చెయ్యడం కోసం మీ సేవ ప్రొవైడర్‌ను సంప్రదించండి.</translation>
 <translation id="5669267381087807207">సక్రియం చేస్తోంది</translation>
@@ -3160,6 +3182,7 @@
 <translation id="5711983031544731014">అన్‌లాక్ చేయడం సాధ్యపడలేదు. మీ పాస్‌వర్డ్‌ను నమోదు చేయండి.</translation>
 <translation id="5715711091495208045">ప్లగిన్ బ్రోకర్: <ph name="PLUGIN_NAME" /></translation>
 <translation id="5719603411793408026">డిఫాల్ట్ శోధన ఇంజిన్‌లు</translation>
+<translation id="572155275267014074">Android సెట్టింగ్‌లు</translation>
 <translation id="572328651809341494">ఇటీవలి ట్యాబ్‌లు</translation>
 <translation id="5723508132121499792">నేపథ్య అనువర్తనాలు ఏవీ అమలులోలేవు</translation>
 <translation id="572392919096807438">నా నిర్ణయాన్ని గుర్తుంచుకో</translation>
@@ -3181,6 +3204,7 @@
 <translation id="5747785204778348146">డెవలపర్ - అస్థిరం</translation>
 <translation id="5749483996735055937">పరికరానికి రికవరీ చిత్రాన్ని కాపీ చెయ్యడంలో సమస్య సంభవించింది.</translation>
 <translation id="5749861707650047230">{NUM_DOWNLOAD,plural, =1{డౌన్‌లోడ్‌ను రద్దు చేయి}other{డౌన్‌లోడ్‌లను రద్దు చేయి}}</translation>
+<translation id="5750324801516359607">దూరంగా ఉండాలి</translation>
 <translation id="5751545372099101699">అర అంశం 4</translation>
 <translation id="5752162773804266219">మీ <ph name="DEVICE_TYPE" /> మీకు ప్రతిస్పందించడంలో సహాయపడటానికి మరియు వాయిస్ శోధనకు విశ్వసనీయమైన మరియు సులభమైన ప్రాప్యత అందించడానికి, మీరు మీ వాయిస్‌ను అర్థం చేసుకోవడంలో Googleకి శిక్షణనివ్వాలి.</translation>
 <translation id="5752453871435543420">Chrome OS Cloud బ్యాకప్</translation>
@@ -3219,6 +3243,7 @@
 <translation id="5801568494490449797">ప్రాధాన్యతలు</translation>
 <translation id="5804241973901381774">అనుమతులు</translation>
 <translation id="580571955903695899">శీర్షిక ద్వారా క్రమాన్ని మార్చు</translation>
+<translation id="5807290661599647102">స్క్రీన్ లాక్‌ను సెట్ చేయండి</translation>
 <translation id="580961539202306967">సైట్ నాకు పుష్ సందేశాలను పంపాలనుకున్నప్పుడు నన్ను అడుగు (సిఫార్సు చేయబడింది)</translation>
 <translation id="5814126672212206791">కనెక్షన్ రకం</translation>
 <translation id="5815645614496570556">X.400 చిరునామా</translation>
@@ -3260,8 +3285,8 @@
 <translation id="5855773610748894548">అయ్యో, సురక్షిత మాడ్యూల్ ఎర్రర్ ఏర్పడింది.</translation>
 <translation id="5856721540245522153">డీబగ్గింగ్ లక్షణాలను ప్రారంభించండి</translation>
 <translation id="5857090052475505287">క్రొత్త ఫోల్డర్</translation>
-<translation id="5859272821192576954">మీరు Hangoutsకి కొనసాగడానికి అంతా పూర్తి చేశారు</translation>
 <translation id="5860033963881614850">ఆఫ్ అయ్యింది</translation>
+<translation id="5860154621968450536">క్షమించండి, ప్రస్తుతం Google సహాయకానికి మీ లొకేల్‌‌ మద్దతు లేదు.</translation>
 <translation id="5860209693144823476">ట్యాబ్ 3</translation>
 <translation id="5860491529813859533">ఆన్ చేయండి</translation>
 <translation id="5860494867054883682">మీ పరికరం <ph name="CHANNEL_NAME" /> ఛానెల్‌కు నవీకరించబడుతోంది (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -3320,6 +3345,7 @@
 <translation id="5948205789991352045">తెరవవద్దు</translation>
 <translation id="5948544841277865110">ప్రైవేట్ నెట్‌వర్క్‌ని జోడించు</translation>
 <translation id="5949544233750246342">ఫైల్‌ని అన్వయించడం సాధ్యపడలేదు</translation>
+<translation id="5950993829859400777">మీరు Smart Lockను ఆఫ్ చేస్తే, మీరు మీ Chrome పరికరాలను మీ ఫోన్ ఉపయోగించి అన్‌లాక్ చేయలేరు. మీరు మీ పాస్‌వర్డ్‌ను టైప్ చేయాలి.</translation>
 <translation id="5951823343679007761">బ్యాటరీ లేదు</translation>
 <translation id="5955282598396714173">మీ పాస్‌వర్డ్ గడువు ముగిసింది. దచయేసి దీనిని మార్చడం కోసం సైన్ అవుట్ చేసి, సైన్ ఇన్ చేయండి.</translation>
 <translation id="5956585768868398362">మీరు ఆశిస్తున్న శోధన పేజీ ఇదేనా?</translation>
@@ -3372,6 +3398,7 @@
 <translation id="604001903249547235">Cloud బ్యాకప్</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
 <translation id="6040852767465482106">అనామక గుర్తింపు</translation>
+<translation id="6041155700700864984">పూర్తి స్క్రీన్ నుండి నిష్క్రమించు</translation>
 <translation id="604124094241169006">స్వయంచాలకంగా</translation>
 <translation id="6042169520002885235">ప్రింటర్ తయారీదారు మరియు మోడల్‌ను ఎంచుకోండి</translation>
 <translation id="6042308850641462728">మరింత</translation>
@@ -3381,6 +3408,7 @@
 <translation id="6051354611314852653">అయ్యో!  ఈ పరికరం కోసం API ప్రాప్యతను ప్రామాణీకరించడంలో సిస్టమ్ విఫలమైంది.</translation>
 <translation id="6052976518993719690">SSL ధృవీకరణ అధికారం</translation>
 <translation id="6053401458108962351">&amp;బ్రౌజింగ్‌ డేటాను క్లియర్ చెయ్యి...</translation>
+<translation id="6054663654428587993">మీ ఖాతాకు Google సహాయకం ఆరంభం కాలేదు.</translation>
 <translation id="6055171183283175969">మీరు నమోదు చేసిన పాస్‌వర్డ్ తప్పు.</translation>
 <translation id="6055392876709372977">RSA గుప్తీకరణతో PKCS #1 SHA-256</translation>
 <translation id="6056710589053485679">సాధారణంగా మళ్లీ లోడ్ చేయి</translation>
@@ -3389,6 +3417,7 @@
 <translation id="6059925163896151826">USB పరికరాలు</translation>
 <translation id="6064217302520318294">స్క్రీన్ లాక్</translation>
 <translation id="6065289257230303064">సర్టిఫికెట్ విషయ డైరెక్టరీ లక్షణాలు</translation>
+<translation id="6068338049763724728">రిమోట్ నమోదును ఆరంభించండి</translation>
 <translation id="6071181508177083058">పాస్‌వర్డ్‌ను నిర్ధారించండి</translation>
 <translation id="6073903501322152803">ప్రాప్యత లక్షణాలను జోడించండి</translation>
 <translation id="6074825444536523002">Google ఫారమ్</translation>
@@ -3441,11 +3470,11 @@
 <translation id="6151771661215463137">ఫైల్ ఇప్పటికే మీ డౌన్‌లోడ్ ఫోల్డర్‌లో ఉంది.</translation>
 <translation id="615436196126345398">ప్రోటోకాల్</translation>
 <translation id="6154697846084421647">ప్రస్తుతం సైన్ ఇన్ చేసారు</translation>
+<translation id="6156262341071374681">అన్ని యాప్‌లు కోసం విస్తరించండి</translation>
 <translation id="6156323911414505561">బుక్‌మార్క్‌ల పట్టీని చూపు</translation>
 <translation id="6156863943908443225">లిపి కాష్</translation>
 <translation id="6156960295318603523">భాష సెట్టింగ్‌లు</translation>
 <translation id="6160625263637492097">ప్రామాణీకరణ కోసం ప్రమాణపత్రాలను అందించడానికి అనుమతి</translation>
-<translation id="6162157842722615167">Chromebook కోసం Smart Lock</translation>
 <translation id="6163363155248589649">&amp;సాధారణంగా</translation>
 <translation id="6163522313638838258">అన్నీ విస్తరించు...</translation>
 <translation id="6164005077879661055">ఈ పర్యవేక్షించబడే వినియోగదారు తీసివేయబడినప్పుడు పర్యవేక్షించబడే వినియోగదారుతో అనుబంధించబడిన అన్ని ఫైల్‌లు మరియు స్థానిక డేటా శాశ్వతంగా తొలగించబడతాయి. ఈ పర్యవేక్షించబడే వినియోగదారు సందర్శించిన వెబ్‌సైట్‌లు మరియు వీరి సెట్టింగ్‌లు ఇప్పటికీ <ph name="MANAGEMENT_URL" />లో నిర్వాహకునికి కనిపించవచ్చు.</translation>
@@ -3455,6 +3484,7 @@
 <translation id="6171948306033499786">ముద్రణను పాజ్ చేయి</translation>
 <translation id="6175314957787328458">Microsoft డొమైన్ GUID</translation>
 <translation id="6178664161104547336">ఒక సర్టిఫికెట్ని ఎంచుకోండి</translation>
+<translation id="6180288788882902869">మీ <ph name="DEVICE_TYPE" />లో Google Play</translation>
 <translation id="6181431612547969857">డౌన్‌లోడ్ బ్లాక్ చేయబడింది</translation>
 <translation id="6185132558746749656">పరికర స్థానం</translation>
 <translation id="6185696379715117369">ఎగువ పేజీకి వెళ్లుతుంది</translation>
@@ -3477,6 +3507,7 @@
 <translation id="6219616557885484178">మీ <ph name="DEVICE_TYPE" />లో ఇన్‌స్టాల్ చేసుకొని, ఉపయోగించడానికి Google Playలోని మిలియన్ల కొద్దీ అనువర్తనాలు మరియు గేమ్‌ల నుండి ఎంచుకోండి.</translation>
 <translation id="6220413761270491930">పొడిగింపును లోడ్ చేయడంలో లోపం</translation>
 <translation id="6223447490656896591">అనుకూల చిత్రం:</translation>
+<translation id="6223747324484398595">తక్షణ టీథెరింగ్ ఉపయోగించడానికి, బ్లూటూత్ ఆన్ చేయండి</translation>
 <translation id="62243461820985415">Chrome ఈ వాల్‌పేపర్‌ను డౌన్‌లోడ్ చేయడం సాధ్యపడదు.</translation>
 <translation id="6224481128663248237">ఆకృతీకరణ విజయవంతంగా పూర్తి అయ్యింది! </translation>
 <translation id="6225378837831321064"><ph name="DEVICE_NAME" />: కనెక్ట్ అవుతోంది...</translation>
@@ -3526,7 +3557,6 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> సాధారణంగా డౌన్‌లోడ్ చేయబడలేదు మరియు ప్రమాదకరమైనది కావచ్చు.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{మీ నెట్‌వర్క్‌లో కొత్త ప్రింటర్}other{మీ నెట్‌వర్క్‌లో కొత్త ప్రింటర్‌లు}}</translation>
-<translation id="6285395082104474418">స్థితి ట్రే మీ నెట్‌వర్క్, బ్యాటరీ మరియు మరిన్ని అంశాల యొక్క ప్రస్తుత స్థితిని మీకు చూపుతుంది.</translation>
 <translation id="6286684120317096255">డేటా వినియోగం గణించబడుతోంది</translation>
 <translation id="6286708577777130801">సేవ్ చేసిన పాస్‌వర్డ్ వివరాలు</translation>
 <translation id="6287852322318138013">ఈ ఫైల్‌ను తెరవడానికి అనువర్తనాన్ని ఎంచుకోండి</translation>
@@ -3552,7 +3582,6 @@
 <translation id="6316806695097060329">ఈ <ph name="SHORT_PRODUCT_NAME" /> పరికరం మీకు వెబ్‌లోని ఉత్తమ అనుభవాన్ని అందించేందుకు రూపొందించబడింది.</translation>
 <translation id="6317369057005134371">అనువర్తన విండో కోసం వేచి ఉంది...</translation>
 <translation id="6322279351188361895">ప్రైవేట్ కీని చదవడంలో విఫలమైంది.</translation>
-<translation id="6324839205543480136">మీ ఫోన్‌ను కనుగొనడం సాధ్యపడదు. ఇది చేతికి అందుబాటులోనే ఉందని మరియు బ్లూటూత్ ఆన్‌లో ఉందని నిర్ధారించుకోండి.</translation>
 <translation id="6325191661371220117">స్వీయ-ప్రారంభాన్ని నిలిపివేయి</translation>
 <translation id="6326175484149238433">Chrome నుండి తీసివేయి</translation>
 <translation id="6326855256003666642">సక్రియ కార్యాచరణల గణన</translation>
@@ -3584,6 +3613,7 @@
 <translation id="6370021412472292592">మానిఫెస్ట్‌ను లోడ్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="637062427944097960">ఈ పైల్ వేరే డెస్క్‌టాప్‌లో తెరవబడింది. దీన్ని వీక్షించడానికి <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />)కి తరలించండి.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
+<translation id="6374108032506706911">Android కోసం Smart Lockను సెటప్ చేయండి</translation>
 <translation id="6374469231428023295">మళ్లీ ప్రయత్నించు</translation>
 <translation id="6380143666419481200">అంగీకరించి, కొనసాగండి</translation>
 <translation id="6380224340023442078">కంటెంట్ సెట్టింగ్‌లు...</translation>
@@ -3652,6 +3682,7 @@
 <translation id="6452181791372256707">తిరస్కరించు</translation>
 <translation id="6455348477571378046">ప్రమాణపత్రం రకం:</translation>
 <translation id="6456394469623773452">శ్రేష్టమైనది</translation>
+<translation id="6456631036739229488">Smart Lock ఫోన్ మారింది. Smart Lockను అప్‌డేట్ చేయడానికి మీ పాస్‌వర్డ్‌ను నమోదు చేయండి. తదుపరిసారి, మీ ఫోన్ మీ <ph name="DEVICE_TYPE" />ను అన్‌లాక్ చేస్తుంది. సెట్టింగ్‌లలో Smart Lockని ఆఫ్ చేయండి.</translation>
 <translation id="645705751491738698">JavaScriptను నిరోధించడాన్ని కొనసాగించు</translation>
 <translation id="6458308652667395253">JavaScript నిరోధించడాన్ని నిర్వహించు...</translation>
 <translation id="6459488832681039634">కనుగొనడానికి ఎంపికను ఉపయోగించండి</translation>
@@ -3685,7 +3716,6 @@
     ఇది ఇతర పరికరాల్లో అనువర్తనాలు లేదా కంటెంట్‌ను ప్రభావితం చేయదు.</translation>
 <translation id="6499143127267478107">ప్రాక్సీ స్క్రిప్ట్‌లో హోస్ట్‌ను పరిష్కరిస్తోంది...</translation>
 <translation id="6503077044568424649">ఎక్కువగా సందర్శించేవి</translation>
-<translation id="6503521261542448765">పాస్‌వర్డ్‌లను టైప్ చేయడంలో విసిగిపోయారా? పాస్‌వర్డ్ అవసరం లేకుండానే మీ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేయడానికి మీ ఫోన్‌ను ఉపయోగించండి.</translation>
 <translation id="6504611359718185067">ప్రింటర్‌ను జోడించడానికి ఇంటర్నెట్‌కు కనెక్ట్ అవ్వండి</translation>
 <translation id="650584126816009598">మీ ప్రింటర్ సిద్ధంగా ఉంది.</translation>
 <translation id="6506374932220792071">SHA-256తో X9.62 ECDSA సంతకం</translation>
@@ -3801,6 +3831,7 @@
 <translation id="667517062706956822">ఈ పేజీని Google <ph name="SOURCE_LANGUAGE" /> నుండి <ph name="TARGET_LANGUAGE" />కి అనువదించాలని మీరు కోరుకుంటున్నారా?</translation>
 <translation id="6675665718701918026">సూచిస్తున్న పరికరం కనెక్ట్ చేయబడింది</translation>
 <translation id="6677037229676347494">ఆశించిన ID "<ph name="EXPECTED_ID" />", కానీ "<ph name="NEW_ID" />" ID అందించబడింది.</translation>
+<translation id="6678312694238602710">"Ok Google" వాయిస్ శోధన Chrome OS నుండి తీసివేయబడింది</translation>
 <translation id="6678717876183468697">ప్రశ్న URL</translation>
 <translation id="6680028776254050810">వినియోగదారులను మార్చు</translation>
 <translation id="6680442031740878064">అందుబాటులో ఉంది: <ph name="AVAILABLE_SPACE" /></translation>
@@ -3838,7 +3869,6 @@
 <translation id="672609503628871915">కొత్తగా ఏమి ఉన్నాయో చూడండి</translation>
 <translation id="6727005317916125192">మునుపటి పేన్</translation>
 <translation id="6731320427842222405">దీనికి కొన్ని నిమిషాలు పట్టవచ్చు</translation>
-<translation id="6732586201820838268">మీ ఫోన్‌తో కనెక్షన్‌ని ఏర్పరచలేకపోయింది. మీరు ఆన్ చేసి ఉన్న అనుకూల Android ఫోన్‌ని ఉపయోగిస్తున్నారని మరియు అది చేతికి అందేంత దగ్గర్లో ఉందని నిర్ధారించుకోండి. &lt;a&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
 <translation id="6732801395666424405">ప్రమాణపత్రాలు లోడ్ కాలేదు</translation>
 <translation id="6735304988756581115">కుక్కీలు మరియు ఇతర సైట్ డేటాను చూపించు... </translation>
 <translation id="6736045498964449756">అయ్యో, పాస్‌వర్డ్‌లు సరిపోలలేదు!</translation>
@@ -3962,6 +3992,7 @@
 <translation id="6943176775188458830">ముద్రణను రద్దు చేయి</translation>
 <translation id="6943836128787782965">HTTP పొందడంలో విఫలమైంది</translation>
 <translation id="6945221475159498467">ఎంచుకోండి</translation>
+<translation id="6948064128393024347">లాంచర్, శోధన ఫలితాలు</translation>
 <translation id="6949306908218145636">తెరిచిన పేజీలను బుక్‌మార్క్ చేయి...</translation>
 <translation id="6955446738988643816">పాప్‌అప్‌ను పరిశీలించు</translation>
 <translation id="695755122858488207">ఎంపిక చెయ్యని రేడియో బటన్</translation>
@@ -4002,6 +4033,7 @@
 <translation id="699220179437400583">సంభావ్య భద్రతాపరమైన దాడులకు సంబంధించిన వివరాలను Googleకి స్వయంచాలకంగా నివేదించు</translation>
 <translation id="6996946928646015361">సురక్షిత మాడ్యూల్ నిలిపివేయబడింది లేదా లేదు.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> ఫోల్డర్‌లు ఎంచుకోబడ్డాయి</translation>
+<translation id="6998793565256476099">వీడియో సమావేశం కోసం పరికరాన్ని నమోదు చేయండి</translation>
 <translation id="6998872712520806535">{NUM_PAGES,plural, =1{క్రింది పేజీ ప్రతిస్పందించడం లేదు. మీరు అది ప్రతిస్పందనాత్మకంగా మారే వరకు వేచి ఉండవచ్చు లేదా దాన్ని నిర్బంధంగా మూసివేయవచ్చు.}other{క్రింది పేజీలు ప్రతిస్పందించడం లేదు. మీరు అవి ప్రతిస్పందనాత్మకంగా మారే వరకు వేచి ఉండవచ్చు లేదా వాటిని నిర్బంధంగా మూసివేయవచ్చు.}}</translation>
 <translation id="7002055706763150362">Chromebook కోసం Smart Lockని సెటప్ చేయడానికి, Google ఇది మీరే అని నిర్ధారించుకోవాలి—కనుక ప్రారంభించడానికి మీ పాస్‌వర్డ్‌ను టైప్ చేయండి.</translation>
 <translation id="7002454948392136538">ఈ పర్యవేక్షించబడే వినియోగదారు కోసం నిర్వాహకుని ఎంచుకోండి</translation>
@@ -4034,8 +4066,10 @@
 <translation id="7029809446516969842">పాస్‌వర్డ్‌లు</translation>
 <translation id="7030031465713069059">పాస్‌వర్డ్ సేవ్ చేయండి</translation>
 <translation id="7031962166228839643">TPM అనేది సిద్ధం అవుతోంది, దయచేసి వేచి ఉంచండి (దీనికి కొన్ని నిమిషాల సమయం పట్టవచ్చు)...</translation>
+<translation id="7035437538340499453">Smart Lock పూర్తిగా సెట్ అయింది</translation>
 <translation id="7039326228527141150"><ph name="VENDOR_NAME" /> అందించిన USB పరికరాలకు ప్రాప్యత</translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
+<translation id="7040138676081995583">దీనితో తెరువు...</translation>
 <translation id="7040230719604914234">ఆపరేటర్</translation>
 <translation id="7042418530779813870">పే&amp;స్ట్ చేసి మరియు శోధించండి</translation>
 <translation id="7043253066477231465">మొబైల్ డేటా సక్రియం చేయబడింది</translation>
@@ -4058,7 +4092,6 @@
 <translation id="7066944511817949584">"<ph name="DEVICE_NAME" />"కి కనెక్ట్ చేయడం విఫలమైంది.</translation>
 <translation id="7067725467529581407">దీన్ని మళ్లీ ఎప్పుడూ చూపవద్దు.</translation>
 <translation id="7072010813301522126">సత్వరమార్గం పేరు</translation>
-<translation id="7073555242265688099">మీకు ఇతర Chrome పరికరాలు ఉంటే, అవి స్వయంచాలకంగా సమకాలీకరించబడతాయి, అందువలన మీ ఫోన్ వాటిని కూడా అన్‌లాక్ చేస్తుంది.</translation>
 <translation id="707392107419594760">మీ కీబోర్డ్‌ని ఎంచుకోండి:</translation>
 <translation id="7075513071073410194">RSA గుప్తీకరణతో PKCS #1 MD5</translation>
 <translation id="7075625805486468288">HTTPS/SSL ప్రమాణపత్రాలు మరియు సెట్టింగ్‌లను నిర్వహించండి</translation>
@@ -4074,9 +4107,7 @@
 <translation id="7092106376816104">పాప్-అప్ మినహాయింపులు</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">ఈ పేర్లు గల పరికరాలతో డేటాను ఇచ్చిపుచ్చుకోవడానికి అనుమతి: <ph name="HOSTNAMES" /></translation>
-<translation id="7096082900368329802">మరిన్ని అద్భుతమైన లక్షణాలను కనుగొనాలనుకుంటున్నారా?</translation>
 <translation id="7096108453481049031">పర్యవేక్షిత వినియోగదారును దిగుమతి చేయడం సాధ్యపడలేదు. దయచేసి మీ నెట్‌వర్క్ కనెక్షన్‌ను తనిఖీ చేసి, ఆపై మళ్లీ ప్రయత్నించండి.</translation>
-<translation id="7097411490633210585">Smart Lock కోసం కనీసం ప్రతీ 20 గంటలకు ఒకసారి మీరు మీ పాస్‌వర్డ్‌ని టైప్ చేయాలి.</translation>
 <translation id="7098447629416471489">సేవ్ చేసిన ఇతర శోధన ఇంజిన్‌లు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> అంశాలు ఎంచుకోబడ్డాయి</translation>
 <translation id="7102687220333134671">స్వయంచాలక నవీకరణలు ఆన్ చేయబడ్డాయి</translation>
@@ -4085,7 +4116,6 @@
 <translation id="7108668606237948702">ఎంటర్</translation>
 <translation id="7113502843173351041">మీ ఇమెయిల్ చిరునామాను తెలియపరచడానికి అనుమతి</translation>
 <translation id="7114054701490058191">పాస్‌‌వర్డ్‌లు సరిపోలలేదు</translation>
-<translation id="7115051913071512405">దీన్ని ప్రయత్నించు</translation>
 <translation id="7117247127439884114">మళ్ళీ సైన్ ఇన్ చెయ్యండి...</translation>
 <translation id="711840821796638741">నిర్వహించబడే బుక్‌మార్క్‌లను చూపు</translation>
 <translation id="711902386174337313">మీ సైన్-ఇన్ చేసిన పరికరాల యొక్క జాబితాను చదవడం</translation>
@@ -4096,7 +4126,6 @@
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;డిస్క్‌లో శోధించు&lt;/em&gt;</translation>
 <translation id="7127980134843952133">డౌన్‌లోడ్ చరిత్ర</translation>
 <translation id="7129050975168763580">పేజీ గణన</translation>
-<translation id="7130666834200497454">మీ <ph name="DEVICE_TYPE" />ని సురక్షితంగా ఉంచడానికి, Chromebook కోసం Smart Lockకి ఫోన్‌లో దాన్ని అన్‌లాక్ చేసే స్క్రీన్ లాక్ ఉండటం అవసరం. మీ ఫోన్ ఇప్పటికే సురక్షితం చేయబడిందా? ధృవీకరించడానికి మరియు సెటప్‌ను కొనసాగించడానికి “మళ్లీ తనిఖీ చేయి” క్లిక్ చేయండి.</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> మరియు <ph name="WEBSITE_3" />లోని మీ డేటాను చదవండి</translation>
 <translation id="713122686776214250">పే&amp;జీని జోడించండి...</translation>
 <translation id="7134098520442464001">టెక్స్ట్‌ని చిన్నదిగా చెయ్యండి</translation>
@@ -4123,11 +4152,9 @@
 <translation id="7175353351958621980">దీని నుండి లోడ్ అయ్యింది:</translation>
 <translation id="7180611975245234373">రీఫ్రెష్ చేయి</translation>
 <translation id="7180865173735832675">అనుకూలీకరించు</translation>
-<translation id="7181387261278441780">సైట్ డేటాను తీసివేసి, రీసెట్ చేయండి</translation>
 <translation id="7186088072322679094">సాధనపట్టీలో ఉంచండి</translation>
 <translation id="7191454237977785534">దీని లాగా ఫైల్ సేవ్ చేయి</translation>
 <translation id="7196835305346730603">సమీపంలోని Chromeboxల కోసం శోధిస్తోంది...</translation>
-<translation id="7198197644913728186">ఈ <ph name="DEVICE_TYPE" />లో బ్లూటూత్ ఆఫ్‌లో ఉంది. ప్రవేశించడానికి మీ పాస్‌వర్డ్‌ను టైప్ చేసి, బ్లూటూత్‌ను ఆన్ చేయండి.</translation>
 <translation id="7199158086730159431">సహా&amp;యం పొందండి</translation>
 <translation id="7201354769043018523">కుడి బ్రాకెట్</translation>
 <translation id="7205869271332034173">SSID:</translation>
@@ -4166,6 +4193,7 @@
 <translation id="7254554697254365959">ఈ పేజీని అనువదించడం సాధ్యపడలేదు.</translation>
 <translation id="7254951428499890870">మీరు ఖచ్చితంగా విశ్లేషణ మోడ్‌లో "<ph name="APP_NAME" />"ని లాంచ్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="7255220508626648026">ప్రసారం చేస్తోంది: <ph name="ROUTETITLE" /></translation>
+<translation id="7255733607359211052">శోధన ఇంజిన్ మరియు Google సహాయకం</translation>
 <translation id="7255935316994522020">వర్తింపజేయి</translation>
 <translation id="7256405249507348194">గుర్తించబడని లోపం: <ph name="DESC" /></translation>
 <translation id="7256710573727326513">ట్యాబ్‌లో తెరువు</translation>
@@ -4287,7 +4315,9 @@
 <translation id="7439964298085099379">మీరు అధిక కాంట్రాస్ట్ మోడ్‌ను ప్రారంభించారు. మీరు మా అధిక కాంట్రాస్ట్ పొడిగింపును మరియు ముదురు రంగు థీమ్‌ను ఇన్‌స్టాల్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="7441570539304949520">JavaScript మినహాయింపులు</translation>
 <translation id="7441830548568730290">ఇతర వినియోగదారులు</translation>
+<translation id="7442465037756169001">మీ Hangouts సమావేశ హార్డ్‌వేర్, సెటప్ చేయడానికి సిద్ధంగా ఉంది.</translation>
 <translation id="744341768939279100">కొత్త ప్రొఫైల్‌ని సృష్టించు...</translation>
+<translation id="7444726222535375658">Hangouts సమావేశానికి కొనసాగండి</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" />ను ఆపివెయ్యి</translation>
 <translation id="7445786591457833608">ఈ భాషను అనువదించడం సాధ్యపడదు</translation>
 <translation id="7447657194129453603">నెట్‌వర్క్  స్థితి:</translation>
@@ -4335,7 +4365,6 @@
 <translation id="7506541170099744506">మీ <ph name="DEVICE_TYPE" /> ఎంటర్‌ప్రైజ్ నిర్వహణ కోసం విజయవంతంగా నమోదు చేయబడింది.</translation>
 <translation id="7507930499305566459">స్థితి ప్రతిస్పందన సర్టిఫికెట్</translation>
 <translation id="7508545000531937079">స్లయిడ్ ప్రదర్శన</translation>
-<translation id="7511955381719512146">మీరు ఉపయోగిస్తున్న Wi-Fiకి మీరు <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ని సందర్శించడం అవసరం.</translation>
 <translation id="7513029293694390567">నిల్వ చేసిన ఆధారాలను ఉపయోగించి స్వయంచాలకంగా వెబ్‌సైట్‌లకు సైన్ ఇన్ చేస్తుంది. దీన్ని నిలిపివేస్తే, మీరు వెబ్‌సైట్‌కు సైన్ ఇన్ చేసే ప్రతిసారి నిర్ధారణ కోసం మిమ్మల్ని అడుగుతుంది.</translation>
 <translation id="7515670329462166359">రక్షిత కంటెంట్‌ను ప్లే చేయడానికి <ph name="URL" /> మీ పరికరాన్ని ప్రత్యేకంగా గుర్తించాలనుకుంటోంది.</translation>
 <translation id="7517569744831774757">సెట్టింగ్‌లను వాటి అసలు డిఫాల్ట్‌లకు పునరుద్ధరిస్తుంది.</translation>
@@ -4384,6 +4413,7 @@
 <translation id="7573172247376861652">బ్యాటరీ ఛార్జ్</translation>
 <translation id="7576032389798113292">6x4</translation>
 <translation id="7576690715254076113">పోగు చేయు</translation>
+<translation id="7580139917303152582">కొత్త యాప్‌లు మరియు కార్యాచరణలను త్వరగా పొందడానికి లాంచర్‌ను ఉపయోగించండి.</translation>
 <translation id="7580671184200851182">అన్ని స్పీకర్‌ల్లో ఒకే ఆడియోను ప్లే చేయి (మోనో ఆడియో)</translation>
 <translation id="7581462281756524039">శుభ్రత సాధనం</translation>
 <translation id="7582582252461552277">ఈ నెట్‌వర్క్‌ను ప్రాధాన్యపరచు</translation>
@@ -4404,6 +4434,7 @@
 <translation id="7606992457248886637">అధికారాలు</translation>
 <translation id="7607002721634913082">పాజ్ చెయ్యబడింది</translation>
 <translation id="7607274158153386860">టాబ్లెట్ సైట్‌ను అభ్యర్థించు</translation>
+<translation id="7611008212562900400">మీ పరికరం, యాప్‌లు, వెబ్‌ను వెతకండి...</translation>
 <translation id="7615851733760445951">&lt; కుక్కీ ఏదీ ఎంచుకోలేదు&gt;</translation>
 <translation id="7615910377284548269">శాండ్‌బాక్స్ చేయని ప్లగిన్‌ను బ్లాక్ చేయడం నిర్వహించు...</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />"కు కనెక్ట్ చేస్తోంది</translation>
@@ -4455,7 +4486,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7705600705238488017">బదులుగా <ph name="BEGIN_LINK" />Chrome వెబ్ స్టోర్‌ను బ్రౌజ్<ph name="END_LINK" /> చేయాలనుకుంటున్నారా?</translation>
 <translation id="7705990546212675384">పరిచయాన్ని జోడించండి</translation>
-<translation id="7707922173985738739">మొబైల్ డేటాను ఉపయోగించండి</translation>
+<translation id="7707922173985738739">మొబైల్ డేటాను ఉపయోగిస్తుంది</translation>
 <translation id="7709152031285164251">విఫలమైంది - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;ప్రసారం...</translation>
 <translation id="7713320380037170544">MIDI పరికరాలను ప్రాప్యత చేయడం కోసం సిస్టమ్ ప్రత్యేక సందేశాలను ఉపయోగించడానికి అన్ని సైట్‌లను అనుమతించు</translation>
@@ -4492,11 +4523,11 @@
 <translation id="7766807826975222231">పర్యటనలో పాల్గొనండి</translation>
 <translation id="7766838926148951335">అనుమతులను ఆమోదించు</translation>
 <translation id="7767646430896201896">ఎంపికలు:</translation>
-<translation id="7769353642898261262">ఫోన్‌ని ఎలా సురక్షితంగా ఉంచాలి</translation>
 <translation id="7769672763586021400">మోడల్ ID</translation>
 <translation id="7771452384635174008">లేఅవుట్</translation>
 <translation id="7772032839648071052">పాస్‌ఫ్రేజ్‌ని నిర్ధారించండి</translation>
 <translation id="7772127298218883077"><ph name="PRODUCT_NAME" /> గురించి</translation>
+<translation id="7772773261844472235">మీ Chromebook స్థితిని తనిఖీ చేయండి</translation>
 <translation id="7773726648746946405">సెషన్ నిల్వ</translation>
 <translation id="7781335840981796660">అన్ని వినియోగదారు ఖాతాలు మరియు స్థానిక డేటా తీసివేయబడతాయి.</translation>
 <translation id="7782102568078991263">ఇక Google నుండి సూచనలు లేవు</translation>
@@ -4535,7 +4566,6 @@
 <translation id="7819857487979277519">PSK (WPA లేదా RSN)</translation>
 <translation id="782057141565633384">వీడియో చిరునామాను కా&amp;పీ చేయండి</translation>
 <translation id="782590969421016895">ప్రస్తుత పేజీలను ఉపయోగించండి</translation>
-<translation id="782886543891417279">మీరు ఉపయోగిస్తున్న Wi-Fi (<ph name="WIFI_NAME" />)కి మీరు దాని లాగిన్ పేజీని సందర్శించడం అవసరం.</translation>
 <translation id="7829298379596169484">ఆడియో ఇన్‌పుట్ ప్రాప్యత చేయబడుతోంది</translation>
 <translation id="7831368056091621108">ఈ పొడిగింపును, మీ చరిత్రను మరియు ఇతర Chrome సెట్టింగ్‌లను మీ అన్ని పరికరాల్లో పొందడానికి.</translation>
 <translation id="7831493768366098287">Google ముద్రణ</translation>
@@ -4551,6 +4581,7 @@
 <translation id="7846076177841592234">ఎంపికను రద్దు చేయి</translation>
 <translation id="7846634333498149051">కీబోర్డ్</translation>
 <translation id="7847212883280406910"><ph name="IDS_SHORT_PRODUCT_OS_NAME" />కు మారడానికి Ctrl + Alt + S నొక్కండి</translation>
+<translation id="7847644661628718598">శీఘ్రంగా నమోదు చేయడానికి బూట్‌స్ట్రాపింగ్ యాప్‌ను ఉపయోగించండి</translation>
 <translation id="7849264908733290972">&amp;చిత్రాన్ని క్రొత్త టాబ్‌లో తెరువు</translation>
 <translation id="7850851215703745691">ఈ డిస్క్ ఫైల్‌లు ఇంకా భాగస్వామ్యం చేయబడలేదు</translation>
 <translation id="7851457902707056880">సైన్-ఇన్ కేవలం యజమాని ఖాతాకు పరిమితం చేయబడింది. దయచేసి మళ్లీ బూట్ చేసి యజమాని ఖాతాతో సైన్ ఇన్ చేయండి. మెషీన్ 30 సెకన్లలో స్వయంచాలకంగా మళ్లీ బూట్ చేయబడుతుంది.</translation>
@@ -4578,12 +4609,12 @@
 <translation id="7889966925761734854">కోరుకునే చోటుకు లాగే నియంత్రణ</translation>
 <translation id="7892100671754994880">తదుపరి వినియోగదారు</translation>
 <translation id="7893008570150657497">మీ కంప్యూటర్ నుండి ఫోటోలు, సంగీతం మరియు ఇతర మీడియాను ప్రాప్యత చేయండి</translation>
+<translation id="7893153962594818789">ఈ <ph name="DEVICE_TYPE" />లో బ్లూటూత్ ఆఫ్‌లో ఉంది. మీ పాస్‌వర్డ్‌ను నమోదు చేసి బ్లూటూత్‌ను ఆన్ చేయండి.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (డిఫాల్ట్)</translation>
 <translation id="78957024357676568">ఎడమ</translation>
 <translation id="7897900149154324287">భవిష్యత్తులో, మీ తీసివేయదగిన పరికరాన్ని అన్‌ప్లగ్ చేయడానికి ముందు ఫైల్‌ల అనువర్తనంలో దాన్ని ఎజెక్ట్ చేయడం మర్చిపోవద్దు. లేదంటే, మీరు డేటాను కోల్పోయే అవకాశం ఉంటుంది.</translation>
 <translation id="7898627924844766532">సాధనపట్టీలో ఉంచండి</translation>
 <translation id="7898725031477653577">ఎల్లప్పుడూ అనువదించు</translation>
-<translation id="7899177175067029110">మీ ఫోన్‌ను కనుగొనలేము. మీ <ph name="DEVICE_TYPE" /> ఇంటర్నెట్‌కి కనెక్ట్ చేయబడి ఉందని నిర్ధారించుకోండి. &lt;a&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
 <translation id="790040513076446191">గోప్యత సంబంధ సెట్టింగ్‌లను మ్యానిపులేట్ చేయండి</translation>
 <translation id="7900476766547206086">ఈ సెట్టింగ్‌ను ఒకరు లేదా అంతకంటే ఎక్కువ మంది వినియోగదారులు ప్రారంభించినందున సైన్-ఇన్ చేసిన వినియోగదారులకు పాస్‌వర్డ్‌లు అవసరం.</translation>
 <translation id="7903128267494448252">ఈ వ్యక్తిని తొలగించు</translation>
@@ -4605,13 +4636,13 @@
 <translation id="79312157130859720"><ph name="APP_NAME" /> మీ స్క్రీన్ మరియు ఆడియోను భాగస్వామ్యం చేస్తోంది.</translation>
 <translation id="7931318309563332511">తెలియదు</translation>
 <translation id="7938594894617528435">ప్రస్తుతం ఆఫ్‌లైన్‌లో ఉంది</translation>
+<translation id="7939062555109487992">అధునాతన ఎంపికలు</translation>
 <translation id="7939412583708276221">ఏదేమైనా ఉంచు</translation>
 <translation id="7939997691108949385">నిర్వాహకులు <ph name="MANAGEMENT_URL" />లో ఈ పర్యవేక్షించబడే వినియోగదారు కోసం పరిమితులు మరియు సెట్టింగ్‌లను కాన్ఫిగర్ చేయగలరు.</translation>
 <translation id="7943837619101191061">స్థానాన్ని జోడించు...</translation>
 <translation id="7945031593909029181">"<ph name="CHROME_EXTENSION_NAME" />" దీనికి కనెక్ట్ చేయాలనుకుంటోంది</translation>
 <translation id="794676567536738329">అనుమతులు నిర్ధారించండి</translation>
 <translation id="7947962633355574091">వీడియో చిరునామాను కా&amp;పీ చేయండి</translation>
-<translation id="7949686702102054831">తీసివేసి, రీసెట్ చేయి</translation>
 <translation id="7950040156882184764">ఇంటర్నెట్ ముద్రణ ప్రోటోకాల్ (HTTP)</translation>
 <translation id="7953739707111622108">పరికరం తెరవడం సాధ్యం కాదు ఎందుకంటే దాని ఫైల్‌సిస్టమ్ గుర్తించబడలేదు.</translation>
 <translation id="7953955868932471628">సత్వరమార్గాలను నిర్వహించండి</translation>
@@ -4642,7 +4673,6 @@
 <translation id="7986295104073916105">సేవ్ చేసిన పాస్‌వర్డ్ సెట్టింగ్‌లను చదవడానికి మరియు మార్చడానికి అనుమతి</translation>
 <translation id="798749371774946697">మెషీన్ పేరు చాలా పెద్దదిగా ఉంది</translation>
 <translation id="7988355189918024273">సులభంగా ప్రాప్యత చేసే లక్షణాలను ప్రారంభించు</translation>
-<translation id="7988930390477596403">మీరు ఈ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేసే తదుపరి సారి ఇది సక్రియం అవుతుంది. Smart Lockతో, మీ ఫోన్ ఈ పరికరాన్ని పాస్‌వర్డ్ లేకుండానే అన్‌లాక్ చేస్తుంది. Smart Lockను ప్రారంభించడానికి బ్లూటూత్ ఆన్ చేయబడుతుంది.</translation>
 <translation id="7994370417837006925">బహుళ సైన్-ఇన్</translation>
 <translation id="7994702968232966508">EAP పద్ధతి</translation>
 <translation id="799547531016638432">సత్వరమార్గాన్ని తీసివేయి</translation>
@@ -4681,6 +4711,7 @@
 <translation id="8032244173881942855">ట్యాబ్‌ను ప్రసారం చేయడం సాధ్యపడలేదు.</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{అన్నింటినీ &amp;అజ్ఞాత విండోలో తెరవండి}=1{&amp;అజ్ఞాత విండోలో తెరవండి}other{అన్నింటినీ (#) &amp;అజ్ఞాత విండోలో తెరవండి}}</translation>
 <translation id="8037117027592400564">సంశ్లేషణ ప్రసంగాన్ని ఉపయోగించి మాట్లాడిన మొత్తం వచనాన్ని చదవడం</translation>
+<translation id="8037357227543935929">అడగాలి (డిఫాల్ట్)</translation>
 <translation id="803771048473350947">ఫైల్</translation>
 <translation id="8038111231936746805">(డిఫాల్ట్)</translation>
 <translation id="8041535018532787664">కియోస్క్ అనువర్తనాన్ని జోడించండి:</translation>
@@ -4718,9 +4749,7 @@
 <translation id="8088137642766812908">జాగ్రత్తగా ఉండండి, ఈ లక్షణం హాని కలిగించవచ్చు</translation>
 <translation id="8090234456044969073">మీరు అత్యంత తరచుగా సందర్శించిన వెబ్‌సైట్‌ల జాబితాను చదవడానికి అనుమతి</translation>
 <translation id="8093832608898425674">రక్షిత కంటెంట్ యొక్క మెరుగుపరచబడిన ప్లేబ్యాక్ అర్హతను నిర్ధారించడానికి, <ph name="DOMAIN" /> మీ పరికరం యొక్క గుర్తింపును Google ద్వారా ధృవీకరించాలనుకుంటోంది. <ph name="LEARN_MORE" />.</translation>
-<translation id="8094917007353911263">మీరు ఉపయోగిస్తున్న నెట్‌వర్క్‌కి మీరు <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ని సందర్శించడం అవసరం.</translation>
 <translation id="80974698889265265">PINలు సరిపోలడం లేదు</translation>
-<translation id="8098975406164436557">మీ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేయడానికి ఈ ఫోన్‌ని ఉపయోగించాలా?</translation>
 <translation id="810066391692572978">ఫైల్ మద్దతు ఇవ్వని లక్షణాలను ఉపయోగిస్తుంది.</translation>
 <translation id="8101987792947961127">తదుపరి రీబూట్‌లో పవర్‌వాష్ అవసరం</translation>
 <translation id="8102535138653976669">మీ Google ఖాతాతో మీ డేటాను <ph name="PRODUCT_NAME" /> సురక్షితంగా సమకాలీకరిస్తుంది. ప్రతి ఒక్కటి సమకాలీకరించండి లేదా సమకాలీకరించబడే డేటా రకాలను మరియు గుప్తీకరణ సెట్టింగ్‌లను అనుకూలీకరించండి.</translation>
@@ -4750,7 +4779,6 @@
 <translation id="8141725884565838206">మీ పాస్‌వర్డ్‌లను నిర్వహించండి</translation>
 <translation id="8142699993796781067">ప్రైవేట్ నెట్‌వర్క్</translation>
 <translation id="8142732521333266922">సరి, ప్రతి ఒక్కటి సమకాలీకరించు</translation>
-<translation id="8144022414479088182">మీరు ఖచ్చితంగా ఈ పరికరాన్ని సమావేశాల కోసం Chromebox పరికరంగా సెటప్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="8146177459103116374">మీరు ఇప్పటికే ఈ పరికరంలో నమోదు చేసి ఉంటే, మీరు <ph name="LINK2_START" />ఇప్పటికే ఉన్న వినియోగదారు వలే సైన్ ఇన్ చేయవచ్చు<ph name="LINK2_END" />.</translation>
 <translation id="8146793085009540321">సైన్-ఇన్ విఫలమైంది. దయచేసి మీ నిర్వాహకులను సంప్రదించండి లేదా మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="8148913456785123871">లాంచర్‌లో Google Now కార్డ్‌లను చూపు</translation>
@@ -4789,7 +4817,6 @@
 <translation id="8195739004487400241">మీ హోమ్‌పేజీ పేజీ <ph name="URL" />కి మార్చబడింది. మీ హోమ్‌పేజీని మార్చే పొడిగింపులను నిలిపివేయడానికి, పునరుద్ధరించు క్లిక్ చేయండి.‌</translation>
 <translation id="8200772114523450471">మళ్ళీ ప్రారంభించు</translation>
 <translation id="8202160505685531999">దయచేసి మీ <ph name="DEVICE_TYPE" /> ప్రొఫైల్‌ను నవీకరించడానికి మీ పాస్‌వర్డ్‌ను మళ్లీ నమోదు చేయండి.</translation>
-<translation id="8204484782770036444">• <ph name="PERMISSION" /></translation>
 <translation id="8206354486702514201">ఈ సెట్టింగ్ మీ నిర్వాహకుడి ద్వారా అమలు చేయబడింది.</translation>
 <translation id="8206745257863499010">బ్లూసై</translation>
 <translation id="8209677645716428427">పర్యవేక్షించబడే వినియోగదారు మీ మార్గదర్శకత్వంతో వెబ్‌ను విశ్లేషించవచ్చు. Chromeలో పర్యవేక్షించబడే వినియోగదారు యొక్క నిర్వాహకునిగా మీరు వీటిని చేయవచ్చు:</translation>
@@ -4804,6 +4831,7 @@
 <translation id="8226742006292257240">క్రింద యాదృచ్ఛికంగా సృష్టించబడిన TPM పాస్‌వర్డ్‌లు మీ కంప్యూటర్‌కు సూచించబడ్డాయి:</translation>
 <translation id="8227119283605456246">ఫైల్‌ను జోడించు</translation>
 <translation id="8234795456569844941">దయచేసి ఈ సమస్యను పరిష్కరించడంలో మా ఇంజినీర్‌లకు సహాయపడండి. మీకు ప్రొఫైల్ లోప సందేశం ఎదురుకావడం కంటే ముందు ఏమి జరిగిందో మాకు తెలియజేయండి:</translation>
+<translation id="8234989666557591529">మీ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేయడానికి ఫోన్‌ని ఎంచుకోండి</translation>
 <translation id="8238649969398088015">సహాయ చిట్కా</translation>
 <translation id="8240697550402899963">క్లాసిక్ థీమ్‌ని ఉపయోగించు</translation>
 <translation id="8241040075392580210">షేడీ</translation>
@@ -4846,7 +4874,6 @@
 <translation id="8274924778568117936">అప్‌డేట్ పూర్తయ్యే వరకు మీ <ph name="DEVICE_TYPE" />ని ఆఫ్ చేయవద్దు లేదా మూసివేయవద్దు. ఇన్‌స్టాలేషన్ పూర్తయిన తర్వాత మీ <ph name="DEVICE_TYPE" /> పునఃప్రారంభమవుతుంది.</translation>
 <translation id="8275038454117074363">దిగుమతి చెయ్యి</translation>
 <translation id="8276560076771292512">ఖాళీ కాష్ మరియు క్లిష్టంగా మళ్లీ లోడ్ చేయి</translation>
-<translation id="8279986815001244679">మొదట్లో సైన్ ఇన్ చేయడానికి Smart Lock కోసం మీరు మీ పాస్‌వర్డ్‌ని టైప్ చేయాలి. ఆ తర్వాత, మీ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేయడానికి మీరు మీ ఫోన్‌ని ఉపయోగించగలుగుతారు.</translation>
 <translation id="8281886186245836920">దాటవేయి</translation>
 <translation id="8282947398454257691">మీ ప్రత్యేక పరికర ఐడెంటిఫైయర్‌ని తెలుసుకోవడానికి అనుమతి</translation>
 <translation id="8283475148136688298">"<ph name="DEVICE_NAME" />"కు కనెక్ట్ చేస్తున్నప్పుడు ప్రామాణీకరణ కోడ్ తిరస్కరించబడింది.</translation>
@@ -4855,9 +4882,7 @@
 <translation id="8291967909914612644">స్వస్థల ప్రదాత దేశం</translation>
 <translation id="8294431847097064396">మూలం</translation>
 <translation id="8297006494302853456">బలహీనం</translation>
-<translation id="8298115750975731693">మీరు ఉపయోగిస్తున్న Wi-Fi (<ph name="WIFI_NAME" />)కి మీరు <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ని సందర్శించడం అవసరం.</translation>
 <translation id="8299319456683969623">మీరు ప్రస్తుతం ఆఫ్‌లైన్‌లో ఉన్నారు.</translation>
-<translation id="8300607741108698921">1-నిమిషం సెటప్</translation>
 <translation id="8300849813060516376">OTASP విఫలమైంది</translation>
 <translation id="8307376264102990850">ఛార్జింగ్ పూర్తి అయ్యే సమయాన్ని లెక్కిస్తోంది</translation>
 <translation id="8308179586020895837"><ph name="HOST" /> మీ కెమెరాను ప్రాప్యత చేయాలనుకుంటే నాకు తెలియజేయి</translation>
@@ -4878,6 +4903,7 @@
 <translation id="8338952601723052325">డెవలపర్ వెబ్‌సైట్</translation>
 <translation id="8339012082103782726">మీ మైక్రోఫోన్‌ను ప్రాప్యత చేయడానికి సైట్‌లను అనుమతించవద్దు</translation>
 <translation id="8339059274628563283"><ph name="SITE" /> స్థానికంగా నిల్వ చేసిన డేటా</translation>
+<translation id="834205140959175756">స్థితి ట్రేతో కనెక్షన్‌లు, అప్‌డేట్‌లు మరియు సెట్టింగ్‌లను నిర్వహించండి.</translation>
 <translation id="8342318071240498787">ఫైల్ లేదా డైరెక్టరీ అదే పేరుతో ఇప్పటికే ఉనికిలో ఉంది.</translation>
 <translation id="8351419472474436977">ఈ పొడిగింపు మీ ప్రాక్సీ సెట్టింగ్‌లను దాని నియంత్రణలోకి తీసుకుంది, అది మీరు ఆన్‌లైన్‌లో ఏదైనా చేస్తుంటే దాన్ని మార్చడం, అంతరాయం కలిగించడం లేదా రహస్యంగా గమనించడం వంటివి చేయగలదని దీనర్థం. ఈ మార్పు ఎందుకు సంభవించిందో మీకు ఖచ్చితంగా తెలియలేదంటే బహుశా మీరు దాన్ని కోరుకొని ఉండకపోవచ్చు.</translation>
 <translation id="8352772353338965963">బహుళ సైన్ ఇన్ కోసం ఖాతాను జోడించండి. అన్ని సైన్ ఇన్ చేసిన ఖాతాలను పాస్‌వర్డ్ లేకుండానే ప్రాప్యత చేయవచ్చు, కనుక ఈ లక్షణాన్ని విశ్వసనీయ ఖాతాలతో మాత్రమే ఉపయోగించాలి.</translation>
@@ -4888,6 +4914,7 @@
 <translation id="8358685469073206162">పేజీలను పునరుద్ధరించాలా?</translation>
 <translation id="8363095875018065315">స్థిరం</translation>
 <translation id="8366396658833131068">మీ నెట్‌వర్క్ కనెక్టివిటీ పునరుద్ధరించబడింది. దయచేసి వేరే నెట్‌వర్క్‌ను ఎంచుకోండి లేదా మీ కియోస్క్ అనువర్తనాన్ని ప్రారంభించడానికి క్రింది 'కొనసాగించు' బటన్ నొక్కండి.</translation>
+<translation id="8366947248864804596">మీ ఫోన్ అన్‌లాక్ చేసినప్పుడు మరియు సమీపంలో ఉన్నప్పుడు, అన్‌లాక్ చేయడానికి కేవలం ఎంచుకోండి. లేకుంటే, మీ పాస్‌వర్డ్‌ లేదా పిన్‌ను నమోదు చేయండి.</translation>
 <translation id="8368859634510605990">&amp;అన్ని బుక్‌మార్క్‌లను తెరువు</translation>
 <translation id="8372369524088641025">తప్పుడు WEP కీ</translation>
 <translation id="8373360586245335572">నోటిఫికేషన్‌లను చూపడానికి అన్ని సైట్‌లను అనుమతించు</translation>
@@ -4922,6 +4949,7 @@
 <translation id="8425755597197517046">పే&amp;స్ట్ చేసి, శోధించండి</translation>
 <translation id="8426519927982004547">HTTPS/SSL</translation>
 <translation id="8426713856918551002">ప్రారంభించబడుతోంది</translation>
+<translation id="8427292751741042100">ఏదైనా హోస్ట్‌లో పొందుపరచబడింది</translation>
 <translation id="8427933533533814946">వీరి ద్వారా ఫోటో</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
 <translation id="8431909052837336408">SIM PINను మార్చండి</translation>
@@ -4971,13 +4999,14 @@
 <translation id="8498214519255567734">కాంతి తక్కువగా ఉన్నప్పుడు మీ స్క్రీన్‌ని చూడటం లేదా చదవడాన్ని సులభతరం చేస్తుంది</translation>
 <translation id="8498716162437226120">బ్లూటూత్ పరికరాన్ని జోడించు</translation>
 <translation id="8503813439785031346">యూజర్‌పేరు</translation>
-<translation id="8506101089619487946">Chromebook కోసం Smart Lockని ఆఫ్ చేయాలా?</translation>
+<translation id="8508332354695141900">లాంచర్, సూచించిన యాప్‌లు</translation>
 <translation id="8509646642152301857">అక్షరక్రమ తనిఖీ నిఘంటువును డౌన్‌లోడ్ చేయడం విఫలమైంది.</translation>
 <translation id="8512476990829870887">ప్రాసెస్‌ని ముగించు</translation>
 <translation id="851263357009351303">చిత్రాలను చూపించడానికి ఎల్లప్పుడూ <ph name="HOST" />ను అనుమతించు</translation>
 <translation id="8513191386157529469">"<ph name="CLIENT_NAME" />" ఈ బ్రౌజర్‌ను డీబగ్ చేస్తోంది.</translation>
 <translation id="8513974249124254369">ChromeVox (చదవబడే అభిప్రాయం) ప్రారంభించబడింది. నిలిపివేయడానికి Ctrl+Alt+Z నొక్కండి.</translation>
 <translation id="8520687380519886411">సాంప్రదాయ స్క్రోలింగ్</translation>
+<translation id="8521475323816527629">మీ యాప్‌లను వేగంగా పొందండి</translation>
 <translation id="852269967951527627">నోటిఫికేషన్‌లను చూపడానికి ఏ సైట్‌ను అనుమతించవద్దు</translation>
 <translation id="8523493869875972733">మార్పులను అలాగే ఉంచు</translation>
 <translation id="8523849605371521713">విధానం ద్వారా జోడించబడింది</translation>
@@ -4985,6 +5014,7 @@
 <translation id="8525306231823319788">పూర్తి స్క్రీన్</translation>
 <translation id="8528074251912154910">భాషలను జోడించు</translation>
 <translation id="8528962588711550376">సైన్ ఇన్ అవుతోంది.</translation>
+<translation id="8529026713753283969">మీరు ఈ ఫోన్‌లో నోటిఫికేషన్ పొందుతారు, అందువలన ఫోన్‌ను సమీపంలో ఉంచండి.</translation>
 <translation id="8529925957403338845">తక్షణ టీథెరింగ్ కనెక్షన్ విఫలమైంది</translation>
 <translation id="8534656636775144800">అయ్యో!  డొమైన్‌‌ను చేర్చడానికి ప్రయత్నిస్తున్నప్పుడు ఏదో తప్పు జరిగింది. దయచేసి మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="8535005006684281994">Netscape సర్టిఫికెట్ పునరుద్ధరణ URL</translation>
@@ -5108,7 +5138,6 @@
 <translation id="8708671767545720562">&amp;మరింత సమాచారం</translation>
 <translation id="8710187907779883426">సంక్షిప్తం (1s)</translation>
 <translation id="8711402221661888347">ఊరగాయలు</translation>
-<translation id="8711453844311572806">మీ ఫోన్ అన్‌లాక్ చేయబడి, సమీపంలో ఉన్నప్పుడు, ప్రవేశించడానికి కేవలం క్లిక్ చేస్తే సరిపోతుంది. లేదంటే, మీకు లాక్ చేసిన చిహ్నం కనిపిస్తుంది, అప్పుడు మీ పాస్‌వర్డ్‌ను టైప్ చేయాలి.</translation>
 <translation id="8713570323158206935"><ph name="BEGIN_LINK1" />సిస్టమ్ సమాచారాన్ని<ph name="END_LINK1" /> పంపు</translation>
 <translation id="871476437400413057">Google సేవ్ చేసిన పాస్‌వర్డ్‌లు</translation>
 <translation id="8714838604780058252">నేపథ్య గ్రాఫిక్స్</translation>
@@ -5146,11 +5175,14 @@
 <translation id="8767621466733104912">అందరు వినియోగదారుల కోసం Chromeను స్వయంచాలకంగా నవీకరించు</translation>
 <translation id="8770406935328356739">పొడిగింపు మూలం డైరెక్టరీ</translation>
 <translation id="8770507190024617908">వ్యక్తులను నిర్వహించు</translation>
+<translation id="8773975913699077944">మొబైల్ డేటా నెట్‌వర్క్‌ను ఎంచుకోండి</translation>
 <translation id="8774934320277480003">ఎగువ అంచు</translation>
+<translation id="8775144690796719618">URL చెల్లదు</translation>
 <translation id="8775404590947523323">మీ సవరణలు స్వయంచాలకంగా సేవ్ చేయబడతాయి.<ph name="BREAKS" />అసలు చిత్రం యొక్క నకలును ఉంచడానికి, "అసలును భర్తీ చేయి" ఎంపికను తీసివేయండి</translation>
 <translation id="8777218413579204310">కంటెంట్‌ను గుర్తించండి</translation>
 <translation id="8777628254805677039">మూల పాస్‌వర్డ్</translation>
 <translation id="878069093594050299">ఈ సర్టిఫికెట్ క్రింది ఉపయోగాలకు ధృవీకరించబడింది:</translation>
+<translation id="8781980678064919987">మూత మూసినప్పుడు షట్ డౌన్ చేయండి</translation>
 <translation id="8782565991310229362">కియోస్క్ అనువర్తనం అమలు రద్దు చేయబడింది.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; మీతో &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; ప్రింటర్‌ని భాగస్వామ్యం చేయాలనుకుంటున్నారు.</translation>
 <translation id="8784626084144195648">బిన్ చేయబడిన సగటు</translation>
@@ -5184,6 +5216,7 @@
 <translation id="8820961991571528294">పరీక్షించడం</translation>
 <translation id="8821045908425223359">IP చిరునామాను స్వయంచాలకంగా కాన్ఫిగర్ చేయి</translation>
 <translation id="8822012246577321911">మూడవ పక్షం</translation>
+<translation id="882204272221080310">అదనపు భద్రత కోసం ఫర్మ్‌వేర్‌ను అప్‌డేట్ చేయండి.</translation>
 <translation id="8823514049557262177">లింక్ వచ&amp;నం కాపీ చేయి</translation>
 <translation id="8824701697284169214">పే&amp;జీని జోడించండి...</translation>
 <translation id="8828933418460119530">DNS పేరు</translation>
@@ -5198,7 +5231,6 @@
 <translation id="8846141544112579928">కీబోర్డ్ కోసం శోధిస్తోంది...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8856844195561710094">Bluetooth పరికర శోధనను నిలిపివేయడం విఫలమైంది.</translation>
-<translation id="8856939286556828596">సైట్ వివరాలు</translation>
 <translation id="8858798938034909167">మీ పాస్‌వర్డ్‌లను ఏ పరికరం నుండైనా <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />లో ప్రాప్యత చేయండి</translation>
 <translation id="8859057652521303089">మీ భాషను ఎంచుకోండి:</translation>
 <translation id="8859174528519900719">సబ్‌ఫ్రేమ్: <ph name="SUBFRAME_SITE" /></translation>
@@ -5241,6 +5273,7 @@
 <translation id="8915370057835397490">సూచన లోడ్ అవుతోంది</translation>
 <translation id="8916476537757519021">అజ్ఞాత సబ్‌ఫ్రేమ్: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8919034266226953085">PWG రాస్టర్ కన్వర్టర్</translation>
+<translation id="8921624153894383499">Google సహాయకం ఈ భాషను మాట్లాడదు.</translation>
 <translation id="89217462949994770">మీరు చాలసార్లు సరికానటువంటి PIN ఎంటర్ చేశారు. దయచేసి క్రొత్త 8-అంకెల PIN అన్‌లాకింగ్‌ కీను సంగ్రహించడానికి <ph name="CARRIER_ID" />ను సంప్రదించండి.</translation>
 <translation id="8922013791253848639">ఎల్లప్పుడూ ఈ సైట్‌లోని ప్రకటనలను అనుమతించు</translation>
 <translation id="8925458182817574960">&amp;సెట్టింగ్‌లు</translation>
@@ -5265,7 +5298,6 @@
 <translation id="895347679606913382">ప్రారంభిస్తోంది...</translation>
 <translation id="8954952943849489823">తరలింపు విఫలమైంది, ఊహించని లోపం: $1</translation>
 <translation id="895586998699996576">$1 చిత్రం</translation>
-<translation id="8957210676456822347">క్యాప్టివ్ పోర్టల్ ప్రామాణీకరణ</translation>
 <translation id="8957423540740801332">కుడి</translation>
 <translation id="8958084571232797708">స్వీయకాన్ఫిగరేషన్ URLని ఉపయోగించు</translation>
 <translation id="895944840846194039">JavaScript మెమరీ</translation>
@@ -5289,11 +5321,11 @@
 <translation id="8986362086234534611">మరిచిపోయారా</translation>
 <translation id="8986494364107987395">Googleకు స్వయంచాలకంగా ఉపయోగ గణాంకాలను మరియు క్రాష్ నివేదికలను పంపు</translation>
 <translation id="8987927404178983737">నెల</translation>
+<translation id="8989308628569556420">క్షమించండి, Google సహాయకం ప్రస్తుతం మీ ఖాతాతో పని చేయదు.</translation>
 <translation id="899403249577094719">Netscape సర్టిఫికెట్ ఆధార URL</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> ద్వారా నిర్వహించబడింది</translation>
 <translation id="8996526648899750015">ఖాతాను జోడించండి...</translation>
 <translation id="8997135628821231"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (<ph name="DEVICE" />)</translation>
-<translation id="9000649589621199759">మీ ఫోన్‌ను కనుగొనలేదు. మీరు ఆన్ చేసి ఉన్న అనుకూల Android ఫోన్‌ని ఉపయోగిస్తున్నారని మరియు అది చేతికి అందేంత దగ్గర్లో ఉందని నిర్ధారించుకోండి. &lt;a&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
 <translation id="9003647077635673607">అన్ని వెబ్‌సైట్‌ల్లో అనుమతించు</translation>
 <translation id="9003677638446136377">మళ్లీ తనిఖీ చేయి</translation>
 <translation id="9003704114456258138">పౌనఃపున్యం</translation>
@@ -5327,6 +5359,7 @@
 <translation id="9035012421917565900">ఈ అంశాలను '<ph name="DESTINATION_NAME" />'లోకి తిరిగి తరలించడం సాధ్యపడదు, కనుక మీరు ఈ చర్యను రద్దు చేయలేరు.</translation>
 <translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">అసలైనది చూపు</translation>
+<translation id="9038430547971207796">తదుపరిసారి, మీ ఫోన్ మీ <ph name="DEVICE_TYPE" />ను అన్‌లాక్ చేస్తుంది. సెట్టింగ్‌లలో Smart Lockని ఆఫ్ చేయండి.</translation>
 <translation id="9038649477754266430">పేజీలను మరింత శీఘ్రంగా లోడ్ చేయడానికి సూచన సేవను ఉపయోగించండి</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9039890312082871605">ట్యాబ్‌లను మ్యూట్ చేయండి</translation>
@@ -5401,6 +5434,7 @@
 <translation id="9138978632494473300">కింది స్థలాలకు సత్వరమార్గాలను జోడించండి:</translation>
 <translation id="9147392381910171771">&amp;ఐచ్ఛికాలు</translation>
 <translation id="9148058034647219655">నిష్క్రమించు</translation>
+<translation id="9148116311817999634">భద్రత కోసం స్క్రీన్ లాక్‌ను సెట్ చేయండి</translation>
 <translation id="9148126808321036104">మళ్ళీ సైన్ ఇన్ చెయ్యండి</translation>
 <translation id="9149866541089851383">సవరించు...</translation>
 <translation id="9150045010208374699">మీ కెమెరాను ఉపయోగించండి</translation>
@@ -5424,7 +5458,6 @@
 <translation id="9186729806195986201">అలాగే, మునుపు ఇన్‌స్టాల్ చేసిన <ph name="IDS_SHORT_PRODUCT_NAME" /> సంస్కరణకు తిరిగి మారండి.</translation>
 <translation id="9187210477874601037">మెషీన్‌ను డొమైన్‌కు చేర్చడంలో విఫలమైంది. దీనికి కారణం సర్వర్‌లో మీ ఖాతాకు తగినన్ని ప్రత్యేకాధికారాలు లేకపోవడం కావచ్చు.</translation>
 <translation id="9188441292293901223">దయచేసి ఈ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేయడానికి మీ ఫోన్‌ను Android తాజా సంస్కరణకు నవీకరించండి.</translation>
-<translation id="9189690067274055051">నమోదు చేయడానికి మీ ఫోన్‌ని అన్‌లాక్ చేసి, దాన్ని <ph name="DEVICE_TYPE" /> సమీపంలోకి తీసుకురండి.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + ముందుగా భాగస్వామ్యం చేసిన కీ</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" />ని శోధించు</translation>
 <translation id="9201220332032049474">స్క్రీన్ లాక్ ఎంపికలు</translation>
@@ -5471,6 +5504,7 @@
 <translation id="973473557718930265">నిష్క్రమించు</translation>
 <translation id="974555521953189084">సమకాలీకరణను ప్రారంభించడానికి మీ రహస్య పదబంధాన్ని నమోదు చేయండి</translation>
 <translation id="981121421437150478">ఆఫ్‌లైన్</translation>
+<translation id="983511809958454316">VRలో ఈ ఫీచర్‌కు మద్దతు లేదు</translation>
 <translation id="98515147261107953">సమతలదిశ</translation>
 <translation id="988978206646512040">రహస్య పదబంధం ఖాళీగా ఉంటే అనుమతించబడదు</translation>
 <translation id="992032470292211616">పొడిగింపులు, అనువర్తనాలు మరియు థీమ్‌లు మీ పరికరానికి హాని కలిగించవచ్చు. మీరు ఖచ్చితంగా కొనసాగాలనుకుంటున్నారా?</translation>

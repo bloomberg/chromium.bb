@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">USB-C-Gerät (Port vorne)</translation>
 <translation id="1013923882670373915">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Geben Sie folgenden PIN-Code auf dem Gerät ein: <ph name="PINCODE" />.</translation>
 <translation id="112308213915226829">Ablage automatisch ausblenden</translation>
-<translation id="1127238861555034875">Lupenmodus</translation>
 <translation id="1153356358378277386">Gekoppelte Geräte</translation>
 <translation id="1195412055398077112">Overscan</translation>
 <translation id="1247372569136754018">Mikrofon (intern)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478">Verbleibende Zeit: <ph name="TIME" /> h</translation>
 <translation id="1698760176351776263">IPv6-Adresse: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Dieses Gerät wird vom Unternehmen verwaltet</translation>
+<translation id="1746730358044914197">Die Eingabemethoden werden von Ihrem Administrator konfiguriert.</translation>
 <translation id="1747827819627189109">Bildschirmtastatur aktiviert</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">WLAN ist deaktiviert.</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">Die Tastenkombination zum Öffnen des Task-Managers hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatische Klicks</translation>
 <translation id="1942830294380034169">Überlaufschaltfläche</translation>
+<translation id="1951012854035635156">Assistant</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Strg + Suche + H</translation>
 <translation id="2049639323467105390">Dieses Gerät wird durch <ph name="DOMAIN" /> verwaltet.</translation>
 <translation id="2050339315714019657">Hochformat</translation>
+<translation id="2067602449040652523">Tastaturhelligkeit</translation>
 <translation id="207439088875642105">Dies ist ein Konto für Kinder, das von <ph name="FIRST_PARENT_EMAIL" /> und <ph name="SECOND_PARENT_EMAIL" /> verwaltet wird.</translation>
 <translation id="2122028596993374965">Streamen von <ph name="TAB_NAME" /> an <ph name="RECEIVER_NAME" /> beenden</translation>
 <translation id="2127372758936585790">Schwachstrom-Ladegerät</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">Alle abmelden</translation>
 <translation id="2292698582925480719">Displaymaßstab</translation>
 <translation id="2303600792989757991">Fensterübersicht umschalten</translation>
+<translation id="2338501278241028356">Aktivieren Sie Bluetooth, damit Geräte in der Nähe gefunden werden</translation>
 <translation id="2352467521400612932">Eingabestift-Einstellungen</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> wird aktiviert</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">Mobilfunk</translation>
 <translation id="3236488194889173876">Kein Mobilfunknetz verfügbar</translation>
 <translation id="3294437725009624529">Gast</translation>
-<translation id="3335772982573114336">Neue Notiz</translation>
 <translation id="3364721542077212959">Eingabestift-Tools</translation>
 <translation id="3368922792935385530">Verbunden</translation>
 <translation id="3371140690572404006">USB-C-Gerät (Port vorne rechts)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">Die Funktion zum Erfassen von Screenshots wurde vom Administrator deaktiviert.</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="3995138139523574647">USB-C-Gerät (Port hinten rechts)</translation>
+<translation id="4017989525502048489">Laserpointer</translation>
 <translation id="4279490309300973883">Spiegelung</translation>
 <translation id="4321179778687042513">Strg</translation>
+<translation id="4338109981321384717">Lupe</translation>
 <translation id="4378551569595875038">Verbindung wird hergestellt...</translation>
 <translation id="4421231901400348175">Sie teilen sich die Bildschirmsteuerung mit <ph name="HELPER_NAME" /> per Remote-Unterstützung.</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">Dieses Netzwerk wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="7067196344162293536">Automatisch drehen</translation>
 <translation id="7098389117866926363">USB-C-Gerät (linker Port hinten)</translation>
-<translation id="7129360219436193655">Laserpointer-Modus</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Alte Auflösung wird in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
-<translation id="7199454189089571166">Assistant-Modus</translation>
 <translation id="7246339268451149667">Entsperren per Fingerabdruck aktivieren?</translation>
 <translation id="7256634071279256947">Mikrofon auf der Rückseite</translation>
 <translation id="7348093485538360975">Bildschirmtastatur</translation>
@@ -253,6 +255,7 @@
 <translation id="8185286464235484130">Bitte geben Sie uns Feedback, indem Sie ein paar Fragen beantworten.</translation>
 <translation id="8190698733819146287">Sprache und Eingabe anpassen...</translation>
 <translation id="8308637677604853869">Vorheriges Menü</translation>
+<translation id="8351131234907093545">Notiz erstellen</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8433186206711564395">Netzwerkeinstellungen</translation>
 <translation id="8433977262951327081">Die Tastenkombination zum Aufrufen des Infofelds für die Eingabeoptionen in der Ablage hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>

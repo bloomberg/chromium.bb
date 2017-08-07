@@ -148,6 +148,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5862307444128926510">Welkom bij Chromium</translation>
 <translation id="5877064549588274448">Kanaal gewijzigd. Start het apparaat opnieuw op om de wijzigingen door te voeren.</translation>
 <translation id="5895138241574237353">Opnieuw starten</translation>
+<translation id="5902536751647951209">Verificatiecertificaat mislukt. Log opnieuw in bij Chromium of neem contact op met je beheerder voor meer informatie. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Updaten bijna voltooid. Start je apparaat opnieuw op om de update te voltooien.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> is toegevoegd aan Chromium.</translation>
 <translation id="59625444380784159">Gegevens van je contacten kunnen je helpen sneller formulieren in te vullen in Chromium.</translation>
@@ -221,6 +222,7 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 <translation id="7745317241717453663">Hiermee worden je browsergegevens verwijderd van dit apparaat. Als je je gegevens later wilt terughalen, log je in bij Chromium als <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Het installatieprogramma kan geen tijdelijke directory maken. Controleer of je nog schijfruimte hebt en of je toestemming hebt om software te installeren.</translation>
 <translation id="7756122083761163394">De browsegegevens van deze persoon worden verwijderd van dit apparaat. Als je de gegevens wilt herstellen, log je in bij Chrome als $2.</translation>
+<translation id="7774736947049807614">Verificatiecertificaat mislukt. Log opnieuw in bij Chromium als <ph name="USER_NAME" /> of neem contact op met je beheerder voor meer informatie. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7937630085815544518">Je bent ingelogd bij Chromium als <ph name="USER_EMAIL_ADDRESS" />. Gebruik hetzelfde account om opnieuw in te loggen.</translation>
 <translation id="795025003224538582">Niet opnieuw starten</translation>
 <translation id="7962572577636132072">Chromium wordt automatisch bijgewerkt, zodat je altijd beschikt over de nieuwste versie.</translation>

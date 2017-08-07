@@ -325,7 +325,6 @@
 <translation id="2299220924812062390">Tukuyin ang isang listahan ng mga pinapaganang plugin</translation>
 <translation id="2309390639296060546">Default na setting ng geolocation</translation>
 <translation id="2312134445771258233">Pinapayagan kang i-configure ang mga pahina na na-load sa startup. Ang mga nilalaman ng listahan ng 'Mga URL upang buksan sa startup' ay binabalewala maliban kung piliin mo ang 'Magbukas ng listahan ng mga URL' sa 'Pagkilos sa startup'.</translation>
-<translation id="23323722127921515">Ipinapakita ang icon ng toolbar ng Google Cast</translation>
 <translation id="2337466621458842053">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url  na tumutukoy sa mga site na pinapayagang magpakita ng mga larawan.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultImagesSetting' kung nakatakda ito, o kung hindi man, ang personal na configuration ng user.</translation>
@@ -414,7 +413,6 @@
 
       Kung nakatakda sa False ang patakarang ito, ipapakita ang isang mensahe ng error sa halip na ang prompt ng configuration ng network.</translation>
 <translation id="2498238926436517902">Palaging awtomatikong itago ang shelf</translation>
-<translation id="2503514368596117142">Nagko-configure ng mga patakaran para sa Google Cast, isang feature na nagbibigay-daan sa mga user na maipadala ang mga content ng mga tab, site o ang desktop mula sa browser patungo sa mga malayuang display at sound system.</translation>
 <translation id="2514328368635166290">Tinutukoy ang paboritong URL ng icon ng default na provider ng paghahanap.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, mawawalan ng icon para sa provider ng paghahanap.
@@ -431,9 +429,6 @@
 <translation id="2529880111512635313">I-configure ang listahan ng mga puwersahang na-install na app at extension</translation>
 <translation id="253135976343875019">Delay ng babala bago mag-idle kapag gumagamit ng AC power</translation>
 <translation id="2552966063069741410">Timezone</translation>
-<translation id="2558917182010914102">Kung nakatakda sa true o hindi nakatakda ang patakarang ito, mae-enable ang Google Cast, at magagawa ng mga user na ilunsad ito mula sa menu ng app, mga menu ng konteksto ng page, mga kontrol ng media sa mga website na may naka-enable na Cast, at (kung ipinapakita) icon ng toolbar ng Cast.
-
-          Kung nakatakda sa false ang patakarang ito, madi-disable ang Google Cast.</translation>
 <translation id="2562339630163277285">Tinutukoy ang URL ng search engine na ginagamit upang magbigay ng mga instant na resulta. Ang URL ay dapat na maglaman ng string na <ph name="SEARCH_TERM_MARKER" />, na papalitan sa panahon ng query ng text na inilagay ng user sa panahong iyon.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, walang ibibigay na mga instant na resulta sa paghahanap.
@@ -562,6 +557,7 @@
 <translation id="3001534538097271560">Kapag itinakda ang patakarang ito sa false, hindi na mapipili ng mga user na magpadala ng ilang impormasyon ng system at content ng page sa mga server ng Google. Kung ang setting na ito ay true o hindi na-configure, papayagan ang mga user na magpadala ng ilang impormasyon ng system at content ng page sa Ligtas na Pag-browse upang makatulong na tumukoy ng mga mapanganib na app at site.
 
       Tingnan ang https://developers.google.com/safe-browsing para sa higit pang impormasyon tungkol sa Ligtas na Pag-browse.</translation>
+<translation id="3016255526521614822">Pinapayagan ang mga app sa paggawa ng tala ng Whitelist sa lock screen ng <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021409116652377124">Huwag paganahin ang tagahanap ng plugin</translation>
 <translation id="3030000825273123558">Paganahin ang pag-uulat ng mga sukatan</translation>
 <translation id="3034580675120919256">Binibigyang-daan kang itakda kung pinapayagan o hindi ang mga website na magpatakbo ng JavaScript. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagpapatakbo ng JavaScript.
@@ -905,6 +901,16 @@
       "1412.24.34": mag-update sa partikular na bersyon lang na ito
 
       Babala: Hindi inirerekomenda na i-configure ang mga paghihigpit ng bersyon dahil maaari nitong pigilan ang pagtanggap ng mga user ng mga update sa software at kritikal na pag-aayos sa seguridad. Maaaring malagay sa peligro ang mga user kung paghihigpitan ang mga update sa isang partikular na prefix ng bersyon.</translation>
+<translation id="4298509794364745131">Tumutukoy ng listahan ng mga app na maaaring i-enable bilang app sa paggawa ng tala sa lock screen ng <ph name="PRODUCT_OS_NAME" />.
+
+      Kung naka-enable sa lock screen ang piniling app sa paggawa ng tala, maglalaman ang lock screen ng elemento ng UI para sa paglulunsad ng piniling app sa paggawa ng tala.
+      Kapag inilunsad, makakagawa ang app ng isang window sa itaas na bahagi ng lock screen, at makakagawa ng mga item ng data (mga tala) sa konteksto ng lock screen. Makakapag-import ang app ng mga nagawang tala sa session ng pangunahing user kapag naka-unlock ang screen. Sa kasalukuyan, ang mga app sa paggawa ng tala ng Chrome lang ang sinusuportahan sa lock screen.
+
+      Kung nakatakda ang patakaran, papayagan lang ang user na mag-enable ng app sa lock screen kung ang extension ID ng app ay nasa value ng listahan ng patakaran.
+      Bilang resulta, kapag itinakda ang patakarang ito sa isang listahang walang laman, tuluyang madi-disable ang paggawa ng tala sa lock screen.
+      Tandaan na ang patakarang naglalaman ng app ID ay hindi nangangahulugang mae-enable ng user ang app bilang app sa paggawa ng tala sa lock screen - halimbawa, sa Chrome 61, may karagdagang paghihigpit ayon sa platform ang hanay ng mga available na app.
+
+      Kung hindi nakatakda ang patakaran, walang ipapatupad na paghihigpit ang patakaran para sa hanay ng mga app na maaaring i-enable ng user sa lock screen.</translation>
 <translation id="4309640770189628899">Kung naka-enable ang mga DHE na cipher suite sa TLS o hindi</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o mas bago</translation>
 <translation id="4322842393287974810">Payagan ang awtomatikong inilunsad na walang pagkaantalang kiosk app na kontrolin ang bersyon ng <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1328,7 +1334,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung papaganahin mo ang setting na ito, laging magiging aktibo ang SafeSearch sa Paghahanap sa Google.
 
       Kung hindi mo papaganahin ang setting na ito o hindi magtatakda ng halaga, hindi ipapatupad ang SafeSearch sa Paghahanap sa Google.</translation>
-<translation id="5940306398763671235">Nag-e-enable sa Google Cast</translation>
 <translation id="5946082169633555022">Beta channel</translation>
 <translation id="5950205771952201658">Dahil sa hindi nagbibigay ang mga soft-fail, online na pagsusuri sa pagbawi ng anumang benepisyo ng kaligtasan, dini-disable ang mga ito bilang default sa bersyon 19 ng <ph name="PRODUCT_NAME" /> at mas bago. Sa pamamagitan ng pagtatakda sa patakarang ito sa true, naibabalik ang nakaraang gawi at maisasagawa ang mga online na pagsusuri sa OCSP/CRL.
 
@@ -1680,13 +1685,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Sinusunod lang ang patakarang ito kung pinagana ang patakarang 'DefaultSearchProviderEnabled'.</translation>
 <translation id="7302043767260300182">Delay ng screen lock kapag tumatakbo habang nakasaksak sa kuryente</translation>
-<translation id="7309839952828354215">Tinutukoy kung paano dapat kumilos ang device na naipadala nang may ecryptfs at kinakailangang lumipat sa ext4 na pag-encrpyt.
-
-      Kung itatakda mo ang patakarang ito sa 'DisallowArc', idi-disable ang mga Android app para sa lahat ng user sa device (kasama iyong mga mayroon nang ext4 na pag-encrypt) at walang iaalok na paglilipat mula sa ecryptfs papuntang ext4 na pag-encrypt sa sinumang user.
-
-      Kung itatakda mo ang patakarang ito sa 'AllowMigration', aalukin ang mga user na may mga ecryptfs na directory sa tahanan na ilipat ang mga ito sa ext4 na pag-encrypt kung kinakailangan (sa kasalukuyan, kapag naging available ang Android N sa device).
-
-      Kung iniwang hindi nakatakda ang patakarang ito, kikilos ang device na parang 'DisallowArc' ang napili.</translation>
 <translation id="7311458740754205918">Kung itinakda ito sa true o hindi ito itinakda, ang page ng Bagong Tab ay maaaring magpakita ng mga suhestyon sa content batay sa history ng pagba-browse, mga interes o lokasyon ng user.
 
       Kung itinakda ito sa false, hindi makikita ang awtomatikong ginawang suhestyon sa content sa page ng Bagong Tab.</translation>
@@ -1771,7 +1769,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung pinagana mo ang setting na ito, ginagamit ng <ph name="PRODUCT_NAME" /> ang tinukoy na lokal. Kung hindi sinusuportahan ang naka-configure na lokal, gagamitin na lang ang 'en-US.'
 
       Kung hindi pinagana o hindi nakatakda ang setting na ito, ginagamit ng <ph name="PRODUCT_NAME" /> ang piniling lokal na tinukoy ng user (kung na-configure), ang lokal ng system o ang fallback na lokal na 'en-US'.</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Tinutukoy kung dapat paganahin ang roaming ng data para sa device. Kung nakatakda sa true, pinapayagan ang roaming ng data. Kung iniwang hindi naka-configure o nakatakda sa false, hindi magiging available ang roaming ng data.</translation>
 <translation id="7683777542468165012">Dynamic na Patakaran sa Pag-refresh</translation>
 <translation id="7694807474048279351">Mag-schedule ng awtomatikong reboot pagkatapos mailapat ang isang update sa <ph name="PRODUCT_OS_NAME" />.
@@ -1894,6 +1891,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung hindi pinagana ang setting na ito at ang mga papalabas na UDP na koneksyon ay pini-filter ng firewall, makakakonekta lamang ang machine na ito sa mga host machine sa loob ng lokal na network.</translation>
 <translation id="7980227303582973781">Walang espesyal na paghihigpit</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">I-rotate ang screen nang 0 degrees</translation>
 <translation id="8044493735196713914">Iulat ang boot mode ng device</translation>
 <translation id="8050080920415773384">Native na Pag-print</translation>

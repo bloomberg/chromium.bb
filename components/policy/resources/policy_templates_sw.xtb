@@ -321,7 +321,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="2312134445771258233">Inakuruhusu kusanidi kurasa ambazo zinapakiwa mwanzoni.
 
       Maudhui ya orodha ya  'URL za kufungua mwanzoni' zinapuuzwa isipokuwa uchague 'Fungua orodha ya URL katika 'Kitendo cha mwanzo'.</translation>
-<translation id="23323722127921515">Inaonyesha aikoni ya upau wa vidhibiti vya Google Cast</translation>
 <translation id="2337466621458842053">Inakuruhusu kuweka orodha ya ruwaza za url zinazobainisha tovuti zinazoruhusiwa kuonyesha picha.
 
          Ikiwa sera hii itaachwa bila thamani chaguo-msingi yote itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultImageSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
@@ -405,7 +404,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 
      Sera hii ikiwekwa kuwa Sivyo, ujumbe wa hitilafu utaonyeshwa badala ya ombi la kusanidi mtandao.</translation>
 <translation id="2498238926436517902">Ficha rafu otomatiki kila wakati</translation>
-<translation id="2503514368596117142">Weka sera za Google Cast, kipengele kinachoruhusu watumiaji kutuma maudhui ya vichupo, tovuti au eneo-kazi kutoka kwenye kivinjari hadi skrini za mbali na spika.</translation>
 <translation id="2514328368635166290">Inabainisha ikoni ya URL pendwa ya mtoaji chaguo-msingi wa utafutaji.
 
           Sera hii ni ya hiari. Ikiwa haitawekwa, hakuna ikoni itakayokuwepo kwa mtojai wa utafutaji.
@@ -422,9 +420,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="2529880111512635313">Sanidi orodha ya programu na viendelezi vilivyosakinishwa kwa nguvu</translation>
 <translation id="253135976343875019">Onyo ya kuchelewa wakati wa kutokuwa na shughuli wakati wa kuendesha kwa nishati ya AC</translation>
 <translation id="2552966063069741410">Saa za eneo:</translation>
-<translation id="2558917182010914102">Sera hii ikiwekwa kuwa ndivyo au isipowekwa, Google Cast itawashwa, na watumiaji wataweza kuizindua kutoka kwenye menyu ya programu, menyu za kurasa, vidhibiti vya maudhui kwenye tovuti vinazoweza kutumia Google Cast, na (ikiwa imeonyeshwa) aikoni ya upau wa vidhibiti vya Google Cast. 
-
-              Sera hii ikiwekwa kuwa sivyo, Google Cast itazimwa.</translation>
 <translation id="2562339630163277285">Hubainisha URL ya mtambo wa kutafuta inayotumiwa kutoa matokeo ya papo hapo. URL inapaswa kuwa na mfuatano wa <ph name="SEARCH_TERM_MARKER" />, ambao nafasi yake itachukuliwa wakati wa kuandika hoja ya maandishi ambayo mtumiaji atakuwa ameweka.
 
           Sera hii ni ya hiari. Ikiwa haijawekwa, hakuna matokeo ya utafutaji ya papo hapo yatakayotolewa.
@@ -553,6 +548,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="3001534538097271560">Kuweka sera hii kuwa sivyo kunazuia watumiaji kuchagua kutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwenye seva za Google. Ikiwa mipangilio hii imewekwa kuwa ndivyo au haijawekwa, basi watumiaji wataruhusiwa kutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwenye Kuvinjari Salama ili kusaidia kugundua programu na tovuti hatari.
 
       Angalia https://developers.google.com/safe-browsing kwa maelezo zaidi kuhusu  SafeBrowsing.</translation>
+<translation id="3016255526521614822">Toa idhini kwa programu za kuandika madokezo zinazoruhusiwa kwenye skrini iliyofungwa ya <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021409116652377124">Lemaza kipataji cha programu jalizi</translation>
 <translation id="3030000825273123558">Wezesha kuripoti kwa metriki</translation>
 <translation id="3034580675120919256">Inakuruhusu kuweka iwapo tovuti zinaruhusiwa kuendesha JavaScript. Kuendesha JavaScript kunaweza kuruhusiwa kwa tovuti zote au kukataliwa kwa tovuti zote.
@@ -904,6 +900,15 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
       "1412.24.34": weka toleo hili mahususi pekee
 
       Onyo: Unashauriwa kuweka mipangilio ya vizuizi vya toleo kwa sababu inaweza kuzuia watumiaji wasipokee masasisho ya programu na marekebisho muhimu ya usalama. Kuweka vizuizi kwenye masasisho kuwa toleo la kiambishi awali cha toleo mahususi kunaweza kuweka watumiaji katika hatari.</translation>
+<translation id="4298509794364745131">Huzibainisha programu zinazoweza kuwashwa kuwa programu za kuandika madokezo kwenye skrini iliyofungwa ya <ph name="PRODUCT_OS_NAME" />.
+
+      Unapoitumia programu ya kuandika vidokezo unayoipendelea kwenye skrini iliyofungwa, kiolesura cha kufungua programu hiyo kitaonekana kwenye skrini iliyofungwa.
+      Unapoifungua programu hiyo, programu itaunda dirisha la programu sehemu ya juu ya skrini iliyofungwa na vipengee vya data (vidokezo) vitaundwa katika skrini iliyofungwa. Programu italeta vidokezo vilivyoundwa kwenye kipindi msingi cha mtumiaji, unapokifungua kipindi. Kwa sasa, unaweza tu kuzitumia programu za Chrome za kuandika vidokezo kwenye skrini iliyofungwa.
+
+      Ukiiweka sera, mtumiaji ataruhusiwa kuwasha programu kwenye skrini iliyofungwa iwapo tu Kitambulisho cha kiendelezi kiko kwenye orodha ya thamani ya sera.
+      Ukiiweka sera hii kwenye orodha tupu, kipengele cha kuandika vidokezo kwenye skrini iliyofungwa kitazimwa kabisa. Kumbuka kuwa sera iliyo na Kitambulisho cha programu haimaanishi kuwa mtumiaji anaweza kuwasha programu kuandika vidokezo kwenye skrini iliyofungwa - kwa mfano, kwenye Chrome 61, programu ambazo unaweza kuzitumia zimewekewa vikwazo na mfumo.
+
+      Usipoiweka sera, hamna vikwazo vitakavyowekwa kwenye seti ya programu ambazo mtumiaji anaweza kuwasha kwenye skrini iliyofungwa vilivyowekwa na sera.</translation>
 <translation id="4309640770189628899">Ikiwa mipangilio ya kriptografia ya DHE katika TLS imewashwa</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 au ya karibuni zaidi</translation>
 <translation id="4322842393287974810">Ruhusu kipengele kilichofunguliwa kiotomatiki bila chochote kuchelewesha programu inayotumia skrini nzima kudhibiti toleo la <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1320,7 +1325,6 @@ Kama sera hii haijawekwa, kiteuzi kikubwa huzimwa wakati skrini ya kuingia katik
       Ukiwasha mpangilio huu, SafeSearch katika Utafutaji wa Google huwa imewashwa wakati wote.
 
       Ukifunga mpangilio huu au usipoweka thamani, SafeSearch katika Utafutaji wa Google haitekelezwi.</translation>
-<translation id="5940306398763671235">Huwasha Google Cast</translation>
 <translation id="5946082169633555022">Kituo cha beta</translation>
 <translation id="5950205771952201658">Kutokana na sababu kwamba ukaguzi wa ubatilishaji wa mtandaoni unaoshindwa chinichini hautoi usalama bora unaofanya kazi, unazimwa kwa chaguo-msingi katika toleo la 19 la <ph name="PRODUCT_NAME" /> na matoleo mapya zaidi. Kwa kuweka sera hii kuwa ndivyo, tabia ya awali inarejeshwa na ukaguzi wa mtandaoni wa OCSP/CRL utatekelezwa.
 
@@ -1669,13 +1673,6 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
           Sera hii inazingatiwa tu iwapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
 <translation id="7302043767260300182">Ufungaji wa skrini unachelewa wakati nishati ya AC inapotimika</translation>
-<translation id="7309839952828354215">Hubainisha jinsi kifaa kilicholetwa kikiwa na ecryptfs na kinahitaji kupata usimbaji fiche wa ex4 kinavyopaswa kufanya kazi.
-
-      Ukiiweka sera hii kuwa 'DisallowArc', watumiaji wote wa kifaa hawataweza kuzitumia programu za Android (wakiwemo wanaotumia usimbaji fiche wa ext4) na kuzihamisha faili zenye ecrypfts kuwa usimbaji fiche wa ext4.
-
-      Ukiiweka sera hii kuwa 'AllowMigration', watumiaji wenye saraka za nyumbani zenye ecryptfs wataweza kuzihamishia kwa usimbaji fiche wa ext4 inavyotakiwa (wakati anapotumia Android N kwenye kifaa).
-
-      Usipoiweka sera hii, kifaa hiki kitafanya kazi kana kwamba umechagua 'DisallowArc'.</translation>
 <translation id="7311458740754205918">Sera hii ikiwekwa kuwa ndivyo au isipowekwa, ukurasa wa Kichupo Kipya utaonyesha mapendekezo ya maudhui kulingana na historia ya kuvinjari, mambo yanayovutia, au mahali alipo mtumiaji.
 
       Sera hii ikiwekwa kuwa sivyo, mapendekezo ya maudhui yanayozalishwa kiotomatiki hayataonyeshwa katika ukurasa wa Kichupo Kipya.</translation>
@@ -1760,7 +1757,6 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
      Ukiwezesha mpangilio huu, <ph name="PRODUCT_NAME" /> hutumia lugha iliyobainishwa. Ikiwa lugha iliyosanidiwa haijahimiliwa, 'en-US' inatumiwa badala yake.
 
       Ikiwa mpangilio huu utalemazwa au haujawekwa, <ph name="PRODUCT_NAME" /> hutumia lugha inayopendelewa iliyobainishwa na mtumiaji (ikiwa imesanidiwa), lugha ya mfumo au lugha mbadala 'en-US'.</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Inathibitisha iwapo utumiaji wa data nje ya mtandao wako unapaswa kuwezeshwa kwa kifaa. Ikiwa itawekwa kuwa Ndivyo, utumiaji wa data nje ya mtandao wako unawezeshwa. Ikiwa hautasanidiwa au kuwekwa kuwa siyo Ndivyo, utumiaji wa data nje ya mtandao wako hautapatikana.</translation>
 <translation id="7683777542468165012">Uonyeshaji Upya wa Ubadilikaji wa Sera</translation>
 <translation id="7694807474048279351">Ratibisha kuwasha tena kiotomatiki baada ya sasisho la <ph name="PRODUCT_OS_NAME" /> limetumika. 
@@ -1882,6 +1878,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
           Ikiwa mpangilio huu umelemazwa na miunganisho ya UDP inayoondoka imechujwa kwa ngome, hivyo basi mashine haya yanaweza tu kuunganisha kwenye mashine ya mpangishaji katika mtandao wa karibu.</translation>
 <translation id="7980227303582973781">Hamna vikwazo maalum</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Zungusha skrini kwa digrii 0</translation>
 <translation id="8044493735196713914">Ripoti modi ya kuwasha kifaa</translation>
 <translation id="8050080920415773384">Uchapishaji Asilia</translation>

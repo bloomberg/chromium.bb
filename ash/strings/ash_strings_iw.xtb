@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">‏מכשיר עם יציאת USB-C (יציאה קדמית)</translation>
 <translation id="1013923882670373915">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לבצע התאמה. הזן את קוד ה-PIN הבא במכשיר הזה: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">הסתרה אוטומטית של המדף</translation>
-<translation id="1127238861555034875">מצב זכוכית מגדלת</translation>
 <translation id="1153356358378277386">מכשירים מותאמים</translation>
 <translation id="1195412055398077112">סריקת יתר</translation>
 <translation id="1247372569136754018">מיקרופון (פנימי)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478">זמן נותר - <ph name="TIME" /></translation>
 <translation id="1698760176351776263">‏כתובת IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">המכשיר הזה מנוהל על ידי ארגון</translation>
+<translation id="1746730358044914197">מנהל המערכת שלך מגדיר את שיטות הקלט.</translation>
 <translation id="1747827819627189109">המקלדת שמופיעה במסך מופעלת</translation>
 <translation id="1823873187264960516">אתרנט: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">‏Wi-Fi כבוי.</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">מקש הקיצור לפתיחת מנהל המשימות השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">לחיצות אוטומטיות</translation>
 <translation id="1942830294380034169">לחצן גלישה</translation>
+<translation id="1951012854035635156">Assistant</translation>
 <translation id="1957803754585243749">‎0°‎</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" />‏ (USB)</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">מכשיר זה מנוהל על ידי <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">לאורך</translation>
+<translation id="2067602449040652523">בהירות מקלדת</translation>
 <translation id="207439088875642105">זהו חשבון עבור ילדים, המנוהל על-ידי <ph name="FIRST_PARENT_EMAIL" /> ועל-ידי <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">הפסק להעביר את <ph name="TAB_NAME" /> אל <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">מטען בעל מתח נמוך</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">הוצא את כולם</translation>
 <translation id="2292698582925480719">קנה המידה של התצוגה</translation>
 <translation id="2303600792989757991">החלף סקירת חלון</translation>
+<translation id="2338501278241028356">‏יש להפעיל את Bluetooth כדי לאתר מכשירים קרובים</translation>
 <translation id="2352467521400612932">הגדרות סטיילוס</translation>
 <translation id="2354174487190027830">מפעיל את <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">נתוני נייד</translation>
 <translation id="3236488194889173876">אין רשת סלולרית זמינה</translation>
 <translation id="3294437725009624529">אורח</translation>
-<translation id="3335772982573114336">הערה חדשה</translation>
 <translation id="3364721542077212959">כלי סטיילוס</translation>
 <translation id="3368922792935385530">מחובר</translation>
 <translation id="3371140690572404006">‏מכשיר עם יציאת USB-C (יציאה ימנית-קדמית)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">היכולת לצלם צילומי מסך הושבתה על-ידי מנהל המערכת שלך.</translation>
 <translation id="397105322502079400">מחשב...</translation>
 <translation id="3995138139523574647">‏מכשיר עם יציאת USB-C (יציאה ימנית-אחורית)</translation>
+<translation id="4017989525502048489">סמן לייזר</translation>
 <translation id="4279490309300973883">שיקוף</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">זכוכית מגדלת</translation>
 <translation id="4378551569595875038">מתחבר...</translation>
 <translation id="4421231901400348175">שיתוף השליטה במסך עם <ph name="HELPER_NAME" /> דרך סיוע מרחוק.</translation>
 <translation id="4430019312045809116">עוצמת קול</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">מנהל המערכת השבית את הרשת הזו.</translation>
 <translation id="7067196344162293536">סיבוב אוטומטי</translation>
 <translation id="7098389117866926363">‏מכשיר עם יציאת USB-C (יציאה שמאלית מאחור)</translation>
-<translation id="7129360219436193655">מצב סמן לייזר</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">חוזר לרזולוציה הקודמת בעוד <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7199454189089571166">‏מצב Assistant</translation>
 <translation id="7246339268451149667">להפעיל ביטול נעילה באמצעות טביעת אצבע?</translation>
 <translation id="7256634071279256947">מיקרופון אחורי</translation>
 <translation id="7348093485538360975">מקלדת על המסך</translation>
@@ -253,6 +255,7 @@
 <translation id="8185286464235484130">ענה על כמה שאלות כדי לתת לנו משוב.</translation>
 <translation id="8190698733819146287">התאם אישית שפה וקלט...</translation>
 <translation id="8308637677604853869">התפריט הקודם</translation>
+<translation id="8351131234907093545">יצירת הערה</translation>
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8433186206711564395">הגדרות רשת</translation>
 <translation id="8433977262951327081">שינינו את קיצור הדרך להצגה של בועת התפריט של אפשרויות הקלט במדף. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>

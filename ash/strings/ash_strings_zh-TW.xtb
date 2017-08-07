@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">USB-C 裝置 (前方連接埠)</translation>
 <translation id="1013923882670373915">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限，請在裝置上輸入以下 PIN 碼：<ph name="PINCODE" /></translation>
 <translation id="112308213915226829">自動隱藏檔案櫃</translation>
-<translation id="1127238861555034875">放大鏡模式</translation>
 <translation id="1153356358378277386">配對裝置</translation>
 <translation id="1195412055398077112">遮視區域</translation>
 <translation id="1247372569136754018">麥克風 (內部)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> 後用盡</translation>
 <translation id="1698760176351776263">IPv6 位址：<ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">這個裝置受到企業管理</translation>
+<translation id="1746730358044914197">輸入法是由你的管理員所設定。</translation>
 <translation id="1747827819627189109">螢幕小鍵盤已啟用</translation>
 <translation id="1823873187264960516">乙太網路：<ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi 已關閉。</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">開啟工作管理員的快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
 <translation id="1923539912171292317">自動點擊</translation>
 <translation id="1942830294380034169">溢位按鈕</translation>
+<translation id="1951012854035635156">小幫手</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl 鍵 + 搜尋鍵 + H 鍵</translation>
 <translation id="2049639323467105390">這個裝置由 <ph name="DOMAIN" /> 管理。</translation>
 <translation id="2050339315714019657">縱向</translation>
+<translation id="2067602449040652523">鍵盤亮度</translation>
 <translation id="207439088875642105">這是由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 所管理的兒童專用帳戶</translation>
 <translation id="2122028596993374965">停止將 <ph name="TAB_NAME" /> 投放到「<ph name="RECEIVER_NAME" />」</translation>
 <translation id="2127372758936585790">低功率充電器</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">登出所有使用者</translation>
 <translation id="2292698582925480719">顯示比例</translation>
 <translation id="2303600792989757991">切換視窗總覽</translation>
+<translation id="2338501278241028356">開啟藍牙即可偵測附近的裝置</translation>
 <translation id="2352467521400612932">觸控筆設定</translation>
 <translation id="2354174487190027830">正在啟用 <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180 度</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">行動數據</translation>
 <translation id="3236488194889173876">沒有可用的行動網路</translation>
 <translation id="3294437725009624529">訪客</translation>
-<translation id="3335772982573114336">新增記事</translation>
 <translation id="3364721542077212959">觸控筆工具</translation>
 <translation id="3368922792935385530">已連線</translation>
 <translation id="3371140690572404006">USB-C 裝置 (右前方連接埠)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">你的管理員已停用拍攝螢幕擷取畫面功能。</translation>
 <translation id="397105322502079400">計算中…</translation>
 <translation id="3995138139523574647">USB-C 裝置 (右後方連接埠)</translation>
+<translation id="4017989525502048489">雷射筆</translation>
 <translation id="4279490309300973883">鏡像</translation>
 <translation id="4321179778687042513">Ctrl</translation>
+<translation id="4338109981321384717">放大鏡</translation>
 <translation id="4378551569595875038">連線中…</translation>
 <translation id="4421231901400348175">透過遠端協助與<ph name="HELPER_NAME" />分享螢幕控制功能。</translation>
 <translation id="4430019312045809116">音量</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">您的管理員已停用這個網路。</translation>
 <translation id="7067196344162293536">自動旋轉</translation>
 <translation id="7098389117866926363">USB-C 裝置 (背面左側連接埠)</translation>
-<translation id="7129360219436193655">雷射筆模式</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Shift + K 鍵</translation>
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS" /> 秒後還原成原來的解析度</translation>
-<translation id="7199454189089571166">個人助理模式</translation>
 <translation id="7246339268451149667">要啟用指紋解鎖功能嗎？</translation>
 <translation id="7256634071279256947">後置麥克風</translation>
 <translation id="7348093485538360975">螢幕小鍵盤</translation>
@@ -253,6 +255,7 @@
 <translation id="8185286464235484130">請回答幾個問題，讓我們瞭解你的滿意度。</translation>
 <translation id="8190698733819146287">自訂語言與輸入法...</translation>
 <translation id="8308637677604853869">前一個選單</translation>
+<translation id="8351131234907093545">寫筆記</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433186206711564395">網路設定</translation>
 <translation id="8433977262951327081">在檔案櫃中顯示輸入選項選單方塊的快速鍵已變更，請改用：<ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>

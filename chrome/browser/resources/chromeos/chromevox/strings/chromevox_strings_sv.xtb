@@ -12,6 +12,7 @@
 <translation id="1044777062731150180">Inga rubriker</translation>
 <translation id="106222400312645156">radrubrik</translation>
 <translation id="1065552602950927991">Ogiltiga indata</translation>
+<translation id="1080471004309605942">Kursiv slutar</translation>
 <translation id="1082209053475788238">Det finns ingen föregående rubrik på nivå 6.</translation>
 <translation id="1088219014394087294">Det finns inga rubriker.</translation>
 <translation id="1106741348836243114">Aktivera eller inaktivera ljudsignaler (ljudikoner).</translation>
@@ -121,6 +122,7 @@
 <translation id="225732394367814946">Öka talhastigheten</translation>
 <translation id="2267945578749931355">Nästa tecken</translation>
 <translation id="2281234842553884450">Föregående skjutreglage</translation>
+<translation id="2294136146931447363">Kursiv börjar</translation>
 <translation id="2318372665160196757">Huvud</translation>
 <translation id="2329324941084714723">Flikpanel</translation>
 <translation id="2344193891939537199">Inmatning av datum och tid</translation>
@@ -343,6 +345,7 @@ Om du är klar med självstudiekursen kan du använda ChromeVox till att naviger
 <translation id="4039983576244166038">Tom radrubrik</translation>
 <translation id="4042843249978639960">Det finns inga fler rubriker på nivå 2.</translation>
 <translation id="4043348641337972076">Det finns inget föregående ARIA-landmärke.</translation>
+<translation id="4045764028670444336">Felstavat ord börjar</translation>
 <translation id="4047216625641135770">Markering</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4054936709456751127">status</translation>
@@ -397,6 +400,7 @@ Om du är klar med självstudiekursen kan du använda ChromeVox till att naviger
 <translation id="4532633738839459153">{COUNT,plural, =1{snedstreck}other{# snedstreck}}</translation>
 <translation id="4547556996012970016">Nästa rubrik på nivå 5</translation>
 <translation id="4562381607973973258">Sidhuvud</translation>
+<translation id="4570424871453628777">Felstavat ord slutar</translation>
 <translation id="4591507479202817876">, valt</translation>
 <translation id="4597532268155981612">formulär</translation>
 <translation id="4597896406374528575">april</translation>
@@ -423,6 +427,7 @@ Om du är klar med självstudiekursen kan du använda ChromeVox till att naviger
 <translation id="4827410568042294688">omarkerad</translation>
 <translation id="4842108708071771135">Det finns inga fler citatblock.</translation>
 <translation id="4844625982113518938">Tryck på en tangent när du vill veta vad den heter. Du stänger inlärningsläget med Ctrl + W.</translation>
+<translation id="4846487886195635104">Genomstrykning slutar</translation>
 <translation id="4848993367330139335">timer</translation>
 <translation id="4850023505158945298">Föregående element av liknande typ.</translation>
 <translation id="485011152882364255">I ChromeVox Next är söktangenten specialtangenten. De flesta ChromeVox-kortkommandon börjar med söktangenten. Du använder också piltangenterna för att navigera.</translation>
@@ -449,7 +454,6 @@ Om du är klar med självstudiekursen kan du använda ChromeVox till att naviger
 <translation id="5000760171916499057">Det finns inga formulär.</translation>
 <translation id="5005670136041063723">Det finns inga fler liknande element.</translation>
 <translation id="501473567976723023">januari</translation>
-<translation id="5040591161308540832">Tabell $1, $2 av $3</translation>
 <translation id="5041394372352067729">Flytta punktskriftsskärmen till sidans början</translation>
 <translation id="5042770794184672516">Höj talvolymen</translation>
 <translation id="5050015258024679800">Föregående rubrik på nivå 4</translation>
@@ -577,6 +581,8 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="6006064078185310784">{COUNT,plural, =1{bakstreck}other{# bakstreck}}</translation>
 <translation id="6037602951055904232">Panorera framåt</translation>
 <translation id="6044160928851315051">Släck skärmen</translation>
+<translation id="605761629541007221">Fetstil slutar</translation>
+<translation id="6065293622157674001">Grammatikfel börjar</translation>
 <translation id="6082768461603900813">Grundläggande navigering</translation>
 <translation id="6092707270915298410">Länkslut</translation>
 <translation id="611827076493383239">besökt</translation>
@@ -668,6 +674,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="712735679809149106">eko för ord</translation>
 <translation id="713824876195128146">Nästa citatblock</translation>
 <translation id="7143034430156387447">Växla mellan punktskrift med sex och åtta punkter</translation>
+<translation id="7161425887892204659">Textmatchning slutar</translation>
 <translation id="7161771961008409533">Popup-knapp</translation>
 <translation id="7165714724802225287">Aktuellt visningsformat är omlott.</translation>
 <translation id="7167657087543110">eko för tecken</translation>
@@ -699,6 +706,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="7370432716629432284">{COUNT,plural, =1{et-tecken}other{# et-tecken}}</translation>
 <translation id="737396357417333429">klickbart</translation>
 <translation id="7374104575779636480">Lämnar tabellen.</translation>
+<translation id="7392145451309930991">Textmatchning börjar</translation>
 <translation id="739763518212184081">Föregående rad</translation>
 <translation id="7400575256015741911">Ett stavfel har upptäckts</translation>
 <translation id="7408482676469142474">tabell</translation>
@@ -730,7 +738,9 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="7685589220304187312">verktygsfält</translation>
 <translation id="7693840228159394336">Föregående alternativknapp</translation>
 <translation id="7701196182766842984">autoslutförande i lista</translation>
+<translation id="7712273827621319827">Understrykning börjar</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, lösenordsruta</translation>
+<translation id="7773125101284285285">Understrykning slutar</translation>
 <translation id="7776293189010177726">Öppna ChromeVox-menyerna</translation>
 <translation id="7805247615045262757">standardnavigering</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -760,6 +770,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="8065607967589909823">Du har markerat</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">Flikar</translation>
+<translation id="8091452896542422286">Blanksteg</translation>
 <translation id="8104178626892949749">Tryck på ChromeVox o, n om du vill veta mer om ChromeVox Next.</translation>
 <translation id="8110647606445335195">Det finns inga ARIA-landmärken.</translation>
 <translation id="8153880621934657047">Inte i tabellen.</translation>
@@ -781,6 +792,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="8374154622594089836">månad</translation>
 <translation id="8378855320830505539">Område</translation>
 <translation id="8382679411218029383">Autoslutförande med både direktinfogning och lista</translation>
+<translation id="8384907037845425279">Fetstil börjar</translation>
 <translation id="8428603554127842284">nivå <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">Det finns inga fler rubriker på nivå 3.</translation>
 <translation id="8430049249787218991">menyfält</translation>
@@ -792,6 +804,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="8476408756881832830">Pausa uppspelningen när ChromeVox används</translation>
 <translation id="8476508772960940536">fönsteröversikt</translation>
 <translation id="8503360654911991865">Minska navigeringens granularitet</translation>
+<translation id="8504695234784218301">Grammatikfel slutar</translation>
 <translation id="8520472399088452386">Snurrknapp</translation>
 <translation id="8538744478902126321">Gissa radrubrik för den aktuella cellen</translation>
 <translation id="8540054775867439484">Till början</translation>
@@ -869,4 +882,5 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="962913030769097253">Nästa rubrik på nivå 1</translation>
 <translation id="973955474346881951">Aktivera/inaktivera låsta knappar</translation>
 <translation id="976849232629612000">Det finns inga objekt.</translation>
+<translation id="995852680044449248">Genomstrykning börjar</translation>
 </translationbundle>

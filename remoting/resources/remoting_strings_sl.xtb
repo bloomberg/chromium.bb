@@ -65,6 +65,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="228809120910082333">Če želite dovoliti dostop prek Oddaljenega povezovanja s Chromom, spodaj potrdite račun in PIN.</translation>
 <translation id="2314101195544969792">Seja aplikacije <ph name="APPLICATION_NAME" /> je že nekaj časa nedejavna, zato bo povezava kmalu prekinjena.</translation>
 <translation id="2317666076142640974">Oglejte si novo <ph name="LINK_BEGIN" />spletno aplikacijo Oddaljeno namizje za Chrome<ph name="LINK_END" /> pred izdajo. Veseli bomo vaših povratnih informacij.</translation>
+<translation id="2320166752086256636">Skrij tipkovnico</translation>
 <translation id="2353140552984634198">Oddaljeno povezovanje s Chromom omogoča varen dostop do tega računalnika.</translation>
 <translation id="2359808026110333948">Nadaljuj</translation>
 <translation id="2366718077645204424">Ni mogoče vzpostaviti povezave z gostiteljem; verjetno zaradi konfiguracije omrežja, ki ga uporabljate.</translation>
@@ -78,9 +79,9 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="2676780859508944670">Obdelava …</translation>
 <translation id="2699970397166997657">Oddaljeno povezovanje s Chromom</translation>
 <translation id="2747641796667576127">Posodobitve programske opreme se običajno izvedejo samodejno, vendar v redkih primerih posodobitev ni uspešna. Posodabljanje naj bi trajalo samo nekaj minut in se lahko izvaja, medtem ko ste s svojim računalnikom povezani oddaljeno.</translation>
+<translation id="2803375539583399270">Vnesite kodo PIN</translation>
 <translation id="2841013758207633010">Čas</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
-<translation id="2855866366045322178">brez povezave</translation>
 <translation id="2888969873284818612">Prišlo je do napake v omrežju. Ko bo naprava spet dosegljiva, bo aplikacija znova zagnana.</translation>
 <translation id="2894654864775534701">Ta računalnik je trenutno v skupni rabi z uporabo drugega računa.</translation>
 <translation id="2919669478609886916">Trenutno imate to napravo v skupni rabi z drugim uporabnikom. Ali želite nadaljevati skupno rabo?</translation>
@@ -201,6 +202,7 @@ namizje za Chrome</translation>
 <translation id="6062854958530969723">Inicializacija gostitelja ni uspela.</translation>
 <translation id="6091564239975589852">Pošlji tipke</translation>
 <translation id="6099500228377758828">Storitev Oddaljeno namizje za Chrome</translation>
+<translation id="6122191549521593678">Dosegljiv</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="6173536234069435147">Ne morem odpreti datotek v Googlu Drive.</translation>
 <translation id="6178645564515549384">Izvorni gostitelj za sporočanje za pomoč na daljavo</translation>
@@ -222,7 +224,6 @@ namizje za Chrome</translation>
 <translation id="6570205395680337606">Ponastavite aplikacijo. Delo, ki ga niste shranili, bo izgubljeno.</translation>
 <translation id="6572345186230665992">Za Mac OS (OS X Mavericks 10.9 in novejši)</translation>
 <translation id="6612717000975622067">Pošlji Ctrl + Alt + Del</translation>
-<translation id="6640610550128933069">nazadnje povezan v splet: <ph name="DATE" /></translation>
 <translation id="6668065415969892472">PIN je posodobljen.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Vse pravice pridržane.</translation>
 <translation id="6705482892455291412">Ko uporabnik vnese kodo, boste pozvani, da sprejmete povezavo in začnete sejo skupne rabe.</translation>
@@ -284,6 +285,7 @@ namizje za Chrome</translation>
 <translation id="837021510621780684">Iz tega računalnika</translation>
 <translation id="8383794970363966105">Če želite uporabljati Oddaljeno povezovanje s Chromom, morate v napravo dodati Google Račun.</translation>
 <translation id="8386846956409881180">Gostitelj je konfiguriran z neveljavnimi poverilnicami OAuth.</translation>
+<translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8445362773033888690">Ogled v Trgovini Google Play</translation>
 <translation id="8509907436388546015">Postopek vključitve namizja</translation>
 <translation id="8513093439376855948">Izvorni gostitelj za sporočanje za upravljanje komunikacije na daljavo</translation>
@@ -307,6 +309,7 @@ namizje za Chrome</translation>
 <translation id="951991426597076286">Zavrni</translation>
 <translation id="962733587145768554">V pogovornem polju povezave izberite »<ph name="SHARE" />«, če želite dokončati postopek.</translation>
 <translation id="979100198331752041">Oddaljeno namizje za Chrome pri gostitelju <ph name="HOSTNAME" /> je zastarelo in ga je treba posodobiti.</translation>
+<translation id="981121421437150478">Brez povezave</translation>
 <translation id="985602178874221306">Ustvarjalci Chromiuma</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (nazadnje s povezavo: <ph name="DATE_OR_TIME" />)</translation>
 </translationbundle>

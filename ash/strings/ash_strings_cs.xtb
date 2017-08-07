@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">Zařízení USB Type-C (přední port)</translation>
 <translation id="1013923882670373915">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. Zadejte prosím v zařízení tento kód PIN: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">Automaticky skrývat poličku</translation>
-<translation id="1127238861555034875">Režim lupy</translation>
 <translation id="1153356358378277386">Spárovaná zařízení</translation>
 <translation id="1195412055398077112">přesah obrazu</translation>
 <translation id="1247372569136754018">Mikrofon (interní)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478">Zbývající čas: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adresa IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Toto zařízení je spravováno organizací</translation>
+<translation id="1746730358044914197">Metody zadávání nastavuje váš administrátor.</translation>
 <translation id="1747827819627189109">Softwarová klávesnice je aktivována</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Připojení Wi-Fi je vypnuto.</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">Zkratka k otevření správce úloh se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatická kliknutí</translation>
 <translation id="1942830294380034169">Tlačítko přetečení</translation>
+<translation id="1951012854035635156">Asistent</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl+Hledat+H</translation>
 <translation id="2049639323467105390">Zařízení je spravováno doménou <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Na výšku</translation>
+<translation id="2067602449040652523">Jas klávesnice</translation>
 <translation id="207439088875642105">Toto je dětský účet spravovaný uživateli <ph name="FIRST_PARENT_EMAIL" /> a <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Ukončit odesílání karty <ph name="TAB_NAME" /> do přijímače <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Nabíječka má příliš nízký výkon</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">Odhlásit vše</translation>
 <translation id="2292698582925480719">Měřítko displeje</translation>
 <translation id="2303600792989757991">Přepnutí přehledu okna</translation>
+<translation id="2338501278241028356">Chcete-li objevit okolní zařízení, zapněte Bluetooth</translation>
 <translation id="2352467521400612932">Nastavení dotykového pera</translation>
 <translation id="2354174487190027830">Aktivace sítě <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">Mobilní datové přenosy</translation>
 <translation id="3236488194889173876">Není k dispozici žádná mobilní síť</translation>
 <translation id="3294437725009624529">Host</translation>
-<translation id="3335772982573114336">Nová poznámka</translation>
 <translation id="3364721542077212959">Nástroje pro dotykové pero</translation>
 <translation id="3368922792935385530">Připojeno</translation>
 <translation id="3371140690572404006">Zařízení USB Type-C (pravý přední port)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">Možnost pořizovat snímky obrazovky byla zakázána správcem.</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
 <translation id="3995138139523574647">Zařízení USB Type-C (pravý zadní port)</translation>
+<translation id="4017989525502048489">Laserové ukazovátko</translation>
 <translation id="4279490309300973883">Zrcadlení</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">Lupa</translation>
 <translation id="4378551569595875038">Připojování...</translation>
 <translation id="4421231901400348175">Ovládání obrazovky je prostřednictvím Vzdálené pomoci sdíleno s uživatelem <ph name="HELPER_NAME" />.</translation>
 <translation id="4430019312045809116">Hlasitost</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">Tato síť je zakázána vaším administrátorem.</translation>
 <translation id="7067196344162293536">Automatické otáčení</translation>
 <translation id="7098389117866926363">Zařízení USB Type-C (levý zadní port)</translation>
-<translation id="7129360219436193655">Režim laserového ukazovátka</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Původní rozlišení bude obnoveno za <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7199454189089571166">Režim asistenta</translation>
 <translation id="7246339268451149667">Povolit odemknutí otiskem prstu?</translation>
 <translation id="7256634071279256947">Zadní mikrofon</translation>
 <translation id="7348093485538360975">Softwarová klávesnice</translation>
@@ -253,6 +255,7 @@
 <translation id="8185286464235484130">Odpovězte prosím na pár dotazů, abychom věděli, jak si vedeme.</translation>
 <translation id="8190698733819146287">Personalizovat jazyky a zadávání...</translation>
 <translation id="8308637677604853869">Předchozí nabídka</translation>
+<translation id="8351131234907093545">Vytvořit poznámku</translation>
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8433186206711564395">Nastavení sítě</translation>
 <translation id="8433977262951327081">Klávesová zkratka k zobrazení bubliny s možnostmi vstupu na poličce se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>

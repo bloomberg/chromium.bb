@@ -146,6 +146,7 @@
 <translation id="5862307444128926510">Tere tulemast Chromiumi</translation>
 <translation id="5877064549588274448">Kanal on muutunud. Muudatuste rakendamiseks taaskäivitage oma seade.</translation>
 <translation id="5895138241574237353">Taaskäivitamine</translation>
+<translation id="5902536751647951209">Autentimissertifikaat ebaõnnestus. Logige Chromiumisse uuesti sisse või võtke lisateabe saamiseks ühendust administraatoriga. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Seade on peaaegu ajakohane. Värskenduse lõpuleviimiseks taaskäivitage seade.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> on Chromiumi lisatud.</translation>
 <translation id="59625444380784159">Kontaktide üksikasjad aitavad Chromiumis kiiremini vorme täita.</translation>
@@ -219,6 +220,7 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7745317241717453663">See kustutab sellest seadmest teie sirvimisandmed. Hiljem oma andmete toomiseks logige Chromiumi sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Installija ei suutnud luua ajutist kataloogi. Palun kontrollige vaba kettaruumi ja tarkvara installimise loa olemasolu.</translation>
 <translation id="7756122083761163394">Selle isiku sirvimisandmed kustutatakse seadmest. Andmete taastamiseks logige Chrome'i sisse kasutajana $2.</translation>
+<translation id="7774736947049807614">Autentimissertifikaat ebaõnnestus. Logige Chromiumisse uuesti sisse kasutajana <ph name="USER_NAME" /> või võtke lisateabe saamiseks ühendust administraatoriga. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7937630085815544518">Olite Chromiumisse sisse logitud kasutajana <ph name="USER_EMAIL_ADDRESS" />. Kasutage uuesti sisselogimiseks sama kontot.</translation>
 <translation id="795025003224538582">Ära taaskäivita</translation>
 <translation id="7962572577636132072">Chromium teeb värskendused automaatselt, nii et kasutate alati uusimat versiooni.</translation>

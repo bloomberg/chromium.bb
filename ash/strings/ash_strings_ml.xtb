@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">USB-C ഉപകരണം (മുൻവശത്തെ പോർട്ട്)</translation>
 <translation id="1013923882670373915">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പിൻ കോഡ് നൽകുക: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">ഷെൽഫ് സ്വയമേവ മറയ്‌ക്കുക</translation>
-<translation id="1127238861555034875">മാഗ്‌നിഫൈയിംഗ് ഗ്ലാസ് മോഡ്</translation>
 <translation id="1153356358378277386">ജോടിയാക്കിയ ഉപകരണങ്ങൾ</translation>
 <translation id="1195412055398077112">ഓവർസ്‌കാൻ</translation>
 <translation id="1247372569136754018">മൈക്രോഫോൺ (ഇന്റേണൽ)</translation>
@@ -36,11 +35,13 @@
 <translation id="1919743966458266018">ടാസ്‌ക് മാനേജർ തുറക്കാനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
 <translation id="1923539912171292317">യാന്ത്രിക ക്ലിക്കുകൾ</translation>
 <translation id="1942830294380034169">ഓവർഫ്ലോ ബട്ടൺ</translation>
+<translation id="1951012854035635156">സഹായി</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl+തിരയൽ+H</translation>
 <translation id="2049639323467105390">ഈ ഉപകരണം നിയന്ത്രിക്കുന്നത് <ph name="DOMAIN" /> ആണ്.</translation>
 <translation id="2050339315714019657">ഛായാചിത്രം</translation>
+<translation id="2067602449040652523">കീബോർഡ് തെളിച്ചം</translation>
 <translation id="207439088875642105"><ph name="FIRST_PARENT_EMAIL" />, <ph name="SECOND_PARENT_EMAIL" /> എന്നിവർ നിയന്ത്രിക്കുന്ന കുട്ടികൾക്കുള്ള അക്കൗണ്ടാണിത്</translation>
 <translation id="2122028596993374965"><ph name="TAB_NAME" />, <ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് കാസ്‌റ്റുചെയ്യുന്നത് നിർത്തുക</translation>
 <translation id="2127372758936585790">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജർ</translation>
@@ -51,6 +52,7 @@
 <translation id="2268813581635650749">എല്ലാം സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="2292698582925480719">ഡിസ്പ്ലേ സ്കെയിൽ</translation>
 <translation id="2303600792989757991">വിൻഡോ ചുരുക്കവിവരണം ടോഗിൾ ചെയ്യുക</translation>
+<translation id="2338501278241028356">സമീപത്തുള്ള ഉപകരണങ്ങൾ കണ്ടെത്താൻ Bluetooth ഓണാക്കുക</translation>
 <translation id="2352467521400612932">സ്റ്റൈലസ് ക്രമീകരണം</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> സജീവമാക്കുന്നു</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -87,7 +89,6 @@
 <translation id="315116470104423982">മൊബൈല്‍ ഡാറ്റ</translation>
 <translation id="3236488194889173876">മൊബൈൽ നെറ്റ്‌വർക്ക് ലഭ്യമല്ല</translation>
 <translation id="3294437725009624529">അതിഥി</translation>
-<translation id="3335772982573114336">പുതിയ കുറിപ്പ്</translation>
 <translation id="3364721542077212959">സ്റ്റൈലസ് ടൂളുകൾ</translation>
 <translation id="3368922792935385530">ബന്ധിപ്പിച്ചു</translation>
 <translation id="3371140690572404006">USB-C ഉപകരണം (വലതുവശത്ത് മുന്നിലെ പോർട്ട്)</translation>
@@ -119,8 +120,10 @@
 <translation id="3967919079500697218">സ്ക്രീൻഷോട്ടുകൾ എടുക്കാനുള്ള കഴിവ് നിങ്ങളുടെ അഡ്‌മിനിസ്ട്രേറ്റർ പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>
 <translation id="3995138139523574647">USB-C ഉപകരണം (വലതുവശത്ത് പിന്നിലെ പോർട്ട്)</translation>
+<translation id="4017989525502048489">ലേസർ പോയിന്റർ</translation>
 <translation id="4279490309300973883">മിററിംഗ്</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">മാഗ്‌നിഫൈയിംഗ് ഗ്ലാസ്</translation>
 <translation id="4378551569595875038">കണക്റ്റുചെയ്യുന്നു...</translation>
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> ഉപയോഗിച്ച് നിങ്ങളുടെ വിദൂര സഹായി മുഖേന സ്‌ക്രീനിന്റെ നിയന്ത്രണം പങ്കിടുക.</translation>
 <translation id="4430019312045809116">അളവ്</translation>
@@ -215,11 +218,9 @@
 <translation id="7066646422045619941">നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഈ നെറ്റ്‌വർക്ക് പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="7067196344162293536">സ്വയമേവ തിരിക്കുക</translation>
 <translation id="7098389117866926363">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
-<translation id="7129360219436193655">ലേസർ പോയിന്റർ മോഡ്</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />-ൽ പഴയ മിഴിവിലേക്ക് പഴയപടിയാക്കുന്നു</translation>
-<translation id="7199454189089571166">അസിസ്റ്റന്റ് മോഡ്</translation>
 <translation id="7246339268451149667">വിരലടയാളം ഉപയോഗിച്ചുള്ള അൺലോക്കുചെയ്യൽ പ്രവർത്തനക്ഷമമാക്കണോ?</translation>
 <translation id="7256634071279256947">പിൻഭാഗത്തെ മൈക്രോഫോൺ</translation>
 <translation id="7348093485538360975">ഓൺ-സ്‌ക്രീൻ കീബോർഡ്</translation>
@@ -254,6 +255,7 @@
 <translation id="8185286464235484130">കുറച്ച് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകിക്കൊണ്ട് ഞങ്ങളുടെ പ്രവർത്തനത്തെക്കുറിച്ചുള്ള അഭിപ്രായം അറിയിക്കൂ.</translation>
 <translation id="8190698733819146287">ഭാഷകൾ‌ ഇച്ഛാനുസൃതമാക്കി നല്‍‌കുക...</translation>
 <translation id="8308637677604853869">മുൻ മെനു</translation>
+<translation id="8351131234907093545">കുറിപ്പ് സൃഷ്‌ടിക്കുക</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
 <translation id="8433186206711564395">നെറ്റ്‍വര്‍ക്ക് ക്രമീകരണങ്ങള്‍</translation>
 <translation id="8433977262951327081">ഷെൽഫിലെ ഇൻപുട്ട് ഓപ്ഷൻ മെനു ബബിൾ കാണുന്നതിനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>

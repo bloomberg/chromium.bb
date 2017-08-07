@@ -317,7 +317,6 @@
 <translation id="2299220924812062390">Tentukan daftar plugin yang diaktifkan</translation>
 <translation id="2309390639296060546">Setelan geolokasi default</translation>
 <translation id="2312134445771258233">Memungkinkan Anda mengonfigurasi laman yang dimuat saat permulaan. Isi daftar 'URL yang dibuka saat permulaan' diabaikan kecuali jika Anda memilih 'Buka daftar URL' dalam 'Tindakan saat permulaan'.</translation>
-<translation id="23323722127921515">Menampilkan ikon toolbar Google Cast</translation>
 <translation id="2337466621458842053">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang diizinkan untuk menampilkan gambar. Jika kebijakan ini dibiarkan tanpa disetel, nilai global default akan digunakan untuk semua situs, baik dari kebijakan 'DefaultImagesSetting', jika disetel, maupun konfigurasi pribadi pengguna.</translation>
 <translation id="2372547058085956601">Penundaan masuk otomatis sesi publik.
 
@@ -402,7 +401,6 @@
 
       Jika kebijakan ini disetel ke False, pesan kesalahan akan muncul, bukan permintaan konfigurasi jaringan.</translation>
 <translation id="2498238926436517902">Selalu sembunyikan rak secara otomatis</translation>
-<translation id="2503514368596117142">Mengonfigurasi kebijakan untuk Google Cast, fitur yang memungkinkan pengguna mengirim konten tab, situs, atau desktop dari browser ke sistem suara dan tampilan dari jarak jauh.</translation>
 <translation id="2514328368635166290">Menentukan URL ikon favorit dari penyedia penelusuran default. Kebijakan ini bersifat opsional. Jika tidak disetel, ikon tidak akan ada untuk penyedia penelusuran. Kebijakan ini hanya berlaku jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="2516600974234263142">Mengaktifkan pencetakan di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
 
@@ -415,9 +413,6 @@
 <translation id="2529880111512635313">Mengonfigurasi daftar aplikasi dan ekstensi yang dipasang secara paksa</translation>
 <translation id="253135976343875019">Menunda peringatan waktu menganggur saat menggunakan daya AC</translation>
 <translation id="2552966063069741410">Zona Waktu</translation>
-<translation id="2558917182010914102">Jika kebijakan ini disetel ke true atau tidak disetel, Google Cast akan diaktifkan, dan pengguna dapat meluncurkannya dari menu aplikasi, menu konteks halaman, kontrol media di situs web yang kompatibel untuk Cast, dan (jika ditampilkan) ikon toolbar Cast.
-
-          Jika kebijakan disetel ke false, Google Cast akan dinonaktifkan.</translation>
 <translation id="2562339630163277285">Menentukan URL mesin telusur yang digunakan untuk memberikan hasil instan. URL harus berisi string <ph name="SEARCH_TERM_MARKER" />, yang akan diganti pada waktu kueri dengan teks yang telah dimasukkan oleh pengguna sejauh ini.
 
           Kebijakan ini persifat opsional. Jika tidak disetel, tidak ada hasil penelusuran instan yang akan diberikan.
@@ -540,6 +535,7 @@
 <translation id="3001534538097271560">Menyetel kebijakan ini ke false akan membuat pengguna tidak dapat mengirim beberapa informasi sistem dan konten halaman ke server Google. Jika disetel ke true atau tidak dikonfigurasi, pengguna akan diizinkan mengirim beberapa informasi sistem dan konten halaman ke Safe Browsing untuk membantu mendeteksi situs dan aplikasi berbahaya.
 
       Lihat https://developers.google.com/safe-browsing untuk mendapatkan informasi selengkapnya terkait SafeBrowsing.</translation>
+<translation id="3016255526521614822">Beri akses aplikasi pencatat yang diizinkan di layar kunci <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021409116652377124">Nonaktifkan pencari plugin</translation>
 <translation id="3030000825273123558">Aktifkan pelaporan metrik</translation>
 <translation id="3034580675120919256">Memungkinkan Anda menyetel apakah situs web diizinkan menjalankan JavaScript. Menjalankan JavaScript dapat diizinkan atau ditolak untuk semua situs web. Jika kebijakan ini tidak disetel, 'AllowJavaScript' akan digunakan dan pengguna dapat mengubahnya.</translation>
@@ -871,6 +867,16 @@
       "1412.24.34": update ke versi tertentu ini saja
 
       Peringatan: Sebaiknya jangan mengonfigurasi batasan versi karena dapat mencegah pengguna menerima update software dan perbaikan keamanan penting. Membatasi update ke awalan versi tertentu dapat menimbulkan risiko terhadap pengguna.</translation>
+<translation id="4298509794364745131">Menentukan daftar aplikasi yang dapat diaktifkan sebagai aplikasi pencatat di layar kunci <ph name="PRODUCT_OS_NAME" />.
+
+      Jika aplikasi pencatat yang dipilih diaktifkan di layar kunci, layar kunci akan menampilkan elemen UI untuk peluncuran aplikasi pencatat yang dipilih.
+      Saat diluncurkan, aplikasi akan dapat membuat jendela aplikasi di bagian atas layar kunci, dan membuat item data (catatan) saat layar dalam keadaan terkunci. Aplikasi akan dapat mengimpor catatan yang dibuat ke sesi pengguna utama, saat sesi telah dibuka kuncinya. Saat ini, hanya aplikasi pencatat Chrome yang didukung di layar kunci. 
+
+      Jika kebijakan telah ditetapkan, pengguna hanya diperbolehkan untuk mengaktifkan aplikasi di layar kunci, jika ID ekstensi aplikasi terdapat di nilai daftar kebijakan.
+      Sebagai konsekuensinya, menyetel kebijakan ini pada daftar kosong akan menonaktifkan pencatatan di layar kunci sepenuhnya.
+      Harap diperhatikan bahwa kebijakan yang berisi ID aplikasi tidak berarti pengguna dapat mengaktifkan aplikasi sebagai aplikasi pencatat di layar kunci - misalnya, di Chrome 61, kumpulan aplikasi yang tersedia dibatasi oleh platform.
+
+      Jika kebijakan tidak disetel, tidak akan ada batasan di kumpulan aplikasi yang dapat diaktifkan oleh pengguna di layar kunci yang diterapkan oleh kebijakan.</translation>
 <translation id="4309640770189628899">Untuk mengetahui apakah cipher suite DHE di TLS diaktifkan</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 atau yang lebih baru</translation>
 <translation id="4322842393287974810">Izinkan peluncuran otomatis dengan aplikasi kios tanpa penundaan untuk mengontrol versi <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1255,7 +1261,6 @@
       Jika Anda mengaktifkan setelan ini, SafeSearch di Google Penelusuran akan selalu aktif.
 
       Jika Anda menonaktifkan setelan ini atau tidak menyetel suatu nilai, SafeSearch di Google Penelusuran tidak akan diterapkan.</translation>
-<translation id="5940306398763671235">Mengaktifkan Google Cast</translation>
 <translation id="5946082169633555022">Saluran beta</translation>
 <translation id="5950205771952201658">Mengingat pemeriksaan pembatalan online kegagalan-lunak tidak memberikan manfaat keamanan yang efektif, pemeriksaan tersebut dinonaktifkan secara default di <ph name="PRODUCT_NAME" /> versi 19 dan yang lebih baru. Dengan menyetel kebijakan ini ke true, perilaku sebelumnya akan dipulihkan dan akan dilakukan pemeriksaan OCSP/CRL online.
 
@@ -1578,13 +1583,6 @@
 
           Kebijakan ini hanya diterapkan jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="7302043767260300182">Penundaan kunci layar saat menggunakan daya AC</translation>
-<translation id="7309839952828354215">Menentukan perilaku perangkat yang memiliki ecryptfs dan memerlukan transisi ke enkripsi ext4.
-
-      Jika Anda menyetel kebijakan ke 'DisallowArc', aplikasi Android akan dinonaktifkan untuk semua pengguna di perangkat (termasuk yang telah memiliki enkripsi ext4) dan tidak akan ada migrasi dari ecryptfs ke enkripsi ext4 yang ditawarkan kepada semua pengguna.
-
-      Jika Anda menyetel kebijakan ini ke 'AllowMigration', pengguna dengan direktori beranda ecryptfs akan menawarkan migrasi ke enkripsi ext4 seperlunya (saat ini ketika Android N tersedia di perangkat).
-
-      Jika kebijakan tidak disetel, perangkat akan berperilaku seolah-olah kebijakan 'DisallowArc' yang dipilih.</translation>
 <translation id="7311458740754205918">Jika kebijakan ini disetel ke true atau tidak disetel, laman Tab Baru dapat menampilkan saran konten berdasarkan riwayat penjelajahan, minat, dan lokasi pengguna.
 
       Jika kebijakan disetel ke false, saran konten yang dibuat secara otomatis tidak akan ditampilkan di laman Tab Baru.</translation>
@@ -1661,7 +1659,6 @@
 <translation id="7625444193696794922">Menentukan saluran rilis yang harus dikunci oleh perangkat ini.</translation>
 <translation id="7632724434767231364">Nama pustaka GSSAPI</translation>
 <translation id="7635471475589566552">Mengonfigurasi lokal aplikasi di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah lokal tersebut. Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan menggunakan lokal yang ditentukan. Jika lokal terkonfigurasi tidak didukung, 'en-US' akan digunakan. Jika setelan ini dinonaktifkan atau tidak disetel, <ph name="PRODUCT_NAME" /> akan menggunakan lokal terpilih yang ditentukan pengguna (jika dikonfigurasi), lokal sistem, atau lokal pengganti 'en-US'.</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Menentukan apakah roaming data harus diaktifkan untuk perangkat. Jika disetel ke true, roaming data akan diizinkan. Jika dibiarkan tanpa konfigurasi atau disetel ke false, roaming data tidak akan tersedia.</translation>
 <translation id="7683777542468165012">Penyegaran Kebijakan Dinamis</translation>
 <translation id="7694807474048279351">Menjadwalkan mulai ulang otomatis setelah pembaruan <ph name="PRODUCT_OS_NAME" /> diterapkan.
@@ -1776,6 +1773,7 @@
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Kebijakan ini tidak lagi didukung. Mengaktifkan penggunaan STUN dan server relay saat menyambungkan ke klien jarak jauh. Jika setelan ini diaktifkan, maka komputer ini dapat menemukan dan tersambung ke komputer host jarak jauh bahkan jika dipisahkan oleh firewall. Jika setelan ini dinonaktifkan dan sambungan UDP keluar difilter oleh firewall, maka komputer ini hanya dapat tersambung ke komputer host dalam jaringan lokal.</translation>
 <translation id="7980227303582973781">Tidak ada batasan khusus</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Putar layar sebesar 0 derajat</translation>
 <translation id="8044493735196713914">Laporkan mode boot perangkat</translation>
 <translation id="8050080920415773384">Pencetakan Asli</translation>

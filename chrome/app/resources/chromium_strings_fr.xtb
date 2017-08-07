@@ -147,6 +147,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="5862307444128926510">Bienvenue dans Chromium</translation>
 <translation id="5877064549588274448">La version a été modifiée. Redémarrez votre appareil pour appliquer les modifications.</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
+<translation id="5902536751647951209">Échec du certificat d'authentification. Pour en savoir plus, connectez-vous de nouveau à Chromium ou contactez votre administrateur. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Mise à jour presque terminée. Pour la finaliser, veuillez redémarrer votre appareil.</translation>
 <translation id="5942520288919337908">L'extension "<ph name="EXTENSION_NAME" />" a été ajoutée à Chromium.</translation>
 <translation id="59625444380784159">Les coordonnées de vos contacts peuvent vous aider à remplir les formulaires plus rapidement dans Chromium.</translation>
@@ -220,6 +221,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="7745317241717453663">Cette action aura pour effet de supprimer vos données de navigation de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chromium en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Le programme d'installation n'a pas pu créer de répertoire temporaire. Vérifiez que le disque a suffisamment d'espace libre et que vous disposez des autorisations nécessaires pour installer le logiciel.</translation>
 <translation id="7756122083761163394">Les données de navigation de cet utilisateur vont être supprimées de cet appareil. Pour récupérer les données, connectez-vous à Chrome en tant que $2.</translation>
+<translation id="7774736947049807614">Échec du certificat d'authentification. Pour en savoir plus, connectez-vous de nouveau à Chromium en tant que <ph name="USER_NAME" /> ou contactez votre administrateur. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7937630085815544518">Vous étiez connecté à Chromium en tant que <ph name="USER_EMAIL_ADDRESS" />. Veuillez utiliser le même compte pour vous reconnecter.</translation>
 <translation id="795025003224538582">Ne pas redémarrer</translation>
 <translation id="7962572577636132072">Chromium est automatiquement mis à jour pour vous permettre de toujours disposer de la dernière version.</translation>

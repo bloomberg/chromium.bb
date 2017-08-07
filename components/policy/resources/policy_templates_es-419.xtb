@@ -310,7 +310,6 @@
 <translation id="2299220924812062390">Especificar una lista de complementos habilitados</translation>
 <translation id="2309390639296060546">Configuración de geolocalización predeterminada</translation>
 <translation id="2312134445771258233">Te permite configurar las páginas que se cargan al iniciar. El contenido de la lista "Direcciones URL que se abrirán al iniciar" se ignora a menos que se haya seleccionado "Abrir una lista de direcciones URL en acción al iniciar".</translation>
-<translation id="23323722127921515">Muestra el ícono de la barra de herramientas de Google Cast</translation>
 <translation id="2337466621458842053">Te permite configurar una lista de patrones de URL que especifican los sitios a los que se les permite mostrar imágenes. Si esta política no se configura, se usará el valor predeterminado global para todos los sitios, ya sea de la política "DefaultImagesSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="2372547058085956601">Establece la demora del acceso automático a la sesión pública.
 
@@ -395,7 +394,6 @@
 
       Si se establece esta política en False, se mostrará un mensaje de error en lugar del mensaje de configuración de red.</translation>
 <translation id="2498238926436517902">Siempre ocultar automáticamente los archivos</translation>
-<translation id="2503514368596117142">Configura las políticas para Google Cast, una función que permite que los usuarios envíen el contenido de las pestañas, los sitios o el escritorio desde el navegador a pantallas y sistemas de sonido remotos.</translation>
 <translation id="2514328368635166290">Especifica la URL de ícono favorita del proveedor de búsqueda predeterminado. Esta política es opcional. Si no se configura, no se presentará ningún ícono al proveedor de búsqueda. Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
 <translation id="2516600974234263142">Permite habilitar la impresión en <ph name="PRODUCT_NAME" /> y evitar que los usuarios modifiquen esta configuración.
 
@@ -408,9 +406,6 @@
 <translation id="2529880111512635313">Configurar la lista de extensiones y apps que se instalarán obligatoriamente</translation>
 <translation id="253135976343875019">Advertencia de inactividad cuando el dispositivo está conectado a alimentación de CA</translation>
 <translation id="2552966063069741410">Zona horaria</translation>
-<translation id="2558917182010914102">Si la política se establece como verdadera o no se establece, se habilitará Google Cast y los usuarios podrán iniciar esta función desde el menú de apps, los menús contextuales de las páginas, los controles de medios de los sitios web compatibles con Cast y desde el ícono de la barra de herramientas de Cast (en caso de que aparezca).
-
-          Si esta política se establece como falsa, se inhabilitará Google Cast.</translation>
 <translation id="2562339630163277285">Especifica la URL del motor de búsqueda que se usa para proporcionar resultados al instante. La URL debe contener el string "<ph name="SEARCH_TERM_MARKER" />", el cual se reemplazará en el momento de la consulta con el texto que el usuario haya ingresado hasta entonces.
 
           Esta política es opcional. Si no se establece, no se mostrarán resultados de la búsqueda al instante.
@@ -533,6 +528,7 @@
 <translation id="3001534538097271560">Configura esta política como falsa para evitar que los usuarios elijan mandar determinada información del sistema y contenido de páginas a los servidores de Google. Si esta opción se establece como verdadera o no se configura, los usuarios podrán enviar determinada información del sistema y contenido de páginas a Navegación segura para colaborar en la detección de apps y sitios peligrosos.
 
       Consulta https://developers.google.com/safe-browsing para obtener más información sobre Navegación segura.</translation>
+<translation id="3016255526521614822">Incluir en la lista blanca las apps para tomar notas que se permiten en la pantalla bloqueada de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021409116652377124">Inhabilitar el buscador de complemento</translation>
 <translation id="3030000825273123558">Activar los informes estadísticos</translation>
 <translation id="3034580675120919256">Te permite configurar si los sitios web pueden ejecutar JavaScript. La ejecución de JavaScript puede permitirse para todos los sitios web o denegarse para todos los sitios web. Si esta política no se configura, se usará "AllowJavaScript" y el usuario podrá cambiarla.</translation>
@@ -863,6 +859,16 @@
       "1412.24.34": Solo se actualiza a esta versión específica
 
       Advertencia: No se recomienda configurar restricciones de versión, ya que pueden evitar que los usuarios reciban actualizaciones de software o correcciones de seguridad críticas. Restringir las actualizaciones a una versión específica puede poner en riesgo a los usuarios.</translation>
+<translation id="4298509794364745131">Especifica una lista de las apps que se pueden habilitar como una app para tomar notas en la pantalla bloqueada de <ph name="PRODUCT_OS_NAME" />.
+
+      Si la app preferida para tomar notas se habilita en la pantalla bloqueada, esta pantalla incluirá el elemento de IU para ejecutar la app preferida para tomar notas.
+      Cuando se ejecuta la app, podrá crear una ventana en la parte superior de la pantalla bloqueada y crear elementos (notas) en este contexto. La app podrá importar las notas creadas a la sesión del usuario principal, cuando la sesión se desbloquee. Actualmente, solo las apps para tomar notas de Chrome son compatibles con la pantalla bloqueada.
+
+      Si se establece la política, el usuario podrá habilitar una app en la pantalla bloqueada, solo si la ID de extensión de la app aparece en la lista de valores de la política.
+      Como consecuencia, si se establece esta política con una lista vacía, se inhabilitará la toma de notas en la pantalla bloqueada por completo.
+      Ten en cuenta que la política que contiene la ID de una app no implica que el usuario podrá habilitar la app para tomar notas en la pantalla bloqueada. Por ejemplo, en Chrome 61, la plataforma aplica otras restricciones al conjunto de apps disponibles.
+
+      Si la política no se configura, la política no restringe el conjunto de apps que el usuario puede habilitar en la pantalla bloqueada.</translation>
 <translation id="4309640770189628899">Si se habilitan los paquetes de encriptación DHE en TLS</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o posterior</translation>
 <translation id="4322842393287974810">Permitir que la aplicación de kiosko con lanzamiento automático sin tiempo de espera controle la versión de <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1244,7 +1250,6 @@
       Si se habilita esta opción, SafeSearch está siempre activado en la Búsqueda de web de Google.
 
       Si se inhabilita esta opción o no se establece un valor, no se aplicará SafeSearch en la Búsqueda web de Google.</translation>
-<translation id="5940306398763671235">Habilita Google Cast</translation>
 <translation id="5946082169633555022">Canal beta</translation>
 <translation id="5950205771952201658">Dado que las comprobaciones de revocación en línea de fallos leves no proporcionan ventajas de seguridad efectivas, están inhabilitadas de forma predeterminada en la versión 19 y versiones posteriores de <ph name="PRODUCT_NAME" />. Al establecer el valor de esta política en true, se restaurará el comportamiento anterior y se realizarán comprobaciones OCSP/CRL en línea.
 
@@ -1567,13 +1572,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
 <translation id="7302043767260300182">Demora de bloqueo de pantalla con alimentación de CA</translation>
-<translation id="7309839952828354215">Especifica el comportamiento de un dispositivo que se ha enviado con eCryptfs y necesita una transición a la encriptación ext4.
-
-      Si estableces esta política como "DisallowArc", se inhabilitarán las apps de Android para todos los usuarios en el dispositivo (incluidos los que ya tienen la encriptación ext4) y no se le ofrecerá a ningún usuario la posibilidad de migrar de la encriptación eCryptfs a la ext4.
-
-      Si estableces esta política como "AllowMigration", los usuarios que tengan directorios principales con eCryptfs podrán migrarlos a la encriptación ext4 en caso de ser necesario (actualmente, cuando está disponible Android N en el dispositivo).
-
-      Si esta política no se establece, el dispositivo se comportará como cuando se elige "DisallowArc".</translation>
 <translation id="7311458740754205918">Si esta política se establece como verdadera o no se establece, la página Nueva pestaña mostrará sugerencias de contenido basadas en la ubicación, los intereses o el historial de navegación del usuario.
 
       Si se establece como falsa, la página Nueva pestaña no mostrará sugerencias de contenido generadas de forma automática.</translation>
@@ -1650,7 +1648,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7625444193696794922">Especifica el canal de publicaciones al que debe conectarse este dispositivo.</translation>
 <translation id="7632724434767231364">Nombre de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Si se establece la configuración regional de la aplicación en <ph name="PRODUCT_NAME" />, los usuarios no podrán cambiarla. Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> usará aquella que se especificó. Si la configuración regional no es compatible, se usará "en-US" en su lugar. Si esta opción se inhabilita o no se configura, <ph name="PRODUCT_NAME" /> usará la configuración regional preferida que haya especificado el usuario (si está configurada), la configuración regional del sistema o la configuración regional alternativa "en-US".</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Determina si la itinerancia de datos debe activarse en el dispositivo. Si el valor se establece en "true", se permite la itinerancia de datos. Si no se configura o si se establece en "false", la itinerancia de datos no estará disponible.</translation>
 <translation id="7683777542468165012">Actualizar política dinámica</translation>
 <translation id="7694807474048279351">Programa un reinicio automático después de aplicar una actualización de <ph name="PRODUCT_OS_NAME" />.
@@ -1765,6 +1762,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política ya no es compatible. Habilita el uso de servidores STUN y de retransmisión cuando se establece una conexión con un cliente remoto. Si se habilita esta configuración, esta máquina podrá descubrir y conectarse a máquinas host remotas, incluso si están separadas por un firewall. Si se inhabilita esta configuración y el firewall filtra las conexiones UDP de salida, esta máquina solo se conectará a máquinas host dentro de la red local.</translation>
 <translation id="7980227303582973781">Sin restricciones especiales</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotar la pantalla 0 grados</translation>
 <translation id="8044493735196713914">Modo de notificación de inicio de dispositivo</translation>
 <translation id="8050080920415773384">Impresión nativa</translation>

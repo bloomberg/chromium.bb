@@ -217,6 +217,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="7196020411877309443">Miks mulle seda näidatakse?</translation>
 <translation id="7242029209006116544">Logite sisse hallatud kontoga ja annate selle administraatorile üle oma Google Chrome'i profiili juhtimise. Teie Chrome'i andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME" />. Saate need andmed Google'i kontode juhtpaneeli kaudu kustutada, kuid te ei saa neid seostada teise kontoga. Võite olemasolevate Chrome'i andmete eraldi hoidmiseks luua aga uue profiili. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Arvuti ei saa varsti enam Google Chrome'i värskendusi, kuna Windows XP ja Windows Vista tugi lõpeb.</translation>
+<translation id="7330164299247909639">Autentimissertifikaadi tõrge. Logige Google Chrome'i uuesti sisse kasutajana <ph name="USER_NAME" /> või võtke lisateabe saamiseks ühendust administraatoriga. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Uus aken</translation>
 <translation id="7369650938475876456">Kasutage Chrome'i loodud tugevat parooli</translation>
 <translation id="7398801000654795464">Olite Chrome'i sisse logitud kasutajana <ph name="USER_EMAIL_ADDRESS" />. Kasutage uuesti sisselogimiseks sama kontot.</translation>
@@ -280,6 +281,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8914504000324227558">Käivita Chrome uuesti</translation>
 <translation id="9026991721384951619">Chrome OS ei saanud andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="9067395829937117663">Google Chrome vajab operatsioonisüsteemi Windows 7 või uuemat versiooni.</translation>
+<translation id="9084668267983921457">Autentimissertifikaadi tõrge. Logige Google Chrome'i uuesti sisse või võtke lisateabe saamiseks ühendust administraatoriga. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Hoiatus:<ph name="END_BOLD" /> Google Chrome ei saa takistada rakendusi teie sirvimisajalugu talletamast. Kui soovite laienduse inkognitorežiimis keelata, siis tühistage see valik.</translation>
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="919706545465235479">Sünkroonimise alustamiseks värskendage Chrome'i</translation>

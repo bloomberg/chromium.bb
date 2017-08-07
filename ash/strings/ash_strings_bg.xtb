@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">USB-C устройство (предният порт)</translation>
 <translation id="1013923882670373915">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Моля, въведете на него следния ПИН код: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">Автоматично скриване на лавицата</translation>
-<translation id="1127238861555034875">Режим на лупа</translation>
 <translation id="1153356358378277386">Сдвоени устройства</translation>
 <translation id="1195412055398077112">допълнителна област</translation>
 <translation id="1247372569136754018">Микрофон (вътрешен)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478">Оставащо време: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 адрес: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Това устройство се управлява корпоративно</translation>
+<translation id="1746730358044914197">Методите на въвеждане са конфигурирани от администратора ви.</translation>
 <translation id="1747827819627189109">Екранната клавиатура е активирана</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi е изключен.</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">Комбинацията за отваряне на диспечера на задачите е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
 <translation id="1923539912171292317">Автоматични кликвания</translation>
 <translation id="1942830294380034169">Бутон „Препълване“</translation>
+<translation id="1951012854035635156">Асистент</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl + клавиш „Търсене“ + H</translation>
 <translation id="2049639323467105390">Това устройство се управлява от <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Вертикално</translation>
+<translation id="2067602449040652523">Яркост на клавиатурата</translation>
 <translation id="207439088875642105">Това е профил за деца, управляван от <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Спиране на предаването на „<ph name="TAB_NAME" />“ към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="2127372758936585790">Зарядно устройство с малка мощност</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">Изход за всички</translation>
 <translation id="2292698582925480719">Мащаб на показване</translation>
 <translation id="2303600792989757991">Превключване на общия преглед на прозорците</translation>
+<translation id="2338501278241028356">Включете Bluetooth, за да бъдат открити устройствата в близост</translation>
 <translation id="2352467521400612932">Настройки за писалката</translation>
 <translation id="2354174487190027830">„<ph name="NAME" />“ се активира</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">Мобилни данни</translation>
 <translation id="3236488194889173876">Няма мобилни мрежи</translation>
 <translation id="3294437725009624529">Гост</translation>
-<translation id="3335772982573114336">Нова бележка</translation>
 <translation id="3364721542077212959">Инструменти за писане</translation>
 <translation id="3368922792935385530">Установена е връзка</translation>
 <translation id="3371140690572404006">устройство с USB-C (предният десен порт)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">Възможността за правене на екранни снимки е деактивирана от администратора ви.</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
 <translation id="3995138139523574647">устройство с USB-C (задният десен порт)</translation>
+<translation id="4017989525502048489">Лазерна показалка</translation>
 <translation id="4279490309300973883">Дублиране</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">Лупа</translation>
 <translation id="4378551569595875038">Установява се връзка...</translation>
 <translation id="4421231901400348175">Споделяте с/ъс <ph name="HELPER_NAME" /> контрола върху екрана си чрез отдалечено съдействие.</translation>
 <translation id="4430019312045809116">Звук</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">Тази мрежа е деактивирана от администратора ви.</translation>
 <translation id="7067196344162293536">Автоматично завъртане</translation>
 <translation id="7098389117866926363">Устройство с USB-C (левият порт на гърба)</translation>
-<translation id="7129360219436193655">Режим на лазерна показалка</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Старата разделителна способност ще се възстанови след <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7199454189089571166">Режим с асистент</translation>
 <translation id="7246339268451149667">Да се активира ли отключването с отпечатък?</translation>
 <translation id="7256634071279256947">Заден микрофон</translation>
 <translation id="7348093485538360975">Екранна клавиатура</translation>
@@ -253,6 +255,7 @@
 <translation id="8185286464235484130">Уведомете ни как се справяме, като отговорите на няколко въпроса.</translation>
 <translation id="8190698733819146287">Персонализиране на езиците и въвеждането...</translation>
 <translation id="8308637677604853869">Предишно меню</translation>
+<translation id="8351131234907093545">Създаване на бележка</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433186206711564395">Настройки на мрежата</translation>
 <translation id="8433977262951327081">Комбинацията за показване в лавицата на балончето с менюто за опциите за въвеждане е променена. Моля, използвайте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>

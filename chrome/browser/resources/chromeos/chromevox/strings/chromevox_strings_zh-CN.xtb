@@ -12,6 +12,7 @@
 <translation id="1044777062731150180">无标题</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">输入无效</translation>
+<translation id="1080471004309605942">斜体文字的末尾</translation>
 <translation id="1082209053475788238">不存在上一个6级标题。</translation>
 <translation id="1088219014394087294">无标题。</translation>
 <translation id="1106741348836243114">开启或关闭声音反馈（耳标）。</translation>
@@ -120,6 +121,7 @@
 <translation id="225732394367814946">加快语速</translation>
 <translation id="2267945578749931355">下一个字符</translation>
 <translation id="2281234842553884450">上一个滑块</translation>
+<translation id="2294136146931447363">斜体文字的开头</translation>
 <translation id="2318372665160196757">主体内容</translation>
 <translation id="2329324941084714723">标签面板</translation>
 <translation id="2344193891939537199">日期时间控件</translation>
@@ -342,6 +344,7 @@
 <translation id="4039983576244166038">行标题为空</translation>
 <translation id="4042843249978639960">不存在下一个2级标题。</translation>
 <translation id="4043348641337972076">不存在上一个ARIA地标。</translation>
+<translation id="4045764028670444336">拼写有误的字词的开头</translation>
 <translation id="4047216625641135770">标记</translation>
 <translation id="404803211695627272"><ph name="V1" />到<ph name="V2" /></translation>
 <translation id="4054936709456751127">状态</translation>
@@ -396,6 +399,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{1个斜线符号}other{#个斜线符号}}</translation>
 <translation id="4547556996012970016">下一个5级标题</translation>
 <translation id="4562381607973973258">标头标记</translation>
+<translation id="4570424871453628777">拼写有误的字词的末尾</translation>
 <translation id="4591507479202817876">，已选中</translation>
 <translation id="4597532268155981612">表单</translation>
 <translation id="4597896406374528575">4月</translation>
@@ -422,6 +426,7 @@
 <translation id="4827410568042294688">已取消选中</translation>
 <translation id="4842108708071771135">不存在下一个块引用。</translation>
 <translation id="4844625982113518938">按任意键可听到相应键名的读音。按 Ctrl+W 组合键可关闭学习模式。</translation>
+<translation id="4846487886195635104">划删除线的文字的末尾</translation>
 <translation id="4848993367330139335">定时器</translation>
 <translation id="4850023505158945298">上一个类似元素。</translation>
 <translation id="485011152882364255">在 ChromeVox Next 中，搜索键可以用作辅助键。大多数 ChromeVox 快捷键是使用搜索键搭配其他按键。此外，进行导航时还将用到箭头键。</translation>
@@ -448,7 +453,6 @@
 <translation id="5000760171916499057">无表单。</translation>
 <translation id="5005670136041063723">不存在其他类似元素。</translation>
 <translation id="501473567976723023">1月</translation>
-<translation id="5040591161308540832">表 $1，$2 x $3</translation>
 <translation id="5041394372352067729">将盲文显示移动到页首</translation>
 <translation id="5042770794184672516">调大朗读音量</translation>
 <translation id="5050015258024679800">上一个4级标题</translation>
@@ -576,6 +580,8 @@
 <translation id="6006064078185310784">{COUNT,plural, =1{1个反斜线符号}other{#个反斜线符号}}</translation>
 <translation id="6037602951055904232">向前平移</translation>
 <translation id="6044160928851315051">调暗屏幕</translation>
+<translation id="605761629541007221">粗体文字的末尾</translation>
+<translation id="6065293622157674001">语法错误的开头</translation>
 <translation id="6082768461603900813">基本导航操作</translation>
 <translation id="6092707270915298410">链接末尾</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -667,6 +673,7 @@
 <translation id="712735679809149106">字词回显</translation>
 <translation id="713824876195128146">下一个块引用</translation>
 <translation id="7143034430156387447">在 6 点式盲文和 8 点式盲文之间切换</translation>
+<translation id="7161425887892204659">匹配文字的末尾</translation>
 <translation id="7161771961008409533">弹出式按钮</translation>
 <translation id="7165714724802225287">当前显示样式为交错。</translation>
 <translation id="7167657087543110">字符回显</translation>
@@ -698,6 +705,7 @@
 <translation id="7370432716629432284">{COUNT,plural, =1{1个&amp;号}other{#个&amp;号}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">即将离开表格。</translation>
+<translation id="7392145451309930991">匹配文字的开头</translation>
 <translation id="739763518212184081">上一行</translation>
 <translation id="7400575256015741911">检测到拼写错误</translation>
 <translation id="7408482676469142474">表格标记</translation>
@@ -729,7 +737,9 @@
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">上一个单选按钮</translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7712273827621319827">带下划线的文字的开头</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />，<ph name="NAME" />，密码文本框</translation>
+<translation id="7773125101284285285">带下划线的文字的末尾</translation>
 <translation id="7776293189010177726">打开 ChromeVox 菜单</translation>
 <translation id="7805247615045262757">默认导航</translation>
 <translation id="7805768142964895445">状态</translation>
@@ -759,6 +769,7 @@
 <translation id="8065607967589909823">当前选择为</translation>
 <translation id="8066678206530322333">横幅</translation>
 <translation id="8076492880354921740">标签页</translation>
+<translation id="8091452896542422286">空格</translation>
 <translation id="8104178626892949749">按 ChromeVox 的 O 键、N 键，即可详细了解 ChromeVox Next。</translation>
 <translation id="8110647606445335195">无ARIA地标。</translation>
 <translation id="8153880621934657047">不在表格内。</translation>
@@ -780,6 +791,7 @@
 <translation id="8374154622594089836">月</translation>
 <translation id="8378855320830505539">区域</translation>
 <translation id="8382679411218029383">自动填充内嵌和列表</translation>
+<translation id="8384907037845425279">粗体文字的开头</translation>
 <translation id="8428603554127842284"><ph name="DEPTH" />级</translation>
 <translation id="842922884199979200">不存在下一个3级标题。</translation>
 <translation id="8430049249787218991">mnubr</translation>
@@ -791,6 +803,7 @@
 <translation id="8476408756881832830">在 ChromeVox 朗读时暂停播放音频</translation>
 <translation id="8476508772960940536">窗口概览</translation>
 <translation id="8503360654911991865">降低导航精细度</translation>
+<translation id="8504695234784218301">语法错误的末尾</translation>
 <translation id="8520472399088452386">数值调节按钮</translation>
 <translation id="8538744478902126321">推测当前单元格的行标题</translation>
 <translation id="8540054775867439484">转至顶部</translation>
@@ -868,4 +881,5 @@
 <translation id="962913030769097253">下一个1级标题</translation>
 <translation id="973955474346881951">启用/停用粘滞模式</translation>
 <translation id="976849232629612000">无菜单项。</translation>
+<translation id="995852680044449248">划删除线的文字的开头</translation>
 </translationbundle>

@@ -12,6 +12,7 @@
 <translation id="1044777062731150180">Ingen overskrifter</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Ugyldig inndata</translation>
+<translation id="1080471004309605942">Slutt på kursiv</translation>
 <translation id="1082209053475788238">Det finnes ikke tidligere overskrifter på nivå 6.</translation>
 <translation id="1088219014394087294">Det fins ingen overskrifter.</translation>
 <translation id="1106741348836243114">Slå tilbakemelding via lydsignaler av eller på.</translation>
@@ -121,6 +122,7 @@
 <translation id="225732394367814946">Øk talehastigheten</translation>
 <translation id="2267945578749931355">Neste tegn</translation>
 <translation id="2281234842553884450">Forrige glidebryter</translation>
+<translation id="2294136146931447363">Begynnelse på kursiv</translation>
 <translation id="2318372665160196757">Hovedelement</translation>
 <translation id="2329324941084714723">Fanepanel</translation>
 <translation id="2344193891939537199">Kontroll av dato/tidspunkt</translation>
@@ -343,6 +345,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="4039983576244166038">Tom radoverskrift</translation>
 <translation id="4042843249978639960">Det finnes ikke flere overskrifter på nivå 2.</translation>
 <translation id="4043348641337972076">Det finnes ingen tidligere ARIA-landemerker.</translation>
+<translation id="4045764028670444336">Begynnelse på stavefeil</translation>
 <translation id="4047216625641135770">Mark-tag</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
@@ -397,6 +400,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="4532633738839459153">{COUNT,plural, =1{skråstrek}other{# skråstreker}}</translation>
 <translation id="4547556996012970016">Neste overskrift på nivå 5</translation>
 <translation id="4562381607973973258">Topptekst</translation>
+<translation id="4570424871453628777">Slutt på stavefeil</translation>
 <translation id="4591507479202817876">, valgt</translation>
 <translation id="4597532268155981612">skjema</translation>
 <translation id="4597896406374528575">April</translation>
@@ -423,6 +427,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="4827410568042294688">fjernet fra utvalget</translation>
 <translation id="4842108708071771135">Det finnes ikke flere blokksitat-elementer.</translation>
 <translation id="4844625982113518938">Trykk på en hvilken som helst tast for å finne ut hva den heter. Du kan lukke læremodusen ved å trykke på Ctrl+W.</translation>
+<translation id="4846487886195635104">Slutt på gjennomstreking</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Forrige lignende element.</translation>
 <translation id="485011152882364255">Søketasten er modifikatornøkkelen i ChromeVox Next. De fleste hurtigtastene i ChromeVox starter med søketasten. Du bruker også piltastene for å navigere.</translation>
@@ -449,7 +454,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="5000760171916499057">Det finnes ingen skjemaer.</translation>
 <translation id="5005670136041063723">Det er ingen flere lignende elementer.</translation>
 <translation id="501473567976723023">Januar</translation>
-<translation id="5040591161308540832">Tabell $1, $2 x $3</translation>
 <translation id="5041394372352067729">Flytt leselisten til toppen av siden</translation>
 <translation id="5042770794184672516">Øk talevolumet</translation>
 <translation id="5050015258024679800">Forrige overskrift på nivå 4</translation>
@@ -577,6 +581,8 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{omvendt skråstrek}other{# omvendte skråstreker}}</translation>
 <translation id="6037602951055904232">Panorer frem</translation>
 <translation id="6044160928851315051">Gjør skjermen mørk</translation>
+<translation id="605761629541007221">Slutt på fet skrift</translation>
+<translation id="6065293622157674001">Begynnelse på grammatikkfeil</translation>
 <translation id="6082768461603900813">Grunnleggende navigering</translation>
 <translation id="6092707270915298410">Slutten av linken</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -668,6 +674,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="712735679809149106">ordekko</translation>
 <translation id="713824876195128146">Neste blokksitat-element</translation>
 <translation id="7143034430156387447">Bytt mellom 6- og 8-punkts punktskrift</translation>
+<translation id="7161425887892204659">Slutt på samsvarende tekst</translation>
 <translation id="7161771961008409533">Knapp med forgrunnsvindu</translation>
 <translation id="7165714724802225287">Nåværende visningsstil er innfelt.</translation>
 <translation id="7167657087543110">tegnekko</translation>
@@ -699,6 +706,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{og-tegn}other{# og-tegn}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Forlater tabellen.</translation>
+<translation id="7392145451309930991">Begynnelse på samsvarende tekst</translation>
 <translation id="739763518212184081">Forrige linje</translation>
 <translation id="7400575256015741911">En stavefeil er oppdaget</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -730,7 +738,9 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Forrige alternativknapp</translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7712273827621319827">Begynnelse på understrek</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, tekstfelt for passord</translation>
+<translation id="7773125101284285285">Slutt på understrek</translation>
 <translation id="7776293189010177726">Åpne ChromeVox-menyene</translation>
 <translation id="7805247615045262757">standardnavigasjon</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -760,6 +770,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8065607967589909823">Utvalget er</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">Faner</translation>
+<translation id="8091452896542422286">Mellomrom</translation>
 <translation id="8104178626892949749">For å finne ut mer om ChromeVox Next, trykk på ChromeVox o, n.</translation>
 <translation id="8110647606445335195">Det finnes ingen ARIA-landmerker.</translation>
 <translation id="8153880621934657047">Ikke inne i tabellen.</translation>
@@ -781,6 +792,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8374154622594089836">måned</translation>
 <translation id="8378855320830505539">Region</translation>
 <translation id="8382679411218029383">Autofullføring – innebygd og liste</translation>
+<translation id="8384907037845425279">Begynnelse på fet skrift</translation>
 <translation id="8428603554127842284">nivå <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">Det finnes ikke flere overskrifter på nivå 3.</translation>
 <translation id="8430049249787218991">mnubr</translation>
@@ -792,6 +804,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8476408756881832830">Sett avspillingen på pause når ChromeVox snakker</translation>
 <translation id="8476508772960940536">vindusoversikt</translation>
 <translation id="8503360654911991865">Reduser detaljnivået på navigeringen</translation>
+<translation id="8504695234784218301">Slutt på grammatikkfeil</translation>
 <translation id="8520472399088452386">Verdisettingsknapp</translation>
 <translation id="8538744478902126321">Gjett radoverskriften i den nåværende cellen</translation>
 <translation id="8540054775867439484">Legges sammen øverst</translation>
@@ -869,4 +882,5 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="962913030769097253">Neste overskrift på nivå 1</translation>
 <translation id="973955474346881951">Slå av eller på trege taster</translation>
 <translation id="976849232629612000">Ingen elementer.</translation>
+<translation id="995852680044449248">Begynnelse på gjennomstreking</translation>
 </translationbundle>

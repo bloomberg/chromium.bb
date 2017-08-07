@@ -278,6 +278,7 @@
 <translation id="3150653042067488994">తాత్కాలిక సర్వర్ లోపం</translation>
 <translation id="3154506275960390542">ఈ పేజీలో ఉన్న ఫారమ్‌ని సురక్షితంగా సమర్పించలేకపోవచ్చు. బదిలీ చేయబడే సమయంలో మీరు పంపే డేటాని ఇతరులు వీక్షించవచ్చు లేదా సర్వర్ స్వీకరించే డేటాని మార్చడం కోసం హ్యాకర్‌లు దీనిని సవరించవచ్చు.</translation>
 <translation id="3157931365184549694">పునరుద్ధరించు</translation>
+<translation id="3162559335345991374">మీరు ఉపయోగిస్తున్న Wi-Fiకి మీరు దాని లాగిన్ పేజీని సందర్శించడం అవసరం.</translation>
 <translation id="3167968892399408617">మీరు అజ్ఞాత ట్యాబ్‌ల్లో వీక్షించిన పేజీలు మీ అన్ని అజ్ఞాత ట్యాబ్‌లను మూసివేసిన అనంతరం మీ బ్రౌజర్ చరిత్ర, కుక్కీ స్టోర్ లేదా శోధన చరిత్రలో ఉంచబడవు. మీరు డౌన్‌లోడ్ చేసే ఏవైనా ఫైల్‌లు లేదా మీరు సృష్టించే ఏవైనా బుక్‌మార్క్‌లు అలాగే ఉంచబడతాయి.</translation>
 <translation id="3169472444629675720">కనుగొను</translation>
 <translation id="3174168572213147020">దీవి</translation>
@@ -365,10 +366,12 @@
 <translation id="3679803492151881375">క్రాష్ నివేదిక <ph name="CRASH_TIME" />కి సంగ్రహించబడింది, <ph name="UPLOAD_TIME" />కి అప్‌లోడ్ చేయబడింది</translation>
 <translation id="3681007416295224113">సర్టిఫికెట్ సమాచారం</translation>
 <translation id="3690164694835360974">లాగిన్ సురక్షితం కాదు</translation>
+<translation id="3704162925118123524">మీరు ఉపయోగించే నెట్‌వర్క్‌కి మీరు దాని లాగిన్ పేజీని సందర్శించడం అవసరం కావచ్చు.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">లోడ్ అవుతోంది...</translation>
 <translation id="3712624925041724820">లైసెన్స్‌లు అయిపోయాయి</translation>
 <translation id="3714780639079136834">మొబైల్ డేటా లేదా Wi-Fiని ఆన్ చేయడం</translation>
+<translation id="3715597595485130451">Wi-Fiకి కనెక్ట్ చేయండి</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />ప్రాక్సీ, ఫైర్‌వాల్ మరియు DNS కాన్ఫిగరేషన్‌ను తనిఖీ చేయడం<ph name="END_LINK" /></translation>
 <translation id="3736520371357197498">మీ భద్రతకు వాటిల్లే ఆపదల గురించి మీకు అర్థం అయ్యి ఉంటే, ప్రమాదకరమైన ప్రోగ్రామ్‌లు తీసివేయబడటానికి ముందే <ph name="BEGIN_LINK" />ఈ అసురక్షితమైన సైట్‌ను సందర్శించవచ్చు<ph name="END_LINK" />.</translation>
 <translation id="3739623965217189342">మీరు కాపీ చేసిన లింక్</translation>
@@ -376,6 +379,7 @@
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />లోని హ్యాకర్‌లు మిమ్మల్ని సాఫ్ట్‌వేర్ ఇన్‌స్టాల్ చేసే విధంగా లేదా మీ వ్యక్తిగత సమాచారాన్ని (ఉదాహరణకు, పాస్‌వర్డ్‌లు, ఫోన్ నంబర్‌లు లేదా క్రెడిట్ కార్డ్‌లు) బహిర్గతం చేసే విధంగా మిమ్మల్ని మాయ చేయవచ్చు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">సర్వర్ లోపం వల్ల అనువాదం విఫలమైంది.</translation>
 <translation id="3759461132968374835">మీకు ఇటీవల నివేదించిన క్రాష్‌లు లేవు. క్రాష్‌ నివేదన నిలిపివేసినపుడు ఏర్పడే క్రాష్‌లు ఇక్కడ కనిపించవు.</translation>
+<translation id="3765032636089507299">సురక్షిత బ్రౌజింగ్ పేజీ నిర్మాణంలో ఉంది.</translation>
 <translation id="3778403066972421603">ఈ కార్డ్‌ని మీ Google ఖాతాకు మరియు ఈ పరికరంలో సేవ్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">గడువు ముగింపు <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -546,6 +550,7 @@
     <ph name="END_LIST" /></translation>
 <translation id="5297526204711817721">ఈ సైట్‌కు మీ కనెక్షన్ ప్రైవేట్ కాదు. ఎప్పుడైనా VR మోడ్ నుండి నిష్క్రమించడానికి, హెడ్‌సెట్‌ను తీసివేసి, వెనుకకు నొక్కండి.</translation>
 <translation id="5299298092464848405">విధానాన్ని అన్వయించడంలో లోపం</translation>
+<translation id="5308380583665731573">కనెక్ట్ చేయండి</translation>
 <translation id="5308689395849655368">క్రాష్ నివేదిక నిలిపివెయ్యబడింది.</translation>
 <translation id="5317780077021120954">సేవ్ చేయి</translation>
 <translation id="5327248766486351172">పేరు</translation>
@@ -785,6 +790,7 @@
 <translation id="7481312909269577407">ఫార్వార్డ్</translation>
 <translation id="7485870689360869515">డేటా కనుగొనబడలేదు.</translation>
 <translation id="7508255263130623398">అందించబడిన విధాన పరికర id ఖాళీగా ఉంది లేదా ప్రస్తుత పరికర idకి సరిపోలలేదు</translation>
+<translation id="7511955381719512146">మీరు ఉపయోగిస్తున్న Wi-Fiకి మీరు <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ని సందర్శించడం అవసరం.</translation>
 <translation id="7514365320538308">డౌన్‌లోడ్ చేయి</translation>
 <translation id="7518003948725431193">వెబ్ చిరునామాకు వెబ్‌పేజీ కనుగొనబడలేదు: <ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -840,6 +846,7 @@
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome నుండి ఫారమ్ సూచనను తీసివేయాలా?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' కోసం <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> కనుగొనబడ్డాయి</translation>
+<translation id="782886543891417279">మీరు ఉపయోగిస్తున్న Wi-Fi (<ph name="WIFI_NAME" />)కి మీరు దాని లాగిన్ పేజీని సందర్శించడం అవసరం.</translation>
 <translation id="785549533363645510">అయితే, మీరు అదృశ్యంగా ఉండరు. అజ్ఞాతంలోకి వెళ్లడం వలన మీ బ్రౌజింగ్ మీ యజమానికి, మీ ఇంటర్నెట్ సేవా ప్రదాతకు లేదా మీరు సందర్శించే వెబ్‌సైట్‌లకు కనిపించకుండా దాచబడదు.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">డెబిట్ మరియు ప్రీపెయిడ్ కార్డ్‌లు ఆమోదించబడతాయి.</translation>
@@ -863,6 +870,7 @@
 <translation id="8041940743680923270">సార్వజనీన డిఫాల్ట్‌ను ఉపయోగించు (అడుగు)</translation>
 <translation id="8088680233425245692">కథనాన్ని వీక్షించడంలో విఫలమైంది.</translation>
 <translation id="8091372947890762290">సక్రియం సర్వర్‌లో పెండింగ్‌లో ఉంది</translation>
+<translation id="8094917007353911263">మీరు ఉపయోగిస్తున్న నెట్‌వర్క్‌కి మీరు <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ని సందర్శించడం అవసరం.</translation>
 <translation id="8118489163946903409">చెల్లింపు పద్ధతి</translation>
 <translation id="8131740175452115882">నిర్ధారించు</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" /> సర్వర్ <ph name="BEGIN_ABBR" />DNS చిరునామా<ph name="END_ABBR" />ను కనుగొనడం సాధ్యపడలేదు.</translation>
@@ -886,6 +894,7 @@
 <translation id="8289355894181816810">మీకు దీని గురించి ఖచ్చితంగా తెలియకుంటే మీ నెట్‌వర్క్ నిర్వాహకుని సంప్రదించండి.</translation>
 <translation id="8293206222192510085">బుక్‌మార్క్‌లను జోడించు</translation>
 <translation id="8294431847097064396">మూలం</translation>
+<translation id="8298115750975731693">మీరు ఉపయోగిస్తున్న Wi-Fi (<ph name="WIFI_NAME" />)కి మీరు <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ని సందర్శించడం అవసరం.</translation>
 <translation id="8306404619377842860">మీ పరికరం యొక్క తేదీ మరియు సమయం (<ph name="DATE_AND_TIME" />) తప్పుగా ఉన్న కారణంగా <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />కు ప్రైవేట్ కనెక్షన్‌ని ఏర్పాటు చేయడం సాధ్యం కాదు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">నెట్‌వర్క్ కనెక్షన్‌తో సమస్య ఉన్నందున అనువాదం విఫలమైంది.</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" />కి ప్రాప్యత నిరాకరించబడింది</translation>
@@ -909,6 +918,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ప్రతిస్పందించడానికి చాలా ఎక్కువ సమయం పట్టింది.</translation>
 <translation id="8503813439785031346">యూజర్‌పేరు</translation>
 <translation id="8543181531796978784">మీరు <ph name="BEGIN_ERROR_LINK" />గుర్తింపు సమస్యను నివేదించవచ్చు<ph name="END_ERROR_LINK" /> లేదా మీకు మీ భద్రతకు పొంచి ఉన్న ప్రమాదాలు అర్థం అయ్యి ఉంటే, <ph name="BEGIN_LINK" />ఈ అసురక్షిత సైట్‌ను సందర్శించండి<ph name="END_LINK" />.</translation>
+<translation id="8543556556237226809">ప్రశ్నలు ఏమైనా ఉన్నాయా? మీ ప్రొఫైల్‌ను పర్యవేక్షించే వ్యక్తిని సంప్రదించండి.</translation>
 <translation id="8553075262323480129">పేజీ భాష నిర్థారించలేకపోయినందున అనువాదం విఫలమైంది.</translation>
 <translation id="8571890674111243710">పేజీని <ph name="LANGUAGE" />కు అనువదిస్తోంది...</translation>
 <translation id="858637041960032120">ఫోన్ నం. జోడిం.
@@ -945,6 +955,7 @@
 <translation id="8931333241327730545">మీరు ఈ కార్డ్‌ను మీ Google ఖాతాకి సేవ్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="8932102934695377596">మీ గడియారం సమయం గతంలో ఉంది</translation>
 <translation id="8938939909778640821">ఆమోదించబడిన క్రెడిట్ మరియు ప్రీపెయిడ్ కార్డ్‌లు</translation>
+<translation id="8957210676456822347">క్యాప్టివ్ పోర్టల్ ప్రామాణీకరణ</translation>
 <translation id="8971063699422889582">సర్వర్ యొక్క ప్రమాణపత్రం గడువు ముగిసింది.</translation>
 <translation id="8986494364107987395">Googleకు స్వయంచాలకంగా ఉపయోగ గణాంకాలను మరియు క్రాష్ నివేదికలను పంపు</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -952,6 +963,7 @@
 <translation id="8997023839087525404">సర్వర్ ప్రమాణపత్ర పారదర్శకత విధానాన్ని ఉపయోగించి పబ్లిక్‌గా బహిరంగపరచబడని ప్రమాణపత్రాన్ని అందించింది. కొన్ని ప్రమాణపత్రాలకు, అవి విశ్వసనీయమైనవని మరియు దాడి చేసేవారి నుండి రక్షణ కల్పించగలవని నిర్ధారించడానికి, ఇది ఆవశ్యకం.</translation>
 <translation id="9001074447101275817"><ph name="DOMAIN" /> ప్రాక్సీకి వినియోగదారు పేరు మరియు పాస్‌వర్డ్ అవసరం.</translation>
 <translation id="9005998258318286617">PDF పత్రాన్ని లోడ్ చేయడం విఫలమైంది.</translation>
+<translation id="9008201768610948239">విస్మరించు</translation>
 <translation id="901974403500617787">సిస్టమ్ వ్యాప్తంగా వర్తింపజేయబడే ఫ్లాగ్‌లు యజమాని ద్వారా మాత్రమే సెట్ చేయబడతాయి: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020200922353704812">కార్డ్ బిల్లింగ్ చిరునామా అవసరం</translation>
 <translation id="9020542370529661692">ఈ పేజీ <ph name="TARGET_LANGUAGE" />కి అనువదించబడింది</translation>
@@ -966,6 +978,7 @@
 <translation id="9076283476770535406">ఇందులో పెద్దలకు మాత్రమే అనుమతించిన కంటెంట్ ఉండవచ్చు</translation>
 <translation id="9078964945751709336">మరింత సమాచారం ఆవశ్యకం</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> సాధారణంగా మీ సమాచారాన్ని రక్షించడానికి గుప్తీకరణను ఉపయోగిస్తుంది. Chromium ఈసారి <ph name="SITE" />కి కనెక్ట్ చేయడానికి ప్రయత్నించినప్పుడు, వెబ్‌సైట్ అసాధారణ మరియు తప్పు ఆధారాలు అని ప్రతిస్పందించింది. దాడి చేసే వ్యక్తి <ph name="SITE" />గా వ్యవహరించి మోసగించడానికి ప్రయత్నిస్తున్నప్పుడు లేదా Wi-Fi సైన్-ఇన్ స్క్రీన్ కనెక్షన్‌కు అంతరాయం కలిగించినప్పుడు ఇలా జరగవచ్చు. Chromium ఎలాంటి డేటా వినిమయం సంభవించక ముందే కనెక్షన్‌ను ఆపివేసినందున మీ సమాచారం ఇప్పటికీ సురక్షితంగానే ఉంది.</translation>
+<translation id="9128870381267983090">నెట్‌వర్క్‌కి కనెక్ట్ చెయ్యి</translation>
 <translation id="9137013805542155359">అసలును చూపించు</translation>
 <translation id="9137248913990643158">దయచేసి ఈ అనువర్తనాన్ని ఉపయోగించే ముందు Chromeని ప్రారంభించి, దానికి సైన్ ఇన్ చేయండి.</translation>
 <translation id="9148507642005240123">&amp;సవరించడాన్ని రద్దు చేయి</translation>

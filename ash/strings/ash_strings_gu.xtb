@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">USB-C ઉપકરણ (આગળનું પોર્ટ)</translation>
 <translation id="1013923882670373915">Bluetooth ઉપકરણ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ઉપકરણ પર આ PIN કોડ દાખલ કરો: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">સ્વતઃછુપાવો શેલ્ફ</translation>
-<translation id="1127238861555034875">બૃહદદર્શક કાચ મોડ</translation>
 <translation id="1153356358378277386">જોડી કરેલા ઉપકરણો</translation>
 <translation id="1195412055398077112">ઓવરસ્કૅન</translation>
 <translation id="1247372569136754018">માઇક્રોફોન (આંતરિક)</translation>
@@ -36,11 +35,13 @@
 <translation id="1919743966458266018">ટાસ્ક સંચાલક ખોલવાનો શોર્ટકટ બદલાયો છે. કૃપા કરીને <ph name="NEW_SHORTCUT" /> ની બદલે <ph name="OLD_SHORTCUT" /> નો ઉપયોગ કરો.</translation>
 <translation id="1923539912171292317">આપમેળે ક્લિક્સ</translation>
 <translation id="1942830294380034169">ઓવરફ્લો બટન</translation>
+<translation id="1951012854035635156">સહાયક</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">આ ઉપકરણને <ph name="DOMAIN" /> દ્વારા મેનેજ કરવામાં આવેલું છે.</translation>
 <translation id="2050339315714019657">પોર્ટ્રેટ</translation>
+<translation id="2067602449040652523">કીબોર્ડનું તેજ</translation>
 <translation id="207439088875642105"><ph name="FIRST_PARENT_EMAIL" /> અને <ph name="SECOND_PARENT_EMAIL" /> દ્વારા સંચાલિત આ બાળકો માટેનું એક એકાઉન્ટ છે</translation>
 <translation id="2122028596993374965"><ph name="RECEIVER_NAME" /> પર <ph name="TAB_NAME" /> ને કાસ્ટ કરવાનું રોકો</translation>
 <translation id="2127372758936585790">નિમ્ન-પાવર ચાર્જર</translation>
@@ -51,6 +52,7 @@
 <translation id="2268813581635650749">બધામાંથી સાઇન આઉટ કરો</translation>
 <translation id="2292698582925480719">પ્રદર્શન સ્કેલ</translation>
 <translation id="2303600792989757991">ટોગલ વિન્ડો વિહંગાવલોકન</translation>
+<translation id="2338501278241028356">નજીકનાં ઉપકરણો શોધવા માટે Bluetooth ચાલુ કરો</translation>
 <translation id="2352467521400612932">કલમની સેટિંગ્સ</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> ને સક્રિય કરી રહ્યું છે</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -87,7 +89,6 @@
 <translation id="315116470104423982">મોબાઇલ ડેટા</translation>
 <translation id="3236488194889173876">કોઈ મોબાઇલ નેટવર્ક ઉપલબ્ધ નથી</translation>
 <translation id="3294437725009624529">અતિથિ</translation>
-<translation id="3335772982573114336">નવી નોંધ</translation>
 <translation id="3364721542077212959">કલમના સાધનો</translation>
 <translation id="3368922792935385530">કનેક્ટેડ</translation>
 <translation id="3371140690572404006">USB-C ઉપકરણ (જમણી બાજુનું આગળનું પોર્ટ)</translation>
@@ -119,8 +120,10 @@
 <translation id="3967919079500697218">સ્ક્રીનશૉટ્સ લેવાની ક્ષમતા તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરવામાં આવી છે.</translation>
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
 <translation id="3995138139523574647">USB-C ઉપકરણ (જમણી બાજુનું પાછળનું પોર્ટ)</translation>
+<translation id="4017989525502048489">લેઝર પૉઇન્ટર</translation>
 <translation id="4279490309300973883">પ્રતિબિંબત થઈ રહ્યું છે</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">બૃહદદર્શક કાચ</translation>
 <translation id="4378551569595875038">કનેક્ટિંગ...</translation>
 <translation id="4421231901400348175">દૂરસ્થ સહાય વડે <ph name="HELPER_NAME" /> સાથે તમારી સ્ક્રીનનું નિયંત્રણ શેર કરવું.</translation>
 <translation id="4430019312045809116">વૉલ્યૂમ</translation>
@@ -215,11 +218,9 @@
 <translation id="7066646422045619941">આ નેટવર્ક તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરેલ છે.</translation>
 <translation id="7067196344162293536">સ્વતઃ ફેરવો</translation>
 <translation id="7098389117866926363">USB-C ઉપકરણ (પાછળની બાજુએ ડાબું પોર્ટ)</translation>
-<translation id="7129360219436193655">લેઝર પૉઇન્ટર મોડ</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">જૂના રિઝોલ્યુશન પર પાછા ફરી રહ્યાં છે <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7199454189089571166">સહાયક મોડ</translation>
 <translation id="7246339268451149667">ફિંગરપ્રિન્ટ અનલૉક સક્ષમ કરીએ?</translation>
 <translation id="7256634071279256947">પાછળનો માઇક્રોફોન</translation>
 <translation id="7348093485538360975">ઑન-સ્ક્રીન કીબોર્ડ</translation>
@@ -254,6 +255,7 @@
 <translation id="8185286464235484130">થોડાક પ્રશ્નોનો જવાબ આપીને અમને જણાવો કે અમે કેવું કાર્ય કરી રહ્યાં છીએ.</translation>
 <translation id="8190698733819146287">ભાષાઓ અને ઇનપુટને કસ્ટમાઇઝ કરો...</translation>
 <translation id="8308637677604853869">પહેલાનું મેનૂ</translation>
+<translation id="8351131234907093545">નોંધ બનાવો</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
 <translation id="8433186206711564395">નેટવર્ક સેટિંગ્સ</translation>
 <translation id="8433977262951327081">શેલ્ફમાં મેનૂ પરપોટો ઇનપુટ વિકલ્પો બતાવવાનો શૉર્ટકટ બદલાયો છે. કૃપા કરીને <ph name="OLD_SHORTCUT" />ને બદલે <ph name="NEW_SHORTCUT" />નો ઉપયોગ કરો.</translation>

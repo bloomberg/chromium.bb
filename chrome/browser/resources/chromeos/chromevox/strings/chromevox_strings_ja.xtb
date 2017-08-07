@@ -12,6 +12,7 @@
 <translation id="1044777062731150180">見出しなし</translation>
 <translation id="106222400312645156">行見出し</translation>
 <translation id="1065552602950927991">無効な入力値</translation>
+<translation id="1080471004309605942">斜体の末尾</translation>
 <translation id="1082209053475788238">前のレベル 6 見出しはありません。</translation>
 <translation id="1088219014394087294">見出しがありません。</translation>
 <translation id="1106741348836243114">音声フィードバック（イアコン）をオンまたはオフにします。</translation>
@@ -121,6 +122,7 @@
 <translation id="225732394367814946">読み上げの速度を上げる</translation>
 <translation id="2267945578749931355">次の文字</translation>
 <translation id="2281234842553884450">前のスライダ</translation>
+<translation id="2294136146931447363">斜体の先頭</translation>
 <translation id="2318372665160196757">本文</translation>
 <translation id="2329324941084714723">タブ パネル</translation>
 <translation id="2344193891939537199">日時の設定</translation>
@@ -343,6 +345,7 @@
 <translation id="4039983576244166038">行見出しが空です</translation>
 <translation id="4042843249978639960">次のレベル 2 見出しはありません。</translation>
 <translation id="4043348641337972076">前の ARIA ランドマークはありません。</translation>
+<translation id="4045764028670444336">スペルミスの先頭</translation>
 <translation id="4047216625641135770">マーク</translation>
 <translation id="404803211695627272"><ph name="V1" />～<ph name="V2" /></translation>
 <translation id="4054936709456751127">ステータス</translation>
@@ -397,6 +400,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{スラッシュ}other{# 個のスラッシュ}}</translation>
 <translation id="4547556996012970016">次のレベル 5 見出し</translation>
 <translation id="4562381607973973258">見出し</translation>
+<translation id="4570424871453628777">スペルミスの末尾</translation>
 <translation id="4591507479202817876">、選択済み</translation>
 <translation id="4597532268155981612">フォーム</translation>
 <translation id="4597896406374528575">4 月</translation>
@@ -423,6 +427,7 @@
 <translation id="4827410568042294688">選択していません</translation>
 <translation id="4842108708071771135">次の引用箇所はありません。</translation>
 <translation id="4844625982113518938">キーを押すとその名前が読み上げられます。学習モードを終了するには Ctrl+W キーを押します。</translation>
+<translation id="4846487886195635104">取り消し線の末尾</translation>
 <translation id="4848993367330139335">タイマー</translation>
 <translation id="4850023505158945298">前の類似の要素。</translation>
 <translation id="485011152882364255">ChromeVox Next では、検索キーは修飾キーとなります。ChromeVox のショートカットのほとんどは検索キーで始まります。また、移動には矢印キーを使用します。</translation>
@@ -449,7 +454,6 @@
 <translation id="5000760171916499057">フォームがありません。</translation>
 <translation id="5005670136041063723">この他に類似の要素はありません。</translation>
 <translation id="501473567976723023">1 月</translation>
-<translation id="5040591161308540832">表 $1、$2x$3</translation>
 <translation id="5041394372352067729">ブライユ点字表示をページ上部に移動</translation>
 <translation id="5042770794184672516">読み上げの音量を上げる</translation>
 <translation id="5050015258024679800">前のレベル 4 見出し</translation>
@@ -577,6 +581,8 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="6006064078185310784">{COUNT,plural, =1{バックスラッシュ}other{# 個のバックスラッシュ}}</translation>
 <translation id="6037602951055904232">前方にパンします</translation>
 <translation id="6044160928851315051">画面表示をオフにする</translation>
+<translation id="605761629541007221">太字の末尾</translation>
+<translation id="6065293622157674001">文法ミスの先頭</translation>
 <translation id="6082768461603900813">基本的な操作</translation>
 <translation id="6092707270915298410">リンクの終了</translation>
 <translation id="611827076493383239">アクセス済み</translation>
@@ -668,6 +674,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="712735679809149106">単語読み上げ</translation>
 <translation id="713824876195128146">次の引用文</translation>
 <translation id="7143034430156387447">6 点点字と 8 点点字を切り替えます</translation>
+<translation id="7161425887892204659">テキスト一致の末尾</translation>
 <translation id="7161771961008409533">ポップアップ ボタン</translation>
 <translation id="7165714724802225287">現在の表示スタイルは交互です。</translation>
 <translation id="7167657087543110">文字読み上げ</translation>
@@ -699,6 +706,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="7370432716629432284">{COUNT,plural, =1{アンパサンド}other{# 個のアンパサンド}}</translation>
 <translation id="737396357417333429">クリック可能</translation>
 <translation id="7374104575779636480">表から移動します。</translation>
+<translation id="7392145451309930991">テキスト一致の先頭</translation>
 <translation id="739763518212184081">前の行</translation>
 <translation id="7400575256015741911">スペルミスが見つかりました</translation>
 <translation id="7408482676469142474">表</translation>
@@ -730,7 +738,9 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="7685589220304187312">ツールバー</translation>
 <translation id="7693840228159394336">前のラジオボタン</translation>
 <translation id="7701196182766842984">リストのオートコンプリート</translation>
+<translation id="7712273827621319827">下線の先頭</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />、<ph name="NAME" />、パスワード テキスト ボックス</translation>
+<translation id="7773125101284285285">下線の末尾</translation>
 <translation id="7776293189010177726">ChromeVox メニューを開きます</translation>
 <translation id="7805247615045262757">デフォルトのナビゲーション</translation>
 <translation id="7805768142964895445">ステータス</translation>
@@ -760,6 +770,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8065607967589909823">現在選択しているのは、</translation>
 <translation id="8066678206530322333">バナー</translation>
 <translation id="8076492880354921740">タブ</translation>
+<translation id="8091452896542422286">スペース</translation>
 <translation id="8104178626892949749">ChromeVox Next の詳細を確認するには、ChromeVox の o+n キーを押します。</translation>
 <translation id="8110647606445335195">ARIA ランドマークはありません。</translation>
 <translation id="8153880621934657047">表の中ではありません。</translation>
@@ -781,6 +792,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8374154622594089836">月</translation>
 <translation id="8378855320830505539">地域</translation>
 <translation id="8382679411218029383">オートコンプリートはインライン表示とリスト形式の両方</translation>
+<translation id="8384907037845425279">太字の先頭</translation>
 <translation id="8428603554127842284"><ph name="DEPTH" /> 階層</translation>
 <translation id="842922884199979200">次のレベル 3 見出しはありません。</translation>
 <translation id="8430049249787218991">メニューバー</translation>
@@ -792,6 +804,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8476408756881832830">ChromeVox の読み上げ中は再生を一時停止する</translation>
 <translation id="8476508772960940536">ウィンドウ概観</translation>
 <translation id="8503360654911991865">一度に移動する単位を大きくする</translation>
+<translation id="8504695234784218301">文法ミスの末尾</translation>
 <translation id="8520472399088452386">スピンボタン</translation>
 <translation id="8538744478902126321">現在のセルの行見出しを推測</translation>
 <translation id="8540054775867439484">先頭に戻ります</translation>
@@ -869,4 +882,5 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="962913030769097253">次のレベル 1 見出し</translation>
 <translation id="973955474346881951">スティッキー モードを有効または無効にする</translation>
 <translation id="976849232629612000">アイテムなし</translation>
+<translation id="995852680044449248">取り消し線の先頭</translation>
 </translationbundle>

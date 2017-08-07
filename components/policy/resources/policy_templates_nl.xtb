@@ -327,7 +327,6 @@
 <translation id="2312134445771258233">Hiermee kun he de pagina's configureren die bij het starten worden geladen.
 
       De content van de lijst 'URL's die worden geopend bij starten' wordt genegeerd, tenzij je 'Een lijst met URL's openen' selecteert bij 'Actie bij starten'.</translation>
-<translation id="23323722127921515">Hiermee wordt het Google Cast-icoon in de werkbalk getoond</translation>
 <translation id="2337466621458842053">Hiermee kun je een lijst URL-patronen instellen waarmee sites worden gespecificeerd waarop afbeeldingen kunnen worden weergegeven.
 
           Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultImagesSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
@@ -416,7 +415,6 @@
 
       Als dit beleid op 'onwaar' is ingesteld, verschijnt een foutmelding in plaats van de prompt voor de netwerkconfiguratie.</translation>
 <translation id="2498238926436517902">Archief altijd automatisch verbergen</translation>
-<translation id="2503514368596117142">Configureer beleid voor Google Cast, een functie waarmee gebruikers de content van tabbladen, sites of hun bureaublad vanuit de browser naar externe schermen en geluidssystemen kunnen sturen.</translation>
 <translation id="2514328368635166290">Hiermee specificeer je de URL van het voorkeurspictogram voor de standaardzoekprovider.
 
           Dit beleid is optioneel. Als je het niet instelt, wordt er geen pictogram weergegeven voor de zoekprovider.
@@ -433,9 +431,6 @@
 <translation id="2529880111512635313">De lijst met automatisch geïnstalleerde apps en extensies configureren</translation>
 <translation id="253135976343875019">Inactieve waarschuwingsvertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2552966063069741410">Tijdzone</translation>
-<translation id="2558917182010914102">Als dit beleid is ingesteld op 'waar' (true) of niet is ingesteld, is Google Cast ingeschakeld en kunnen gebruikers deze functie starten vanuit het app-menu, contextmenu's op pagina's, mediabedieningsopties op websites die werken met Cast en via het Cast-icoon in de werkbalk (als dit wordt weergegeven).
-
-          Als dit beleid is ingesteld op 'onwaar' (false), is Google Cast uitgeschakeld.</translation>
 <translation id="2562339630163277285">Hiermee kun je de URL opgeven van de zoekmachine die wordt gebruikt om instantresultaten te leveren. De URL moet de tekenreeks <ph name="SEARCH_TERM_MARKER" /> bevatten. Deze tekenreeks wordt op het moment van de zoekopdracht vervangen door de tekst die de gebruiker tot op dat moment heeft getypt.
 
           Dit beleid is optioneel. Als het beleid niet is ingesteld, worden er geen instantresultaten geleverd.
@@ -564,6 +559,7 @@
 <translation id="3001534538097271560">Als dit beleid wordt ingesteld op false (onwaar), kunnen gebruikers geen systeeminformatie en paginacontent meer naar Google-servers verzenden. Als deze instelling wordt ingesteld op true (waar) of niet wordt geconfigureerd, kunnen gebruikers bepaalde systeeminformatie en paginacontent naar Safe Browsing verzenden om te helpen bij de detectie van gevaarlijke apps en sites
 
       Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.</translation>
+<translation id="3016255526521614822">Notitie-apps die zijn toegestaan op het <ph name="PRODUCT_OS_NAME" />-vergrendelingsscherm, op de witte lijst zetten</translation>
 <translation id="3021409116652377124">Plug-inzoeker uitschakelen</translation>
 <translation id="3030000825273123558">Rapportage van statistieken inschakelen</translation>
 <translation id="3034580675120919256">Hiermee kun je instellen of JavaScript op websites mag worden uitgevoerd. Het uitvoeren van JavaScript kan voor alle websites worden toegestaan of voor alle websites worden geweigerd.
@@ -913,6 +909,16 @@
       "1412.24.34": alleen updaten naar deze specifieke versie.
 
       Waarschuwing: Het wordt niet aanbevolen versiebeperkingen te configureren, omdat gebruikers hierdoor mogelijk geen software-updates en essentiële beveiligingsoplossingen ontvangen. Als je updates beperkt tot een specifiek versievoorvoegsel, kunnen gebruikers gevaar lopen.</translation>
+<translation id="4298509794364745131">Specificeert de lijst met apps die kunnen worden ingeschakeld als notitie-app op het <ph name="PRODUCT_OS_NAME" />-vergrendelingsscherm.
+
+      Als de gewenste notitie-app is ingeschakeld op het vergrendelingsscherm, bevat het vergrendelingsscherm een UI-element om de gewenste notitie-app te starten.
+      Wanneer de app is gestart, kan deze een app-venster bovenop het vergrendelingsscherm maken en gegevensitems (notities) maken in de context van het vergrendelingsscherm. De app kan gemaakte notities importeren naar de primaire gebruikerssessie wanneer de sessie ontgrendeld is. Momenteel worden alleen Chrome-notitie-apps ondersteund op het vergrendelingsscherm.
+
+      Als het beleid is ingesteld, kan de gebruiker een app alleen inschakelen op het vergrendelingsscherm als de extensie-ID van de app is opgenomen in de beleidslijstwaarde.
+      Dit betekent dat als je dit beleid instelt op een lege lijst, het maken van notities op het vergrendelingsscherm volledig wordt uitgeschakeld.
+      Houd er rekening mee dat als het beleid een app-ID bevat, dit niet noodzakelijkerwijs betekent dat de gebruiker de app kan inschakelen als notitie-app op het vergrendelingsscherm. In Chrome 61 wordt de reeks beschikbare apps bijvoorbeeld extra beperkt door het platform.
+
+      Als het beleid niet wordt ingesteld, gelden er geen beperkingen voor de reeks apps die de gebruiker kan inschakelen op het vergrendelingsscherm.</translation>
 <translation id="4309640770189628899">Of DHE-coderingssuites in TLS zijn ingeschakeld</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 of hoger</translation>
 <translation id="4322842393287974810">Toestaan dat de kiosk-app die automatisch zonder vertraging is gestart, de <ph name="PRODUCT_OS_NAME" />-versie beheert</translation>
@@ -1335,7 +1341,6 @@
       Als je deze instelling inschakelt, is SafeSearch altijd actief in Google Zoeken.
 
       Als je deze instelling uitschakelt of geen waarde instelt, wordt SafeSearch Zoeken niet afgedwongen voor Google Zoeken.</translation>
-<translation id="5940306398763671235">Hiermee wordt Google Cast ingeschakeld</translation>
 <translation id="5946082169633555022">Bètakanaal</translation>
 <translation id="5950205771952201658">Omdat soft-fail online certificaatintrekkingscontroles de veiligheid niet aantoonbaar verhogen, worden deze standaard uitgeschakeld in versie 19 en hoger van <ph name="PRODUCT_NAME" />. Als dit beleid op 'waar' wordt ingesteld, wordt het eerdere gedrag hersteld en worden online OCSP/CRL-controles uitgevoerd.
 
@@ -1684,13 +1689,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="7302043767260300182">Vertraging van schermvergrendeling wanneer op netstroom wordt gewerkt</translation>
-<translation id="7309839952828354215">Geeft aan hoe een apparaat zich moet gedragen dat is geleverd met eCryptfs en moet worden overgezet naar ext4-versleuteling.
-
-      Als je dit beleid instelt op 'DisallowArc', worden Android-apps uitgeschakeld voor alle gebruikers op het apparaat (waaronder gebruikers die al beschikken over ext4-versleuteling) en wordt er geen migratie van eCryptfs naar ext4-versleuteling aangeboden aan gebruikers.
-
-      Als je dit beleid instelt op 'AllowMigration', wordt aan gebruikers met eCryptfs-hoofdmappen aangeboden deze te migreren naar ext4-versleuteling indien nodig (momenteel is dit het geval wanneer Android N beschikbaar komt op het apparaat).
-
-      Als dit beleid niet wordt ingesteld, gedraagt het apparaat zich alsof 'DisallowArc' is gekozen.</translation>
 <translation id="7311458740754205918">Als dit beleid is ingesteld op 'waar' of niet is ingesteld, kunnen op de nieuwe tabbladpagina contentsuggesties worden weergegeven op basis van de browsegeschiedenis, interesses en locatie van de gebruiker.
 
       Als dit is ingesteld op 'onwaar', worden er geen automatisch gegenereerde contentsuggesties weergegeven op de nieuwe tabbladpagina.</translation>
@@ -1775,7 +1773,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als je deze instelling inschakelt, gebruikt <ph name="PRODUCT_NAME" /> de gespecificeerde landinstelling. Als de geconfigureerde landinstelling niet wordt ondersteund, wordt 'en-US' gebruikt.
 
       Als deze instelling is uitgeschakeld of niet is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> de door de gebruiker gespecificeerde landinstelling (indien geconfigureerd), de landinstelling voor het systeem of 'en-US'.</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Bepaalt of gegevensroaming moet worden ingeschakeld voor het apparaat. Als dit is ingesteld op 'true', wordt gegevensroaming toegestaan. Als de instelling niet wordt geconfigureerd of op 'false' is ingesteld, is gegevensroaming niet beschikbaar.</translation>
 <translation id="7683777542468165012">Beleid dynamisch vernieuwen</translation>
 <translation id="7694807474048279351">Plannen dat het apparaat automatisch opnieuw opstart nadat een update van <ph name="PRODUCT_OS_NAME" /> is uitgevoerd.
@@ -1897,6 +1894,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als deze instelling is uitgeschakeld en uitgaande UDP-verbindingen worden gefilterd door de firewall, kan dit apparaat alleen verbinding maken met hosts binnen het lokale netwerk.</translation>
 <translation id="7980227303582973781">Geen speciale beperkingen</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Scherm 0 graden draaien</translation>
 <translation id="8044493735196713914">Opstartmodus van apparaat melden</translation>
 <translation id="8050080920415773384">Systeemeigen printer</translation>

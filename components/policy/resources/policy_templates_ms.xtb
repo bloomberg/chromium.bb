@@ -329,7 +329,6 @@
 <translation id="2312134445771258233">Membenarkan anda mengkonfigurasi halaman yang dimuatkan pada permulaan.
 
       Kandungan senarai 'URL untuk dibuka semasa permulaan' diabaikan melainkan anda memilih 'Buka senarai URL' dalam 'Tindakan pada permulaan'.</translation>
-<translation id="23323722127921515">Menunjukkan ikon bar alat Google Cast</translation>
 <translation id="2337466621458842053">Membolehkan anda menetapkan senarai corak url yang menentukan tapak mana yang dibenarkan untuk memaparkan imej.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultImagesSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
@@ -418,7 +417,6 @@
 
       Jika dasar ini ditetapkan kepada Palsu, mesej ralat akan dipaparkan dan bukannya gesaan konfigurasi rangkaian.</translation>
 <translation id="2498238926436517902">Sentiasa sembunyikan rak secara automatik</translation>
-<translation id="2503514368596117142">Konfigurasikan dasar untuk Google Cast, ciri yang membolehkan pengguna menghantar kandungan tab, tapak atau desktop daripada penyemak imbas ke paparan dan sistem bunyi jauh.</translation>
 <translation id="2514328368635166290">Menetapkan URL ikon kegemaran penyedia carian lalai.
 
           Dasar ini adalah pilihan. Jika tidak ditetapkan, ikon tidak akan dipaparkan untuk penyedia carian ini.
@@ -435,9 +433,6 @@
 <translation id="2529880111512635313">Konfigurasikan senarai apl dan sambungan pemasangan paksa</translation>
 <translation id="253135976343875019">Kelewatan amaran melahu apabila dijalankan dengan kuasa AC</translation>
 <translation id="2552966063069741410">Zon waktu</translation>
-<translation id="2558917182010914102">Jika dasar ini ditetapkan kepada benar atau tidak ditetapkan, Google Cast akan didayakan dan pengguna akan dapat melancarkan Google Cast daripada menu apl, menu konteks halaman, kawalan media di tapak web berdaya Cast dan (jika ditunjukkan) ikon bar alat Cast.
-
-          Jika dasar ini ditetapkan kepada palsu, Google Cast akan dilumpuhkan.</translation>
 <translation id="2562339630163277285">Menentukan URL enjin carian yang digunakan untuk memberikan hasil carian segera. URL tersebut harus mengandungi rentetan <ph name="SEARCH_TERM_MARKER" />, yang akan digantikan oleh teks yang telah dimasukkan oleh pengguna setakat ini pada masa pertanyaan dibuat.
 
           Dasar ini tidak wajib. Jika tidak ditetapkan, tiada hasil carian segera akan diberikan.
@@ -564,6 +559,7 @@
 <translation id="3001534538097271560">Penetapan dasar ini kepada palsu akan menghentikan pengguna daripada memilih untuk menghantar beberapa maklumat sistem dan kandungan halaman kepada pelayan Google. Jika tetapan ini benar atau tidak dikonfigurasikan, maka pengguna akan dibenarkan menghantar beberapa maklumat sistem dan kandungan halaman kepada Penyemakan Imbas Selamat untuk mengesan apl dan tapak yang berbahaya.
 
       Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat tentang Penyemakan Imbas Selamat.</translation>
+<translation id="3016255526521614822">Apl pencatatan nota senarai putih dibenarkan pada skrin kunci <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021409116652377124">Lumpuhkan pencari pemalam</translation>
 <translation id="3030000825273123558">Dayakan laporan metrik</translation>
 <translation id="3034580675120919256">Membolehkan anda menetapkan sama ada laman web dibenarkan untuk menjalankan JavaScript. Menjalankan JavaScript boleh dibenarkan untuk semua tapak web atau dinafikan untuk semua tapak web.
@@ -913,6 +909,16 @@
       "1412.24.34": kemas kini kepada versi tertentu yang ini sahaja
 
       Amaran: Anda tidak disyorkan untuk mengkonfigurasi had versi kerana tindakan ini boleh menghalang pengguna daripada menerima kemas kini perisian dan pembetulan keselamatan kritikal. Tindakan mengehadkan kemas kini kepada awalan versi tertentu boleh menyebabkan pengguna terdedah kepada risiko.</translation>
+<translation id="4298509794364745131">Menentukan senarai apl yang boleh didayakan sebagai apl pencatatan nota pada skrin kunci <ph name="PRODUCT_OS_NAME" />.
+
+      Jika apl pencatatan nota pilihan didayakan pada skrin kunci, skrin kunci akan mengandungi unsur UI untuk melancarkan apl pencatatan nota pilihan.
+      Apabila dilancarkan, apl ini akan dapat membuat tetingkap apl di atas skrin kunci dan membuat item data (nota) dalam konteks skrin kunci. Apl ini akan dapat mengimport nota yang dibuat ke sesi pengguna utama, semasa sesi dibuka kunci. Hanya apl pencatatan nota Chrome yang disokong pada skrin kunci pada masa ini.
+
+      Jika dasar ini ditetapkan, pengguna akan dibenarkan untuk mendayakan apl pada skrin kunci hanya jika ID sambungan apl terkandung dalam nilai senarai dasar.
+      Akibatnya, tindakan menetapkan dasar ini kepada senarai kosong akan melumpuhkan pencatatan nota pada keseluruhan skrin kunci.
+      Sila ambil perhatian bahawa dasar yang mengandungi ID apl tidak semestinya bermaksud pengguna akan dapat mendayakan apl sebagai apl pencatatan nota pada skrin kunci - contohnya, pada Chrome 61, set apl yang tersedia dihadkan secara tambahan oleh platform.
+
+      Jika dasar dibiarkan tanpa ditetapkan, tiada sekatan pada set apl yang boleh didayakan oleh pengguna pada skrin kunci yang dikenakan oleh dasar.</translation>
 <translation id="4309640770189628899">Sama ada suit sifer DHE dalam TLS didayakan</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 atau lebih baharu</translation>
 <translation id="4322842393287974810">Benarkan apl kios kelewatan sifar yang dilancarkan secara automatik untuk mengawal versi <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1335,7 +1341,6 @@
       Jika anda mendayakan tetapan ini, SafeSearch dalam Carian Google sentiasa diaktifkan.
 
       Jika anda melumpuhkan tetapan ini atau tidak menetapkan nilai, SafeSearch dalam Carian Google tidak dikuatkuasakan.</translation>
-<translation id="5940306398763671235">Mendayakan Google Cast</translation>
 <translation id="5946082169633555022">Saluran Beta</translation>
 <translation id="5950205771952201658">Berasaskan fakta bahawa semakan pembatalan dalam talian gagal-lembut tidak memberikan sebarang manfaat keselamatan yang berkesan, semakan ini dilumpuhkan secara lalai dalam <ph name="PRODUCT_NAME" /> versi 19 dan yang lebih baharu. Dengan menetapkan dasar ini kepada benar, gelagat sebelumnya dipulihkan dan semakan OCSP/CRL dalam talian akan dilaksanakan.
 
@@ -1686,13 +1691,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Dasar ini hanya dihormati jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="7302043767260300182">Kelewatan kunci skrin apabila dijalankan dengan kuasa AC</translation>
-<translation id="7309839952828354215">Menentukan gelagat peranti yang dihantar dengan ecryptfs dan memerlukan peralihan kepada penyulitan ext4.
-
-      Jika anda menetapkan dasar ini kepada 'DisallowArc', apl Android akan dilumpuhkan untuk semua pengguna pada peranti tersebut (termasuk yang sudah mempunyai penyulitan ext4) dan penghijarahan daripada ecryptfs kepada penyulitan ext4 tidak akan ditawarkan kepada mana-mana pengguna.
-
-      Jika anda menetapkan dasar ini kepada 'AllowMigration', pengguna dengan direktori laman utama ecryptfs akan diberi tawaran untuk menghijrahkan direktori ini ke penyulitan ext4 mengikut keperluan (pada masa ini apabila Android N tersedia pada peranti tersebut).
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, peranti akan berkelakuan seolah-olah 'DisallowArc' telah dipilih.</translation>
 <translation id="7311458740754205918">Jika dasar ini ditetapkan kepada benar atau tidak ditetapkan, halaman Tab Baharu boleh menunjukkan cadangan kandungan berdasarkan sejarah penyemakan imbas, minat atau lokasi pengguna.
 
       Jika dasar ini ditetapkan kepada palsu, cadangan kandungan yang dihasilkan secara automatik tidak ditunjukkan pada halaman Tab Baharu.</translation>
@@ -1777,7 +1775,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> menggunakan penempatan yang dinyatakan. Sebaliknya, jika penempatan yang dikonfigurasi tidak disokong, 'en-US' akan digunakan.
 
       Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> menggunakan sama ada penempatan pilihan yang ditentukan pengguna (jika dikonfigurasi), penempatan sistem atau penempatan bertahan 'en-US'.</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Menentukan sama ada data perayauan perlu didayakan untuk peranti. Jika ditetapkan kepada benar, perayauan data dibenarkan. Jika dibiarkan tanpa dikonfigurasi atau ditetapkan kepada palsu, perayauan data tidak akan tersedia.</translation>
 <translation id="7683777542468165012">Segar Semula Dasar Dinamik</translation>
 <translation id="7694807474048279351">Jadualkan but semula automatik selepas kemas kini <ph name="PRODUCT_OS_NAME" /> telah dilaksanakan.
@@ -1899,6 +1896,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Jika tetapan ini dilumpuhkan dan sambungan UDP keluar ditapis oleh firewall, maka mesin ini hanya boleh bersambung dengan mesin hos di dalam rangkaian setempat sahaja.</translation>
 <translation id="7980227303582973781">Tiada sekatan khas</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Putar skrin 0 darjah</translation>
 <translation id="8044493735196713914">Laporkan mod but peranti</translation>
 <translation id="8050080920415773384">Pencetakan Natif</translation>

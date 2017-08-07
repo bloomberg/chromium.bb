@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">C típusú USB-vel kompatibilis eszköz (elülső port)</translation>
 <translation id="1013923882670373915">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra. Kérjük, adja meg ezt a PIN kódot azon az eszközön: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">Polc automatikus elrejtése</translation>
-<translation id="1127238861555034875">Nagyító mód</translation>
 <translation id="1153356358378277386">Párosított eszközök</translation>
 <translation id="1195412055398077112">túlpásztázás</translation>
 <translation id="1247372569136754018">Mikrofon (belső)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> van hátra</translation>
 <translation id="1698760176351776263">IPv6-cím: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Az eszközt a vállalat felügyeli</translation>
+<translation id="1746730358044914197">A rendszergazda állította be a beviteli módszereket.</translation>
 <translation id="1747827819627189109">Képernyő-billentyűzet bekapcsolva</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi kikapcsolva.</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">Megváltozott a feladatkezelő megnyitásának billentyűkódja. A <ph name="OLD_SHORTCUT" /> helyett használja a következőt: <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatikus kattintások</translation>
 <translation id="1942830294380034169">Túlcsordulás gomb</translation>
+<translation id="1951012854035635156">Segéd</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl+Keresés+H</translation>
 <translation id="2049639323467105390">Ezt az eszközt a(z) <ph name="DOMAIN" /> domain kezeli.</translation>
 <translation id="2050339315714019657">Álló</translation>
+<translation id="2067602449040652523">Billentyűzet világossága</translation>
 <translation id="207439088875642105">Ez a fiók gyerekeknek készült; <ph name="FIRST_PARENT_EMAIL" /> és <ph name="SECOND_PARENT_EMAIL" /> felügyelete mellett.</translation>
 <translation id="2122028596993374965">„<ph name="TAB_NAME" />” lap „<ph name="RECEIVER_NAME" />” eszközre történő átküldésének leállítása</translation>
 <translation id="2127372758936585790">Kis teljesítményű töltő</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">Összes kijelentkeztetése</translation>
 <translation id="2292698582925480719">Megjelenítés méret</translation>
 <translation id="2303600792989757991">Ablakáttekintési mód váltása</translation>
+<translation id="2338501278241028356">Kapcsolja be a Bluetooth-t a közeli eszközök felfedezéséhez</translation>
 <translation id="2352467521400612932">Az érintőceruza beállításai</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> aktiválása</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">Mobiladatok</translation>
 <translation id="3236488194889173876">Nem áll rendelkezésre mobilhálózat</translation>
 <translation id="3294437725009624529">Vendég</translation>
-<translation id="3335772982573114336">Új jegyzet</translation>
 <translation id="3364721542077212959">Érintőceruza eszközök</translation>
 <translation id="3368922792935385530">Kapcsolódva</translation>
 <translation id="3371140690572404006">C típusú USB-vel kompatibilis eszköz (jobb első port)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">A képernyőkép-készítést letiltotta a rendszergazda.</translation>
 <translation id="397105322502079400">Számítás…</translation>
 <translation id="3995138139523574647">C típusú USB-vel kompatibilis eszköz (jobb hátsó port)</translation>
+<translation id="4017989525502048489">Lézermutató</translation>
 <translation id="4279490309300973883">Tükrözés</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">Nagyító</translation>
 <translation id="4378551569595875038">Kapcsolódás folyamatban…</translation>
 <translation id="4421231901400348175">A képernyő irányításának megosztása <ph name="HELPER_NAME" /> segítővel a Távsegítség szolgáltatás keretein belül.</translation>
 <translation id="4430019312045809116">Hangerő</translation>
@@ -214,11 +218,9 @@
 <translation id="7066646422045619941">Ezt a hálózatot letiltotta a rendszergazda.</translation>
 <translation id="7067196344162293536">Automatikus forgatás</translation>
 <translation id="7098389117866926363">C típusú USB-vel kompatibilis eszköz (bal hátsó port)</translation>
-<translation id="7129360219436193655">Lézermutató mód</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Visszaállítás a régi felbontásra <ph name="TIMEOUT_SECONDS" /> mp múlva</translation>
-<translation id="7199454189089571166">Segédmód</translation>
 <translation id="7246339268451149667">Engedélyezi az ujjlenyomatos feloldást?</translation>
 <translation id="7256634071279256947">Hátulsó mikrofon</translation>
 <translation id="7348093485538360975">Képernyő-billentyűzet</translation>
@@ -253,6 +255,7 @@
 <translation id="8185286464235484130">Néhány kérdés megválaszolásával ossza meg velünk, mennyire van megelégedve munkákkal.</translation>
 <translation id="8190698733819146287">Nyelvek és beviteli módok személyre szabása...</translation>
 <translation id="8308637677604853869">Előző menü</translation>
+<translation id="8351131234907093545">Jegyzet létrehozása</translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8433186206711564395">Hálózati beállítások</translation>
 <translation id="8433977262951327081">Megváltozott a beviteli lehetőségek menüjének buborékját a polcon megjelenítő gyorsparancs. A(z) <ph name="OLD_SHORTCUT" /> helyett használja a(z) <ph name="NEW_SHORTCUT" /> billentyűkombinációt.</translation>

@@ -317,7 +317,6 @@
 <translation id="2299220924812062390">指定停用的外掛程式清單</translation>
 <translation id="2309390639296060546">預設地理位置設定</translation>
 <translation id="2312134445771258233">允許你設定起始時載入的網頁。系統會略過 [起始時開啟的網址] 網頁清單內容，除非你在 [起始動作] 中選取 [開啟網址清單]。</translation>
-<translation id="23323722127921515">顯示 Google Cast 工具列圖示</translation>
 <translation id="2337466621458842053">允許你設定網址模式清單，指定可以顯示圖片的網站。如果未設定這項政策，系統會從「DefaultImagesSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="2372547058085956601">公開工作階段自動登入延遲時間。
 
@@ -402,7 +401,6 @@
 
       如果這項政策已設定或設為 False，則會顯示錯誤訊息，而不是網路設定提示。</translation>
 <translation id="2498238926436517902">一律自動隱藏檔案櫃</translation>
-<translation id="2503514368596117142">設定 Google Cast 的各項政策。Google Cast 可讓使用者透過瀏覽器將分頁、網站或桌面內容傳送至遠端的螢幕和音響設備。</translation>
 <translation id="2514328368635166290">指定預設搜尋引擎的最愛圖示網址。這項政策是選擇性的，如果未設定，系統就不會顯示搜尋引擎的圖示。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="2516600974234263142">啟用 <ph name="PRODUCT_NAME" /> 的列印功能，並且禁止使用者變更這項設定。
 
@@ -415,9 +413,6 @@
 <translation id="2529880111512635313">設定強制安裝的應用程式和擴充功能清單</translation>
 <translation id="253135976343875019">在 AC 供電環境下執行時的閒置警告延遲時間</translation>
 <translation id="2552966063069741410">時區</translation>
-<translation id="2558917182010914102">如果這項政策設為 True 或未設定，系統將啟用 Google Cast，使用者則可從應用程式選單、頁面內容選單以及 Cast 工具列圖示 (假設不是隱藏狀態) 啟動 Google Cast，或是在支援投放功能的網站上使用媒體控制項啟動 Google Cast。
-
-          如果這項政策設為 False，Google Cast 會遭到停用。</translation>
 <translation id="2562339630163277285">指定用於提供互動智慧搜尋結果的搜尋引擎網址。網址應包含 <ph name="SEARCH_TERM_MARKER" /> 字串，使用者輸入的查詢文字會取代這個字串。
 
           這是選用政策，如果未設定，系統就不會提供互動智慧搜尋結果。
@@ -540,6 +535,7 @@
 <translation id="3001534538097271560">如果將此政策設為 False，使用者將無法選擇向 Google 伺服器傳送一些系統資訊和網頁內容；如果設為 True 或未設定，使用者就可以向「安全瀏覽」服務傳送一些系統資訊和網頁內容，協助我們偵測危險的應用程式和網站。
 
       如需進一步瞭解「安全瀏覽」功能，請參閱 https://developers.google.com/safe-browsing。</translation>
+<translation id="3016255526521614822">將「<ph name="PRODUCT_OS_NAME" />」螢幕鎖定畫面允許的筆記應用程式加入許可清單</translation>
 <translation id="3021409116652377124">停用外掛程式尋找工具</translation>
 <translation id="3030000825273123558">啟用計量報告</translation>
 <translation id="3034580675120919256">允許你設定是否要讓網站執行 JavaScript。你可以允許或禁止所有網站執行 JavaScript。如果未設定這項政策，系統會使用「AllowJavaScript」，不過使用者可以變更設定。</translation>
@@ -869,6 +865,16 @@
       "1412.24.34"：僅更新至這個指定版本
 
       警告：我們不建議設定版本限制，因為這可能導致使用者無法接收軟體更新，且無法修正重大的安全性問題。限制僅能更新至指定前置碼版本，可能讓使用者面臨風險。</translation>
+<translation id="4298509794364745131">指定可在「<ph name="PRODUCT_OS_NAME" />」螢幕鎖定畫面中做為筆記應用程式使用的應用程式清單。
+
+      如果你偏好的筆記應用程式可在螢幕鎖定畫面中啟用，螢幕鎖定畫面就會顯示使用者介面元素，供你啟動該應用程式。
+      啟動後，應用程式將可在螢幕鎖定畫面上方建立應用程式視窗，並在螢幕鎖定的狀態下建立資料項目 (記事)。主要使用者工作階段解鎖後，應用程式可以將建立的記事匯入主要使用者工作階段。目前只有 Chrome 筆記應用程式可在螢幕鎖定畫面中使用。
+
+      設定政策後，使用者如要在螢幕鎖定畫面中啟用某個應用程式，該應用程式的擴充功能 ID 必須包含在政策清單值內才能啟用。
+      因此，將這項政策設定為空白清單時，系統會完全停用螢幕鎖定畫面的筆記功能。
+      請注意，即使政策中包含某個應用程式 ID，也不一定代表使用者可以在螢幕鎖定畫面中將該應用程式做為筆記應用程式使用。舉例來說，Chrome 61 版本的可用應用程式集會額外受到平台限制。
+
+      如未設定政策，使用者可在螢幕鎖定畫面中啟用的應用程式集就不會受到任何政策限制。</translation>
 <translation id="4309640770189628899">是否在 TLS 中啟用 DHE 加密套件</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更新版本</translation>
 <translation id="4322842393287974810">允許使用無延遲資訊站應用程式的自動啟動功能來控制 <ph name="PRODUCT_OS_NAME" /> 版本</translation>
@@ -1253,7 +1259,6 @@
       如果你啟用這項設定，就會一律啟用 Google 搜尋中的安全搜尋服務。
 
       如果你停用這項設定或尚未設定值，就不會在 Google 搜尋中強制執行安全搜尋服務。</translation>
-<translation id="5940306398763671235">啟用 Google Cast</translation>
 <translation id="5946082169633555022">測試頻道</translation>
 <translation id="5950205771952201658">由於線上撤銷檢查 (監測隨機性軟體錯誤) 無法提供實際的安全性效益，因此在 <ph name="PRODUCT_NAME" /> 版本 19 和更新的版本中，系統已預設停用這些檢查。將這項政策設定為 True，系統會還原先前行為，並且會執行線上 OCSP/CRL 檢查。
 
@@ -1574,13 +1579,6 @@
 
           只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="7302043767260300182">在 AC 供電環境下執行時的螢幕鎖定延遲時間</translation>
-<translation id="7309839952828354215">針對採用 eCryptfs 檔案系統且需要轉換成 Ext4 加密系統的裝置指定相關行為。
-
-      如果將這項政策設為「DisallowArc」，裝置上的所有使用者 (包括已採用 Ext4 加密者) 均無法使用 Android 應用程式，也無法從 eCryptfs 檔案系統遷移至 Ext4 加密系統。
-
-      如果將這項政策設為「AllowMigration」，擁有 eCryptfs 檔案系統主目錄的使用者可視需要將主目錄遷移至 Ext4 加密系統 (目前是當裝置可下載 Android N 時)。
-
-      如果未設定這項政策，裝置行為會與選擇「DisallowArc」時相同。</translation>
 <translation id="7311458740754205918">如果將這項政策設為 true 或未設定這項政策，系統可能會根據使用者的瀏覽紀錄、興趣或位置在新分頁顯示內容建議。
 
       如果將這項政策設為 false，新分頁就不會顯示系統自動產生的內容建議。</translation>
@@ -1657,7 +1655,6 @@
 <translation id="7625444193696794922">指定裝置的固定發佈頻道。</translation>
 <translation id="7632724434767231364">GSSAPI 資料庫名稱</translation>
 <translation id="7635471475589566552">設定「<ph name="PRODUCT_NAME" />」的應用程式語言代碼，並且禁止使用者變更語言代碼。如果你啟用這項設定，「<ph name="PRODUCT_NAME" />」就會使用指定的語言代碼。如果設定的語言代碼不受支援，就會改用「en-US」。如果停用或尚未調整這項設定，「<ph name="PRODUCT_NAME" />」就會使用使用者指定的偏好語言代碼 (如果已設定)、系統語言代碼或備用語言代碼「en-US」。</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">決定是否要為裝置啟用數據漫遊。如果設為 True，就會允許數據漫遊。如未設定或設為 False，就不支援數據漫遊。</translation>
 <translation id="7683777542468165012">動態政策更新</translation>
 <translation id="7694807474048279351">在系統已套用 <ph name="PRODUCT_OS_NAME" />更新之後安排自動重新啟動。
@@ -1772,6 +1769,7 @@
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">系統不再支援這項政策。連線至遠端用戶時，啟用 STUN 使用量和轉送伺服器。如果啟用這項設定，那麼即使遠端主機電腦被防火牆隔開，這台電腦也能發現遠端主機電腦並建立連結。如果停用這項設定，並且外傳 UDP 連結遭到防火牆篩選，則這台電腦只會與當地網路內的主機電腦建立連線。</translation>
 <translation id="7980227303582973781">無特殊限制</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">將畫面旋轉 0 度</translation>
 <translation id="8044493735196713914">回報裝置啟動模式</translation>
 <translation id="8050080920415773384">原生列印</translation>

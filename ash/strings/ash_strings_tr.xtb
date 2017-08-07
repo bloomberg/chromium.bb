@@ -4,7 +4,6 @@
 <translation id="1012876632442809908">USB-C cihaz (ön bağlantı noktası)</translation>
 <translation id="1013923882670373915">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda şu PIN kodunu girin: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">Rafı otomatik gizle</translation>
-<translation id="1127238861555034875">Büyüteç modu</translation>
 <translation id="1153356358378277386">Eşlenen cihazlar</translation>
 <translation id="1195412055398077112">fazla tarama</translation>
 <translation id="1247372569136754018">Mikrofon (dahili)</translation>
@@ -26,6 +25,7 @@
 <translation id="1677472565718498478">Kalan süre: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 adresi: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Bu cihaz kuruluş tarafından yönetiliyor</translation>
+<translation id="1746730358044914197">Giriş yöntemleri, yöneticiniz tarafından yapılandırılır.</translation>
 <translation id="1747827819627189109">Dokunmatik klavye etkin</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Kablosuz kapalı.</translation>
@@ -35,11 +35,13 @@
 <translation id="1919743966458266018">Görev yöneticisini açma kısayolu değişti. Lütfen <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>
 <translation id="1923539912171292317">Otomatik tıklamalar</translation>
 <translation id="1942830294380034169">Taşma düğmesi</translation>
+<translation id="1951012854035635156">Asistan</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2012624427112548395">Ctrl+Arama+H</translation>
 <translation id="2049639323467105390">Bu cihaz <ph name="DOMAIN" /> tarafından yönetiliyor.</translation>
 <translation id="2050339315714019657">Dikey</translation>
+<translation id="2067602449040652523">Klavye parlaklığı</translation>
 <translation id="207439088875642105">Bu hesap çocuklar içindir ve <ph name="FIRST_PARENT_EMAIL" /> ile <ph name="SECOND_PARENT_EMAIL" /> tarafından yönetilmektedir</translation>
 <translation id="2122028596993374965"><ph name="TAB_NAME" /> sekmesinin <ph name="RECEIVER_NAME" /> cihazına yayınını durdur</translation>
 <translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>
@@ -50,6 +52,7 @@
 <translation id="2268813581635650749">Tüm kullanıcıların oturumunu kapat</translation>
 <translation id="2292698582925480719">Görüntüyü ölçekle</translation>
 <translation id="2303600792989757991">Pencere genel bakışını değiştir</translation>
+<translation id="2338501278241028356">Yakındaki cihazları keşfetmek için Bluetooth'u aç</translation>
 <translation id="2352467521400612932">Ekran kalemi ayarları</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> etkinleştiriliyor</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -86,7 +89,6 @@
 <translation id="315116470104423982">Mobil veriler</translation>
 <translation id="3236488194889173876">Kullanılabilir mobil ağ yok</translation>
 <translation id="3294437725009624529">Misafir</translation>
-<translation id="3335772982573114336">Yeni not</translation>
 <translation id="3364721542077212959">Ekran kalemi araçları</translation>
 <translation id="3368922792935385530">Bağlı</translation>
 <translation id="3371140690572404006">USB-C cihaz (sağ ön bağlantı noktası)</translation>
@@ -118,8 +120,10 @@
 <translation id="3967919079500697218">Ekran görüntüsü alabilme işlevi yöneticiniz tarafından devre dışı bırakılmıştır.</translation>
 <translation id="397105322502079400">Hesaplanııyor...</translation>
 <translation id="3995138139523574647">USB-C cihaz (sağ arka bağlantı noktası)</translation>
+<translation id="4017989525502048489">Lazer işaretçi</translation>
 <translation id="4279490309300973883">Yansıtılıyor</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4338109981321384717">Büyüteç</translation>
 <translation id="4378551569595875038">Bağlanıyor...</translation>
 <translation id="4421231901400348175">Ekranınızın kontrolü, Uzaktan Yardım kullanılarak <ph name="HELPER_NAME" /> ile paylaşılıyor.</translation>
 <translation id="4430019312045809116">Ses</translation>
@@ -215,11 +219,9 @@
 <translation id="7066646422045619941">Bu ağ, yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="7067196344162293536">Otomatik döndür</translation>
 <translation id="7098389117866926363">USB-C cihaz (arkadaki sol bağlantı noktası)</translation>
-<translation id="7129360219436193655">Lazer işaretçi modu</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Üst Karakter+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> saniye içinde eski çözünürlüğe dönülüyor</translation>
-<translation id="7199454189089571166">Asistan modu</translation>
 <translation id="7246339268451149667">Parmak iziyle kilit açma etkinleştirilsin mi?</translation>
 <translation id="7256634071279256947">Arka mikrofon</translation>
 <translation id="7348093485538360975">Ekran klavyesi</translation>
@@ -254,6 +256,7 @@
 <translation id="8185286464235484130">Birkaç soruyu yanıtlayarak bizimle ilgili görüşünüzü bildirin.</translation>
 <translation id="8190698733819146287">Dilleri ve girişi özelleştir...</translation>
 <translation id="8308637677604853869">Önceki menü</translation>
+<translation id="8351131234907093545">Not oluştur</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8433186206711564395">Ağ ayarları</translation>
 <translation id="8433977262951327081">Giriş seçenekleri menüsü balonunu rafta görüntüleme kısa yolu değişti. <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>

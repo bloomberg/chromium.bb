@@ -134,6 +134,8 @@
 <translation id="3474649192738347024">ഫോമുകൾ പൂരിപ്പിച്ചു.</translation>
 <translation id="3478058380795961209">കാലഹരണപ്പെടുന്ന മാസം</translation>
 <translation id="3482959374254649722">നിങ്ങളുടെ ടാബുകൾ സമന്വയിപ്പിക്കുന്നു...</translation>
+<translation id="3487093336331957349">തിരയലും സൈറ്റ് നിർദ്ദേശങ്ങളും</translation>
+<translation id="3493531032208478708">നിർദ്ദേശിച്ച ഉള്ളടക്കത്തെക്കുറിച്ച് <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="3494788280727468875">ബ്രൗസിംഗ് ഡാറ്റ മായ്‌ക്കുന്നത് സ്ഥിരീകരിക്കുക</translation>
 <translation id="3519193562722059437">വെബ് ബ്രൗസുചെയ്യാൻ ഒരു ടാബ് തുറക്കുക.</translation>
 <translation id="3527085408025491307">ഫോൾഡർ</translation>
@@ -151,6 +153,7 @@
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> ഫോൾഡറിലേക്ക് ബുക്ക്മാർക്ക് ചെയ്‌തു</translation>
 <translation id="3738139272394829648">തിരയാൻ സ്‌പർശിക്കുക</translation>
 <translation id="3771033907050503522">ആൾമാറാട്ട ടാബുകൾ</translation>
+<translation id="3779810277399252432">ഇന്റർനെറ്റ് കണക്ഷനില്ല.</translation>
 <translation id="3783017676699494206">ഇമേജ് സംരക്ഷിക്കുക</translation>
 <translation id="385051799172605136">പിന്നോട്ട്</translation>
 <translation id="3897092660631435901">മെനു</translation>
@@ -173,6 +176,7 @@
 <translation id="4281844954008187215">സേവന നിബന്ധനകൾ</translation>
 <translation id="430793432425771671">എല്ലാം സമന്വയിപ്പിക്കുക</translation>
 <translation id="4359125752503270327">ഈ പേജ് മറ്റൊരു അപ്ലിക്കേഷനിൽ തുറക്കും.</translation>
+<translation id="4375040482473363939">QR കോഡ് തിരയൽ</translation>
 <translation id="4378154925671717803">ഫോണ്‍</translation>
 <translation id="441868831736628555">സ്വകാര്യത അറിയിപ്പ്</translation>
 <translation id="4508750114462689118">സൈൻ ഇൻ പ്രമോ അടയ്‌ക്കുക</translation>
@@ -262,7 +266,6 @@
 <translation id="6196207969502475924">ശബ്ദ തിരയൽ</translation>
 <translation id="6254066287920239840">ബ്രൗസറിന് പകരം ആപ്പിൽ ലിങ്കുകൾ തുറക്കുക.</translation>
 <translation id="6255097610484507482">ക്രെഡിറ്റ് കാര്‍ഡ് എഡിറ്റുചെയ്യുക</translation>
-<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">ഫോട്ടോകളെടുത്ത് അപ്‌ലോഡുചെയ്യാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു.</translation>
 <translation id="6314335155547195432">പാസ്‌വേഡ് സൃഷ്‌ടിക്കുക</translation>
 <translation id="6324528485781869530">സമന്വയ അക്കൗണ്ട് മാറുക</translation>
@@ -365,7 +368,6 @@
 <translation id="842017693807136194">ഇതുപയോഗിച്ച് സൈൻ ഇൻ ചെയ്‌‌തു</translation>
 <translation id="8428045167754449968">നഗരം / പട്ടണം</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
-<translation id="8433678324664858900">നിർദ്ദേശങ്ങൾ കാണിക്കുക</translation>
 <translation id="8458397775385147834">ഒരു ഇനം ഇല്ലാതാക്കി</translation>
 <translation id="8487700953926739672">ഓഫ്‌ലൈനില്‍ ലഭ്യമാണ്</translation>
 <translation id="8503813439785031346">ഉപയോക്തൃനാമം</translation>

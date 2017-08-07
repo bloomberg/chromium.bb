@@ -107,11 +107,11 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1994173015038366702">Webadresse</translation>
 <translation id="2000271276660256125">Af sikkerhedsmæssige årsager skal du bekræfte din skærmlås for at få adgang til din adgangskode.</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB af andre apps</translation>
+<translation id="2011013297378343166">Ved at bruge denne app accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" /> og <ph name="BEGIN_LINK3" />Erklæring om privatliv for Google-konti, der er oprettet i Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2017836877785168846">Nulstiller historikken og autofuldførelser i adresselinjen.</translation>
 <translation id="2020525020270327736">Kopiér websitet</translation>
 <translation id="2038563949887743358">Slå computerversionen af websitet til</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB af andre apps</translation>
-<translation id="2073732792864401646">Nulstil statistik</translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> af <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2095887075102408547">Når denne funktion er aktiveret, anvender Chrome Googles servere til at komprimere de sider, du besøger, før de downloades. Google optimerer og ser ikke sider, der besøges via private forbindelser (HTTPS) eller inkognitofaner.</translation>
@@ -129,7 +129,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="219985413780390209">Beskyt dig selv og din enhed mod farlige websites</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Fortsæt som <ph name="USER_FULL_NAME" /></translation>
-<translation id="2246961355222023276">Brugt data:</translation>
 <translation id="2268044343513325586">Juster</translation>
 <translation id="2286841657746966508">Faktureringsadresse</translation>
 <translation id="2315043854645842844">Klientens certifikatvalg understøttes ikke af operativsystemet.</translation>
@@ -144,7 +143,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2369533728426058518">åbne faner</translation>
 <translation id="2385560268894525395">den seneste uge</translation>
 <translation id="2387895666653383613">Skalering af tekst</translation>
-<translation id="238909021488141516">Der opstod en fejl under download af indholdet.</translation>
 <translation id="2414886740292270097">Mørk</translation>
 <translation id="2416359993254398973">Chrome skal have tilladelse til at bruge dit kamera på dette website.</translation>
 <translation id="2433507940547922241">Udseende</translation>
@@ -211,6 +209,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="3115898365077584848">Vis oplysninger</translation>
 <translation id="3137521801621304719">Slå inkognitotilstand fra</translation>
 <translation id="3148434565183091099">Log ind på Chrome for at se dine bogmærker på alle dine enheder.</translation>
+<translation id="3157842584138209013">Se, hvor meget data du har gemt via knappen Flere valgmuligheder</translation>
 <translation id="3166827708714933426">Genveje på faner og i vinduer</translation>
 <translation id="3177909033752230686">Sidens sprog:</translation>
 <translation id="3190152372525844641">Aktivér tilladelse for Chrome i <ph name="BEGIN_LINK" />Indstillinger for Android<ph name="END_LINK" />.</translation>
@@ -231,13 +230,13 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="3319792846664697699">Navigationspanel</translation>
 <translation id="3321222012623826478">Denne tjeneste skal sende denne websiteadresse anonymt til bekræftelse på Googles servere.</translation>
 <translation id="3328801116991980348">Webstedoplysninger</translation>
+<translation id="3341058695485821946">Se, hvor meget data du har gemt</translation>
 <translation id="3350687908700087792">Luk alle inkognitofaner</translation>
 <translation id="3365671512111106261">Ikke tilgængelig, når Datasparefunktion er slået til.</translation>
 <translation id="3367813778245106622">Log ind igen for at starte synkroniseringen</translation>
 <translation id="3384347053049321195">Del billede</translation>
 <translation id="3386292677130313581">Spørg om tilladelse, inden websites får oplyst din placering (anbefales)</translation>
 <translation id="3387650086002190359">Download af <ph name="FILE_NAME" /> mislykkedes på grund af fejl i filsystemet.</translation>
-<translation id="3391904733075904777">Du skal konfigurere en enhedslås i enhedens sikkerhedsindstillinger for at se og kopiere adgangskoder.</translation>
 <translation id="339329030417445648">Dette website har tendens til at vise påtrængende annoncer</translation>
 <translation id="3398320232533725830">Åbn bogmærkeadministratoren</translation>
 <translation id="3414952576877147120">Størrelse:</translation>
@@ -261,7 +260,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="360207483134687714">Hjælp med at forbedre VR-oplevelsen i Chrome</translation>
 <translation id="360480449234699036">Få oplysninger om emner på websites uden at forlade siden. "Tryk for at søge" sender et ord og ordets kontekst til Google Søgning og giver dig definitioner, billeder, søgeresultater og andre oplysninger.
 
-Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgrænse din søgning ved at skyde panelet hele vejen op og trykke på søgefeltet.</translation>
+Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgrænse din søgning ved at skyde panelet hele vejen op og trykke i søgefeltet.</translation>
 <translation id="3616113530831147358">Lyd</translation>
 <translation id="3632295766818638029">Vis adgangskoden</translation>
 <translation id="363596933471559332">Log automatisk ind på websites med gemte loginoplysninger. Når funktionen er slået fra, bliver du bedt om at bekræfte, hver gang du vil logge ind på et website.</translation>
@@ -270,7 +269,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3661699943263275414">Tredjepartswebsites kan gemme og læse cookiedata</translation>
 <translation id="3662546969139119822">Der er ingen historik her</translation>
 <translation id="3672452749423051839">Forslag ved navigationsfejl</translation>
-<translation id="3714981814255182093">Åbn søgebjælken</translation>
+<translation id="3714981814255182093">Åbn søgefeltet</translation>
 <translation id="3734660163659757482">Træk opad for at se bogmærker m.m.</translation>
 <translation id="3738139272394829648">Tryk for at søge</translation>
 <translation id="3739899004075612870">Tilføjet som bogmærke i <ph name="PRODUCT_NAME" /></translation>
@@ -331,6 +330,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="42981349822642051">Udvid</translation>
 <translation id="4300272766492248925">Åbn app</translation>
 <translation id="4307992518367153382">Grundlæggende valgmuligheder</translation>
+<translation id="4334425495413014985">Hvis du vil bruge <ph name="APP_NAME" /> for første gang, skal du oprette forbindelse til internettet.</translation>
 <translation id="4351244548802238354">Luk dialogboksen</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Søgning via Sogou</translation>
@@ -491,12 +491,14 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="583891442612896534">Chrome kan ikke komme i kontakt med Googles servere i forbindelse med datakomprimering. Dine sparede data kan være begrænsede.</translation>
 <translation id="5858741533101922242">Chrome kan ikke slå Bluetooth-adapteren til</translation>
 <translation id="5860033963881614850">Fra</translation>
+<translation id="5867841422488265304">Søg, eller skriv webadresse</translation>
 <translation id="5869522115854928033">Gemte adgangskoder</translation>
 <translation id="5878455346526065919">Bloker annoncer fra websites, der har tendens til at vise påtrængende annoncer</translation>
 <translation id="5902828464777634901">Alle lokale data, der gemmes af websitet, herunder cookies, slettes</translation>
 <translation id="5911030830365207728">Google Oversæt</translation>
 <translation id="5916664084637901428">Til</translation>
 <translation id="5919204609460789179">Opdater <ph name="PRODUCT_NAME" /> for at starte synkroniseringen</translation>
+<translation id="5923939907038835197">Find nyheder, opskrifter, vejr...</translation>
 <translation id="5939518447894949180">Nulstil</translation>
 <translation id="5942872142862698679">Søgning via Google</translation>
 <translation id="5956665950594638604">Åbn Hjælp til Chrome i en ny fane</translation>
@@ -673,6 +675,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7600965453749440009">Oversæt aldrig <ph name="LANGUAGE" /></translation>
 <translation id="7605594153474022051">Synkronisering fungerer ikke</translation>
+<translation id="7607552448134703340">Skriv, hvad du leder efter</translation>
 <translation id="7612619742409846846">Du er logget ind på Google som</translation>
 <translation id="7619072057915878432">Download af <ph name="FILE_NAME" /> mislykkedes på grund af netværksfejl.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Få hjælp<ph name="END_LINK1" />, eller <ph name="BEGIN_LINK2" />scan igen<ph name="END_LINK2" /></translation>
@@ -827,7 +830,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="9188680907066685419">Log ud af den administrerede konto</translation>
 <translation id="9204836675896933765">1 fil tilbage</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9216841883364897953">Fordeling af dataforbrug</translation>
 <translation id="9219103736887031265">Billeder</translation>
 <translation id="932327136139879170">Start</translation>
 <translation id="932599481871055447">Gem data, og få en hurtigere browsingoplevelse</translation>
@@ -838,7 +840,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="969096075394517431">Skift sprog</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> minutter tilbage</translation>
 <translation id="974555521953189084">Indtast din adgangssætning for at starte synkroniseringen</translation>
-<translation id="977929483582859929">Gemte data:</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="982182592107339124">Denne handling rydder dataene for alle websites, herunder:</translation>
 <translation id="983192555821071799">Luk alle faner</translation>

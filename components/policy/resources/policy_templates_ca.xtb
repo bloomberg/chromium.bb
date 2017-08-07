@@ -314,7 +314,6 @@
 <translation id="2299220924812062390">Especifica una llista de connectors activats</translation>
 <translation id="2309390639296060546">Configuració d'ubicació geogràfica predeterminada</translation>
 <translation id="2312134445771258233">Us permet configurar les pàgines que es carreguen en iniciar. El contingut de la llista "URL que s'han d'obrir en iniciar" s'ignora tret que seleccioneu "Obre una llista d'URL" a "Acció a l'inici".</translation>
-<translation id="23323722127921515">Mostra la icona de la barra d'eines de Google Cast</translation>
 <translation id="2337466621458842053">Us permet definir una llista de patrons d'URL que especifiquen els llocs que poden mostrar imatges. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultImagesSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="2372547058085956601">Retard d'inici de sessió automàtic de la sessió pública.
 
@@ -399,7 +398,6 @@
 
       Si aquesta política es defineix com a False, es mostrarà un missatge d'error en comptes de la sol·licitud de configuració de la xarxa.</translation>
 <translation id="2498238926436517902">Amaga sempre el prestatge automàticament</translation>
-<translation id="2503514368596117142">Configura les polítiques de Google Cast, una funció que permet als usuaris enviar el contingut de pestanyes, de llocs o de l'escriptori del navegador a pantalles remotes i sistemes de so.</translation>
 <translation id="2514328368635166290">Especifica l'URL de la icona preferida del proveïdor de cerca predeterminat. Aquesta política és opcional. Si no es defineix, no apareixerà cap icona per al proveïdor de cerca. Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="2516600974234263142">Activa la impressió a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta configuració.
 
@@ -412,9 +410,6 @@
 <translation id="2529880111512635313">Configura la llista d'aplicacions i d'extensions instal·lades per força</translation>
 <translation id="253135976343875019">Retard d'advertiment d'inactivitat quan s'utilitza alimentació</translation>
 <translation id="2552966063069741410">Zona horària</translation>
-<translation id="2558917182010914102">Si aquesta política es defineix com a "true" o no es defineix, Google Cast s'activarà i els usuaris podran iniciar-lo des del menú d'aplicacions, des dels menús contextuals d'una pàgina, des dels controls multimèdia de llocs web compatibles amb Cast i (si es mostra) des de la icona de la barra d'eines de Cast.
-
-          Si aquesta política es defineix com a "false", Google Cast es desactivarà.</translation>
 <translation id="2562339630163277285">Especifica l'URL del motor de cerca utilitzat per proporcionar resultats immediats. L'URL ha de contenir la cadena <ph name="SEARCH_TERM_MARKER" />, que se substituirà, en el moment de fer la consulta, pel text que l'usuari hagi introduït fins al moment.
 
           Aquesta política és opcional i, si no s'estableix, no es proporcionaran resultats de cerca immediats.
@@ -537,6 +532,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="3001534538097271560">Si s'estableix aquesta política en "false", els usuaris no poden decidir si volen que algunes dades del sistema i contingut de les pàgines s'enviïn als servidors de Google. Si aquesta opció de configuració s'estableix en "true" o no s'estableix, els usuaris poden enviar aquestes dades a Navegació segura per ajudar a detectar les aplicacions i els llocs perillosos.
 
       Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
+<translation id="3016255526521614822">Afegeix a la llista blanca les aplicacions per prendre notes que es permeten a la pantalla de bloqueig de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021409116652377124">Desactiva el cercador de connectors</translation>
 <translation id="3030000825273123558">Activa la creació d'informes de mètriques</translation>
 <translation id="3034580675120919256">Us permet definir si els llocs web poden executar JavaScript. L'execució de JavaScript es pot autoritzar o denegar per a tots els llocs web. Si no es defineix aquesta política, s'utilitzarà el paràmetre "AllowJavaScript" i l'usuari podrà canviar-lo.</translation>
@@ -864,6 +860,16 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       "1412.24.34":  només s'actualitza a aquesta versió específica
 
       Advertiment: no et recomanem configurar restriccions de versions, ja que podrien impedir que els usuaris rebin actualitzacions de programari i correccions crítiques de seguretat. En definitiva, restringir les actualitzacions al prefix d'una versió específica pot posar els usuaris en perill.</translation>
+<translation id="4298509794364745131">Indica una llista d'aplicacions que es poden activar com a aplicacions per prendre notes a la pantalla de bloqueig de <ph name="PRODUCT_OS_NAME" />.
+
+      Si l'aplicació preferida per prendre notes està activada a la pantalla de bloqueig, en aquesta pantalla s'hi mostrarà un element d'IU per iniciar-la.
+      Quan s'hagi iniciat, l'aplicació podrà crear una finestra d'aplicació a la part superior de la pantalla de bloqueig i crear elements de dades (notes) en el context de la pantalla de bloqueig. L'aplicació podrà importar notes creades a la sessió principal de l'usuari quan la sessió estigui desbloquejada. En aquests moments, a la pantalla de bloqueig només s'hi admeten aplicacions de Chrome per prendre notes.
+
+      Si la política es defineix, l'usuari podrà activar una aplicació a la pantalla de bloqueig només si el valor de llista de la política conté l'identificador d'extensió de l'aplicació.
+      Per tant, si aquesta política es defineix en una llista buida, no es permetrà en cap cas prendre notes des de la pantalla de bloqueig.
+      Tingues en compte que el fet que la política contingui un identificador d'aplicació no vol dir necessàriament que l'usuari pugui activar l'aplicació com a aplicació per prendre notes a la pantalla de bloqueig. Per exemple, a Chrome 61, la plataforma també restringeix el conjunt d'aplicacions disponibles.
+
+      Si la política no es defineix, no hi haurà restriccions imposades per la política respecte del conjunt d'aplicacions que l'usuari pot activar a la pantalla de bloqueig.</translation>
 <translation id="4309640770189628899">Si els sistemes de xifratge DHE de TLS estan activats</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o una versió posterior</translation>
 <translation id="4322842393287974810">Permet que l'aplicació de quiosc d'inici automàtic sense retards controli la versió de <ph name="PRODUCT_OS_NAME" /></translation>
@@ -946,7 +952,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Per veure patrons d'exemple, consulteu l'enllaç https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Obre una llista d'URL</translation>
-<translation id="4680961954980851756">Activa l'emplenament automàtic</translation>
+<translation id="4680961954980851756">Activa Emplenament automàtic</translation>
 <translation id="4722399051042571387">Si s'estableix com a "false", els usuaris no podran definir codis PIN poc segurs i fàcils d'esbrinar.
 
           Exemples de codis PIN poc segurs: codis PIN que només continguin un sol dígit repetit diverses vegades (1111), codis PIN consecutius que augmentin d'un en un (1234) o que disminueixin d'un en un (4321) i codis PIN que s'utilitzin de manera habitual.
@@ -1244,7 +1250,6 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 Si activeu aquest paràmetre, SafeSearch de Cerca de Google sempre estarà activa.
 
 Si desactiveu aquest paràmetre o si no definiu cap valor, SafeSearch de Cerca de Google no s'executarà.</translation>
-<translation id="5940306398763671235">Activa Google Cast</translation>
 <translation id="5946082169633555022">Canal beta</translation>
 <translation id="5950205771952201658">Com que les comprovacions de revocació en línia "soft-fail" no proporcionen cap avantatge concret en termes de seguretat, estan desactivades de manera predeterminada a <ph name="PRODUCT_NAME" /> versió 19 i versions posteriors. En establir aquesta política en true, es restaurarà el comportament anterior i es realitzaran les comprovacions OCSP/CRL en línia.
 
@@ -1426,7 +1431,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6689792153960219308">Informa de l'estat del maquinari</translation>
 <translation id="6693751878507293182">Si es defineix aquest paràmetre com a activat, es desactivaran la cerca automàtica i la instal·lació dels connectors que falten a <ph name="PRODUCT_NAME" />. Si es defineix aquest paràmetre com a desactivat o si es deixa sense definir, el cercador de connectors quedarà actiu.</translation>
 <translation id="6699880231565102694">Activació de l'autenticació de dos factors per als amfitrions d'accés remot</translation>
-<translation id="6724842112053619797">Si actives aquesta opció de configuració, les opcions de configuració emmagatzemades als perfils que hi ha a <ph name="PRODUCT_NAME" />, com ara les adreces d'interès, les dades d'emplenament automàtic o les contrasenyes, entre d'altres, també s'introduiran en un fitxer emmagatzemat a la carpeta Itinerància del perfil de l'usuari o a la ubicació especificada per l'administrador a la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. En activar aquesta política, es desactiva la sincronització en núvol.
+<translation id="6724842112053619797">Si actives aquesta opció de configuració, les opcions de configuració emmagatzemades als perfils que hi ha a <ph name="PRODUCT_NAME" />, com ara les adreces d'interès, les dades d'Emplenament automàtic o les contrasenyes, entre d'altres, també s'introduiran en un fitxer emmagatzemat a la carpeta Itinerància del perfil de l'usuari o a la ubicació especificada per l'administrador a la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. En activar aquesta política, es desactiva la sincronització en núvol.
 
       Si aquesta política es desactiva o no es defineix, només s'utilitzaran els perfils locals habituals.
 
@@ -1567,13 +1572,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="7302043767260300182">Retard del bloqueig de pantalla quan s'utilitza alimentació</translation>
-<translation id="7309839952828354215">Especifica com s'ha de comportar un dispositiu que conté eCryptfs i que ha de fer una transició a encriptació ext4.
-
-      Si defineixes aquesta política en "DisallowArc", les aplicacions d'Android es desactivaran per a tots els usuaris del dispositiu (fins i tot per a aquells que ja tinguin encriptació ext4) i no se'ls oferirà cap tipus de migració d'eCryptfs a encriptació ext4.
-
-      Si defineixes aquesta política en "AllowMigration", s'oferirà als usuaris amb directoris d'inici eCryptfs la possibilitat de migrar-los a encriptació ext4 si és necessari (en concret, quan Android N estigui disponible al dispositiu).
-
-      Si aquesta política no es defineix, el dispositiu es comportarà com si la política s'hagués establert en "DisallowArc".</translation>
 <translation id="7311458740754205918">Si s'estableix en "true" o no s'estableix cap valor, és possible que a la pàgina Pestanya nova es mostrin suggeriments de contingut basats en l'historial de navegació, en els interessos o en la ubicació de l'usuari.
 
       Si s'estableix en "false", a la pàgina Pestanya nova no es mostraran suggeriments de contingut generats automàticament.</translation>
@@ -1650,7 +1648,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7625444193696794922">Especifica el canal de llançament al qual aquest dispositiu s'hauria de bloquejar.</translation>
 <translation id="7632724434767231364">Nom de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Defineix la configuració regional de les aplicacions a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris la modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> fa servir la configuració regional especificada. Si aquesta configuració regional no és compatible, es fa servir "en-US" en lloc seu. Si aquest paràmetre està desactivat o bé si no està configurat, <ph name="PRODUCT_NAME" /> fa servir la configuració regional preferida que hagi especificat l'usuari (en cas que n'hagi configurat cap), la configuració regional del sistema o bé la configuració regional alternativa "en-US".</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Determina si cal activar la itinerància de dades per al dispositiu. Si es defineix a «true» (cert), es permet la itinerància de dades. Si es deixa sense configurar o es defineix a «false» (fals), la itinerància de dades no estarà disponible.</translation>
 <translation id="7683777542468165012">Actualització de la política dinàmica</translation>
 <translation id="7694807474048279351">Programa un reinici automàtic un cop s'hagi aplicat una actualització de <ph name="PRODUCT_OS_NAME" />.
@@ -1764,6 +1761,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Aquesta política ja no és compatible. Activa l'ús de servidors STUN i de relé quan us connecteu a un client remot. Si s'activa aquest paràmetre, aquest equip pot descobrir i connectar-se a equips amfitrions remots, fins i tot si estan separats per un tallafoc. Si es desactiva aquest paràmetre i el tallafoc filtra les connexions UDP de sortida, aquest equip només es podrà connectar als equips amfitrions de la xarxa local.</translation>
 <translation id="7980227303582973781">Sense restriccions especials</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Gira la pantalla 0 graus</translation>
 <translation id="8044493735196713914">Informa del mode d'inici del dispositiu</translation>
 <translation id="8050080920415773384">Impressió nativa</translation>

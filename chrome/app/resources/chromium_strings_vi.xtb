@@ -146,6 +146,7 @@
 <translation id="5862307444128926510">Chào mừng bạn đến với Chromium</translation>
 <translation id="5877064549588274448">Kênh đã thay đổi. Hãy khởi động lại thiết bị để áp dụng thay đổi.</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
+<translation id="5902536751647951209">Lỗi chứng chỉ xác thực. Vui lòng đăng nhập lại vào Chromium hoặc liên hệ với quản trị viên của bạn để biết thêm thông tin. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Gần được cập nhật! Hãy khởi động lại thiết bị của bạn để hoàn tất cập nhật.</translation>
 <translation id="5942520288919337908">Đã thêm <ph name="EXTENSION_NAME" /> vào  Chromium.</translation>
 <translation id="59625444380784159">Chi tiết từ danh bạ của bạn có thể giúp bạn điền vào biểu mẫu trong Chromium nhanh hơn.</translation>
@@ -219,6 +220,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được
 <translation id="7745317241717453663">Thao tác này sẽ xóa dữ liệu duyệt web của bạn khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chromium dưới dạng <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Trình cài đặt không thể tạo thư mục tạm thời. Vui lòng kiểm tra dung lượng ổ đĩa còn trống và quyền cài đặt phần mềm.</translation>
 <translation id="7756122083761163394">Dữ liệu duyệt web của người này sẽ bị xóa khỏi thiết bị này. Để khôi phục dữ liệu, hãy đăng nhập vào Chrome bằng $2.</translation>
+<translation id="7774736947049807614">Lỗi chứng chỉ xác thực. Vui lòng đăng nhập lại vào Chromium với tư cách <ph name="USER_NAME" /> hoặc liên hệ với quản trị viên của bạn để biết thêm thông tin. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7937630085815544518">Bạn đã đăng nhập vào Chromium là <ph name="USER_EMAIL_ADDRESS" />. Vui lòng sử dụng cùng tài khoản để đăng nhập lại.</translation>
 <translation id="795025003224538582">Không khởi động lại</translation>
 <translation id="7962572577636132072">Chromium tự động cập nhật nên bạn luôn có phiên bản mới nhất.</translation>

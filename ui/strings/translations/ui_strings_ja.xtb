@@ -4,14 +4,17 @@
 <translation id="111910763555783249">通知設定</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 日前}other{# 日前}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 分前}other{# 分前}}</translation>
+<translation id="1169783199079129864">{MINUTES,plural, =1{1分}other{#分}}</translation>
 <translation id="1190609913194133056">通知センター</translation>
 <translation id="1243314992276662751">アップロード</translation>
 <translation id="1293699935367580298">Esc</translation>
+<translation id="1306549533752902673">おすすめのアプリ</translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> からの通知を無効にする</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分 }other{# 分 }}</translation>
 <translation id="1643823602425662293">通知</translation>
 <translation id="1685967565548146460">Hats</translation>
+<translation id="1710340000377843106">現在</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 分}other{# 分}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">期間</translation>
@@ -21,7 +24,9 @@
 <translation id="1842960171412779397">選択</translation>
 <translation id="1860796786778352021">通知を閉じる</translation>
 <translation id="1871244248791675517">Insert</translation>
+<translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">すべて選択(&amp;A)</translation>
+<translation id="2141853158323869627">{DAYS,plural, =1{1日}other{#日}}</translation>
 <translation id="2148716181193084225">今日</translation>
 <translation id="2168039046890040389">前のページへ</translation>
 <translation id="2190355936436201913">(なし)</translation>
@@ -61,6 +66,7 @@
 <translation id="4316910396681052118">すべてのアプリ</translation>
 <translation id="4320177379694898372">インターネットに接続されていません</translation>
 <translation id="4588090240171750605">右にスクロール</translation>
+<translation id="4730374152663651037">よく使用するアプリ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{残り 1 か月}other{残り # か月}}</translation>
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
@@ -71,9 +77,11 @@
 <translation id="5120799197269191491">検索+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="5153297660536091054">PIN ロック解除機能</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
+<translation id="5266161281976477809">三角形の展開ボタン</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">削除(&amp;D)</translation>
 <translation id="5476505524087279545">チェックを外す</translation>
+<translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> システム</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">左矢印キー</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 分}other{# 分}}</translation>
@@ -89,6 +97,7 @@
 <translation id="6135826906199951471">Delete</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/秒</translation>
 <translation id="6264365405983206840">すべて選択(&amp;A)</translation>
+<translation id="6351032674660237738">アプリの候補</translation>
 <translation id="6364916375976753737">左にスクロール</translation>
 <translation id="6394627529324717982">カンマ</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
@@ -109,10 +118,12 @@
 <translation id="6945221475159498467">選択</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7052633198403197513">F1</translation>
+<translation id="7130207228079676353">これですか？</translation>
 <translation id="7135556860107312402">次の通知を許可:</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{残り 1 分}other{残り # 分}}</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 分前}other{# 分前}}</translation>
+<translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{残り 1 分}other{残り # 分}}</translation>
 <translation id="7457942297256758195">すべて消去</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
@@ -138,8 +149,11 @@
 <translation id="8394908167088220973">メディアの再生/一時停止</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8428213095426709021">設定</translation>
+<translation id="8458811141851741261">{YEARS,plural, =1{1年}other{#年}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ファイル (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/秒</translation>
+<translation id="8725488761726303204">他 <ph name="NUMBER" /> 件</translation>
+<translation id="8772073294905169192">{HOURS,plural, =1{1時間}other{#時間}}</translation>
 <translation id="8806053966018712535">フォルダ <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">画像に注釈を付ける</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

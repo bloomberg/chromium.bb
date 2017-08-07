@@ -213,6 +213,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="7196020411877309443">¿Por qué estoy viendo esto?</translation>
 <translation id="7242029209006116544">Estás por acceder con una cuenta administrada, lo que significa que proporcionarás al administrador el control sobre tu perfil de Google Chrome. Tus datos de Google Chrome, como las aplicaciones, los favoritos, el historial, las contraseñas y otros parámetros de configuración quedarán vinculados a <ph name="USER_NAME" /> de forma permanente. Podrás eliminar estos datos a través del Panel de control de Cuentas de Google, pero no podrás asociarlos a otra cuenta. También puedes crear un perfil para mantener separados tus datos de Chrome. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Esta computadora dejará de recibir actualizaciones de Google Chrome en breve porque Windows XP y Windows Vista ya no se admitirán.</translation>
+<translation id="7330164299247909639">Se produjo un error en el certificado de autenticación. Vuelve a acceder a tu cuenta en Google Chrome como <ph name="USER_NAME" /> o comunícate con tu administrador para obtener más información. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="7369650938475876456">Usar una contraseña segura generada por Chrome</translation>
 <translation id="7398801000654795464">Accediste a Google Chrome con <ph name="USER_EMAIL_ADDRESS" />. Usa la misma cuenta para volver a acceder.</translation>
@@ -276,6 +277,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="8914504000324227558">Volver a iniciar Chrome</translation>
 <translation id="9026991721384951619">El Sistema operativo Chrome no pudo sincronizar los datos porque la información de acceso de la cuenta está desactualizada.</translation>
 <translation id="9067395829937117663">Para usar Google Chrome, se requiere Windows 7 o versiones posteriores.</translation>
+<translation id="9084668267983921457">Se produjo un error en el certificado de autenticación. Vuelve a acceder a tu cuenta en Google Chrome o comunícate con tu administrador para obtener más información. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Advertencia:<ph name="END_BOLD" /> Google Chrome no puede evitar que las extensiones registren tu historial de búsqueda. Para desactivar la extensión en modo incógnito, desactiva la casilla de esta opción.</translation>
 <translation id="911206726377975832">¿También eliminar datos de navegación?</translation>
 <translation id="919706545465235479">Actualiza Chrome para iniciar la sincronización</translation>

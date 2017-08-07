@@ -134,6 +134,8 @@
 <translation id="3474649192738347024">تم ملء النماذج.</translation>
 <translation id="3478058380795961209">شهر انتهاء الصلاحية</translation>
 <translation id="3482959374254649722">جارٍ مزامنة علامات التبويب الخاصة بك ...</translation>
+<translation id="3487093336331957349">اقتراحات البحث والمواقع</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> حول المحتوى المقترح</translation>
 <translation id="3494788280727468875">تأكيد محو بيانات التصفّح</translation>
 <translation id="3519193562722059437">افتح علامة تبويب لتصفح الويب.</translation>
 <translation id="3527085408025491307">المجلد</translation>
@@ -151,6 +153,7 @@
 <translation id="3691593122358196899">أُضيفَت إشارة مرجعية إلى <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">المس للبحث</translation>
 <translation id="3771033907050503522">علامات تبويب التصفح المتخفي</translation>
+<translation id="3779810277399252432">لا يتوفر اتصال بالإنترنت.</translation>
 <translation id="3783017676699494206">حفظ الصورة</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="3897092660631435901">قائمة</translation>
@@ -173,6 +176,7 @@
 <translation id="4281844954008187215">شروط الخدمة</translation>
 <translation id="430793432425771671">مزامنة كل شيء</translation>
 <translation id="4359125752503270327">ستفتح هذه الصفحة في تطبيق آخر.</translation>
+<translation id="4375040482473363939">البحث عن رمز الاستجابة السريعة</translation>
 <translation id="4378154925671717803">الهاتف</translation>
 <translation id="441868831736628555">إشعار الخصوصية</translation>
 <translation id="4508750114462689118">إغلاق عرض ترويجي لتسجيل الدخول</translation>
@@ -262,7 +266,6 @@
 <translation id="6196207969502475924">البحث الصوتي</translation>
 <translation id="6254066287920239840">فتح الروابط في التطبيق بدلاً من المتصفح.</translation>
 <translation id="6255097610484507482">تعديل بطاقة الائتمان</translation>
-<translation id="6273258929211277933"><ph name="TITLE" />، و<ph name="PUBLISHER_INFORMATION" />، و<ph name="PUBLICATION_DATE" />، و<ph name="STATE" /></translation>
 <translation id="6308436439357671616">هذا يتيح لك التقاط الصور وتحميلها.</translation>
 <translation id="6314335155547195432">إنشاء كلمة المرور</translation>
 <translation id="6324528485781869530">تبديل حساب المزامنة</translation>
@@ -365,7 +368,6 @@
 <translation id="842017693807136194">تم تسجيل الدخول باستخدام</translation>
 <translation id="8428045167754449968">المدينة/البلدة</translation>
 <translation id="8428213095426709021">إعدادات</translation>
-<translation id="8433678324664858900">عرض الاقتراحات</translation>
 <translation id="8458397775385147834">تم حذف عنصر واحد</translation>
 <translation id="8487700953926739672">التوفر في وضع عدم الاتصال</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>

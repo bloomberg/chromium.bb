@@ -215,6 +215,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7196020411877309443">為何出現這個對話框？</translation>
 <translation id="7242029209006116544">你已登入管理化環境下的帳戶，並將管理控制權授予你的 Chrome 設定檔。你的 Chrome 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。你可以透過 Google 帳戶資訊主頁刪除這些資料，但你無法將這些資料與其他帳戶建立關聯。如要另行保留現有的 Chromium 資料，你可以選擇建立新的設定檔。<ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Google Chrome 將停止支援 Windows XP 和 Windows Vista，因此這部電腦很快就不會再收到 Google Chrome 更新。</translation>
+<translation id="7330164299247909639">驗證憑證無效，請以<ph name="USER_NAME" />身分重新登入 Google Chrome 或向你的管理員洽詢詳情。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">新視窗</translation>
 <translation id="7369650938475876456">使用 Chrome 產生的高強度密碼</translation>
 <translation id="7398801000654795464">你使用了 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入 Chrome，請使用相同帳戶重新登入。</translation>
@@ -278,6 +279,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="8914504000324227558">重新啟動 Chrome</translation>
 <translation id="9026991721384951619">你的帳戶登入詳細資料尚未更新，因此 Chrome 作業系統無法同步處理你的資料。</translation>
 <translation id="9067395829937117663">Google Chrome 僅支援 Windows 7 以上版本的作業系統。</translation>
+<translation id="9084668267983921457">驗證憑證無效，請重新登入 Google Chrome 或向你的管理員洽詢詳情。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />警告：<ph name="END_BOLD" />Google Chrome 無法阻止擴充功能記錄你的瀏覽紀錄，如要在無痕模式中停用這個擴充功能，請取消選取這個選項。 </translation>
 <translation id="911206726377975832">你要一併刪除瀏覽資料嗎？</translation>
 <translation id="919706545465235479">如要開始同步處理，請更新 Chrome</translation>

@@ -330,7 +330,6 @@
 <translation id="2299220924812062390">Etkinleştirilmiş eklentilerin listesini belirt</translation>
 <translation id="2309390639296060546">Varsayılan coğrafi konum ayarı</translation>
 <translation id="2312134445771258233">Başlangıçta yüklenen sayfaları yapılandırmanıza olanak verir. 'Başlangıçtaki işlem' içinde 'URL listesi aç'ı seçmediğiniz sürece 'Başlangıçta açılan URL'ler' listesinin içeriği göz ardı edilir.</translation>
-<translation id="23323722127921515">Google Cast araç çubuğu simgesini gösterir</translation>
 <translation id="2337466621458842053">Resimleri görüntülemelerine izin verilen sitelerin belirtildiği bir URL kalıpları listesini ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultImagesSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
@@ -419,7 +418,6 @@
 
       Bu politika Yanlış seçeneğine ayarlanırsa ağ yapılandırma istemi yerine bir hata iletisi görüntülenir.</translation>
 <translation id="2498238926436517902">Rafı her zaman otomatik olarak gizle</translation>
-<translation id="2503514368596117142">Kullanıcıların tarayıcılarındaki sekme, site veya masaüstü içeriklerini uzak ekranlara ve ses sistemlerine göndermelerine olanak tanıyan Google Cast özelliğine ilişkin politikaları yapılandırın.</translation>
 <translation id="2514328368635166290">Varsayılan arama sağlayıcının favori simge URL'sini belirtir.
 
           Bu politika isteğe bağlıdır. Ayarlanmazsa, arama sağlayıcı için herhangi bir simge sunulmaz.
@@ -436,9 +434,6 @@
 <translation id="2529880111512635313">Yüklenmeye zorlanan uygulama ve uzantıların listesini yapılandır</translation>
 <translation id="253135976343875019">AC güçle çalışırken boşta kalma uyarısı gecikmesi</translation>
 <translation id="2552966063069741410">Saat dilimi</translation>
-<translation id="2558917182010914102">Bu politika doğru değerine ayarlanır veya hiç ayarlanmazsa Google Cast etkinleştirilir ve kullanıcılar uygulama menüsünden, sayfa içerik menülerinden, Cast özellikli web sitelerindeki medya denetimlerinden ve (gösteriliyorsa) Cast araç çubuğu simgesinden bu özelliği başlatabilir.
-
-          Bu politika yanlış değerine ayarlanırsa Google Cast devre dışı bırakılır.</translation>
 <translation id="2562339630163277285">Anında arama sonuçları sağlamak için kullanılan arama motorunun URL'sini belirtir. URL, <ph name="SEARCH_TERM_MARKER" /> dizesini içermelidir. Sorgu sırasında, kullanıcının girdiği metin bu dizenin yerini alır.
 
           Bu politika isteğe bağlıdır. Ayarlanmazsa, herhangi bir arama sonucu sağlanmaz.
@@ -567,6 +562,7 @@
 <translation id="3001534538097271560">Bu politika yanlış seçeneğine ayarlandığında, kullanıcıların, bazı sistem bilgilerini ve sayfa içeriğini Google sunucularına göndermeyi seçmeleri engellenir. Bu ayar doğru seçeneğine ayarlanırsa veya hiç yapılandırılmazsa kullanıcılar, tehlikeli uygulamaların ve sitelerin tespit edilmesine yardımcı olmak amacıyla bazı sistem bilgilerini ve sayfa içeriğini Güvenli Tarama'ya gönderebilir.
 
       Güvenli Tarama ile ilgili daha fazla bilgi için https://developers.google.com/safe-browsing adresine bakın.</translation>
+<translation id="3016255526521614822">Beyaz listedeki not alma uygulamalarına <ph name="PRODUCT_OS_NAME" /> kilit ekranında izin verilir</translation>
 <translation id="3021409116652377124">Eklenti bulucuyu devre dışı bırak</translation>
 <translation id="3030000825273123558">Ölçüm raporlamayı etkinleştir</translation>
 <translation id="3034580675120919256">Web sitelerinin JavaScript çalıştırmalarına izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Tüm sitelerin JavaScript çalıştırmasına izin verilebilir veya tüm siteler için bu reddedilebilir.
@@ -907,6 +903,16 @@ politikayı geçersiz kılamaz.
       "1412.24.34": Sadece bu belirli sürüme güncelle
 
       Uyarı: Kullanıcıların yazılım güncellemelerini ve kritik güvenlik düzeltmelerini almasını engelleyebileceği için sürüm kısıtlamalarının yapılandırılması önerilmez. Güncellemeleri belirli bir sürüm önekiyle sınırlamak, kullanıcıları risk altında bırakabilir.</translation>
+<translation id="4298509794364745131"><ph name="PRODUCT_OS_NAME" /> kilit ekranında not alma uygulaması olarak etkinleştirilebilen uygulamaların listesini belirtir.
+
+      Tercih edilen not alma uygulaması kilit ekranında etkinleştirilmişse, kilit ekranı bu uygulamayı başlatacak bir kullanıcı arayüzü öğesi barındırır.
+      Uygulama başlatıldığı zaman kilit ekranının üst kısmında bir uygulama penceresi ve kilit ekranı bağlamında veri öğeleri (notlar) oluşturulabilir. Oturumun kilidi açık olduğunda, uygulama, oluşturulan notları birincil kullanıcı oturumuna aktarabilecektir. Şu anda yalnızca Chrome not alma uygulamaları kilit ekranında desteklenmektedir.
+
+      Politika ayarlanmışsa, yalnızca uygulamanın uzantı kimliğinin politika listesi değerinde yer alması halinde, kullanıcı uygulamayı kilit ekranında etkinleştirilebilir.
+      Bu nedenle, bu politikayı boş bir listeye ayarlamak, kilit ekranında not almayı tamamen devre dışı bırakır.
+      Uygulama kimliği içeren politikanın, kullanıcının uygulamayı kilit ekranında not alma uygulaması olarak etkinleştirebileceği anlamına gelmediğini unutmayın. Örneğin, Chrome 61 sürümünde, kullanılabilir uygulamalar dizisi platform tarafından ilave bir kısıtlamaya tabidir.
+
+      Politika ayarlanmadan bırakılırsa, kullanıcının kilit ekranında etkinleştirebileceği uygulama dizisi üzerinde politika tarafından hiçbir kısıtlama söz konusu olmaz.</translation>
 <translation id="4309640770189628899">TLS'deki DHE şifre paketlerinin etkinleştirilip etkinleştirilmediği</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 veya sonrası</translation>
 <translation id="4322842393287974810">Sıfır gecikmeyle otomatik başlatılan kiosk uygulamasının <ph name="PRODUCT_OS_NAME" /> sürümünü kontrol etmesine izin ver</translation>
@@ -1328,7 +1334,6 @@ politikayı geçersiz kılamaz.
       Bu ayarı etkinleştirirseniz, Google Arama'da Güvenli Arama her zaman etkin olur.
 
       Bu ayarı devre dışı bırakırsanız veya bir değer ayarlamazsanız, Google Arama'da Güvenli Arama uygulanmaz.</translation>
-<translation id="5940306398763671235">Google Cast'i etkinleştirir</translation>
 <translation id="5946082169633555022">Beta kanalı</translation>
 <translation id="5950205771952201658">Kısmi çökme bağlamında, çevrimiçi iptal denetimleri güvenlik açısından etkili yararlar sağlamaz. Bunlar <ph name="PRODUCT_NAME" /> 19 ve sonraki sürümlerde varsayılan olarak devre dışı bırakılmıştır. Bu politika doğru değerine ayarlandığında, önceki çalışma biçimi geri yüklenir ve çevrimiçi OCSP/CRL denetimleri yapılır.
 
@@ -1677,13 +1682,6 @@ politikayı geçersiz kılamaz.
 
           Bu politika yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirilirse uygulanır.</translation>
 <translation id="7302043767260300182">AC güçle çalışırken ekran kilidi gecikmesi</translation>
-<translation id="7309839952828354215">Ecryptfs koduyla gönderilen ve ext4 şifrelemesine geçmesi gereken bir cihazın nasıl davranması gerektiğini belirtir.
-
-      Bu politikayı "DisallowArc" değerine ayarlarsanız, cihazdaki tüm kullanıcılar için Android uygulamaları devre dışı bırakılır (ext4 şifrelemesine önceden sahip olanlar dahil) ve kullanıcılara, ecryptfs'den ext4 şifrelemesine geçiş yapmaları teklif edilmez.
-
-      Bu politikayı "AllowMigration" değerine ayarlarsanız, ecryptfs ana dizinlerine sahip kullanıcılara gerektiğinde (şimdilik cihazda Android N kullanılabilir hale geldiğinde) bunların ext4 şifrelemesine taşınması teklif edilir.
-
-      Bu politika ayarlanmadan bırakılırsa, cihaz "DisallowArc" değeri seçilmiş gibi davranır.</translation>
 <translation id="7311458740754205918">Bunun için doğru (true) değeri ayarlanır veya herhangi bir değer belirtilmezse Yeni Sekme sayfasında kullanıcının tarama geçmişi, ilgi alanları veya konumuna dayalı içerik önerileri gösterilebilir.
 
 Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otomatik oluşturulan içerik önerileri gösterilmez.</translation>
@@ -1768,7 +1766,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Bu ayarı etkinleştirirseniz, <ph name="PRODUCT_NAME" /> belirtilen yerel ayarı kullanır. Yapılandırılmış olan yerel ayar desteklenmiyorsa yerine 'en-US' kullanılır.
 
       Bu ayar devre dışı bırakılırsa veya yapılandırılmazsa, <ph name="PRODUCT_NAME" /> ya kullanıcının belirttiği tercih edilen yerel ayarı (yapılandırıldıysa), ya sistem yerel ayarını ya da yedek yerel ayarı ('en-US') kullanır.</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Veri dolaşımının etkin olup olmayacağını belirler. True olarak ayarlanırsa, veri dolaşımına izin verilir. Hiç ayarlanmazsa veya false değerine ayarlanırsa, veri dolaşımına izin verilmez.</translation>
 <translation id="7683777542468165012">Dinamik Politika Yenileme</translation>
 <translation id="7694807474048279351"><ph name="PRODUCT_OS_NAME" /> güncellemesi uygulandıktan sonra otomatik yeniden başlatma planla.
@@ -1890,6 +1887,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
           Bu ayar devre dışı bırakılırsa ve giden UDP bağlantılarına güvenlik duvarı tarafından filtre uygulanıyorsa, bu makine yalnızca yerel ağ içindeki ana makinelere bağlanabilir.</translation>
 <translation id="7980227303582973781">Özel kısıtlama yok</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Ekranı 0 derece döndür</translation>
 <translation id="8044493735196713914">Rapor cihazı önyükleme modu</translation>
 <translation id="8050080920415773384">Yerel Yazdırma</translation>

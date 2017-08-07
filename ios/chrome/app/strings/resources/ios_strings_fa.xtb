@@ -135,6 +135,8 @@
 <translation id="3474649192738347024">فرم‌ها پر شد.</translation>
 <translation id="3478058380795961209">ماه انقضا</translation>
 <translation id="3482959374254649722">درحال همگام‌سازی برگه‌های شما...</translation>
+<translation id="3487093336331957349">پیشنهادهای جستجو و سایت</translation>
+<translation id="3493531032208478708">درباره محتوای پیشنهادی <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="3494788280727468875">تأیید پاک کردن داده‌های مرور</translation>
 <translation id="3519193562722059437">برگه‌ای برای مرور وب باز کنید.</translation>
 <translation id="3527085408025491307">پوشه</translation>
@@ -152,6 +154,7 @@
 <translation id="3691593122358196899">نشانک به <ph name="FOLDER_TITLE" /> اضافه شد</translation>
 <translation id="3738139272394829648">لمس کردن برای جستجو</translation>
 <translation id="3771033907050503522">برگه‌های ناشناس</translation>
+<translation id="3779810277399252432">اتصال اینترنتی ندارید</translation>
 <translation id="3783017676699494206">ذخیره تصویر</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3897092660631435901">منو</translation>
@@ -174,6 +177,7 @@
 <translation id="4281844954008187215">شرایط استفاده از سرویس</translation>
 <translation id="430793432425771671">همگام‌سازی همه چیز</translation>
 <translation id="4359125752503270327">این صفحه در برنامه دیگری باز می‌شود.</translation>
+<translation id="4375040482473363939">‏جستجوی کد QR</translation>
 <translation id="4378154925671717803">تلفن</translation>
 <translation id="441868831736628555">اعلامیه حریم خصوصی</translation>
 <translation id="4508750114462689118">بستن تبلیغ ورود به سیستم</translation>
@@ -263,7 +267,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6196207969502475924">جستجوی گفتاری</translation>
 <translation id="6254066287920239840">پیوندها به‌جای مرورگر در برنامه باز شوند.</translation>
 <translation id="6255097610484507482">ویرایش کارت اعتباری</translation>
-<translation id="6273258929211277933"><ph name="TITLE" />، <ph name="PUBLISHER_INFORMATION" />، <ph name="PUBLICATION_DATE" />، <ph name="STATE" /></translation>
 <translation id="6308436439357671616">این کار به شما اجازه می‌دهد عکس بگیرید و آن‌ها را بارگذاری کنید.</translation>
 <translation id="6314335155547195432">تولید گذرواژه</translation>
 <translation id="6324528485781869530">تغییر وضعیت حساب همگام‌سازی</translation>
@@ -366,7 +369,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="842017693807136194">ورود به سیستم با</translation>
 <translation id="8428045167754449968">شهر / شهرک</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
-<translation id="8433678324664858900">نمایش پیشنهادات</translation>
 <translation id="8458397775385147834">۱ مورد حذف شد</translation>
 <translation id="8487700953926739672">امکان دسترسی به صورت آفلاین</translation>
 <translation id="8503813439785031346">نام کاربری</translation>

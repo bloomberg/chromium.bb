@@ -219,6 +219,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7196020411877309443">Waarom zie ik dit venster?</translation>
 <translation id="7242029209006116544">Je logt in op een beheerd account waarmee de eigenaar van dat account beheer krijgt over je Google Chrome-profiel. Je Chrome-gegevens zoals je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden permanent gekoppeld aan <ph name="USER_NAME" />. Je kunt deze gegevens verwijderen via het Google Accounts Dashboard, maar je kunt deze gegevens niet koppelen aan een ander account. Je kunt ook een nieuw profiel maken om je bestaande Chrome-gegevens gescheiden te houden. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Deze computer ontvangt binnenkort geen Google Chrome-updates meer, omdat Windows XP en Windows Vista niet meer worden ondersteund.</translation>
+<translation id="7330164299247909639">Verificatiecertificaat mislukt. Log opnieuw in bij Google Chrome als <ph name="USER_NAME" /> of neem contact op met je beheerder voor meer informatie. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Nieuw venster</translation>
 <translation id="7369650938475876456">Een sterk wachtwoord gebruiken dat is gegenereerd door Chrome</translation>
 <translation id="7398801000654795464">Je bent ingelogd bij Chrome als <ph name="USER_EMAIL_ADDRESS" />. Gebruik hetzelfde account om opnieuw in te loggen.</translation>
@@ -282,6 +283,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="8914504000324227558">Chrome opnieuw starten</translation>
 <translation id="9026991721384951619">Chrome OS kan je gegevens niet synchroniseren omdat de inloggegevens voor je account zijn verouderd.</translation>
 <translation id="9067395829937117663">Voor Google Chrome is Windows 7 of hoger vereist.</translation>
+<translation id="9084668267983921457">Verificatiecertificaat mislukt. Log opnieuw in bij Google Chrome of neem contact op met je beheerder voor meer informatie. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Waarschuwing:<ph name="END_BOLD" /> Google Chrome kan niet voorkomen dat extensies je browsegeschiedenis registreren. Als je deze extensie in de incognitomodus wilt uitschakelen, verwijder je het vinkje bij deze optie.</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="919706545465235479">Chrome updaten om de synchronisatie te starten</translation>

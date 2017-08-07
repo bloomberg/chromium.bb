@@ -9,6 +9,7 @@
 <translation id="1050038467049342496">他のアプリを終了する</translation>
 <translation id="1055184225775184556">追加の取り消し（&amp;U）</translation>
 <translation id="10614374240317010">常に保存しない</translation>
+<translation id="1066396345355680611"><ph name="SITE" /> と他の一部のサイトで、保護されたコンテンツにアクセスできなくなる可能性があります。</translation>
 <translation id="106701514854093668">パソコンのブックマーク</translation>
 <translation id="1074497978438210769">保護されていません</translation>
 <translation id="1080116354587839789">ウィンドウ幅に合わせる</translation>
@@ -167,6 +168,7 @@
 <translation id="2282872951544483773">利用できない試験運用機能</translation>
 <translation id="2292556288342944218">インターネット アクセスがブロックされています</translation>
 <translation id="230155334948463882">カード情報を更新</translation>
+<translation id="2316887270356262533">最大で 1 MB を解放します。サイトによっては、次回アクセスする際に読み込みに時間がかかる可能性があります。</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> にはユーザー名とパスワードが必要です。</translation>
 <translation id="2317583587496011522">デビットカードをご利用いただけます。</translation>
 <translation id="2337852623177822836">管理者が指定する設定</translation>
@@ -242,6 +244,7 @@
 <translation id="2916038427272391327">他のプログラムを終了する</translation>
 <translation id="2922350208395188000">サーバーの証明書を確認できません。</translation>
 <translation id="2928905813689894207">請求先住所</translation>
+<translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 件）}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 件）}}</translation>
 <translation id="2941952326391522266">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は <ph name="DOMAIN2" /> から発行されています。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="2948083400971632585">接続用に設定されたプロキシは、設定ページで無効にできます。</translation>
 <translation id="2955913368246107853">検索バーを閉じる</translation>
@@ -275,6 +278,7 @@
 <translation id="3150653042067488994">一時的なサーバー エラーです</translation>
 <translation id="3154506275960390542">このページのフォームは安全に送信されない可能性があります。送信中にデータが他者に閲覧されたり、悪意のあるユーザーによりデータが変更されてサーバーに別の内容が届いたりする可能性があります。</translation>
 <translation id="3157931365184549694">復元</translation>
+<translation id="3162559335345991374">ご利用の Wi-Fi ネットワークでは、ログインページへのアクセスが必要な可能性があります。</translation>
 <translation id="3167968892399408617">シークレット タブで表示したページの記録は、シークレット タブをすべて閉じた後、ブラウザの履歴、Cookie の保存場所、検索履歴から消去されます。ただし、ダウンロードしたファイルや作成したブックマークは保存されます。</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">島</translation>
@@ -362,10 +366,12 @@
 <translation id="3679803492151881375"><ph name="CRASH_TIME" /> にクラッシュ レポートが作成され、<ph name="UPLOAD_TIME" /> にアップロードされました</translation>
 <translation id="3681007416295224113">証明書情報</translation>
 <translation id="3690164694835360974">ログイン情報は保護されません</translation>
+<translation id="3704162925118123524">ご利用のネットワークでは、ログインページへのアクセスが必要な可能性があります。</translation>
 <translation id="3704609568417268905"><ph name="TIME" />、<ph name="TITLE" />（<ph name="DOMAIN" />）を<ph name="BOOKMARKED" /></translation>
 <translation id="370665806235115550">読み込んでいます...</translation>
 <translation id="3712624925041724820">ライセンスを使い切りました</translation>
 <translation id="3714780639079136834">モバイルデータまたは Wi-Fi を有効にする</translation>
+<translation id="3715597595485130451">Wi-Fi 接続</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />プロキシ、ファイアウォール、DNS の設定を確認する<ph name="END_LINK" /></translation>
 <translation id="3736520371357197498">危険なプログラムが削除されるより前に<ph name="BEGIN_LINK" />この安全でないサイトにアクセスする<ph name="END_LINK" />場合は、セキュリティ上のリスクについてご承知おきください。</translation>
 <translation id="3739623965217189342">コピーしたリンク</translation>
@@ -373,6 +379,7 @@
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では、悪意のあるユーザーによって、ソフトウェアのインストールや個人情報（パスワード、電話番号、クレジット カードなど）の入力といった危険な操作を行うよう誘導される可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">サーバー エラーのため翻訳できませんでした。</translation>
 <translation id="3759461132968374835">最近発生した障害はありません。障害レポートが無効になっているときに発生した障害は、ここには表示されません。</translation>
+<translation id="3765032636089507299">セーフ ブラウジング ページは準備中です。</translation>
 <translation id="3778403066972421603">このカードを Google アカウントとこの端末に保存しますか？</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">有効期限: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
@@ -417,6 +424,7 @@
 <translation id="4165986682804962316">サイトの設定</translation>
 <translation id="4169947484918424451">Chromium にこのカードを保存しますか？</translation>
 <translation id="4171400957073367226">確認用の署名に問題があります</translation>
+<translation id="4173827307318847180">{MORE_ITEMS,plural, =1{他 <ph name="ITEM_COUNT" /> 件のアイテム}other{他 <ph name="ITEM_COUNT" /> 件のアイテム}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4196861286325780578">移動のやり直し（&amp;R）</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ファイアウォールとウイルス対策の設定を確認する<ph name="END_LINK" /></translation>
@@ -511,6 +519,7 @@
 <translation id="5045550434625856497">パスワードが正しくありません</translation>
 <translation id="5056549851600133418">おすすめの記事</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />プロキシ アドレスを確認する<ph name="END_LINK" /></translation>
+<translation id="5086888986931078152">一部のサイトで、保護されたコンテンツにアクセスできなくなる可能性があります。</translation>
 <translation id="5087286274860437796">サーバーの証明書が現在有効ではありません。</translation>
 <translation id="5087580092889165836">カードを追加</translation>
 <translation id="5089810972385038852">都道府県 / 州</translation>
@@ -541,6 +550,7 @@
     <ph name="END_LIST" /></translation>
 <translation id="5297526204711817721">このサイトへの接続ではプライバシーが保護されません。VR モードを終了するには、ヘッドセットを外して「戻る」を押します。</translation>
 <translation id="5299298092464848405">ポリシーの解析中にエラーが発生しました</translation>
+<translation id="5308380583665731573">接続</translation>
 <translation id="5308689395849655368">障害レポートが無効になっています。</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名前</translation>
@@ -556,6 +566,7 @@
 <translation id="5452270690849572955">この <ph name="HOST_NAME" /> ページが見つかりません</translation>
 <translation id="5455374756549232013">ポリシーのタイムスタンプが不適切です</translation>
 <translation id="5457113250005438886">無効</translation>
+<translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 件）}other{<ph name="CONTACT_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 件）}}</translation>
 <translation id="5470861586879999274">編集のやり直し（&amp;R）</translation>
 <translation id="5481076368049295676">アクセス先のコンテンツによって、個人情報を入手したり削除したりする危険なソフトウェアがインストールされる可能性があります。<ph name="BEGIN_LINK" />危険性を理解したうえで表示する<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">有効なアドレスを追加</translation>
@@ -657,6 +668,7 @@
 <translation id="6321917430147971392">DNS 設定を確認してください</translation>
 <translation id="6328639280570009161">ネットワーク予測を無効にしてみてください</translation>
 <translation id="6328786501058569169">これは偽のサイトです</translation>
+<translation id="6337133576188860026">最大で <ph name="SIZE" /> を解放します。サイトによっては、次回アクセスする際に読み込みに時間がかかる可能性があります。</translation>
 <translation id="6337534724793800597">ポリシーを名前でフィルタ</translation>
 <translation id="6342069812937806050">たった今</translation>
 <translation id="6355080345576803305">公開セッションのオーバーライド</translation>
@@ -738,7 +750,9 @@
 <translation id="7129409597930077180">この住所には配送できません。別の住所を選択してください。</translation>
 <translation id="7138472120740807366">配達方法</translation>
 <translation id="7139724024395191329">管轄区域</translation>
+<translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 件）}other{<ph name="PAYMENT_METHOD_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 件）}}</translation>
 <translation id="7155487117670177674">お支払い情報は保護されません</translation>
+<translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 件）}other{<ph name="SHIPPING_OPTION_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 件）}}</translation>
 <translation id="7179921470347911571">今すぐ再起動</translation>
 <translation id="7180611975245234373">更新</translation>
 <translation id="7182878459783632708">ポリシーが設定されていません</translation>
@@ -776,6 +790,7 @@
 <translation id="7481312909269577407">進む</translation>
 <translation id="7485870689360869515">データが見つかりません。</translation>
 <translation id="7508255263130623398">返されたポリシーの端末 ID が空であるか、現在の端末 ID と一致しません</translation>
+<translation id="7511955381719512146">ご利用の Wi-Fi では、<ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> へのアクセスが必要な可能性があります。</translation>
 <translation id="7514365320538308">ダウンロード</translation>
 <translation id="7518003948725431193">次の URL のウェブページは見つかりませんでした:<ph name="URL" /></translation>
 <translation id="7521387064766892559">Javascript</translation>
@@ -831,6 +846,7 @@
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome から候補を削除してもよろしいですか？</translation>
 <translation id="7815407501681723534">「<ph name="SEARCH_STRING" />」に対し <ph name="NUMBER_OF_RESULTS" /> 件の <ph name="SEARCH_RESULTS" />が見つかりました</translation>
+<translation id="782886543891417279">ご利用の Wi-Fi（<ph name="WIFI_NAME" />）では、ログインページへのアクセスが必要な可能性があります。</translation>
 <translation id="785549533363645510">あらゆる場所に記録が一切残らないわけではありません。シークレット モードを使っても、雇用主、インターネット サービス プロバイダ、訪問先のウェブサイトに閲覧内容が知られる可能性はあります。</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7878176543348854470">デビットカードとプリペイド カードをご利用いただけます。</translation>
@@ -854,6 +870,7 @@
 <translation id="8041940743680923270">グローバルのデフォルト値（[確認]）を使用</translation>
 <translation id="8088680233425245692">記事を表示できませんでした。</translation>
 <translation id="8091372947890762290">サーバーで有効化が保留になっています</translation>
+<translation id="8094917007353911263">ご利用のネットワークでは、<ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> へのアクセスが必要な可能性があります。</translation>
 <translation id="8118489163946903409">お支払い方法</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" /> のサーバーの <ph name="BEGIN_ABBR" />DNS アドレス<ph name="END_ABBR" />が見つかりませんでした。</translation>
@@ -877,6 +894,7 @@
 <translation id="8289355894181816810">確認方法がわからない場合は、ネットワーク管理者までお問い合わせください。</translation>
 <translation id="8293206222192510085">ブックマークの追加</translation>
 <translation id="8294431847097064396">ソース</translation>
+<translation id="8298115750975731693">ご利用の Wi-Fi（<ph name="WIFI_NAME" />）では、<ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> へのアクセスが必要な可能性があります。</translation>
 <translation id="8306404619377842860">お使いの端末の日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">ネットワーク接続に問題があったため翻訳できませんでした。</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> へのアクセスが拒否されました</translation>
@@ -900,6 +918,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> からの応答時間が長すぎます。</translation>
 <translation id="8503813439785031346">ユーザー名</translation>
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />検出の問題をご報告<ph name="END_ERROR_LINK" />ください。<ph name="BEGIN_LINK" />安全でないこのサイトにアクセス<ph name="END_LINK" />する場合は、セキュリティ上のリスクがあることをご承知おきください。</translation>
+<translation id="8543556556237226809">ご不明な点は、プロフィールの管理担当者にお問い合わせください。</translation>
 <translation id="8553075262323480129">ページの言語を検出できないため翻訳できません。</translation>
 <translation id="8571890674111243710">ページを<ph name="LANGUAGE" />に翻訳しています...</translation>
 <translation id="858637041960032120">電話番号を追加
@@ -936,6 +955,7 @@
 <translation id="8931333241327730545">このカードを Google アカウントに保存しますか？</translation>
 <translation id="8932102934695377596">時計が遅れています</translation>
 <translation id="8938939909778640821">利用可能なクレジット カードとプリペイド カード</translation>
+<translation id="8957210676456822347">キャプティブ ポータル認証</translation>
 <translation id="8971063699422889582">サーバーの証明書の有効期限が切れています。</translation>
 <translation id="8986494364107987395">使用統計データと障害レポートを Google に自動送信する</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -943,6 +963,7 @@
 <translation id="8997023839087525404">サーバーから提示された証明書は、証明書の透明性ポリシーを介して公開されていません。一部の証明書は、信頼性の確保と攻撃者からの保護のため、証明書の透明性ポリシーを介して公開されることが要件となっています。</translation>
 <translation id="9001074447101275817">プロキシ <ph name="DOMAIN" /> にはユーザー名とパスワードを指定する必要があります。</translation>
 <translation id="9005998258318286617">PDF ドキュメントを読み込めませんでした。</translation>
+<translation id="9008201768610948239">無視する</translation>
 <translation id="901974403500617787">システム全体に適用されるフラグは所有者（<ph name="OWNER_EMAIL" />）のみが設定できます。</translation>
 <translation id="9020200922353704812">カードの請求先住所を入力する必要があります</translation>
 <translation id="9020542370529661692">このページは<ph name="TARGET_LANGUAGE" />に翻訳されています</translation>
@@ -957,6 +978,7 @@
 <translation id="9076283476770535406">成人向けコンテンツが含まれている可能性があります</translation>
 <translation id="9078964945751709336">その他の情報が必要です</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Chromium から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Chromium によって接続が停止されたため、情報は引き続き保護されています。</translation>
+<translation id="9128870381267983090">ネットワークに接続する</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9137248913990643158">このアプリを使用するには、Chrome を起動してログインしてください。</translation>
 <translation id="9148507642005240123">編集の取り消し（&amp;U）</translation>

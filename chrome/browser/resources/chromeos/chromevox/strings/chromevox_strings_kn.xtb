@@ -385,7 +385,7 @@
 <translation id="4342180618051828363">{COUNT,plural, =1{ಪೂರ್ಣ ವಿರಾಮ}=3{ದೀರ್ಘವೃತ್ತಗಳು}one{# ಪೂರ್ಣ ವಿರಾಮಗಳು}other{# ಪೂರ್ಣ ವಿರಾಮಗಳು}}</translation>
 <translation id="4347461890115250064">ಯಾವುದೇ ಮುಂದಿನ ಪಠ್ಯವಿಲ್ಲ.</translation>
 <translation id="4367650418938037324">ಗಣಿತ ML ಲೀಫ್</translation>
-<translation id="4372435075475052704">ಕನಿಷ್ಟ:<ph name="X" /></translation>
+<translation id="4372435075475052704">ಕನಿಷ್ಠ:<ph name="X" /></translation>
 <translation id="4372705107434148843">ಮಾತು ನಿಲ್ಲಿಸಿ</translation>
 <translation id="4373197658375206385">ಹಿಂದಿನ ಯಾವುದೇ ಐಟಂ ಲಿಂಕ್ ಆಗಿಲ್ಲ</translation>
 <translation id="4376316291247992553">ಗ್ರಾಫಿಕ್ ಅನ್ನು ಬ್ರೈಲ್‌ನಂತೆ ವೀಕ್ಷಿಸಿ</translation>
@@ -454,7 +454,6 @@
 <translation id="5000760171916499057">ಯಾವುದೇ ಫಾರ್ಮ್‌ಗಳಿಲ್ಲ.</translation>
 <translation id="5005670136041063723">ಇನ್ಯಾವುದೇ ಒಂದೇ ರೀತಿಯ ಅಂಶಗಳಿಲ್ಲ</translation>
 <translation id="501473567976723023">ಜನವರಿ</translation>
-<translation id="5040591161308540832">ಕೋಷ್ಟಕ $1, $3 ರಿಂದ $2</translation>
 <translation id="5041394372352067729">ಬ್ರೈಲಿ ಪ್ರದರ್ಶನವನ್ನು ಪುಟದ ಮೇಲ್ಭಾಗಕ್ಕೆ ಸರಿಸು</translation>
 <translation id="5042770794184672516">ಧ್ವನಿಯ ವಾಲ್ಯೂಮ್ ಹೆಚ್ಚಿಸಿ</translation>
 <translation id="5050015258024679800">ಹಿಂದಿನ ಹಂತದ 4 ಶಿರೋನಾಮೆ</translation>
@@ -771,6 +770,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8065607967589909823">ಆಯ್ಕೆಯು</translation>
 <translation id="8066678206530322333">ಬ್ಯಾನರ್</translation>
 <translation id="8076492880354921740">ಟ್ಯಾಬ್‌ಗಳು</translation>
+<translation id="8091452896542422286">ಸ್ಪೇಸ್</translation>
 <translation id="8104178626892949749">ChromeVox Next ಕುರಿತು ಮತ್ತಷ್ಟು ತಿಳಿಯಲು ChromeVox o, n ಒತ್ತಿ.</translation>
 <translation id="8110647606445335195">ಯಾವುದೇ ARIA ಹೆಗ್ಗುರುತುಗಳಿಲ್ಲ.</translation>
 <translation id="8153880621934657047">ಕೋಷ್ಟಕದ ಒಳಗೆ ಇಲ್ಲ.</translation>

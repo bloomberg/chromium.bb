@@ -316,7 +316,6 @@
 <translation id="2299220924812062390">Określ listę włączonych wtyczek</translation>
 <translation id="2309390639296060546">Domyślne ustawienie geolokalizacji</translation>
 <translation id="2312134445771258233">Umożliwia skonfigurowanie stron wczytywanych po uruchomieniu. Zawartość listy „Adresy URL otwierane po uruchomieniu” jest ignorowana, chyba że wybierzesz opcję „Otwórz adresy URL z listy” w ustawieniu „Działanie po uruchomieniu”.</translation>
-<translation id="23323722127921515">Pokazuje ikonę Google Cast na pasku narzędzi</translation>
 <translation id="2337466621458842053">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być wyświetlane obrazy. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultImagesSettings” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="2372547058085956601">Opóźnienie automatycznego logowania się do sesji publicznej.
 
@@ -401,7 +400,6 @@
 
       Jeśli wartość zasady to Fałsz, zamiast pytania wyświetla się komunikat o błędzie.</translation>
 <translation id="2498238926436517902">Zawsze autoukrywaj półkę</translation>
-<translation id="2503514368596117142">Pozwala skonfigurować zasady dotyczące Google Cast – funkcji, która umożliwia użytkownikom przesyłanie zawartości kart, stron i pulpitu z przeglądarki do zdalnych wyświetlaczy i systemów audio.</translation>
 <translation id="2514328368635166290">Pozwala określić URL wybranej ikony domyślnego dostawcy wyszukiwania. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, ikona dostawcy wyszukiwania nie będzie wyświetlana. Ta zasada jest stosowana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
 <translation id="2516600974234263142">Włącza drukowanie w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
 
@@ -414,9 +412,6 @@
 <translation id="2529880111512635313">Konfiguruj listę aplikacji i rozszerzeń, których instalacja jest wymuszana</translation>
 <translation id="253135976343875019">Opóźnienie ostrzeżenia o bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2552966063069741410">Strefa czasowa</translation>
-<translation id="2558917182010914102">Jeśli nie ustawisz tej zasady lub ma ona wartość prawda, Google Cast jest włączony, a użytkownicy mogą go uruchomić, korzystając z menu aplikacji, menu kontekstowych na stronach, elementów sterujących odtwarzaniem multimediów na stronach obsługujących Cast, oraz ikony Cast na pasku narzędzi (jeśli jest widoczna).
-
-          Jeśli zasada ma wartość fałsz, Google Cast jest wyłączony.</translation>
 <translation id="2562339630163277285">Określa URL wyszukiwarki, z której pobierane są wyniki wyszukiwania dynamicznego. URL musi zawierać ciąg <ph name="SEARCH_TERM_MARKER" />, który podczas wyszukiwania jest zastępowany tekstem wpisanym przez użytkownika
 
           Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, wyniki wyszukiwania dynamicznego nie będą dostarczane.
@@ -539,6 +534,7 @@
 <translation id="3001534538097271560">Wyłączenie tej zasady uniemożliwi użytkownikom wysyłanie na serwery Google pewnych informacji o systemie i zawartości stron. Jeśli włączysz tę zasadę lub jej nie skonfigurujesz, użytkownicy będą mogli wysyłać te dane do funkcji Bezpieczne przeglądanie, by pomóc w wykrywaniu niebezpiecznych aplikacji i stron.
 
       Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na stronie https://developers.google.com/safe-browsing</translation>
+<translation id="3016255526521614822">Aplikacje do robienia notatek dodane do białej listy, które są dozwolone na ekranie blokady w: <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021409116652377124">Wyłącz znajdowanie wtyczek</translation>
 <translation id="3030000825273123558">Włącz raportowanie danych</translation>
 <translation id="3034580675120919256">Umożliwia określenie, czy w witrynach może być wykonywany kod JavaScript. Wykonanie kodu JavaScript może być dozwolone lub zabronione we wszystkich witrynach. W przypadku nieskonfigurowania tej zasady będzie używane ustawienie „AllowJavaScript”, a użytkownik będzie mógł je zmienić.</translation>
@@ -866,6 +862,16 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       "1412.24.34": zaktualizuj tylko do tej konkretnej wersji.
 
       Ostrzeżenie: nie zaleca się konfigurowania ograniczeń wersji, ponieważ w rezultacie użytkownicy mogą nie otrzymywać aktualizacji oprogramowania ani bardzo ważnych poprawek zabezpieczeń. Ograniczenie aktualizacji do konkretnej wersji może narazić użytkowników na niebezpieczeństwo.</translation>
+<translation id="4298509794364745131">Określa listę aplikacji, które mogą być włączone jako aplikacje do notatek na ekranie blokady w: <ph name="PRODUCT_OS_NAME" />.
+
+      Jeśli preferowana aplikacja do robienia notatek jest włączona na ekranie blokady, będą na nim dostępne elementy interfejsu umożliwiające uruchomienie tej aplikacji.
+      Po uruchomieniu aplikacja będzie mogła otworzyć swoje okno w górnej części ekranu blokady, a następnie generować dane (notatki) na ekranie blokady. Aplikacja będzie mogła zaimportować utworzone notatki do głównej sesji użytkownika, gdy sesja ta zostanie odblokowana. Obecnie na ekranie blokady można używać tylko aplikacji do robienia notatek obsługiwanych przez Chrome.
+
+      Jeśli ta zasada zostanie skonfigurowana, użytkownik będzie mógł włączyć aplikację na ekranie blokady tylko wtedy, gdy identyfikator rozszerzenia aplikacji zostanie dodany do listy wartości zasady.
+      Z tego powodu w przypadku, gdy lista wartości będzie pusta, robienie notatek na ekranie blokady będzie niemożliwe.
+      Pamiętaj, że nawet jeśli zasada będzie zawierać identyfikator aplikacji, nie oznacza to, że użytkownik będzie mógł włączyć aplikację do robienia notatek na ekranie blokady – np. w przypadku Chrome 61 lista dostępnych aplikacji jest dodatkowo ograniczona przez samą platformę.
+
+      Jeśli ta zasada nie zostanie skonfigurowana, nie będzie ograniczeń dotyczących aplikacji, które użytkownik może włączyć na ekranie blokady.</translation>
 <translation id="4309640770189628899">Czy włączone są mechanizmy szyfrowania DHE w TLS</translation>
 <translation id="4320376026953250541">Microsoft Windows XP z dodatkiem SP2 lub nowszy</translation>
 <translation id="4322842393287974810">Zezwalaj aplikacji kiosku uruchamianej automatycznie z zerowym opóźnieniem na kontrolowanie wersji <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1245,7 +1251,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli ta opcja zostanie włączona, filtr SafeSearch w wyszukiwarce Google będzie zawsze aktywny.
 
       W przypadku wyłączenia tego ustawienia lub niepodania wartości nie będzie wymuszane stosowanie filtra SafeSearch w wyszukiwarce Google.</translation>
-<translation id="5940306398763671235">Włącz Google Cast</translation>
 <translation id="5946082169633555022">Wersja beta</translation>
 <translation id="5950205771952201658">Ignorowana w razie błędu sieci kontrola online, czy certyfikat nie został unieważniony, w rzeczywistości nie poprawia bezpieczeństwa, dlatego w <ph name="PRODUCT_NAME" /> 19 i nowszych wersjach jest domyślnie wyłączona. Jeśli zasada ma wartość prawda, przywraca poprzedni sposób działania i powoduje wykonywanie kontroli OCSP/CRL online.
 
@@ -1558,13 +1563,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Ta zasada jest stosowana tylko wtedy, gdy włączono zasadę „DefaultSearchProviderEnabled”.</translation>
 <translation id="7302043767260300182">Opóźnienie blokady ekranu przy zasilaniu sieciowym</translation>
-<translation id="7309839952828354215">Określa, jak powinno zachowywać się urządzenie, które zostało dostarczone z systemem plików eCryptfs i wymaga przejścia na szyfrowanie ext4.
-
-      Jeśli wybierzesz dla tej zasady ustawienie „DisallowArc”, aplikacje na Androida zostaną wyłączone dla wszystkich użytkowników urządzenia (także tych, którzy już korzystają z szyfrowania ext4). Użytkownicy nie będą mogli przeprowadzić migracji z szyfrowania eCryptfs do ext4.
-
-      Jeśli wybierzesz dla tej zasady ustawienie „AllowMigration”, użytkownicy korzystający z katalogów domowych eCryptfs zobaczą opcję przeniesienia ich do szyfrowania ext4, jeśli będzie to konieczne (obecnie dzieje się to w momencie, gdy na urządzeniu pojawia się Android N).
-
-      Jeśli zasada pozostanie nieskonfigurowana, urządzenie będzie zachowywać się tak samo jak po wybraniu opcji „DisallowArc”.</translation>
 <translation id="7311458740754205918">Jeśli ta zasada ma wartość prawda lub nie jest skonfigurowana, na stronie Nowa karta mogą pojawiać się polecane treści wybrane na podstawie historii przeglądania, zainteresowań lub lokalizacji użytkownika.
 
       Jeśli ta zasada ma wartość fałsz, automatycznie wybierane polecane treści nie będą wyświetlać się na stronie Nowa karta.</translation>
@@ -1641,7 +1639,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7625444193696794922">Określa kanał wersji, z którym to urządzenie powinno być powiązane na stałe.</translation>
 <translation id="7632724434767231364">Nazwa biblioteki GSSAPI</translation>
 <translation id="7635471475589566552">Pozwala skonfigurować język w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jego zmianę. Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME" /> będzie używany określony język. W przypadku, gdy skonfigurowany język nie jest obsługiwany, wybierana jest opcja „en-US”. Jeśli ustawienie jest wyłączone lub nieskonfigurowane, w <ph name="PRODUCT_NAME" /> używany jest preferowany język określony przez użytkownika (jeśli został skonfigurowany), język ustawiony w systemie lub zastępcza opcja „en-US”.</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">Określa, czy na urządzeniu powinno być włączone przesyłanie danych w roamingu. W przypadku włączenia tej zasady przesyłanie danych w roamingu będzie dozwolone. Jeśli zasada będzie wyłączona lub nieskonfigurowana, przesyłanie danych w roamingu będzie niedostępne.</translation>
 <translation id="7683777542468165012">Dynamiczne odświeżanie zasad</translation>
 <translation id="7694807474048279351">Planuje automatyczne ponowne uruchomienie po zastosowaniu aktualizacji <ph name="PRODUCT_OS_NAME" />.
@@ -1756,6 +1753,7 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ta zasada nie jest już obsługiwana. Umożliwia stosowanie protokołu STUN i serwerów przekazywania podczas łączenia się z klientem zdalnym. Jeśli ustawienie jest włączone, ten komputer może wykrywać hosty zdalne i łączyć się z nimi nawet wówczas, gdy są oddzielone zaporą sieciową. Jeśli ustawienie jest wyłączone, a wychodzące połączenia UDP są filtrowane przez zaporę sieciową, komputer może łączyć się tylko z hostami w sieci lokalnej.</translation>
 <translation id="7980227303582973781">Brak ograniczeń specjalnych</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Obróć ekran o 0 stopni</translation>
 <translation id="8044493735196713914">Zgłoś tryb uruchomienia urządzenia</translation>
 <translation id="8050080920415773384">Drukowanie natywne</translation>

@@ -300,7 +300,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2299220924812062390">Consente di specificare un elenco dei plug-in attivati</translation>
 <translation id="2309390639296060546">Impostazione di geolocalizzazione predefinita</translation>
 <translation id="2312134445771258233">Consente di configurare le pagine che vengono caricate all'avvio. I contenuti dell'elenco "Pagine da aprire all'avvio" vengono ignorati a meno che non selezioni "Apri un elenco di URL" in "Azione all'avvio".</translation>
-<translation id="23323722127921515">Mostra l'icona Google Cast della barra degli strumenti</translation>
 <translation id="2337466621458842053">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita la visualizzazione di immagini. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultImagesSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="2372547058085956601">Il ritardo prima dell'accesso automatico alla sessione pubblica.
 
@@ -385,7 +384,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se questa norma viene impostata su False, verrà visualizzato un messaggio di errore anziché la richiesta di configurazione della rete.</translation>
 <translation id="2498238926436517902">Nascondi sempre automaticamente lo shelf</translation>
-<translation id="2503514368596117142">Consente di configurare i criteri per Google Cast, una funzione che permette agli utenti di inviare i contenuti di schede, siti o del desktop dal browser a schermi remoti e sistemi audio.</translation>
 <translation id="2514328368635166290">Consente di specificare l'URL dell'icona preferita del provider di ricerca predefinito. Questa norma è facoltativa. Se non viene impostata, per il provider di ricerca non verrà visualizzata alcuna icona. Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="2516600974234263142">Consente di attivare la stampa in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
 
@@ -398,9 +396,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2529880111512635313">Configura l'elenco di estensioni e app con installazione imposta</translation>
 <translation id="253135976343875019">Ritardo avviso inattività in caso di utilizzo di CA</translation>
 <translation id="2552966063069741410">Fuso orario</translation>
-<translation id="2558917182010914102">Se il criterio è impostato su true o non viene del tutto impostato, Google Cast sarà attivato e gli utenti potranno avviarlo dal menu dell'app, dai menu contestuali nelle pagine, dai controlli multimediali nei siti web compatibili con Google Cast e (se presente) dall'icona Cast della barra degli strumenti.
-
-          Se il criterio è impostato su false, Google Cast sarà disattivato.</translation>
 <translation id="2562339630163277285">Consente di specificare l'URL del motore di ricerca utilizzato per fornire risultati immediati. L'URL deve contenere la stringa <ph name="SEARCH_TERM_MARKER" />, che verrà sostituita in fase di query dal testo inserito dall'utente fino a quel momento.
 
           Questa norma è facoltativa. Se non viene impostata, non verranno restituiti risultati di ricerca immediati.
@@ -523,6 +518,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="3001534538097271560">L'impostazione di questa norma su false impedisce agli utenti di decidere di inviare ai server di Google alcune informazioni sul sistema e alcuni contenuti delle pagine. Se questa norma viene impostata su true o non viene configurata, gli utenti potranno inviare alcune informazioni sul sistema e alcuni contenuti delle pagine alla funzione Navigazione sicura per contribuire a rilevare app e siti pericolosi.
 
       Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
+<translation id="3016255526521614822">Autorizza l'uso di app per scrivere note nella schermata di blocco di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021409116652377124">Disabilita ricerca plug-in</translation>
 <translation id="3030000825273123558">Attiva rapporti sulle metriche</translation>
 <translation id="3034580675120919256">Permette di stabilire se consentire o meno l'esecuzione di JavaScript nei siti web. L'esecuzione di JavaScript può essere consentita o negata per tutti i siti web. Se questa norma non viene impostata, verrà utilizzato il valore "AllowJavaScript", che potrà essere modificato dagli utenti.</translation>
@@ -848,6 +844,16 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       "1412.24.34": si aggiorna soltanto a questa versione specifica
 
 Avviso. Non è consigliabile configurare restrizioni alle versioni, poiché potrebbero impedire agli utenti di ricevere aggiornamenti software e correzioni di sicurezza fondamentali. Limitare gli aggiornamenti a uno specifico prefisso per la versione potrebbe mettere a rischio gli utenti.</translation>
+<translation id="4298509794364745131">Consente di specificare l'elenco di app che è possibile attivare come app per scrivere note nella schermata di blocco di <ph name="PRODUCT_OS_NAME" />.
+
+      Se nella schermata di blocco viene attivata l'app per scrivere note preferita, nella schermata sarà presente l'elemento dell'interfaccia utente per avviare tale app.
+      Quando viene avviata, l'app può creare una finestra sopra la schermata di blocco e creare dati (note) nel contesto della schermata di blocco. L'app può importare note create nella sessione utente principale, quando la sessione è sbloccata. Attualmente, nella schermata di blocco sono supportate soltanto le app per scrivere note di Chrome.
+
+      Se la norma viene impostata, l'utente potrà attivare un'app nella schermata di blocco soltanto se l'ID estensione dell'app è presente come valore nell'elenco della norma.
+      Di conseguenza, se l'elenco di questa norma viene lasciato vuoto, non sarà consentito scrivere note nella schermata di blocco.
+      Tieni presente che l'esistenza dell'ID di un'app nella norma non implica necessariamente che l'utente potrà attivare l'app in questione come app per scrivere note nella schermata di blocco. Ad esempio, su Chrome 61, il gruppo di app disponibili è limitato ulteriormente dalla piattaforma.
+
+      Se la norma non viene impostata, non ci saranno limitazioni relative al gruppo di app che l'utente potrà attivare nella schermata di blocco.</translation>
 <translation id="4309640770189628899">Attiva o meno i pacchetti di crittografia DHE in TLS</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o versione successiva</translation>
 <translation id="4322842393287974810">Consenti all'app kiosk avviata automaticamente senza ritardo di controllare la versione di <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1222,7 +1228,6 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
       Se attivi l'impostazione, SafeSearch in Ricerca Google è sempre attiva.
 
       Se disattivi l'impostazione o non imposti un valore, l'utilizzo di SafeSearch non viene forzato in Ricerca Google.</translation>
-<translation id="5940306398763671235">Abilita Google Cast</translation>
 <translation id="5946082169633555022">Canale Beta</translation>
 <translation id="5950205771952201658">Alla luce del fatto che i controlli della revoca online soft-fail non offrono un effettivo vantaggio per la sicurezza, sono disattivati per impostazione predefinita nella versione 19 e nelle versioni successive di <ph name="PRODUCT_NAME" />. Se questa norma viene impostata su true, viene ripristinato il comportamento precedente e vengono effettuati controlli OCSP/CRL online.
 
@@ -1541,13 +1546,6 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 
           Questa norma viene rispettata solo se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="7302043767260300182">Ritardo blocco schermo in caso di utilizzo di CA</translation>
-<translation id="7309839952828354215">Consente di specificare come deve comportarsi un dispositivo con ecryptfs e come deve passare alla crittografia ext4.
-
-      Se questa norma viene impostata su "DisallowArc", le app Android verranno disattivate per tutti gli utenti configurati sul dispositivo (inclusi quelli che hanno già la crittografia ext4) e gli utenti non avranno la possibilità di eseguire la migrazione da ecryptfs alla crittografia ext4.
-
-      Se questa norma viene impostata su "AllowMigration", gli utenti con home directory ecryptfs avranno la possibilità di eseguire la migrazione di queste directory alla crittografia ext4, se necessario (attualmente quando Android N diventa disponibile sul dispositivo).
-
-      Se questa norma non viene impostata, il dispositivo si comporterà come se fosse stata scelta l'opzione "DisallowArc".</translation>
 <translation id="7311458740754205918">Se questa norma viene impostata su true o non viene impostata, nella pagina Nuova scheda potrebbero essere mostrati suggerimenti di contenuti basati sulla cronologia di navigazione, sugli interessi o sulla posizione dell'utente.
 
       Se viene impostata su false, i suggerimenti di contenuti generati automaticamente non vengono mostrati nella pagina Nuova scheda.</translation>
@@ -1622,7 +1620,6 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 <translation id="7625444193696794922">Consente di specificare il canale di rilascio su cui deve essere bloccato questo dispositivo.</translation>
 <translation id="7632724434767231364">Nome della libreria GSSAPI</translation>
 <translation id="7635471475589566552">Consente di configurare in <ph name="PRODUCT_NAME" /> le impostazioni della lingua e di impedirne la modifica agli utenti. Se attivi questa impostazione, <ph name="PRODUCT_NAME" /> utilizzerà le impostazioni della lingua specificate. Se la lingua configurata non è supportata, verrà utilizzata la lingua "en-US". Se questa impostazione viene disattivata o non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà la lingua preferita specificata dall'utente (se configurata), quella del sistema o la lingua di fallback "en-US".</translation>
-<translation id="7638300388094655454">Google Cast</translation>
 <translation id="7651739109954974365">È possibile stabilire se attivare o meno il roaming dei dati per il dispositivo. Se la norma viene impostata su true, il roaming dei dati sarà consentito. Se non viene configurata o viene impostata su false, il roaming dei dati non sarà disponibile.</translation>
 <translation id="7683777542468165012">Aggiornamento dinamico delle norme</translation>
 <translation id="7694807474048279351">Consente di pianificare un riavvio automatico in seguito all'applicazione di un aggiornamento di <ph name="PRODUCT_OS_NAME" />.
@@ -1738,6 +1735,7 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Questa norma non è più supportata. Consente di attivare l'utilizzo di server relay e STUN durante la connessione a un client remoto. Se questa impostazione viene attivata, questo computer potrà rilevare i computer host remoti e collegarsi a essi anche se sono separati da un firewall. Se questa impostazione viene disattivata e le connessioni UDP in uscita vengono filtrate dal firewall, questo computer potrà collegarsi ai computer host soltanto all'interno della rete locale.</translation>
 <translation id="7980227303582973781">Nessuna limitazione speciale</translation>
+<translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Ruota lo schermo di 0°</translation>
 <translation id="8044493735196713914">Indicazione modalità di avvio dispositivo</translation>
 <translation id="8050080920415773384">Stampa nativa</translation>

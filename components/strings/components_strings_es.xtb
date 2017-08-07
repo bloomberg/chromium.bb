@@ -9,6 +9,7 @@
 <translation id="1050038467049342496">Cierra otras aplicaciones</translation>
 <translation id="1055184225775184556">&amp;Deshacer acción de añadir</translation>
 <translation id="10614374240317010">Contraseñas que nunca se guardan</translation>
+<translation id="1066396345355680611">Es posible que dejes de tener acceso al contenido protegido de <ph name="SITE" /> y a otros sitios web.</translation>
 <translation id="106701514854093668">Marcadores del ordenador</translation>
 <translation id="1074497978438210769">No es seguro</translation>
 <translation id="1080116354587839789">Se ajusta al ancho</translation>
@@ -167,6 +168,7 @@
 <translation id="2282872951544483773">Experimentos no disponibles</translation>
 <translation id="2292556288342944218">Tu acceso a Internet está bloqueado</translation>
 <translation id="230155334948463882">¿Nueva tarjeta?</translation>
+<translation id="2316887270356262533">Libera menos de 1 MB. Algunos sitios web pueden tardar más en cargarse la próxima vez que accedas a ellos.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> necesita un nombre de usuario y una contraseña.</translation>
 <translation id="2317583587496011522">Se aceptan tarjetas de débito.</translation>
 <translation id="2337852623177822836">Configuración controlada por el administrador</translation>
@@ -242,6 +244,7 @@
 <translation id="2916038427272391327">Cierra otros programas</translation>
 <translation id="2922350208395188000">No es posible comprobar el certificado del servidor.</translation>
 <translation id="2928905813689894207">Dirección de facturación</translation>
+<translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> más}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> más}}</translation>
 <translation id="2941952326391522266">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, su certificado de seguridad procede de <ph name="DOMAIN2" />. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="2948083400971632585">Puedes inhabilitar los servidores proxy configurados para una conexión en la página de configuración.</translation>
 <translation id="2955913368246107853">Cerrar la barra de búsqueda</translation>
@@ -249,7 +252,7 @@
 <translation id="2966678944701946121">Fecha de caducidad: <ph name="EXPIRATION_DATE_ABBR" /> (añadida el <ph name="ADDED_TO_AUTOFILL_MONTH" />)</translation>
 <translation id="2969319727213777354">Para establecer una conexión segura, el reloj debe estar configurado correctamente. Esto se debe a que los certificados que utilizan los sitios web para identificarse solo son válidos para períodos de tiempo específicos. Como el reloj de tu dispositivo no está configurado correctamente, Google Chrome no puede verificar estos certificados.</translation>
 <translation id="2972581237482394796">&amp;Rehacer</translation>
-<translation id="2977665033722899841"><ph name="ROW_NAME" />, seleccionada actualmente. <ph name="ROW_CONTENT" /></translation>
+<translation id="2977665033722899841"><ph name="ROW_NAME" />, opción seleccionada actualmente. <ph name="ROW_CONTENT" /></translation>
 <translation id="2985306909656435243">Si se habilita esta opción, Chromium guardará una copia de tu tarjeta en este dispositivo para completar formularios más rápidamente.</translation>
 <translation id="2985398929374701810">Introduce una dirección válida</translation>
 <translation id="2986368408720340940">Este método de recogida no está disponible. Selecciona otro.</translation>
@@ -275,6 +278,7 @@
 <translation id="3150653042067488994">Error de servidor temporal</translation>
 <translation id="3154506275960390542">Es posible que un formulario de esta página no se envíe de forma segura. Otros usuarios pueden ver los datos que envías mientras estén en circulación y un atacante podría modificar lo que recibe el servidor.</translation>
 <translation id="3157931365184549694">Restaurar</translation>
+<translation id="3162559335345991374">La red Wi-Fi que estás utilizando puede requerir que accedas a su página de inicio de sesión.</translation>
 <translation id="3167968892399408617">Las páginas que aparezcan en las pestañas de incógnito no se guardarán en el historial del navegador, en el almacén de cookies ni en el historial de búsquedas una vez que hayas cerrado todas tus pestañas de incógnito. Se mantendrán los archivos que descargues o los marcadores que crees.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Isla</translation>
@@ -362,10 +366,12 @@
 <translation id="3679803492151881375">Informe sobre fallos registrado el <ph name="CRASH_TIME" /> y subido el <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Datos del certificado</translation>
 <translation id="3690164694835360974">Inicio de sesión no seguro</translation>
+<translation id="3704162925118123524">La red que estás utilizando puede requerir el acceso a su página de inicio de sesión.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Cargando...</translation>
 <translation id="3712624925041724820">Licencias agotadas</translation>
 <translation id="3714780639079136834">Activar los datos móviles o la conexión Wi-Fi</translation>
+<translation id="3715597595485130451">Conectarse a una red Wi-Fi</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Comprobar el proxy, el cortafuegos y la configuración de DNS<ph name="END_LINK" /></translation>
 <translation id="3736520371357197498">Si entiendes los riesgos para tu seguridad, puedes <ph name="BEGIN_LINK" />acceder a este sitio no seguro<ph name="END_LINK" /> antes de que se hayan eliminado los programas peligrosos.</translation>
 <translation id="3739623965217189342">Enlace copiado</translation>
@@ -373,6 +379,7 @@
 <translation id="3748148204939282805">Es posible que los atacantes que se encuentren en <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> intenten engañarte para que realices una acción peligrosa, como instalar software o revelar tu información personal (por ejemplo, contraseñas, números de teléfono o tarjetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Se ha producido un error de traducción debido a un problema con el servidor.</translation>
 <translation id="3759461132968374835">No se ha notificado ningún fallo recientemente. Los fallos que se hayan producido cuando la función de notificación de fallos estaba inhabilitada no aparecerán en esta página.</translation>
+<translation id="3765032636089507299">La página Navegación Segura está en construcción.</translation>
 <translation id="3778403066972421603">¿Quieres guardar esta tarjeta en tu cuenta de Google y en este dispositivo?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Vencimiento: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -417,6 +424,7 @@
 <translation id="4165986682804962316">Configuración de sitios web</translation>
 <translation id="4169947484918424451">¿Quieres que Chromium guarde esta tarjeta?</translation>
 <translation id="4171400957073367226">La firma de verificación no es válida</translation>
+<translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> elemento más}other{<ph name="ITEM_COUNT" /> elementos más}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4196861286325780578">&amp;Rehacer movimiento</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comprobar la configuración del cortafuegos y del antivirus<ph name="END_LINK" /></translation>
@@ -511,6 +519,7 @@
 <translation id="5045550434625856497">Contraseña incorrecta</translation>
 <translation id="5056549851600133418">Artículos recomendados para ti</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Comprobar la dirección del proxy<ph name="END_LINK" /></translation>
+<translation id="5086888986931078152">Es posible que dejes de tener acceso al contenido protegido de algunos sitios web.</translation>
 <translation id="5087286274860437796">El certificado del servidor no es válido en este momento.</translation>
 <translation id="5087580092889165836">Añadir tarjeta</translation>
 <translation id="5089810972385038852">Estado</translation>
@@ -541,6 +550,7 @@
     <ph name="END_LIST" /></translation>
 <translation id="5297526204711817721">Tu conexión a este sitio web no es privada. Para salir del modo RV en cualquier momento, quita el visor y pulsa Atrás.</translation>
 <translation id="5299298092464848405">Error al analizar la política</translation>
+<translation id="5308380583665731573">Conectar</translation>
 <translation id="5308689395849655368">Notificación de fallos inhabilitada</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nombre</translation>
@@ -556,6 +566,7 @@
 <translation id="5452270690849572955">No se puede encontrar esta página (<ph name="HOST_NAME" />)</translation>
 <translation id="5455374756549232013">Marca de tiempo de política incorrecta</translation>
 <translation id="5457113250005438886">No válido</translation>
+<translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> más}other{<ph name="CONTACT_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> más}}</translation>
 <translation id="5470861586879999274">&amp;Rehacer edición</translation>
 <translation id="5481076368049295676">Es posible que este contenido intente instalar software peligroso que robe o elimine tu información en el dispositivo. <ph name="BEGIN_LINK" />Mostrar de todos modos<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Añadir dirección válida</translation>
@@ -657,6 +668,7 @@
 <translation id="6321917430147971392">Comprueba tu configuración de DNS</translation>
 <translation id="6328639280570009161">Prueba a inhabilitar la predicción de red</translation>
 <translation id="6328786501058569169">Este sitio web es engañoso</translation>
+<translation id="6337133576188860026">Libera menos de <ph name="SIZE" />. Algunos sitios web pueden tardar más en cargarse la próxima vez que accedas a ellos.</translation>
 <translation id="6337534724793800597">Filtrar políticas por nombre</translation>
 <translation id="6342069812937806050">Ahora</translation>
 <translation id="6355080345576803305">Anulación de sesión pública</translation>
@@ -738,7 +750,9 @@
 <translation id="7129409597930077180">Los pedidos no se pueden enviar a esta dirección. Selecciona otra.</translation>
 <translation id="7138472120740807366">Método de entrega</translation>
 <translation id="7139724024395191329">Emirato</translation>
+<translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> más}other{<ph name="PAYMENT_METHOD_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> más}}</translation>
 <translation id="7155487117670177674">Pago no seguro</translation>
+<translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> más}other{<ph name="SHIPPING_OPTION_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> más}}</translation>
 <translation id="7179921470347911571">Reiniciar ahora</translation>
 <translation id="7180611975245234373">Actualizar</translation>
 <translation id="7182878459783632708">No hay políticas establecidas.</translation>
@@ -776,6 +790,7 @@
 <translation id="7481312909269577407">Adelante</translation>
 <translation id="7485870689360869515">No se han encontrado datos.</translation>
 <translation id="7508255263130623398">El ID de dispositivo de política devuelto está vacío o no coincide con el ID de dispositivo actual</translation>
+<translation id="7511955381719512146">La red Wi-Fi que estás utilizando puede requerir que accedas a la página <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7514365320538308">Descargar</translation>
 <translation id="7518003948725431193">No se ha encontrado ninguna página web para la dirección <ph name="URL" />.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -831,6 +846,7 @@
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">¿Eliminar sugerencia de formulario de Chrome?</translation>
 <translation id="7815407501681723534">Se han encontrado <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> de <ph name="SEARCH_STRING" /></translation>
+<translation id="782886543891417279">La red Wi-Fi que estás utilizando (<ph name="WIFI_NAME" />) puede requerir que accedas a su página de inicio de sesión.</translation>
 <translation id="785549533363645510">Ten en cuenta que tus acciones no serán totalmente invisibles. El uso del modo incógnito no te permite ocultar tu actividad de navegación a tu empresa, a tu proveedor de servicios de Internet o a los sitios web que visites.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7878176543348854470">Se aceptan tarjetas prepago y de débito.</translation>
@@ -854,6 +870,7 @@
 <translation id="8041940743680923270">Utilizar valor predeterminado global (Preguntar)</translation>
 <translation id="8088680233425245692">Se ha producido un error al ver el artículo.</translation>
 <translation id="8091372947890762290">La activación está pendiente en el servidor.</translation>
+<translation id="8094917007353911263">La red que estás utilizando puede requerir que accedas a la página <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8118489163946903409">Método de pago</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8134994873729925007">No se ha podido encontrar la <ph name="BEGIN_ABBR" />dirección DNS<ph name="END_ABBR" /> del servidor de <ph name="HOST_NAME" />.</translation>
@@ -877,6 +894,7 @@
 <translation id="8289355894181816810">Si tienes alguna duda, ponte en contacto con el administrador de red.</translation>
 <translation id="8293206222192510085">Añadir marcador</translation>
 <translation id="8294431847097064396">Origen</translation>
+<translation id="8298115750975731693">La red Wi-Fi que estás utilizando (<ph name="WIFI_NAME" />) puede requerir que accedas a la página <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8306404619377842860">No se puede establecer ninguna conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora de tu dispositivo (<ph name="DATE_AND_TIME" />) no son correctas. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">Se ha producido un error de traducción debido a un problema con la conexión de red.</translation>
 <translation id="8332188693563227489">Se ha denegado el acceso a <ph name="HOST_NAME" /></translation>
@@ -900,6 +918,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ha tardado demasiado tiempo en responder.</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="8543181531796978784">Puedes <ph name="BEGIN_ERROR_LINK" />informar de un problema de detección<ph name="END_ERROR_LINK" /> o, si comprendes los riesgos que conlleva esta acción para tu seguridad, <ph name="BEGIN_LINK" />accede a este sitio web no seguro<ph name="END_LINK" />.</translation>
+<translation id="8543556556237226809">¿Tienes alguna pregunta? Ponte en contacto con la persona que supervisa tu perfil.</translation>
 <translation id="8553075262323480129">La traducción no se ha realizado correctamente porque no se ha podido determinar el idioma de la página.</translation>
 <translation id="8571890674111243710">Traduciendo página a <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Añade un teléfono</translation>
@@ -935,6 +954,7 @@
 <translation id="8931333241327730545">¿Quieres guardar esta tarjeta en tu cuenta de Google?</translation>
 <translation id="8932102934695377596">Tu reloj está atrasado</translation>
 <translation id="8938939909778640821">Tarjetas prepago y de crédito aceptadas</translation>
+<translation id="8957210676456822347">Autorización de portal cautivo</translation>
 <translation id="8971063699422889582">El certificado del servidor ha caducado.</translation>
 <translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -942,6 +962,7 @@
 <translation id="8997023839087525404">El servidor ha mostrado un certificado que no se ha hecho público mediante la Política de Transparencia en los Certificados. Este requisito se aplica a algunos certificados para garantizar que son de confianza y ofrecer protección contra los atacantes.</translation>
 <translation id="9001074447101275817">El proxy <ph name="DOMAIN" /> requiere un nombre de usuario y una contraseña.</translation>
 <translation id="9005998258318286617">Se ha producido un error al cargar el documento PDF.</translation>
+<translation id="9008201768610948239">Ignorar</translation>
 <translation id="901974403500617787">Las opciones que se aplican a todo el sistema solo las puede establecer el propietario: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020200922353704812">La dirección de facturación de la tarjeta es obligatoria</translation>
 <translation id="9020542370529661692">Esta página se ha traducido al <ph name="TARGET_LANGUAGE" /></translation>
@@ -956,6 +977,7 @@
 <translation id="9076283476770535406">Es posible que incluya contenido para adultos</translation>
 <translation id="9078964945751709336">Se necesita más información</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> utiliza normalmente el cifrado para proteger tu información. Cuando Chromium intentó establecer conexión con <ph name="SITE" />, el sitio web devolvió unas credenciales inusuales e incorrectas. Esto puede ocurrir si un atacante intenta suplantar la identidad de <ph name="SITE" /> o si una pantalla de inicio de sesión Wi-Fi interrumpe la conexión. Tu información sigue estando protegida, ya que Chromium detuvo la conexión antes de que se intercambiaran datos.</translation>
+<translation id="9128870381267983090">Conectarse a la red</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9137248913990643158">Abre Chrome e inicia sesión en el navegador para usar esta aplicación.</translation>
 <translation id="9148507642005240123">&amp;Deshacer edición</translation>
