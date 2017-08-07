@@ -29,7 +29,7 @@ Sensor::Sensor(ExecutionContext* execution_context,
   // Check secure context.
   String error_message;
   if (!execution_context->IsSecureContext(error_message)) {
-    exception_state.ThrowDOMException(kSecurityError, error_message);
+    exception_state.ThrowSecurityError(error_message);
     return;
   }
 
