@@ -604,8 +604,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNotShownTest, OnlyNotShownMetricsLogged) {
   std::vector<base::Bucket> buckets =
       histogram_tester.GetAllSamples("PaymentRequest.Events");
   ASSERT_EQ(1U, buckets.size());
-  // Only USER_ABORTED should be logged.
-  EXPECT_EQ(JourneyLogger::EVENT_USER_ABORTED, buckets[0].min);
+  // Only USER_ABORTED and CAN_MAKE_PAYMENT_FALSE should be logged.
+  EXPECT_EQ(JourneyLogger::EVENT_USER_ABORTED |
+                JourneyLogger::EVENT_CAN_MAKE_PAYMENT_FALSE,
+            buckets[0].min);
 
   // Make sure that the metrics that required the Payment Request to be shown
   // are not logged.

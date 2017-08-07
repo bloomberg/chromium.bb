@@ -95,6 +95,12 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Used.FalseWithShowEffectOnCompletion",
                         CompletionStatus.USER_ABORTED));
+
+        // Make sure the canMakePayment events were logged correctly.
+        int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.CAN_MAKE_PAYMENT_FALSE;
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.Events", expectedSample));
     }
 
     /**
@@ -147,6 +153,13 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Used.FalseWithShowEffectOnCompletion",
                         CompletionStatus.COMPLETED));
+
+        // Make sure the canMakePayment events were logged correctly.
+        int expectedSample = Event.SHOWN | Event.PAY_CLICKED | Event.RECEIVED_INSTRUMENT_DETAILS
+                | Event.COMPLETED | Event.CAN_MAKE_PAYMENT_FALSE;
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.Events", expectedSample));
     }
 
     /**
@@ -189,6 +202,13 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
                         CompletionStatus.OTHER_ABORTED));
+
+        // Make sure the canMakePayment events were logged correctly.
+        int expectedSample = Event.SHOWN | Event.OTHER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
+                | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.CAN_MAKE_PAYMENT_TRUE;
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.Events", expectedSample));
     }
 
     /**
@@ -229,6 +249,14 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
                         CompletionStatus.COMPLETED));
+
+        // Make sure the canMakePayment events were logged correctly.
+        int expectedSample = Event.SHOWN | Event.PAY_CLICKED | Event.RECEIVED_INSTRUMENT_DETAILS
+                | Event.COMPLETED | Event.HAD_INITIAL_FORM_OF_PAYMENT
+                | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.CAN_MAKE_PAYMENT_TRUE;
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.Events", expectedSample));
     }
 
     /**
@@ -267,6 +295,12 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
                         CompletionStatus.USER_ABORTED));
+
+        // Make sure no canMakePayment events were logged.
+        int expectedSample = Event.SHOWN | Event.USER_ABORTED;
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.Events", expectedSample));
     }
 
     /**
@@ -299,5 +333,13 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
                         CompletionStatus.COMPLETED));
+
+        // Make sure no canMakePayment events were logged.
+        int expectedSample = Event.SHOWN | Event.PAY_CLICKED | Event.RECEIVED_INSTRUMENT_DETAILS
+                | Event.COMPLETED | Event.HAD_INITIAL_FORM_OF_PAYMENT
+                | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS;
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.Events", expectedSample));
     }
 }

@@ -111,7 +111,9 @@ class JourneyLogger {
     EVENT_OTHER_ABORTED = 1 << 6,
     EVENT_HAD_INITIAL_FORM_OF_PAYMENT = 1 << 7,
     EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS = 1 << 8,
-    EVENT_ENUM_MAX = 512,
+    EVENT_CAN_MAKE_PAYMENT_TRUE = 1 << 9,
+    EVENT_CAN_MAKE_PAYMENT_FALSE = 1 << 10,
+    EVENT_ENUM_MAX = 2048,
   };
 
   // The reason why the Payment Request was aborted.
@@ -259,11 +261,17 @@ class JourneyLogger {
   // Records the Payment Request Url Keyed Metrics.
   void RecordUrlKeyedMetrics(CompletionStatus completion_status);
 
+  // Returns whether canMakePayment was used.
+  bool WasCanMakePaymentUsed();
+
+  // Returns whether the answer to canMakePayment was true or false;
+  bool CouldMakePayment();
+
+  // Returns whether this Payment Request was triggered (shown or skipped show).
+  bool WasPaymentRequestTriggered();
+
   SectionStats sections_[NUMBER_OF_SECTIONS];
   bool has_recorded_ = false;
-  bool was_can_make_payments_used_ = false;
-  bool could_make_payment_ = false;
-  bool was_payment_request_triggered_ = false;
   bool is_incognito_;
 
   // Accumulates the many events that have happened during the Payment Request.
