@@ -60,16 +60,14 @@ class ELFParsingTest(cros_test_lib.TempDirTestCase):
     self.assertFalse('exp_sym' in elf)
 
     # Test with symbols by default.
-    elf = parseelf.ParseELF(self.tempdir, 'libxyz.so', self._ldpaths)
+    elf = parseelf.ParseELF(self.tempdir, 'libxyz.so', self._ldpaths,
+                            parse_symbols=True)
     self.assertTrue('imp_sym' in elf)
     self.assertTrue('exp_sym' in elf)
     self.assertEquals(elf['imp_sym'], set(['fa', 'fb', 'fc']))
-    self.assertEquals(set(k for k, (_, _, st_shndx)
-                          in elf['exp_sym'].iteritems()
-                          if st_shndx == 'SHT_DYNSYM'),
-                      set(['fx', 'fy', 'fz']))
-    for sym in ['fx', 'fy', 'fz']:
-      self.assertEquals('STB_GLOBAL', elf['exp_sym'][sym][0])
+    self.assertIn('fx', elf['exp_sym'])
+    self.assertIn('fy', elf['exp_sym'])
+    self.assertIn('fz', elf['exp_sym'])
 
   def testLibDependencies(self):
     """Tests the list direct dependencies."""

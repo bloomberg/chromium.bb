@@ -327,8 +327,6 @@ class SymbolsTest(image_test_lib.NonForgivingImageTestCase):
       raise ValueError('%s is not an ELF file.' % file_name)
 
     imp, exp = parseelf.ParseELFSymbols(elf)
-    exp = set(exp.keys())
-
     self._known_symtabs[file_name] = imp, exp
     return imp, exp
 
