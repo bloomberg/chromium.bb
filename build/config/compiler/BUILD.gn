@@ -1003,6 +1003,13 @@ config("default_warnings") {
       # This is necessary for the shared library build.
       "/wd4251",
 
+      # C4275:  non dll-interface class used as base for dll-interface class
+      # This points out a potential (but rare) problem with referencing static
+      # fields of a non-exported base, through the base's non-exported inline
+      # functions, or directly. The warning is subtle enough that people just
+      # suppressed it when they saw it, so it's not worth it.
+      "/wd4275",
+
       # C4312 is a VS 2015 64-bit warning for integer to larger pointer.
       # TODO(brucedawson): fix warnings, crbug.com/554200
       "/wd4312",
