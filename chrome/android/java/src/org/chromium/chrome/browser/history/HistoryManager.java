@@ -421,7 +421,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      */
     boolean shouldShowInfoButton() {
         return mHistoryAdapter.hasPrivacyDisclaimers() && mHistoryAdapter.getItemCount() > 0
-                && !mToolbar.isSearching();
+                && !mToolbar.isSearching() && !mSelectionDelegate.isSelectionEnabled();
     }
 
     /**

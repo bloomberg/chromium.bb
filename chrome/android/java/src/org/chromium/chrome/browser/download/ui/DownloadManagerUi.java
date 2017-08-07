@@ -467,7 +467,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
      * @return True if info menu item should be shown on download toolbar, false otherwise.
      */
     boolean shouldShowInfoButton() {
-        return mHistoryAdapter.getItemCount() > 0 && !mToolbar.isSearching();
+        return mHistoryAdapter.getItemCount() > 0 && !mToolbar.isSearching()
+                && !mBackendProvider.getSelectionDelegate().isSelectionEnabled();
     }
 
     /**
