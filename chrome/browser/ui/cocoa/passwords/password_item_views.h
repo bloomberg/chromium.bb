@@ -71,7 +71,9 @@ enum ManagePasswordItemState {
   // The field contains the password or IDP origin for federated credentials.
   base::scoped_nsobject<NSTextField> passwordField_;
 }
-- (id)initWithForm:(const autofill::PasswordForm&)form;
+@property(readonly, nonatomic) NSTextField* usernameField;
+
+- (id)initWithForm:(const autofill::PasswordForm&)form editMode:(BOOL)editMode;
 @end
 
 @interface PendingPasswordItemView (Testing)
