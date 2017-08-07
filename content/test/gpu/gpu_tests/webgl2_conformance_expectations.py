@@ -495,7 +495,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     #     ['mac', 'amd'], bug=735483)
     # self.Fail('conformance2/rendering/texture-switch-performance.html',
     #     ['mac', 'amd'], bug=735483)
-    self.Flaky('deqp/functional/gles3/shaderoperator/common_functions.html',
+    self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
         ['mac', 'amd'], bug=702336)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'array_interleaved_lines.html',
@@ -590,6 +590,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=642822)
 
     # Mac Intel
+    self.Flaky('deqp/functional/gles3/shaderoperator/common_functions.html',
+        ['mac', 'intel'], bug=702336)
     self.Fail('conformance2/rendering/framebuffer-texture-level1.html',
         ['mac', 'intel'], bug=680278)
     self.Fail('conformance2/textures/misc/angle-stuck-depth-textures.html',
