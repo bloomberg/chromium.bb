@@ -4,39 +4,200 @@
 
 #include "remoting/host/setup/daemon_controller_delegate_mac.h"
 
-#import <AppKit/AppKit.h>
-
-#include <CoreFoundation/CoreFoundation.h>
 #include <launch.h>
-#include <stdio.h>
 #include <sys/types.h>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
+#include "base/mac/authorization_util.h"
 #include "base/mac/launchd.h"
 #include "base/mac/mac_logging.h"
-#include "base/mac/mac_util.h"
+#include "base/mac/scoped_authorizationref.h"
 #include "base/mac/scoped_launch_data.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/time/time.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/values.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/mac/constants_mac.h"
-#include "remoting/host/usage_stats_consent.h"
 
 namespace remoting {
+
+namespace {
+
+// Simple RAII class to ensure that waitpid() gets called on a child process.
+// Neither std::unique_ptr nor base::ScopedGeneric are well suited, because the
+// caller wants to examine the returned status of waitpid() from the scoper's
+// deleter function.
+class ScopedWaitpid {
+ public:
+  // -1 is treated as an invalid PID and waitpit() will not be called in this
+  // case. Note that -1 is the value returned from
+  // base::mac::ExecuteWithPrivilegesAndGetPID() when the child PID could not be
+  // determined.
+  ScopedWaitpid(pid_t pid) : pid_(pid) {}
+  ~ScopedWaitpid() { MaybeWait(); }
+
+  // Executes the waitpid() and resets the scoper. After this, the caller may
+  // examine error() and exit_status().
+  void Reset() { MaybeWait(); }
+
+  bool error() { return error_; }
+  int exit_status() { return exit_status_; }
+
+ private:
+  pid_t pid_ = -1;
+
+  // Set if waitpid() failed (returned a value not equal to |pid_|).
+  bool error_ = false;
+
+  // The exit status, if waitpid() succeeded.
+  int exit_status_ = 0;
+
+  void MaybeWait() {
+    if (pid_ != -1) {
+      pid_t wait_result = HANDLE_EINTR(waitpid(pid_, &exit_status_, 0));
+      if (wait_result != pid_) {
+        PLOG(ERROR) << "waitpid failed";
+        error_ = true;
+      }
+      pid_ = -1;
+    }
+  }
+};
+
+// Runs the helper script as root with the given command-line argument.
+// If |input_data| is non-empty, it will be piped to the script via standard
+// input. Returns true if successful.
+bool RunHelperAsRoot(const std::string& command,
+                     const std::string& input_data) {
+  base::mac::ScopedAuthorizationRef authorization(
+      base::mac::AuthorizationCreateToRunAsRoot(nullptr));
+  if (!authorization.get()) {
+    LOG(ERROR) << "Failed to obtain authorizationRef";
+    return false;
+  }
+
+  // TODO(lambroslambrou): Replace the deprecated ExecuteWithPrivileges
+  // call with a launchd-based helper tool, which is more secure.
+  // http://crbug.com/120903
+  const char* arguments[] = {command.c_str(), nullptr};
+  FILE* pipe = nullptr;
+  pid_t pid;
+  OSStatus status = base::mac::ExecuteWithPrivilegesAndGetPID(
+      authorization.get(), remoting::kHostHelperScriptPath,
+      kAuthorizationFlagDefaults, arguments, &pipe, &pid);
+  if (status != errAuthorizationSuccess) {
+    LOG(ERROR) << "AuthorizationExecuteWithPrivileges: "
+               << logging::DescriptionFromOSStatus(status)
+               << static_cast<int>(status);
+    return false;
+  }
+
+  // It is safer to order the scopers this way round, to ensure that the pipe is
+  // closed before calling waitpid(). In the case of sending data to the child,
+  // the child reads until EOF on its stdin, so calling waitpid() first would
+  // result in deadlock in this situation.
+  ScopedWaitpid scoped_pid(pid);
+  base::ScopedFILE scoped_pipe(pipe);
+
+  if (pid == -1) {
+    LOG(ERROR) << "Failed to get child PID";
+    return false;
+  }
+  if (!pipe) {
+    LOG(ERROR) << "Unexpected nullptr pipe";
+    return false;
+  }
+
+  if (!input_data.empty()) {
+    size_t bytes_written =
+        fwrite(input_data.data(), sizeof(char), input_data.size(), pipe);
+    // According to the fwrite manpage, a partial count is returned only if a
+    // write error has occurred.
+    if (bytes_written != input_data.size()) {
+      LOG(ERROR) << "Failed to write data to child process";
+      return false;
+    }
+
+    // Flush any buffers here to avoid doing it in fclose(), because the
+    // ScopedFILE does not allow checking for errors from fclose().
+    if (fflush(pipe) != 0) {
+      PLOG(ERROR) << "Failed to flush data to child process";
+      return false;
+    }
+  }
+
+  // Close the pipe (to send EOF) and wait for the child process to run.
+  scoped_pipe.reset();
+  scoped_pid.Reset();
+
+  if (scoped_pid.error()) {
+    PLOG(ERROR) << "waitpid failed";
+    return false;
+  }
+  const int exit_status = scoped_pid.exit_status();
+  if (WIFEXITED(exit_status) && WEXITSTATUS(exit_status) == 0) {
+    return true;
+  }
+
+  LOG(ERROR) << remoting::kHostHelperScriptPath << " failed with exit status "
+             << exit_status;
+  return false;
+}
+
+void ElevateAndSetConfig(const base::DictionaryValue& config,
+                         const DaemonController::CompletionCallback& done) {
+  // Find out if the host service is running.
+  pid_t job_pid = base::mac::PIDForJob(remoting::kServiceName);
+  bool service_running = (job_pid > 0);
+
+  const char* command = service_running ? "--save-config" : "--enable";
+  std::string input_data = HostConfigToJson(config);
+  if (!RunHelperAsRoot(command, input_data)) {
+    LOG(ERROR) << "Failed to run the helper tool.";
+    done.Run(DaemonController::RESULT_FAILED);
+    return;
+  }
+
+  if (!service_running) {
+    base::mac::ScopedLaunchData response(
+        base::mac::MessageForJob(remoting::kServiceName, LAUNCH_KEY_STARTJOB));
+    if (!response.is_valid()) {
+      LOG(ERROR) << "Failed to send STARTJOB to launchd";
+      done.Run(DaemonController::RESULT_FAILED);
+      return;
+    }
+  }
+  done.Run(DaemonController::RESULT_OK);
+}
+
+void ElevateAndStopHost(const DaemonController::CompletionCallback& done) {
+  if (!RunHelperAsRoot("--disable", std::string())) {
+    LOG(ERROR) << "Failed to run the helper tool.";
+    done.Run(DaemonController::RESULT_FAILED);
+    return;
+  }
+
+  // Stop the launchd job.  This cannot easily be done by the helper tool,
+  // since the launchd job runs in the current user's context.
+  base::mac::ScopedLaunchData response(
+      base::mac::MessageForJob(remoting::kServiceName, LAUNCH_KEY_STOPJOB));
+  if (!response.is_valid()) {
+    LOG(ERROR) << "Failed to send STOPJOB to launchd";
+    done.Run(DaemonController::RESULT_FAILED);
+    return;
+  }
+  done.Run(DaemonController::RESULT_OK);
+}
+
+}  // namespace
 
 DaemonControllerDelegateMac::DaemonControllerDelegateMac() {
 }
 
 DaemonControllerDelegateMac::~DaemonControllerDelegateMac() {
-  DeregisterForPreferencePaneNotifications();
 }
 
 DaemonController::State DaemonControllerDelegateMac::GetState() {
@@ -73,7 +234,7 @@ void DaemonControllerDelegateMac::SetConfigAndStart(
     bool consent,
     const DaemonController::CompletionCallback& done) {
   config->SetBoolean(kUsageStatsConsentConfigPath, consent);
-  ShowPreferencePane(HostConfigToJson(*config), done);
+  ElevateAndSetConfig(*config, done);
 }
 
 void DaemonControllerDelegateMac::UpdateConfig(
@@ -88,12 +249,12 @@ void DaemonControllerDelegateMac::UpdateConfig(
   }
 
   host_config->MergeDictionary(config.get());
-  ShowPreferencePane(HostConfigToJson(*host_config), done);
+  ElevateAndSetConfig(*host_config, done);
 }
 
 void DaemonControllerDelegateMac::Stop(
     const DaemonController::CompletionCallback& done) {
-  ShowPreferencePane("", done);
+  ElevateAndStopHost(done);
 }
 
 DaemonController::UsageStatsConsent
@@ -112,139 +273,6 @@ DaemonControllerDelegateMac::GetUsageStatsConsent() {
   }
 
   return consent;
-}
-
-void DaemonControllerDelegateMac::ShowPreferencePane(
-    const std::string& config_data,
-    const DaemonController::CompletionCallback& done) {
-  if (DoShowPreferencePane(config_data)) {
-    RegisterForPreferencePaneNotifications(done);
-  } else {
-    done.Run(DaemonController::RESULT_FAILED);
-  }
-}
-
-// CFNotificationCenterAddObserver ties the thread on which distributed
-// notifications are received to the one on which it is first called.
-// This is safe because HostNPScriptObject::InvokeAsyncResultCallback
-// bounces the invocation to the correct thread, so it doesn't matter
-// which thread CompletionCallbacks are called on.
-void DaemonControllerDelegateMac::RegisterForPreferencePaneNotifications(
-    const DaemonController::CompletionCallback& done) {
-  // We can only have one callback registered at a time. This is enforced by the
-  // UX flow of the web-app.
-  DCHECK(current_callback_.is_null());
-  current_callback_ = done;
-
-  CFNotificationCenterAddObserver(
-      CFNotificationCenterGetDistributedCenter(),
-      this,
-      &DaemonControllerDelegateMac::PreferencePaneCallback,
-      CFSTR(UPDATE_SUCCEEDED_NOTIFICATION_NAME),
-      nullptr,
-      CFNotificationSuspensionBehaviorDeliverImmediately);
-  CFNotificationCenterAddObserver(
-      CFNotificationCenterGetDistributedCenter(),
-      this,
-      &DaemonControllerDelegateMac::PreferencePaneCallback,
-      CFSTR(UPDATE_FAILED_NOTIFICATION_NAME),
-      nullptr,
-      CFNotificationSuspensionBehaviorDeliverImmediately);
-}
-
-void DaemonControllerDelegateMac::DeregisterForPreferencePaneNotifications() {
-  CFNotificationCenterRemoveObserver(
-      CFNotificationCenterGetDistributedCenter(),
-      this,
-      CFSTR(UPDATE_SUCCEEDED_NOTIFICATION_NAME),
-      nullptr);
-  CFNotificationCenterRemoveObserver(
-      CFNotificationCenterGetDistributedCenter(),
-      this,
-      CFSTR(UPDATE_FAILED_NOTIFICATION_NAME),
-      nullptr);
-}
-
-void DaemonControllerDelegateMac::PreferencePaneCallbackDelegate(
-    CFStringRef name) {
-  DaemonController::AsyncResult result = DaemonController::RESULT_FAILED;
-  if (CFStringCompare(name, CFSTR(UPDATE_SUCCEEDED_NOTIFICATION_NAME), 0) ==
-          kCFCompareEqualTo) {
-    result = DaemonController::RESULT_OK;
-  } else if (CFStringCompare(name, CFSTR(UPDATE_FAILED_NOTIFICATION_NAME), 0) ==
-          kCFCompareEqualTo) {
-    result = DaemonController::RESULT_FAILED;
-  } else {
-    LOG(WARNING) << "Ignoring unexpected notification: " << name;
-    return;
-  }
-
-  DeregisterForPreferencePaneNotifications();
-
-  DCHECK(!current_callback_.is_null());
-  base::ResetAndReturn(&current_callback_).Run(result);
-}
-
-// static
-bool DaemonControllerDelegateMac::DoShowPreferencePane(
-    const std::string& config_data) {
-  if (!config_data.empty()) {
-    base::FilePath config_path;
-    if (!base::GetTempDir(&config_path)) {
-      LOG(ERROR) << "Failed to get filename for saving configuration data.";
-      return false;
-    }
-    config_path = config_path.Append(kHostConfigFileName);
-
-    int written = base::WriteFile(config_path, config_data.data(),
-                                       config_data.size());
-    if (written != static_cast<int>(config_data.size())) {
-      LOG(ERROR) << "Failed to save configuration data to: "
-                 << config_path.value();
-      return false;
-    }
-  }
-
-  base::FilePath pane_path;
-  // TODO(lambroslambrou): Use NSPreferencePanesDirectory once we start
-  // building against SDK 10.6.
-  if (!base::mac::GetLocalDirectory(NSLibraryDirectory, &pane_path)) {
-    LOG(ERROR) << "Failed to get directory for local preference panes.";
-    return false;
-  }
-  pane_path = pane_path.Append("PreferencePanes").Append(kPrefPaneFileName);
-
-  bool success = [[NSWorkspace sharedWorkspace]
-      openFile:base::SysUTF8ToNSString(pane_path.value())];
-  if (!success) {
-    LOG(ERROR) << "Failed to open preferences pane: " << pane_path.value();
-    return false;
-  }
-
-  CFNotificationCenterRef center =
-      CFNotificationCenterGetDistributedCenter();
-  base::ScopedCFTypeRef<CFStringRef> service_name(CFStringCreateWithCString(
-      kCFAllocatorDefault, remoting::kServiceName, kCFStringEncodingUTF8));
-  CFNotificationCenterPostNotification(center, service_name, nullptr, nullptr,
-                                       TRUE);
-  return true;
-}
-
-// static
-void DaemonControllerDelegateMac::PreferencePaneCallback(
-    CFNotificationCenterRef center,
-    void* observer,
-    CFStringRef name,
-    const void* object,
-    CFDictionaryRef user_info) {
-  DaemonControllerDelegateMac* self =
-      reinterpret_cast<DaemonControllerDelegateMac*>(observer);
-  if (!self) {
-    LOG(WARNING) << "Ignoring notification with nullptr observer: " << name;
-    return;
-  }
-
-  self->PreferencePaneCallbackDelegate(name);
 }
 
 scoped_refptr<DaemonController> DaemonController::Create() {
