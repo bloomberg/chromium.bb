@@ -164,11 +164,6 @@ def parse_args(args):
                 type='string',
                 help='Alternative driver binary to use'),
             optparse.make_option(
-                '--full-results-html',
-                action='store_true',
-                default=False,
-                help='Show all failures in results.html, rather than only regressions'),
-            optparse.make_option(
                 '--json-test-results',              # New name from json_results_generator
                 '--write-full-results-to',          # Old argument name
                 '--isolated-script-test-output',    # Isolated API

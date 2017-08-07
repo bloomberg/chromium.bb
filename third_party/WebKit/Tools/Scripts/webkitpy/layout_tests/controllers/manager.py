@@ -227,8 +227,7 @@ class Manager(object):
             else:
                 if initial_results.interrupted:
                     exit_code = exit_codes.EARLY_EXIT_STATUS
-                if self._options.show_results and (
-                        exit_code or (self._options.full_results_html and initial_results.total_failures)):
+                if self._options.show_results and (exit_code or initial_results.total_failures):
                     self._port.show_results_html_file(results_path)
                 self._printer.print_results(time.time() - start_time, initial_results)
 
