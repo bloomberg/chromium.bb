@@ -257,10 +257,6 @@ class ContentViewCore : public WebContentsObserver {
   void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
                                const SkBitmap& zoomed_bitmap);
 
-  // Creates a java-side touch event, used for injecting motion events for
-  // testing/benchmarking purposes.
-  base::android::ScopedJavaLocalRef<jobject> CreateMotionEventSynthesizer();
-
   void DidStopFlinging();
 
   // Returns the context with which the ContentViewCore was created, typically

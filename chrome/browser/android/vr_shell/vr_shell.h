@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/android/jni_weak_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -72,7 +71,7 @@ class VrShell : public device::GvrDelegate,
                 public ChromeToolbarModelDelegate {
  public:
   VrShell(JNIEnv* env,
-          jobject obj,
+          const base::android::JavaParamRef<jobject>& obj,
           ui::WindowAndroid* window,
           bool for_web_vr,
           bool web_vr_autopresentation_expected,
@@ -84,7 +83,7 @@ class VrShell : public device::GvrDelegate,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& web_contents,
-      const base::android::JavaParamRef<jobject>& touch_event_synthesizer);
+      const base::android::JavaParamRef<jobject>& android_ui_gesture_target);
   void LoadUIContent(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);

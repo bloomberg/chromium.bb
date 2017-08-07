@@ -1656,12 +1656,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private MotionEventSynthesizer createMotionEventSynthesizer() {
-        return new MotionEventSynthesizer(getContainerView(), this);
-    }
-
-    @SuppressWarnings("unused")
-    @CalledByNative
     private void performLongPressHapticFeedback() {
         mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
     }

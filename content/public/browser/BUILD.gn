@@ -31,6 +31,7 @@ source_set("browser_sources") {
     "android/content_view_layer_renderer.h",
     "android/devtools_auth.h",
     "android/java_interfaces.h",
+    "android/motion_event_action.h",
     "android/synchronous_compositor.cc",
     "android/synchronous_compositor.h",
     "android/synchronous_compositor_client.h",

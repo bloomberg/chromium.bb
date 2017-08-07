@@ -4,22 +4,29 @@
 
 #include "chrome/browser/android/vr_shell/android_ui_gesture_target.h"
 
-#include "jni/MotionEventSynthesizer_jni.h"
+#include "jni/AndroidUiGestureTarget_jni.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebMouseEvent.h"
+
+using base::android::JavaParamRef;
+using base::android::JavaRef;
+using content::MotionEventAction;
 
 namespace vr_shell {
 
-AndroidUiGestureTarget::AndroidUiGestureTarget(
-    const base::android::JavaRef<jobject>& event_synthesizer,
-    float scroll_ratio)
-    : event_synthesizer_(event_synthesizer), scroll_ratio_(scroll_ratio) {
-  DCHECK(!event_synthesizer_.is_null());
-}
+AndroidUiGestureTarget::AndroidUiGestureTarget(JNIEnv* env,
+                                               const JavaParamRef<jobject>& obj,
+                                               float scale_factor,
+                                               float scroll_ratio)
+    : scale_factor_(scale_factor),
+      scroll_ratio_(scroll_ratio),
+      java_ref_(env, obj) {}
 
 AndroidUiGestureTarget::~AndroidUiGestureTarget() = default;
 
 void AndroidUiGestureTarget::DispatchWebInputEvent(
     std::unique_ptr<blink::WebInputEvent> event) {
-  JNIEnv* env = base::android::AttachCurrentThread();
   blink::WebMouseEvent* mouse;
   blink::WebGestureEvent* gesture;
   if (blink::WebInputEvent::IsMouseEventType(event->GetType())) {
@@ -28,58 +35,59 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
     gesture = static_cast<blink::WebGestureEvent*>(event.get());
   }
 
+  int64_t event_time_ms = event->TimeStampSeconds() * 1000;
   switch (event->GetType()) {
     case blink::WebGestureEvent::kGestureScrollBegin:
       DCHECK(gesture->data.scroll_begin.delta_hint_units ==
              blink::WebGestureEvent::ScrollUnits::kPrecisePixels);
       scroll_x_ = (scroll_ratio_ * gesture->data.scroll_begin.delta_x_hint);
       scroll_y_ = (scroll_ratio_ * gesture->data.scroll_begin.delta_y_hint);
-      SetPointer(env, 0, 0);
-      Inject(env, Action::Start, gesture->TimeStampSeconds());
-      SetPointer(env, scroll_x_, scroll_y_);
+      SetPointer(0, 0);
+      Inject(content::MOTION_EVENT_ACTION_START, event_time_ms);
+      SetPointer(scroll_x_, scroll_y_);
       // Send a move immediately so that we can't accidentally trigger a click.
-      Inject(env, Action::Move, gesture->TimeStampSeconds());
+      Inject(content::MOTION_EVENT_ACTION_MOVE, event_time_ms);
       break;
     case blink::WebGestureEvent::kGestureScrollEnd:
-      Inject(env, Action::End, gesture->TimeStampSeconds());
+      Inject(content::MOTION_EVENT_ACTION_END, event_time_ms);
       break;
     case blink::WebGestureEvent::kGestureScrollUpdate:
       scroll_x_ += (scroll_ratio_ * gesture->data.scroll_update.delta_x);
       scroll_y_ += (scroll_ratio_ * gesture->data.scroll_update.delta_y);
-      SetPointer(env, scroll_x_, scroll_y_);
-      Inject(env, Action::Move, gesture->TimeStampSeconds());
+      SetPointer(scroll_x_, scroll_y_);
+      Inject(content::MOTION_EVENT_ACTION_MOVE, event_time_ms);
       break;
     case blink::WebGestureEvent::kGestureTapDown:
-      SetPointer(env, gesture->x, gesture->y);
-      Inject(env, Action::Start, gesture->TimeStampSeconds());
-      Inject(env, Action::End, gesture->TimeStampSeconds());
+      SetPointer(gesture->x, gesture->y);
+      Inject(content::MOTION_EVENT_ACTION_START, event_time_ms);
+      Inject(content::MOTION_EVENT_ACTION_END, event_time_ms);
       break;
     case blink::WebGestureEvent::kGestureFlingCancel:
-      Inject(env, Action::Cancel, gesture->TimeStampSeconds());
+      Inject(content::MOTION_EVENT_ACTION_CANCEL, event_time_ms);
       break;
     case blink::WebGestureEvent::kGestureFlingStart:
       // Flings are automatically generated for android UI. Ignore this input.
       break;
     case blink::WebMouseEvent::kMouseEnter:
-      SetPointer(env, mouse->PositionInWidget().x, mouse->PositionInWidget().y);
-      Inject(env, Action::HoverEnter, gesture->TimeStampSeconds());
+      SetPointer(mouse->PositionInWidget().x, mouse->PositionInWidget().y);
+      Inject(content::MOTION_EVENT_ACTION_HOVER_ENTER, event_time_ms);
       break;
     case blink::WebMouseEvent::kMouseMove:
-      SetPointer(env, mouse->PositionInWidget().x, mouse->PositionInWidget().y);
-      Inject(env, Action::HoverMove, gesture->TimeStampSeconds());
+      SetPointer(mouse->PositionInWidget().x, mouse->PositionInWidget().y);
+      Inject(content::MOTION_EVENT_ACTION_HOVER_MOVE, event_time_ms);
       break;
     case blink::WebMouseEvent::kMouseLeave:
-      SetPointer(env, mouse->PositionInWidget().x, mouse->PositionInWidget().y);
-      Inject(env, Action::HoverExit, gesture->TimeStampSeconds());
+      SetPointer(mouse->PositionInWidget().x, mouse->PositionInWidget().y);
+      Inject(content::MOTION_EVENT_ACTION_HOVER_EXIT, event_time_ms);
       break;
     case blink::WebMouseEvent::kMouseDown:
       // Mouse down events are translated into touch events on Android anyways,
       // so we can just send touch events.
       // We intentionally don't support long press or drags/swipes with mouse
       // input as this could trigger long press and open 2D popups.
-      SetPointer(env, mouse->PositionInWidget().x, mouse->PositionInWidget().y);
-      Inject(env, Action::Start, gesture->TimeStampSeconds());
-      Inject(env, Action::End, gesture->TimeStampSeconds());
+      SetPointer(mouse->PositionInWidget().x, mouse->PositionInWidget().y);
+      Inject(content::MOTION_EVENT_ACTION_START, event_time_ms);
+      Inject(content::MOTION_EVENT_ACTION_END, event_time_ms);
       break;
     case blink::WebMouseEvent::kMouseUp:
       // No need to do anything for mouseUp as mouseDown already handled up.
@@ -90,26 +98,39 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
   }
 }
 
-void AndroidUiGestureTarget::SetPointer(JNIEnv* env, int x, int y) {
-  content::Java_MotionEventSynthesizer_setPointer(env, event_synthesizer_, 0, x,
-                                                  y, 0);
+void AndroidUiGestureTarget::Inject(MotionEventAction action, int64_t time_ms) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_AndroidUiGestureTarget_inject(env, obj, action, time_ms);
 }
 
-void AndroidUiGestureTarget::SetScrollDeltas(JNIEnv* env,
-                                             int x,
-                                             int y,
-                                             int dx,
-                                             int dy) {
-  content::Java_MotionEventSynthesizer_setScrollDeltas(env, event_synthesizer_,
-                                                       x, y, dx, dy);
+void AndroidUiGestureTarget::SetPointer(int x, int y) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_AndroidUiGestureTarget_setPointer(env, obj, x * scale_factor_,
+                                         y * scale_factor_);
 }
 
-void AndroidUiGestureTarget::Inject(JNIEnv* env,
-                                    Action action,
-                                    double time_in_seconds) {
-  content::Java_MotionEventSynthesizer_inject(
-      env, event_synthesizer_, static_cast<int>(action), 1,
-      static_cast<int64_t>(time_in_seconds * 1000.0));
+// static
+AndroidUiGestureTarget* AndroidUiGestureTarget::FromJavaObject(
+    const JavaRef<jobject>& obj) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return reinterpret_cast<AndroidUiGestureTarget*>(
+      Java_AndroidUiGestureTarget_getNativeObject(env, obj));
+}
+
+static jlong Init(JNIEnv* env,
+                  const JavaParamRef<jobject>& obj,
+                  jfloat scale_factor,
+                  jfloat scroll_ratio) {
+  return reinterpret_cast<intptr_t>(
+      new AndroidUiGestureTarget(env, obj, scale_factor, scroll_ratio));
 }
 
 }  // namespace vr_shell

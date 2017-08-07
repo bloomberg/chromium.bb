@@ -571,15 +571,6 @@ void ContentViewCore::ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
                                                java_bitmap);
 }
 
-ScopedJavaLocalRef<jobject> ContentViewCore::CreateMotionEventSynthesizer() {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return ScopedJavaLocalRef<jobject>();
-  return Java_ContentViewCore_createMotionEventSynthesizer(env, obj);
-}
-
 void ContentViewCore::DidStopFlinging() {
   JNIEnv* env = AttachCurrentThread();
 
