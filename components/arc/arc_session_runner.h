@@ -32,6 +32,11 @@ class ArcSessionRunner : public ArcSession::Observer,
     // RequestStop(), so may be called multiple times for one RequestStart().
     virtual void OnSessionStopped(ArcStopReason reason, bool restarting) = 0;
 
+    // Called when ARC session is stopped, but is being restarted automatically.
+    // Unlike OnSessionStopped() with |restarting| == true, this is called
+    // _after_ the container is actually created.
+    virtual void OnSessionRestarting() = 0;
+
    protected:
     virtual ~Observer() = default;
   };
@@ -114,6 +119,9 @@ class ArcSessionRunner : public ArcSession::Observer,
 
   // Starts to run an ARC instance.
   void StartArcSession();
+
+  // Restarts an ARC instance.
+  void RestartArcSession();
 
   // ArcSession::Observer:
   void OnSessionReady() override;

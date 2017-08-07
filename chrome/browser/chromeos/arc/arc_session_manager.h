@@ -117,6 +117,10 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
     // automatically.
     virtual void OnArcSessionStopped(ArcStopReason stop_reason) {}
 
+    // Called when ARC session is stopped, but is being restarted automatically.
+    // This is called _after_ the container is actually created.
+    virtual void OnArcSessionRestarting() {}
+
     // Called to notify that Android data has been removed. Used in
     // browser_tests
     virtual void OnArcDataRemoved() {}
@@ -328,6 +332,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   // ArcSessionRunner::Observer:
   void OnSessionStopped(ArcStopReason reason, bool restarting) override;
+  void OnSessionRestarting() override;
 
   // Starts to remove ARC data, if it is requested via RequestArcDataRemoval().
   // On completion, OnArcDataRemoved() is called.

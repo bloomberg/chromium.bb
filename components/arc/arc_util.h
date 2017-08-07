@@ -89,6 +89,7 @@ bool IsArcAppWindow(aura::Window* window);
 // Adjusts the amount of CPU the ARC instance is allowed to use. When
 // |do_restrict| is true, the limit is adjusted so ARC can only use tightly
 // restricted CPU resources.
+// TODO(yusukes): Use enum instead of bool.
 void SetArcCpuRestriction(bool do_restrict);
 
 }  // namespace arc
