@@ -406,12 +406,6 @@ class ResourceSchedulerTest : public testing::Test {
       EXPECT_EQ(bdp_ranges[bdp_range_index - 1].max_requests,
                 bdp_range_index * 10u);
     }
-
-    net::EffectiveConnectionType max_ect;
-    net::GetEffectiveConnectionTypeForName(max_ect_string, &max_ect);
-    EXPECT_EQ(
-        ResourceScheduler::GetMaxDelayableRequestsExperimentMaxECTForTests(),
-        max_ect);
   }
 
   ResourceScheduler* scheduler() {
