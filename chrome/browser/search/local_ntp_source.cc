@@ -117,6 +117,10 @@ std::string GetConfigData(bool is_google) {
   config_data.Set("translatedStrings", GetTranslatedStrings(is_google));
   config_data.SetBoolean("isGooglePage", is_google);
 
+  bool is_voice_search_enabled =
+      base::FeatureList::IsEnabled(features::kVoiceSearchOnLocalNtp);
+  config_data.SetBoolean("isVoiceSearchEnabled", is_voice_search_enabled);
+
   // Serialize the dictionary.
   std::string js_text;
   JSONStringValueSerializer serializer(&js_text);

@@ -22671,6 +22671,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1989747818" label="TabStripKeyboardFocus:disabled"/>
   <int value="-1985025593" label="file-manager-enable-new-gallery"/>
   <int value="-1980328793" label="trace-upload-url"/>
+  <int value="-1973722176" label="VoiceSearchOnLocalNtp:enabled"/>
   <int value="-1972383451" label="disable-pinch"/>
   <int value="-1972312724" label="OfflinePagesLoadSignalCollecting:enabled"/>
   <int value="-1972219399" label="NTPSaveToOffline:enabled"/>
@@ -22855,6 +22856,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1440440375" label="WebVrAutopresent:enabled"/>
   <int value="-1440152291" label="disable-gesture-typing"/>
   <int value="-1438279809" label="GamepadExtensions:disabled"/>
+  <int value="-1436251034" label="VoiceSearchOnLocalNtp:disabled"/>
   <int value="-1433719718" label="enable-webrtc-stun-origin"/>
   <int value="-1433087548" label="enable-app-install-alerts"/>
   <int value="-1431563697" label="WebPaymentsMethodSectionOrderV2:enabled"/>

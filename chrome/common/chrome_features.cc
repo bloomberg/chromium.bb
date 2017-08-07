@@ -407,6 +407,12 @@ const base::Feature kUseGroupedPermissionInfobars{
 const base::Feature kUsePermissionManagerForMediaRequests{
     "UsePermissionManagerForMediaRequests", base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if !defined(OS_ANDROID)
+// Enables or disables Voice Search on the local NTP.
+const base::Feature kVoiceSearchOnLocalNtp{"VoiceSearchOnLocalNtp",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_CHROMEOS)
 // Enables or disables the opt-in IME menu in the language settings page.
 const base::Feature kOptInImeMenu{"OptInImeMenu",

@@ -2733,6 +2733,12 @@ const char kOneGoogleBarOnLocalNtpDescription[] =
     "Show a OneGoogleBar on the local New Tab page if Google is the default "
     "search engine.";
 
+const char kVoiceSearchOnLocalNtpName[] =
+    "Enable Voice Search on the local NTP";
+const char kVoiceSearchOnLocalNtpDescription[] =
+    "Show a microphone for voice search on the local New Tab page "
+    "if Google is the default search engine.";
+
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)

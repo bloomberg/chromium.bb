@@ -3313,6 +3313,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnableManualFallbacksFilling)},
 
+#if !defined(OS_ANDROID)
+    {"voice-search-on-local-ntp", flag_descriptions::kVoiceSearchOnLocalNtpName,
+     flag_descriptions::kVoiceSearchOnLocalNtpDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kVoiceSearchOnLocalNtp)},
+#endif  // !defined(OS_ANDROID)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.

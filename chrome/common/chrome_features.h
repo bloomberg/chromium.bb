@@ -211,6 +211,10 @@ extern const base::Feature kUseGroupedPermissionInfobars;
 
 extern const base::Feature kUsePermissionManagerForMediaRequests;
 
+#if !defined(OS_ANDROID)
+extern const base::Feature kVoiceSearchOnLocalNtp;
+#endif
+
 #if defined(OS_CHROMEOS)
 extern const base::Feature kOptInImeMenu;
 
