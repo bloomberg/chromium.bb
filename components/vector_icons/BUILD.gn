@@ -36,6 +36,7 @@ aggregate_vector_icons("components_vector_icons") {
     "reload.icon",
     "screen_share.icon",
     "search.icon",
+    "usb.icon",
     "videocam.icon",
     "warning.icon",
   ]

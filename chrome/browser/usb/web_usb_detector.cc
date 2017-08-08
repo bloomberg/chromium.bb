@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
 #include "device/base/device_client.h"
@@ -29,9 +29,10 @@
 #include "device/usb/usb_ids.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
@@ -212,7 +213,6 @@ void WebUsbDetector::OnDeviceAdded(scoped_refptr<device::UsbDevice> device) {
 
   std::string notification_id = device->guid();
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   message_center::RichNotificationData rich_notification_data;
   std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
@@ -222,8 +222,9 @@ void WebUsbDetector::OnDeviceAdded(scoped_refptr<device::UsbDevice> device) {
           l10n_util::GetStringFUTF16(
               IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION,
               base::UTF8ToUTF16(landing_page.GetContent())),
-          rb.GetNativeImageNamed(IDR_USB_NOTIFICATION_ICON), base::string16(),
-          GURL(),
+          gfx::Image(gfx::CreateVectorIcon(vector_icons::kUsbIcon, 64,
+                                           gfx::kChromeIconGrey)),
+          base::string16(), GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT, kNotifierWebUsb),
           rich_notification_data,
