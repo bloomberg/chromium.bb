@@ -5,13 +5,16 @@
 #include "components/ntp_tiles/popular_sites_impl.h"
 
 #include <stddef.h>
+#include <map>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -53,11 +56,8 @@ const char kPopularSitesURLFormat[] =
 const char kPopularSitesDefaultDirectory[] = "chrome/ntp/";
 const char kPopularSitesDefaultCountryCode[] = "DEFAULT";
 const char kPopularSitesDefaultVersion[] = "5";
+const int kSitesExplorationStartVersion = 6;
 const int kPopularSitesRedownloadIntervalHours = 24;
-
-const char kPopularSitesLastDownloadPref[] = "popular_sites_last_download";
-const char kPopularSitesURLPref[] = "popular_sites_url";
-const char kPopularSitesJsonPref[] = "suggested_sites_json";
 
 GURL GetPopularSitesURL(const std::string& directory,
                         const std::string& country,
@@ -132,6 +132,60 @@ PopularSites::SitesVector ParseSiteList(const base::ListValue& list) {
   return sites;
 }
 
+std::map<SectionType, PopularSites::SitesVector> ParseVersion5(
+    const base::ListValue& list) {
+  return {{SectionType::PERSONALIZED, ParseSiteList(list)}};
+}
+
+std::map<SectionType, PopularSites::SitesVector> ParseVersion6OrAbove(
+    const base::ListValue& list) {
+  // Valid lists would have contained at least the PERSONALIZED section.
+  std::map<SectionType, PopularSites::SitesVector> sections = {
+      std::make_pair(SectionType::PERSONALIZED, PopularSites::SitesVector{})};
+  for (size_t i = 0; i < list.GetSize(); i++) {
+    const base::DictionaryValue* item;
+    if (!list.GetDictionary(i, &item)) {
+      LOG(WARNING) << "Parsed SitesExploration list contained an invalid "
+                   << "section at position " << i << ".";
+      continue;
+    }
+    int section;
+    if (!item->GetInteger("section", &section) || section < 0 ||
+        section > static_cast<int>(SectionType::LAST)) {
+      LOG(WARNING) << "Parsed SitesExploration list contained a section with "
+                   << "invalid ID (" << section << ")";
+      continue;
+    }
+    SectionType section_type = static_cast<SectionType>(section);
+    if (section_type == SectionType::UNKNOWN) {
+      LOG(WARNING) << "Dropped an unknown section in SitesExploration list.";
+      continue;
+    }
+    const base::ListValue* sites_list;
+    if (!item->GetList("sites", &sites_list)) {
+      continue;
+    }
+    sections[section_type] = ParseSiteList(*sites_list);
+  }
+  if (!base::FeatureList::IsEnabled(kSitesExplorationFeature)) {
+    // New versions of popular sites that should act like old versions will
+    // mimic having only the personalized list.
+    return {std::make_pair(SectionType::PERSONALIZED,
+                           std::move(sections[SectionType::PERSONALIZED]))};
+  }
+  return sections;
+}
+
+std::map<SectionType, PopularSites::SitesVector> ParseSites(
+    const base::ListValue& list,
+    int version) {
+  if (version >= kSitesExplorationStartVersion) {
+    return ParseVersion6OrAbove(list);
+  } else {
+    return ParseVersion5(list);
+  }
+}
+
 #if defined(GOOGLE_CHROME_BUILD) && (defined(OS_ANDROID) || defined(OS_IOS))
 void SetDefaultResourceForSite(int index,
                                int resource_id,
@@ -201,7 +255,9 @@ PopularSitesImpl::PopularSitesImpl(
       download_context_(download_context),
       parse_json_(std::move(parse_json)),
       is_fallback_(false),
-      sites_(ParseSiteList(*prefs->GetList(kPopularSitesJsonPref))),
+      sections_(
+          ParseSites(*prefs->GetList(prefs::kPopularSitesJsonPref),
+                     prefs_->GetInteger(prefs::kPopularSitesVersionPref))),
       weak_ptr_factory_(this) {}
 
 PopularSitesImpl::~PopularSitesImpl() {}
@@ -212,7 +268,7 @@ bool PopularSitesImpl::MaybeStartFetch(bool force_download,
   callback_ = callback;
 
   const base::Time last_download_time = base::Time::FromInternalValue(
-      prefs_->GetInt64(kPopularSitesLastDownloadPref));
+      prefs_->GetInt64(prefs::kPopularSitesLastDownloadPref));
   const base::TimeDelta time_since_last_download =
       base::Time::Now() - last_download_time;
   const base::TimeDelta redownload_interval =
@@ -221,7 +277,7 @@ bool PopularSitesImpl::MaybeStartFetch(bool force_download,
 
   pending_url_ = GetURLToFetch();
   const bool url_changed =
-      pending_url_.spec() != prefs_->GetString(kPopularSitesURLPref);
+      pending_url_.spec() != prefs_->GetString(prefs::kPopularSitesURLPref);
 
   // Download forced, or we need to download a new file.
   if (force_download || download_time_is_future ||
@@ -232,18 +288,20 @@ bool PopularSitesImpl::MaybeStartFetch(bool force_download,
   return false;
 }
 
-const PopularSites::SitesVector& PopularSitesImpl::sites() const {
-  return sites_;
+const std::map<SectionType, PopularSitesImpl::SitesVector>&
+PopularSitesImpl::sections() const {
+  return sections_;
 }
 
 GURL PopularSitesImpl::GetLastURLFetched() const {
-  return GURL(prefs_->GetString(kPopularSitesURLPref));
+  return GURL(prefs_->GetString(prefs::kPopularSitesURLPref));
 }
 
 GURL PopularSitesImpl::GetURLToFetch() {
   const std::string directory = GetDirectoryToFetch();
   const std::string country = GetCountryToFetch();
   const std::string version = GetVersionToFetch();
+  base::StringToInt(version, &version_in_pending_url_);
 
   const GURL override_url =
       GURL(prefs_->GetString(ntp_tiles::prefs::kPopularSitesOverrideURL));
@@ -311,7 +369,7 @@ std::string PopularSitesImpl::GetVersionToFetch() {
 }
 
 const base::ListValue* PopularSitesImpl::GetCachedJson() {
-  return prefs_->GetList(kPopularSitesJsonPref);
+  return prefs_->GetList(prefs::kPopularSitesJsonPref);
 }
 
 // static
@@ -326,9 +384,13 @@ void PopularSitesImpl::RegisterProfilePrefs(
   user_prefs->RegisterStringPref(ntp_tiles::prefs::kPopularSitesOverrideVersion,
                                  std::string());
 
-  user_prefs->RegisterInt64Pref(kPopularSitesLastDownloadPref, 0);
-  user_prefs->RegisterStringPref(kPopularSitesURLPref, std::string());
-  user_prefs->RegisterListPref(kPopularSitesJsonPref, DefaultPopularSites());
+  user_prefs->RegisterInt64Pref(prefs::kPopularSitesLastDownloadPref, 0);
+  user_prefs->RegisterStringPref(prefs::kPopularSitesURLPref, std::string());
+  user_prefs->RegisterListPref(prefs::kPopularSitesJsonPref,
+                               DefaultPopularSites());
+  int version;
+  base::StringToInt(kPopularSitesDefaultVersion, &version);
+  user_prefs->RegisterIntegerPref(prefs::kPopularSitesVersionPref, version);
 }
 
 void PopularSitesImpl::FetchPopularSites() {
@@ -390,13 +452,13 @@ void PopularSitesImpl::OnJsonParsed(std::unique_ptr<base::Value> json) {
     OnDownloadFailed();
     return;
   }
-
-  prefs_->Set(kPopularSitesJsonPref, *list);
-  prefs_->SetInt64(kPopularSitesLastDownloadPref,
+  prefs_->Set(prefs::kPopularSitesJsonPref, *list);
+  prefs_->SetInt64(prefs::kPopularSitesLastDownloadPref,
                    base::Time::Now().ToInternalValue());
-  prefs_->SetString(kPopularSitesURLPref, pending_url_.spec());
+  prefs_->SetInteger(prefs::kPopularSitesVersionPref, version_in_pending_url_);
+  prefs_->SetString(prefs::kPopularSitesURLPref, pending_url_.spec());
 
-  sites_ = ParseSiteList(*list);
+  sections_ = ParseSites(*list, version_in_pending_url_);
   callback_.Run(true);
 }
 
