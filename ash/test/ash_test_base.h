@@ -17,6 +17,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/aura/env_observer.h"
+#include "ui/aura/window_tree_host_observer.h"
 #include "ui/display/display.h"
 
 namespace aura {
@@ -57,14 +59,12 @@ class SystemTray;
 class TestScreenshotDelegate;
 class TestSessionControllerClient;
 
-class AshTestBase : public testing::Test {
+class AshTestBase : public testing::Test,
+                    public aura::EnvObserver,
+                    public aura::WindowTreeHostObserver {
  public:
   AshTestBase();
   ~AshTestBase() override;
-
-  // Give all ui::Compositors a valid viz::LocalSurfaceId so that they can
-  // unblock cc::LayerTreeHost.
-  void UnblockCompositors();
 
   // testing::Test:
   void SetUp() override;
@@ -198,6 +198,13 @@ class AshTestBase : public testing::Test {
   display::Display GetSecondaryDisplay();
 
  private:
+  // aura::EnvObserver:
+  void OnWindowInitialized(aura::Window* window) override;
+  void OnHostInitialized(aura::WindowTreeHost* host) override;
+
+  // aura::WindowTreeHostObserver:
+  void OnHostResized(const aura::WindowTreeHost* host) override;
+
   bool setup_called_;
   bool teardown_called_;
   // |SetUp()| doesn't activate session if this is set to false.
