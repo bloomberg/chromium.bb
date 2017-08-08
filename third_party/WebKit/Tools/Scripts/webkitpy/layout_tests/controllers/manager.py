@@ -281,11 +281,6 @@ class Manager(object):
         """
         return self._is_http_test(test_file) or self._is_perf_test(test_file)
 
-    def _test_is_expected_missing(self, test_file):
-        expectations = self._expectations.model().get_expectations(test_file)
-        return (test_expectations.MISSING in expectations or
-                test_expectations.NEEDS_MANUAL_REBASELINE in expectations)
-
     def _test_is_slow(self, test_file):
         expectations = self._expectations.model().get_expectations(test_file)
         return (test_expectations.SLOW in expectations or
