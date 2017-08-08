@@ -241,9 +241,11 @@ class NET_EXPORT UDPSocketPosix {
   // success, or the net error code on failure. On success, LogRead takes in a
   // sockaddr and its length, which are mandatory, while LogWrite takes in an
   // optional IPEndPoint.
-  void LogRead(int result, const char* bytes, socklen_t addr_len,
-               const sockaddr* addr) const;
-  void LogWrite(int result, const char* bytes, const IPEndPoint* address) const;
+  void LogRead(int result,
+               const char* bytes,
+               socklen_t addr_len,
+               const sockaddr* addr);
+  void LogWrite(int result, const char* bytes, const IPEndPoint* address);
 
   // Same as SendTo(), except that address is passed by pointer
   // instead of by reference. It is called from Write() with |address|
@@ -320,6 +322,12 @@ class NET_EXPORT UDPSocketPosix {
 
   // Network that this socket is bound to via BindToNetwork().
   NetworkChangeNotifier::NetworkHandle bound_network_;
+
+  // These are used to lower the overhead updating activity monitor.
+  uint32_t activity_monitor_bytes_sent_;
+  uint32_t activity_monitor_num_writes_;
+  uint32_t activity_monitor_bytes_received_;
+  uint32_t activity_monitor_num_reads_;
 
   THREAD_CHECKER(thread_checker_);
 
