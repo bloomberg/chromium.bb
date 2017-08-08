@@ -918,15 +918,12 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
 
   SetManualFallbacksForFillingFeatureEnabled();
 
-// "Show all passwords" row shows only on Desktop when the feature is enabled,
-// so there are 3 suggestions (+ 1 separator on desktop) in total, and the
-// message comes last among suggestions.
-
 #if !defined(OS_ANDROID)
   auto elements = testing::ElementsAre(title, test_username_, base::string16(),
                                        show_all_saved_row_text);
 #else
-  auto elements = testing::ElementsAre(title, test_username_);
+  auto elements =
+      testing::ElementsAre(title, test_username_, show_all_saved_row_text);
 #endif
   EXPECT_CALL(*autofill_client,
               ShowAutofillPopup(element_bounds, _,
@@ -935,7 +932,6 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
       autofill::IS_PASSWORD_FIELD, element_bounds);
 
-#if !defined(OS_ANDROID)
   // Clicking at the "Show all passwords row" should trigger a call to open the
   // Password Manager settings page and hide the popup.
   EXPECT_CALL(
@@ -944,7 +940,6 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
   EXPECT_CALL(*autofill_client, HideAutofillPopup());
   password_autofill_manager_->DidAcceptSuggestion(
       base::string16(), autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY, 0);
-#endif
 }
 
 TEST_F(PasswordAutofillManagerTest, ShowStandaloneShowAllPasswords) {
@@ -971,7 +966,6 @@ TEST_F(PasswordAutofillManagerTest, ShowStandaloneShowAllPasswords) {
                                 SuggestionVectorValuesAre(elements), _));
   password_autofill_manager_->OnShowManualFallbackSuggestion(
       base::i18n::RIGHT_TO_LEFT, element_bounds);
-#if !defined(OS_ANDROID)
   // Clicking at the "Show all passwords row" should trigger a call to open the
   // Password Manager settings page and hide the popup.
   EXPECT_CALL(
@@ -980,7 +974,6 @@ TEST_F(PasswordAutofillManagerTest, ShowStandaloneShowAllPasswords) {
   EXPECT_CALL(*autofill_client, HideAutofillPopup());
   password_autofill_manager_->DidAcceptSuggestion(
       base::string16(), autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY, 0);
-#endif
 }
 
 // Tests that the "Show all passwords" fallback doesn't shows up in non-password
