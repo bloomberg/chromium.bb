@@ -3,7 +3,4 @@ include_rules = [
   # exported.
   "+core/exported",
   "+public/web",
-  # We do not want any new dependencies on Web(Local|Remote)FrameBase.h until
-  # we resolve the control layer.
-  "+core/frame/WebLocalFrameBase.h",
 ]
