@@ -288,5 +288,12 @@ TEST_F(AnswerCardSearchProviderTest, DidFinishNavigation) {
   TestDidFinishNavigation(false, false, kCatCardTitle, "", 0UL);
 }
 
+// Escaping a query with a special character.
+TEST_F(AnswerCardSearchProviderTest, QueryEscaping) {
+  EXPECT_CALL(*contents(),
+              LoadURL(GURL("http://beasts.org/search?q=cat%26dog")));
+  provider()->Start(false, base::UTF8ToUTF16("cat&dog"));
+}
+
 }  // namespace test
 }  // namespace app_list
