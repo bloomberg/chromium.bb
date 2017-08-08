@@ -70,7 +70,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     // |clear_focus| is true, the implementation should deactivate the active
     // window and set the focus window to NULL.
     virtual void PreDisplayConfigurationChange(bool clear_focus) = 0;
-    virtual void PostDisplayConfigurationChange(bool must_clear_window) = 0;
+    virtual void PostDisplayConfigurationChange() = 0;
 
 #if defined(OS_CHROMEOS)
     // Get the DisplayConfigurator.

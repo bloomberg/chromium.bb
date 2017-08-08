@@ -84,7 +84,7 @@ class ScreenManagerOzoneInternal : public ScreenManager,
       const DisplayInfoList& display_info_list) override;
   void CloseMirroringDisplayIfNotNecessary() override;
   void PreDisplayConfigurationChange(bool clear_focus) override;
-  void PostDisplayConfigurationChange(bool must_clear_window) override;
+  void PostDisplayConfigurationChange() override;
   DisplayConfigurator* display_configurator() override;
 
   void BindDisplayControllerRequest(

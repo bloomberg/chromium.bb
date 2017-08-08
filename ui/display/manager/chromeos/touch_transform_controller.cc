@@ -197,16 +197,10 @@ double TouchTransformController::GetTouchResolutionScale(
 gfx::Transform TouchTransformController::GetTouchTransform(
     const ManagedDisplayInfo& display,
     const ManagedDisplayInfo& touch_display,
-    const ui::TouchscreenDevice& touchscreen,
-    const gfx::Size& framebuffer_size) const {
+    const ui::TouchscreenDevice& touchscreen) const {
   auto current_size = gfx::SizeF(display.bounds_in_native().size());
   auto touch_native_size = gfx::SizeF(touch_display.GetNativeModeSize());
-#if defined(USE_OZONE)
   auto touch_area = gfx::SizeF(touchscreen.size);
-#elif defined(USE_X11)
-  // On X11 touches are reported in the framebuffer coordinate space.
-  auto touch_area = gfx::SizeF(framebuffer_size);
-#endif
 
   gfx::Transform ctm;
 
@@ -214,14 +208,12 @@ gfx::Transform TouchTransformController::GetTouchTransform(
       touch_area.IsEmpty() || touchscreen.id == ui::InputDevice::kInvalidId)
     return ctm;
 
-#if defined(USE_OZONE)
   // Translate the touch so that it falls within the display bounds. This
   // should not be performed if the displays are mirrored.
   if (display.id() == touch_display.id()) {
     ctm.Translate(display.bounds_in_native().x(),
                   display.bounds_in_native().y());
   }
-#endif
 
   // If the device is currently under calibration, then do not return any
   // transform as we want to use the raw native touch input data for calibration
@@ -321,11 +313,10 @@ void TouchTransformController::UpdateTouchTransform(
     UpdateData* update_data) const {
   TouchDeviceTransform touch_device_transform;
   touch_device_transform.display_id = target_display_id;
-  gfx::Size fb_size = display_configurator_->framebuffer_size();
   for (const auto& device_id : touch_display.input_devices()) {
     touch_device_transform.device_id = device_id;
     touch_device_transform.transform = GetTouchTransform(
-        target_display, touch_display, FindTouchscreenById(device_id), fb_size);
+        target_display, touch_display, FindTouchscreenById(device_id));
     update_data->touch_device_transforms.push_back(touch_device_transform);
   }
 }

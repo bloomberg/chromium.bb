@@ -381,11 +381,8 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   bool is_panel_fitting_enabled_;
 
   // This is detected by the constructor to determine whether or not we should
-  // be enabled.  If we aren't running on Chrome OS, we can't assume that the
-  // Xrandr X11 extension or the Ozone underlying display hotplug system are
-  // supported.
-  // If this flag is set to false, any attempts to change the display
-  // configuration to immediately fail without changing the state.
+  // be enabled. If this flag is set to false, any attempts to change the
+  // display configuration will immediately fail without changing the state.
   bool configure_display_;
 
   // Current configuration state.
@@ -438,7 +435,6 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
 
   // The timer to delay configuring displays. This is used to aggregate multiple
   // display configuration events when they are reported in short time spans.
-  // See comment for NativeDisplayEventDispatcherX11 for more details.
   base::OneShotTimer configure_timer_;
 
   // Id for next display protection client.
