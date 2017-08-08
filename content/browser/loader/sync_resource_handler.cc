@@ -87,6 +87,7 @@ void SyncResourceHandler::OnResponseStarted(
   result_.response_time = response->head.response_time;
   result_.load_timing = response->head.load_timing;
   result_.devtools_info = response->head.devtools_info;
+  result_.socket_address = response->head.socket_address;
   controller->Resume();
 }
 
