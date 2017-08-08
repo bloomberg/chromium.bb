@@ -79,11 +79,14 @@ struct CONTENT_EXPORT SSLStatus {
   int security_bits;
   uint16_t key_exchange_group;
   int connection_status;
-  // A combination of the ContentStatusFlags above.
+  // A combination of the ContentStatusFlags above. Flags are cleared when a
+  // navigation commits.
   int content_status;
   // True if PKP was bypassed due to a local trust anchor.
   bool pkp_bypassed;
-
+  // Embedder-specific data attached to the SSLStatus is cloned when an
+  // |SSLStatus| is assigned or copy-constructed, and is cleared when a
+  // navigation commits.
   std::unique_ptr<UserData> user_data;
 
   // If you add new fields here, be sure to add them in the copy constructor and

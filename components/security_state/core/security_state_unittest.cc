@@ -462,12 +462,66 @@ TEST(SecurityStateTest, MarkHttpAsStatusHistogram) {
     histograms.ExpectUniqueSample(
         kHistogramName, 5 /* NON_SECURE_WHILE_INCOGNITO_OR_EDITING */, 1);
 
-    // Ensure histogram recorded correctly even without the Incognito flag.
+    // Ensure histogram recorded correctly when the Insecure Field Edit flag
+    // is set.
     helper.set_is_incognito(false);
+    helper.set_insecure_field_edit(true);
     helper.GetSecurityInfo(&security_info);
     EXPECT_FALSE(security_info.incognito_downgraded_security_level);
     histograms.ExpectUniqueSample(
         kHistogramName, 5 /* NON_SECURE_WHILE_INCOGNITO_OR_EDITING */, 2);
+
+    // Ensure histogram recorded correctly even when neither flag is set.
+    helper.set_is_incognito(false);
+    helper.set_insecure_field_edit(false);
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_FALSE(security_info.incognito_downgraded_security_level);
+    histograms.ExpectUniqueSample(
+        kHistogramName, 5 /* NON_SECURE_WHILE_INCOGNITO_OR_EDITING */, 3);
+  }
+
+  {
+    // Test the "non-secure-after-editing" configuration.
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+        security_state::switches::kMarkHttpAs,
+        security_state::switches::kMarkHttpAsNonSecureAfterEditing);
+
+    base::HistogramTester histograms;
+    TestSecurityStateHelper helper;
+    helper.SetUrl(GURL(kHttpUrl));
+
+    // Ensure histogram recorded correctly when the editing flag is present.
+    helper.set_insecure_field_edit(true);
+    SecurityInfo security_info;
+    histograms.ExpectTotalCount(kHistogramName, 0);
+    helper.GetSecurityInfo(&security_info);
+    histograms.ExpectUniqueSample(kHistogramName,
+                                  3 /*  NON_SECURE_AFTER_EDITING */, 1);
+
+    // Ensure histogram recorded correctly even without the editing flag.
+    helper.set_insecure_field_edit(false);
+    helper.GetSecurityInfo(&security_info);
+    histograms.ExpectUniqueSample(kHistogramName,
+                                  3 /*  NON_SECURE_AFTER_EDITING */, 2);
+  }
+
+  {
+    // Test the "dangerous" configuration.
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+        security_state::switches::kMarkHttpAs,
+        security_state::switches::kMarkHttpAsDangerous);
+
+    base::HistogramTester histograms;
+    TestSecurityStateHelper helper;
+    helper.SetUrl(GURL(kHttpUrl));
+
+    // Ensure histogram recorded correctly.
+    SecurityInfo security_info;
+    histograms.ExpectTotalCount(kHistogramName, 0);
+    helper.GetSecurityInfo(&security_info);
+    histograms.ExpectUniqueSample(kHistogramName, 1 /* NON_SECURE */, 1);
   }
 }
 
@@ -519,6 +573,7 @@ TEST(SecurityStateTest, MixedForm) {
 // Tests that a field edit is reflected in the SecurityInfo.
 TEST(SecurityStateTest, FieldEdit) {
   TestSecurityStateHelper helper;
+  helper.SetUrl(GURL(kHttpUrl));
 
   SecurityInfo no_field_edit_security_info;
   helper.GetSecurityInfo(&no_field_edit_security_info);
@@ -527,10 +582,43 @@ TEST(SecurityStateTest, FieldEdit) {
 
   helper.set_insecure_field_edit(true);
 
-  SecurityInfo insecure_field_edit_security_info;
-  helper.GetSecurityInfo(&insecure_field_edit_security_info);
-  EXPECT_TRUE(insecure_field_edit_security_info.insecure_input_events
-                  .insecure_field_edited);
+  SecurityInfo security_info;
+  helper.GetSecurityInfo(&security_info);
+  EXPECT_TRUE(security_info.insecure_input_events.insecure_field_edited);
+
+  {
+    // Test that no warning is raised in the "non-secure-while-incognito"
+    // configuration.
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+        security_state::switches::kMarkHttpAs,
+        security_state::switches::kMarkHttpAsNonSecureWhileIncognito);
+
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_EQ(NONE, security_info.security_level);
+  }
+
+  {
+    // Test the "non-secure-after-editing" configuration.
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+        security_state::switches::kMarkHttpAs,
+        security_state::switches::kMarkHttpAsNonSecureAfterEditing);
+
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
+  }
+
+  {
+    // Test the "non-secure-while-incognito-or-editing" configuration.
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+        security_state::switches::kMarkHttpAs,
+        security_state::switches::kMarkHttpAsNonSecureWhileIncognitoOrEditing);
+
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
+  }
 }
 
 }  // namespace security_state
