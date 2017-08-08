@@ -92,14 +92,49 @@ crbug.com/671048 virtual/color_space/fast/canvas/color-space/display_linear-rgb.
 
 crbug.com/693568 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality.html [ Failure ]
 
+
 # Looks like a filuare to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
 # instead of a timeout, which may fix things.
 crbug.com/713049 images/color-profile-reflection.html [ Failure Pass ]
 crbug.com/713049 virtual/gpu-rasterization/images/color-profile-reflection.html [ Failure Pass Timeout ]
 crbug.com/713049 virtual/exotic-color-space/images/color-profile-reflection.html [ Failure Pass ]
 
+# Reftest with slightly different pixels values.
+# Should make a pixel test to keep coverage.
+crbug.com/713891 virtual/exotic-color-space/images/animated-png.html [ Pass Failure ]
+
 crbug.com/717389 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Crash ]
 crbug.com/717389 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Timeout ]
+
+# Flakily timing out or failing.
+# TODO(ccameron): Investigate this.
+crbug.com/730267 virtual/gpu-rasterization/images/color-profile-group.html [ Pass Timeout Failure ]
+crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer.html [ Pass Timeout Failure ]
+crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.html [ Pass Timeout Failure ]
+
+crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
+crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
+
+# Awaiting rebaseline after skia roll.
+crbug.com/739559 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Failure Pass ]
+crbug.com/739559 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Failure Pass ]
+crbug.com/739559 virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ Failure Pass ]
+crbug.com/739559 virtual/gpu-rasterization/images/color-profile-svg.html [ Failure Pass ]
+crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-background-size.html [ Failure Pass ]
+crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-overflow-position.html [ Failure Pass ]
+crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-tiled.html [ Failure Pass ]
+
+crbug.com/746578 fast/css/transformed-mask.html [ NeedsManualRebaseline ]
+crbug.com/746578 fast/reflections/reflection-masks-opacity.html [ NeedsManualRebaseline ]
+crbug.com/746578 fast/reflections/reflection-masks.html [ NeedsManualRebaseline ]
+crbug.com/746578 svg/filters/feImage-preserveAspectratio.svg [ NeedsManualRebaseline ]
+
+crbug.com/747502 paint/roundedrects/input-with-rounded-rect-and-shadow.html [ NeedsManualRebaseline ]
+crbug.com/747502 fast/borders/border-radius-with-box-shadow.html [ NeedsManualRebaseline ]
+crbug.com/747502 paint/roundedrects/circle-with-shadow.html [ NeedsManualRebaseline ]
+
+crbug.com/749760 compositing/overflow/relpos-under-abspos-border-radius.html [ Failure ]
+crbug.com/749760 virtual/prefer_compositing_to_lcd_text/compositing/overflow/relpos-under-abspos-border-radius.html [ Failure ]
 
 # ====== Paint team owned tests to here ======
 
@@ -987,9 +1022,6 @@ crbug.com/492664 external/wpt/css/css-writing-modes-3/clip-rect-vrl-006.xht [ Fa
 crbug.com/492664 external/wpt/css/css-writing-modes-3/clip-rect-vrl-008.xht [ Failure ]
 crbug.com/492664 external/wpt/css/css-writing-modes-3/line-box-direction-vrl-009.xht [ Failure ]
 
-crbug.com/749760 compositing/overflow/relpos-under-abspos-border-radius.html [ Failure ]
-crbug.com/749760 virtual/prefer_compositing_to_lcd_text/compositing/overflow/relpos-under-abspos-border-radius.html [ Failure ]
-
 crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
 
 # These tests pass but images do not match because tests are stricter than the spec.
@@ -1288,9 +1320,6 @@ crbug.com/660185 [ Mac ] fast/forms/datalist/input-appearance-range-with-transfo
 
 crbug.com/658304 [ Win Linux ] fast/forms/select/input-select-after-resize.html [ Crash Timeout Pass ]
 
-crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
-crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
-
 # We don't support requesting flex line breaks and it is not clear that we should.
 # See https://lists.w3.org/Archives/Public/www-style/2015May/0065.html
 crbug.com/473481 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-break-request-horiz-001a.html [ Failure ]
@@ -1455,11 +1484,6 @@ crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 
 crbug.com/527270 accessibility/name-calc-img.html [ Failure Pass Timeout ]
-
-crbug.com/746578 fast/css/transformed-mask.html [ NeedsManualRebaseline ]
-crbug.com/746578 fast/reflections/reflection-masks-opacity.html [ NeedsManualRebaseline ]
-crbug.com/746578 fast/reflections/reflection-masks.html [ NeedsManualRebaseline ]
-crbug.com/746578 svg/filters/feImage-preserveAspectratio.svg [ NeedsManualRebaseline ]
 
 # Win7 does not support the needed DirectWrite APIs for font fallback
 crbug.com/459056 [ Win7 ] fast/text/font-fallback-win.html [ Failure ]
@@ -2231,10 +2255,6 @@ crbug.com/675540 virtual/off-main-thread-fetch/external/wpt/service-workers/serv
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 crbug.com/435547 virtual/mojo-loading/http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 
-crbug.com/747502 paint/roundedrects/input-with-rounded-rect-and-shadow.html [ NeedsManualRebaseline ]
-crbug.com/747502 fast/borders/border-radius-with-box-shadow.html [ NeedsManualRebaseline ]
-crbug.com/747502 paint/roundedrects/circle-with-shadow.html [ NeedsManualRebaseline ]
-
 crbug.com/697971 [ Mac10.12 ] fast/text/flexbox-selection-nested.html [ Skip ]
 crbug.com/697971 [ Mac10.12 ] fast/text/flexbox-selection.html [ Skip ]
 crbug.com/678481 http/tests/inspector/appcache/appcache-manifest-with-non-existing-file.html [ Skip ]
@@ -2305,15 +2325,6 @@ crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-vertical-rl-02.
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-vertical-rl-03.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-vertical-rl-04.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-vertical-rl-05.html [ Failure ]
-
-# Flakily timing out or failing.
-# TODO(ccameron): Investigate this.
-crbug.com/730267 virtual/gpu-rasterization/images/color-profile-group.html [ Pass Timeout Failure ]
-crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer.html [ Pass Timeout Failure ]
-crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.html [ Pass Timeout Failure ]
-
-# Reftest with slightly different pixels values, can be left disabled.
-crbug.com/713891 virtual/exotic-color-space/images/animated-png.html [ Pass Failure ]
 
 # [selectors-4]
 crbug.com/706118 external/wpt/css/selectors4/focus-within-004.html [ Failure ]
@@ -2896,15 +2907,6 @@ crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-cra
 crbug.com/737959 virtual/off-main-thread-fetch/http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
 crbug.com/737959 virtual/off-main-thread-fetch/http/tests/misc/image-input-type-outlives-gc-without-crashing.html [ Failure Pass Crash ]
 crbug.com/737959 virtual/off-main-thread-fetch/http/tests/misc/embed-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
-
-# Awaiting rebaseline after skia roll.
-crbug.com/739559 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Failure Pass ]
-crbug.com/739559 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Failure Pass ]
-crbug.com/739559 virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ Failure Pass ]
-crbug.com/739559 virtual/gpu-rasterization/images/color-profile-svg.html [ Failure Pass ]
-crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-background-size.html [ Failure Pass ]
-crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-overflow-position.html [ Failure Pass ]
-crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-tiled.html [ Failure Pass ]
 
 # These tests are failing on Mac-10.12 when using an Intel GPU.
 crbug.com/736177 [ Mac10.12 ] css2.1/t1202-counter-04-b.html [ Failure Pass ]
