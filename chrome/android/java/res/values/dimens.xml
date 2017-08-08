@@ -159,12 +159,8 @@
 
     <!-- User Picture Dimensions -->
     <dimen name="user_picture_size">40dp</dimen>
-    <dimen name="badged_user_picture_height">40dp</dimen>
-    <!-- The design spec is that the center of the badge should be 4dp from the right edge of the
-    user picture. This is equivalent to a badged_user_picture_width of 46dp assuming a badge_radius
-    of 10dp. -->
-    <dimen name="badged_user_picture_width">46dp</dimen>
-    <dimen name="badge_radius">10dp</dimen>
+    <dimen name="badge_position_x">26dp</dimen>
+    <dimen name="badge_position_y">20dp</dimen>
     <dimen name="badge_border_size">1.3dp</dimen>
 
     <!-- First Run Experience dimensions -->
