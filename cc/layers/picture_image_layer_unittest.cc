@@ -5,6 +5,7 @@
 #include "cc/layers/picture_image_layer.h"
 
 #include "cc/animation/animation_host.h"
+#include "cc/paint/paint_image_builder.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -39,8 +40,10 @@ TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
   image_canvas->drawRect(SkRect::MakeWH(100, 100), blue_paint);
   image_canvas->drawRect(SkRect::MakeLTRB(100, 100, 200, 200), blue_paint);
 
-  layer->SetImage(
-      PaintImage(PaintImage::GetNextId(), image_surface->makeImageSnapshot()));
+  layer->SetImage(PaintImageBuilder()
+                      .set_id(PaintImage::GetNextId())
+                      .set_image(image_surface->makeImageSnapshot())
+                      .TakePaintImage());
   layer->SetBounds(gfx::Size(layer_rect.width(), layer_rect.height()));
 
   scoped_refptr<DisplayItemList> display_list =

@@ -4,6 +4,7 @@
 
 #include "cc/raster/playback_image_provider.h"
 
+#include "cc/paint/paint_image_builder.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/stub_decode_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,22 +57,30 @@ TEST(PlaybackImageProviderTest, SkipsAllImages) {
   SkRect rect = SkRect::MakeWH(10, 10);
   SkMatrix matrix = SkMatrix::I();
 
-  EXPECT_FALSE(provider.GetDecodedDrawImage(
-      PaintImage(PaintImage::kNonLazyStableId, CreateRasterImage()), rect,
-      kMedium_SkFilterQuality, matrix));
+  EXPECT_FALSE(
+      provider.GetDecodedDrawImage(PaintImageBuilder()
+                                       .set_id(PaintImage::kNonLazyStableId)
+                                       .set_image(CreateRasterImage())
+                                       .TakePaintImage(),
+                                   rect, kMedium_SkFilterQuality, matrix));
   EXPECT_EQ(cache.images_decoded(), 0);
 
   EXPECT_FALSE(provider.GetDecodedDrawImage(
-      PaintImage(PaintImage::GetNextId(),
-                 CreateDiscardableImage(gfx::Size(10, 10))),
+      PaintImageBuilder()
+          .set_id(PaintImage::GetNextId())
+          .set_image(CreateDiscardableImage(gfx::Size(10, 10)))
+          .TakePaintImage(),
       rect, kMedium_SkFilterQuality, matrix));
   EXPECT_EQ(cache.images_decoded(), 0);
 }
 
 TEST(PlaybackImageProviderTest, SkipsSomeImages) {
   MockDecodeCache cache;
-  PaintImage skip_image = PaintImage(PaintImage::GetNextId(),
-                                     CreateDiscardableImage(gfx::Size(10, 10)));
+  PaintImage skip_image =
+      PaintImageBuilder()
+          .set_id(PaintImage::GetNextId())
+          .set_image(CreateDiscardableImage(gfx::Size(10, 10)))
+          .TakePaintImage();
   PlaybackImageProvider provider(false, {skip_image.stable_id()}, &cache,
                                  gfx::ColorSpace());
 
@@ -90,8 +99,10 @@ TEST(PlaybackImageProviderTest, RefAndUnrefDecode) {
     SkRect rect = SkRect::MakeWH(10, 10);
     SkMatrix matrix = SkMatrix::I();
     auto decode = provider.GetDecodedDrawImage(
-        PaintImage(PaintImage::GetNextId(),
-                   CreateDiscardableImage(gfx::Size(10, 10))),
+        PaintImageBuilder()
+            .set_id(PaintImage::GetNextId())
+            .set_image(CreateDiscardableImage(gfx::Size(10, 10)))
+            .TakePaintImage(),
         rect, kMedium_SkFilterQuality, matrix);
     EXPECT_TRUE(decode);
     EXPECT_EQ(cache.refed_image_count(), 1);

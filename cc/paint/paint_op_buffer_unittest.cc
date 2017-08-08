@@ -8,6 +8,7 @@
 #include "cc/paint/decoded_draw_image.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/image_provider.h"
+#include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_op_reader.h"
 #include "cc/paint/paint_op_writer.h"
 #include "cc/test/skia_common.h"
@@ -569,16 +570,14 @@ TEST(PaintOpBufferTest, DiscardableImagesTracking_NoImageOp) {
 
 TEST(PaintOpBufferTest, DiscardableImagesTracking_DrawImage) {
   PaintOpBuffer buffer;
-  PaintImage image = PaintImage(PaintImage::GetNextId(),
-                                CreateDiscardableImage(gfx::Size(100, 100)));
+  PaintImage image = CreateDiscardablePaintImage(gfx::Size(100, 100));
   buffer.push<DrawImageOp>(image, SkIntToScalar(0), SkIntToScalar(0), nullptr);
   EXPECT_TRUE(buffer.HasDiscardableImages());
 }
 
 TEST(PaintOpBufferTest, DiscardableImagesTracking_DrawImageRect) {
   PaintOpBuffer buffer;
-  PaintImage image = PaintImage(PaintImage::GetNextId(),
-                                CreateDiscardableImage(gfx::Size(100, 100)));
+  PaintImage image = CreateDiscardablePaintImage(gfx::Size(100, 100));
   buffer.push<DrawImageRectOp>(
       image, SkRect::MakeWH(100, 100), SkRect::MakeWH(100, 100), nullptr,
       PaintCanvas::SrcRectConstraint::kFast_SrcRectConstraint);
@@ -588,8 +587,7 @@ TEST(PaintOpBufferTest, DiscardableImagesTracking_DrawImageRect) {
 TEST(PaintOpBufferTest, DiscardableImagesTracking_OpWithFlags) {
   PaintOpBuffer buffer;
   PaintFlags flags;
-  auto image = PaintImage(PaintImage::GetNextId(),
-                          CreateDiscardableImage(gfx::Size(100, 100)));
+  auto image = CreateDiscardablePaintImage(gfx::Size(100, 100));
   flags.setShader(PaintShader::MakeImage(std::move(image),
                                          SkShader::kClamp_TileMode,
                                          SkShader::kClamp_TileMode, nullptr));
@@ -726,8 +724,7 @@ TEST(PaintOpBufferTest, NonAAPaint) {
     auto buffer = sk_make_sp<PaintOpBuffer>();
     EXPECT_FALSE(buffer->HasNonAAPaint());
 
-    PaintImage image = PaintImage(PaintImage::GetNextId(),
-                                  CreateDiscardableImage(gfx::Size(100, 100)));
+    PaintImage image = CreateDiscardablePaintImage(gfx::Size(100, 100));
     PaintFlags non_aa_flags;
     non_aa_flags.setAntiAlias(true);
     buffer->push<DrawImageOp>(image, SkIntToScalar(0), SkIntToScalar(0),
@@ -1556,12 +1553,9 @@ std::vector<sk_sp<SkTextBlob>> test_blobs = {
 // ahead of time and not be bitmaps. These paint images should be fake
 // gpu resource paint images.
 std::vector<PaintImage> test_images = {
-    PaintImage(PaintImage::GetNextId(),
-               CreateDiscardableImage(gfx::Size(5, 10))),
-    PaintImage(PaintImage::GetNextId(),
-               CreateDiscardableImage(gfx::Size(1, 1))),
-    PaintImage(PaintImage::GetNextId(),
-               CreateDiscardableImage(gfx::Size(50, 50))),
+    CreateDiscardablePaintImage(gfx::Size(5, 10)),
+    CreateDiscardablePaintImage(gfx::Size(1, 1)),
+    CreateDiscardablePaintImage(gfx::Size(50, 50)),
 };
 
 // Writes as many ops in |buffer| as can fit in |output_size| to |output|.
@@ -3063,8 +3057,7 @@ TEST(PaintOpBufferTest, SkipsOpsOutsideClip) {
   buffer.push<SaveLayerAlphaOp>(&rect, alpha, false);
 
   PaintFlags flags;
-  PaintImage paint_image = PaintImage(
-      PaintImage::GetNextId(), CreateDiscardableImage(gfx::Size(10, 10)));
+  PaintImage paint_image = CreateDiscardablePaintImage(gfx::Size(10, 10));
   buffer.push<DrawImageOp>(paint_image, 105.0f, 105.0f, &flags);
   PaintFlags image_flags;
   image_flags.setShader(
@@ -3142,8 +3135,7 @@ TEST(PaintOpBufferTest, ReplacesImagesFromProvider) {
   SkRect rect = SkRect::MakeWH(10, 10);
   PaintFlags flags;
   flags.setFilterQuality(kLow_SkFilterQuality);
-  PaintImage paint_image = PaintImage(
-      PaintImage::GetNextId(), CreateDiscardableImage(gfx::Size(10, 10)));
+  PaintImage paint_image = CreateDiscardablePaintImage(gfx::Size(10, 10));
   buffer.push<DrawImageOp>(paint_image, 0.0f, 0.0f, &flags);
   buffer.push<DrawImageRectOp>(
       paint_image, rect, rect, &flags,

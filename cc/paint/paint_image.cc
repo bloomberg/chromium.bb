@@ -13,18 +13,6 @@ base::AtomicSequenceNumber s_next_id_;
 }
 
 PaintImage::PaintImage() = default;
-PaintImage::PaintImage(Id id,
-                       sk_sp<SkImage> sk_image,
-                       AnimationType animation_type,
-                       CompletionState completion_state,
-                       size_t frame_count,
-                       bool is_multipart)
-    : sk_image_(std::move(sk_image)),
-      id_(id),
-      animation_type_(animation_type),
-      completion_state_(completion_state),
-      frame_count_(frame_count),
-      is_multipart_(is_multipart) {}
 PaintImage::PaintImage(const PaintImage& other) = default;
 PaintImage::PaintImage(PaintImage&& other) = default;
 PaintImage::~PaintImage() = default;
@@ -42,15 +30,6 @@ bool PaintImage::operator==(const PaintImage& other) const {
 
 PaintImage::Id PaintImage::GetNextId() {
   return s_next_id_.GetNext();
-}
-
-PaintImage PaintImage::CloneWithSkImage(sk_sp<SkImage> new_image) const {
-  PaintImage result(*this);
-  result.sk_image_ = std::move(new_image);
-  result.cached_sk_image_ = nullptr;
-  result.paint_record_ = nullptr;
-  result.paint_record_rect_ = gfx::Rect();
-  return result;
 }
 
 const sk_sp<SkImage>& PaintImage::GetSkImage() const {

@@ -12,6 +12,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker_impl.h"
+#include "cc/paint/paint_image_builder.h"
 #include "cc/test/skia_common.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -236,10 +237,12 @@ class BlockingTask : public TileTask {
 int kDefaultTimeoutSeconds = 10;
 
 DrawImage CreateDiscardableDrawImage(gfx::Size size) {
-  return DrawImage(
-      PaintImage(PaintImage::kUnknownStableId, CreateDiscardableImage(size)),
-      SkIRect::MakeWH(size.width(), size.height()), kNone_SkFilterQuality,
-      SkMatrix::I(), gfx::ColorSpace());
+  return DrawImage(PaintImageBuilder()
+                       .set_id(PaintImage::GetNextId())
+                       .set_image(CreateDiscardableImage(size))
+                       .TakePaintImage(),
+                   SkIRect::MakeWH(size.width(), size.height()),
+                   kNone_SkFilterQuality, SkMatrix::I(), gfx::ColorSpace());
 }
 
 class ImageControllerTest : public testing::Test {
@@ -328,10 +331,12 @@ TEST_F(ImageControllerTest, QueueImageDecodeNonLazy) {
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(1, 1);
-  DrawImage image = DrawImage(
-      PaintImage(PaintImage::kUnknownStableId, SkImage::MakeFromBitmap(bitmap)),
-      SkIRect::MakeWH(1, 1), kNone_SkFilterQuality, SkMatrix::I(),
-      gfx::ColorSpace());
+  DrawImage image = DrawImage(PaintImageBuilder()
+                                  .set_id(PaintImage::GetNextId())
+                                  .set_image(SkImage::MakeFromBitmap(bitmap))
+                                  .TakePaintImage(),
+                              SkIRect::MakeWH(1, 1), kNone_SkFilterQuality,
+                              SkMatrix::I(), gfx::ColorSpace());
 
   ImageController::ImageDecodeRequestId expected_id =
       controller()->QueueImageDecode(

@@ -15,7 +15,9 @@ namespace cc {
 class PaintOpBuffer;
 using PaintRecord = PaintOpBuffer;
 
-// TODO(vmpstr): Add a persistent id to the paint image.
+// A representation of an image for the compositor.
+// Note that aside from default construction, it can only be constructed using a
+// PaintImageBuilder, or copied/moved into using operator=.
 class CC_PAINT_EXPORT PaintImage {
  public:
   using Id = int;
@@ -25,33 +27,12 @@ class CC_PAINT_EXPORT PaintImage {
   // GetNextId to generate a stable id for such images.
   static const Id kNonLazyStableId = -1;
 
-  // This is the id used in places where we are currently not plumbing the
-  // correct image id from blink.
-  // TODO(khushalsagar): The only user of these seems to be the ImageBuffer in
-  // blink. Same goes for the animation and completion states.
-  static const Id kUnknownStableId = -2;
-
-  // TODO(vmpstr): Work towards removing "UNKNOWN" value.
-  enum class AnimationType { UNKNOWN, ANIMATED, VIDEO, STATIC };
-
-  // TODO(vmpstr): Work towards removing "UNKNOWN" value.
-  enum class CompletionState { UNKNOWN, DONE, PARTIALLY_DONE };
+  enum class AnimationType { ANIMATED, VIDEO, STATIC };
+  enum class CompletionState { DONE, PARTIALLY_DONE };
 
   static Id GetNextId();
 
   PaintImage();
-  // - id: stable id for this image; can be generated using GetNextId().
-  // - sk_image: the underlying skia image that this represents.
-  // - animation_type: the animation type of this paint image.
-  // - completion_state: indicates whether the image is completed loading.
-  // - frame_count: the known number of frames in this image. E.g. number of GIF
-  //   frames in an animated GIF.
-  explicit PaintImage(Id id,
-                      sk_sp<SkImage> sk_image,
-                      AnimationType animation_type = AnimationType::STATIC,
-                      CompletionState completion_state = CompletionState::DONE,
-                      size_t frame_count = 0,
-                      bool is_multipart = false);
   PaintImage(const PaintImage& other);
   PaintImage(PaintImage&& other);
   ~PaintImage();
@@ -74,12 +55,6 @@ class CC_PAINT_EXPORT PaintImage {
   int width() const { return GetSkImage()->width(); }
   int height() const { return GetSkImage()->height(); }
 
-  // Returns a PaintImage that has the same fields as this PaintImage, except
-  // with a replaced sk_image_. This can be used to swap out a specific SkImage
-  // in an otherwise unchanged PaintImage. This is also used to swap out a
-  // paint record representation with an SkImage instead.
-  PaintImage CloneWithSkImage(sk_sp<SkImage> new_image) const;
-
  private:
   friend class PaintImageBuilder;
 
@@ -87,9 +62,9 @@ class CC_PAINT_EXPORT PaintImage {
   sk_sp<PaintRecord> paint_record_;
   gfx::Rect paint_record_rect_;
 
-  Id id_ = kUnknownStableId;
-  AnimationType animation_type_ = AnimationType::UNKNOWN;
-  CompletionState completion_state_ = CompletionState::UNKNOWN;
+  Id id_ = 0;
+  AnimationType animation_type_ = AnimationType::STATIC;
+  CompletionState completion_state_ = CompletionState::DONE;
 
   // The number of frames known to exist in this image (eg number of GIF frames
   // loaded). 0 indicates either unknown or only a single frame, both of which
