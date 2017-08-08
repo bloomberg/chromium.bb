@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/login/login_handler.h"
@@ -300,14 +299,7 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserConnectToTest,
 // HTTPS connection limits should not be applied to wss:. This is only tested
 // for secure connections here because the unencrypted case is tested in the
 // Blink layout tests, and browser tests are expensive to run.
-// Flaky on windows. https://crbug.com/753261
-#if defined(OS_WIN)
-#define MAYBE_SSLConnectionLimit DISABLED_SSLConnectionLimit
-#else
-#define MAYBE_SSLConnectionLimit SSLConnectionLimit
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, MAYBE_SSLConnectionLimit) {
+IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SSLConnectionLimit) {
   ASSERT_TRUE(wss_server_.Start());
 
   NavigateToHTTPS("multiple-connections.html");
