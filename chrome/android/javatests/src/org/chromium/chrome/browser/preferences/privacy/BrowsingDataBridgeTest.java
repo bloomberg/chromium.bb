@@ -27,6 +27,10 @@ import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * Integration tests for ClearBrowsingDataPreferences.
  */
@@ -75,7 +79,7 @@ public class BrowsingDataBridgeTest {
             }
         });
         mCallbackHelper.waitForCallback(0);
-        assertThat(mActionTester.toString(), mActionTester.getActions(),
+        assertThat(mActionTester.toString(), getActions(),
                 Matchers.contains("ClearBrowsingData_Everything"));
     }
 
@@ -93,10 +97,24 @@ public class BrowsingDataBridgeTest {
             }
         });
         mCallbackHelper.waitForCallback(0);
-        assertThat(mActionTester.toString(), mActionTester.getActions(),
+        assertThat(mActionTester.toString(), getActions(),
                 Matchers.containsInAnyOrder("ClearBrowsingData_LastHour",
                         "ClearBrowsingData_MaskContainsUnprotectedWeb",
                         "ClearBrowsingData_ChannelIDs", "ClearBrowsingData_Cookies"));
+    }
+
+    /**
+     * Get ClearBrowsingData related actions, filter all other actions to avoid flakes.
+     */
+    private List<String> getActions() {
+        List<String> actions = new ArrayList<>(mActionTester.getActions());
+        Iterator<String> it = actions.iterator();
+        while (it.hasNext()) {
+            if (!it.next().startsWith("ClearBrowsingData_")) {
+                it.remove();
+            }
+        }
+        return actions;
     }
 
     /**
@@ -113,7 +131,7 @@ public class BrowsingDataBridgeTest {
             }
         });
         mCallbackHelper.waitForCallback(0);
-        assertThat(mActionTester.toString(), mActionTester.getActions(),
+        assertThat(mActionTester.toString(), getActions(),
                 Matchers.containsInAnyOrder("ClearBrowsingData_LastDay",
                         "ClearBrowsingData_MaskContainsUnprotectedWeb",
                         "ClearBrowsingData_History"));
@@ -136,7 +154,7 @@ public class BrowsingDataBridgeTest {
             }
         });
         mCallbackHelper.waitForCallback(0);
-        assertThat(mActionTester.toString(), mActionTester.getActions(),
+        assertThat(mActionTester.toString(), getActions(),
                 Matchers.containsInAnyOrder("ClearBrowsingData_LastMonth",
                         "ClearBrowsingData_MaskContainsUnprotectedWeb", "ClearBrowsingData_Cache",
                         "ClearBrowsingData_ShaderCache", "ClearBrowsingData_ContentSettings"));
@@ -160,7 +178,7 @@ public class BrowsingDataBridgeTest {
             }
         });
         mCallbackHelper.waitForCallback(0);
-        assertThat(mActionTester.toString(), mActionTester.getActions(),
+        assertThat(mActionTester.toString(), getActions(),
                 Matchers.containsInAnyOrder("ClearBrowsingData_LastMonth",
                         // ClearBrowsingData_MaskContainsUnprotectedWeb is logged
                         // twice because important storage is deleted separately.
@@ -188,7 +206,7 @@ public class BrowsingDataBridgeTest {
             }
         });
         mCallbackHelper.waitForCallback(0);
-        assertThat(mActionTester.toString(), mActionTester.getActions(),
+        assertThat(mActionTester.toString(), getActions(),
                 Matchers.containsInAnyOrder("ClearBrowsingData_LastWeek",
                         "ClearBrowsingData_MaskContainsUnprotectedWeb", "ClearBrowsingData_Cache",
                         "ClearBrowsingData_ShaderCache", "ClearBrowsingData_Cookies",
