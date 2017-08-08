@@ -56,23 +56,28 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       bool flattens_inherited_transform,
       unsigned rendering_context_id,
       CompositingReasons direct_compositing_reasons,
-      const CompositorElementId& compositor_element_id,
       PassRefPtr<const ScrollPaintPropertyNode> parent_scroll,
+      const IntPoint& bounds_offset,
       const IntSize& scroll_container_bounds,
       const IntSize& bounds,
       bool user_scrollable_horizontal,
       bool user_scrollable_vertical,
       MainThreadScrollingReasons main_thread_scrolling_reasons,
+      const CompositorElementId& compositor_element_id,
       WebLayerScrollClient* scroll_client) {
     // If this transform is for scroll offset, it should be a 2d translation.
     DCHECK(matrix.IsIdentityOr2DTranslation());
     return AdoptRef(new TransformPaintPropertyNode(
         std::move(parent), matrix, origin, flattens_inherited_transform,
-        rendering_context_id, direct_compositing_reasons, compositor_element_id,
+        rendering_context_id, direct_compositing_reasons,
+        // The compositor element id is empty because the element id is stored
+        // on the scroll node.
+        CompositorElementId(),
         ScrollPaintPropertyNode::Create(
-            std::move(parent_scroll), scroll_container_bounds, bounds,
-            user_scrollable_horizontal, user_scrollable_vertical,
-            main_thread_scrolling_reasons, scroll_client)));
+            std::move(parent_scroll), bounds_offset, scroll_container_bounds,
+            bounds, user_scrollable_horizontal, user_scrollable_vertical,
+            main_thread_scrolling_reasons, compositor_element_id,
+            scroll_client)));
   }
 
   bool Update(
@@ -109,23 +114,24 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       bool flattens_inherited_transform,
       unsigned rendering_context_id,
       CompositingReasons direct_compositing_reasons,
-      CompositorElementId compositor_element_id,
       PassRefPtr<const ScrollPaintPropertyNode> parent_scroll,
+      const IntPoint& bounds_offset,
       const IntSize& scroll_container_bounds,
       const IntSize& bounds,
       bool user_scrollable_horizontal,
       bool user_scrollable_vertical,
       MainThreadScrollingReasons main_thread_scrolling_reasons,
+      CompositorElementId compositor_element_id,
       WebLayerScrollClient* scroll_client) {
     bool changed = Update(std::move(parent), matrix, origin,
                           flattens_inherited_transform, rendering_context_id,
-                          direct_compositing_reasons, compositor_element_id);
+                          direct_compositing_reasons, CompositorElementId());
     DCHECK(scroll_);
     DCHECK(matrix.IsIdentityOr2DTranslation());
     changed |= scroll_->Update(
-        std::move(parent_scroll), scroll_container_bounds, bounds,
-        user_scrollable_horizontal, user_scrollable_vertical,
-        main_thread_scrolling_reasons, scroll_client);
+        std::move(parent_scroll), bounds_offset, scroll_container_bounds,
+        bounds, user_scrollable_horizontal, user_scrollable_vertical,
+        main_thread_scrolling_reasons, compositor_element_id, scroll_client);
     return changed;
   }
 

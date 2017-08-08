@@ -91,27 +91,26 @@ static bool UpdateScrollTranslation(
     MainThreadScrollingReasons main_thread_scrolling_reasons,
     WebLayerScrollClient* scroll_client) {
   DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
+  // TODO(pdr): Set the correct compositing reasons here.
+  auto element_id = CompositorElementIdFromLayoutObjectId(
+      frame_view.GetLayoutView()->UniqueId(),
+      CompositorElementIdNamespace::kScrollTranslation);
   if (auto* existing_scroll_translation = frame_view.ScrollTranslation()) {
     auto existing_reasons = existing_scroll_translation->ScrollNode()
                                 ->GetMainThreadScrollingReasons();
     existing_scroll_translation->UpdateScrollTranslation(
         std::move(parent), matrix, origin, false, 0, kCompositingReasonNone,
-        CompositorElementIdFromLayoutObjectId(
-            frame_view.GetLayoutView()->UniqueId(),
-            CompositorElementIdNamespace::kScrollTranslation),
-        std::move(scroll_parent), clip, bounds, user_scrollable_horizontal,
-        user_scrollable_vertical, main_thread_scrolling_reasons, scroll_client);
+        std::move(scroll_parent), IntPoint(), clip, bounds,
+        user_scrollable_horizontal, user_scrollable_vertical,
+        main_thread_scrolling_reasons, element_id, scroll_client);
     return existing_reasons != main_thread_scrolling_reasons;
   }
   frame_view.SetScrollTranslation(
       TransformPaintPropertyNode::CreateScrollTranslation(
           std::move(parent), matrix, origin, false, 0, kCompositingReasonNone,
-          CompositorElementIdFromLayoutObjectId(
-              frame_view.GetLayoutView()->UniqueId(),
-              CompositorElementIdNamespace::kScrollTranslation),
-          std::move(scroll_parent), clip, bounds, user_scrollable_horizontal,
-          user_scrollable_vertical, main_thread_scrolling_reasons,
-          scroll_client));
+          std::move(scroll_parent), IntPoint(), clip, bounds,
+          user_scrollable_horizontal, user_scrollable_vertical,
+          main_thread_scrolling_reasons, element_id, scroll_client));
   return true;
 }
 
@@ -966,13 +965,19 @@ void PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation(
       const LayoutBox& box = ToLayoutBox(object);
       auto* scrollable_area = box.GetScrollableArea();
       IntSize scroll_offset = box.ScrolledContentOffset();
+      TransformationMatrix scroll_offset_matrix =
+          TransformationMatrix().Translate(-scroll_offset.Width(),
+                                           -scroll_offset.Height());
 
-      auto clip_rect = box.OverflowClipRect(context.current.paint_offset);
       // The container bounds are snapped to integers to match the equivalent
-      // bounds on cc::ScrollNode.
-      IntSize container_bounds = PixelSnappedIntRect(clip_rect).Size();
-
+      // bounds on cc::ScrollNode. The offset is snapped to match the current
+      // integer offsets used in CompositedLayerMapping.
+      auto clip_rect = PixelSnappedIntRect(
+          box.OverflowClipRect(context.current.paint_offset));
+      IntPoint bounds_offset = clip_rect.Location();
+      IntSize container_bounds = clip_rect.Size();
       IntSize scroll_bounds = scrollable_area->ContentsSize();
+
       bool user_scrollable_horizontal =
           scrollable_area->UserInputScrollable(kHorizontalScrollbar);
       bool user_scrollable_vertical =
@@ -990,18 +995,17 @@ void PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation(
           force_subtree_update = true;
       }
 
-      TransformationMatrix matrix = TransformationMatrix().Translate(
-          -scroll_offset.Width(), -scroll_offset.Height());
+      auto element_id = CompositorElementIdFromLayoutObjectId(
+          object.UniqueId(), CompositorElementIdNamespace::kScrollTranslation);
+
+      // TODO(pdr): Set the correct compositing reasons here.
       auto result = properties.UpdateScrollTranslation(
-          context.current.transform, matrix, FloatPoint3D(),
+          context.current.transform, scroll_offset_matrix, FloatPoint3D(),
           context.current.should_flatten_inherited_transform,
           context.current.rendering_context_id, kCompositingReasonNone,
-          CompositorElementIdFromLayoutObjectId(
-              object.UniqueId(),
-              CompositorElementIdNamespace::kScrollTranslation),
-          context.current.scroll, container_bounds, scroll_bounds,
-          user_scrollable_horizontal, user_scrollable_vertical, reasons,
-          scrollable_area);
+          context.current.scroll, bounds_offset, container_bounds,
+          scroll_bounds, user_scrollable_horizontal, user_scrollable_vertical,
+          reasons, element_id, scrollable_area);
       force_subtree_update |= result.NewNodeCreated();
     } else {
       // Ensure pre-existing properties are cleared.

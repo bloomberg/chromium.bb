@@ -35,6 +35,13 @@ const CompositorElementId PropertyTreeState::GetCompositorElementId(
   if (Transform()->GetCompositorElementId() &&
       !element_ids.Contains(Transform()->GetCompositorElementId()))
     return Transform()->GetCompositorElementId();
+  // TODO(pdr): This should be removed when scroll element ids are used only
+  // for scroll layers.
+  if (auto* scroll_node = Transform()->ScrollNode()) {
+    if (scroll_node->GetCompositorElementId() &&
+        !element_ids.Contains(scroll_node->GetCompositorElementId()))
+      return scroll_node->GetCompositorElementId();
+  }
   return CompositorElementId();
 }
 
