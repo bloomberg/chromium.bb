@@ -18,9 +18,9 @@
 // view and matches the desired |mode|.
 void VerifyContentViewMatchesMode(CRWContentView* content_view,
                                   SadTabViewMode mode) {
-  EXPECT_TRUE([content_view isKindOfClass:[CRWGenericContentView class]]);
+  ASSERT_TRUE([content_view isKindOfClass:[CRWGenericContentView class]]);
   UIView* content_view_view = [(CRWGenericContentView*)content_view view];
-  EXPECT_TRUE([content_view_view isKindOfClass:[SadTabView class]]);
+  ASSERT_TRUE([content_view_view isKindOfClass:[SadTabView class]]);
   EXPECT_EQ([(SadTabView*)content_view_view mode], mode);
 }
 
