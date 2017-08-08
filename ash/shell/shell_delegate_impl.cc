@@ -145,10 +145,6 @@ PrefService* ShellDelegateImpl::GetActiveUserPrefService() const {
   return nullptr;
 }
 
-PrefService* ShellDelegateImpl::GetLocalStatePrefService() const {
-  return nullptr;
-}
-
 bool ShellDelegateImpl::IsTouchscreenEnabledInPrefs(
     bool use_local_state) const {
   return true;

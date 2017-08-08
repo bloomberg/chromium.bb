@@ -116,6 +116,10 @@ AshInit::AshInit() {
 
   ash::Shell* shell = ash::Shell::Get();
 
+  // Under mash the local state pref service isn't available until after shell
+  // initialization. Make classic ash behave the same way.
+  shell->SetLocalStatePrefService(g_browser_process->local_state());
+
   ash::AcceleratorControllerDelegateClassic* accelerator_controller_delegate =
       nullptr;
   if (chromeos::GetAshConfig() == ash::Config::CLASSIC) {

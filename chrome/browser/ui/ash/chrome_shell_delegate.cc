@@ -552,10 +552,6 @@ PrefService* ChromeShellDelegate::GetActiveUserPrefService() const {
   return profile ? profile->GetPrefs() : nullptr;
 }
 
-PrefService* ChromeShellDelegate::GetLocalStatePrefService() const {
-  return g_browser_process->local_state();
-}
-
 bool ChromeShellDelegate::IsTouchscreenEnabledInPrefs(
     bool use_local_state) const {
   return chromeos::system::InputDeviceSettings::Get()

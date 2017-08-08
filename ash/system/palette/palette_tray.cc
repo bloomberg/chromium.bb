@@ -236,6 +236,31 @@ void PaletteTray::OnLockStateChanged(bool locked) {
   }
 }
 
+void PaletteTray::OnLocalStatePrefServiceInitialized(
+    PrefService* pref_service) {
+  local_state_pref_service_ = pref_service;
+
+  // May be null in mash_unittests where there is no mojo pref service.
+  if (!local_state_pref_service_)
+    return;
+
+  // If a device has an internal stylus or the flag to force stylus is set, mark
+  // the has seen stylus flag as true since we know the user has a stylus.
+  if (palette_utils::HasInternalStylus() ||
+      palette_utils::HasForcedStylusInput()) {
+    local_state_pref_service_->SetBoolean(prefs::kHasSeenStylus, true);
+  }
+
+  pref_change_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(local_state_pref_service_);
+  pref_change_registrar_->Add(
+      prefs::kHasSeenStylus,
+      base::Bind(&PaletteTray::OnHasSeenStylusPrefChanged,
+                 base::Unretained(this)));
+
+  OnHasSeenStylusPrefChanged();
+}
+
 void PaletteTray::ClickedOutsideBubble() {
   if (num_actions_in_bubble_ == 0)
     RecordPaletteOptionsUsage(PaletteTrayOptions::PALETTE_CLOSED_NO_ACTION);
@@ -386,29 +411,6 @@ void PaletteTray::Initialize() {
   // which will take care of showing the palette.
   palette_enabled_subscription_ = delegate->AddPaletteEnableListener(base::Bind(
       &PaletteTray::OnPaletteEnabledPrefChanged, weak_factory_.GetWeakPtr()));
-
-  local_state_pref_service_ = Shell::Get()->GetLocalStatePrefService();
-
-  // |local_state_pref_service_| may be null in tests.
-  // TODO(crbug.com/751191): Remove the check for Mash.
-  if (Shell::GetAshConfig() == Config::MASH || !local_state_pref_service_)
-    return;
-
-  // If a device has an internal stylus or the flag to force stylus is set, mark
-  // the has seen stylus flag as true since we know the user has a stylus.
-  if (palette_utils::HasInternalStylus() ||
-      palette_utils::HasForcedStylusInput()) {
-    local_state_pref_service_->SetBoolean(prefs::kHasSeenStylus, true);
-  }
-
-  pref_change_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
-  pref_change_registrar_->Init(local_state_pref_service_);
-  pref_change_registrar_->Add(
-      prefs::kHasSeenStylus,
-      base::Bind(&PaletteTray::OnHasSeenStylusPrefChanged,
-                 base::Unretained(this)));
-
-  OnHasSeenStylusPrefChanged();
 }
 
 bool PaletteTray::PerformAction(const ui::Event& event) {

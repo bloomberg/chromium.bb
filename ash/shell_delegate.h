@@ -122,9 +122,8 @@ class ASH_EXPORT ShellDelegate {
 
   virtual gfx::Image GetDeprecatedAcceleratorImage() const = 0;
 
+  // Not used in mash because ash owns the PrefService.
   virtual PrefService* GetActiveUserPrefService() const = 0;
-
-  virtual PrefService* GetLocalStatePrefService() const = 0;
 
   // If |use_local_state| is true, returns the touchscreen status from local
   // state, otherwise from user prefs.

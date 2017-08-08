@@ -76,6 +76,7 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
 
   // ShellObserver:
   void OnLockStateChanged(bool locked) override;
+  void OnLocalStatePrefServiceInitialized(PrefService* pref_service) override;
 
   // TrayBackgroundView:
   void ClickedOutsideBubble() override;

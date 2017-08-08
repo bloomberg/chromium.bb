@@ -78,6 +78,10 @@ class ASH_EXPORT ShellObserver {
   // most of Shell's state has been deleted.
   virtual void OnShellDestroyed() {}
 
+  // Called when local state prefs are available. This occurs an arbitrary
+  // amount of time after Shell initialization. Only called once.
+  virtual void OnLocalStatePrefServiceInitialized(PrefService* pref_service) {}
+
   // Called when the user profile pref service is available. Also called after
   // multiprofile user switch. Never called with the login screen profile.
   // May be called with null in tests.
