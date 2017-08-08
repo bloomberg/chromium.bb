@@ -5297,7 +5297,8 @@ TEST_F(GLES2FormatTest, OverlayPromotionHintCHROMIUM) {
       *GetBufferAs<cmds::OverlayPromotionHintCHROMIUM>();
   void* next_cmd =
       cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLboolean>(12),
-              static_cast<GLint>(13), static_cast<GLint>(14));
+              static_cast<GLint>(13), static_cast<GLint>(14),
+              static_cast<GLint>(15), static_cast<GLint>(16));
   EXPECT_EQ(static_cast<uint32_t>(cmds::OverlayPromotionHintCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
@@ -5305,6 +5306,8 @@ TEST_F(GLES2FormatTest, OverlayPromotionHintCHROMIUM) {
   EXPECT_EQ(static_cast<GLboolean>(12), cmd.promotion_hint);
   EXPECT_EQ(static_cast<GLint>(13), cmd.display_x);
   EXPECT_EQ(static_cast<GLint>(14), cmd.display_y);
+  EXPECT_EQ(static_cast<GLint>(15), cmd.display_width);
+  EXPECT_EQ(static_cast<GLint>(16), cmd.display_height);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

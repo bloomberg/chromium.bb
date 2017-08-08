@@ -1711,7 +1711,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void DoOverlayPromotionHintCHROMIUM(GLuint client_id,
                                       GLboolean promotion_hint,
                                       GLint display_x,
-                                      GLint display_y);
+                                      GLint display_y,
+                                      GLint display_width,
+                                      GLint display_height);
 
   // Wrapper for glSetDrawRectangleCHROMIUM
   void DoSetDrawRectangleCHROMIUM(GLint x, GLint y, GLint width, GLint height);
@@ -8825,7 +8827,9 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
 void GLES2DecoderImpl::DoOverlayPromotionHintCHROMIUM(GLuint client_id,
                                                       GLboolean promotion_hint,
                                                       GLint display_x,
-                                                      GLint display_y) {
+                                                      GLint display_y,
+                                                      GLint display_width,
+                                                      GLint display_height) {
   if (client_id == 0)
     return;
 
@@ -8844,7 +8848,8 @@ void GLES2DecoderImpl::DoOverlayPromotionHintCHROMIUM(GLuint client_id,
     return;
   }
 
-  image->NotifyPromotionHint(promotion_hint != GL_FALSE, display_x, display_y);
+  image->NotifyPromotionHint(promotion_hint != GL_FALSE, display_x, display_y,
+                             display_width, display_height);
 }
 
 void GLES2DecoderImpl::DoSetDrawRectangleCHROMIUM(GLint x,

@@ -4336,8 +4336,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleOverlayPromotionHintCHROMIUM(
   GLboolean promotion_hint = static_cast<GLboolean>(c.promotion_hint);
   GLint display_x = static_cast<GLint>(c.display_x);
   GLint display_y = static_cast<GLint>(c.display_y);
-  error::Error error = DoOverlayPromotionHintCHROMIUM(texture, promotion_hint,
-                                                      display_x, display_y);
+  GLint display_width = static_cast<GLint>(c.display_width);
+  GLint display_height = static_cast<GLint>(c.display_height);
+  error::Error error =
+      DoOverlayPromotionHintCHROMIUM(texture, promotion_hint, display_x,
+                                     display_y, display_width, display_height);
   if (error != error::kNoError) {
     return error;
   }
