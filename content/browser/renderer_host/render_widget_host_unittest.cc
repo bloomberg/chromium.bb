@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/input/legacy_input_router_impl.h"
+#include "content/browser/renderer_host/mock_widget_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -153,17 +154,6 @@ class MockInputRouter : public InputRouter {
 
 class MockRenderWidgetHost : public RenderWidgetHostImpl {
  public:
-  MockRenderWidgetHost(RenderWidgetHostDelegate* delegate,
-                       RenderProcessHost* process,
-                       int routing_id)
-      : RenderWidgetHostImpl(
-            delegate,
-            process,
-            routing_id,
-            false),
-        new_content_rendering_timeout_fired_(false) {
-    acked_touch_event_type_ = blink::WebInputEvent::kUndefined;
-  }
 
   // Allow poking at a few private members.
   using RenderWidgetHostImpl::GetResizeParams;
@@ -216,6 +206,17 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     return processed_frame_messages_count_;
   }
 
+  static MockRenderWidgetHost* Create(RenderWidgetHostDelegate* delegate,
+                                      RenderProcessHost* process,
+                                      int32_t routing_id) {
+    mojom::WidgetPtr widget;
+    std::unique_ptr<MockWidgetImpl> widget_impl =
+        base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+
+    return new MockRenderWidgetHost(delegate, process, routing_id,
+                                    std::move(widget_impl), std::move(widget));
+  }
+
  protected:
   void NotifyNewContentRenderingTimeoutForTesting() override {
     new_content_rendering_timeout_fired_ = true;
@@ -225,10 +226,27 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   WebInputEvent::Type acked_touch_event_type_;
 
  private:
+  MockRenderWidgetHost(RenderWidgetHostDelegate* delegate,
+                       RenderProcessHost* process,
+                       int routing_id,
+                       std::unique_ptr<MockWidgetImpl> widget_impl,
+                       mojom::WidgetPtr widget)
+      : RenderWidgetHostImpl(delegate,
+                             process,
+                             routing_id,
+                             std::move(widget),
+                             false),
+        new_content_rendering_timeout_fired_(false),
+        widget_impl_(std::move(widget_impl)) {
+    acked_touch_event_type_ = blink::WebInputEvent::kUndefined;
+  }
+
   void ProcessSwapMessages(std::vector<IPC::Message> messages) override {
     processed_frame_messages_count_++;
   }
   uint32_t processed_frame_messages_count_ = 0;
+  std::unique_ptr<MockWidgetImpl> widget_impl_;
+
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHost);
 };
 
@@ -580,8 +598,8 @@ class RenderWidgetHostTest : public testing::Test {
     screen_.reset(aura::TestScreen::Create(gfx::Size()));
     display::Screen::SetScreenInstance(screen_.get());
 #endif
-    host_.reset(new MockRenderWidgetHost(delegate_.get(), process_,
-                                         process_->GetNextRoutingID()));
+    host_.reset(MockRenderWidgetHost::Create(delegate_.get(), process_,
+                                             process_->GetNextRoutingID()));
     view_.reset(new TestView(host_.get()));
     ConfigureView(view_.get());
     host_->SetView(view_.get());

@@ -1307,6 +1307,8 @@ test("content_unittests") {
     "../browser/renderer_host/media/video_capture_controller_unittest.cc",
     "../browser/renderer_host/media/video_capture_manager_unittest.cc",
     "../browser/renderer_host/media/video_capture_unittest.cc",
+    "../browser/renderer_host/mock_widget_impl.cc",
+    "../browser/renderer_host/mock_widget_impl.h",
     "../browser/renderer_host/offscreen_canvas_provider_impl_unittest.cc",
     "../browser/renderer_host/render_process_host_unittest.cc",
     "../browser/renderer_host/render_view_host_unittest.cc",

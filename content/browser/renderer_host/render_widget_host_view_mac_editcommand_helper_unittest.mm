@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/mock_widget_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/input_messages.h"
@@ -140,9 +141,12 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest,
   base::mac::ScopedNSAutoreleasePool pool;
 
   int32_t routing_id = process_host->GetNextRoutingID();
+  mojom::WidgetPtr widget;
+  std::unique_ptr<MockWidgetImpl> widget_impl =
+      base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget));
 
-  RenderWidgetHostImpl* render_widget =
-      new RenderWidgetHostImpl(&delegate, process_host, routing_id, false);
+  RenderWidgetHostImpl* render_widget = new RenderWidgetHostImpl(
+      &delegate, process_host, routing_id, std::move(widget), false);
 
   ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
 

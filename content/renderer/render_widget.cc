@@ -2410,4 +2410,11 @@ blink::WebInputMethodController* RenderWidget::GetInputMethodController()
       ->GetActiveWebInputMethodController();
 }
 
+void RenderWidget::SetWidgetBinding(mojom::WidgetRequest request) {
+  // Close the old binding if there was one.
+  // A RenderWidgetHost should not need more than one channel.
+  widget_binding_.Close();
+  widget_binding_.Bind(std::move(request));
+}
+
 }  // namespace content

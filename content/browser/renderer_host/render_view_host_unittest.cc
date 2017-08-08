@@ -10,6 +10,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_message_filter.h"
+#include "content/browser/renderer_host/mock_widget_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/common/frame_messages.h"
@@ -30,15 +31,6 @@
 #include "ui/base/page_transition_types.h"
 
 namespace content {
-
-class WidgetImpl : public mojom::Widget {
- public:
-  explicit WidgetImpl(mojo::InterfaceRequest<mojom::Widget> request)
-      : binding_(this, std::move(request)) {}
-
- private:
-  mojo::Binding<mojom::Widget> binding_;
-};
 
 class RenderViewHostTestBrowserClient : public TestContentBrowserClient {
  public:
@@ -90,8 +82,8 @@ TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
   int32_t routing_id = process()->GetNextRoutingID();
 
   mojom::WidgetPtr widget;
-  std::unique_ptr<WidgetImpl> widget_impl =
-      base::MakeUnique<WidgetImpl>(mojo::MakeRequest(&widget));
+  std::unique_ptr<MockWidgetImpl> widget_impl =
+      base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget));
   test_rvh()->CreateNewFullscreenWidget(routing_id, std::move(widget));
 }
 

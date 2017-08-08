@@ -6766,6 +6766,9 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
   registry_.AddInterface(base::Bind(&FrameInputHandlerImpl::CreateMojoService,
                                     weak_factory_.GetWeakPtr()));
 
+  registry_.AddInterface(
+      base::Bind(&RenderFrameImpl::BindWidget, weak_factory_.GetWeakPtr()));
+
   if (!frame_->Parent()) {
     // Only main frame have ImageDownloader service.
     registry_.AddInterface(base::Bind(&ImageDownloaderImpl::CreateMojoService,
@@ -7107,5 +7110,9 @@ RenderFrameImpl::PendingNavigationInfo::PendingNavigationInfo(
       cache_disabled(info.is_cache_disabled),
       form(info.form),
       source_location(info.source_location) {}
+
+void RenderFrameImpl::BindWidget(mojom::WidgetRequest request) {
+  GetRenderWidget()->SetWidgetBinding(std::move(request));
+}
 
 }  // namespace content

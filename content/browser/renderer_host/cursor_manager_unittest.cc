@@ -6,6 +6,7 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "content/browser/renderer_host/mock_widget_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -45,6 +46,37 @@ class MockRenderWidgetHostViewForCursors : public TestRenderWidgetHostView {
   std::unique_ptr<CursorManager> cursor_manager_;
 };
 
+class MockRenderWidgetHost : public RenderWidgetHostImpl {
+ public:
+  static MockRenderWidgetHost* Create(RenderWidgetHostDelegate* delegate,
+                                      RenderProcessHost* process,
+                                      int32_t routing_id) {
+    mojom::WidgetPtr widget;
+    std::unique_ptr<MockWidgetImpl> widget_impl =
+        base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+
+    return new MockRenderWidgetHost(delegate, process, routing_id,
+                                    std::move(widget_impl), std::move(widget));
+  }
+
+ private:
+  MockRenderWidgetHost(RenderWidgetHostDelegate* delegate,
+                       RenderProcessHost* process,
+                       int routing_id,
+                       std::unique_ptr<MockWidgetImpl> widget_impl,
+                       mojom::WidgetPtr widget)
+      : RenderWidgetHostImpl(delegate,
+                             process,
+                             routing_id,
+                             std::move(widget),
+                             false),
+        widget_impl_(std::move(widget_impl)) {}
+
+  std::unique_ptr<MockWidgetImpl> widget_impl_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHost);
+};
+
 class CursorManagerTest : public testing::Test {
  public:
   CursorManagerTest()
@@ -61,8 +93,8 @@ class CursorManagerTest : public testing::Test {
 
   RenderWidgetHostImpl* MakeNewWidgetHost() {
     int32_t routing_id = process_host_->GetNextRoutingID();
-    return new RenderWidgetHostImpl(&delegate_, process_host_.get(), routing_id,
-                                    false);
+    return MockRenderWidgetHost::Create(&delegate_, process_host_.get(),
+                                        routing_id);
   }
 
   void TearDown() override {

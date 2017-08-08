@@ -44,6 +44,7 @@
 #include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/render_widget_surface_properties.h"
 #include "content/common/view_message_enums.h"
+#include "content/common/widget.mojom.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
@@ -115,7 +116,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                        RenderProcessHost* process,
                        int32_t routing_id,
+                       mojom::WidgetPtr widget_interface,
                        bool hidden);
+
   ~RenderWidgetHostImpl() override;
 
   // Similar to RenderWidgetHost::FromID, but returning the Impl object.
@@ -588,6 +591,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Signals that a frame with token |frame_token| was finished processing. If
   // there are any queued messages belonging to it, they will be processed.
   void DidProcessFrame(uint32_t frame_token);
+
+  void SetWidget(mojom::WidgetPtr widget);
 
  protected:
   // ---------------------------------------------------------------------------

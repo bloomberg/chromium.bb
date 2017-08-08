@@ -19,6 +19,7 @@
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/mock_widget_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/view_messages.h"
@@ -52,8 +53,11 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
     MockRenderProcessHost* process_host =
         new MockRenderProcessHost(browser_context_.get());
     int32_t routing_id = process_host->GetNextRoutingID();
-    widget_host_ =
-        new RenderWidgetHostImpl(&delegate_, process_host, routing_id, false);
+    mojom::WidgetPtr widget;
+    widget_impl_ = base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+
+    widget_host_ = new RenderWidgetHostImpl(
+        &delegate_, process_host, routing_id, std::move(widget), false);
     view_ = RenderWidgetHostViewGuest::Create(
         widget_host_, NULL,
         (new TestRenderWidgetHostView(widget_host_))->GetWeakPtr());
@@ -83,6 +87,7 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
 
   // Tests should set these to NULL if they've already triggered their
   // destruction.
+  std::unique_ptr<MockWidgetImpl> widget_impl_;
   RenderWidgetHostImpl* widget_host_;
   RenderWidgetHostViewGuest* view_;
 
@@ -153,8 +158,11 @@ class RenderWidgetHostViewGuestSurfaceTest
         web_contents_.get(), &browser_plugin_guest_delegate_);
 
     int32_t routing_id = process_host->GetNextRoutingID();
-    widget_host_ =
-        new RenderWidgetHostImpl(&delegate_, process_host, routing_id, false);
+    mojom::WidgetPtr widget;
+    widget_impl_ = base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+
+    widget_host_ = new RenderWidgetHostImpl(
+        &delegate_, process_host, routing_id, std::move(widget), false);
     view_ = RenderWidgetHostViewGuest::Create(
         widget_host_, browser_plugin_guest_,
         (new TestRenderWidgetHostView(widget_host_))->GetWeakPtr());
@@ -203,6 +211,7 @@ class RenderWidgetHostViewGuestSurfaceTest
 
   // Tests should set these to NULL if they've already triggered their
   // destruction.
+  std::unique_ptr<MockWidgetImpl> widget_impl_;
   RenderWidgetHostImpl* widget_host_;
   RenderWidgetHostViewGuest* view_;
   std::unique_ptr<FakeRendererCompositorFrameSink>

@@ -44,6 +44,7 @@
 #include "content/browser/renderer_host/delegated_frame_host_client_aura.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/mouse_wheel_event_queue.h"
+#include "content/browser/renderer_host/mock_widget_impl.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -553,13 +554,7 @@ class MockWindowObserver : public aura::WindowObserver {
 
 class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
  public:
-  MockRenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
-                           RenderProcessHost* process,
-                           int32_t routing_id)
-      : RenderWidgetHostImpl(delegate, process, routing_id, false) {
-    set_renderer_initialized(true);
-    lastWheelOrTouchEventLatencyInfo = ui::LatencyInfo();
-  }
+  ~MockRenderWidgetHostImpl() override {}
 
   // Extracts |latency_info| for wheel event, and stores it in
   // |lastWheelOrTouchEventLatencyInfo|.
@@ -581,7 +576,35 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
     lastWheelOrTouchEventLatencyInfo = ui::LatencyInfo(ui_latency);
   }
 
+  static MockRenderWidgetHostImpl* Create(RenderWidgetHostDelegate* delegate,
+                                          RenderProcessHost* process,
+                                          int32_t routing_id) {
+    mojom::WidgetPtr widget;
+    std::unique_ptr<MockWidgetImpl> widget_impl =
+        base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+
+    return new MockRenderWidgetHostImpl(delegate, process, routing_id,
+                                        std::move(widget_impl),
+                                        std::move(widget));
+  }
   ui::LatencyInfo lastWheelOrTouchEventLatencyInfo;
+
+ private:
+  MockRenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
+                           RenderProcessHost* process,
+                           int32_t routing_id,
+                           std::unique_ptr<MockWidgetImpl> widget_impl,
+                           mojom::WidgetPtr widget)
+      : RenderWidgetHostImpl(delegate,
+                             process,
+                             routing_id,
+                             std::move(widget),
+                             false),
+        widget_impl_(std::move(widget_impl)) {
+    lastWheelOrTouchEventLatencyInfo = ui::LatencyInfo();
+  }
+
+  std::unique_ptr<MockWidgetImpl> widget_impl_;
 };
 
 const WebInputEvent* GetInputEventFromMessage(const IPC::Message& message) {
@@ -632,8 +655,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
     int32_t routing_id = process_host_->GetNextRoutingID();
     delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
-    parent_host_ = new RenderWidgetHostImpl(delegates_.back().get(),
-                                            process_host_, routing_id, false);
+    parent_host_ = MockRenderWidgetHostImpl::Create(delegates_.back().get(),
+                                                    process_host_, routing_id);
     delegates_.back()->set_widget_host(parent_host_);
     parent_view_ =
         new RenderWidgetHostViewAura(parent_host_, is_guest_view_hack_);
@@ -644,8 +667,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
     routing_id = process_host_->GetNextRoutingID();
     delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
-    widget_host_ = new MockRenderWidgetHostImpl(delegates_.back().get(),
-                                                process_host_, routing_id);
+    widget_host_ = MockRenderWidgetHostImpl::Create(delegates_.back().get(),
+                                                    process_host_, routing_id);
     delegates_.back()->set_widget_host(widget_host_);
     widget_host_->Init();
     view_ = new FakeRenderWidgetHostViewAura(widget_host_, is_guest_view_hack_);
@@ -3108,8 +3131,8 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   for (size_t i = 0; i < renderer_count; ++i) {
     int32_t routing_id = process_host_->GetNextRoutingID();
     delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
-    hosts[i] = new RenderWidgetHostImpl(delegates_.back().get(), process_host_,
-                                        routing_id, false);
+    hosts[i] = MockRenderWidgetHostImpl::Create(delegates_.back().get(),
+                                                process_host_, routing_id);
     delegates_.back()->set_widget_host(hosts[i]);
     hosts[i]->Init();
     views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
@@ -3282,8 +3305,8 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   for (size_t i = 0; i < renderer_count; ++i) {
     int32_t routing_id = process_host_->GetNextRoutingID();
     delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
-    hosts[i] = new RenderWidgetHostImpl(delegates_.back().get(), process_host_,
-                                        routing_id, false);
+    hosts[i] = MockRenderWidgetHostImpl::Create(delegates_.back().get(),
+                                                process_host_, routing_id);
     delegates_.back()->set_widget_host(hosts[i]);
     hosts[i]->Init();
     views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
@@ -3354,9 +3377,10 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
   // Create a bunch of renderers.
   for (size_t i = 0; i < renderer_count; ++i) {
     int32_t routing_id = process_host_->GetNextRoutingID();
+
     delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
-    hosts[i] = new RenderWidgetHostImpl(delegates_.back().get(), process_host_,
-                                        routing_id, false);
+    hosts[i] = MockRenderWidgetHostImpl::Create(delegates_.back().get(),
+                                                process_host_, routing_id);
     delegates_.back()->set_widget_host(hosts[i]);
     hosts[i]->Init();
     views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
@@ -5888,10 +5912,11 @@ class InputMethodAuraTestBase : public RenderWidgetHostViewAuraTest {
     return process_host;
   }
 
-  RenderWidgetHostImpl* CreateRenderWidgetHostForProcess(
+  MockRenderWidgetHostImpl* CreateRenderWidgetHostForProcess(
       MockRenderProcessHost* process_host) {
-    return new RenderWidgetHostImpl(render_widget_host_delegate(), process_host,
-                                    process_host->GetNextRoutingID(), false);
+    return MockRenderWidgetHostImpl::Create(render_widget_host_delegate(),
+                                            process_host,
+                                            process_host->GetNextRoutingID());
   }
 
   TestRenderWidgetHostView* CreateViewForProcess(

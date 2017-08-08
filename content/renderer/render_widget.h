@@ -464,6 +464,7 @@ class CONTENT_EXPORT RenderWidget
   // composition info (when in monitor mode).
   void OnRequestCompositionUpdates(bool immediate_request,
                                    bool monitor_updates);
+  void SetWidgetBinding(mojom::WidgetRequest request);
 
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class

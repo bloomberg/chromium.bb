@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
+#include "content/browser/renderer_host/mock_widget_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -58,7 +59,12 @@ class TextInputClientMacTest : public testing::Test {
     RenderProcessHost* rph =
         process_factory_.CreateRenderProcessHost(&browser_context_);
     int32_t routing_id = rph->GetNextRoutingID();
-    widget_.reset(new RenderWidgetHostImpl(&delegate_, rph, routing_id, false));
+    mojom::WidgetPtr widget;
+    mock_widget_impl_ =
+        base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+
+    widget_.reset(new RenderWidgetHostImpl(&delegate_, rph, routing_id,
+                                           std::move(widget), false));
   }
 
   void TearDown() override {
@@ -106,6 +112,7 @@ class TextInputClientMacTest : public testing::Test {
   MockRenderProcessHostFactory process_factory_;
   MockRenderWidgetHostDelegate delegate_;
   std::unique_ptr<RenderWidgetHostImpl> widget_;
+  std::unique_ptr<MockWidgetImpl> mock_widget_impl_;
 
   base::Thread thread_;
 };
