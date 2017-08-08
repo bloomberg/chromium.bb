@@ -20,6 +20,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -252,6 +253,8 @@ public class PasswordEntryEditor extends Fragment {
     }
 
     private void displayPassword() {
+        getActivity().getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
+
         changeHowPasswordIsDisplayed(
                 R.drawable.ic_visibility_off, InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
     }
