@@ -103,7 +103,7 @@ void SurfaceLayerBridge::CreateSolidColorLayer() {
   GraphicsLayer::RegisterContentsLayer(web_layer_.get());
 }
 
-void SurfaceLayerBridge::OnSurfaceCreated(
+void SurfaceLayerBridge::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   if (!current_surface_id_.is_valid() && surface_info.is_valid()) {
     // First time a SurfaceId is received

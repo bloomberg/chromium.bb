@@ -184,7 +184,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void OnBeginFramePausedChanged(bool paused) override;
 
   // viz::HostFrameSinkClient implementation.
-  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
 
   // Exposed for tests.
   bool IsChildFrameForTesting() const override;

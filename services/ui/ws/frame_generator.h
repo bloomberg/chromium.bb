@@ -34,7 +34,7 @@ class FrameGenerator : public viz::mojom::CompositorFrameSinkClient {
   void SetHighContrastMode(bool enabled);
 
   // Updates the WindowManager's SurfaceInfo.
-  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info);
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info);
 
   // Swaps the |window_manager_surface_info_| with that of |other|.
   void SwapSurfaceWith(FrameGenerator* other);

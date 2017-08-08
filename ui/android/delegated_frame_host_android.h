@@ -95,7 +95,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
   // viz::HostFrameSinkClient implementation.
-  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
 
   void CreateNewCompositorFrameSinkSupport();
 

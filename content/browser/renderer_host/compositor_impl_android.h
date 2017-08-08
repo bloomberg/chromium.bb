@@ -124,7 +124,7 @@ class CONTENT_EXPORT CompositorImpl
   void RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id) override;
 
   // viz::HostFrameSinkClient implementation.
-  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
 
   void SetVisible(bool visible);
   void CreateLayerTreeHost();

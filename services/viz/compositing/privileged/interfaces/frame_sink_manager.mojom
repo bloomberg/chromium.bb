@@ -95,9 +95,9 @@ interface FrameSinkManager {
 // compositor. The frame sink manager host is either the browser process in
 // Chrome or the window server process.
 interface FrameSinkManagerClient {
-  // Called by the frame sink manager immediately upon receiving a
-  // CompositorFrame with a new SurfaceId for the first time.
-  OnSurfaceCreated(cc.mojom.SurfaceInfo surface_info);
+  // Called by the frame sink manager when a CompositorFrame with a new
+  // SurfaceId activates for the first time.
+  OnFirstSurfaceActivation(cc.mojom.SurfaceInfo surface_info);
 
   // The CompositorFrameSink pipe for |frame_sink_id| was closed. The client
   // cannot submit any CompositorFrames to viz after this occurs.

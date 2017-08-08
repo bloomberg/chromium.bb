@@ -135,7 +135,7 @@ class FrameGeneratorTest : public testing::Test {
   // |frame_generator_|. After InitWithSurfaceInfo finishes, |frame_generator_|
   // has a valid SurfaceInfo and does not request BeginFrames.
   void InitWithSurfaceInfo() {
-    frame_generator_->OnSurfaceCreated(kArbitrarySurfaceInfo);
+    frame_generator_->OnFirstSurfaceActivation(kArbitrarySurfaceInfo);
 
     // Issue a BeginFrame so that frame_generator_ stops requesting BeginFrames
     // after submitting a CompositorFrame.
@@ -187,7 +187,7 @@ TEST_F(FrameGeneratorTest, InvalidSurfaceInfo) {
   EXPECT_EQ(viz::BeginFrameAck(), LastBeginFrameAck());
 }
 
-TEST_F(FrameGeneratorTest, OnSurfaceCreated) {
+TEST_F(FrameGeneratorTest, OnFirstSurfaceActivation) {
   InitWithSurfaceInfo();
 
   // Verify that the CompositorFrame refers to the window manager's surface via

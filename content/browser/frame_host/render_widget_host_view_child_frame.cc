@@ -782,7 +782,7 @@ void RenderWidgetHostViewChildFrame::OnBeginFramePausedChanged(bool paused) {
   renderer_compositor_frame_sink_->OnBeginFramePausedChanged(paused);
 }
 
-void RenderWidgetHostViewChildFrame::OnSurfaceCreated(
+void RenderWidgetHostViewChildFrame::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   // TODO(fsamuel): Once surface synchronization is turned on, the fallback
   // surface should be set here.

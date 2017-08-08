@@ -58,13 +58,13 @@ void OffscreenCanvasSurfaceImpl::CreateCompositorFrameSink(
   has_created_compositor_frame_sink_ = true;
 }
 
-void OffscreenCanvasSurfaceImpl::OnSurfaceCreated(
+void OffscreenCanvasSurfaceImpl::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   DCHECK_EQ(surface_info.id().frame_sink_id(), frame_sink_id_);
 
   local_surface_id_ = surface_info.id().local_surface_id();
   if (client_)
-    client_->OnSurfaceCreated(surface_info);
+    client_->OnFirstSurfaceActivation(surface_info);
 }
 
 void OffscreenCanvasSurfaceImpl::Require(const viz::SurfaceId& surface_id,

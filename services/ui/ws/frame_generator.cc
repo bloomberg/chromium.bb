@@ -36,7 +36,8 @@ void FrameGenerator::SetHighContrastMode(bool enabled) {
   SetNeedsBeginFrame(true);
 }
 
-void FrameGenerator::OnSurfaceCreated(const viz::SurfaceInfo& surface_info) {
+void FrameGenerator::OnFirstSurfaceActivation(
+    const viz::SurfaceInfo& surface_info) {
   DCHECK(surface_info.is_valid());
 
   // Only handle embedded surfaces changing here. The display root surface

@@ -372,7 +372,7 @@ class WindowServer : public ServerWindowDelegate,
   void OnGpuServiceInitialized() override;
 
   // viz::mojom::FrameSinkManagerClient:
-  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnClientConnectionClosed(const viz::FrameSinkId& frame_sink_id) override;
   void OnAggregatedHitTestRegionListUpdated(
       const viz::FrameSinkId& frame_sink_id,

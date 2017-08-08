@@ -431,11 +431,11 @@ bool SurfaceManager::SurfaceModified(const SurfaceId& surface_id,
   return changed;
 }
 
-void SurfaceManager::SurfaceCreated(const SurfaceInfo& surface_info) {
+void SurfaceManager::FirstSurfaceActivation(const SurfaceInfo& surface_info) {
   CHECK(thread_checker_.CalledOnValidThread());
 
   for (auto& observer : observer_list_)
-    observer.OnSurfaceCreated(surface_info);
+    observer.OnFirstSurfaceActivation(surface_info);
 }
 
 void SurfaceManager::SurfaceActivated(Surface* surface) {
