@@ -188,6 +188,8 @@ static_library("extensions") {
     "api/extension_action/extension_action_api.h",
     "api/extension_action/extension_page_actions_api_constants.cc",
     "api/extension_action/extension_page_actions_api_constants.h",
+    "api/feedback_private/chrome_feedback_private_delegate.cc",
+    "api/feedback_private/chrome_feedback_private_delegate.h",
     "api/feedback_private/feedback_private_api.cc",
     "api/feedback_private/feedback_private_api.h",
     "api/feedback_private/feedback_service.cc",

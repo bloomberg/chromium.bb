@@ -35,6 +35,7 @@ class ContentRulesRegistry;
 class DevicePermissionsPrompt;
 class ExtensionOptionsGuest;
 class ExtensionOptionsGuestDelegate;
+class FeedbackPrivateDelegate;
 class FileSystemDelegate;
 class ManagementAPIDelegate;
 class MessagingDelegate;
@@ -144,6 +145,9 @@ class ExtensionsAPIClient {
 
   // Returns a delegate for embedder-specific extension messaging.
   virtual MessagingDelegate* GetMessagingDelegate();
+
+  // Returns a delegate for the chrome.feedbackPrivate API.
+  virtual FeedbackPrivateDelegate* GetFeedbackPrivateDelegate();
 
 #if defined(OS_CHROMEOS)
   // If supported by the embedder, returns a delegate for querying non-native
