@@ -163,7 +163,7 @@ const CGFloat kWindowGradientHeight = 24.0;
       // highlights the buttons on mouse enter event. That rect is added where
       // buttons used to be previously.
       [self forbidAddingWindowButtonsTrackingArea];
-    } else {
+    } else if (hasTabStrip_) {
       // If Chrome does not use a full sized content view then AppKit adds the
       // window buttons to the root view, where they must be manually
       // re-positioned.
@@ -195,6 +195,13 @@ const CGFloat kWindowGradientHeight = 24.0;
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
+}
+
+- (NSUserInterfaceLayoutDirection)windowTitlebarLayoutDirection
+    NS_AVAILABLE_MAC(10_12) {
+  if (!cocoa_l10n_util::ShouldFlipWindowControlsInRTL())
+    return NSUserInterfaceLayoutDirectionLeftToRight;
+  return [super windowTitlebarLayoutDirection];
 }
 
 - (void)adjustTitlebarContainer:(NSView*)titlebarContainer {
