@@ -65,6 +65,7 @@ constexpr int kSearchBoxBorderCornerRadius = 2;
 constexpr int kSearchBoxBorderCornerRadiusSearchResult = 4;
 constexpr int kMicIconSize = 24;
 constexpr int kCloseIconSize = 24;
+constexpr int kSearchBoxFocusBorderCornerRadius = 28;
 
 constexpr int kLightVibrantBlendAlpha = 0xE6;
 
@@ -921,9 +922,9 @@ void SearchBoxView::SetSelected(bool selected) {
     return;
   selected_ = selected;
   if (selected) {
-    SetBorder(views::CreateRoundedRectBorder(
-        kSearchBoxBorderWidth, kSearchBoxBorderCornerRadiusFullscreen,
-        kSearchBoxBorderColor));
+    SetBorder(views::CreateRoundedRectBorder(kSearchBoxBorderWidth,
+                                             kSearchBoxFocusBorderCornerRadius,
+                                             kSearchBoxBorderColor));
   } else {
     SetDefaultBorder();
   }
