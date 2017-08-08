@@ -17,182 +17,148 @@ GEN('#include "chrome/browser/ui/webui/extensions/' +
 /**
  * Basic test fixture for the MD chrome://extensions page. Installs no
  * extensions.
- * @constructor
- * @extends {PolymerTest}
  */
-function CrExtensionsBrowserTest() {}
-
-CrExtensionsBrowserTest.prototype = {
-  __proto__: PolymerTest.prototype,
+var CrExtensionsBrowserTest = class extends PolymerTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/';
+  }
 
   /** @override */
-  browsePreload: 'chrome://extensions/',
+  get commandLineSwitches() {
+    return [{
+      switchName: 'enable-features',
+      switchValue: 'MaterialDesignExtensions',
+    }];
+  }
 
   /** @override */
-  commandLineSwitches: [{
-    switchName: 'enable-features',
-    switchValue: 'MaterialDesignExtensions',
-  }],
+  get extraLibraries() {
+    return PolymerTest.getLibraries(ROOT_PATH).concat([
+      ROOT_PATH + 'ui/webui/resources/js/assert.js',
+      'extension_test_util.js',
+      '../mock_controller.js',
+      '../../../../../ui/webui/resources/js/promise_resolver.js',
+      '../../../../../ui/webui/resources/js/webui_resource_test.js',
+    ]);
+  }
 
   /** @override */
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    ROOT_PATH + 'ui/webui/resources/js/assert.js',
-    'extension_test_util.js',
-    '../mock_controller.js',
-    '../../../../../ui/webui/resources/js/promise_resolver.js',
-    '../../../../../ui/webui/resources/js/webui_resource_test.js',
-  ]),
-
-  /** @override */
-  typedefCppFixture: 'ExtensionSettingsUIBrowserTest',
+  get typedefCppFixture() {
+    return 'ExtensionSettingsUIBrowserTest';
+  }
 };
 
 /**
  * Test fixture with one installed extension.
- * @constructor
- * @extends {CrExtensionsBrowserTest}
  */
-function CrExtensionsBrowserTestWithInstalledExtension() {}
-
-CrExtensionsBrowserTestWithInstalledExtension.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
-
+var CrExtensionsBrowserTestWithInstalledExtension =
+    class extends CrExtensionsBrowserTest {
   /** @override */
-  testGenPreamble: function() {
+  testGenPreamble() {
     GEN('  InstallGoodExtension();');
     GEN('  SetAutoConfirmUninstall();');
-  },
+  }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Sidebar Tests
 
-/**
- * @constructor
- * @extends {CrExtensionsBrowserTest}
- */
-function CrExtensionsSidebarTest() {}
-
-CrExtensionsSidebarTest.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
-
+var CrExtensionsSidebarTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_sidebar_test.js',
-  ]),
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_sidebar_test.js',
+    ]);
+  }
 };
 
-TEST_F(
-    'CrExtensionsSidebarTest', 'ExtensionSidebarLayoutAndClickHandlersTest',
-    function() {
-      mocha
-          .grep(
-              assert(extension_sidebar_tests.TestNames.LayoutAndClickHandlers))
-          .run();
-    });
+TEST_F('CrExtensionsSidebarTest', 'LayoutAndClickHandlers', function() {
+  mocha.grep(assert(extension_sidebar_tests.TestNames.LayoutAndClickHandlers))
+      .run();
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Toolbar Tests
 
-/**
- * @constructor
- * @extends {CrExtensionsBrowserTest}
- */
-function CrExtensionsToolbarTest() {}
-
-CrExtensionsToolbarTest.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
-
+var CrExtensionsToolbarTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_toolbar_test.js',
-  ]),
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_toolbar_test.js',
+    ]);
+  }
 };
 
-TEST_F('CrExtensionsToolbarTest', 'ExtensionToolbarLayoutTest', function() {
+TEST_F('CrExtensionsToolbarTest', 'Layout', function() {
   mocha.grep(assert(extension_toolbar_tests.TestNames.Layout)).run();
 });
 
-TEST_F(
-    'CrExtensionsToolbarTest', 'ExtensionToolbarClickHandlersTest', function() {
-      mocha.grep(assert(extension_toolbar_tests.TestNames.ClickHandlers)).run();
-    });
+TEST_F('CrExtensionsToolbarTest', 'ClickHandlers', function() {
+  mocha.grep(assert(extension_toolbar_tests.TestNames.ClickHandlers)).run();
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Item Tests
 
-/**
- * @constructor
- * @extends {CrExtensionsBrowserTest}
- */
-function CrExtensionsItemsTest() {}
-
-CrExtensionsItemsTest.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
-
+var CrExtensionsItemsTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_item_test.js',
-  ]),
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_item_test.js',
+    ]);
+  }
 };
 
-TEST_F('CrExtensionsItemsTest', 'ExtensionItemNormalStateTest', function() {
+TEST_F('CrExtensionsItemsTest', 'NormalState', function() {
   var TestNames = extension_item_tests.TestNames;
   mocha.grep(assert(TestNames.ElementVisibilityNormalState)).run();
 });
 
-TEST_F('CrExtensionsItemsTest', 'ExtensionItemDeveloperStateTest', function() {
+TEST_F('CrExtensionsItemsTest', 'DeveloperState', function() {
   var TestNames = extension_item_tests.TestNames;
   mocha.grep(assert(TestNames.ElementVisibilityDeveloperState)).run();
 });
 
-TEST_F('CrExtensionsItemsTest', 'ExtensionItemClickableItemsTest', function() {
+TEST_F('CrExtensionsItemsTest', 'ClickableItems', function() {
   var TestNames = extension_item_tests.TestNames;
   mocha.grep(assert(TestNames.ClickableItems)).run();
 });
 
-TEST_F('CrExtensionsItemsTest', 'ExtensionItemWarningsTest', function() {
+TEST_F('CrExtensionsItemsTest', 'Warnings', function() {
   mocha.grep(assert(extension_item_tests.TestNames.Warnings)).run();
 });
 
-TEST_F('CrExtensionsItemsTest', 'ExtensionItemSourceIndicatorTest', function() {
+TEST_F('CrExtensionsItemsTest', 'SourceIndicator', function() {
   mocha.grep(assert(extension_item_tests.TestNames.SourceIndicator)).run();
 });
 
-TEST_F('CrExtensionsItemsTest', 'ExtensionItemEnableToggleTest', function() {
+TEST_F('CrExtensionsItemsTest', 'EnableToggle', function() {
   mocha.grep(assert(extension_item_tests.TestNames.EnableToggle)).run();
 });
 
-TEST_F('CrExtensionsItemsTest', 'ExtensionItemRemoveButtonTest', function() {
+TEST_F('CrExtensionsItemsTest', 'RemoveButton', function() {
   mocha.grep(assert(extension_item_tests.TestNames.RemoveButton)).run();
 });
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Detail View Tests
 
-/**
- * @constructor
- * @extends {CrExtensionsBrowserTest}
- */
-function CrExtensionsDetailViewTest() {}
-
-CrExtensionsDetailViewTest.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
-
+var CrExtensionsDetailViewTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_detail_view_test.js',
-  ]),
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_detail_view_test.js',
+    ]);
+  }
 };
 
-TEST_F(
-    'CrExtensionsDetailViewTest', 'ExtensionDetailViewLayoutTest', function() {
-      mocha.grep(assert(extension_detail_view_tests.TestNames.Layout)).run();
-    });
+TEST_F('CrExtensionsDetailViewTest', 'Layout', function() {
+  mocha.grep(assert(extension_detail_view_tests.TestNames.Layout)).run();
+});
 
 TEST_F(
-    'CrExtensionsDetailViewTest', 'ExtensionDetailViewClickableElementsTest',
-    function() {
+    'CrExtensionsDetailViewTest', 'ClickableElements', function() {
       mocha
           .grep(assert(extension_detail_view_tests.TestNames.ClickableElements))
           .run();
@@ -201,246 +167,183 @@ TEST_F(
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Item List Tests
 
-/**
- * @constructor
- * @extends {CrExtensionsBrowserTest}
- */
-function CrExtensionsItemListTest() {}
-
-CrExtensionsItemListTest.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
-
+var CrExtensionsItemListTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_item_list_test.js',
-  ]),
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_item_list_test.js',
+    ]);
+  }
 };
 
-TEST_F('CrExtensionsItemListTest', 'ExtensionItemList', function() {
-  mocha.grep(
-      assert(extension_item_list_tests.TestNames.ItemListFiltering)).run();
+TEST_F('CrExtensionsItemListTest', 'Filtering', function() {
+  mocha.grep(assert(extension_item_list_tests.TestNames.Filtering)).run();
 });
 
-TEST_F('CrExtensionsItemListTest', 'ExtensionItemListEmpty', function() {
-  mocha.grep(assert(extension_item_list_tests.TestNames.ItemListNoItemsMsg))
+TEST_F('CrExtensionsItemListTest', 'NoItems', function() {
+  mocha.grep(assert(extension_item_list_tests.TestNames.NoItemsMsg)).run();
+});
+
+TEST_F('CrExtensionsItemListTest', 'NoSearchResults', function() {
+  mocha.grep(assert(extension_item_list_tests.TestNames.NoSearchResultsMsg))
       .run();
 });
-
-TEST_F(
-    'CrExtensionsItemListTest', 'ExtensionItemListNoSearchResults', function() {
-      mocha
-          .grep(assert(
-              extension_item_list_tests.TestNames.ItemListNoSearchResultsMsg))
-          .run();
-    });
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Load Error Tests
 
-/**
- * @constructor
- * @extends {CrExtensionsBrowserTest}
- */
-function CrExtensionsLoadErrorTest() {}
-
-CrExtensionsLoadErrorTest.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
-
+var CrExtensionsLoadErrorTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_load_error_test.js',
-  ]),
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_load_error_test.js',
+    ]);
+  }
 };
 
-TEST_F(
-    'CrExtensionsLoadErrorTest', 'ExtensionLoadErrorInteractionTest',
-    function() {
-      mocha.grep(assert(extension_load_error_tests.TestNames.Interaction))
-          .run();
-    });
+TEST_F('CrExtensionsLoadErrorTest', 'Interaction', function() {
+  mocha.grep(assert(extension_load_error_tests.TestNames.Interaction)).run();
+});
 
-TEST_F(
-    'CrExtensionsLoadErrorTest', 'ExtensionLoadErrorCodeSectionTest',
-    function() {
-      mocha.grep(assert(extension_load_error_tests.TestNames.CodeSection))
-          .run();
-    });
+TEST_F('CrExtensionsLoadErrorTest', 'CodeSection', function() {
+  mocha.grep(assert(extension_load_error_tests.TestNames.CodeSection)).run();
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Service Tests
 
-/**
- * @constructor
- * @extends {CrExtensionsBrowserTestWithInstalledExtension}
- */
-function CrExtensionsServiceTest() {}
-
-CrExtensionsServiceTest.prototype = {
-  __proto__: CrExtensionsBrowserTestWithInstalledExtension.prototype,
-
+var CrExtensionsServiceTest =
+    class extends CrExtensionsBrowserTestWithInstalledExtension {
   /** @override */
-  extraLibraries: CrExtensionsBrowserTestWithInstalledExtension.prototype
-                      .extraLibraries.concat([
-                        'extension_service_test.js',
-                      ]),
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_service_test.js',
+    ]);
+  }
 };
 
-TEST_F(
-    'CrExtensionsServiceTest', 'ExtensionServiceToggleEnableTest', function() {
-      mocha.grep(assert(extension_service_tests.TestNames.EnableAndDisable))
-          .run();
-    });
+TEST_F('CrExtensionsServiceTest', 'ToggleEnable', function() {
+  mocha.grep(assert(extension_service_tests.TestNames.EnableAndDisable)).run();
+});
 
 TEST_F(
-    'CrExtensionsServiceTest', 'ExtensionServiceToggleIncognitoTest',
-    function() {
+    'CrExtensionsServiceTest', 'ToggleIncognito', function() {
       mocha.grep(assert(extension_service_tests.TestNames.ToggleIncognitoMode))
           .run();
     });
 
-TEST_F('CrExtensionsServiceTest', 'ExtensionServiceUninstallTest', function() {
+TEST_F('CrExtensionsServiceTest', 'Uninstall', function() {
   mocha.grep(assert(extension_service_tests.TestNames.Uninstall)).run();
 });
 
-TEST_F(
-    'CrExtensionsServiceTest', 'ExtensionServiceProfileSettingsTest',
-    function() {
-      mocha.grep(assert(extension_service_tests.TestNames.ProfileSettings))
-          .run();
-    });
+TEST_F('CrExtensionsServiceTest', 'ProfileSettings', function() {
+  mocha.grep(assert(extension_service_tests.TestNames.ProfileSettings)).run();
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Manager Tests
 
-/**
- * @constructor
- * @extends {CrExtensionsBrowserTest}
- */
-function CrExtensionsManagerTest() {}
-
-CrExtensionsManagerTest.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
-
+var CrExtensionsManagerTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_manager_test.js',
-  ]),
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_manager_test.js',
+    ]);
+  }
 };
 
-/**
- * Test fixture with multiple installed extensions of different types.
- * @constructor
- * @extends {CrExtensionsBrowserTest}
- */
-function CrExtensionsManagerTestWithMultipleExtensionTypesInstalled() {}
-
-CrExtensionsManagerTestWithMultipleExtensionTypesInstalled.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
+var CrExtensionsManagerTestWithMultipleExtensionTypesInstalled =
+    class extends CrExtensionsBrowserTest {
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_manager_test.js',
+    ]);
+  }
 
   /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_manager_test.js',
-  ]),
-
-  /** @override */
-  testGenPreamble: function() {
+  testGenPreamble() {
     GEN('  InstallGoodExtension();');
     GEN('  InstallPackagedApp();');
     GEN('  InstallHostedApp();');
     GEN('  InstallPlatformApp();');
-  },
+  }
 };
 
-/**
- * Test fixture that navigates to chrome://extensions/?id=<id>.
- * @constructor
- * @extends {CrExtensionsBrowserTestWithInstalledExtension}
- */
-function CrExtensionsManagerTestWithIdQueryParam() {}
-
-CrExtensionsManagerTestWithIdQueryParam.prototype = {
-  __proto__: CrExtensionsBrowserTestWithInstalledExtension.prototype,
+var CrExtensionsManagerTestWithIdQueryParam =
+    class extends CrExtensionsBrowserTestWithInstalledExtension {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/?id=ldnnhddmnhbkjipkidpdiheffobcpfmf';
+  }
 
   /** @override */
-  browsePreload: 'chrome://extensions/?id=ldnnhddmnhbkjipkidpdiheffobcpfmf',
-
-  /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_manager_test.js',
-  ]),
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_manager_test.js',
+    ]);
+  }
 };
 
-TEST_F('CrExtensionsManagerTest', 'ExtensionManagerItemOrderTest', function() {
+TEST_F('CrExtensionsManagerTest', 'ItemOrder', function() {
   mocha.grep(assert(extension_manager_tests.TestNames.ItemOrder)).run();
 });
 
 TEST_F(
     'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled',
-    'ExtensionManagerItemListVisibilityTest', function() {
+    'ItemListVisibility', function() {
       mocha.grep(assert(extension_manager_tests.TestNames.ItemListVisibility))
           .run();
     });
 
 TEST_F(
-    'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled',
-    'ExtensionManagerShowItemsTest', function() {
+    'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled', 'ShowItems',
+    function() {
       mocha.grep(assert(extension_manager_tests.TestNames.ShowItems)).run();
     });
 
 TEST_F(
-    'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled',
-    'ExtensionManagerChangePagesTest', function() {
+    'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled', 'ChangePages',
+    function() {
       mocha.grep(assert(extension_manager_tests.TestNames.ChangePages)).run();
     });
 
 TEST_F(
-    'CrExtensionsManagerTestWithIdQueryParam',
-    'ExtensionManagerNavigationToDetailsTest', function() {
+    'CrExtensionsManagerTestWithIdQueryParam', 'NavigationToDetails',
+    function() {
       mocha
           .grep(
               assert(extension_manager_tests.TestNames.UrlNavigationToDetails))
           .run();
     });
 
-TEST_F(
-    'CrExtensionsManagerTest', 'ExtensionManagerUpdateItemDataTest',
-    function() {
-      mocha.grep(assert(extension_manager_tests.TestNames.UpdateItemData))
-          .run();
-    });
+TEST_F('CrExtensionsManagerTest', 'UpdateItemData', function() {
+  mocha.grep(assert(extension_manager_tests.TestNames.UpdateItemData)).run();
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Keyboard Shortcuts Tests
 
-/**
- * @constructor
- * @extends {CrExtensionsBrowserTest}
- */
-function CrExtensionsShortcutTest() {}
-
-CrExtensionsShortcutTest.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
-
+var CrExtensionsShortcutTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_keyboard_shortcuts_test.js',
-    'extension_shortcut_input_test.js',
-  ]),
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_keyboard_shortcuts_test.js',
+      'extension_shortcut_input_test.js',
+    ]);
+  }
 };
 
-TEST_F(
-    'CrExtensionsShortcutTest', 'ExtensionKeyboardShortcutsLayoutTest',
-    function() {
-      mocha.grep(assert(extension_keyboard_shortcut_tests.TestNames.Layout))
-          .run();
-    });
+TEST_F('CrExtensionsShortcutTest', 'Layout', function() {
+  mocha.grep(assert(extension_keyboard_shortcut_tests.TestNames.Layout)).run();
+});
 
-TEST_F('CrExtensionsShortcutTest', 'ExtensionShortcutUtilTest', function() {
+TEST_F('CrExtensionsShortcutTest', 'Util', function() {
   mocha.grep(
       assert(extension_keyboard_shortcut_tests.TestNames.ShortcutUtil)).run();
 });
 
-TEST_F('CrExtensionsShortcutTest', 'ExtensionShortcutInputTest', function() {
+TEST_F('CrExtensionsShortcutTest', 'Basic', function() {
   mocha.grep(
       assert(extension_shortcut_input_tests.TestNames.Basic)).run();
 });
@@ -448,166 +351,116 @@ TEST_F('CrExtensionsShortcutTest', 'ExtensionShortcutInputTest', function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Pack Dialog Tests
 
-/**
- * @constructor
- * @extends {CrExtensionsBrowserTest}
- */
-function CrExtensionsPackDialogTest() {}
-
-CrExtensionsPackDialogTest.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
-
+var CrExtensionsPackDialogTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_pack_dialog_test.js',
-  ]),
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_pack_dialog_test.js',
+    ]);
+  }
 };
 
-TEST_F(
-    'CrExtensionsPackDialogTest', 'ExtensionPackDialogInteractionTest',
-    function() {
-      mocha.grep(assert(extension_pack_dialog_tests.TestNames.Interaction))
-          .run();
-    });
+TEST_F('CrExtensionsPackDialogTest', 'Interaction', function() {
+  mocha.grep(assert(extension_pack_dialog_tests.TestNames.Interaction)).run();
+});
 
-TEST_F(
-    'CrExtensionsPackDialogTest', 'ExtensionPackDialogPackSuccessTest',
-    function() {
-      mocha.grep(assert(extension_pack_dialog_tests.TestNames.PackSuccess))
-          .run();
-    });
+TEST_F('CrExtensionsPackDialogTest', 'PackSuccess', function() {
+  mocha.grep(assert(extension_pack_dialog_tests.TestNames.PackSuccess)).run();
+});
 
-TEST_F(
-    'CrExtensionsPackDialogTest', 'ExtensionPackDialogPackErrorTest',
-    function() {
-      mocha.grep(assert(extension_pack_dialog_tests.TestNames.PackError)).run();
-    });
+TEST_F('CrExtensionsPackDialogTest', 'PackError', function() {
+  mocha.grep(assert(extension_pack_dialog_tests.TestNames.PackError)).run();
+});
 
-TEST_F(
-    'CrExtensionsPackDialogTest', 'ExtensionPackDialogPackWarningTest',
-    function() {
-      mocha.grep(assert(extension_pack_dialog_tests.TestNames.PackWarning))
-          .run();
-    });
+TEST_F('CrExtensionsPackDialogTest', 'PackWarning', function() {
+  mocha.grep(assert(extension_pack_dialog_tests.TestNames.PackWarning)).run();
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Options Dialog Tests
 
-/**
- * @constructor
- * @extends {CrExtensionsBrowserTest}
- */
-function CrExtensionsOptionsDialogTest() {}
-
-CrExtensionsOptionsDialogTest.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
-
+var CrExtensionsOptionsDialogTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_options_dialog_test.js',
-  ]),
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_options_dialog_test.js',
+    ]);
+  }
 };
 
-TEST_F(
-    'CrExtensionsOptionsDialogTest', 'ExtensionOptionsDialogInteractionTest',
-    function() {
-      mocha.grep(assert(extension_options_dialog_tests.TestNames.Layout)).run();
-    });
+TEST_F('CrExtensionsOptionsDialogTest', 'Layout', function() {
+  mocha.grep(assert(extension_options_dialog_tests.TestNames.Layout)).run();
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Error Page Tests
 
-/**
- * @constructor
- * @extends {CrExtensionsBrowserTest}
- */
-function CrExtensionsErrorPageTest() {}
-
-CrExtensionsErrorPageTest.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
-
+var CrExtensionsErrorPageTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_error_page_test.js',
-  ]),
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_error_page_test.js',
+    ]);
+  }
 };
 
-TEST_F('CrExtensionsErrorPageTest', 'ExtensionErrorPageLayoutTest', function() {
+TEST_F('CrExtensionsErrorPageTest', 'Layout', function() {
   mocha.grep(assert(extension_error_page_tests.TestNames.Layout)).run();
 });
 
-TEST_F(
-    'CrExtensionsErrorPageTest', 'ExtensionErrorPageCodeSectionTest',
-    function() {
-      mocha.grep(assert(extension_error_page_tests.TestNames.CodeSection))
-          .run();
-    });
+TEST_F('CrExtensionsErrorPageTest', 'CodeSection', function() {
+  mocha.grep(assert(extension_error_page_tests.TestNames.CodeSection)).run();
+});
 
-TEST_F(
-    'CrExtensionsErrorPageTest', 'ExtensionErrorPageErrorSelectionTest',
-    function() {
-      mocha.grep(assert(extension_error_page_tests.TestNames.ErrorSelection))
-          .run();
-    });
+TEST_F('CrExtensionsErrorPageTest', 'ErrorSelection', function() {
+  mocha.grep(assert(extension_error_page_tests.TestNames.ErrorSelection)).run();
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Code Section Tests
 
-/**
- * @constructor
- * @extends {CrExtensionsBrowserTest}
- */
-function CrExtensionsCodeSectionTest() {}
-
-CrExtensionsCodeSectionTest.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
-
+var CrExtensionsCodeSectionTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_code_section_test.js',
-  ]),
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_code_section_test.js',
+    ]);
+  }
 };
 
-TEST_F(
-    'CrExtensionsCodeSectionTest', 'ExtensionCodeSectionLayoutTest',
-    function() {
-      mocha.grep(assert(extension_code_section_tests.TestNames.Layout)).run();
-    });
+TEST_F('CrExtensionsCodeSectionTest', 'Layout', function() {
+  mocha.grep(assert(extension_code_section_tests.TestNames.Layout)).run();
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Navigation Helper Tests
 
-function CrExtensionsNavigationHelperBrowserTest() {}
-
-// extensions.NavigationHelper observes window.location. In order to test this
-// without the "real" NavigationHelper joining the party, we navigate to
-// navigation_helper.html directly.
-CrExtensionsNavigationHelperBrowserTest.prototype = {
-  __proto__: CrExtensionsBrowserTest.prototype,
+var CrExtensionsNavigationHelperTest = class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/navigation_helper.html';
+  }
 
   /** @override */
-  browsePreload: 'chrome://extensions/navigation_helper.html',
-
-  /** @override */
-  extraLibraries: CrExtensionsBrowserTest.prototype.extraLibraries.concat([
-    'extension_navigation_helper_test.js',
-  ]),
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_navigation_helper_test.js',
+    ]);
+  }
 };
 
-TEST_F('CrExtensionsNavigationHelperBrowserTest',
-       'ExtensionNavigationHelperBasicTest', function() {
+TEST_F('CrExtensionsNavigationHelperTest', 'Basic', function() {
   mocha.grep(assert(extension_navigation_helper_tests.TestNames.Basic)).run();
 });
 
-TEST_F('CrExtensionsNavigationHelperBrowserTest',
-       'ExtensionNavigationHelperConversionTest', function() {
+TEST_F('CrExtensionsNavigationHelperTest', 'Conversion', function() {
   mocha.grep(
       assert(extension_navigation_helper_tests.TestNames.Conversions)).run();
 });
 
-TEST_F('CrExtensionsNavigationHelperBrowserTest',
-       'ExtensionNavigationHelperPushAndReplaceStateTest', function() {
-  mocha.grep(
-      assert(extension_navigation_helper_tests.TestNames.PushAndReplaceState))
-          .run();
+TEST_F('CrExtensionsNavigationHelperTest', 'PushAndReplaceState', function() {
+  mocha
+      .grep(assert(
+          extension_navigation_helper_tests.TestNames.PushAndReplaceState))
+      .run();
 });
