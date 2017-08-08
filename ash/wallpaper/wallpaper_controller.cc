@@ -302,12 +302,6 @@ void WallpaperController::OnSessionStateChanged(
     session_manager::SessionState state) {
   CalculateWallpaperColors();
 
-  // The wallpaper may be dimmed/blurred based on session state. The color of
-  // the dimming overlay depends on the prominent color cached from a previous
-  // calculation, or a default color if cache is not available. It should never
-  // depend on any in-flight color calculation.
-  InstallDesktopControllerForAllWindows();
-
   if (state == session_manager::SessionState::ACTIVE)
     MoveToUnlockedContainer();
   else
