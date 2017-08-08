@@ -201,9 +201,6 @@ class MockExecutive(object):
     def map(self, thunk, arglist, processes=None):
         return map(thunk, arglist)
 
-    def process_dump(self):
-        return []
-
     @property
     def calls(self):
         # TODO(crbug.com/718456): Make self.full_calls always be an array of
