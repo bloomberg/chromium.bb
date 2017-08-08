@@ -28,7 +28,7 @@ class AutofillDriverFactory {
   // null if there is none.
   AutofillDriver* DriverForKey(void* key);
 
-  // Handles finished navigation in any of the frames.
+  // Handles finished navigation in the main frame.
   void NavigationFinished();
 
   // Handles hiding of the corresponding tab.
