@@ -303,6 +303,7 @@ void drv_bo_destroy(struct bo *bo)
 {
 	size_t plane;
 	uintptr_t total = 0;
+	size_t map_count = 0;
 	struct driver *drv = bo->drv;
 
 	pthread_mutex_lock(&drv->driver_lock);
@@ -310,13 +311,24 @@ void drv_bo_destroy(struct bo *bo)
 	for (plane = 0; plane < bo->num_planes; plane++)
 		drv_decrement_reference_count(drv, bo, plane);
 
-	for (plane = 0; plane < bo->num_planes; plane++)
+	for (plane = 0; plane < bo->num_planes; plane++) {
+		void *ptr;
+
 		total += drv_get_reference_count(drv, bo, plane);
+		map_count += !drmHashLookup(bo->drv->map_table, bo->handles[plane].u32, &ptr);
+	}
 
 	pthread_mutex_unlock(&drv->driver_lock);
 
-	if (total == 0)
+	if (total == 0) {
+		/*
+		 * If we leak a reference to the GEM handle being freed here in the mapping table,
+		 * we risk using the mapping table entry later for a completely different BO that
+		 * gets the same handle. (See b/38250067.)
+		 */
+		assert(!map_count);
 		bo->drv->backend->bo_destroy(bo);
+	}
 
 	free(bo);
 }
