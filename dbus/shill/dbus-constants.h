@@ -512,8 +512,10 @@ const char kConfigureServiceForProfileFunction[] = "ConfigureServiceForProfile";
 const char kConnectToBestServicesFunction[] = "ConnectToBestServices";
 const char kCreateConnectivityReportFunction[] = "CreateConnectivityReport";
 const char kAddWakeOnPacketConnectionFunction[] = "AddWakeOnPacketConnection";
+const char kAddWakeOnPacketOfTypesFunction[] = "AddWakeOnPacketOfTypes";
 const char kRemoveWakeOnPacketConnectionFunction[] =
     "RemoveWakeOnPacketConnection";
+const char kRemoveWakeOnPacketOfTypesFunction[] = "RemoveWakeOnPacketOfTypes";
 const char kRemoveAllWakeOnPacketConnectionsFunction[] =
     "RemoveAllWakeOnPacketConnections";
 const char kGetLoadableProfileEntriesFunction[] = "GetLoadableProfileEntries";
@@ -680,6 +682,15 @@ const char kWakeOnWiFiFeaturesEnabledPacketDarkConnect[] =
     "packet_and_darkconnect";
 const char kWakeOnWiFiFeaturesEnabledNone[] = "none";
 const char kWakeOnWiFiFeaturesEnabledNotSupported[] = "not_supported";
+
+// Wake on WiFi Packet Type Constants.
+const char kWakeOnTCP[] = "TCP";
+const char kWakeOnUDP[] = "UDP";
+const char kWakeOnIDP[] = "IDP";
+const char kWakeOnIPIP[] = "IPIP";
+const char kWakeOnIGMP[] = "IGMP";
+const char kWakeOnICMP[] = "ICMP";
+const char kWakeOnIP[] = "IP";
 
 // Cellular service carriers.
 const char kCarrierGenericUMTS[] = "Generic UMTS";
