@@ -250,19 +250,17 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
     if (event == IA2_EVENT_TEXT_REMOVED) {
       IA2TextSegment old_text;
       if (SUCCEEDED(accessible_text->get_oldText(&old_text))) {
-        log += base::StringPrintf(" old_text={'%s' start=%d end=%d}",
+        log += base::StringPrintf(" old_text={'%s' start=%ld end=%ld}",
                                   BstrToUTF8(old_text.text).c_str(),
-                                  old_text.start,
-                                  old_text.end);
+                                  old_text.start, old_text.end);
       }
     }
     if (event == IA2_EVENT_TEXT_INSERTED) {
       IA2TextSegment new_text;
       if (SUCCEEDED(accessible_text->get_newText(&new_text))) {
-        log += base::StringPrintf(" new_text={'%s' start=%d end=%d}",
+        log += base::StringPrintf(" new_text={'%s' start=%ld end=%ld}",
                                   BstrToUTF8(new_text.text).c_str(),
-                                  new_text.start,
-                                  new_text.end);
+                                  new_text.start, new_text.end);
       }
     }
   }
