@@ -165,13 +165,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       const ServiceWorkerRegistrationObjectInfo& info,
       const ServiceWorkerVersionAttributes& attrs);
 
-  // TODO(falken): Change the caller to just call the appropriate function on
-  // ServiceWorkerProviderContext directly.
-  void OnAssociateRegistrationForController(
-      int provider_id,
-      const ServiceWorkerRegistrationObjectInfo& info,
-      const ServiceWorkerVersionAttributes& attrs);
-
   static ServiceWorkerDispatcher* GetOrCreateThreadSpecificInstance(
       ThreadSafeSender* thread_safe_sender,
       base::SingleThreadTaskRunner* main_thread_task_runner);

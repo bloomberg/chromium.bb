@@ -22,7 +22,7 @@ class ThreadSafeSender;
 // managed in the browser process. The constructor and destructor sends a
 // message to increment or decrement the reference count to the browser
 // process.
-class ServiceWorkerRegistrationHandleReference {
+class CONTENT_EXPORT ServiceWorkerRegistrationHandleReference {
  public:
   // Creates a new ServiceWorkerRegistrationHandleReference and increments
   // ref-count.

@@ -108,12 +108,6 @@ class WebServiceWorkerContextClient {
   // completed. Called on the main thread.
   virtual void WorkerContextFailedToStart() {}
 
-  // True if the running service worker has a service worker registration. This
-  // should never be false and is currently used as a sanity check that the
-  // worker started up using the expected code path.
-  // TODO(falken): Investigate removing this method.
-  virtual bool HasAssociatedRegistration() { return false; }
-
   // The worker script successfully loaded. Called on the main thread when the
   // script is served from ResourceLoader or on the worker thread when the
   // script is served via WebServiceWorkerInstalledScriptsManager.

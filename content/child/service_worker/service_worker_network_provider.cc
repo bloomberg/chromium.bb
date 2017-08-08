@@ -10,6 +10,8 @@
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
+#include "content/child/service_worker/service_worker_registration_handle_reference.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_provider_host_info.h"
@@ -216,6 +218,7 @@ bool ServiceWorkerNetworkProvider::IsControlledByServiceWorker() const {
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider()
     : provider_id_(kInvalidServiceWorkerProviderId) {}
 
+// Constructor for service worker clients.
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     int route_id,
     ServiceWorkerProviderType provider_type,
@@ -240,34 +243,47 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
 
   DCHECK(host_info.host_request.is_pending());
   DCHECK(host_info.host_request.handle().is_valid());
-  context_ = new ServiceWorkerProviderContext(
-      provider_id_, provider_type, std::move(client_request),
-      ChildThreadImpl::current()->thread_safe_sender());
+  ServiceWorkerDispatcher* dispatcher =
+      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
+          ChildThreadImpl::current()->thread_safe_sender(),
+          base::ThreadTaskRunnerHandle::Get().get());
+  context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
+      provider_id_, provider_type, std::move(client_request), dispatcher);
   ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
       &dispatcher_host_);
   dispatcher_host_->OnProviderCreated(std::move(host_info));
 }
 
+// Constructor for service worker execution contexts.
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr info)
     : provider_id_(info->provider_id) {
-  context_ = new ServiceWorkerProviderContext(
+  // Initialize the provider context with info for
+  // ServiceWorkerGlobalScope#registration.
+  ThreadSafeSender* sender = ChildThreadImpl::current()->thread_safe_sender();
+  ServiceWorkerDispatcher* dispatcher =
+      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
+          sender, base::ThreadTaskRunnerHandle::Get().get());
+  context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
       provider_id_, SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
-      std::move(info->client_request),
-      ChildThreadImpl::current()->thread_safe_sender());
+      std::move(info->client_request), dispatcher);
+  std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration =
+      ServiceWorkerRegistrationHandleReference::Adopt(info->registration,
+                                                      sender);
+  std::unique_ptr<ServiceWorkerHandleReference> installing =
+      ServiceWorkerHandleReference::Adopt(info->attributes.installing, sender);
+  std::unique_ptr<ServiceWorkerHandleReference> waiting =
+      ServiceWorkerHandleReference::Adopt(info->attributes.waiting, sender);
+  std::unique_ptr<ServiceWorkerHandleReference> active =
+      ServiceWorkerHandleReference::Adopt(info->attributes.active, sender);
+  context_->SetRegistration(std::move(registration), std::move(installing),
+                            std::move(waiting), std::move(active));
 
   if (info->script_loader_factory_ptr_info.is_valid()) {
     script_loader_factory_.Bind(
         std::move(info->script_loader_factory_ptr_info));
   }
 
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-          ChildThreadImpl::current()->thread_safe_sender(),
-          base::ThreadTaskRunnerHandle::Get().get());
-  // TODO(shimazu): Set registration/attributes directly to |context_|.
-  dispatcher->OnAssociateRegistrationForController(
-      info->provider_id, info->registration, info->attributes);
   provider_host_.Bind(std::move(info->host_ptr_info));
 }
 
