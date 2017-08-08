@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.ui.widget.ButtonCompat;
@@ -20,6 +21,7 @@ import org.chromium.ui.widget.ButtonCompat;
 public class SigninPromoView extends LinearLayout {
     private ImageView mImage;
     private ImageButton mDismissButton;
+    private TextView mDescription;
     private ButtonCompat mSigninButton;
     private Button mChooseAccountButton;
 
@@ -33,6 +35,7 @@ public class SigninPromoView extends LinearLayout {
 
         mImage = (ImageView) findViewById(R.id.signin_promo_image);
         mDismissButton = (ImageButton) findViewById(R.id.signin_promo_close_button);
+        mDescription = (TextView) findViewById(R.id.signin_promo_description);
         mSigninButton = (ButtonCompat) findViewById(R.id.signin_promo_signin_button);
         mChooseAccountButton = (Button) findViewById(R.id.signin_promo_choose_account_button);
     }
@@ -49,6 +52,13 @@ public class SigninPromoView extends LinearLayout {
      */
     public ImageButton getDismissButton() {
         return mDismissButton;
+    }
+
+    /**
+     * Returns a reference to the description of the promo.
+     */
+    public TextView getDescription() {
+        return mDescription;
     }
 
     /**
