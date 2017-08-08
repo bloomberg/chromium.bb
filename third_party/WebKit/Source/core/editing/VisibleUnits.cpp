@@ -1124,7 +1124,7 @@ VisiblePosition VisiblePositionForContentsPoint(const IntPoint& contents_point,
 // where it takes |LayoutObject| from |Position|.
 
 int CaretMinOffset(const Node* node) {
-  LayoutObject* layout_object = AssociatedLayoutObjectOf(*node, 0);
+  const LayoutObject* layout_object = AssociatedLayoutObjectOf(*node, 0);
   return layout_object ? layout_object->CaretMinOffset() : 0;
 }
 
@@ -1139,12 +1139,12 @@ static bool InRenderedText(const PositionTemplate<Strategy>& position) {
     return false;
 
   const int offset_in_node = position.ComputeEditingOffset();
-  LayoutObject* layout_object =
+  const LayoutObject* layout_object =
       AssociatedLayoutObjectOf(*anchor_node, offset_in_node);
   if (!layout_object)
     return false;
 
-  LayoutText* text_layout_object = ToLayoutText(layout_object);
+  const LayoutText* text_layout_object = ToLayoutText(layout_object);
   const int text_offset =
       offset_in_node - text_layout_object->TextStartOffset();
   for (InlineTextBox* box : InlineTextBoxesOf(*text_layout_object)) {
@@ -1306,7 +1306,7 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
       return last_visible.DeprecatedComputePosition();
 
     // skip position in non-laid out or invisible node
-    LayoutObject* const layout_object =
+    const LayoutObject* const layout_object =
         AssociatedLayoutObjectOf(*current_node, current_pos.OffsetInLeafNode());
     if (!layout_object ||
         layout_object->Style()->Visibility() != EVisibility::kVisible)
@@ -1340,7 +1340,7 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
     // return current position if it is in laid out text
     if (!layout_object->IsText())
       continue;
-    LayoutText* const text_layout_object = ToLayoutText(layout_object);
+    const LayoutText* const text_layout_object = ToLayoutText(layout_object);
     if (!text_layout_object->FirstTextBox())
       continue;
     const unsigned text_start_offset = text_layout_object->TextStartOffset();
@@ -1515,7 +1515,7 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
       return last_visible.DeprecatedComputePosition();
 
     // skip position in non-laid out or invisible node
-    LayoutObject* const layout_object =
+    const LayoutObject* const layout_object =
         AssociatedLayoutObjectOf(*current_node, current_pos.OffsetInLeafNode());
     if (!layout_object ||
         layout_object->Style()->Visibility() != EVisibility::kVisible)
@@ -1541,7 +1541,7 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
     // return current position if it is in laid out text
     if (!layout_object->IsText())
       continue;
-    LayoutText* const text_layout_object = ToLayoutText(layout_object);
+    const LayoutText* const text_layout_object = ToLayoutText(layout_object);
     if (!text_layout_object->FirstTextBox())
       continue;
     const unsigned text_start_offset = text_layout_object->TextStartOffset();

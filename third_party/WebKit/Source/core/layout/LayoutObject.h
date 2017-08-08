@@ -2749,8 +2749,8 @@ inline double AdjustScrollForAbsoluteZoom(double value,
   return AdjustScrollForAbsoluteZoom(value, layout_object.StyleRef());
 }
 
-CORE_EXPORT LayoutObject* AssociatedLayoutObjectOf(const Node&,
-                                                   int offset_in_node);
+CORE_EXPORT const LayoutObject* AssociatedLayoutObjectOf(const Node&,
+                                                         int offset_in_node);
 
 #define DEFINE_LAYOUT_OBJECT_TYPE_CASTS(thisType, predicate)           \
   DEFINE_TYPE_CASTS(thisType, LayoutObject, object, object->predicate, \

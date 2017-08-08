@@ -733,7 +733,7 @@ Optional<NGInlineNode> GetNGInlineNodeFor(const Node& node) {
 
 // static
 Optional<NGInlineNode> GetNGInlineNodeFor(const Node& node, unsigned offset) {
-  LayoutObject* layout_object = AssociatedLayoutObjectOf(node, offset);
+  const LayoutObject* layout_object = AssociatedLayoutObjectOf(node, offset);
   if (!layout_object || !layout_object->IsInline())
     return WTF::nullopt;
   LayoutBox* box = layout_object->EnclosingBox();
@@ -747,7 +747,7 @@ Optional<NGInlineNode> GetNGInlineNodeFor(const Node& node, unsigned offset) {
 const NGOffsetMappingUnit* NGInlineNode::GetMappingUnitForDOMOffset(
     const Node& node,
     unsigned offset) {
-  LayoutObject* layout_object = AssociatedLayoutObjectOf(node, offset);
+  const LayoutObject* layout_object = AssociatedLayoutObjectOf(node, offset);
   if (!layout_object || !layout_object->IsText())
     return nullptr;
 
