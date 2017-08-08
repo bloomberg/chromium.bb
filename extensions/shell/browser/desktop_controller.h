@@ -11,10 +11,6 @@ namespace content {
 class BrowserContext;
 }
 
-namespace gfx {
-class Size;
-}
-
 namespace extensions {
 class AppWindow;
 class Extension;
@@ -33,10 +29,6 @@ class DesktopController {
   // ShellAppWindowCreateFunction need to be able to access the desktop, so
   // we need a singleton somewhere).
   static DesktopController* instance();
-
-  // Get the size of the window created by this DesktopController. This should
-  // typically be full-screen.
-  virtual gfx::Size GetWindowSize() = 0;
 
   // Creates a new app window and adds it to the desktop. The desktop maintains
   // ownership of the window. The window must be closed before |extension| is

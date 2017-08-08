@@ -7,9 +7,6 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/shell/browser/shell_app_delegate.h"
 #include "extensions/shell/browser/shell_app_window_client.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace extensions {
 
@@ -22,11 +19,6 @@ ShellDesktopControllerMac::~ShellDesktopControllerMac() {
   // TOOD(yoz): This is actually too late to close app windows (for tests).
   // Maybe this is useful for non-tests.
   CloseAppWindows();
-}
-
-gfx::Size ShellDesktopControllerMac::GetWindowSize() {
-  // This is the full screen size.
-  return display::Screen::GetScreen()->GetPrimaryDisplay().bounds().size();
 }
 
 AppWindow* ShellDesktopControllerMac::CreateAppWindow(

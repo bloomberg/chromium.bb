@@ -15,10 +15,10 @@
 #include "extensions/browser/extensions_test.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/shell/browser/desktop_controller.h"
 #include "extensions/shell/browser/shell_app_delegate.h"
 #include "extensions/shell/browser/shell_app_window_client.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace extensions {
 
@@ -63,6 +63,10 @@ TEST_F(ShellNativeAppWindowAuraTest, Bounds) {
 
   gfx::Rect bounds = window.GetBounds();
   EXPECT_EQ(window_spec.bounds, bounds);
+
+  // The window should not be resizable from the extension API.
+  EXPECT_EQ(bounds.size(), window.GetContentMinimumSize());
+  EXPECT_EQ(bounds.size(), window.GetContentMaximumSize());
 
   // Delete the AppWindow.
   app_window->OnNativeClose();

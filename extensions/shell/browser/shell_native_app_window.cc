@@ -169,16 +169,6 @@ void ShellNativeAppWindow::HideWithApp() {
   NOTIMPLEMENTED();
 }
 
-gfx::Size ShellNativeAppWindow::GetContentMinimumSize() const {
-  // Content fills the desktop and cannot be resized.
-  return DesktopController::instance()->GetWindowSize();
-}
-
-gfx::Size ShellNativeAppWindow::GetContentMaximumSize() const {
-  // Content fills the desktop and cannot be resized.
-  return DesktopController::instance()->GetWindowSize();
-}
-
 void ShellNativeAppWindow::SetContentSizeConstraints(
     const gfx::Size& min_size,
     const gfx::Size& max_size) {
