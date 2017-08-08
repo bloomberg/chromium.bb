@@ -25,6 +25,7 @@ struct NGPreviousInflowPosition {
   LayoutUnit bfc_block_offset;
   LayoutUnit logical_block_offset;
   NGMarginStrut margin_strut;
+  bool empty_block_affected_by_clearance;
 };
 
 // This strut holds information for the current inflow child. The data is not
