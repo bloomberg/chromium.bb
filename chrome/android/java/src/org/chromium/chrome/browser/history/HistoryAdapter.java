@@ -473,10 +473,10 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
 
     @VisibleForTesting
     void setClearBrowsingDataButtonVisibilityForTest(boolean isVisible) {
-        if (mClearBrowsingDataButton == null) return;
         if (mClearBrowsingDataButtonVisible == isVisible) return;
         mClearBrowsingDataButtonVisible = isVisible;
-        if (mIsInitialized) setHeaders();
+
+        setHeaders();
     }
 
     @VisibleForTesting
@@ -489,5 +489,15 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mPrivacyDisclaimerHeaderItem = new HeaderItem(0, null);
         mClearBrowsingDataButtonHeaderItem = new HeaderItem(1, null);
         mClearBrowsingDataButtonVisible = true;
+    }
+
+    @VisibleForTesting
+    boolean arePrivacyDisclaimersVisible() {
+        return mPrivacyDisclaimersVisible;
+    }
+
+    @VisibleForTesting
+    boolean isClearBrowsingDataButtonVisible() {
+        return mClearBrowsingDataButtonVisible;
     }
 }
