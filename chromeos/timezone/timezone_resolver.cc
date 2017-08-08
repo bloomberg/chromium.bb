@@ -226,7 +226,7 @@ void TZRequest::OnLocationResolved(const Geoposition& position,
       base::Bind(&TZRequest::OnTimezoneResolved, AsWeakPtr()));
 
   // Prevent |on_request_finished| from firing here.
-  base::Closure unused = on_request_finished.Release();
+  base::OnceClosure unused = on_request_finished.Release();
 }
 
 void TZRequest::OnTimezoneResolved(

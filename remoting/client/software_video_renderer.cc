@@ -159,7 +159,7 @@ void SoftwareVideoRenderer::ProcessVideoPacket(
                  base::Passed(&frame)),
       base::Bind(&SoftwareVideoRenderer::RenderFrame,
                  weak_factory_.GetWeakPtr(), base::Passed(&frame_stats),
-                 done_runner.Release()));
+                 base::AdaptCallbackForRepeating(done_runner.Release())));
 }
 
 void SoftwareVideoRenderer::RenderFrame(

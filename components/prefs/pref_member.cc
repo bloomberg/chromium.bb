@@ -102,13 +102,12 @@ bool PrefMemberBase::Internal::IsOnCorrectThread() const {
   return thread_task_runner_->BelongsToCurrentThread();
 }
 
-void PrefMemberBase::Internal::UpdateValue(
-    base::Value* v,
-    bool is_managed,
-    bool is_user_modifiable,
-    const base::Closure& callback) const {
+void PrefMemberBase::Internal::UpdateValue(base::Value* v,
+                                           bool is_managed,
+                                           bool is_user_modifiable,
+                                           base::OnceClosure callback) const {
   std::unique_ptr<base::Value> value(v);
-  base::ScopedClosureRunner closure_runner(callback);
+  base::ScopedClosureRunner closure_runner(std::move(callback));
   if (IsOnCorrectThread()) {
     bool rv = UpdateValueInternal(*value);
     DCHECK(rv);
@@ -116,9 +115,10 @@ void PrefMemberBase::Internal::UpdateValue(
     is_user_modifiable_ = is_user_modifiable;
   } else {
     bool may_run = thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PrefMemberBase::Internal::UpdateValue, this,
-                              value.release(), is_managed, is_user_modifiable,
-                              closure_runner.Release()));
+        FROM_HERE,
+        base::BindOnce(&PrefMemberBase::Internal::UpdateValue, this,
+                       value.release(), is_managed, is_user_modifiable,
+                       closure_runner.Release()));
     DCHECK(may_run);
   }
 }

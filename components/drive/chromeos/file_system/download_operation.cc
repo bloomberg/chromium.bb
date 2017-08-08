@@ -250,7 +250,7 @@ FileError UpdateLocalStateForDownloadFile(
                        internal::FileCache::FILE_OPERATION_MOVE);
   if (error != FILE_ERROR_OK)
     return error;
-  base::Closure unused_file_deleter_closure = file_deleter.Release();
+  base::OnceClosure unused_file_deleter_closure = file_deleter.Release();
 
   error = metadata->GetResourceEntryById(local_id, entry_after_update);
   if (error != FILE_ERROR_OK)
