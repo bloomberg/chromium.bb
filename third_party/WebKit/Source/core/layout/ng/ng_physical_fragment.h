@@ -85,6 +85,10 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
 
   String ToString() const;
 
+#ifndef NDEBUG
+  void ShowFragmentTree() const;
+#endif
+
   // Override RefCounted's deref() to ensure operator delete is called on the
   // appropriate subclass type.
   void Deref() const {

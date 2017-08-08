@@ -116,3 +116,14 @@ Here is the instruction how to generate a new result.
 `chromium\src>node lcov-result-merger\bin\lcov-result-merger.js *.info output.info`
 * Generate the coverage html from the master lcov file
 `chromium\src>C:\Perl64\bin\perl.exe dynamorio.git\third_party\lcov\genhtml output.info -o output`
+
+### Debugging ###
+Both layout input node subtrees and layout output physical fragment subtrees
+may be dumped to stderr, for debugging purposes.
+
+#### For layout input node subtree ####
+Call NGLayoutInputNode::ShowNodeTree().
+
+#### For physical fragment subtree ####
+Call NGPhysicalFragment::ShowFragmentTree(). Fragments in the subtree are not
+required to be marked as placed (i.e. know their offset).
