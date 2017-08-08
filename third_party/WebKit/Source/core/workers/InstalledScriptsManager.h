@@ -50,8 +50,8 @@ class InstalledScriptsManager {
 
   // Used on the worker thread. This is possible to return WTF::nullopt when the
   // script has already been served from this manager (i.e. the same script is
-  // read more than once). This can be blocked if the script is not streamed
-  // yet.
+  // read more than once) or when receiving the script from the browser has
+  // failed. This can be blocked if the script is not streamed yet.
   virtual Optional<ScriptData> GetScriptData(const KURL& script_url) = 0;
 };
 

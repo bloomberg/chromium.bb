@@ -33735,6 +33735,16 @@ from previous Chrome versions.
   <int value="2" label="All"/>
 </enum>
 
+<enum name="ServiceWorkerInstalledScriptsManager.FinishedReason">
+  <int value="0" label="NOT_FINISHED"/>
+  <int value="1" label="SUCCESS"/>
+  <int value="2" label="NO_HTTP_INFO_ERROR"/>
+  <int value="3" label="CREATE_DATA_PIPE_ERROR"/>
+  <int value="4" label="CONNECTION_ERROR"/>
+  <int value="5" label="RESPONSE_READER_ERROR"/>
+  <int value="6" label="META_DATA_SENDER_ERROR"/>
+</enum>
+
 <enum name="ServiceWorkerMetrics.EventType">
   <int value="0" label="ACTIVATE"/>
   <int value="1" label="INSTALL"/>

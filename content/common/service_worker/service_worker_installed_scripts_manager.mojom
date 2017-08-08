@@ -22,9 +22,11 @@ struct ServiceWorkerScriptInfo {
   map<string, string> headers;
   // A handle for receiving the script body.
   handle<data_pipe_consumer> body;
+  uint64 body_size;
   // A handle for receiving the V8 code cached metadata. This is null when no
   // meta data is available.
   handle<data_pipe_consumer>? meta_data;
+  uint64 meta_data_size;
 };
 
 // Renderer-side interface. The browser uses this interface to send

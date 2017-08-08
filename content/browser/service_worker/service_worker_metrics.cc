@@ -497,14 +497,19 @@ void ServiceWorkerMetrics::RecordStartWorkerStatus(
   RecordHistogramEnum(std::string("ServiceWorker.StartWorker.StatusByPurpose") +
                           EventTypeToSuffix(purpose),
                       status, SERVICE_WORKER_ERROR_MAX_VALUE);
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Purpose",
-                            static_cast<int>(purpose),
-                            static_cast<int>(EventType::NUM_TYPES));
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Purpose", purpose,
+                            EventType::NUM_TYPES);
   if (status == SERVICE_WORKER_ERROR_TIMEOUT) {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Timeout.StartPurpose",
-                              static_cast<int>(purpose),
-                              static_cast<int>(EventType::NUM_TYPES));
+                              purpose, EventType::NUM_TYPES);
   }
+}
+
+void ServiceWorkerMetrics::RecordInstalledScriptsSenderStatus(
+    ServiceWorkerInstalledScriptsSender::FinishedReason reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "ServiceWorker.StartWorker.InstalledScriptsSender.FinishedReason", reason,
+      ServiceWorkerInstalledScriptsSender::FinishedReason::kMaxValue);
 }
 
 void ServiceWorkerMetrics::RecordStartWorkerTime(base::TimeDelta time,

@@ -1713,6 +1713,10 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
   if (context_ && IsInstalled(prestart_status))
     context_->UpdateVersionFailureCount(version_id_, status);
 
+  if (installed_scripts_sender_) {
+    ServiceWorkerMetrics::RecordInstalledScriptsSenderStatus(
+        installed_scripts_sender_->finished_reason());
+  }
   ServiceWorkerMetrics::RecordStartWorkerStatus(status, purpose,
                                                 IsInstalled(prestart_status));
 
