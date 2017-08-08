@@ -463,11 +463,11 @@ tools/irt_core_x86_32.nexe
 tools/irt_core_x86_64.nexe
 [linux]tools/lib/arm_trusted/lib/ld-linux-armhf.so.3
 [linux]tools/lib/arm_trusted/lib/libc.so.6
+[linux]tools/lib/arm_trusted/lib/libdl.so.2
 [linux]tools/lib/arm_trusted/lib/libgcc_s.so.1
 [linux]tools/lib/arm_trusted/lib/libm.so.6
 [linux]tools/lib/arm_trusted/lib/libpthread.so.0
 [linux]tools/lib/arm_trusted/lib/librt.so.1
-[linux]tools/lib/arm_trusted/lib/libstdc++.so.6
 tools/lib/elf.py
 tools/lib/get_shared_deps.py
 tools/lib/quote.py
