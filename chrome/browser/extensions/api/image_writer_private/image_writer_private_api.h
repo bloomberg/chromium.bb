@@ -72,8 +72,7 @@ class ImageWriterPrivateListRemovableStorageDevicesFunction
  private:
   ~ImageWriterPrivateListRemovableStorageDevicesFunction() override;
   bool RunAsync() override;
-  void OnDeviceListReady(scoped_refptr<StorageDeviceList> device_list,
-                         bool success);
+  void OnDeviceListReady(scoped_refptr<StorageDeviceList> device_list);
 };
 
 }  // namespace extensions
