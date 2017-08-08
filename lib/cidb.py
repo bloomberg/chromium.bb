@@ -1319,13 +1319,13 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                       milestone_version=None, platform_version=None,
                       starting_build_id=None, waterfall=None,
                       buildbot_generation=None, final=False):
-    """Returns basic information about most recent builds.
+    """Returns basic information about most recent builds for build config.
 
     By default this function returns the most recent builds. Some arguments can
     restrict the result to older builds.
 
     Args:
-      build_config: config name of the build.
+      build_config: config name of the build to get history.
       num_results: Number of builds to search back. Set this to
           CIDBConnection.NUM_RESULTS_NO_LIMIT to request no limit on the number
           of results.
@@ -1358,7 +1358,63 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       start_time, finish_time, platform_version, full_version, status,
       important, buildbucket_id].
     """
-    where_clauses = ['build_config = "%s"' % build_config]
+    return self.GetBuildsHistory(
+        [build_config], num_results,
+        ignore_build_id=ignore_build_id, start_date=start_date,
+        end_date=end_date, starting_build_number=starting_build_number,
+        ending_build_number=ending_build_number,
+        milestone_version=milestone_version, platform_version=platform_version,
+        starting_build_id=starting_build_id, waterfall=waterfall,
+        buildbot_generation=buildbot_generation, final=final)
+
+  @minimum_schema(47)
+  def GetBuildsHistory(self, build_configs, num_results,
+                       ignore_build_id=None, start_date=None, end_date=None,
+                       starting_build_number=None, ending_build_number=None,
+                       milestone_version=None, platform_version=None,
+                       starting_build_id=None, waterfall=None,
+                       buildbot_generation=None, final=False):
+    """Returns basic information about most recent builds for build configs.
+
+    By default this function returns the most recent builds. Some arguments can
+    restrict the result to older builds.
+
+    Args:
+      build_configs: config names of the builds to get history.
+      num_results: Number of builds to search back. Set this to
+          CIDBConnection.NUM_RESULTS_NO_LIMIT to request no limit on the number
+          of results.
+      ignore_build_id: (Optional) Ignore a specific build. This is most useful
+          to ignore the current build when querying recent past builds from a
+          build in flight.
+      start_date: (Optional, type: datetime.date) Get builds that occured on or
+          after this date.
+      end_date: (Optional, type:datetime.date) Get builds that occured on or
+          before this date.
+      starting_build_number: (Optional) The minimum build_number for which
+          data should be retrieved.
+      ending_build_number: (Optional) The maximum build_number for which
+          data should be retrieved.
+      milestone_version: (Optional) Return only results for this
+          milestone_version.
+      platform_version: (Optional) Return only results for this
+          platform_version.
+      starting_build_id: (Optional) The minimum build_id for which data should
+          be retrieved.
+      waterfall: (Optional) The waterfall for which data should be retrieved.
+      buildbot_generation: (Optional) The buildbot_generation for which data
+          should be retrieved.
+      final: (Optional) If True, only retrieve final (ie finished) builds.
+
+    Returns:
+      A sorted list of dicts containing up to |number| dictionaries for
+      build statuses in descending order. Valid keys in the dictionary are
+      [id, build_config, buildbot_generation, waterfall, build_number,
+      start_time, finish_time, platform_version, full_version, status,
+      important, buildbucket_id].
+    """
+    where_clauses = ['build_config IN (%s)' %
+                     ','.join('"%s"' % b for b in build_configs)]
     if start_date is not None:
       where_clauses.append('date(start_time) >= date("%s")' %
                            start_date.strftime(self._DATE_FORMAT))
@@ -1518,7 +1574,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     if action is not None:
       basic_conds.append('action = "%s"' % action)
     if start_time is not None:
-      basic_conds.append('timestamp > TIMESTAMP("%s")' % start_time)
+      basic_conds.append('timestamp >= TIMESTAMP("%s")' % start_time)
 
     # Note: We are using a string of OR statements rather than a 'WHERE IN'
     # style clause, because 'WHERE IN' does not make use of multi-column
@@ -1693,21 +1749,53 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return [hwtest_results.HWTestResult(*values) for values in results]
 
   @minimum_schema(59)
-  def GetBuildRequestsForBuildConfig(self, request_build_config, num_results=1):
-    """Get BuildRequests for a build_config.
+  def GetBuildRequestsForBuildConfig(self,
+                                     request_build_config,
+                                     num_results=NUM_RESULTS_NO_LIMIT,
+                                     start_time=None):
+    """Get BuildRequests for one request_build_config.
 
     Args:
       request_build_config: build config (string) to request.
-      num_results: number of results to return, default to 1.
+      num_results: Number of results to return, default to
+        self.NUM_RESULTS_NO_LIMIT.
+      start_time: If not None, only return build requests sent after the
+        start_time. Default to None.
 
     Returns:
       A list of BuildRequest instances sorted by id in descending order.
     """
-    query = ('SELECT * from buildRequestTable WHERE request_build_config = "%s"'
-             ' ORDER BY id DESC' % request_build_config)
+    return self.GetBuildRequestsForBuildConfigs([request_build_config],
+                                                num_results=num_results,
+                                                start_time=start_time)
+
+  @minimum_schema(59)
+  def GetBuildRequestsForBuildConfigs(self,
+                                      request_build_configs,
+                                      num_results=NUM_RESULTS_NO_LIMIT,
+                                      start_time=None):
+    """Get BuildRequests for a list of request_build_configs.
+
+    Args:
+      request_build_configs: A list of build configs (string) to request.
+      num_results: Number of results to return, default to
+        self.NUM_RESULTS_NO_LIMIT.
+      start_time: If not None, only return build requests sent after the
+        start_time. Default to None.
+
+    Returns:
+      A list of BuildRequest instances sorted by id in descending order.
+    """
+    query = ('SELECT * from buildRequestTable WHERE request_build_config IN '
+             '(%s)' % (','.join('"%s"' % x for x in request_build_configs)))
+
+    if start_time is not None:
+      query += (' and timestamp > TIMESTAMP("%s")' % start_time)
+
+    query += ' ORDER BY id DESC'
 
     if num_results != self.NUM_RESULTS_NO_LIMIT:
-      query += ' LIMIT %d' % num_results
+      query += (' LIMIT %d' % num_results)
 
     results = self._Execute(query).fetchall()
 

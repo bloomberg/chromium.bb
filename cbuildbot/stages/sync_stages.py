@@ -28,6 +28,7 @@ from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import build_stages
 from chromite.lib import buildbucket_lib
+from chromite.lib import build_requests
 from chromite.lib import clactions
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -1213,6 +1214,12 @@ class PreCQLauncherStage(SyncStage):
   # cancel builds which were launched >= BUILDBUCKET_DELTA_TIME_HOUR ago.
   BUILDBUCKET_DELTA_TIME_HOUR = 4
 
+  # Delay between launches of sanity-pre-cq builds for the same build config
+  PRE_CQ_SANITY_CHECK_PERIOD_HOURS = 5
+
+  # How many days to look back in build history to check for sanity-pre-cq
+  PRE_CQ_SANITY_CHECK_LOOK_BACK_HISTORY_DAYS = 1
+
   def __init__(self, builder_run, **kwargs):
     super(PreCQLauncherStage, self).__init__(builder_run, **kwargs)
     self.skip_sync = True
@@ -1415,32 +1422,46 @@ class PreCQLauncherStage(SyncStage):
 
     return config_buildbucket_id_map
 
-  def LaunchTrybot(self, pool, plan, configs):
-    """Launch a Pre-CQ run with the provided list of CLs.
+  def _LaunchTrybots(self, pool, configs, plan=None, sanity_check_build=False):
+    """Launch tryjobs on the configs with patches if provided.
 
     Args:
-      pool: ValidationPool corresponding to |plan|.
-      plan: The list of patches to test in the pre-cq tryjob.
+      pool: An instance of ValidationPool.validation_pool.
       configs: A list of pre-cq config names to launch.
+      plan: A list of patches to test in the pre-cq tryjob, default to None.
+      sanity_check_build: Boolean indicating whether to run the tryjobs as
+        sanity-check-build.
+
+    Returns:
+      A dict mapping from build_config (string) to the buildbucket_id (string)
+      of the launched Pre-CQs. An empty dict if any configuration target doesn't
+      exist.
     """
     # Verify the configs to test are in the cbuildbot config list.
     for config in configs:
       if config not in self._run.site_config:
-        for change in plan:
-          logging.error('No such configuraton target: %s. '
-                        'Skipping trybots for %s %s',
-                        config, str(change), change.url)
-          pool.HandleNoConfigTargetFailure(change, config)
-          return
+        logging.error('No such configuraton target: %s.', config)
+
+        if plan is not None:
+          for change in plan:
+            logging.error('Skipping trybots on nonexistent config %s for '
+                          '%s %s', config, str(change), change.url)
+            pool.HandleNoConfigTargetFailure(change, config)
+
+        return {}
 
     cmd = ['cbuildbot', '--remote',
            '--timeout', str(self.INFLIGHT_TIMEOUT * 60)] + configs
-    for patch in plan:
-      cmd += ['-g', cros_patch.AddPrefix(patch, patch.gerrit_number)]
-      self._PrintPatchStatus(patch, 'testing')
+
+    if sanity_check_build:
+      cmd += ['--sanity-check-build']
+
+    if plan is not None:
+      for patch in plan:
+        cmd += ['-g', cros_patch.AddPrefix(patch, patch.gerrit_number)]
+        self._PrintPatchStatus(patch, 'testing')
 
     config_buildbucket_id_map = {}
-
     if self._run.options.debug:
       logging.debug('Would have launched tryjob with %s', cmd)
     else:
@@ -1451,15 +1472,58 @@ class PreCQLauncherStage(SyncStage):
         config_buildbucket_id_map = self.GetConfigBuildbucketIdMap(
             result.output)
 
+    return config_buildbucket_id_map
+
+  def LaunchPreCQs(self, build_id, db, pool, configs, plan):
+    """Launch Pre-CQ tryjobs on the configs with patches.
+
+    Args:
+      build_id: build_id (string) of the pre-cq-launcher build.
+      db: An instance of cidb.CIDBConnection.
+      pool: An instance of ValidationPool.validation_pool.
+      configs: A list of pre-cq config names to launch.
+      plan: The list of patches to test in the pre-cq tryjob.
+    """
+    logging.info('Launching Pre-CQs for configs %s with changes %s',
+                 configs, cros_patch.GetChangesAsString(plan))
+    config_buildbucket_id_map = self._LaunchTrybots(pool, configs, plan=plan)
+
+    if not config_buildbucket_id_map:
+      return
+
+    # Update cidb clActionTable.
     actions = []
-    build_id, db = self._run.GetCIDBHandle()
-    for patch in plan:
-      for config in configs:
-        actions.append(clactions.CLAction.FromGerritPatchAndAction(
-            patch, constants.CL_ACTION_TRYBOT_LAUNCHING, config,
-            buildbucket_id=config_buildbucket_id_map.get(config)))
+    for config in configs:
+      if config in config_buildbucket_id_map:
+        for patch in plan:
+          actions.append(clactions.CLAction.FromGerritPatchAndAction(
+              patch, constants.CL_ACTION_TRYBOT_LAUNCHING, config,
+              buildbucket_id=config_buildbucket_id_map[config]))
 
     db.InsertCLActions(build_id, actions)
+
+  def LaunchSanityPreCQs(self, build_id, db, pool, configs):
+    """Launch Sanity-Pre-CQ tryjobs on the configs.
+
+    Args:
+      build_id: build_id (string) of the pre-cq-launcher build.
+      db: An instance of cidb.CIDBConnection.
+      pool: An instance of ValidationPool.validation_pool.
+      configs: A set of pre-cq config names to launch.
+    """
+    logging.info('Launching Sanity-Pre-CQs for configs %s.', configs)
+    config_buildbucket_id_map = self._LaunchTrybots(
+        pool, configs, sanity_check_build=True)
+
+    if not config_buildbucket_id_map:
+      return
+
+    # Update cidb buildRequestTable.
+    for config in configs:
+      if config in config_buildbucket_id_map:
+        db.InsertBuildRequest(
+            build_id, config, build_requests.REASON_SANITY_PRE_CQ,
+            request_buildbucket_id=config_buildbucket_id_map[config])
 
   def GetDisjointTransactionsToTest(self, pool, progress_map):
     """Get the list of disjoint transactions to test.
@@ -1648,6 +1712,116 @@ class PreCQLauncherStage(SyncStage):
                       ' change: %s buildbucket_id: %s error: %r',
                       change, old_build_action.buildbucket_id, e)
 
+  def _GetFailedPreCQConfigs(self, action_history):
+    """Get failed Pre-CQ build configs from action history.
+
+    Args:
+      action_history: A list of clactions.CLAction.
+
+    Returns:
+      A set of failed Pre-CQ build configs.
+    """
+    failed_build_configs = set()
+    for action in action_history:
+      build_config = action.build_config
+      if (build_config not in failed_build_configs and
+          site_config.get(build_config) is not None and
+          site_config[build_config].build_type == constants.PRE_CQ_TYPE and
+          action.action == constants.CL_ACTION_PICKED_UP and
+          action.status == constants.BUILDER_STATUS_FAILED):
+        failed_build_configs.add(build_config)
+
+    return failed_build_configs
+
+  def _FailureStreakCounterExceedsThreshold(self, build_config, build_history):
+    """Check whether the consecutive failure counter exceeds the threshold.
+
+    Args:
+      db: CIDBConnection instance.
+      build_config: The build config to check.
+      build_history: A sorted list of dict containing build information. See
+        Return types of cidb.CIDBConnection.GetBuildsHistory.
+
+    Returns:
+      A boolean indicating whether the consecutive failure counter of
+        build_config exceeds its health_threshold.
+    """
+    health_threshold = site_config[build_config].health_threshold
+
+    if health_threshold <= 0:
+      return False
+
+    streak_counter = 0
+    for build in build_history:
+      if build['status'] == constants.BUILDER_STATUS_PASSED:
+        return False
+      elif build['status'] == constants.BUILDER_STATUS_FAILED:
+        streak_counter += 1
+
+      if streak_counter >= health_threshold:
+        return True
+
+    return False
+
+  def _GetBuildConfigsToSanityCheck(self, db, build_configs):
+    """Get build configs to sanity check.
+
+    Args:
+      db: An instance of cidb.CIDBConnection.
+      build_configs: A list of build configs (strings) to check whether to
+        sanity check.
+
+    Returns:
+      A set of build_configs (strings) to sanity check.
+    """
+    start_date = datetime.datetime.now().date() - datetime.timedelta(
+        days=self.PRE_CQ_SANITY_CHECK_LOOK_BACK_HISTORY_DAYS)
+    builds_history = db.GetBuildsHistory(
+        build_configs, db.NUM_RESULTS_NO_LIMIT, start_date=start_date,
+        final=True)
+    build_history_by_build_config = cros_build_lib.GroupByKey(
+        builds_history, 'build_config')
+
+    start_time = datetime.datetime.now() - datetime.timedelta(
+        hours=self.PRE_CQ_SANITY_CHECK_PERIOD_HOURS)
+    builds_requests = db.GetBuildRequestsForBuildConfigs(
+        build_configs, start_time=start_time)
+    build_requests_by_build_config = cros_build_lib.GroupNamedtuplesByKey(
+        builds_requests, 'request_build_config')
+
+    sanity_check_build_configs = set()
+    for build_config in build_configs:
+      build_history = build_history_by_build_config.get(build_config, [])
+      build_reqs = build_requests_by_build_config.get(build_config, [])
+      if (build_history and
+          not build_reqs and
+          self._FailureStreakCounterExceedsThreshold(
+              build_config, build_history)):
+        sanity_check_build_configs.add(build_config)
+
+    return sanity_check_build_configs
+
+  def _LaunchSanityCheckPreCQsIfNeeded(self, build_id, db, pool,
+                                       action_history):
+    """Check the Pre-CQs of changes and launch Sanity-Pre-CQs if needed.
+
+    Args:
+      build_id: build_id (string) of the pre-cq-launcher build.
+      db: An instance of cidb.CIDBConnection.
+      pool: An instance of ValidationPool.validation_pool.
+      action_history: A list of clactions.CLActions.
+    """
+    failed_build_configs = self._GetFailedPreCQConfigs(action_history)
+
+    if not failed_build_configs:
+      return
+
+    sanity_check_build_configs = self._GetBuildConfigsToSanityCheck(
+        db, failed_build_configs)
+
+    if sanity_check_build_configs:
+      self.LaunchSanityPreCQs(build_id, db, pool, sanity_check_build_configs)
+
   def _ProcessVerified(self, change, can_submit, will_submit):
     """Process a change that is fully pre-cq verified.
 
@@ -1702,8 +1876,11 @@ class PreCQLauncherStage(SyncStage):
     Non-manifest changes are just submitted here because they don't need to be
     verified by either the Pre-CQ or CQ.
     """
-    _, db = self._run.GetCIDBHandle()
+    build_id, db = self._run.GetCIDBHandle()
+
     action_history = db.GetActionsForChanges(changes)
+
+    self._LaunchSanityCheckPreCQsIfNeeded(build_id, db, pool, action_history)
 
     if self.buildbucket_client is not None:
       for change in changes:
@@ -1817,7 +1994,7 @@ class PreCQLauncherStage(SyncStage):
                      launch_count_limit, configs,
                      cros_patch.GetChangesAsString(plan))
       else:
-        self.LaunchTrybot(pool, plan, configs)
+        self.LaunchPreCQs(build_id, db, pool, configs, plan)
         launch_count += len(configs)
         cl_launch_count += len(configs) * len(plan)
 
