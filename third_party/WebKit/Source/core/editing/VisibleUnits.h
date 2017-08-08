@@ -84,9 +84,6 @@ struct LocalCaretRect {
 // "core/editing/VisibleUnitsTest.cpp".
 std::ostream& operator<<(std::ostream&, const InlineBoxPosition&);
 
-CORE_EXPORT LayoutObject* AssociatedLayoutObjectOf(const Node&,
-                                                   int offset_in_node);
-
 // offset functions on Node
 CORE_EXPORT int CaretMinOffset(const Node*);
 CORE_EXPORT int CaretMaxOffset(const Node*);
