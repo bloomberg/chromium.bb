@@ -859,17 +859,19 @@ TEST_P(InterfacePtrTest, ThreadSafeInterfacePointer) {
         auto calc_callback = base::Bind(
             [](const scoped_refptr<base::TaskRunner>& main_task_runner,
                const base::Closure& quit_closure,
-               base::PlatformThreadId thread_id,
+               scoped_refptr<base::SequencedTaskRunner> sender_sequence_runner,
                double result) {
               EXPECT_EQ(123, result);
-              // Validate the callback is invoked on the calling thread.
-              EXPECT_EQ(thread_id, base::PlatformThread::CurrentId());
+              // Validate the callback is invoked on the calling sequence.
+              EXPECT_TRUE(sender_sequence_runner->RunsTasksInCurrentSequence());
               // Notify the run_loop to quit.
               main_task_runner->PostTask(FROM_HERE, quit_closure);
             });
-        (*thread_safe_ptr)->Add(
-            123, base::Bind(calc_callback, main_task_runner, quit_closure,
-                            base::PlatformThread::CurrentId()));
+        scoped_refptr<base::SequencedTaskRunner> current_sequence_runner =
+            base::SequencedTaskRunnerHandle::Get();
+        (*thread_safe_ptr)
+            ->Add(123, base::Bind(calc_callback, main_task_runner, quit_closure,
+                                  current_sequence_runner));
       },
       base::SequencedTaskRunnerHandle::Get(), run_loop.QuitClosure(),
       thread_safe_ptr);
