@@ -27,7 +27,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import datetime
 import logging
 import re
 
@@ -120,25 +119,12 @@ class Git(object):
         return executive.run_command(
             [cls.executable_name, 'config', '--get-all', key], error_handler=Executive.ignore_error, cwd=cwd).rstrip('\n')
 
-    def _discard_local_commits(self):
-        self.run(['reset', '--hard', self._remote_branch_ref()])
-
-    def _rebase_in_progress(self):
-        return self._filesystem.exists(self.absolute_path(self._filesystem.join('.git', 'rebase-apply')))
-
     def has_working_directory_changes(self, pathspec=None):
         """Checks whether there are uncommitted changes."""
         command = ['diff', 'HEAD', '--no-renames', '--name-only']
         if pathspec:
             command.extend(['--', pathspec])
         return self.run(command) != ''
-
-    def _discard_working_directory_changes(self):
-        # TODO(qyearsley): Could run git clean here too; this wasn't done
-        # before in order to match svn, but this is no longer a concern.
-        self.run(['reset', 'HEAD', '--hard'])
-        if self._rebase_in_progress():
-            self.run(['rebase', '--abort'])
 
     def unstaged_changes(self):
         """Lists files with unstaged changes, including untracked files.
@@ -185,14 +171,6 @@ class Git(object):
             return ''
         return self._branch_from_ref(ref)
 
-    def current_branch_or_ref(self):
-        """Returns the name of the current branch, or the commit hash if HEAD is detached."""
-        branch_name = self.current_branch()
-        if not branch_name:
-            # HEAD is detached; use commit SHA instead.
-            return self.run(['rev-parse', 'HEAD']).strip()
-        return branch_name
-
     def _upstream_branch(self):
         current_branch = self.current_branch()
         return self._branch_from_ref(self.read_git_config(
@@ -234,7 +212,6 @@ class Git(object):
             match = re.search(status_regexp, line)
             if not match:
                 continue
-            # status = match.group('status')
             filename = match.group('filename')
             filenames.append(filename)
         return filenames
@@ -267,7 +244,7 @@ class Git(object):
         return self._commit_position_from_git_log(git_log)
 
     def create_patch(self, git_commit=None, changed_files=None):
-        """Returns a byte array (str()) representing the patch file.
+        """Returns a byte array (str) representing the patch file.
 
         Patch files are effectively binary since they may contain
         files of multiple different encodings.
@@ -282,7 +259,6 @@ class Git(object):
             '--no-renames',
             '--src-prefix=a/',
             '--dst-prefix=b/',
-
         ]
         if order:
             command.append(order)
@@ -305,19 +281,8 @@ class Git(object):
         git_log = self.git_commit_detail(git_commit)
         return self._commit_position_from_git_log(git_log)
 
-    def checkout_branch(self, name):
-        self.run(['checkout', '-q', name])
-
-    def create_clean_branch(self, name):
-        self.run(['checkout', '-q', '-b', name, self._remote_branch_ref()])
-
-    # Git-specific methods:
     def _branch_ref_exists(self, branch_ref):
         return self.run(['show-ref', '--quiet', '--verify', branch_ref], return_exit_code=True) == 0
-
-    def delete_branch(self, branch_name):
-        if self._branch_ref_exists('refs/heads/' + branch_name):
-            self.run(['branch', '-D', branch_name])
 
     def _remote_merge_base(self):
         return self.run(['merge-base', self._remote_branch_ref(), 'HEAD']).strip()
@@ -344,7 +309,3 @@ class Git(object):
         if format:
             args.append('--format=' + format)
         return self.run(args)
-
-    def affected_files(self, commit):
-        output = self.run(['log', '-1', '--format=', '--name-only', commit])
-        return output.strip().split('\n')

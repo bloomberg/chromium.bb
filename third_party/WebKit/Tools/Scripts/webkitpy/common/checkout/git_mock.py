@@ -33,18 +33,6 @@ class MockGit(object):
     def current_branch(self):
         return 'mock-branch-name'
 
-    def current_branch_or_ref(self):
-        return 'mock-branch-name'
-
-    def checkout_branch(self, name):
-        pass
-
-    def create_clean_branch(self, name):
-        pass
-
-    def delete_branch(self, name):
-        pass
-
     def exists(self, path):
         # TestRealMain.test_real_main (and several other rebaseline tests) are sensitive to this return value.
         # We should make those tests more robust, but for now we just return True always (since no test needs otherwise).
