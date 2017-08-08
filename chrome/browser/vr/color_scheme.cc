@@ -59,9 +59,9 @@ void InitializeColorSchemes() {
   normal_scheme.prompt_button_background_down = 0xE6FFFFFF;
   normal_scheme.secure = gfx::kGoogleGreen700;
   normal_scheme.insecure = gfx::kGoogleRed700;
-  normal_scheme.warning = 0xFF5A5A5A;
   normal_scheme.url_emphasized = SK_ColorBLACK;
-  normal_scheme.url_deemphasized = normal_scheme.warning;
+  normal_scheme.url_deemphasized = 0xFF5A5A5A;
+  normal_scheme.offline_page_warning = 0xFF242424;
   normal_scheme.disabled = 0x33333333;
   normal_scheme.dimmer_inner = 0xCC0D0D0D;
   normal_scheme.dimmer_outer = 0xE6000000;
@@ -109,9 +109,9 @@ void InitializeColorSchemes() {
   incognito_scheme.separator = 0xFF474747;
   incognito_scheme.secure = 0xFFEDEDED;
   incognito_scheme.insecure = incognito_scheme.secure;
-  incognito_scheme.warning = incognito_scheme.secure;
   incognito_scheme.url_emphasized = incognito_scheme.secure;
   incognito_scheme.url_deemphasized = 0xFF878787;
+  incognito_scheme.offline_page_warning = incognito_scheme.secure;
   incognito_scheme.prompt_foreground = 0xCCFFFFFF;
   incognito_scheme.prompt_primary_button_forground = 0xD9000000;
   incognito_scheme.prompt_secondary_button_foreground = 0xD9000000;

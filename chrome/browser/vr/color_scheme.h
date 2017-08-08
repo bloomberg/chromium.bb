@@ -68,9 +68,9 @@ struct ColorScheme {
   // should respect these colors.
   SkColor secure;
   SkColor insecure;
-  SkColor warning;
   SkColor url_emphasized;
   SkColor url_deemphasized;
+  SkColor offline_page_warning;
 
   // The color used for disabled icons.
   SkColor disabled;
