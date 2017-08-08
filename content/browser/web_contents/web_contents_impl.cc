@@ -1713,10 +1713,9 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
         site_instance->GetProcess()->GetNextRoutingID();
   }
 
-  GetRenderManager()->Init(site_instance.get(), view_routing_id,
-                           params.main_frame_routing_id,
-                           main_frame_widget_routing_id,
-                           params.renderer_initiated_creation);
+  GetRenderManager()->Init(
+      site_instance.get(), view_routing_id, params.main_frame_routing_id,
+      main_frame_widget_routing_id, params.renderer_initiated_creation);
 
   // blink::FrameTree::setName always keeps |unique_name| empty in case of a
   // main frame - let's do the same thing here.
@@ -2421,8 +2420,8 @@ void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
     return;
   }
 
-  RenderWidgetHostImpl* widget_host =
-      new RenderWidgetHostImpl(this, process, route_id, IsHidden());
+  RenderWidgetHostImpl* widget_host = new RenderWidgetHostImpl(
+      this, process, route_id, std::move(widget), IsHidden());
 
   RenderWidgetHostViewBase* widget_view =
       static_cast<RenderWidgetHostViewBase*>(

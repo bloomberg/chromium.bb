@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 
 #include "base/test/scoped_task_environment.h"
+#include "content/browser/renderer_host/mock_widget_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -81,12 +82,18 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
         base::MakeUnique<MockRenderProcessHost>(browser_context_.get());
     process_host2_ =
         base::MakeUnique<MockRenderProcessHost>(browser_context_.get());
+    mojom::WidgetPtr widget1;
+    widget_impl1_ =
+        base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget1));
     widget_host1_ = base::MakeUnique<RenderWidgetHostImpl>(
         &delegate_, process_host1_.get(), process_host1_->GetNextRoutingID(),
-        false);
+        std::move(widget1), false);
+    mojom::WidgetPtr widget2;
+    widget_impl2_ =
+        base::MakeUnique<MockWidgetImpl>(mojo::MakeRequest(&widget2));
     widget_host2_ = base::MakeUnique<RenderWidgetHostImpl>(
         &delegate_, process_host2_.get(), process_host2_->GetNextRoutingID(),
-        false);
+        std::move(widget2), false);
 
     view_root_ = base::MakeUnique<MockRootRenderWidgetHostView>(
         widget_host1_.get(), frame_sink_id_map_);
@@ -119,7 +126,9 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
   std::unique_ptr<BrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> process_host1_;
   std::unique_ptr<MockRenderProcessHost> process_host2_;
+  std::unique_ptr<MockWidgetImpl> widget_impl1_;
   std::unique_ptr<RenderWidgetHostImpl> widget_host1_;
+  std::unique_ptr<MockWidgetImpl> widget_impl2_;
   std::unique_ptr<RenderWidgetHostImpl> widget_host2_;
 
   std::unique_ptr<MockRootRenderWidgetHostView> view_root_;
