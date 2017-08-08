@@ -20,7 +20,6 @@ class AppListView;
 class AppListViewDelegate;
 class CustomLauncherPageBackgroundView;
 class ExpandArrowView;
-class IndicatorChipView;
 class SearchResultTileItemView;
 class SuggestionsContainerView;
 class TileItemView;
@@ -96,7 +95,6 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
   views::View* instant_container_;  // Owned by views hierarchy.
   CustomLauncherPageBackgroundView*
       custom_launcher_page_background_;     // Owned by views hierarchy.
-  IndicatorChipView* indicator_ = nullptr;  // Owned by views hierarchy.
   SuggestionsContainerView*
       suggestions_container_;  // Owned by views hierarchy.
   ExpandArrowView* expand_arrow_view_ = nullptr;  // Owned by views hierarchy.
