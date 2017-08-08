@@ -24,6 +24,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/safe_browsing/web_ui/webui.pb.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
@@ -187,6 +188,9 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate interface.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
+  // Populates the protobuf with the FullHashCache data.
+  void CollectFullHashCacheInfo(FullHashCacheInfo* full_hash_cache_info);
+
  protected:
   // Constructs a V4GetHashProtocolManager that issues network requests using
   // |request_context_getter|.
@@ -231,7 +235,7 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate {
           full_hash_to_store_and_hash_prefixes,
       const base::Time& now,
       std::vector<HashPrefix>* prefixes_to_request,
-      std::vector<FullHashInfo>* cached_full_hash_infos) const;
+      std::vector<FullHashInfo>* cached_full_hash_infos);
 
   // Fills a FindFullHashesRequest protocol buffer for a request.
   // Returns the serialized and base 64 encoded request as a string.
@@ -326,6 +330,9 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate {
 
   // The context we use to issue network requests.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+
+  // Records number of cache hits since the beginning of this session.
+  int number_of_hits_ = 0;
 
   // ID for URLFetchers for testing.
   int url_fetcher_id_;

@@ -58,3 +58,49 @@ message DatabaseManagerInfo {
 
   optional DatabaseInfo database_info = 2;
 }
+
+// The information about the list of prefixes for which the full hashes have
+// been stored in the cache.
+message FullHashCacheInfo {
+  // Records number of cache hits since the beginning of the session.
+  optional int32 number_of_hits = 1;
+  // Cached full hashes received from the server for the corresponding hash
+  // prefixes.
+  message FullHashCache {
+    // The hash prefix for which the full hashes are stored in the cache.
+    optional string hash_prefix = 1;
+    // The information about a hash prefix stored in the cache.
+    message CachedHashPrefixInfo {
+      // The negative ttl for the hash prefix.
+      optional int64 negative_expiry = 1;
+      // The information about a particular full hash.
+      message FullHashInfo {
+        // The expiration time of the full hash for a particular store.
+        optional int64 positive_expiry = 1;
+        // A variable-length SHA256 hash with size between 4 and 32 bytes
+        // inclusive.
+        optional string full_hash = 2;
+        // The list for which this full hash is applicable.
+        message ListIdentifier {
+          // Types of platforms. The value of platform_type corresponds to the
+          // PlatformType enum in safebrowsing_proto.
+          optional int32 platform_type = 1;
+          // Types of entries that pose threats. The value of threat_entry_type
+          // corresponds to the ThreatEntryType enum in safebrowsing_proto.
+          optional int32 threat_entry_type = 2;
+          // Types of threats. The value of threat_type corresponds to the
+          // ThreatType enum in safebrowsing_proto.
+          optional int32 threat_type = 3;
+        }
+        optional ListIdentifier list_identifier = 3;
+      }
+      // The list of all full hashes (and related info) that start with a
+      // particular hash prefix and are known to be unsafe.
+      repeated FullHashInfo full_hash_info = 2;
+    }
+    // Information about the cached hash prefix for each hash prefix in the
+    // cache.
+    optional CachedHashPrefixInfo cached_hash_prefix_info = 2;
+  }
+  repeated FullHashCache full_hash_cache = 2;
+}
