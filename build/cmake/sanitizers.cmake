@@ -20,8 +20,8 @@ include("${AOM_ROOT}/build/cmake/compiler_flags.cmake")
 string(TOLOWER ${SANITIZE} SANITIZE)
 
 # Require the sanitizer requested.
-require_compiler_flag("-fsanitize=${SANITIZE}" YES)
 require_linker_flag("-fsanitize=${SANITIZE}")
+require_compiler_flag("-fsanitize=${SANITIZE}" YES)
 
 # Make callstacks accurate.
 require_compiler_flag("-fno-omit-frame-pointer -fno-optimize-sibling-calls" YES)
