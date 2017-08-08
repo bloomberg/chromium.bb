@@ -37,54 +37,56 @@
 
 namespace blink {
 
+#define INSTANCE_COUNTERS_LIST(V) \
+  V(AudioHandler)                 \
+  V(Document)                     \
+  V(Frame)                        \
+  V(JSEventListener)              \
+  V(LayoutObject)                 \
+  V(MediaKeySession)              \
+  V(MediaKeys)                    \
+  V(Node)                         \
+  V(Resource)                     \
+  V(ScriptPromise)                \
+  V(SuspendableObject)            \
+  V(V8PerContextData)             \
+  V(WorkerGlobalScope)
+
 class InstanceCounters {
   STATIC_ONLY(InstanceCounters);
 
  public:
   enum CounterType {
-    kAudioHandlerCounter,
-    kDocumentCounter,
-    kFrameCounter,
-    kJSEventListenerCounter,
-    kLayoutObjectCounter,
-    kMediaKeySessionCounter,
-    kMediaKeysCounter,
-    kNodeCounter,
-    kResourceCounter,
-    kScriptPromiseCounter,
-    kSuspendableObjectCounter,
-    kV8PerContextDataCounter,
-    kWorkerGlobalScopeCounter,
-
-    // This value must be the last.
-    kCounterTypeLength,
+#define DECLARE_INSTANCE_COUNTER(name) k##name##Counter,
+    INSTANCE_COUNTERS_LIST(DECLARE_INSTANCE_COUNTER)
+#undef DECLARE_INSTANCE_COUNTER
+        kCounterTypeLength
   };
 
   static inline void IncrementCounter(CounterType type) {
-    DCHECK_NE(type, kNodeCounter);
-    AtomicIncrement(&counters_[type]);
+    // There are lots of nodes created. Atomic barriers or locks
+    // should be avoided for the sake of performance. See crbug.com/641019
+    if (type == kNodeCounter) {
+      DCHECK(IsMainThread());
+      ++counters_[kNodeCounter];
+    } else {
+      AtomicIncrement(&counters_[type]);
+    }
   }
 
   static inline void DecrementCounter(CounterType type) {
-    DCHECK_NE(type, kNodeCounter);
-    AtomicDecrement(&counters_[type]);
-  }
-
-  static inline void IncrementNodeCounter() {
-    DCHECK(IsMainThread());
-    node_counter_++;
-  }
-
-  static inline void DecrementNodeCounter() {
-    DCHECK(IsMainThread());
-    node_counter_--;
+    if (type == kNodeCounter) {
+      DCHECK(IsMainThread());
+      --counters_[kNodeCounter];
+    } else {
+      AtomicDecrement(&counters_[type]);
+    }
   }
 
   PLATFORM_EXPORT static int CounterValue(CounterType);
 
  private:
-  PLATFORM_EXPORT static int counters_[kCounterTypeLength];
-  PLATFORM_EXPORT static int node_counter_;
+  PLATFORM_EXPORT static int counters_[];
 };
 
 }  // namespace blink
