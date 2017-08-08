@@ -34,11 +34,11 @@
 namespace blink {
 
 class LocalFrame;
-class WebViewBase;
+class WebViewImpl;
 
 class CORE_EXPORT EditorClient {
  public:
-  explicit EditorClient(WebViewBase&);
+  explicit EditorClient(WebViewImpl&);
   virtual ~EditorClient();
 
   virtual void RespondToChangedContents();
@@ -53,7 +53,7 @@ class CORE_EXPORT EditorClient {
   EditorClient(){};
 
  private:
-  WebViewBase* web_view_;
+  WebViewImpl* web_view_;
 };
 
 }  // namespace blink

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLSelectElement.h"
@@ -91,7 +91,7 @@ class CreateWindowTest : public ::testing::Test {
 
   ViewCreatingClient web_view_client_;
   FrameTestHelpers::WebViewHelper helper_;
-  WebViewBase* web_view_;
+  WebViewImpl* web_view_;
   WebLocalFrame* main_frame_;
   Persistent<ChromeClientImpl> chrome_client_impl_;
 };
@@ -205,7 +205,7 @@ class PagePopupSuppressionTest : public ::testing::Test {
 
  protected:
   FrameTestHelpers::WebViewHelper helper_;
-  WebViewBase* web_view_;
+  WebViewImpl* web_view_;
   Persistent<WebLocalFrameImpl> main_frame_;
   Persistent<ChromeClientImpl> chrome_client_impl_;
   Persistent<FakeColorChooserClient> color_chooser_client_;

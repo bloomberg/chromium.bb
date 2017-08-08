@@ -31,7 +31,7 @@
 
 #include "core/loader/PrerendererClient.h"
 
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/page/Page.h"
 #include "platform/Prerender.h"
 #include "public/platform/WebPrerender.h"

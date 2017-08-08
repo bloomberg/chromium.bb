@@ -41,7 +41,7 @@
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/WebInputEventConversion.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"

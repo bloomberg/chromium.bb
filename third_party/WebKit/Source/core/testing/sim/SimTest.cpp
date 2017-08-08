@@ -5,7 +5,7 @@
 #include "core/testing/sim/SimTest.h"
 
 #include "core/dom/Document.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "platform/LayoutTestSupport.h"
@@ -62,7 +62,7 @@ Document& SimTest::GetDocument() {
   return *WebView().MainFrameImpl()->GetFrame()->GetDocument();
 }
 
-WebViewBase& SimTest::WebView() {
+WebViewImpl& SimTest::WebView() {
   return *web_view_helper_.WebView();
 }
 

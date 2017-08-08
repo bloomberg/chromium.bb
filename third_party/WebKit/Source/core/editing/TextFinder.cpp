@@ -41,7 +41,7 @@
 #include "core/editing/iterators/SearchBuffer.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/editing/markers/DocumentMarkerController.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/layout/LayoutObject.h"

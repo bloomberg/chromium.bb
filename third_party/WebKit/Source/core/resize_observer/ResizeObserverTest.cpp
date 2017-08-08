@@ -7,7 +7,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8GCController.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/resize_observer/ResizeObservation.h"
 #include "core/resize_observer/ResizeObserverController.h"
 #include "core/testing/sim/SimCompositor.h"

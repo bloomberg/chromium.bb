@@ -4,7 +4,7 @@
 
 #include "core/intersection_observer/IntersectionObserver.h"
 
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/intersection_observer/IntersectionObserverDelegate.h"
 #include "core/intersection_observer/IntersectionObserverInit.h"

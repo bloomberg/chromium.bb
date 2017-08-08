@@ -27,7 +27,7 @@
 #include "build/build_config.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheetList.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
@@ -112,7 +112,7 @@ class ScrollingCoordinatorTest : public ::testing::Test,
     return layer ? layer->PlatformLayer() : nullptr;
   }
 
-  WebViewBase* GetWebView() const { return helper_.WebView(); }
+  WebViewImpl* GetWebView() const { return helper_.WebView(); }
   LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
 
   WebLayerTreeView* GetWebLayerTreeView() const {

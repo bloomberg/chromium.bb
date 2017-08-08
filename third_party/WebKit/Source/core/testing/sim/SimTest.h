@@ -15,7 +15,7 @@
 
 namespace blink {
 
-class WebViewBase;
+class WebViewImpl;
 class WebLocalFrameImpl;
 class Document;
 class LocalDOMWindow;
@@ -35,7 +35,7 @@ class SimTest : public ::testing::Test {
   LocalDOMWindow& Window();
   SimPage& Page();
   Document& GetDocument();
-  WebViewBase& WebView();
+  WebViewImpl& WebView();
   WebLocalFrameImpl& MainFrame();
   const SimWebViewClient& WebViewClient() const;
   SimCompositor& Compositor();

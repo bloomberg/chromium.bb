@@ -30,7 +30,7 @@
 
 #include "public/web/WebStorageEventDispatcher.h"
 
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "modules/storage/StorageArea.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"

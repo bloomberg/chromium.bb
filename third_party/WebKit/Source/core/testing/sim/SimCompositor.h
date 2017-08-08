@@ -10,7 +10,7 @@
 namespace blink {
 
 class SimDisplayItemList;
-class WebViewBase;
+class WebViewImpl;
 
 // Simulated very basic compositor that's capable of running the BeginMainFrame
 // processing steps on WebView: beginFrame, layout, paint.
@@ -26,7 +26,7 @@ class SimCompositor final : public WebLayerTreeView {
   explicit SimCompositor();
   ~SimCompositor();
 
-  void SetWebView(WebViewBase&);
+  void SetWebView(WebViewImpl&);
 
   // Execute the BeginMainFrame processing steps, an approximation of what
   // cc::ThreadProxy::BeginMainFrame would do.
@@ -53,7 +53,7 @@ class SimCompositor final : public WebLayerTreeView {
   bool needs_begin_frame_;
   bool defer_commits_;
   bool has_selection_;
-  WebViewBase* web_view_;
+  WebViewImpl* web_view_;
   double last_frame_time_monotonic_;
   WebColor background_color_;
 };
