@@ -127,5 +127,14 @@ static const Inv_Txfm2d_Func inv_txfm_func_ls[TX_SIZES_ALL] = {
 };
 #endif  // CONFIG_HIGHBITDEPTH
 
+#define BD_NUM 3
+
+extern int bd_arr[];
+extern int8_t low_range_arr[];
+extern int8_t high_range_arr[];
+
+void txfm_stage_range_check(const int8_t *stage_range, int stage_num,
+                            const int8_t *cos_bit, int low_range,
+                            int high_range);
 }  // namespace libaom_test
 #endif  // AV1_TXFM_TEST_H_

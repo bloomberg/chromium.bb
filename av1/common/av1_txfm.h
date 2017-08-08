@@ -21,6 +21,10 @@
 #include "aom/aom_integer.h"
 #include "aom_dsp/aom_dsp_common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MAX_TXFM_STAGE_NUM 12
 
 static const int cos_bit_min = 10;
@@ -322,11 +326,9 @@ void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
                              const TXFM_2D_FLIP_CFG *cfg, int8_t fwd_shift,
                              int bd);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 TXFM_2D_FLIP_CFG av1_get_fwd_txfm_cfg(int tx_type, int tx_size);
 TXFM_2D_FLIP_CFG av1_get_fwd_txfm_64x64_cfg(int tx_type);
+TXFM_2D_FLIP_CFG av1_get_inv_txfm_cfg(int tx_type, int tx_size);
 #ifdef __cplusplus
 }
 #endif  // __cplusplus

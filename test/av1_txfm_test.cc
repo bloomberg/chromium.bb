@@ -161,4 +161,19 @@ template void fliplr<double>(double *dest, int stride, int length);
 template void flipud<double>(double *dest, int stride, int length);
 template void fliplrud<double>(double *dest, int stride, int length);
 
+int bd_arr[BD_NUM] = { 8, 10, 12 };
+int8_t low_range_arr[BD_NUM] = { 16, 32, 32 };
+int8_t high_range_arr[BD_NUM] = { 32, 32, 32 };
+
+void txfm_stage_range_check(const int8_t *stage_range, int stage_num,
+                            const int8_t *cos_bit, int low_range,
+                            int high_range) {
+  for (int i = 0; i < stage_num; ++i) {
+    EXPECT_LE(stage_range[i], low_range);
+  }
+  for (int i = 0; i < stage_num - 1; ++i) {
+    // make sure there is no overflow while doing half_btf()
+    EXPECT_LE(stage_range[i + 1] + cos_bit[i], high_range);
+  }
+}
 }  // namespace libaom_test
