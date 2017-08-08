@@ -4,7 +4,6 @@
 
 #import <EarlGrey/EarlGrey.h>
 
-#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -166,11 +165,6 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iPad (no progress view in tablet)");
   }
 
-  // TODO(crbug.com/747442): Re-enable this test once the bug is fixed.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-  }
-
   const GURL formURL = web::test::HttpServer::MakeUrl(kFormURL);
   const GURL infinitePendingURL =
       web::test::HttpServer::MakeUrl(kInfinitePendingPageURL);
@@ -204,11 +198,6 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
 - (void)testProgressIndicatorDisappearsAfterFormSubmit {
   if (IsIPadIdiom()) {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iPad (no progress view in tablet)");
-  }
-
-  // TODO(crbug.com/747442): Re-enable this test once the bug is fixed.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
   }
 
   const GURL formURL = web::test::HttpServer::MakeUrl(kFormURL);
