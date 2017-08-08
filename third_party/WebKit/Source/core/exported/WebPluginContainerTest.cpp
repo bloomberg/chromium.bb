@@ -138,12 +138,12 @@ class TestPlugin : public FakeWebPlugin {
   TestPluginWebFrameClient* const test_client_;
 };
 
-// Subclass of FakeWebPlugin used for testing the Cut edit command, so
-// HasSelection() and CanEditText() return true by default.
+// Subclass of FakeWebPlugin used for testing edit commands, so HasSelection()
+// and CanEditText() return true by default.
 class TestPluginWithEditableText : public FakeWebPlugin {
  public:
   explicit TestPluginWithEditableText(const WebPluginParams& params)
-      : FakeWebPlugin(params), cut_called_(false) {}
+      : FakeWebPlugin(params), cut_called_(false), paste_called_(false) {}
 
   bool HasSelection() const override { return true; }
   bool CanEditText() const override { return true; }
@@ -153,16 +153,25 @@ class TestPluginWithEditableText : public FakeWebPlugin {
       cut_called_ = true;
       return true;
     }
+    if (name == "Paste") {
+      paste_called_ = true;
+      return true;
+    }
     return false;
   }
 
   bool IsCutCalled() const { return cut_called_; }
-  void ResetCutStatus() { cut_called_ = false; }
+  bool IsPasteCalled() const { return paste_called_; }
+  void ResetEditCommandState() {
+    cut_called_ = false;
+    paste_called_ = false;
+  }
 
  private:
   ~TestPluginWithEditableText() override {}
 
   bool cut_called_;
+  bool paste_called_;
 };
 
 class TestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
@@ -532,7 +541,7 @@ TEST_F(WebPluginContainerTest, CutDeleteKeyboardEventsTest) {
   EXPECT_TRUE(test_plugin->IsCutCalled());
 
   // Reset Cut status for next time.
-  test_plugin->ResetCutStatus();
+  test_plugin->ResetEditCommandState();
 
   modifier_key = static_cast<WebInputEvent::Modifiers>(
       WebInputEvent::kShiftKey | WebInputEvent::kNumLockOn |
@@ -543,6 +552,59 @@ TEST_F(WebPluginContainerTest, CutDeleteKeyboardEventsTest) {
 
   // Check that "Cut" command is invoked.
   EXPECT_TRUE(test_plugin->IsCutCalled());
+}
+
+// Verifies |Ctrl-V| and |Shift-Insert| keyboard events, results in the "Paste"
+// command being invoked.
+TEST_F(WebPluginContainerTest, PasteInsertKeyboardEventsTest) {
+  RegisterMockedURL("plugin_container.html");
+  // Must outlive |web_view_helper|.
+  TestPluginWebFrameClient plugin_web_frame_client;
+  FrameTestHelpers::WebViewHelper web_view_helper;
+
+  // Use TestPluginWithEditableText for testing "Paste".
+  plugin_web_frame_client.SetHasEditableText(true);
+
+  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+      base_url_ + "plugin_container.html", &plugin_web_frame_client);
+  EnablePlugins(web_view, WebSize(300, 300));
+
+  WebElement plugin_container_one_element =
+      web_view->MainFrameImpl()->GetDocument().GetElementById(
+          WebString::FromUTF8("translated-plugin"));
+
+  WebPlugin* plugin =
+      ToWebPluginContainerImpl(plugin_container_one_element.PluginContainer())
+          ->Plugin();
+  TestPluginWithEditableText* test_plugin =
+      static_cast<TestPluginWithEditableText*>(plugin);
+
+  WebInputEvent::Modifiers modifier_key = static_cast<WebInputEvent::Modifiers>(
+      WebInputEvent::kControlKey | WebInputEvent::kNumLockOn |
+      WebInputEvent::kIsLeft);
+#if defined(OS_MACOSX)
+  modifier_key = static_cast<WebInputEvent::Modifiers>(
+      WebInputEvent::kMetaKey | WebInputEvent::kNumLockOn |
+      WebInputEvent::kIsLeft);
+#endif
+  CreateAndHandleKeyboardEvent(&plugin_container_one_element, modifier_key,
+                               VKEY_V);
+
+  // Check that "Paste" command is invoked.
+  EXPECT_TRUE(test_plugin->IsPasteCalled());
+
+  // Reset Paste status for next time.
+  test_plugin->ResetEditCommandState();
+
+  modifier_key = static_cast<WebInputEvent::Modifiers>(
+      WebInputEvent::kShiftKey | WebInputEvent::kNumLockOn |
+      WebInputEvent::kIsLeft);
+
+  CreateAndHandleKeyboardEvent(&plugin_container_one_element, modifier_key,
+                               VKEY_INSERT);
+
+  // Check that "Paste" command is invoked.
+  EXPECT_TRUE(test_plugin->IsPasteCalled());
 }
 
 // A class to facilitate testing that events are correctly received by plugins.
