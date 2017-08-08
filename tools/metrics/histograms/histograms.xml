@@ -60554,6 +60554,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Printing.CUPS.IppAttributesSuccess" enum="BooleanSuccess">
+  <owner>skau@chromium.org</owner>
+  <summary>
+    Record if the request for IPP attributes was successful during printer
+    setup.  This only occurs for setup attempts of IPP and IPPS printers.
+  </summary>
+</histogram>
+
 <histogram name="Printing.CUPS.JobResult" enum="PrintJobResult">
   <owner>skau@chromium.org</owner>
   <summary>

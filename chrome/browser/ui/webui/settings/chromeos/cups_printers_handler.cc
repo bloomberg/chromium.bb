@@ -336,6 +336,8 @@ void CupsPrintersHandler::OnPrinterInfo(const std::string& callback_id,
                                         const std::string& model,
                                         const std::string& make_and_model,
                                         bool ipp_everywhere) {
+  UMA_HISTOGRAM_BOOLEAN("Printing.CUPS.IppAttributesSuccess", success);
+
   if (!success) {
     base::DictionaryValue reject;
     reject.SetString("message", "Querying printer failed");
