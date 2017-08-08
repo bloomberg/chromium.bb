@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = 1 duplicate test name: "'onerror' event is fired when sensor is not supported"
-PASS 'onerror' event is fired when sensor is not supported 
-PASS 'onerror' event is fired when sensor is not supported 
-Harness: the test ran to completion.
-
