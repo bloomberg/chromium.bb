@@ -516,6 +516,15 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, RequestTabletSite) {
   // Watch for all possible outcomes to avoid timeouts if something breaks.
   AddAllPossibleTitles(start_url, &title_watcher);
 
+  // Erase the current title in the NavigationEntry.
+  //
+  // TitleWatcher overrides WebContentObserver's TitleWasSet() but also
+  // DidStopLoading(). The page that is being reloaded sets its title after load
+  // is complete, so the title change is missed because the title is checked on
+  // load. Clearing the title ensures that TitleWatcher will wait for the actual
+  // title setting.
+  tab->GetController().GetActiveEntry()->SetTitle(base::string16());
+
   // Request tablet version.
   chrome::ToggleRequestTabletSite(browser());
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
