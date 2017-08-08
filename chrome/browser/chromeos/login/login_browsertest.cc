@@ -184,7 +184,6 @@ class LoginTest : public LoginManagerTest {
 };
 
 const char kDeviceId[] = "device_id";
-const char kTestRealm[] = "test_realm.com";
 const char kTestActiveDirectoryUser[] = "test-user";
 const char kAdMachineInput[] = "machineNameInput";
 const char kAdUserInput[] = "userInput";
@@ -197,9 +196,12 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
  public:
   ActiveDirectoryLoginTest()
       : LoginManagerTest(true),
+        // Using the same realm as supervised user domain. Should be treated as
+        // normal realm.
+        test_realm_(user_manager::kSupervisedUserDomain),
         install_attributes_(
             ScopedStubInstallAttributes::CreateActiveDirectoryManaged(
-                kTestRealm,
+                test_realm_,
                 kDeviceId)) {}
 
   ~ActiveDirectoryLoginTest() override = default;
@@ -238,12 +240,12 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     const std::string innerText(".innerText");
     // Checks if Active Directory welcome message contains realm.
     EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE,
-                                        base::UTF8ToUTF16(kTestRealm)),
+                                        base::UTF8ToUTF16(test_realm_)),
               js_checker().GetString(JSElement(kAdWelcomMessage) + innerText));
 
     // Checks if realm is set to autocomplete username.
     EXPECT_EQ(
-        "@" + std::string(kTestRealm),
+        "@" + test_realm_,
         js_checker().GetString(JSElement(kAdAutocompleteRealm) + innerText));
 
     // Checks if bottom bar is visible.
@@ -310,6 +312,8 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     return static_cast<FakeAuthPolicyClient*>(
         DBusThreadManager::Get()->GetAuthPolicyClient());
   }
+
+  const std::string test_realm_;
 
  private:
   // Used for the callback from FakeAuthPolicy::RefreshDevicePolicy.
@@ -471,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginErrors) {
 
   fake_auth_policy_client()->set_auth_error(authpolicy::ERROR_BAD_USER_NAME);
   SubmitActiveDirectoryCredentials(
-      std::string(kTestActiveDirectoryUser) + "@" + kTestRealm, kPassword);
+      std::string(kTestActiveDirectoryUser) + "@" + test_realm_, kPassword);
   WaitForMessage(&message_queue, "\"ShowAuthError\"");
   TestUserError();
   TestDomainVisible();

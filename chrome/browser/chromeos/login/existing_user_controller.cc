@@ -557,8 +557,8 @@ void ExistingUserController::PerformLogin(
         user_context.GetKey()->GetSecret());
   }
 
-  if (gaia::ExtractDomainName(user_context.GetAccountId().GetUserEmail()) ==
-      user_manager::kSupervisedUserDomain) {
+  if (user_manager::UserManager::Get()->IsSupervisedAccountId(
+          user_context.GetAccountId())) {
     login_performer_->LoginAsSupervisedUser(user_context);
   } else {
     // If a regular user log in to a device which supports ARC, we should make
