@@ -583,10 +583,13 @@ component("base") {
     ]
 
     deps += [
-      "//ui/events/ozone:events_ozone_evdev",
       "//ui/events/ozone:events_ozone_layout",
       "//ui/ozone:ozone_base",
     ]
+
+    if (!is_fuchsia) {
+      deps += [ "//ui/events/ozone:events_ozone_evdev" ]
+    }
   }
 
   if (!toolkit_views && !use_aura) {
