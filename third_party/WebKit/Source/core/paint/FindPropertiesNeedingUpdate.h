@@ -66,6 +66,8 @@ class FindFrameViewPropertiesNeedingUpdateScope {
       original_pre_translation_ = pre_translation->Clone();
     if (auto* content_clip = frame_view_->ContentClip())
       original_content_clip_ = content_clip->Clone();
+    if (auto* scroll_node = frame_view_->ScrollNode())
+      original_scroll_node_ = scroll_node->Clone();
     if (auto* scroll_translation = frame_view_->ScrollTranslation())
       original_scroll_translation_ = scroll_translation->Clone();
   }
@@ -85,6 +87,8 @@ class FindFrameViewPropertiesNeedingUpdateScope {
                                  frame_view_->PreTranslation());
     DCHECK_FRAMEVIEW_PROPERTY_EQ(original_content_clip_,
                                  frame_view_->ContentClip());
+    DCHECK_FRAMEVIEW_PROPERTY_EQ(original_scroll_node_,
+                                 frame_view_->ScrollNode());
     DCHECK_FRAMEVIEW_PROPERTY_EQ(original_scroll_translation_,
                                  frame_view_->ScrollTranslation());
 
@@ -98,6 +102,7 @@ class FindFrameViewPropertiesNeedingUpdateScope {
   bool needed_forced_subtree_update_;
   RefPtr<const TransformPaintPropertyNode> original_pre_translation_;
   RefPtr<const ClipPaintPropertyNode> original_content_clip_;
+  RefPtr<const ScrollPaintPropertyNode> original_scroll_node_;
   RefPtr<const TransformPaintPropertyNode> original_scroll_translation_;
 };
 
@@ -184,6 +189,8 @@ class FindObjectPropertiesNeedingUpdateScope {
       DCHECK_OBJECT_PROPERTY_EQ(
           object_, original_properties_->SvgLocalToBorderBoxTransform(),
           object_properties->SvgLocalToBorderBoxTransform());
+      DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->Scroll(),
+                                object_properties->Scroll());
       DCHECK_OBJECT_PROPERTY_EQ(object_,
                                 original_properties_->ScrollTranslation(),
                                 object_properties->ScrollTranslation());

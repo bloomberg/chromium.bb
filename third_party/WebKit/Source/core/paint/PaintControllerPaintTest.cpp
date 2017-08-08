@@ -135,8 +135,8 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
 
   // Verify that the background does not scroll.
   const PaintChunk& background_chunk = RootPaintController().PaintChunks()[0];
-  EXPECT_FALSE(background_chunk.properties.property_tree_state.Transform()
-                   ->IsScrollTranslation());
+  auto* transform = background_chunk.properties.property_tree_state.Transform();
+  EXPECT_EQ(nullptr, transform->ScrollNode());
 
   const EffectPaintPropertyNode* effect_node =
       div.FirstFragment()->PaintProperties()->Effect();

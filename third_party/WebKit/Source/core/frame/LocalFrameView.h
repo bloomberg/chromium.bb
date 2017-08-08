@@ -706,7 +706,10 @@ class CORE_EXPORT LocalFrameView final
   TransformPaintPropertyNode* PreTranslation() const {
     return pre_translation_.Get();
   }
-
+  void SetScrollNode(RefPtr<ScrollPaintPropertyNode> scroll_node) {
+    scroll_node_ = std::move(scroll_node);
+  }
+  ScrollPaintPropertyNode* ScrollNode() const { return scroll_node_.Get(); }
   void SetScrollTranslation(
       RefPtr<TransformPaintPropertyNode> scroll_translation) {
     scroll_translation_ = std::move(scroll_translation);
@@ -714,7 +717,6 @@ class CORE_EXPORT LocalFrameView final
   TransformPaintPropertyNode* ScrollTranslation() const {
     return scroll_translation_.Get();
   }
-
   void SetContentClip(RefPtr<ClipPaintPropertyNode> content_clip) {
     content_clip_ = std::move(content_clip);
   }
@@ -1162,6 +1164,7 @@ class CORE_EXPORT LocalFrameView final
   // enabled.
   RefPtr<TransformPaintPropertyNode> pre_translation_;
   RefPtr<TransformPaintPropertyNode> scroll_translation_;
+  RefPtr<ScrollPaintPropertyNode> scroll_node_;
   // The content clip clips the document (= LayoutView) but not the scrollbars.
   // TODO(trchen): This will not be needed once settings->rootLayerScrolls() is
   // enabled.

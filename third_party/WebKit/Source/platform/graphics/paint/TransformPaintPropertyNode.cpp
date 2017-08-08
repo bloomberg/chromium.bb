@@ -45,8 +45,10 @@ String TransformPaintPropertyNode::ToString() const {
       flattens_inherited_transform_ ? "yes" : "no", rendering_context_id_,
       CompositingReasonsAsString(direct_compositing_reasons_).Ascii().data(),
       compositor_element_id_.ToString().c_str());
-  if (scroll_)
-    return transform + " scroll=" + scroll_->ToString();
+  if (scroll_) {
+    return String::Format("%s scroll=%p", transform.Utf8().data(),
+                          scroll_.Get());
+  }
   return transform;
 }
 

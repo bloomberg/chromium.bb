@@ -310,7 +310,7 @@ void PropertyTreeManager::UpdateLayerScrollMapping(
   layer->SetScrollTreeIndex(scroll_node_id);
   auto& compositor_scroll_node = *GetScrollTree().Node(scroll_node_id);
 
-  if (!transform->IsScrollTranslation())
+  if (!transform->ScrollNode())
     return;
 
   auto& compositor_transform_node =

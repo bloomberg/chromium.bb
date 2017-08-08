@@ -22,16 +22,16 @@ class WebLayerScrollClient;
 
 // A scroll node contains auxiliary scrolling information which includes how far
 // an area can be scrolled, main thread scrolling reasons, etc. Scroll nodes
-// are owned by TransformPaintPropertyNodes that are used for the scroll offset
-// translation.
+// are referenced by TransformPaintPropertyNodes that are used for the scroll
+// offset translation, though scroll offset translation can exist without a
+// scroll node (e.g., overflow: hidden).
 //
 // Main thread scrolling reasons force scroll updates to go to the main thread
 // and can have dependencies on other nodes. For example, all parents of a
 // scroll node with background attachment fixed set should also have it set.
 //
 // The scroll tree differs from the other trees because it does not affect
-// geometry directly. We may want to rename this class to reflect that it is
-// more like rare scroll data for TransformPaintPropertyNode.
+// geometry directly.
 class PLATFORM_EXPORT ScrollPaintPropertyNode
     : public PaintPropertyNode<ScrollPaintPropertyNode> {
  public:
