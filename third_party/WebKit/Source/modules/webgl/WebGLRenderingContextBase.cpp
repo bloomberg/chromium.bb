@@ -726,21 +726,29 @@ ScriptPromise WebGLRenderingContextBase::commit(
                           exception_state);
   }
 
-  RefPtr<StaticBitmapImage> image;
-  if (CreationAttributes().preserveDrawingBuffer()) {
-    SkImageInfo image_info =
-        SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
-                          CreationAttributes().alpha() ? kPremul_SkAlphaType
-                                                       : kOpaque_SkAlphaType);
-    image = MakeImageSnapshot(image_info);
-  } else {
-    image = GetDrawingBuffer()->TransferToStaticBitmapImage();
-  }
+  RefPtr<StaticBitmapImage> image = GetStaticBitmapImage();
 
   return host()->Commit(
       std::move(image), SkIRect::MakeWH(width, height),
       GetDrawingBuffer()->ContextProvider()->IsSoftwareRendering(),
       script_state, exception_state);
+}
+
+PassRefPtr<StaticBitmapImage>
+WebGLRenderingContextBase::GetStaticBitmapImage() {
+  if (!GetDrawingBuffer())
+    return nullptr;
+
+  if (CreationAttributes().preserveDrawingBuffer()) {
+    int width = GetDrawingBuffer()->Size().Width();
+    int height = GetDrawingBuffer()->Size().Height();
+    SkImageInfo image_info =
+        SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
+                          CreationAttributes().alpha() ? kPremul_SkAlphaType
+                                                       : kOpaque_SkAlphaType);
+    return MakeImageSnapshot(image_info);
+  }
+  return GetDrawingBuffer()->TransferToStaticBitmapImage();
 }
 
 RefPtr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(

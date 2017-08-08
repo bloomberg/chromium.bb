@@ -598,6 +598,10 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // This clears the backbuffer if preserveDrawingBuffer is false.
   void MarkCompositedAndClearBackbufferIfNeeded();
 
+  // For use by WebVR, commits the current canvas content similar
+  // to the "commit" JS API.
+  PassRefPtr<StaticBitmapImage> GetStaticBitmapImage();
+
  protected:
   friend class EXTDisjointTimerQuery;
   friend class EXTDisjointTimerQueryWebGL2;
