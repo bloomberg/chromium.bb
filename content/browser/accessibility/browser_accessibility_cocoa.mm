@@ -16,7 +16,7 @@
 #include "base/mac/availability.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/app/strings/grit/content_strings.h"
@@ -65,7 +65,11 @@ NSString* const NSAccessibilityARIASetSizeAttribute = @"AXARIASetSize";
 NSString* const NSAccessibilityAccessKeyAttribute = @"AXAccessKey";
 NSString* const NSAccessibilityDOMIdentifierAttribute = @"AXDOMIdentifier";
 NSString* const NSAccessibilityDropEffectsAttribute = @"AXDropEffects";
+NSString* const NSAccessibilityEditableAncestorAttribute =
+    @"AXEditableAncestor";
 NSString* const NSAccessibilityGrabbedAttribute = @"AXGrabbed";
+NSString* const NSAccessibilityHighestEditableAncestorAttribute =
+    @"AXHighestEditableAncestor";
 NSString* const NSAccessibilityInvalidAttribute = @"AXInvalid";
 NSString* const NSAccessibilityIsMultiSelectableAttribute =
     @"AXIsMultiSelectable";
@@ -563,6 +567,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       {NSAccessibilityDisclosedRowsAttribute, @"disclosedRows"},
       {NSAccessibilityDropEffectsAttribute, @"dropEffects"},
       {NSAccessibilityDOMIdentifierAttribute, @"domIdentifier"},
+      {NSAccessibilityEditableAncestorAttribute, @"editableAncestor"},
       {NSAccessibilityEnabledAttribute, @"enabled"},
       {NSAccessibilityEndTextMarkerAttribute, @"endTextMarker"},
       {NSAccessibilityExpandedAttribute, @"expanded"},
@@ -570,6 +575,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       {NSAccessibilityGrabbedAttribute, @"grabbed"},
       {NSAccessibilityHeaderAttribute, @"header"},
       {NSAccessibilityHelpAttribute, @"help"},
+      {NSAccessibilityHighestEditableAncestorAttribute,
+       @"highestEditableAncestor"},
       {NSAccessibilityIndexAttribute, @"index"},
       {NSAccessibilityInsertionPointLineNumberAttribute,
        @"insertionPointLineNumber"},
@@ -968,6 +975,23 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   return nil;
 }
 
+- (id)editableAncestor {
+  if (![self instanceActive])
+    return nil;
+
+  BrowserAccessibilityCocoa* editableRoot = self;
+  while (![editableRoot browserAccessibility]->GetBoolAttribute(
+      ui::AX_ATTR_EDITABLE_ROOT)) {
+    BrowserAccessibilityCocoa* parent = [editableRoot parent];
+    if (!parent || ![parent isKindOfClass:[self class]] ||
+        ![parent instanceActive]) {
+      return nil;
+    }
+    editableRoot = parent;
+  }
+  return editableRoot;
+}
+
 - (NSNumber*)enabled {
   if (![self instanceActive])
     return nil;
@@ -1044,6 +1068,26 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
   return NSStringForStringAttribute(
       browserAccessibility_, ui::AX_ATTR_DESCRIPTION);
+}
+
+- (id)highestEditableAncestor {
+  if (![self instanceActive])
+    return nil;
+
+  BrowserAccessibilityCocoa* highestEditableAncestor = [self editableAncestor];
+  while (highestEditableAncestor) {
+    BrowserAccessibilityCocoa* ancestorParent =
+        [highestEditableAncestor parent];
+    if (!ancestorParent || ![ancestorParent isKindOfClass:[self class]]) {
+      break;
+    }
+    BrowserAccessibilityCocoa* higherAncestor =
+        [ancestorParent editableAncestor];
+    if (!higherAncestor)
+      break;
+    highestEditableAncestor = higherAncestor;
+  }
+  return highestEditableAncestor;
 }
 
 - (NSNumber*)index {
@@ -1341,6 +1385,45 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
 - (content::BrowserAccessibility*)browserAccessibility {
   return browserAccessibility_;
+}
+
+// Assumes that there is at most one insertion, deletion or replacement at once.
+// TODO(nektar): Merge this method with
+// |BrowserAccessibilityAndroid::CommonEndLengths|.
+- (content::AXTextEdit)computeTextEdit {
+  // Starting from macOS 10.11, if the user has edited some text we need to
+  // dispatch the actual text that changed on the value changed notification.
+  // We run this code on all macOS versions to get the highest test coverage.
+  base::string16 oldValue = oldValue_;
+  base::string16 newValue = browserAccessibility_->GetValue();
+  oldValue_ = newValue;
+  if (oldValue.empty() && newValue.empty())
+    return content::AXTextEdit();
+
+  size_t i;
+  size_t j;
+  // Sometimes Blink doesn't use the same UTF16 characters to represent
+  // whitespace.
+  for (i = 0;
+       i < oldValue.length() && i < newValue.length() &&
+       (oldValue[i] == newValue[i] || (base::IsUnicodeWhitespace(oldValue[i]) &&
+                                       base::IsUnicodeWhitespace(newValue[i])));
+       ++i) {
+  }
+  for (j = 0;
+       (i + j) < oldValue.length() && (i + j) < newValue.length() &&
+       (oldValue[oldValue.length() - j - 1] ==
+            newValue[newValue.length() - j - 1] ||
+        (base::IsUnicodeWhitespace(oldValue[oldValue.length() - j - 1]) &&
+         base::IsUnicodeWhitespace(newValue[newValue.length() - j - 1])));
+       ++j) {
+  }
+  DCHECK_LE(i + j, oldValue.length());
+  DCHECK_LE(i + j, newValue.length());
+
+  base::string16 deletedText = oldValue.substr(i, oldValue.length() - i - j);
+  base::string16 insertedText = newValue.substr(i, newValue.length() - i - j);
+  return content::AXTextEdit(insertedText, deletedText);
 }
 
 - (BOOL)instanceActive {
@@ -2581,10 +2664,12 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
                        NSAccessibilityChildrenAttribute,
                        NSAccessibilityDescriptionAttribute,
                        NSAccessibilityDOMIdentifierAttribute,
+                       NSAccessibilityEditableAncestorAttribute,
                        NSAccessibilityEnabledAttribute,
                        NSAccessibilityEndTextMarkerAttribute,
                        NSAccessibilityFocusedAttribute,
                        NSAccessibilityHelpAttribute,
+                       NSAccessibilityHighestEditableAncestorAttribute,
                        NSAccessibilityInvalidAttribute,
                        NSAccessibilityLinkedUIElementsAttribute,
                        NSAccessibilityParentAttribute,

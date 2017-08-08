@@ -7,14 +7,18 @@
 #import <Cocoa/Cocoa.h>
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
+#include "content/public/browser/ax_event_notification_details.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "ui/accessibility/ax_tree_update.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace content {
@@ -28,14 +32,16 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
 
  protected:
   void RebuildAccessibilityTree() {
-    ui::AXNodeData root;
-    root.id = 1000;
-    root.location.set_width(500);
-    root.location.set_height(100);
-    root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-    root.AddStringAttribute(ui::AX_ATTR_DESCRIPTION, "HelpText");
-    root.child_ids.push_back(1001);
-    root.child_ids.push_back(1002);
+    // Clean out the existing root data in case this method is called multiple
+    // times in a test.
+    root_ = ui::AXNodeData();
+    root_.id = 1000;
+    root_.location.set_width(500);
+    root_.location.set_height(100);
+    root_.role = ui::AX_ROLE_ROOT_WEB_AREA;
+    root_.AddStringAttribute(ui::AX_ATTR_DESCRIPTION, "HelpText");
+    root_.child_ids.push_back(1001);
+    root_.child_ids.push_back(1002);
 
     ui::AXNodeData child1;
     child1.id = 1001;
@@ -51,14 +57,26 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
     child2.location.set_height(100);
     child2.role = ui::AX_ROLE_HEADING;
 
-    manager_.reset(
-        new BrowserAccessibilityManagerMac(
-            MakeAXTreeUpdate(root, child1, child2),
-            NULL));
+    manager_.reset(new BrowserAccessibilityManagerMac(
+        MakeAXTreeUpdate(root_, child1, child2), nullptr));
     accessibility_.reset([ToBrowserAccessibilityCocoa(manager_->GetRoot())
         retain]);
   }
 
+  void SetRootValue(std::string value) {
+    if (!manager_)
+      return;
+    root_.SetValue(value);
+    ui::AXTreeUpdate update;
+    update.nodes.push_back(root_);
+    AXEventNotificationDetails param;
+    param.event_type = ui::AX_EVENT_VALUE_CHANGED;
+    param.id = root_.id;
+    std::vector<AXEventNotificationDetails> events{param};
+    manager_->OnAccessibilityEvents(update, events);
+  }
+
+  ui::AXNodeData root_;
   base::scoped_nsobject<BrowserAccessibilityCocoa> accessibility_;
   std::unique_ptr<BrowserAccessibilityManager> manager_;
 };
@@ -124,6 +142,74 @@ TEST_F(BrowserAccessibilityTest, RetainedDetachedObjectsReturnNil) {
 
   // Don't leak memory in the test.
   [retainedFirstChild release];
+}
+
+TEST_F(BrowserAccessibilityTest, TestComputeTextEdit) {
+  BrowserAccessibility* wrapper = [accessibility_ browserAccessibility];
+  ASSERT_NE(nullptr, wrapper);
+
+  // Insertion but no deletion.
+
+  SetRootValue("text");
+  AXTextEdit text_edit = [accessibility_ computeTextEdit];
+  EXPECT_EQ(base::UTF8ToUTF16("text"), text_edit.inserted_text);
+  EXPECT_TRUE(text_edit.deleted_text.empty());
+
+  SetRootValue("new text");
+  text_edit = [accessibility_ computeTextEdit];
+  EXPECT_EQ(base::UTF8ToUTF16("new "), text_edit.inserted_text);
+  EXPECT_TRUE(text_edit.deleted_text.empty());
+
+  SetRootValue("new text hello");
+  text_edit = [accessibility_ computeTextEdit];
+  EXPECT_EQ(base::UTF8ToUTF16(" hello"), text_edit.inserted_text);
+  EXPECT_TRUE(text_edit.deleted_text.empty());
+
+  SetRootValue("newer text hello");
+  text_edit = [accessibility_ computeTextEdit];
+  EXPECT_EQ(base::UTF8ToUTF16("er"), text_edit.inserted_text);
+  EXPECT_TRUE(text_edit.deleted_text.empty());
+
+  // Deletion but no insertion.
+
+  SetRootValue("new text hello");
+  text_edit = [accessibility_ computeTextEdit];
+  EXPECT_EQ(base::UTF8ToUTF16("er"), text_edit.deleted_text);
+  EXPECT_TRUE(text_edit.inserted_text.empty());
+
+  SetRootValue("new text");
+  text_edit = [accessibility_ computeTextEdit];
+  EXPECT_EQ(base::UTF8ToUTF16(" hello"), text_edit.deleted_text);
+  EXPECT_TRUE(text_edit.inserted_text.empty());
+
+  SetRootValue("text");
+  text_edit = [accessibility_ computeTextEdit];
+  EXPECT_EQ(base::UTF8ToUTF16("new "), text_edit.deleted_text);
+  EXPECT_TRUE(text_edit.inserted_text.empty());
+
+  SetRootValue("");
+  text_edit = [accessibility_ computeTextEdit];
+  EXPECT_EQ(base::UTF8ToUTF16("text"), text_edit.deleted_text);
+  EXPECT_TRUE(text_edit.inserted_text.empty());
+
+  // Both insertion and deletion.
+
+  SetRootValue("new text hello");
+  text_edit = [accessibility_ computeTextEdit];
+  SetRootValue("new word hello");
+  text_edit = [accessibility_ computeTextEdit];
+  EXPECT_EQ(base::UTF8ToUTF16("text"), text_edit.deleted_text);
+  EXPECT_EQ(base::UTF8ToUTF16("word"), text_edit.inserted_text);
+
+  SetRootValue("new word there");
+  text_edit = [accessibility_ computeTextEdit];
+  EXPECT_EQ(base::UTF8ToUTF16("hello"), text_edit.deleted_text);
+  EXPECT_EQ(base::UTF8ToUTF16("there"), text_edit.inserted_text);
+
+  SetRootValue("old word there");
+  text_edit = [accessibility_ computeTextEdit];
+  EXPECT_EQ(base::UTF8ToUTF16("new"), text_edit.deleted_text);
+  EXPECT_EQ(base::UTF8ToUTF16("old"), text_edit.inserted_text);
 }
 
 }  // namespace content

@@ -465,6 +465,13 @@ bool WebAXObject::AriaHasPopup() const {
   return private_->AriaHasPopup();
 }
 
+bool WebAXObject::IsEditableRoot() const {
+  if (IsDetached())
+    return false;
+
+  return private_->IsEditableRoot();
+}
+
 bool WebAXObject::IsEditable() const {
   if (IsDetached())
     return false;

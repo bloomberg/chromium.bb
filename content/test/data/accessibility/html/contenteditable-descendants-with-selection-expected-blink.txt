@@ -1,5 +1,5 @@
 rootWebArea
-++genericContainer editable multiline richlyEditable
+++genericContainer editable multiline richlyEditable editableRoot=true
 ++++paragraph editable richlyEditable
 ++++++staticText editable richlyEditable name='A contenteditable with a ' TreeData.textSelStartOffset=0
 ++++++++inlineTextBox name='A contenteditable with a '

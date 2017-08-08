@@ -909,6 +909,9 @@ std::string AXNodeData::ToString() const {
   for (size_t i = 0; i < bool_attributes.size(); ++i) {
     std::string value = bool_attributes[i].second ? "true" : "false";
     switch (bool_attributes[i].first) {
+      case AX_ATTR_EDITABLE_ROOT:
+        result += " editable_root=" + value;
+        break;
       case AX_ATTR_LIVE_ATOMIC:
         result += " atomic=" + value;
         break;

@@ -8,8 +8,26 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/strings/string16.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+
+namespace content {
+
+// Used to store changes in edit fields, required by VoiceOver in order to
+// support character echo and other announcements during editing.
+struct AXTextEdit {
+  AXTextEdit() = default;
+  AXTextEdit(base::string16 inserted_text, base::string16 deleted_text)
+      : inserted_text(inserted_text), deleted_text(deleted_text) {}
+
+  bool IsEmpty() const { return inserted_text.empty() && deleted_text.empty(); }
+
+  base::string16 inserted_text;
+  base::string16 deleted_text;
+};
+
+}  // namespace content
 
 // BrowserAccessibilityCocoa is a cocoa wrapper around the BrowserAccessibility
 // object. The renderer converts webkit's accessibility tree into a
@@ -19,6 +37,8 @@
  @private
   content::BrowserAccessibility* browserAccessibility_;
   base::scoped_nsobject<NSMutableArray> children_;
+  // Stores the previous value of an edit field.
+  base::string16 oldValue_;
 }
 
 // This creates a cocoa browser accessibility object around
@@ -47,6 +67,9 @@
 
 // Get the BrowserAccessibility that this object wraps.
 - (content::BrowserAccessibility*)browserAccessibility;
+
+// Computes the text that was added or deleted in a text field after an edit.
+- (content::AXTextEdit)computeTextEdit;
 
 // Determines if this object is alive, i.e. it hasn't been detached.
 - (BOOL)instanceActive;
@@ -84,6 +107,8 @@
 @property(nonatomic, readonly) NSNumber* disclosureLevel;
 @property(nonatomic, readonly) id disclosedRows;
 @property(nonatomic, readonly) NSString* dropEffects;
+// Returns the object at the root of the current edit field, if any.
+@property(nonatomic, readonly) id editableAncestor;
 @property(nonatomic, readonly) NSNumber* enabled;
 // Returns a text marker that points to the last character in the document that
 // can be selected with Voiceover.
