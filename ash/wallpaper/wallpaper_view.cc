@@ -4,6 +4,7 @@
 
 #include "ash/wallpaper/wallpaper_view.h"
 
+#include "ash/login/ui/login_constants.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -18,6 +19,8 @@
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_analysis.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/transform.h"
@@ -70,6 +73,23 @@ class LayerControlView : public views::View {
  private:
   DISALLOW_COPY_AND_ASSIGN(LayerControlView);
 };
+
+// Returns the color used to darken the wallpaper, needed by login, lock, OOBE
+// and add user screens.
+SkColor GetWallpaperDarkenColor() {
+  SkColor darken_color =
+      Shell::Get()->wallpaper_controller()->GetProminentColor(
+          color_utils::ColorProfile(color_utils::LumaRange::DARK,
+                                    color_utils::SaturationRange::MUTED));
+  if (darken_color == WallpaperController::kInvalidColor)
+    darken_color = login_constants::kDefaultBaseColor;
+
+  darken_color = color_utils::GetResultingPaintColor(
+      SkColorSetA(login_constants::kDefaultBaseColor,
+                  login_constants::kTranslucentColorDarkenAlpha),
+      SkColorSetA(darken_color, 0xFF));
+  return SkColorSetA(darken_color, login_constants::kTranslucentAlpha);
+}
 
 }  // namespace
 
@@ -139,6 +159,12 @@ void WallpaperView::OnPaint(gfx::Canvas* canvas) {
   if (wallpaper.isNull())
     return;
 
+  cc::PaintFlags flags;
+  if (Shell::Get()->session_controller()->IsUserSessionBlocked()) {
+    flags.setColorFilter(SkColorFilter::MakeModeFilter(
+        GetWallpaperDarkenColor(), SkBlendMode::kDarken));
+  }
+
   if (layout == wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED) {
     // The dimension with the smallest ratio must be cropped, the other one
     // is preserved. Both are set in gfx::Size cropped_size.
@@ -164,13 +190,14 @@ void WallpaperView::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawImageInt(
         wallpaper, wallpaper_cropped_rect.x(), wallpaper_cropped_rect.y(),
         wallpaper_cropped_rect.width(), wallpaper_cropped_rect.height(), 0, 0,
-        width(), height(), true);
+        width(), height(), true, flags);
   } else if (layout == wallpaper::WALLPAPER_LAYOUT_TILE) {
-    canvas->TileImageInt(wallpaper, 0, 0, width(), height());
+    canvas->TileImageInt(wallpaper, 0, 0, 0, 0, width(), height(), 1.0f,
+                         &flags);
   } else if (layout == wallpaper::WALLPAPER_LAYOUT_STRETCH) {
     // This is generally not recommended as it may show artifacts.
     canvas->DrawImageInt(wallpaper, 0, 0, wallpaper.width(), wallpaper.height(),
-                         0, 0, width(), height(), true);
+                         0, 0, width(), height(), true, flags);
   } else {
     float image_scale = canvas->image_scale();
     gfx::Rect wallpaper_rect(0, 0, wallpaper.width() / image_scale,
@@ -179,7 +206,8 @@ void WallpaperView::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawImageInt(wallpaper, 0, 0, wallpaper.width(), wallpaper.height(),
                          (width() - wallpaper_rect.width()) / 2,
                          (height() - wallpaper_rect.height()) / 2,
-                         wallpaper_rect.width(), wallpaper_rect.height(), true);
+                         wallpaper_rect.width(), wallpaper_rect.height(), true,
+                         flags);
   }
 }
 
@@ -235,6 +263,9 @@ views::Widget* CreateWallpaper(aura::Window* root_window, int container_id) {
 
   aura::Window* container = root_window->GetChildById(container_id);
   wallpaper_widget->SetBounds(container->bounds());
+  if (Shell::Get()->session_controller()->IsUserSessionBlocked())
+    wallpaper_widget->GetLayer()->SetLayerBlur(login_constants::kBlurSigma);
+
   return wallpaper_widget;
 }
 
