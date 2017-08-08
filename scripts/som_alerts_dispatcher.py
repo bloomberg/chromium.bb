@@ -270,7 +270,7 @@ def SummarizeHistory(build, db):
   start_date = now - datetime.timedelta(days=MAX_HISTORY_DAYS)
   history = db.GetBuildHistory(
       build['build_config'], MAX_CONSECUTIVE_BUILDS, start_date=start_date,
-      ending_build_number=build['build_number'], wfall=build['waterfall'],
+      ending_build_number=build['build_number'], waterfall=build['waterfall'],
       buildbot_generation=build['buildbot_generation'])
   history = sorted(history, key=lambda s: s['build_number'], reverse=True)
 
