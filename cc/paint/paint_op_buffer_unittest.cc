@@ -268,45 +268,6 @@ TEST_F(PaintOpAppendTest, MoveThenReappendOperatorEq) {
   VerifyOps(&original);
 }
 
-// Verify that PaintOps with data are stored properly.
-TEST(PaintOpBufferTest, PaintOpData) {
-  PaintOpBuffer buffer;
-
-  buffer.push<SaveOp>();
-  PaintFlags flags;
-  char text1[] = "asdfasdf";
-  buffer.push_with_data<DrawTextOp>(text1, arraysize(text1), 0.f, 0.f, flags);
-
-  char text2[] = "qwerty";
-  buffer.push_with_data<DrawTextOp>(text2, arraysize(text2), 0.f, 0.f, flags);
-
-  ASSERT_EQ(buffer.size(), 3u);
-
-  // Verify iteration behavior and brief smoke test of op state.
-  PaintOpBuffer::Iterator iter(&buffer);
-  PaintOp* save_op = *iter;
-  EXPECT_EQ(save_op->GetType(), PaintOpType::Save);
-  ++iter;
-
-  PaintOp* op1 = *iter;
-  ASSERT_EQ(op1->GetType(), PaintOpType::DrawText);
-  DrawTextOp* draw_text_op1 = static_cast<DrawTextOp*>(op1);
-  EXPECT_EQ(draw_text_op1->bytes, arraysize(text1));
-  const void* data1 = draw_text_op1->GetData();
-  EXPECT_EQ(memcmp(data1, text1, arraysize(text1)), 0);
-  ++iter;
-
-  PaintOp* op2 = *iter;
-  ASSERT_EQ(op2->GetType(), PaintOpType::DrawText);
-  DrawTextOp* draw_text_op2 = static_cast<DrawTextOp*>(op2);
-  EXPECT_EQ(draw_text_op2->bytes, arraysize(text2));
-  const void* data2 = draw_text_op2->GetData();
-  EXPECT_EQ(memcmp(data2, text2, arraysize(text2)), 0);
-  ++iter;
-
-  EXPECT_FALSE(iter);
-}
-
 // Verify that PaintOps with arrays are stored properly.
 TEST(PaintOpBufferTest, PaintOpArray) {
   PaintOpBuffer buffer;
@@ -1857,16 +1818,6 @@ void PushDrawRRectOps(PaintOpBuffer* buffer) {
     buffer->push<DrawRRectOp>(test_rrects[i], test_flags[i]);
 }
 
-void PushDrawTextOps(PaintOpBuffer* buffer) {
-  size_t len = std::min(std::min(test_strings.size(), test_flags.size()),
-                        test_floats.size() - 1);
-  for (size_t i = 0; i < len; ++i) {
-    buffer->push_with_data<DrawTextOp>(
-        test_strings[i].c_str(), test_strings[i].size() + 1, test_floats[i],
-        test_floats[i + 1], test_flags[i]);
-  }
-}
-
 void PushDrawTextBlobOps(PaintOpBuffer* buffer) {
   size_t len = std::min(std::min(test_blobs.size(), test_flags.size()),
                         test_floats.size() - 1);
@@ -2113,17 +2064,6 @@ void CompareDrawRRectOp(const DrawRRectOp* original,
   EXPECT_EQ(original->rrect, written->rrect);
 }
 
-void CompareDrawTextOp(const DrawTextOp* original, const DrawTextOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareFlags(original->flags, written->flags);
-  EXPECT_EQ(original->x, written->x);
-  EXPECT_EQ(original->y, written->y);
-  ASSERT_EQ(original->bytes, written->bytes);
-  EXPECT_EQ(std::string(static_cast<const char*>(original->GetData())),
-            std::string(static_cast<const char*>(written->GetData())));
-}
-
 void CompareDrawTextBlobOp(const DrawTextBlobOp* original,
                            const DrawTextBlobOp* written) {
   EXPECT_TRUE(original->IsValid());
@@ -2298,9 +2238,6 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
       case PaintOpType::DrawRRect:
         PushDrawRRectOps(&buffer_);
         break;
-      case PaintOpType::DrawText:
-        PushDrawTextOps(&buffer_);
-        break;
       case PaintOpType::DrawTextBlob:
         PushDrawTextBlobOps(&buffer_);
         break;
@@ -2419,10 +2356,6 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
       case PaintOpType::DrawRRect:
         CompareDrawRRectOp(static_cast<const DrawRRectOp*>(original),
                            static_cast<const DrawRRectOp*>(written));
-        break;
-      case PaintOpType::DrawText:
-        CompareDrawTextOp(static_cast<const DrawTextOp*>(original),
-                          static_cast<const DrawTextOp*>(written));
         break;
       case PaintOpType::DrawTextBlob:
         CompareDrawTextBlobOp(static_cast<const DrawTextBlobOp*>(original),

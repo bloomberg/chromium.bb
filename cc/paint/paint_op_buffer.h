@@ -76,7 +76,6 @@ enum class PaintOpType : uint8_t {
   DrawRecord,
   DrawRect,
   DrawRRect,
-  DrawText,
   DrawTextBlob,
   Noop,
   Restore,
@@ -218,45 +217,6 @@ class CC_PAINT_EXPORT PaintOpWithFlags : public PaintOp {
   PaintOpWithFlags() = default;
 };
 
-class CC_PAINT_EXPORT PaintOpWithData : public PaintOpWithFlags {
- public:
-  // Having data is just a helper for ops that have a varying amount of data and
-  // want a way to store that inline.  This is for ops that pass in a
-  // void* and a length.  The void* data is assumed to not have any alignment
-  // requirements.
-  PaintOpWithData(const PaintFlags& flags, size_t bytes)
-      : PaintOpWithFlags(flags), bytes(bytes) {}
-
-  // Get data out by calling paint_op_data.  This can't be part of the class
-  // because it needs to know the size of the derived type.
-  size_t bytes;
-
- protected:
-  PaintOpWithData() = default;
-
-  // For some derived object T, return the internally stored data.
-  // This needs the fully derived type to know how much to offset
-  // from the start of the top to the data.
-  template <typename T>
-  const void* GetDataForThis(const T* op) const {
-    static_assert(std::is_convertible<T, PaintOpWithData>::value,
-                  "T is not a PaintOpWithData");
-    // Arbitrary data for a PaintOp is stored after the PaintOp itself
-    // in the PaintOpBuffer.  Therefore, to access this data, it's
-    // pointer math to increment past the size of T.  Accessing the
-    // next op in the buffer is ((char*)op) + op->skip, with the data
-    // fitting between.
-    return op + 1;
-  }
-
-  template <typename T>
-  void* GetDataForThis(T* op) {
-    return const_cast<void*>(
-        const_cast<const PaintOpWithData*>(this)->GetDataForThis(
-            const_cast<const T*>(op)));
-  }
-};
-
 class CC_PAINT_EXPORT PaintOpWithArrayBase : public PaintOpWithFlags {
  public:
   explicit PaintOpWithArrayBase(const PaintFlags& flags)
@@ -286,7 +246,7 @@ class CC_PAINT_EXPORT PaintOpWithArray : public PaintOpWithArrayBase {
   template <typename T>
   const void* GetDataForThis(const T* op) const {
     static_assert(std::is_convertible<T, PaintOpWithArrayBase>::value,
-                  "T is not a PaintOpWithData");
+                  "T is not a PaintOpWithArray");
     const char* start_array =
         reinterpret_cast<const char*>(GetArrayForThis(op));
     return start_array + sizeof(M) * count;
@@ -302,7 +262,7 @@ class CC_PAINT_EXPORT PaintOpWithArray : public PaintOpWithArrayBase {
   template <typename T>
   const M* GetArrayForThis(const T* op) const {
     static_assert(std::is_convertible<T, PaintOpWithArrayBase>::value,
-                  "T is not a PaintOpWithData");
+                  "T is not a PaintOpWithArray");
     // As an optimization to not have to store an additional offset,
     // assert that T has the same or more alignment requirements than M.  Thus,
     // if T is aligned, and M's alignment needs are a multiple of T's size, then
@@ -765,29 +725,6 @@ class CC_PAINT_EXPORT DrawRRectOp final : public PaintOpWithFlags {
   DrawRRectOp() = default;
 };
 
-class CC_PAINT_EXPORT DrawTextOp final : public PaintOpWithData {
- public:
-  static constexpr PaintOpType kType = PaintOpType::DrawText;
-  static constexpr bool kIsDrawOp = true;
-  DrawTextOp(size_t bytes, SkScalar x, SkScalar y, const PaintFlags& flags)
-      : PaintOpWithData(flags, bytes), x(x), y(y) {}
-  static void RasterWithFlags(const DrawTextOp* op,
-                              const PaintFlags* flags,
-                              SkCanvas* canvas,
-                              const PlaybackParams& params);
-  bool IsValid() const { return flags.IsValid(); }
-  HAS_SERIALIZATION_FUNCTIONS();
-
-  void* GetData() { return GetDataForThis(this); }
-  const void* GetData() const { return GetDataForThis(this); }
-
-  SkScalar x;
-  SkScalar y;
-
- private:
-  DrawTextOp() = default;
-};
-
 class CC_PAINT_EXPORT DrawTextBlobOp final : public PaintOpWithFlags {
  public:
   static constexpr PaintOpType kType = PaintOpType::DrawTextBlob;
@@ -1007,31 +944,9 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   template <typename T, typename... Args>
   void push(Args&&... args) {
     static_assert(std::is_convertible<T, PaintOp>::value, "T not a PaintOp.");
-    static_assert(!std::is_convertible<T, PaintOpWithData>::value,
-                  "Type needs to use push_with_data");
-    push_internal<T>(0, std::forward<Args>(args)...);
-  }
-
-  template <typename T, typename... Args>
-  void push_with_data(const void* data, size_t bytes, Args&&... args) {
-    static_assert(std::is_convertible<T, PaintOpWithData>::value,
-                  "T is not a PaintOpWithData");
     static_assert(!std::is_convertible<T, PaintOpWithArrayBase>::value,
                   "Type needs to use push_with_array");
-    T* op = push_internal<T>(bytes, bytes, std::forward<Args>(args)...);
-    memcpy(op->GetData(), data, bytes);
-
-#if DCHECK_IS_ON()
-    // Double check the data fits between op and next op and doesn't clobber.
-    char* op_start = reinterpret_cast<char*>(op);
-    char* op_end = op_start + sizeof(T);
-    char* next_op = op_start + op->skip;
-    char* data_start = reinterpret_cast<char*>(op->GetData());
-    char* data_end = data_start + bytes;
-    DCHECK_GE(data_start, op_end);
-    DCHECK_LT(data_start, next_op);
-    DCHECK_LE(data_end, next_op);
-#endif
+    push_internal<T>(0, std::forward<Args>(args)...);
   }
 
   template <typename T, typename M, typename... Args>

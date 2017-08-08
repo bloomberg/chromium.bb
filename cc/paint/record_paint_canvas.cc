@@ -303,14 +303,6 @@ void RecordPaintCanvas::drawBitmap(const SkBitmap& bitmap,
             left, top, flags);
 }
 
-void RecordPaintCanvas::drawText(const void* text,
-                                 size_t byte_length,
-                                 SkScalar x,
-                                 SkScalar y,
-                                 const PaintFlags& flags) {
-  list_->push_with_data<DrawTextOp>(text, byte_length, x, y, flags);
-}
-
 void RecordPaintCanvas::drawPosText(const void* text,
                                     size_t byte_length,
                                     const SkPoint pos[],
