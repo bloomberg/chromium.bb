@@ -2862,6 +2862,24 @@
             ]
         }
     ],
+    "SyncPasswordReuseEvent": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncPasswordReuseEvent"
+                    ]
+                }
+            ]
+        }
+    ],
     "SyncUSSAutocomplete": [
         {
             "platforms": [
