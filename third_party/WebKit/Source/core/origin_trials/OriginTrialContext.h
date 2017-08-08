@@ -68,6 +68,10 @@ class CORE_EXPORT OriginTrialContext final
   void AddToken(const String& token);
   void AddTokens(const Vector<String>& tokens);
 
+  // Forces a given origin-trial-enabled feature to be enabled in this context
+  // and immediately adds required bindings to already initialized JS contexts.
+  void AddFeature(const String& feature);
+
   // Returns true if the trial (and therefore the feature or features it
   // controls) should be considered enabled for the current execution context.
   bool IsTrialEnabled(const String& trial_name);

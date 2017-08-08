@@ -197,6 +197,7 @@
 #include "core/loader/NavigationScheduler.h"
 #include "core/loader/PrerendererClient.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
+#include "core/origin_trials/OriginTrials.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "core/page/FocusController.h"
@@ -4801,7 +4802,7 @@ Event* Document::createEvent(ScriptState* script_state,
       // createEvent for TouchEvent should throw DOM exception if touch event
       // feature detection is not enabled. See crbug.com/392584#c22
       if (DeprecatedEqualIgnoringCase(event_type, "TouchEvent") &&
-          !RuntimeEnabledFeatures::TouchEventFeatureDetectionEnabled())
+          !OriginTrials::touchEventFeatureDetectionEnabled(execution_context))
         break;
       return event;
     }

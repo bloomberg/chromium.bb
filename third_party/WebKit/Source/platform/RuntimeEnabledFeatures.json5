@@ -1026,6 +1026,7 @@
     // enabled since they're a feature always supported by Chrome.
     {
       name: "TouchEventFeatureDetection",
+      origin_trial_feature_name: "ForceTouchEventFeatureDetectionForInspector",
       status: "stable",
     },
     // This is set conditionally in SetRuntimeFeaturesDefaultsAndUpdateFromArgs

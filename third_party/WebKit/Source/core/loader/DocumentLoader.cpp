@@ -946,6 +946,10 @@ void DocumentLoader::DidInstallNewDocument(Document* document,
       document->SetContentLanguage(AtomicString(header_content_language));
   }
 
+  if (settings->GetForceTouchEventFeatureDetectionForInspector()) {
+    OriginTrialContext::From(document)->AddFeature(
+        "ForceTouchEventFeatureDetectionForInspector");
+  }
   OriginTrialContext::AddTokensFromHeader(
       document, response_.HttpHeaderField(HTTPNames::Origin_Trial));
   String referrer_policy_header =
