@@ -131,7 +131,8 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
         external_resources.mailboxes[i],
         SingleReleaseCallbackImpl::Create(
             external_resources.release_callbacks[i]),
-        external_resources.read_lock_fences_enabled);
+        external_resources.read_lock_fences_enabled,
+        external_resources.buffer_format);
     frame_resources_.push_back(FrameResource(
         resource_id, external_resources.mailboxes[i].size_in_pixels(),
         external_resources.mailboxes[i].is_overlay_candidate()));
