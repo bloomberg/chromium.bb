@@ -426,16 +426,21 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent,
   const display::Display display_nearest_view = GetDisplayNearestView();
   const gfx::Rect display_work_area_bounds = display_nearest_view.work_area();
   const int bottom_of_screen = display_nearest_view.size().height();
-  // todo(crbug.com/750664): Modify animations and bounds of the launcher
-  // in side shelf mode.
+
+  // Set the widget height to the shelf height to replace the shelf background
+  // on show animation with no flicker. In shelf mode we set the bounds to the
+  // top of the screen because the widget does not animate.
+  const int overlay_view_bounds_y =
+      is_side_shelf_ ? 0 : (bottom_of_screen - kShelfSize);
+  const int overlay_view_bounds_x =
+      is_side_shelf_ ? 0 : display_work_area_bounds.x();
+  const int overlay_view_bounds_width =
+      display_work_area_bounds.width() + (is_side_shelf_ ? kShelfSize : 0);
+  const int overlay_view_bounds_height =
+      display_work_area_bounds.height() + (is_side_shelf_ ? 0 : kShelfSize);
   gfx::Rect app_list_overlay_view_bounds(
-      display_work_area_bounds.x(),
-      bottom_of_screen -
-          kShelfSize,  // Set the widget height to the shelf height to replace
-                       // the shelf background on show animation with no
-                       // flicker.
-      display_work_area_bounds.width(),
-      display_work_area_bounds.height() + kShelfSize);
+      overlay_view_bounds_x, overlay_view_bounds_y, overlay_view_bounds_width,
+      overlay_view_bounds_height);
 
   fullscreen_widget_ = new views::Widget;
   views::Widget::InitParams app_list_overlay_view_params(
@@ -701,11 +706,15 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_SCROLL_FLING_START:
     case ui::ET_GESTURE_SCROLL_BEGIN:
+      if (is_side_shelf_)
+        return;
       processing_scroll_event_series_ = true;
       StartDrag(event->location());
       event->SetHandled();
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
+      if (is_side_shelf_)
+        return;
       processing_scroll_event_series_ = true;
       last_fling_velocity_ = event->details().scroll_y();
       UpdateDrag(event->location());
@@ -714,7 +723,8 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_END:
       if (!processing_scroll_event_series_)
         break;
-
+      if (is_side_shelf_)
+        return;
       processing_scroll_event_series_ = false;
       EndDrag(event->location());
       event->SetHandled();
@@ -851,7 +861,6 @@ void AppListView::SetState(AppListState new_state) {
     }
   }
 
-  StartAnimationForState(new_state_override);
   switch (new_state_override) {
     case PEEKING: {
       switch (app_list_state_) {
@@ -882,7 +891,7 @@ void AppListView::SetState(AppListState new_state) {
         apps_container_view->app_list_folder_view()->CloseFolderPage();
 
       app_list_main_view_->contents_view()->SetActiveState(
-          AppListModel::STATE_APPS);
+          AppListModel::STATE_APPS, !is_side_shelf_);
       break;
     }
     case FULLSCREEN_SEARCH:
@@ -892,10 +901,14 @@ void AppListView::SetState(AppListState new_state) {
       delegate_->Dismiss();
       break;
   }
+  StartAnimationForState(new_state_override);
   app_list_state_ = new_state_override;
 }
 
 void AppListView::StartAnimationForState(AppListState target_state) {
+  if (is_side_shelf_)
+    return;
+
   const int display_height = GetDisplayNearestView().size().height();
   int target_state_y = 0;
 

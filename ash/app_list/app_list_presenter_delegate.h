@@ -54,6 +54,8 @@ class ASH_EXPORT AppListPresenterDelegate
   void UpdateBounds() override;
   gfx::Vector2d GetVisibilityAnimationOffset(
       aura::Window* root_window) override;
+  base::TimeDelta GetVisibilityAnimationDuration(aura::Window* root_window,
+                                                 bool is_visible) override;
 
  private:
   void ProcessLocatedEvent(ui::LocatedEvent* event);
@@ -75,6 +77,9 @@ class ASH_EXPORT AppListPresenterDelegate
 
   // Whether the app list is visible (or in the process of being shown).
   bool is_visible_ = false;
+
+  // Whether the fullscreen app list feature is enabled.
+  const bool is_fullscreen_app_list_enabled_;
 
   // Not owned. Pointer is guaranteed to be valid while this object is alive.
   app_list::AppListPresenterImpl* presenter_;

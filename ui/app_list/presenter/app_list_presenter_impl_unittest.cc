@@ -52,6 +52,10 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   gfx::Vector2d GetVisibilityAnimationOffset(aura::Window*) override {
     return gfx::Vector2d(0, 0);
   }
+  base::TimeDelta GetVisibilityAnimationDuration(aura::Window* root_window,
+                                                 bool is_visible) override {
+    return base::TimeDelta::FromMilliseconds(0);
+  }
 
  private:
   aura::Window* container_;
