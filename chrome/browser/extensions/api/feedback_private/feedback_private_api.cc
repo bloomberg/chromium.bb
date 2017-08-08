@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/statistics_recorder.h"
@@ -28,15 +29,13 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/feedback/tracing_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/strings/grit/components_strings.h"
+#include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/feedback_private/feedback_private_delegate.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extensions_browser_client.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/webui/web_ui_util.h"
 #include "url/url_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/extensions/api/feedback_private/log_source_access_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -188,63 +187,13 @@ ExtensionFunction::ResponseAction FeedbackPrivateGetStringsFunction::Run() {
   auto params = feedback_private::GetStrings::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-
-#define SET_STRING(id, idr) \
-  dict->SetString(id, l10n_util::GetStringUTF16(idr))
-  SET_STRING("page-title",
-             params->flow == FeedbackFlow::FEEDBACK_FLOW_SADTABCRASH
-                 ? IDS_FEEDBACK_REPORT_PAGE_TITLE_SAD_TAB_FLOW
-                 : IDS_FEEDBACK_REPORT_PAGE_TITLE);
-  SET_STRING("additionalInfo", IDS_FEEDBACK_ADDITIONAL_INFO_LABEL);
-  SET_STRING("minimize-btn-label", IDS_FEEDBACK_MINIMIZE_BUTTON_LABEL);
-  SET_STRING("close-btn-label", IDS_FEEDBACK_CLOSE_BUTTON_LABEL);
-  SET_STRING("page-url", IDS_FEEDBACK_REPORT_URL_LABEL);
-  SET_STRING("screenshot", IDS_FEEDBACK_SCREENSHOT_LABEL);
-  SET_STRING("user-email", IDS_FEEDBACK_USER_EMAIL_LABEL);
-  SET_STRING("anonymous-user", IDS_FEEDBACK_ANONYMOUS_EMAIL_OPTION);
-#if defined(OS_CHROMEOS)
-  if (arc::IsArcPlayStoreEnabledForProfile(
-          Profile::FromBrowserContext(browser_context()))) {
-    SET_STRING("sys-info",
-               IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_AND_METRICS_CHKBOX_ARC);
-  } else {
-    SET_STRING("sys-info",
-               IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_AND_METRICS_CHKBOX);
-  }
-#else
-  SET_STRING("sys-info", IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_CHKBOX);
-#endif
-  SET_STRING("attach-file-label", IDS_FEEDBACK_ATTACH_FILE_LABEL);
-  SET_STRING("attach-file-note", IDS_FEEDBACK_ATTACH_FILE_NOTE);
-  SET_STRING("attach-file-to-big", IDS_FEEDBACK_ATTACH_FILE_TO_BIG);
-  SET_STRING("reading-file", IDS_FEEDBACK_READING_FILE);
-  SET_STRING("send-report", IDS_FEEDBACK_SEND_REPORT);
-  SET_STRING("cancel", IDS_CANCEL);
-  SET_STRING("no-description", IDS_FEEDBACK_NO_DESCRIPTION);
-  SET_STRING("privacy-note", IDS_FEEDBACK_PRIVACY_NOTE);
-  SET_STRING("performance-trace",
-             IDS_FEEDBACK_INCLUDE_PERFORMANCE_TRACE_CHECKBOX);
-  // Add the localized strings needed for the "system information" page.
-  SET_STRING("sysinfoPageTitle", IDS_FEEDBACK_SYSINFO_PAGE_TITLE);
-  SET_STRING("sysinfoPageDescription", IDS_ABOUT_SYS_DESC);
-  SET_STRING("sysinfoPageTableTitle", IDS_ABOUT_SYS_TABLE_TITLE);
-  SET_STRING("sysinfoPageExpandAllBtn", IDS_ABOUT_SYS_EXPAND_ALL);
-  SET_STRING("sysinfoPageCollapseAllBtn", IDS_ABOUT_SYS_COLLAPSE_ALL);
-  SET_STRING("sysinfoPageExpandBtn", IDS_ABOUT_SYS_EXPAND);
-  SET_STRING("sysinfoPageCollapseBtn", IDS_ABOUT_SYS_COLLAPSE);
-  SET_STRING("sysinfoPageStatusLoading", IDS_FEEDBACK_SYSINFO_PAGE_LOADING);
-  // And the localized strings needed for the SRT Download Prompt.
-  SET_STRING("srtPromptBody", IDS_FEEDBACK_SRT_PROMPT_BODY);
-  SET_STRING("srtPromptAcceptButton", IDS_FEEDBACK_SRT_PROMPT_ACCEPT_BUTTON);
-  SET_STRING("srtPromptDeclineButton",
-             IDS_FEEDBACK_SRT_PROMPT_DECLINE_BUTTON);
-#undef SET_STRING
-
-  const std::string& app_locale =
-      ExtensionsBrowserClient::Get()->GetApplicationLocale();
-  webui::SetLoadTimeDataDefaults(app_locale, dict.get());
-
+  FeedbackPrivateDelegate* feedback_private_delegate =
+      ExtensionsAPIClient::Get()->GetFeedbackPrivateDelegate();
+  DCHECK(feedback_private_delegate);
+  std::unique_ptr<base::DictionaryValue> dict =
+      feedback_private_delegate->GetStrings(
+          browser_context(),
+          params->flow == FeedbackFlow::FEEDBACK_FLOW_SADTABCRASH);
 
   if (test_callback_ && !test_callback_->is_null())
     test_callback_->Run();
