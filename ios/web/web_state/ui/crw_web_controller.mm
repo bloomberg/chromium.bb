@@ -1840,7 +1840,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   // Mark pending item as created from hash change if necessary. This is needed
   // because window.hashchange message may not arrive on time.
-  web::NavigationItemImpl* pendingItem = self.sessionController.pendingItem;
+  // TODO(crbug.com/738020) Using static_cast for down-cast is not safe in the
+  // long run. Move this block to NavigationManager if the nav experiment is
+  // successful.
+  web::NavigationItemImpl* pendingItem = static_cast<web::NavigationItemImpl*>(
+      self.navigationManagerImpl->GetPendingItem());
   if (pendingItem) {
     GURL lastCommittedURL = _webStateImpl->GetLastCommittedURL();
     GURL pendingURL = pendingItem->GetURL();
@@ -1896,7 +1900,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
       // WebUI URLs can not be opened by DOM to prevent cross-site scripting as
       // they have increased power. WebUI URLs may only be opened when the user
       // types in the URL or use bookmarks.
-      [[self sessionController] discardNonCommittedItems];
+      self.navigationManagerImpl->DiscardNonCommittedItems();
       return;
     } else {
       [self createWebUIForURL:currentURL];
@@ -3141,7 +3145,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)handleCancelledError:(NSError*)error {
   if ([self shouldCancelLoadForCancelledError:error]) {
     [self loadCancelled];
-    [[self sessionController] discardNonCommittedItems];
+    self.navigationManagerImpl->DiscardNonCommittedItems();
     // If discarding the non-committed entries results in native content URL,
     // reload it in its native view.
     if (!self.nativeController) {
@@ -4172,7 +4176,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   base::RecordAction(UserMetricsAction("Stop"));
   // Discard the pending and transient entried before notifying the tab model
   // observers of the change via |-abortLoad|.
-  [[self sessionController] discardNonCommittedItems];
+  self.navigationManagerImpl->DiscardNonCommittedItems();
   [self abortLoad];
   web::NavigationItem* item = self.currentNavItem;
   GURL navigationURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
@@ -4384,7 +4388,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     BOOL previousItemWasLoadedInNativeView =
         [self shouldLoadURLInNativeView:lastCommittedURL];
     if (!isFirstLoad && !previousItemWasLoadedInNativeView)
-      [self.sessionController discardNonCommittedItems];
+      self.navigationManagerImpl->DiscardNonCommittedItems();
   }
 
   handler(allowNavigation ? WKNavigationResponsePolicyAllow
@@ -5170,7 +5174,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
-  BOOL isBack = pendingIndex < self.sessionController.lastCommittedItemIndex;
+  BOOL isBack =
+      pendingIndex < self.navigationManagerImpl->GetLastCommittedItemIndex();
   BackForwardNavigationType type = BackForwardNavigationType::FAST_BACK;
   if (isBack) {
     type = isFast ? BackForwardNavigationType::FAST_BACK
