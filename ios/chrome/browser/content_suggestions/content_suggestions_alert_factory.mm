@@ -20,7 +20,7 @@
 
 + (AlertCoordinator*)
 alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
-                 onViewController:(UIViewController*)viewController
+                 onViewController:(UICollectionViewController*)viewController
                           atPoint:(CGPoint)touchLocation
                       atIndexPath:(NSIndexPath*)indexPath
                   readLaterAction:(BOOL)readLaterAction
@@ -32,7 +32,7 @@ alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
                          message:nil
                             rect:CGRectMake(touchLocation.x, touchLocation.y, 0,
                                             0)
-                            view:[viewController view]];
+                            view:viewController.collectionView];
 
   __weak ContentSuggestionsItem* weakItem = item;
   __weak id<ContentSuggestionsGestureCommands> weakCommandHandler =
@@ -105,7 +105,7 @@ alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
 
 + (AlertCoordinator*)
 alertCoordinatorForMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
-                  onViewController:(UIViewController*)viewController
+                  onViewController:(UICollectionViewController*)viewController
                            atPoint:(CGPoint)touchLocation
                        atIndexPath:(NSIndexPath*)indexPath
                     commandHandler:
@@ -116,7 +116,7 @@ alertCoordinatorForMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
                          message:nil
                             rect:CGRectMake(touchLocation.x, touchLocation.y, 0,
                                             0)
-                            view:[viewController view]];
+                            view:viewController.collectionView];
 
   __weak ContentSuggestionsMostVisitedItem* weakItem = item;
   __weak id<ContentSuggestionsGestureCommands> weakCommandHandler =
