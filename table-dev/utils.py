@@ -163,7 +163,7 @@ def get_rule(c_rule_pointer):
 def suggest_chunks(text, braille):
     c_text = create_unicode_buffer(text)
     c_braille = create_unicode_buffer(braille)
-    c_hyphen_string = create_string_buffer(len(text) + 1)
+    c_hyphen_string = create_string_buffer(len(text) + 2)
     if not liblouis_dev.suggestChunks(c_text, c_braille, c_hyphen_string):
         return None;
     hyphen_string = c_hyphen_string.value.decode('ascii')
