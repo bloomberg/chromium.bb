@@ -426,6 +426,7 @@ enum HistogramValue {
   MEDIA_PERCEPTION_PRIVATE_ON_MEDIA_PERCEPTION,
   NETWORKING_PRIVATE_ON_CERTIFICATE_LISTS_CHANGED,
   LOCK_SCREEN_DATA_ON_DATA_ITEMS_AVAILABLE,
+  WEB_VIEW_INTERNAL_ON_AUDIO_STATE_CHANGED,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

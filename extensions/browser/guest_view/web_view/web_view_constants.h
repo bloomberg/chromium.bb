@@ -27,6 +27,7 @@ extern const char kAPILoadDataInvalidBaseURL[];
 extern const char kAPILoadDataInvalidVirtualURL[];
 
 // Events.
+extern const char kEventAudioStateChanged[];
 extern const char kEventClose[];
 extern const char kEventConsoleMessage[];
 extern const char kEventContentLoad[];
@@ -66,6 +67,7 @@ extern const char kEventSendHeaders[];
 extern const char kWebViewEventPrefix[];
 
 // Parameters/properties on events.
+extern const char kAudible[];
 extern const char kContextMenuItems[];
 extern const char kDefaultPromptText[];
 extern const char kFindSearchText[];

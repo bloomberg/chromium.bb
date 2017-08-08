@@ -893,6 +893,47 @@ ExtensionFunction::ResponseAction WebViewInternalStopFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+WebViewInternalSetAudioMutedFunction::WebViewInternalSetAudioMutedFunction() {}
+
+WebViewInternalSetAudioMutedFunction::~WebViewInternalSetAudioMutedFunction() {}
+
+ExtensionFunction::ResponseAction WebViewInternalSetAudioMutedFunction::Run() {
+  std::unique_ptr<web_view_internal::SetAudioMuted::Params> params(
+      web_view_internal::SetAudioMuted::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  guest_->web_contents()->SetAudioMuted(params->mute);
+  return RespondNow(NoArguments());
+}
+
+WebViewInternalIsAudioMutedFunction::WebViewInternalIsAudioMutedFunction() {}
+
+WebViewInternalIsAudioMutedFunction::~WebViewInternalIsAudioMutedFunction() {}
+
+ExtensionFunction::ResponseAction WebViewInternalIsAudioMutedFunction::Run() {
+  std::unique_ptr<web_view_internal::IsAudioMuted::Params> params(
+      web_view_internal::IsAudioMuted::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  content::WebContents* web_contents = guest_->web_contents();
+  return RespondNow(
+      OneArgument(base::MakeUnique<base::Value>(web_contents->IsAudioMuted())));
+}
+
+WebViewInternalGetAudioStateFunction::WebViewInternalGetAudioStateFunction() {}
+
+WebViewInternalGetAudioStateFunction::~WebViewInternalGetAudioStateFunction() {}
+
+ExtensionFunction::ResponseAction WebViewInternalGetAudioStateFunction::Run() {
+  std::unique_ptr<web_view_internal::GetAudioState::Params> params(
+      web_view_internal::GetAudioState::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  content::WebContents* web_contents = guest_->web_contents();
+  return RespondNow(OneArgument(
+      base::MakeUnique<base::Value>(web_contents->IsCurrentlyAudible())));
+}
+
 WebViewInternalTerminateFunction::WebViewInternalTerminateFunction() {
 }
 

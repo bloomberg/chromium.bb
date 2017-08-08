@@ -185,6 +185,67 @@
     ],
     "functions": [
       {
+        "name": "getAudioState",
+        "type": "function",
+        "description": "Callback that returns audio state.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "audible",
+                "type": "boolean"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setAudioMuted",
+        "type": "function",
+        "description": "Sets audio mute state.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "boolean",
+            "name": "mute",
+            "description": "Mute audio value."
+          }
+        ]
+      },
+      {
+        "name": "isAudioMuted",
+        "type": "function",
+        "description": "Callback that returns whether audio is muted.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "muted",
+                "type": "boolean"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "executeScript",
         "type": "function",
         "description": "Injects JavaScript code into a <webview> page.",

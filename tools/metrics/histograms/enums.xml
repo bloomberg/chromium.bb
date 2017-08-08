@@ -11992,6 +11992,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="408" label="MEDIA_PERCEPTION_PRIVATE_ON_MEDIA_PERCEPTION"/>
   <int value="409" label="NETWORKING_PRIVATE_ON_CERTIFICATE_LISTS_CHANGED"/>
   <int value="410" label="LOCK_SCREEN_DATA_ON_DATA_ITEMS_AVAILABLE"/>
+  <int value="411" label="WEB_VIEW_INTERNAL_ON_AUDIO_STATE_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -13227,6 +13228,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1183" label="LOCKSCREENDATA_SETCONTENT"/>
   <int value="1184" label="LOCKSCREENDATA_DELETE"/>
   <int value="1185" label="BLUETOOTHLOWENERGY_RESETADVERTISING"/>
+  <int value="1186" label="WEBVIEWINTERNAL_SETAUDIOMUTED"/>
+  <int value="1187" label="WEBVIEWINTERNAL_ISAUDIOMUTED"/>
+  <int value="1188" label="WEBVIEWINTERNAL_GETAUDIOSTATE"/>
 </enum>
 
 <enum name="ExtensionIconState">
