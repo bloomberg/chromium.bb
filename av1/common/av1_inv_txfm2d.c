@@ -127,9 +127,9 @@ TXFM_2D_FLIP_CFG av1_get_inv_txfm_64x64_cfg(int tx_type) {
   return cfg;
 }
 
-static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
-                                    int stride, TXFM_2D_FLIP_CFG *cfg,
-                                    int32_t *txfm_buf, int bd) {
+void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
+                             const TXFM_2D_FLIP_CFG *cfg, int8_t fwd_shift,
+                             int bd) {
   // Note when assigning txfm_size_col, we use the txfm_size from the
   // row configuration and vice versa. This is intentionally done to
   // accurately perform rectangular transforms. When the transform is
@@ -141,8 +141,38 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
   // Take the shift from the larger dimension in the rectangular case.
   const int8_t *shift = (txfm_size_col > txfm_size_row) ? cfg->row_cfg->shift
                                                         : cfg->col_cfg->shift;
-  const int8_t *stage_range_col = cfg->col_cfg->stage_range;
-  const int8_t *stage_range_row = cfg->row_cfg->stage_range;
+  // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
+  for (int i = 0; i < cfg->row_cfg->stage_num && i < MAX_TXFM_STAGE_NUM; ++i) {
+    stage_range_row[i] = cfg->row_cfg->stage_range[i] + fwd_shift + bd + 1;
+  }
+  // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
+  for (int i = 0; i < cfg->col_cfg->stage_num && i < MAX_TXFM_STAGE_NUM; ++i) {
+    stage_range_col[i] =
+        cfg->col_cfg->stage_range[i] + fwd_shift + shift[0] + bd + 1;
+  }
+}
+
+static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
+                                    int stride, TXFM_2D_FLIP_CFG *cfg,
+                                    int32_t *txfm_buf, int8_t fwd_shift,
+                                    int bd) {
+  // Note when assigning txfm_size_col, we use the txfm_size from the
+  // row configuration and vice versa. This is intentionally done to
+  // accurately perform rectangular transforms. When the transform is
+  // rectangular, the number of columns will be the same as the
+  // txfm_size stored in the row cfg struct. It will make no difference
+  // for square transforms.
+  const int txfm_size_col = cfg->row_cfg->txfm_size;
+  const int txfm_size_row = cfg->col_cfg->txfm_size;
+  // Take the shift from the larger dimension in the rectangular case.
+  const int8_t *shift = (txfm_size_col > txfm_size_row) ? cfg->row_cfg->shift
+                                                        : cfg->col_cfg->shift;
+  int8_t stage_range_row[MAX_TXFM_STAGE_NUM];
+  int8_t stage_range_col[MAX_TXFM_STAGE_NUM];
+  assert(cfg->row_cfg->stage_num <= MAX_TXFM_STAGE_NUM);
+  assert(cfg->col_cfg->stage_num <= MAX_TXFM_STAGE_NUM);
+  av1_gen_inv_stage_range(stage_range_col, stage_range_row, cfg, fwd_shift, bd);
+
   const int8_t *cos_bit_col = cfg->col_cfg->cos_bit;
   const int8_t *cos_bit_row = cfg->row_cfg->cos_bit;
   const TxfmFunc txfm_func_col = inv_txfm_type_to_func(cfg->col_cfg->txfm_type);
@@ -200,7 +230,9 @@ static INLINE void inv_txfm2d_add_facade(const int32_t *input, uint16_t *output,
                                          int stride, int32_t *txfm_buf,
                                          int tx_type, int tx_size, int bd) {
   TXFM_2D_FLIP_CFG cfg = av1_get_inv_txfm_cfg(tx_type, tx_size);
-  inv_txfm2d_add_c(input, output, stride, &cfg, txfm_buf, bd);
+  int tx_size_sqr = txsize_sqr_map[tx_size];
+  inv_txfm2d_add_c(input, output, stride, &cfg, txfm_buf,
+                   fwd_shift_sum[tx_size_sqr], bd);
 }
 
 void av1_inv_txfm2d_add_4x8_c(const int32_t *input, uint16_t *output,
@@ -318,5 +350,8 @@ void av1_inv_txfm2d_add_64x64_c(const int32_t *input, uint16_t *output,
                                 int stride, int tx_type, int bd) {
   int txfm_buf[64 * 64 + 64 + 64];
   TXFM_2D_FLIP_CFG cfg = av1_get_inv_txfm_64x64_cfg(tx_type);
-  inv_txfm2d_add_c(input, output, stride, &cfg, txfm_buf, bd);
+  inv_txfm2d_add_c(input, output, stride, &cfg, txfm_buf, -4, bd);
+#if CONFIG_TX64X64
+  assert(fwd_shift_sum[TX_64X64] == -4);
+#endif
 }

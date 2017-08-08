@@ -21,6 +21,8 @@
 #include "aom/aom_integer.h"
 #include "aom_dsp/aom_dsp_common.h"
 
+#define MAX_TXFM_STAGE_NUM 12
+
 static const int cos_bit_min = 10;
 static const int cos_bit_max = 16;
 
@@ -312,6 +314,13 @@ static INLINE int is_valid_mrc_mask(int n_masked_vals, int width, int height) {
   return !(n_masked_vals == 0 || n_masked_vals == (width * height));
 }
 #endif  // CONFIG_MRC_TX
+
+void av1_gen_fwd_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
+                             const TXFM_2D_FLIP_CFG *cfg, int bd);
+
+void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
+                             const TXFM_2D_FLIP_CFG *cfg, int8_t fwd_shift,
+                             int bd);
 
 #ifdef __cplusplus
 extern "C" {
