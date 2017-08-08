@@ -35,13 +35,13 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextAffinity.h"
-#include "core/editing/VisibleUnits.h"
 #include "core/frame/DeprecatedScheduleStyleRecalcDuringLayout.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalFrame.h"
@@ -69,6 +69,7 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableCol.h"
 #include "core/layout/LayoutTableRow.h"
+#include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutAPIShim.h"
@@ -3530,6 +3531,60 @@ void LayoutObject::InvalidatePaintForSelection() {
       continue;
     child->SetShouldInvalidateSelection();
   }
+}
+
+// Note about ::first-letter pseudo-element:
+//   When an element has ::first-letter pseudo-element, first letter characters
+//   are taken from |Text| node and first letter characters are considered
+//   as content of <pseudo:first-letter>.
+//   For following HTML,
+//      <style>div::first-letter {color: red}</style>
+//      <div>abc</div>
+//   we have following layout tree:
+//      LayoutBlockFlow {DIV} at (0,0) size 784x55
+//        LayoutInline {<pseudo:first-letter>} at (0,0) size 22x53
+//          LayoutTextFragment (anonymous) at (0,1) size 22x53
+//            text run at (0,1) width 22: "a"
+//        LayoutTextFragment {#text} at (21,30) size 16x17
+//          text run at (21,30) width 16: "bc"
+//  In this case, |Text::layoutObject()| for "abc" returns |LayoutTextFragment|
+//  containing "bc", and it is called remaining part.
+//
+//  Even if |Text| node contains only first-letter characters, e.g. just "a",
+//  remaining part of |LayoutTextFragment|, with |fragmentLength()| == 0, is
+//  appeared in layout tree.
+//
+//  When |Text| node contains only first-letter characters and whitespaces, e.g.
+//  "B\n", associated |LayoutTextFragment| is first-letter part instead of
+//  remaining part.
+//
+//  Punctuation characters are considered as first-letter. For "(1)ab",
+//  "(1)" are first-letter part and "ab" are remaining part.
+LayoutObject* AssociatedLayoutObjectOf(const Node& node, int offset_in_node) {
+  DCHECK_GE(offset_in_node, 0);
+  LayoutObject* layout_object = node.GetLayoutObject();
+  if (!node.IsTextNode() || !layout_object ||
+      !ToLayoutText(layout_object)->IsTextFragment())
+    return layout_object;
+  LayoutTextFragment* layout_text_fragment =
+      ToLayoutTextFragment(layout_object);
+  if (!layout_text_fragment->IsRemainingTextLayoutObject()) {
+    DCHECK_LE(
+        static_cast<unsigned>(offset_in_node),
+        layout_text_fragment->Start() + layout_text_fragment->FragmentLength());
+    return layout_text_fragment;
+  }
+  if (layout_text_fragment->FragmentLength() &&
+      static_cast<unsigned>(offset_in_node) >= layout_text_fragment->Start())
+    return layout_object;
+  LayoutObject* first_letter_layout_object =
+      layout_text_fragment->GetFirstLetterPseudoElement()->GetLayoutObject();
+  // TODO(yosin): We're not sure when |firstLetterLayoutObject| has
+  // multiple child layout object.
+  LayoutObject* child = first_letter_layout_object->SlowFirstChild();
+  CHECK(child && child->IsText());
+  DCHECK_EQ(child, first_letter_layout_object->SlowLastChild());
+  return child;
 }
 
 }  // namespace blink

@@ -4,8 +4,10 @@
 
 #include "core/layout/LayoutObject.h"
 
+#include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutTestHelper.h"
+#include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
 #include "platform/json/JSONValues.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
@@ -286,6 +288,78 @@ TEST_F(LayoutObjectTest, NeedsPaintOffsetAndVisualRectUpdate) {
   parent->ClearPaintInvalidationFlags();
   EXPECT_FALSE(parent->MayNeedPaintInvalidation());
   EXPECT_FALSE(parent->NeedsPaintOffsetAndVisualRectUpdate());
+}
+
+TEST_F(LayoutObjectTest, AssociatedLayoutObjectOfFirstLetterPunctuations) {
+  const char* body_content =
+      "<style>p:first-letter {color:red;}</style><p id=sample>(a)bc</p>";
+  SetBodyInnerHTML(body_content);
+
+  Node* sample = GetDocument().getElementById("sample");
+  Node* text = sample->firstChild();
+
+  LayoutTextFragment* layout_object0 =
+      ToLayoutTextFragment(AssociatedLayoutObjectOf(*text, 0));
+  EXPECT_FALSE(layout_object0->IsRemainingTextLayoutObject());
+
+  LayoutTextFragment* layout_object1 =
+      ToLayoutTextFragment(AssociatedLayoutObjectOf(*text, 1));
+  EXPECT_EQ(layout_object0, layout_object1)
+      << "A character 'a' should be part of first letter.";
+
+  LayoutTextFragment* layout_object2 =
+      ToLayoutTextFragment(AssociatedLayoutObjectOf(*text, 2));
+  EXPECT_EQ(layout_object0, layout_object2)
+      << "close parenthesis should be part of first letter.";
+
+  LayoutTextFragment* layout_object3 =
+      ToLayoutTextFragment(AssociatedLayoutObjectOf(*text, 3));
+  EXPECT_TRUE(layout_object3->IsRemainingTextLayoutObject());
+}
+
+TEST_F(LayoutObjectTest, AssociatedLayoutObjectOfFirstLetterSplit) {
+  V8TestingScope scope;
+
+  const char* body_content =
+      "<style>p:first-letter {color:red;}</style><p id=sample>abc</p>";
+  SetBodyInnerHTML(body_content);
+
+  Node* sample = GetDocument().getElementById("sample");
+  Node* first_letter = sample->firstChild();
+  // Split "abc" into "a" "bc"
+  ToText(first_letter)->splitText(1, ASSERT_NO_EXCEPTION);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  LayoutTextFragment* layout_object0 =
+      ToLayoutTextFragment(AssociatedLayoutObjectOf(*first_letter, 0));
+  EXPECT_FALSE(layout_object0->IsRemainingTextLayoutObject());
+
+  LayoutTextFragment* layout_object1 =
+      ToLayoutTextFragment(AssociatedLayoutObjectOf(*first_letter, 1));
+  EXPECT_EQ(layout_object0, layout_object1);
+}
+
+TEST_F(LayoutObjectTest,
+       AssociatedLayoutObjectOfFirstLetterWithTrailingWhitespace) {
+  const char* body_content =
+      "<style>div:first-letter {color:red;}</style><div id=sample>a\n "
+      "<div></div></div>";
+  SetBodyInnerHTML(body_content);
+
+  Node* sample = GetDocument().getElementById("sample");
+  Node* text = sample->firstChild();
+
+  LayoutTextFragment* layout_object0 =
+      ToLayoutTextFragment(AssociatedLayoutObjectOf(*text, 0));
+  EXPECT_FALSE(layout_object0->IsRemainingTextLayoutObject());
+
+  LayoutTextFragment* layout_object1 =
+      ToLayoutTextFragment(AssociatedLayoutObjectOf(*text, 1));
+  EXPECT_TRUE(layout_object1->IsRemainingTextLayoutObject());
+
+  LayoutTextFragment* layout_object2 =
+      ToLayoutTextFragment(AssociatedLayoutObjectOf(*text, 2));
+  EXPECT_EQ(layout_object1, layout_object2);
 }
 
 }  // namespace blink
