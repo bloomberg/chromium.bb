@@ -13,6 +13,7 @@
 #include "base/i18n/streaming_utf8_validator.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
@@ -127,6 +128,9 @@ void AnalyzeZipFile(base::File zip_file,
   }
 
   bool advanced = true;
+#if defined(OS_MACOSX)
+  bool zip_has_app_directory = false;
+#endif  // OS_MACOSX
   for (; reader.HasMore(); advanced = reader.AdvanceToNextEntry()) {
     if (!advanced) {
       DVLOG(1) << "Could not advance to next entry, aborting zip scan.";
@@ -167,6 +171,7 @@ void AnalyzeZipFile(base::File zip_file,
       // to fail.
       if (file.Extension().compare(".app") == 0) {
         DVLOG(2) << "Downloaded a zipped .app directory: " << file.value();
+        zip_has_app_directory = true;
       } else {
 #endif  // OS_MACOSX
         DVLOG(2) << "Downloaded a zipped executable: " << file.value();
@@ -180,6 +185,12 @@ void AnalyzeZipFile(base::File zip_file,
       DVLOG(3) << "Ignoring non-binary file: " << file.value();
     }
   }
+#if defined(OS_MACOSX)
+  UMA_HISTOGRAM_BOOLEAN(
+      "SBClientDownload."
+      "ZipFileContainsAppDirectory",
+      zip_has_app_directory);
+#endif  // OS_MACOSX
   results->archived_archive_filenames.assign(archived_archive_filenames.begin(),
                                              archived_archive_filenames.end());
   results->success = true;

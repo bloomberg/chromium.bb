@@ -12,13 +12,23 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/sha2.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_MACOSX)
+namespace {
+
+const char kAppInZipHistogramName[] =
+    "SBClientDownload.ZipFileContainsAppDirectory";
+}
+#endif  // OS_MACOSX
 
 namespace safe_browsing {
 
@@ -351,11 +361,18 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedJSEFile) {
 
 #if defined(OS_MACOSX)
 TEST_F(SandboxedZipAnalyzerTest, ZippedAppWithUnsignedAndSignedExecutable) {
+  base::HistogramTester histograms;
+  histograms.ExpectTotalCount(kAppInZipHistogramName, 0);
+
   ArchiveAnalyzerResults results;
   RunAnalyzer(dir_test_data_.AppendASCII(
                   "mach_o/zipped-app-two-executables-one-signed.zip"),
               &results);
-  ASSERT_TRUE(results.success);
+
+  EXPECT_THAT(histograms.GetAllSamples(kAppInZipHistogramName),
+              testing::ElementsAre(base::Bucket(/*bucket=*/true, /*count=*/1)));
+
+  EXPECT_TRUE(results.success);
   EXPECT_TRUE(results.has_executable);
   EXPECT_FALSE(results.has_archive);
   ASSERT_EQ(2, results.archived_binary.size());
