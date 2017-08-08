@@ -28,6 +28,7 @@ static_library("ntp_tiles") {
     "popular_sites_impl.h",
     "pref_names.cc",
     "pref_names.h",
+    "section_type.h",
     "switches.cc",
     "switches.h",
     "tile_source.h",
@@ -111,6 +112,7 @@ source_set("unit_tests") {
 if (is_android) {
   java_cpp_enum("ntp_tiles_enums_java") {
     sources = [
+      "section_type.h",
       "tile_source.h",
       "tile_visual_type.h",
     ]

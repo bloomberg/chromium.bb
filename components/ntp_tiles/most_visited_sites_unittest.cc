@@ -273,10 +273,10 @@ class PopularSitesFactoryForTest {
     PopularSitesImpl::RegisterProfilePrefs(pref_service->registry());
     if (enabled) {
       prefs_->SetString(prefs::kPopularSitesOverrideCountry, "IN");
-      prefs_->SetString(prefs::kPopularSitesOverrideVersion, "7");
+      prefs_->SetString(prefs::kPopularSitesOverrideVersion, "5");
 
       url_fetcher_factory_.SetFakeResponse(
-          GURL("https://www.gstatic.com/chrome/ntp/suggested_sites_IN_7.json"),
+          GURL("https://www.gstatic.com/chrome/ntp/suggested_sites_IN_5.json"),
           R"([{
                 "title": "PopularSite1",
                 "url": "http://popularsite1/",

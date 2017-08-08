@@ -361,7 +361,9 @@ NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
   // Collect non-blacklisted popular suggestions, skipping those already present
   // in the personal suggestions.
   NTPTilesVector popular_sites_tiles;
-  for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
+  const PopularSites::SitesVector& popular_sites =
+      popular_sites_->sections().at(SectionType::PERSONALIZED);
+  for (const PopularSites::Site& popular_site : popular_sites) {
     if (popular_sites_tiles.size() + num_actual_tiles >= num_sites_)
       break;
 
@@ -506,7 +508,9 @@ void MostVisitedSites::OnPopularSitesDownloaded(bool success) {
     return;
   }
 
-  for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
+  const PopularSites::SitesVector& popular_sites =
+      popular_sites_->sections().at(SectionType::PERSONALIZED);
+  for (const PopularSites::Site& popular_site : popular_sites) {
     // Ignore callback; these icons will be seen on the *next* NTP.
     icon_cacher_->StartFetchPopularSites(popular_site, base::Closure(),
                                          base::Closure());

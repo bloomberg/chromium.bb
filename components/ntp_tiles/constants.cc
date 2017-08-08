@@ -21,6 +21,9 @@ extern const base::Feature kNtpMostLikelyFaviconsFromServerFeature{
 extern const base::Feature kLowerResolutionFaviconsFeature{
     "NTPTilesLowerResolutionFavicons", base::FEATURE_DISABLED_BY_DEFAULT};
 
+extern const base::Feature kSitesExplorationFeature{
+    "SitesExplorationFeature", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool AreNtpMostLikelyFaviconsFromServerEnabled() {
   // Check if the experimental flag is forced on or off.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
