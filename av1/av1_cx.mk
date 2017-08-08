@@ -108,6 +108,12 @@ AV1_CX_SRCS-yes += encoder/temporal_filter.c
 AV1_CX_SRCS-yes += encoder/temporal_filter.h
 AV1_CX_SRCS-yes += encoder/mbgraph.c
 AV1_CX_SRCS-yes += encoder/mbgraph.h
+ifeq ($(CONFIG_HASH_ME),yes)
+AV1_CX_SRCS-yes += ../third_party/vector/vector.h
+AV1_CX_SRCS-yes += ../third_party/vector/vector.c
+AV1_CX_SRCS-yes += encoder/hash_motion.c
+AV1_CX_SRCS-yes += encoder/hash_motion.h
+endif
 ifeq ($(CONFIG_CDEF),yes)
 AV1_CX_SRCS-yes += encoder/pickcdef.c
 endif

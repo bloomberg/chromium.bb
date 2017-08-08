@@ -86,6 +86,9 @@ void av1_free_ref_frame_buffers(BufferPool *pool) {
     aom_free(pool->frame_bufs[i].mvs);
     pool->frame_bufs[i].mvs = NULL;
     aom_free_frame_buffer(&pool->frame_bufs[i].buf);
+#if CONFIG_HASH_ME
+    av1_hash_table_destroy(&pool->frame_bufs[i].hash_table);
+#endif
   }
 }
 

@@ -692,6 +692,17 @@ static INLINE int get_ref_frame_buf_idx(const AV1_COMP *cpi,
   return (map_idx != INVALID_IDX) ? cm->ref_frame_map[map_idx] : INVALID_IDX;
 }
 
+#if CONFIG_HASH_ME
+static INLINE hash_table *get_ref_frame_hash_map(const AV1_COMP *cpi,
+                                                 MV_REFERENCE_FRAME ref_frame) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const int buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
+  return buf_idx != INVALID_IDX
+             ? &cm->buffer_pool->frame_bufs[buf_idx].hash_table
+             : NULL;
+}
+#endif
+
 static INLINE YV12_BUFFER_CONFIG *get_ref_frame_buffer(
     const AV1_COMP *cpi, MV_REFERENCE_FRAME ref_frame) {
   const AV1_COMMON *const cm = &cpi->common;

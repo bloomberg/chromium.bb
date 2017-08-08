@@ -340,6 +340,7 @@ EXPERIMENT_LIST="
     uv_lvl
     no_frame_context_signaling
     txmg
+    hash_me
 "
 CONFIG_LIST="
     dependency_tracking

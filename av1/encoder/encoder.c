@@ -45,6 +45,9 @@
 #endif
 #include "av1/encoder/ethread.h"
 #include "av1/encoder/firstpass.h"
+#if CONFIG_HASH_ME
+#include "av1/encoder/hash_motion.h"
+#endif
 #include "av1/encoder/mbgraph.h"
 #include "av1/encoder/picklpf.h"
 #if CONFIG_LOOP_RESTORATION
@@ -5362,6 +5365,11 @@ static void init_ref_frame_bufs(AV1_COMMON *cm) {
     cm->ref_frame_map[i] = INVALID_IDX;
     pool->frame_bufs[i].ref_count = 0;
   }
+#if CONFIG_HASH_ME
+  for (i = 0; i < FRAME_BUFFERS; ++i) {
+    av1_hash_table_init(&pool->frame_bufs[i].hash_table);
+  }
+#endif
 }
 
 static void check_initial_width(AV1_COMP *cpi,
@@ -6085,6 +6093,71 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     Pass0Encode(cpi, size, dest, 0, frame_flags);
   }
 #endif
+#if CONFIG_HASH_ME
+  if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools) {
+    // add to hash table
+    const int pic_width = cpi->source->y_crop_width;
+    const int pic_height = cpi->source->y_crop_height;
+    uint32_t *block_hash_values[2][2];
+    int8_t *is_block_same[2][3];
+    int k, j;
+
+    for (k = 0; k < 2; k++) {
+      for (j = 0; j < 2; j++) {
+        CHECK_MEM_ERROR(cm, block_hash_values[k][j],
+                        aom_malloc(sizeof(uint32_t) * pic_width * pic_height));
+      }
+
+      for (j = 0; j < 3; j++) {
+        CHECK_MEM_ERROR(cm, is_block_same[k][j],
+                        aom_malloc(sizeof(int8_t) * pic_width * pic_height));
+      }
+    }
+
+    av1_hash_table_create(&cm->cur_frame->hash_table);
+    av1_generate_block_2x2_hash_value(cpi->source, block_hash_values[0],
+                                      is_block_same[0]);
+    av1_generate_block_hash_value(cpi->source, 4, block_hash_values[0],
+                                  block_hash_values[1], is_block_same[0],
+                                  is_block_same[1]);
+    av1_generate_block_hash_value(cpi->source, 8, block_hash_values[1],
+                                  block_hash_values[0], is_block_same[1],
+                                  is_block_same[0]);
+    av1_add_to_hash_map_by_row_with_precal_data(
+        &cm->cur_frame->hash_table, block_hash_values[0], is_block_same[0][2],
+        pic_width, pic_height, 8);
+    av1_generate_block_hash_value(cpi->source, 16, block_hash_values[0],
+                                  block_hash_values[1], is_block_same[0],
+                                  is_block_same[1]);
+    av1_add_to_hash_map_by_row_with_precal_data(
+        &cm->cur_frame->hash_table, block_hash_values[1], is_block_same[1][2],
+        pic_width, pic_height, 16);
+    av1_generate_block_hash_value(cpi->source, 32, block_hash_values[1],
+                                  block_hash_values[0], is_block_same[1],
+                                  is_block_same[0]);
+    av1_add_to_hash_map_by_row_with_precal_data(
+        &cm->cur_frame->hash_table, block_hash_values[0], is_block_same[0][2],
+        pic_width, pic_height, 32);
+    av1_generate_block_hash_value(cpi->source, 64, block_hash_values[0],
+                                  block_hash_values[1], is_block_same[0],
+                                  is_block_same[1]);
+    av1_add_to_hash_map_by_row_with_precal_data(
+        &cm->cur_frame->hash_table, block_hash_values[1], is_block_same[1][2],
+        pic_width, pic_height, 64);
+
+    for (k = 0; k < 2; k++) {
+      for (j = 0; j < 2; j++) {
+        aom_free(block_hash_values[k][j]);
+      }
+
+      for (j = 0; j < 3; j++) {
+        aom_free(is_block_same[k][j]);
+      }
+    }
+  }
+
+#endif
+
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
   cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
 #else

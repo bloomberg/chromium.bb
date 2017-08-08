@@ -131,10 +131,17 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
 
 struct AV1_COMP;
 
+#if CONFIG_HASH_ME
+int av1_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
+                          BLOCK_SIZE bsize, MV *mvp_full, int step_param,
+                          int error_per_bit, int *cost_list, const MV *ref_mv,
+                          int var_max, int rd, int x_pos, int y_pos);
+#else
 int av1_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
                           BLOCK_SIZE bsize, MV *mvp_full, int step_param,
                           int error_per_bit, int *cost_list, const MV *ref_mv,
                           int var_max, int rd);
+#endif
 
 #if CONFIG_MOTION_VAR
 int av1_obmc_full_pixel_diamond(const struct AV1_COMP *cpi, MACROBLOCK *x,

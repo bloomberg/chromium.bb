@@ -476,6 +476,15 @@ if (CONFIG_WARPED_MOTION OR CONFIG_GLOBAL_MOTION)
   endif ()
 endif ()
 
+if (CONFIG_HASH_ME)
+  set(AOM_AV1_ENCODER_SOURCES
+      ${AOM_AV1_ENCODER_SOURCES}
+      "${AOM_ROOT}/av1/encoder/hash_motion.h"
+      "${AOM_ROOT}/av1/encoder/hash_motion.c"
+      "${AOM_ROOT}/third_party/vector/vector.h"
+      "${AOM_ROOT}/third_party/vector/vector.c")
+endif ()
+
 # Setup AV1 common/decoder/encoder targets. The libaom target must exist before
 # this function is called.
 function (setup_av1_targets)
