@@ -233,6 +233,7 @@ static_library("v4_get_hash_protocol_manager") {
     ":v4_protocol_manager_util",
     "//base",
     "//components/data_use_measurement/core",
+    "//components/safe_browsing/web_ui:webui_proto",
     "//content/public/browser",
     "//net",
     "//url",
