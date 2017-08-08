@@ -236,7 +236,8 @@ IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, ManyInterleavedDumps) {
 // dump requests are queued and carried out after it's finished. Also checks
 // that periodic dump requests fail in case there is already a request in the
 // queue with the same level of detail.
-IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, QueuedDumps) {
+// Flaky failures on all platforms. https://crbug.com/752613
+IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, DISABLED_QueuedDumps) {
   Navigate(shell());
 
   EnableMemoryTracing();
