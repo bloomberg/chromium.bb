@@ -23,10 +23,12 @@
         -webkit-padding-end: 0;
       }
 
-      /* When the 'Usage' section is omitted, all headings are removed. This
-       * reduces the start padding allowed for lists without headings. */
+      /* When 'Usage' is omitted, subheadings are removed. Reduce the start
+       * padding allowed for lists without headings and add back vertical space
+       * that would normally be provided by the subheading. */
       .list-frame.without-heading {
         -webkit-padding-start: var(--settings-box-row-padding);
+        margin-top: 12px;
       }
 
       #clearAndReset {
