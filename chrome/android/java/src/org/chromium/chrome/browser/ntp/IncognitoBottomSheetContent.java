@@ -5,16 +5,14 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.app.Activity;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewTreeObserver.OnScrollChangedListener;
+import android.widget.ImageView;
 import android.widget.ScrollView;
+import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
@@ -23,8 +21,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentControll
 /**
  * Provides content to be displayed inside the Home tab of the bottom sheet in incognito mode.
  */
-public class IncognitoBottomSheetContent implements BottomSheetContent {
-    private final View mView;
+public class IncognitoBottomSheetContent extends IncognitoNewTabPage implements BottomSheetContent {
     private final ScrollView mScrollView;
 
     /**
@@ -32,25 +29,29 @@ public class IncognitoBottomSheetContent implements BottomSheetContent {
      * @param activity The {@link Activity} displaying this bottom sheet content.
      */
     public IncognitoBottomSheetContent(final Activity activity) {
-        LayoutInflater inflater = LayoutInflater.from(activity);
-        mView = inflater.inflate(R.layout.incognito_bottom_sheet_content, null);
+        super(activity);
 
-        View learnMore = mView.findViewById(R.id.learn_more);
-        learnMore.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HelpAndFeedback.getInstance(activity).show(activity,
-                        activity.getString(R.string.help_context_incognito_learn_more),
-                        Profile.getLastUsedProfile(), null);
-            }
-        });
-
-        final FadingShadowView shadow = (FadingShadowView) mView.findViewById(R.id.shadow);
-        shadow.init(
-                ApiCompatibilityUtils.getColor(mView.getResources(), R.color.toolbar_shadow_color),
+        final FadingShadowView shadow =
+                (FadingShadowView) mIncognitoNewTabPageView.findViewById(R.id.shadow);
+        shadow.init(ApiCompatibilityUtils.getColor(
+                            mIncognitoNewTabPageView.getResources(), R.color.toolbar_shadow_color),
                 FadingShadow.POSITION_TOP);
 
-        mScrollView = (ScrollView) mView.findViewById(R.id.scroll_view);
+        initTextViewColors();
+
+        // Hide the incognito image from the Chrome Home NTP pages.
+        ImageView incognitoSplash =
+                (ImageView) mIncognitoNewTabPageView.findViewById(R.id.new_tab_incognito_icon);
+        incognitoSplash.setVisibility(View.GONE);
+
+        mScrollView = (ScrollView) mIncognitoNewTabPageView.findViewById(R.id.ntp_scrollview);
+        mScrollView.setBackgroundColor(ApiCompatibilityUtils.getColor(
+                mIncognitoNewTabPageView.getResources(), R.color.incognito_primary_color));
+        // Remove some additional padding that's not necessary when using Chrome Home.
+        mScrollView.setPaddingRelative(0,
+                -((int) activity.getResources().getDimension(R.dimen.toolbar_height_no_shadow)), 0,
+                0);
+
         mScrollView.getViewTreeObserver().addOnScrollChangedListener(new OnScrollChangedListener() {
             @Override
             public void onScrollChanged() {
@@ -60,9 +61,55 @@ public class IncognitoBottomSheetContent implements BottomSheetContent {
         });
     }
 
+    private void initTextViewColors() {
+        final int locationBarLightHintTextColor = ApiCompatibilityUtils.getColor(
+                mIncognitoNewTabPageView.getResources(), R.color.locationbar_light_hint_text);
+        final int googleBlueColor = ApiCompatibilityUtils.getColor(
+                mIncognitoNewTabPageView.getResources(), R.color.google_blue_300);
+
+        final TextView learnMoreView =
+                (TextView) mIncognitoNewTabPageView.findViewById(R.id.learn_more);
+
+        learnMoreView.setTextColor(googleBlueColor);
+
+        if (useMDIncognitoNTP()) {
+            final TextView newTabIncognitoTitleView =
+                    (TextView) mIncognitoNewTabPageView.findViewById(R.id.new_tab_incognito_title);
+            final TextView newTabIncognitoSubtitleView =
+                    (TextView) mIncognitoNewTabPageView.findViewById(
+                            R.id.new_tab_incognito_subtitle);
+            final TextView newTabIncognitoFeaturesView =
+                    (TextView) mIncognitoNewTabPageView.findViewById(
+                            R.id.new_tab_incognito_features);
+            final TextView newTabIncognitoWarningView =
+                    (TextView) mIncognitoNewTabPageView.findViewById(
+                            R.id.new_tab_incognito_warning);
+
+            newTabIncognitoTitleView.setTextColor(locationBarLightHintTextColor);
+            newTabIncognitoSubtitleView.setTextColor(locationBarLightHintTextColor);
+            newTabIncognitoFeaturesView.setTextColor(locationBarLightHintTextColor);
+            newTabIncognitoWarningView.setTextColor(locationBarLightHintTextColor);
+        } else {
+            final TextView incognitoNtpHeaderView =
+                    (TextView) mIncognitoNewTabPageView.findViewById(R.id.ntp_incognito_header);
+            final TextView newTabIncognitoMessageView =
+                    (TextView) mIncognitoNewTabPageView.findViewById(
+                            R.id.new_tab_incognito_message);
+
+            incognitoNtpHeaderView.setTextColor(locationBarLightHintTextColor);
+            newTabIncognitoMessageView.setTextColor(locationBarLightHintTextColor);
+        }
+    }
+
+    @Override
+    protected int getLayoutResource() {
+        return useMDIncognitoNTP() ? R.layout.incognito_bottom_sheet_content_md
+                                   : R.layout.incognito_bottom_sheet_content;
+    }
+
     @Override
     public View getContentView() {
-        return mView;
+        return getView();
     }
 
     @Override

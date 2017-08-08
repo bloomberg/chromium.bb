@@ -8,9 +8,14 @@
     xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:id="@+id/ntp_content"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingTop="@dimen/tab_strip_height" >
+    android:layout_height="match_parent" >
 
-    <include layout="@layout/new_tab_page_incognito_md_common"/>
+    <include layout="@layout/new_tab_page_incognito_md_common" />
+
+    <org.chromium.chrome.browser.widget.FadingShadowView
+        android:id="@+id/shadow"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/action_bar_shadow_height"
+        android:visibility="gone" />
 
 </org.chromium.chrome.browser.ntp.IncognitoNewTabPageViewMD>

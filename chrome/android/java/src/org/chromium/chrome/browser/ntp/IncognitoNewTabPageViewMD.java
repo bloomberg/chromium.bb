@@ -26,6 +26,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
@@ -160,9 +161,9 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
         //   - Add the bulletpoint symbols (Unicode BULLET U+2022)
         //   - Remove leading whitespace (caused by formatting in the .grdp file)
         //   - Remove the trailing newline after the last bulletpoint.
-        text = text.replaceFirst(" +<li>([^<]*)</li>", "<li1>\u2022 $1</li1>");
-        text = text.replaceFirst(" +<li>([^<]*)</li>", "<li2>\u2022 $1</li2>");
-        text = text.replaceFirst(" +<li>([^<]*)</li>\n", "<li3>\u2022 $1</li3>");
+        text = text.replaceFirst(" +<li>([^<]*)</li>", "<li1>     \u2022     $1</li1>");
+        text = text.replaceFirst(" +<li>([^<]*)</li>", "<li2>     \u2022     $1</li2>");
+        text = text.replaceFirst(" +<li>([^<]*)</li>\n", "<li3>     \u2022     $1</li3>");
 
         // Remove the <ul></ul> tags which serve no purpose here, including the whitespace around
         // them.
@@ -203,15 +204,25 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
 
         boolean bulletpointsArrangedHorizontally;
 
-        if (mWidthDp <= WIDE_LAYOUT_THRESHOLD_DP) {
+        boolean usingChromeHome = ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME);
+        if (mWidthDp <= WIDE_LAYOUT_THRESHOLD_DP || usingChromeHome) {
             // Small padding.
-            paddingHorizontalDp = mWidthDp <= 240 ? 24 : 32;
-            paddingVerticalDp = mHeightDp <= 600 ? 32 : 72;
+            // Set the padding to a default for Chrome Home, since we want less padding in this
+            // case.
+            if (usingChromeHome) {
+                paddingVerticalDp = 0;
+                paddingHorizontalDp = 16;
+            } else {
+                paddingHorizontalDp = mWidthDp <= 240 ? 24 : 32;
+                paddingVerticalDp = (mHeightDp <= 600) ? 32 : 72;
+            }
 
             // Align left.
             mContainer.setGravity(Gravity.START);
 
             // Decide the bulletpoints orientation.
+            // TODO (thildebr): This is never set to anything but false, check if we can remove
+            // related code.
             bulletpointsArrangedHorizontally = false;
 
             // The subtitle is sized automatically, but not wider than CONTENT_WIDTH_DP.
