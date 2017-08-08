@@ -664,16 +664,107 @@ TEST_F(GenericURLRequestJobTest, GetPostData) {
       })";
 
   std::string post_data;
+  uint64_t post_data_size;
   job_delegate_.SetPolicy(base::Bind(
-      [](std::string* post_data, PendingRequest* pending_request) {
+      [](std::string* post_data, uint64_t* post_data_size,
+         PendingRequest* pending_request) {
         *post_data = pending_request->GetRequest()->GetPostData();
+        *post_data_size = pending_request->GetRequest()->GetPostDataSize();
         pending_request->AllowRequest();
       },
-      &post_data));
+      &post_data, &post_data_size));
 
   CreateAndCompletePostJob(GURL("https://example.com"), "payload", reply);
 
   EXPECT_EQ("payload", post_data);
+  EXPECT_EQ(post_data_size, post_data.size());
+}
+
+namespace {
+class ByteAtATimeUploadElementReader : public net::UploadElementReader {
+ public:
+  explicit ByteAtATimeUploadElementReader(const std::string& content)
+      : content_(content) {}
+
+  // net::UploadElementReader implementation:
+  int Init(const net::CompletionCallback& callback) override {
+    offset_ = 0;
+    return net::OK;
+  }
+
+  uint64_t GetContentLength() const override { return content_.size(); }
+
+  uint64_t BytesRemaining() const override { return content_.size() - offset_; }
+
+  bool IsInMemory() const override { return false; }
+
+  int Read(net::IOBuffer* buf,
+           int buf_length,
+           const net::CompletionCallback& callback) override {
+    if (!BytesRemaining())
+      return net::OK;
+
+    base::MessageLoop::current()->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&ByteAtATimeUploadElementReader::ReadImpl,
+                              base::Unretained(this), make_scoped_refptr(buf),
+                              buf_length, callback));
+    return net::ERR_IO_PENDING;
+  }
+
+ private:
+  void ReadImpl(scoped_refptr<net::IOBuffer> buf,
+                int buf_length,
+                const net::CompletionCallback callback) {
+    if (BytesRemaining()) {
+      *buf->data() = content_[offset_++];
+      callback.Run(1u);
+    } else {
+      callback.Run(0u);
+    }
+  }
+
+  std::string content_;
+  uint64_t offset_ = 0;
+};
+}  // namespace
+
+TEST_F(GenericURLRequestJobTest, GetPostDataAsync) {
+  std::string json_reply = R"(
+      {
+        "url": "https://example.com",
+        "http_response_code": 200,
+        "data": "Reply",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
+
+  std::string post_data;
+  uint64_t post_data_size;
+  job_delegate_.SetPolicy(base::Bind(
+      [](std::string* post_data, uint64_t* post_data_size,
+         PendingRequest* pending_request) {
+        *post_data = pending_request->GetRequest()->GetPostData();
+        *post_data_size = pending_request->GetRequest()->GetPostDataSize();
+        pending_request->AllowRequest();
+      },
+      &post_data, &post_data_size));
+
+  GURL url("https://example.com");
+  std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
+      url, net::DEFAULT_PRIORITY, &request_delegate_,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->set_method("POST");
+
+  json_fetch_reply_map_[url.spec()] = json_reply;
+
+  request->set_upload(net::ElementsUploadDataStream::CreateWithReader(
+      base::MakeUnique<ByteAtATimeUploadElementReader>("payload"), 0));
+  request->Start();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ("payload", post_data);
+  EXPECT_EQ(post_data_size, post_data.size());
 }
 
 }  // namespace headless

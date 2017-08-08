@@ -51,6 +51,9 @@ class HEADLESS_EXPORT Request {
   // Gets the POST data, if any, from the net::URLRequest.
   virtual std::string GetPostData() const = 0;
 
+  // Returns the size of the POST data, if any, from the net::URLRequest.
+  virtual uint64_t GetPostDataSize() const = 0;
+
   enum class ResourceType {
     MAIN_FRAME = 0,
     SUB_FRAME = 1,
@@ -192,6 +195,7 @@ class HEADLESS_EXPORT GenericURLRequestJob
   int GetFrameTreeNodeId() const override;
   std::string GetDevToolsAgentHostId() const override;
   std::string GetPostData() const override;
+  uint64_t GetPostDataSize() const override;
   ResourceType GetResourceType() const override;
   bool IsAsync() const override;
 

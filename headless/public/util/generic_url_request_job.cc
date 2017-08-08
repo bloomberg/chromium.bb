@@ -280,6 +280,13 @@ bool GenericURLRequestJob::IsAsync() const {
   return true;
 }
 
+namespace {
+void CompletionCallback(int* dest, base::Closure* quit_closure, int value) {
+  *dest = value;
+  quit_closure->Run();
+}
+}  // namespace
+
 std::string GenericURLRequestJob::GetPostData() const {
   if (!request_->has_upload())
     return "";
@@ -292,11 +299,80 @@ std::string GenericURLRequestJob::GetPostData() const {
     return "";
 
   DCHECK_EQ(1u, stream->GetElementReaders()->size());
-  const net::UploadBytesElementReader* reader =
-      (*stream->GetElementReaders())[0]->AsBytesReader();
-  if (!reader)
-    return "";
-  return std::string(reader->bytes(), reader->length());
+  const std::unique_ptr<net::UploadElementReader>& reader =
+      (*stream->GetElementReaders())[0];
+  // If |reader| is actually an UploadBytesElementReader we can get the data
+  // directly (should be faster than the horrible stuff below).
+  const net::UploadBytesElementReader* bytes_reader = reader->AsBytesReader();
+  if (bytes_reader)
+    return std::string(bytes_reader->bytes(), bytes_reader->length());
+
+  // TODO(alexclarke): Consider changing the interface of
+  // GenericURLRequestJob::GetPostData to use a callback which would let us
+  // avoid the nested run loops below.
+
+  // Initialize the reader.
+  {
+    base::Closure quit_closure;
+    int init_result = reader->Init(
+        base::Bind(&CompletionCallback, &init_result, &quit_closure));
+    if (init_result == net::ERR_IO_PENDING) {
+      base::RunLoop nested_run_loop;
+      base::MessageLoop::ScopedNestableTaskAllower allow_nested(
+          base::MessageLoop::current());
+      quit_closure = nested_run_loop.QuitClosure();
+      nested_run_loop.Run();
+    }
+
+    if (init_result != net::OK)
+      return "";
+  }
+
+  // Read the POST bytes.
+  uint64_t content_length = reader->GetContentLength();
+  std::string post_data;
+  post_data.reserve(content_length);
+  const size_t block_size = 1024;
+  scoped_refptr<net::IOBuffer> read_buffer(new net::IOBuffer(block_size));
+  while (post_data.size() < content_length) {
+    base::Closure quit_closure;
+    int bytes_read = reader->Read(
+        read_buffer.get(), block_size,
+        base::Bind(&CompletionCallback, &bytes_read, &quit_closure));
+
+    if (bytes_read == net::ERR_IO_PENDING) {
+      base::MessageLoop::ScopedNestableTaskAllower allow_nested(
+          base::MessageLoop::current());
+      base::RunLoop nested_run_loop;
+      quit_closure = nested_run_loop.QuitClosure();
+      nested_run_loop.Run();
+    }
+
+    // Bail out if an error occured.
+    if (bytes_read < 0)
+      return "";
+
+    post_data.append(read_buffer->data(), bytes_read);
+  }
+
+  return post_data;
+}
+
+uint64_t GenericURLRequestJob::GetPostDataSize() const {
+  if (!request_->has_upload())
+    return 0;
+
+  const net::UploadDataStream* stream = request_->get_upload();
+  if (!stream->GetElementReaders())
+    return 0;
+
+  if (stream->GetElementReaders()->size() == 0)
+    return 0;
+
+  DCHECK_EQ(1u, stream->GetElementReaders()->size());
+  const std::unique_ptr<net::UploadElementReader>& reader =
+      (*stream->GetElementReaders())[0];
+  return reader->GetContentLength();
 }
 
 const Request* GenericURLRequestJob::GetRequest() const {
