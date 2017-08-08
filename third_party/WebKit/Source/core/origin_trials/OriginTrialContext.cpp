@@ -204,6 +204,11 @@ void OriginTrialContext::InitializePendingFeatures() {
   }
 }
 
+void OriginTrialContext::AddFeature(const String& feature) {
+  enabled_trials_.insert(feature);
+  InitializePendingFeatures();
+}
+
 bool OriginTrialContext::IsTrialEnabled(const String& trial_name) {
   if (!RuntimeEnabledFeatures::OriginTrialsEnabled())
     return false;

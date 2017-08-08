@@ -35,6 +35,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -1968,6 +1969,67 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SetAndGetCookies) {
     }
   }
   EXPECT_EQ(2u, found);
+}
+
+class DevToolsProtocolTouchTest : public DevToolsProtocolTest {
+ public:
+  ~DevToolsProtocolTouchTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        switches::kTouchEventFeatureDetection,
+        switches::kTouchEventFeatureDetectionDisabled);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTouchTest, EnableTouch) {
+  std::unique_ptr<base::DictionaryValue> params;
+  bool result;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url = embedded_test_server()->GetURL("/devtools/enable_touch.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  Attach();
+
+  params.reset(new base::DictionaryValue());
+  SendCommand("Page.enable", std::move(params), true);
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
+      "domAutomationController.send(checkProtos(false))", &result));
+  EXPECT_TRUE(result);
+
+  params.reset(new base::DictionaryValue());
+  params->SetBoolean("enabled", true);
+  SendCommand("Emulation.setTouchEmulationEnabled", std::move(params), true);
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
+      "domAutomationController.send(checkProtos(false))", &result));
+  EXPECT_TRUE(result);
+
+  params.reset(new base::DictionaryValue());
+  SendCommand("Page.reload", std::move(params), false);
+  WaitForNotification("Page.frameStoppedLoading");
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
+      "domAutomationController.send(checkProtos(true))", &result));
+  EXPECT_TRUE(result);
+
+  params.reset(new base::DictionaryValue());
+  params->SetBoolean("enabled", false);
+  SendCommand("Emulation.setTouchEmulationEnabled", std::move(params), true);
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
+      "domAutomationController.send(checkProtos(true))", &result));
+  EXPECT_TRUE(result);
+
+  params.reset(new base::DictionaryValue());
+  SendCommand("Page.reload", std::move(params), false);
+  WaitForNotification("Page.frameStoppedLoading");
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
+      "domAutomationController.send(checkProtos(false))", &result));
+  EXPECT_TRUE(result);
 }
 
 }  // namespace content

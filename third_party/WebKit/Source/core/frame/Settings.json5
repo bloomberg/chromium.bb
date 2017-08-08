@@ -594,6 +594,14 @@
       invalidate: "DOMWorlds",
     },
 
+    // Forces TouchEventFeatureDetection conditional feature for all main
+    // worlds in the page. Used by inspector to emulate touch on devices
+    // which don't support it naturally.
+    {
+      name: "forceTouchEventFeatureDetectionForInspector",
+      initial: false,
+    },
+
     // Compensates for poor text legibility on mobile devices. This value is
     // multiplied by the font scale factor when performing text autosizing of
     // websites that do not set an explicit viewport description.

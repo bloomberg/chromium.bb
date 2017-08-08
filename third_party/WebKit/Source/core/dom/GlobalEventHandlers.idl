@@ -115,8 +115,8 @@
 
     // Touch Events
     // https://w3c.github.io/touch-events/#extensions-to-the-globaleventhandlers-interface
-    [RuntimeEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchcancel;
-    [RuntimeEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchend;
-    [RuntimeEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchmove;
-    [RuntimeEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchstart;
+    [OriginTrialEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchcancel;
+    [OriginTrialEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchend;
+    [OriginTrialEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchmove;
+    [OriginTrialEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchstart;
 };

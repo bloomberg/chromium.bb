@@ -94,7 +94,6 @@ DevToolsEmulator::DevToolsEmulator(WebViewBase* web_view)
               .GetMainFrameResizesAreOrientationChanges()),
       touch_event_emulation_enabled_(false),
       double_tap_to_zoom_enabled_(false),
-      original_touch_event_feature_detection_enabled_(false),
       original_device_supports_touch_(false),
       original_max_touch_points_(0),
       embedder_script_enabled_(
@@ -477,15 +476,14 @@ void DevToolsEmulator::SetTouchEventEmulationEnabled(bool enabled) {
   if (touch_event_emulation_enabled_ == enabled)
     return;
   if (!touch_event_emulation_enabled_) {
-    original_touch_event_feature_detection_enabled_ =
-        RuntimeEnabledFeatures::TouchEventFeatureDetectionEnabled();
     original_device_supports_touch_ =
         web_view_->GetPage()->GetSettings().GetDeviceSupportsTouch();
     original_max_touch_points_ =
         web_view_->GetPage()->GetSettings().GetMaxTouchPoints();
   }
-  RuntimeEnabledFeatures::SetTouchEventFeatureDetectionEnabled(
-      enabled ? true : original_touch_event_feature_detection_enabled_);
+  web_view_->GetPage()
+      ->GetSettings()
+      .SetForceTouchEventFeatureDetectionForInspector(enabled);
   if (!original_device_supports_touch_) {
     if (enabled && web_view_->MainFrameImpl()) {
       web_view_->MainFrameImpl()

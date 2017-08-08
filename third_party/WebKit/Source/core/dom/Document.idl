@@ -158,7 +158,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
 
     // Touch Events
     // https://w3c.github.io/touch-events/#extensions-to-the-document-interface
-    [RuntimeEnabled=TouchEventFeatureDetection, Measure, LegacyInterfaceTypeChecking, Custom=CallPrologue]
+    [OriginTrialEnabled=TouchEventFeatureDetection, Measure, LegacyInterfaceTypeChecking, Custom=CallPrologue]
     Touch createTouch(Window view,
                       EventTarget target,
                       long identifier,
@@ -170,7 +170,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
                       optional unrestricted double radiusY = 0,
                       optional unrestricted float rotationAngle = 0,
                       optional unrestricted float force = 0);
-    [RuntimeEnabled=TouchEventFeatureDetection] TouchList createTouchList(Touch... touches);
+    [OriginTrialEnabled=TouchEventFeatureDetection] TouchList createTouchList(Touch... touches);
 
     // Custom Elements
     // https://w3c.github.io/webcomponents/spec/custom/#extensions-to-document-interface-to-register
