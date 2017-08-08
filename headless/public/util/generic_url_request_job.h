@@ -107,6 +107,7 @@ class HEADLESS_EXPORT PendingRequest {
 
   struct MockResponseData {
     std::string response_data;
+    net::LoadTimingInfo load_timing_info;
   };
 
   // Instead of fetching the request, |mock_response| is returned instead.
@@ -176,12 +177,13 @@ class HEADLESS_EXPORT GenericURLRequestJob
   bool GetCharset(std::string* charset) override;
   void GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
 
-  // URLFetcher::FetchResultListener implementation:
+  // URLFetcher::ResultListener implementation:
   void OnFetchStartError(net::Error error) override;
   void OnFetchComplete(const GURL& final_url,
                        scoped_refptr<net::HttpResponseHeaders> response_headers,
                        const char* body,
-                       size_t body_size) override;
+                       size_t body_size,
+                       const net::LoadTimingInfo& load_timing_info) override;
 
  protected:
   // Request implementation:
@@ -224,7 +226,7 @@ class HEADLESS_EXPORT GenericURLRequestJob
   const char* body_ = nullptr;  // Not owned.
   size_t body_size_ = 0;
   size_t read_offset_ = 0;
-  base::TimeTicks response_time_;
+  net::LoadTimingInfo load_timing_info_;
   const uint64_t request_id_;
   static uint64_t next_request_id_;
 

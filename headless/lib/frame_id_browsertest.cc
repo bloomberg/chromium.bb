@@ -81,8 +81,9 @@ class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
       if (!response)
         result_listener->OnFetchStartError(net::ERR_FILE_NOT_FOUND);
 
+      net::LoadTimingInfo load_timing_info;
       result_listener->OnFetchCompleteExtractHeaders(
-          url, response->data.c_str(), response->data.size());
+          url, response->data.c_str(), response->data.size(), load_timing_info);
     }
 
    private:

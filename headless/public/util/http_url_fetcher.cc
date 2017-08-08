@@ -211,12 +211,16 @@ void HttpURLFetcher::Delegate::OnResponseCompleted(net::URLRequest* request,
     return;
   }
 
+  // Extract LoadTimingInfo from the request to pass to the result listener.
+  net::LoadTimingInfo load_timing_info;
+  request->GetLoadTimingInfo(&load_timing_info);
+
   // TODO(alexclarke) apart from the headers there's a lot of stuff in
   // |request->response_info()| that we drop here.  Find a way to pipe it
   // through.
   result_listener_->OnFetchComplete(
       request->url(), request->response_info().headers,
-      bytes_read_so_far_.c_str(), bytes_read_so_far_.size());
+      bytes_read_so_far_.c_str(), bytes_read_so_far_.size(), load_timing_info);
 }
 
 HttpURLFetcher::HttpURLFetcher(
