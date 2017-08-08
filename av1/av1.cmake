@@ -305,6 +305,13 @@ if (CONFIG_ACCOUNTING)
       "${AOM_ROOT}/av1/decoder/accounting.h")
 endif ()
 
+if (CONFIG_BGSPRITE)
+  set(AOM_AV1_ENCODER_SOURCES
+      ${AOM_AV1_ENCODER_SOURCES}
+      "${AOM_ROOT}/av1/encoder/bgsprite.c"
+      "${AOM_ROOT}/av1/encoder/bgsprite.h")
+endif ()
+
 if (CONFIG_GLOBAL_MOTION)
   set(AOM_AV1_ENCODER_SOURCES
       ${AOM_AV1_ENCODER_SOURCES}
