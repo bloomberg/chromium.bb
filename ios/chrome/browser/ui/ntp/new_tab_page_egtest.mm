@@ -144,11 +144,6 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
 
-  // TODO(crbug.com/751803): Re-enable this test once the bug is fixed.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.")
-  }
-
   NSString* ntpOmniboxLabel = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
   NSString* focusedOmniboxLabel = l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
   SelectNewTabPagePanel(NewTabPage::kHomePanel);
@@ -220,11 +215,6 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
 
 // Tests focusing and defocusing the NTP's omnibox.
 - (void)testOmnibox {
-  // TODO(crbug.com/751803): Re-enable this test once the bug is fixed.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.")
-  }
-
   // Empty the pasteboard: if it contains a link the Google Landing will not be
   // interactable.
   [UIPasteboard generalPasteboard].string = @"";
@@ -291,11 +281,6 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
 - (void)testScrollToolbar {
   if (IsIPadIdiom()) {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iPad (no hidden toolbar in tablet)");
-  }
-
-  // TODO(crbug.com/751803): Re-enable this test once the bug is fixed.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.")
   }
 
   NSString* toolsMenuLabel = l10n_util::GetNSString(IDS_IOS_TOOLBAR_SETTINGS);
