@@ -325,10 +325,10 @@ void RenderViewTest::TearDown() {
 
   render_thread_->SendCloseMessage();
 
-  std::unique_ptr<blink::WebLeakDetector> leak_detector =
-      base::WrapUnique(blink::WebLeakDetector::Create(this));
+  std::unique_ptr<blink::WebLeakDetector> leak_detector = base::WrapUnique(
+      blink::WebLeakDetector::Create(this, view_->GetWebView()->MainFrame()));
 
-  leak_detector->PrepareForLeakDetection(view_->GetWebView()->MainFrame());
+  leak_detector->PrepareForLeakDetection();
 
   view_ = NULL;
   mock_process_.reset();
