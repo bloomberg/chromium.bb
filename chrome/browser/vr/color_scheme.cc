@@ -87,6 +87,8 @@ void InitializeColorSchemes() {
   fullscreen_scheme.close_button_background_down =
       fullscreen_scheme.element_background_down;
 
+  kColorSchemes[ColorScheme::kModeIncognito] =
+      kColorSchemes[ColorScheme::kModeNormal];
   ColorScheme& incognito_scheme = kColorSchemes[ColorScheme::kModeIncognito];
   incognito_scheme.world_background = 0xFF2E2E2E;
   incognito_scheme.floor = 0xFF282828;
