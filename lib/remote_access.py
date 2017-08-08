@@ -20,6 +20,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import timeout_util
+from chromite.lib.workqueue import throttle
 
 
 _path = os.path.dirname(os.path.realpath(__file__))
@@ -713,12 +714,14 @@ class RemoteDevice(object):
         * Use scp when we have incompressible files (say already compressed),
         especially if we know no previous version exist at the destination.
     """
-    assert mode in ['rsync', 'scp']
+    assert mode in ['rsync', 'scp', 'throttled']
+    if mode == 'throttled':
+      logging.info('Throttled copy: %s:%s -> %s', self.hostname, src, dest)
+      throttle.ThrottledCopy(self.hostname, src, dest, **kwargs)
+      return
     msg = 'Could not copy %s to device.' % src
     # Fall back to scp if device has no rsync. Happens when stateful is cleaned.
-    if not self.HasRsync():
-      mode = 'scp'
-    if mode == 'scp':
+    if mode == 'scp' or not self.HasRsync():
       # scp always follow symlinks
       kwargs.pop('follow_symlinks', None)
       func = self.GetAgent().Scp
@@ -739,11 +742,7 @@ class RemoteDevice(object):
     """
     msg = 'Could not copy %s from device.' % src
     # Fall back to scp if device has no rsync. Happens when stateful is cleaned.
-    if not self.HasRsync():
-      # Use rsync by default if it exists.
-      mode = 'scp'
-
-    if mode == 'scp':
+    if mode == 'scp' or not self.HasRsync():
       # scp always follow symlinks
       kwargs.pop('follow_symlinks', None)
       func = self.GetAgent().ScpToLocal
