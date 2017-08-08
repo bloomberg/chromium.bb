@@ -1707,16 +1707,6 @@ void PDFiumEngine::PrintEnd() {
   FORM_DoDocumentAAction(form_, FPDFDOC_AACTION_DP);
 }
 
-PDFiumPage::Area PDFiumEngine::GetCharIndex(const pp::MouseInputEvent& event,
-                                            int* page_index,
-                                            int* char_index,
-                                            int* form_type,
-                                            PDFiumPage::LinkTarget* target) {
-  // First figure out which page this is in.
-  pp::Point mouse_point = event.GetPosition();
-  return GetCharIndex(mouse_point, page_index, char_index, form_type, target);
-}
-
 PDFiumPage::Area PDFiumEngine::GetCharIndex(const pp::Point& point,
                                             int* page_index,
                                             int* char_index,
@@ -1779,8 +1769,9 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
   int char_index = -1;
   int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
+  pp::Point point = event.GetPosition();
   PDFiumPage::Area area =
-      GetCharIndex(event, &page_index, &char_index, &form_type, &target);
+      GetCharIndex(point, &page_index, &char_index, &form_type, &target);
   mouse_down_state_.Set(area, target);
 
   // Decide whether to open link or not based on user action in mouse up and
@@ -1794,8 +1785,8 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
 
   if (page_index != -1) {
     last_page_mouse_down_ = page_index;
-    double page_x, page_y;
-    pp::Point point = event.GetPosition();
+    double page_x;
+    double page_y;
     DeviceToPage(page_index, point.x(), point.y(), &page_x, &page_y);
 
     FORM_OnLButtonDown(form_, pages_[page_index]->GetPage(), 0, page_x, page_y);
@@ -1895,8 +1886,9 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
   int char_index = -1;
   int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
+  pp::Point point = event.GetPosition();
   PDFiumPage::Area area =
-      GetCharIndex(event, &page_index, &char_index, &form_type, &target);
+      GetCharIndex(point, &page_index, &char_index, &form_type, &target);
 
   // Open link on mouse up for same link for which mouse down happened earlier.
   if (mouse_down_state_.Matches(area, target)) {
@@ -1928,8 +1920,8 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
     return false;
 
   if (page_index != -1) {
-    double page_x, page_y;
-    pp::Point point = event.GetPosition();
+    double page_x;
+    double page_y;
     DeviceToPage(page_index, point.x(), point.y(), &page_x, &page_y);
     FORM_OnLButtonUp(form_, pages_[page_index]->GetPage(), 0, page_x, page_y);
   }
@@ -1946,8 +1938,9 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
   int char_index = -1;
   int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
+  pp::Point point = event.GetPosition();
   PDFiumPage::Area area =
-      GetCharIndex(event, &page_index, &char_index, &form_type, &target);
+      GetCharIndex(point, &page_index, &char_index, &form_type, &target);
 
   // Clear |mouse_down_state_| if mouse moves away from where the mouse down
   // happened.
@@ -1986,8 +1979,8 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
     }
 
     if (page_index != -1) {
-      double page_x, page_y;
-      pp::Point point = event.GetPosition();
+      double page_x;
+      double page_y;
       DeviceToPage(page_index, point.x(), point.y(), &page_x, &page_y);
       FORM_OnMouseMove(form_, pages_[page_index]->GetPage(), 0, page_x, page_y);
     }
