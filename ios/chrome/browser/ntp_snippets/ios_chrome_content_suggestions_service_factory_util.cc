@@ -34,7 +34,7 @@
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler_impl.h"
-#include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
+#include "components/ntp_snippets/remote/remote_suggestions_status_service_impl.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -62,7 +62,7 @@ using ntp_snippets::RemoteSuggestionsDatabase;
 using ntp_snippets::RemoteSuggestionsFetcherImpl;
 using ntp_snippets::RemoteSuggestionsProviderImpl;
 using ntp_snippets::RemoteSuggestionsSchedulerImpl;
-using ntp_snippets::RemoteSuggestionsStatusService;
+using ntp_snippets::RemoteSuggestionsStatusServiceImpl;
 using ntp_snippets::UserClassifier;
 
 namespace {
@@ -195,8 +195,8 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       base::MakeUnique<ImageFetcherImpl>(CreateIOSImageDecoder(),
                                          request_context.get()),
       base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner),
-      base::MakeUnique<RemoteSuggestionsStatusService>(signin_manager, prefs,
-                                                       pref_name),
+      base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(signin_manager,
+                                                           prefs, pref_name),
       /*prefetched_pages_tracker=*/nullptr,
       /*breaking_news_raw_data_provider*/ nullptr);
 

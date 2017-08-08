@@ -54,7 +54,7 @@
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler_impl.h"
-#include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
+#include "components/ntp_snippets/remote/remote_suggestions_status_service_impl.h"
 #include "components/ntp_snippets/sessions/foreign_sessions_suggestions_provider.h"
 #include "components/ntp_snippets/sessions/tab_delegate_sync_adapter.h"
 #include "components/ntp_snippets/user_classifier.h"
@@ -117,7 +117,7 @@ using ntp_snippets::RemoteSuggestionsDatabase;
 using ntp_snippets::RemoteSuggestionsFetcherImpl;
 using ntp_snippets::RemoteSuggestionsProviderImpl;
 using ntp_snippets::RemoteSuggestionsSchedulerImpl;
-using ntp_snippets::RemoteSuggestionsStatusService;
+using ntp_snippets::RemoteSuggestionsStatusServiceImpl;
 using ntp_snippets::TabDelegateSyncAdapter;
 using ntp_snippets::UserClassifier;
 using suggestions::ImageDecoderImpl;
@@ -462,7 +462,7 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
       base::MakeUnique<ImageFetcherImpl>(base::MakeUnique<ImageDecoderImpl>(),
                                          request_context.get()),
       base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner),
-      base::MakeUnique<RemoteSuggestionsStatusService>(
+      base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(
           signin_manager, pref_service, additional_toggle_pref),
       std::move(prefetched_pages_tracker),
       std::move(breaking_news_raw_data_provider));

@@ -1,8 +1,8 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
+#include "components/ntp_snippets/remote/remote_suggestions_status_service_impl.h"
 
 #include <memory>
 
@@ -24,15 +24,15 @@
 
 namespace ntp_snippets {
 
-class RemoteSuggestionsStatusServiceTest : public ::testing::Test {
+class RemoteSuggestionsStatusServiceImplTest : public ::testing::Test {
  public:
-  RemoteSuggestionsStatusServiceTest() {
-    RemoteSuggestionsStatusService::RegisterProfilePrefs(
+  RemoteSuggestionsStatusServiceImplTest() {
+    RemoteSuggestionsStatusServiceImpl::RegisterProfilePrefs(
         utils_.pref_service()->registry());
   }
 
-  std::unique_ptr<RemoteSuggestionsStatusService> MakeService() {
-    return base::MakeUnique<RemoteSuggestionsStatusService>(
+  std::unique_ptr<RemoteSuggestionsStatusServiceImpl> MakeService() {
+    return base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(
         utils_.fake_signin_manager(), utils_.pref_service(), std::string());
   }
 
@@ -41,14 +41,14 @@ class RemoteSuggestionsStatusServiceTest : public ::testing::Test {
   variations::testing::VariationParamsManager params_manager_;
 };
 
-TEST_F(RemoteSuggestionsStatusServiceTest, NoSigninNeeded) {
+TEST_F(RemoteSuggestionsStatusServiceImplTest, NoSigninNeeded) {
   auto service = MakeService();
 
   // By default, no signin is required.
   EXPECT_EQ(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT,
             service->GetStatusFromDeps());
 
-  // One can still sign in.
+// One can still sign in.
 #if defined(OS_CHROMEOS)
   utils_.fake_signin_manager()->SignIn("foo@bar.com");
 #else
@@ -58,7 +58,7 @@ TEST_F(RemoteSuggestionsStatusServiceTest, NoSigninNeeded) {
             service->GetStatusFromDeps());
 }
 
-TEST_F(RemoteSuggestionsStatusServiceTest, DisabledViaPref) {
+TEST_F(RemoteSuggestionsStatusServiceImplTest, DisabledViaPref) {
   auto service = MakeService();
 
   // The default test setup is signed out. The service is enabled.
@@ -70,7 +70,7 @@ TEST_F(RemoteSuggestionsStatusServiceTest, DisabledViaPref) {
   EXPECT_EQ(RemoteSuggestionsStatus::EXPLICITLY_DISABLED,
             service->GetStatusFromDeps());
 
-  // The other dependencies shouldn't matter anymore.
+// The other dependencies shouldn't matter anymore.
 #if defined(OS_CHROMEOS)
   utils_.fake_signin_manager()->SignIn("foo@bar.com");
 #else
