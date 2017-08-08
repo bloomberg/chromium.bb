@@ -349,7 +349,7 @@ TemplateUrlServiceAndroid::AddSearchEngineForTesting(
       base::android::ConvertJavaStringToUTF16(env, jkeyword);
   data.SetShortName(keyword);
   data.SetKeyword(keyword);
-  data.SetURL("http://testurl");
+  data.SetURL("https://testurl.com/?searchstuff={searchTerms}");
   data.favicon_url = GURL("http://favicon.url");
   data.safe_for_autoreplace = true;
   data.input_encodings.push_back("UTF-8");
@@ -362,6 +362,7 @@ TemplateUrlServiceAndroid::AddSearchEngineForTesting(
       base::Time::Now() - base::TimeDelta::FromDays((int) age_in_days);
   TemplateURL* t_url =
       template_url_service_->Add(base::MakeUnique<TemplateURL>(data));
+  CHECK(t_url) << "Failed adding template url for: " << keyword;
   return base::android::ConvertUTF16ToJavaString(env, t_url->data().keyword());
 }
 
