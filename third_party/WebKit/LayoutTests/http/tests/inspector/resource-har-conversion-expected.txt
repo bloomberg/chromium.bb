@@ -219,7 +219,7 @@ Page reloaded.
                 status : 200
                 statusText : "OK"
             }
-            serverIPAddress : ""
+            serverIPAddress : "127.0.0.1"
             startedDateTime : <plausible>
             time : <number>
             timings : <object>
