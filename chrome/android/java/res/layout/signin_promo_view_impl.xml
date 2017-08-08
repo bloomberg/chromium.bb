@@ -43,9 +43,9 @@
         android:layout_marginEnd="24dp"
         android:layout_marginStart="24dp"
         android:gravity="center"
-        android:text="@string/signin_promo_settings"
         android:textColor="#FF333333"
-        android:textSize="14sp"/>
+        android:textSize="14sp"
+        tools:text="@string/signin_promo_description_settings"/>
 
     <org.chromium.ui.widget.ButtonCompat
         android:id="@+id/signin_promo_signin_button"
