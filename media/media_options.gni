@@ -204,3 +204,9 @@ declare_args() {
   # devices when the tab is being casted and other conditions are met.
   enable_media_remoting = !is_chromecast && !is_ios
 }
+
+declare_args() {
+  # Media Remoting RPC is disabled on Android since it's unused but increases
+  # the native binary size by ~70Kb.
+  enable_media_remoting_rpc = enable_media_remoting && !is_android
+}

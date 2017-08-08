@@ -11,6 +11,8 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
+#include "media/media_features.h"
 #include "media/remoting/remoting_cdm.h"
 #include "media/remoting/remoting_cdm_context.h"
 
@@ -128,11 +130,13 @@ void RendererController::OnRemotePlaybackDisabled(bool disabled) {
   UpdateAndMaybeSwitch(ENABLED_BY_PAGE, DISABLED_BY_PAGE);
 }
 
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
 base::WeakPtr<RpcBroker> RendererController::GetRpcBroker() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   return session_->rpc_broker()->GetWeakPtr();
 }
+#endif
 
 void RendererController::StartDataPipe(
     std::unique_ptr<mojo::DataPipe> audio_data_pipe,

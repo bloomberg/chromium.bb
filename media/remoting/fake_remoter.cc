@@ -9,10 +9,15 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/remoting/proto_utils.h"
+#include "build/buildflag.h"
+#include "media/media_features.h"
 #include "media/remoting/shared_session.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
+#include "media/remoting/proto_utils.h"  // nogncheck
+#endif
 
 namespace media {
 namespace remoting {
@@ -45,6 +50,9 @@ bool FakeRemotingDataStreamSender::ValidateFrameBuffer(size_t index,
     return false;
   }
 
+#if !BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
+  return true;
+#else
   const std::vector<uint8_t>& data = received_frame_list[index];
   scoped_refptr<DecoderBuffer> media_buffer =
       ByteArrayToDecoderBuffer(data.data(), data.size());
@@ -83,6 +91,7 @@ bool FakeRemotingDataStreamSender::ValidateFrameBuffer(size_t index,
     }
   }
   return return_value;
+#endif  // !defined(ENABLE_MEDIA_REMOTING_RPC)
 }
 
 void FakeRemotingDataStreamSender::ConsumeDataChunk(
