@@ -6,7 +6,9 @@
 #define ScrollPaintPropertyNode_h
 
 #include "platform/PlatformExport.h"
+#include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/paint/PaintPropertyNode.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/wtf/text/WTFString.h"
@@ -38,43 +40,54 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
 
   static PassRefPtr<ScrollPaintPropertyNode> Create(
       PassRefPtr<const ScrollPaintPropertyNode> parent,
+      const IntPoint& bounds_offset,
       const IntSize& container_bounds,
       const IntSize& bounds,
       bool user_scrollable_horizontal,
       bool user_scrollable_vertical,
       MainThreadScrollingReasons main_thread_scrolling_reasons,
+      CompositorElementId compositor_element_id,
       WebLayerScrollClient* scroll_client) {
     return AdoptRef(new ScrollPaintPropertyNode(
-        std::move(parent), container_bounds, bounds, user_scrollable_horizontal,
-        user_scrollable_vertical, main_thread_scrolling_reasons,
-        scroll_client));
+        std::move(parent), bounds_offset, container_bounds, bounds,
+        user_scrollable_horizontal, user_scrollable_vertical,
+        main_thread_scrolling_reasons, compositor_element_id, scroll_client));
   }
 
   bool Update(PassRefPtr<const ScrollPaintPropertyNode> parent,
+              const IntPoint& bounds_offset,
               const IntSize& container_bounds,
               const IntSize& bounds,
               bool user_scrollable_horizontal,
               bool user_scrollable_vertical,
               MainThreadScrollingReasons main_thread_scrolling_reasons,
+              CompositorElementId compositor_element_id,
               WebLayerScrollClient* scroll_client) {
     bool parent_changed = PaintPropertyNode::Update(std::move(parent));
 
-    if (container_bounds == container_bounds_ && bounds == bounds_ &&
+    if (bounds_offset == bounds_offset_ &&
+        container_bounds == container_bounds_ && bounds == bounds_ &&
         user_scrollable_horizontal == user_scrollable_horizontal_ &&
         user_scrollable_vertical == user_scrollable_vertical_ &&
         main_thread_scrolling_reasons == main_thread_scrolling_reasons_ &&
+        compositor_element_id_ == compositor_element_id &&
         scroll_client == scroll_client_)
       return parent_changed;
 
     SetChanged();
+    bounds_offset_ = bounds_offset;
     container_bounds_ = container_bounds;
     bounds_ = bounds;
     user_scrollable_horizontal_ = user_scrollable_horizontal;
     user_scrollable_vertical_ = user_scrollable_vertical;
     main_thread_scrolling_reasons_ = main_thread_scrolling_reasons;
+    compositor_element_id_ = compositor_element_id;
     scroll_client_ = scroll_client;
     return true;
   }
+
+  // Offset for |ContainerBounds| and |Bounds|.
+  const IntPoint& Offset() const { return bounds_offset_; }
 
   // Size of the container area that the contents scrolls in, not including
   // non-overlay scrollbars. Overlay scrollbars do not affect these bounds.
@@ -103,6 +116,10 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
            MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
   }
 
+  const CompositorElementId& GetCompositorElementId() const {
+    return compositor_element_id_;
+  }
+
   WebLayerScrollClient* ScrollClient() const { return scroll_client_; }
 
 #if DCHECK_IS_ON()
@@ -111,8 +128,9 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   PassRefPtr<ScrollPaintPropertyNode> Clone() const {
     RefPtr<ScrollPaintPropertyNode> cloned =
         AdoptRef(new ScrollPaintPropertyNode(
-            Parent(), container_bounds_, bounds_, user_scrollable_horizontal_,
-            user_scrollable_vertical_, main_thread_scrolling_reasons_,
+            Parent(), bounds_offset_, container_bounds_, bounds_,
+            user_scrollable_horizontal_, user_scrollable_vertical_,
+            main_thread_scrolling_reasons_, compositor_element_id_,
             scroll_client_));
     return cloned;
   }
@@ -120,11 +138,12 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
   // if a scroll node has changed.
   bool operator==(const ScrollPaintPropertyNode& o) const {
-    return Parent() == o.Parent() && container_bounds_ == o.container_bounds_ &&
-           bounds_ == o.bounds_ &&
+    return Parent() == o.Parent() && bounds_offset_ == o.bounds_offset_ &&
+           container_bounds_ == o.container_bounds_ && bounds_ == o.bounds_ &&
            user_scrollable_horizontal_ == o.user_scrollable_horizontal_ &&
            user_scrollable_vertical_ == o.user_scrollable_vertical_ &&
            main_thread_scrolling_reasons_ == o.main_thread_scrolling_reasons_ &&
+           compositor_element_id_ == o.compositor_element_id_ &&
            scroll_client_ == o.scroll_client_;
   }
 
@@ -136,25 +155,33 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
  private:
   ScrollPaintPropertyNode(
       PassRefPtr<const ScrollPaintPropertyNode> parent,
+      IntPoint bounds_offset,
       IntSize container_bounds,
       IntSize bounds,
       bool user_scrollable_horizontal,
       bool user_scrollable_vertical,
       MainThreadScrollingReasons main_thread_scrolling_reasons,
+      CompositorElementId compositor_element_id,
       WebLayerScrollClient* scroll_client)
       : PaintPropertyNode(std::move(parent)),
+        bounds_offset_(bounds_offset),
         container_bounds_(container_bounds),
         bounds_(bounds),
         user_scrollable_horizontal_(user_scrollable_horizontal),
         user_scrollable_vertical_(user_scrollable_vertical),
         main_thread_scrolling_reasons_(main_thread_scrolling_reasons),
+        compositor_element_id_(compositor_element_id),
         scroll_client_(scroll_client) {}
 
+  IntPoint bounds_offset_;
   IntSize container_bounds_;
   IntSize bounds_;
   bool user_scrollable_horizontal_ : 1;
   bool user_scrollable_vertical_ : 1;
   MainThreadScrollingReasons main_thread_scrolling_reasons_;
+  // The scrolling element id is stored directly on the scroll node and not on
+  // the associated TransformPaintPropertyNode used for scroll offset.
+  CompositorElementId compositor_element_id_;
   WebLayerScrollClient* scroll_client_;
 };
 
