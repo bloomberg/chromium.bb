@@ -13,6 +13,7 @@ import static org.mockito.Mockito.spy;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
@@ -335,6 +336,76 @@ public class AutocompleteEditTextTest {
         } else {
             mInOrder.verify(mVerifier).onUpdateSelection(6, 11);
         }
+        mInOrder.verifyNoMoreInteractions();
+    }
+
+    @Test
+    @Features(@Features.Register(
+            value = ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE, enabled = true))
+    public void testAppend_DispatchKeyEventWithSpannableModel() {
+        internalTestAppend_DispatchKeyEvent();
+    }
+
+    @Test
+    @Features(@Features.Register(
+            value = ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE, enabled = false))
+    public void testAppend_DispatchKeyEventWithoutSpannableModel() {
+        internalTestAppend_DispatchKeyEvent();
+    }
+
+    private void internalTestAppend_DispatchKeyEvent() {
+        // User types "h".
+        mAutocomplete.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_H));
+        mAutocomplete.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_H));
+        if (isUsingSpannableModel()) {
+            mInOrder.verify(mVerifier).onUpdateSelection(1, 1);
+            mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(false);
+        } else {
+            mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(true);
+            mInOrder.verify(mVerifier).onUpdateSelection(1, 1);
+        }
+        mInOrder.verifyNoMoreInteractions();
+        assertTrue(mAutocomplete.shouldAutocomplete());
+
+        // The controller kicks in.
+        mAutocomplete.setAutocompleteText("h", "ello world");
+        // The non-spannable model changes selection in two steps.
+        if (isUsingSpannableModel()) {
+            assertFalse(mAutocomplete.isCursorVisible());
+        } else {
+            mInOrder.verify(mVerifier).onUpdateSelection(11, 11);
+            mInOrder.verify(mVerifier).onUpdateSelection(1, 11);
+        }
+        mInOrder.verifyNoMoreInteractions();
+        assertTrue(mAutocomplete.shouldAutocomplete());
+
+        // User types "he".
+        mAutocomplete.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_E));
+        mAutocomplete.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_E));
+        if (isUsingSpannableModel()) {
+            mInOrder.verify(mVerifier).onUpdateSelection(2, 2);
+            mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(false);
+            // The new model tries to reuse autocomplete text.
+            assertTexts("he", "llo world");
+        } else {
+            mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(false);
+            mInOrder.verify(mVerifier).onUpdateSelection(11, 11);
+            mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(true);
+            mInOrder.verify(mVerifier).onUpdateSelection(2, 2);
+        }
+        mInOrder.verifyNoMoreInteractions();
+        assertTrue(mAutocomplete.shouldAutocomplete());
+        // The controller kicks in.
+        mAutocomplete.setAutocompleteText("he", "llo world");
+        if (isUsingSpannableModel()) {
+            assertFalse(mAutocomplete.isCursorVisible());
+        } else {
+            mInOrder.verify(mVerifier).onUpdateSelection(11, 11);
+            mInOrder.verify(mVerifier).onUpdateSelection(2, 11);
+        }
+        mInOrder.verifyNoMoreInteractions();
+        assertTexts("he", "llo world");
+        assertTrue(mAutocomplete.shouldAutocomplete());
         mInOrder.verifyNoMoreInteractions();
     }
 

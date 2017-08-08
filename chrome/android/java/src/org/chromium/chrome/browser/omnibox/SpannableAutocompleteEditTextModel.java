@@ -305,8 +305,9 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
 
             if (mSpan == null) mSpan = new BackgroundColorSpan(mDelegate.getHighlightColor());
             SpannableString spanString = new SpannableString(state.getAutocompleteText());
-            spanString.setSpan(
-                    mSpan, 0, state.getAutocompleteText().length(), Spanned.SPAN_INTERMEDIATE);
+            // The flag here helps make sure that span does not get spill to other part of the text.
+            spanString.setSpan(mSpan, 0, state.getAutocompleteText().length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             Editable editable = mDelegate.getEditableText();
             editable.append(spanString);
 
