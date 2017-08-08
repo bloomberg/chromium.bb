@@ -1554,6 +1554,7 @@ Bug(none) css3/blending/mix-blend-mode-composited-reason-children.html [ Failure
 Bug(none) css3/blending/mix-blend-mode-isolation-2-stacking-contexts.html [ Failure ]
 Bug(none) css3/blending/mix-blend-mode-isolation-layer.html [ Failure ]
 Bug(none) css3/blending/mix-blend-mode-isolation-remove.html [ Failure ]
+Bug(none) css3/blending/svg-blend-multiply-alpha.html [ Failure ]
 
 # Failures due to rounding differences
 crbug.com/589265 compositing/culling/filter-occlusion-blur-large.html [ Failure ]
@@ -1652,6 +1653,9 @@ crbug.com/702370 virtual/threaded/animations/compositor-independent-transform-ca
 # and can explore enhancing animation test infrastructure or other
 # approaches. http://crbug.com/692310#c12
 crbug.com/692310 virtual/threaded/animations/composited-animations-rotate-zero-degrees.html [ Pass Failure Timeout ]
+
+# This test uses internal call to initiate smooth scrolling on impl-thread.
+crbug.com/667946 fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Failure ]
 
 Bug(none) virtual/threaded/animations/svg-attribute-composition/svg-startOffset-composition.html [ Failure ]
 
