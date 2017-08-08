@@ -126,19 +126,33 @@ enum ExecutableType : uint32_t {
   kExeTypeElfArm32 = 4,
   kExeTypeElfAArch64 = 5,
   kExeTypeDex = 6,
+  kNumExeType
 };
 
-// Descibes where to find an executable embedded in an image.
+// Descibes a region in an image with associated executable type. Note that
+// |exe_type| can be kExeTypeNoOp, in which case the Element descibes a region
+// of raw data.
 struct Element {
   ExecutableType exe_type;
   offset_t offset;
   offset_t length;
+
+  // Returns the end offset of this element.
+  offset_t EndOffset() const { return offset + length; }
+
+  // Returns true if the element fits in an image of size |total_size|, false
+  // otherwise.
+  bool FitsIn(offset_t total_size) const {
+    return offset <= total_size && total_size - offset >= length;
+  }
 };
 
 // A matched pair of Elements.
 struct ElementMatch {
   Element old_element;
   Element new_element;
+
+  bool IsValid() const { return old_element.exe_type == new_element.exe_type; }
 };
 
 }  // namespace zucchini
