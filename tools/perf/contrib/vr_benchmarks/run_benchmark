@@ -52,7 +52,7 @@ def main():
   shared_preference_utils.ApplySharedPreferenceSettings(dev, preferences)
 
   # Start the benchmarks
-  return benchmark_runner.main(vr_config.Config(['benchmarks']))
+  return benchmark_runner.main(vr_config.Config(['vr_benchmarks']))
 
 
 if __name__ == '__main__':
