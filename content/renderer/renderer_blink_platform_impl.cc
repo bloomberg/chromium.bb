@@ -1180,12 +1180,8 @@ RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
     thread = NULL;
 
   switch (type) {
-    case blink::kWebPlatformEventTypeDeviceMotion: {
-      blink::WebLocalFrame* const web_frame =
-          blink::WebLocalFrame::FrameForCurrentContext();
-      RenderFrame* const render_frame = RenderFrame::FromWebFrame(web_frame);
-      return base::MakeUnique<DeviceMotionEventPump>(thread, render_frame);
-    }
+    case blink::kWebPlatformEventTypeDeviceMotion:
+      return base::MakeUnique<DeviceMotionEventPump>(thread);
     case blink::kWebPlatformEventTypeDeviceOrientation:
       return base::MakeUnique<DeviceOrientationEventPump>(thread);
     case blink::kWebPlatformEventTypeDeviceOrientationAbsolute:
