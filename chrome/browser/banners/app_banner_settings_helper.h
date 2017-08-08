@@ -63,10 +63,10 @@ class AppBannerSettingsHelper {
     // the banner from being shown too often.
     APP_BANNER_EVENT_DID_SHOW,
     // Records the latest time a banner was dismissed by the user. Used to
-    // suppress the banenr for some time if the user explicitly didn't want it.
+    // suppress the banner for some time if the user explicitly didn't want it.
     APP_BANNER_EVENT_DID_BLOCK,
-    // Records the latest time the user adds a site to the homescreen from a
-    // banner, or launched that site from homescreen. Used to ensure banenrs are
+    // Records the latest time the user added a site to the homescreen from a
+    // banner, or launched that site from homescreen. Used to ensure banners are
     // not shown for sites which were added, and to determine if sites were
     // launched recently.
     APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
