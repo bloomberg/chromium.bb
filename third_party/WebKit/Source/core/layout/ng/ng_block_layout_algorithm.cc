@@ -575,11 +575,43 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   } else
     DCHECK(IsEmptyBlock(child, *layout_result));
 
+  // We need to re-layout a child if it was affected by clearance in order to
+  // produce a new margin strut. For example:
+  // <div style="margin-bottom: 50px;"></div>
+  // <div id="float" style="height: 50px;"></div>
+  // <div id="zero" style="clear: left; margin-top: -20px;">
+  //   <div id="zero-inner" style="margin-top: 40px; margin-bottom: -30px;">
+  // </div>
+  //
+  // The end margin strut for #zero will be {50, -30}. #zero will be affected
+  // by clearance (as 50 > {50, -30}).
+  //
+  // As #zero doesn't touch the incoming margin strut now we need to perform a
+  // relayout with an empty incoming margin strut.
+  //
+  // The resulting margin strut in the above example will be {40, -30}. See
+  // ComputeInflowPosition for how this end margin strut is used.
+  bool empty_block_affected_by_clearance_needs_relayout = false;
+  if (empty_block_affected_by_clearance) {
+    NGMarginStrut margin_strut;
+    margin_strut.Append(child_data.margins.block_start,
+                        child.Style().HasMarginBeforeQuirk());
+
+    // We only need to relayout if the new margin strut is different to the
+    // previous one.
+    if (child_data.margin_strut != margin_strut) {
+      child_data.margin_strut = margin_strut;
+      empty_block_affected_by_clearance_needs_relayout = true;
+    }
+  }
+
   // We need to layout a child if we know its BFC offset and:
   //  - It aborted its layout as it resolved its BFC offset.
   //  - It has some unpositioned floats.
+  //  - It was affected by clearance.
   if ((layout_result->Status() == NGLayoutResult::kBfcOffsetResolved ||
-       !layout_result->UnpositionedFloats().IsEmpty()) &&
+       !layout_result->UnpositionedFloats().IsEmpty() ||
+       empty_block_affected_by_clearance_needs_relayout) &&
       child_bfc_offset) {
     RefPtr<NGConstraintSpace> new_child_space =
         CreateConstraintSpaceForChild(child, child_data, child_bfc_offset);
@@ -670,7 +702,7 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
       //
       // Instead of just passing through the previous inflow position, we make
       // the inflow position our new position (which was affected by the
-      // float), minus what the margin strut would be placed at.
+      // float), minus what the margin strut which the empty block produced.
       //
       // Another way of thinking about this is that when you *add* back the
       // margin strut, you end up with the same position as you started with.

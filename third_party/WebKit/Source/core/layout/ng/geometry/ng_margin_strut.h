@@ -26,6 +26,9 @@ struct CORE_EXPORT NGMarginStrut {
   LayoutUnit Sum() const;
 
   bool operator==(const NGMarginStrut& other) const;
+  bool operator!=(const NGMarginStrut& other) const {
+    return !(*this == other);
+  }
 };
 
 }  // namespace blink
