@@ -799,8 +799,8 @@ class CDM_CLASS_API ContentDecryptionModule_9 {
   //
   // Returns kSuccess if the |audio_decoder_config| is supported and the CDM
   // audio decoder is successfully initialized.
-  // Returns kSessionError if |audio_decoder_config| is not supported. The CDM
-  // may still be able to do Decrypt().
+  // Returns kInitializationError if |audio_decoder_config| is not supported.
+  // The CDM may still be able to do Decrypt().
   // Returns kDeferredInitialization if the CDM is not ready to initialize the
   // decoder at this time. Must call Host::OnDeferredInitializationDone() once
   // initialization is complete.
@@ -812,8 +812,8 @@ class CDM_CLASS_API ContentDecryptionModule_9 {
   //
   // Returns kSuccess if the |video_decoder_config| is supported and the CDM
   // video decoder is successfully initialized.
-  // Returns kSessionError if |video_decoder_config| is not supported. The CDM
-  // may still be able to do Decrypt().
+  // Returns kInitializationError if |video_decoder_config| is not supported.
+  // The CDM may still be able to do Decrypt().
   // Returns kDeferredInitialization if the CDM is not ready to initialize the
   // decoder at this time. Must call Host::OnDeferredInitializationDone() once
   // initialization is complete.
