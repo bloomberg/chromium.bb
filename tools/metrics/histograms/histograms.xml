@@ -32328,6 +32328,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Various usage counts for media galleries.</summary>
 </histogram>
 
+<histogram name="MediaRouter.Cast.Discovery.ConnectedDevicesCount"
+    units="devices">
+  <owner>zhaobin@chromium.org</owner>
+  <summary>
+    The number of connected Cast devices. Recorded when browser finishes
+    discovering Cast devices. Recording happens roughly once per hour.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.Cast.Discovery.KnownDevicesCount" units="devices">
+  <owner>zhaobin@chromium.org</owner>
+  <summary>
+    The number of known Cast devices. Recorded when browser finishes discovering
+    Cast devices. Recording happens roughly once per hour.
+  </summary>
+</histogram>
+
 <histogram name="MediaRouter.Dial.AvailableDevicesCount" units="devices">
   <owner>zhaobin@chromium.org</owner>
   <summary>

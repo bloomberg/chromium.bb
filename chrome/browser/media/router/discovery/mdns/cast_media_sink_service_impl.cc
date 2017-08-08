@@ -40,6 +40,11 @@ void CastMediaSinkServiceImpl::Stop() {
   MediaSinkServiceBase::StopTimer();
 }
 
+void CastMediaSinkServiceImpl::RecordDeviceCounts() {
+  metrics_.RecordDeviceCountsIfNeeded(current_sinks_.size(),
+                                      current_service_ip_endpoints_.size());
+}
+
 void CastMediaSinkServiceImpl::OpenChannels(
     std::vector<MediaSinkInternal> cast_sinks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
