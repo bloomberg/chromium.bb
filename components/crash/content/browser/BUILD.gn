@@ -8,6 +8,8 @@ if (is_android) {
 
 source_set("browser") {
   sources = [
+    "child_process_crash_observer_android.cc",
+    "child_process_crash_observer_android.h",
     "crash_dump_manager_android.cc",
     "crash_dump_manager_android.h",
     "crash_dump_observer_android.cc",

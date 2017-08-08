@@ -37,7 +37,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/message_loop/message_loop.h"
-#include "components/crash/content/browser/crash_dump_manager_android.h"
+#include "components/crash/content/browser/child_process_crash_observer_android.h"
 #include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
@@ -174,7 +174,7 @@ int ShellBrowserMainParts::PreCreateThreads() {
         base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
             switches::kCrashDumpsDir);
     breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
-        base::MakeUnique<breakpad::CrashDumpManager>(
+        base::MakeUnique<breakpad::ChildProcessCrashObserver>(
             crash_dumps_dir, kAndroidMinidumpDescriptor));
   }
 

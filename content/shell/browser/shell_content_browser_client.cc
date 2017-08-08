@@ -52,7 +52,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
 #include "base/android/path_utils.h"
-#include "components/crash/content/browser/crash_dump_manager_android.h"
+#include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "content/shell/android/shell_descriptors.h"
 #endif
 

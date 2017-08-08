@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/synchronization/lock.h"
+#include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/crash/content/browser/crash_dump_observer_android.h"
 
 namespace base {
@@ -26,7 +27,7 @@ namespace android_webview {
 // crash status.
 class AwBrowserTerminator : public breakpad::CrashDumpObserver::Client {
  public:
-  AwBrowserTerminator();
+  AwBrowserTerminator(base::FilePath crash_dump_dir);
   ~AwBrowserTerminator() override;
 
   // breakpad::CrashDumpObserver::Client implementation.
@@ -39,9 +40,15 @@ class AwBrowserTerminator : public breakpad::CrashDumpObserver::Client {
                    base::android::ApplicationState app_state) override;
 
  private:
-  static void ProcessTerminationStatus(int child_process_id,
-                                       base::ProcessHandle pid,
-                                       std::unique_ptr<base::SyncSocket> pipe);
+  static void OnChildExitAsync(int child_process_id,
+                               base::ProcessHandle pid,
+                               content::ProcessType process_type,
+                               base::TerminationStatus termination_status,
+                               base::android::ApplicationState app_state,
+                               base::FilePath crash_dump_dir,
+                               std::unique_ptr<base::SyncSocket> pipe);
+
+  base::FilePath crash_dump_dir_;
 
   // This map should only be accessed with its lock aquired as it is accessed
   // from the PROCESS_LAUNCHER, FILE, and UI threads.

@@ -122,17 +122,6 @@ int AwBrowserMainParts::PreCreateThreads() {
       base::android::AttachCurrentThread());
   breakpad::CrashDumpObserver::Create();
 
-  if (crash_reporter::IsCrashReporterEnabled()) {
-    base::FilePath crash_dir;
-    if (PathService::Get(android_webview::DIR_CRASH_DUMPS, &crash_dir)) {
-      if (!base::PathExists(crash_dir))
-        base::CreateDirectory(crash_dir);
-      breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
-          base::MakeUnique<breakpad::CrashDumpManager>(
-              crash_dir, kAndroidMinidumpDescriptor));
-    }
-  }
-
   // We need to create the safe browsing specific directory even if the
   // AwSafeBrowsingConfigHelper::GetSafeBrowsingEnabled() is false
   // initially, because safe browsing can be enabled later at runtime
@@ -144,11 +133,19 @@ int AwBrowserMainParts::PreCreateThreads() {
       base::CreateDirectory(safe_browsing_dir);
   }
 
+  base::FilePath crash_dir;
+  if (crash_reporter::IsCrashReporterEnabled()) {
+    if (PathService::Get(android_webview::DIR_CRASH_DUMPS, &crash_dir)) {
+      if (!base::PathExists(crash_dir))
+        base::CreateDirectory(crash_dir);
+    }
+  }
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kWebViewSandboxedRenderer)) {
     // Create the renderers crash manager on the UI thread.
     breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
-        base::MakeUnique<AwBrowserTerminator>());
+        base::MakeUnique<AwBrowserTerminator>(crash_dir));
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
