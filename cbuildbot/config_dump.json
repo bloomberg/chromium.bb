@@ -6210,6 +6210,7 @@
         "boards": [
             "coral"
         ],
+        "important": true,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -8636,6 +8637,7 @@
         "boards": [
             "fizz"
         ],
+        "important": true,
         "vm_tests": [],
         "vm_tests_override": null
     },

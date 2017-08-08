@@ -270,7 +270,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": true,
           "board_group": "coral",
           "arch": "X86_INTERNAL"
@@ -414,7 +414,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": true,
           "board_group": "fizz",
           "arch": "X86_INTERNAL"
