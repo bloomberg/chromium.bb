@@ -55,7 +55,7 @@ constexpr base::TaskTraits kCreateTemporaryFileTaskTraits = {
 
     // TaskPriority: Inherit.
 
-    // TaskShutdownBehavior: TemporaryFileCreated() called from
+    // TaskShutdownBehavior: TemporaryFileCreated*() called from
     // CreateTemporaryFile() might access global variable, so use
     // SKIP_ON_SHUTDOWN. See ShareableFileReference::GetOrCreate().
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
@@ -161,26 +161,37 @@ void PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile() {
   bool success = base::CreateTemporaryFile(&mhtml_path_);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated,
+      base::BindOnce(&PageCaptureSaveAsMHTMLFunction::TemporaryFileCreatedOnIO,
                      this, success));
 }
 
-void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated(bool success) {
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    if (success) {
-      // Setup a ShareableFileReference so the temporary file gets deleted
-      // once it is no longer used.
-      mhtml_file_ = ShareableFileReference::GetOrCreate(
-          mhtml_path_, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get());
-    }
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated,
-                       this, success));
-    return;
-  }
+void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreatedOnIO(bool success) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (success) {
+    // Setup a ShareableFileReference so the temporary file gets deleted
+    // once it is no longer used.
+    mhtml_file_ = ShareableFileReference::GetOrCreate(
+        mhtml_path_, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
+        base::CreateSequencedTaskRunnerWithTraits(
+            {// Requires IO.
+             base::MayBlock(),
 
+             // TaskPriority: Inherit.
+
+             // Because we are using DELETE_ON_FINAL_RELEASE here, the
+             // storage::ScopedFile inside ShareableFileReference requires
+             // a shutdown blocking task runner to ensure that its deletion
+             // task runs.
+             base::TaskShutdownBehavior::BLOCK_SHUTDOWN})
+            .get());
+  }
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&PageCaptureSaveAsMHTMLFunction::TemporaryFileCreatedOnUI,
+                     this, success));
+}
+
+void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreatedOnUI(bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!success) {
     ReturnFailure(kTemporaryFileError);

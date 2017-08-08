@@ -50,8 +50,10 @@ class PageCaptureSaveAsMHTMLFunction : public ChromeAsyncExtensionFunction {
   // Called on the file thread.
   void CreateTemporaryFile();
 
+  void TemporaryFileCreatedOnIO(bool success);
+  void TemporaryFileCreatedOnUI(bool success);
+
   // Called on the UI thread.
-  void TemporaryFileCreated(bool success);
   void ReturnFailure(const std::string& error);
   void ReturnSuccess(int64_t file_size);
 
