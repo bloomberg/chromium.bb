@@ -1748,9 +1748,12 @@ GLES2UniformMatrix4fvStreamTextureMatrixCHROMIUM(GLint location,
 void GL_APIENTRY GLES2OverlayPromotionHintCHROMIUM(GLuint texture,
                                                    GLboolean promotion_hint,
                                                    GLint display_x,
-                                                   GLint display_y) {
-  gles2::GetGLContext()->OverlayPromotionHintCHROMIUM(texture, promotion_hint,
-                                                      display_x, display_y);
+                                                   GLint display_y,
+                                                   GLint display_width,
+                                                   GLint display_height) {
+  gles2::GetGLContext()->OverlayPromotionHintCHROMIUM(
+      texture, promotion_hint, display_x, display_y, display_width,
+      display_height);
 }
 void GL_APIENTRY GLES2SwapBuffersWithBoundsCHROMIUM(GLsizei count,
                                                     const GLint* rects) {

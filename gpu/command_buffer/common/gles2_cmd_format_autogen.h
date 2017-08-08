@@ -15846,21 +15846,28 @@ struct OverlayPromotionHintCHROMIUM {
   void Init(GLuint _texture,
             GLboolean _promotion_hint,
             GLint _display_x,
-            GLint _display_y) {
+            GLint _display_y,
+            GLint _display_width,
+            GLint _display_height) {
     SetHeader();
     texture = _texture;
     promotion_hint = _promotion_hint;
     display_x = _display_x;
     display_y = _display_y;
+    display_width = _display_width;
+    display_height = _display_height;
   }
 
   void* Set(void* cmd,
             GLuint _texture,
             GLboolean _promotion_hint,
             GLint _display_x,
-            GLint _display_y) {
+            GLint _display_y,
+            GLint _display_width,
+            GLint _display_height) {
     static_cast<ValueType*>(cmd)->Init(_texture, _promotion_hint, _display_x,
-                                       _display_y);
+                                       _display_y, _display_width,
+                                       _display_height);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -15869,10 +15876,12 @@ struct OverlayPromotionHintCHROMIUM {
   uint32_t promotion_hint;
   int32_t display_x;
   int32_t display_y;
+  int32_t display_width;
+  int32_t display_height;
 };
 
-static_assert(sizeof(OverlayPromotionHintCHROMIUM) == 20,
-              "size of OverlayPromotionHintCHROMIUM should be 20");
+static_assert(sizeof(OverlayPromotionHintCHROMIUM) == 28,
+              "size of OverlayPromotionHintCHROMIUM should be 28");
 static_assert(offsetof(OverlayPromotionHintCHROMIUM, header) == 0,
               "offset of OverlayPromotionHintCHROMIUM header should be 0");
 static_assert(offsetof(OverlayPromotionHintCHROMIUM, texture) == 4,
@@ -15884,6 +15893,12 @@ static_assert(offsetof(OverlayPromotionHintCHROMIUM, display_x) == 12,
               "offset of OverlayPromotionHintCHROMIUM display_x should be 12");
 static_assert(offsetof(OverlayPromotionHintCHROMIUM, display_y) == 16,
               "offset of OverlayPromotionHintCHROMIUM display_y should be 16");
+static_assert(
+    offsetof(OverlayPromotionHintCHROMIUM, display_width) == 20,
+    "offset of OverlayPromotionHintCHROMIUM display_width should be 20");
+static_assert(
+    offsetof(OverlayPromotionHintCHROMIUM, display_height) == 24,
+    "offset of OverlayPromotionHintCHROMIUM display_height should be 24");
 
 struct SwapBuffersWithBoundsCHROMIUMImmediate {
   typedef SwapBuffersWithBoundsCHROMIUMImmediate ValueType;

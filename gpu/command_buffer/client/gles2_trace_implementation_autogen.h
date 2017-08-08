@@ -883,7 +883,9 @@ void UniformMatrix4fvStreamTextureMatrixCHROMIUM(
 void OverlayPromotionHintCHROMIUM(GLuint texture,
                                   GLboolean promotion_hint,
                                   GLint display_x,
-                                  GLint display_y) override;
+                                  GLint display_y,
+                                  GLint display_width,
+                                  GLint display_height) override;
 void SwapBuffersWithBoundsCHROMIUM(GLsizei count, const GLint* rects) override;
 void SetDrawRectangleCHROMIUM(GLint x,
                               GLint y,

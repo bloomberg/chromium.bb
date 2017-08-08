@@ -27,7 +27,9 @@ class GPU_EXPORT GLStreamTextureImage : public gl::GLImage {
 
   virtual void NotifyPromotionHint(bool promotion_hint,
                                    int display_x,
-                                   int display_y) {}
+                                   int display_y,
+                                   int display_width,
+                                   int display_height) {}
 
  protected:
   ~GLStreamTextureImage() override {}

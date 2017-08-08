@@ -1650,7 +1650,9 @@ void ResourceProvider::SendPromotionHints(
       bool promotable = iter != promotion_hints.end();
       gl->OverlayPromotionHintCHROMIUM(resource->gl_id, promotable,
                                        promotable ? iter->second.x() : 0,
-                                       promotable ? iter->second.y() : 0);
+                                       promotable ? iter->second.y() : 0,
+                                       promotable ? iter->second.width() : 0,
+                                       promotable ? iter->second.height() : 0);
     }
     UnlockForRead(id);
   }

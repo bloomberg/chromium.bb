@@ -980,7 +980,9 @@ error::Error DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
 error::Error DoOverlayPromotionHintCHROMIUM(GLuint texture,
                                             GLboolean promotion_hint,
                                             GLint display_x,
-                                            GLint display_y);
+                                            GLint display_y,
+                                            GLint display_width,
+                                            GLint display_height);
 error::Error DoSetDrawRectangleCHROMIUM(GLint x,
                                         GLint y,
                                         GLint width,
