@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
 #include "chrome/browser/media/router/discovery/media_sink_service_base.h"
 #include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/cast_socket.h"
@@ -39,6 +40,9 @@ class CastMediaSinkServiceImpl
   // MediaSinkService implementation
   void Start() override;
   void Stop() override;
+
+  // MediaSinkServiceBase implementation
+  void RecordDeviceCounts() override;
 
   // Opens cast channels on the IO thread.
   virtual void OpenChannels(std::vector<MediaSinkInternal> cast_sinks);
@@ -78,6 +82,8 @@ class CastMediaSinkServiceImpl
   // Raw pointer of leaky singleton CastSocketService, which manages adding and
   // removing Cast channels.
   cast_channel::CastSocketService* const cast_socket_service_;
+
+  CastDeviceCountMetrics metrics_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
