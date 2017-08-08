@@ -167,16 +167,15 @@ ImageWriterPrivateListRemovableStorageDevicesFunction::
 }
 
 bool ImageWriterPrivateListRemovableStorageDevicesFunction::RunAsync() {
-  RemovableStorageProvider::GetAllDevices(
-    base::Bind(
+  RemovableStorageProvider::GetAllDevices(base::BindOnce(
       &ImageWriterPrivateListRemovableStorageDevicesFunction::OnDeviceListReady,
       this));
   return true;
 }
 
 void ImageWriterPrivateListRemovableStorageDevicesFunction::OnDeviceListReady(
-    scoped_refptr<StorageDeviceList> device_list,
-    bool success) {
+    scoped_refptr<StorageDeviceList> device_list) {
+  const bool success = device_list.get() != nullptr;
   if (success) {
     results_ = image_writer_api::ListRemovableStorageDevices::Results::Create(
         device_list->data);

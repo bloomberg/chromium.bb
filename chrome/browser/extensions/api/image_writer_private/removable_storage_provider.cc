@@ -5,6 +5,7 @@
 
 #include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
 #include "base/lazy_instance.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -19,29 +20,30 @@ static base::LazyInstance<scoped_refptr<StorageDeviceList>>::DestructorAtExit
 
 void RemovableStorageProvider::GetAllDevices(DeviceListReadyCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (g_test_device_list.Get().get() != NULL) {
+  if (g_test_device_list.Get().get() != nullptr) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, g_test_device_list.Get(), true));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), g_test_device_list.Get()));
     return;
   }
-
-  scoped_refptr<StorageDeviceList> device_list(new StorageDeviceList);
-
   // We need to do some file i/o to get the device block size
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE,
+  base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      base::Bind(PopulateDeviceList, device_list),
-      base::Bind(callback, device_list));
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&RemovableStorageProvider::PopulateDeviceList),
+      std::move(callback));
 }
 
+// static
 void RemovableStorageProvider::SetDeviceListForTesting(
     scoped_refptr<StorageDeviceList> device_list) {
   g_test_device_list.Get() = device_list;
 }
 
+// static
 void RemovableStorageProvider::ClearDeviceListForTesting() {
-  g_test_device_list.Get() = NULL;
+  g_test_device_list.Get() = nullptr;
 }
 
 }  // namespace extensions
