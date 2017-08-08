@@ -306,7 +306,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     }
 
     /**
-     * Notify subclasses that browsing data is about to be cleared.
+     * Notifies subclasses that browsing data is about to be cleared.
      */
     protected void onClearBrowsingData() {}
 
