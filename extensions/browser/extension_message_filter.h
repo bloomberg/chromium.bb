@@ -15,6 +15,8 @@
 #include "content/public/browser/browser_message_filter.h"
 
 class GURL;
+struct ExtensionMsg_ExternalConnectionInfo;
+struct ExtensionMsg_TabTargetConnectionInfo;
 
 namespace content {
 class BrowserContext;
@@ -22,6 +24,8 @@ class BrowserContext;
 
 namespace extensions {
 class EventRouter;
+struct Message;
+struct PortId;
 
 // This class filters out incoming extension-specific IPC messages from the
 // renderer process. It is created and destroyed on the UI thread and handles
@@ -86,6 +90,26 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
   void OnExtensionTransferBlobsAck(const std::vector<std::string>& blob_uuids);
   void OnExtensionWakeEventPage(int request_id,
                                 const std::string& extension_id);
+
+  void OnOpenChannelToExtension(int routing_id,
+                                const ExtensionMsg_ExternalConnectionInfo& info,
+                                const std::string& channel_name,
+                                bool include_tls_channel_id,
+                                const extensions::PortId& port_id);
+  void OnOpenChannelToNativeApp(int routing_id,
+                                const std::string& native_app_name,
+                                const extensions::PortId& port_id);
+  void OnOpenChannelToTab(int routing_id,
+                          const ExtensionMsg_TabTargetConnectionInfo& info,
+                          const std::string& extension_id,
+                          const std::string& channel_name,
+                          const extensions::PortId& port_id);
+  void OnOpenMessagePort(int routing_id, const extensions::PortId& port_id);
+  void OnCloseMessagePort(int routing_id,
+                          const extensions::PortId& port_id,
+                          bool force_close);
+  void OnPostMessage(const extensions::PortId& port_id,
+                     const extensions::Message& message);
 
   // Responds to the ExtensionHostMsg_WakeEventPage message.
   void SendWakeEventPageResponse(int request_id, bool success);

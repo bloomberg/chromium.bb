@@ -13,6 +13,7 @@
 
 namespace extensions {
 
+class MessagingDelegate;
 class VirtualKeyboardDelegate;
 
 class ShellExtensionsAPIClient : public ExtensionsAPIClient {
@@ -29,11 +30,13 @@ class ShellExtensionsAPIClient : public ExtensionsAPIClient {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   FileSystemDelegate* GetFileSystemDelegate() override;
 #endif
+  MessagingDelegate* GetMessagingDelegate() override;
 
  private:
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   std::unique_ptr<FileSystemDelegate> file_system_delegate_;
 #endif
+  std::unique_ptr<MessagingDelegate> messaging_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionsAPIClient);
 };

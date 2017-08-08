@@ -45,7 +45,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/extensions/api/messaging/messaging_delegate.h"
+#include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
@@ -161,6 +161,7 @@
 #include "content/public/test/test_utils.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "extensions/browser/api/messaging/messaging_delegate.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
@@ -618,6 +619,18 @@ extensions::AppWindow* TestAddAppWindowObserver::WaitForAppWindow() {
   return window_;
 }
 
+#endif
+
+#if !defined(OS_CHROMEOS)
+extensions::MessagingDelegate::PolicyPermission IsNativeMessagingHostAllowed(
+    content::BrowserContext* browser_context,
+    const std::string& native_host_name) {
+  extensions::MessagingDelegate* messaging_delegate =
+      extensions::ExtensionsAPIClient::Get()->GetMessagingDelegate();
+  EXPECT_NE(messaging_delegate, nullptr);
+  return messaging_delegate->IsNativeMessagingHostAllowed(browser_context,
+                                                          native_host_name);
+}
 #endif
 
 }  // namespace
@@ -4119,11 +4132,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlacklistSelective) {
   UpdateProviderPolicy(policies);
 
   EXPECT_EQ(extensions::MessagingDelegate::PolicyPermission::DISALLOW,
-            extensions::MessagingDelegate::IsNativeMessagingHostAllowed(
-                browser()->profile(), "host.name"));
-  EXPECT_EQ(extensions::MessagingDelegate::PolicyPermission::ALLOW_ALL,
-            extensions::MessagingDelegate::IsNativeMessagingHostAllowed(
-                browser()->profile(), "other.host.name"));
+            IsNativeMessagingHostAllowed(browser()->profile(), "host.name"));
+  EXPECT_EQ(
+      extensions::MessagingDelegate::PolicyPermission::ALLOW_ALL,
+      IsNativeMessagingHostAllowed(browser()->profile(), "other.host.name"));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlacklistWildcard) {
@@ -4136,11 +4148,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlacklistWildcard) {
   UpdateProviderPolicy(policies);
 
   EXPECT_EQ(extensions::MessagingDelegate::PolicyPermission::DISALLOW,
-            extensions::MessagingDelegate::IsNativeMessagingHostAllowed(
-                browser()->profile(), "host.name"));
-  EXPECT_EQ(extensions::MessagingDelegate::PolicyPermission::DISALLOW,
-            extensions::MessagingDelegate::IsNativeMessagingHostAllowed(
-                browser()->profile(), "other.host.name"));
+            IsNativeMessagingHostAllowed(browser()->profile(), "host.name"));
+  EXPECT_EQ(
+      extensions::MessagingDelegate::PolicyPermission::DISALLOW,
+      IsNativeMessagingHostAllowed(browser()->profile(), "other.host.name"));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingWhitelist) {
@@ -4158,11 +4169,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingWhitelist) {
   UpdateProviderPolicy(policies);
 
   EXPECT_EQ(extensions::MessagingDelegate::PolicyPermission::ALLOW_ALL,
-            extensions::MessagingDelegate::IsNativeMessagingHostAllowed(
-                browser()->profile(), "host.name"));
-  EXPECT_EQ(extensions::MessagingDelegate::PolicyPermission::DISALLOW,
-            extensions::MessagingDelegate::IsNativeMessagingHostAllowed(
-                browser()->profile(), "other.host.name"));
+            IsNativeMessagingHostAllowed(browser()->profile(), "host.name"));
+  EXPECT_EQ(
+      extensions::MessagingDelegate::PolicyPermission::DISALLOW,
+      IsNativeMessagingHostAllowed(browser()->profile(), "other.host.name"));
 }
 
 #endif  // !defined(CHROME_OS)
