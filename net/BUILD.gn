@@ -1597,8 +1597,6 @@ component("net") {
       "spdy/core/spdy_frame_reader.h",
       "spdy/core/spdy_framer.cc",
       "spdy/core/spdy_framer.h",
-      "spdy/core/spdy_framer_decoder_adapter.cc",
-      "spdy/core/spdy_framer_decoder_adapter.h",
       "spdy/core/spdy_header_block.cc",
       "spdy/core/spdy_header_block.h",
       "spdy/core/spdy_headers_handler_interface.h",
