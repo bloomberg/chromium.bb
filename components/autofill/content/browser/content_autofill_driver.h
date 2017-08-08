@@ -96,8 +96,9 @@ class ContentAutofillDriver : public AutofillDriver,
   void SetDataList(const std::vector<base::string16>& values,
                    const std::vector<base::string16>& labels) override;
 
-  // Called when the frame has navigated.
-  void DidNavigateFrame(content::NavigationHandle* navigation_handle);
+  // Called when the main frame has navigated. Explicitely will not trigger for
+  // subframe navigations. See navigation_handle.h for details.
+  void DidNavigateMainFrame(content::NavigationHandle* navigation_handle);
 
   AutofillExternalDelegate* autofill_external_delegate() {
     return autofill_external_delegate_.get();

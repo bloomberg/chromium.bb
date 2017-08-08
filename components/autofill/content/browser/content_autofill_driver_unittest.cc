@@ -29,6 +29,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -264,7 +265,7 @@ class TestContentAutofillDriver : public ContentAutofillDriver {
     return static_cast<MockAutofillManager*>(autofill_manager());
   }
 
-  using ContentAutofillDriver::DidNavigateFrame;
+  using ContentAutofillDriver::DidNavigateMainFrame;
 };
 
 class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
@@ -294,16 +295,11 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
     content::RenderViewHostTestHarness::TearDown();
   }
 
-  void Navigate(bool main_frame) {
-    content::RenderFrameHost* rfh = main_rfh();
-    content::RenderFrameHostTester* rfh_tester =
-        content::RenderFrameHostTester::For(rfh);
-    if (!main_frame)
-      rfh = rfh_tester->AppendChild("subframe");
+  void Navigate(bool same_document) {
     std::unique_ptr<content::NavigationHandle> navigation_handle =
         content::NavigationHandle::CreateNavigationHandleForTesting(
-            GURL(), rfh, true);
-   driver_->DidNavigateFrame(navigation_handle.get());
+            GURL(), main_rfh(), /*committed=*/true, net::OK, same_document);
+    driver_->DidNavigateMainFrame(navigation_handle.get());
   }
 
  protected:
@@ -322,14 +318,14 @@ TEST_F(ContentAutofillDriverTest, GetURLRequestContext) {
   EXPECT_EQ(request_context, expected_request_context);
 }
 
-TEST_F(ContentAutofillDriverTest, NavigatedToDifferentPage) {
+TEST_F(ContentAutofillDriverTest, NavigatedMainFrameDifferentDocument) {
   EXPECT_CALL(*driver_->mock_autofill_manager(), Reset());
-  Navigate(true);
+  Navigate(/*same_document=*/false);
 }
 
-TEST_F(ContentAutofillDriverTest, NavigatedWithinSamePage) {
+TEST_F(ContentAutofillDriverTest, NavigatedMainFrameSameDocument) {
   EXPECT_CALL(*driver_->mock_autofill_manager(), Reset()).Times(0);
-  Navigate(false);
+  Navigate(/*same_document=*/true);
 }
 
 TEST_F(ContentAutofillDriverTest, FormDataSentToRenderer_FillForm) {
