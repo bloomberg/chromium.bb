@@ -445,6 +445,14 @@ void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
         password_field_exists);
   }
 }
+
+void ChromePasswordManagerClient::LogPasswordReuseDetectedEvent() {
+  safe_browsing::PasswordProtectionService* pps =
+      GetPasswordProtectionService();
+  if (pps) {
+    pps->MaybeLogPasswordReuseDetectedEvent(web_contents());
+  }
+}
 #endif
 
 ukm::UkmRecorder* ChromePasswordManagerClient::GetUkmRecorder() {

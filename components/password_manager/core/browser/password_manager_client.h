@@ -215,6 +215,9 @@ class PasswordManagerClient {
   virtual void CheckProtectedPasswordEntry(
       const std::string& password_saved_domain,
       bool password_field_exists) = 0;
+
+  // Records a Chrome Sync event that sync password reuse was detected.
+  virtual void LogPasswordReuseDetectedEvent() = 0;
 #endif
 
   // Gets the UKM service associated with this client (for metrics).

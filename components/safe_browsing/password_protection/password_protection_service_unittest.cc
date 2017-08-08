@@ -106,6 +106,9 @@ class TestPasswordProtectionService : public PasswordProtectionService {
 
   void set_incognito(bool enabled) { is_incognito_ = enabled; }
 
+  void MaybeLogPasswordReuseDetectedEvent(
+      content::WebContents* web_contents) override {}
+
   bool IsPingingEnabled(const base::Feature& feature,
                         RequestOutcome* reason) override {
     checked_feature_name_ = feature.name;
