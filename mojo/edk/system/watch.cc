@@ -25,8 +25,12 @@ bool Watch::NotifyState(const HandleSignalsState& state,
                         bool allowed_to_call_callback) {
   AssertWatcherLockAcquired();
 
+  // TODO(crbug.com/740044): Remove this CHECK.
+  CHECK(this);
+
   // NOTE: This method must NEVER call into |dispatcher_| directly, because it
   // may be called while |dispatcher_| holds a lock.
+
   MojoResult rv = MOJO_RESULT_SHOULD_WAIT;
   RequestContext* const request_context = RequestContext::current();
   const bool notify_success =
@@ -55,6 +59,9 @@ bool Watch::NotifyState(const HandleSignalsState& state,
 }
 
 void Watch::Cancel() {
+  // TODO(crbug.com/740044): Remove this CHECK.
+  CHECK(this);
+
   RequestContext::current()->AddWatchCancelFinalizer(this);
 }
 
@@ -64,13 +71,13 @@ void Watch::InvokeCallback(MojoResult result,
   // We hold the lock through invocation to ensure that only one notification
   // callback runs for this context at any given time.
   base::AutoLock lock(notification_lock_);
-
-  // Ensure that no notifications are dispatched beyond cancellation.
-  if (is_cancelled_)
-    return;
-
-  if (result == MOJO_RESULT_CANCELLED)
+  if (result == MOJO_RESULT_CANCELLED) {
+    // Make sure cancellation is the last notification we dispatch.
+    DCHECK(!is_cancelled_);
     is_cancelled_ = true;
+  } else if (is_cancelled_) {
+    return;
+  }
 
   // NOTE: This will acquire |watcher_|'s internal lock. It's safe because a
   // thread can only enter InvokeCallback() from within a RequestContext
