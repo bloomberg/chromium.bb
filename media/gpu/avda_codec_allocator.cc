@@ -229,8 +229,31 @@ void AVDACodecAllocator::ForwardOrDropCodec(
     // |client| has been destroyed.  Free |media_codec| on the right thread.
     // Note that this also preserves |surface_bundle| until |media_codec| has
     // been released, in case our ref to it is the last one.
-    if (media_codec)
-      ReleaseMediaCodec(std::move(media_codec), surface_bundle);
+    if (!media_codec)
+      return;
+
+    // If there are no registered clients, then the threads are stopped or are
+    // stopping.  We must restart them / cancel any pending stop requests before
+    // we can post codec destruction to them.  In the "restart them" case, the
+    // threads aren't running.  In the "cancel...requests" case, the threads are
+    // running, but we're trying to clear them out via a DoNothing task posted
+    // there.  Once that completes, there will be a join on the main thread.  If
+    // we post, then it will be ordered after the DoNothing, but before the join
+    // on the main thread (this thread).  If the destruction task hangs, then so
+    // will the join.
+    //
+    // We register a fake client to make sure that the threads are ready.
+    //
+    // If we can't start the thread, then, well, good luck.
+    if (!StartThread(nullptr))
+      return;
+
+    ReleaseMediaCodec(std::move(media_codec), surface_bundle);
+
+    // We can stop the threads immediately.  If other clients are around, then
+    // this will do nothing.  Otherwise, this will order the join after the
+    // release completes successfully.
+    StopThread(nullptr);
     return;
   }
 
