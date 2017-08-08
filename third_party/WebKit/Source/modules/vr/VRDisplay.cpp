@@ -644,10 +644,6 @@ void VRDisplay::submitFrame() {
     return;
   }
 
-  TRACE_EVENT_BEGIN0("gpu", "VRDisplay::Flush_1");
-  context_gl_->Flush();
-  TRACE_EVENT_END0("gpu", "VRDisplay::Flush_1");
-
   // Check if the canvas got resized, if yes send a bounds update.
   int current_width = rendering_context_->drawingBufferWidth();
   int current_height = rendering_context_->drawingBufferHeight();
@@ -679,18 +675,26 @@ void VRDisplay::submitFrame() {
     }
   }
 
-  TRACE_EVENT_BEGIN0("gpu", "VRDisplay::GetImage");
-  RefPtr<Image> image_ref = rendering_context_->GetImage(
-      kPreferAcceleration, kSnapshotReasonCreateImageBitmap);
-  TRACE_EVENT_END0("gpu", "VRDisplay::GetImage");
+  TRACE_EVENT_BEGIN0("gpu", "VRDisplay::GetStaticBitmapImage");
+  RefPtr<Image> image_ref = rendering_context_->GetStaticBitmapImage();
+  TRACE_EVENT_END0("gpu", "VRDisplay::GetStaticBitmapImage");
 
   // Hardware-accelerated rendering should always be texture backed,
   // as implemented by AcceleratedStaticBitmapImage. Ensure this is
   // the case, don't attempt to render if using an unexpected drawing
   // path.
   if (!image_ref.Get() || !image_ref->IsTextureBacked()) {
-    NOTREACHED() << "WebVR requires hardware-accelerated rendering to texture";
-    return;
+    TRACE_EVENT0("gpu", "VRDisplay::GetImage_SlowFallback");
+    // We get a non-texture-backed image when running layout tests
+    // on desktop builds. Add a slow fallback so that these continue
+    // working.
+    image_ref = rendering_context_->GetImage(kPreferAcceleration,
+                                             kSnapshotReasonCreateImageBitmap);
+    if (!image_ref.Get() || !image_ref->IsTextureBacked()) {
+      NOTREACHED()
+          << "WebVR requires hardware-accelerated rendering to texture";
+      return;
+    }
   }
 
   // The AcceleratedStaticBitmapImage must be kept alive until the
@@ -712,11 +716,6 @@ void VRDisplay::submitFrame() {
   TRACE_EVENT_BEGIN0("gpu", "VRDisplay::GetMailbox");
   auto mailbox = static_image->GetMailbox();
   TRACE_EVENT_END0("gpu", "VRDisplay::GetMailbox");
-  // Flush to avoid black screen flashes which appear to be related to
-  // "fence sync must be flushed before generating sync token" GL errors.
-  TRACE_EVENT_BEGIN0("gpu", "VRDisplay::Flush_2");
-  context_gl_->Flush();
-  TRACE_EVENT_END0("gpu", "VRDisplay::Flush_2");
   auto sync_token = static_image->GetSyncToken();
 
   // Wait for the previous render to finish, to avoid losing frames in the
