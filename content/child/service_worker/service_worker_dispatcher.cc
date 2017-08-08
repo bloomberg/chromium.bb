@@ -386,26 +386,6 @@ ServiceWorkerDispatcher::GetOrAdoptRegistration(
   return registration;
 }
 
-void ServiceWorkerDispatcher::OnAssociateRegistrationForController(
-    int provider_id,
-    const ServiceWorkerRegistrationObjectInfo& info,
-    const ServiceWorkerVersionAttributes& attrs) {
-  // Adopt the references sent from the browser process and pass them to the
-  // provider context if it exists.
-  std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration =
-      Adopt(info);
-  std::unique_ptr<ServiceWorkerHandleReference> installing =
-      Adopt(attrs.installing);
-  std::unique_ptr<ServiceWorkerHandleReference> waiting = Adopt(attrs.waiting);
-  std::unique_ptr<ServiceWorkerHandleReference> active = Adopt(attrs.active);
-  ProviderContextMap::iterator context = provider_contexts_.find(provider_id);
-  if (context != provider_contexts_.end()) {
-    context->second->OnAssociateRegistration(
-        std::move(registration), std::move(installing), std::move(waiting),
-        std::move(active));
-  }
-}
-
 void ServiceWorkerDispatcher::OnRegistered(
     int thread_id,
     int request_id,

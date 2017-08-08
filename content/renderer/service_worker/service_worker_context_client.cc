@@ -742,10 +742,6 @@ void ServiceWorkerContextClient::WorkerScriptLoaded() {
   }
 }
 
-bool ServiceWorkerContextClient::HasAssociatedRegistration() {
-  return provider_context_ && provider_context_->HasAssociatedRegistration();
-}
-
 void ServiceWorkerContextClient::WorkerContextStarted(
     blink::WebServiceWorkerContextProxy* proxy) {
   DCHECK(!worker_task_runner_.get());
@@ -765,8 +761,7 @@ void ServiceWorkerContextClient::WorkerContextStarted(
 
   ServiceWorkerRegistrationObjectInfo registration_info;
   ServiceWorkerVersionAttributes version_attrs;
-  provider_context_->GetAssociatedRegistration(&registration_info,
-                                               &version_attrs);
+  provider_context_->GetRegistration(&registration_info, &version_attrs);
   DCHECK_NE(registration_info.registration_id,
             kInvalidServiceWorkerRegistrationId);
 
