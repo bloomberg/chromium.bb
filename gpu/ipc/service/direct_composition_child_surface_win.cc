@@ -81,7 +81,7 @@ void DirectCompositionChildSurfaceWin::ReleaseCurrentSurface() {
   swap_chain_.Reset();
 }
 
-void DirectCompositionChildSurfaceWin::InitializeSurface() {
+bool DirectCompositionChildSurfaceWin::InitializeSurface() {
   TRACE_EVENT1("gpu", "DirectCompositionChildSurfaceWin::InitializeSurface()",
                "enable_dc_layers_", enable_dc_layers_);
   DCHECK(!dcomp_surface_);
@@ -122,8 +122,9 @@ void DirectCompositionChildSurfaceWin::InitializeSurface() {
         d3d11_device_.Get(), &desc, nullptr, swap_chain_.GetAddressOf());
     has_been_rendered_to_ = false;
     first_swap_ = true;
-    CHECK(SUCCEEDED(hr));
+    return SUCCEEDED(hr);
   }
+  return true;
 }
 
 void DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
@@ -241,7 +242,10 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
   if ((enable_dc_layers_ && !dcomp_surface_) ||
       (!enable_dc_layers_ && !swap_chain_)) {
     ReleaseCurrentSurface();
-    InitializeSurface();
+    if (!InitializeSurface()) {
+      LOG(ERROR) << "InitializeSurface failed";
+      return false;
+    }
   }
 
   if (!gfx::Rect(size_).Contains(rectangle)) {
