@@ -54,19 +54,6 @@ class WPTManifest(object):
                         urls.update([item[0] for item in records])
         return urls
 
-    @memoized
-    def all_wpt_tests(self):
-        # TODO(qyearsley): Rename this method to indicate that it
-        # returns wpt test file paths, which may not be "test names".
-        if 'items' not in self.raw_dict:
-            return []
-
-        all_tests = []
-        for test_type in self.test_types:
-            for path_in_wpt in self.raw_dict['items'][test_type]:
-                all_tests.append(path_in_wpt)
-        return all_tests
-
     def is_test_file(self, path_in_wpt):
         return self._items_for_path(path_in_wpt) is not None
 
