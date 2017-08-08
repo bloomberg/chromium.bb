@@ -90,6 +90,9 @@ class GPU_EXPORT RingBuffer {
     return (size + alignment_ - 1) & ~(alignment_ - 1);
   }
 
+  // Shrinks the last block.  new_size must be smaller than the current size
+  // and the block must still be in use in order to shrink.
+  void ShrinkLastBlock(unsigned int new_size);
 
  private:
   enum State {
