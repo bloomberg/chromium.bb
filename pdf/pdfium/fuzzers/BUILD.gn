@@ -216,6 +216,6 @@ if (pdf_enable_xfa) {
       "//v8:external_startup_data",
     ]
     dict = "dicts/pdf.dict"
-    seed_corpus = "src/third_party/pdfium/test"
+    seed_corpus = "//third_party/pdfium/test"
   }
 }
