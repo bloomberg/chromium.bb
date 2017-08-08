@@ -7,7 +7,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/ui_devtools/views/ui_element.h"
-#include "ui/aura/window.h"
 
 namespace ui_devtools {
 namespace {

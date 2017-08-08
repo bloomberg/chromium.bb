@@ -6,6 +6,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/ui_devtools/views/ui_devtools_css_agent.h"
 #include "components/ui_devtools/views/ui_devtools_dom_agent.h"
+#include "components/ui_devtools/views/ui_devtools_overlay_agent.h"
 #include "components/ui_devtools/views/ui_element.h"
 #include "components/ui_devtools/views/view_element.h"
 #include "components/ui_devtools/views/widget_element.h"
@@ -13,6 +14,7 @@
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/background.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/native_widget_private.h"
@@ -59,7 +61,7 @@ class FakeFrontendChannel : public FrontendChannel {
                       protocol_notification_messages_.end(), message);
   }
 
-  // FrontendChannel
+  // FrontendChannel:
   void sendProtocolResponse(int callId,
                             std::unique_ptr<Serializable> message) override {}
   void flushProtocolNotifications() override {}
@@ -157,10 +159,10 @@ std::unique_ptr<DOM::RGBA> SkColorToRGBA(const SkColor& color) {
       .build();
 }
 
-std::unique_ptr<DOM::HighlightConfig> CreateHighlightConfig(
+std::unique_ptr<Overlay::HighlightConfig> CreateHighlightConfig(
     const SkColor& background_color,
     const SkColor& border_color) {
-  return DOM::HighlightConfig::create()
+  return Overlay::HighlightConfig::create()
       .setContentColor(SkColorToRGBA(background_color))
       .setBorderColor(SkColorToRGBA(border_color))
       .build();
@@ -223,6 +225,10 @@ class UIDevToolsTest : public views::ViewsTestBase {
         base::MakeUnique<ui_devtools::UIDevToolsCSSAgent>(dom_agent_.get());
     css_agent_->Init(uber_dispatcher_.get());
     css_agent_->enable();
+    overlay_agent_ =
+        base::MakeUnique<ui_devtools::UIDevToolsOverlayAgent>(dom_agent_.get());
+    overlay_agent_->Init(uber_dispatcher_.get());
+    overlay_agent_->enable();
 
     // We need to create |dom_agent| first to observe creation of
     // WindowTreeHosts in ViewTestBase::SetUp().
@@ -239,6 +245,7 @@ class UIDevToolsTest : public views::ViewsTestBase {
     top_default_container_window.reset();
     top_window.reset();
     css_agent_.reset();
+    overlay_agent_.reset();
     dom_agent_.reset();
     uber_dispatcher_.reset();
     fake_frontend_channel_.reset();
@@ -266,6 +273,22 @@ class UIDevToolsTest : public views::ViewsTestBase {
         base::StringPrintf("{\"method\":\"CSS.styleSheetChanged\",\"params\":{"
                            "\"styleSheetId\":\"%d\"}}",
                            node_id));
+  }
+
+  int GetOverlayNodeHighlightRequestedCount(int node_id) {
+    return frontend_channel()->CountProtocolNotificationMessage(
+        base::StringPrintf(
+            "{\"method\":\"Overlay.nodeHighlightRequested\",\"params\":{"
+            "\"nodeId\":%d}}",
+            node_id));
+  }
+
+  int GetOverlayInspectNodeRequestedCount(int node_id) {
+    return frontend_channel()->CountProtocolNotificationMessage(
+        base::StringPrintf(
+            "{\"method\":\"Overlay.inspectNodeRequested\",\"params\":{"
+            "\"backendNodeId\":%d}}",
+            node_id));
   }
 
   void CompareNodeBounds(DOM::Node* node, const gfx::Rect& bounds) {
@@ -299,7 +322,7 @@ class UIDevToolsTest : public views::ViewsTestBase {
   }
 
   void HighlightNode(int node_id) {
-    dom_agent_->highlightNode(
+    overlay_agent_->highlightNode(
         CreateHighlightConfig(kBackgroundColor, kBorderColor), node_id);
   }
 
@@ -324,6 +347,9 @@ class UIDevToolsTest : public views::ViewsTestBase {
 
   ui_devtools::UIDevToolsCSSAgent* css_agent() { return css_agent_.get(); }
   ui_devtools::UIDevToolsDOMAgent* dom_agent() { return dom_agent_.get(); }
+  ui_devtools::UIDevToolsOverlayAgent* overlay_agent() {
+    return overlay_agent_.get();
+  }
 
   std::unique_ptr<aura::Window> top_overlay_window;
   std::unique_ptr<aura::Window> top_window;
@@ -334,9 +360,68 @@ class UIDevToolsTest : public views::ViewsTestBase {
   std::unique_ptr<FakeFrontendChannel> fake_frontend_channel_;
   std::unique_ptr<ui_devtools::UIDevToolsDOMAgent> dom_agent_;
   std::unique_ptr<ui_devtools::UIDevToolsCSSAgent> css_agent_;
+  std::unique_ptr<ui_devtools::UIDevToolsOverlayAgent> overlay_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(UIDevToolsTest);
 };
+
+// Tests that FindElementIdTargetedByPoint() returns a non-zero id when a UI
+// element target exists.
+TEST_F(UIDevToolsTest, FindElementIdTargetedByPoint) {
+  std::unique_ptr<views::Widget> widget(
+      CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
+  dom_agent()->getDocument(&root);
+  EXPECT_NE(0, dom_agent()->FindElementIdTargetedByPoint(
+                   gfx::Point(1, 1), GetPrimaryRootWindow()));
+}
+
+// Tests that the correct Overlay events are dispatched to the frontend when
+// hovering and clicking over a UI element in inspect mode.
+TEST_F(UIDevToolsTest, MouseEventsGenerateFEEventsInInspectMode) {
+  std::unique_ptr<views::Widget> widget(
+      CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
+
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
+  dom_agent()->getDocument(&root);
+
+  gfx::Point p(1, 1);
+  int node_id =
+      dom_agent()->FindElementIdTargetedByPoint(p, GetPrimaryRootWindow());
+
+  EXPECT_EQ(0, GetOverlayInspectNodeRequestedCount(node_id));
+  EXPECT_EQ(0, GetOverlayNodeHighlightRequestedCount(node_id));
+  overlay_agent()->setInspectMode(
+      "searchForNode", protocol::Maybe<protocol::Overlay::HighlightConfig>());
+
+  // Moving the mouse cursor over the widget bounds should request a node
+  // highlight.
+  ui::test::EventGenerator generator(widget->GetNativeWindow());
+  generator.MoveMouseBy(p.x(), p.y());
+
+  // 2 mouse events ET_MOUSE_ENTERED and ET_MOUSE_MOVED are generated.
+  EXPECT_EQ(2, GetOverlayNodeHighlightRequestedCount(node_id));
+
+  EXPECT_EQ(0, GetOverlayInspectNodeRequestedCount(node_id));
+
+  // Clicking on the widget should request that element be inspected.
+  generator.PressLeftButton();
+  int highlight_notification_count =
+      GetOverlayNodeHighlightRequestedCount(node_id);
+  int inspect_node_notification_count =
+      GetOverlayInspectNodeRequestedCount(node_id);
+
+  EXPECT_EQ(1, GetOverlayInspectNodeRequestedCount(node_id));
+
+  // Since the last event dispatched to the widget was a click, a subsequent
+  // mouse event should generate neither a nodeHighlightRequested nor a
+  // inspectNodeRequested event.
+  generator.MoveMouseBy(p.x(), p.y());
+  EXPECT_EQ(highlight_notification_count,
+            GetOverlayNodeHighlightRequestedCount(node_id));
+  EXPECT_EQ(inspect_node_notification_count,
+            GetOverlayInspectNodeRequestedCount(node_id));
+}
 
 TEST_F(UIDevToolsTest, GetDocumentWithWindowWidgetView) {
   std::unique_ptr<views::Widget> widget(

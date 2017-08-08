@@ -41,7 +41,7 @@ class WidgetElement : public views::WidgetRemovalsObserver,
   void SetVisible(bool visible) override;
   std::pair<aura::Window*, gfx::Rect> GetNodeWindowAndBounds() const override;
 
-  static views::Widget* From(UIElement* element);
+  static views::Widget* From(const UIElement* element);
 
  private:
   views::Widget* widget_;

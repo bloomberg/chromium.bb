@@ -88,9 +88,9 @@ std::pair<aura::Window*, gfx::Rect> WindowElement::GetNodeWindowAndBounds()
 }
 
 // static
-aura::Window* WindowElement::From(UIElement* element) {
+aura::Window* WindowElement::From(const UIElement* element) {
   DCHECK_EQ(UIElementType::WINDOW, element->type());
-  return static_cast<WindowElement*>(element)->window_;
+  return static_cast<const WindowElement*>(element)->window_;
 }
 
 }  // namespace ui_devtools

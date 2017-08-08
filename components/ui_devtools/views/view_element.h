@@ -36,7 +36,7 @@ class ViewElement : public views::ViewObserver, public UIElement {
   void GetVisible(bool* visible) const override;
   void SetVisible(bool visible) override;
   std::pair<aura::Window*, gfx::Rect> GetNodeWindowAndBounds() const override;
-  static views::View* From(UIElement* element);
+  static views::View* From(const UIElement* element);
 
  private:
   views::View* view_;

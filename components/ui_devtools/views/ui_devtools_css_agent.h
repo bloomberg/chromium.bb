@@ -43,7 +43,7 @@ class UIDevToolsCSSAgent : public ui_devtools::UiDevToolsBaseAgent<
   bool SetPropertiesForNodeId(int node_id,
                               const gfx::Rect& bounds,
                               bool visible);
-  UIDevToolsDOMAgent* dom_agent_;
+  UIDevToolsDOMAgent* const dom_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(UIDevToolsCSSAgent);
 };
