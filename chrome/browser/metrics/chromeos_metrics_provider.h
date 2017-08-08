@@ -69,9 +69,6 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
       metrics::ChromeUserMetricsExtension* uma_proto) override;
 
  private:
-  // Called on a background thread to load hardware class information.
-  void InitTaskGetHardwareClassOnBackgroundThread();
-
   // Update the number of users logged into a multi-profile session.
   // If the number of users change while the log is open, the call invalidates
   // the user count value.
@@ -82,6 +79,9 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // call and calls callback.
   void SetBluetoothAdapter(base::Closure callback,
                            scoped_refptr<device::BluetoothAdapter> adapter);
+
+  // Sets the hardware class, then calls the callback.
+  void SetHardwareClass(base::Closure callback, std::string hardware_class);
 
   // Writes info about paired Bluetooth devices on this system.
   void WriteBluetoothProto(metrics::SystemProfileProto* system_profile_proto);

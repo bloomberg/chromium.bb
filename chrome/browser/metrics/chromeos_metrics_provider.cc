@@ -103,6 +103,15 @@ void IncrementPrefValue(const char* path) {
   pref->SetInteger(path, value + 1);
 }
 
+// Called on a background thread to load hardware class information.
+std::string GetHardwareClassOnBackgroundThread() {
+  base::ThreadRestrictions::AssertWaitAllowed();
+  std::string hardware_class;
+  chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+      "hardware_class", &hardware_class);
+  return hardware_class;
+}
+
 }  // namespace
 
 ChromeOSMetricsProvider::ChromeOSMetricsProvider()
@@ -178,21 +187,14 @@ void ChromeOSMetricsProvider::InitTaskGetHardwareClass(
     const base::Closure& callback) {
   // Run the (potentially expensive) task in the background to avoid blocking
   // the UI thread.
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::WithBaseSyncPrimitives(),
        base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(
-          &ChromeOSMetricsProvider::InitTaskGetHardwareClassOnBackgroundThread,
-          weak_ptr_factory_.GetWeakPtr()),
-      callback);
-}
-
-void ChromeOSMetricsProvider::InitTaskGetHardwareClassOnBackgroundThread() {
-  base::ThreadRestrictions::AssertWaitAllowed();
-  chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
-      "hardware_class", &hardware_class_);
+      base::BindOnce(&GetHardwareClassOnBackgroundThread),
+      base::BindOnce(&ChromeOSMetricsProvider::SetHardwareClass,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void ChromeOSMetricsProvider::InitTaskGetBluetoothAdapter(
@@ -346,6 +348,12 @@ void ChromeOSMetricsProvider::SetBluetoothAdapter(
     base::Closure callback,
     scoped_refptr<device::BluetoothAdapter> adapter) {
   adapter_ = adapter;
+  callback.Run();
+}
+
+void ChromeOSMetricsProvider::SetHardwareClass(base::Closure callback,
+                                               std::string hardware_class) {
+  hardware_class_ = hardware_class;
   callback.Run();
 }
 
