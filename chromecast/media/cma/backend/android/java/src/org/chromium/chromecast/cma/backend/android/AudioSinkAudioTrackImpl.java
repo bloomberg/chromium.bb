@@ -76,6 +76,12 @@ class AudioSinkAudioTrackImpl {
     private static final int AUDIO_MODE = AudioTrack.MODE_STREAM;
     private static final int BYTES_PER_FRAME = 2 * 4; // 2 channels, float (4-bytes)
 
+    // Parameter to determine the proper internal buffer size of the AudioTrack instance. In order
+    // to minimize latency we want a buffer as small as possible. However, to avoid underruns we
+    // need a size several times the size returned by AudioTrack.getMinBufferSize() (see
+    // the Android documentation for details).
+    private static final int MIN_BUFFER_SIZE_MULTIPLIER = 3;
+
     private static final long NO_TIMESTAMP = Long.MIN_VALUE;
 
     private static final long SEC_IN_NSEC = 1000000000L;
@@ -198,18 +204,16 @@ class AudioSinkAudioTrackImpl {
         }
         mSampleRateInHz = sampleRateInHz;
 
-        // TODO(ckuiper): ALSA code uses a 90ms buffer size, we should do something
-        // similar.
-        int bufferSizeInBytes =
-                5 * AudioTrack.getMinBufferSize(mSampleRateInHz, CHANNEL_CONFIG, AUDIO_FORMAT);
-
         int usageType = CAST_TYPE_TO_ANDROID_USAGE_TYPE_MAP.get(castContentType);
         int contentType = CAST_TYPE_TO_ANDROID_CONTENT_TYPE_MAP.get(castContentType);
         int sessionId = (usageType == AudioAttributes.USAGE_MEDIA) ? getSessionIdMedia()
                                                                    : getSessionIdNonMedia();
+        int bufferSizeInBytes = MIN_BUFFER_SIZE_MULTIPLIER
+                * AudioTrack.getMinBufferSize(mSampleRateInHz, CHANNEL_CONFIG, AUDIO_FORMAT);
+        int bufferSizeInMs = 1000 * bufferSizeInBytes / (BYTES_PER_FRAME * mSampleRateInHz);
         Log.i(TAG,
-                "Init: create an AudioTrack of size=" + bufferSizeInBytes
-                        + " usageType=" + usageType + " contentType=" + contentType
+                "Init: create an AudioTrack of size=" + bufferSizeInBytes + " (" + bufferSizeInMs
+                        + "ms) usageType=" + usageType + " contentType=" + contentType
                         + " with session-id=" + sessionId);
 
         AudioTrack.Builder builder = new AudioTrack.Builder();
