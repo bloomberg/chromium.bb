@@ -365,7 +365,7 @@ void MarkupFormatter::AppendAttribute(StringBuilder& result,
   QualifiedName prefixed_name = attribute.GetName();
   if (document_is_html && !AttributeIsInSerializedNamespace(attribute)) {
     result.Append(' ');
-    result.Append(attribute.GetName().LocalName());
+    result.Append(prefixed_name.ToString());
   } else {
     if (attribute.NamespaceURI() == XMLNSNames::xmlnsNamespaceURI) {
       if (!attribute.Prefix() && attribute.LocalName() != g_xmlns_atom)
