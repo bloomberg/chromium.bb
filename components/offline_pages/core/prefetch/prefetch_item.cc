@@ -30,7 +30,8 @@ bool PrefetchItem::operator==(const PrefetchItem& other) const {
          archive_body_length == other.archive_body_length &&
          creation_time == other.creation_time &&
          freshness_time == other.freshness_time &&
-         error_code == other.error_code;
+         error_code == other.error_code && title == other.title &&
+         file_path == other.file_path && file_size == other.file_size;
 }
 
 bool PrefetchItem::operator!=(const PrefetchItem& other) const {

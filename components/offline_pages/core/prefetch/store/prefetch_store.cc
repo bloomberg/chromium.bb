@@ -53,7 +53,10 @@ bool CreatePrefetchItemsTable(sql::Connection* db) {
       " requested_url VARCHAR NOT NULL DEFAULT '',"
       " final_archived_url VARCHAR NOT NULL DEFAULT '',"
       " operation_name VARCHAR NOT NULL DEFAULT '',"
-      " archive_body_name VARCHAR NOT NULL DEFAULT ''"
+      " archive_body_name VARCHAR NOT NULL DEFAULT '',"
+      " title VARCHAR NOT NULL DEFAULT '',"
+      " file_path VARCHAR NOT NULL DEFAULT '',"
+      " file_size INTEGER NOT NULL DEFAULT 0"
       ")";
   return db->Execute(kSql);
 }

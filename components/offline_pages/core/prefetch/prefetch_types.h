@@ -88,6 +88,11 @@ enum class PrefetchItemState {
   RECEIVED_BUNDLE,
   // This item's archive is currently being downloaded.
   DOWNLOADING,
+  // The archive has been downloaded, waiting to be imported into offline pages
+  // model.
+  DOWNLOADED,
+  // The archive is being imported into offline pages model.
+  IMPORTING,
   // Item has finished processing, successfully or otherwise, and is waiting to
   // be processed for stats reporting to UMA.
   FINISHED,
@@ -106,6 +111,8 @@ enum class PrefetchItemErrorCode {
   // Got too many Urls from suggestions, canceled this one. See kMaxUrlsToSend
   // defined in GeneratePageBundleTask.
   TOO_MANY_NEW_URLS,
+  DOWNLOAD_ERROR,
+  IMPORT_ERROR,
 };
 
 // Callback invoked upon completion of a prefetch request.
@@ -133,18 +140,34 @@ struct PrefetchDownloadResult {
   PrefetchDownloadResult();
   PrefetchDownloadResult(const std::string& download_id,
                          const base::FilePath& file_path,
-                         uint64_t file_size);
+                         int64_t file_size);
   PrefetchDownloadResult(const PrefetchDownloadResult& other);
 
   std::string download_id;
   bool success = false;
   base::FilePath file_path;
-  uint64_t file_size = 0u;
+  int64_t file_size = 0;
 };
 
 // Callback invoked upon completion of a download.
 using PrefetchDownloadCompletedCallback =
     base::Callback<void(const PrefetchDownloadResult& result)>;
+
+// Describes all the info needed to import an archive.
+struct PrefetchArchiveInfo {
+  PrefetchArchiveInfo();
+  PrefetchArchiveInfo(const PrefetchArchiveInfo& other);
+  ~PrefetchArchiveInfo();
+  bool empty() const;
+
+  int64_t offline_id = 0;  // Defaults to invalid id.
+  ClientId client_id;
+  GURL url;
+  GURL final_archived_url;
+  base::string16 title;
+  base::FilePath file_path;
+  int64_t file_size = 0;
+};
 
 }  // namespace offline_pages
 

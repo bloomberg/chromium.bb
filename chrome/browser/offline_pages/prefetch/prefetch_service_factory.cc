@@ -84,8 +84,8 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
       DownloadServiceFactory::GetForBrowserContext(context),
       chrome::GetChannel());
 
-  auto prefetch_importer =
-      base::MakeUnique<PrefetchImporterImpl>(context, background_task_runner);
+  auto prefetch_importer = base::MakeUnique<PrefetchImporterImpl>(
+      prefetch_dispatcher.get(), context, background_task_runner);
 
   std::unique_ptr<PrefetchBackgroundTaskHandler>
       prefetch_background_task_handler =

@@ -94,8 +94,16 @@ void PrefetchDownloader::OnDownloadServiceShutdown() {
 void PrefetchDownloader::OnDownloadSucceeded(const std::string& download_id,
                                              const base::FilePath& file_path,
                                              uint64_t file_size) {
-  if (callback_)
-    callback_.Run(PrefetchDownloadResult(download_id, file_path, file_size));
+  // The file is not likely to be that big. Treat it as error if so.
+  if (file_size > static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
+    OnDownloadFailed(download_id);
+    return;
+  }
+
+  if (callback_) {
+    callback_.Run(PrefetchDownloadResult(download_id, file_path,
+                                         static_cast<int64_t>(file_size)));
+  }
 }
 
 void PrefetchDownloader::OnDownloadFailed(const std::string& download_id) {
