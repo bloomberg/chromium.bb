@@ -31,7 +31,7 @@ class KeyboardController;
 namespace ui {
 class ImplicitAnimationObserver;
 class MouseEvent;
-}
+}  // namespace ui
 
 namespace ash {
 
@@ -326,7 +326,7 @@ class ASH_EXPORT ShelfLayoutManager
   // Do any windows overlap the shelf? This is maintained by WorkspaceManager.
   bool window_overlaps_shelf_;
 
-  // Is the AppList visible? This is maintained by
+  // Whether the app list is visible. This is maintained by
   // OnAppListVisibilityChanged.
   bool is_app_list_visible_ = false;
 
