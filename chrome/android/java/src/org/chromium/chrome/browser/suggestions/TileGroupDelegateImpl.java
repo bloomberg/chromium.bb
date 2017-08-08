@@ -28,6 +28,8 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
+import java.util.List;
+
 /**
  * Reusable implementation of {@link TileGroup.Delegate}. Performs work in parts of the system that
  * the {@link TileGroup} should not know about.
@@ -89,22 +91,22 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
     }
 
     @Override
-    public void onLoadingComplete(Tile[] tiles) {
+    public void onLoadingComplete(List<Tile> tiles) {
         // This method is called after network calls complete. It could happen after the suggestions
         // surface is destroyed.
         if (mIsDestroyed) return;
 
-        for (int i = 0; i < tiles.length; i++) {
+        for (Tile tile : tiles) {
             mMostVisitedSites.recordTileImpression(
-                    i, tiles[i].getType(), tiles[i].getSource(), tiles[i].getUrl());
+                    tile.getIndex(), tile.getType(), tile.getSource(), tile.getUrl());
         }
 
-        mMostVisitedSites.recordPageImpression(tiles.length);
+        mMostVisitedSites.recordPageImpression(tiles.size());
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME)) {
-            for (int i = 0; i < tiles.length; i++) {
-                if (tiles[i].isOfflineAvailable()) {
-                    SuggestionsMetrics.recordTileOfflineAvailability(i);
+            for (Tile tile : tiles) {
+                if (tile.isOfflineAvailable()) {
+                    SuggestionsMetrics.recordTileOfflineAvailability(tile.getIndex());
                 }
             }
         }
