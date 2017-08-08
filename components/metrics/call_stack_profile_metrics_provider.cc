@@ -508,9 +508,22 @@ bool CallStackProfileMetricsProvider::IsPeriodicSamplingEnabled() {
   // calls base::FeatureList::IsEnabled() internally. While extremely unlikely,
   // it is possible that the profiler callback and therefore this function get
   // called before FeatureList initialization (e.g. if machine was suspended).
-  return base::FeatureList::GetInstance() != nullptr &&
-         base::GetFieldTrialParamByFeatureAsBool(kEnableReporting, "periodic",
-                                                 false);
+  //
+  // The result is cached in a static to avoid a shutdown hang calling into the
+  // API while FieldTrialList is being destroyed. See also the comment below in
+  // Init().
+  static const bool is_enabled = base::FeatureList::GetInstance() != nullptr &&
+                                 base::GetFieldTrialParamByFeatureAsBool(
+                                     kEnableReporting, "periodic", false);
+  return is_enabled;
+}
+
+void CallStackProfileMetricsProvider::Init() {
+  // IsPeriodicSamplingEnabled() caches the result in a local static, so that
+  // future calls will return it directly. Calling it in Init() will cache the
+  // result, which will ensure we won't call into FieldTrialList during
+  // shutdown which can hang if it's in the middle of being destroyed.
+  CallStackProfileMetricsProvider::IsPeriodicSamplingEnabled();
 }
 
 void CallStackProfileMetricsProvider::OnRecordingEnabled() {

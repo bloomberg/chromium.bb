@@ -71,6 +71,7 @@ class CallStackProfileMetricsProvider : public MetricsProvider {
   static bool IsPeriodicSamplingEnabled();
 
   // MetricsProvider:
+  void Init() override;
   void OnRecordingEnabled() override;
   void OnRecordingDisabled() override;
   void ProvideCurrentSessionData(
