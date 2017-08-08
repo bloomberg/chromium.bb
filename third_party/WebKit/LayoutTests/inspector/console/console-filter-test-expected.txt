@@ -32,7 +32,9 @@ CONSOLE MESSAGE: line 9: 28innerGroup
 CONSOLE MESSAGE: line 3: 29innerGroup
 CONSOLE MESSAGE: line 36: console.groupEnd
 CONSOLE MESSAGE: line 37: console.groupEnd
-CONSOLE MESSAGE: line 39: end
+CONSOLE MESSAGE: line 41: Hello 1
+CONSOLE MESSAGE: line 42: Hello 2
+CONSOLE MESSAGE: line 44: end
 Tests that console can filter messages by source.
 
 
@@ -70,7 +72,9 @@ log-source.js:3 9topGroup
     log-source.js:3 27innerGroup
     console-filter-test.html:9 28innerGroup
     log-source.js:3 29innerGroup
-console-filter-test.html:39 end
+console-filter-test.html:41 Hello 1
+console-filter-test.html:42 Hello 2
+console-filter-test.html:44 end
 
 Running: addURL1Filter
 log-source.js:3 1topGroup
@@ -113,7 +117,9 @@ console-filter-test.html:9 8topGroup
     console-filter-test.html:9 24innerGroup
     console-filter-test.html:9 26innerGroup
     console-filter-test.html:9 28innerGroup
-console-filter-test.html:39 end
+console-filter-test.html:41 Hello 1
+console-filter-test.html:42 Hello 2
+console-filter-test.html:44 end
 
 Running: restoreURL1Filter
 >console-filter-test.html:22 outerGroup
@@ -152,7 +158,51 @@ log-source.js:3 9topGroup
     log-source.js:3 27innerGroup
     console-filter-test.html:9 28innerGroup
     log-source.js:3 29innerGroup
-console-filter-test.html:39 end
+console-filter-test.html:41 Hello 1
+console-filter-test.html:42 Hello 2
+console-filter-test.html:44 end
+
+Running: checkContextFilter
+>console-filter-test.html:22 outerGroup
+  >console-filter-test.html:29 innerGroup
+console-filter-test.html:41 Hello 1
+
+Running: checkAllContextsFilter
+console-filter-test.html:9 0topGroup
+log-source.js:3 1topGroup
+console-filter-test.html:9 2topGroup
+log-source.js:3 3topGroup
+console-filter-test.html:9 4topGroup
+log-source.js:3 5topGroup
+console-filter-test.html:9 6topGroup
+log-source.js:3 7topGroup
+console-filter-test.html:9 8topGroup
+log-source.js:3 9topGroup
+>console-filter-test.html:22 outerGroup
+  console-filter-test.html:9 10outerGroup
+  log-source.js:3 11outerGroup
+  console-filter-test.html:9 12outerGroup
+  log-source.js:3 13outerGroup
+  console-filter-test.html:9 14outerGroup
+  log-source.js:3 15outerGroup
+  console-filter-test.html:9 16outerGroup
+  log-source.js:3 17outerGroup
+  console-filter-test.html:9 18outerGroup
+  log-source.js:3 19outerGroup
+  >console-filter-test.html:29 innerGroup
+    console-filter-test.html:9 20innerGroup
+    log-source.js:3 21innerGroup
+    console-filter-test.html:9 22innerGroup
+    log-source.js:3 23innerGroup
+    console-filter-test.html:9 24innerGroup
+    log-source.js:3 25innerGroup
+    console-filter-test.html:9 26innerGroup
+    log-source.js:3 27innerGroup
+    console-filter-test.html:9 28innerGroup
+    log-source.js:3 29innerGroup
+console-filter-test.html:41 Hello 1
+console-filter-test.html:42 Hello 2
+console-filter-test.html:44 end
 
 Running: checkTextFilter
 >console-filter-test.html:22 outerGroup
@@ -201,5 +251,7 @@ log-source.js:3 9topGroup
     log-source.js:3 27innerGroup
     console-filter-test.html:9 28innerGroup
     log-source.js:3 29innerGroup
-console-filter-test.html:39 end
+console-filter-test.html:41 Hello 1
+console-filter-test.html:42 Hello 2
+console-filter-test.html:44 end
 
