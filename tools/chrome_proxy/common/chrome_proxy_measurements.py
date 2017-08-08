@@ -111,8 +111,3 @@ class ChromeProxyValidation(legacy_page_test.LegacyPageTest):
 
   def AddResults(self, tab, results):
     raise NotImplementedError
-
-  def StopBrowserAfterPage(self, browser, page):  # pylint: disable=W0613
-    if hasattr(page, 'restart_after') and page.restart_after:
-      return True
-    return False
