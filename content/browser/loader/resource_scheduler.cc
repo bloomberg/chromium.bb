@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
@@ -63,6 +62,14 @@ const int kMaxRequestsBeforeYieldingDefault = 5;
 // experiment configuration.
 const base::Feature kMaxDelayableRequestsNetworkOverride{
     "MaxDelayableRequestsNetworkOverride", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// This experiment throttles delayable requests based on the number of
+// non-delayable requests in-flight times a weighting factor. The experiment is
+// enabled only when the effective connection type is strictly greater than
+// net::EFFECTIVE_CONNECTION_TYPE_OFFLINE and less than or equal to
+// the maximum effective connection type in the configuration.
+const base::Feature kNonDelayableThrottlesDelayable{
+    "NonDelayableThrottlesDelayable", base::FEATURE_DISABLED_BY_DEFAULT};
 
 enum StartMode {
   START_SYNC,
@@ -732,6 +739,13 @@ class ResourceScheduler::Client {
           net::NetLog::StringCallback(
               "trigger", RequestStartTriggerString(trigger)));
     }
+    // Record the number of delayable requests in-flight when a non-delayable
+    // request starts.
+    if (!RequestAttributesAreSet(request->attributes(), kAttributeDelayable)) {
+      UMA_HISTOGRAM_COUNTS_100(
+          "ResourceScheduler.NumDelayableRequestsInFlightAtStart.NonDelayable",
+          in_flight_delayable_count_);
+    }
     InsertInFlightRequest(request);
     request->Start(start_mode);
   }
@@ -806,8 +820,15 @@ class ResourceScheduler::Client {
       return ShouldStartOrYieldRequest();
 
     // Delayable requests.
-    if (in_flight_delayable_count_ >= max_delayable_requests_)
+    DCHECK_GE(in_flight_requests_.size(), in_flight_delayable_count_);
+    size_t num_non_delayable_requests_weighted = static_cast<size_t>(
+        resource_scheduler_->non_delayable_throttles_delayable_experiment_
+            .GetCurrentNonDelayableWeight(network_quality_estimator_) *
+        (in_flight_requests_.size() - in_flight_delayable_count_));
+    if (in_flight_delayable_count_ + num_non_delayable_requests_weighted >=
+        max_delayable_requests_) {
       return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
+    }
 
     if (ShouldKeepSearching(host_port_pair)) {
       // There may be other requests for other hosts that may be allowed,
@@ -1269,6 +1290,37 @@ ResourceScheduler::MaxDelayableRequestsNetworkOverrideExperiment::GetConfig() {
     result.push_back({max_bdp_kbits, max_delayable_requests});
     config_param_index++;
   }
+}
+
+ResourceScheduler::NonDelayableThrottlesDelayableExperiment::
+    NonDelayableThrottlesDelayableExperiment()
+    : max_effective_connection_type_(GetEffectiveConnectionTypeForNameWrapper(
+          base::GetFieldTrialParamValueByFeature(
+              kNonDelayableThrottlesDelayable,
+              "MaxEffectiveConnectionType"))),
+      non_delayable_weight_(base::GetFieldTrialParamByFeatureAsDouble(
+          kNonDelayableThrottlesDelayable,
+          "NonDelayableWeight",
+          0.0)) {}
+
+double ResourceScheduler::NonDelayableThrottlesDelayableExperiment::
+    GetCurrentNonDelayableWeight(
+        const net::NetworkQualityEstimator* network_quality_estimator) const {
+  if (!network_quality_estimator) {
+    // Fall back to default behavior by setting the weight of non-delayable
+    // requests to 0 when |network_quality_estimator| is not set.
+    return 0.0;
+  }
+  net::EffectiveConnectionType effective_connection_type =
+      network_quality_estimator->GetEffectiveConnectionType();
+  if (effective_connection_type > max_effective_connection_type_ ||
+      effective_connection_type <= net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+    // If the effective connection type is detected as offline or unknown, or
+    // strictly better than the maximum effective connection type set in the
+    // experiment parameters, fall back to the default behavior.
+    return 0.0;
+  }
+  return non_delayable_weight_;
 }
 
 }  // namespace content

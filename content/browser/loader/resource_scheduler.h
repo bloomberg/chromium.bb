@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
@@ -132,6 +133,7 @@ class CONTENT_EXPORT ResourceScheduler {
   }
 
  private:
+  class Client;
   class RequestQueue;
   class ScheduledResourceRequest;
   struct RequestPriorityParams;
@@ -139,7 +141,28 @@ class CONTENT_EXPORT ResourceScheduler {
     bool operator()(const ScheduledResourceRequest* a,
                     const ScheduledResourceRequest* b) const;
   };
-  class Client;
+
+  // Experiment parameters and helper functions for the throttling of delayable
+  // requests in the presence of non-delayable requests in-flight.
+  class NonDelayableThrottlesDelayableExperiment {
+   public:
+    NonDelayableThrottlesDelayableExperiment();
+
+    // This method computes the correct weight for the non-delayable requests
+    // based on the current effective connection type. If it is out of bounds,
+    // it returns 0, effectively disabling the experiment.
+    double GetCurrentNonDelayableWeight(
+        const net::NetworkQualityEstimator* network_quality_estimator) const;
+
+   private:
+    // The maximum effective connection type for which the experiment should be
+    // enabled.
+    const net::EffectiveConnectionType max_effective_connection_type_;
+
+    // The weight of a non-delayable request when counting the effective number
+    // of non-delayable requests in-flight.
+    const double non_delayable_weight_;
+  };
 
   // Experiment parameters and helper functions for varying the maximum number
   // of delayable requests in-flight based on the observed bandwidth delay
@@ -218,6 +241,11 @@ class CONTENT_EXPORT ResourceScheduler {
 
   const MaxDelayableRequestsNetworkOverrideExperiment
       max_delayable_requests_network_override_experiment_;
+
+  // Parameters for the throttling of non-delayable requests in the
+  // presence of delayable requests.
+  const NonDelayableThrottlesDelayableExperiment
+      non_delayable_throttles_delayable_experiment_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

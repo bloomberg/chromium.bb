@@ -64762,6 +64762,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="ResourceScheduler.NumDelayableRequestsInFlightAtStart.NonDelayable"
+    units="requests">
+  <owner>devdeepray@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Records the number of delayable requests in-flight when a non-delayable
+    request is started.
+  </summary>
+</histogram>
+
 <histogram name="ResourceScheduler.NumSkippedScans.ScheduleStart"
     units="requests">
   <owner>csharrison@chromium.org</owner>
