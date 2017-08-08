@@ -60,14 +60,13 @@ class CONTENT_EXPORT WebSocketManager
 
   // WebSocketImpl::Delegate methods:
   int GetClientProcessId() override;
-  StoragePartition* GetStoragePartition() override;
+  net::URLRequestContext* GetURLRequestContext() override;
   void OnReceivedResponseFromServer(WebSocketImpl* impl) override;
   void OnLostConnectionToClient(WebSocketImpl* impl) override;
 
   void ObserveURLRequestContextGetter();
 
   int process_id_;
-  StoragePartition* storage_partition_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   std::set<WebSocketImpl*> impls_;

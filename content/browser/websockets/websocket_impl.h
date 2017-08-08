@@ -25,11 +25,11 @@ class Origin;
 }  // namespace url
 
 namespace net {
+class URLRequestContext;
 class WebSocketChannel;
 }  // namespace net
 
 namespace content {
-class StoragePartition;
 
 // Host of net::WebSocketChannel.
 class CONTENT_EXPORT WebSocketImpl
@@ -39,7 +39,7 @@ class CONTENT_EXPORT WebSocketImpl
    public:
     virtual ~Delegate() {}
     virtual int GetClientProcessId() = 0;
-    virtual StoragePartition* GetStoragePartition() = 0;
+    virtual net::URLRequestContext* GetURLRequestContext() = 0;
     virtual void OnReceivedResponseFromServer(WebSocketImpl* impl) = 0;
     virtual void OnLostConnectionToClient(WebSocketImpl* impl) = 0;
   };

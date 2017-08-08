@@ -514,14 +514,10 @@ void WebSocketImpl::AddChannel(
 
   DCHECK(!channel_);
 
-  StoragePartition* partition = delegate_->GetStoragePartition();
-
   std::unique_ptr<net::WebSocketEventInterface> event_interface(
       new WebSocketEventHandler(this));
-  channel_.reset(
-      new net::WebSocketChannel(
-          std::move(event_interface),
-          partition->GetURLRequestContext()->GetURLRequestContext()));
+  channel_.reset(new net::WebSocketChannel(std::move(event_interface),
+                                           delegate_->GetURLRequestContext()));
 
   int64_t quota = pending_flow_control_quota_;
   pending_flow_control_quota_ = 0;
