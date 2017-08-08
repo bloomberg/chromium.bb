@@ -34,6 +34,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 
@@ -75,6 +76,19 @@ class PLATFORM_EXPORT GenericFontFamilySettings {
 
   GenericFontFamilySettings& operator=(const GenericFontFamilySettings&);
 
+  // Returns a new instance with String instead of AtomicString objects.
+  // This allows GenericFontFamilySettings to be sent from one thread to
+  // another, since AtomicStrings can't be shared cross-threads.
+  // Before using it, call it MakeAtomic() on the final thread, to bring back
+  // the AtomicStrings.
+  void IsolatedCopyTo(GenericFontFamilySettings& dest) const;
+
+  bool IsIsolated() const { return isolated_copy_.get(); }
+
+  // Transform an IsolatedCopy GenericFontFamilySettings into a regular
+  // GenericFontFamilySettings.
+  void MakeAtomic();
+
  private:
   // UScriptCode uses -1 and 0 for UScriptInvalidCode and UScriptCommon.
   // We need to use -2 and -3 for empty value and deleted value.
@@ -105,6 +119,9 @@ class PLATFORM_EXPORT GenericFontFamilySettings {
   ScriptFontFamilyMap cursive_font_family_map_;
   ScriptFontFamilyMap fantasy_font_family_map_;
   ScriptFontFamilyMap pictograph_font_family_map_;
+
+  typedef Vector<std::pair<int, String>> IsolatedCopyVector;
+  std::unique_ptr<IsolatedCopyVector[]> isolated_copy_;
 };
 
 }  // namespace blink

@@ -18,6 +18,8 @@ void WorkerSettings::CopyFlagValuesFromSettings(Settings* settings) {
       settings->GetAllowRunningOfInsecureContent();
   strictly_block_blockable_mixed_content_ =
       settings->GetStrictlyBlockBlockableMixedContent();
+  settings->GetGenericFontFamilySettings().IsolatedCopyTo(
+      generic_font_family_settings_);
 }
 
 }  // namespace blink
