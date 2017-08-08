@@ -54365,6 +54365,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PaymentRequest.RequestedInformation"
     enum="PaymentRequestRequestedInformation">
+  <obsolete>
+    M62+ Included in PaymentRequest.Events
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>
     Tracks what user information is required by merchants to complete a Payment

@@ -74,13 +74,12 @@ public class PaymentRequestEmailAndFreeShippingTest implements MainActivityStart
 
     /**
      * Test that ending a payment request that requires and email address and a shipping address
-     * results in the appropriate metric being logged in the PaymentRequest.RequestedInformation
-     * histogram.
+     * results in the appropriate metric being logged in PaymentRequest.Events.
      */
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testRequestedInformationMetric()
+    public void testPaymentRequestEventsMetric()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Start and cancel the Payment Request.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
@@ -88,13 +87,12 @@ public class PaymentRequestEmailAndFreeShippingTest implements MainActivityStart
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
-        // Make sure that only the appropriate enum value was logged.
-        for (int i = 0; i < RequestedInformation.MAX; ++i) {
-            Assert.assertEquals(
-                    (i == (RequestedInformation.EMAIL | RequestedInformation.SHIPPING) ? 1 : 0),
-                    RecordHistogram.getHistogramValueCountForTesting(
-                            "PaymentRequest.RequestedInformation", i));
-        }
+        int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
+                | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.REQUEST_PAYER_EMAIL
+                | Event.REQUEST_SHIPPING;
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.Events", expectedSample));
     }
 
     /**
