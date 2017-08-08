@@ -9,7 +9,6 @@
 #include "base/containers/adapters.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
@@ -108,7 +107,8 @@ PaymentRequest::PaymentRequest(
   const auto first_complete_payment_method =
       std::find_if(payment_methods_.begin(), payment_methods_.end(),
                    [this](PaymentInstrument* payment_method) {
-                     return payment_method->IsCompleteForPayment();
+                     return payment_method->IsCompleteForPayment() &&
+                            payment_method->IsExactlyMatchingMerchantRequest();
                    });
   if (first_complete_payment_method != payment_methods_.end())
     selected_payment_method_ = *first_complete_payment_method;
@@ -286,8 +286,7 @@ AutofillPaymentInstrument* PaymentRequest::AddAutofillPaymentInstrument(
       autofill::data_util::GetPaymentRequestData(credit_card.network())
           .basic_card_issuer_network;
 
-  if (!base::ContainsValue(supported_card_networks_,
-                           basic_card_issuer_network) ||
+  if (!supported_card_networks_set_.count(basic_card_issuer_network) ||
       !supported_card_types_set_.count(credit_card.card_type())) {
     return nullptr;
   }
@@ -383,6 +382,8 @@ void PaymentRequest::PopulatePaymentMethodCache() {
   data_util::ParseSupportedMethods(
       web_payment_request_.method_data, &supported_card_networks_,
       &basic_card_specified_networks_, &url_payment_method_identifiers_);
+  supported_card_networks_set_.insert(supported_card_networks_.begin(),
+                                      supported_card_networks_.end());
 
   data_util::ParseSupportedCardTypes(web_payment_request_.method_data,
                                      &supported_card_types_set_);
