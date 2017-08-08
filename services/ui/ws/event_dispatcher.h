@@ -59,8 +59,6 @@ class EventDispatcher : public ServerWindowObserver,
   explicit EventDispatcher(EventDispatcherDelegate* delegate);
   ~EventDispatcher() override;
 
-  void set_fallback_to_root(bool value) { fallback_to_root_ = value; }
-
   ModalWindowController* modal_window_controller() {
     return &modal_window_controller_;
   }
@@ -352,13 +350,6 @@ class EventDispatcher : public ServerWindowObserver,
   AcceleratorMatchPhase previous_accelerator_match_phase_ =
       AcceleratorMatchPhase::ANY;
 #endif
-
-  // Used to determine behavior when the target of an event is blocked by a
-  // modal window.
-  // . If true, the target becomes the root window.
-  // . If false, no target is used, which means the window-manager does not
-  //   see the event.
-  bool fallback_to_root_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };
