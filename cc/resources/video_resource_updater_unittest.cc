@@ -179,6 +179,7 @@ class VideoResourceUpdaterTest : public testing::Test {
   }
 
   scoped_refptr<media::VideoFrame> CreateTestHardwareVideoFrame(
+      media::VideoPixelFormat format,
       unsigned target) {
     const int kDimension = 10;
     gfx::Size size(kDimension, kDimension);
@@ -190,7 +191,7 @@ class VideoResourceUpdaterTest : public testing::Test {
         gpu::MailboxHolder(mailbox, kMailboxSyncToken, target)};
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::WrapNativeTextures(
-            media::PIXEL_FORMAT_ARGB, mailbox_holders,
+            format, mailbox_holders,
             base::Bind(&VideoResourceUpdaterTest::SetReleaseSyncToken,
                        base::Unretained(this)),
             size,                // coded_size
@@ -202,13 +203,14 @@ class VideoResourceUpdaterTest : public testing::Test {
   }
 
   scoped_refptr<media::VideoFrame> CreateTestRGBAHardwareVideoFrame() {
-    return CreateTestHardwareVideoFrame(GL_TEXTURE_2D);
+    return CreateTestHardwareVideoFrame(media::PIXEL_FORMAT_ARGB,
+                                        GL_TEXTURE_2D);
   }
 
   scoped_refptr<media::VideoFrame> CreateTestStreamTextureHardwareVideoFrame(
       bool needs_copy) {
-    scoped_refptr<media::VideoFrame> video_frame =
-        CreateTestHardwareVideoFrame(GL_TEXTURE_EXTERNAL_OES);
+    scoped_refptr<media::VideoFrame> video_frame = CreateTestHardwareVideoFrame(
+        media::PIXEL_FORMAT_ARGB, GL_TEXTURE_EXTERNAL_OES);
     video_frame->metadata()->SetBoolean(
         media::VideoFrameMetadata::COPY_REQUIRED, needs_copy);
     return video_frame;
@@ -663,6 +665,27 @@ TEST_F(VideoResourceUpdaterTest, GenerateSyncTokenOnTextureCopy) {
   ASSERT_EQ(resources.mailboxes.size(), 1u);
   EXPECT_TRUE(resources.mailboxes[0].HasSyncToken());
   EXPECT_NE(resources.mailboxes[0].sync_token(), kMailboxSyncToken);
+}
+
+// NV12 VideoFrames backed by a single native texture can be sampled out
+// by GL as RGB. To use them as HW overlays we need to know the format
+// of the underlying buffer, that is YUV_420_BIPLANAR.
+TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_SingleNV12) {
+  bool use_stream_video_draw_quad = false;
+  VideoResourceUpdater updater(context_provider_.get(),
+                               resource_provider3d_.get(),
+                               use_stream_video_draw_quad);
+  context3d_->ResetTextureCreationCount();
+  scoped_refptr<media::VideoFrame> video_frame = CreateTestHardwareVideoFrame(
+      media::PIXEL_FORMAT_NV12, GL_TEXTURE_EXTERNAL_OES);
+
+  VideoFrameExternalResources resources =
+      updater.CreateExternalResourcesFromVideoFrame(video_frame);
+  EXPECT_EQ(VideoFrameExternalResources::RGB_RESOURCE, resources.type);
+  EXPECT_EQ(1u, resources.mailboxes.size());
+  EXPECT_EQ((GLenum)GL_TEXTURE_EXTERNAL_OES, resources.mailboxes[0].target());
+  EXPECT_EQ(gfx::BufferFormat::YUV_420_BIPLANAR, resources.buffer_format);
+  EXPECT_EQ(0, context3d_->TextureCreationCount());
 }
 
 }  // namespace

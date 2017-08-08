@@ -160,6 +160,12 @@ class CC_EXPORT ResourceProvider
       std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl,
       bool read_lock_fences_enabled);
 
+  viz::ResourceId CreateResourceFromTextureMailbox(
+      const viz::TextureMailbox& mailbox,
+      std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl,
+      bool read_lock_fences_enabled,
+      gfx::BufferFormat buffer_format);
+
   void DeleteResource(viz::ResourceId id);
   // In the case of GPU resources, we may need to flush the GL context to ensure
   // that texture deletions are seen in a timely fashion. This function should

@@ -35,7 +35,9 @@ const viz::ResourceFormat kRGBResourceFormat = viz::RGBA_8888;
 
 VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
     media::VideoFrame* video_frame,
+    gfx::BufferFormat* buffer_format,
     bool use_stream_video_draw_quad) {
+  DCHECK(buffer_format);
   switch (video_frame->format()) {
     case media::PIXEL_FORMAT_ARGB:
     case media::PIXEL_FORMAT_XRGB:
@@ -64,7 +66,13 @@ VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
       switch (video_frame->mailbox_holder(0).texture_target) {
         case GL_TEXTURE_EXTERNAL_OES:
         case GL_TEXTURE_2D:
-          return VideoFrameExternalResources::YUV_RESOURCE;
+          // Single plane textures can be sampled as RGB.
+          if (video_frame->NumTextures() > 1) {
+            return VideoFrameExternalResources::YUV_RESOURCE;
+          } else {
+            *buffer_format = gfx::BufferFormat::YUV_420_BIPLANAR;
+            return VideoFrameExternalResources::RGB_RESOURCE;
+          }
         case GL_TEXTURE_RECTANGLE_ARB:
           return VideoFrameExternalResources::RGB_RESOURCE;
         default:
@@ -172,6 +180,7 @@ void VideoResourceUpdater::PlaneResource::SetUniqueId(int unique_frame_id,
 VideoFrameExternalResources::VideoFrameExternalResources()
     : type(NONE),
       read_lock_fences_enabled(false),
+      buffer_format(gfx::BufferFormat::RGBA_8888),
       offset(0.0f),
       multiplier(1.0f),
       bits_per_channel(8) {}
@@ -652,8 +661,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   }
   gfx::ColorSpace resource_color_space = video_frame->ColorSpace();
 
-  external_resources.type =
-      ResourceTypeForVideoFrame(video_frame.get(), use_stream_video_draw_quad_);
+  external_resources.type = ResourceTypeForVideoFrame(
+      video_frame.get(), &external_resources.buffer_format,
+      use_stream_video_draw_quad_);
   if (external_resources.type == VideoFrameExternalResources::NONE) {
     DLOG(ERROR) << "Unsupported Texture format"
                 << media::VideoPixelFormatToString(video_frame->format());

@@ -660,7 +660,8 @@ viz::ResourceId ResourceProvider::CreateBitmap(
 viz::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     const viz::TextureMailbox& mailbox,
     std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl,
-    bool read_lock_fences_enabled) {
+    bool read_lock_fences_enabled,
+    gfx::BufferFormat buffer_format) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Just store the information. Mailbox will be consumed in LockForRead().
   viz::ResourceId id = next_id_++;
@@ -689,6 +690,7 @@ viz::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
       base::Bind(&SingleReleaseCallbackImpl::Run,
                  base::Owned(release_callback_impl.release()));
   resource->read_lock_fences_enabled = read_lock_fences_enabled;
+  resource->buffer_format = buffer_format;
   resource->is_overlay_candidate = mailbox.is_overlay_candidate();
 #if defined(OS_ANDROID)
   resource->is_backed_by_surface_texture =
@@ -700,6 +702,15 @@ viz::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   resource->color_space = mailbox.color_space();
 
   return id;
+}
+
+viz::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
+    const viz::TextureMailbox& mailbox,
+    std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl,
+    bool read_lock_fences_enabled) {
+  return CreateResourceFromTextureMailbox(
+      mailbox, std::move(release_callback_impl), read_lock_fences_enabled,
+      gfx::BufferFormat::RGBA_8888);
 }
 
 viz::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
