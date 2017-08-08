@@ -408,7 +408,6 @@ Bug(none) external/wpt/streams/readable-streams/garbage-collection.dedicatedwork
 Bug(none) external/wpt/streams/readable-streams/garbage-collection.html [ Failure Timeout ]
 Bug(none) external/wpt/streams/readable-streams/garbage-collection.serviceworker.https.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/streams/readable-streams/general.serviceworker.https.html [ Crash Failure Timeout ]
-Bug(none) external/wpt/streams/readable-streams/pipe-through.serviceworker.https.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/streams/readable-streams/tee.serviceworker.https.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/streams/readable-streams/templated.serviceworker.https.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/streams/writable-streams/aborting.html [ Failure Timeout ]

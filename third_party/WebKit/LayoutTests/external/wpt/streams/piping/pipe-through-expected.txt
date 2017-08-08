@@ -6,7 +6,11 @@ PASS pipeThrough can handle calling a pipeTo that returns a non-promise object
 PASS pipeThrough can handle calling a pipeTo that returns a non-promise thenable object 
 PASS pipeThrough should mark a real promise from a fake readable as handled 
 PASS pipeThrough should not be fooled by an object whose instanceof Promise returns true 
-FAIL undefined readable or writable arguments should cause pipeThrough() to throw assert_throws: pipeThrough should throw for argument {} (index 0); function "() => rs.pipeThrough(pair)" did not throw
-PASS invalid but not undefined arguments should not cause pipeThrough() to throw 
+FAIL undefined readable or writable arguments should cause pipeThrough to throw assert_throws: pipeThrough should throw for argument {} (index 0); function "() => rs.pipeThrough(pair)" did not throw
+PASS invalid but not undefined arguments should not cause pipeThrough to throw 
+PASS pipeThrough should throw when its first argument is not convertible to an object 
+PASS pipeThrough should throw when "this" has no pipeTo method 
+PASS pipeThrough should rethrow errors from accessing pipeTo, readable, or writable 
+PASS pipeThrough should work with no options argument 
 Harness: the test ran to completion.
 
