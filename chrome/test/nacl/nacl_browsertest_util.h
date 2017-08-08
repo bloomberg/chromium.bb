@@ -196,10 +196,15 @@ class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
 
 // Similar to MAYBE_NONSFI, this is available only on x86-32, x86-64 or
 // ARM linux.
-// Disabled since PPAPINaClPNaClNonSfiTest and
-// PPAPIPrivateNaClPNaClNonSfiTest.FILEIO_Private is continuously failing on
-// Linux bots. https://crbug.com/753299
-#define MAYBE_PNACL_NONSFI(test_case) DISABLED_##test_case
+#if defined(OS_LINUX) && !defined(ADDRESS_SANITIZER) && \
+    !defined(THREAD_SANITIZER) && !defined(MEMORY_SANITIZER) && \
+    !defined(LEAK_SANITIZER) && \
+    (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL))
+#  define MAYBE_PNACL_NONSFI(test_case) test_case
+#else
+#  define MAYBE_PNACL_NONSFI(test_case) DISABLED_##test_case
+#endif
+
 
 #define NACL_BROWSER_TEST_F(suite, name, body) \
 IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
