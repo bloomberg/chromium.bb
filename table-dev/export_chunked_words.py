@@ -14,6 +14,10 @@ def main():
         load_table(args.TABLE)
     for chunked_text, in c.fetchall():
         text, hyphen_string = parse_chunks(chunked_text)
+        # ignore long words for now
+        if len(text) > 48:
+            printerrln('WARNING: word is too long to be processed, may be translated incorrectly: %s' % text)
+            continue
         if args.TABLE:
             actual_hyphen_string = hyphenate(text)
         else:
