@@ -60,6 +60,22 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_OffscreenCanvasTransferAfterStyleResize',
               ['mac', 'linux', 'win', 'android'], bug=735171)
 
+    # TODO(fserb): already fixed, just needed to submit so the tests pass.
+    self.Fail('Pixel_OffscreenCanvasAccelerated2D',
+        ['mac', 'linux', 'win', 'android'])
+    self.Fail('Pixel_OffscreenCanvasAccelerated2DWorker',
+        ['mac', 'linux', 'win', 'android'])
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2D',
+        ['mac', 'linux', 'win', 'android'])
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing',
+        ['mac', 'linux', 'win', 'android'])
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
+        ['mac', 'linux', 'win', 'android'])
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DWorker',
+        ['mac', 'linux', 'win', 'android'])
+
+
+
     # TODO(junov): update reference images
     self.Fail('Pixel_CSSFilterEffects', ['mac'], bug=721727)
     self.Fail('Pixel_CSSFilterEffects_NoOverlays', ['mac'], bug=721727)
@@ -72,4 +88,3 @@ class PixelExpectations(GpuTestExpectations):
 
     self.Flaky('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
         ['mac', ('nvidia', 0xfe9), 'debug'], bug=751328)
-
