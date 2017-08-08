@@ -2005,51 +2005,6 @@
             ]
         }
     ],
-    "PasswordProtectionPasswordFieldOnFocusPing": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "SBEROnlyNoIncognito2",
-                    "params": {
-                        "extended_reporting": "true",
-                        "history_sync": "false",
-                        "incognito": "false"
-                    },
-                    "enable_features": [
-                        "PasswordFieldOnFocusPinging"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PasswordProtectionProtectedPasswordEntryPing": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "AllPopulation",
-                    "params": {
-                        "all_population": "true",
-                        "incognito": "true"
-                    },
-                    "enable_features": [
-                        "ProtectedPasswordEntryPinging"
-                    ]
-                }
-            ]
-        }
-    ],
     "PasswordSeparatedSigninFlow": [
         {
             "platforms": [
