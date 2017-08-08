@@ -320,10 +320,6 @@
     "label": "//:chromium_builder_perf",
     "type": "additional_compile_target",
   },
-  "chromium_swarm_tests": {
-    "label": "//:chromium_swarm_tests",
-    "type": "additional_compile_target",
-  },
   "chromiumos_preflight": {
     "label": "//:chromiumos_preflight",
     "type": "additional_compile_target",
