@@ -44,7 +44,6 @@ from chromite.lib import gob_util
 from chromite.lib import metadata_lib
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
-from chromite.lib import patch_unittest
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
 
@@ -332,7 +331,6 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
 
   def setUp(self):
     """Setup patchers for specified bot id."""
-    self._patch_factory = patch_unittest.MockPatchFactory()
     # Mock out methods as needed.
     self.PatchObject(lkgm_manager, 'GenerateBlameList')
     self.PatchObject(repository.RepoRepository, 'ExportManifest',
@@ -656,151 +654,14 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
                      autospec=True)
 
   def _Prepare(self, bot_id=None, **kwargs):
-    self.build_id = self.fake_db.InsertBuild(
+    build_id = self.fake_db.InsertBuild(
         constants.PRE_CQ_LAUNCHER_NAME, waterfall.WATERFALL_INTERNAL, 1,
         constants.PRE_CQ_LAUNCHER_CONFIG, 'bot-hostname')
 
     super(PreCQLauncherStageTest, self)._Prepare(
-        bot_id, build_id=self.build_id, **kwargs)
+        bot_id, build_id=build_id, **kwargs)
 
     self.sync_stage = sync_stages.PreCQLauncherStage(self._run)
-
-  def testGetFailedPreCQConfigs(self):
-    """Test _GetFailedPreCQConfigs."""
-    change = self._patch_factory.MockPatch()
-    pre_cq_1 = self.fake_db.InsertBuild(
-        'lumpy-pre-cq', constants.WATERFALL_TRYBOT, 0, 'lumpy-pre-cq',
-        'bot hostname')
-    self.fake_db.InsertCLActions(
-        pre_cq_1,
-        [clactions.CLAction.FromGerritPatchAndAction(
-            change, constants.CL_ACTION_PICKED_UP)])
-
-    pre_cq_2 = self.fake_db.InsertBuild(
-        'cyan-pre-cq', constants.WATERFALL_TRYBOT, 1, 'lumpy-pre-cq',
-        'bot hostname', status=constants.BUILDER_STATUS_FAILED)
-    self.fake_db.InsertCLActions(
-        pre_cq_2,
-        [clactions.CLAction.FromGerritPatchAndAction(
-            change, constants.CL_ACTION_PICKED_UP)])
-
-    action_history = self.fake_db.GetActionsForChanges([change])
-
-    failed_configs = self.sync_stage._GetFailedPreCQConfigs(action_history)
-    self.assertItemsEqual(failed_configs, ['lumpy-pre-cq'])
-
-  def testFailureStreakCounterExceedsThreshold(self):
-    """Test FailureStreakCounterExceedsThreshold."""
-    pre_cq_1 = self.fake_db.InsertBuild(
-        'lumpy-pre-cq', constants.WATERFALL_TRYBOT, 0, 'lumpy-pre-cq',
-        'bot hostname')
-    pre_cq_2 = self.fake_db.InsertBuild(
-        'lumpy-pre-cq', constants.WATERFALL_TRYBOT, 1, 'lumpy-pre-cq',
-        'bot hostname')
-    pre_cq_3 = self.fake_db.InsertBuild(
-        'lumpy-pre-cq', constants.WATERFALL_TRYBOT, 2, 'lumpy-pre-cq',
-        'bot hostname')
-    self.fake_db.FinishBuild(pre_cq_1, status=constants.BUILDER_STATUS_PASSED)
-    self.fake_db.FinishBuild(pre_cq_2, status=constants.BUILDER_STATUS_FAILED)
-    self.fake_db.FinishBuild(pre_cq_3, status=constants.BUILDER_STATUS_FAILED)
-
-    build_history = self.fake_db.GetBuildHistory('lumpy-pre-cq', -1, final=True)
-    self.assertFalse(self.sync_stage. _FailureStreakCounterExceedsThreshold(
-        'lumpy-pre-cq', build_history))
-
-    pre_cq_4 = self.fake_db.InsertBuild(
-        'lumpy-pre-cq', constants.WATERFALL_TRYBOT, 2, 'lumpy-pre-cq',
-        'bot hostname')
-    self.fake_db.FinishBuild(pre_cq_4, status=constants.BUILDER_STATUS_FAILED)
-
-    build_history = self.fake_db.GetBuildHistory('lumpy-pre-cq', -1, final=True)
-    self.assertTrue(self.sync_stage. _FailureStreakCounterExceedsThreshold(
-        'lumpy-pre-cq', build_history))
-
-  def testGetBuildConfigsToSanityCheck(self):
-    """Test _GetBuildConfigsToSanityCheck."""
-    build_configs = {'lumpy-pre-cq', 'cyan-pre-cq', 'betty-pre-cq'}
-
-    for build_config in ('lumpy-pre-cq', 'cyan-pre-cq'):
-      for _ in range(0, 3):
-        pre_cq = self.fake_db.InsertBuild(
-            build_config, constants.WATERFALL_TRYBOT, 0, build_config,
-            'bot hostname')
-        self.fake_db.FinishBuild(pre_cq, status=constants.BUILDER_STATUS_FAILED)
-
-    self.fake_db.InsertBuildRequest(
-        self.build_id, 'lumpy-pre-cq', 'sanity-pre-cq',
-        request_buildbucket_id='bb_id_1', timestamp=datetime.datetime.now())
-
-    stale_timestamp = datetime.datetime.now() - datetime.timedelta(hours=10)
-    self.fake_db.InsertBuildRequest(
-        self.build_id, 'cyan-pre-cq', 'sanity-pre-cq',
-        request_buildbucket_id='bb_id_2', timestamp=stale_timestamp)
-
-    sanity_check_build_configs = self.sync_stage._GetBuildConfigsToSanityCheck(
-        self.fake_db, build_configs)
-    self.assertSetEqual(sanity_check_build_configs, {'cyan-pre-cq'})
-
-  def testLaunchSanityCheckPreCQsIfNeeded(self):
-    """Test _LaunchSanityCheckPreCQsIfNeeded."""
-    mock_pool = mock.Mock()
-    configs = {'lumpy-pre-cq', 'cyan-pre-cq'}
-    self.PatchObject(sync_stages.PreCQLauncherStage, '_GetFailedPreCQConfigs',
-                     return_value=configs)
-    self.PatchObject(sync_stages.PreCQLauncherStage,
-                     '_GetBuildConfigsToSanityCheck',
-                     return_value=configs)
-
-    mock_launch = self.PatchObject(sync_stages.PreCQLauncherStage,
-                                   'LaunchSanityPreCQs')
-
-    self.sync_stage._LaunchSanityCheckPreCQsIfNeeded(
-        self.build_id, self.fake_db, mock_pool,
-        mock.Mock())
-    mock_launch.assert_called_once_with(
-        self.build_id, self.fake_db, mock_pool, configs)
-
-  def testLaunchTrybots(self):
-    """Test _LaunchTrybots."""
-    mock_pool = mock.Mock()
-    change = MockPatch()
-
-    configs = ['cyan-pre-cq', 'lumpy-pre-cq']
-    self.assertDictEqual(self.sync_stage._LaunchTrybots(mock_pool, configs), {})
-    self.assertDictEqual(self.sync_stage._LaunchTrybots(
-        mock_pool, configs, sanity_check_build=True), {})
-
-    self.assertDictEqual(self.sync_stage._LaunchTrybots(
-        mock_pool, configs, plan=[change]), {})
-
-    configs = ['test-pre-cq', 'lumpy-pre-cq']
-    self.assertDictEqual(self.sync_stage._LaunchTrybots(mock_pool, configs), {})
-    self.assertTrue(mock_pool.HandleNoConfigTargetFailure.assert_not_called())
-
-    self.assertDictEqual(self.sync_stage._LaunchTrybots(
-        mock_pool, configs, plan=[change]), {})
-    self.assertTrue(mock_pool.HandleNoConfigTargetFailure.assert_called_once())
-
-  def testLaunchSanityPreCQs(self):
-    """Test LaunchSanityPreCQs."""
-    mock_pool = mock.Mock()
-    configs = ['test-pre-cq1', 'test-pre-cq2']
-    config_bb_id_map = {'test-pre-cq1': 'bb_id_1',
-                        'test-pre-cq2': 'bb_id_2'}
-    self.PatchObject(sync_stages.PreCQLauncherStage, '_LaunchTrybots',
-                     return_value=config_bb_id_map)
-    self.sync_stage.LaunchSanityPreCQs(
-        self.build_id, self.fake_db, mock_pool, configs)
-
-    requests = self.fake_db.GetBuildRequestsForBuildConfig('test-pre-cq1')
-    self.assertEqual(len(requests), 1)
-    self.assertEqual(requests[0].request_build_config, 'test-pre-cq1')
-    self.assertEqual(requests[0].request_buildbucket_id, 'bb_id_1')
-
-    requests = self.fake_db.GetBuildRequestsForBuildConfig('test-pre-cq2')
-    self.assertEqual(len(requests), 1)
-    self.assertEqual(requests[0].request_build_config, 'test-pre-cq2')
-    self.assertEqual(requests[0].request_buildbucket_id, 'bb_id_2')
 
   def testVerificationsForChangeValidConfig(self):
     change = MockPatch()
@@ -953,19 +814,6 @@ pre-cq-configs: link-pre-cq
     # Change should be marked as pre-cq passed, rather than being submitted.
     self.assertEqual(constants.CL_STATUS_PASSED, self._GetPreCQStatus(change))
 
-
-  def mockLaunchTrybots(self, configs=None):
-    configs = configs or constants.PRE_CQ_DEFAULT_CONFIGS
-    config_buildbucket_id_map = {}
-
-    for i in range(0, len(configs)):
-      bb_id = 'bb_id_%s' % str(i)
-      config_buildbucket_id_map[configs[i]] = bb_id
-
-    self.PatchObject(sync_stages.PreCQLauncherStage,
-                     '_LaunchTrybots',
-                     return_value=config_buildbucket_id_map)
-
   def assertAllStatuses(self, changes, status):
     """Verify that all configs for |changes| all have status |status|.
 
@@ -983,8 +831,6 @@ pre-cq-configs: link-pre-cq
     # Create a change that is ready to be tested.
     change = self._PrepareChangesWithPendingVerifications()[0]
     change.approval_timestamp = 0
-
-    self.mockLaunchTrybots()
 
     # Change should be launched now.
     self.PerformSync(pre_cq_status=None, changes=[change], runs=2)
@@ -1004,8 +850,6 @@ pre-cq-configs: link-pre-cq
       return len(
           [a for a in action_history
            if a.action == constants.CL_ACTION_TRYBOT_LAUNCHING])
-
-    self.mockLaunchTrybots(configs=['lumpy-pre-cq'])
 
     # After one cycle of the launcher, exactly MAX_LAUNCHES_PER_CYCLE_DERIVATIVE
     # should have launched.
@@ -1051,8 +895,6 @@ pre-cq-configs: link-pre-cq
         self._PrepareChangesWithPendingVerifications([['chromite-pre-cq']])[0])
     change.approval_timestamp = 0
 
-    self.mockLaunchTrybots(configs=['chromite-pre-cq'])
-
     # Change should be launched now.
     self.PerformSync(pre_cq_status=None, changes=[change], runs=2)
     self.assertAllStatuses([change], constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
@@ -1090,9 +932,6 @@ pre-cq-configs: link-pre-cq
     for change in changes[2:5]:
       change.flags = {'TRY': '1'}
       change.IsMergeable = lambda: False
-
-    self.mockLaunchTrybots(
-        configs=['chromite-pre-cq', 'signer-pre-cq', 'rambi-pre-cq'])
 
     self.PerformSync(pre_cq_status=None, changes=changes, runs=2)
 
@@ -1201,8 +1040,6 @@ pre-cq-configs: link-pre-cq
     # Fake that launch delay has expired by changing change approval times.
     for change in changes:
       change.approval_timestamp = 0
-
-    self.mockLaunchTrybots()
 
     # This should cause the changes to be pending.
     self.PerformSync(pre_cq_status=None, changes=changes)
