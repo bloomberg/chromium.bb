@@ -274,10 +274,6 @@ NSTextField* FederationLabel(const base::string16& text) {
 
 @implementation PendingPasswordItemView (Testing)
 
-- (NSTextField*)usernameField {
-  return usernameField_.get();
-}
-
 - (NSTextField*)passwordField {
   return passwordField_.get();
 }
