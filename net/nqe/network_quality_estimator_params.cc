@@ -403,9 +403,27 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
       persistent_cache_reading_enabled_(
           GetPersistentCacheReadingEnabled(params_)),
       min_socket_watcher_notification_interval_(
-          GetMinSocketWatcherNotificationInterval(params_)) {
+          GetMinSocketWatcherNotificationInterval(params_)),
+      lower_bound_http_rtt_transport_rtt_multiplier_(
+          GetDoubleValueForVariationParamWithDefaultValue(
+              params_,
+              "lower_bound_http_rtt_transport_rtt_multiplier",
+              -1)),
+      upper_bound_http_rtt_transport_rtt_multiplier_(
+          GetDoubleValueForVariationParamWithDefaultValue(
+              params_,
+              "upper_bound_http_rtt_transport_rtt_multiplier",
+              -1)) {
   DCHECK_LE(0.0, correlation_uma_logging_probability_);
   DCHECK_GE(1.0, correlation_uma_logging_probability_);
+  DCHECK(lower_bound_http_rtt_transport_rtt_multiplier_ == -1 ||
+         lower_bound_http_rtt_transport_rtt_multiplier_ > 0);
+  DCHECK(upper_bound_http_rtt_transport_rtt_multiplier_ == -1 ||
+         upper_bound_http_rtt_transport_rtt_multiplier_ > 0);
+  DCHECK(lower_bound_http_rtt_transport_rtt_multiplier_ == -1 ||
+         upper_bound_http_rtt_transport_rtt_multiplier_ == -1 ||
+         lower_bound_http_rtt_transport_rtt_multiplier_ <
+             upper_bound_http_rtt_transport_rtt_multiplier_);
 
   const auto algorithm_it = params_.find("effective_connection_type_algorithm");
   effective_connection_type_algorithm_ =

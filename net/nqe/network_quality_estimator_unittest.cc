@@ -1777,6 +1777,124 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestEffectiveConnectionTypeObserver) {
   EXPECT_EQ(0U, observer_3.effective_connection_types().size());
 }
 
+// Tests that the transport RTT is used for computing the HTTP RTT.
+TEST(NetworkQualityEstimatorTest, TestTransportRttUsedForHttpRttComputation) {
+  const struct {
+    base::TimeDelta http_rtt;
+    base::TimeDelta transport_rtt;
+    std::string lower_bound_http_rtt_transport_rtt_multiplier;
+    std::string upper_bound_http_rtt_transport_rtt_multiplier;
+    base::TimeDelta expected_http_rtt;
+    EffectiveConnectionType expected_type;
+  } tests[] = {
+      {
+          base::TimeDelta::FromMilliseconds(100),
+          base::TimeDelta::FromMilliseconds(200), "", "",
+          base::TimeDelta::FromMilliseconds(100), EFFECTIVE_CONNECTION_TYPE_4G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(100),
+          base::TimeDelta::FromMilliseconds(200), "0.01", "",
+          base::TimeDelta::FromMilliseconds(100), EFFECTIVE_CONNECTION_TYPE_4G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(100),
+          base::TimeDelta::FromMilliseconds(200), "1.0", "",
+          base::TimeDelta::FromMilliseconds(200), EFFECTIVE_CONNECTION_TYPE_4G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(100),
+          base::TimeDelta::FromMilliseconds(200), "1.5", "",
+          base::TimeDelta::FromMilliseconds(300), EFFECTIVE_CONNECTION_TYPE_3G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(100),
+          base::TimeDelta::FromMilliseconds(200), "2.0", "",
+          base::TimeDelta::FromMilliseconds(400), EFFECTIVE_CONNECTION_TYPE_3G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(100),
+          base::TimeDelta::FromMilliseconds(200), "2.0", "5.0",
+          base::TimeDelta::FromMilliseconds(400), EFFECTIVE_CONNECTION_TYPE_3G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(100),
+          base::TimeDelta::FromMilliseconds(200), "10.0", "",
+          base::TimeDelta::FromMilliseconds(2000), EFFECTIVE_CONNECTION_TYPE_2G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(200),
+          base::TimeDelta::FromMilliseconds(100), "10.0", "",
+          base::TimeDelta::FromMilliseconds(1000), EFFECTIVE_CONNECTION_TYPE_3G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(200),
+          base::TimeDelta::FromMilliseconds(5), "10.0", "",
+          base::TimeDelta::FromMilliseconds(200), EFFECTIVE_CONNECTION_TYPE_4G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(200),
+          base::TimeDelta::FromMilliseconds(5), "10.0", "20.0",
+          base::TimeDelta::FromMilliseconds(100), EFFECTIVE_CONNECTION_TYPE_4G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(100),
+          base::TimeDelta::FromMilliseconds(200), "foobar", "",
+          base::TimeDelta::FromMilliseconds(100), EFFECTIVE_CONNECTION_TYPE_4G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(100),
+          base::TimeDelta::FromMilliseconds(4000), "", "",
+          base::TimeDelta::FromMilliseconds(100), EFFECTIVE_CONNECTION_TYPE_4G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(100),
+          base::TimeDelta::FromMilliseconds(4000), "1.0", "10.0",
+          base::TimeDelta::FromMilliseconds(4000),
+          EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(4000),
+          base::TimeDelta::FromMilliseconds(100), "", "",
+          base::TimeDelta::FromMilliseconds(4000),
+          EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(4000),
+          base::TimeDelta::FromMilliseconds(100), "1.0", "10.0",
+          base::TimeDelta::FromMilliseconds(1000), EFFECTIVE_CONNECTION_TYPE_3G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(1),
+          base::TimeDelta::FromMilliseconds(100), "1.0", "10.0",
+          base::TimeDelta::FromMilliseconds(100), EFFECTIVE_CONNECTION_TYPE_4G,
+      },
+      {
+          base::TimeDelta::FromMilliseconds(500),
+          base::TimeDelta::FromMilliseconds(100), "1.0", "10.0",
+          base::TimeDelta::FromMilliseconds(500), EFFECTIVE_CONNECTION_TYPE_3G,
+      },
+  };
+
+  for (const auto& test : tests) {
+    std::map<std::string, std::string> variation_params;
+    variation_params["lower_bound_http_rtt_transport_rtt_multiplier"] =
+        test.lower_bound_http_rtt_transport_rtt_multiplier;
+    variation_params["upper_bound_http_rtt_transport_rtt_multiplier"] =
+        test.upper_bound_http_rtt_transport_rtt_multiplier;
+    TestNetworkQualityEstimator estimator(variation_params);
+
+    estimator.set_start_time_null_http_rtt(test.http_rtt);
+    estimator.set_start_time_null_transport_rtt(test.transport_rtt);
+
+    estimator.RunOneRequest();
+    EXPECT_EQ(test.expected_http_rtt, estimator.GetHttpRTT());
+    EXPECT_EQ(test.transport_rtt, estimator.GetTransportRTT());
+    EXPECT_EQ(test.expected_type, estimator.GetEffectiveConnectionType())
+        << test.lower_bound_http_rtt_transport_rtt_multiplier;
+  }
+}
+
 // Tests that the network quality is computed at the specified interval, and
 // that the network quality observers are notified of any change.
 TEST(NetworkQualityEstimatorTest, TestRTTAndThroughputEstimatesObserver) {
