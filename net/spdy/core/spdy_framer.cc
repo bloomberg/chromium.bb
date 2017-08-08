@@ -25,7 +25,6 @@
 #include "net/spdy/core/spdy_bug_tracker.h"
 #include "net/spdy/core/spdy_frame_builder.h"
 #include "net/spdy/core/spdy_frame_reader.h"
-#include "net/spdy/core/spdy_framer_decoder_adapter.h"
 #include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
 #include "net/spdy/platform/api/spdy_ptr_util.h"
 #include "net/spdy/platform/api/spdy_string_utils.h"
@@ -85,11 +84,6 @@ const size_t SpdyFramer::kOneSettingParameterSize = 6;
     state_ = newstate;                                          \
   } while (false)
 #endif
-
-bool SpdyFramerVisitorInterface::OnGoAwayFrameData(const char* goaway_data,
-                                                   size_t len) {
-  return true;
-}
 
 SpdyFramer::SpdyFramer(CompressionOption option)
     : visitor_(nullptr),

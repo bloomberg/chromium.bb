@@ -11,8 +11,8 @@
 
 #include <cstdint>
 
+#include "net/spdy/core/http2_frame_decoder_adapter.h"
 #include "net/spdy/core/spdy_framer.h"
-#include "net/spdy/core/spdy_framer_decoder_adapter.h"
 #include "net/spdy/core/spdy_protocol.h"
 #include "net/spdy/platform/api/spdy_string_piece.h"
 

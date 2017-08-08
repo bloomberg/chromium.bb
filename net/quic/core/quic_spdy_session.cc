@@ -16,7 +16,7 @@
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_text_utils.h"
-#include "net/spdy/core/spdy_framer_decoder_adapter.h"
+#include "net/spdy/core/http2_frame_decoder_adapter.h"
 
 using std::string;
 

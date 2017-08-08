@@ -15,9 +15,11 @@
 #include <cstring>
 #include <utility>
 
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/sys_byteorder.h"
+#include "build/build_config.h"
 #include "net/http2/decoder/decode_buffer.h"
 #include "net/http2/decoder/decode_status.h"
 #include "net/http2/decoder/http2_frame_decoder.h"
@@ -35,6 +37,15 @@
 #include "net/spdy/core/spdy_protocol.h"
 #include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
 #include "net/spdy/platform/api/spdy_ptr_util.h"
+#include "net/spdy/platform/api/spdy_string_utils.h"
+
+#if defined(COMPILER_GCC)
+#define PRETTY_THIS SpdyStringPrintf("%s@%p ", __PRETTY_FUNCTION__, this)
+#elif defined(COMPILER_MSVC)
+#define PRETTY_THIS SpdyStringPrintf("%s@%p ", __FUNCSIG__, this)
+#else
+#define PRETTY_THIS SpdyStringPrintf("%s@%p ", __func__, this)
+#endif
 
 namespace net {
 
@@ -992,6 +1003,33 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
 };
 
 }  // namespace
+
+bool SpdyFramerVisitorInterface::OnGoAwayFrameData(const char* goaway_data,
+                                                   size_t len) {
+  return true;
+}
+
+SpdyFramerDecoderAdapter::SpdyFramerDecoderAdapter() {
+  DVLOG(1) << PRETTY_THIS;
+}
+
+SpdyFramerDecoderAdapter::~SpdyFramerDecoderAdapter() {
+  DVLOG(1) << PRETTY_THIS;
+}
+
+void SpdyFramerDecoderAdapter::set_visitor(
+    SpdyFramerVisitorInterface* visitor) {
+  visitor_ = visitor;
+}
+
+void SpdyFramerDecoderAdapter::set_debug_visitor(
+    SpdyFramerDebugVisitorInterface* debug_visitor) {
+  debug_visitor_ = debug_visitor;
+}
+
+void SpdyFramerDecoderAdapter::set_process_single_input_frame(bool v) {
+  process_single_input_frame_ = v;
+}
 
 std::unique_ptr<SpdyFramerDecoderAdapter> CreateHttp2FrameDecoderAdapter() {
   return SpdyMakeUnique<Http2DecoderAdapter>();
