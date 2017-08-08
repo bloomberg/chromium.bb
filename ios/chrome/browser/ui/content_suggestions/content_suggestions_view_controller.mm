@@ -294,10 +294,9 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
                                             layout:collectionViewLayout
                             insetForSectionAtIndex:section];
   if ([self.collectionUpdater isHeaderSection:section]) {
-    return parentInset;
-  }
-  if ([self.collectionUpdater isMostVisitedSection:section] ||
-      [self.collectionUpdater isPromoSection:section]) {
+    parentInset.top = 0;
+  } else if ([self.collectionUpdater isMostVisitedSection:section] ||
+             [self.collectionUpdater isPromoSection:section]) {
     CGFloat margin = content_suggestions::centeredTilesMarginForWidth(
         collectionView.frame.size.width);
     parentInset.left = margin;
