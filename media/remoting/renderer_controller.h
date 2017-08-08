@@ -11,7 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
+#include "build/buildflag.h"
 #include "media/base/media_observer.h"
+#include "media/media_features.h"
 #include "media/remoting/metrics.h"
 #include "media/remoting/shared_session.h"
 
@@ -68,7 +70,9 @@ class RendererController final : public SharedSession::Client,
   // Used by CourierRenderer to query the session state.
   SharedSession* session() const { return session_.get(); }
 
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
   base::WeakPtr<RpcBroker> GetRpcBroker() const;
+#endif
 
   // Called by CourierRenderer when it encountered a fatal error. This will
   // cause remoting to shut down and never start back up for the lifetime of

@@ -10,9 +10,14 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "build/buildflag.h"
+#include "media/media_features.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
-#include "media/remoting/rpc_broker.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
+#include "media/remoting/rpc_broker.h"  // nogncheck
+#endif
 
 namespace media {
 namespace remoting {
@@ -126,7 +131,9 @@ class SharedSession final : public mojom::RemotingSource,
   void AddClient(Client* client);
   void RemoveClient(Client* client);
 
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
   RpcBroker* rpc_broker() { return &rpc_broker_; }
+#endif
 
   void EstimateTransmissionCapacity(
       mojom::Remoter::EstimateTransmissionCapacityCallback callback);
@@ -142,8 +149,10 @@ class SharedSession final : public mojom::RemotingSource,
   // Callback from RpcBroker when sending message to remote sink.
   void SendMessageToSink(std::unique_ptr<std::vector<uint8_t>> message);
 
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
   // Handles dispatching of incoming and outgoing RPC messages.
   RpcBroker rpc_broker_;
+#endif
 
   const mojo::Binding<mojom::RemotingSource> binding_;
   const mojom::RemoterPtr remoter_;
