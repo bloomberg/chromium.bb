@@ -11,10 +11,6 @@
 #include "components/viz/common/quads/copy_output_result.h"
 #include "ui/snapshot/snapshot.h"
 
-namespace base {
-class TaskRunner;
-}
-
 namespace gfx {
 class Size;
 }
@@ -28,7 +24,6 @@ class SnapshotAsync {
   static void ScaleCopyOutputResult(
       const GrabWindowSnapshotAsyncCallback& callback,
       const gfx::Size& target_size,
-      scoped_refptr<base::TaskRunner> background_task_runner,
       std::unique_ptr<viz::CopyOutputResult> result);
 
   static void RunCallbackWithCopyOutputResult(

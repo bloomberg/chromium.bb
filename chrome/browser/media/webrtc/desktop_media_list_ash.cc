@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "base/task_scheduler/post_task.h"
 #include "chrome/grit/generated_resources.h"
 #include "media/base/video_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,8 +24,6 @@ const int kDefaultUpdatePeriod = 500;
 DesktopMediaListAsh::DesktopMediaListAsh(content::DesktopMediaID::Type type)
     : DesktopMediaListBase(
           base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
-      background_task_runner_(base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_BLOCKING})),
       weak_factory_(this) {
   DCHECK(type == content::DesktopMediaID::TYPE_SCREEN ||
          type == content::DesktopMediaID::TYPE_WINDOW);
@@ -122,7 +119,7 @@ void DesktopMediaListAsh::CaptureThumbnail(content::DesktopMediaID id,
 
   ++pending_window_capture_requests_;
   ui::GrabWindowSnapshotAndScaleAsync(
-      window, window_rect, scaled_rect.size(), background_task_runner_,
+      window, window_rect, scaled_rect.size(),
       base::Bind(&DesktopMediaListAsh::OnThumbnailCaptured,
                  weak_factory_.GetWeakPtr(), id));
 }

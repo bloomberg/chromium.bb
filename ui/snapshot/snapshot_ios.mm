@@ -28,7 +28,6 @@ void GrabWindowSnapshotAndScaleAsync(
     gfx::NativeWindow window,
     const gfx::Rect& snapshot_bounds,
     const gfx::Size& target_size,
-    scoped_refptr<base::TaskRunner> background_task_runner,
     GrabWindowSnapshotAsyncCallback callback) {
   callback.Run(gfx::Image());
 }

@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include <climits>
-#include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -18,6 +17,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -103,10 +103,10 @@ void EnsureLocalDirectoryExists(
 
 void ScreenshotGrabberDelegate::PrepareFileAndRunOnBlockingPool(
     const base::FilePath& path,
-    scoped_refptr<base::TaskRunner> blocking_task_runner,
     const FileCallback& callback_on_blocking_pool) {
-  blocking_task_runner->PostTask(
+  base::PostTaskWithTraits(
       FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::Bind(EnsureLocalDirectoryExists, path, callback_on_blocking_pool));
 }
 
@@ -139,13 +139,8 @@ class ScreenshotGrabber::ScopedCursorHider {
 };
 #endif
 
-ScreenshotGrabber::ScreenshotGrabber(
-    ScreenshotGrabberDelegate* client,
-    scoped_refptr<base::TaskRunner> blocking_task_runner)
-    : client_(client),
-      blocking_task_runner_(blocking_task_runner),
-      factory_(this) {
-}
+ScreenshotGrabber::ScreenshotGrabber(ScreenshotGrabberDelegate* client)
+    : client_(client), factory_(this) {}
 
 ScreenshotGrabber::~ScreenshotGrabber() {
 }
@@ -169,7 +164,7 @@ void ScreenshotGrabber::TakeScreenshot(gfx::NativeWindow window,
   cursor_hider_ = ScopedCursorHider::Create(aura_window->GetRootWindow());
 #endif
   ui::GrabWindowSnapshotAsyncPNG(
-      window, rect, blocking_task_runner_,
+      window, rect,
       base::Bind(&ScreenshotGrabber::GrabWindowSnapshotAsyncCallback,
                  factory_.GetWeakPtr(), window_identifier, screenshot_path,
                  is_partial));
@@ -230,7 +225,7 @@ void ScreenshotGrabber::GrabWindowSnapshotAsyncCallback(
   ShowNotificationCallback notification_callback(base::Bind(
       &ScreenshotGrabber::NotifyScreenshotCompleted, factory_.GetWeakPtr()));
   client_->PrepareFileAndRunOnBlockingPool(
-      screenshot_path, blocking_task_runner_,
+      screenshot_path,
       base::Bind(&SaveScreenshot, base::ThreadTaskRunnerHandle::Get(),
                  notification_callback, screenshot_path, png_data));
 }

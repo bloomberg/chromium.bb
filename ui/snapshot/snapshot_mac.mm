@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/sdk_forward_declarations.h"
-#include "base/task_runner.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 
@@ -69,7 +68,6 @@ void GrabWindowSnapshotAndScaleAsync(
     gfx::NativeWindow window,
     const gfx::Rect& snapshot_bounds,
     const gfx::Size& target_size,
-    scoped_refptr<base::TaskRunner> background_task_runner,
     GrabWindowSnapshotAsyncCallback callback) {
   callback.Run(gfx::Image());
 }
