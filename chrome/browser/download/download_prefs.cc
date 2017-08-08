@@ -317,7 +317,9 @@ bool DownloadPrefs::IsAutoOpenEnabledBasedOnExtension(
   DCHECK(extension[0] == base::FilePath::kExtensionSeparator);
   extension.erase(0, 1);
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
-  if (extension == FILE_PATH_LITERAL("pdf") && ShouldOpenPdfInSystemReader())
+  if (base::FilePath::CompareEqualIgnoreCase(extension,
+                                             FILE_PATH_LITERAL("pdf")) &&
+      ShouldOpenPdfInSystemReader())
     return true;
 #endif
 
