@@ -129,6 +129,12 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
     public void setUp() throws Exception {
         super.setUp();
 
+        // Account not signed in by default. The clear browsing data header, one date view, and two
+        // history item views should be shown, but the info header should not. We enforce a default
+        // state because the number of headers shown depends on the signed-in state.
+        ChromeSigninController signinController = ChromeSigninController.get();
+        signinController.setSignedInAccountName(null);
+
         mHistoryProvider = new StubbedHistoryProvider();
 
         Date today = new Date();
@@ -148,18 +154,22 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
         mAdapter.registerAdapterDataObserver(mTestObserver);
         mRecyclerView = ((RecyclerView) activity.findViewById(R.id.recycler_view));
 
-        // Account not signed in by default. The clear browsing data header, one date view, and two
-        // history item views should be shown, but the info header should not. We enforce a default
-        // state because the number of headers shown depends on the signed-in state.
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName(null);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mAdapter.setClearBrowsingDataButtonVisibilityForTest(true);
-            }
-        });
-        setHasOtherFormsOfBrowsingData(false, false);
+        if (!mAdapter.isClearBrowsingDataButtonVisible()) {
+            int changedCallCount = mTestObserver.onChangedCallback.getCallCount();
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    mAdapter.setClearBrowsingDataButtonVisibilityForTest(true);
+                }
+            });
+            mTestObserver.onChangedCallback.waitForCallback(changedCallCount);
+        }
+
+        if (mAdapter.arePrivacyDisclaimersVisible()) {
+            int changedCallCount = mTestObserver.onChangedCallback.getCallCount();
+            setHasOtherFormsOfBrowsingData(false, false);
+            mTestObserver.onChangedCallback.waitForCallback(changedCallCount);
+        }
 
         assertEquals(4, mAdapter.getItemCount());
     }
@@ -627,7 +637,8 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
     @SuppressWarnings("unchecked")
     private SelectableItemView<HistoryItem> getItemView(int position) {
         ViewHolder mostRecentHolder = mRecyclerView.findViewHolderForAdapterPosition(position);
-        assertTrue(mostRecentHolder instanceof SelectableItemViewHolder);
+        assertTrue(mostRecentHolder + " should be instance of SelectableItemViewHolder",
+                mostRecentHolder instanceof SelectableItemViewHolder);
         return ((SelectableItemViewHolder<HistoryItem>) mostRecentHolder).getItemView();
     }
 
