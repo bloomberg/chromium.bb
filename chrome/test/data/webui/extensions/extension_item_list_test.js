@@ -6,9 +6,9 @@
 cr.define('extension_item_list_tests', function() {
   /** @enum {string} */
   var TestNames = {
-    ItemListFiltering: 'item list filtering',
-    ItemListNoItemsMsg: 'empty item list',
-    ItemListNoSearchResultsMsg: 'empty item list filtering results',
+    Filtering: 'item list filtering',
+    NoItemsMsg: 'empty item list',
+    NoSearchResultsMsg: 'empty item list filtering results',
   };
 
   suite('ExtensionItemListTest', function() {
@@ -37,7 +37,7 @@ cr.define('extension_item_list_tests', function() {
       document.body.appendChild(itemList);
     });
 
-    test(assert(TestNames.ItemListFiltering), function() {
+    test(assert(TestNames.Filtering), function() {
       var ironList = itemList.$.list;
       assert(ironList);
 
@@ -66,7 +66,7 @@ cr.define('extension_item_list_tests', function() {
       expectEquals(3, ironList.items.length);
     });
 
-    test(assert(TestNames.ItemListNoItemsMsg), function() {
+    test(assert(TestNames.NoItemsMsg), function() {
       testVisible('#no-items', false);
       testVisible('#no-search-results', false);
 
@@ -75,7 +75,7 @@ cr.define('extension_item_list_tests', function() {
       testVisible('#no-search-results', false);
     });
 
-    test(assert(TestNames.ItemListNoSearchResultsMsg), function() {
+    test(assert(TestNames.NoSearchResultsMsg), function() {
       testVisible('#no-items', false);
       testVisible('#no-search-results', false);
 
