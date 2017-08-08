@@ -2188,6 +2188,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webvr-autopresent", flag_descriptions::kWebVrAutopresentName,
      flag_descriptions::kWebVrAutopresentDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kWebVrAutopresent)},
+    {"enable-webvr-vsync-align", flag_descriptions::kWebVrVsyncAlignName,
+     flag_descriptions::kWebVrVsyncAlignDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kWebVrVsyncAlign)},
 #endif  // OS_ANDROID
 #endif  // ENABLE_VR
 #if defined(OS_CHROMEOS)

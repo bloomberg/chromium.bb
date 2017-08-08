@@ -2392,6 +2392,11 @@ const char kWebVrAutopresentName[] = "Enable WebVr auto presentation";
 const char kWebVrAutopresentDescription[] =
     "Allows auto presentation of WebVr content from trusted first-party apps";
 
+const char kWebVrVsyncAlignName[] = "Enable WebVR VSync-aligned timing";
+const char kWebVrVsyncAlignDescription[] =
+    "Enabling this option aligns WebVR application rendering with VSync "
+    "for smoother animations.";
+
 #endif  // defined(OS_ANDROID)
 
 const char kWebvrExperimentalRenderingName[] =

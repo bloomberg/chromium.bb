@@ -1535,6 +1535,9 @@ extern const char kVrCustomTabBrowsingDescription[];
 extern const char kWebVrAutopresentName[];
 extern const char kWebVrAutopresentDescription[];
 
+extern const char kWebVrVsyncAlignName[];
+extern const char kWebVrVsyncAlignDescription[];
+
 #endif  // OS_ANDROID
 
 extern const char kWebvrExperimentalRenderingName[];

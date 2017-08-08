@@ -412,6 +412,10 @@ const base::Feature kServiceWorkerPaymentApps{
 // Controls whether the WebNFC API is enabled:
 // https://w3c.github.io/web-nfc/
 const base::Feature kWebNfc{"WebNFC", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables WebVR VSync-aligned render loop timing.
+const base::Feature kWebVrVsyncAlign{"WebVrVsyncAlign",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
