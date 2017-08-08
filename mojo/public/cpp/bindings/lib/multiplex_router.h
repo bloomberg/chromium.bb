@@ -25,7 +25,6 @@
 #include "mojo/public/cpp/bindings/connector.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
-#include "mojo/public/cpp/bindings/lib/debug_util.h"
 #include "mojo/public/cpp/bindings/lib/deque.h"
 #include "mojo/public/cpp/bindings/message_header_validator.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_handler.h"
@@ -56,8 +55,7 @@ namespace internal {
 class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
     : NON_EXPORTED_BASE(public MessageReceiver),
       public AssociatedGroupController,
-      NON_EXPORTED_BASE(public PipeControlMessageHandlerDelegate),
-      NON_EXPORTED_BASE(private LifeTimeTrackerForDebugging) {
+      NON_EXPORTED_BASE(public PipeControlMessageHandlerDelegate) {
  public:
   enum Config {
     // There is only the master interface running on this router. Please note

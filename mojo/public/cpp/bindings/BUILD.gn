@@ -67,7 +67,6 @@ component("bindings") {
     "lib/control_message_handler.h",
     "lib/control_message_proxy.cc",
     "lib/control_message_proxy.h",
-    "lib/debug_util.h",
     "lib/deque.h",
     "lib/filter_chain.cc",
     "lib/fixed_buffer.cc",
