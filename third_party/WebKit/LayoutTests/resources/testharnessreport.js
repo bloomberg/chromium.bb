@@ -8,15 +8,18 @@
  * harness_status)).
  *
  * For more documentation about the callback functions and the
- * parameters they are called with, see testharness.js.
+ * parameters they are called with, see testharness.js, or the docs at:
+ * http://web-platform-tests.org/writing-tests/testharness-api.html
  */
 
 (function() {
 
-    let output_document = document;
+    let outputDocument = document;
+    let didDispatchLoadEvent = false;
+    let localPathRegExp = undefined;
 
     // Setup for Blink JavaScript tests. self.testRunner is expected to be
-    // present when tests are run
+    // present when tests are run.
     if (self.testRunner) {
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
@@ -33,30 +36,6 @@
         }
     }
 
-    // Disable the default output of testharness.js.  The default output formats
-    // test results into an HTML table.  When that table is dumped as text, no
-    // spacing between cells is preserved, and it is therefore not readable. By
-    // setting output to false, the HTML table will not be created.
-    // Also, disable timeout (except for explicit timeout), since the Blink
-    // layout test runner has its own timeout mechanism.
-    // See: http://web-platform-tests.org/writing-tests/testharness-api.html
-    setup({'output': false, 'explicit_timeout': true});
-
-    /** Converts the testharness test status into the corresponding string. */
-    function convertResult(resultStatus) {
-        switch (resultStatus) {
-            case 0:
-                return 'PASS';
-            case 1:
-                return 'FAIL';
-            case 2:
-                return 'TIMEOUT';
-            default:
-                return 'NOTRUN';
-        }
-    }
-
-    let localPathRegExp;
     if (document.URL.startsWith('file:///')) {
         const index = document.URL.indexOf('/external/wpt');
         if (index >= 0) {
@@ -66,19 +45,26 @@
         }
     }
 
-    /** Sanitizes the given text for display in test results. */
-    function sanitize(text) {
-        if (!text) {
-            return '';
+    window.addEventListener('load', loadCallback, {'once': true});
+
+    setup({
+        // The default output formats test results into an HTML table, but for
+        // the Blink layout test runner, we dump the results as text in the
+        // completion callback, so we disable the default output.
+        'output': false,
+        // The Blink layout test runner has its own timeout mechanism.
+        'explicit_timeout': true
+    });
+
+    add_start_callback(startCallback);
+    add_completion_callback(completionCallback);
+
+    /** Loads an automation script if necessary. */
+    function loadCallback() {
+        didDispatchLoadEvent = true;
+        if (isWPTManualTest()) {
+            setTimeout(loadAutomationScript, 0);
         }
-        // Escape null characters, otherwise diff will think the file is binary.
-        text = text.replace(/\0/g, '\\0');
-        // Escape carriage returns as they break rietveld's difftools.
-        text = text.replace(/\r/g, '\\r');
-        // Replace machine-dependent path with "...".
-        if (localPathRegExp)
-            text = text.replace(localPathRegExp, '...');
-        return text;
     }
 
     /** Checks whether the current path is a manual test in WPT. */
@@ -93,23 +79,6 @@
         // If the file is loaded locally via file://, it must include
         // the wpt directory in the path.
         return /\/external\/wpt\/.*-manual(\.https)?\.html$/.test(path);
-    }
-
-    /**
-     * Returns a directory part relative to WPT root and a basename part of the
-     * current test. e.g.
-     * Current test: file:///.../LayoutTests/external/wpt/pointerevents/foobar.html
-     * Output: "/pointerevents/foobar"
-     */
-    function pathAndBaseNameInWPT() {
-        const path = location.pathname;
-        let matches;
-        if (location.hostname == 'web-platform.test') {
-            matches = path.match(/^(\/.*)\.html$/);
-            return matches ? matches[1] : null;
-        }
-        matches = path.match(/external\/wpt(\/.*)\.html$/);
-        return matches ? matches[1] : null;
     }
 
     /** Loads the WPT automation script for the current test, if applicable. */
@@ -153,26 +122,25 @@
         document.head.appendChild(script);
     }
 
-    // Listen for the load event, and load an automation script if necessary.
-    let didDispatchLoadEvent = false;
-    window.addEventListener('load', function() {
-        didDispatchLoadEvent = true;
-        if (isWPTManualTest()) {
-            setTimeout(loadAutomationScript, 0);
+    /**
+     * Sets the output document based on the given properties.
+     * Usually the output document is the current document, but it could be
+     * a separate document in some cases.
+     */
+    function startCallback(properties) {
+        if (properties.output_document) {
+            outputDocument = properties.output_document;
         }
-    }, {once: true});
+    }
 
-    add_start_callback(function(properties) {
-        if (properties.output_document)
-            output_document = properties.output_document;
-    });
-
-    // Using a callback function, test results will be added to the page in a
-    // manner that allows dumpAsText to produce readable test results.
-    add_completion_callback(function(tests, harness_status) {
+    /**
+     * Adds results to the page in a manner that allows dumpAsText to produce
+     * readable test results.
+     */
+    function completionCallback(tests, harness_status) {
 
         // Create element to hold results.
-        const resultsElement = output_document.createElement('pre');
+        const resultsElement = outputDocument.createElement('pre');
 
         // Declare result string.
         let resultStr = 'This is a testharness.js-based test.\n';
@@ -180,63 +148,25 @@
         // Check harness_status.  If it is not 0, tests did not execute
         // correctly, output the error code and message.
         if (harness_status.status != 0) {
-            resultStr +=
-                'Harness Error. harness_status.status = ' + harness_status.status +
-                ' , harness_status.message = ' + harness_status.message + '\n';
+            resultStr += `Harness Error. ` +
+                `harness_status.status = ${harness_status.status} , ` +
+                `harness_status.message = ${harness_status.message}\n`;
         }
 
-        // Iterate through the `tests` array and build a string that contains
-        // results for all the subtests in this test.
-        let testResults = '';
-        let resultCounter = [0, 0, 0, 0];
-        // The reflection tests contain huge number of tests, and Chromium code
-        // review tool has the 1MB diff size limit. We merge PASS lines.
-        if (output_document.URL.indexOf('/html/dom/reflection') >= 0) {
-            for (let i = 0; i < tests.length; ++i) {
-                if (tests[i].status == 0) {
-                    const colon = tests[i].name.indexOf(':');
-                    if (colon > 0) {
-                        const prefix = tests[i].name.substring(0, colon + 1);
-                        let j = i + 1;
-                        for (; j < tests.length; ++j) {
-                            if (!tests[j].name.startsWith(prefix) ||
-                                tests[j].status != 0)
-                                break;
-                        }
-                        const numPasses = j - i;
-                        if (numPasses > 1) {
-                            resultCounter[0] += numPasses;
-                            testResults += convertResult(tests[i].status) +
-                                ` ${sanitize(prefix)} ${numPasses} tests\n`;
-                            i = j - 1;
-                            continue;
-                        }
-                    }
-                }
-                resultCounter[tests[i].status]++;
-                testResults += convertResult(tests[i].status) + ' ' +
-                    sanitize(tests[i].name) + ' ' + sanitize(tests[i].message) +
-                    '\n';
-            }
-        } else {
-            for (let i = 0; i < tests.length; ++i) {
-                resultCounter[tests[i].status]++;
-                testResults += convertResult(tests[i].status) + ' ' +
-                    sanitize(tests[i].name) + ' ' + sanitize(tests[i].message) +
-                    '\n';
-            }
-        }
-        if (output_document.URL.indexOf('http://web-platform.test') >= 0 &&
+        // Output failure metrics if there are many.
+        resultCounts = countResultTypes(tests);
+        if (outputDocument.URL.indexOf('http://web-platform.test') >= 0 &&
             tests.length >= 50 &&
-            (resultCounter[1] || resultCounter[2] || resultCounter[3])) {
-            // Output failure metrics if there are many.
-            resultStr += `Found ${tests.length} tests;` +
-                ` ${resultCounter[0]} PASS,` +
-                ` ${resultCounter[1]} FAIL,` +
-                ` ${resultCounter[2]} TIMEOUT,` +
-                ` ${resultCounter[3]} NOTRUN.\n`;
+            (resultCounts[1] || resultCounts[2] || resultCounts[3])) {
+
+            resultStr += failureMetricSummary(resultCounts);
         }
-        resultStr += testResults;
+
+        if (outputDocument.URL.indexOf('/html/dom/reflection') >= 0) {
+            resultStr += compactTestOutput(tests);
+        } else {
+            resultStr += testOutput(tests);
+        }
 
         resultStr += 'Harness: the test ran to completion.\n';
 
@@ -245,12 +175,12 @@
         function done() {
             const xhtmlNS = 'http://www.w3.org/1999/xhtml';
             let body = null;
-            if (output_document.body && output_document.body.tagName == 'BODY' &&
-                output_document.body.namespaceURI == xhtmlNS) {
-                body = output_document.body;
+            if (outputDocument.body && outputDocument.body.tagName == 'BODY' &&
+                outputDocument.body.namespaceURI == xhtmlNS) {
+                body = outputDocument.body;
             }
             // A temporary workaround since |window.self| property lookup starts
-            // failing if the frame is detached. |output_document| may be an
+            // failing if the frame is detached. |outputDocument| may be an
             // ancestor of |self| so clearing |textContent| may detach |self|.
             // To get around this, cache window.self now and use the cached
             // value.
@@ -263,33 +193,34 @@
                 // test.
                 testRunner.setDumpConsoleMessages(false);
 
-                // Anything isn't material to the testrunner output, so should
+                // Anything in the body isn't part of the output and so should
                 // be hidden from the text dump.
                 if (body) {
                     body.textContent = '';
                 }
             }
 
-            // Add results element to output_document.
+            // Add the results element to the output document.
             if (!body) {
-                // output_document might be an SVG document.
-                if (output_document.documentElement)
-                    output_document.documentElement.remove();
-                let html = output_document.createElementNS(xhtmlNS, 'html');
-                output_document.appendChild(html);
-                body = output_document.createElementNS(xhtmlNS, 'body');
+                // |outputDocument| might be an SVG document.
+                if (outputDocument.documentElement) {
+                    outputDocument.documentElement.remove();
+                }
+                let html = outputDocument.createElementNS(xhtmlNS, 'html');
+                outputDocument.appendChild(html);
+                body = outputDocument.createElementNS(xhtmlNS, 'body');
                 body.setAttribute('style', 'white-space:pre;');
                 html.appendChild(body);
             }
-            output_document.body.appendChild(resultsElement);
+            outputDocument.body.appendChild(resultsElement);
 
             if (cachedSelf.testRunner) {
                 testRunner.notifyDone();
             }
         }
 
-        if (didDispatchLoadEvent || output_document.readyState != 'loading') {
-            // This function might not be the last "completion callback", and
+        if (didDispatchLoadEvent || outputDocument.readyState != 'loading') {
+            // This function might not be the last completion callback, and
             // another completion callback might generate more results.
             // So, we don't dump the results immediately.
             setTimeout(done, 0);
@@ -297,5 +228,120 @@
             // Parsing the test HTML isn't finished yet.
             window.addEventListener('load', done);
         }
-    });
+    }
+
+    /**
+     * Returns a directory part relative to WPT root and a basename part of the
+     * current test. e.g.
+     * Current test: file:///.../LayoutTests/external/wpt/pointerevents/foobar.html
+     * Output: "/pointerevents/foobar"
+     */
+    function pathAndBaseNameInWPT() {
+        const path = location.pathname;
+        let matches;
+        if (location.hostname == 'web-platform.test') {
+            matches = path.match(/^(\/.*)\.html$/);
+            return matches ? matches[1] : null;
+        }
+        matches = path.match(/external\/wpt(\/.*)\.html$/);
+        return matches ? matches[1] : null;
+    }
+
+    /** Converts the testharness test status into the corresponding string. */
+    function convertResult(resultStatus) {
+        switch (resultStatus) {
+            case 0:
+                return 'PASS';
+            case 1:
+                return 'FAIL';
+            case 2:
+                return 'TIMEOUT';
+            default:
+                return 'NOTRUN';
+        }
+    }
+
+    /**
+     * Returns a compact output for reflection test results.
+     *
+     * The reflection tests contain huge number of tests, and Rietveld
+     * code review tool had a 1MB diff size limit. We merge PASS lines.
+     * TODO(qyearsley): Remove this now that we don't use Rietveld.
+     */
+    function compactTestOutput(tests) {
+        let testResults = [];
+        for (let i = 0; i < tests.length; ++i) {
+            if (tests[i].status == 0) {
+                const colon = tests[i].name.indexOf(':');
+                if (colon > 0) {
+                    const prefix = tests[i].name.substring(0, colon + 1);
+                    let j = i + 1;
+                    for (; j < tests.length; ++j) {
+                        if (!tests[j].name.startsWith(prefix) ||
+                            tests[j].status != 0)
+                            break;
+                    }
+                    const numPasses = j - i;
+                    if (numPasses > 1) {
+                        testResults.push(
+                            `${convertResult(tests[i].status)} ` +
+                            `${sanitize(prefix)} ${numPasses} tests\n`);
+                        i = j - 1;
+                        continue;
+                    }
+                }
+            }
+            testResults.push(
+                `${convertResult(tests[i].status)} ` +
+                `${sanitize(tests[i].name)} ${sanitize(tests[i].message)}\n`);
+        }
+        return testResults.join('');
+    }
+
+    function testOutput(tests) {
+        let testResults = '';
+        window.tests = tests;
+        for (let test of tests) {
+            testResults += `${convertResult(test.status)} ` +
+                `${sanitize(test.name)} ${sanitize(test.message)}\n`;
+        }
+        return testResults;
+    }
+
+    /** Prepares the given text for display in test results. */
+    function sanitize(text) {
+        if (!text) {
+            return '';
+        }
+        // Escape null characters, otherwise diff will think the file is binary.
+        text = text.replace(/\0/g, '\\0');
+        // Escape carriage returns as they break rietveld's difftools.
+        // TODO(qyearsley): Remove this; we are no longer using Rietveld,
+        // so escaping carriage returns should now be unnecessary.
+        text = text.replace(/\r/g, '\\r');
+        // Replace machine-dependent path with "...".
+
+        if (localPathRegExp) {
+            text = text.replace(localPathRegExp, '...');
+        }
+        return text;
+    }
+
+    function countResultTypes(tests) {
+        const resultCounts = [0, 0, 0, 0];
+        for (let test of tests) {
+            resultCounts[test.status]++;
+        }
+        return resultCounts;
+    }
+
+    function failureMetricSummary(resultCounts) {
+        const total = resultCounts[0] + resultCounts[1] + resultCounts[2] + resultCounts[3];
+        return `Found ${total} tests;` +
+            ` ${resultCounts[0]} PASS,` +
+            ` ${resultCounts[1]} FAIL,` +
+            ` ${resultCounts[2]} TIMEOUT,` +
+            ` ${resultCounts[3]} NOTRUN.\n`;
+    }
+
 })();
