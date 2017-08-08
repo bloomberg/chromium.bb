@@ -82,6 +82,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     user_scrollable_vertical_ = user_scrollable_vertical;
     main_thread_scrolling_reasons_ = main_thread_scrolling_reasons;
     compositor_element_id_ = compositor_element_id;
+    DCHECK(ElementIdNamespaceIsForScrolling());
     scroll_client_ = scroll_client;
     return true;
   }
@@ -171,7 +172,15 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
         user_scrollable_vertical_(user_scrollable_vertical),
         main_thread_scrolling_reasons_(main_thread_scrolling_reasons),
         compositor_element_id_(compositor_element_id),
-        scroll_client_(scroll_client) {}
+        scroll_client_(scroll_client) {
+    DCHECK(ElementIdNamespaceIsForScrolling());
+  }
+
+  bool ElementIdNamespaceIsForScrolling() const {
+    return !compositor_element_id_ ||
+           NamespaceFromCompositorElementId(compositor_element_id_) ==
+               CompositorElementIdNamespace::kScroll;
+  }
 
   IntPoint bounds_offset_;
   IntSize container_bounds_;

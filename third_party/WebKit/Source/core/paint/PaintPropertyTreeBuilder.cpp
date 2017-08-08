@@ -90,7 +90,7 @@ static bool UpdateScroll(
   DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
   auto element_id = CompositorElementIdFromLayoutObjectId(
       frame_view.GetLayoutView()->UniqueId(),
-      CompositorElementIdNamespace::kScrollTranslation);
+      CompositorElementIdNamespace::kScroll);
   if (auto* existing_scroll = frame_view.ScrollNode()) {
     auto existing_reasons = existing_scroll->GetMainThreadScrollingReasons();
     existing_scroll->Update(
@@ -1019,7 +1019,7 @@ void PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation(
       }
 
       auto element_id = CompositorElementIdFromLayoutObjectId(
-          object.UniqueId(), CompositorElementIdNamespace::kScrollTranslation);
+          object.UniqueId(), CompositorElementIdNamespace::kScroll);
 
       // TODO(pdr): Set the correct compositing reasons here.
       auto result = properties.UpdateScroll(
