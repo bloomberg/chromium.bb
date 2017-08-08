@@ -298,21 +298,21 @@ TEST_F(LayoutObjectTest, AssociatedLayoutObjectOfFirstLetterPunctuations) {
   Node* sample = GetDocument().getElementById("sample");
   Node* text = sample->firstChild();
 
-  LayoutTextFragment* layout_object0 =
+  const LayoutTextFragment* layout_object0 =
       ToLayoutTextFragment(AssociatedLayoutObjectOf(*text, 0));
   EXPECT_FALSE(layout_object0->IsRemainingTextLayoutObject());
 
-  LayoutTextFragment* layout_object1 =
+  const LayoutTextFragment* layout_object1 =
       ToLayoutTextFragment(AssociatedLayoutObjectOf(*text, 1));
   EXPECT_EQ(layout_object0, layout_object1)
       << "A character 'a' should be part of first letter.";
 
-  LayoutTextFragment* layout_object2 =
+  const LayoutTextFragment* layout_object2 =
       ToLayoutTextFragment(AssociatedLayoutObjectOf(*text, 2));
   EXPECT_EQ(layout_object0, layout_object2)
       << "close parenthesis should be part of first letter.";
 
-  LayoutTextFragment* layout_object3 =
+  const LayoutTextFragment* layout_object3 =
       ToLayoutTextFragment(AssociatedLayoutObjectOf(*text, 3));
   EXPECT_TRUE(layout_object3->IsRemainingTextLayoutObject());
 }
@@ -330,11 +330,11 @@ TEST_F(LayoutObjectTest, AssociatedLayoutObjectOfFirstLetterSplit) {
   ToText(first_letter)->splitText(1, ASSERT_NO_EXCEPTION);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  LayoutTextFragment* layout_object0 =
+  const LayoutTextFragment* layout_object0 =
       ToLayoutTextFragment(AssociatedLayoutObjectOf(*first_letter, 0));
   EXPECT_FALSE(layout_object0->IsRemainingTextLayoutObject());
 
-  LayoutTextFragment* layout_object1 =
+  const LayoutTextFragment* layout_object1 =
       ToLayoutTextFragment(AssociatedLayoutObjectOf(*first_letter, 1));
   EXPECT_EQ(layout_object0, layout_object1);
 }
@@ -349,15 +349,15 @@ TEST_F(LayoutObjectTest,
   Node* sample = GetDocument().getElementById("sample");
   Node* text = sample->firstChild();
 
-  LayoutTextFragment* layout_object0 =
+  const LayoutTextFragment* layout_object0 =
       ToLayoutTextFragment(AssociatedLayoutObjectOf(*text, 0));
   EXPECT_FALSE(layout_object0->IsRemainingTextLayoutObject());
 
-  LayoutTextFragment* layout_object1 =
+  const LayoutTextFragment* layout_object1 =
       ToLayoutTextFragment(AssociatedLayoutObjectOf(*text, 1));
   EXPECT_TRUE(layout_object1->IsRemainingTextLayoutObject());
 
-  LayoutTextFragment* layout_object2 =
+  const LayoutTextFragment* layout_object2 =
       ToLayoutTextFragment(AssociatedLayoutObjectOf(*text, 2));
   EXPECT_EQ(layout_object1, layout_object2);
 }

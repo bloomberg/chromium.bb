@@ -3560,7 +3560,8 @@ void LayoutObject::InvalidatePaintForSelection() {
 //
 //  Punctuation characters are considered as first-letter. For "(1)ab",
 //  "(1)" are first-letter part and "ab" are remaining part.
-LayoutObject* AssociatedLayoutObjectOf(const Node& node, int offset_in_node) {
+const LayoutObject* AssociatedLayoutObjectOf(const Node& node,
+                                             int offset_in_node) {
   DCHECK_GE(offset_in_node, 0);
   LayoutObject* layout_object = node.GetLayoutObject();
   if (!node.IsTextNode() || !layout_object ||
