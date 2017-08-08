@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/Settings.h"
+#include "platform/fonts/GenericFontFamilySettings.h"
 
 namespace blink {
 
@@ -25,6 +26,14 @@ class CORE_EXPORT WorkerSettings {
     return strictly_block_blockable_mixed_content_;
   }
 
+  const GenericFontFamilySettings& GetGenericFontFamilySettings() const {
+    return generic_font_family_settings_;
+  }
+
+  void MakeGenericFontFamilySettingsAtomic() {
+    generic_font_family_settings_.MakeAtomic();
+  }
+
  private:
   void CopyFlagValuesFromSettings(Settings*);
 
@@ -36,6 +45,8 @@ class CORE_EXPORT WorkerSettings {
   bool strict_mixed_content_checking_ = false;
   bool allow_running_of_insecure_content_ = false;
   bool strictly_block_blockable_mixed_content_ = false;
+
+  GenericFontFamilySettings generic_font_family_settings_;
 };
 
 }  // namespace blink

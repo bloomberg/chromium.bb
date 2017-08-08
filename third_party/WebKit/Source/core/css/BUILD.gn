@@ -222,6 +222,8 @@ blink_core_sources("css") {
     "MediaValuesDynamic.h",
     "MediaValuesInitialViewport.cpp",
     "MediaValuesInitialViewport.h",
+    "OffscreenFontSelector.cpp",
+    "OffscreenFontSelector.h",
     "PageRuleCollector.cpp",
     "PageRuleCollector.h",
     "PropertyRegistration.cpp",
