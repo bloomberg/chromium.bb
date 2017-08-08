@@ -69,6 +69,7 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
   std::unique_ptr<net::URLRequest> url_request_;
   mojo::Binding<mojom::URLLoader> binding_;
   mojom::URLLoaderClientPtr url_loader_client_;
+  int64_t total_written_bytes_ = 0;
 
   mojo::ScopedDataPipeProducerHandle response_body_stream_;
   scoped_refptr<NetToMojoPendingBuffer> pending_write_;
