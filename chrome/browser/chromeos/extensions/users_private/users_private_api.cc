@@ -71,20 +71,22 @@ UsersPrivateGetWhitelistedUsersFunction::Run() {
     email_list.reset(new base::ListValue());
   }
 
+  const user_manager::UserManager* user_manager =
+      user_manager::UserManager::Get();
+
   // Remove all supervised users. On the next step only supervised users present
   // on the device will be added back. Thus not present SU are removed.
   // No need to remove usual users as they can simply login back.
   for (size_t i = 0; i < email_list->GetSize(); ++i) {
     std::string whitelisted_user;
     email_list->GetString(i, &whitelisted_user);
-    if (gaia::ExtractDomainName(whitelisted_user) ==
-        user_manager::kSupervisedUserDomain) {
+    if (user_manager->IsSupervisedAccountId(
+            AccountId::FromUserEmail(whitelisted_user))) {
       email_list->Remove(i, NULL);
       --i;
     }
   }
 
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   const user_manager::UserList& users = user_manager->GetUsers();
   for (const auto* user : users) {
     email_list->AppendIfNotPresent(

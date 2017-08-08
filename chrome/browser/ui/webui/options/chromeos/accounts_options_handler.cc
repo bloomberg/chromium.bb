@@ -158,8 +158,8 @@ void AccountsOptionsHandler::HandleUpdateWhitelist(
   for (size_t i = 0; i < new_list->GetSize(); ++i) {
     std::string whitelisted_user;
     new_list->GetString(i, &whitelisted_user);
-    if (gaia::ExtractDomainName(whitelisted_user) ==
-        user_manager::kSupervisedUserDomain) {
+    if (user_manager::UserManager::Get()->IsSupervisedAccountId(
+            AccountId::FromUserEmail(whitelisted_user))) {
       new_list->Remove(i, NULL);
       --i;
     }
