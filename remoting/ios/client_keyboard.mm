@@ -65,6 +65,10 @@
   return YES;
 }
 
+- (BOOL)resignFirstResponder {
+  return [self resignFirstResponderForced:NO];
+}
+
 - (UIView*)inputAccessoryView {
   return nil;
 }
@@ -89,13 +93,31 @@
 
   if (self.isFirstResponder) {
     // Cause the app to reload inputView.
-    [self resignFirstResponder];
+
+    [self resignFirstResponderForced:YES];
     [self becomeFirstResponder];
   }
 }
 
 - (BOOL)showsSoftKeyboard {
   return _inputView == nil;
+}
+
+#pragma mark - Private
+
+- (BOOL)resignFirstResponderForced:(BOOL)forced {
+  if (!forced && self.showsSoftKeyboard) {
+    // This translates the action of resigning first responder when the keyboard
+    // is showing into hiding the soft keyboard while keeping the view first
+    // responder. This is to allow the hide keyboard button on the soft keyboard
+    // to work properly with ClientKeyboard's soft keyboard logic, which calls
+    // resignFirstResponder.
+    // This may cause weird behavior if the superview has multiple responders
+    // (text views).
+    self.showsSoftKeyboard = NO;
+    return NO;
+  }
+  return [super resignFirstResponder];
 }
 
 @end
