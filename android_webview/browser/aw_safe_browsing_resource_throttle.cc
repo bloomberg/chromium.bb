@@ -12,6 +12,7 @@
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
+#include "components/security_interstitials/core/urls.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/resource_type.h"
@@ -89,7 +90,9 @@ void AwSafeBrowsingResourceThrottle::StartApplicationResponse(
         base::Bind(&AwSafeBrowsingResourceThrottle::DoApplicationResponse,
                    throttle, ui_manager, resource);
 
-    client->OnSafeBrowsingHit(request, resource.threat_type, callback);
+    client->OnSafeBrowsingHit(
+        request, resource.threat_type,
+        security_interstitials::kSafeBrowsingPrivacyPolicyUrl, callback);
   }
 }
 
