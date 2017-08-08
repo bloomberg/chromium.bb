@@ -161,6 +161,7 @@ class WebAXObject {
   BLINK_EXPORT WebString AriaAutoComplete() const;
   BLINK_EXPORT WebAXAriaCurrentState AriaCurrentState() const;
   BLINK_EXPORT bool AriaHasPopup() const;
+  BLINK_EXPORT bool IsEditableRoot() const;
   BLINK_EXPORT bool IsEditable() const;
   BLINK_EXPORT bool IsMultiline() const;
   BLINK_EXPORT bool IsRichlyEditable() const;

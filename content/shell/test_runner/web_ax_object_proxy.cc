@@ -593,6 +593,7 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetProperty("isBusy", &WebAXObjectProxy::IsBusy)
       .SetProperty("isRequired", &WebAXObjectProxy::IsRequired)
       .SetProperty("isEditable", &WebAXObjectProxy::IsEditable)
+      .SetProperty("isEditableRoot", &WebAXObjectProxy::IsEditableRoot)
       .SetProperty("isRichlyEditable", &WebAXObjectProxy::IsRichlyEditable)
       .SetProperty("isFocused", &WebAXObjectProxy::IsFocused)
       .SetProperty("isFocusable", &WebAXObjectProxy::IsFocusable)
@@ -995,6 +996,11 @@ std::string WebAXObjectProxy::Restriction() {
 bool WebAXObjectProxy::IsRequired() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
   return accessibility_object_.IsRequired();
+}
+
+bool WebAXObjectProxy::IsEditableRoot() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  return accessibility_object_.IsEditableRoot();
 }
 
 bool WebAXObjectProxy::IsEditable() {
