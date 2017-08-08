@@ -11,6 +11,7 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image.h"
+#include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_pixel_resource_test.h"
@@ -109,8 +110,10 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
       client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   mask_display_list->Raster(canvas);
-  mask->SetImage(
-      PaintImage(PaintImage::GetNextId(), surface->makeImageSnapshot()));
+  mask->SetImage(PaintImageBuilder()
+                     .set_id(PaintImage::GetNextId())
+                     .set_image(surface->makeImageSnapshot())
+                     .TakePaintImage());
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
       gfx::Rect(25, 25, 50, 50), kCSSGreen, 1, SK_ColorBLACK);

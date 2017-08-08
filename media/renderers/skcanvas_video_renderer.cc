@@ -12,6 +12,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image.h"
+#include "cc/paint/paint_image_builder.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -432,10 +433,14 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
     image = last_image_->makeNonTextureImage();
   else
     image = last_image_;
-  canvas->drawImage(cc::PaintImage(renderer_stable_id_, std::move(image),
-                                   cc::PaintImage::AnimationType::VIDEO,
-                                   cc::PaintImage::CompletionState::DONE),
-                    0, 0, &video_flags);
+  canvas->drawImage(
+      cc::PaintImageBuilder()
+          .set_id(renderer_stable_id_)
+          .set_image(std::move(image))
+          .set_animation_type(cc::PaintImage::AnimationType::VIDEO)
+          .set_completion_state(cc::PaintImage::CompletionState::DONE)
+          .TakePaintImage(),
+      0, 0, &video_flags);
 
   if (need_transform)
     canvas->restore();

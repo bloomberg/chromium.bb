@@ -5,6 +5,7 @@
 #include "cc/tiles/gpu_image_decode_cache.h"
 
 #include "cc/paint/draw_image.h"
+#include "cc/paint/paint_image_builder.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_tile_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +22,10 @@ gfx::ColorSpace DefaultColorSpace() {
 PaintImage::Id s_paint_image_id = PaintImage::GetNextId();
 
 PaintImage CreatePaintImage(sk_sp<SkImage> image) {
-  return PaintImage(s_paint_image_id, image);
+  return PaintImageBuilder()
+      .set_id(s_paint_image_id)
+      .set_image(std::move(image))
+      .TakePaintImage();
 }
 
 size_t kGpuMemoryLimitBytes = 96 * 1024 * 1024;

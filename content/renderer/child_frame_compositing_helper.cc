@@ -12,6 +12,7 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/paint/paint_image.h"
+#include "cc/paint/paint_image_builder.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
@@ -238,8 +239,10 @@ void ChildFrameCompositingHelper::ChildFrameGone() {
         web_layer_->Bounds().height > sad_bitmap->height()) {
       scoped_refptr<cc::PictureImageLayer> sad_layer =
           cc::PictureImageLayer::Create();
-      sad_layer->SetImage(cc::PaintImage(cc::PaintImage::kNonLazyStableId,
-                                         SkImage::MakeFromBitmap(*sad_bitmap)));
+      sad_layer->SetImage(cc::PaintImageBuilder()
+                              .set_id(cc::PaintImage::kNonLazyStableId)
+                              .set_image(SkImage::MakeFromBitmap(*sad_bitmap))
+                              .TakePaintImage());
       sad_layer->SetBounds(
           gfx::Size(sad_bitmap->width(), sad_bitmap->height()));
       sad_layer->SetPosition(gfx::PointF(

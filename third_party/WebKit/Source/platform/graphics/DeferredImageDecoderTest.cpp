@@ -163,7 +163,10 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecord) {
 
   PaintRecorder recorder;
   PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
-  temp_canvas->drawImage(PaintImage(PaintImage::GetNextId(), std::move(image)),
+  temp_canvas->drawImage(PaintImageBuilder()
+                             .set_id(PaintImage::GetNextId())
+                             .set_image(std::move(image))
+                             .TakePaintImage(),
                          0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, decode_request_count_);
@@ -185,8 +188,11 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
   PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
   PaintImage::Id stable_id = PaintImage::GetNextId();
   temp_canvas->drawImage(
-      PaintImage(stable_id, std::move(image), PaintImage::AnimationType::STATIC,
-                 PaintImage::CompletionState::PARTIALLY_DONE),
+      PaintImageBuilder()
+          .set_id(stable_id)
+          .set_image(std::move(image))
+          .set_completion_state(PaintImage::CompletionState::PARTIALLY_DONE)
+          .TakePaintImage(),
       0, 0);
   canvas_->drawPicture(recorder.finishRecordingAsPicture());
 
@@ -195,7 +201,11 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
   image = lazy_decoder_->CreateFrameAtIndex(0);
   ASSERT_TRUE(image);
   temp_canvas = recorder.beginRecording(100, 100);
-  temp_canvas->drawImage(PaintImage(stable_id, std::move(image)), 0, 0);
+  temp_canvas->drawImage(PaintImageBuilder()
+                             .set_id(stable_id)
+                             .set_image(std::move(image))
+                             .TakePaintImage(),
+                         0, 0);
   canvas_->drawPicture(recorder.finishRecordingAsPicture());
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), bitmap_.getColor(0, 0));
 }
@@ -213,7 +223,10 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread) {
 
   PaintRecorder recorder;
   PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
-  temp_canvas->drawImage(PaintImage(PaintImage::GetNextId(), std::move(image)),
+  temp_canvas->drawImage(PaintImageBuilder()
+                             .set_id(PaintImage::GetNextId())
+                             .set_image(std::move(image))
+                             .TakePaintImage(),
                          0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, decode_request_count_);
@@ -308,7 +321,10 @@ TEST_F(DeferredImageDecoderTest, decodedSize) {
   // The following code should not fail any assert.
   PaintRecorder recorder;
   PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
-  temp_canvas->drawImage(PaintImage(PaintImage::GetNextId(), std::move(image)),
+  temp_canvas->drawImage(PaintImageBuilder()
+                             .set_id(PaintImage::GetNextId())
+                             .set_image(std::move(image))
+                             .TakePaintImage(),
                          0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, decode_request_count_);

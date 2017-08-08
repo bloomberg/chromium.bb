@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/paint/display_item_list.h"
+#include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
@@ -295,9 +296,11 @@ void RecordPaintCanvas::drawBitmap(const SkBitmap& bitmap,
   // TODO(enne): Move into base class?
   if (bitmap.drawsNothing())
     return;
-  drawImage(
-      PaintImage(PaintImage::kNonLazyStableId, SkImage::MakeFromBitmap(bitmap)),
-      left, top, flags);
+  drawImage(PaintImageBuilder()
+                .set_id(PaintImage::kNonLazyStableId)
+                .set_image(SkImage::MakeFromBitmap(bitmap))
+                .TakePaintImage(),
+            left, top, flags);
 }
 
 void RecordPaintCanvas::drawText(const void* text,

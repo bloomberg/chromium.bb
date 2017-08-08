@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "cc/paint/paint_image_builder.h"
 #include "cc/test/skia_common.h"
 #include "cc/tiles/decoded_image_tracker.h"
 #include "cc/tiles/image_controller.h"
@@ -57,8 +58,7 @@ class DecodedImageTrackerTest : public testing::Test {
 TEST_F(DecodedImageTrackerTest, QueueImageLocksImages) {
   bool locked = false;
   decoded_image_tracker()->QueueImageDecode(
-      PaintImage(PaintImage::GetNextId(),
-                 CreateDiscardableImage(gfx::Size(1, 1))),
+      CreateDiscardablePaintImage(gfx::Size(1, 1)),
       base::Bind([](bool* locked, bool success) { *locked = true; },
                  base::Unretained(&locked)));
   EXPECT_TRUE(locked);
@@ -68,8 +68,7 @@ TEST_F(DecodedImageTrackerTest, QueueImageLocksImages) {
 TEST_F(DecodedImageTrackerTest, NotifyFrameFinishedUnlocksImages) {
   bool locked = false;
   decoded_image_tracker()->QueueImageDecode(
-      PaintImage(PaintImage::GetNextId(),
-                 CreateDiscardableImage(gfx::Size(1, 1))),
+      CreateDiscardablePaintImage(gfx::Size(1, 1)),
       base::Bind([](bool* locked, bool success) { *locked = true; },
                  base::Unretained(&locked)));
   EXPECT_TRUE(locked);
@@ -80,8 +79,7 @@ TEST_F(DecodedImageTrackerTest, NotifyFrameFinishedUnlocksImages) {
 
   locked = false;
   decoded_image_tracker()->QueueImageDecode(
-      PaintImage(PaintImage::GetNextId(),
-                 CreateDiscardableImage(gfx::Size(1, 1))),
+      CreateDiscardablePaintImage(gfx::Size(1, 1)),
       base::Bind([](bool* locked, bool success) { *locked = true; },
                  base::Unretained(&locked)));
   EXPECT_TRUE(locked);

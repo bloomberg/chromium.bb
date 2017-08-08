@@ -572,8 +572,8 @@ class LayerTreeHostImplTest : public testing::Test,
 
     std::unique_ptr<FakeRecordingSource> recording_source =
         FakeRecordingSource::CreateFilledRecordingSource(layer_size);
-    PaintImage checkerable_image = PaintImage(
-        PaintImage::GetNextId(), CreateDiscardableImage(gfx::Size(500, 500)));
+    PaintImage checkerable_image =
+        CreateDiscardablePaintImage(gfx::Size(500, 500));
     recording_source->add_draw_image(checkerable_image, gfx::Point(0, 0));
 
     recording_source->Rerecord();
@@ -12662,8 +12662,8 @@ TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
 
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_size);
-  PaintImage checkerable_image = PaintImage(
-      PaintImage::GetNextId(), CreateDiscardableImage(gfx::Size(500, 500)));
+  PaintImage checkerable_image =
+      CreateDiscardablePaintImage(gfx::Size(500, 500));
   recording_source->add_draw_image(checkerable_image, gfx::Point(0, 0));
 
   SkColor non_solid_color = SkColorSetARGB(128, 45, 56, 67);

@@ -9,6 +9,7 @@
 #include "cc/paint/decoded_draw_image.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/image_provider.h"
+#include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_op_reader.h"
 #include "cc/paint/paint_op_writer.h"
 #include "cc/paint/paint_record.h"
@@ -90,8 +91,9 @@ class ScopedImageFlags {
 
     sk_sp<SkImage> sk_image =
         sk_ref_sp<SkImage>(const_cast<SkImage*>(decoded_image.image().get()));
-    PaintImage decoded_paint_image =
-        paint_image.CloneWithSkImage(std::move(sk_image));
+    PaintImage decoded_paint_image = PaintImageBuilder(std::move(paint_image))
+                                         .set_image(std::move(sk_image))
+                                         .TakePaintImage();
     decoded_flags_.setFilterQuality(decoded_image.filter_quality());
     decoded_flags_.setShader(
         PaintShader::MakeImage(decoded_paint_image, flags.getShader()->tx(),

@@ -511,16 +511,7 @@ void ImageBuffer::SetSurface(std::unique_ptr<ImageBufferSurface> surface) {
     image.Clear();
     image = StaticBitmapImage::Create(texture_image->makeNonTextureImage());
   }
-  // TODO(vmpstr): Figure out actual values for this.
-  auto animation_type = PaintImage::AnimationType::UNKNOWN;
-  auto completion_state = PaintImage::CompletionState::UNKNOWN;
-  static PaintImage::Id unknown_stable_id = PaintImage::GetNextId();
-  surface->Canvas()->drawImage(
-      PaintImage(unknown_stable_id,
-                 image->PaintImageForCurrentFrame().GetSkImage(),
-                 animation_type, completion_state),
-      0, 0);
-
+  surface->Canvas()->drawImage(image->PaintImageForCurrentFrame(), 0, 0);
   surface->SetImageBuffer(this);
   if (client_)
     client_->RestoreCanvasMatrixClipStack(surface->Canvas());
