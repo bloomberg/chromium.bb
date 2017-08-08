@@ -56,14 +56,12 @@ static void amdgpu_close_kms_handle(amdgpu_device_handle dev,
 drm_private void amdgpu_bo_free_internal(amdgpu_bo_handle bo)
 {
 	/* Remove the buffer from the hash tables. */
-	pthread_mutex_lock(&bo->dev->bo_table_mutex);
 	util_hash_table_remove(bo->dev->bo_handles,
 			       (void*)(uintptr_t)bo->handle);
 	if (bo->flink_name) {
 		util_hash_table_remove(bo->dev->bo_flink_names,
 				       (void*)(uintptr_t)bo->flink_name);
 	}
-	pthread_mutex_unlock(&bo->dev->bo_table_mutex);
 
 	/* Release CPU access. */
 	if (bo->cpu_map_count > 0) {
@@ -342,10 +340,9 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 	}
 
 	if (bo) {
-		pthread_mutex_unlock(&dev->bo_table_mutex);
-
 		/* The buffer already exists, just bump the refcount. */
 		atomic_inc(&bo->refcount);
+		pthread_mutex_unlock(&dev->bo_table_mutex);
 
 		output->buf_handle = bo;
 		output->alloc_size = bo->alloc_size;

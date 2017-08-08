@@ -206,8 +206,17 @@ static inline bool update_references(atomic_t *dst, atomic_t *src)
 static inline void amdgpu_bo_reference(struct amdgpu_bo **dst,
 					struct amdgpu_bo *src)
 {
-	if (update_references(&(*dst)->refcount, &src->refcount))
-		amdgpu_bo_free_internal(*dst);
+	pthread_mutex_t *mlock;
+	struct amdgpu_bo* bo = *dst;
+
+	assert(bo != NULL);
+	mlock = &bo->dev->bo_table_mutex;
+	pthread_mutex_lock(mlock);
+
+	if (update_references(&bo->refcount, src?&src->refcount:NULL))
+		amdgpu_bo_free_internal(bo);
+
+	pthread_mutex_unlock(mlock);
 	*dst = src;
 }
 
