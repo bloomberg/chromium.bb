@@ -5,41 +5,40 @@
 #ifndef ASH_SHELF_SHELF_CONTROLLER_H_
 #define ASH_SHELF_SHELF_CONTROLLER_H_
 
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/shelf.mojom.h"
+#include "ash/shell_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
-namespace ash {
+class PrefChangeRegistrar;
+class PrefRegistrySimple;
 
-class Shelf;
+namespace ash {
 
 // Ash's ShelfController owns the ShelfModel and implements interface functions
 // that allow Chrome to modify and observe the Shelf and ShelfModel state.
 class ShelfController : public mojom::ShelfController,
-                        public ShelfModelObserver {
+                        public ShelfModelObserver,
+                        public ShellObserver,
+                        public WindowTreeHostManager::Observer {
  public:
   ShelfController();
   ~ShelfController() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Binds the mojom::ShelfController interface request to this object.
   void BindRequest(mojom::ShelfControllerRequest request);
 
   ShelfModel* model() { return &model_; }
 
-  // Functions used to notify mojom::ShelfObserver instances of changes.
-  void NotifyShelfInitialized(Shelf* shelf);
-  void NotifyShelfAlignmentChanged(Shelf* shelf);
-  void NotifyShelfAutoHideBehaviorChanged(Shelf* shelf);
-
   // mojom::ShelfController:
   void AddObserver(mojom::ShelfObserverAssociatedPtrInfo observer) override;
-  void SetAlignment(ShelfAlignment alignment, int64_t display_id) override;
-  void SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide,
-                           int64_t display_id) override;
   void AddShelfItem(int32_t index, const ShelfItem& item) override;
   void RemoveShelfItem(const ShelfID& id) override;
   void MoveShelfItem(const ShelfID& id, int32_t index) override;
@@ -56,6 +55,17 @@ class ShelfController : public mojom::ShelfController,
                                 ShelfItemDelegate* delegate) override;
 
  private:
+  // ShellObserver:
+  void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
+
+  // WindowTreeHostManager::Observer:
+  void OnDisplayConfigurationChanged() override;
+  void OnWindowTreeHostReusedForDisplay(
+      AshWindowTreeHost* window_tree_host,
+      const display::Display& display) override;
+  void OnWindowTreeHostsSwappedDisplays(AshWindowTreeHost* host1,
+                                        AshWindowTreeHost* host2) override;
+
   // The shelf model shared by all shelf instances.
   ShelfModel model_;
 
@@ -68,6 +78,9 @@ class ShelfController : public mojom::ShelfController,
 
   // The set of shelf observers notified about state and model changes.
   mojo::AssociatedInterfacePtrSet<mojom::ShelfObserver> observers_;
+
+  // Observes user profile prefs for the shelf.
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfController);
 };

@@ -1,4 +1,6 @@
 include_rules = [
+  "+components/prefs",
   "+mojo/common",
   "+skia/public/interfaces",
+  "+ui/display",
 ]

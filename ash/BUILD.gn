@@ -853,6 +853,8 @@ component("ash") {
     "//chromeos:power_manager_proto",
     "//components/device_event_log",
     "//components/onc",
+    "//components/pref_registry",
+    "//components/prefs",
     "//components/quirks",
     "//components/session_manager:base",
     "//components/signin/core/account_id",

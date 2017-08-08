@@ -32,7 +32,6 @@
 #include "components/session_manager/core/session_manager.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -132,7 +131,7 @@ class LauncherContextMenuTest : public ash::AshTestBase {
 // menu is disabled when Incognito mode is switched off (by a policy).
 TEST_F(LauncherContextMenuTest,
        NewIncognitoWindowMenuIsDisabledWhenIncognitoModeOff) {
-  int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  int64_t primary_id = GetPrimaryDisplay().id();
   // Initially, "New Incognito window" should be enabled.
   std::unique_ptr<LauncherContextMenu> menu(CreateLauncherContextMenu(
       ash::TYPE_BROWSER_SHORTCUT, GetShelf(primary_id)));
@@ -157,7 +156,7 @@ TEST_F(LauncherContextMenuTest,
 // menu is disabled when Incognito mode is forced (by a policy).
 TEST_F(LauncherContextMenuTest,
        NewWindowMenuIsDisabledWhenIncognitoModeForced) {
-  int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  int64_t primary_id = GetPrimaryDisplay().id();
   // Initially, "New window" should be enabled.
   std::unique_ptr<LauncherContextMenu> menu(CreateLauncherContextMenu(
       ash::TYPE_BROWSER_SHORTCUT, GetShelf(primary_id)));
@@ -177,7 +176,7 @@ TEST_F(LauncherContextMenuTest,
 
 // Verifies status of contextmenu items for desktop shell.
 TEST_F(LauncherContextMenuTest, DesktopShellLauncherContextMenuItemCheck) {
-  int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  int64_t primary_id = GetPrimaryDisplay().id();
   std::unique_ptr<LauncherContextMenu> menu(
       CreateLauncherContextMenuForDesktopShell(GetShelf(primary_id)));
   EXPECT_FALSE(
@@ -202,7 +201,7 @@ TEST_F(LauncherContextMenuTest, DesktopShellLauncherContextMenuItemCheck) {
 // opened.
 TEST_F(LauncherContextMenuTest,
        DesktopShellLauncherContextMenuVerifyCloseItem) {
-  int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  int64_t primary_id = GetPrimaryDisplay().id();
   std::unique_ptr<LauncherContextMenu> menu(CreateLauncherContextMenu(
       ash::TYPE_BROWSER_SHORTCUT, GetShelf(primary_id)));
   ASSERT_FALSE(
@@ -221,7 +220,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
 
   const ash::ShelfItem* item = controller()->GetItem(ash::ShelfID(app_id));
   ASSERT_TRUE(item);
-  int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  int64_t primary_id = GetPrimaryDisplay().id();
   ash::Shelf* shelf = GetShelf(primary_id);
 
   std::unique_ptr<LauncherContextMenu> menu(
@@ -308,8 +307,8 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
 // shelf is a per-display setting (crbug.com/496681).
 TEST_F(LauncherContextMenuTest, AutohideShelfOptionOnExternalDisplay) {
   UpdateDisplay("940x550,940x550");
-  int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  int64_t secondary_id = display_manager()->GetSecondaryDisplay().id();
+  int64_t primary_id = GetPrimaryDisplay().id();
+  int64_t secondary_id = GetSecondaryDisplay().id();
 
   // Create a normal window on primary display.
   views::Widget* widget = new views::Widget;

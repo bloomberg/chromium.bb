@@ -8,6 +8,7 @@
 #include "ash/public/cpp/remote_shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/shelf/shelf.h"
@@ -246,11 +247,6 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   app_window_controllers_.push_back(std::move(extension_app_window_controller));
   app_window_controllers_.push_back(
       base::MakeUnique<ArcAppWindowLauncherController>(this));
-
-  // Right now ash::Shell isn't created for tests.
-  // TODO(mukai): Allows it to observe display change and write tests.
-  if (ash::Shell::HasInstance())
-    ash::Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 ChromeLauncherController::~ChromeLauncherController() {
@@ -261,8 +257,6 @@ ChromeLauncherController::~ChromeLauncherController() {
   app_window_controllers_.clear();
 
   model_->RemoveObserver(this);
-  if (ash::Shell::HasInstance())
-    ash::Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 
   // Release all profile dependent resources.
   ReleaseProfile();
@@ -686,14 +680,16 @@ bool ChromeLauncherController::ShelfBoundsChangesProbablyWithUser(
   PrefService* prefs = profile()->GetPrefs();
   PrefService* other_prefs = other_profile->GetPrefs();
   const int64_t display = GetDisplayIDForShelf(shelf);
-  const bool currently_shown = ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER ==
-                               GetShelfAutoHideBehaviorPref(prefs, display);
-  const bool other_shown = ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER ==
-                           GetShelfAutoHideBehaviorPref(other_prefs, display);
+  const bool currently_shown =
+      ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER ==
+      ash::GetShelfAutoHideBehaviorPref(prefs, display);
+  const bool other_shown =
+      ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER ==
+      ash::GetShelfAutoHideBehaviorPref(other_prefs, display);
 
   return currently_shown != other_shown ||
-         GetShelfAlignmentPref(prefs, display) !=
-             GetShelfAlignmentPref(other_prefs, display);
+         ash::GetShelfAlignmentPref(prefs, display) !=
+             ash::GetShelfAlignmentPref(other_prefs, display);
 }
 
 void ChromeLauncherController::OnUserProfileReadyToSwitch(Profile* profile) {
@@ -704,35 +700,6 @@ void ChromeLauncherController::OnUserProfileReadyToSwitch(Profile* profile) {
 ArcAppDeferredLauncherController*
 ChromeLauncherController::GetArcDeferredLauncher() {
   return arc_deferred_launcher_.get();
-}
-
-void ChromeLauncherController::SetShelfAutoHideBehaviorFromPrefs() {
-  if (!ConnectToShelfController() || updating_shelf_pref_from_observer_)
-    return;
-
-  // The pref helper functions return default values for invalid display ids.
-  PrefService* prefs = profile_->GetPrefs();
-  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
-    shelf_controller_->SetAutoHideBehavior(
-        GetShelfAutoHideBehaviorPref(prefs, display.id()), display.id());
-  }
-}
-
-void ChromeLauncherController::SetShelfAlignmentFromPrefs() {
-  if (!ConnectToShelfController() || updating_shelf_pref_from_observer_)
-    return;
-
-  // The pref helper functions return default values for invalid display ids.
-  PrefService* prefs = profile_->GetPrefs();
-  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
-    shelf_controller_->SetAlignment(GetShelfAlignmentPref(prefs, display.id()),
-                                    display.id());
-  }
-}
-
-void ChromeLauncherController::SetShelfBehaviorsFromPrefs() {
-  SetShelfAutoHideBehaviorFromPrefs();
-  SetShelfAlignmentFromPrefs();
 }
 
 ChromeLauncherController::ScopedPinSyncDisabler
@@ -1190,8 +1157,6 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
     app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
   }
 
-  SetShelfBehaviorsFromPrefs();
-
   pref_change_registrar_.Init(profile()->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kPolicyPinnedLauncherApps,
@@ -1203,18 +1168,6 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
   pref_change_registrar_.Add(
       prefs::kArcEnabled,
       base::Bind(&ChromeLauncherController::ScheduleUpdateAppLaunchersFromPref,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kShelfAlignmentLocal,
-      base::Bind(&ChromeLauncherController::SetShelfAlignmentFromPrefs,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kShelfAutoHideBehaviorLocal,
-      base::Bind(&ChromeLauncherController::SetShelfAutoHideBehaviorFromPrefs,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kShelfPreferences,
-      base::Bind(&ChromeLauncherController::SetShelfBehaviorsFromPrefs,
                  base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kTouchVirtualKeyboardEnabled,
@@ -1245,8 +1198,6 @@ void ChromeLauncherController::ReleaseProfile() {
 
   app_updaters_.clear();
 
-  prefs_observer_.reset();
-
   pref_change_registrar_.RemoveAll();
 
   app_list::AppListSyncableService* app_service =
@@ -1259,38 +1210,6 @@ void ChromeLauncherController::ReleaseProfile() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // ash::mojom::ShelfObserver:
-
-void ChromeLauncherController::OnShelfInitialized(int64_t display_id) {
-  if (!ConnectToShelfController())
-    return;
-
-  // The pref helper functions return default values for invalid display ids.
-  PrefService* prefs = profile_->GetPrefs();
-  shelf_controller_->SetAlignment(GetShelfAlignmentPref(prefs, display_id),
-                                  display_id);
-  shelf_controller_->SetAutoHideBehavior(
-      GetShelfAutoHideBehaviorPref(prefs, display_id), display_id);
-}
-
-void ChromeLauncherController::OnAlignmentChanged(ash::ShelfAlignment alignment,
-                                                  int64_t display_id) {
-  // The locked alignment is set temporarily and not saved to preferences.
-  if (alignment == ash::SHELF_ALIGNMENT_BOTTOM_LOCKED)
-    return;
-  DCHECK(!updating_shelf_pref_from_observer_);
-  base::AutoReset<bool> updating(&updating_shelf_pref_from_observer_, true);
-  // This will uselessly store a preference value for invalid display ids.
-  SetShelfAlignmentPref(profile_->GetPrefs(), display_id, alignment);
-}
-
-void ChromeLauncherController::OnAutoHideBehaviorChanged(
-    ash::ShelfAutoHideBehavior auto_hide,
-    int64_t display_id) {
-  DCHECK(!updating_shelf_pref_from_observer_);
-  base::AutoReset<bool> updating(&updating_shelf_pref_from_observer_, true);
-  // This will uselessly store a preference value for invalid display ids.
-  SetShelfAutoHideBehaviorPref(profile_->GetPrefs(), display_id, auto_hide);
-}
 
 void ChromeLauncherController::OnShelfItemAdded(int32_t index,
                                                 const ash::ShelfItem& item) {
@@ -1480,18 +1399,6 @@ void ChromeLauncherController::ShelfItemDelegateChanged(
         id, delegate ? delegate->CreateInterfacePtrAndBind()
                      : ash::mojom::ShelfItemDelegatePtr());
   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// ash::WindowTreeHostManager::Observer:
-
-void ChromeLauncherController::OnDisplayConfigurationChanged() {
-  // In BOTTOM_LOCKED state, ignore the call of SetShelfBehaviorsFromPrefs.
-  // Because it might be called by some operations, like crbug.com/627040
-  // rotating screen.
-  ash::Shelf* shelf = ash::Shelf::ForWindow(ash::Shell::GetPrimaryRootWindow());
-  if (shelf->alignment() != ash::SHELF_ALIGNMENT_BOTTOM_LOCKED)
-    SetShelfBehaviorsFromPrefs();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

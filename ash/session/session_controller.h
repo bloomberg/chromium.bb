@@ -64,6 +64,9 @@ class ASH_EXPORT SessionController
   // is turned off or the system is suspended.
   bool ShouldLockScreenAutomatically() const;
 
+  // Returns true if the session is in a kiosk-like mode running a single app.
+  bool IsRunningInAppMode() const;
+
   // Returns true if user session blocked by some overlying UI. It can be
   // login screen, lock screen or screen for adding users into multi-profile
   // session.
@@ -167,6 +170,7 @@ class ASH_EXPORT SessionController
   // Cached session info.
   bool can_lock_ = false;
   bool should_lock_screen_automatically_ = false;
+  bool is_running_in_app_mode_ = false;
   AddUserSessionPolicy add_user_session_policy_ = AddUserSessionPolicy::ALLOWED;
   session_manager::SessionState state_;
 

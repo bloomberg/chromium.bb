@@ -85,6 +85,10 @@ bool SessionController::ShouldLockScreenAutomatically() const {
   return should_lock_screen_automatically_;
 }
 
+bool SessionController::IsRunningInAppMode() const {
+  return is_running_in_app_mode_;
+}
+
 bool SessionController::IsUserSessionBlocked() const {
   // User sessions are blocked when session state is not ACTIVE, with two
   // exceptions:
@@ -200,6 +204,7 @@ void SessionController::SetClient(mojom::SessionControllerClientPtr client) {
 void SessionController::SetSessionInfo(mojom::SessionInfoPtr info) {
   can_lock_ = info->can_lock_screen;
   should_lock_screen_automatically_ = info->should_lock_screen_automatically;
+  is_running_in_app_mode_ = info->is_running_in_app_mode;
   add_user_session_policy_ = info->add_user_session_policy;
   SetSessionState(info->state);
 }

@@ -18,6 +18,12 @@ ASH_PUBLIC_EXPORT extern const char kNightLightScheduleType[];
 ASH_PUBLIC_EXPORT extern const char kNightLightCustomStartTime[];
 ASH_PUBLIC_EXPORT extern const char kNightLightCustomEndTime[];
 
+ASH_PUBLIC_EXPORT extern const char kShelfAlignment[];
+ASH_PUBLIC_EXPORT extern const char kShelfAlignmentLocal[];
+ASH_PUBLIC_EXPORT extern const char kShelfAutoHideBehavior[];
+ASH_PUBLIC_EXPORT extern const char kShelfAutoHideBehaviorLocal[];
+ASH_PUBLIC_EXPORT extern const char kShelfPreferences[];
+
 ASH_PUBLIC_EXPORT extern const char kShowLogoutButtonInTray[];
 ASH_PUBLIC_EXPORT extern const char kLogoutDialogDurationMs[];
 

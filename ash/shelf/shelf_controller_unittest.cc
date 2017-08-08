@@ -4,21 +4,30 @@
 
 #include "ash/shelf/shelf_controller.h"
 
-#include <set>
 #include <string>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_model_observer.h"
+#include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/interfaces/shelf.mojom.h"
+#include "ash/root_window_controller.h"
+#include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
+#include "ash/test_shell_delegate.h"
+#include "components/prefs/testing_pref_service.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "ui/display/types/display_constants.h"
 
 namespace ash {
 namespace {
+
+Shelf* GetShelfForDisplay(int64_t display_id) {
+  return Shell::GetRootWindowControllerWithDisplayId(display_id)->shelf();
+}
 
 // A test implementation of the ShelfObserver mojo interface.
 class TestShelfObserver : public mojom::ShelfObserver {
@@ -27,19 +36,6 @@ class TestShelfObserver : public mojom::ShelfObserver {
   ~TestShelfObserver() override = default;
 
   // mojom::ShelfObserver:
-  void OnShelfInitialized(int64_t display_id) override {
-    display_id_ = display_id;
-  }
-  void OnAlignmentChanged(ShelfAlignment alignment,
-                          int64_t display_id) override {
-    alignment_ = alignment;
-    display_id_ = display_id;
-  }
-  void OnAutoHideBehaviorChanged(ShelfAutoHideBehavior auto_hide,
-                                 int64_t display_id) override {
-    auto_hide_ = auto_hide;
-    display_id_ = display_id;
-  }
   void OnShelfItemAdded(int32_t, const ShelfItem&) override { added_count_++; }
   void OnShelfItemRemoved(const ShelfID&) override { removed_count_++; }
   void OnShelfItemMoved(const ShelfID&, int32_t) override {}
@@ -47,16 +43,10 @@ class TestShelfObserver : public mojom::ShelfObserver {
   void OnShelfItemDelegateChanged(const ShelfID&,
                                   mojom::ShelfItemDelegatePtr) override {}
 
-  int64_t display_id() const { return display_id_; }
-  ShelfAlignment alignment() const { return alignment_; }
-  ShelfAutoHideBehavior auto_hide() const { return auto_hide_; }
   size_t added_count() const { return added_count_; }
   size_t removed_count() const { return removed_count_; }
 
  private:
-  int64_t display_id_ = display::kInvalidDisplayId;
-  ShelfAlignment alignment_ = SHELF_ALIGNMENT_BOTTOM_LOCKED;
-  ShelfAutoHideBehavior auto_hide_ = SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
   size_t added_count_ = 0;
   size_t removed_count_ = 0;
 
@@ -64,7 +54,6 @@ class TestShelfObserver : public mojom::ShelfObserver {
 };
 
 using ShelfControllerTest = AshTestBase;
-using NoSessionShelfControllerTest = NoSessionAshTestBase;
 
 TEST_F(ShelfControllerTest, IntializesAppListItemDelegate) {
   ShelfModel* model = Shell::Get()->shelf_controller()->model();
@@ -75,34 +64,6 @@ TEST_F(ShelfControllerTest, IntializesAppListItemDelegate) {
   const char kChromeAppId[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";
   EXPECT_EQ(kChromeAppId, model->items()[1].id.app_id);
   EXPECT_FALSE(model->GetShelfItemDelegate(ShelfID(kChromeAppId)));
-}
-
-TEST_F(NoSessionShelfControllerTest, AlignmentAndAutoHide) {
-  ShelfController* controller = Shell::Get()->shelf_controller();
-  TestShelfObserver observer;
-  mojom::ShelfObserverAssociatedPtr observer_ptr;
-  mojo::AssociatedBinding<mojom::ShelfObserver> binding(
-      &observer, mojo::MakeIsolatedRequest(&observer_ptr));
-  controller->AddObserver(observer_ptr.PassInterface());
-
-  // Simulated login should initialize the primary shelf and notify |observer|.
-  EXPECT_EQ(display::kInvalidDisplayId, observer.display_id());
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM_LOCKED, observer.alignment());
-  EXPECT_EQ(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, observer.auto_hide());
-  SetUserLoggedIn(true);
-  SetSessionStarted(true);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(GetPrimaryDisplay().id(), observer.display_id());
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, observer.alignment());
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, observer.auto_hide());
-
-  // Changing shelf properties should notify |observer|.
-  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, observer.alignment());
-  GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, observer.auto_hide());
 }
 
 TEST_F(ShelfControllerTest, ShelfModelChangesInClassicAsh) {
@@ -192,6 +153,160 @@ TEST_F(ShelfControllerTest, ShelfModelChangesInMash) {
   EXPECT_EQ(2, controller->model()->item_count());
   EXPECT_EQ(3u, observer.added_count());
   EXPECT_EQ(1u, observer.removed_count());
+}
+
+class ShelfControllerPrefsTest : public AshTestBase {
+ public:
+  ShelfControllerPrefsTest() = default;
+  ~ShelfControllerPrefsTest() override = default;
+
+  void SetUp() override {
+    // TODO(crbug.com/753149): Refine apis to use TestPrefService in mash.
+    Shell::RegisterProfilePrefs(prefs_.registry());
+    TestShellDelegate* delegate = new TestShellDelegate();
+    delegate->set_active_user_pref_service(&prefs_);
+    ash_test_helper()->set_test_shell_delegate(delegate);
+    AshTestBase::SetUp();
+    TestSessionControllerClient* session = GetSessionControllerClient();
+    session->AddUserSession("user1@test.com");
+    session->SetSessionState(session_manager::SessionState::ACTIVE);
+    session->SwitchActiveUser(AccountId::FromUserEmail("user1@test.com"));
+  }
+
+ private:
+  TestingPrefServiceSimple prefs_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShelfControllerPrefsTest);
+};
+
+// Ensure shelf settings are updated on preference changes.
+TEST_F(ShelfControllerPrefsTest, ShelfRespectsPrefs) {
+  Shelf* shelf = GetPrimaryShelf();
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+
+  PrefService* prefs = Shell::Get()->GetActiveUserPrefService();
+  // TODO(crbug.com/753149): Enable with Mash GetActiveUserPrefService support.
+  EXPECT_EQ(Shell::GetAshConfig() == Config::MASH, prefs == nullptr);
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
+  prefs->SetString(prefs::kShelfAlignmentLocal, "Left");
+  prefs->SetString(prefs::kShelfAutoHideBehaviorLocal, "Always");
+
+  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, shelf->alignment());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+}
+
+// Ensure shelf settings are updated on per-display preference changes.
+TEST_F(ShelfControllerPrefsTest, ShelfRespectsPerDisplayPrefs) {
+  UpdateDisplay("1024x768,800x600");
+  base::RunLoop().RunUntilIdle();
+  const int64_t id1 = GetPrimaryDisplay().id();
+  const int64_t id2 = GetSecondaryDisplay().id();
+  Shelf* shelf1 = GetShelfForDisplay(id1);
+  Shelf* shelf2 = GetShelfForDisplay(id2);
+
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf1->alignment());
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf2->alignment());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf1->auto_hide_behavior());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf2->auto_hide_behavior());
+
+  PrefService* prefs = Shell::Get()->GetActiveUserPrefService();
+  // TODO(crbug.com/753149): Enable with Mash GetActiveUserPrefService support.
+  EXPECT_EQ(Shell::GetAshConfig() == Config::MASH, prefs == nullptr);
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
+  SetShelfAlignmentPref(prefs, id1, SHELF_ALIGNMENT_LEFT);
+  SetShelfAlignmentPref(prefs, id2, SHELF_ALIGNMENT_RIGHT);
+  SetShelfAutoHideBehaviorPref(prefs, id1, SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  SetShelfAutoHideBehaviorPref(prefs, id2, SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+
+  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, shelf1->alignment());
+  EXPECT_EQ(SHELF_ALIGNMENT_RIGHT, shelf2->alignment());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf1->auto_hide_behavior());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf2->auto_hide_behavior());
+}
+
+// Ensure shelf settings are correct after display swap, see crbug.com/748291
+TEST_F(ShelfControllerPrefsTest, ShelfSettingsValidAfterDisplaySwap) {
+  // Simulate adding an external display at the lock screen.
+  GetSessionControllerClient()->RequestLockScreen();
+  UpdateDisplay("1024x768,800x600");
+  base::RunLoop().RunUntilIdle();
+  const int64_t internal_display_id = GetPrimaryDisplay().id();
+  const int64_t external_display_id = GetSecondaryDisplay().id();
+
+  // The primary shelf should be on the internal display.
+  EXPECT_EQ(GetPrimaryShelf(), GetShelfForDisplay(internal_display_id));
+  EXPECT_NE(GetPrimaryShelf(), GetShelfForDisplay(external_display_id));
+
+  PrefService* prefs = Shell::Get()->GetActiveUserPrefService();
+  // TODO(crbug.com/753149): Enable with Mash GetActiveUserPrefService support.
+  EXPECT_EQ(Shell::GetAshConfig() == Config::MASH, prefs == nullptr);
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
+  // Check for the default shelf preferences.
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+            GetShelfAutoHideBehaviorPref(prefs, internal_display_id));
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+            GetShelfAutoHideBehaviorPref(prefs, external_display_id));
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM,
+            GetShelfAlignmentPref(prefs, internal_display_id));
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM,
+            GetShelfAlignmentPref(prefs, external_display_id));
+
+  // Check the current state; shelves have locked alignments in the lock screen.
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+            GetShelfForDisplay(internal_display_id)->auto_hide_behavior());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+            GetShelfForDisplay(external_display_id)->auto_hide_behavior());
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM_LOCKED,
+            GetShelfForDisplay(internal_display_id)->alignment());
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM_LOCKED,
+            GetShelfForDisplay(external_display_id)->alignment());
+
+  // Set some shelf prefs to differentiate the two shelves, check state.
+  SetShelfAlignmentPref(prefs, internal_display_id, SHELF_ALIGNMENT_LEFT);
+  SetShelfAlignmentPref(prefs, external_display_id, SHELF_ALIGNMENT_RIGHT);
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM_LOCKED,
+            GetShelfForDisplay(internal_display_id)->alignment());
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM_LOCKED,
+            GetShelfForDisplay(external_display_id)->alignment());
+
+  SetShelfAutoHideBehaviorPref(prefs, external_display_id,
+                               SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+            GetShelfForDisplay(internal_display_id)->auto_hide_behavior());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+            GetShelfForDisplay(external_display_id)->auto_hide_behavior());
+
+  // Simulate the external display becoming the primary display. The shelves are
+  // swapped (each instance now has a different display id), check state.
+  SwapPrimaryDisplay();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM_LOCKED,
+            GetShelfForDisplay(internal_display_id)->alignment());
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM_LOCKED,
+            GetShelfForDisplay(external_display_id)->alignment());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+            GetShelfForDisplay(internal_display_id)->auto_hide_behavior());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+            GetShelfForDisplay(external_display_id)->auto_hide_behavior());
+
+  // After screen unlock the shelves should have the expected alignment values.
+  GetSessionControllerClient()->UnlockScreen();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SHELF_ALIGNMENT_LEFT,
+            GetShelfForDisplay(internal_display_id)->alignment());
+  EXPECT_EQ(SHELF_ALIGNMENT_RIGHT,
+            GetShelfForDisplay(external_display_id)->alignment());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+            GetShelfForDisplay(internal_display_id)->auto_hide_behavior());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+            GetShelfForDisplay(external_display_id)->auto_hide_behavior());
 }
 
 }  // namespace

@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
@@ -524,6 +525,7 @@ void SessionControllerClient::SendSessionInfoIfChanged() {
   ash::mojom::SessionInfoPtr info = ash::mojom::SessionInfo::New();
   info->can_lock_screen = CanLockScreen();
   info->should_lock_screen_automatically = ShouldLockScreenAutomatically();
+  info->is_running_in_app_mode = chrome::IsRunningInAppMode();
   info->add_user_session_policy = GetAddUserSessionPolicy();
   info->state = session_manager->session_state();
 

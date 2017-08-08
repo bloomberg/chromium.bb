@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/shelf_prefs.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -24,21 +25,9 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/desktop_shell_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/common/context_menu_params.h"
-
-namespace {
-
-// Returns true if the user can modify the |shelf|'s auto-hide behavior.
-bool CanUserModifyShelfAutoHideBehavior(const Profile* profile) {
-  const std::string& pref = prefs::kShelfAutoHideBehaviorLocal;
-  return profile->GetPrefs()->FindPreference(pref)->IsUserModifiable();
-}
-
-}  // namespace
 
 // static
 LauncherContextMenu* LauncherContextMenu::Create(
@@ -98,7 +87,8 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
     case MENU_CHANGE_WALLPAPER:
       return ash::Shell::Get()->wallpaper_delegate()->CanOpenSetWallpaperPage();
     case MENU_AUTO_HIDE:
-      return CanUserModifyShelfAutoHideBehavior(controller_->profile());
+      return ash::CanUserModifyShelfAutoHideBehavior(
+          controller_->profile()->GetPrefs());
     default:
       DCHECK(command_id < MENU_ITEM_COUNT);
       return true;
@@ -106,13 +96,14 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
 }
 
 void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
+  int64_t display_id =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(shelf_->shelf_widget()->GetNativeWindow())
+          .id();
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_OPEN_NEW:
       controller_->LaunchApp(item_.id, ash::LAUNCH_FROM_UNKNOWN, ui::EF_NONE,
-                             display::Screen::GetScreen()
-                                 ->GetDisplayNearestWindow(
-                                     shelf_->shelf_widget()->GetNativeWindow())
-                                 .id());
+                             display_id);
       break;
     case MENU_CLOSE:
       if (item_.type == ash::TYPE_DIALOG) {
@@ -139,10 +130,11 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
         controller_->PinAppWithID(item_.id.app_id);
       break;
     case MENU_AUTO_HIDE:
-      shelf_->SetAutoHideBehavior(shelf_->auto_hide_behavior() ==
-                                          ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS
-                                      ? ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER
-                                      : ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+      ash::SetShelfAutoHideBehaviorPref(
+          controller_->profile()->GetPrefs(), display_id,
+          shelf_->auto_hide_behavior() == ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS
+              ? ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER
+              : ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
       break;
     case MENU_ALIGNMENT_MENU:
       break;
@@ -185,7 +177,8 @@ void LauncherContextMenu::AddShelfOptionsMenu() {
       display::Screen::GetScreen()->GetDisplayNearestWindow(
           shelf_->GetWindow()->GetRootWindow());
   if (!IsFullScreenMode(display.id()) &&
-      CanUserModifyShelfAutoHideBehavior(controller_->profile())) {
+      ash::CanUserModifyShelfAutoHideBehavior(
+          controller_->profile()->GetPrefs())) {
     AddCheckItemWithStringId(MENU_AUTO_HIDE,
                              IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
   }

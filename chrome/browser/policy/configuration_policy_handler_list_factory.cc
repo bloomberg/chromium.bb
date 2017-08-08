@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -491,7 +492,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     ash::prefs::kShowLogoutButtonInTray,
     base::Value::Type::BOOLEAN },
   { key::kShelfAutoHideBehavior,
-    prefs::kShelfAutoHideBehaviorLocal,
+    ash::prefs::kShelfAutoHideBehaviorLocal,
     base::Value::Type::STRING },
   { key::kSessionLengthLimit,
     prefs::kSessionLengthLimit,
