@@ -118,6 +118,16 @@ class WPTGitHubTest(unittest.TestCase):
         with self.assertRaises(GitHubError):
             self.wpt_github.delete_remote_branch('rutabaga')
 
+    def test_pr_for_chromium_commit_change_id_only(self):
+        self.wpt_github.all_pull_requests = lambda: [
+            PullRequest('PR1', 1, 'body\nChange-Id: I00c0ffee', 'open', []),
+            PullRequest('PR2', 2, 'body\nChange-Id: I00decade', 'open', []),
+        ]
+        chromium_commit = MockChromiumCommit(
+            MockHost(), change_id='I00decade', position='refs/heads/master@{#10}')
+        pull_request = self.wpt_github.pr_for_chromium_commit(chromium_commit)
+        self.assertEqual(pull_request.number, 2)
+
     def test_pr_for_chromium_commit_prefers_change_id(self):
         self.wpt_github.all_pull_requests = lambda: [
             PullRequest('PR1', 1, 'body\nChange-Id: I00c0ffee\nCr-Commit-Position: refs/heads/master@{#10}', 'open', []),

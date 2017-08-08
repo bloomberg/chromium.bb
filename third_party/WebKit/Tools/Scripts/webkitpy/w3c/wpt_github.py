@@ -264,9 +264,11 @@ class WPTGitHub(object):
         if pull_request:
             return pull_request
         # The Change ID can't be used for commits made via Rietveld,
-        # so we fall back to trying to use commit position here, although
-        # commit position is not correct sometimes (https://crbug.com/737178).
-        # TODO(qyearsley): Remove this fallback after full Gerrit migration.
+        # so we fall back to trying to use commit position here.
+        # Note that Gerrit returns ToT+1 as the commit positions for in-flight
+        # CLs, but they are scrubbed from the PR description and hence would
+        # not be mismatched to random Chromium commits in the fallback.
+        # TODO(robertma): Remove this fallback after Rietveld becomes read-only.
         return self.pr_with_position(chromium_commit.position)
 
     def pr_with_change_id(self, target_change_id):
