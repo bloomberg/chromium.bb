@@ -447,7 +447,7 @@ class ActiveDirectoryAuthPage {
     // end of the SAML flow. Before that, we're on the Active Directory
     // Federation Services server.
     if (this.deviceManagementUrlPrefix_ &&
-        details.url.startsWith(this.deviceManagementUrlPrefix)) {
+        details.url.startsWith(this.deviceManagementUrlPrefix_)) {
       // Did it actually work?
       if (details.statusCode == 200) {
         // 'code' is unused, but it needs to be there.
