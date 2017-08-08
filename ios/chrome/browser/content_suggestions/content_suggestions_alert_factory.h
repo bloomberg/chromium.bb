@@ -17,12 +17,12 @@
 
 // Returns an AlertCoordinator for a suggestions |item| with the indexPath
 // |indexPath|. The alert will be presented on the |viewController| at the
-// |touchLocation|, in the coordinates of the |viewController|'s view. The
-// |commandHandler| will receive callbacks when the user chooses one of the
+// |touchLocation|, in the coordinates of the |viewController|'s collectionView.
+// The |commandHandler| will receive callbacks when the user chooses one of the
 // options displayed by the alert.
 + (AlertCoordinator*)
 alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
-                 onViewController:(UIViewController*)viewController
+                 onViewController:(UICollectionViewController*)viewController
                           atPoint:(CGPoint)touchLocation
                       atIndexPath:(NSIndexPath*)indexPath
                   readLaterAction:(BOOL)readLaterAction
@@ -32,7 +32,7 @@ alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
 // Same as above but for a MostVisited item.
 + (AlertCoordinator*)
 alertCoordinatorForMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
-                  onViewController:(UIViewController*)viewController
+                  onViewController:(UICollectionViewController*)viewController
                            atPoint:(CGPoint)touchLocation
                        atIndexPath:(NSIndexPath*)indexPath
                     commandHandler:

@@ -78,29 +78,3 @@ source_set("unit_tests") {
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
-
-source_set("eg_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "content_suggestions_alert_egtest.mm",
-  ]
-  deps = [
-    ":content_suggestions",
-    "//base",
-    "//base/test:test_support",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/alert_coordinator",
-    "//ios/chrome/browser/ui/alert_coordinator",
-    "//ios/chrome/browser/ui/collection_view/cells",
-    "//ios/chrome/browser/ui/content_suggestions/cells",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ui/strings",
-  ]
-  libs = [
-    "UIKit.framework",
-    "XCTest.framework",
-  ]
-}
