@@ -10,6 +10,7 @@
 
 #include "base/containers/mru_cache.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -91,8 +92,6 @@ class CONTENT_EXPORT LevelDBDatabase
   static std::unique_ptr<LevelDBDatabase> OpenInMemory(
       const LevelDBComparator* comparator);
   static leveldb::Status Destroy(const base::FilePath& file_name);
-  static std::unique_ptr<LevelDBLock> LockForTesting(
-      const base::FilePath& file_name);
   ~LevelDBDatabase() override;
 
   leveldb::Status Put(const base::StringPiece& key, std::string* value);
@@ -112,11 +111,15 @@ class CONTENT_EXPORT LevelDBDatabase
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
  protected:
-  LevelDBDatabase(size_t max_open_iterators);
+  explicit LevelDBDatabase(size_t max_open_iterators);
 
  private:
   friend class LevelDBSnapshot;
   friend class LevelDBIteratorImpl;
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, DeleteFailsIfDirectoryLocked);
+
+  static std::unique_ptr<LevelDBLock> LockForTesting(
+      const base::FilePath& file_name);
 
   // Methods for iterator pooling.
   std::unique_ptr<leveldb::Iterator> CreateLevelDBIterator(
