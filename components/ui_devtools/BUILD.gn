@@ -11,6 +11,8 @@ _protocol_generated = [
   "DOM.cpp",
   "DOM.h",
   "Forward.h",
+  "Overlay.cpp",
+  "Overlay.h",
   "Protocol.cpp",
   "Protocol.h",
 ]

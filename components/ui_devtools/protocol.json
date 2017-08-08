@@ -23,28 +23,51 @@
                 },
                 {
                     "name": "highlightNode",
-                    "parameters": [
-                        { 
-                            "name": "highlightConfig", 
-                            "$ref": "HighlightConfig",  
-                            "description": "A descriptor for the highlight appearance."  
-                        },
-                        {
-                            "description": "Identifier of the node to highlight.",
-                            "optional": true,
-                            "name": "nodeId",
-                            "$ref": "NodeId"
-                        }
-                    ],
-                    "description": "Highlights DOM node with given id or with the given JavaScript object wrapper. Either nodeId or objectId must be specified."
+                    "description": "Highlights DOM node.",
+                    "redirect": "Overlay"
                 },
                 {
                     "name": "hideHighlight",
                     "description": "Hides DOM node highlight."
+                },
+                {
+                    "name": "pushNodesByBackendIdsToFrontend",
+                    "parameters": [
+                        {
+                            "name": "backendNodeIds",
+                            "type": "array",
+                            "items": {
+                                "$ref": "BackendNodeId"
+                            },
+                            "description": "The array of backend node ids."
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "nodeIds",
+                            "type": "array",
+                            "items": {
+                                "$ref": "NodeId"
+                            },
+                            "description": "The array of ids of pushed nodes that correspond to the backend ids specified in backendNodeIds."
+                        }
+                    ],
+                    "description": "Requests that a batch of nodes is sent to the caller given their backend node ids.",
+                    "experimental": true
                 }
-
             ],
             "events": [
+                {
+                    "name": "nodeHighlightRequested",
+                    "parameters": [
+                        {
+                            "name": "nodeId",
+                            "$ref": "NodeId",
+                            "description": "Identifier of the node to highlight in DOM tree."
+                        }
+                    ],
+                    "description": "In DOM tree, highlights DOM node with given id."
+                },
                 {
                     "name": "childNodeInserted",
                     "parameters": [
@@ -54,7 +77,6 @@
                             "$ref": "NodeId"
                         },
                         {
-
                             "description": "Id of the previous sibling (0 if this is at the beginning of the list).",
                             "name": "previousNodeId",
                             "$ref": "NodeId"
@@ -92,6 +114,11 @@
                     "type": "integer"
                 },
                 {
+                    "id": "BackendNodeId",
+                    "type": "integer",
+                    "description": "Unique DOM node identifier used to reference a node that may not have been pushed to the front-end."
+                },
+                {
                     "description": "DOM interaction is implemented in terms of mirror objects that represent the actual DOM nodes. DOMNode is a base node mirror type.",
                     "id": "Node",
                     "properties": [
@@ -99,6 +126,11 @@
                             "$ref": "NodeId",
                             "description": "Node identifier that is passed into the rest of the DOM messages as the <code>nodeId</code>. Backend will only push node with given <code>id</code> once. It is aware of all requested nodes and will only fire DOM events for nodes known to the client.",
                             "name": "nodeId"
+                        },
+                        {
+                            "name": "backendNodeId",
+                            "$ref": "BackendNodeId",
+                            "description": "The BackendNodeId for this node."
                         },
                         {
                             "description": "<code>Node</code>'s nodeType.",
@@ -153,49 +185,113 @@
                     "id": "RGBA",
                     "type": "object",
                     "properties": [
-                        { 
+                        {
                             "name": "r",
                             "type": "integer",
                             "description": "The red component, in the [0-255] range."
                         },
-                        { 
-                            "name": "g", 
-                            "type": "integer", 
-                            "description": "The green component, in the [0-255] range." 
+                        {
+                            "name": "g",
+                            "type": "integer",
+                            "description": "The green component, in the [0-255] range."
                         },
                         {
-                            "name": "b", 
-                            "type": "integer", 
-                            "description": "The blue component, in the [0-255] range." 
+                            "name": "b",
+                            "type": "integer",
+                            "description": "The blue component, in the [0-255] range."
                         },
-                        { 
-                            "name": "a", 
-                            "type": "number", 
-                            "optional": true, 
-                            "description": "The alpha component, in the [0-1] range (default: 1)." 
+                        {
+                            "name": "a",
+                            "type": "number",
+                            "optional": true,
+                            "description": "The alpha component, in the [0-1] range (default: 1)."
                         }
                     ],
                     "description": "A structure holding an RGBA color."
                 },
                 {
+                    "id": "Mode",
+                    "type": "string",
+                    "description": "Enable or Disable the highlighting inspector."
+                },
+                {
                     "id": "HighlightConfig",
                     "type": "object",
                     "properties": [
-                        { 
-                            "name": "contentColor", 
-                            "$ref": "RGBA", 
-                            "optional": true, 
-                            "description": "The content box highlight fill color (default: transparent)." 
+                        {
+                            "name": "showInfo",
+                            "type": "boolean",
+                            "optional": true,
+                            "description": "Whether the node info tooltip should be shown (default: false)."
                         },
-                        { 
-                            "name": "borderColor", 
-                            "$ref": "RGBA", 
-                            "optional": true, 
-                            "description": "The border highlight fill color (default: transparent)." 
+                        {
+                            "name": "showRulers",
+                            "type": "boolean",
+                            "optional": true,
+                            "description": "Whether the rulers should be shown (default: false)."
+                        },
+                        {
+                            "name": "showExtensionLines",
+                            "type": "boolean",
+                            "optional": true,
+                            "description": "Whether the extension lines from node to the rulers should be shown (default: false)."
+                        },
+                        {
+                            "name": "displayAsMaterial",
+                            "type": "boolean",
+                            "optional": true
+                        },
+                        {
+                            "name": "contentColor",
+                            "$ref": "DOM.RGBA",
+                            "optional": true,
+                            "description": "The content box highlight fill color (default: transparent)."
+                        },
+                        {
+                            "name": "paddingColor",
+                            "$ref": "DOM.RGBA",
+                            "optional": true,
+                            "description": "The padding highlight fill color (default: transparent)."
+                        },
+                        {
+                            "name": "borderColor",
+                            "$ref": "DOM.RGBA",
+                            "optional": true,
+                            "description": "The border highlight fill color (default: transparent)."
+                        },
+                        {
+                            "name": "marginColor",
+                            "$ref": "DOM.RGBA",
+                            "optional": true,
+                            "description": "The margin highlight fill color (default: transparent)."
+                        },
+                        {
+                            "name": "eventTargetColor",
+                            "$ref": "DOM.RGBA",
+                            "optional": true,
+                            "description": "The event target element highlight fill color (default: transparent)."
+                        },
+                        {
+                            "name": "shapeColor",
+                            "$ref": "DOM.RGBA",
+                            "optional": true,
+                            "description": "The shape outside fill color (default: transparent)."
+                        },
+                        {
+                            "name": "shapeMarginColor",
+                            "$ref": "DOM.RGBA",
+                            "optional": true,
+                            "description": "The shape margin fill color (default: transparent)."
+                        },
+                        {
+                            "name": "selectorList",
+                            "type": "string",
+                            "optional": true,
+                            "description": "Selectors to highlight relevant nodes."
                         }
                     ],
                     "description": "Configuration data for the highlighting of page elements."
-                } 
+                }
             ]
         },
         {
@@ -224,7 +320,6 @@
                             "name": "inlineStyle",
                             "optional": true
                         }
-
                     ]
                 },
                 {
@@ -326,11 +421,11 @@
                             "name": "value",
                             "type": "string"
                         },
-                        { 
-                            "name": "range", 
-                            "$ref": "SourceRange", 
-                            "optional": true, 
-                            "description": "The entire property range in the enclosing style declaration (if available)."  
+                        {
+                            "name": "range",
+                            "$ref": "SourceRange",
+                            "optional": true,
+                            "description": "The entire property range in the enclosing style declaration (if available)."
                         }
                     ],
                     "type": "object"
@@ -369,6 +464,174 @@
                         }
                     ],
                     "type": "object"
+                }
+            ]
+        },
+        {
+            "commands": [
+                {
+                    "description": "Enables Overlay agent for the given page.",
+                    "name": "enable"
+                },
+                {
+                    "description": "Disables Overlay agent for the given page.",
+                    "name": "disable"
+                },
+                {
+                    "name": "highlightNode",
+                    "description": "Highlights DOM node with given id.",
+                    "parameters": [
+                        {
+                            "name": "highlightConfig",
+                            "$ref": "HighlightConfig",
+                            "description": "A descriptor for the highlight appearance."
+                        },
+                        {
+                            "name": "nodeId",
+                            "$ref": "DOM.NodeId",
+                            "optional":true,
+                            "description": "Identifier of the node to highlight."
+                        }
+                    ]
+                },
+                {
+                    "name": "hideHighlight",
+                    "description": "Hides DOM node highlight."
+                },
+                {
+                    "name": "setInspectMode",
+                    "parameters": [
+                        {
+                            "description": "Set an inspection mode.",
+                            "name": "mode",
+                            "$ref": "InspectMode"
+                        },
+                        {
+                            "description": "A descriptor for the highlight appearance of hovered-over nodes. May be omitted if <code>enabled == false</code>.",
+                            "optional":true,
+                            "name": "highlightConfig",
+                            "$ref": "HighlightConfig"
+                        }
+                    ],
+                    "description": "Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection."
+                }
+            ],
+            "description": "This domain provides various functionality related to drawing atop the inspected page.",
+            "domain": "Overlay",
+            "dependencies": [
+                "DOM"
+            ],
+            "experimental":true,
+            "events": [
+                {
+                    "name": "nodeHighlightRequested",
+                    "description": "Fired when the node should be highlighted. This happens after call to <code>setInspectMode</code>.",
+                    "parameters": [
+                        {
+                            "name": "nodeId",
+                            "$ref": "DOM.NodeId"
+                        }
+                    ]
+                },
+                {
+                    "name": "inspectNodeRequested",
+                    "description": "Fired when the node should be inspected. This happens after call to <code>setInspectMode</code> or when user manually inspects an element.",
+                    "parameters": [
+                        {
+                            "name": "backendNodeId",
+                            "$ref": "DOM.BackendNodeId",
+                            "description": "Id of the node to inspect."
+                        }
+                    ]
+                }
+            ],
+            "types": [
+                {
+                    "id": "HighlightConfig",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "showInfo",
+                            "type": "boolean",
+                            "optional":true,
+                            "description": "Whether the node info tooltip should be shown (default: false)."
+                        },
+                        {
+                            "name": "showRulers",
+                            "type": "boolean",
+                            "optional":true,
+                            "description": "Whether the rulers should be shown (default: false)."
+                        },
+                        {
+                            "name": "showExtensionLines",
+                            "type": "boolean",
+                            "optional":true,
+                            "description": "Whether the extension lines from node to the rulers should be shown (default: false)."
+                        },
+                        {
+                            "name": "displayAsMaterial",
+                            "type": "boolean",
+                            "optional":true
+                        },
+                        {
+                            "name": "contentColor",
+                            "$ref": "DOM.RGBA",
+                            "optional":true,
+                            "description": "The content box highlight fill color (default: transparent)."
+                        },
+                        {
+                            "name": "paddingColor",
+                            "$ref": "DOM.RGBA",
+                            "optional":true,
+                            "description": "The padding highlight fill color (default: transparent)."
+                        },
+                        {
+                            "name": "borderColor",
+                            "$ref": "DOM.RGBA",
+                            "optional":true,
+                            "description": "The border highlight fill color (default: transparent)."
+                        },
+                        {
+                            "name": "marginColor",
+                            "$ref": "DOM.RGBA",
+                            "optional":true,
+                            "description": "The margin highlight fill color (default: transparent)."
+                        },
+                        {
+                            "name": "eventTargetColor",
+                            "$ref": "DOM.RGBA",
+                            "optional":true,
+                            "description": "The event target element highlight fill color (default: transparent)."
+                        },
+                        {
+                            "name": "shapeColor",
+                            "$ref": "DOM.RGBA",
+                            "optional":true,
+                            "description": "The shape outside fill color (default: transparent)."
+                        },
+                        {
+                            "name": "shapeMarginColor",
+                            "$ref": "DOM.RGBA",
+                            "optional":true,
+                            "description": "The shape margin fill color (default: transparent)."
+                        },
+                        {
+                            "name": "selectorList",
+                            "type": "string",
+                            "optional":true,
+                            "description": "Selectors to highlight relevant nodes."
+                        }
+                    ],
+                    "description": "Configuration data for the highlighting of page elements."
+                },
+                {
+                    "id": "InspectMode",
+                    "type": "string",
+                    "enum": [
+                        "searchForNode",
+                        "searchForUAShadowDOM",
+                        "none"
+                    ]
                 }
             ]
         }
