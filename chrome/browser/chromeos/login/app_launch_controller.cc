@@ -368,9 +368,8 @@ bool AppLaunchController::CanConfigureNetwork() {
       return should_prompt;
     }
 
-    // Network configuration has to be explicitly allowed by the policy.
-    // Default to false if the policy is missing.
-    return false;
+    // Default to true to allow network configuration if the policy is missing.
+    return true;
   }
 
   return user_manager::UserManager::Get()->GetOwnerAccountId().is_valid();
