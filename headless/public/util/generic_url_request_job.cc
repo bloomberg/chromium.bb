@@ -141,12 +141,13 @@ void GenericURLRequestJob::OnFetchComplete(
     const GURL& final_url,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     const char* body,
-    size_t body_size) {
+    size_t body_size,
+    const net::LoadTimingInfo& load_timing_info) {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
-  response_time_ = base::TimeTicks::Now();
   response_headers_ = response_headers;
   body_ = body;
   body_size_ = body_size;
+  load_timing_info_ = load_timing_info;
 
   DispatchHeadersComplete();
 
@@ -186,8 +187,7 @@ bool GenericURLRequestJob::GetCharset(std::string* charset) {
 
 void GenericURLRequestJob::GetLoadTimingInfo(
     net::LoadTimingInfo* load_timing_info) const {
-  // TODO(alexclarke): Investigate setting the other members too where possible.
-  load_timing_info->receive_headers_end = response_time_;
+  *load_timing_info = load_timing_info_;
 }
 
 uint64_t GenericURLRequestJob::GenericURLRequestJob::GetRequestId() const {
@@ -359,9 +359,9 @@ void GenericURLRequestJob::MockResponse(
 
   mock_response_ = std::move(mock_response);
 
-  OnFetchCompleteExtractHeaders(request_->url(),
-                                mock_response_->response_data.data(),
-                                mock_response_->response_data.size());
+  OnFetchCompleteExtractHeaders(
+      request_->url(), mock_response_->response_data.data(),
+      mock_response_->response_data.size(), mock_response_->load_timing_info);
 }
 
 }  // namespace headless
