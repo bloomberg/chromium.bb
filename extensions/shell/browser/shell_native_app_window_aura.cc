@@ -68,4 +68,13 @@ void ShellNativeAppWindowAura::SetBounds(const gfx::Rect& bounds) {
   GetNativeWindow()->SetBounds(bounds);
 }
 
+gfx::Size ShellNativeAppWindowAura::GetContentMinimumSize() const {
+  // Content fills the desktop and cannot be resized.
+  return GetNativeWindow()->GetBoundsInRootWindow().size();
+}
+
+gfx::Size ShellNativeAppWindowAura::GetContentMaximumSize() const {
+  return GetContentMinimumSize();
+}
+
 }  // namespace extensions

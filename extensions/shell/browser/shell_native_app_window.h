@@ -20,7 +20,7 @@ class ShellNativeAppWindow : public NativeAppWindow {
 
   AppWindow* app_window() const { return app_window_; }
 
-  // ui::BaseView overrides:
+  // ui::BaseWindow overrides:
   bool IsMaximized() const override;
   bool IsMinimized() const override;
   bool IsFullscreen() const override;
@@ -62,8 +62,6 @@ class ShellNativeAppWindow : public NativeAppWindow {
   gfx::Insets GetFrameInsets() const override;
   void ShowWithApp() override;
   void HideWithApp() override;
-  gfx::Size GetContentMinimumSize() const override;
-  gfx::Size GetContentMaximumSize() const override;
   void SetContentSizeConstraints(const gfx::Size& min_size,
                                  const gfx::Size& max_size) override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;

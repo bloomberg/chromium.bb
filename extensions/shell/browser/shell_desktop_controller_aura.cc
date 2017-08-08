@@ -217,10 +217,6 @@ ShellDesktopControllerAura::~ShellDesktopControllerAura() {
   extensions::AppWindowClient::Set(NULL);
 }
 
-gfx::Size ShellDesktopControllerAura::GetWindowSize() {
-  return host_->window()->bounds().size();
-}
-
 AppWindow* ShellDesktopControllerAura::CreateAppWindow(
     content::BrowserContext* context,
     const Extension* extension) {
