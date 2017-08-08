@@ -284,7 +284,9 @@ void MediaStreamDispatcherHost::OnStreamGenerated(
 
   mojom::MediaStreamDispatcherPtr dispatcher =
       mojo::MakeProxy(std::move(dispatcher_info));
-  DCHECK(dispatcher.is_bound());
+  if (!dispatcher || !dispatcher.is_bound())
+    return;
+
   dispatcher->OnStreamGenerated(page_request_id, label, audio_devices,
                                 video_devices);
   dispatchers_[render_frame_id] = std::move(dispatcher);
@@ -299,7 +301,9 @@ void MediaStreamDispatcherHost::OnStreamGenerationFailed(
 
   mojom::MediaStreamDispatcherPtr dispatcher =
       mojo::MakeProxy(std::move(dispatcher_info));
-  DCHECK(dispatcher.is_bound());
+  if (!dispatcher || !dispatcher.is_bound())
+    return;
+
   dispatcher->OnStreamGenerationFailed(page_request_id, result);
   dispatchers_[render_frame_id] = std::move(dispatcher);
 }
@@ -314,7 +318,9 @@ void MediaStreamDispatcherHost::OnDeviceOpened(
 
   mojom::MediaStreamDispatcherPtr dispatcher =
       mojo::MakeProxy(std::move(dispatcher_info));
-  DCHECK(dispatcher.is_bound());
+  if (!dispatcher || !dispatcher.is_bound())
+    return;
+
   dispatcher->OnDeviceOpened(page_request_id, label, video_device);
   dispatchers_[render_frame_id] = std::move(dispatcher);
 }
@@ -327,7 +333,9 @@ void MediaStreamDispatcherHost::OnDeviceOpenFailed(
 
   mojom::MediaStreamDispatcherPtr dispatcher =
       mojo::MakeProxy(std::move(dispatcher_info));
-  DCHECK(dispatcher.is_bound());
+  if (!dispatcher || !dispatcher.is_bound())
+    return;
+
   dispatcher->OnDeviceOpenFailed(page_request_id);
   dispatchers_[render_frame_id] = std::move(dispatcher);
 }
@@ -341,7 +349,9 @@ void MediaStreamDispatcherHost::OnDeviceStopped(
 
   mojom::MediaStreamDispatcherPtr dispatcher =
       mojo::MakeProxy(std::move(dispatcher_info));
-  DCHECK(dispatcher.is_bound());
+  if (!dispatcher || !dispatcher.is_bound())
+    return;
+
   dispatcher->OnDeviceStopped(label, device);
   dispatchers_[render_frame_id] = std::move(dispatcher);
 }
