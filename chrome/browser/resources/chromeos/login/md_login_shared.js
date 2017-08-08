@@ -426,12 +426,6 @@ cr.define('cr.ui', function() {
   Oobe.setVirtualKeyboardShown = function(shown) {
     Oobe.getInstance().virtualKeyboardShown = shown;
     $('pod-row').setFocusedPodPinVisibility(!shown);
-    // The dark overlay should always have the same size with the larger one
-    // of the outer-container and the scroll-container.
-    if (shown)
-      $('login-shield').style.minHeight = $('outer-container').style.minHeight;
-    else
-      $('login-shield').style.minHeight = 'unset';
   };
 
   /**

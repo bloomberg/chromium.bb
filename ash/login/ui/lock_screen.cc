@@ -77,29 +77,27 @@ void LockScreen::Show() {
   window->SetContentsView(contents);
   window->set_data_dispatcher(std::move(data_dispatcher));
   window->Show();
-
-  for (aura::Window* window : Shell::GetAllRootWindows()) {
-    ui::Layer* layer = GetWallpaperLayerForWindow(window);
-    instance_->initial_blur_[layer] = layer->layer_blur();
-  }
-  instance_->ToggleBlur();
 }
 
 void LockScreen::Destroy() {
   CHECK_EQ(instance_, this);
 
-  for (aura::Window* window : Shell::GetAllRootWindows()) {
-    ui::Layer* layer = GetWallpaperLayerForWindow(window);
-    auto it = initial_blur_.find(layer);
-    if (it != initial_blur_.end())
-      layer->SetLayerBlur(it->second);
-  }
+  // Restore the initial wallpaper bluriness if they were changed.
+  for (auto it = initial_blur_.begin(); it != initial_blur_.end(); ++it)
+    it->first->SetLayerBlur(it->second);
   window_->Close();
   delete instance_;
   instance_ = nullptr;
 }
 
-void LockScreen::ToggleBlur() {
+void LockScreen::ToggleBlurForDebug() {
+  // Save the initial wallpaper bluriness upon the first time this is called.
+  if (instance_->initial_blur_.empty()) {
+    for (aura::Window* window : Shell::GetAllRootWindows()) {
+      ui::Layer* layer = GetWallpaperLayerForWindow(window);
+      instance_->initial_blur_[layer] = layer->layer_blur();
+    }
+  }
   for (aura::Window* window : Shell::GetAllRootWindows()) {
     ui::Layer* layer = GetWallpaperLayerForWindow(window);
     if (layer->layer_blur() > 0.0f) {

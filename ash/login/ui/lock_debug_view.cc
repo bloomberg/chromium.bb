@@ -186,7 +186,7 @@ void LockDebugView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   // Enable or disable wallpaper blur.
   if (sender == toggle_blur_) {
-    LockScreen::Get()->ToggleBlur();
+    LockScreen::Get()->ToggleBlurForDebug();
     return;
   }
 
