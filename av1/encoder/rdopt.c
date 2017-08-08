@@ -786,7 +786,7 @@ static double od_compute_dist_8x8(int use_activity_masking, uint16_t *x,
     }
   }
   /* We use a different variance statistic depending on whether activity
-     masking is used, since the harmonic mean appeared slghtly worse with
+     masking is used, since the harmonic mean appeared slightly worse with
      masking off. The calibration constant just ensures that we preserve the
      rate compared to activity=1. */
   if (use_activity_masking) {
@@ -1149,7 +1149,7 @@ static int64_t av1_dist_8x8_diff(const MACROBLOCKD *xd, const uint8_t *src,
     // input
   }
 #elif NEW_FUTURE_DIST
-  // Call new 8x8-wise distortion function (with diff inpu) here, for example
+  // Call new 8x8-wise distortion function (with diff input) here, for example
   for (i = 0; i < bsh; i += 8) {
     for (j = 0; j < bsw; j += 8) {
       d += av1_compute_dist_8x8_diff(&orig[i * bsw + j], &diff16[i * bsw + j],
@@ -6416,7 +6416,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   int ite, ref;
   struct scale_factors sf;
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-  // ic and ir are the 4x4 coordiantes of the sub8x8 at index "block"
+  // ic and ir are the 4x4 coordinates of the sub8x8 at index "block"
   const int ic = block & 1;
   const int ir = (block - ic) >> 1;
   struct macroblockd_plane *const pd = &xd->plane[0];
@@ -7112,7 +7112,7 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   // Work out the size of the first step in the mv step search.
   // 0 here is maximum length first step. 1 is AOMMAX >> 1 etc.
   if (cpi->sf.mv.auto_mv_step_size && cm->show_frame) {
-    // Take wtd average of the step_params based on the last frame's
+    // Take the weighted average of the step_params based on the last frame's
     // max mv magnitude and that based on the best ref mvs of the current
     // block for the given reference.
     step_param =
@@ -7320,7 +7320,7 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
   struct scale_factors sf;
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
   struct macroblockd_plane *const pd = &xd->plane[0];
-  // ic and ir are the 4x4 coordiantes of the sub8x8 at index "block"
+  // ic and ir are the 4x4 coordinates of the sub8x8 at index "block"
   const int ic = block & 1;
   const int ir = (block - ic) >> 1;
   const int p_col = ((mi_col * MI_SIZE) >> pd->subsampling_x) + 4 * ic;
@@ -7648,7 +7648,7 @@ static void do_masked_motion_search_indexed(
 #endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #endif  // CONFIG_EXT_INTER
 
-// In some situations we want to discount tha pparent cost of a new motion
+// In some situations we want to discount the apparent cost of a new motion
 // vector. Where there is a subtle motion field and especially where there is
 // low spatial complexity then it can be hard to cover the cost of a new motion
 // vector in a single block, even if that motion vector reduces distortion.
@@ -9035,7 +9035,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   int pred_exists = 1;
 #if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT || CONFIG_INTERINTRA
   const int bw = block_size_wide[bsize];
-#endif  // ONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
+#endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
   int_mv single_newmv[TOTAL_REFS_PER_FRAME];
 #if CONFIG_INTERINTRA
   const int *const interintra_mode_cost =
