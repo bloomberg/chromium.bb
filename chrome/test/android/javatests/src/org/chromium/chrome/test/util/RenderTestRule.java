@@ -76,7 +76,7 @@ public class RenderTestRule extends TestWatcher {
     private enum ComparisonResult { MATCH, MISMATCH, GOLDEN_NOT_FOUND }
 
     // State for a test class.
-    private final String mOutputDirectory;
+    private final String mOutputFolder;
     private final String mGoldenFolder;
 
     // State for a test method.
@@ -97,10 +97,11 @@ public class RenderTestRule extends TestWatcher {
     }
 
     public RenderTestRule(String goldenFolder) {
-        mGoldenFolder = goldenFolder;
-        // The output directory can be overridden with the --render-test-output-dir command.
-        mOutputDirectory =
-                CommandLine.getInstance().getSwitchValue("render-test-output-dir", goldenFolder);
+        // |goldenFolder| is relative to the src directory in the repository. |mGoldenFolder| will
+        // be the folder on the test device.
+        mGoldenFolder = UrlUtils.getIsolatedTestFilePath(goldenFolder);
+        // The output folder can be overridden with the --render-test-output-dir command.
+        mOutputFolder = CommandLine.getInstance().getSwitchValue("render-test-output-dir");
     }
 
     @Override
@@ -248,15 +249,16 @@ public class RenderTestRule extends TestWatcher {
      * Convenience method to create a File pointing to |filename| in |mGoldenFolder|.
      */
     private File createGoldenPath(String filename) throws IOException {
-        return createPath(UrlUtils.getIsolatedTestFilePath(mGoldenFolder), filename);
+        return createPath(mGoldenFolder, filename);
     }
 
     /**
      * Convenience method to create a File pointing to |filename| in the |subfolder| in
-     * |mOutputDirectory|.
+     * |mOutputFolder|.
      */
     private File createOutputPath(String subfolder, String filename) throws IOException {
-        return createPath(mOutputDirectory + subfolder, filename);
+        String folder = mOutputFolder != null ? mOutputFolder : mGoldenFolder;
+        return createPath(folder + subfolder, filename);
     }
 
     private static File createPath(String folder, String filename) throws IOException {
