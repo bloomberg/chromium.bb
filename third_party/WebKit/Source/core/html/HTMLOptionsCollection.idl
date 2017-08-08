@@ -31,8 +31,13 @@
     [CEReactions, RaisesException] void add((HTMLOptionElement or HTMLOptGroupElement) element, optional (HTMLElement or long)? before = null);
     [CEReactions] void remove(long index);
     attribute long selectedIndex;
-    // FIXME: Neither of these getters are in the spec, and the
-    // getters inherited from HTMLCollection always return an Element.
+
+    // TODO(tkent): We need to declare this indexed property getter because our
+    // IDL compiler doesn't support inheritance of indexed property
+    // getters. crbug.com/752877
+    // TODO(tkent): This getter should return Element.
     [ImplementedAs=item] getter Node (unsigned long index);
+
+    // TODO(tkent): This should return only Element. crbug.com/695902
     [ImplementedAs=namedGetter] getter (NodeList or Element)? namedItem(DOMString name);
 };

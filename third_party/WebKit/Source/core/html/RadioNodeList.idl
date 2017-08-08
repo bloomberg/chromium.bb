@@ -28,6 +28,8 @@
 interface RadioNodeList : NodeList {
     attribute DOMString value;
 
-    // TODO(foolip): This should be inherited from NodeList.
+    // TODO(tkent): We need to declare this indexed property getter because our
+    // IDL compiler doesn't support inheritance of indexed property
+    // getters. crbug.com/752877
     [ImplementedAs=item] getter Node? (unsigned long index);
 };
