@@ -191,6 +191,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   // samplerExternalOES texture data for WebVR content image.
   int webvr_texture_id_ = 0;
 
+  // Set from feature flag.
+  bool webvr_vsync_align_;
+
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::SurfaceTexture> content_surface_texture_;

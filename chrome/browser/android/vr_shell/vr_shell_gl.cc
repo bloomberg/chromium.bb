@@ -26,6 +26,7 @@
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/vr_gl_util.h"
 #include "chrome/browser/vr/vr_shell_renderer.h"
+#include "content/public/common/content_features.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
@@ -257,6 +258,8 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   // thread in VrGlThread). I.e., we could probably split GlBrowserInterface
   // into parts.
   browser_->OnGlInitialized(content_texture_id_);
+
+  webvr_vsync_align_ = base::FeatureList::IsEnabled(features::kWebVrVsyncAlign);
 
   gfx::Size webvr_size =
       device::GvrDelegate::GetRecommendedWebVrSize(gvr_api_.get());
@@ -1096,7 +1099,7 @@ void VrShellGl::GetVSync(GetVSyncCallback callback) {
   // In surfaceless (reprojecting) rendering, stay locked
   // to vsync intervals. Otherwise, for legacy Cardboard mode,
   // run requested animation frames now if it missed a vsync.
-  if (surfaceless_rendering_ || !pending_vsync_) {
+  if ((surfaceless_rendering_ && webvr_vsync_align_) || !pending_vsync_) {
     if (!callback_.is_null()) {
       mojo::ReportBadMessage(
           "Requested VSync before waiting for response to previous request.");
