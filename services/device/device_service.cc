@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -17,6 +18,7 @@
 #include "services/device/fingerprint/fingerprint.h"
 #include "services/device/generic_sensor/sensor_provider_impl.h"
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
+#include "services/device/public/cpp/device_features.h"
 #include "services/device/public/interfaces/battery_monitor.mojom.h"
 #include "services/device/serial/serial_device_enumerator_impl.h"
 #include "services/device/time_zone_monitor/time_zone_monitor.h"
@@ -89,6 +91,8 @@ DeviceService::~DeviceService() {
 void DeviceService::OnStart() {
   registry_.AddInterface<mojom::Fingerprint>(base::Bind(
       &DeviceService::BindFingerprintRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::MotionSensor>(base::Bind(
+      &DeviceService::BindMotionSensorRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::OrientationSensor>(base::Bind(
       &DeviceService::BindOrientationSensorRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::OrientationAbsoluteSensor>(
@@ -99,8 +103,10 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::ScreenOrientationListener>(
       base::Bind(&DeviceService::BindScreenOrientationListenerRequest,
                  base::Unretained(this)));
-  registry_.AddInterface<mojom::SensorProvider>(base::Bind(
-      &DeviceService::BindSensorProviderRequest, base::Unretained(this)));
+  if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
+    registry_.AddInterface<mojom::SensorProvider>(base::Bind(
+        &DeviceService::BindSensorProviderRequest, base::Unretained(this)));
+  }
   registry_.AddInterface<mojom::TimeZoneMonitor>(base::Bind(
       &DeviceService::BindTimeZoneMonitorRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::WakeLockProvider>(base::Bind(
@@ -153,6 +159,22 @@ void DeviceService::BindVibrationManagerRequest(
 
 void DeviceService::BindFingerprintRequest(mojom::FingerprintRequest request) {
   Fingerprint::Create(std::move(request));
+}
+
+void DeviceService::BindMotionSensorRequest(
+    mojom::MotionSensorRequest request) {
+#if defined(OS_ANDROID)
+  // On Android the device sensors implementations need to run on the UI thread
+  // to communicate to Java.
+  DeviceMotionHost::Create(std::move(request));
+#else
+  // On platforms other than Android the device sensors implementations run on
+  // the IO thread.
+  if (io_task_runner_) {
+    io_task_runner_->PostTask(FROM_HERE, base::Bind(&DeviceMotionHost::Create,
+                                                    base::Passed(&request)));
+  }
+#endif  // defined(OS_ANDROID)
 }
 
 void DeviceService::BindOrientationSensorRequest(

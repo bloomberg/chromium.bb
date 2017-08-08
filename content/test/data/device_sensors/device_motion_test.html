@@ -2,7 +2,6 @@
   <head>
     <title>DeviceMotion test</title>
     <script type="text/javascript">
-      let expectedInterval = Math.floor(1000 / 60);
       function checkMotionEvent(event) {
         return event.acceleration.x == 1 &&
                event.acceleration.y == 2 &&
@@ -13,7 +12,7 @@
                event.rotationRate.alpha == 7 &&
                event.rotationRate.beta == 8 &&
                event.rotationRate.gamma == 9 &&
-               event.interval == expectedInterval;
+               event.interval == 100;
       }
 
       function onMotion(event) {
