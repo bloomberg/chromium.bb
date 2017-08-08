@@ -67183,6 +67183,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SBClientDownload.ZipFileContainsAppDirectory" enum="Boolean">
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    A Mac-only metric that records whether a downloaded zip file contains an
+    .app directory, signifying the presence of installable software.
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.ZipFileHasArchiveButNoExecutable"
     enum="Boolean">
   <owner>mattm@chromium.org</owner>
