@@ -304,7 +304,6 @@ static CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
 }
 
 static CSSValue* ConsumePrefixedBackgroundBox(CSSParserTokenRange& range,
-                                              const CSSParserContext* context,
                                               bool allow_text_value) {
   // The values 'border', 'padding' and 'content' are deprecated and do not
   // apply to the version of the property that has the -webkit- prefix removed.
@@ -363,12 +362,10 @@ static CSSValue* ConsumeBackgroundComponent(CSSPropertyID unresolved_property,
       return CSSPropertyBackgroundUtils::ConsumeMaskSourceType(range);
     case CSSPropertyWebkitBackgroundClip:
     case CSSPropertyWebkitMaskClip:
-      return ConsumePrefixedBackgroundBox(range, context,
-                                          true /* allow_text_value */);
+      return ConsumePrefixedBackgroundBox(range, true /* allow_text_value */);
     case CSSPropertyWebkitBackgroundOrigin:
     case CSSPropertyWebkitMaskOrigin:
-      return ConsumePrefixedBackgroundBox(range, context,
-                                          false /* allow_text_value */);
+      return ConsumePrefixedBackgroundBox(range, false /* allow_text_value */);
     case CSSPropertyBackgroundImage:
     case CSSPropertyWebkitMaskImage:
       return ConsumeImageOrNone(range, context);
@@ -451,11 +448,11 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyWebkitBackgroundClip:
     case CSSPropertyWebkitMaskClip:
       return ConsumeCommaSeparatedList(ConsumePrefixedBackgroundBox, range_,
-                                       context_, true /* allow_text_value */);
+                                       true /* allow_text_value */);
     case CSSPropertyWebkitBackgroundOrigin:
     case CSSPropertyWebkitMaskOrigin:
       return ConsumeCommaSeparatedList(ConsumePrefixedBackgroundBox, range_,
-                                       context_, false /* allow_text_value */);
+                                       false /* allow_text_value */);
     case CSSPropertyWebkitMaskRepeatX:
     case CSSPropertyWebkitMaskRepeatY:
       return nullptr;
