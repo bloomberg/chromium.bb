@@ -43,21 +43,17 @@ const char kPage1Link[] = "page-1";
 const char kPage2Link[] = "page-2";
 const char kPage3Link[] = "page-3";
 
-// Purges all cached web view pages, so the next time back navigation will not
-// use cached page. Browsers don't have to use fresh version for back forward
+// Purges cached web view page, so the next time back navigation will not use
+// cached page. Browsers don't have to use fresh version for back forward
 // navigation for HTTP pages and may serve version from the cache even if
 // Cache-Control response header says otherwise.
 void PurgeCachedWebViewPages() {
-  chrome_test_util::ResetAllWebViews();
-
-  BOOL reloaded = [[GREYCondition
-      conditionWithName:@"Wait for reload"
-                  block:^{
-                    return chrome_test_util::GetCurrentWebState()->IsLoading()
-                               ? NO
-                               : YES;
-                  }] waitWithTimeout:10];
-  GREYAssert(reloaded, @"page did not reload");
+  chrome_test_util::GetCurrentWebState()->SetWebUsageEnabled(false);
+  chrome_test_util::GetCurrentWebState()->SetWebUsageEnabled(true);
+  // TODO(crbug.com/705819): Reload will not happen after purging web view,
+  // unless WebState::GetView is called.
+  chrome_test_util::GetCurrentWebState()->GetView();
+  [ChromeEarlGrey reload];
 }
 
 // Response provider which can be paused. When it is paused it buffers all
