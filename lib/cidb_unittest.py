@@ -7,12 +7,15 @@
 from __future__ import print_function
 
 import exceptions
+import mock
+import os
 import sqlalchemy
 
 from chromite.lib import constants
 from chromite.lib import cidb
 from chromite.lib import cros_test_lib
 from chromite.lib import factory
+from chromite.lib import osutils
 
 
 class RetryableOperationalError(exceptions.EnvironmentError):
@@ -160,3 +163,57 @@ class CIDBConnectionFactoryTest(cros_test_lib.MockTestCase):
                       cidb.CIDBConnectionFactory.SetupDebugCidb)
     self.assertRaises(factory.ObjectFactoryIllegalOperation,
                       cidb.CIDBConnectionFactory.SetupMockCidb)
+
+
+# pylint: disable=protected-access
+class SchemaVersionedMySQLConnectionTest(cros_test_lib.MockTempDirTestCase):
+  """Test for SchemaVersionedMySQLConnection."""
+
+  def setUp(self):
+    self.db_name = 'cidb'
+    mock_engine = mock.Mock()
+    self.PatchObject(sqlalchemy, 'create_engine', return_value=mock_engine)
+    user_path = os.path.join(self.tempdir, 'user.txt')
+    osutils.WriteFile(user_path, 'user')
+    password_path = os.path.join(self.tempdir, 'password.txt')
+    osutils.WriteFile(password_path, 'password')
+
+    mock_result = mock.Mock()
+    mock_result.fetchall.return_value = [self.db_name]
+    self.PatchObject(cidb.SchemaVersionedMySQLConnection,
+                     '_ExecuteWithEngine', return_value=mock_result)
+
+  def testConnectionWithIP(self):
+    """Test connection with IP."""
+    host_path = os.path.join(self.tempdir, 'host.txt')
+    osutils.WriteFile(host_path, '127.0.0.1')
+    port_path = os.path.join(self.tempdir, 'port.txt')
+    osutils.WriteFile(port_path, '3306')
+    conn = cidb.SchemaVersionedMySQLConnection(
+        self.db_name, cidb.CIDB_MIGRATIONS_DIR, self.tempdir)
+
+    self.assertEqual(
+        str(conn._connect_url),
+        'mysql://user:password@127.0.0.1:3306/cidb')
+
+  def testConnectionWithUnixSocket(self):
+    """Test Connection with Unix Socket."""
+    # No unix_socket.txt found.
+    conn = cidb.SchemaVersionedMySQLConnection(
+        self.db_name, cidb.CIDB_MIGRATIONS_DIR, self.tempdir,
+        for_service=True)
+    self.assertEqual(
+        str(conn._connect_url),
+        'mysql+pymysql://user:password@/cidb')
+
+    unix_socket_path = os.path.join(self.tempdir, 'unix_socket.txt')
+    osutils.WriteFile(unix_socket_path, '/cloudsql/CLOUDSQL_CONNECTION_NAME')
+
+    conn = cidb.SchemaVersionedMySQLConnection(
+        self.db_name, cidb.CIDB_MIGRATIONS_DIR, self.tempdir,
+        for_service=True)
+
+    self.assertEqual(
+        str(conn._connect_url),
+        'mysql+pymysql://user:password@/cidb?unix_socket='
+        '/cloudsql/CLOUDSQL_CONNECTION_NAME')

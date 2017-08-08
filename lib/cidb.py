@@ -143,6 +143,21 @@ class SchemaVersionedMySQLConnection(object):
     if os.path.exists(file_path):
       self._connect_url_args[key] = osutils.ReadFile(file_path).strip()
 
+  def _UpdateConnectUrlQuery(self, key, db_credentials_dir, filename):
+    """Read 'query' args from the given file and update connect url.
+
+    Args:
+      key: Name of the arg to read.
+      db_credentials_dir: The directory containing the credentials.
+      filename: Name of the file to read.
+    """
+    file_path = os.path.join(db_credentials_dir, filename)
+    try:
+      value = osutils.ReadFile(file_path).strip()
+      self._connect_url_args['query'].update({key: value})
+    except IOError as e:
+      logging.warning('Error reading %s from file %s: %s', key, file_path, e)
+
   def _UpdateSslArgs(self, key, db_credentials_dir, filename):
     """Read an ssl argument for the sql connection from the given file.
 
@@ -159,18 +174,24 @@ class SchemaVersionedMySQLConnection(object):
         self._ssl_args['ssl'] = {}
       self._ssl_args['ssl'][key] = file_path
 
-  def _UpdateConnectArgs(self, db_credentials_dir):
+  def _UpdateConnectArgs(self, db_credentials_dir, for_service=False):
     """Update all connection args from |db_credentials_dir|."""
-    self._UpdateConnectUrlArgs('host', db_credentials_dir, 'host.txt')
-    self._UpdateConnectUrlArgs('port', db_credentials_dir, 'port.txt')
     self._UpdateConnectUrlArgs('username', db_credentials_dir, 'user.txt')
     self._UpdateConnectUrlArgs('password', db_credentials_dir, 'password.txt')
 
-    self._UpdateSslArgs('cert', db_credentials_dir, 'client-cert.pem')
-    self._UpdateSslArgs('key', db_credentials_dir, 'client-key.pem')
-    self._UpdateSslArgs('ca', db_credentials_dir, 'server-ca.pem')
+    if not for_service:
+      self._UpdateConnectUrlArgs('host', db_credentials_dir, 'host.txt')
+      self._UpdateConnectUrlArgs('port', db_credentials_dir, 'port.txt')
+
+      self._UpdateSslArgs('cert', db_credentials_dir, 'client-cert.pem')
+      self._UpdateSslArgs('key', db_credentials_dir, 'client-key.pem')
+      self._UpdateSslArgs('ca', db_credentials_dir, 'server-ca.pem')
+    else:
+      self._UpdateConnectUrlQuery(
+          'unix_socket', db_credentials_dir, 'unix_socket.txt')
 
   def __init__(self, db_name, db_migrations_dir, db_credentials_dir,
+               for_service=False,
                query_retry_args=SqlConnectionRetryArgs(8, 4, 2)):
     """SchemaVersionedMySQLConnection constructor.
 
@@ -179,12 +200,16 @@ class SchemaVersionedMySQLConnection(object):
       db_migrations_dir: Absolute path to directory of migration scripts
                          for this database.
       db_credentials_dir: Absolute path to directory containing connection
-                          information to the database. Specifically, this
+                          information to the database. For connections for GAE
+                          services, this directory may contain user.txt and
+                          password txt; For connections for normal builds, this
                           directory may contain files names user.txt,
                           password.txt, host.txt, port.txt, client-cert.pem,
-                          client-key.pem, and server-ca.pem This object will
+                          client-key.pem, and server-ca.pem. This object will
                           silently drop the relevant mysql commandline flags for
                           missing files in the directory.
+      for_service: Boolean indicating whether the connection is for GAE
+                   services. Unix socket will be used to connect MYSQL servers.
       query_retry_args: An optional SqlConnectionRetryArgs tuple to tweak the
                         retry behaviour of SQL queries.
     """
@@ -219,6 +244,8 @@ class SchemaVersionedMySQLConnection(object):
 
     self._engine = None
 
+    self._driver_name = 'mysql+pymysql' if for_service else 'mysql'
+
     self.db_migrations_dir = db_migrations_dir
     self.db_credentials_dir = db_credentials_dir
     self.db_name = db_name
@@ -226,19 +253,21 @@ class SchemaVersionedMySQLConnection(object):
 
     # mysql args that are optionally provided by files in db_credentials_dir
     self._connect_url_args = {}
+    self._connect_url_args['query'] = {}
     self._ssl_args = {}
+    self._UpdateConnectArgs(db_credentials_dir, for_service=for_service)
 
-    self._UpdateConnectArgs(db_credentials_dir)
-
-    connect_url = sqlalchemy.engine.url.URL('mysql', **self._connect_url_args)
+    tmp_connect_url = sqlalchemy.engine.url.URL(
+        self._driver_name, **self._connect_url_args)
 
     # Create a temporary engine to connect to the mysql instance, and check if
     # a database named |db_name| exists. If not, create one. We use a temporary
     # engine here because the real engine will be opened with a default
     # database name given by |db_name|.
-    temp_engine = sqlalchemy.create_engine(connect_url,
+    temp_engine = sqlalchemy.create_engine(tmp_connect_url,
                                            connect_args=self._ssl_args,
                                            listeners=[self._listener_class()])
+
     databases = self._ExecuteWithEngine('SHOW DATABASES',
                                         temp_engine).fetchall()
     if (db_name,) not in databases:
@@ -250,9 +279,11 @@ class SchemaVersionedMySQLConnection(object):
     # Now create the persistent connection to the database named |db_name|.
     # If there is a schema version table, read the current schema version
     # from it. Otherwise, assume schema_version 0.
+
     self._connect_url_args['database'] = db_name
-    self._connect_url = sqlalchemy.engine.url.URL('mysql',
-                                                  **self._connect_url_args)
+
+    self._connect_url = sqlalchemy.engine.url.URL(
+        self._driver_name, **self._connect_url_args)
 
     self.schema_version = self.QuerySchemaVersion()
 
@@ -618,9 +649,11 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       'milestone_version', 'important', 'buildbucket_id', 'summary',
       'buildbot_generation')
 
-  def __init__(self, db_credentials_dir, *args, **kwargs):
-    super(CIDBConnection, self).__init__('cidb', CIDB_MIGRATIONS_DIR,
-                                         db_credentials_dir, *args, **kwargs)
+  def __init__(self, db_credentials_dir, for_service=False,
+               query_retry_args=SqlConnectionRetryArgs(8, 4, 2)):
+    super(CIDBConnection, self).__init__(
+        'cidb', CIDB_MIGRATIONS_DIR, db_credentials_dir,
+        for_service=for_service, query_retry_args=query_retry_args)
 
   def GetTime(self):
     """Gets the current time, according to database.
@@ -1811,6 +1844,7 @@ CONNECTION_TYPE_MOCK = 'mock'   # mock connection, not backed by database
 CONNECTION_TYPE_NONE = 'none'   # explicitly no connection
 CONNECTION_TYPE_INV = 'invalid' # invalidated connection
 
+
 class CIDBConnectionFactoryClass(factory.ObjectFactory):
   """Factory class used by builders to fetch the appropriate cidb connection"""
 
@@ -1875,7 +1909,6 @@ class CIDBConnectionFactoryClass(factory.ObjectFactory):
     method, otherwise it will raise an AssertionError.
     """
     self.Setup(CONNECTION_TYPE_PROD)
-
 
   def SetupDebugCidb(self):
     """Sets up CIDB to use the debug instance of the database.
