@@ -14,7 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
-#include "chrome/browser/ui/blocked_content/app_modal_dialog_helper.h"
+#include "chrome/browser/ui/blocked_content/popunder_preventer.h"
 #include "chrome/browser/ui/javascript_dialogs/chrome_javascript_native_dialog_factory.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/javascript_dialog_manager.h"
@@ -229,7 +229,7 @@ const int kMessageTextMaxSlots = 2000;
 JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
     app_modal::JavaScriptAppModalDialog* dialog)
     : dialog_(dialog),
-      popup_helper_(new AppModalDialogHelper(dialog->web_contents())),
+      popunder_preventer_(new PopunderPreventer(dialog->web_contents())),
       is_showing_(false) {
   // Determine the names of the dialog buttons based on the flags. "Default"
   // is the OK button. "Other" is the cancel button. We don't use the

@@ -17,9 +17,9 @@
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 
-class AppModalDialogHelper;
 class GURL;
 class LoginInterstitialDelegate;
+class PopunderPreventer;
 
 namespace content {
 class NotificationRegistrar;
@@ -247,7 +247,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   base::WeakPtr<LoginInterstitialDelegate> interstitial_delegate_;
 
 #if !defined(OS_ANDROID)
-  std::unique_ptr<AppModalDialogHelper> dialog_helper_;
+  std::unique_ptr<PopunderPreventer> popunder_preventer_;
 #endif
 };
 

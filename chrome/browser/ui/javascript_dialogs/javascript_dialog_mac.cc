@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog.h"
 
-#include "chrome/browser/ui/blocked_content/app_modal_dialog_helper.h"
+#include "chrome/browser/ui/blocked_content/popunder_preventer.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_cocoa.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_views.h"
 #include "content/public/browser/web_contents.h"
@@ -12,7 +12,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 
 JavaScriptDialog::JavaScriptDialog(content::WebContents* parent_web_contents) {
-  dialog_helper_.reset(new AppModalDialogHelper(parent_web_contents));
+  popunder_preventer_.reset(new PopunderPreventer(parent_web_contents));
   parent_web_contents->GetDelegate()->ActivateContents(parent_web_contents);
 }
 

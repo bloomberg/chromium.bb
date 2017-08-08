@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/javascript_app_modal_dialog_views_x11.h"
 
-#include "chrome/browser/ui/blocked_content/app_modal_dialog_helper.h"
+#include "chrome/browser/ui/blocked_content/popunder_preventer.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/javascript_app_modal_event_blocker_x11.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
@@ -13,7 +13,7 @@
 JavaScriptAppModalDialogViewsX11::JavaScriptAppModalDialogViewsX11(
     app_modal::JavaScriptAppModalDialog* parent)
     : app_modal::JavaScriptAppModalDialogViews(parent),
-      helper_(new AppModalDialogHelper(parent->web_contents())) {
+      popunder_preventer_(new PopunderPreventer(parent->web_contents())) {
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::JAVA_SCRIPT_APP_MODAL_X11);
 }
