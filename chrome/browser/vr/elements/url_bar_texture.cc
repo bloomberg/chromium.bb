@@ -61,7 +61,7 @@ SkColor GetSchemeColor(SecurityLevel level, const ColorScheme& color_scheme) {
 SkColor GetSecurityChipColor(SecurityLevel level,
                              bool offline_page,
                              const ColorScheme& color_scheme) {
-  return offline_page ? color_scheme.url_emphasized
+  return offline_page ? color_scheme.offline_page_warning
                       : GetSchemeColor(level, color_scheme);
 }
 
