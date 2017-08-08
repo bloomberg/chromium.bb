@@ -126,6 +126,8 @@
     <color name="incognito_text">#b3ffffff</color>
     <color name="incognito_emphasis">@android:color/white</color>
     <color name="incognito_header">#ccffffff</color>
+    <color name="incognito_ntp_learn_more_link">#03a9f4</color>
+    <color name="incognito_ntp_header">#d2d2d2</color>
 
     <!-- Site suggestion tile colors. -->
     <color name="tile_view_text">@color/black_alpha_54</color>
