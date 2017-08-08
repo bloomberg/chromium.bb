@@ -774,6 +774,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       this.classList.toggle('full-width', isSAML);
       $('saml-notice-container').hidden = !isSAML;
+      this.classList.toggle('saml', isSAML);
 
       if (Oobe.getInstance().currentScreen === this) {
         Oobe.getInstance().updateScreenSize(this);
