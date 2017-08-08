@@ -505,4 +505,34 @@ TEST_F(TransferBufferExpandContractTest, ReallocsToDefault) {
       transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
 }
 
+TEST_F(TransferBufferExpandContractTest, Shrink) {
+  unsigned int alloc_size = transfer_buffer_->GetFreeSize();
+  EXPECT_EQ(kStartTransferBufferSize - kStartingOffset, alloc_size);
+  unsigned int size_allocated = 0;
+  void* ptr = transfer_buffer_->AllocUpTo(alloc_size, &size_allocated);
+
+  ASSERT_NE(ptr, nullptr);
+  EXPECT_EQ(alloc_size, size_allocated);
+  EXPECT_GT(alloc_size, 0u);
+  EXPECT_EQ(0u, transfer_buffer_->GetFreeSize());
+
+  // Shrink once.
+  const unsigned int shrink_size1 = 80;
+  EXPECT_LT(shrink_size1, alloc_size);
+  transfer_buffer_->ShrinkLastBlock(shrink_size1);
+  EXPECT_EQ(alloc_size - shrink_size1, transfer_buffer_->GetFreeSize());
+
+  // Shrink again.
+  const unsigned int shrink_size2 = 30;
+  EXPECT_LT(shrink_size2, shrink_size1);
+  transfer_buffer_->ShrinkLastBlock(shrink_size2);
+  EXPECT_EQ(alloc_size - shrink_size2, transfer_buffer_->GetFreeSize());
+
+  // Shrink to zero (minimum size is 1).
+  transfer_buffer_->ShrinkLastBlock(0);
+  EXPECT_EQ(alloc_size - 1, transfer_buffer_->GetFreeSize());
+
+  transfer_buffer_->FreePendingToken(ptr, 1);
+}
+
 }  // namespace gpu

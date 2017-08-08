@@ -69,6 +69,8 @@ class GPU_EXPORT TransferBufferInterface {
   virtual unsigned int GetSize() const = 0;
 
   virtual unsigned int GetFreeSize() const = 0;
+
+  virtual void ShrinkLastBlock(unsigned int new_size) = 0;
 };
 
 // Class that manages the transfer buffer.
@@ -97,6 +99,7 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
   void FreePendingToken(void* p, unsigned int token) override;
   unsigned int GetSize() const override;
   unsigned int GetFreeSize() const override;
+  void ShrinkLastBlock(unsigned int new_size) override;
 
   // These are for testing.
   unsigned int GetCurrentMaxAllocationWithoutRealloc() const;
@@ -199,6 +202,9 @@ class GPU_EXPORT ScopedTransferBufferPtr {
   void Discard();
 
   void Reset(unsigned int new_size);
+
+  // Shrinks this transfer buffer to a given size.
+  void Shrink(unsigned int new_size);
 
  private:
   void* buffer_;
