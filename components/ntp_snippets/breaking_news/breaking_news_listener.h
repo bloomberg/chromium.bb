@@ -28,6 +28,7 @@ class BreakingNewsListener {
   // will be ignored. Must be called while listening.
   virtual void StopListening() = 0;
 };
+
 }  // namespace ntp_snippets
 
 #endif  // COMPONENTS_NTP_SNIPPETS_BREAKING_NEWS_BREAKING_NEWS_LISTENER_H_
