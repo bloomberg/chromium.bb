@@ -196,28 +196,33 @@ class BotUpdateApi(recipe_api.RecipeApi):
         ['--output_json', self.m.json.output()],
     ]
 
-
-    # Collect all fixed revisions to simulate them in the json output.
-    # Fixed revision are the explicit input revisions of bot_update.py, i.e.
-    # every command line parameter "--revision name@value".
-    fixed_revisions = {}
-
+    # Compute requested revisions.
     revisions = {}
     for solution in cfg.solutions:
       if solution.revision:
         revisions[solution.name] = solution.revision
       elif solution == cfg.solutions[0]:
+        # TODO(machenbach): We should explicitly pass HEAD for ALL solutions
+        # that don't specify anything else.
         revisions[solution.name] = (
             self._parent_got_revision or
             self._revision or
             'HEAD')
     if self.m.gclient.c and self.m.gclient.c.revisions:
-      revisions.update(self.m.gclient.c.revisions)
+      # Only update with non-empty values. Some recipe might otherwise
+      # overwrite the HEAD default with an empty string.
+      revisions.update(
+          (k, v) for k, v in self.m.gclient.c.revisions.iteritems() if v)
     if cfg.solutions and root_solution_revision:
       revisions[cfg.solutions[0].name] = root_solution_revision
     # Allow for overrides required to bisect into rolls.
     revisions.update(self._deps_revision_overrides)
+
     # Compute command-line parameters for requested revisions.
+    # Also collect all fixed revisions to simulate them in the json output.
+    # Fixed revision are the explicit input revisions of bot_update.py, i.e.
+    # every command line parameter "--revision name@value".
+    fixed_revisions = {}
     for name, revision in sorted(revisions.items()):
       fixed_revision = self.m.gclient.resolve_revision(revision)
       if fixed_revision:

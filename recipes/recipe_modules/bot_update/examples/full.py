@@ -101,6 +101,12 @@ def GenTests(api):
       patchset=654321,
       rietveld='https://rietveld.example.com/',
   )
+  yield api.test('tryjob_empty_revision') + api.properties(
+      issue=12345,
+      patchset=654321,
+      rietveld='https://rietveld.example.com/',
+      revisions={'src': ''},
+  )
   yield api.test('deprecated_got_revision_mapping') + api.properties(
       deprecated_got_revision_mapping=True,
       issue=12345,
