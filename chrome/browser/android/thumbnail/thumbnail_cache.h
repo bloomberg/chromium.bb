@@ -18,6 +18,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/thumbnail/scoped_ptr_expiring_cache.h"
 #include "chrome/browser/android/thumbnail/thumbnail.h"
@@ -145,6 +146,8 @@ class ThumbnailCache : ThumbnailDelegate {
 
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel level);
+
+  const scoped_refptr<base::SequencedTaskRunner> file_sequenced_task_runner_;
 
   const size_t compression_queue_max_size_;
   const size_t write_queue_max_size_;
