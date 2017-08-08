@@ -394,6 +394,13 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   AndroidVideoSurfaceChooser::State surface_chooser_state_;
 
+  // Number of promotion hints that we need to receive before clearing the
+  // "delay overlay promotion" flag in |surface_chooser_state_|.  We do this so
+  // that the transition looks better, since it gives blink time to stabilize.
+  // Since overlay positioning isn't synchronous, it's good to make sure that
+  // blink isn't moving the quad around too.
+  int hints_until_clear_relayout_flag_ = 0;
+
   // Optional factory to produce mojo AndroidOverlay instances.
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;
 
