@@ -8,16 +8,76 @@
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
+#include "ui/base/cursor/cursor.h"
+#include "ui/base/hit_test.h"
 #include "ui/views/controls/native/native_view_host.h"
+#include "ui/views/widget/widget.h"
 
 namespace arc {
+
+namespace {
+
+class CustomWindowDelegate : public aura::WindowDelegate {
+ public:
+  explicit CustomWindowDelegate(exo::NotificationSurface* notification_surface)
+      : notification_surface_(notification_surface) {}
+  ~CustomWindowDelegate() override {}
+
+  // Overridden from aura::WindowDelegate:
+  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
+  gfx::Size GetMaximumSize() const override { return gfx::Size(); }
+  void OnBoundsChanged(const gfx::Rect& old_bounds,
+                       const gfx::Rect& new_bounds) override {}
+  gfx::NativeCursor GetCursor(const gfx::Point& point) override {
+    return notification_surface_->GetCursor(point);
+  }
+  int GetNonClientComponent(const gfx::Point& point) const override {
+    return HTNOWHERE;
+  }
+  bool ShouldDescendIntoChildForEventHandling(
+      aura::Window* child,
+      const gfx::Point& location) override {
+    return true;
+  }
+  bool CanFocus() override { return true; }
+  void OnCaptureLost() override {}
+  void OnPaint(const ui::PaintContext& context) override {}
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnWindowDestroying(aura::Window* window) override {}
+  void OnWindowDestroyed(aura::Window* window) override { delete this; }
+  void OnWindowTargetVisibilityChanged(bool visible) override {}
+  bool HasHitTestMask() const override {
+    return notification_surface_->HasHitTestMask();
+  }
+  void GetHitTestMask(gfx::Path* mask) const override {
+    notification_surface_->GetHitTestMask(mask);
+  }
+  void OnKeyEvent(ui::KeyEvent* event) override {
+    // Propagates the key event upto the top-level views Widget so that we can
+    // trigger proper events in the views/ash level there. Event handling for
+    // Surfaces is done in a post event handler in keyboard.cc.
+    views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(
+        notification_surface_->host_window());
+    if (widget)
+      widget->OnKeyEvent(event);
+  }
+
+ private:
+  exo::NotificationSurface* const notification_surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomWindowDelegate);
+};
+
+}  // namespace
 
 // Handles notification surface role of a given surface.
 ArcNotificationSurfaceImpl::ArcNotificationSurfaceImpl(
     exo::NotificationSurface* surface)
     : surface_(surface) {
   DCHECK(surface);
-  native_view_ = base::MakeUnique<aura::Window>(nullptr);
+  native_view_ =
+      base::MakeUnique<aura::Window>(new CustomWindowDelegate(surface));
   native_view_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   native_view_->set_owned_by_parent(false);
   native_view_->Init(ui::LAYER_NOT_DRAWN);
