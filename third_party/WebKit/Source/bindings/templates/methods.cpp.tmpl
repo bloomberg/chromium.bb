@@ -57,9 +57,9 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 
   {% if 'scriptState' in function_call %}
   {% if method.is_static %}
-  ScriptState* scriptState = ScriptState::ForFunctionObject(info);
+  ScriptState* scriptState = ScriptState::ForCurrentRealm(info);
   {% else %}
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   {% endif %}
   {% endif %}
 
@@ -504,9 +504,9 @@ void {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}(cons
   {% endif %}{# not method.overloads #}
   {% if world_suffix in method.activity_logging_world_list %}
   {% if method.is_static %}
-  ScriptState* scriptState = ScriptState::ForFunctionObject(info);
+  ScriptState* scriptState = ScriptState::ForCurrentRealm(info);
   {% else %}
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   {% endif %}
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
@@ -594,7 +594,8 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "{{interface_name}}");
   {% endif %}
   {% if 'scriptState' in function_call %}
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::From(
+      info.NewTarget().As<v8::Object>()->CreationContext());
   {% endif %}
 
   {{function_call | indent(2)}}

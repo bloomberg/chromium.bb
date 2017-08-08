@@ -21,7 +21,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
   {% set getter_name = getter.name or 'AnonymousIndexedGetter' %}
   {% set getter_arguments = ['index'] %}
   {% if getter.is_call_with_script_state %}
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   {% set getter_arguments = ['scriptState'] + getter_arguments %}
   {% endif %}
   {% if getter.is_raises_exception %}
@@ -89,7 +89,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
   {% set setter_name = setter.name or 'AnonymousIndexedSetter' %}
   {% set setter_arguments = ['index', 'propertyValue'] %}
   {% if setter.is_call_with_script_state %}
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   {% set setter_arguments = ['scriptState'] + setter_arguments %}
   {% endif %}
   {% if setter.is_raises_exception %}
@@ -210,7 +210,7 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
   {% set deleter_name = deleter.name or 'AnonymousIndexedDeleter' %}
   {% set deleter_arguments = ['index'] %}
   {% if deleter.is_call_with_script_state %}
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   {% set deleter_arguments = ['scriptState'] + deleter_arguments %}
   {% endif %}
   {% if deleter.is_raises_exception %}
@@ -321,7 +321,7 @@ static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCall
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "{{interface_name}}", nameInUtf8.data());
   {% endif %}
   {% if getter.is_call_with_script_state %}
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   {% endif %}
 
   {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
@@ -371,7 +371,7 @@ static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kSetterContext, "{{interface_name}}", nameInUtf8.data());
   {% endif %}
   {% if setter.is_call_with_script_state %}
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   {% endif %}
 
   {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
@@ -441,7 +441,7 @@ static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCal
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kDeletionContext, "{{interface_name}}", nameInUtf8.data());
   {% endif %}
   {% if deleter.is_call_with_script_state %}
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   {% endif %}
 
   {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
@@ -503,7 +503,7 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
   const CString& nameInUtf8 = name.Utf8();
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "{{interface_name}}", nameInUtf8.data());
   {% if getter.is_call_with_script_state %}
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   {% endif %}
 
   {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());

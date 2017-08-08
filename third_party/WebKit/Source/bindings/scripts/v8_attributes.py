@@ -486,11 +486,11 @@ def setter_expression(interface, attribute, context):
             includes.add('bindings/core/v8/V8ErrorHandler.h')
             arguments.append(
                 'V8EventListenerHelper::EnsureErrorHandler(' +
-                'ScriptState::ForReceiverObject(info), v8Value)')
+                'ScriptState::ForRelevantRealm(info), v8Value)')
         else:
             arguments.append(
                 'V8EventListenerHelper::GetEventListener(' +
-                'ScriptState::ForReceiverObject(info), v8Value, true, ' +
+                'ScriptState::ForRelevantRealm(info), v8Value, true, ' +
                 'kListenerFindOrCreate)')
     else:
         arguments.append('cppValue')
