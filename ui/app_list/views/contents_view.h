@@ -138,6 +138,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void TransitionStarted() override;
   void TransitionChanged() override;
 
+  // Returns the height of current display.
+  int GetDisplayHeight() const;
+
  private:
   // Sets the active launcher page, accounting for whether the change is for
   // search results.

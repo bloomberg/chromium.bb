@@ -16,6 +16,7 @@
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
+#include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/folder_background_view.h"
 #include "ui/app_list/views/suggestions_container_view.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -149,10 +150,27 @@ void AppsContainerView::OnWillBeShown() {
 gfx::Rect AppsContainerView::GetPageBoundsForState(
     AppListModel::State state) const {
   gfx::Rect onscreen_bounds = GetDefaultContentsBounds();
-  if (state == AppListModel::STATE_APPS)
+  if (state == AppListModel::STATE_APPS) {
+    if (is_fullscreen_app_list_enabled_)
+      onscreen_bounds.set_y(GetSearchBoxBounds().bottom());
     return onscreen_bounds;
+  }
 
   return GetBelowContentsOffscreenBounds(onscreen_bounds.size());
+}
+
+gfx::Rect AppsContainerView::GetSearchBoxBounds() const {
+  if (!is_fullscreen_app_list_enabled_)
+    return AppListPage::GetSearchBoxBounds();
+
+  // Makes search box and content vertically centered in screen.
+  gfx::Rect search_box_bounds(contents_view()->GetDefaultSearchBoxBounds());
+  const int total_height =
+      GetDefaultContentsBounds().bottom() - search_box_bounds.y();
+  search_box_bounds.set_y(
+      std::max(search_box_bounds.y(),
+               (contents_view()->GetDisplayHeight() - total_height) / 2));
+  return search_box_bounds;
 }
 
 void AppsContainerView::OnTopIconAnimationsComplete() {
