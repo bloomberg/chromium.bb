@@ -11,13 +11,16 @@
 
 // View to display a Most Visited tile based on the suggestion.
 // It displays the favicon for this Most Visited suggestion and its title.
-@interface MostVisitedTileView : UIView
+@interface MostVisitedTileView : UIButton
 
 // FaviconView displaying the favicon.
 @property(nonatomic, strong, readonly, nonnull) FaviconViewNew* faviconView;
 
 // Title of the Most Visited.
 @property(nonatomic, strong, readonly, nonnull) UILabel* titleLabel;
+
+// URL of the Most Visited.
+@property(nonatomic, strong, nullable) NSURL* URL;
 
 @end
 
