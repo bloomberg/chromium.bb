@@ -92,6 +92,13 @@ class BufferViewBase {
     first_ += n;
   }
 
+  // Moves the start of the view to |pos| which is in range [begin(), end()).
+  void seek(iterator pos) {
+    DCHECK_GE(pos, begin());
+    DCHECK_LE(pos, end());
+    first_ = pos;
+  }
+
  private:
   iterator first_ = nullptr;
   iterator last_ = nullptr;
