@@ -4623,6 +4623,12 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
     tmp_dist =
         av1_block_error(coeff, dqcoeff, buffer_length, &tmp_sse) >> shift;
 
+#if CONFIG_MRC_TX
+  if (tx_type == MRC_DCT && !xd->mi[0]->mbmi.valid_mrc_mask) {
+    av1_invalid_rd_stats(rd_stats);
+    return;
+  }
+#endif  // CONFIG_MRC_TX
   if (
 #if CONFIG_DIST_8X8
       sub8x8tx_in_gte8x8blk_in_plane0 ||
@@ -4776,8 +4782,13 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   if (cpi->common.tx_mode == TX_MODE_SELECT || tx_size == TX_4X4) {
     inter_tx_size[0][0] = tx_size;
 
+#if CONFIG_MRC_TX
+    if (tx_size == TX_32X32 && mbmi->tx_type != DCT_DCT &&
+        rd_stats_stack[block32].rate != INT_MAX && !USE_MRC_INTER) {
+#else
     if (tx_size == TX_32X32 && mbmi->tx_type != DCT_DCT &&
         rd_stats_stack[block32].rate != INT_MAX) {
+#endif  // CONFIG_MRC_TX
       *rd_stats = rd_stats_stack[block32];
       p->eobs[block] = !rd_stats->skip;
       x->blk_skip[plane][blk_row * bw + blk_col] = rd_stats->skip;
@@ -4788,6 +4799,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
         rd_stats_stack[block32] = *rd_stats;
       }
     }
+    if (rd_stats->rate == INT_MAX) return;
 
     if ((RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist) >=
              RDCOST(x->rdmult, zero_blk_rate, rd_stats->sse) ||
@@ -4842,6 +4854,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
       av1_tx_block_rd_b(cpi, x, quarter_txsize, 0, 0, plane, 0, plane_bsize,
                         pta, ptl, &rd_stats_qttx);
+      if (rd_stats->rate == INT_MAX) return;
 
       tx_size_ctx = txsize_sqr_map[quarter_txsize];
       coeff_ctx = get_entropy_context(quarter_txsize, pta, ptl);
@@ -4871,6 +4884,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       av1_tx_block_rd_b(cpi, x, quarter_txsize, blk_row_offset, blk_col_offset,
                         plane, block_offset_qttx, plane_bsize, pta, ptl,
                         &rd_stats_tmp);
+
+      if (rd_stats->rate == INT_MAX) return;
 
       av1_set_txb_context(x, plane, 0, quarter_txsize, pta, ptl);
       coeff_ctx = get_entropy_context(quarter_txsize, pta + blk_col_offset,
@@ -5171,6 +5186,10 @@ static void inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
                         mi_height != mi_width, plane_bsize, ctxa, ctxl,
                         tx_above, tx_left, &pn_rd_stats, ref_best_rd - this_rd,
                         &is_cost_valid, rd_stats_stack);
+        if (pn_rd_stats.rate == INT_MAX) {
+          av1_invalid_rd_stats(rd_stats);
+          return;
+        }
         av1_merge_rd_stats(rd_stats, &pn_rd_stats);
         this_rd += AOMMIN(RDCOST(x->rdmult, pn_rd_stats.rate, pn_rd_stats.dist),
                           RDCOST(x->rdmult, 0, pn_rd_stats.sse));
