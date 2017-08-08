@@ -22,6 +22,10 @@
     <org.chromium.chrome.browser.preferences.ChromeBasePreference
         android:key="saved_passwords"/>
     <Preference
+        android:fragment="org.chromium.chrome.browser.preferences.NotificationsPreferences"
+        android:key="notifications"
+        android:title="@string/prefs_notifications" />
+    <Preference
         android:fragment="org.chromium.chrome.browser.preferences.HomepagePreferences"
         android:key="homepage"
         android:title="@string/options_homepage_title" />
