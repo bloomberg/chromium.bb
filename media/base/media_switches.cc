@@ -228,7 +228,7 @@ const base::Feature kMojoCdm{"MojoCdm", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Support FLAC codec within ISOBMFF streams used with Media Source Extensions.
 const base::Feature kMseFlacInIsobmff{"MseFlacInIsobmff",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use the new Remote Playback / media flinging pipeline.
 const base::Feature kNewRemotePlaybackPipeline{
