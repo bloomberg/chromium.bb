@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 
-class AppModalDialogHelper;
+class PopunderPreventer;
 
 class JavaScriptDialog {
  public:
@@ -39,7 +39,7 @@ class JavaScriptDialog {
   explicit JavaScriptDialog(content::WebContents* parent_web_contents);
 
  private:
-  std::unique_ptr<AppModalDialogHelper> dialog_helper_;
+  std::unique_ptr<PopunderPreventer> popunder_preventer_;
 };
 
 #endif  // CHROME_BROWSER_UI_JAVASCRIPT_DIALOGS_JAVASCRIPT_DIALOG_H_

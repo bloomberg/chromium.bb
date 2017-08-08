@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "components/app_modal/native_app_modal_dialog.h"
 
-class AppModalDialogHelper;
+class PopunderPreventer;
 
 namespace app_modal {
 class JavaScriptAppModalDialog;
@@ -50,7 +50,7 @@ class JavaScriptAppModalDialogCocoa : public app_modal::NativeAppModalDialog {
   NSAlert* GetAlert() const;
 
   std::unique_ptr<app_modal::JavaScriptAppModalDialog> dialog_;
-  std::unique_ptr<AppModalDialogHelper> popup_helper_;
+  std::unique_ptr<PopunderPreventer> popunder_preventer_;
 
   // Created in the constructor and destroyed in the destructor.
   base::scoped_nsobject<JavaScriptAppModalDialogHelper> helper_;
