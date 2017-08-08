@@ -155,8 +155,7 @@ bool CreateWindowStationAndDesktop(ScopedSid logon_sid,
 
   // Generate a unique window station name.
   std::string window_station_name = base::StringPrintf(
-      "chromoting-%d-%d",
-      base::GetCurrentProcId(),
+      "chromoting-%" CrPRIdPid "-%d", base::GetCurrentProcId(),
       base::RandInt(1, std::numeric_limits<int>::max()));
 
   // Make sure that a new window station will be created instead of opening

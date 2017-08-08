@@ -470,7 +470,7 @@ base::Process CloudPrintProxyPolicyStartupTest::Launch(
   EXPECT_FALSE(CheckServiceProcessReady());
 
   startup_channel_handle_ = mojo::edk::NamedPlatformHandle(
-      base::StringPrintf("%d.%p.%d", base::GetCurrentProcId(), this,
+      base::StringPrintf("%" CrPRIdPid ".%p.%d", base::GetCurrentProcId(), this,
                          base::RandInt(0, std::numeric_limits<int>::max())));
   startup_channel_ = IPC::ChannelProxy::Create(
       peer_connection_

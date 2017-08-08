@@ -311,7 +311,7 @@ void ScopedGroupPolicyRegistrySandbox::ActivateOverrides() {
   // makes sure that tests executing in parallel won't delete each other's
   // key, at DeleteKeys().
   key_name_ = base::ASCIIToUTF16(base::StringPrintf(
-        "SOFTWARE\\chromium unittest %d", base::GetCurrentProcId()));
+      "SOFTWARE\\chromium unittest %" CrPRIdPid, base::GetCurrentProcId()));
   std::wstring hklm_key_name = key_name_ + L"\\HKLM";
   std::wstring hkcu_key_name = key_name_ + L"\\HKCU";
 

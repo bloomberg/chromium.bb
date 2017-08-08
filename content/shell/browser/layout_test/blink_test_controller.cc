@@ -531,7 +531,7 @@ void BlinkTestController::PluginCrashed(const base::FilePath& plugin_path,
                                         base::ProcessId plugin_pid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   printer_->AddErrorMessage(
-      base::StringPrintf("#CRASHED - plugin (pid %d)", plugin_pid));
+      base::StringPrintf("#CRASHED - plugin (pid %" CrPRIdPid ")", plugin_pid));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&BlinkTestController::DiscardMainWindow),
