@@ -26,7 +26,7 @@ UA_IOS="Mozilla/5.0%20%28iPhone%3B%20CPU%20iPhone%20OS%2011_0%20like%20Mac%20OS\
 %20X%29%20AppleWebKit/603.1.30%20%28KHTML%2C%20like%20Gecko%29%20CriOS/60.0.311\
 2.72%20Mobile/15A5304i%20Safari/602.1"
 
-for i in `seq 1 4`; do
+for i in `seq 0 4`; do
   DOODLE_PARAM="data_push_epoch=200000000$i"
 
   # Android UA.
