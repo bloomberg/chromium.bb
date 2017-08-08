@@ -190,6 +190,10 @@ class WebState : public base::SupportsUserData {
   // (nothing loaded) and 1.0 (fully loaded).
   virtual double GetLoadingProgress() const = 0;
 
+  // Returns true if the web process backing this WebState is believed to
+  // currently be crashed.
+  virtual bool IsCrashed() const = 0;
+
   // Whether this instance is in the process of being destroyed.
   virtual bool IsBeingDestroyed() const = 0;
 
