@@ -411,29 +411,39 @@ void WorkerThread::InitializeOnWorkerThread(
 
   String source_code;
   std::unique_ptr<Vector<char>> cached_meta_data;
+  bool should_terminate = false;
   if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled() &&
       GetInstalledScriptsManager() &&
       GetInstalledScriptsManager()->IsScriptInstalled(script_url)) {
     // GetScriptData blocks until the script is received from the browser.
     auto script_data = GetInstalledScriptsManager()->GetScriptData(script_url);
-    DCHECK(script_data);
-    DCHECK(source_code.IsEmpty());
-    DCHECK(!cached_meta_data);
-    source_code = script_data->TakeSourceText();
-    cached_meta_data = script_data->TakeMetaData();
 
-    String referrer_policy = script_data->GetReferrerPolicy();
-    ContentSecurityPolicyResponseHeaders
-        content_security_policy_response_headers =
-            script_data->GetContentSecurityPolicyResponseHeaders();
-    worker_reporting_proxy_.DidLoadInstalledScript(
-        content_security_policy_response_headers, referrer_policy);
+    // |script_data| could be null if an error occurred in the browser process
+    // while trying to read the installed script. In that case, the worker
+    // thread will terminate after initialization of the global scope since
+    // PrepareForShutdownOnWorkerThread() assumes the global scope has already
+    // been initialized.
+    if (!script_data) {
+      should_terminate = true;
+    } else {
+      DCHECK(source_code.IsEmpty());
+      DCHECK(!cached_meta_data);
+      source_code = script_data->TakeSourceText();
+      cached_meta_data = script_data->TakeMetaData();
 
-    global_scope_creation_params->content_security_policy_raw_headers =
-        std::move(content_security_policy_response_headers);
-    global_scope_creation_params->referrer_policy = referrer_policy;
-    global_scope_creation_params->origin_trial_tokens =
-        script_data->CreateOriginTrialTokens();
+      global_scope_creation_params->content_security_policy_raw_headers =
+          script_data->GetContentSecurityPolicyResponseHeaders();
+      global_scope_creation_params->referrer_policy =
+          script_data->GetReferrerPolicy();
+      global_scope_creation_params->origin_trial_tokens =
+          script_data->CreateOriginTrialTokens();
+      // This may block until CSP and referrer policy are set on the main
+      // thread.
+      worker_reporting_proxy_.DidLoadInstalledScript(
+          global_scope_creation_params->content_security_policy_raw_headers
+              .value(),
+          global_scope_creation_params->referrer_policy);
+    }
   } else {
     source_code = std::move(global_scope_creation_params->source_code);
     cached_meta_data =
@@ -473,10 +483,11 @@ void WorkerThread::InitializeOnWorkerThread(
   if (start_mode == kPauseWorkerGlobalScopeOnStart)
     StartRunningDebuggerTasksOnPauseOnWorkerThread();
 
-  if (CheckRequestedToTerminateOnWorkerThread()) {
+  if (CheckRequestedToTerminateOnWorkerThread() || should_terminate) {
     // Stop further worker tasks from running after this point. WorkerThread
     // was requested to terminate before initialization or during running
-    // debugger tasks. performShutdownOnWorkerThread() will be called soon.
+    // debugger tasks, or loading the installed main script
+    // failed. PerformShutdownOnWorkerThread() will be called soon.
     PrepareForShutdownOnWorkerThread();
     return;
   }

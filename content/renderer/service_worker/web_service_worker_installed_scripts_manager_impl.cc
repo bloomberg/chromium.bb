@@ -22,9 +22,10 @@ class Receiver {
  public:
   using BytesChunk = blink::WebVector<char>;
 
-  explicit Receiver(mojo::ScopedDataPipeConsumerHandle handle)
+  Receiver(mojo::ScopedDataPipeConsumerHandle handle, uint64_t total_bytes)
       : handle_(std::move(handle)),
-        watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL) {}
+        watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+        remaining_bytes_(total_bytes) {}
 
   void Start(base::OnceClosure callback) {
     if (!handle_.is_valid()) {
@@ -33,12 +34,15 @@ class Receiver {
     }
     callback_ = std::move(callback);
     // base::Unretained is safe because |watcher_| is owned by |this|.
-    watcher_.Watch(handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
+    watcher_.Watch(handle_.get(),
+                   MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
                    base::Bind(&Receiver::OnReadable, base::Unretained(this)));
     watcher_.ArmOrNotify();
   }
 
-  void OnReadable(MojoResult /* unused */) {
+  void OnReadable(MojoResult) {
+    // It isn't necessary to handle MojoResult here since BeginReadDataRaw()
+    // returns an equivalent error.
     const void* buffer = nullptr;
     uint32_t bytes_read = 0;
     MojoResult rv =
@@ -50,16 +54,19 @@ class Receiver {
         return;
       case MOJO_RESULT_FAILED_PRECONDITION:
         // Closed by peer.
-        watcher_.Cancel();
-        handle_.reset();
-        DCHECK(callback_);
-        std::move(callback_).Run();
+        OnCompleted();
         return;
       case MOJO_RESULT_SHOULD_WAIT:
         watcher_.ArmOrNotify();
         return;
       case MOJO_RESULT_OK:
         break;
+      default:
+        // mojo::BeginReadDataRaw() should not return any other values.
+        // Notify the error to the browser by resetting the handle even though
+        // it's in the middle of data transfer.
+        OnCompleted();
+        return;
     }
 
     if (bytes_read > 0)
@@ -67,10 +74,13 @@ class Receiver {
 
     rv = handle_->EndReadData(bytes_read);
     DCHECK_EQ(rv, MOJO_RESULT_OK);
+    CHECK_GE(remaining_bytes_, bytes_read);
+    remaining_bytes_ -= bytes_read;
     watcher_.ArmOrNotify();
   }
 
   bool is_running() const { return handle_.is_valid(); }
+  bool has_received_all_data() const { return remaining_bytes_ == 0; }
 
   blink::WebVector<BytesChunk> TakeChunks() {
     DCHECK(!is_running());
@@ -78,6 +88,15 @@ class Receiver {
   }
 
  private:
+  void OnCompleted() {
+    handle_.reset();
+    watcher_.Cancel();
+    if (!has_received_all_data())
+      chunks_.clear();
+    DCHECK(callback_);
+    std::move(callback_).Run();
+  }
+
   base::OnceClosure callback_;
   mojo::ScopedDataPipeConsumerHandle handle_;
   mojo::SimpleWatcher watcher_;
@@ -85,6 +104,7 @@ class Receiver {
   // std::vector is internally used because blink::WebVector is immutable and
   // cannot append data.
   std::vector<BytesChunk> chunks_;
+  uint64_t remaining_bytes_;
 };
 
 // BundledReceivers is a helper class to wait for the end of reading body and
@@ -92,9 +112,11 @@ class Receiver {
 class BundledReceivers {
  public:
   BundledReceivers(mojo::ScopedDataPipeConsumerHandle meta_data_handle,
-                   mojo::ScopedDataPipeConsumerHandle body_handle)
-      : meta_data_(std::move(meta_data_handle)),
-        body_(std::move(body_handle)) {}
+                   uint64_t meta_data_size,
+                   mojo::ScopedDataPipeConsumerHandle body_handle,
+                   uint64_t body_size)
+      : meta_data_(std::move(meta_data_handle), meta_data_size),
+        body_(std::move(body_handle), body_size) {}
 
   // Starts reading the pipes and invokes |callback| when both are finished.
   void Start(base::OnceClosure callback) {
@@ -147,7 +169,8 @@ class Internal : public mojom::ServiceWorkerInstalledScriptsManager {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     GURL script_url = script_info->script_url;
     auto receivers = base::MakeUnique<BundledReceivers>(
-        std::move(script_info->meta_data), std::move(script_info->body));
+        std::move(script_info->meta_data), script_info->meta_data_size,
+        std::move(script_info->body), script_info->body_size);
     receivers->Start(base::BindOnce(&Internal::OnScriptReceived,
                                     weak_factory_.GetWeakPtr(),
                                     base::Passed(&script_info)));
@@ -163,6 +186,16 @@ class Internal : public mojom::ServiceWorkerInstalledScriptsManager {
     DCHECK(iter != running_receivers_.end());
     std::unique_ptr<BundledReceivers> receivers = std::move(iter->second);
     DCHECK(receivers);
+    if (!receivers->body()->has_received_all_data() ||
+        !receivers->meta_data()->has_received_all_data()) {
+      // TODO(shimazu): Add a RawScriptData with a failure flag to
+      // |script_container_| in order to distinguish failure of receiving the
+      // script from getting the script twice.
+      running_receivers_.erase(iter);
+      script_container_->OnAllDataAddedOnIOThread();
+      return;
+    }
+
     auto script_data =
         blink::WebServiceWorkerInstalledScriptsManager::RawScriptData::Create(
             blink::WebString::FromUTF8(script_info->encoding),
