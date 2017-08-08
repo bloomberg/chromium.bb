@@ -541,6 +541,7 @@ class InputHandlerProxyEventQueueTest : public testing::TestWithParam<bool> {
   void SetUp() override {
     bool wheel_scroll_latching_enabled = GetParam();
     event_disposition_recorder_.clear();
+    latency_info_recorder_.clear();
     input_handler_proxy_ = base::MakeUnique<TestInputHandlerProxy>(
         &mock_input_handler_, &mock_client_, wheel_scroll_latching_enabled);
     if (input_handler_proxy_->compositor_event_queue_)
@@ -603,6 +604,7 @@ class InputHandlerProxyEventQueueTest : public testing::TestWithParam<bool> {
       const ui::LatencyInfo& latency_info,
       std::unique_ptr<ui::DidOverscrollParams> overscroll_params) {
     event_disposition_recorder_.push_back(event_disposition);
+    latency_info_recorder_.push_back(latency_info);
   }
 
   std::deque<std::unique_ptr<EventWithCallback>>& event_queue() {
@@ -620,6 +622,7 @@ class InputHandlerProxyEventQueueTest : public testing::TestWithParam<bool> {
   std::unique_ptr<TestInputHandlerProxy> input_handler_proxy_;
   testing::StrictMock<MockInputHandlerProxyClient> mock_client_;
   std::vector<InputHandlerProxy::EventDisposition> event_disposition_recorder_;
+  std::vector<ui::LatencyInfo> latency_info_recorder_;
 
   base::MessageLoop loop_;
   base::WeakPtrFactory<InputHandlerProxyEventQueueTest> weak_ptr_factory_;
@@ -4120,6 +4123,38 @@ TEST_P(InputHandlerProxyEventQueueTest, TouchpadGestureScrollEndFlushQueue) {
   EXPECT_EQ(3ul, event_disposition_recorder_.size());
   EXPECT_FALSE(
       input_handler_proxy_->gesture_scroll_on_impl_thread_for_testing());
+}
+
+TEST_P(InputHandlerProxyEventQueueTest, CoalescedLatencyInfo) {
+  // Handle scroll on compositor.
+  cc::InputHandlerScrollResult scroll_result_did_scroll_;
+  scroll_result_did_scroll_.did_scroll = true;
+
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput()).Times(1);
+  EXPECT_CALL(
+      mock_input_handler_,
+      ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
+      .WillOnce(testing::Return(scroll_result_did_scroll_));
+  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+
+  HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
+  HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -20);
+  HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -40);
+  HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -30);
+  HandleGestureEvent(WebInputEvent::kGestureScrollEnd);
+  input_handler_proxy_->DeliverInputForBeginFrame();
+
+  EXPECT_EQ(0ul, event_queue().size());
+  // Should run callbacks for every original events.
+  EXPECT_EQ(5ul, event_disposition_recorder_.size());
+  EXPECT_EQ(5ul, latency_info_recorder_.size());
+  EXPECT_EQ(false, latency_info_recorder_[1].coalesced());
+  // Coalesced events should have latency set to coalesced.
+  EXPECT_EQ(true, latency_info_recorder_[2].coalesced());
+  EXPECT_EQ(true, latency_info_recorder_[3].coalesced());
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 
 INSTANTIATE_TEST_CASE_P(AnimateInput,

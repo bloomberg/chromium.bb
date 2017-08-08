@@ -72,15 +72,28 @@ void EventWithCallback::RunCallbacks(
     InputHandlerProxy::EventDisposition disposition,
     const LatencyInfo& latency,
     std::unique_ptr<DidOverscrollParams> did_overscroll_params) {
-  for (auto& original_event : original_events_) {
-    std::unique_ptr<DidOverscrollParams> did_overscroll_params_copy;
-    if (did_overscroll_params) {
-      did_overscroll_params_copy =
-          base::MakeUnique<DidOverscrollParams>(*did_overscroll_params);
-    }
-    std::move(original_event.callback_)
-        .Run(disposition, std::move(original_event.event_), latency,
-             std::move(did_overscroll_params));
+  // |original_events_| could be empty if this is the scroll event extracted
+  // from the matrix multiplication.
+  if (original_events_.size() == 0)
+    return;
+
+  // Ack the oldest event with original latency.
+  std::move(original_events_.front().callback_)
+      .Run(disposition, std::move(original_events_.front().event_), latency,
+           did_overscroll_params
+               ? base::MakeUnique<DidOverscrollParams>(*did_overscroll_params)
+               : nullptr);
+  original_events_.pop_front();
+
+  // Ack other events with coalesced latency to avoid redundant tracking.
+  LatencyInfo coalesced_latency = latency;
+  coalesced_latency.set_coalesced();
+  for (auto& coalesced_event : original_events_) {
+    std::move(coalesced_event.callback_)
+        .Run(disposition, std::move(coalesced_event.event_), coalesced_latency,
+             did_overscroll_params
+                 ? base::MakeUnique<DidOverscrollParams>(*did_overscroll_params)
+                 : nullptr);
   }
 }
 
