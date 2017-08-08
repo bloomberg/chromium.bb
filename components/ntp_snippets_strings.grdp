@@ -19,9 +19,17 @@
     Articles aren't available right now
   </message>
 
-  <message name="IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER" desc="Header of the articles section, which is a list of news articles displayed as cards on the New Tab Page.">
-    Articles for you
-  </message>
+  <if expr="use_titlecase">
+    <message name="IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER" desc="Header of the articles section, which is a list of news articles displayed as cards on the New Tab Page.">
+      Articles for You
+    </message>
+  </if>
+
+  <if expr="not use_titlecase">
+    <message name="IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER" desc="Header of the articles section, which is a list of news articles displayed as cards on the New Tab Page.">
+      Articles for you
+    </message>
+  </if>
 
   <message name="IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_EMPTY" desc="On the New Tab Page, text of the card explaining to the user that they can expect to see suggested articles in this area in the future.">
     Your suggested articles appear here
@@ -52,9 +60,17 @@
     Your nearby suggestions appear here
   </message>
 
-  <message name="IDS_NTP_READING_LIST_SUGGESTIONS_SECTION_HEADER" desc="Header of the Reading List section. The Reading List section shows a list of unread pages from the Reading List.">
-    Reading list
-  </message>
+  <if expr="use_titlecase">
+    <message name="IDS_NTP_READING_LIST_SUGGESTIONS_SECTION_HEADER" desc="Header of the Reading List section. The Reading List section shows a list of unread pages from the Reading List.">
+      Reading List
+    </message>
+  </if>
+
+  <if expr="not use_titlecase">
+    <message name="IDS_NTP_READING_LIST_SUGGESTIONS_SECTION_HEADER" desc="Header of the Reading List section. The Reading List section shows a list of unread pages from the Reading List.">
+      Reading list
+    </message>
+  </if>
 
   <message name="IDS_NTP_READING_LIST_SUGGESTIONS_SECTION_EMPTY" desc="On the New Tab Page, text of the card explaining to the user that they can expect to see Reading List articles in this area in the future.">
     Pages from your reading list appear here
