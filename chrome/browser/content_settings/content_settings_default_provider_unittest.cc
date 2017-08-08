@@ -4,7 +4,9 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -24,12 +26,13 @@ using ::testing::_;
 
 namespace content_settings {
 
-class DefaultProviderTest : public testing::Test {
+class ContentSettingsDefaultProviderTest : public testing::Test {
  public:
-  DefaultProviderTest()
-      : provider_(profile_.GetPrefs(), false) {
+  ContentSettingsDefaultProviderTest()
+      : provider_(profile_.GetPrefs(), false) {}
+  ~ContentSettingsDefaultProviderTest() override {
+    provider_.ShutdownOnUIThread();
   }
-  ~DefaultProviderTest() override { provider_.ShutdownOnUIThread(); }
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -37,7 +40,7 @@ class DefaultProviderTest : public testing::Test {
   DefaultProvider provider_;
 };
 
-TEST_F(DefaultProviderTest, DefaultValues) {
+TEST_F(ContentSettingsDefaultProviderTest, DefaultValues) {
   // Check setting defaults.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             TestUtils::GetContentSetting(&provider_, GURL(), GURL(),
@@ -71,7 +74,7 @@ TEST_F(DefaultProviderTest, DefaultValues) {
   EXPECT_FALSE(value.get());
 }
 
-TEST_F(DefaultProviderTest, IgnoreNonDefaultSettings) {
+TEST_F(ContentSettingsDefaultProviderTest, IgnoreNonDefaultSettings) {
   GURL primary_url("http://www.google.com");
   GURL secondary_url("http://www.google.com");
 
@@ -93,7 +96,7 @@ TEST_F(DefaultProviderTest, IgnoreNonDefaultSettings) {
                                          std::string(), false));
 }
 
-TEST_F(DefaultProviderTest, Observer) {
+TEST_F(ContentSettingsDefaultProviderTest, Observer) {
   MockObserver mock_observer;
   EXPECT_CALL(mock_observer,
               OnContentSettingChanged(
@@ -113,8 +116,7 @@ TEST_F(DefaultProviderTest, Observer) {
                               new base::Value(CONTENT_SETTING_BLOCK));
 }
 
-
-TEST_F(DefaultProviderTest, ObservePref) {
+TEST_F(ContentSettingsDefaultProviderTest, ObservePref) {
   PrefService* prefs = profile_.GetPrefs();
 
   provider_.SetWebsiteSetting(ContentSettingsPattern::Wildcard(),
@@ -142,7 +144,7 @@ TEST_F(DefaultProviderTest, ObservePref) {
 }
 
 // Tests that fullscreen and mouselock content settings are cleared.
-TEST_F(DefaultProviderTest, DiscardObsoletePreferences) {
+TEST_F(ContentSettingsDefaultProviderTest, DiscardObsoletePreferences) {
   static const char kFullscreenPrefPath[] =
       "profile.default_content_setting_values.fullscreen";
 #if !defined(OS_ANDROID)
@@ -173,7 +175,42 @@ TEST_F(DefaultProviderTest, DiscardObsoletePreferences) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK, prefs->GetInteger(kGeolocationPrefPath));
 }
 
-TEST_F(DefaultProviderTest, OffTheRecord) {
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+TEST_F(ContentSettingsDefaultProviderTest, DiscardObsoletePluginsAllow) {
+  PrefService* prefs = profile_.GetPrefs();
+  const std::string& plugins_pref_path =
+      WebsiteSettingsRegistry::GetInstance()
+          ->Get(ContentSettingsType::CONTENT_SETTINGS_TYPE_PLUGINS)
+          ->default_value_pref_name();
+
+  // The ALLOW value of the plugins content setting should be discarded.
+  {
+    prefs->SetInteger(plugins_pref_path, CONTENT_SETTING_ALLOW);
+    DefaultProvider provider(prefs, false);
+    EXPECT_FALSE(prefs->HasPrefPath(plugins_pref_path));
+  }
+
+  // Other values of the plugins content setting should be preserved.
+  {
+    prefs->SetInteger(plugins_pref_path, CONTENT_SETTING_BLOCK);
+    DefaultProvider provider(prefs, false);
+    EXPECT_TRUE(prefs->HasPrefPath(plugins_pref_path));
+    EXPECT_EQ(CONTENT_SETTING_BLOCK, prefs->GetInteger(plugins_pref_path));
+  }
+
+  {
+    prefs->SetInteger(plugins_pref_path,
+                      CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+    DefaultProvider provider(prefs, false);
+
+    EXPECT_TRUE(prefs->HasPrefPath(plugins_pref_path));
+    EXPECT_EQ(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
+              prefs->GetInteger(plugins_pref_path));
+  }
+}
+#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
+
+TEST_F(ContentSettingsDefaultProviderTest, OffTheRecord) {
   DefaultProvider otr_provider(profile_.GetPrefs(), true /* incognito */);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
