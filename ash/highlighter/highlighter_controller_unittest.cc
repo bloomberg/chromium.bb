@@ -22,19 +22,11 @@ class HighlighterControllerTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    controller_ = base::MakeUnique<HighlighterController>();
-  }
-
-  void TearDown() override {
-    // This needs to be called first to remove the event handler before the
-    // shell instance gets torn down.
-    controller_.reset();
-    AshTestBase::TearDown();
+    controller_test_api_ = base::MakeUnique<HighlighterControllerTestApi>(
+        ash::Shell::Get()->highlighter_controller());
   }
 
  protected:
-  std::unique_ptr<HighlighterController> controller_;
-
   void TraceRect(const gfx::Rect& rect) {
     GetEventGenerator().MoveTouch(gfx::Point(rect.x(), rect.y()));
     GetEventGenerator().PressTouch();
@@ -45,6 +37,8 @@ class HighlighterControllerTest : public AshTestBase {
     GetEventGenerator().ReleaseTouch();
   }
 
+  std::unique_ptr<HighlighterControllerTestApi> controller_test_api_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(HighlighterControllerTest);
 };
@@ -54,100 +48,96 @@ class HighlighterControllerTest : public AshTestBase {
 // Test to ensure the class responsible for drawing the highlighter pointer
 // receives points from stylus movements as expected.
 TEST_F(HighlighterControllerTest, HighlighterRenderer) {
-  HighlighterControllerTestApi controller_test_api_(controller_.get());
-
   // The highlighter pointer mode only works with stylus.
   GetEventGenerator().EnterPenPointerMode();
 
   // When disabled the highlighter pointer should not be showing.
   GetEventGenerator().MoveTouch(gfx::Point(1, 1));
-  EXPECT_FALSE(controller_test_api_.IsShowingHighlighter());
+  EXPECT_FALSE(controller_test_api_->IsShowingHighlighter());
 
   // Verify that by enabling the mode, the highlighter pointer should still not
   // be showing.
-  controller_test_api_.SetEnabled(true);
-  EXPECT_FALSE(controller_test_api_.IsShowingHighlighter());
+  controller_test_api_->SetEnabled(true);
+  EXPECT_FALSE(controller_test_api_->IsShowingHighlighter());
 
   // Verify moving the stylus 4 times will not display the highlighter pointer.
   GetEventGenerator().MoveTouch(gfx::Point(2, 2));
   GetEventGenerator().MoveTouch(gfx::Point(3, 3));
   GetEventGenerator().MoveTouch(gfx::Point(4, 4));
   GetEventGenerator().MoveTouch(gfx::Point(5, 5));
-  EXPECT_FALSE(controller_test_api_.IsShowingHighlighter());
+  EXPECT_FALSE(controller_test_api_->IsShowingHighlighter());
 
   // Verify pressing the stylus will show the highlighter pointer and add a
   // point but will not activate fading out.
   GetEventGenerator().PressTouch();
-  EXPECT_TRUE(controller_test_api_.IsShowingHighlighter());
-  EXPECT_FALSE(controller_test_api_.IsFadingAway());
-  EXPECT_EQ(1, controller_test_api_.points().GetNumberOfPoints());
+  EXPECT_TRUE(controller_test_api_->IsShowingHighlighter());
+  EXPECT_FALSE(controller_test_api_->IsFadingAway());
+  EXPECT_EQ(1, controller_test_api_->points().GetNumberOfPoints());
 
   // Verify dragging the stylus 2 times will add 2 more points.
   GetEventGenerator().MoveTouch(gfx::Point(6, 6));
   GetEventGenerator().MoveTouch(gfx::Point(7, 7));
-  EXPECT_EQ(3, controller_test_api_.points().GetNumberOfPoints());
+  EXPECT_EQ(3, controller_test_api_->points().GetNumberOfPoints());
 
   // Verify releasing the stylus still shows the highlighter pointer, which is
   // fading away.
   GetEventGenerator().ReleaseTouch();
-  EXPECT_TRUE(controller_test_api_.IsShowingHighlighter());
-  EXPECT_TRUE(controller_test_api_.IsFadingAway());
+  EXPECT_TRUE(controller_test_api_->IsShowingHighlighter());
+  EXPECT_TRUE(controller_test_api_->IsFadingAway());
 
   // Verify that disabling the mode does not display the highlighter pointer.
-  controller_test_api_.SetEnabled(false);
-  EXPECT_FALSE(controller_test_api_.IsShowingHighlighter());
-  EXPECT_FALSE(controller_test_api_.IsFadingAway());
+  controller_test_api_->SetEnabled(false);
+  EXPECT_FALSE(controller_test_api_->IsShowingHighlighter());
+  EXPECT_FALSE(controller_test_api_->IsFadingAway());
 
   // Verify that disabling the mode while highlighter pointer is displayed does
   // not display the highlighter pointer.
-  controller_test_api_.SetEnabled(true);
+  controller_test_api_->SetEnabled(true);
   GetEventGenerator().PressTouch();
   GetEventGenerator().MoveTouch(gfx::Point(6, 6));
-  EXPECT_TRUE(controller_test_api_.IsShowingHighlighter());
-  controller_test_api_.SetEnabled(false);
-  EXPECT_FALSE(controller_test_api_.IsShowingHighlighter());
+  EXPECT_TRUE(controller_test_api_->IsShowingHighlighter());
+  controller_test_api_->SetEnabled(false);
+  EXPECT_FALSE(controller_test_api_->IsShowingHighlighter());
 
   // Verify that the highlighter pointer does not add points while disabled.
   GetEventGenerator().PressTouch();
   GetEventGenerator().MoveTouch(gfx::Point(8, 8));
   GetEventGenerator().ReleaseTouch();
   GetEventGenerator().MoveTouch(gfx::Point(9, 9));
-  EXPECT_FALSE(controller_test_api_.IsShowingHighlighter());
+  EXPECT_FALSE(controller_test_api_->IsShowingHighlighter());
 
   // Verify that the highlighter pointer does not get shown if points are not
   // coming from the stylus, even when enabled.
   GetEventGenerator().ExitPenPointerMode();
-  controller_test_api_.SetEnabled(true);
+  controller_test_api_->SetEnabled(true);
   GetEventGenerator().PressTouch();
   GetEventGenerator().MoveTouch(gfx::Point(10, 10));
   GetEventGenerator().MoveTouch(gfx::Point(11, 11));
-  EXPECT_FALSE(controller_test_api_.IsShowingHighlighter());
+  EXPECT_FALSE(controller_test_api_->IsShowingHighlighter());
   GetEventGenerator().ReleaseTouch();
 }
 
 // Test to ensure the class responsible for drawing the highlighter pointer
 // handles prediction as expected when it receives points from stylus movements.
 TEST_F(HighlighterControllerTest, HighlighterPrediction) {
-  HighlighterControllerTestApi controller_test_api_(controller_.get());
-
-  controller_test_api_.SetEnabled(true);
+  controller_test_api_->SetEnabled(true);
   // The highlighter pointer mode only works with stylus.
   GetEventGenerator().EnterPenPointerMode();
   GetEventGenerator().PressTouch();
-  EXPECT_TRUE(controller_test_api_.IsShowingHighlighter());
+  EXPECT_TRUE(controller_test_api_->IsShowingHighlighter());
 
-  EXPECT_EQ(1, controller_test_api_.points().GetNumberOfPoints());
+  EXPECT_EQ(1, controller_test_api_->points().GetNumberOfPoints());
   // Initial press event shouldn't generate any predicted points as there's no
   // history to use for prediction.
-  EXPECT_EQ(0, controller_test_api_.predicted_points().GetNumberOfPoints());
+  EXPECT_EQ(0, controller_test_api_->predicted_points().GetNumberOfPoints());
 
   // Verify dragging the stylus 3 times will add some predicted points.
   GetEventGenerator().MoveTouch(gfx::Point(10, 10));
   GetEventGenerator().MoveTouch(gfx::Point(20, 20));
   GetEventGenerator().MoveTouch(gfx::Point(30, 30));
-  EXPECT_NE(0, controller_test_api_.predicted_points().GetNumberOfPoints());
+  EXPECT_NE(0, controller_test_api_->predicted_points().GetNumberOfPoints());
   // Verify predicted points are in the right direction.
-  for (const auto& point : controller_test_api_.predicted_points().points()) {
+  for (const auto& point : controller_test_api_->predicted_points().points()) {
     EXPECT_LT(30, point.location.x());
     EXPECT_LT(30, point.location.y());
   }
@@ -155,45 +145,43 @@ TEST_F(HighlighterControllerTest, HighlighterPrediction) {
 
 // Test that stylus gestures are correctly recognized by HighlighterController.
 TEST_F(HighlighterControllerTest, HighlighterGestures) {
-  HighlighterControllerTestApi controller_test_api_(controller_.get());
-
-  controller_test_api_.SetEnabled(true);
+  controller_test_api_->SetEnabled(true);
   GetEventGenerator().EnterPenPointerMode();
 
   // A non-horizontal stroke is not recognized
-  controller_test_api_.ResetSelection();
+  controller_test_api_->ResetSelection();
   GetEventGenerator().MoveTouch(gfx::Point(100, 100));
   GetEventGenerator().PressTouch();
   GetEventGenerator().MoveTouch(gfx::Point(200, 200));
   GetEventGenerator().ReleaseTouch();
-  EXPECT_FALSE(controller_test_api_.handle_selection_called());
+  EXPECT_FALSE(controller_test_api_->handle_selection_called());
 
   // An almost horizontal stroke is recognized
-  controller_test_api_.ResetSelection();
+  controller_test_api_->ResetSelection();
   GetEventGenerator().MoveTouch(gfx::Point(100, 100));
   GetEventGenerator().PressTouch();
   GetEventGenerator().MoveTouch(gfx::Point(300, 102));
   GetEventGenerator().ReleaseTouch();
-  EXPECT_TRUE(controller_test_api_.handle_selection_called());
+  EXPECT_TRUE(controller_test_api_->handle_selection_called());
 
   // Horizontal stroke selection rectangle should:
   //   have the same horizontal center line as the stroke bounding box,
   //   be 4dp wider than the stroke bounding box,
   //   be exactly 14dp high.
-  EXPECT_EQ("98,94 204x14", controller_test_api_.selection().ToString());
+  EXPECT_EQ("98,94 204x14", controller_test_api_->selection().ToString());
 
   // An insufficiently closed C-like shape is not recognized
-  controller_test_api_.ResetSelection();
+  controller_test_api_->ResetSelection();
   GetEventGenerator().MoveTouch(gfx::Point(100, 0));
   GetEventGenerator().PressTouch();
   GetEventGenerator().MoveTouch(gfx::Point(0, 0));
   GetEventGenerator().MoveTouch(gfx::Point(0, 100));
   GetEventGenerator().MoveTouch(gfx::Point(100, 100));
   GetEventGenerator().ReleaseTouch();
-  EXPECT_FALSE(controller_test_api_.handle_selection_called());
+  EXPECT_FALSE(controller_test_api_->handle_selection_called());
 
   // An almost closed G-like shape is recognized
-  controller_test_api_.ResetSelection();
+  controller_test_api_->ResetSelection();
   GetEventGenerator().MoveTouch(gfx::Point(200, 0));
   GetEventGenerator().PressTouch();
   GetEventGenerator().MoveTouch(gfx::Point(0, 0));
@@ -201,11 +189,11 @@ TEST_F(HighlighterControllerTest, HighlighterGestures) {
   GetEventGenerator().MoveTouch(gfx::Point(200, 100));
   GetEventGenerator().MoveTouch(gfx::Point(200, 20));
   GetEventGenerator().ReleaseTouch();
-  EXPECT_TRUE(controller_test_api_.handle_selection_called());
-  EXPECT_EQ("0,0 200x100", controller_test_api_.selection().ToString());
+  EXPECT_TRUE(controller_test_api_->handle_selection_called());
+  EXPECT_EQ("0,0 200x100", controller_test_api_->selection().ToString());
 
   // A closed diamond shape is recognized
-  controller_test_api_.ResetSelection();
+  controller_test_api_->ResetSelection();
   GetEventGenerator().MoveTouch(gfx::Point(100, 0));
   GetEventGenerator().PressTouch();
   GetEventGenerator().MoveTouch(gfx::Point(200, 150));
@@ -213,15 +201,13 @@ TEST_F(HighlighterControllerTest, HighlighterGestures) {
   GetEventGenerator().MoveTouch(gfx::Point(0, 150));
   GetEventGenerator().MoveTouch(gfx::Point(100, 0));
   GetEventGenerator().ReleaseTouch();
-  EXPECT_TRUE(controller_test_api_.handle_selection_called());
-  EXPECT_EQ("0,0 200x300", controller_test_api_.selection().ToString());
+  EXPECT_TRUE(controller_test_api_->handle_selection_called());
+  EXPECT_EQ("0,0 200x300", controller_test_api_->selection().ToString());
 }
 
 // Test that stylus gesture recognition correctly handles display scaling
 TEST_F(HighlighterControllerTest, HighlighterGesturesScaled) {
-  HighlighterControllerTestApi controller_test_api_(controller_.get());
-
-  controller_test_api_.SetEnabled(true);
+  controller_test_api_->SetEnabled(true);
   GetEventGenerator().EnterPenPointerMode();
 
   const gfx::Rect original_rect(200, 100, 400, 300);
@@ -244,11 +230,11 @@ TEST_F(HighlighterControllerTest, HighlighterGesturesScaled) {
       SCOPED_TRACE(display_spec);
       UpdateDisplay(display_spec);
 
-      controller_test_api_.ResetSelection();
+      controller_test_api_->ResetSelection();
       TraceRect(original_rect);
-      EXPECT_TRUE(controller_test_api_.handle_selection_called());
+      EXPECT_TRUE(controller_test_api_->handle_selection_called());
 
-      const gfx::Rect selection = controller_test_api_.selection();
+      const gfx::Rect selection = controller_test_api_->selection();
       EXPECT_TRUE(inflated.Contains(selection));
       EXPECT_TRUE(selection.Contains(original_rect));
     }
@@ -257,40 +243,38 @@ TEST_F(HighlighterControllerTest, HighlighterGesturesScaled) {
 
 // Test that stylus gesture recognition correctly handles display rotation
 TEST_F(HighlighterControllerTest, HighlighterGesturesRotated) {
-  HighlighterControllerTestApi controller_test_api_(controller_.get());
-
-  controller_test_api_.SetEnabled(true);
+  controller_test_api_->SetEnabled(true);
   GetEventGenerator().EnterPenPointerMode();
 
   const gfx::Rect trace(200, 100, 400, 300);
 
   // No rotation
   UpdateDisplay("1500x1000");
-  controller_test_api_.ResetSelection();
+  controller_test_api_->ResetSelection();
   TraceRect(trace);
-  EXPECT_TRUE(controller_test_api_.handle_selection_called());
-  EXPECT_EQ("200,100 400x300", controller_test_api_.selection().ToString());
+  EXPECT_TRUE(controller_test_api_->handle_selection_called());
+  EXPECT_EQ("200,100 400x300", controller_test_api_->selection().ToString());
 
   // Rotate to 90 degrees
   UpdateDisplay("1500x1000/r");
-  controller_test_api_.ResetSelection();
+  controller_test_api_->ResetSelection();
   TraceRect(trace);
-  EXPECT_TRUE(controller_test_api_.handle_selection_called());
-  EXPECT_EQ("100,899 300x400", controller_test_api_.selection().ToString());
+  EXPECT_TRUE(controller_test_api_->handle_selection_called());
+  EXPECT_EQ("100,899 300x400", controller_test_api_->selection().ToString());
 
   // Rotate to 180 degrees
   UpdateDisplay("1500x1000/u");
-  controller_test_api_.ResetSelection();
+  controller_test_api_->ResetSelection();
   TraceRect(trace);
-  EXPECT_TRUE(controller_test_api_.handle_selection_called());
-  EXPECT_EQ("899,599 400x300", controller_test_api_.selection().ToString());
+  EXPECT_TRUE(controller_test_api_->handle_selection_called());
+  EXPECT_EQ("899,599 400x300", controller_test_api_->selection().ToString());
 
   // Rotate to 270 degrees
   UpdateDisplay("1500x1000/l");
-  controller_test_api_.ResetSelection();
+  controller_test_api_->ResetSelection();
   TraceRect(trace);
-  EXPECT_TRUE(controller_test_api_.handle_selection_called());
-  EXPECT_EQ("599,200 300x400", controller_test_api_.selection().ToString());
+  EXPECT_TRUE(controller_test_api_->handle_selection_called());
+  EXPECT_EQ("599,200 300x400", controller_test_api_->selection().ToString());
 }
 
 }  // namespace ash

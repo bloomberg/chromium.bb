@@ -49,11 +49,11 @@ class MetalayerToolTest : public AshTestBase {
 
 // The metalayer tool is only visible when the delegate supports metalayer.
 TEST_F(MetalayerToolTest, ViewOnlyCreatedWhenMetalayerIsSupported) {
-  test_palette_delegate()->set_is_metalayer_supported(false);
+  test_palette_delegate()->SetMetalayerSupported(false);
   EXPECT_FALSE(tool_->CreateView());
   tool_->OnViewDestroyed();
 
-  test_palette_delegate()->set_is_metalayer_supported(true);
+  test_palette_delegate()->SetMetalayerSupported(true);
   std::unique_ptr<views::View> view = base::WrapUnique(tool_->CreateView());
   EXPECT_TRUE(view);
   tool_->OnViewDestroyed();
@@ -83,6 +83,17 @@ TEST_F(MetalayerToolTest, MetalayerCallbackDisablesPaletteTool) {
   EXPECT_CALL(*palette_tool_delegate_.get(),
               DisableTool(PaletteToolId::METALAYER));
   test_palette_delegate()->metalayer_closed().Run();
+}
+
+// Verifies that disabling the metalayer support in the delegate disables the
+// tool.
+TEST_F(MetalayerToolTest, MetalayerUnsupportedDisablesPaletteTool) {
+  test_palette_delegate()->SetMetalayerSupported(true);
+  tool_->OnEnable();
+  // Disabling the metalayer support in the delegate will disable the tool.
+  EXPECT_CALL(*palette_tool_delegate_.get(),
+              DisableTool(PaletteToolId::METALAYER));
+  test_palette_delegate()->SetMetalayerSupported(false);
 }
 
 }  // namespace ash
