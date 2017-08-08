@@ -18,12 +18,6 @@ enum ShelfAction {
   APP_LIST_SHOWN,    // The app list launcher menu was shown.
 };
 
-// These values match ash::ShelfAlignment.
-enum ShelfAlignment { BOTTOM, LEFT, RIGHT, BOTTOM_LOCKED, };
-
-// These values match ash::ShelfAutoHideBehavior.
-enum ShelfAutoHideBehavior { ALWAYS, NEVER, HIDDEN, };
-
 // Represents the status of items in the shelf.
 // These values match ash::ShelfItemStatus.
 enum ShelfItemStatus {
@@ -78,22 +72,10 @@ interface ShelfController {
   UpdateShelfItem(ShelfItem item);
   // Sets the |delegate| for the item with |id|.
   SetShelfItemDelegate(ShelfID id, ShelfItemDelegate delegate);
-
-  // Set the shelf alignment and auto-hide behavior. See Shelf for details.
-  // TODO(jamescook): Eliminate all these methods and use the ash pref service
-  // to observe and to set prefs. http://crbug.com/723085
-  SetAlignment(ShelfAlignment alignment, int64 display_id);
-  SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide, int64 display_id);
 };
 
 // A Shelf observer, used to persist profile settings and cache a ShelfModel.
 interface ShelfObserver {
-  // TODO(jamescook): Eliminate all these methods and use the ash pref service
-  // to observe and to set prefs. http://crbug.com/723085
-  OnShelfInitialized(int64 display_id);
-  OnAlignmentChanged(ShelfAlignment alignment, int64 display_id);
-  OnAutoHideBehaviorChanged(ShelfAutoHideBehavior auto_hide, int64 display_id);
-
   // Called when the |item| has been added at |index|.
   OnShelfItemAdded(int32 index, ShelfItem item);
   // Called when the item with |id| has been removed.

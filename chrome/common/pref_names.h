@@ -773,13 +773,7 @@ extern const char kMediaGalleriesRememberedGalleries[];
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-extern const char kShelfAlignment[];
-extern const char kShelfAlignmentLocal[];
-extern const char kShelfAutoHideBehavior[];
-extern const char kShelfAutoHideBehaviorLocal[];
 extern const char kShelfChromeIconIndex[];
-extern const char kShelfPreferences[];
-
 extern const char kPinnedLauncherApps[];
 extern const char kPolicyPinnedLauncherApps[];
 #endif  // defined(OS_CHROMEOS)

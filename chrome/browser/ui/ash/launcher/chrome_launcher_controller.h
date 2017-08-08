@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -20,7 +19,6 @@
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
-#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -67,7 +65,6 @@ class ChromeLauncherController
       public AppIconLoaderDelegate,
       private ash::mojom::ShelfObserver,
       private ash::ShelfModelObserver,
-      private ash::WindowTreeHostManager::Observer,
       private AppSyncUIStateObserver,
       private app_list::AppListSyncableService::Observer,
       private sync_preferences::PrefServiceSyncableObserver {
@@ -224,11 +221,6 @@ class ChromeLauncherController
   // Controller to launch ARC apps in deferred mode.
   ArcAppDeferredLauncherController* GetArcDeferredLauncher();
 
-  // Sets the shelf auto-hide and/or alignment behavior from prefs.
-  void SetShelfAutoHideBehaviorFromPrefs();
-  void SetShelfAlignmentFromPrefs();
-  void SetShelfBehaviorsFromPrefs();
-
   // Temporarily prevent pinned shelf item changes from updating the sync model.
   using ScopedPinSyncDisabler = std::unique_ptr<base::AutoReset<bool>>;
   ScopedPinSyncDisabler GetScopedPinSyncDisabler();
@@ -356,11 +348,6 @@ class ChromeLauncherController
   void ReleaseProfile();
 
   // ash::mojom::ShelfObserver:
-  void OnShelfInitialized(int64_t display_id) override;
-  void OnAlignmentChanged(ash::ShelfAlignment alignment,
-                          int64_t display_id) override;
-  void OnAutoHideBehaviorChanged(ash::ShelfAutoHideBehavior auto_hide,
-                                 int64_t display_id) override;
   void OnShelfItemAdded(int32_t index, const ash::ShelfItem& item) override;
   void OnShelfItemRemoved(const ash::ShelfID& id) override;
   void OnShelfItemMoved(const ash::ShelfID& id, int32_t index) override;
@@ -376,9 +363,6 @@ class ChromeLauncherController
   void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override;
   void ShelfItemDelegateChanged(const ash::ShelfID& id,
                                 ash::ShelfItemDelegate* delegate) override;
-
-  // ash::WindowTreeHostManager::Observer:
-  void OnDisplayConfigurationChanged() override;
 
   // AppSyncUIStateObserver:
   void OnAppSyncUIStatusChanged() override;
@@ -412,9 +396,6 @@ class ChromeLauncherController
 
   // The binding this instance uses to implment mojom::ShelfObserver
   mojo::AssociatedBinding<ash::mojom::ShelfObserver> observer_binding_;
-
-  // True when setting a shelf pref in response to an observer notification.
-  bool updating_shelf_pref_from_observer_ = false;
 
   // True when applying changes from the remote ShelfModel owned by Ash.
   // Changes to the local ShelfModel should not be reported during this time.

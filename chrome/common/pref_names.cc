@@ -2159,30 +2159,12 @@ const char kMediaGalleriesRememberedGalleries[] =
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-// |kShelfAlignment| and |kShelfAutoHideBehavior| have a local variant. The
-// local variant is not synced and is used if set. If the local variant is not
-// set its value is set from the synced value (once prefs have been
-// synced). This gives a per-machine setting that is initialized from the last
-// set value.
-// These values are default on the machine but can be overridden by per-display
-// values in kShelfPreferences (unless overridden by managed policy).
-// String value corresponding to ash::Shell::ShelfAlignment.
-const char kShelfAlignment[] = "shelf_alignment";
-const char kShelfAlignmentLocal[] = "shelf_alignment_local";
-// String value corresponding to ash::Shell::ShelfAutoHideBehavior.
-const char kShelfAutoHideBehavior[] = "auto_hide_behavior";
-const char kShelfAutoHideBehaviorLocal[] = "auto_hide_behavior_local";
 // This value stores chrome icon's index in the launcher. This should be handled
 // separately with app shortcut's index because of ShelfModel's backward
 // compatibility. If we add chrome icon index to |kPinnedLauncherApps|, its
 // index is also stored in the |kPinnedLauncherApp| pref. It may causes
 // creating two chrome icons.
 const char kShelfChromeIconIndex[] = "shelf_chrome_icon_index";
-// Dictionary value that holds per-display preference of shelf alignment and
-// auto-hide behavior. Key of the dictionary is the id of the display, and
-// its value is a dictionary whose keys are kShelfAlignment and
-// kShelfAutoHideBehavior.
-const char kShelfPreferences[] = "shelf_preferences";
 
 const char kPinnedLauncherApps[] = "pinned_launcher_apps";
 const char kPolicyPinnedLauncherApps[] = "policy_pinned_launcher_apps";

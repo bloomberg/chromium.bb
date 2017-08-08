@@ -35,6 +35,8 @@ component("ash_public_cpp") {
     "shelf_model.cc",
     "shelf_model.h",
     "shelf_model_observer.h",
+    "shelf_prefs.cc",
+    "shelf_prefs.h",
     "shelf_types.cc",
     "shelf_types.h",
     "shell_window_ids.cc",
@@ -50,9 +52,11 @@ component("ash_public_cpp") {
   defines = [ "ASH_PUBLIC_IMPLEMENTATION" ]
 
   deps = [
+    "//components/prefs",
     "//mojo/common:common_custom_types",
     "//skia/public/interfaces",
     "//ui/aura",
+    "//ui/display",
     "//ui/views",
     "//ui/views/mus",
   ]

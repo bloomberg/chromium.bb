@@ -97,6 +97,10 @@ struct SessionInfo {
   // Whether the screen should be locked automatically before suspending.
   bool should_lock_screen_automatically;
 
+  // Whether the session is in app mode, which includes a kiosk-like mode for
+  // fullscreen web content or running a single [forced] Chrome or ARC app.
+  bool is_running_in_app_mode;
+
   // Sets whether adding a user session to ash is allowed.
   AddUserSessionPolicy add_user_session_policy;
 

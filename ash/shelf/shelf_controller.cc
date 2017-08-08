@@ -4,8 +4,10 @@
 
 #include "ash/shelf/shelf_controller.h"
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/remote_shelf_item_delegate.h"
+#include "ash/public/cpp/shelf_prefs.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/app_list_shelf_item_delegate.h"
@@ -14,6 +16,10 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/auto_reset.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/display/display.h"
@@ -31,6 +37,51 @@ Shelf* GetShelfForDisplay(int64_t display_id) {
   return root_window_controller ? root_window_controller->shelf() : nullptr;
 }
 
+// Set each Shelf's auto-hide behavior from the per-display pref.
+void SetShelfAutoHideFromPrefs() {
+  // TODO(jamescook): The session state check should not be necessary, but
+  // otherwise this wrongly tries to set the alignment on a secondary display
+  // during login before the ShelfLockingManager is created.
+  SessionController* session_controller = Shell::Get()->session_controller();
+  PrefService* prefs = Shell::Get()->GetActiveUserPrefService();
+  if (!prefs || !session_controller->IsActiveUserSessionStarted())
+    return;
+
+  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
+    auto value = GetShelfAutoHideBehaviorPref(prefs, display.id());
+    // Don't show the shelf in app mode.
+    if (session_controller->IsRunningInAppMode())
+      value = SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
+    Shelf* shelf = GetShelfForDisplay(display.id());
+    if (shelf)
+      shelf->SetAutoHideBehavior(value);
+  }
+}
+
+// Set each Shelf's alignment from the per-display pref.
+void SetShelfAlignmentFromPrefs() {
+  // TODO(jamescook): The session state check should not be necessary, but
+  // otherwise this wrongly tries to set the alignment on a secondary display
+  // during login before the ShelfLockingManager is created.
+  SessionController* session_controller = Shell::Get()->session_controller();
+  PrefService* prefs = Shell::Get()->GetActiveUserPrefService();
+  if (!prefs || !session_controller->IsActiveUserSessionStarted())
+    return;
+
+  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
+    auto value = GetShelfAlignmentPref(prefs, display.id());
+    Shelf* shelf = GetShelfForDisplay(display.id());
+    if (shelf)
+      shelf->SetAlignment(value);
+  }
+}
+
+// Set each Shelf's auto-hide behavior and alignment from the per-display prefs.
+void SetShelfBehaviorsFromPrefs() {
+  SetShelfAutoHideFromPrefs();
+  SetShelfAlignmentFromPrefs();
+}
+
 }  // namespace
 
 ShelfController::ShelfController() {
@@ -43,45 +94,38 @@ ShelfController::ShelfController() {
   model_.Set(0, item);
 
   model_.AddObserver(this);
+  Shell::Get()->AddShellObserver(this);
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 ShelfController::~ShelfController() {
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   model_.RemoveObserver(this);
+}
+
+// static
+void ShelfController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  // These prefs are marked PUBLIC for use by Chrome, they're currently only
+  // needed for ChromeLauncherController::ShelfBoundsChangesProbablyWithUser
+  // and ChromeLauncherPrefsObserver. See the pref names definitions for an
+  // explanation of the synced, local, and per-display behavior of these prefs.
+  registry->RegisterStringPref(
+      prefs::kShelfAutoHideBehavior, kShelfAutoHideBehaviorNever,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterStringPref(prefs::kShelfAutoHideBehaviorLocal,
+                               std::string(), PrefRegistry::PUBLIC);
+  registry->RegisterStringPref(
+      prefs::kShelfAlignment, kShelfAlignmentBottom,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterStringPref(prefs::kShelfAlignmentLocal, std::string(),
+                               PrefRegistry::PUBLIC);
+  registry->RegisterDictionaryPref(prefs::kShelfPreferences,
+                                   PrefRegistry::PUBLIC);
 }
 
 void ShelfController::BindRequest(mojom::ShelfControllerRequest request) {
   bindings_.AddBinding(this, std::move(request));
-}
-
-void ShelfController::NotifyShelfInitialized(Shelf* shelf) {
-  // Notify observers, Chrome will set alignment and auto-hide from prefs.
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(shelf->GetWindow());
-  int64_t display_id = display.id();
-  observers_.ForAllPtrs([display_id](mojom::ShelfObserver* observer) {
-    observer->OnShelfInitialized(display_id);
-  });
-}
-
-void ShelfController::NotifyShelfAlignmentChanged(Shelf* shelf) {
-  ShelfAlignment alignment = shelf->alignment();
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(shelf->GetWindow());
-  int64_t display_id = display.id();
-  observers_.ForAllPtrs(
-      [alignment, display_id](mojom::ShelfObserver* observer) {
-        observer->OnAlignmentChanged(alignment, display_id);
-      });
-}
-
-void ShelfController::NotifyShelfAutoHideBehaviorChanged(Shelf* shelf) {
-  ShelfAutoHideBehavior behavior = shelf->auto_hide_behavior();
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(shelf->GetWindow());
-  int64_t display_id = display.id();
-  observers_.ForAllPtrs([behavior, display_id](mojom::ShelfObserver* observer) {
-    observer->OnAutoHideBehaviorChanged(behavior, display_id);
-  });
 }
 
 void ShelfController::AddObserver(
@@ -104,26 +148,6 @@ void ShelfController::AddObserver(
   }
 
   observers_.AddPtr(std::move(observer_ptr));
-}
-
-void ShelfController::SetAlignment(ShelfAlignment alignment,
-                                   int64_t display_id) {
-  Shelf* shelf = GetShelfForDisplay(display_id);
-  // TODO(jamescook): The session state check should not be necessary, but
-  // otherwise this wrongly tries to set the alignment on a secondary display
-  // during login before the ShelfLockingManager is created.
-  if (shelf && Shell::Get()->session_controller()->IsActiveUserSessionStarted())
-    shelf->SetAlignment(alignment);
-}
-
-void ShelfController::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide,
-                                          int64_t display_id) {
-  Shelf* shelf = GetShelfForDisplay(display_id);
-  // TODO(jamescook): The session state check should not be necessary, but
-  // otherwise this wrongly tries to set auto-hide state on a secondary display
-  // during login.
-  if (shelf && Shell::Get()->session_controller()->IsActiveUserSessionStarted())
-    shelf->SetAutoHideBehavior(auto_hide);
 }
 
 void ShelfController::AddShelfItem(int32_t index, const ShelfItem& item) {
@@ -250,6 +274,42 @@ void ShelfController::ShelfItemDelegateChanged(const ShelfID& id,
         id, delegate ? delegate->CreateInterfacePtrAndBind()
                      : mojom::ShelfItemDelegatePtr());
   });
+}
+
+void ShelfController::OnActiveUserPrefServiceChanged(
+    PrefService* pref_service) {
+  pref_change_registrar_.reset();
+  if (!pref_service)  // Null during startup, user switch and tests.
+    return;
+  SetShelfBehaviorsFromPrefs();
+  pref_change_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(pref_service);
+  pref_change_registrar_->Add(prefs::kShelfAlignmentLocal,
+                              base::Bind(&SetShelfAlignmentFromPrefs));
+  pref_change_registrar_->Add(prefs::kShelfAutoHideBehaviorLocal,
+                              base::Bind(&SetShelfAutoHideFromPrefs));
+  pref_change_registrar_->Add(prefs::kShelfPreferences,
+                              base::Bind(&SetShelfBehaviorsFromPrefs));
+}
+
+void ShelfController::OnDisplayConfigurationChanged() {
+  // Set/init the shelf behaviors from preferences, in case a display was added.
+  SetShelfBehaviorsFromPrefs();
+}
+
+void ShelfController::OnWindowTreeHostReusedForDisplay(
+    AshWindowTreeHost* window_tree_host,
+    const display::Display& display) {
+  // See comment in OnWindowTreeHostsSwappedDisplays().
+  SetShelfBehaviorsFromPrefs();
+}
+
+void ShelfController::OnWindowTreeHostsSwappedDisplays(
+    AshWindowTreeHost* host1,
+    AshWindowTreeHost* host2) {
+  // The display ids for existing shelf instances may have changed, so update
+  // the alignment and auto-hide state from prefs. See http://crbug.com/748291
+  SetShelfBehaviorsFromPrefs();
 }
 
 }  // namespace ash

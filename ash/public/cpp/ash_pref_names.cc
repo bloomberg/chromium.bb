@@ -37,6 +37,25 @@ const char kNightLightScheduleType[] = "ash.night_light.schedule_type";
 const char kNightLightCustomStartTime[] = "ash.night_light.custom_start_time";
 const char kNightLightCustomEndTime[] = "ash.night_light.custom_end_time";
 
+// |kShelfAlignment| and |kShelfAutoHideBehavior| have a local variant. The
+// local variant is not synced and is used if set. If the local variant is not
+// set its value is set from the synced value (once prefs have been
+// synced). This gives a per-machine setting that is initialized from the last
+// set value.
+// These values are default on the machine but can be overridden by per-display
+// values in kShelfPreferences (unless overridden by managed policy).
+// String value corresponding to ash::ShelfAlignment (e.g. "Bottom").
+const char kShelfAlignment[] = "shelf_alignment";
+const char kShelfAlignmentLocal[] = "shelf_alignment_local";
+// String value corresponding to ash::ShelfAutoHideBehavior (e.g. "Never").
+const char kShelfAutoHideBehavior[] = "auto_hide_behavior";
+const char kShelfAutoHideBehaviorLocal[] = "auto_hide_behavior_local";
+// Dictionary value that holds per-display preference of shelf alignment and
+// auto-hide behavior. Key of the dictionary is the id of the display, and
+// its value is a dictionary whose keys are kShelfAlignment and
+// kShelfAutoHideBehavior.
+const char kShelfPreferences[] = "shelf_preferences";
+
 // Boolean pref indicating whether to show a logout button in the system tray.
 const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 

@@ -65,6 +65,7 @@ class TestSessionObserver : public SessionObserver {
 void FillDefaultSessionInfo(mojom::SessionInfo* info) {
   info->can_lock_screen = true;
   info->should_lock_screen_automatically = true;
+  info->is_running_in_app_mode = false;
   info->add_user_session_policy = AddUserSessionPolicy::ALLOWED;
   info->state = SessionState::LOGIN_PRIMARY;
 }
@@ -127,16 +128,25 @@ TEST_F(SessionControllerTest, SimpleSessionInfo) {
 
   EXPECT_TRUE(controller()->CanLockScreen());
   EXPECT_TRUE(controller()->ShouldLockScreenAutomatically());
+  EXPECT_FALSE(controller()->IsRunningInAppMode());
 
   info.can_lock_screen = false;
   SetSessionInfo(info);
   EXPECT_FALSE(controller()->CanLockScreen());
   EXPECT_TRUE(controller()->ShouldLockScreenAutomatically());
+  EXPECT_FALSE(controller()->IsRunningInAppMode());
 
   info.should_lock_screen_automatically = false;
   SetSessionInfo(info);
   EXPECT_FALSE(controller()->CanLockScreen());
   EXPECT_FALSE(controller()->ShouldLockScreenAutomatically());
+  EXPECT_FALSE(controller()->IsRunningInAppMode());
+
+  info.is_running_in_app_mode = true;
+  SetSessionInfo(info);
+  EXPECT_FALSE(controller()->CanLockScreen());
+  EXPECT_FALSE(controller()->ShouldLockScreenAutomatically());
+  EXPECT_TRUE(controller()->IsRunningInAppMode());
 }
 
 // Tests that the CanLockScreen is only true with an active user session.

@@ -35,31 +35,8 @@ extern const char kPinnedAppsPrefPinnedByPolicy[];
 // This is NOT a valid extension identifier so pre-M31 versions ignore it.
 extern const char kPinnedAppsPlaceholder[];
 
-// Values used for prefs::kShelfAutoHideBehavior.
-extern const char kShelfAutoHideBehaviorAlways[];
-extern const char kShelfAutoHideBehaviorNever[];
-
-// Values used for prefs::kShelfAlignment.
-extern const char kShelfAlignmentBottom[];
-extern const char kShelfAlignmentLeft[];
-extern const char kShelfAlignmentRight[];
-
 void RegisterChromeLauncherUserPrefs(
     user_prefs::PrefRegistrySyncable* registry);
-
-// Get or set the shelf auto hide behavior preference for a particular display.
-ash::ShelfAutoHideBehavior GetShelfAutoHideBehaviorPref(PrefService* prefs,
-                                                        int64_t display_id);
-void SetShelfAutoHideBehaviorPref(PrefService* prefs,
-                                  int64_t display_id,
-                                  ash::ShelfAutoHideBehavior behavior);
-
-// Get or set the shelf alignment preference for a particular display.
-ash::ShelfAlignment GetShelfAlignmentPref(PrefService* prefs,
-                                          int64_t display_id);
-void SetShelfAlignmentPref(PrefService* prefs,
-                           int64_t display_id,
-                           ash::ShelfAlignment alignment);
 
 // Get the list of pinned apps from preferences.
 std::vector<ash::ShelfID> GetPinnedAppsFromPrefs(
