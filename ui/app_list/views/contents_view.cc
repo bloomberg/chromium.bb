@@ -504,10 +504,14 @@ void ContentsView::Layout() {
 bool ContentsView::OnKeyPressed(const ui::KeyEvent& event) {
   if (app_list_pages_[GetActivePageIndex()]->OnKeyPressed(event))
     return true;
-  if (event.key_code() != ui::VKEY_TAB)
+  if (event.key_code() != ui::VKEY_TAB &&
+      !GetSearchBoxView()->IsArrowKey(event))
     return false;
   if (is_fullscreen_app_list_enabled_) {
-    GetSearchBoxView()->MoveTabFocus(event.IsShiftDown());
+    if (event.key_code() == ui::VKEY_TAB)
+      GetSearchBoxView()->MoveTabFocus(event.IsShiftDown());
+    else
+      GetSearchBoxView()->MoveArrowFocus(event);
     return true;
   }
   if (event.IsShiftDown()) {
