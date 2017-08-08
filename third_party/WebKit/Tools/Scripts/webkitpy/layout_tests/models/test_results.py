@@ -67,11 +67,5 @@ class TestResult(object):
     def __ne__(self, other):
         return not (self == other)
 
-    def has_failure_matching_types(self, *failure_classes):
-        for failure in self.failures:
-            if type(failure) in failure_classes:
-                return True
-        return False
-
     def dumps(self):
         return cPickle.dumps(self)
