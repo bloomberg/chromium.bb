@@ -241,9 +241,7 @@ void TextFinder::SetFindEndstateFocusAndSelection() {
 
   // If the user has set the selection since the match was found, we
   // don't focus anything.
-  VisibleSelection selection(
-      GetFrame()->Selection().ComputeVisibleSelectionInDOMTreeDeprecated());
-  if (!selection.IsNone())
+  if (!GetFrame()->Selection().GetSelectionInDOMTree().IsNone())
     return;
 
   // Need to clean out style and layout state before querying
