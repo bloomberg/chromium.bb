@@ -444,6 +444,7 @@ TEST(LayerImplTest, PerspectiveTransformHasReasonableScale) {
                                   &task_graph_runner);
   auto owned_layer = LayerImpl::Create(host_impl.active_tree(), 1);
   LayerImpl* layer = owned_layer.get();
+  layer->SetBounds(gfx::Size(10, 10));
   layer->set_contributes_to_drawn_render_surface(true);
   host_impl.active_tree()->SetRootLayerForTesting(std::move(owned_layer));
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
@@ -467,6 +468,16 @@ TEST(LayerImplTest, PerspectiveTransformHasReasonableScale) {
 
     ASSERT_TRUE(layer->ScreenSpaceTransform().HasPerspective());
     EXPECT_FLOAT_EQ(1.f, layer->GetIdealContentsScale());
+  }
+  // Ensure that large scales don't end up extremely large.
+  {
+    gfx::Transform transform;
+    transform.Scale(10000.1f, 10000.2f);
+    transform.ApplyPerspectiveDepth(10);
+    layer->draw_properties().screen_space_transform = transform;
+
+    ASSERT_TRUE(layer->ScreenSpaceTransform().HasPerspective());
+    EXPECT_FLOAT_EQ(127.f, layer->GetIdealContentsScale());
   }
 }
 

@@ -932,9 +932,30 @@ float LayerImpl::GetIdealContentsScale() const {
   const auto& transform = ScreenSpaceTransform();
   if (transform.HasPerspective()) {
     float scale = MathUtil::ComputeApproximateMaxScale(transform);
+
+    const int kMaxTilesToCoverLayerDimension = 5;
+    // Cap the scale in a way that it should be covered by at most
+    // |kMaxTilesToCoverLayerDimension|^2 default tile sizes. If this is left
+    // uncapped, then we can fairly easily use too much memory (or too many
+    // tiles). See crbug.com/752382 for an example of such a page. Note that
+    // because this is an approximation anyway, it's fine to use a smaller scale
+    // that desired. On top of this, the layer has a perspective transform so
+    // technically it could all be within the viewport, so it's important for us
+    // to have a reasonable scale here. The scale we use would also be at least
+    // |default_scale|, as checked below.
+    float scale_cap = std::min(
+        (layer_tree_impl()->settings().default_tile_size.width() - 2) *
+            kMaxTilesToCoverLayerDimension /
+            static_cast<float>(bounds().width()),
+        (layer_tree_impl()->settings().default_tile_size.height() - 2) *
+            kMaxTilesToCoverLayerDimension /
+            static_cast<float>(bounds().height()));
+    scale = std::min(scale, scale_cap);
+
     // Since we're approximating the scale anyway, round it to the nearest
     // integer to prevent jitter when animating the transform.
     scale = std::round(scale);
+
     // Don't let the scale fall below the default scale.
     return std::max(scale, default_scale);
   }
