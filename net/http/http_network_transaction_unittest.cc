@@ -8381,7 +8381,7 @@ TEST_F(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
 
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
-      nullptr, 0, 2, 1, "https://myproxy:70/foo.dat"));
+      nullptr, 0, 2, 1, "http://www.example.org/foo.dat"));
 
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
 
