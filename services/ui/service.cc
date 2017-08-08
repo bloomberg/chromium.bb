@@ -272,7 +272,7 @@ void Service::OnStart() {
   // so keep this line below both of those.
   input_device_server_.RegisterAsObserver();
 
-  window_server_.reset(new ws::WindowServer(this));
+  window_server_ = base::MakeUnique<ws::WindowServer>(this);
   std::unique_ptr<ws::GpuHost> gpu_host =
       base::MakeUnique<ws::DefaultGpuHost>(window_server_.get());
   std::unique_ptr<ws::FrameSinkManagerClientBinding> frame_sink_manager =

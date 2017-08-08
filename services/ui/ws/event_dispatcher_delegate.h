@@ -97,6 +97,13 @@ class EventDispatcherDelegate {
   virtual void OnEventTargetNotFound(const ui::Event& event,
                                      int64_t display_id) = 0;
 
+  // If an event is blocked by a modal window this function is used to determine
+  // which window the event should be dispatched to. Return null to indicate no
+  // window. |window| is the window the event would be targetted at if there was
+  // no modal window open.
+  virtual ServerWindow* GetFallbackTargetForEventBlockedByModal(
+      ServerWindow* window) = 0;
+
   // Called when an event occurs that targets a window that should be blocked
   // by a modal window. |modal_window| is the modal window that blocked the
   // event.
