@@ -42,6 +42,9 @@ class PrintPreviewDialogController
   // Call this instead of GetOrCreatePreviewDialog().
   static void PrintPreview(content::WebContents* initiator);
 
+  // Returns true if |url| is a print preview url.
+  static bool IsPrintPreviewURL(const GURL& url);
+
   // Get/Create the print preview dialog for |initiator|.
   // Exposed for unit tests.
   content::WebContents* GetOrCreatePreviewDialog(
@@ -65,12 +68,6 @@ class PrintPreviewDialogController
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
-
-  // Returns true if |contents| is a print preview dialog.
-  static bool IsPrintPreviewDialog(content::WebContents* contents);
-
-  // Returns true if |url| is a print preview url.
-  static bool IsPrintPreviewURL(const GURL& url);
 
   // Erase the initiator info associated with |preview_dialog|.
   void EraseInitiatorInfo(content::WebContents* preview_dialog);

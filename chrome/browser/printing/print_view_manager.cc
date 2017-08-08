@@ -59,7 +59,7 @@ PrintViewManager::PrintViewManager(content::WebContents* web_contents)
       print_preview_state_(NOT_PREVIEWING),
       print_preview_rfh_(nullptr),
       scripted_print_preview_rph_(nullptr) {
-  if (PrintPreviewDialogController::IsPrintPreviewDialog(web_contents)) {
+  if (PrintPreviewDialogController::IsPrintPreviewURL(web_contents->GetURL())) {
     EnableInternalPDFPluginForContents(
         web_contents->GetRenderProcessHost()->GetID(),
         web_contents->GetMainFrame()->GetRoutingID());
@@ -146,7 +146,8 @@ void PrintViewManager::PrintPreviewDone() {
 
 void PrintViewManager::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
-  if (PrintPreviewDialogController::IsPrintPreviewDialog(web_contents())) {
+  if (PrintPreviewDialogController::IsPrintPreviewURL(
+          web_contents()->GetURL())) {
     EnableInternalPDFPluginForContents(render_frame_host->GetProcess()->GetID(),
                                        render_frame_host->GetRoutingID());
   }
