@@ -102,11 +102,6 @@ class CC_PAINT_EXPORT RecordPaintCanvas final : public PaintCanvas {
                   SkScalar top,
                   const PaintFlags* flags) override;
 
-  void drawText(const void* text,
-                size_t byte_length,
-                SkScalar x,
-                SkScalar y,
-                const PaintFlags& flags) override;
   void drawPosText(const void* text,
                    size_t byte_length,
                    const SkPoint pos[],

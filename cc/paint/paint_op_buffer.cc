@@ -196,7 +196,6 @@ void RasterWithAlpha(const PaintOp* op,
   M(DrawRecordOp)     \
   M(DrawRectOp)       \
   M(DrawRRectOp)      \
-  M(DrawTextOp)       \
   M(DrawTextBlobOp)   \
   M(NoopOp)           \
   M(RestoreOp)        \
@@ -382,8 +381,6 @@ std::string PaintOpTypeToString(PaintOpType type) {
       return "DrawRect";
     case PaintOpType::DrawRRect:
       return "DrawRRect";
-    case PaintOpType::DrawText:
-      return "DrawText";
     case PaintOpType::DrawTextBlob:
       return "DrawTextBlob";
     case PaintOpType::Noop:
@@ -635,20 +632,6 @@ size_t DrawRRectOp::Serialize(const PaintOp* base_op,
   PaintOpWriter helper(memory, size);
   helper.Write(op->flags);
   helper.Write(op->rrect);
-  return helper.size();
-}
-
-size_t DrawTextOp::Serialize(const PaintOp* base_op,
-                             void* memory,
-                             size_t size,
-                             const SerializeOptions& options) {
-  auto* op = static_cast<const DrawTextOp*>(base_op);
-  PaintOpWriter helper(memory, size);
-  helper.Write(op->flags);
-  helper.Write(op->x);
-  helper.Write(op->y);
-  helper.Write(op->bytes);
-  helper.WriteData(op->bytes, op->GetData());
   return helper.size();
 }
 
@@ -1087,31 +1070,6 @@ PaintOp* DrawRRectOp::Deserialize(const void* input,
   return op;
 }
 
-PaintOp* DrawTextOp::Deserialize(const void* input,
-                                 size_t input_size,
-                                 void* output,
-                                 size_t output_size) {
-  CHECK_GE(output_size, sizeof(DrawTextOp) + input_size);
-  DrawTextOp* op = new (output) DrawTextOp;
-
-  PaintOpReader helper(input, input_size);
-  helper.Read(&op->flags);
-  helper.Read(&op->x);
-  helper.Read(&op->y);
-  helper.Read(&op->bytes);
-  if (helper.valid())
-    helper.ReadData(op->bytes, op->GetData());
-  if (!helper.valid() || !op->IsValid()) {
-    op->~DrawTextOp();
-    return nullptr;
-  }
-
-  op->type = static_cast<uint8_t>(PaintOpType::DrawText);
-  op->skip = MathUtil::UncheckedRoundUp(sizeof(DrawTextOp) + op->bytes,
-                                        PaintOpBuffer::PaintOpAlign);
-  return op;
-}
-
 PaintOp* DrawTextBlobOp::Deserialize(const void* input,
                                      size_t input_size,
                                      void* output,
@@ -1434,14 +1392,6 @@ void DrawRRectOp::RasterWithFlags(const DrawRRectOp* op,
   canvas->drawRRect(op->rrect, paint);
 }
 
-void DrawTextOp::RasterWithFlags(const DrawTextOp* op,
-                                 const PaintFlags* flags,
-                                 SkCanvas* canvas,
-                                 const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawText(op->GetData(), op->bytes, op->x, op->y, paint);
-}
-
 void DrawTextBlobOp::RasterWithFlags(const DrawTextBlobOp* op,
                                      const PaintFlags* flags,
                                      SkCanvas* canvas,
@@ -1650,8 +1600,6 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
       return true;
     }
     case PaintOpType::DrawRecord:
-      return false;
-    case PaintOpType::DrawText:
       return false;
     case PaintOpType::DrawTextBlob: {
       auto* text_op = static_cast<const DrawTextBlobOp*>(op);

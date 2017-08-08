@@ -73,15 +73,6 @@ class CC_PAINT_EXPORT DisplayItemList
     paint_op_buffer_.push<T>(std::forward<Args>(args)...);
   }
 
-  template <typename T, typename... Args>
-  void push_with_data(const void* data, size_t bytes, Args&&... args) {
-    DCHECK(in_painting_);
-    if (usage_hint_ == kTopLevelDisplayItemList)
-      offsets_.push_back(paint_op_buffer_.next_op_offset());
-    paint_op_buffer_.push_with_data<T>(data, bytes,
-                                       std::forward<Args>(args)...);
-  }
-
   template <typename T, typename M, typename... Args>
   void push_with_array(const void* data,
                        size_t bytes,
