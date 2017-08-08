@@ -1957,6 +1957,126 @@ TEST_P(NavigationManagerTest, BackwardItemsShouldBeEmptyIfFirstIsTransient) {
   EXPECT_TRUE(back_items.empty());
 }
 
+TEST_P(NavigationManagerTest, VisibleItemIsTransientItemIfPresent) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  navigation_manager()->AddTransientItem(GURL("http://www.url.com/1"));
+
+  ASSERT_TRUE(navigation_manager()->GetVisibleItem());
+  EXPECT_EQ("http://www.url.com/1",
+            navigation_manager()->GetVisibleItem()->GetURL().spec());
+
+  // Visible item is still transient item even if there is a committed item.
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/2"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  navigation_manager()->AddTransientItem(GURL("http://www.url.com/3"));
+
+  ASSERT_TRUE(navigation_manager()->GetVisibleItem());
+  EXPECT_EQ("http://www.url.com/3",
+            navigation_manager()->GetVisibleItem()->GetURL().spec());
+}
+
+TEST_P(NavigationManagerTest, PendingItemIsVisibleIfNewAndUserInitiated) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  ASSERT_TRUE(navigation_manager()->GetVisibleItem());
+  EXPECT_EQ("http://www.url.com/0",
+            navigation_manager()->GetVisibleItem()->GetURL().spec());
+
+  // Visible item is still the user initiated pending item even if there is a
+  // committed item.
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  ASSERT_TRUE(navigation_manager()->GetVisibleItem());
+  EXPECT_EQ("http://www.url.com/1",
+            navigation_manager()->GetVisibleItem()->GetURL().spec());
+}
+
+TEST_P(NavigationManagerTest, PendingItemIsNotVisibleIfNotUserInitiated) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::RENDERER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  EXPECT_EQ(nullptr, navigation_manager()->GetVisibleItem());
+}
+
+TEST_P(NavigationManagerTest, PendingItemIsNotVisibleIfNotNewNavigation) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::RENDERER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::RENDERER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/1"
+                  backListURLs:@[ @"http://www.url.com/0" ]
+               forwardListURLs:nil];
+  navigation_manager()->CommitPendingItem();
+
+  // Move pending item back to index 0.
+  if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
+    [session_controller() setPendingItemIndex:0];
+  } else {
+    OCMExpect([mock_web_view_ URL])
+        .andReturn([NSURL URLWithString:@"http://www.url.com/0"]);
+    [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"
+                    backListURLs:nil
+                 forwardListURLs:@[ @"http://www.url.com/1" ]];
+    navigation_manager()->AddPendingItem(
+        GURL("http://www.url.com/0"), Referrer(),
+        ui::PAGE_TRANSITION_FORWARD_BACK,
+        web::NavigationInitiationType::USER_INITIATED,
+        web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  }
+  ASSERT_EQ(0, navigation_manager()->GetPendingItemIndex());
+
+  ASSERT_TRUE(navigation_manager()->GetVisibleItem());
+  EXPECT_EQ("http://www.url.com/1",
+            navigation_manager()->GetVisibleItem()->GetURL().spec());
+}
+
+TEST_P(NavigationManagerTest, VisibleItemDefaultsToLastCommittedItem) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::RENDERER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::RENDERER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  ASSERT_TRUE(navigation_manager()->GetVisibleItem());
+  EXPECT_EQ("http://www.url.com/0",
+            navigation_manager()->GetVisibleItem()->GetURL().spec());
+}
+
 INSTANTIATE_TEST_CASE_P(
     ProgrammaticNavigationManagerTest,
     NavigationManagerTest,
