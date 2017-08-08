@@ -427,9 +427,6 @@ class TestPort(Port):
             'linux': ['precise', 'trusty']
         }
 
-    def buildbot_archives_baselines(self):
-        return self._name != 'test-win-win7'
-
     def _path_to_driver(self):
         # This routine shouldn't normally be called, but it is called by
         # the mock_drt Driver. We return something, but make sure it's useless.
