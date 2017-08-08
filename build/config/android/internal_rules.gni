@@ -1196,10 +1196,8 @@ if (enable_java_templates) {
         defined(invoker.supports_android) && invoker.supports_android &&
         (is_java_debug || dcheck_always_on)
 
-    _desugar =
-        defined(invoker.supports_android) && invoker.supports_android &&
-        ((defined(invoker.process_java8) && invoker.process_java8) || use_java8)
-
+    _desugar = defined(invoker.supports_android) && invoker.supports_android
+    
     _deps = []
     _previous_output_jar = _input_jar_path
 
@@ -2070,7 +2068,6 @@ if (enable_java_templates) {
       forward_variables_from(invoker,
                              [
                                "jar_excluded_patterns",
-                               "process_java8",
                                "strip_resource_classes",
                              ])
 
@@ -2298,6 +2295,7 @@ if (enable_java_templates) {
         "--jar-path=$_rebased_jar_path",
         "--java-srcjars=$_rebased_java_srcjars",
         "--java-srcjars=@FileArg($_rebased_build_config:javac:srcjars)",
+        "--java-version=1.8",
       ]
       if (_enable_interface_jars_javac) {
         args += [ "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)" ]
@@ -2323,11 +2321,6 @@ if (enable_java_templates) {
         _rebased_android_sdk_ijar =
             rebase_path(_android_sdk_ijar, root_build_dir)
         args += [ "--bootclasspath=$_rebased_android_sdk_ijar" ]
-      }
-      if (use_java8) {
-        args += [ "--java-version=1.8" ]
-      } else if (_supports_android) {
-        args += [ "--java-version=1.7" ]
       }
       foreach(e, _manifest_entries) {
         args += [ "--manifest-entry=" + e ]
