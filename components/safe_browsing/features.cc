@@ -31,13 +31,13 @@ const base::Feature kLocalDatabaseManagerEnabled{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPasswordFieldOnFocusPinging{
-    "PasswordFieldOnFocusPinging", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PasswordFieldOnFocusPinging", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kPasswordProtectionInterstitial{
     "PasswordProtectionInterstitial", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kProtectedPasswordEntryPinging{
-    "ProtectedPasswordEntryPinging", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ProtectedPasswordEntryPinging", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Specifies which non-resource HTML Elements to collect based on their tag and
 // attributes. It's a single param containing a comma-separated list of pairs.

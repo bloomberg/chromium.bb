@@ -78,20 +78,15 @@ class MockChromePasswordProtectionService
                                         content_setting_map,
                                         ui_manager),
         is_incognito_(false),
-        is_extended_reporting_(false),
-        is_history_sync_enabled_(false) {}
+        is_extended_reporting_(false) {}
   bool IsExtendedReporting() override { return is_extended_reporting_; }
   bool IsIncognito() override { return is_incognito_; }
-  bool IsHistorySyncEnabled() override { return is_history_sync_enabled_; }
 
   // Configures the results returned by IsExtendedReporting(), IsIncognito(),
   // and IsHistorySyncEnabled().
-  void ConfigService(bool is_incognito,
-                     bool is_extended_reporting,
-                     bool is_history_sync_enabled) {
+  void ConfigService(bool is_incognito, bool is_extended_reporting) {
     is_incognito_ = is_incognito;
     is_extended_reporting_ = is_extended_reporting;
-    is_history_sync_enabled_ = is_history_sync_enabled;
   }
 
   void SetUIManager(scoped_refptr<SafeBrowsingUIManager> ui_manager) {
@@ -108,7 +103,6 @@ class MockChromePasswordProtectionService
  private:
   bool is_incognito_;
   bool is_extended_reporting_;
-  bool is_history_sync_enabled_;
 };
 
 class ChromePasswordProtectionServiceTest
@@ -152,28 +146,6 @@ class ChromePasswordProtectionServiceTest
     return builder.Build().release();
   }
 
-  // Sets up Finch trial feature parameters.
-  void SetFeatureParams(const base::Feature& feature,
-                        const std::string& trial_name,
-                        const Parameters& params) {
-    static std::set<std::string> features = {feature.name};
-    params_manager_.ClearAllVariationParams();
-    params_manager_.SetVariationParamsWithFeatureAssociations(trial_name,
-                                                              params, features);
-  }
-
-  // Creates Finch trial parameters.
-  Parameters CreateParameters(bool allowed_for_incognito,
-                              bool allowed_for_all,
-                              bool allowed_for_extended_reporting,
-                              bool allowed_for_history_sync) {
-    return {{"incognito", allowed_for_incognito ? "true" : "false"},
-            {"all_population", allowed_for_all ? "true" : "false"},
-            {"extended_reporting",
-             allowed_for_extended_reporting ? "true" : "false"},
-            {"history_sync", allowed_for_history_sync ? "true" : "false"}};
-  }
-
   void InitializeRequest(LoginReputationClientRequest::TriggerType type) {
     request_ = new PasswordProtectionRequest(web_contents(), GURL(kPhishingURL),
                                              GURL(), GURL(), std::string(),
@@ -205,7 +177,6 @@ class ChromePasswordProtectionServiceTest
   }
 
  protected:
-  variations::testing::VariationParamsManager params_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
   sync_preferences::TestingPrefServiceSyncable test_pref_service_;
   scoped_refptr<HostContentSettingsMap> content_setting_map_;
@@ -215,225 +186,47 @@ class ChromePasswordProtectionServiceTest
 };
 
 TEST_F(ChromePasswordProtectionServiceTest,
-       VerifyFinchControlForLowReputationPingSBEROnlyNoIncognito) {
+       VerifyUserPopulationForPasswordOnFocusPing) {
+  // Password field on focus pinging is enabled on !incognito && SBER.
+
   PasswordProtectionService::RequestOutcome reason;
-
-  // By default kPasswordFieldOnFocusPinging feature is disabled.
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_FEATURE_DISABLED,
-            reason);
-
-  // Enables kPasswordFieldOnFocusPinging feature.
-  scoped_feature_list_.InitAndEnableFeature(kPasswordFieldOnFocusPinging);
-  // Creates finch trial parameters correspond to the following experiment:
-  // "name": "SBEROnlyNoIncognito",
-  // "params": {
-  //     "incognito": "false",
-  //     "extended_reporting": "true",
-  //     "history_sync": "false"
-  // },
-  // "enable_features": [
-  //     "PasswordFieldOnFocusPinging"
-  // ]
-  Parameters sber_and_no_incognito =
-      CreateParameters(false, false, true, false);
-  SetFeatureParams(kPasswordFieldOnFocusPinging, "SBEROnlyNoIncognito",
-                   sber_and_no_incognito);
-
-  service_->ConfigService(false /*incognito*/, false /*SBER*/, false /*sync*/);
+  service_->ConfigService(false /*incognito*/, false /*SBER*/);
   EXPECT_FALSE(
       service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
   EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_USER_POPULATION, reason);
 
-  service_->ConfigService(false /*incognito*/, false /*SBER*/, true /*sync*/);
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_USER_POPULATION, reason);
-
-  service_->ConfigService(false /*incognito*/, true /*SBER*/, false /*sync*/);
+  service_->ConfigService(false /*incognito*/, true /*SBER*/);
   EXPECT_TRUE(
       service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
 
-  service_->ConfigService(false /*incognito*/, true /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-
-  service_->ConfigService(true /*incognito*/, false /*SBER*/, false /*sync*/);
+  service_->ConfigService(true /*incognito*/, false /*SBER*/);
   EXPECT_FALSE(
       service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
   EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
 
-  service_->ConfigService(true /*incognito*/, false /*SBER*/, true /*sync*/);
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
-
-  service_->ConfigService(true /*incognito*/, true /*SBER*/, false /*sync*/);
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
-
-  service_->ConfigService(true /*incognito*/, true /*SBER*/, true /*sync*/);
+  service_->ConfigService(true /*incognito*/, true /*SBER*/);
   EXPECT_FALSE(
       service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
   EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
-       VerifyFinchControlForLowReputationPingSBERAndHistorySyncNoIncognito) {
+       VerifyUserPopulationForProtectedPasswordEntryPing) {
+  // Protected password entry pinging is enabled for all safe browsing users.
   PasswordProtectionService::RequestOutcome reason;
 
-  // Enables kPasswordFieldOnFocusPinging feature.
-  scoped_feature_list_.InitAndEnableFeature(kPasswordFieldOnFocusPinging);
-  // Creates finch trial parameters correspond to the following experiment:
-  // "name": "SBERAndHistorySyncNoIncognito",
-  // "params": {
-  //     "incognito": "false",
-  //     "extended_reporting": "true",
-  //     "history_sync": "true"
-  // },
-  // "enable_features": [
-  //     "PasswordFieldOnFocusPinging"
-  // ]
-  Parameters sber_and_sync_no_incognito =
-      CreateParameters(false, false, true, true);
-  SetFeatureParams(kPasswordFieldOnFocusPinging,
-                   "SBERAndHistorySyncNoIncognito", sber_and_sync_no_incognito);
-  service_->ConfigService(false /*incognito*/, false /*SBER*/, false /*sync*/);
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_USER_POPULATION, reason);
-
-  service_->ConfigService(false /*incognito*/, false /*SBER*/, true /*sync*/);
+  service_->ConfigService(false /*incognito*/, false /*SBER*/);
   EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-
-  service_->ConfigService(false /*incognito*/, true /*SBER*/, false /*sync*/);
+      service_->IsPingingEnabled(kProtectedPasswordEntryPinging, &reason));
+  service_->ConfigService(false /*incognito*/, true /*SBER*/);
   EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-
-  service_->ConfigService(false /*incognito*/, true /*SBER*/, true /*sync*/);
+      service_->IsPingingEnabled(kProtectedPasswordEntryPinging, &reason));
+  service_->ConfigService(true /*incognito*/, false /*SBER*/);
   EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-
-  service_->ConfigService(true /*incognito*/, false /*SBER*/, false /*sync*/);
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
-
-  service_->ConfigService(true /*incognito*/, false /*SBER*/, true /*sync*/);
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
-
-  service_->ConfigService(true /*incognito*/, true /*SBER*/, false /*sync*/);
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
-
-  service_->ConfigService(true /*incognito*/, true /*SBER*/, true /*sync*/);
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
-}
-
-TEST_F(ChromePasswordProtectionServiceTest,
-       VerifyFinchControlForLowReputationPingAllButNoIncognito) {
-  PasswordProtectionService::RequestOutcome reason;
-
-  // Enables kPasswordFieldOnFocusPinging feature.
-  scoped_feature_list_.InitAndEnableFeature(kPasswordFieldOnFocusPinging);
-  // Creates finch trial parameters correspond to the following experiment:
-  // "name": "AllButNoIncognito",
-  // "params": {
-  //     "all_population": "true",
-  //     "incongito": "false"
-  // },
-  // "enable_features": [
-  //     "PasswordFieldOnFocusPinging"
-  // ]
-  Parameters all_users = CreateParameters(false, true, true, true);
-  SetFeatureParams(kPasswordFieldOnFocusPinging, "AllButNoIncognito",
-                   all_users);
-  service_->ConfigService(false /*incognito*/, false /*SBER*/, false /*sync*/);
+      service_->IsPingingEnabled(kProtectedPasswordEntryPinging, &reason));
+  service_->ConfigService(true /*incognito*/, true /*SBER*/);
   EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-
-  service_->ConfigService(false /*incognito*/, false /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-
-  service_->ConfigService(false /*incognito*/, true /*SBER*/, false /*sync*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-
-  service_->ConfigService(false /*incognito*/, true /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-
-  service_->ConfigService(true /*incognito*/, false /*SBER*/, false /*sync*/);
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
-
-  service_->ConfigService(true /*incognito*/, false /*SBER*/, true /*sync*/);
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
-
-  service_->ConfigService(true /*incognito*/, true /*SBER*/, false /*sync*/);
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
-
-  service_->ConfigService(true /*incognito*/, true /*SBER*/, true /*sync*/);
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
-}
-
-TEST_F(ChromePasswordProtectionServiceTest,
-       VerifyFinchControlForLowReputationPingAll) {
-  PasswordProtectionService::RequestOutcome reason;
-
-  // Enables kPasswordFieldOnFocusPinging feature.
-  scoped_feature_list_.InitAndEnableFeature(kPasswordFieldOnFocusPinging);
-  // Creates finch trial parameters correspond to the following experiment:
-  // "name": "All",
-  // "params": {
-  //     "all_population": "true",
-  //     "incognito": "true"
-  // },
-  // "enable_features": [
-  //     "PasswordFieldOnFocusPinging"
-  // ]
-  Parameters all_users = CreateParameters(true, true, true, true);
-  SetFeatureParams(kPasswordFieldOnFocusPinging, "All", all_users);
-  service_->ConfigService(false /*incognito*/, false /*SBER*/, false /*sync*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  service_->ConfigService(false /*incognito*/, false /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  service_->ConfigService(false /*incognito*/, true /*SBER*/, false /*sync*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  service_->ConfigService(false /*incognito*/, true /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  service_->ConfigService(true /*incognito*/, false /*SBER*/, false /*sync*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  service_->ConfigService(true /*incognito*/, false /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  service_->ConfigService(true /*incognito*/, true /*SBER*/, false /*sync*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
-  service_->ConfigService(true /*incognito*/, true /*SBER*/, true /*sync*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+      service_->IsPingingEnabled(kProtectedPasswordEntryPinging, &reason));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
