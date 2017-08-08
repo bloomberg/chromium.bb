@@ -182,8 +182,7 @@ img {
 }
 
 .used-for-port-forwarding {
-  background-image: -webkit-image-set(url(chrome://theme/IDR_INFO) 1x,
-                                      url(chrome://theme/IDR_INFO@2x) 2x);
+  background-image: url(../../../../ui/webui/resources/images/info.svg);
   height: 15px;
   margin-left: 20px;
   width: 15px;
