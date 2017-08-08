@@ -36,18 +36,17 @@
                 btn.onclick = function() {
                     internals.mediaPlayerRemoteRouteAvailabilityChanged(v, true);
 
-                    v.remote.prompt();
+                    v.remote.prompt().then(
+                        test.step_func(function() {}),
+                        test.step_func(function() {}));
 
-                    btn.onclick = function() {
-                        v.remote.prompt().then(
-                            test.unreached_func(),
-                            test.step_func_done(function(e) {
-                                assert_equals(e.name, 'OperationError');
-                                assert_equals(e.message, 'A prompt is already being shown for this media element.');
-                            }));
-                        btn.onclick = null;
-                    };
-                    clickOnElem(btn);
+                    v.remote.prompt().then(
+                        test.unreached_func(),
+                        test.step_func_done(function(e) {
+                            assert_equals(e.name, 'OperationError');
+                            assert_equals(e.message, 'A prompt is already being shown for this media element.');
+                        }));
+                    btn.onclick = null;
                 }
 
                 clickOnElem(btn);

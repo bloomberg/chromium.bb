@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "build/build_config.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/cdm_config.h"
 #include "media/base/limits.h"
@@ -274,6 +275,8 @@ TEST_F(RendererControllerTest, ToggleRendererOnDisableChange) {
   ExpectInLocalRendering();
 }
 
+#if !defined(OS_ANDROID)
+
 TEST_F(RendererControllerTest, WithVP9VideoCodec) {
   const scoped_refptr<SharedSession> shared_session =
       FakeRemoterFactory::CreateSharedSession(false);
@@ -382,6 +385,8 @@ TEST_F(RendererControllerTest, WithOpusAudioCodec) {
   RunUntilIdle();
   ExpectInRemoting();  // All requirements now satisfied.
 }
+
+#endif  // OS_ANDROID
 
 TEST_F(RendererControllerTest, StartFailed) {
   const scoped_refptr<SharedSession> shared_session =

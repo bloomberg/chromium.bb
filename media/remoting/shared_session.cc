@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "build/buildflag.h"
 #include "media/media_features.h"
 
@@ -40,16 +41,24 @@ SharedSession::~SharedSession() {
 
 bool SharedSession::HasVideoCapability(
     mojom::RemotingSinkVideoCapability capability) const {
+#if defined(OS_ANDROID)
+  return true;
+#else
   return std::find(std::begin(sink_metadata_.video_capabilities),
                    std::end(sink_metadata_.video_capabilities),
                    capability) != std::end(sink_metadata_.video_capabilities);
+#endif
 }
 
 bool SharedSession::HasAudioCapability(
     mojom::RemotingSinkAudioCapability capability) const {
+#if defined(OS_ANDROID)
+  return true;
+#else
   return std::find(std::begin(sink_metadata_.audio_capabilities),
                    std::end(sink_metadata_.audio_capabilities),
                    capability) != std::end(sink_metadata_.audio_capabilities);
+#endif
 }
 
 bool SharedSession::HasFeatureCapability(

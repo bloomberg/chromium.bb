@@ -15,9 +15,12 @@
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebCallbacks.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
+#include "public/platform/modules/presentation/WebPresentationConnection.h"
+#include "public/platform/modules/presentation/WebPresentationConnectionProxy.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackState.h"
@@ -29,12 +32,16 @@ class HTMLMediaElement;
 class RemotePlaybackAvailabilityCallback;
 class ScriptPromiseResolver;
 class ScriptState;
+class WebPresentationConnectionProxy;
+struct WebPresentationError;
+struct WebPresentationInfo;
 
 class MODULES_EXPORT RemotePlayback final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<RemotePlayback>,
       NON_EXPORTED_BASE(public WebRemotePlaybackClient),
-      public WebPresentationAvailabilityObserver {
+      public WebPresentationAvailabilityObserver,
+      public NON_EXPORTED_BASE(WebPresentationConnection) {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
 
@@ -83,9 +90,20 @@ class MODULES_EXPORT RemotePlayback final
 
   WebRemotePlaybackState GetState() const { return state_; }
 
+  // Called by RemotePlaybackConnectionCallbacks.
+  void OnConnectionSuccess(const WebPresentationInfo&);
+  void OnConnectionError(const WebPresentationError&);
+
   // WebPresentationAvailabilityObserver implementation.
   void AvailabilityChanged(mojom::ScreenAvailability) override;
   const WebVector<WebURL>& Urls() const override;
+
+  // WebPresentationConnection implementation.
+  void BindProxy(std::unique_ptr<WebPresentationConnectionProxy>) override;
+  void DidReceiveTextMessage(const WebString& message) override;
+  void DidReceiveBinaryMessage(const uint8_t* data, size_t length) override;
+  void DidChangeState(WebPresentationConnectionState) override;
+  void DidClose() override;
 
   // WebRemotePlaybackClient implementation.
   void StateChanged(WebRemotePlaybackState) override;
@@ -132,6 +150,11 @@ class MODULES_EXPORT RemotePlayback final
   Member<ScriptPromiseResolver> prompt_promise_resolver_;
   WebVector<WebURL> availability_urls_;
   bool is_listening_;
+
+  // WebPresentationConnection implementation.
+  String presentation_id_;
+  KURL presentation_url_;
+  std::unique_ptr<WebPresentationConnectionProxy> connection_proxy_;
 };
 
 }  // namespace blink
