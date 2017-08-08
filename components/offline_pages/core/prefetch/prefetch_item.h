@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/client_id.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
@@ -101,6 +102,15 @@ struct PrefetchItem {
   // The reason why the item was set to the FINISHED state. Should be
   // disregarded until reaching that state.
   PrefetchItemErrorCode error_code = PrefetchItemErrorCode::SUCCESS;
+
+  // The title of the page.
+  base::string16 title;
+
+  // The file path to the archive of the page.
+  base::FilePath file_path;
+
+  // The size of the archive file.
+  int64_t file_size = 0;
 };
 
 }  // namespace offline_pages

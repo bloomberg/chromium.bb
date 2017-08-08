@@ -38,6 +38,9 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
   void StopBackgroundTask() override;
   void GCMOperationCompletedMessageReceived(
       const std::string& operation_name) override;
+  void DownloadCompleted(
+      const PrefetchDownloadResult& download_result) override;
+  void ImportCompleted(int64_t offline_id, bool success) override;
   void RequestFinishBackgroundTaskForTest() override;
 
   // TaskQueue::Delegate implementation:

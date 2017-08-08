@@ -5,36 +5,30 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_IMPORTER_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_IMPORTER_H_
 
-#include <string>
-
-class GURL;
-namespace base {
-class FilePath;
-}  // namespace base
+#include "components/offline_pages/core/prefetch/prefetch_types.h"
 
 namespace offline_pages {
 
-struct ClientId;
+class PrefetchDispatcher;
 
 // Interface to import the downloaded archive such that it can be rendered as
 // offline page.
 class PrefetchImporter {
  public:
-  using CompletedCallback =
-      base::Callback<void(bool success, int64_t offline_id)>;
-
+  explicit PrefetchImporter(PrefetchDispatcher* dispatcher);
   virtual ~PrefetchImporter() = default;
 
   // Imports the downloaded archive by moving the file into archive directory
   // and creating an entry in the offline metadata database.
-  virtual void ImportFile(const GURL& url,
-                          const GURL& original_url,
-                          const base::string16& title,
-                          int64_t offline_id,
-                          const ClientId& client_id,
-                          const base::FilePath& file_path,
-                          int64_t file_size,
-                          const CompletedCallback& callback) = 0;
+  virtual void ImportArchive(const PrefetchArchiveInfo& info) = 0;
+
+ protected:
+  void NotifyImportCompleted(int64_t offline_id, bool success);
+
+ private:
+  PrefetchDispatcher* dispatcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrefetchImporter);
 };
 
 }  // namespace offline_pages
