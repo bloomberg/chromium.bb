@@ -487,6 +487,20 @@ CHAR-LIMIT guidelines:
         Open this page
       </message>
 
+      <!-- Notifications preferences -->
+      <message name="IDS_PREFS_NOTIFICATIONS" desc="Title for Notification preferences.">
+        Notifications
+      </message>
+      <message name="IDS_NOTIFICATIONS_CONTENT_SUGGESTIONS_TITLE" desc="Title for the preference to turn on/off content suggestions notifications.">
+        Content suggestions
+      </message>
+      <message name="IDS_NOTIFICATIONS_CONTENT_SUGGESTIONS_SUMMARY" desc="Summary for preference to turn on/off content suggestions notifications.">
+        Based on your browsing history
+      </message>
+      <message name="IDS_NOTIFICATIONS_FROM_WEBSITES_TITLE" desc="Summary for the preference to link to the per-website notification settings.">
+        From websites
+      </message>
+
       <!-- Privacy preferences -->
       <message name="IDS_PREFS_PRIVACY" desc="Title for the Privacy preferences. [CHAR-LIMIT=32]">
         Privacy
@@ -709,9 +723,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_SUGGESTIONS_CAVEATS_DESCRIPTION" desc="Description text for suggestions usage caveats" translateable="false">
         When this feature is turned on, Chrome will use Google servers to provide browsing suggestions, e.g. when you open a new tab. This include popular websites, trending articles as well as personalized suggestions.
-      </message>
-      <message name="IDS_SUGGESTIONS_NOTIFICATIONS_SWITCH_TITLE" desc="Title for switch used to toggle the Content Suggestions notifications on or off." translateable="false">
-        Notifications
       </message>
 
       <!-- Accessibility preferences -->
