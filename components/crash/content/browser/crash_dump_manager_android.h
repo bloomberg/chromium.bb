@@ -7,9 +7,13 @@
 
 #include <map>
 
+#include "base/android/application_status_listener.h"
 #include "base/files/file_path.h"
+#include "base/files/platform_file.h"
+#include "base/lazy_instance.h"
+#include "base/process/kill.h"
 #include "base/synchronization/lock.h"
-#include "components/crash/content/browser/crash_dump_observer_android.h"
+#include "content/public/common/process_type.h"
 
 namespace breakpad {
 
@@ -23,21 +27,24 @@ namespace breakpad {
 // This class creates these file descriptors and associates them with render
 // processes and takes the appropriate action when the render process
 // terminates.
-class CrashDumpManager : public breakpad::CrashDumpObserver::Client {
+class CrashDumpManager {
  public:
-  CrashDumpManager(const base::FilePath& crash_dump_dir, int descriptor_id);
-  ~CrashDumpManager() override;
+  static CrashDumpManager* GetInstance();
 
-  // breakpad::CrashDumpObserver::Client implementation:
-  void OnChildStart(int child_process_id,
-                    content::PosixFileDescriptorInfo* mappings) override;
-  void OnChildExit(int child_process_id,
-                   base::ProcessHandle pid,
-                   content::ProcessType process_type,
-                   base::TerminationStatus termination_status,
-                   base::android::ApplicationState app_state) override;
+  void ProcessMinidumpFileFromChild(base::FilePath crash_dump_dir,
+                                    base::ProcessHandle pid,
+                                    content::ProcessType process_type,
+                                    base::TerminationStatus termination_status,
+                                    base::android::ApplicationState app_state);
+
+  base::ScopedFD CreateMinidumpFileForChild(int child_process_id);
 
  private:
+  friend struct base::LazyInstanceTraitsBase<CrashDumpManager>;
+
+  CrashDumpManager();
+  ~CrashDumpManager();
+
   typedef std::map<int, base::FilePath> ChildProcessIDToMinidumpPath;
 
   // This enum is used to back a UMA histogram, and must be treated as
@@ -52,24 +59,14 @@ class CrashDumpManager : public breakpad::CrashDumpObserver::Client {
     MINIDUMP_STATUS_COUNT
   };
 
-  static void ProcessMinidump(const base::FilePath& minidump_path,
-                              const base::FilePath& crash_dump_dir,
-                              base::ProcessHandle pid,
-                              content::ProcessType process_type,
-                              base::TerminationStatus termination_status,
-                              base::android::ApplicationState app_state);
+  void SetMinidumpPath(int child_process_id,
+                       const base::FilePath& minidump_path);
+  bool GetMinidumpPath(int child_process_id, base::FilePath* minidump_path);
 
   // This map should only be accessed with its lock aquired as it is accessed
   // from the PROCESS_LAUNCHER and UI threads.
   base::Lock child_process_id_to_minidump_path_lock_;
   ChildProcessIDToMinidumpPath child_process_id_to_minidump_path_;
-
-  // The directory in which temporary minidump files should be created.
-  base::FilePath crash_dump_dir_;
-
-  // The id used to identify the file descriptor in the set of file
-  // descriptor mappings passed to the child process.
-  int descriptor_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashDumpManager);
 };

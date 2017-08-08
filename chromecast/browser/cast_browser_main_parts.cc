@@ -79,7 +79,8 @@
 
 #if defined(OS_ANDROID)
 #include "chromecast/app/android/crash_handler.h"
-#include "components/crash/content/browser/crash_dump_manager_android.h"
+#include "components/crash/content/browser/child_process_crash_observer_android.h"
+#include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #else
 #include "chromecast/net/network_change_notifier_factory_cast.h"
@@ -409,16 +410,16 @@ void CastBrowserMainParts::ToolkitInitialized() {
 
 int CastBrowserMainParts::PreCreateThreads() {
 #if defined(OS_ANDROID)
-  // GPU process is started immediately after threads are created, requiring
-  // CrashDumpManager to be initialized beforehand.
+  // GPU process is started immediately after threads are created,
+  // requiring ChildProcessCrashObserver to be initialized beforehand.
   base::FilePath crash_dumps_dir;
   if (!chromecast::CrashHandler::GetCrashDumpLocation(&crash_dumps_dir)) {
     LOG(ERROR) << "Could not find crash dump location.";
   }
   breakpad::CrashDumpObserver::Create();
   breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
-      base::MakeUnique<breakpad::CrashDumpManager>(crash_dumps_dir,
-                                                   kAndroidMinidumpDescriptor));
+      base::MakeUnique<breakpad::ChildProcessCrashObserver>(
+          crash_dumps_dir, kAndroidMinidumpDescriptor));
 #else
   base::FilePath home_dir;
   CHECK(PathService::Get(DIR_CAST_HOME, &home_dir));

@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/sync_socket.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_service.h"
@@ -89,16 +90,14 @@ void OnRenderProcessGoneDetail(int child_process_id,
   }
 
   // By this point we have moved the minidump to the crash directory, so it can
-  // now be copied and uploaded. This is guaranteed by the order in which we
-  // register breakpad::CrashDumpManager and AwBrowserTerminator as
-  // breakpad::CrashDumpObserver clients over in AwBrowserMainParts
-  // (CrashDumpManager is registered first).
+  // now be copied and uploaded.
   TriggerMinidumpUploading();
 }
 
 }  // namespace
 
-AwBrowserTerminator::AwBrowserTerminator() {}
+AwBrowserTerminator::AwBrowserTerminator(base::FilePath crash_dump_dir)
+    : crash_dump_dir_(crash_dump_dir) {}
 
 AwBrowserTerminator::~AwBrowserTerminator() {}
 
@@ -117,12 +116,33 @@ void AwBrowserTerminator::OnChildStart(
     mappings->Transfer(kAndroidWebViewCrashSignalDescriptor,
                        base::ScopedFD(dup(child_pipe->handle())));
   }
+  if (crash_reporter::IsCrashReporterEnabled()) {
+    base::ScopedFD file(
+        breakpad::CrashDumpManager::GetInstance()->CreateMinidumpFileForChild(
+            child_process_id));
+    if (file != base::kInvalidPlatformFile)
+      mappings->Transfer(kAndroidMinidumpDescriptor, std::move(file));
+  }
 }
 
-void AwBrowserTerminator::ProcessTerminationStatus(
+void AwBrowserTerminator::OnChildExitAsync(
     int child_process_id,
     base::ProcessHandle pid,
+    content::ProcessType process_type,
+    base::TerminationStatus termination_status,
+    base::android::ApplicationState app_state,
+    base::FilePath crash_dump_dir,
     std::unique_ptr<base::SyncSocket> pipe) {
+  if (crash_reporter::IsCrashReporterEnabled()) {
+    breakpad::CrashDumpManager::GetInstance()->ProcessMinidumpFileFromChild(
+        crash_dump_dir, child_process_id, process_type, termination_status,
+        app_state);
+  }
+
+  if (!pipe.get() ||
+      termination_status == base::TERMINATION_STATUS_NORMAL_TERMINATION)
+    return;
+
   bool crashed = false;
 
   // If the child process hasn't written anything into the pipe. This implies
@@ -150,23 +170,27 @@ void AwBrowserTerminator::OnChildExit(
 
   {
     base::AutoLock auto_lock(child_process_id_to_pipe_lock_);
+    // We might get a NOTIFICATION_RENDERER_PROCESS_TERMINATED and a
+    // NOTIFICATION_RENDERER_PROCESS_CLOSED. In that case we only want
+    // to process the first notification.
     const auto& iter = child_process_id_to_pipe_.find(child_process_id);
-    if (iter == child_process_id_to_pipe_.end()) {
-      // We might get a NOTIFICATION_RENDERER_PROCESS_TERMINATED and a
-      // NOTIFICATION_RENDERER_PROCESS_CLOSED.
-      return;
+    if (iter != child_process_id_to_pipe_.end()) {
+      pipe = std::move(iter->second);
+      DCHECK(pipe->handle() != base::SyncSocket::kInvalidHandle);
+      child_process_id_to_pipe_.erase(iter);
     }
-    pipe = std::move(iter->second);
-    child_process_id_to_pipe_.erase(iter);
   }
-  if (termination_status == base::TERMINATION_STATUS_NORMAL_TERMINATION)
-    return;
-  OnRenderProcessGone(child_process_id);
-  DCHECK(pipe->handle() != base::SyncSocket::kInvalidHandle);
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&AwBrowserTerminator::ProcessTerminationStatus,
-                 child_process_id, pid, base::Passed(std::move(pipe))));
+  if (pipe.get()) {
+    OnRenderProcessGone(child_process_id);
+  }
+
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::Bind(&AwBrowserTerminator::OnChildExitAsync, child_process_id, pid,
+                 process_type, termination_status, app_state, crash_dump_dir_,
+                 base::Passed(std::move(pipe))));
 }
 
 }  // namespace android_webview
