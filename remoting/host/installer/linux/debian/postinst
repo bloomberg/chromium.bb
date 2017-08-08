@@ -18,9 +18,23 @@ Description: Chrome Remote Desktop has been updated. Please save your work and l
 NOTIFIER_DIR="/var/lib/update-notifier/user.d"
 VAR_DIR="/var/lib/chrome-remote-desktop"
 HASHES_FILE="$VAR_DIR/hashes"
+USER_SESSION_PATH="/opt/google/chrome-remote-desktop/user-session"
+CRD_GROUP="chrome-remote-desktop"
 
 case "$1" in
   "configure")
+    # Create CRD group if it doesn't already exist
+    if ! getent group "$CRD_GROUP" > /dev/null 2>&1; then
+      addgroup --system "$CRD_GROUP"
+    fi
+    # dpkg supports "stat overrides", which allow the administrator to specify
+    # the ownership and permissions that should be used when a given filesystem
+    # object is installed. If such an override is set, we shouldn't change the
+    # owner and permissions here.
+    if ! dpkg-statoverride --list "$USER_SESSION_PATH" > /dev/null 2>&1; then
+      chown root:"$CRD_GROUP" "$USER_SESSION_PATH"
+      chmod u=srwx,g=rx,o=r "$USER_SESSION_PATH"
+    fi
     # Kill host processes. The wrapper script will restart them.
     # TODO(lambroslambrou): Remove the '-9' when the underlying problem with
     # hosts not responding to SIGTERM has been fixed - http://crbug.com/420090
