@@ -37,6 +37,7 @@ class ExtensionOptionsGuest;
 class ExtensionOptionsGuestDelegate;
 class FileSystemDelegate;
 class ManagementAPIDelegate;
+class MessagingDelegate;
 class MetricsPrivateDelegate;
 class MimeHandlerViewGuest;
 class MimeHandlerViewGuestDelegate;
@@ -140,6 +141,9 @@ class ExtensionsAPIClient {
 
   // Returns a delegate for embedder-specific chrome.fileSystem behavior.
   virtual FileSystemDelegate* GetFileSystemDelegate();
+
+  // Returns a delegate for embedder-specific extension messaging.
+  virtual MessagingDelegate* GetMessagingDelegate();
 
 #if defined(OS_CHROMEOS)
   // If supported by the embedder, returns a delegate for querying non-native

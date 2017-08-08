@@ -20,14 +20,12 @@
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
-#include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/api/messaging/message.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/file_util.h"
@@ -82,14 +80,6 @@ bool ChromeExtensionMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeExtensionMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
-                        OnOpenChannelToExtension)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToTab, OnOpenChannelToTab)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToNativeApp,
-                        OnOpenChannelToNativeApp)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenMessagePort, OnOpenMessagePort)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseMessagePort, OnCloseMessagePort)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_PostMessage, OnPostMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ExtensionHostMsg_GetMessageBundle,
                                     OnGetExtMessageBundle)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddAPIActionToActivityLog,
@@ -107,12 +97,6 @@ bool ChromeExtensionMessageFilter::OnMessageReceived(
 void ChromeExtensionMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   switch (message.type()) {
-    case ExtensionHostMsg_OpenChannelToExtension::ID:
-    case ExtensionHostMsg_OpenChannelToTab::ID:
-    case ExtensionHostMsg_OpenChannelToNativeApp::ID:
-    case ExtensionHostMsg_OpenMessagePort::ID:
-    case ExtensionHostMsg_CloseMessagePort::ID:
-    case ExtensionHostMsg_PostMessage::ID:
     case ExtensionHostMsg_AddAPIActionToActivityLog::ID:
     case ExtensionHostMsg_AddDOMActionToActivityLog::ID:
     case ExtensionHostMsg_AddEventToActivityLog::ID:
@@ -129,75 +113,6 @@ void ChromeExtensionMessageFilter::OnDestruct() const {
   } else {
     BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
   }
-}
-
-void ChromeExtensionMessageFilter::OnOpenChannelToExtension(
-    int routing_id,
-    const ExtensionMsg_ExternalConnectionInfo& info,
-    const std::string& channel_name,
-    bool include_tls_channel_id,
-    const extensions::PortId& port_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (profile_) {
-    extensions::MessageService::Get(profile_)->OpenChannelToExtension(
-        render_process_id_, routing_id, port_id, info.source_id, info.target_id,
-        info.source_url, channel_name, include_tls_channel_id);
-  }
-}
-
-void ChromeExtensionMessageFilter::OnOpenChannelToNativeApp(
-    int routing_id,
-    const std::string& native_app_name,
-    const extensions::PortId& port_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (profile_) {
-    extensions::MessageService::Get(profile_)->OpenChannelToNativeApp(
-        render_process_id_, routing_id, port_id, native_app_name);
-  }
-}
-
-void ChromeExtensionMessageFilter::OnOpenChannelToTab(
-    int routing_id,
-    const ExtensionMsg_TabTargetConnectionInfo& info,
-    const std::string& extension_id,
-    const std::string& channel_name,
-    const extensions::PortId& port_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (profile_) {
-    extensions::MessageService::Get(profile_)->OpenChannelToTab(
-        render_process_id_, routing_id, port_id, info.tab_id, info.frame_id,
-        extension_id, channel_name);
-  }
-}
-
-void ChromeExtensionMessageFilter::OnOpenMessagePort(
-    int routing_id,
-    const extensions::PortId& port_id) {
-  if (!profile_)
-    return;
-
-  extensions::MessageService::Get(profile_)->OpenPort(
-      port_id, render_process_id_, routing_id);
-}
-
-void ChromeExtensionMessageFilter::OnCloseMessagePort(
-    int routing_id,
-    const extensions::PortId& port_id,
-    bool force_close) {
-  if (!profile_)
-    return;
-
-  extensions::MessageService::Get(profile_)->ClosePort(
-      port_id, render_process_id_, routing_id, force_close);
-}
-
-void ChromeExtensionMessageFilter::OnPostMessage(
-    const extensions::PortId& port_id,
-    const extensions::Message& message) {
-  if (!profile_)
-    return;
-
-  extensions::MessageService::Get(profile_)->PostMessage(port_id, message);
 }
 
 void ChromeExtensionMessageFilter::OnGetExtMessageBundle(

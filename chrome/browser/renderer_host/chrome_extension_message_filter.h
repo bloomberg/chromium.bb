@@ -17,14 +17,11 @@
 class Profile;
 struct ExtensionHostMsg_APIActionOrEvent_Params;
 struct ExtensionHostMsg_DOMAction_Params;
-struct ExtensionMsg_ExternalConnectionInfo;
-struct ExtensionMsg_TabTargetConnectionInfo;
 
 namespace extensions {
 class ActivityLog;
 class InfoMap;
 struct Message;
-struct PortId;
 }
 
 // This class filters out incoming Chrome-specific IPC messages from the
@@ -48,27 +45,8 @@ class ChromeExtensionMessageFilter : public content::BrowserMessageFilter,
 
   // TODO(jamescook): Move these functions into the extensions module. Ideally
   // this would be in extensions::ExtensionMessageFilter but that will require
-  // resolving the MessageService and ActivityLog dependencies on src/chrome.
+  // resolving the ActivityLog dependencies on src/chrome.
   // http://crbug.com/339637
-  void OnOpenChannelToExtension(int routing_id,
-                                const ExtensionMsg_ExternalConnectionInfo& info,
-                                const std::string& channel_name,
-                                bool include_tls_channel_id,
-                                const extensions::PortId& port_id);
-  void OnOpenChannelToNativeApp(int routing_id,
-                                const std::string& native_app_name,
-                                const extensions::PortId& port_id);
-  void OnOpenChannelToTab(int routing_id,
-                          const ExtensionMsg_TabTargetConnectionInfo& info,
-                          const std::string& extension_id,
-                          const std::string& channel_name,
-                          const extensions::PortId& port_id);
-  void OnOpenMessagePort(int routing_id, const extensions::PortId& port_id);
-  void OnCloseMessagePort(int routing_id,
-                          const extensions::PortId& port_id,
-                          bool force_close);
-  void OnPostMessage(const extensions::PortId& port_id,
-                     const extensions::Message& message);
   void OnGetExtMessageBundle(const std::string& extension_id,
                              IPC::Message* reply_msg);
   void OnGetExtMessageBundleAsync(

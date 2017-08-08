@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_MESSAGING_MESSAGE_SERVICE_H_
-#define CHROME_BROWSER_EXTENSIONS_API_MESSAGING_MESSAGE_SERVICE_H_
+#ifndef EXTENSIONS_BROWSER_API_MESSAGING_MESSAGE_SERVICE_H_
+#define EXTENSIONS_BROWSER_API_MESSAGING_MESSAGE_SERVICE_H_
 
 #include <map>
 #include <memory>
@@ -32,6 +32,7 @@ namespace extensions {
 class Extension;
 class ExtensionHost;
 class LazyBackgroundTaskQueue;
+class MessagingDelegate;
 
 // This class manages message and event passing between renderer processes.
 // It maintains a list of processes that are listening to events and a set of
@@ -228,12 +229,14 @@ class MessageService : public BrowserContextKeyedAPI,
                                const ChannelId& channel_id);
 
   // BrowserContextKeyedAPI implementation.
-  static const char* service_name() {
-    return "MessageService";
-  }
+  static const char* service_name() { return "MessageService"; }
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsCreatedWithBrowserContext = false;
   static const bool kServiceIsNULLWhileTesting = true;
+
+  // Delegate for embedder-specific messaging, e.g. for Chrome tabs.
+  // Owned by the ExtensionsAPIClient and guaranteed to outlive |this|.
+  MessagingDelegate* messaging_delegate_;
 
   MessageChannelMap channels_;
   // A set of channel IDs waiting for TLS channel IDs to complete opening, and
@@ -258,4 +261,4 @@ class MessageService : public BrowserContextKeyedAPI,
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_MESSAGING_MESSAGE_SERVICE_H_
+#endif  // EXTENSIONS_BROWSER_API_MESSAGING_MESSAGE_SERVICE_H_

@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/api/declarative_content/default_content_predicate_evaluators.h"
 #include "chrome/browser/extensions/api/file_system/chrome_file_system_delegate.h"
 #include "chrome/browser/extensions/api/management/chrome_management_api_delegate.h"
+#include "chrome/browser/extensions/api/messaging/chrome_messaging_delegate.h"
 #include "chrome/browser/extensions/api/metrics_private/chrome_metrics_private_delegate.h"
 #include "chrome/browser/extensions/api/networking_cast_private/chrome_networking_cast_private_delegate.h"
 #include "chrome/browser/extensions/api/storage/managed_value_store_cache.h"
@@ -184,6 +185,12 @@ FileSystemDelegate* ChromeExtensionsAPIClient::GetFileSystemDelegate() {
   if (!file_system_delegate_)
     file_system_delegate_ = base::MakeUnique<ChromeFileSystemDelegate>();
   return file_system_delegate_.get();
+}
+
+MessagingDelegate* ChromeExtensionsAPIClient::GetMessagingDelegate() {
+  if (!messaging_delegate_)
+    messaging_delegate_ = base::MakeUnique<ChromeMessagingDelegate>();
+  return messaging_delegate_.get();
 }
 
 #if defined(OS_CHROMEOS)

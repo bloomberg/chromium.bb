@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/messaging/message_service.h"
+#include "extensions/browser/api/messaging/message_service.h"
 
 #include <stdint.h>
 #include <limits>
@@ -17,8 +17,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/api/messaging/extension_message_port.h"
-#include "chrome/browser/extensions/api/messaging/messaging_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -29,7 +27,10 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
+#include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/messaging/extension_message_port.h"
 #include "extensions/browser/api/messaging/message_port.h"
+#include "extensions/browser/api/messaging/messaging_delegate.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_host.h"
@@ -132,10 +133,11 @@ static content::RenderProcessHost* GetExtensionProcess(
 }  // namespace
 
 MessageService::MessageService(BrowserContext* context)
-    : lazy_background_task_queue_(
-          LazyBackgroundTaskQueue::Get(context)),
+    : messaging_delegate_(ExtensionsAPIClient::Get()->GetMessagingDelegate()),
+      lazy_background_task_queue_(LazyBackgroundTaskQueue::Get(context)),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_NE(nullptr, messaging_delegate_);
 }
 
 MessageService::~MessageService() {
@@ -245,7 +247,7 @@ void MessageService::OpenChannelToExtension(
 
   // Get information about the opener's tab, if applicable.
   std::unique_ptr<base::DictionaryValue> source_tab =
-      MessagingDelegate::MaybeGetTabInfo(source_contents);
+      messaging_delegate_->MaybeGetTabInfo(source_contents);
 
   if (source_tab.get()) {
     DCHECK(source_render_frame_host);
@@ -256,8 +258,8 @@ void MessageService::OpenChannelToExtension(
     // Sending messages from WebViews to extensions breaks webview isolation,
     // so only allow component extensions to receive messages from WebViews.
     bool is_web_view = !!WebViewGuest::FromWebContents(source_contents);
-    if (is_web_view && extensions::Manifest::IsComponentLocation(
-                           target_extension->location())) {
+    if (is_web_view &&
+        Manifest::IsComponentLocation(target_extension->location())) {
       include_guest_process_info = true;
     }
   }
@@ -305,7 +307,7 @@ void MessageService::OpenChannelToExtension(
     }
 
     // This check may show a dialog.
-    MessagingDelegate::QueryIncognitoConnectability(
+    messaging_delegate_->QueryIncognitoConnectability(
         context, target_extension, source_contents, source_url,
         base::Bind(&MessageService::OnOpenChannelAllowed,
                    weak_factory_.GetWeakPtr(), base::Passed(&params)));
@@ -353,7 +355,7 @@ void MessageService::OpenChannelToNativeApp(
 
   // Verify that the host is not blocked by policies.
   MessagingDelegate::PolicyPermission policy_permission =
-      MessagingDelegate::IsNativeMessagingHostAllowed(
+      messaging_delegate_->IsNativeMessagingHostAllowed(
           source->GetProcess()->GetBrowserContext(), native_app_name);
   if (policy_permission == MessagingDelegate::PolicyPermission::DISALLOW) {
     DispatchOnDisconnect(source, receiver_port_id, kProhibitedByPoliciesError);
@@ -370,7 +372,7 @@ void MessageService::OpenChannelToNativeApp(
 
   std::string error = kReceivingEndDoesntExistError;
   std::unique_ptr<MessagePort> receiver(
-      MessagingDelegate::CreateReceiverForNativeApp(
+      messaging_delegate_->CreateReceiverForNativeApp(
           weak_factory_.GetWeakPtr(), source, extension->id(), receiver_port_id,
           native_app_name,
           policy_permission == MessagingDelegate::PolicyPermission::ALLOW_ALL,
@@ -417,7 +419,7 @@ void MessageService::OpenChannelToTab(int source_process_id,
   PortId receiver_port_id(source_port_id.context_id, source_port_id.port_number,
                           false);
   content::WebContents* receiver_contents =
-      MessagingDelegate::GetWebContentsByTabId(browser_context, tab_id);
+      messaging_delegate_->GetWebContentsByTabId(browser_context, tab_id);
   if (!receiver_contents || receiver_contents->GetController().NeedsReload()) {
     // The tab isn't loaded yet. Don't attempt to connect.
     DispatchOnDisconnect(
@@ -426,9 +428,9 @@ void MessageService::OpenChannelToTab(int source_process_id,
   }
 
   std::unique_ptr<MessagePort> receiver =
-      MessagingDelegate::CreateReceiverForTab(weak_factory_.GetWeakPtr(),
-                                              extension_id, receiver_port_id,
-                                              receiver_contents, frame_id);
+      messaging_delegate_->CreateReceiverForTab(weak_factory_.GetWeakPtr(),
+                                                extension_id, receiver_port_id,
+                                                receiver_contents, frame_id);
   if (!receiver.get()) {
     DispatchOnDisconnect(
         source, receiver_port_id, kReceivingEndDoesntExistError);
@@ -798,7 +800,7 @@ void MessageService::OnOpenChannelAllowed(
   // process, we will use the incognito EPM to find the right extension process,
   // which depends on whether the extension uses spanning or split mode.
   if (content::RenderProcessHost* extension_process =
-      GetExtensionProcess(context, params->target_extension_id)) {
+          GetExtensionProcess(context, params->target_extension_id)) {
     params->receiver.reset(
         new ExtensionMessagePort(
             weak_factory_.GetWeakPtr(), params->receiver_port_id,

@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/messaging/messaging_delegate.h"
+#include "chrome/browser/extensions/api/messaging/chrome_messaging_delegate.h"
 
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/api/messaging/extension_message_port.h"
 #include "chrome/browser/extensions/api/messaging/incognito_connectability.h"
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -17,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/api/messaging/extension_message_port.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/pref_names.h"
@@ -27,9 +27,11 @@
 
 namespace extensions {
 
-// static
+ChromeMessagingDelegate::ChromeMessagingDelegate() = default;
+ChromeMessagingDelegate::~ChromeMessagingDelegate() = default;
+
 MessagingDelegate::PolicyPermission
-MessagingDelegate::IsNativeMessagingHostAllowed(
+ChromeMessagingDelegate::IsNativeMessagingHostAllowed(
     content::BrowserContext* browser_context,
     const std::string& native_host_name) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -72,8 +74,7 @@ MessagingDelegate::IsNativeMessagingHostAllowed(
   return PolicyPermission::DISALLOW;
 }
 
-// static
-std::unique_ptr<base::DictionaryValue> MessagingDelegate::MaybeGetTabInfo(
+std::unique_ptr<base::DictionaryValue> ChromeMessagingDelegate::MaybeGetTabInfo(
     content::WebContents* web_contents) {
   // Add info about the opener's tab (if it was a tab).
   if (web_contents && ExtensionTabUtil::GetTabId(web_contents) >= 0) {
@@ -85,8 +86,7 @@ std::unique_ptr<base::DictionaryValue> MessagingDelegate::MaybeGetTabInfo(
   return nullptr;
 }
 
-// static
-content::WebContents* MessagingDelegate::GetWebContentsByTabId(
+content::WebContents* ChromeMessagingDelegate::GetWebContentsByTabId(
     content::BrowserContext* browser_context,
     int tab_id) {
   content::WebContents* contents = nullptr;
@@ -98,8 +98,7 @@ content::WebContents* MessagingDelegate::GetWebContentsByTabId(
   return contents;
 }
 
-// static
-std::unique_ptr<MessagePort> MessagingDelegate::CreateReceiverForTab(
+std::unique_ptr<MessagePort> ChromeMessagingDelegate::CreateReceiverForTab(
     base::WeakPtr<MessagePort::ChannelDelegate> channel_delegate,
     const std::string& extension_id,
     const PortId& receiver_port_id,
@@ -119,8 +118,8 @@ std::unique_ptr<MessagePort> MessagingDelegate::CreateReceiverForTab(
       include_child_frames);
 }
 
-// static
-std::unique_ptr<MessagePort> MessagingDelegate::CreateReceiverForNativeApp(
+std::unique_ptr<MessagePort>
+ChromeMessagingDelegate::CreateReceiverForNativeApp(
     base::WeakPtr<MessagePort::ChannelDelegate> channel_delegate,
     content::RenderFrameHost* source,
     const std::string& extension_id,
@@ -138,8 +137,7 @@ std::unique_ptr<MessagePort> MessagingDelegate::CreateReceiverForNativeApp(
                                              std::move(native_host));
 }
 
-// static
-void MessagingDelegate::QueryIncognitoConnectability(
+void ChromeMessagingDelegate::QueryIncognitoConnectability(
     content::BrowserContext* context,
     const Extension* target_extension,
     content::WebContents* source_contents,

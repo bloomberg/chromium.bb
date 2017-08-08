@@ -112,6 +112,10 @@ FileSystemDelegate* ExtensionsAPIClient::GetFileSystemDelegate() {
   return nullptr;
 }
 
+MessagingDelegate* ExtensionsAPIClient::GetMessagingDelegate() {
+  return nullptr;
+}
+
 #if defined(OS_CHROMEOS)
 NonNativeFileSystemDelegate*
 ExtensionsAPIClient::GetNonNativeFileSystemDelegate() {

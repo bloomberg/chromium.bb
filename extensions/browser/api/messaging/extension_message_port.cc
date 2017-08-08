@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/messaging/extension_message_port.h"
+#include "extensions/browser/api/messaging/extension_message_port.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
@@ -17,7 +17,6 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_observer.h"
 #include "extensions/common/api/messaging/message.h"
-#include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 
@@ -169,14 +168,14 @@ void ExtensionMessagePort::RevalidatePort() {
 
   // If the port is unknown, the renderer will respond by closing the port.
   SendToPort(base::MakeUnique<ExtensionMsg_ValidateMessagePort>(
-          MSG_ROUTING_NONE, port_id_));
+      MSG_ROUTING_NONE, port_id_));
 }
 
 void ExtensionMessagePort::RemoveCommonFrames(const MessagePort& port) {
   // Avoid overlap in the set of frames to make sure that it does not matter
   // when UnregisterFrame is called.
   for (std::set<content::RenderFrameHost*>::iterator it = frames_.begin();
-       it != frames_.end(); ) {
+       it != frames_.end();) {
     if (port.HasFrame(*it)) {
       frames_.erase(it++);
     } else {

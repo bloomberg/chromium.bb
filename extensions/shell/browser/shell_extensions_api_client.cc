@@ -5,6 +5,7 @@
 #include "extensions/shell/browser/shell_extensions_api_client.h"
 
 #include "base/memory/ptr_util.h"
+#include "extensions/browser/api/messaging/messaging_delegate.h"
 #include "extensions/shell/browser/delegates/shell_kiosk_delegate.h"
 #include "extensions/shell/browser/shell_app_view_guest_delegate.h"
 #include "extensions/shell/browser/shell_extension_web_contents_observer.h"
@@ -42,5 +43,12 @@ FileSystemDelegate* ShellExtensionsAPIClient::GetFileSystemDelegate() {
   return file_system_delegate_.get();
 }
 #endif
+
+MessagingDelegate* ShellExtensionsAPIClient::GetMessagingDelegate() {
+  // The default implementation does nothing, which is fine.
+  if (!messaging_delegate_)
+    messaging_delegate_ = base::MakeUnique<MessagingDelegate>();
+  return messaging_delegate_.get();
+}
 
 }  // namespace extensions

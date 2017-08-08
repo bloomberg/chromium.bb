@@ -56,6 +56,7 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   MetricsPrivateDelegate* GetMetricsPrivateDelegate() override;
   NetworkingCastPrivateDelegate* GetNetworkingCastPrivateDelegate() override;
   FileSystemDelegate* GetFileSystemDelegate() override;
+  MessagingDelegate* GetMessagingDelegate() override;
 
 #if defined(OS_CHROMEOS)
   NonNativeFileSystemDelegate* GetNonNativeFileSystemDelegate() override;
@@ -73,6 +74,7 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   std::unique_ptr<NetworkingCastPrivateDelegate>
       networking_cast_private_delegate_;
   std::unique_ptr<FileSystemDelegate> file_system_delegate_;
+  std::unique_ptr<MessagingDelegate> messaging_delegate_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<NonNativeFileSystemDelegate> non_native_file_system_delegate_;
