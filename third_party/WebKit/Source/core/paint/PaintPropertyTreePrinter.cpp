@@ -220,18 +220,16 @@ class PropertyTreePrinterTraits<ScrollPaintPropertyNode> {
   static void AddFrameViewProperties(
       const LocalFrameView& frame_view,
       PropertyTreePrinter<ScrollPaintPropertyNode>& printer) {
-    if (const auto* scroll_translation = frame_view.ScrollTranslation()) {
-      const auto* scroll_node = scroll_translation->ScrollNode();
+    if (const auto* scroll_node = frame_view.ScrollNode())
       printer.AddPropertyNode(scroll_node, "Scroll (FrameView)");
-    }
   }
 
   static void AddObjectPaintProperties(
       const LayoutObject& object,
       const ObjectPaintProperties& paint_properties,
       PropertyTreePrinter<ScrollPaintPropertyNode>& printer) {
-    if (const auto* scroll_translation = paint_properties.ScrollTranslation()) {
-      printer.AddPropertyNode(scroll_translation->ScrollNode(),
+    if (const auto* scroll_node = paint_properties.Scroll()) {
+      printer.AddPropertyNode(scroll_node,
                               "Scroll (" + object.DebugName() + ")");
     }
   }

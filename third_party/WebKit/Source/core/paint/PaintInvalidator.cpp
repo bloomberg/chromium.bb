@@ -268,12 +268,14 @@ class ScopedUndoFrameViewContentClipAndScroll {
         saved_context_(tree_builder_context_.current) {
     DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
 
+    if (const auto* scroll_node = frame_view.ScrollNode()) {
+      DCHECK_EQ(scroll_node, saved_context_.scroll);
+      tree_builder_context_.current.scroll = saved_context_.scroll->Parent();
+    }
     if (const auto* scroll_translation = frame_view.ScrollTranslation()) {
       DCHECK_EQ(scroll_translation, saved_context_.transform);
-      DCHECK_EQ(scroll_translation->ScrollNode(), saved_context_.scroll);
       tree_builder_context_.current.transform =
           saved_context_.transform->Parent();
-      tree_builder_context_.current.scroll = saved_context_.scroll->Parent();
     }
     DCHECK_EQ(frame_view.PreTranslation(),
               tree_builder_context_.current.transform);

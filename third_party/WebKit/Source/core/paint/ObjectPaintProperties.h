@@ -76,6 +76,7 @@ class CORE_EXPORT ObjectPaintProperties {
   const TransformPaintPropertyNode* SvgLocalToBorderBoxTransform() const {
     return svg_local_to_border_box_transform_.Get();
   }
+  const ScrollPaintPropertyNode* Scroll() const { return scroll_.Get(); }
   const TransformPaintPropertyNode* ScrollTranslation() const {
     return scroll_translation_.Get();
   }
@@ -159,6 +160,7 @@ class CORE_EXPORT ObjectPaintProperties {
   bool ClearSvgLocalToBorderBoxTransform() {
     return Clear(svg_local_to_border_box_transform_);
   }
+  bool ClearScroll() { return Clear(scroll_); }
   bool ClearScrollTranslation() { return Clear(scroll_translation_); }
   bool ClearScrollbarPaintOffset() { return Clear(scrollbar_paint_offset_); }
 
@@ -195,19 +197,15 @@ class CORE_EXPORT ObjectPaintProperties {
                   std::forward<Args>(args)...);
   }
   template <typename... Args>
+  UpdateResult UpdateScroll(Args&&... args) {
+    return Update(scroll_, std::forward<Args>(args)...);
+  }
+  template <typename... Args>
   UpdateResult UpdateScrollTranslation(Args&&... args) {
     DCHECK(!SvgLocalToBorderBoxTransform())
         << "SVG elements cannot scroll so there should never be both a scroll "
            "translation and an SVG local to border box transform.";
-    if (scroll_translation_) {
-      return scroll_translation_->UpdateScrollTranslation(
-                 std::forward<Args>(args)...)
-                 ? UpdateResult::kValueChanged
-                 : UpdateResult::kUnchanged;
-    }
-    scroll_translation_ = TransformPaintPropertyNode::CreateScrollTranslation(
-        std::forward<Args>(args)...);
-    return UpdateResult::kNewNodeCreated;
+    return Update(scroll_translation_, std::forward<Args>(args)...);
   }
   template <typename... Args>
   UpdateResult UpdateScrollbarPaintOffset(Args&&... args) {
@@ -276,6 +274,8 @@ class CORE_EXPORT ObjectPaintProperties {
       cloned->svg_local_to_border_box_transform_ =
           svg_local_to_border_box_transform_->Clone();
     }
+    if (scroll_)
+      cloned->scroll_ = scroll_->Clone();
     if (scroll_translation_)
       cloned->scroll_translation_ = scroll_translation_->Clone();
     if (scrollbar_paint_offset_)
@@ -328,6 +328,7 @@ class CORE_EXPORT ObjectPaintProperties {
   RefPtr<TransformPaintPropertyNode> perspective_;
   // TODO(pdr): Only LayoutSVGRoot needs this and it should be moved there.
   RefPtr<TransformPaintPropertyNode> svg_local_to_border_box_transform_;
+  RefPtr<ScrollPaintPropertyNode> scroll_;
   RefPtr<TransformPaintPropertyNode> scroll_translation_;
   RefPtr<TransformPaintPropertyNode> scrollbar_paint_offset_;
 };
