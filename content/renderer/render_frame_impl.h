@@ -34,6 +34,7 @@
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/host_zoom.mojom.h"
+#include "content/common/possibly_associated_interface_ptr.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
 #include "content/common/widget.mojom.h"
@@ -1476,7 +1477,7 @@ class CONTENT_EXPORT RenderFrameImpl
   mojo::BindingSet<service_manager::mojom::InterfaceProvider>
       interface_provider_bindings_;
 
-  mojom::URLLoaderFactoryPtr url_loader_factory_;
+  PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory> url_loader_factory_;
 
   // AndroidOverlay routing token from the browser, if we have one yet.
   base::Optional<base::UnguessableToken> overlay_routing_token_;

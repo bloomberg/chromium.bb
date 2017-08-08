@@ -5246,8 +5246,10 @@ void RenderFrameImpl::OnCommitNavigation(
       weak_factory_.GetWeakPtr());
 
   // Chrome doesn't use interface versioning.
-  url_loader_factory_.Bind(mojom::URLLoaderFactoryPtrInfo(
+  mojom::URLLoaderFactoryPtr url_loader_factory;
+  url_loader_factory.Bind(mojom::URLLoaderFactoryPtrInfo(
       mojo::ScopedMessagePipeHandle(commit_data.url_loader_factory), 0u));
+  url_loader_factory_ = std::move(url_loader_factory);
 
   // If the request was initiated in the context of a user gesture then make
   // sure that the navigation also executes in the context of a user gesture.
@@ -6825,23 +6827,28 @@ std::unique_ptr<blink::WebURLLoader> RenderFrameImpl::CreateURLLoader(
   UpdatePeakMemoryStats();
 
   ChildThreadImpl* child_thread = ChildThreadImpl::current();
-  if (base::FeatureList::IsEnabled(features::kNetworkService) && child_thread) {
-    // Use if per-frame or per-scheme URLLoaderFactory is given.
-    mojom::URLLoaderFactory* factory = url_loader_factory_.get();
-
-    if (request.Url().ProtocolIs(url::kBlobScheme))
-      factory = RenderThreadImpl::current()->GetBlobURLLoaderFactory();
-
-    if (factory) {
-      return base::MakeUnique<WebURLLoaderImpl>(
-          child_thread->resource_dispatcher(), task_runner, factory);
-    }
-    // Otherwise fallback to the platform one, which will use the default
-    // network service's URLLoaderFactory.
+  if (!child_thread) {
+    return RenderThreadImpl::current()->blink_platform_impl()->CreateURLLoader(
+        request, task_runner);
   }
 
-  return RenderThreadImpl::current()->blink_platform_impl()->CreateURLLoader(
-      request, task_runner);
+  mojom::URLLoaderFactory* factory = url_loader_factory_.get();
+  if (base::FeatureList::IsEnabled(features::kNetworkService) &&
+      request.Url().ProtocolIs(url::kBlobScheme)) {
+    factory = RenderThreadImpl::current()->GetBlobURLLoaderFactory();
+    DCHECK(factory);
+  }
+
+  if (!factory && !url_loader_factory_) {
+    url_loader_factory_ = RenderThreadImpl::current()
+                              ->blink_platform_impl()
+                              ->CreateURLLoaderFactory();
+    factory = url_loader_factory_.get();
+    DCHECK(factory);
+  }
+
+  return base::MakeUnique<WebURLLoaderImpl>(child_thread->resource_dispatcher(),
+                                            task_runner, factory);
 }
 
 void RenderFrameImpl::DraggableRegionsChanged() {
