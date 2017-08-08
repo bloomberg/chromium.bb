@@ -2832,8 +2832,19 @@ bool BackTexture::AllocateNativeGpuMemoryBuffer(const gfx::Size& size,
   scoped_refptr<gl::GLImage> image =
       decoder_->GetContextGroup()->image_factory()->CreateAnonymousImage(
           size,
-          format == GL_RGB ? gfx::BufferFormat::RGBX_8888
-                           : gfx::BufferFormat::RGBA_8888,
+          format == GL_RGB
+              ?
+#if defined(USE_OZONE)
+              // BGRX format is preferred for Ozone as it matches the format
+              // used by the buffer queue and is as a result guaranteed to work
+              // on all devices.
+              // TODO(reveman): Define this format in one place instead of
+              // having to duplicate BGRX_8888.
+              gfx::BufferFormat::BGRX_8888
+#else
+              gfx::BufferFormat::RGBX_8888
+#endif
+              : gfx::BufferFormat::RGBA_8888,
           format);
   if (!image || !image->BindTexImage(Target()))
     return false;
