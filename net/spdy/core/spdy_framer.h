@@ -26,19 +26,18 @@
 
 namespace net {
 
-class HttpProxyClientSocketPoolTest;
+class Http2DecoderAdapter;
 class HttpNetworkLayer;
 class HttpNetworkTransactionTest;
+class HttpProxyClientSocketPoolTest;
+class SpdyFrameBuilder;
+class SpdyFramer;
+class SpdyFramerVisitorInterface;
 class SpdyHttpStreamTest;
 class SpdyNetworkTransactionTest;
 class SpdyProxyClientSocketTest;
 class SpdySessionTest;
 class SpdyStreamTest;
-
-class SpdyFramer;
-class SpdyFrameBuilder;
-class SpdyFramerDecoderAdapter;
-class SpdyFramerVisitorInterface;
 
 namespace test {
 
@@ -638,7 +637,7 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
   SpdyHeadersHandlerInterface* header_handler_;
 
   // Decoder to use instead of this instance.
-  std::unique_ptr<SpdyFramerDecoderAdapter> decoder_adapter_;
+  std::unique_ptr<Http2DecoderAdapter> decoder_adapter_;
 
   // Determines whether HPACK compression is used.
   const CompressionOption compression_option_;
