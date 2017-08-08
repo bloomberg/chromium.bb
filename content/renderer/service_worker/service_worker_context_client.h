@@ -368,10 +368,6 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   const GURL service_worker_scope_;
   const GURL script_url_;
 
-  // True if the scripts for the worker are installed and its scripts are
-  // streamed from the browser process instead of ResourceLoader.
-  const bool is_script_streaming_;
-
   scoped_refptr<ThreadSafeSender> sender_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;
