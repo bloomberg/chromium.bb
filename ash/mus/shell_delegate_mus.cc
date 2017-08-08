@@ -132,14 +132,6 @@ PrefService* ShellDelegateMus::GetActiveUserPrefService() const {
   return nullptr;
 }
 
-PrefService* ShellDelegateMus::GetLocalStatePrefService() const {
-  // This code should never be called in the case of Config::MASH. Rather, the
-  // PrefService instance is stored by Shell when it manages to connect to the
-  // pref service in Chrome.
-  NOTREACHED();
-  return nullptr;
-}
-
 bool ShellDelegateMus::IsTouchscreenEnabledInPrefs(bool use_local_state) const {
   NOTIMPLEMENTED();
   return true;

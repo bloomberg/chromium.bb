@@ -139,11 +139,15 @@ class TestShellObserver : public ShellObserver {
   ~TestShellObserver() override = default;
 
   // ShellObserver:
+  void OnLocalStatePrefServiceInitialized(PrefService* pref_service) override {
+    last_local_state_ = pref_service;
+  }
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override {
-    last_pref_service_ = pref_service;
+    last_user_pref_service_ = pref_service;
   }
 
-  PrefService* last_pref_service_ = nullptr;
+  PrefService* last_local_state_ = nullptr;
+  PrefService* last_user_pref_service_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestShellObserver);
@@ -583,13 +587,64 @@ TEST_F(ShellPrefsTest, Observer) {
   ash_test_helper()->test_shell_delegate()->set_active_user_pref_service(
       &pref_service1_);
   session->SwitchActiveUser(AccountId::FromUserEmail("user1@test.com"));
-  EXPECT_EQ(&pref_service1_, observer.last_pref_service_);
+  EXPECT_EQ(&pref_service1_, observer.last_user_pref_service_);
 
   // Switching users notifies observers of the new user pref service.
   ash_test_helper()->test_shell_delegate()->set_active_user_pref_service(
       &pref_service2_);
   session->SwitchActiveUser(AccountId::FromUserEmail("user2@test.com"));
-  EXPECT_EQ(&pref_service2_, observer.last_pref_service_);
+  EXPECT_EQ(&pref_service2_, observer.last_user_pref_service_);
+
+  Shell::Get()->RemoveShellObserver(&observer);
+}
+
+// Tests the local state code path used with Config::CLASSIC and Config::MUS.
+class ShellLocalStateTestNonMash : public NoSessionAshTestBase {
+ public:
+  ShellLocalStateTestNonMash() = default;
+  ~ShellLocalStateTestNonMash() override = default;
+
+  // Must outlive Shell.
+  TestingPrefServiceSimple local_state_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShellLocalStateTestNonMash);
+};
+
+TEST_F(ShellLocalStateTestNonMash, LocalState) {
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
+  TestShellObserver observer;
+  Shell::Get()->AddShellObserver(&observer);
+
+  // In classic ash, chrome calls into ash to set up local state.
+  Shell::RegisterLocalStatePrefs(local_state_.registry());
+  Shell::Get()->SetLocalStatePrefService(&local_state_);
+  EXPECT_EQ(&local_state_, observer.last_local_state_);
+  EXPECT_EQ(&local_state_, Shell::Get()->GetLocalStatePrefService());
+
+  Shell::Get()->RemoveShellObserver(&observer);
+}
+
+// Tests the local state code path used with Config::MASH.
+using ShellLocalStateTestMash = ShellTest;
+
+TEST_F(ShellLocalStateTestMash, LocalState) {
+  if (Shell::GetAshConfig() != Config::MASH)
+    return;
+
+  TestShellObserver observer;
+  Shell::Get()->AddShellObserver(&observer);
+
+  // In mash, prefs service wrapper code creates a PrefService.
+  std::unique_ptr<TestingPrefServiceSimple> local_state =
+      base::MakeUnique<TestingPrefServiceSimple>();
+  Shell::RegisterLocalStatePrefs(local_state->registry());
+  TestingPrefServiceSimple* local_state_ptr = local_state.get();
+  ShellTestApi().OnLocalStatePrefServiceInitialized(std::move(local_state));
+  EXPECT_EQ(local_state_ptr, observer.last_local_state_);
+  EXPECT_EQ(local_state_ptr, Shell::Get()->GetLocalStatePrefService());
 
   Shell::Get()->RemoveShellObserver(&observer);
 }

@@ -425,16 +425,16 @@ void Shell::UpdateShelfVisibility() {
 
 PrefService* Shell::GetActiveUserPrefService() const {
   if (shell_port_->GetAshConfig() == Config::MASH)
-    return profile_pref_service_.get();
+    return profile_pref_service_mash_.get();
 
   return shell_delegate_->GetActiveUserPrefService();
 }
 
 PrefService* Shell::GetLocalStatePrefService() const {
   if (shell_port_->GetAshConfig() == Config::MASH)
-    return local_state_.get();
+    return local_state_mash_.get();
 
-  return shell_delegate_->GetLocalStatePrefService();
+  return local_state_non_mash_;
 }
 
 WebNotificationTray* Shell::GetWebNotificationTray() {
@@ -590,6 +590,15 @@ void Shell::NotifyShelfAutoHideBehaviorChanged(aura::Window* root_window) {
 // static
 void Shell::SetIsBrowserProcessWithMash() {
   g_is_browser_process_with_mash = true;
+}
+
+void Shell::SetLocalStatePrefService(PrefService* local_state) {
+  DCHECK(GetAshConfig() != Config::MASH);
+  DCHECK(local_state);
+  local_state_non_mash_ = local_state;
+
+  for (auto& observer : shell_observers_)
+    observer.OnLocalStatePrefServiceInitialized(local_state_non_mash_);
 }
 
 void Shell::NotifyAppListVisibilityChanged(bool visible,
@@ -840,7 +849,9 @@ Shell::~Shell() {
   // NightLightController depeneds on the PrefService and must be destructed
   // before it. crbug.com/724231.
   night_light_controller_ = nullptr;
-  profile_pref_service_ = nullptr;
+  profile_pref_service_mash_.reset();
+  local_state_mash_.reset();
+  local_state_non_mash_ = nullptr;
   shell_delegate_.reset();
 
   for (auto& observer : shell_observers_)
@@ -1335,22 +1346,28 @@ void Shell::RegisterForeignPrefs(PrefRegistrySimple* registry) {
 
 void Shell::OnProfilePrefServiceInitialized(
     std::unique_ptr<PrefService> pref_service) {
+  DCHECK(GetAshConfig() == Config::MASH);
   // Keep the old PrefService object alive so OnActiveUserPrefServiceChanged()
   // clients can unregister pref observers on the old service.
-  std::unique_ptr<PrefService> old_service = std::move(profile_pref_service_);
-  profile_pref_service_ = std::move(pref_service);
+  std::unique_ptr<PrefService> old_service =
+      std::move(profile_pref_service_mash_);
+  profile_pref_service_mash_ = std::move(pref_service);
   // |pref_service| can be null if can't connect to Chrome (as happens when
   // running mash outside of chrome --mash and chrome isn't built).
   for (auto& observer : shell_observers_)
-    observer.OnActiveUserPrefServiceChanged(profile_pref_service_.get());
+    observer.OnActiveUserPrefServiceChanged(profile_pref_service_mash_.get());
   // |old_service| is deleted.
 }
 
 void Shell::OnLocalStatePrefServiceInitialized(
     std::unique_ptr<::PrefService> pref_service) {
+  DCHECK(GetAshConfig() == Config::MASH);
   // |pref_service| is null if can't connect to Chrome (as happens when
   // running mash outside of chrome --mash and chrome isn't built).
-  local_state_ = std::move(pref_service);
+  local_state_mash_ = std::move(pref_service);
+
+  for (auto& observer : shell_observers_)
+    observer.OnLocalStatePrefServiceInitialized(local_state_mash_.get());
 }
 
 }  // namespace ash
