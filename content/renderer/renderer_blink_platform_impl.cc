@@ -316,32 +316,41 @@ std::unique_ptr<blink::WebURLLoader> RendererBlinkPlatformImpl::CreateURLLoader(
     base::SingleThreadTaskRunner* task_runner) {
   ChildThreadImpl* child_thread = ChildThreadImpl::current();
 
-  if (!url_loader_factory_ && child_thread) {
-    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-      mojom::URLLoaderFactoryPtr factory_ptr;
-      connector_->BindInterface(mojom::kBrowserServiceName, &factory_ptr);
-      url_loader_factory_ = std::move(factory_ptr);
-    } else {
-      mojom::URLLoaderFactoryAssociatedPtr factory_ptr;
-      child_thread->channel()->GetRemoteAssociatedInterface(&factory_ptr);
-      url_loader_factory_ = std::move(factory_ptr);
-    }
-
-    // Attach the CORS-enabled URLLoader if we use the default (non-custom)
-    // network URLLoader.
-    if (base::FeatureList::IsEnabled(features::kOutOfBlinkCORS)) {
-      mojom::URLLoaderFactoryPtr factory_ptr;
-      CORSURLLoaderFactory::CreateAndBind(std::move(url_loader_factory_),
-                                          mojo::MakeRequest(&factory_ptr));
-      url_loader_factory_ = std::move(factory_ptr);
-    }
-  }
+  if (!url_loader_factory_ && child_thread)
+    url_loader_factory_ = CreateURLLoaderFactory();
 
   // There may be no child thread in RenderViewTests.  These tests can still use
   // data URLs to bypass the ResourceDispatcher.
   return base::MakeUnique<WebURLLoaderImpl>(
       child_thread ? child_thread->resource_dispatcher() : nullptr, task_runner,
       url_loader_factory_.get());
+}
+
+PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory>
+RendererBlinkPlatformImpl::CreateURLLoaderFactory() {
+  ChildThreadImpl* child_thread = ChildThreadImpl::current();
+  DCHECK(child_thread);
+  PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory> url_loader_factory;
+
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    mojom::URLLoaderFactoryPtr factory_ptr;
+    connector_->BindInterface(mojom::kBrowserServiceName, &factory_ptr);
+    url_loader_factory = std::move(factory_ptr);
+  } else {
+    mojom::URLLoaderFactoryAssociatedPtr factory_ptr;
+    child_thread->channel()->GetRemoteAssociatedInterface(&factory_ptr);
+    url_loader_factory = std::move(factory_ptr);
+  }
+
+  // Attach the CORS-enabled URLLoader if we use the default (non-custom)
+  // network URLLoader.
+  if (base::FeatureList::IsEnabled(features::kOutOfBlinkCORS)) {
+    mojom::URLLoaderFactoryPtr factory_ptr;
+    CORSURLLoaderFactory::CreateAndBind(std::move(url_loader_factory_),
+                                        mojo::MakeRequest(&factory_ptr));
+    url_loader_factory = std::move(factory_ptr);
+  }
+  return url_loader_factory;
 }
 
 blink::WebThread* RendererBlinkPlatformImpl::CurrentThread() {
