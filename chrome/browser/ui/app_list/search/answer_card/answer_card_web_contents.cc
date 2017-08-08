@@ -15,6 +15,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "ui/views/controls/webview/web_contents_set_background_color.h"
@@ -77,16 +78,17 @@ void ParseResponseHeaders(const net::HttpResponseHeaders* headers,
                << " header != true";
     return;
   }
-  if (!headers->GetNormalizedHeader(kSearchAnswerTitle, result_title)) {
+  if (!headers->GetNormalizedHeader(kSearchAnswerTitle, result_title) ||
+      result_title->empty()) {
     LOG(ERROR) << "Failed to parse response headers: " << kSearchAnswerTitle
                << " header is not present";
     return;
   }
-  if (!headers->GetNormalizedHeader(kSearchAnswerIssuedQuery, issued_query)) {
-    // TODO(749320): Make the header mandatory once the production server
-    // starts serving it.
-    VLOG(1) << "Warning: " << kSearchAnswerIssuedQuery
-            << " header is not present";
+  if (!headers->GetNormalizedHeader(kSearchAnswerIssuedQuery, issued_query) ||
+      issued_query->empty()) {
+    LOG(ERROR) << "Failed to parse response headers: "
+               << kSearchAnswerIssuedQuery << " header is not present";
+    return;
   }
   *has_answer_card = true;
 }

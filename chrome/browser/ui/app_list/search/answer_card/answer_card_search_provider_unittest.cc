@@ -69,14 +69,16 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
   AnswerCardSearchProviderTest() : field_trial_list_(nullptr) {}
 
   void TestDidFinishNavigation(bool has_error,
-                               bool has_result,
-                               std::string title,
+                               bool has_answer_card,
+                               const std::string& title,
+                               const std::string& issued_query,
                                std::size_t expected_result_count) {
     EXPECT_CALL(*contents(), LoadURL(GURL("http://beasts.org/search?q=cat")));
     provider()->Start(false, base::UTF8ToUTF16("cat"));
 
     provider()->DidFinishNavigation(GURL("http://beasts.org/search?q=cat"),
-                                    has_error, has_result, title, "");
+                                    has_error, has_answer_card, title,
+                                    issued_query);
 
     provider()->DidStopLoading();
     provider()->UpdatePreferredSize(GetMaxValidCardSize());
@@ -281,10 +283,9 @@ TEST_F(AnswerCardSearchProviderTest, ChangingSize) {
 
 // Various values for DidFinishNavigation params.
 TEST_F(AnswerCardSearchProviderTest, DidFinishNavigation) {
-  TestDidFinishNavigation(false, true, kCatCardTitle, 1UL);
-  TestDidFinishNavigation(true, true, kCatCardTitle, 0UL);
-  TestDidFinishNavigation(false, false, kCatCardTitle, 0UL);
-  TestDidFinishNavigation(false, true, "", 0UL);
+  TestDidFinishNavigation(false, true, kCatCardTitle, "cat", 1UL);
+  TestDidFinishNavigation(true, true, kCatCardTitle, "cat", 0UL);
+  TestDidFinishNavigation(false, false, kCatCardTitle, "", 0UL);
 }
 
 }  // namespace test
