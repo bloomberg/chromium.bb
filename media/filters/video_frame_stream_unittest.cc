@@ -942,6 +942,52 @@ TEST_P(VideoFrameStreamTest, FallbackDecoder_DecodeErrorTwice) {
   ASSERT_EQ(VideoFrameStream::DECODE_ERROR, last_read_status_);
 }
 
+// This tests verifies that we properly fallback to a new decoder if the first
+// decode after a config change fails.
+TEST_P(VideoFrameStreamTest,
+       FallbackDecoder_SelectedOnMidstreamDecodeErrorAfterReinitialization) {
+  // For simplicity of testing, this test applies only when there is no decoder
+  // delay and parallel decoding is disabled.
+  if (GetParam().decoding_delay != 0 || GetParam().parallel_decoding > 1)
+    return;
+
+  Initialize();
+
+  // Note: Completes decoding one frame, results in Decode() being called with
+  // second frame that is not completed.
+  ReadOneFrame();
+
+  // Verify that the first frame was decoded successfully.
+  EXPECT_FALSE(pending_read_);
+  EXPECT_GT(decoder_->total_bytes_decoded(), 0);
+  EXPECT_EQ(VideoFrameStream::OK, last_read_status_);
+
+  // Continue up to the point of reinitialization.
+  EnterPendingState(DEMUXER_READ_CONFIG_CHANGE);
+
+  // Hold decodes to prevent a frame from being outputed upon reinitialization.
+  decoder_->HoldDecode();
+  SatisfyPendingCallback(DEMUXER_READ_CONFIG_CHANGE);
+
+  // DecoderStream sends an EOS to flush the decoder during config changes.
+  // Let the EOS decode be satisfied to properly complete the decoder reinit.
+  decoder_->SatisfySingleDecode();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(pending_read_);
+
+  // Fail the first decode, before a frame can be outputed.
+  decoder_->SimulateError();
+  base::RunLoop().RunUntilIdle();
+
+  ReadOneFrame();
+
+  // Verify that fallback happened.
+  EXPECT_EQ(GetDecoderName(1), decoder_->GetDisplayName());
+  EXPECT_FALSE(pending_read_);
+  EXPECT_EQ(VideoFrameStream::OK, last_read_status_);
+  EXPECT_GT(decoder_->total_bytes_decoded(), 0);
+}
+
 TEST_P(VideoFrameStreamTest,
        FallbackDecoder_DecodeErrorTwice_AfterReinitialization) {
   Initialize();
