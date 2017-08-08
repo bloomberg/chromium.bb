@@ -1,6 +1,5 @@
 
-Basic Definitions for Patching
-------------------------------
+## Basic Definitions for Patching
 
 **Binary**: Executable image and data. Binaries may persist in an archive
 (e.g., chrome.7z), and need to be periodically updated. Formats for binaries
@@ -10,7 +9,7 @@ or an image file.
 
 **Patching**: Sending a "new" file to clients who have an "old" file by
 computing and transmitting a "patch" that can be used to transform "old" into
-"new".  Patches are compressed for transmission. A key performance metric is
+"new". Patches are compressed for transmission. A key performance metric is
 patch size, which refers to the size of compressed patch file. For our
 experiments we use 7z.
 
@@ -20,7 +19,7 @@ generation is a run-once step on the server-side when releasing "new" binaries,
 the expense is not too critical.
 
 **Patch application**: Transformation from "old" binaries to "new", using a
-(downloaded) "patch".  This is executed on client side on updates, so resource
+(downloaded) "patch". This is executed on client side on updates, so resource
 constraints (e.g., time, RAM, disk space) is more stringent. Also, fault-
 tolerance is important. This is usually achieved by an update system by having
 a fallback method of directly downloading "new" in case of patching failure.
@@ -28,6 +27,10 @@ a fallback method of directly downloading "new" in case of patching failure.
 **Offset**: Position relative to the start of a file.
 
 **Local offset**: An offset relative to the start of a region of a file.
+
+**Element**: A region in a file with associated executable type, represented by
+the tuple (exe_type, offset, length). Every Element in new file is associated
+with an Element in old file and patched independantly.
 
 **Reference**: A directed connection between two offsets in a binary. For
 example, consider jump instructions in x86:
@@ -102,6 +105,11 @@ memory access.
 "old" binary, at an offset of |src_offset|, that is similar to a region of "new"
 binary, at an offset of |dst_offset|.
 
+**Raw delta unit**: Describes a raw modification to apply on the new image, as a
+pair (copy_offset, diff), where copy_offset describes the position in new file
+as an offset in the data that was copied from the old file, and diff is the
+bytewise difference to apply.
+
 **Associated Targets**: A target in "old" binary is associated with a target in
 "new" binary if both targets:
 1. are part of similar regions from the same equivalence, and
@@ -126,3 +134,116 @@ then we could assign indices for "new" Labels as:
 values that describe content on a higher level of abstraction, masking away
 undesirable noise in raw content. Notably, the projection encodes references
 based on their associated label.
+
+## Zucchini Ensemble Patch Format
+
+### Types
+
+**int8**: 8-bit unsigned int.
+
+**uint32**: 32-bit unsigned int, little-endian.
+
+**int32**:  32-bit signed int, little-endian.
+
+**Varints**: This is a generic variable-length encoding for integer quantities
+that strips away leading (most-significant) null bytes.
+The Varints format is borrowed from protocol-buffers, see
+[documentation](https://developers.google.com/protocol-buffers/docs/encoding#varints)
+for more info.
+
+**varuint32**: A uint32 encoded using Varints format.
+
+**varint32**: A int32 encoded using Varints format.
+
+### File Layout
+
+Name | Format | Description
+--- | --- | ---
+header | PatchHeader | The header.
+patch_type | uint32 | Type of this patch, see `enum PatchType`.
+elements_count | uint32 | Number of patch units.
+elements | PatchElement[elements_count] | List of all patch elements.
+
+Position of elements in new file is ascending.
+
+### Structures
+
+**PatchHeader**
+
+Name | Format | Description
+--- | --- | ---
+magic | uint32 = kMagic | Magic value.
+old_size | uint32 | Size of old file in bytes.
+old_crc | uint32 | CRC32 of old file.
+new_size | uint32 | Size of new file in bytes.
+new_crc | uint32 | CRC32 of new file.
+
+**kMagic** == `'Z' | ('u' << 8) | ('c' << 16)`
+
+**PatchElement**
+Contains all the information required to produce a single element in new file.
+
+Name | Format | Description
+--- | --- | ---
+header | PatchElementHeader | The header.
+equivalences | EquivalenceList | List of equivalences.
+raw_deltas | RawDeltaList | List of raw deltas.
+reference_deltas | ReferenceDeltaList | List of reference deltas.
+pool_count | uint32 | Number of pools.
+extra_targets | ExtraTargetList[pool_count] | Lists of extra targets.
+
+**PatchElementHeader**
+Describes a correspondence between an element in old and in new files. Some
+redundancy arise from storing |new_offset|, but it is necessary to make
+PatchElement self contained.
+
+Name | Format | Description
+--- | --- | ---
+old_offset | uint32 | Starting offset of the element in old file.
+new_offset | uint32 | Starting offset of the element in new file.
+old_length | uint32 | Length of the element in old file.
+new_length | uint32 | Length of the element in new file.
+exe_type | uint32 | Executable type for this unit, see `enum ExecutableType`.
+
+**EquivalenceList**
+Encodes a list of equivalences, where dst offsets (in new image) are ascending.
+
+Name | Format | Description
+--- | --- | ---
+src_skip | Buffer<varint32> | Src offset for each equivalence, delta encoded.
+dst_skip | Buffer<varuint32> | Dst offset for each equivalence, delta encoded.
+copy_count | Buffer<varuint32> | Length for each equivalence.
+
+**RawDeltaList**
+Encodes a list of raw delta units, with ascending copy offsets.
+
+Name | Format | Description
+--- | --- | ---
+raw_delta_skip | Buffer<varuint32> | Copy offset for each delta unit, delta encoded and biased by -1.
+raw_delta_diff | Buffer<int8> | Bytewise difference for each delta unit.
+
+**ReferenceDeltaList**
+Encodes a list of reference deltas, in the order they appear in the new
+image file. A reference delta is a signed integer representing a jump through a
+list of targets.
+
+Name | Format | Description
+--- | --- | ---
+reference_delta | Buffer<varuint32> | Vector of reference deltas.
+
+**ExtraTargetList**
+Encodes a list of additional targets in the new image file, in ascending
+order.
+
+Name | Format | Description
+--- | --- | ---
+pool_tag | uint8_t | Unique identifier for this pool of targets.
+extra_targets | Buffer<varuint32> | Additional targets, delta encoded and biased by -1.
+
+**Buffer<T>**
+A generic vector of data.
+
+Name | Format | Description
+--- | --- | ---
+size |uint32 | Size of content in bytes.
+content |T[] | List of integers.
