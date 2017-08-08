@@ -79,12 +79,12 @@ class NTPTileSaverControllerTest : public BlockCleanupTest {
     EXPECT_NSEQ(tile.title, expectedTitle);
     EXPECT_NSEQ(tile.URL, expectedURL);
     EXPECT_TRUE(tile.faviconFetched);
-    EXPECT_NSNE(tile.faviconPath, nil);
+    EXPECT_NSNE(tile.faviconFileName, nil);
     EXPECT_NSEQ(tile.fallbackTextColor, nil);
     EXPECT_NSEQ(tile.fallbackBackgroundColor, nil);
     EXPECT_TRUE([[NSFileManager defaultManager]
         fileExistsAtPath:[[testFaviconDirectory()
-                             URLByAppendingPathComponent:tile.faviconPath]
+                             URLByAppendingPathComponent:tile.faviconFileName]
                              path]]);
   }
 
@@ -95,7 +95,7 @@ class NTPTileSaverControllerTest : public BlockCleanupTest {
     EXPECT_NSEQ(tile.title, expectedTitle);
     EXPECT_NSEQ(tile.URL, expectedURL);
     EXPECT_TRUE(tile.faviconFetched);
-    EXPECT_NSEQ(tile.faviconPath, nil);
+    EXPECT_NSEQ(tile.faviconFileName, nil);
     EXPECT_NSEQ(tile.fallbackTextColor, UIColor.whiteColor);
     EXPECT_NSEQ(tile.fallbackBackgroundColor, UIColor.blueColor);
     EXPECT_EQ(tile.fallbackIsDefaultColor, NO);

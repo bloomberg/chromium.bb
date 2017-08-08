@@ -6,6 +6,7 @@
 
 #include "base/md5.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/favicon/core/fallback_url_util.h"
 #include "components/ntp_tiles/ntp_tile.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
 #import "ios/chrome/browser/ui/ntp/ntp_tile.h"
@@ -52,6 +53,12 @@ void ReplaceSavedFavicons(NSURL* faviconsURL) {
 
   if ([[NSFileManager defaultManager]
           fileExistsAtPath:[TmpFaviconFolderPath() path]]) {
+    [[NSFileManager defaultManager]
+               createDirectoryAtURL:faviconsURL.URLByDeletingLastPathComponent
+        withIntermediateDirectories:YES
+                         attributes:nil
+                              error:nil];
+
     [[NSFileManager defaultManager] moveItemAtURL:TmpFaviconFolderPath()
                                             toURL:faviconsURL
                                             error:nil];
@@ -82,6 +89,7 @@ void SaveMostVisitedToDisk(const ntp_tiles::NTPTilesVector& mostVisitedData,
   if (faviconsURL == nil) {
     return;
   }
+
   NSMutableDictionary<NSURL*, NTPTile*>* tiles =
       [[NSMutableDictionary alloc] init];
 
@@ -100,14 +108,16 @@ void SaveMostVisitedToDisk(const ntp_tiles::NTPTilesVector& mostVisitedData,
   // WriteToDiskIfComplete after each callback execution.
   // All the sites are added first to the list so that the WriteToDiskIfComplete
   // command is not passed an incomplete list.
-  for (const ntp_tiles::NTPTile& ntpTile : mostVisitedData) {
+  for (size_t i = 0; i < mostVisitedData.size(); i++) {
+    const ntp_tiles::NTPTile& ntpTile = mostVisitedData[i];
     NTPTile* tile =
         [[NTPTile alloc] initWithTitle:base::SysUTF16ToNSString(ntpTile.title)
-                                   URL:net::NSURLWithGURL(ntpTile.url)];
+                                   URL:net::NSURLWithGURL(ntpTile.url)
+                              position:i];
     [tiles setObject:tile forKey:tile.URL];
   }
 
-  for (NTPTile* tile : [tiles objectEnumerator]) {
+  for (__block NTPTile* tile : [tiles objectEnumerator]) {
     const GURL& gurl = net::GURLWithNSURL(tile.URL);
     NSString* faviconFileName = GetFaviconFileName(gurl);
     NSURL* fileURL =
@@ -117,7 +127,7 @@ void SaveMostVisitedToDisk(const ntp_tiles::NTPTilesVector& mostVisitedData,
       tile.faviconFetched = YES;
       NSData* imageData = UIImagePNGRepresentation(favicon);
       if ([imageData writeToURL:fileURL atomically:YES]) {
-        tile.faviconPath = faviconFileName;
+        tile.faviconFileName = faviconFileName;
       }
       WriteToDiskIfComplete(tiles, faviconsURL);
     };
@@ -128,6 +138,8 @@ void SaveMostVisitedToDisk(const ntp_tiles::NTPTilesVector& mostVisitedData,
           tile.fallbackTextColor = textColor;
           tile.fallbackBackgroundColor = backgroundColor;
           tile.fallbackIsDefaultColor = isDefaultColor;
+          tile.fallbackMonogram = base::SysUTF16ToNSString(
+              favicon::GetFallbackIconText(net::GURLWithNSURL(tile.URL)));
           WriteToDiskIfComplete(tiles, faviconsURL);
         };
 
@@ -150,8 +162,7 @@ void WriteSingleUpdatedTileToDisk(NTPTile* tile) {
 
 void WriteSavedMostVisited(NSDictionary<NSURL*, NTPTile*>* mostVisitedSites) {
   NSData* data = [NSKeyedArchiver archivedDataWithRootObject:mostVisitedSites];
-  NSUserDefaults* sharedDefaults =
-      [[NSUserDefaults alloc] initWithSuiteName:app_group::ApplicationGroup()];
+  NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
   [sharedDefaults setObject:data forKey:app_group::kSuggestedItems];
 
   // TODO(crbug.com/750673): Update the widget's visibility depending on
@@ -159,8 +170,7 @@ void WriteSavedMostVisited(NSDictionary<NSURL*, NTPTile*>* mostVisitedSites) {
 }
 
 NSDictionary* ReadSavedMostVisited() {
-  NSUserDefaults* sharedDefaults =
-      [[NSUserDefaults alloc] initWithSuiteName:app_group::ApplicationGroup()];
+  NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
 
   return [NSKeyedUnarchiver
       unarchiveObjectWithData:[sharedDefaults
@@ -181,20 +191,25 @@ void UpdateSingleFavicon(const GURL& siteURL,
   tile.fallbackTextColor = nil;
   tile.fallbackBackgroundColor = nil;
   tile.faviconFetched = NO;
-  NSString* faviconPath = tile.faviconPath;
-  tile.faviconPath = nil;
+  NSString* previousFaviconFileName = tile.faviconFileName;
+  tile.faviconFileName = nil;
 
   // Fetch favicon and update saved defaults.
   NSString* faviconFileName = GetFaviconFileName(siteURL);
   NSURL* fileURL = [faviconsURL URLByAppendingPathComponent:faviconFileName];
+  NSURL* previousFileURL =
+      previousFaviconFileName
+          ? [faviconsURL URLByAppendingPathComponent:previousFaviconFileName]
+          : nil;
+  NSString* monogram =
+      base::SysUTF16ToNSString(favicon::GetFallbackIconText(siteURL));
 
   void (^faviconImageBlock)(UIImage*) = ^(UIImage* favicon) {
     tile.faviconFetched = YES;
     NSData* imageData = UIImagePNGRepresentation(favicon);
+    [[NSFileManager defaultManager] removeItemAtURL:previousFileURL error:nil];
     if ([imageData writeToURL:fileURL atomically:YES]) {
-      tile.faviconPath = faviconFileName;
-    } else {
-      [[NSFileManager defaultManager] removeItemAtPath:faviconPath error:nil];
+      tile.faviconFileName = faviconFileName;
     }
     WriteSingleUpdatedTileToDisk(tile);
   };
@@ -205,7 +220,9 @@ void UpdateSingleFavicon(const GURL& siteURL,
         tile.fallbackTextColor = textColor;
         tile.fallbackBackgroundColor = backgroundColor;
         tile.fallbackIsDefaultColor = isDefaultColor;
-        [[NSFileManager defaultManager] removeItemAtPath:faviconPath error:nil];
+        tile.fallbackMonogram = monogram;
+        [[NSFileManager defaultManager] removeItemAtURL:previousFileURL
+                                                  error:nil];
         WriteSingleUpdatedTileToDisk(tile);
       };
 
