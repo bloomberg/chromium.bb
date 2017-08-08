@@ -42,6 +42,8 @@ bundle_data("unit_tests_bundle_data") {
   visibility = [ ":unit_tests" ]
   testonly = true
   sources = [
+    "//components/test/data/search_provider_logos/ddljson_android0.json",
+    "//components/test/data/search_provider_logos/ddljson_android0_fp.json",
     "//components/test/data/search_provider_logos/ddljson_android1.json",
     "//components/test/data/search_provider_logos/ddljson_android1_fp.json",
     "//components/test/data/search_provider_logos/ddljson_android2.json",
@@ -50,6 +52,8 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/search_provider_logos/ddljson_android3_fp.json",
     "//components/test/data/search_provider_logos/ddljson_android4.json",
     "//components/test/data/search_provider_logos/ddljson_android4_fp.json",
+    "//components/test/data/search_provider_logos/ddljson_ios0.json",
+    "//components/test/data/search_provider_logos/ddljson_ios0_fp.json",
     "//components/test/data/search_provider_logos/ddljson_ios1.json",
     "//components/test/data/search_provider_logos/ddljson_ios1_fp.json",
     "//components/test/data/search_provider_logos/ddljson_ios2.json",

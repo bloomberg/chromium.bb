@@ -111,16 +111,16 @@ TEST(GoogleNewLogoApiTest, ParsesCapturedApiResult) {
                       .AppendASCII("data")
                       .AppendASCII("search_provider_logos");
 
-  // TODO(treib): Add the doodle with index 0 (here and in the
-  // download_test_doodles.sh script) once it has been updated on the server.
   const struct TestCase {
     const char* file;
     bool has_image_data;
   } test_cases[] = {
+      {"ddljson_android0.json", true}, {"ddljson_android0_fp.json", false},
       {"ddljson_android1.json", true}, {"ddljson_android1_fp.json", false},
       {"ddljson_android2.json", true}, {"ddljson_android2_fp.json", false},
       {"ddljson_android3.json", true}, {"ddljson_android3_fp.json", false},
       {"ddljson_android4.json", true}, {"ddljson_android4_fp.json", false},
+      {"ddljson_ios0.json", true},     {"ddljson_ios0_fp.json", false},
       {"ddljson_ios1.json", true},     {"ddljson_ios1_fp.json", false},
       {"ddljson_ios2.json", true},     {"ddljson_ios2_fp.json", false},
       {"ddljson_ios3.json", true},     {"ddljson_ios3_fp.json", false},
