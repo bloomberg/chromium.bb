@@ -373,7 +373,7 @@ TEST_F(DownloadRequestLimiterTest, RendererInitiated) {
   // The state should not be reset on a renderer-initiated load to either the
   // same host or a different host, in either the main frame or the subframe.
   content::NavigationSimulator::NavigateAndCommitFromDocument(
-      GURL("http://fooeybar.com/bar"), web_contents()->GetMainFrame());
+      GURL("http://fooey.com/bar2"), web_contents()->GetMainFrame());
   LoadCompleted();
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
             download_request_limiter_->GetDownloadStatus(web_contents()));
