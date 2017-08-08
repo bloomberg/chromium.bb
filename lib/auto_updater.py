@@ -938,6 +938,10 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   # return from reboot' bug is solved.
   REBOOT_TIMEOUT = 480
 
+  # For provisioning in the lab, payload copies must use the throttling
+  # workqueue.
+  PAYLOAD_MODE = 'throttled'
+
   def __init__(self, device, build_name, payload_dir, dev_dir='',
                log_file=None, tempdir=None, original_payload_dir=None,
                clobber_stateful=True, local_devserver=False, yes=False,
