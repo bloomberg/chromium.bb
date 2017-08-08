@@ -187,6 +187,10 @@ class PaymentRequest : public PaymentOptionsProvider,
     return supported_card_networks_;
   }
 
+  const std::set<std::string>& supported_card_networks_set() const {
+    return supported_card_networks_set_;
+  }
+
   const std::vector<GURL>& url_payment_method_identifiers() const {
     return url_payment_method_identifiers_;
   }
@@ -327,6 +331,7 @@ class PaymentRequest : public PaymentOptionsProvider,
 
   // A vector of supported basic card networks.
   std::vector<std::string> supported_card_networks_;
+  std::set<std::string> supported_card_networks_set_;
   // A subset of |supported_card_networks_| which is only the networks that have
   // been specified as part of the "basic-card" supported method. Callers should
   // use |supported_card_networks_| for merchant support checks.

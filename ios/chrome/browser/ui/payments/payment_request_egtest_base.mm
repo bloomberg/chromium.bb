@@ -5,8 +5,10 @@
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -75,6 +77,11 @@ std::vector<autofill::CreditCard> _cards;
 }
 
 - (void)addCreditCard:(const autofill::CreditCard&)card {
+  if (card.record_type() != autofill::CreditCard::LOCAL_CARD) {
+    [self personalDataManager]->AddServerCreditCardForTest(
+        base::MakeUnique<autofill::CreditCard>(card));
+    return;
+  }
   _cards.push_back(card);
   size_t card_count = [self personalDataManager]->GetCreditCards().size();
   [self personalDataManager]->AddCreditCard(card);
