@@ -346,6 +346,23 @@ if (CONFIG_INTERNAL_STATS)
       "${AOM_ROOT}/av1/encoder/blockiness.c")
 endif ()
 
+if (CONFIG_LV_MAP)
+  set(AOM_AV1_COMMON_SOURCES
+      ${AOM_AV1_COMMON_SOURCES}
+      "${AOM_ROOT}/av1/common/txb_common.c"
+      "${AOM_ROOT}/av1/common/txb_common.h")
+
+  set(AOM_AV1_DECODER_SOURCES
+      ${AOM_AV1_DECODER_SOURCES}
+      "${AOM_ROOT}/av1/decoder/decodetxb.c"
+      "${AOM_ROOT}/av1/decoder/decodetxb.h")
+
+  set(AOM_AV1_ENCODER_SOURCES
+      ${AOM_AV1_ENCODER_SOURCES}
+      "${AOM_ROOT}/av1/encoder/encodetxb.c"
+      "${AOM_ROOT}/av1/encoder/encodetxb.h")
+endif ()
+
 if (CONFIG_PALETTE)
   set(AOM_AV1_ENCODER_SOURCES
       ${AOM_AV1_ENCODER_SOURCES}

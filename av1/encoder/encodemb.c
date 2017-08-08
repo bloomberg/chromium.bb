@@ -110,12 +110,12 @@ void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
                  pd->dst.buf, pd->dst.stride);
 }
 
+#if !CONFIG_LV_MAP
 // These numbers are empirically obtained.
 static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
   { 10, 7 }, { 8, 5 },
 };
 
-#if !CONFIG_LV_MAP
 static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
                              int blk_row, int blk_col, int block,
                              TX_SIZE tx_size, int ctx) {
