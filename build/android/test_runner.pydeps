@@ -113,6 +113,7 @@
 ../../tools/swarming_client/libs/logdog/stream.py
 ../../tools/swarming_client/libs/logdog/streamname.py
 ../../tools/swarming_client/libs/logdog/varint.py
+../util/lib/common/chrome_test_server_spawner.py
 ../util/lib/common/unittest_util.py
 devil_chromium.py
 pylib/__init__.py
@@ -129,7 +130,6 @@ pylib/base/test_instance_factory.py
 pylib/base/test_run.py
 pylib/base/test_run_factory.py
 pylib/base/test_server.py
-pylib/chrome_test_server_spawner.py
 pylib/constants/__init__.py
 pylib/constants/host_paths.py
 pylib/gtest/__init__.py
