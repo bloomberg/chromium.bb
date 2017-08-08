@@ -4,7 +4,7 @@
 
 #include "core/testing/sim/SimCompositor.h"
 
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameImpl.h"
@@ -57,7 +57,7 @@ SimCompositor::~SimCompositor() {
   LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(false);
 }
 
-void SimCompositor::SetWebView(WebViewBase& web_view) {
+void SimCompositor::SetWebView(WebViewImpl& web_view) {
   web_view_ = &web_view;
 }
 

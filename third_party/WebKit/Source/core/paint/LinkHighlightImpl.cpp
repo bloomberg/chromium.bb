@@ -30,7 +30,7 @@
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
 #include "core/exported/WebSettingsImpl.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameImpl.h"
@@ -71,11 +71,11 @@ namespace blink {
 
 std::unique_ptr<LinkHighlightImpl> LinkHighlightImpl::Create(
     Node* node,
-    WebViewBase* owning_web_view) {
+    WebViewImpl* owning_web_view) {
   return WTF::WrapUnique(new LinkHighlightImpl(node, owning_web_view));
 }
 
-LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewBase* owning_web_view)
+LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
     : node_(node),
       owning_web_view_(owning_web_view),
       current_graphics_layer_(0),

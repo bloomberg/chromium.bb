@@ -45,7 +45,7 @@ class LayoutBoxModelObject;
 class Node;
 class WebContentLayer;
 class WebLayer;
-class WebViewBase;
+class WebViewImpl;
 
 class CORE_EXPORT LinkHighlightImpl final
     : public LinkHighlight,
@@ -53,7 +53,7 @@ class CORE_EXPORT LinkHighlightImpl final
       public CompositorAnimationDelegate,
       public CompositorAnimationPlayerClient {
  public:
-  static std::unique_ptr<LinkHighlightImpl> Create(Node*, WebViewBase*);
+  static std::unique_ptr<LinkHighlightImpl> Create(Node*, WebViewImpl*);
   ~LinkHighlightImpl() override;
 
   WebContentLayer* ContentLayer();
@@ -84,7 +84,7 @@ class CORE_EXPORT LinkHighlightImpl final
   }
 
  private:
-  LinkHighlightImpl(Node*, WebViewBase*);
+  LinkHighlightImpl(Node*, WebViewImpl*);
 
   void ReleaseResources();
   void ComputeQuads(const Node&, Vector<FloatQuad>&) const;
@@ -101,7 +101,7 @@ class CORE_EXPORT LinkHighlightImpl final
   Path path_;
 
   Persistent<Node> node_;
-  WebViewBase* owning_web_view_;
+  WebViewImpl* owning_web_view_;
   GraphicsLayer* current_graphics_layer_;
   bool is_scrolling_graphics_layer_;
   std::unique_ptr<CompositorAnimationPlayer> compositor_player_;
