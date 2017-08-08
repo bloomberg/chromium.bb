@@ -2,4 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//services/viz/public/cpp/compositing/resource_settings.typemap" ]
+typemaps = [
+  "//services/viz/public/cpp/compositing/compositor_frame.typemap",
+  "//services/viz/public/cpp/compositing/resource_settings.typemap",
+]

@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("compositing") {
   sources = [
+    "compositor_frame.mojom",
     "compositor_frame_sink.mojom",
     "resource_settings.mojom",
   ]
