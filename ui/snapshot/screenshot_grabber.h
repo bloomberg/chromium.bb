@@ -6,6 +6,7 @@
 #define UI_SNAPSHOT_SCREENSHOT_GRABBER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -19,10 +20,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/snapshot/screenshot_grabber_observer.h"
 #include "ui/snapshot/snapshot_export.h"
-
-namespace base {
-class TaskRunner;
-}
 
 namespace ui {
 
@@ -50,14 +47,12 @@ class SNAPSHOT_EXPORT ScreenshotGrabberDelegate {
   // the remote file and call the callback with the local path.
   virtual void PrepareFileAndRunOnBlockingPool(
       const base::FilePath& path,
-      scoped_refptr<base::TaskRunner> blocking_task_runner,
       const FileCallback& callback_on_blocking_pool);
 };
 
 class SNAPSHOT_EXPORT ScreenshotGrabber {
  public:
-  ScreenshotGrabber(ScreenshotGrabberDelegate* client,
-                    scoped_refptr<base::TaskRunner> blocking_task_runner);
+  explicit ScreenshotGrabber(ScreenshotGrabberDelegate* client);
   ~ScreenshotGrabber();
 
   // Takes a screenshot of |rect| in |window| in that window's coordinate space
@@ -91,9 +86,6 @@ class SNAPSHOT_EXPORT ScreenshotGrabber {
 
   // The timestamp when the screenshot task was issued last time.
   base::TimeTicks last_screenshot_timestamp_;
-
-  // Task runner for blocking tasks.
-  scoped_refptr<base::TaskRunner> blocking_task_runner_;
 
 #if defined(USE_AURA)
   // The object to hide cursor when taking screenshot.

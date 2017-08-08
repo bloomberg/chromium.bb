@@ -4,8 +4,9 @@
 
 #include "ui/snapshot/snapshot_win.h"
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/task_runner.h"
 #include "base/win/windows_version.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
@@ -149,11 +150,10 @@ void GrabWindowSnapshotAndScaleAsync(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
     const gfx::Size& target_size,
-    scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncCallback& callback) {
   if (UseAuraSnapshot()) {
     GrabWindowSnapshotAndScaleAsyncAura(window, source_rect, target_size,
-                                        background_task_runner, callback);
+                                        callback);
     return;
   }
   NOTIMPLEMENTED();

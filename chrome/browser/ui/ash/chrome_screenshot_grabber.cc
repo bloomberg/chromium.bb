@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <string>
+#include <vector>
+
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/system_notifier.h"
@@ -296,12 +299,8 @@ std::string ReadFileToString(const base::FilePath& path) {
 }  // namespace
 
 ChromeScreenshotGrabber::ChromeScreenshotGrabber()
-    : screenshot_grabber_(new ui::ScreenshotGrabber(
-          this,
-          base::CreateTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}))),
-      profile_for_test_(NULL),
+    : screenshot_grabber_(new ui::ScreenshotGrabber(this)),
+      profile_for_test_(nullptr),
       weak_factory_(this) {
   screenshot_grabber_->AddObserver(this);
 }
@@ -400,7 +399,6 @@ bool ChromeScreenshotGrabber::CanTakeScreenshot() {
 
 void ChromeScreenshotGrabber::PrepareFileAndRunOnBlockingPool(
     const base::FilePath& path,
-    scoped_refptr<base::TaskRunner> blocking_task_runner,
     const FileCallback& callback) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (drive::util::IsUnderDriveMountPoint(path)) {
@@ -409,8 +407,8 @@ void ChromeScreenshotGrabber::PrepareFileAndRunOnBlockingPool(
         base::Bind(&EnsureDirectoryExistsCallback, callback, profile, path));
     return;
   }
-  ui::ScreenshotGrabberDelegate::PrepareFileAndRunOnBlockingPool(
-      path, blocking_task_runner, callback);
+  ui::ScreenshotGrabberDelegate::PrepareFileAndRunOnBlockingPool(path,
+                                                                 callback);
 }
 
 void ChromeScreenshotGrabber::OnScreenshotCompleted(

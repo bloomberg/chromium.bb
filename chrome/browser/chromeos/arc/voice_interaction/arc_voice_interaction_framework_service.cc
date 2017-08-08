@@ -257,8 +257,6 @@ void ArcVoiceInteractionFrameworkService::CaptureFocusedWindow(
   }
   ui::GrabWindowSnapshotAsyncJPEG(
       window, gfx::Rect(window->bounds().size()),
-      base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_BLOCKING}),
       base::Bind(&ScreenshotCallback, callback));
 }
 

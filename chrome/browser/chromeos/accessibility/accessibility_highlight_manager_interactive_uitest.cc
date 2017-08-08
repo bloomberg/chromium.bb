@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
@@ -136,7 +135,6 @@ class AccessibilityHighlightManagerTest : public InProcessBrowserTest {
       aura::Window* window = ash::Shell::GetPrimaryRootWindow();
       ui::GrabWindowSnapshotAndScaleAsync(
           window, bounds, bounds.size(),
-          content::BrowserThread::GetBlockingPool(),
           base::Bind(&AccessibilityHighlightManagerTest::GotSnapshot,
                      base::Unretained(this)));
       base::RunLoop run_loop;

@@ -7,7 +7,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "jni/ScreenshotTask_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/android/window_android.h"
@@ -47,7 +46,7 @@ void GrabWindowSnapshotAsync(JNIEnv* env,
       native_window_android);
   gfx::Rect window_bounds(window_width, window_height);
   ui::GrabWindowSnapshotAsyncPNG(
-      window_android, window_bounds, base::ThreadTaskRunnerHandle::Get(),
+      window_android, window_bounds,
       base::Bind(&SnapshotCallback, env,
                  ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }

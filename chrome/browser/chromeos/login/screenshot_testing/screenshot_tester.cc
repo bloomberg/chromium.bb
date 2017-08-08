@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
-#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/login/screenshot_testing/SkDiffPixelsMetric.h"
 #include "chrome/browser/chromeos/login/screenshot_testing/SkImageDiffer.h"
 #include "chrome/browser/chromeos/login/screenshot_testing/SkPMetric.h"
@@ -216,9 +215,6 @@ ScreenshotTester::PNGFile ScreenshotTester::TakeScreenshot() {
   base::RunLoop run_loop;
   ui::GrabWindowSnapshotAsyncPNG(
       primary_window, rect,
-      base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
       base::Bind(&ScreenshotTester::ReturnScreenshot,
                  weak_factory_.GetWeakPtr(), base::Unretained(&run_loop),
                  &screenshot));

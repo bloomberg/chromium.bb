@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task_runner.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/android/view_android.h"
@@ -51,12 +50,10 @@ void GrabWindowSnapshotAndScaleAsync(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
     const gfx::Size& target_size,
-    scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncCallback& callback) {
-  MakeAsyncCopyRequest(
-      window, source_rect,
-      base::BindOnce(&SnapshotAsync::ScaleCopyOutputResult, callback,
-                     target_size, background_task_runner));
+  MakeAsyncCopyRequest(window, source_rect,
+                       base::BindOnce(&SnapshotAsync::ScaleCopyOutputResult,
+                                      callback, target_size));
 }
 
 void GrabWindowSnapshotAsync(gfx::NativeWindow window,
