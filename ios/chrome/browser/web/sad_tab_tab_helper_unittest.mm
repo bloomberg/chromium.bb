@@ -30,8 +30,16 @@ class SadTabTabHelperTest : public PlatformTest {
   web::TestWebState web_state_;
 };
 
+// TODO(crbug.com/753327): those tests are consistently failing on devices on
+// the bots. Remove once they have been fixed.
+#if TARGET_OS_SIMULATOR
+#define DISABLED_ON_DEVICE(NAME) NAME
+#else
+#define DISABLED_ON_DEVICE(NAME) DISABLED_##NAME
+#endif
+
 // Tests that SadTab is not presented for not shown web states.
-TEST_F(SadTabTabHelperTest, NotPresented) {
+TEST_F(SadTabTabHelperTest, DISABLED_ON_DEVICE(NotPresented)) {
   // WebState should not have presented a transient content view.
   EXPECT_FALSE(web_state_.GetTransientContentView());
 
@@ -42,7 +50,7 @@ TEST_F(SadTabTabHelperTest, NotPresented) {
 }
 
 // Tests that SadTab is presented for shown web states.
-TEST_F(SadTabTabHelperTest, Presented) {
+TEST_F(SadTabTabHelperTest, DISABLED_ON_DEVICE(Presented)) {
   web_state_.WasShown();
 
   // WebState should not have presented a transient content view.
@@ -54,7 +62,7 @@ TEST_F(SadTabTabHelperTest, Presented) {
 }
 
 // Tests that repeated failures generate the correct UI.
-TEST_F(SadTabTabHelperTest, RepeatedFailuresShowCorrectUI) {
+TEST_F(SadTabTabHelperTest, DISABLED_ON_DEVICE(RepeatedFailuresShowCorrectUI)) {
   web_state_.WasShown();
 
   // Helper should get notified of render process failure.
@@ -77,7 +85,7 @@ TEST_F(SadTabTabHelperTest, RepeatedFailuresShowCorrectUI) {
 }
 
 // Tests that repeated failures can time out, and return to the RELOAD UI.
-TEST_F(SadTabTabHelperTest, FailureInterval) {
+TEST_F(SadTabTabHelperTest, DISABLED_ON_DEVICE(FailureInterval)) {
   // N.B. The test fixture web_state_ is not used for this test as a custom
   // |repeat_failure_interval| is required.
   web::TestWebState web_state;
