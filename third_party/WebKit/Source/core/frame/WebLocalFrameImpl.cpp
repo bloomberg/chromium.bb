@@ -1598,7 +1598,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
     WebTreeScopeType scope,
     WebFrameClient* client,
     blink::InterfaceRegistry* interface_registry)
-    : WebLocalFrameBase(scope),
+    : WebLocalFrame(scope),
       local_frame_client_(LocalFrameClientImpl::Create(this)),
       client_(client),
       autofill_client_(0),
@@ -1640,8 +1640,6 @@ DEFINE_TRACE(WebLocalFrameImpl) {
   visitor->Trace(context_menu_node_);
   visitor->Trace(input_method_controller_);
   visitor->Trace(text_checker_client_);
-  WebLocalFrameBase::Trace(visitor);
-  // TODO(slangley): Call this from WebLocalFrameBase, once WebFrame is in core.
   WebFrame::TraceFrames(visitor, this);
 }
 
