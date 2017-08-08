@@ -1099,71 +1099,49 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
   int ref_frame = mbmi0->ref_frame[0];
   int up_available = xd->up_available;
   int left_available = xd->left_available;
-  int i, mi_step = 1, np = 0, n, j, k;
+  int i, mi_step = 1, np = 0;
   int global_offset_c = mi_col * MI_SIZE;
   int global_offset_r = mi_row * MI_SIZE;
 
   const TileInfo *const tile = &xd->tile;
-  // Search nb range in the unit of mi
-  int bs =
-      (AOMMAX(xd->n8_w, xd->n8_h) > 1) ? (AOMMAX(xd->n8_w, xd->n8_h) >> 1) : 1;
-  int marked[16 * 32];  // max array size for 128x128
   int do_tl = 1;
   int do_tr = 1;
 
-  // scan the above rows
+  // scan the nearest above rows
   if (up_available) {
-    for (n = 0; n < bs; n++) {
-      int mi_row_offset = -1 * (n + 1);
+    int mi_row_offset = -1;
+    MODE_INFO *mi = xd->mi[mi_row_offset * xd->mi_stride];
+    MB_MODE_INFO *mbmi = &mi->mbmi;
+    uint8_t n8_w = mi_size_wide[mbmi->sb_type];
 
-      if (!n) {
-        MODE_INFO *mi = xd->mi[mi_row_offset * xd->mi_stride];
-        MB_MODE_INFO *mbmi = &mi->mbmi;
-        uint8_t n8_w = mi_size_wide[mbmi->sb_type];
+    if (xd->n8_w <= n8_w) {
+      // Handle "current block width <= above block width" case.
+      int col_offset = -mi_col % n8_w;
 
-        // Handle "current block width <= above block width" case.
-        if (xd->n8_w <= n8_w) {
-          int col_offset = -mi_col % n8_w;
+      if (col_offset < 0) do_tl = 0;
+      if (col_offset + n8_w > xd->n8_w) do_tr = 0;
 
-          if (col_offset < 0) do_tl = 0;
-          if (col_offset + n8_w > xd->n8_w) do_tr = 0;
-
-          if (mbmi->ref_frame[0] == ref_frame &&
-              mbmi->ref_frame[1] == NONE_FRAME) {
-            record_samples(mbmi, pts, pts_inref, pts_mv, global_offset_r,
-                           global_offset_c, 0, -1, col_offset, 1);
-            pts += 2;
-            pts_inref += 2;
-            pts_mv += 2;
-            np++;
-          }
-          break;
-        }
+      if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE_FRAME) {
+        record_samples(mbmi, pts, pts_inref, pts_mv, global_offset_r,
+                       global_offset_c, 0, -1, col_offset, 1);
+        pts += 2;
+        pts_inref += 2;
+        pts_mv += 2;
+        np++;
       }
-
+    } else {
       // Handle "current block width > above block width" case.
-      if (!n) memset(marked, 0, bs * xd->n8_w * sizeof(*marked));
-
       for (i = 0; i < AOMMIN(xd->n8_w, cm->mi_cols - mi_col); i += mi_step) {
         int mi_col_offset = i;
-        MODE_INFO *mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
-        MB_MODE_INFO *mbmi = &mi->mbmi;
-        uint8_t n8_w = mi_size_wide[mbmi->sb_type];
-        uint8_t n8_h = mi_size_high[mbmi->sb_type];
-
+        mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
+        mbmi = &mi->mbmi;
+        n8_w = mi_size_wide[mbmi->sb_type];
         mi_step = AOMMIN(xd->n8_w, n8_w);
-
-        // Processed already
-        if (marked[n * xd->n8_w + i]) continue;
-
-        for (j = 0; j < AOMMIN(bs, n8_h); j++)
-          for (k = 0; k < AOMMIN(xd->n8_w, n8_w); k++)
-            marked[(n + j) * xd->n8_w + i + k] = 1;
 
         if (mbmi->ref_frame[0] == ref_frame &&
             mbmi->ref_frame[1] == NONE_FRAME) {
           record_samples(mbmi, pts, pts_inref, pts_mv, global_offset_r,
-                         global_offset_c, -n, -1, i, 1);
+                         global_offset_c, 0, -1, i, 1);
           pts += 2;
           pts_inref += 2;
           pts_mv += 2;
@@ -1174,58 +1152,41 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
   }
   assert(2 * np <= SAMPLES_ARRAY_SIZE);
 
-  // scan the left columns
+  // scan the nearest left columns
   if (left_available) {
-    for (n = 0; n < bs; n++) {
-      int mi_col_offset = -1 * (n + 1);
+    int mi_col_offset = -1;
 
-      if (!n) {
-        MODE_INFO *mi = xd->mi[mi_col_offset];
-        MB_MODE_INFO *mbmi = &mi->mbmi;
-        uint8_t n8_h = mi_size_high[mbmi->sb_type];
+    MODE_INFO *mi = xd->mi[mi_col_offset];
+    MB_MODE_INFO *mbmi = &mi->mbmi;
+    uint8_t n8_h = mi_size_high[mbmi->sb_type];
 
-        // Handle "current block height <= above block height" case.
-        if (xd->n8_h <= n8_h) {
-          int row_offset = -mi_row % n8_h;
+    if (xd->n8_h <= n8_h) {
+      // Handle "current block height <= above block height" case.
+      int row_offset = -mi_row % n8_h;
 
-          if (row_offset < 0) do_tl = 0;
+      if (row_offset < 0) do_tl = 0;
 
-          if (mbmi->ref_frame[0] == ref_frame &&
-              mbmi->ref_frame[1] == NONE_FRAME) {
-            record_samples(mbmi, pts, pts_inref, pts_mv, global_offset_r,
-                           global_offset_c, row_offset, 1, 0, -1);
-            pts += 2;
-            pts_inref += 2;
-            pts_mv += 2;
-            np++;
-          }
-          break;
-        }
+      if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE_FRAME) {
+        record_samples(mbmi, pts, pts_inref, pts_mv, global_offset_r,
+                       global_offset_c, row_offset, 1, 0, -1);
+        pts += 2;
+        pts_inref += 2;
+        pts_mv += 2;
+        np++;
       }
-
+    } else {
       // Handle "current block height > above block height" case.
-      if (!n) memset(marked, 0, bs * xd->n8_h * sizeof(*marked));
-
       for (i = 0; i < AOMMIN(xd->n8_h, cm->mi_rows - mi_row); i += mi_step) {
         int mi_row_offset = i;
-        MODE_INFO *mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
-        MB_MODE_INFO *mbmi = &mi->mbmi;
-        uint8_t n8_w = mi_size_wide[mbmi->sb_type];
-        uint8_t n8_h = mi_size_high[mbmi->sb_type];
-
+        mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
+        mbmi = &mi->mbmi;
+        n8_h = mi_size_high[mbmi->sb_type];
         mi_step = AOMMIN(xd->n8_h, n8_h);
-
-        // Processed already
-        if (marked[n * xd->n8_h + i]) continue;
-
-        for (j = 0; j < AOMMIN(bs, n8_w); j++)
-          for (k = 0; k < AOMMIN(xd->n8_h, n8_h); k++)
-            marked[(n + j) * xd->n8_h + i + k] = 1;
 
         if (mbmi->ref_frame[0] == ref_frame &&
             mbmi->ref_frame[1] == NONE_FRAME) {
           record_samples(mbmi, pts, pts_inref, pts_mv, global_offset_r,
-                         global_offset_c, i, 1, -n, -1);
+                         global_offset_c, i, 1, 0, -1);
           pts += 2;
           pts_inref += 2;
           pts_mv += 2;
