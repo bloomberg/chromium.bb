@@ -288,6 +288,41 @@ views::ImageButton* SearchBoxView::close_button() {
   return static_cast<views::ImageButton*>(close_button_);
 }
 
+bool SearchBoxView::MoveArrowFocus(const ui::KeyEvent& event) {
+  DCHECK(IsArrowKey(event));
+  DCHECK(is_fullscreen_app_list_enabled_);
+
+  // Left and right arrow should work in the same way as shift+tab and tab.
+  if (event.key_code() == ui::VKEY_LEFT)
+    return MoveTabFocus(true);
+  if (event.key_code() == ui::VKEY_RIGHT)
+    return MoveTabFocus(false);
+  if (back_button_)
+    back_button_->SetSelected(false);
+  if (close_button_)
+    close_button_->SetSelected(false);
+  const bool move_up = event.key_code() == ui::VKEY_UP;
+
+  switch (focused_view_) {
+    case FOCUS_NONE:
+      focused_view_ = move_up ? FOCUS_CONTENTS_VIEW : FOCUS_SEARCH_BOX;
+      break;
+    case FOCUS_BACK_BUTTON:
+    case FOCUS_SEARCH_BOX:
+    case FOCUS_CLOSE_BUTTON:
+      focused_view_ = move_up ? FOCUS_NONE : FOCUS_CONTENTS_VIEW;
+      break;
+    case FOCUS_CONTENTS_VIEW:
+      focused_view_ = move_up ? FOCUS_SEARCH_BOX : FOCUS_NONE;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  SetSelected(focused_view_ == FOCUS_SEARCH_BOX);
+  return (focused_view_ < FOCUS_CONTENTS_VIEW);
+}
+
 // Returns true if set internally, i.e. if focused_view_ != CONTENTS_VIEW.
 // Note: because we always want to be able to type in the edit box, this is only
 // a faux-focus so that buttons can respond to the ENTER key.
@@ -620,6 +655,12 @@ void SearchBoxView::UpdateOpacity(float work_area_bottom, bool is_end_gesture) {
   contents_view_->layer()->SetOpacity(opacity);
 }
 
+bool SearchBoxView::IsArrowKey(const ui::KeyEvent& event) {
+  return event.key_code() == ui::VKEY_UP || event.key_code() == ui::VKEY_DOWN ||
+         event.key_code() == ui::VKEY_LEFT ||
+         event.key_code() == ui::VKEY_RIGHT;
+}
+
 void SearchBoxView::UpdateModel() {
   // Temporarily remove from observer to ignore notifications caused by us.
   model_->search_box()->RemoveObserver(this);
@@ -661,6 +702,10 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
         MoveTabFocus(key_event.IsShiftDown()))
       return true;
 
+    if (is_fullscreen_app_list_enabled_ && IsArrowKey(key_event) &&
+        focused_view_ != FOCUS_CONTENTS_VIEW && MoveArrowFocus(key_event))
+      return true;
+
     if (focused_view_ == FOCUS_BACK_BUTTON && back_button_ &&
         back_button_->OnKeyPressed(key_event))
       return true;
@@ -681,7 +726,10 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
     // If they didn't, we still select the first search item, in case they're
     // moving the caret through typed search text.  The UP arrow never moves
     // focus from text/buttons to app list/results, so ignore it.
-    if (focused_view_ < FOCUS_CONTENTS_VIEW &&
+    // For fullscreen app list, the arrow key should be ignored here since it
+    // has been handled.
+    if (!is_fullscreen_app_list_enabled_ &&
+        focused_view_ < FOCUS_CONTENTS_VIEW &&
         (key_event.key_code() == ui::VKEY_LEFT ||
          key_event.key_code() == ui::VKEY_RIGHT ||
          key_event.key_code() == ui::VKEY_DOWN)) {

@@ -77,6 +77,9 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
     contents_view_ = contents_view;
   }
 
+  // Moves focus in response to arrow key.
+  bool MoveArrowFocus(const ui::KeyEvent& event);
+
   // Moves focus forward/backwards in response to TAB.
   bool MoveTabFocus(bool move_backwards);
 
@@ -140,6 +143,10 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
 
   // Whether the search box is active.
   bool is_search_box_active() const { return is_search_box_active_; }
+
+  // Whether the key event is an arrow up/down/left/right.
+  // TODO(weidongg): move this function to utility class.
+  static bool IsArrowKey(const ui::KeyEvent& event);
 
  private:
   // Updates model text and selection model with current Textfield info.

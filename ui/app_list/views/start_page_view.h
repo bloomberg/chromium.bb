@@ -78,6 +78,9 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
 
   TileItemView* GetTileItemView(size_t index);
 
+  // Handles key events in fullscreen app list.
+  bool HandleKeyPressedFullscreen(const ui::KeyEvent& event);
+
   AppListView* app_list_view_;
 
   // The parent view of ContentsView which is the parent of this view.
