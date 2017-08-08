@@ -164,6 +164,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const std::string& saved_domain,
       bool password_field_exists);
 
+  // Records a Chrome Sync event that sync password reuse was detected.
+  virtual void MaybeLogPasswordReuseDetectedEvent(
+      content::WebContents* web_contents) = 0;
+
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
 
   // Safe Browsing backend cannot get a reliable reputation of a URL if

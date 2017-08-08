@@ -80,6 +80,8 @@ void StubPasswordManagerClient::CheckSafeBrowsingReputation(
 void StubPasswordManagerClient::CheckProtectedPasswordEntry(
     const std::string& password_saved_domain,
     bool password_field_exists) {}
+
+void StubPasswordManagerClient::LogPasswordReuseDetectedEvent() {}
 #endif
 
 ukm::UkmRecorder* StubPasswordManagerClient::GetUkmRecorder() {

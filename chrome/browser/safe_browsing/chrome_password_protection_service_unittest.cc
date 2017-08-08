@@ -16,6 +16,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
+#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -28,6 +29,7 @@
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/sync/user_events/fake_user_event_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/variations/variations_params_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -42,6 +44,11 @@ namespace {
 const char kPhishingURL[] = "http://phishing.com";
 const char kTestAccountID[] = "account_id";
 const char kTestEmail[] = "foo@example.com";
+
+std::unique_ptr<KeyedService> BuildFakeUserEventService(
+    content::BrowserContext* context) {
+  return base::MakeUnique<syncer::FakeUserEventService>();
+}
 
 }  // namespace
 
@@ -123,6 +130,10 @@ class ChromePasswordProtectionServiceTest
         profile(), content_setting_map_,
         new testing::StrictMock<MockSafeBrowsingUIManager>(
             SafeBrowsingService::CreateSafeBrowsingService()));
+    fake_user_event_service_ = static_cast<syncer::FakeUserEventService*>(
+        browser_sync::UserEventServiceFactory::GetInstance()
+            ->SetTestingFactoryAndUse(browser_context(),
+                                      &BuildFakeUserEventService));
   }
 
   void TearDown() override {
@@ -144,6 +155,14 @@ class ChromePasswordProtectionServiceTest
     builder.AddTestingFactory(AccountFetcherServiceFactory::GetInstance(),
                               FakeAccountFetcherServiceBuilder::BuildForTests);
     return builder.Build().release();
+  }
+
+  void EnableSyncPasswordReuseEvent() {
+    scoped_feature_list_.InitAndEnableFeature(kSyncPasswordReuseEvent);
+  }
+
+  syncer::FakeUserEventService* GetUserEventService() {
+    return fake_user_event_service_;
   }
 
   void InitializeRequest(LoginReputationClientRequest::TriggerType type) {
@@ -183,6 +202,8 @@ class ChromePasswordProtectionServiceTest
   std::unique_ptr<MockChromePasswordProtectionService> service_;
   scoped_refptr<PasswordProtectionRequest> request_;
   std::unique_ptr<LoginReputationClientResponse> verdict_;
+  // Owned by KeyedServiceFactory.
+  syncer::FakeUserEventService* fake_user_event_service_;
 };
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -331,5 +352,45 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {
       LoginReputationClientResponse::SAFE,
       service_->GetCachedVerdict(
           url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &verdict));
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyPasswordReuseUserEventNotRecorded) {
+  // Feature not enabled.
+  service_->MaybeLogPasswordReuseDetectedEvent(web_contents());
+  EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
+
+  EnableSyncPasswordReuseEvent();
+  // Feature enabled but no committed navigation entry.
+  service_->MaybeLogPasswordReuseDetectedEvent(web_contents());
+  EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyPasswordReuseUserEventRecorded) {
+  EnableSyncPasswordReuseEvent();
+  NavigateAndCommit(GURL("https://www.example.com/"));
+
+  // Case 1: safe_browsing_enabled = true
+  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, true);
+  service_->MaybeLogPasswordReuseDetectedEvent(web_contents());
+  ASSERT_EQ(1ul, GetUserEventService()->GetRecordedUserEvents().size());
+  sync_pb::UserEventSpecifics::SyncPasswordReuseEvent event =
+      GetUserEventService()
+          ->GetRecordedUserEvents()[0]
+          .sync_password_reuse_event();
+  EXPECT_TRUE(event.reuse_detected().status().enabled());
+
+  // Case 2: safe_browsing_enabled = false
+  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, false);
+  service_->MaybeLogPasswordReuseDetectedEvent(web_contents());
+  ASSERT_EQ(2ul, GetUserEventService()->GetRecordedUserEvents().size());
+  event = GetUserEventService()
+              ->GetRecordedUserEvents()[1]
+              .sync_password_reuse_event();
+  EXPECT_FALSE(event.reuse_detected().status().enabled());
+
+  // Not checking for the extended_reporting_level since that requires setting
+  // multiple prefs and doesn't add much verification value.
 }
 }  // namespace safe_browsing

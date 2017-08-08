@@ -115,6 +115,8 @@ class ChromePasswordManagerClient
 
   void CheckProtectedPasswordEntry(const std::string& password_saved_domain,
                                    bool password_field_exists) override;
+
+  void LogPasswordReuseDetectedEvent() override;
 #endif
 
   ukm::UkmRecorder* GetUkmRecorder() override;

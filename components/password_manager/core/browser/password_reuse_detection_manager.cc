@@ -94,6 +94,11 @@ void PasswordReuseDetectionManager::OnReuseFound(
 #if defined(SAFE_BROWSING_DB_LOCAL)
   // TODO(jialiul): After CSD whitelist being added to Android, we should gate
   // this by either SAFE_BROWSING_DB_LOCAL or SAFE_BROWSING_DB_REMOTE.
+  if (!number_matches) {
+    // |number_matches| == 0 means sync password reuse was detected.
+    client_->LogPasswordReuseDetectedEvent();
+  }
+
   client_->CheckProtectedPasswordEntry(legitimate_domain,
                                        password_field_detected);
 #endif

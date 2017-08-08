@@ -85,6 +85,7 @@ class MockPasswordProtectionService
   MOCK_METHOD0(IsIncognito, bool());
   MOCK_METHOD2(IsPingingEnabled, bool(const base::Feature&, RequestOutcome*));
   MOCK_METHOD0(IsHistorySyncEnabled, bool());
+  MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(WebContents*));
   MOCK_METHOD4(MaybeStartPasswordFieldOnFocusRequest,
                void(WebContents*, const GURL&, const GURL&, const GURL&));
   MOCK_METHOD4(MaybeStartProtectedPasswordEntryRequest,
@@ -640,6 +641,18 @@ TEST_F(ChromePasswordManagerClientTest,
               MaybeStartProtectedPasswordEntryRequest(_, _, _, true))
       .Times(1);
   client->CheckProtectedPasswordEntry(std::string("saved_domain.com"), true);
+}
+
+TEST_F(ChromePasswordManagerClientTest, VerifyLogPasswordReuseDetectedEvent) {
+  std::unique_ptr<WebContents> test_web_contents(
+      content::WebContentsTester::CreateTestWebContents(
+          web_contents()->GetBrowserContext(), nullptr));
+  std::unique_ptr<MockChromePasswordManagerClient> client(
+      new MockChromePasswordManagerClient(test_web_contents.get()));
+  EXPECT_CALL(*client->password_protection_service(),
+              MaybeLogPasswordReuseDetectedEvent(test_web_contents.get()))
+      .Times(1);
+  client->LogPasswordReuseDetectedEvent();
 }
 
 #endif
