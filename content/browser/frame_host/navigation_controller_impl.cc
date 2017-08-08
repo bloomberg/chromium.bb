@@ -420,12 +420,6 @@ void NavigationControllerImpl::Reload(ReloadType reload_type,
       pending_entry_ = entry;
       pending_entry_index_ = current_index;
 
-      // The title of the page being reloaded might have been removed in the
-      // meanwhile, so we need to revert to the default title upon reload and
-      // invalidate the previously cached title (SetTitle will do both).
-      // See Chromium issue 96041.
-      pending_entry_->SetTitle(base::string16());
-
       pending_entry_->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
     }
 
