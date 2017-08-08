@@ -105,6 +105,9 @@ class WebStateImpl;
 // |WebStateObserver::DidSuppressDialog| will be called.
 @property(nonatomic, assign) BOOL shouldSuppressDialogs;
 
+// YES if the web process backing WebView is believed to currently be crashed.
+@property(nonatomic, assign, getter=isWebProcessCrashed) BOOL webProcessCrashed;
+
 // Designated initializer. Initializes web controller with |webState|. The
 // calling code must retain the ownership of |webState|.
 - (instancetype)initWithWebState:(web::WebStateImpl*)webState;

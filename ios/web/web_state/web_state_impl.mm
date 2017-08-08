@@ -240,6 +240,10 @@ double WebStateImpl::GetLoadingProgress() const {
   return [web_controller_ loadingProgress];
 }
 
+bool WebStateImpl::IsCrashed() const {
+  return [web_controller_ isWebProcessCrashed];
+}
+
 bool WebStateImpl::IsBeingDestroyed() const {
   return is_being_destroyed_;
 }

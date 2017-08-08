@@ -948,6 +948,10 @@ class CRWWebControllerWebProcessTest : public web::WebTestWithWebController {
 // Tests that WebStateDelegate::RenderProcessGone is called when WKWebView web
 // process has crashed.
 TEST_F(CRWWebControllerWebProcessTest, Crash) {
+  ASSERT_TRUE([web_controller() isViewAlive]);
+  ASSERT_FALSE([web_controller() isWebProcessCrashed]);
+  ASSERT_FALSE(web_state()->IsCrashed());
+
   web::TestWebStateObserver observer(web_state());
   web::TestWebStateObserver* observer_ptr = &observer;
   web::SimulateWKWebViewCrash(webView_);
@@ -956,6 +960,8 @@ TEST_F(CRWWebControllerWebProcessTest, Crash) {
   });
   EXPECT_EQ(web_state(), observer.render_process_gone_info()->web_state);
   EXPECT_FALSE([web_controller() isViewAlive]);
+  EXPECT_TRUE([web_controller() isWebProcessCrashed]);
+  EXPECT_TRUE(web_state()->IsCrashed());
 };
 
 }  // namespace
