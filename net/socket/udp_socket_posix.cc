@@ -59,6 +59,8 @@ namespace {
 const int kBindRetries = 10;
 const int kPortStart = 1024;
 const int kPortEnd = 65535;
+const int kActivityMonitorBytesThreshold = 65535;
+const int kActivityMonitorCallsThreshold = 32;
 
 #if defined(OS_MACOSX)
 
@@ -171,7 +173,11 @@ UDPSocketPosix::UDPSocketPosix(DatagramSocket::BindType bind_type,
       recv_from_address_(NULL),
       write_buf_len_(0),
       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::UDP_SOCKET)),
-      bound_network_(NetworkChangeNotifier::kInvalidNetworkHandle) {
+      bound_network_(NetworkChangeNotifier::kInvalidNetworkHandle),
+      activity_monitor_bytes_sent_(0),
+      activity_monitor_num_writes_(0),
+      activity_monitor_bytes_received_(0),
+      activity_monitor_num_reads_(0) {
   net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
                       source.ToEventParametersCallback());
   if (bind_type == DatagramSocket::RANDOM_BIND)
@@ -234,6 +240,19 @@ void UDPSocketPosix::Close() {
   socket_ = kInvalidSocket;
   addr_family_ = 0;
   is_connected_ = false;
+
+  if (activity_monitor_bytes_sent_ > 0) {
+    NetworkActivityMonitor::GetInstance()->IncrementBytesSent(
+        activity_monitor_bytes_sent_);
+    activity_monitor_bytes_sent_ = 0;
+    activity_monitor_num_writes_ = 0;
+  }
+  if (activity_monitor_bytes_received_ > 0) {
+    NetworkActivityMonitor::GetInstance()->IncrementBytesReceived(
+        activity_monitor_bytes_received_);
+    activity_monitor_bytes_received_ = 0;
+    activity_monitor_num_reads_ = 0;
+  }
 }
 
 int UDPSocketPosix::GetPeerAddress(IPEndPoint* address) const {
@@ -619,7 +638,7 @@ void UDPSocketPosix::DidCompleteRead() {
 void UDPSocketPosix::LogRead(int result,
                              const char* bytes,
                              socklen_t addr_len,
-                             const sockaddr* addr) const {
+                             const sockaddr* addr) {
   if (result < 0) {
     net_log_.AddEventWithNetErrorCode(NetLogEventType::UDP_RECEIVE_ERROR,
                                       result);
@@ -637,7 +656,15 @@ void UDPSocketPosix::LogRead(int result,
                           result, bytes, is_address_valid ? &address : NULL));
   }
 
-  NetworkActivityMonitor::GetInstance()->IncrementBytesReceived(result);
+  activity_monitor_bytes_received_ += result;
+  activity_monitor_num_reads_++;
+  if (activity_monitor_bytes_received_ > kActivityMonitorBytesThreshold ||
+      activity_monitor_num_reads_ > kActivityMonitorCallsThreshold) {
+    NetworkActivityMonitor::GetInstance()->IncrementBytesReceived(
+        activity_monitor_bytes_received_);
+    activity_monitor_bytes_received_ = 0;
+    activity_monitor_num_reads_ = 0;
+  }
 }
 
 void UDPSocketPosix::DidCompleteWrite() {
@@ -655,7 +682,7 @@ void UDPSocketPosix::DidCompleteWrite() {
 
 void UDPSocketPosix::LogWrite(int result,
                               const char* bytes,
-                              const IPEndPoint* address) const {
+                              const IPEndPoint* address) {
   if (result < 0) {
     net_log_.AddEventWithNetErrorCode(NetLogEventType::UDP_SEND_ERROR, result);
     return;
@@ -667,7 +694,15 @@ void UDPSocketPosix::LogWrite(int result,
         CreateNetLogUDPDataTranferCallback(result, bytes, address));
   }
 
-  NetworkActivityMonitor::GetInstance()->IncrementBytesSent(result);
+  activity_monitor_bytes_sent_ += result;
+  activity_monitor_num_writes_++;
+  if (activity_monitor_bytes_sent_ > kActivityMonitorBytesThreshold ||
+      activity_monitor_num_writes_ > kActivityMonitorCallsThreshold) {
+    NetworkActivityMonitor::GetInstance()->IncrementBytesSent(
+        activity_monitor_bytes_sent_);
+    activity_monitor_bytes_sent_ = 0;
+    activity_monitor_num_writes_ = 0;
+  }
 }
 
 int UDPSocketPosix::InternalRecvFrom(IOBuffer* buf,
