@@ -431,14 +431,6 @@ class SmoothnessToughPinchZoomCases(_Smoothness):
   def Name(cls):
     return 'smoothness.tough_pinch_zoom_cases'
 
-  @classmethod
-  def ShouldDisable(cls, possible_browser):
-    return (
-       # http://crbug.com/564008
-       cls.IsSvelte(possible_browser) or
-       # http://crbug.com/630701
-       possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
-
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
@@ -484,10 +476,6 @@ class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.gpu_rasterization.tough_pinch_zoom_cases'
-
-  @classmethod
-  def ShouldDisable(cls, possible_browser):
-    return cls.IsSvelte(possible_browser)  # http://crbug.com/564008
 
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
