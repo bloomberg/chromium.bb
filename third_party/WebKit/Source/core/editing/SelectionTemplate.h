@@ -116,6 +116,7 @@ class CORE_EXPORT SelectionTemplate final {
   };
 
   Document* GetDocument() const;
+  void ResetDirectionCache() const;
 
   PositionTemplate<Strategy> base_;
   PositionTemplate<Strategy> extent_;

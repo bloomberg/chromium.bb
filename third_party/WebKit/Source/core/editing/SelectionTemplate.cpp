@@ -149,9 +149,29 @@ SelectionTemplate<Strategy>::ComputeStartPosition() const {
 template <typename Strategy>
 bool SelectionTemplate<Strategy>::IsBaseFirst() const {
   DCHECK(AssertValid());
-  if (direction_ == Direction::kNotComputed)
-    direction_ = base_ <= extent_ ? Direction::kForward : Direction::kBackward;
+  if (base_ == extent_) {
+    DCHECK_EQ(direction_, Direction::kForward);
+    return true;
+  }
+  if (direction_ == Direction::kForward) {
+    DCHECK_LE(base_, extent_);
+    return true;
+  }
+  if (direction_ == Direction::kBackward) {
+    DCHECK_GT(base_, extent_);
+    return false;
+  }
+  // Note: Since same position can be represented in different anchor type,
+  // e.g. Position(div, 0) and BeforeNode(first-child), we use |<=| to check
+  // forward selection.
+  DCHECK_EQ(direction_, Direction::kNotComputed);
+  direction_ = base_ <= extent_ ? Direction::kForward : Direction::kBackward;
   return direction_ == Direction::kForward;
+}
+
+template <typename Strategy>
+void SelectionTemplate<Strategy>::ResetDirectionCache() const {
+  direction_ = base_ == extent_ ? Direction::kForward : Direction::kNotComputed;
 }
 
 template <typename Strategy>
@@ -206,8 +226,7 @@ template <typename Strategy>
 SelectionTemplate<Strategy> SelectionTemplate<Strategy>::Builder::Build()
     const {
   DCHECK(selection_.AssertValid());
-  selection_.direction_ =
-      selection_.IsNone() ? Direction::kForward : Direction::kNotComputed;
+  selection_.ResetDirectionCache();
   return selection_;
 }
 
