@@ -14,6 +14,7 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MockSpecialLocaleHandler : public SpecialLocaleHandler {
@@ -33,6 +34,8 @@ class MockSpecialLocaleHandler : public SpecialLocaleHandler {
         TemplateURLPrepopulateData::so_360));
     result.push_back(TemplateURLDataFromPrepopulatedEngine(
         TemplateURLPrepopulateData::naver));
+    result.push_back(TemplateURLDataFromPrepopulatedEngine(
+        TemplateURLPrepopulateData::google));
     return result;
   }
 
@@ -122,4 +125,25 @@ TEST_F(SpecialLocaleHandlerTest, OverrideDefaultSearch) {
   handler()->SetGoogleAsDefaultSearch(NULL, JavaParamRef<jobject>(NULL));
   ASSERT_EQ(TemplateURLPrepopulateData::google.id,
             model()->GetDefaultSearchProvider()->prepopulate_id());
+}
+
+TEST_F(SpecialLocaleHandlerTest, ChangedGoogleBaseURL) {
+  test_util()->VerifyLoad();
+  auto google_keyword = base::ASCIIToUTF16("google.com");
+  ASSERT_THAT(model()->GetTemplateURLForKeyword(google_keyword),
+              testing::NotNull());
+  test_util()->SetGoogleBaseURL(GURL("http://google.de"));
+
+  // After changing the base URL, the previous google keyword will no longer
+  // match.
+  ASSERT_EQ(nullptr, model()->GetTemplateURLForKeyword(google_keyword));
+
+  ASSERT_TRUE(handler()->LoadTemplateUrls(NULL, JavaParamRef<jobject>(NULL)));
+
+  auto template_urls = model()->GetTemplateURLs();
+  ASSERT_EQ(1, std::count_if(template_urls.begin(), template_urls.end(),
+                             [](TemplateURL* template_url) {
+                               return template_url->prepopulate_id() ==
+                                      TemplateURLPrepopulateData::google.id;
+                             }));
 }

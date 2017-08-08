@@ -75,9 +75,9 @@ jboolean SpecialLocaleHandler::LoadTemplateUrls(
     // Otherwise, matching based on keyword is sufficient and preferred as
     // some logically distinct search engines share the same prepopulate ID and
     // only differ on keyword.
-    const TemplateURL* existing_url =
+    const TemplateURL* matching_url =
         template_url_service_->GetTemplateURLForKeyword(data_url->keyword());
-    bool exists = existing_url != nullptr;
+    bool exists = matching_url != nullptr;
     if (!exists &&
         data_url->prepopulate_id == TemplateURLPrepopulateData::google.id) {
       auto existing_urls = template_url_service_->GetTemplateURLs();
@@ -85,6 +85,7 @@ jboolean SpecialLocaleHandler::LoadTemplateUrls(
       for (auto* existing_url : existing_urls) {
         if (existing_url->prepopulate_id() ==
             TemplateURLPrepopulateData::google.id) {
+          matching_url = existing_url;
           exists = true;
           break;
         }
@@ -95,12 +96,12 @@ jboolean SpecialLocaleHandler::LoadTemplateUrls(
       // Update the visit time of any existing custom search engines to ensure
       // they are not filtered out in TemplateUrlServicAndroid::LoadTemplateURLs
       if (!template_url_service_->IsPrepopulatedOrCreatedByPolicy(
-              existing_url)) {
+              matching_url)) {
         UIThreadSearchTermsData search_terms_data(profile_);
 
         TemplateURLService::URLVisitedDetails visited_details;
         visited_details.url =
-            existing_url->GenerateSearchURL(search_terms_data);
+            matching_url->GenerateSearchURL(search_terms_data);
         visited_details.is_keyword_transition = false;
         template_url_service_->OnHistoryURLVisited(visited_details);
       }
