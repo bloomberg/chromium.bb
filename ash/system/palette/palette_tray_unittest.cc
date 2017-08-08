@@ -7,8 +7,10 @@
 #include "ash/ash_switches.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"
+#include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
+#include "ash/system/palette/palette_utils.h"
 #include "ash/system/palette/test_palette_delegate.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
@@ -18,7 +20,11 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/session_manager/session_manager_types.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/event.h"
+#include "ui/events/test/device_data_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -30,11 +36,11 @@ class PaletteTrayTest : public AshTestBase {
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAshForceEnableStylusTools);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnablePaletteOnAllDisplays);
 
     AshTestBase::SetUp();
+
+    palette_utils::SetHasStylusInputForTesting();
 
     Shell::RegisterLocalStatePrefs(pref_service_.registry());
     ash_test_helper()->test_shell_delegate()->set_local_state_pref_service(
@@ -88,7 +94,7 @@ TEST_F(PaletteTrayTest, PaletteTrayIsInvisible) {
 // Verify that if the has seen stylus pref is not set initially, the palette
 // tray's touch event watcher should be active.
 TEST_F(PaletteTrayTest, PaletteTrayStylusWatcherAlive) {
-  // TODO(crbug.com/751191): Remove the check for Mash.
+  // TODO(crbug.com/752997): Remove the check for Mash.
   if (Shell::GetAshConfig() == Config::MASH)
     return;
 
@@ -100,7 +106,7 @@ TEST_F(PaletteTrayTest, PaletteTrayStylusWatcherAlive) {
 // Verify if the has seen stylus pref is not set initially, the palette tray
 // should become visible after seeing a stylus event.
 TEST_F(PaletteTrayTest, PaletteTrayVisibleAfterStylusSeen) {
-  // TODO(crbug.com/751191): Remove the check for Mash.
+  // TODO(crbug.com/752997): Remove the check for Mash.
   if (Shell::GetAshConfig() == Config::MASH)
     return;
 
@@ -123,7 +129,7 @@ TEST_F(PaletteTrayTest, PaletteTrayVisibleAfterStylusSeen) {
 // Verify if the has seen stylus pref is initially set, the palette tray is
 // visible.
 TEST_F(PaletteTrayTest, StylusSeenPrefInitiallySet) {
-  // TODO(crbug.com/751191): Remove the check for Mash.
+  // TODO(crbug.com/752997): Remove the check for Mash.
   if (Shell::GetAshConfig() == Config::MASH)
     return;
 
@@ -137,13 +143,40 @@ TEST_F(PaletteTrayTest, StylusSeenPrefInitiallySet) {
 // Verify the palette tray button exists and is visible if the device has an
 // internal stylus.
 TEST_F(PaletteTrayTest, PaletteTrayIsVisibleForInternalStylus) {
-  // TODO(crbug.com/751191): Remove the check for Mash.
+  // TODO(crbug.com/752997): Remove the check for Mash.
   if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   InitForInternalStylus();
   ASSERT_TRUE(palette_tray_);
   EXPECT_TRUE(palette_tray_->visible());
+}
+
+// Verify that when entering or exiting the lock screen, the behavior of the
+// palette tray button is as expected.
+TEST_F(PaletteTrayTest, PaletteTrayOnLockScreenBehavior) {
+  // TODO(crbug.com/752997): Remove the check for Mash.
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
+  InitForInternalStylus();
+  ASSERT_TRUE(palette_tray_->visible());
+
+  PaletteToolManager* manager = test_api_->GetPaletteToolManager();
+  manager->ActivateTool(PaletteToolId::LASER_POINTER);
+  EXPECT_TRUE(manager->IsToolActive(PaletteToolId::LASER_POINTER));
+
+  // Verify that when entering the lock screen, the palette tray button is
+  // hidden, and the tool that was active is no longer active.
+  GetSessionControllerClient()->RequestLockScreen();
+  EXPECT_FALSE(manager->IsToolActive(PaletteToolId::LASER_POINTER));
+  EXPECT_FALSE(palette_tray_->visible());
+
+  // Verify that when logging back in the tray is visible, but the tool that was
+  // active before locking the screen is still inactive.
+  GetSessionControllerClient()->UnlockScreen();
+  EXPECT_TRUE(palette_tray_->visible());
+  EXPECT_FALSE(manager->IsToolActive(PaletteToolId::LASER_POINTER));
 }
 
 // Verify taps on the palette tray button results in expected behaviour.

@@ -227,10 +227,13 @@ void PaletteTray::OnSessionStateChanged(session_manager::SessionState state) {
 void PaletteTray::OnLockStateChanged(bool locked) {
   UpdateIconVisibility();
 
-  // The user can eject the stylus during the lock screen transition, which will
-  // open the palette. Make sure to close it if that happens.
-  if (locked)
+  if (locked) {
+    palette_tool_manager_->DisableActiveTool(PaletteGroup::MODE);
+
+    // The user can eject the stylus during the lock screen transition, which
+    // will open the palette. Make sure to close it if that happens.
     HidePalette();
+  }
 }
 
 void PaletteTray::ClickedOutsideBubble() {
@@ -391,10 +394,12 @@ void PaletteTray::Initialize() {
   if (Shell::GetAshConfig() == Config::MASH || !local_state_pref_service_)
     return;
 
-  // If a device has an internal stylus, mark the has seen stylus flag as true
-  // since we know the user has a stylus.
-  if (palette_utils::HasInternalStylus())
+  // If a device has an internal stylus or the flag to force stylus is set, mark
+  // the has seen stylus flag as true since we know the user has a stylus.
+  if (palette_utils::HasInternalStylus() ||
+      palette_utils::HasForcedStylusInput()) {
     local_state_pref_service_->SetBoolean(prefs::kHasSeenStylus, true);
+  }
 
   pref_change_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(local_state_pref_service_);

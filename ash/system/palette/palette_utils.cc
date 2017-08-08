@@ -19,13 +19,25 @@
 namespace ash {
 namespace palette_utils {
 
+namespace {
+// If true the device performs as if it is hardware reports that it is stylus
+// capable.
+bool g_has_stylus_input_for_testing = false;
+}  // namespace
+
+bool HasForcedStylusInput() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshForceEnableStylusTools);
+}
+
 bool HasStylusInput() {
+  if (g_has_stylus_input_for_testing)
+    return true;
+
   // Allow the user to force enable or disable by passing a switch. If both are
   // present, enabling takes precedence over disabling.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshForceEnableStylusTools)) {
+  if (HasForcedStylusInput())
     return true;
-  }
 
   // Check to see if the hardware reports it is stylus capable.
   for (const ui::TouchscreenDevice& device :
@@ -66,6 +78,10 @@ bool PaletteContainsPointInScreen(const gfx::Point& point) {
 bool HasInternalStylus() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kHasInternalStylus);
+}
+
+void SetHasStylusInputForTesting() {
+  g_has_stylus_input_for_testing = true;
 }
 
 }  // namespace palette_utils
