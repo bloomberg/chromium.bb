@@ -25,20 +25,21 @@
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "net/cookies/canonical_cookie.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
@@ -99,9 +100,9 @@ class InfobarView : public views::View {
     content_->SetBorder(
         views::CreateSolidBorder(kInfobarBorderSize, border_color));
 
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     info_image_ = new views::ImageView();
-    info_image_->SetImage(rb.GetImageSkiaNamed(IDR_INFO));
+    info_image_->SetImage(gfx::CreateVectorIcon(vector_icons::kInfoOutlineIcon,
+                                                16, gfx::kChromeIconGrey));
     label_ = new views::Label();
   }
   ~InfobarView() override {}
