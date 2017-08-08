@@ -14,7 +14,7 @@
 namespace blink {
 
 class NGConstraintSpace;
-
+class NGInlineItem;
 class NGInlineNode;
 
 // The result of measuring NGInlineItem.
@@ -28,8 +28,11 @@ struct CORE_EXPORT NGInlineItemResult {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  // The index of NGInlineItem and its text range.
+  // The NGInlineItem and its index.
+  const NGInlineItem* item;
   unsigned item_index;
+
+  // The range of text content for this item.
   unsigned start_offset;
   unsigned end_offset;
 
@@ -66,7 +69,10 @@ struct CORE_EXPORT NGInlineItemResult {
   bool has_hanging_spaces = false;
 
   NGInlineItemResult();
-  NGInlineItemResult(unsigned index, unsigned start, unsigned end);
+  NGInlineItemResult(const NGInlineItem*,
+                     unsigned index,
+                     unsigned start,
+                     unsigned end);
 };
 
 // Represents a set of NGInlineItemResult that form a line box.

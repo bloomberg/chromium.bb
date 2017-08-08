@@ -33,6 +33,11 @@ struct CORE_EXPORT NGInlineNodeData {
   String text_content_;
   Vector<NGInlineItem> items_;
 
+  // |items_| to use for the first line, when the node has :first-line rules.
+  // Items have different ComputedStyle, and may also have different ShapeResult
+  // if fonts are different.
+  std::unique_ptr<Vector<NGInlineItem>> first_line_items_;
+
   // The DOM to text content offset mapping of this inline node.
   std::unique_ptr<NGOffsetMappingResult> offset_mapping_;
 

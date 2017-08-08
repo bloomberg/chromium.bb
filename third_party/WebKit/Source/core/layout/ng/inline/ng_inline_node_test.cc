@@ -23,34 +23,34 @@ class NGInlineNodeForTest : public NGInlineNode {
  public:
   using NGInlineNode::NGInlineNode;
 
-  String& Text() { return MutableData().text_content_; }
-  Vector<NGInlineItem>& Items() { return MutableData().items_; }
+  String& Text() { return MutableData()->text_content_; }
+  Vector<NGInlineItem>& Items() { return MutableData()->items_; }
 
   void Append(const String& text,
               const ComputedStyle* style = nullptr,
               LayoutObject* layout_object = nullptr) {
     unsigned start = Data().text_content_.length();
-    MutableData().text_content_.append(text);
-    MutableData().items_.push_back(NGInlineItem(NGInlineItem::kText, start,
-                                                start + text.length(), style,
-                                                layout_object));
+    MutableData()->text_content_.append(text);
+    MutableData()->items_.push_back(NGInlineItem(NGInlineItem::kText, start,
+                                                 start + text.length(), style,
+                                                 layout_object));
   }
 
   void Append(UChar character) {
-    MutableData().text_content_.append(character);
+    MutableData()->text_content_.append(character);
     unsigned end = Data().text_content_.length();
-    MutableData().items_.push_back(
+    MutableData()->items_.push_back(
         NGInlineItem(NGInlineItem::kBidiControl, end - 1, end, nullptr));
-    MutableData().is_bidi_enabled_ = true;
+    MutableData()->is_bidi_enabled_ = true;
   }
 
   void ClearText() {
-    MutableData().text_content_ = String();
-    MutableData().items_.clear();
+    MutableData()->text_content_ = String();
+    MutableData()->items_.clear();
   }
 
   void SegmentText() {
-    MutableData().is_bidi_enabled_ = true;
+    MutableData()->is_bidi_enabled_ = true;
     NGInlineNode::SegmentText();
   }
 

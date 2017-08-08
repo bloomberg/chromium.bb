@@ -26,7 +26,7 @@ class CORE_EXPORT LayoutNGBlockFlow final : public LayoutBlockFlow {
 
   const char* GetName() const override { return "LayoutNGBlockFlow"; }
 
-  NGInlineNodeData& GetNGInlineNodeData() const;
+  NGInlineNodeData* GetNGInlineNodeData() const;
   void ResetNGInlineNodeData();
   bool HasNGInlineNodeData() const { return ng_inline_node_data_.get(); }
 
