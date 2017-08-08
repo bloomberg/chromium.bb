@@ -10,8 +10,6 @@
 
 namespace ash {
 
-class HighlighterControllerTestApi;
-
 // A simple test double for a PaletteDelegate.
 class TestPaletteDelegate : public PaletteDelegate {
  public:
@@ -42,7 +40,9 @@ class TestPaletteDelegate : public PaletteDelegate {
     should_show_palette_ = should_show_palette;
   }
 
-  void SetMetalayerSupported(bool is_metalayer_supported);
+  void set_is_metalayer_supported(bool is_metalayer_supported) {
+    is_metalayer_supported_ = is_metalayer_supported;
+  }
 
   int show_metalayer_count() const { return show_metalayer_count_; }
 
@@ -50,11 +50,7 @@ class TestPaletteDelegate : public PaletteDelegate {
 
   base::Closure metalayer_closed() const { return metalayer_closed_; }
 
-  void set_highlighter_test_api(HighlighterControllerTestApi* api) {
-    highlighter_test_api_ = api;
-  }
-
- protected:
+ private:
   // PaletteDelegate:
   std::unique_ptr<EnableListenerSubscription> AddPaletteEnableListener(
       const EnableListener& on_state_changed) override;
@@ -81,8 +77,6 @@ class TestPaletteDelegate : public PaletteDelegate {
   int show_metalayer_count_ = 0;
   int hide_metalayer_count_ = 0;
   base::Closure metalayer_closed_;
-
-  HighlighterControllerTestApi* highlighter_test_api_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPaletteDelegate);
 };
