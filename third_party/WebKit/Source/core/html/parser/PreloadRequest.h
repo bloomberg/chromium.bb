@@ -94,11 +94,13 @@ class CORE_EXPORT PreloadRequest {
     return client_hints_preferences_;
   }
   ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
+
+  // Only scripts and css stylesheets need to have integrity set on preloads.
+  // This is because neither resource keeps raw data around to redo an
+  // integrity check. A resource in memory cache needs integrity
+  // data cached to match an outgoing request.
   void SetIntegrityMetadata(const IntegrityMetadataSet& metadata_set) {
     integrity_metadata_ = metadata_set;
-  }
-  const IntegrityMetadataSet& IntegrityMetadata() const {
-    return integrity_metadata_;
   }
   void SetFromInsertionScanner(const bool from_insertion_scanner) {
     from_insertion_scanner_ = from_insertion_scanner;
