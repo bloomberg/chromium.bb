@@ -603,7 +603,7 @@ Your Google account may have other forms of browsing history like searches and a
         Signs you out of most sites.
       </message>
       <message name="IDS_CLEAR_COOKIES_AND_SITE_DATA_SIGNED_IN_SUMMARY_BASIC" desc="A summary for the 'Cookies and site data' option in the 'Clear Browsing Data' screen, explaining that deleting cookies and site data will sign the user out of most websites but you Google sign in will stay.">
-        Signs you out of most sites. You won't be signed out of you Google Account.
+        Signs you out of most sites. You won't be signed out of your Google Account.
       </message>
       <message name="IDS_CLEAR_BROWSING_HISTORY_SUMMARY" desc="A text for the basic tab explaining browsing history.">
         Clears history and autocompletions in the address bar.
