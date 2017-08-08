@@ -12,7 +12,7 @@
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/windows_version.h"
 #include "content/common/dwrite_font_proxy_messages.h"
@@ -55,8 +55,14 @@ class DWriteFontProxyMessageFilterUnitTest : public testing::Test {
     std::unique_ptr<IPC::SyncMessage> deleter(message);
     std::unique_ptr<IPC::MessageReplyDeserializer> serializer(
         message->GetReplyDeserializer());
-    filter_->OnMessageReceived(*message);
-    base::RunLoop().RunUntilIdle();
+    base::TaskRunner* dwrite_io_task_runner =
+        filter_->OverrideTaskRunnerForMessage(*message);
+    dwrite_io_task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(
+                       &DWriteFontProxyMessageFilter::OnMessageReceived),
+                   filter_, base::ConstRef(*message)));
+    scoped_task_environment_.RunUntilIdle();
     ASSERT_NE(nullptr, filter_->GetReply());
     serializer->SerializeOutputParameters(*(filter_->GetReply()));
   }
@@ -74,8 +80,8 @@ class DWriteFontProxyMessageFilterUnitTest : public testing::Test {
     return factory2.Get();
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<FilterWithFakeSender> filter_;
-  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(DWriteFontProxyMessageFilterUnitTest, GetFamilyCount) {
