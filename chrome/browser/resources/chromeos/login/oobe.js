@@ -7,7 +7,7 @@
  * This is the main code for the OOBE WebUI implementation.
  */
 
-// <include src="login_shared.js">
+// <include src="md_login_shared.js">
 // <include src="login_non_lock_shared.js">
 // <include src="oobe_screen_auto_enrollment_check.js">
 // <include src="oobe_screen_controller_pairing.js">

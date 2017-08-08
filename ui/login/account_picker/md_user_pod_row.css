@@ -165,7 +165,7 @@ html:not([screen=login-add-user]) .pod.focused .user-image {
   top: 182px;
 }
 
-.pod.focused:not(.multiprofiles-policy-applied) .auth-container {
+.pod.focused:not(.multiprofiles-policy-applied):not(.public-account) .auth-container {
   display: flex;
   height: 40px;
   left: 51px;
@@ -182,7 +182,7 @@ html:not([screen=login-add-user]) .pod.focused .user-image {
 </if>
 }
 
-html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied) .auth-container {
+html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied):not(.public-account) .auth-container {
   left: auto;
   right: 51px;
 }
