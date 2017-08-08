@@ -3471,6 +3471,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.AddWithoutTemplate(
       'som-dispatcher',
+      site_config.templates.internal,
       site_config.templates.no_hwtest_builder,
       site_config.templates.no_vmtest_builder,
       important=True,

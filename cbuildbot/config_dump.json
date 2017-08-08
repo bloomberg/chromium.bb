@@ -22500,6 +22500,9 @@
         "description": "Updates alerts displayed on SoM website. go/som/chromeos",
         "hw_tests_override": [],
         "important": true,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
         "vm_tests": []
     },
     "soraka-chrome-pfq": {
