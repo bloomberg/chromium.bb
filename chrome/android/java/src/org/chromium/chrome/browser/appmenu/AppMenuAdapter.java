@@ -323,7 +323,12 @@ class AppMenuAdapter extends BaseAdapter {
     private void setupMenuButton(View button, final MenuItem item) {
         button.setEnabled(item.isEnabled());
         button.setFocusable(item.isEnabled());
-        button.setContentDescription(item.getTitleCondensed());
+        if (TextUtils.isEmpty(item.getTitleCondensed())) {
+            button.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        } else {
+            button.setContentDescription(item.getTitleCondensed());
+            button.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
+        }
 
         button.setOnClickListener(new OnClickListener() {
             @Override
