@@ -1246,6 +1246,9 @@ enum HistogramValue {
   LOCKSCREENDATA_SETCONTENT,
   LOCKSCREENDATA_DELETE,
   BLUETOOTHLOWENERGY_RESETADVERTISING,
+  WEBVIEWINTERNAL_SETAUDIOMUTED,
+  WEBVIEWINTERNAL_ISAUDIOMUTED,
+  WEBVIEWINTERNAL_GETAUDIOSTATE,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

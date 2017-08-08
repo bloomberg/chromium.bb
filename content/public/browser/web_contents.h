@@ -409,6 +409,9 @@ class WebContents : public PageNavigator,
   virtual bool IsAudioMuted() const = 0;
   virtual void SetAudioMuted(bool mute) = 0;
 
+  // Returns true if the audio is currently audible.
+  virtual bool IsCurrentlyAudible() = 0;
+
   // Indicates whether any frame in the WebContents is connected to a Bluetooth
   // Device.
   virtual bool IsConnectedToBluetoothDevice() const = 0;
