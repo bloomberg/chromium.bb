@@ -223,7 +223,7 @@ js_library("js_devtools_bindings_lib") {
   extra_deps = [ ":gen_devtools_client_api" ]
 }
 
-if (headless_fontconfig_utils && !is_fuchsia) {
+if (headless_fontconfig_utils) {
   static_library("headless_fontconfig_utils") {
     sources = [
       "public/util/fontconfig.cc",
