@@ -28,6 +28,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/ui/autofill/autofill_client_ios.h"
+#include "ios/chrome/browser/ui/settings/personal_data_manager_data_changed_observer.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #import "ios/web/public/navigation_item.h"
@@ -583,7 +584,13 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
   infobars::InfoBarDelegate* infobar =
       infobar_manager->infobar_at(0)->delegate();
   ConfirmInfoBarDelegate* confirm_infobar = infobar->AsConfirmInfoBarDelegate();
+
+  // This call cause a modification of the PersonalDataManager, so wait until
+  // the asynchronous task complete in addition to waiting for the UI update.
+  PersonalDataManagerDataChangedObserver observer(personal_data_manager);
   confirm_infobar->Accept();
+  observer.Wait();
+
   const std::vector<CreditCard*>& credit_cards =
       personal_data_manager->GetCreditCards();
   ASSERT_EQ(1U, credit_cards.size());
