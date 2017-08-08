@@ -62,17 +62,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   void UpdateSecurityState(SBThreatType threat_type,
                            content::WebContents* web_contents) override;
 
-  FRIEND_TEST_ALL_PREFIXES(
-      ChromePasswordProtectionServiceTest,
-      VerifyFinchControlForLowReputationPingSBEROnlyNoIncognito);
-  FRIEND_TEST_ALL_PREFIXES(
-      ChromePasswordProtectionServiceTest,
-      VerifyFinchControlForLowReputationPingSBERAndHistorySyncNoIncognito);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
-                           VerifyFinchControlForLowReputationPingAll);
-  FRIEND_TEST_ALL_PREFIXES(
-      ChromePasswordProtectionServiceTest,
-      VerifyFinchControlForLowReputationPingAllButNoIncognito);
+                           VerifyUserPopulationForPasswordOnFocusPing);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyUserPopulationForProtectedPasswordEntryPing);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyGetSyncAccountType);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
