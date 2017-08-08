@@ -4,11 +4,9 @@
 
 #include <vector>
 
-#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/field_types.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
@@ -204,29 +202,6 @@ const char kNoShippingPage[] =
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kPaymentRequestCollectionViewID)]
       assertWithMatcher:grey_nil()];
-
-  // Confirm that the appropriate response message was sent. Note that this does
-  // not test the structure of the response.
-  [self
-      waitForWebViewContainingTexts:
-          {base::UTF16ToUTF8(card.GetRawInfo(autofill::CREDIT_CARD_NUMBER)),
-           base::UTF16ToUTF8(card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL)),
-           base::UTF16ToUTF8(card.GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH)),
-           base::UTF16ToUTF8(
-               card.GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR)),
-           "111"}];
-  [self
-      waitForWebViewContainingTexts:
-          {base::UTF16ToUTF8(profile.GetRawInfo(autofill::NAME_FIRST)),
-           base::UTF16ToUTF8(profile.GetRawInfo(autofill::NAME_LAST)),
-           base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_LINE1)),
-           base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_LINE2)),
-           base::UTF16ToUTF8(
-               profile.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY)),
-           base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_ZIP)),
-           base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_CITY)),
-           base::UTF16ToUTF8(
-               profile.GetRawInfo(autofill::ADDRESS_HOME_STATE))}];
 }
 
 // Tests that calling request.abort() successfully aborts the Payment Request.

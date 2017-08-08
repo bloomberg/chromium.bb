@@ -452,20 +452,12 @@ TEST(PaymentRequestTest, EmptyResponseDictionary) {
 
   expected_value.SetString("requestId", "");
   expected_value.SetString("methodName", "");
-  std::unique_ptr<base::DictionaryValue> shipping_address(
-      new base::DictionaryValue);
-  shipping_address->SetString("country", "");
-  shipping_address->Set("addressLine", base::MakeUnique<base::ListValue>());
-  shipping_address->SetString("region", "");
-  shipping_address->SetString("dependentLocality", "");
-  shipping_address->SetString("city", "");
-  shipping_address->SetString("postalCode", "");
-  shipping_address->SetString("languageCode", "");
-  shipping_address->SetString("sortingCode", "");
-  shipping_address->SetString("organization", "");
-  shipping_address->SetString("recipient", "");
-  shipping_address->SetString("phone", "");
-  expected_value.Set("shippingAddress", std::move(shipping_address));
+  expected_value.Set("details", base::MakeUnique<base::Value>());
+  expected_value.Set("shippingAddress", base::MakeUnique<base::Value>());
+  expected_value.SetString("shippingOption", "");
+  expected_value.SetString("payerName", "");
+  expected_value.SetString("payerEmail", "");
+  expected_value.SetString("payerPhone", "");
 
   PaymentResponse payment_response;
   EXPECT_TRUE(
@@ -539,7 +531,9 @@ TEST(PaymentRequestTest, PopulatedResponseDictionary) {
                           &payment_response_stringified_details);
   payment_response.details = payment_response_stringified_details;
 
-  payment_response.shipping_address.postal_code = base::ASCIIToUTF16("94115");
+  payment_response.shipping_address =
+      base::MakeUnique<payments::PaymentAddress>();
+  payment_response.shipping_address->postal_code = base::ASCIIToUTF16("94115");
   payment_response.shipping_option = base::ASCIIToUTF16("666");
   payment_response.payer_name = base::ASCIIToUTF16("Jane Doe");
   payment_response.payer_email = base::ASCIIToUTF16("jane@example.com");

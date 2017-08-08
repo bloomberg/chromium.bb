@@ -26,9 +26,7 @@ function buy() {  // eslint-disable-line no-unused-vars
         .then(function(resp) {
           resp.complete('success')
               .then(function() {
-                print(
-                    resp.methodName + '<br>' +
-                    JSON.stringify(resp.details, undefined, 2));
+                print(JSON.stringify(resp, undefined, 2));
               })
               .catch(function(error) {
                 print(error);

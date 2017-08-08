@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/payments/payment_response_helper.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -67,8 +68,9 @@ void PaymentResponseHelper::AddressNormalizationCompleted() {
   response.details = stringified_details_;
 
   if (payment_request_->request_shipping()) {
-    response.shipping_address = data_util::GetPaymentAddressFromAutofillProfile(
-        shipping_address_, payment_request_->GetApplicationLocale());
+    response.shipping_address = base::MakeUnique<payments::PaymentAddress>(
+        data_util::GetPaymentAddressFromAutofillProfile(
+            shipping_address_, payment_request_->GetApplicationLocale()));
 
     web::PaymentShippingOption* shippingOption =
         payment_request_->selected_shipping_option();

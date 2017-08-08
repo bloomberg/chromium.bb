@@ -264,7 +264,6 @@ class PaymentRequest {
 class PaymentResponse {
  public:
   PaymentResponse();
-  PaymentResponse(const PaymentResponse& other);
   ~PaymentResponse();
 
   bool operator==(const PaymentResponse& other) const;
@@ -287,7 +286,7 @@ class PaymentResponse {
   // If request_shipping was set to true in the PaymentOptions passed to the
   // PaymentRequest constructor, this will be the full and final shipping
   // address chosen by the user.
-  payments::PaymentAddress shipping_address;
+  std::unique_ptr<payments::PaymentAddress> shipping_address;
 
   // If the request_shipping flag was set to true in the PaymentOptions passed
   // to the PaymentRequest constructor, this will be the id attribute of the
