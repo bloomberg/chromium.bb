@@ -1703,7 +1703,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, NoRecommendedLocaleSwitch) {
           "domAutomationController.send(pod.classList.contains('advanced'));",
           account_id_1_.Serialize().c_str()),
       &advanced));
-  EXPECT_FALSE(advanced);
+  // Public session pods switch to advanced form immediately upon being
+  // clicked, instead of waiting for animation to end which were in the old UI.
+  EXPECT_TRUE(advanced);
 
   // Manually select a different locale.
   ASSERT_TRUE(content::ExecuteScript(
