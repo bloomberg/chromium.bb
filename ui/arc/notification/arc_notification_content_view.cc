@@ -61,7 +61,7 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
     // TODO(yoshiki): Use a better tigger (eg. focusing EditText on
     // notification) than clicking (crbug.com/697379).
     if (event->type() == ui::ET_MOUSE_PRESSED)
-      owner_->ActivateToast();
+      owner_->Activate();
 
     views::Widget* widget = owner_->GetWidget();
     if (!widget)
@@ -555,12 +555,18 @@ void ArcNotificationContentView::OnBlur() {
   static_cast<ArcNotificationView*>(parent())->OnContentBlured();
 }
 
-void ArcNotificationContentView::ActivateToast() {
-  if (message_center::ToastContentsView::kViewClassName ==
-      parent()->parent()->GetClassName()) {
-    static_cast<message_center::ToastContentsView*>(parent()->parent())
-        ->ActivateToast();
+void ArcNotificationContentView::Activate() {
+  if (!GetWidget())
+    return;
+
+  // Make the widget active.
+  if (!GetWidget()->IsActive()) {
+    GetWidget()->widget_delegate()->set_can_activate(true);
+    GetWidget()->Activate();
   }
+
+  // Focus the surface window.
+  surface_->FocusSurfaceWindow();
 }
 
 views::FocusTraversable* ArcNotificationContentView::GetFocusTraversable() {

@@ -75,9 +75,6 @@ class MESSAGE_CENTER_EXPORT ToastContentsView
 
   void SetBoundsWithAnimation(gfx::Rect new_bounds);
 
-  // Makes the toast activatable, then activate.
-  void ActivateToast();
-
   // Origin and bounds are not 'instant', but rather 'current stable values',
   // there could be animation in progress that targets these values.
   gfx::Point origin() { return origin_; }

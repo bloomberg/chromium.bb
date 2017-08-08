@@ -171,12 +171,6 @@ void ToastContentsView::SetBoundsWithAnimation(gfx::Rect new_bounds) {
   bounds_animation_->Show();
 }
 
-void ToastContentsView::ActivateToast() {
-  set_can_activate(true);
-  if (GetWidget())
-    GetWidget()->Activate();
-}
-
 void ToastContentsView::StartFadeIn() {
   // The decrement is done in OnBoundsAnimationEndedOrCancelled callback.
   if (collection_)
