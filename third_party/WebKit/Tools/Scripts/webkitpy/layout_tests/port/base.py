@@ -234,10 +234,6 @@ class Port(object):
             return 1
         return max_locked_shards
 
-    def baseline_platform_dir(self):
-        """Returns the absolute path to the default (version-independent) platform-specific results."""
-        return self._filesystem.join(self.layout_tests_dir(), 'platform', self.port_name)
-
     def baseline_version_dir(self):
         """Returns the absolute path to the platform-and-version-specific results."""
         baseline_search_paths = self.baseline_search_path()
