@@ -302,6 +302,19 @@ void WallpaperController::OnSessionStateChanged(
     session_manager::SessionState state) {
   CalculateWallpaperColors();
 
+  // The wallpaper may be dimmed/blurred based on session state. The color of
+  // the dimming overlay depends on the prominent color cached from a previous
+  // calculation, or a default color if cache is not available. It should never
+  // depend on any in-flight color calculation.
+  if (wallpaper_mode_ == WALLPAPER_IMAGE &&
+      (state == session_manager::SessionState::ACTIVE ||
+       state == session_manager::SessionState::LOCKED ||
+       state == session_manager::SessionState::LOGIN_SECONDARY)) {
+    // TODO(crbug.com/753518): Reuse the existing WallpaperWidgetController for
+    // dimming/blur purpose.
+    InstallDesktopControllerForAllWindows();
+  }
+
   if (state == session_manager::SessionState::ACTIVE)
     MoveToUnlockedContainer();
   else
