@@ -66,6 +66,11 @@ enum { kNumPictureBuffers = limits::kMaxVideoFrames + 1 };
 // NotifyEndOfBitstreamBuffer() before getting output from the bitstream.
 enum { kMaxBitstreamsNotifiedInAdvance = 32 };
 
+// Number of frames to defer overlays for when entering fullscreen.  This lets
+// blink relayout settle down a bit.  If overlay positions were synchronous,
+// then we wouldn't need this.
+enum { kFrameDelayForFullscreenLayout = 15 };
+
 // MediaCodec is only guaranteed to support baseline, but some devices may
 // support others. Advertise support for all H264 profiles and let the
 // MediaCodec fail when decoding if it's not actually supported. It's assumed
@@ -1276,6 +1281,18 @@ void AndroidVideoDecodeAccelerator::SetOverlayInfo(
 
   surface_chooser_state_.is_frame_hidden = overlay_info.is_frame_hidden;
 
+  if (overlay_info.is_fullscreen && !surface_chooser_state_.is_fullscreen) {
+    // It would be nice if we could just delay until we get a hint from an
+    // overlay that's "in fullscreen" in the sense that the CompositorFrame it
+    // came from had some flag set to indicate that the renderer was in
+    // fullscreen mode when it was generated.  However, even that's hard, since
+    // there's no real connection between "renderer finds out about fullscreen"
+    // and "blink has completed layouts for it".  The latter is what we really
+    // want to know.
+    surface_chooser_state_.is_expecting_relayout = true;
+    hints_until_clear_relayout_flag_ = kFrameDelayForFullscreenLayout;
+  }
+
   // Notify the chooser about the fullscreen state.
   surface_chooser_state_.is_fullscreen = overlay_info.is_fullscreen;
 
@@ -1563,10 +1580,29 @@ AndroidVideoDecodeAccelerator::GetPromotionHintCB() {
 
 void AndroidVideoDecodeAccelerator::NotifyPromotionHint(
     const PromotionHintAggregator::Hint& hint) {
+  bool update_state = false;
+
   promotion_hint_aggregator_->NotifyPromotionHint(hint);
+
+  // If we're expecting a full screen relayout, then also use this hint as a
+  // notification that another frame has happened.
+  if (hints_until_clear_relayout_flag_ > 0) {
+    hints_until_clear_relayout_flag_--;
+    if (hints_until_clear_relayout_flag_ == 0) {
+      surface_chooser_state_.is_expecting_relayout = false;
+      update_state = true;
+    }
+  }
+
+  surface_chooser_state_.initial_position =
+      gfx::Rect(hint.x, hint.y, hint.width, hint.height);
   bool promotable = promotion_hint_aggregator_->IsSafeToPromote();
   if (promotable != surface_chooser_state_.is_compositor_promotable) {
     surface_chooser_state_.is_compositor_promotable = promotable;
+    update_state = true;
+  }
+
+  if (update_state) {
     surface_chooser_->UpdateState(base::Optional<AndroidOverlayFactoryCB>(),
                                   surface_chooser_state_);
   }

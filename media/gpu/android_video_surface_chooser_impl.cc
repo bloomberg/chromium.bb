@@ -110,6 +110,14 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
   if (!current_state_.is_compositor_promotable)
     new_overlay_state = kUsingSurfaceTexture;
 
+  // If we're expecting a relayout, then don't transition to overlay if we're
+  // not already in one.  We don't want to transition out, though.  This lets us
+  // delay entering on a fullscreen transition until blink relayout is complete.
+  // TODO(liberato): Detect this more directly.
+  if (current_state_.is_expecting_relayout &&
+      client_overlay_state_ != kUsingOverlay)
+    new_overlay_state = kUsingSurfaceTexture;
+
   // If we need a secure surface, then we must choose an overlay.  The only way
   // we won't is if we don't have a factory or our request fails.  If the
   // compositor won't promote, then we still use the overlay, since hopefully
@@ -182,10 +190,7 @@ void AndroidVideoSurfaceChooserImpl::SwitchToOverlay() {
   config.failed_cb =
       base::Bind(&AndroidVideoSurfaceChooserImpl::OnOverlayFailed,
                  weak_factory_.GetWeakPtr());
-  // TODO(liberato): where do we get the initial size from?  For CVV, it's
-  // set via the natural size, and this is ignored anyway.  The client should
-  // provide this.
-  config.rect = gfx::Rect(0, 0, 1, 1);
+  config.rect = current_state_.initial_position;
   overlay_ = overlay_factory_.Run(std::move(config));
   if (!overlay_)
     SwitchToSurfaceTexture();

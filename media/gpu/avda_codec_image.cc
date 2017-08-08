@@ -241,6 +241,8 @@ void AVDACodecImage::NotifyPromotionHint(bool promotion_hint,
   PromotionHintAggregator::Hint hint;
   hint.x = display_x;
   hint.y = display_y;
+  hint.width = display_width;
+  hint.height = display_height;
   hint.is_promotable = promotion_hint;
   shared_state_->GetPromotionHintCB().Run(hint);
 }
