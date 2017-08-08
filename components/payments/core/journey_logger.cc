@@ -119,13 +119,17 @@ void JourneyLogger::SetRequestedInformation(bool requested_shipping,
                                             bool requested_phone,
                                             bool requested_name) {
   // This method should only be called once per Payment Request.
-  DCHECK(requested_information_ == REQUESTED_INFORMATION_MAX);
+  if (requested_shipping)
+    SetEventOccurred(EVENT_REQUEST_SHIPPING);
 
-  requested_information_ =
-      (requested_shipping ? REQUESTED_INFORMATION_SHIPPING : 0) |
-      (requested_email ? REQUESTED_INFORMATION_EMAIL : 0) |
-      (requested_phone ? REQUESTED_INFORMATION_PHONE : 0) |
-      (requested_name ? REQUESTED_INFORMATION_NAME : 0);
+  if (requested_email)
+    SetEventOccurred(EVENT_REQUEST_PAYER_EMAIL);
+
+  if (requested_phone)
+    SetEventOccurred(EVENT_REQUEST_PAYER_PHONE);
+
+  if (requested_name)
+    SetEventOccurred(EVENT_REQUEST_PAYER_NAME);
 }
 
 void JourneyLogger::SetCompleted() {
@@ -171,7 +175,6 @@ void JourneyLogger::RecordJourneyStatsHistograms(
   // triggered.
   if (WasPaymentRequestTriggered()) {
     RecordPaymentMethodMetric();
-    RecordRequestedInformationMetrics();
     RecordSectionSpecificStats(completion_status);
   }
 }
@@ -196,14 +199,6 @@ void JourneyLogger::RecordCheckoutFlowMetrics() {
 void JourneyLogger::RecordPaymentMethodMetric() {
   base::UmaHistogramEnumeration("PaymentRequest.SelectedPaymentMethod",
                                 payment_method_, SELECTED_PAYMENT_METHOD_MAX);
-}
-
-void JourneyLogger::RecordRequestedInformationMetrics() {
-  DCHECK(requested_information_ != REQUESTED_INFORMATION_MAX);
-  UMA_HISTOGRAM_ENUMERATION(
-      "PaymentRequest.RequestedInformation",
-      static_cast<RequestedInformation>(requested_information_),
-      REQUESTED_INFORMATION_MAX);
 }
 
 void JourneyLogger::RecordSectionSpecificStats(
