@@ -333,6 +333,7 @@ void URLLoaderImpl::ReadMore() {
 }
 
 void URLLoaderImpl::DidRead(uint32_t num_bytes, bool completed_synchronously) {
+  total_written_bytes_ += num_bytes;
   pending_write_buffer_offset_ += num_bytes;
   DCHECK(url_request_->status().is_success());
   bool complete_read = true;
@@ -398,6 +399,7 @@ void URLLoaderImpl::NotifyCompleted(int error_code) {
   request_complete_data.encoded_data_length =
       url_request_->GetTotalReceivedBytes();
   request_complete_data.encoded_body_length = url_request_->GetRawBodyBytes();
+  request_complete_data.decoded_body_length = total_written_bytes_;
 
   url_loader_client_->OnComplete(request_complete_data);
   DeleteIfNeeded();
