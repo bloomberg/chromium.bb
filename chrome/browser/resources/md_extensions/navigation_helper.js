@@ -7,7 +7,7 @@
  * Note: This must remain in sync with the page ids in manager.html!
  * @enum {string}
  */
-var Page = {
+const Page = {
   LIST: 'items-list',
   DETAILS: 'details-view',
   SHORTCUTS: 'keyboard-shortcuts',
@@ -15,14 +15,14 @@ var Page = {
 };
 
 /** @enum {string} */
-var Dialog = {
+const Dialog = {
   OPTIONS: 'options',
 };
 
 /** @typedef {{page: Page,
                extensionId: (string|undefined),
                subpage: (!Dialog|undefined)}} */
-var PageState;
+let PageState;
 
 cr.define('extensions', function() {
   'use strict';
@@ -53,8 +53,8 @@ cr.define('extensions', function() {
      *     URL.
      */
     getCurrentPage() {
-      var search = new URLSearchParams(location.search);
-      var id = search.get('id');
+      const search = new URLSearchParams(location.search);
+      let id = search.get('id');
       if (id)
         return {page: Page.DETAILS, extensionId: id};
       id = search.get('options');
@@ -75,7 +75,7 @@ cr.define('extensions', function() {
      * @param {!PageState} entry
      */
     updateHistory(entry) {
-      var path;
+      let path;
       switch (entry.page) {
         case Page.LIST:
           path = '/';
@@ -96,9 +96,9 @@ cr.define('extensions', function() {
           break;
       }
       assert(path);
-      var state = {url: path};
-      var currentPage = this.getCurrentPage();
-      var isDialogNavigation = currentPage.page == entry.page &&
+      const state = {url: path};
+      const currentPage = this.getCurrentPage();
+      const isDialogNavigation = currentPage.page == entry.page &&
           currentPage.extensionId == entry.extensionId;
       // Navigating to a dialog doesn't visually change pages; it just opens
       // a dialog. As such, we replace state rather than pushing a new state

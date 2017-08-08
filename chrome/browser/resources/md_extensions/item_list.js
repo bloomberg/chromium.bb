@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('extensions', function() {
-  var ItemList = Polymer({
+  const ItemList = Polymer({
     is: 'extensions-item-list',
 
     behaviors: [Polymer.NeonAnimatableBehavior, Polymer.IronResizableBehavior],

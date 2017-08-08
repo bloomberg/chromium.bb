@@ -5,7 +5,7 @@
 cr.define('extensions', function() {
   'use strict';
 
-  var PackDialogAlert = Polymer({
+  const PackDialogAlert = Polymer({
     is: 'extensions-pack-dialog-alert',
     properties: {
       /** @private {chrome.developerPrivate.PackDirectoryResponse} */

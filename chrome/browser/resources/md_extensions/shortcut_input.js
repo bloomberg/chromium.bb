@@ -6,7 +6,7 @@ cr.define('extensions', function() {
   'use strict';
 
   // The UI to display and manage keyboard shortcuts set for extension commands.
-  var ShortcutInput = Polymer({
+  const ShortcutInput = Polymer({
     is: 'extensions-shortcut-input',
 
     behaviors: [I18nBehavior],
@@ -37,7 +37,7 @@ cr.define('extensions', function() {
     },
 
     ready: function() {
-      var node = this.$['input'];
+      const node = this.$['input'];
       node.addEventListener('mouseup', this.startCapture_.bind(this));
       node.addEventListener('blur', this.endCapture_.bind(this));
       node.addEventListener('focus', this.startCapture_.bind(this));

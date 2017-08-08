@@ -11,7 +11,7 @@ cr.define('extensions', function() {
    * @param {chrome.developerPrivate.ExtensionInfo} b
    * @return {number}
    */
-  var compareExtensions = function(a, b) {
+  const compareExtensions = function(a, b) {
     function compare(x, y) {
       return x < y ? -1 : (x > y ? 1 : 0);
     }
@@ -29,7 +29,7 @@ cr.define('extensions', function() {
         compare(a.id, b.id);
   };
 
-  var Manager = Polymer({
+  const Manager = Polymer({
     is: 'extensions-manager',
 
     behaviors: [I18nBehavior],
@@ -203,8 +203,8 @@ cr.define('extensions', function() {
      * @private
      */
     getListId_: function(type) {
-      var listId;
-      var ExtensionType = chrome.developerPrivate.ExtensionType;
+      let listId;
+      const ExtensionType = chrome.developerPrivate.ExtensionType;
       switch (type) {
         case ExtensionType.HOSTED_APP:
         case ExtensionType.LEGACY_PACKAGED_APP:
@@ -252,10 +252,10 @@ cr.define('extensions', function() {
      *     the new element is representing.
      */
     addItem: function(item) {
-      var listId = this.getListId_(item.type);
+      const listId = this.getListId_(item.type);
       // We should never try and add an existing item.
       assert(this.getIndexInList_(listId, item.id) == -1);
-      var insertBeforeChild = this[listId].findIndex(function(listEl) {
+      let insertBeforeChild = this[listId].findIndex(function(listEl) {
         return compareExtensions(listEl, item) > 0;
       });
       if (insertBeforeChild == -1)
@@ -268,8 +268,8 @@ cr.define('extensions', function() {
      *     item to update.
      */
     updateItem: function(item) {
-      var listId = this.getListId_(item.type);
-      var index = this.getIndexInList_(listId, item.id);
+      const listId = this.getListId_(item.type);
+      const index = this.getIndexInList_(listId, item.id);
       // We should never try and update a non-existent item.
       assert(index >= 0);
       this.set([listId, index], item);
@@ -294,8 +294,8 @@ cr.define('extensions', function() {
      *     item to remove.
      */
     removeItem: function(item) {
-      var listId = this.getListId_(item.type);
-      var index = this.getIndexInList_(listId, item.id);
+      const listId = this.getListId_(item.type);
+      const index = this.getIndexInList_(listId, item.id);
       // We should never try and remove a non-existent item.
       assert(index >= 0);
       this.splice(listId, index, 1);
@@ -339,9 +339,9 @@ cr.define('extensions', function() {
       if (this.optionsDialog.open)
         this.optionsDialog.close();
 
-      var fromPage = this.$.pages.selected;
-      var toPage = newPage.page;
-      var data;
+      const fromPage = this.$.pages.selected;
+      const toPage = newPage.page;
+      let data;
       if (newPage.extensionId)
         data = assert(this.getData_(newPage.extensionId));
 
@@ -351,8 +351,8 @@ cr.define('extensions', function() {
         this.errorPageItem_ = assert(data);
 
       if (fromPage != toPage) {
-        var entry;
-        var exit;
+        let entry;
+        let exit;
         if (fromPage == Page.LIST &&
             (toPage == Page.DETAILS || toPage == Page.ERRORS)) {
           this.$['items-list'].willShowItemSubpage(data.id);
@@ -433,7 +433,7 @@ cr.define('extensions', function() {
 
     /** @override */
     showType(type) {
-      var items;
+      let items;
       switch (type) {
         case extensions.ShowingType.EXTENSIONS:
           items = this.manager_.extensions;

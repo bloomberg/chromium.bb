@@ -41,7 +41,7 @@ cr.define('extensions', function() {
      * @param {!Array<extensions.Animation>} animations
      */
     setEntryAnimations(animations) {
-      var configs = [];
+      const configs = [];
       for (let animation of animations) {
         switch (animation) {
           case extensions.Animation.HERO:
@@ -64,7 +64,7 @@ cr.define('extensions', function() {
      * @param {!Array<extensions.Animation>} animations
      */
     setExitAnimations(animations) {
-      var configs = [];
+      const configs = [];
       for (let animation of animations) {
         switch (animation) {
           case extensions.Animation.HERO:

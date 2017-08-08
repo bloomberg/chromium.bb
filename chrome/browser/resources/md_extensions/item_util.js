@@ -4,7 +4,7 @@
 
 // Closure compiler won't let this be declared inside cr.define().
 /** @enum {string} */
-var SourceType = {
+const SourceType = {
   WEBSTORE: 'webstore',
   POLICY: 'policy',
   SIDELOADED: 'sideloaded',
@@ -106,8 +106,8 @@ cr.define('extensions', function() {
    */
   function computeInspectableViewLabel(view) {
     // Trim the "chrome-extension://<id>/".
-    var url = new URL(view.url);
-    var label = view.url;
+    const url = new URL(view.url);
+    let label = view.url;
     if (url.protocol == 'chrome-extension:')
       label = url.pathname.substring(1);
     if (label == '_generated_background_page.html')

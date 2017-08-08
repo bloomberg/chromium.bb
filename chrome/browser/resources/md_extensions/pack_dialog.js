@@ -33,7 +33,7 @@ cr.define('extensions', function() {
     packExtension: assertNotReached,
   };
 
-  var PackDialog = Polymer({
+  const PackDialog = Polymer({
     is: 'extensions-pack-dialog',
     properties: {
       /** @type {extensions.PackDialogDelegate} */
