@@ -1,6 +1,14 @@
 import argparse
 from utils import *
 
+def update_counters(correct, auto_chunked, init=False):
+    if not init:
+        sys.stderr.write("\033[1A\033[K")
+        sys.stderr.write("\033[1A\033[K")
+    sys.stderr.write(("%d words correctly translated\n" % correct))
+    sys.stderr.write(("%d words automatically chunked\n" % auto_chunked))
+    sys.stderr.flush()
+
 def main():
     parser = argparse.ArgumentParser(description="Suggest dictionary rows and liblouis rules")
     parser.add_argument('-d', '--dictionary', required=True, dest="DICTIONARY",
@@ -21,6 +29,7 @@ def main():
     problems = 0
     auto_chunked = 0
     correct = 0
+    update_counters(correct, auto_chunked, init=True)
     for text, braille, chunked_text in c.fetchall():
         problem = False
         if braille:
@@ -83,6 +92,7 @@ def main():
                                                     c.execute("UPDATE dictionary SET chunked_text=:chunked_text WHERE text=:text",
                                                               {"text": subword, "chunked_text": suggested_chunked_subword})
                                                     auto_chunked += 1
+                                                    update_counters(correct, auto_chunked)
                                                     need_more_hints = False
                                                     # TODO: set problem to False after all words are auto chunked
                                                 else:
@@ -97,6 +107,7 @@ def main():
                                         c.execute("UPDATE dictionary SET chunked_text=:chunked_text WHERE text=:text",
                                                   {"text": text, "chunked_text": suggested_chunked_text})
                                         auto_chunked += 1
+                                        update_counters(correct, auto_chunked)
                                         problem = False
                                     else:
                                         suggest_rows.append({"text": suggested_chunked_text, "braille": braille})
@@ -126,6 +137,7 @@ def main():
                     break
             else:
                 correct += 1
+                update_counters(correct, auto_chunked)
     if args.TOTAL_RATE:
         println("### %d out of %d (%.1f %%) words translated correctly" % (correct, correct + problems, math.floor(1000 * correct / (correct + problems)) / 10))
     elif correct > 0:
