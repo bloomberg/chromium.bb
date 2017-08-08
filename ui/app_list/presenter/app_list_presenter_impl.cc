@@ -21,15 +21,6 @@
 namespace app_list {
 namespace {
 
-// Duration for show/hide animation in milliseconds.
-constexpr int kAnimationDurationMs = 200;
-
-// Duration for hide animation for the fullscreen app list in milliseconds.
-constexpr int kAnimationDurationMsFullscreen = 300;
-
-// Offset for the hide animation for the fullscreen app list in DIPs.
-constexpr int kHideAnimationOffset = 400;
-
 // The maximum shift in pixels when over-scroll happens.
 constexpr int kMaxOverScrollShift = 48;
 
@@ -188,15 +179,16 @@ void AppListPresenterImpl::ScheduleAnimation() {
   layer->GetAnimator()->StopAnimating();
   gfx::Rect target_bounds = widget->GetWindowBoundsInScreen();
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
+  aura::Window* root_window = widget->GetNativeView()->GetRootWindow();
+  const gfx::Vector2d offset =
+      presenter_delegate_->GetVisibilityAnimationOffset(root_window);
+  animation.SetTransitionDuration(
+      presenter_delegate_->GetVisibilityAnimationDuration(root_window,
+                                                          is_visible_));
 
   if (is_fullscreen_app_list_enabled_) {
-    // Set up the hide animation for the app list.
-    target_bounds.Offset(gfx::Vector2d(0, kHideAnimationOffset));
-    animation.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kAnimationDurationMsFullscreen));
+    target_bounds.Offset(offset);
   } else {
-    gfx::Vector2d offset = presenter_delegate_->GetVisibilityAnimationOffset(
-        widget->GetNativeView()->GetRootWindow());
     if (is_visible_) {
       gfx::Rect start_bounds = gfx::Rect(target_bounds);
       start_bounds.Offset(offset);
@@ -204,8 +196,6 @@ void AppListPresenterImpl::ScheduleAnimation() {
     } else {
       target_bounds.Offset(offset);
     }
-    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        is_visible_ ? 0 : kAnimationDurationMs));
   }
 
   animation.AddObserver(this);

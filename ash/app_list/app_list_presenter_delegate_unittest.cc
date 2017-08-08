@@ -252,6 +252,30 @@ TEST_F(AppListPresenterDelegateTest, TinyDisplay) {
   EXPECT_GE(app_list_view_top, kMinimalAppListMargin);
 }
 
+// Tests that the app list is not draggable in side shelf alignment.
+TEST_F(FullscreenAppListPresenterDelegateTest, SideShelfAlignmentDragDisabled) {
+  SetShelfAlignment(ShelfAlignment::SHELF_ALIGNMENT_RIGHT);
+  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
+  const app_list::AppListView* app_list = app_list_presenter_impl()->GetView();
+  EXPECT_TRUE(app_list->is_fullscreen());
+  EXPECT_EQ(app_list::AppListView::FULLSCREEN_ALL_APPS,
+            app_list->app_list_state());
+
+  // Drag the widget across the screen over an arbitrary 100Ms, this would
+  // normally result in the app list transitioning to PEEKING but will now
+  // result in no state change.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.GestureScrollSequence(GetPointOutsideSearchbox(),
+                                  gfx::Point(10, 900),
+                                  base::TimeDelta::FromMilliseconds(100), 10);
+  EXPECT_EQ(app_list::AppListView::FULLSCREEN_ALL_APPS,
+            app_list->app_list_state());
+
+  // Tap the app list body. This should still close the app list.
+  generator.GestureTapAt(GetPointOutsideSearchbox());
+  EXPECT_EQ(app_list::AppListView::CLOSED, app_list->app_list_state());
+}
+
 // Tests that the app list initializes in fullscreen with side shelf alignment
 // and that the state transitions via text input act properly.
 TEST_F(FullscreenAppListPresenterDelegateTest,
@@ -697,7 +721,7 @@ TEST_F(AppListPresenterDelegateTest,
   EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
   EXPECT_FALSE(GetPrimaryShelf()->IsHorizontalAlignment());
   EXPECT_EQ(GetPrimaryShelf()->shelf_layout_manager()->GetShelfBackgroundType(),
-            SHELF_BACKGROUND_OVERLAP);
+            SHELF_BACKGROUND_DEFAULT);
 }
 
 // Tests that the app list in HALF with an active search transitions to PEEKING

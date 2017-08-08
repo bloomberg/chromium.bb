@@ -500,12 +500,6 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   if (state_.session_state != session_manager::SessionState::ACTIVE)
     return SHELF_BACKGROUND_OVERLAP;
 
-  // If the app list is active and the shelf is oriented vertically, enable the
-  // shelf background.
-  if (is_app_list_visible_ && !shelf_->IsHorizontalAlignment() &&
-      is_fullscreen_app_list_enabled)
-    return SHELF_BACKGROUND_OVERLAP;
-
   // If the app list is active, hide the shelf background to prevent overlap.
   if (is_app_list_visible_ && is_fullscreen_app_list_enabled)
     return SHELF_BACKGROUND_DEFAULT;
@@ -747,8 +741,9 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
     status_size.set_width(kShelfSize);
 
   gfx::Point status_origin = SelectValueForShelfAlignment(
-      gfx::Point(0, 0), gfx::Point(shelf_width - status_size.width(),
-                                   shelf_height - status_size.height()),
+      gfx::Point(0, 0),
+      gfx::Point(shelf_width - status_size.width(),
+                 shelf_height - status_size.height()),
       gfx::Point(0, shelf_height - status_size.height()));
   if (shelf_->IsHorizontalAlignment() && !base::i18n::IsRTL())
     status_origin.set_x(shelf_width - status_size.width());

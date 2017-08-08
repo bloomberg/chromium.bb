@@ -102,6 +102,15 @@ gfx::Vector2d AppListPresenterDelegateMus::GetVisibilityAnimationOffset(
   return gfx::Vector2d(0, kAnimationOffset);
 }
 
+base::TimeDelta AppListPresenterDelegateMus::GetVisibilityAnimationDuration(
+    aura::Window* root_window,
+    bool is_visible) {
+  // TODO(crbug.com/752695): Classic ash does a different animation here
+  // depending on shelf alignment. We should probably do that too.
+  return is_visible ? base::TimeDelta::FromMilliseconds(0)
+                    : animation_duration();
+}
+
 void AppListPresenterDelegateMus::OnPointerEventObserved(
     const ui::PointerEvent& event,
     const gfx::Point& location_in_screen,
