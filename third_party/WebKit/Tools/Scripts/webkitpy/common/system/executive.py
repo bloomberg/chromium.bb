@@ -207,19 +207,6 @@ class Executive(object):
 
         return sorted(running_pids)
 
-    def process_dump(self):
-        ps_process = None
-        if sys.platform in 'win32':
-            ps_process = self.popen(
-                ['wmic', 'process', 'get',
-                 'ProcessId,ParentProcessId,CommandLine'],
-                stdout=self.PIPE, stderr=self.PIPE)
-        else:
-            ps_process = self.popen(['ps', 'aux'], stdout=self.PIPE, stderr=self.PIPE)
-
-        stdout, _ = ps_process.communicate()
-        return [line.strip() for line in stdout.splitlines()]
-
     def wait_limited(self, pid, limit_in_seconds=None, check_frequency_in_seconds=None):
         seconds_left = limit_in_seconds or 10
         sleep_length = check_frequency_in_seconds or 1
