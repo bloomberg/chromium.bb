@@ -47,9 +47,6 @@ void WatcherDispatcher::NotifyHandleClosed(Dispatcher* dispatcher) {
 
     watch = std::move(it->second);
 
-    // TODO(crbug.com/740044): Remove this CHECK.
-    CHECK(watch);
-
     // Wipe out all state associated with the closed dispatcher.
     watches_.erase(watch->context());
     ready_watches_.erase(watch.get());
@@ -97,7 +94,8 @@ MojoResult WatcherDispatcher::Close() {
   std::map<uintptr_t, scoped_refptr<Watch>> watches;
   {
     base::AutoLock lock(lock_);
-    DCHECK(!closed_);
+    if (closed_)
+      return MOJO_RESULT_INVALID_ARGUMENT;
     closed_ = true;
     std::swap(watches, watches_);
     watched_handles_.clear();
@@ -122,9 +120,8 @@ MojoResult WatcherDispatcher::WatchDispatcher(
   // after we've updated all our own relevant state and released |lock_|.
   {
     base::AutoLock lock(lock_);
-
-    // TODO(crbug.com/740044): Remove this CHECK.
-    CHECK(!closed_);
+    if (closed_)
+      return MOJO_RESULT_INVALID_ARGUMENT;
 
     if (watches_.count(context) || watched_handles_.count(dispatcher.get()))
       return MOJO_RESULT_ALREADY_EXISTS;
@@ -147,21 +144,17 @@ MojoResult WatcherDispatcher::WatchDispatcher(
     return rv;
   }
 
-  // TODO(crbug.com/740044): Perhaps the crash is caused by a racy use of
-  // watchers, which - while incorrect - should not in fact be able to crash at
-  // this layer.
-  //
-  // Hypothesis is that two threads are racing with one adding a watch and one
-  // closing the watcher handle. If the watcher handle is closed immediately
-  // before the AddWatcherRef() call above, |dispatcher| can retain an invalid
-  // pointer to this WatcherDispatcher indefinitely, leading to an eventual UAF
-  // if and when it tries to dispatch a notification.
-  //
-  // If such a race is indeed the sole source of crashes, all subsequent crash
-  // reports which would have come from Watch::NotifyState etc should instead
-  // fail the CHECK below.
-  base::AutoLock lock(lock_);
-  CHECK(!closed_);
+  bool remove_now;
+  {
+    // If we've been closed already, there's a chance our closure raced with
+    // the call to AddWatcherRef() above. In that case we want to ensure we've
+    // removed our ref from |dispatcher|. Note that this may in turn race
+    // with normal removal, but that's fine.
+    base::AutoLock lock(lock_);
+    remove_now = closed_;
+  }
+  if (remove_now)
+    dispatcher->RemoveWatcherRef(this, context);
 
   return MOJO_RESULT_OK;
 }
@@ -172,17 +165,14 @@ MojoResult WatcherDispatcher::CancelWatch(uintptr_t context) {
   scoped_refptr<Watch> watch;
   {
     base::AutoLock lock(lock_);
+    if (closed_)
+      return MOJO_RESULT_INVALID_ARGUMENT;
     auto it = watches_.find(context);
     if (it == watches_.end())
       return MOJO_RESULT_NOT_FOUND;
     watch = it->second;
     watches_.erase(it);
   }
-
-  // TODO(crbug.com/740044): Remove these CHECKs.
-  CHECK(watch);
-  CHECK(watch->dispatcher());
-  CHECK(this);
 
   // Mark the watch as cancelled so no further notifications get through.
   watch->Cancel();
@@ -218,6 +208,8 @@ MojoResult WatcherDispatcher::Arm(
       (!ready_contexts || !ready_results || !ready_signals_states)) {
     return MOJO_RESULT_INVALID_ARGUMENT;
   }
+  if (closed_)
+    return MOJO_RESULT_INVALID_ARGUMENT;
 
   if (watched_handles_.empty())
     return MOJO_RESULT_NOT_FOUND;
@@ -261,10 +253,7 @@ MojoResult WatcherDispatcher::Arm(
   return MOJO_RESULT_FAILED_PRECONDITION;
 }
 
-WatcherDispatcher::~WatcherDispatcher() {
-  // TODO(crbug.com/740044): Remove this.
-  CHECK(closed_);
-}
+WatcherDispatcher::~WatcherDispatcher() = default;
 
 }  // namespace edk
 }  // namespace mojo
