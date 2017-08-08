@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "gpu/ipc/host/shader_disk_cache.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "gpu/ipc/host/shader_disk_cache.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,14 +21,7 @@ const char kCacheValue[] = "cached value";
 
 class ShaderDiskCacheTest : public testing::Test {
  public:
-  ShaderDiskCacheTest()
-      : cache_thread_("CacheThread") {
-    base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_IO;
-    CHECK(cache_thread_.StartWithOptions(options));
-    factory_ =
-        base::MakeUnique<ShaderCacheFactory>(cache_thread_.task_runner());
-  }
+  ShaderDiskCacheTest() {}
 
   ~ShaderDiskCacheTest() override {}
 
@@ -38,18 +29,17 @@ class ShaderDiskCacheTest : public testing::Test {
 
   void InitCache() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    factory_->SetCacheInfo(kDefaultClientId, cache_path());
+    factory_.SetCacheInfo(kDefaultClientId, cache_path());
   }
 
-  ShaderCacheFactory* factory() { return factory_.get(); }
+  ShaderCacheFactory* factory() { return &factory_; }
 
  private:
-  void TearDown() override { factory_->RemoveCacheInfo(kDefaultClientId); }
+  void TearDown() override { factory_.RemoveCacheInfo(kDefaultClientId); }
 
-  std::unique_ptr<ShaderCacheFactory> factory_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir temp_dir_;
-  base::Thread cache_thread_;
-  base::MessageLoopForIO message_loop_;
+  ShaderCacheFactory factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderDiskCacheTest);
 };
