@@ -84,8 +84,8 @@ void AppsContainerView::ResetForShowApps() {
 void AppsContainerView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
   apps_grid_view()->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
-  app_list_folder_view()->items_grid_view()->
-      SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
+  app_list_folder_view()->items_grid_view()->SetDragAndDropHostOfCurrentAppList(
+      drag_and_drop_host);
 }
 
 void AppsContainerView::ReparentFolderItemTransit(
@@ -230,8 +230,8 @@ std::vector<gfx::Rect> AppsContainerView::GetTopItemIconBoundsInActiveFolder() {
   // Get the active folder's icon bounds relative to AppsContainerView.
   AppListItemView* folder_item_view =
       apps_grid_view_->activated_folder_item_view();
-  gfx::Rect to_grid_view = folder_item_view->ConvertRectToParent(
-      folder_item_view->GetIconBounds());
+  gfx::Rect to_grid_view =
+      folder_item_view->ConvertRectToParent(folder_item_view->GetIconBounds());
   gfx::Rect to_container = apps_grid_view_->ConvertRectToParent(to_grid_view);
 
   return FolderImage::GetTopIconsBounds(to_container);

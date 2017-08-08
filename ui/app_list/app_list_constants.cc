@@ -152,6 +152,17 @@ const size_t kMaxFolderNameChars = 80;
 const ui::ResourceBundle::FontStyle kItemTextFontStyle =
     ui::ResourceBundle::SmallFont;
 
+// The UMA histogram that logs usage of the original and redesigned folders.
+const char kAppListFolderOpenedHistogram[] = "Apps.AppListFolderOpened";
+
+// The UMA histogram that logs how the app list transitions from peeking to
+// fullscreen.
+const char kAppListPeekingToFullscreenHistogram[] =
+    "Apps.AppListPeekingToFullscreen";
+
+// The UMA histogram that logs how the app list is shown.
+const char kAppListToggleMethodHistogram[] = "Apps.AppListShowSource";
+
 // The UMA histogram that logs which page gets opened by the user.
 const char kPageOpenedHistogram[] = "Apps.AppListPageOpened";
 

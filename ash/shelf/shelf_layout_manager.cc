@@ -29,6 +29,8 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "base/metrics/histogram_macros.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/base/ui_base_switches.h"
@@ -1112,7 +1114,7 @@ void ShelfLayoutManager::StartGestureDrag(
   if (CanStartFullscreenAppListDrag(
           gesture_in_screen.details().scroll_y_hint())) {
     gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
-    Shell::Get()->ShowAppList();
+    Shell::Get()->ShowAppList(app_list::kSwipeFromShelf);
     Shell::Get()->UpdateAppListYPositionAndOpacity(
         gesture_in_screen.location().y(),
         GetAppListBackgroundOpacityOnShelfOpacity(),
@@ -1234,6 +1236,10 @@ void ShelfLayoutManager::CompleteAppListDrag(
             .work_area()
             .y(),
         GetAppListBackgroundOpacityOnShelfOpacity(), true /* is_end_gesture */);
+    UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
+                              app_list::kSwipeFromShelf,
+                              app_list::kMaxAppListToggleMethod);
+
   } else {
     Shell::Get()->DismissAppList();
   }

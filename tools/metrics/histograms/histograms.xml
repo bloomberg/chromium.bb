@@ -1617,6 +1617,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppListFolderOpened" enum="AppListFolderOpened">
+  <owner>newcomer@chromium.org</owner>
+  <summary>
+    The number of times folders are opened in the app list. This is logged when
+    the folder is clicked.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppListHowEnabled" enum="AppListEnableSource">
   <owner>tapted@chromium.org</owner>
   <summary>
@@ -1632,6 +1640,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The page that the app list goes to. This is gathered every time the user
     initiates a transition to another page in the launcher.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppListPeekingToFullscreenSource"
+    enum="AppListPeekingToFullscreenSource">
+  <owner>newcomer@chromium.org</owner>
+  <summary>
+    The source which transitions the app list from Peeking to Fullscreen. This
+    is logged when the transition method is used.
   </summary>
 </histogram>
 
@@ -1676,6 +1693,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppListShowSource" enum="AppListShowSource">
+  <owner>newcomer@chromium.org</owner>
+  <summary>
+    The number of times the different sources for showing the app list are used.
+    This is logged when the app list is shown.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppListTimeToDiscover" units="ms">
   <owner>tapted@chromium.org</owner>
   <summary>
@@ -1708,6 +1733,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     call ChromeAppModeMain. For example, when Chrome updates from 32-bit to
     64-bit, an older shim will find the new framework version but fail to dyload
     it.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppsInFolders" units="Apps">
+<!-- Name completed by histogram_suffixes
+     name="AppListFolderExperiment" -->
+
+  <owner>newcomer@chromium.org</owner>
+  <summary>
+    The total number of apps in folders ignoring OEM folders. This is logged
+    each time the app list is initialized. The suffix denotes whether the
+    fullscreen app list feature has been enabled.
   </summary>
 </histogram>
 
@@ -90442,6 +90479,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Fast"
       label="Fast start by skipping normal chrome.dll startup."/>
   <affected-histogram name="Startup.AppListFirstPaintWarmStart"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AppListFolderExperiment" separator=".">
+  <suffix name="FullscreenAppListEnabled" label="Peeking Launcher Enabled"/>
+  <suffix name="FullscreenAppListDisabled" label="Peeking Launcher Disabled"/>
+  <affected-histogram name="Apps.AppsInFolders"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ArcUserTypes" separator=".">

@@ -75,7 +75,7 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
 
   // Helper function to determine whether and event at |location| should be
   // handled by the back button or the app list circle. Returns false if we are
-  // not in maximized mode (there is no back button).
+  // not in tablet mode (there is no back button).
   bool IsBackEvent(const gfx::Point& location);
 
   // Generate and send a VKEY_BROWSER_BACK key event when the back button

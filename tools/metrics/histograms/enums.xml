@@ -1131,11 +1131,23 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="5" label="Second packaged app installed without showing"/>
 </enum>
 
+<enum name="AppListFolderOpened">
+  <int value="0" label="Original Folder Design"/>
+  <int value="1" label="Peeking App List Folder Design"/>
+</enum>
+
 <enum name="AppListPage">
   <int value="0" label="APPS"/>
   <int value="1" label="SEARCH_RESULTS"/>
   <int value="2" label="START"/>
   <int value="3" label="CUSTOM_LAUNCHER_PAGE"/>
+</enum>
+
+<enum name="AppListPeekingToFullscreenSource">
+  <int value="0" label="Swiped Up On Launcher"/>
+  <int value="1" label="Clicked Expand Arrow"/>
+  <int value="2" label="Scrolled With Mousepad"/>
+  <int value="3" label="Scrolled With Mouse"/>
 </enum>
 
 <enum name="AppListSearchResult">
@@ -1155,6 +1167,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="LIST"/>
   <int value="2" label="TILE"/>
   <int value="3" label="RECOMMENDATION"/>
+</enum>
+
+<enum name="AppListShowSource">
+  <int value="0" label="Search Key"/>
+  <int value="1" label="Shelf Button"/>
+  <int value="2" label="Swipe Up From Shelf"/>
 </enum>
 
 <enum name="AppLoadedInTabSource">
