@@ -106,10 +106,10 @@ int AudioLatency::GetRtcBufferSize(int sample_rate, int hardware_buffer_size) {
     return frames_per_buffer;
   }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  // On Linux and MacOS, the low level IO implementations on the browser side
-  // supports all buffer size the clients want. We use the native peer
-  // connection buffer size (10ms) to achieve best possible performance.
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_FUCHSIA)
+  // On Linux, MacOS and Fuchsia, the low level IO implementations on the
+  // browser side supports all buffer size the clients want. We use the native
+  // peer connection buffer size (10ms) to achieve best possible performance.
   frames_per_buffer = sample_rate / 100;
 #elif defined(OS_ANDROID)
   // TODO(olka/henrika): This settings are very old, need to be revisited.
