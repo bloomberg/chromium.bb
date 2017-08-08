@@ -117,6 +117,10 @@ ui::mojom::WindowType MusWindowTypeFromWindowType(
 
 AshTestBase::AshTestBase()
     : setup_called_(false), teardown_called_(false), start_session_(true) {
+  if (AshTestHelper::config() != Config::CLASSIC) {
+    CHECK(aura::Env::GetInstance());
+    aura::Env::GetInstance()->AddObserver(this);
+  }
   ash_test_environment_ = AshTestEnvironment::Create();
 
   // Must initialize |ash_test_helper_| here because some tests rely on
@@ -129,21 +133,8 @@ AshTestBase::~AshTestBase() {
       << "You have overridden SetUp but never called AshTestBase::SetUp";
   CHECK(teardown_called_)
       << "You have overridden TearDown but never called AshTestBase::TearDown";
-}
-
-void AshTestBase::UnblockCompositors() {
-  // In order for frames to be generated, a viz::LocalSurfaceId must be given to
-  // the ui::Compositor. Normally that viz::LocalSurfaceId comes from the window
-  // server but in unit tests, there is no window server so we just make up a
-  // viz::LocalSurfaceId to allow the layer compositor to make forward progress.
-  if (Shell::GetAshConfig() == Config::MUS ||
-      Shell::GetAshConfig() == Config::MASH) {
-    aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-    for (aura::Window* root : root_windows) {
-      viz::LocalSurfaceId id(1, base::UnguessableToken::Create());
-      root->GetHost()->compositor()->SetLocalSurfaceId(id);
-    }
-  }
+  if (AshTestHelper::config() != Config::CLASSIC)
+    aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void AshTestBase::SetUp() {
@@ -164,8 +155,6 @@ void AshTestBase::SetUp() {
   if (Shell::GetAshConfig() == Config::CLASSIC)
     Shell::Get()->cursor_manager()->EnableMouseEvents();
 
-  UnblockCompositors();
-
   // Changing GestureConfiguration shouldn't make tests fail. These values
   // prevent unexpected events from being generated during tests. Such as
   // delayed events which create race conditions on slower tests.
@@ -179,10 +168,6 @@ void AshTestBase::SetUp() {
 void AshTestBase::TearDown() {
   teardown_called_ = true;
   Shell::Get()->session_controller()->NotifyChromeTerminating();
-
-  // Some tasks are blocked on progress by the layer compositor. The layer
-  // compositor might be blocked if created during a unit test.
-  UnblockCompositors();
 
   // Flush the message loop to finish pending release tasks.
   RunAllPendingInMessageLoop();
@@ -229,7 +214,6 @@ display::Display::Rotation AshTestBase::GetCurrentInternalDisplayRotation() {
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
       .UpdateDisplay(display_specs);
-  UnblockCompositors();
 }
 
 aura::Window* AshTestBase::CurrentContext() {
@@ -480,6 +464,23 @@ display::Display AshTestBase::GetPrimaryDisplay() {
 
 display::Display AshTestBase::GetSecondaryDisplay() {
   return ash_test_helper_->GetSecondaryDisplay();
+}
+
+void AshTestBase::OnWindowInitialized(aura::Window* window) {}
+
+void AshTestBase::OnHostInitialized(aura::WindowTreeHost* host) {
+  // AshTestBase outlives all the WindowTreeHosts. So RemoveObserver() is not
+  // necessary.
+  host->AddObserver(this);
+  OnHostResized(host);
+}
+
+void AshTestBase::OnHostResized(const aura::WindowTreeHost* host) {
+  // The local surface id comes from the window server. However, there is no
+  // window server in tests. So a fake id is assigned so that the layer
+  // compositor can submit compositor frames.
+  viz::LocalSurfaceId id(1, base::UnguessableToken::Create());
+  const_cast<aura::WindowTreeHost*>(host)->compositor()->SetLocalSurfaceId(id);
 }
 
 }  // namespace ash
