@@ -365,7 +365,7 @@ public class AwContentsClientBridge {
             // WebResourceRequest
             String url, boolean isMainFrame, boolean hasUserGesture, String method,
             String[] requestHeaderNames, String[] requestHeaderValues, int threatType,
-            final int requestId) {
+            final String privacyPolicyUrl, final int requestId) {
         AwContentsClient.AwWebResourceRequest request = new AwContentsClient.AwWebResourceRequest();
         request.url = url;
         request.isMainFrame = isMainFrame;
@@ -390,8 +390,9 @@ public class AwContentsClientBridge {
                     }
                 };
 
-        mClient.getCallbackHelper().postOnSafeBrowsingHit(
-                request, AwSafeBrowsingConversionHelper.convertThreatType(threatType), callback);
+        mClient.getCallbackHelper().postOnSafeBrowsingHit(request,
+                AwSafeBrowsingConversionHelper.convertThreatType(threatType), privacyPolicyUrl,
+                callback);
     }
 
     @CalledByNative
