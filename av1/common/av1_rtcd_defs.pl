@@ -412,7 +412,6 @@ specialize qw/av1_fwd_txfm2d_16x16 sse4_1/;
 add_proto qw/void av1_fwd_txfm2d_32x32/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
 specialize qw/av1_fwd_txfm2d_32x32 sse4_1/;
 add_proto qw/void av1_fwd_txfm2d_64x64/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
-specialize qw/av1_fwd_txfm2d_64x64 sse4_1/;
 
 #
 # Motion search
@@ -456,11 +455,6 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 
   add_proto qw/int64_t av1_highbd_block_error/, "const tran_low_t *coeff, const tran_low_t *dqcoeff, intptr_t block_size, int64_t *ssz, int bd";
   specialize qw/av1_highbd_block_error sse2/;
-
-  # fdct functions
-  if (aom_config("CONFIG_TX64X64") eq "yes") {
-    add_proto qw/void av1_highbd_fht64x64/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
-  }
 
   add_proto qw/void av1_highbd_temporal_filter_apply/, "uint8_t *frame1, unsigned int stride, uint8_t *frame2, unsigned int block_width, unsigned int block_height, int strength, int filter_weight, unsigned int *accumulator, uint16_t *count";
 

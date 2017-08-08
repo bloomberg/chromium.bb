@@ -24,6 +24,9 @@ static INLINE TxfmFunc fwd_txfm_type_to_func(TXFM_TYPE txfm_type) {
     case TXFM_TYPE_DCT8: return av1_fdct8_new;
     case TXFM_TYPE_DCT16: return av1_fdct16_new;
     case TXFM_TYPE_DCT32: return av1_fdct32_new;
+#if CONFIG_TX64X64
+    case TXFM_TYPE_DCT64: return av1_fdct64_new;
+#endif  // CONFIG_TX64X64
     case TXFM_TYPE_ADST4: return av1_fadst4_new;
     case TXFM_TYPE_ADST8: return av1_fadst8_new;
     case TXFM_TYPE_ADST16: return av1_fadst16_new;
