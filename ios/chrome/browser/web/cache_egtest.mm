@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/history_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
@@ -241,6 +242,12 @@ class ScopedBlockPopupsPref {
 // Tests that cache is not used when selecting omnibox suggested website, even
 // though cache for that website exists.
 - (void)testCachingBehaviorOnSelectOmniboxSuggestion {
+  // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
+  // grey_typeText works on iOS 11.
+  if (base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
+  }
+
   web::test::SetUpHttpServer(base::MakeUnique<CacheTestResponseProvider>());
 
   // Clear the history to ensure expected omnibox autocomplete results.
