@@ -1,4 +1,4 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -21,21 +21,19 @@ import threading
 import time
 import urlparse
 
-from devil.android import forwarder
-from devil.android import ports
 
-from pylib import constants
-from pylib.constants import host_paths
+DIR_SOURCE_ROOT = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
+                 os.pardir))
 
 
 # Path that are needed to import necessary modules when launching a testserver.
 os.environ['PYTHONPATH'] = os.environ.get('PYTHONPATH', '') + (':%s:%s:%s:%s:%s'
-    % (os.path.join(host_paths.DIR_SOURCE_ROOT, 'third_party'),
-       os.path.join(host_paths.DIR_SOURCE_ROOT, 'third_party', 'tlslite'),
-       os.path.join(host_paths.DIR_SOURCE_ROOT, 'third_party', 'pyftpdlib',
-                    'src'),
-       os.path.join(host_paths.DIR_SOURCE_ROOT, 'net', 'tools', 'testserver'),
-       os.path.join(host_paths.DIR_SOURCE_ROOT, 'components', 'sync', 'tools',
+    % (os.path.join(DIR_SOURCE_ROOT, 'third_party'),
+       os.path.join(DIR_SOURCE_ROOT, 'third_party', 'tlslite'),
+       os.path.join(DIR_SOURCE_ROOT, 'third_party', 'pyftpdlib', 'src'),
+       os.path.join(DIR_SOURCE_ROOT, 'net', 'tools', 'testserver'),
+       os.path.join(DIR_SOURCE_ROOT, 'components', 'sync', 'tools',
                     'testserver')))
 
 
@@ -50,35 +48,6 @@ SERVER_TYPES = {
 
 # The timeout (in seconds) of starting up the Python test server.
 TEST_SERVER_STARTUP_TIMEOUT = 10
-
-def _WaitUntil(predicate, max_attempts=5):
-  """Blocks until the provided predicate (function) is true.
-
-  Returns:
-    Whether the provided predicate was satisfied once (before the timeout).
-  """
-  sleep_time_sec = 0.025
-  for _ in xrange(1, max_attempts):
-    if predicate():
-      return True
-    time.sleep(sleep_time_sec)
-    sleep_time_sec = min(1, sleep_time_sec * 2)  # Don't wait more than 1 sec.
-  return False
-
-
-def _CheckPortAvailable(port):
-  """Returns True if |port| is available."""
-  return _WaitUntil(lambda: ports.IsHostPortAvailable(port))
-
-
-def _CheckPortNotAvailable(port):
-  """Returns True if |port| is not available."""
-  return _WaitUntil(lambda: not ports.IsHostPortAvailable(port))
-
-
-def _CheckDevicePortStatus(device, port):
-  """Returns whether the provided port is used."""
-  return _WaitUntil(lambda: ports.IsDevicePortUsed(device, port))
 
 
 def _GetServerTypeCommandLine(server_type):
@@ -98,10 +67,35 @@ def _GetServerTypeCommandLine(server_type):
   return SERVER_TYPES[server_type]
 
 
+class PortForwarder:
+  def Map(self, port_pairs):
+    pass
+
+  def GetDevicePortForHostPort(self, host_port):
+    """Returns the device port that corresponds to a given host port."""
+    return host_port
+
+  def WaitHostPortAvailable(self, port):
+    """Returns True if |port| is available."""
+    return True
+
+  def WaitPortNotAvailable(self, port):
+    """Returns True if |port| is not available."""
+    return True
+
+  def WaitDevicePortReady(self, port):
+    """Returns whether the provided port is used."""
+    return True
+
+  def Unmap(self, device_port):
+    """Unmaps specified port"""
+    pass
+
+
 class TestServerThread(threading.Thread):
   """A thread to run the test server in a separate process."""
 
-  def __init__(self, ready_event, arguments, device, tool):
+  def __init__(self, ready_event, arguments, port_forwarder):
     """Initialize TestServerThread with the following argument.
 
     Args:
@@ -112,12 +106,11 @@ class TestServerThread(threading.Thread):
     """
     threading.Thread.__init__(self)
     self.wait_event = threading.Event()
-    self.stop_flag = False
+    self.stop_event = threading.Event()
     self.ready_event = ready_event
     self.ready_event.clear()
     self.arguments = arguments
-    self.device = device
-    self.tool = tool
+    self.port_forwarder = port_forwarder
     self.test_server_process = None
     self.is_ready = False
     self.host_port = self.arguments['port']
@@ -166,7 +159,7 @@ class TestServerThread(threading.Thread):
     port_json = json.loads(port_json)
     if port_json.has_key('port') and isinstance(port_json['port'], int):
       self.host_port = port_json['port']
-      return _CheckPortNotAvailable(self.host_port)
+      return self.port_forwarder.WaitPortNotAvailable(self.host_port)
     logging.error('Failed to get port information from the server data.')
     return False
 
@@ -218,7 +211,7 @@ class TestServerThread(threading.Thread):
     logging.info('Start running the thread!')
     self.wait_event.clear()
     self._GenerateCommandLineArguments()
-    command = host_paths.DIR_SOURCE_ROOT
+    command = DIR_SOURCE_ROOT
     if self.arguments['server-type'] == 'sync':
       command = [os.path.join(command, 'components', 'sync', 'tools',
                               'testserver',
@@ -236,29 +229,30 @@ class TestServerThread(threading.Thread):
     # paths in the arguments are resolved correctly.
     self.process = subprocess.Popen(
         command, preexec_fn=self._CloseUnnecessaryFDsForTestServerProcess,
-        cwd=host_paths.DIR_SOURCE_ROOT)
+        cwd=DIR_SOURCE_ROOT)
     if unbuf:
       os.environ['PYTHONUNBUFFERED'] = unbuf
     if self.process:
       if self.pipe_out:
         self.is_ready = self._WaitToStartAndGetPortFromTestServer()
       else:
-        self.is_ready = _CheckPortNotAvailable(self.host_port)
+        self.is_ready = self.port_forwarder.WaitPortNotAvailable(self.host_port)
     if self.is_ready:
-      forwarder.Forwarder.Map([(0, self.host_port)], self.device, self.tool)
+      self.port_forwarder.Map([(0, self.host_port)])
+
       # Check whether the forwarder is ready on the device.
       self.is_ready = False
-      device_port = forwarder.Forwarder.DevicePortForHostPort(self.host_port)
-      if device_port and _CheckDevicePortStatus(self.device, device_port):
+      device_port = self.port_forwarder.GetDevicePortForHostPort(self.host_port)
+      if device_port and self.port_forwarder.WaitDevicePortReady(device_port):
         self.is_ready = True
         self.forwarder_device_port = device_port
     # Wake up the request handler thread.
     self.ready_event.set()
     # Keep thread running until Stop() gets called.
-    _WaitUntil(lambda: self.stop_flag, max_attempts=sys.maxint)
+    self.stop_event.wait()
     if self.process.poll() is None:
       self.process.kill()
-    forwarder.Forwarder.UnmapDevicePort(self.forwarder_device_port, self.device)
+    self.port_forwarder.Unmap(self.forwarder_device_port)
     self.process = None
     self.is_ready = False
     if self.pipe_out:
@@ -276,7 +270,7 @@ class TestServerThread(threading.Thread):
     """
     if not self.process:
       return
-    self.stop_flag = True
+    self.stop_event.set()
     self.wait_event.wait()
 
 
@@ -333,8 +327,7 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.server.test_server_instance = TestServerThread(
         ready_event,
         json.loads(test_server_argument_json),
-        self.server.device,
-        self.server.tool)
+        self.server.port_forwarder)
     self.server.test_server_instance.setDaemon(True)
     self.server.test_server_instance.start()
     ready_event.wait()
@@ -360,7 +353,7 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     logging.info('Handling request to kill a test server on port: %d.', port)
     self.server.test_server_instance.Stop()
     # Make sure the status of test server is correct before sending response.
-    if _CheckPortAvailable(port):
+    if self.server.port_forwarder.WaitHostPortAvailable(port):
       self._SendResponse(200, 'OK', {}, 'killed')
       logging.info('Test server on port %d is killed', port)
     else:
@@ -401,14 +394,12 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 class SpawningServer(object):
   """The class used to start/stop a http server."""
 
-  def __init__(self, test_server_spawner_port, device, tool):
+  def __init__(self, test_server_spawner_port, port_forwarder):
     logging.info('Creating new spawner on port: %d.', test_server_spawner_port)
     self.server = BaseHTTPServer.HTTPServer(('', test_server_spawner_port),
                                             SpawningServerRequestHandler)
-    self.server.device = device
-    self.server.tool = tool
+    self.server.port_forwarder = port_forwarder
     self.server.test_server_instance = None
-    self.server.build_type = constants.GetBuildType()
 
   def _Listen(self):
     logging.info('Starting test server spawner')
