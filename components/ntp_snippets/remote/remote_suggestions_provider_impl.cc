@@ -559,11 +559,6 @@ int RemoteSuggestionsProviderImpl::GetMaxSuggestionCountForTesting() {
   return kMaxSuggestionCount;
 }
 
-void RemoteSuggestionsProviderImpl::PushArticleSuggestionToTheFrontForDebugging(
-    std::unique_ptr<RemoteSuggestion> suggestion) {
-  PrependArticleSuggestion(std::move(suggestion));
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
 

@@ -575,16 +575,20 @@ void SnippetsInternalsMessageHandler::SendString(const std::string& name,
 
 void SnippetsInternalsMessageHandler::PushDummySuggestion() {
   std::string json =
-      "{"
-      "  \"ids\" : [\"http://url.com\"],"
-      "  \"title\" : \"Pushed Dummy Title %s\","
-      "  \"snippet\" : \"Pushed Dummy Snippet\","
-      "  \"fullPageUrl\" : \"http://url.com\","
-      "  \"creationTime\" : \"%s\","
-      "  \"expirationTime\" : \"%s\","
-      "  \"attribution\" : \"Pushed Dummy Publisher\","
-      "  \"imageUrl\" : \"https://www.google.com/favicon.ico\" "
-      "}";
+      "{\"categories\" : [{"
+      "  \"id\": 1,"
+      "  \"localizedTitle\": \"section title\","
+      "  \"suggestions\" : [{"
+      "    \"ids\" : [\"http://url.com\"],"
+      "    \"title\" : \"Pushed Dummy Title %s\","
+      "    \"snippet\" : \"Pushed Dummy Snippet\","
+      "    \"fullPageUrl\" : \"http://url.com\","
+      "    \"creationTime\" : \"%s\","
+      "    \"expirationTime\" : \"%s\","
+      "    \"attribution\" : \"Pushed Dummy Publisher\","
+      "    \"imageUrl\" : \"https://www.google.com/favicon.ico\" "
+      "  }]"
+      "}]}";
 
   const base::Time now = base::Time::Now();
   json = base::StringPrintf(
@@ -592,24 +596,18 @@ void SnippetsInternalsMessageHandler::PushDummySuggestion() {
       TimeToJSONTimeString(now).c_str(),
       TimeToJSONTimeString(now + base::TimeDelta::FromMinutes(60)).c_str());
 
-  std::unique_ptr<base::Value> suggestion_value = base::JSONReader::Read(json);
-  DCHECK(suggestion_value != nullptr);
+  gcm::IncomingMessage message;
+  message.data["payload"] = json;
 
-  const base::DictionaryValue* suggestion_dictionary = nullptr;
-  bool success = suggestion_value->GetAsDictionary(&suggestion_dictionary);
-  DCHECK(success);
-
-  std::unique_ptr<RemoteSuggestion> suggestion =
-      RemoteSuggestion::CreateFromContentSuggestionsDictionary(
-          *suggestion_dictionary, /*remote_category_id=*/1,
-          /*fetch_time=*/now);
-  DCHECK(suggestion != nullptr);
-
-  // TODO(vitaliii): Provide JSON directly to BreakingNewsAppHandler once it is
-  // connected to the provider.
-  static_cast<ntp_snippets::RemoteSuggestionsProviderImpl*>(
-      remote_suggestions_provider_)
-      ->PushArticleSuggestionToTheFrontForDebugging(std::move(suggestion));
+  RemoteSuggestionsProvider* provider =
+      content_suggestions_service_->remote_suggestions_provider_for_debugging();
+  DCHECK(provider);
+  ntp_snippets::BreakingNewsListener* listener =
+      static_cast<ntp_snippets::RemoteSuggestionsProviderImpl*>(provider)
+          ->breaking_news_listener_for_debugging();
+  DCHECK(listener);
+  static_cast<ntp_snippets::BreakingNewsGCMAppHandler*>(listener)->OnMessage(
+      "com.google.breakingnews.gcm", message);
 }
 
 void SnippetsInternalsMessageHandler::OnDismissedSuggestionsLoaded(
