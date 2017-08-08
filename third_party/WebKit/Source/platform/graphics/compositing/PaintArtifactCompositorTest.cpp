@@ -149,6 +149,11 @@ class PaintArtifactCompositorTestWithPropertyTrees
         .get();
   }
 
+  CompositorElementId ScrollElementId(unsigned id) {
+    return CompositorElementIdFromLayoutObjectId(
+        id, CompositorElementIdNamespace::kScroll);
+  }
+
   void AddSimpleRectChunk(TestPaintArtifact& artifact) {
     artifact
         .Chunk(TransformPaintPropertyNode::Root(),
@@ -729,7 +734,7 @@ class FakeScrollClient : public WebLayerScrollClient {
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
   FakeScrollClient scroll_client;
 
-  CompositorElementId expected_compositor_element_id = CompositorElementId(2);
+  CompositorElementId expected_compositor_element_id = ScrollElementId(2);
   RefPtr<ScrollPaintPropertyNode> scroll = ScrollPaintPropertyNode::Create(
       ScrollPaintPropertyNode::Root(), IntPoint(), IntSize(11, 13),
       IntSize(27, 31), true, false, 0 /* mainThreadScrollingReasons */,
@@ -838,7 +843,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
   RefPtr<EffectPaintPropertyNode> effect =
       CreateOpacityOnlyEffect(EffectPaintPropertyNode::Root(), 0.5);
 
-  CompositorElementId expected_compositor_element_id_a = CompositorElementId(2);
+  CompositorElementId expected_compositor_element_id_a = ScrollElementId(2);
   RefPtr<ScrollPaintPropertyNode> scroll_a = ScrollPaintPropertyNode::Create(
       ScrollPaintPropertyNode::Root(), IntPoint(), IntSize(2, 3), IntSize(5, 7),
       false, true,
@@ -851,7 +856,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
           kCompositingReasonLayerForScrollingContents, CompositorElementId(),
           scroll_a);
 
-  CompositorElementId expected_compositor_element_id_b = CompositorElementId(3);
+  CompositorElementId expected_compositor_element_id_b = ScrollElementId(3);
   RefPtr<ScrollPaintPropertyNode> scroll_b = ScrollPaintPropertyNode::Create(
       scroll_translation_a->ScrollNode(), IntPoint(), IntSize(19, 23),
       IntSize(29, 31), true, false, 0 /* mainThreadScrollingReasons */,
