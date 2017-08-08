@@ -1820,7 +1820,10 @@ component("net") {
         sources -= [ "cert/x509_certificate_ios.cc" ]
       }
       if (is_mac) {
-        sources -= [ "cert/x509_certificate_mac.cc" ]
+        sources -= [
+          "cert/x509_cert_types_mac.cc",
+          "cert/x509_certificate_mac.cc",
+        ]
       }
       if (use_nss_certs) {
         sources -= [ "cert/x509_certificate_nss.cc" ]
@@ -1829,7 +1832,10 @@ component("net") {
         sources -= [ "cert/x509_certificate_openssl.cc" ]
       }
       if (is_win) {
-        sources -= [ "cert/x509_certificate_win.cc" ]
+        sources -= [
+          "cert/x509_cert_types_win.cc",
+          "cert/x509_certificate_win.cc",
+        ]
       }
     } else {
       sources -= [ "cert/x509_certificate_bytes.cc" ]
