@@ -91,7 +91,6 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'chrome_official_builder_no_unittests',
   'chromium_builder_asan',
   'chromium_builder_perf',
-  'chromium_swarm_tests',
   'chromiumos_preflight',
   'mini_installer',
   'next_version_mini_installer',
