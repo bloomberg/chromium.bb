@@ -98,9 +98,8 @@ void NGInlineLayoutAlgorithm::BidiReorder(NGInlineItemResults* line_items) {
   // runs instead of characters.
   Vector<UBiDiLevel, 32> levels;
   levels.ReserveInitialCapacity(line_items->size());
-  const Vector<NGInlineItem>& items = Node().Items();
   for (const auto& item_result : *line_items)
-    levels.push_back(items[item_result.item_index].BidiLevel());
+    levels.push_back(item_result.item->BidiLevel());
   Vector<int32_t, 32> indices_in_visual_order(line_items->size());
   NGBidiParagraph::IndicesInVisualOrder(levels, &indices_in_visual_order);
 
@@ -117,7 +116,7 @@ void NGInlineLayoutAlgorithm::BidiReorder(NGInlineItemResults* line_items) {
   HashMap<LayoutObject*, unsigned> first_index;
   for (unsigned i = 0; i < line_items_in_visual_order.size(); i++) {
     NGInlineItemResult& item_result = line_items_in_visual_order[i];
-    const NGInlineItem& item = items[item_result.item_index];
+    const NGInlineItem& item = *item_result.item;
     if (item.Type() != NGInlineItem::kOpenTag &&
         item.Type() != NGInlineItem::kCloseTag) {
       continue;
@@ -136,7 +135,6 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
     NGLineInfo* line_info,
     RefPtr<NGInlineBreakToken> break_token) {
   NGInlineItemResults* line_items = &line_info->Results();
-  const Vector<NGInlineItem>& items = Node().Items();
 
   const ComputedStyle& line_style = line_info->LineStyle();
   NGLineHeightMetrics line_metrics(line_style, baseline_type_);
@@ -156,7 +154,8 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   LayoutUnit position;
 
   for (auto& item_result : *line_items) {
-    const NGInlineItem& item = items[item_result.item_index];
+    DCHECK(item_result.item);
+    const NGInlineItem& item = *item_result.item;
     if (item.Type() == NGInlineItem::kText ||
         item.Type() == NGInlineItem::kControl) {
       DCHECK(item.GetLayoutObject()->IsText());
@@ -378,7 +377,6 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
     LayoutUnit line_bottom) {
   LayoutUnit content_size = line_bottom;
 
-  const Vector<NGInlineItem>& items = Node().Items();
   const NGInlineItemResults& line_items = line_info.Results();
   DCHECK(!line_items.IsEmpty());
 
@@ -386,7 +384,8 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
   // floats if specified. The <br> element must be at the back of the item
   // result list as it forces a line to break.
   const NGInlineItemResult& item_result = line_items.back();
-  const NGInlineItem& item = items[item_result.item_index];
+  DCHECK(item_result.item);
+  const NGInlineItem& item = *item_result.item;
   const LayoutObject* layout_object = item.GetLayoutObject();
 
   // layout_object may be null in certain cases, e.g. if it's a kBidiControl.

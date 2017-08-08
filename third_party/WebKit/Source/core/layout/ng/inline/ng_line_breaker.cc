@@ -144,7 +144,8 @@ bool NGLineBreaker::NextLine(NGLineInfo* line_info,
 
 void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
   NGInlineItemResults* item_results = &line_info->Results();
-  const Vector<NGInlineItem>& items = node_.Items();
+  const Vector<NGInlineItem>& items =
+      node_.Items(line_info->UseFirstLineStyle());
   LineBreakState state = LineBreakState::kNotBreakable;
 
   while (item_index_ < items.size()) {
@@ -172,7 +173,7 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
       return HandleOverflow(line_info);
 
     item_results->push_back(
-        NGInlineItemResult(item_index_, offset_, item.EndOffset()));
+        NGInlineItemResult(&item, item_index_, offset_, item.EndOffset()));
     NGInlineItemResult* item_result = &item_results->back();
     if (item.Type() == NGInlineItem::kText) {
       state = HandleText(*item_results, item, item_result);
@@ -605,7 +606,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleCloseTag(
     const NGInlineItem& item,
     NGInlineItemResults* item_results) {
   item_results->push_back(
-      NGInlineItemResult(item_index_, offset_, item.EndOffset()));
+      NGInlineItemResult(&item, item_index_, offset_, item.EndOffset()));
   NGInlineItemResult* item_result = &item_results->back();
 
   item_result->needs_box_when_empty = false;
@@ -653,7 +654,6 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleCloseTag(
 // are no break opportunities in item_results.back().
 void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
   NGInlineItemResults* item_results = &line_info->Results();
-  const Vector<NGInlineItem>& items = node_.Items();
   LayoutUnit available_width = line_.AvailableWidth();
   LayoutUnit width_to_rewind = line_.position - available_width;
   DCHECK_GT(width_to_rewind, 0);
@@ -675,7 +675,8 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
     // Try to break inside of this item.
     LayoutUnit next_width_to_rewind =
         width_to_rewind - item_result->inline_size;
-    const NGInlineItem& item = items[item_result->item_index];
+    DCHECK(item_result->item);
+    const NGInlineItem& item = *item_result->item;
     if (item.Type() == NGInlineItem::kText && next_width_to_rewind < 0 &&
         !item_result->no_break_opportunities_inside) {
       // When the text fits but its right margin does not, the break point
@@ -718,7 +719,7 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
   if (break_before)
     return Rewind(line_info, break_before);
 
-  line_info->SetIsLastLine(item_index_ >= items.size());
+  line_info->SetIsLastLine(item_index_ >= node_.Items().size());
 }
 
 void NGLineBreaker::Rewind(NGLineInfo* line_info, unsigned new_end) {
@@ -776,7 +777,6 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
 }
 
 void NGLineBreaker::MoveToNextOf(const NGInlineItem& item) {
-  DCHECK_EQ(&item, &node_.Items()[item_index_]);
   offset_ = item.EndOffset();
   item_index_++;
 }
@@ -784,8 +784,8 @@ void NGLineBreaker::MoveToNextOf(const NGInlineItem& item) {
 void NGLineBreaker::MoveToNextOf(const NGInlineItemResult& item_result) {
   offset_ = item_result.end_offset;
   item_index_ = item_result.item_index;
-  const NGInlineItem& item = node_.Items()[item_result.item_index];
-  if (offset_ == item.EndOffset())
+  DCHECK(item_result.item);
+  if (offset_ == item_result.item->EndOffset())
     item_index_++;
 }
 

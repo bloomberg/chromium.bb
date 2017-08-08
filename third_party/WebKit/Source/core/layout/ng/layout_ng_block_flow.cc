@@ -101,9 +101,9 @@ void LayoutNGBlockFlow::UpdateMargins(
   SetMarginEnd(margins.inline_end);
 }
 
-NGInlineNodeData& LayoutNGBlockFlow::GetNGInlineNodeData() const {
+NGInlineNodeData* LayoutNGBlockFlow::GetNGInlineNodeData() const {
   DCHECK(ng_inline_node_data_);
-  return *ng_inline_node_data_.get();
+  return ng_inline_node_data_.get();
 }
 
 void LayoutNGBlockFlow::ResetNGInlineNodeData() {

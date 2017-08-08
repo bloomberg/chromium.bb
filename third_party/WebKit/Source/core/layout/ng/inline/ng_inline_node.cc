@@ -347,14 +347,20 @@ NGInlineNode::NGInlineNode(LayoutNGBlockFlow* block)
     block->ResetNGInlineNodeData();
 }
 
+const Vector<NGInlineItem>& NGInlineNode::Items(bool is_first_line) const {
+  const NGInlineNodeData& data = Data();
+  if (!is_first_line || !data.first_line_items_)
+    return data.items_;
+  return *data.first_line_items_;
+}
+
 NGInlineItemRange NGInlineNode::Items(unsigned start, unsigned end) {
-  return NGInlineItemRange(&MutableData().items_, start, end);
+  return NGInlineItemRange(&MutableData()->items_, start, end);
 }
 
 void NGInlineNode::InvalidatePrepareLayout() {
   ToLayoutNGBlockFlow(GetLayoutBlockFlow())->ResetNGInlineNodeData();
-  MutableData().text_content_ = String();
-  MutableData().items_.clear();
+  DCHECK(!IsPrepareLayoutFinished());
 }
 
 void NGInlineNode::PrepareLayout() {
@@ -382,7 +388,7 @@ const NGOffsetMappingResult& NGInlineNode::ComputeOffsetMappingIfNeeded() {
         builder.GetConcatenatedOffsetMappingBuilder();
     mapping_builder.Composite(builder.GetOffsetMappingBuilder());
 
-    MutableData().offset_mapping_ =
+    MutableData()->offset_mapping_ =
         WTF::MakeUnique<NGOffsetMappingResult>(mapping_builder.Build());
   }
 
@@ -396,43 +402,43 @@ const NGOffsetMappingResult& NGInlineNode::ComputeOffsetMappingIfNeeded() {
 void NGInlineNode::CollectInlines() {
   DCHECK(Data().text_content_.IsNull());
   DCHECK(Data().items_.IsEmpty());
-  NGInlineItemsBuilder builder(&MutableData().items_);
-  MutableData().next_sibling_ =
-      CollectInlinesInternal(GetLayoutBlockFlow(), &builder);
-  MutableData().text_content_ = builder.ToString();
-  MutableData().is_bidi_enabled_ =
+  NGInlineNodeData* data = MutableData();
+  NGInlineItemsBuilder builder(&data->items_);
+  data->next_sibling_ = CollectInlinesInternal(GetLayoutBlockFlow(), &builder);
+  data->text_content_ = builder.ToString();
+  data->is_bidi_enabled_ =
       !Data().text_content_.IsEmpty() &&
       !(Data().text_content_.Is8Bit() && !builder.HasBidiControls());
-  MutableData().is_empty_inline_ = builder.IsEmptyInline();
+  data->is_empty_inline_ = builder.IsEmptyInline();
 }
 
 void NGInlineNode::SegmentText() {
-  NGInlineNodeData& data = MutableData();
-  if (!data.is_bidi_enabled_) {
-    data.SetBaseDirection(TextDirection::kLtr);
+  NGInlineNodeData* data = MutableData();
+  if (!data->is_bidi_enabled_) {
+    data->SetBaseDirection(TextDirection::kLtr);
     return;
   }
 
   NGBidiParagraph bidi;
-  data.text_content_.Ensure16Bit();
-  if (!bidi.SetParagraph(data.text_content_, Style())) {
+  data->text_content_.Ensure16Bit();
+  if (!bidi.SetParagraph(data->text_content_, Style())) {
     // On failure, give up bidi resolving and reordering.
-    data.is_bidi_enabled_ = false;
-    data.SetBaseDirection(TextDirection::kLtr);
+    data->is_bidi_enabled_ = false;
+    data->SetBaseDirection(TextDirection::kLtr);
     return;
   }
 
-  data.SetBaseDirection(bidi.BaseDirection());
+  data->SetBaseDirection(bidi.BaseDirection());
 
   if (bidi.IsUnidirectional() && IsLtr(bidi.BaseDirection())) {
     // All runs are LTR, no need to reorder.
-    data.is_bidi_enabled_ = false;
+    data->is_bidi_enabled_ = false;
     return;
   }
 
-  Vector<NGInlineItem>& items = data.items_;
+  Vector<NGInlineItem>& items = data->items_;
   unsigned item_index = 0;
-  for (unsigned start = 0; start < Data().text_content_.length();) {
+  for (unsigned start = 0; start < data->text_content_.length();) {
     UBiDiLevel level;
     unsigned end = bidi.GetLogicalRun(start, &level);
     DCHECK_EQ(items[item_index].start_offset_, start);
@@ -444,13 +450,19 @@ void NGInlineNode::SegmentText() {
 
 void NGInlineNode::ShapeText() {
   // TODO(eae): Add support for shaping latin-1 text?
-  MutableData().text_content_.Ensure16Bit();
-  const String& text_content = Data().text_content_;
+  NGInlineNodeData* data = MutableData();
+  data->text_content_.Ensure16Bit();
+  ShapeText(data->text_content_, &data->items_);
 
+  ShapeTextForFirstLineIfNeeded();
+}
+
+void NGInlineNode::ShapeText(const String& text_content,
+                             Vector<NGInlineItem>* items) {
   // Shape each item with the full context of the entire node.
   HarfBuzzShaper shaper(text_content.Characters16(), text_content.length());
   ShapeResultSpacing<String> spacing(text_content);
-  for (auto& item : MutableData().items_) {
+  for (auto& item : *items) {
     if (item.Type() != NGInlineItem::kText)
       continue;
 
@@ -463,6 +475,40 @@ void NGInlineNode::ShapeText() {
 
     item.shape_result_ = std::move(shape_result);
   }
+}
+
+// Create Vector<NGInlineItem> with :first-line rules applied if needed.
+void NGInlineNode::ShapeTextForFirstLineIfNeeded() {
+  // First check if the document has any :first-line rules.
+  NGInlineNodeData* data = MutableData();
+  DCHECK(!data->first_line_items_);
+  LayoutObject* layout_object = GetLayoutObject();
+  if (!layout_object->GetDocument().GetStyleEngine().UsesFirstLineRules())
+    return;
+
+  // Check if :first-line rules make any differences in the style.
+  const ComputedStyle* block_style = layout_object->Style();
+  const ComputedStyle* first_line_style = layout_object->FirstLineStyle();
+  if (block_style == first_line_style)
+    return;
+
+  auto first_line_items = WTF::MakeUnique<Vector<NGInlineItem>>();
+  first_line_items->AppendVector(data->items_);
+  for (auto& item : *first_line_items) {
+    if (item.style_) {
+      DCHECK(item.layout_object_);
+      item.style_ = item.layout_object_->FirstLineStyle();
+    }
+  }
+
+  // Re-shape if the font is different.
+  const Font& font = block_style->GetFont();
+  const Font& first_line_font = first_line_style->GetFont();
+  if (&font != &first_line_font && font != first_line_font) {
+    ShapeText(data->text_content_, first_line_items.get());
+  }
+
+  data->first_line_items_ = std::move(first_line_items);
 }
 
 RefPtr<NGLayoutResult> NGInlineNode::Layout(NGConstraintSpace* constraint_space,
@@ -622,6 +668,7 @@ void NGInlineNode::CopyFragmentDataToLayoutBox(
         baseline - line_metrics.ascent, baseline + line_metrics.descent,
         line_top, baseline + max_with_leading.descent);
 
+    line_info.SetFirstLine(false);
     bidi_runs.DeleteRuns();
     positions_for_bidi_runs.clear();
     positions.clear();
