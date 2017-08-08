@@ -747,6 +747,10 @@ class CONTENT_EXPORT RenderWidget
   // Stores the current text input flags of |webwidget_|.
   int text_input_flags_;
 
+  // Indicates whether currently focused input field has next/previous focusable
+  // form input field.
+  int next_previous_flags_;
+
   // Stores the current type of composition text rendering of |webwidget_|.
   bool can_compose_inline_;
 

@@ -31,6 +31,7 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.ui.base.ime.TextInputType;
 
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 /**
@@ -419,6 +420,69 @@ public class ImeTest {
 
         Assert.assertEquals(5, mRule.getConnectionFactory().getOutAttrs().initialSelStart);
         Assert.assertEquals(5, mRule.getConnectionFactory().getOutAttrs().initialSelEnd);
+    }
+
+    private static int getImeAction(EditorInfo editorInfo) {
+        return editorInfo.imeOptions & EditorInfo.IME_MASK_ACTION;
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testAdvanceFocusNextAndPrevious() throws Exception {
+        mRule.focusElement("textarea");
+        // Forward direction focus. Excessive focus advance should be ignored.
+        for (int i = 0; i < 10; ++i) {
+            // Forward direction focus.
+            mRule.performEditorAction(EditorInfo.IME_ACTION_NEXT);
+        }
+        mRule.waitForKeyboardStates(7, 0, 7,
+                new Integer[] {TextInputType.TEXT_AREA, TextInputType.TEXT_AREA,
+                        TextInputType.NUMBER, TextInputType.NUMBER, TextInputType.CONTENT_EDITABLE,
+                        TextInputType.SEARCH, TextInputType.TEXT});
+        ArrayList<EditorInfo> editorInfoList =
+                mRule.getInputMethodManagerWrapper().getEditorInfoList();
+        Assert.assertEquals(7, editorInfoList.size());
+        // textarea.
+        Assert.assertEquals(EditorInfo.IME_ACTION_NONE, getImeAction(editorInfoList.get(0)));
+        // textarea2.
+        Assert.assertEquals(EditorInfo.IME_ACTION_NONE, getImeAction(editorInfoList.get(1)));
+        // input_number1.
+        Assert.assertEquals(EditorInfo.IME_ACTION_NEXT, getImeAction(editorInfoList.get(2)));
+        // input_number2.
+        Assert.assertEquals(EditorInfo.IME_ACTION_NEXT, getImeAction(editorInfoList.get(3)));
+        // content_editable1.
+        Assert.assertEquals(EditorInfo.IME_ACTION_NONE, getImeAction(editorInfoList.get(4)));
+        // search1.
+        Assert.assertEquals(EditorInfo.IME_ACTION_SEARCH, getImeAction(editorInfoList.get(5)));
+        // input_text1.
+        Assert.assertEquals(EditorInfo.IME_ACTION_GO, getImeAction(editorInfoList.get(6)));
+
+        mRule.resetAllStates();
+
+        // Backward direction focus. Excessive focus advance should be ignored.
+        for (int i = 0; i < 10; ++i) {
+            // Backward direction focus.
+            mRule.performEditorAction(EditorInfo.IME_ACTION_PREVIOUS);
+        }
+        mRule.waitForKeyboardStates(6, 0, 6,
+                new Integer[] {TextInputType.SEARCH, TextInputType.CONTENT_EDITABLE,
+                        TextInputType.NUMBER, TextInputType.NUMBER, TextInputType.TEXT_AREA,
+                        TextInputType.TEXT_AREA});
+        editorInfoList = mRule.getInputMethodManagerWrapper().getEditorInfoList();
+        Assert.assertEquals(6, editorInfoList.size());
+        // search1.
+        Assert.assertEquals(EditorInfo.IME_ACTION_SEARCH, getImeAction(editorInfoList.get(0)));
+        // content_editable1.
+        Assert.assertEquals(EditorInfo.IME_ACTION_NONE, getImeAction(editorInfoList.get(1)));
+        // input_number2.
+        Assert.assertEquals(EditorInfo.IME_ACTION_NEXT, getImeAction(editorInfoList.get(2)));
+        // input_number1.
+        Assert.assertEquals(EditorInfo.IME_ACTION_NEXT, getImeAction(editorInfoList.get(3)));
+        // textarea2.
+        Assert.assertEquals(EditorInfo.IME_ACTION_NONE, getImeAction(editorInfoList.get(4)));
+        // textarea.
+        Assert.assertEquals(EditorInfo.IME_ACTION_NONE, getImeAction(editorInfoList.get(5)));
     }
 
     @Test

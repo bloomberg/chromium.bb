@@ -100,6 +100,10 @@ class CORE_EXPORT InputMethodController final
   void DeleteSurroundingText(int before, int after);
   void DeleteSurroundingTextInCodePoints(int before, int after);
   WebTextInputInfo TextInputInfo() const;
+  // For finding NEXT/PREVIOUS everytime during frame update is a costly
+  // operation, so making it specific whenever needed by splitting from
+  // TextInputFlags()
+  int ComputeWebTextInputNextPreviousFlags() const;
   WebTextInputType TextInputType() const;
 
   // Call this when we will change focus.
