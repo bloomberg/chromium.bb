@@ -18,6 +18,8 @@ source_set("test_support") {
     "mock_client.h",
     "mock_controller.cc",
     "mock_controller.h",
+    "mock_download_service.cc",
+    "mock_download_service.h",
     "mock_model_client.cc",
     "mock_model_client.h",
     "noop_store.cc",
@@ -26,6 +28,8 @@ source_set("test_support") {
     "test_device_status_listener.h",
     "test_download_driver.cc",
     "test_download_driver.h",
+    "test_download_service.cc",
+    "test_download_service.h",
     "test_store.cc",
     "test_store.h",
   ]
