@@ -37,10 +37,8 @@ bool IsLogoOkToShow(const LogoMetadata& metadata, base::Time now) {
   base::TimeDelta offset =
       base::TimeDelta::FromMilliseconds(kMaxTimeToLiveMS * 3 / 2);
   base::Time distant_past = now - offset;
-  base::Time distant_future = now + offset;
   // Sanity check so logos aren't accidentally cached forever.
-  if (metadata.expiration_time < distant_past ||
-      metadata.expiration_time > distant_future) {
+  if (metadata.expiration_time < distant_past) {
     return false;
   }
   return metadata.can_show_after_expiration || metadata.expiration_time >= now;
