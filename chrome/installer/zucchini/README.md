@@ -88,6 +88,16 @@ to the same pool can reduce redundancy, but will use more memory and might
 cause larger corrections to happen, so this is a tradeoff that can be resolved
 with benchmarks.
 
+**Abs32 references**: References whose targets are adjusted by the OS during
+program load. In an image, a **relocation table** typically provides locations
+of abs32 references. At each abs32 location, the stored bytes then encode
+semantic information about the target (e.g., as RVA).
+
+**Rel32 references**: References embedded within machine code, in which targets
+are encoded as some delta relative to the reference's location. Typical examples
+of rel32 references are branching instructions and instruction pointer-relative
+memory access.
+
 **Equivalence**: A (src_offset, dst_offset, length) tuple describing a region of
 "old" binary, at an offset of |src_offset|, that is similar to a region of "new"
 binary, at an offset of |dst_offset|.
@@ -95,7 +105,7 @@ binary, at an offset of |dst_offset|.
 **Associated Targets**: A target in "old" binary is associated with a target in
 "new" binary if both targets:
 1. are part of similar regions from the same equivalence, and
-2. share the same offset local to the similar regions they are part of, and
+2. have the same local offset (relative to respective start regions), and
 3. are not part of any larger region from a different equivalence.
 Not all targets are necessarily associated with another target.
 
