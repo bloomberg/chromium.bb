@@ -5,6 +5,7 @@
 #include "ios/web/public/payments/payment_request.h"
 
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -398,14 +399,15 @@ bool PaymentRequest::FromDictionaryValue(const base::DictionaryValue& value) {
 }
 
 PaymentResponse::PaymentResponse() {}
-PaymentResponse::PaymentResponse(const PaymentResponse& other) = default;
 PaymentResponse::~PaymentResponse() = default;
 
 bool PaymentResponse::operator==(const PaymentResponse& other) const {
   return this->payment_request_id == other.payment_request_id &&
          this->method_name == other.method_name &&
          this->details == other.details &&
-         this->shipping_address == other.shipping_address &&
+         ((!this->shipping_address && !other.shipping_address) ||
+          (this->shipping_address && other.shipping_address &&
+           *this->shipping_address == *other.shipping_address)) &&
          this->shipping_option == other.shipping_option &&
          this->payer_name == other.payer_name &&
          this->payer_email == other.payer_email &&
@@ -423,25 +425,20 @@ std::unique_ptr<base::DictionaryValue> PaymentResponse::ToDictionaryValue()
   result->SetString(kPaymentResponseId, this->payment_request_id);
   result->SetString(kPaymentResponseMethodName, this->method_name);
   // |this.details| is a json-serialized string. Parse it to a base::Value so
-  // that when |this| is converted to a JSON string, |this.details| won't get
-  // json-escaped.
+  // that when |result| is converted to a JSON string, the "details" property
+  // won't get json-escaped.
   std::unique_ptr<base::Value> details =
       base::JSONReader().ReadToValue(this->details);
-  if (details)
-    result->Set(kPaymentResponseDetails, std::move(details));
-  if (!this->shipping_address.ToDictionaryValue()->empty()) {
-    result->Set(kPaymentResponseShippingAddress,
-                this->shipping_address.ToDictionaryValue());
-  }
-  if (!this->shipping_option.empty())
-    result->SetString(kPaymentResponseShippingOption, this->shipping_option);
-  if (!this->payer_name.empty())
-    result->SetString(kPaymentResponsePayerName, this->payer_name);
-  if (!this->payer_email.empty())
-    result->SetString(kPaymentResponsePayerEmail, this->payer_email);
-  if (!this->payer_phone.empty())
-    result->SetString(kPaymentResponsePayerPhone, this->payer_phone);
-
+  result->Set(kPaymentResponseDetails,
+              details ? std::move(details) : base::MakeUnique<base::Value>());
+  result->Set(kPaymentResponseShippingAddress,
+              this->shipping_address
+                  ? this->shipping_address->ToDictionaryValue()
+                  : base::MakeUnique<base::Value>());
+  result->SetString(kPaymentResponseShippingOption, this->shipping_option);
+  result->SetString(kPaymentResponsePayerName, this->payer_name);
+  result->SetString(kPaymentResponsePayerEmail, this->payer_email);
+  result->SetString(kPaymentResponsePayerPhone, this->payer_phone);
   return result;
 }
 

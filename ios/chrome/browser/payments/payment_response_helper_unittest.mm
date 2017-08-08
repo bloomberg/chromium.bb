@@ -116,27 +116,29 @@ TEST_F(PaymentRequestPaymentResponseHelperTest, PaymentResponse) {
          EXPECT_EQ(GetMethodName(), response.method_name);
          EXPECT_EQ(GetStringifiedDetails(), response.details);
 
-         EXPECT_EQ(base::ASCIIToUTF16("US"), response.shipping_address.country);
-         ASSERT_EQ(2U, response.shipping_address.address_line.size());
+         EXPECT_TRUE(!!response.shipping_address);
+         EXPECT_EQ(base::ASCIIToUTF16("US"),
+                   response.shipping_address->country);
+         ASSERT_EQ(2U, response.shipping_address->address_line.size());
          EXPECT_EQ(base::ASCIIToUTF16("666 Erebus St."),
-                   response.shipping_address.address_line[0]);
+                   response.shipping_address->address_line[0]);
          EXPECT_EQ(base::ASCIIToUTF16("Apt 8"),
-                   response.shipping_address.address_line[1]);
-         EXPECT_EQ(base::ASCIIToUTF16("CA"), response.shipping_address.region);
+                   response.shipping_address->address_line[1]);
+         EXPECT_EQ(base::ASCIIToUTF16("CA"), response.shipping_address->region);
          EXPECT_EQ(base::ASCIIToUTF16("Elysium"),
-                   response.shipping_address.city);
+                   response.shipping_address->city);
          EXPECT_EQ(base::string16(),
-                   response.shipping_address.dependent_locality);
+                   response.shipping_address->dependent_locality);
          EXPECT_EQ(base::ASCIIToUTF16("91111"),
-                   response.shipping_address.postal_code);
-         EXPECT_EQ(base::string16(), response.shipping_address.sorting_code);
-         EXPECT_EQ(base::string16(), response.shipping_address.language_code);
+                   response.shipping_address->postal_code);
+         EXPECT_EQ(base::string16(), response.shipping_address->sorting_code);
+         EXPECT_EQ(base::string16(), response.shipping_address->language_code);
          EXPECT_EQ(base::ASCIIToUTF16("Underworld"),
-                   response.shipping_address.organization);
+                   response.shipping_address->organization);
          EXPECT_EQ(base::ASCIIToUTF16("John H. Doe"),
-                   response.shipping_address.recipient);
+                   response.shipping_address->recipient);
          EXPECT_EQ(base::ASCIIToUTF16("16502111111"),
-                   response.shipping_address.phone);
+                   response.shipping_address->phone);
 
          EXPECT_EQ(base::ASCIIToUTF16("John H. Doe"), response.payer_name);
          EXPECT_EQ(base::ASCIIToUTF16("+16502111111"), response.payer_phone);
@@ -162,19 +164,7 @@ TEST_F(PaymentRequestPaymentResponseHelperTest, PaymentResponseNoShipping) {
       @selector(paymentResponseHelperDidCompleteWithPaymentResponse:);
   [consumer_mock onSelector:selector
        callBlockExpectation:^(const web::PaymentResponse& response) {
-         EXPECT_EQ(base::string16(), response.shipping_address.country);
-         EXPECT_TRUE(response.shipping_address.address_line.empty());
-         EXPECT_EQ(base::string16(), response.shipping_address.region);
-         EXPECT_EQ(base::string16(), response.shipping_address.city);
-         EXPECT_EQ(base::string16(),
-                   response.shipping_address.dependent_locality);
-         EXPECT_EQ(base::string16(), response.shipping_address.postal_code);
-         EXPECT_EQ(base::string16(), response.shipping_address.sorting_code);
-         EXPECT_EQ(base::string16(), response.shipping_address.language_code);
-         EXPECT_EQ(base::string16(), response.shipping_address.organization);
-         EXPECT_EQ(base::string16(), response.shipping_address.recipient);
-         EXPECT_EQ(base::string16(), response.shipping_address.phone);
-
+         EXPECT_FALSE(!!response.shipping_address);
          EXPECT_EQ(base::ASCIIToUTF16("John H. Doe"), response.payer_name);
          EXPECT_EQ(base::ASCIIToUTF16("+16502111111"), response.payer_phone);
          EXPECT_EQ(base::ASCIIToUTF16("johndoe@hades.com"),
