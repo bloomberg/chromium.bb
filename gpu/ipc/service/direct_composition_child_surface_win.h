@@ -50,7 +50,7 @@ class GPU_EXPORT DirectCompositionChildSurfaceWin : public gl::GLSurfaceEGL {
 
  private:
   void ReleaseCurrentSurface();
-  void InitializeSurface();
+  bool InitializeSurface();
   // Release the texture that's currently being drawn to. If will_discard is
   // true then the surface should be discarded without swapping any contents
   // to it.
