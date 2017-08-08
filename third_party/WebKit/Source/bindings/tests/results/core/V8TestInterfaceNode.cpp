@@ -149,7 +149,7 @@ static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
 
   // Prepare the value to be set.
 
-  impl->setEventHandlerAttribute(V8EventListenerHelper::GetEventListener(ScriptState::ForReceiverObject(info), v8Value, true, kListenerFindOrCreate));
+  impl->setEventHandlerAttribute(V8EventListenerHelper::GetEventListener(ScriptState::ForRelevantRealm(info), v8Value, true, kListenerFindOrCreate));
 }
 
 static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {

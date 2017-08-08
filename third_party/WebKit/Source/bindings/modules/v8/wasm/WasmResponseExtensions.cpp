@@ -127,7 +127,7 @@ void CompileFromResponseCallback(
                                  "WebAssembly", "compile");
   ExceptionToRejectPromiseScope reject_promise_scope(args, exception_state);
 
-  ScriptState* script_state = ScriptState::ForReceiverObject(args);
+  ScriptState* script_state = ScriptState::ForRelevantRealm(args);
   if (!ExecutionContext::From(script_state)) {
     V8SetReturnValue(args, ScriptPromise().V8Value());
     return;
@@ -187,7 +187,7 @@ void CompileFromResponseCallback(
 // See https://crbug.com/708238 for tracking avoiding the hand-generated code.
 void WasmCompileStreamingImpl(const v8::FunctionCallbackInfo<v8::Value>& args) {
   v8::Isolate* isolate = args.GetIsolate();
-  ScriptState* script_state = ScriptState::ForReceiverObject(args);
+  ScriptState* script_state = ScriptState::ForRelevantRealm(args);
 
   v8::Local<v8::Function> compile_callback =
       v8::Function::New(isolate, CompileFromResponseCallback);

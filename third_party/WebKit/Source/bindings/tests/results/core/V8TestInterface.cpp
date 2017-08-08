@@ -825,7 +825,7 @@ static void implementsEventHandlerAttributeAttributeSetter(v8::Local<v8::Value> 
 
   // Prepare the value to be set.
 
-  impl->setImplementsEventHandlerAttribute(V8EventListenerHelper::GetEventListener(ScriptState::ForReceiverObject(info), v8Value, true, kListenerFindOrCreate));
+  impl->setImplementsEventHandlerAttribute(V8EventListenerHelper::GetEventListener(ScriptState::ForRelevantRealm(info), v8Value, true, kListenerFindOrCreate));
 }
 
 static void implementsRuntimeEnabledNodeAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -1989,7 +1989,7 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   Iterator* result = impl->keysForBinding(scriptState, exceptionState);
   if (exceptionState.HadException()) {
@@ -2003,7 +2003,7 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
   if (exceptionState.HadException()) {
@@ -2017,7 +2017,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   if (UNLIKELY(info.Length() < 1)) {
     exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
@@ -2046,7 +2046,7 @@ static void toJSONMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   ScriptValue result = impl->toJSONForBinding(scriptState, exceptionState);
   if (exceptionState.HadException()) {
@@ -2066,7 +2066,7 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   Iterator* result = impl->GetIterator(scriptState, exceptionState);
   if (exceptionState.HadException()) {

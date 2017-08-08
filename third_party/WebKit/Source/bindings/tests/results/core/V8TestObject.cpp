@@ -1707,7 +1707,7 @@ static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
 
   // Prepare the value to be set.
 
-  impl->setEventHandlerAttribute(V8EventListenerHelper::GetEventListener(ScriptState::ForReceiverObject(info), v8Value, true, kListenerFindOrCreate));
+  impl->setEventHandlerAttribute(V8EventListenerHelper::GetEventListener(ScriptState::ForRelevantRealm(info), v8Value, true, kListenerFindOrCreate));
 }
 
 static void doubleOrStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -2187,7 +2187,7 @@ static void callWithScriptStateAnyAttributeAttributeGetter(const v8::FunctionCal
 
   TestObject* impl = V8TestObject::toImpl(holder);
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   V8SetReturnValue(info, impl->callWithScriptStateAnyAttribute(scriptState).V8Value());
 }
@@ -2204,7 +2204,7 @@ static void callWithScriptStateAnyAttributeAttributeSetter(v8::Local<v8::Value> 
   // Prepare the value to be set.
   ScriptValue cppValue = ScriptValue(ScriptState::Current(info.GetIsolate()), v8Value);
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   impl->setCallWithScriptStateAnyAttribute(scriptState, cppValue);
 }
@@ -2216,7 +2216,7 @@ static void callWithExecutionContextAndScriptStateAnyAttributeAttributeGetter(co
 
   ExecutionContext* executionContext = ExecutionContext::ForRelevantRealm(info);
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   V8SetReturnValue(info, impl->callWithExecutionContextAndScriptStateAnyAttribute(scriptState, executionContext).V8Value());
 }
@@ -2235,7 +2235,7 @@ static void callWithExecutionContextAndScriptStateAnyAttributeAttributeSetter(v8
 
   ExecutionContext* executionContext = ExecutionContext::ForRelevantRealm(info);
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   impl->setCallWithExecutionContextAndScriptStateAnyAttribute(scriptState, executionContext, cppValue);
 }
@@ -7867,7 +7867,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   if (UNLIKELY(info.Length() < 1)) {
     exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
@@ -7888,7 +7888,7 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   if (UNLIKELY(info.Length() < 2)) {
     exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(2, info.Length()));
@@ -8049,7 +8049,7 @@ static void callWithExecutionContextVoidMethodMethod(const v8::FunctionCallbackI
 static void callWithScriptStateVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   impl->callWithScriptStateVoidMethod(scriptState);
 }
@@ -8057,7 +8057,7 @@ static void callWithScriptStateVoidMethodMethod(const v8::FunctionCallbackInfo<v
 static void callWithScriptStateLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   int32_t result = impl->callWithScriptStateLongMethod(scriptState);
   V8SetReturnValueInt(info, result);
@@ -8066,7 +8066,7 @@ static void callWithScriptStateLongMethodMethod(const v8::FunctionCallbackInfo<v
 static void callWithScriptStateExecutionContextVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   ExecutionContext* executionContext = ExecutionContext::ForRelevantRealm(info);
   impl->callWithScriptStateExecutionContextVoidMethod(scriptState, executionContext);
@@ -8075,7 +8075,7 @@ static void callWithScriptStateExecutionContextVoidMethodMethod(const v8::Functi
 static void callWithScriptStateScriptArgumentsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   ScriptArguments* scriptArguments(ScriptArguments::Create(scriptState, info, 0));
   impl->callWithScriptStateScriptArgumentsVoidMethod(scriptState, scriptArguments);
@@ -8086,7 +8086,7 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   bool optionalBooleanArg;
   int numArgsPassed = info.Length();
@@ -8123,7 +8123,7 @@ static void callWithCurrentWindowScriptWindowMethod(const v8::FunctionCallbackIn
 static void callWithThisValueMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   impl->callWithThisValue(ScriptValue(scriptState, info.Holder()));
 }
@@ -9258,7 +9258,7 @@ static void clearMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   bool result = impl->myMaplikeClear(scriptState, exceptionState);
   if (exceptionState.HadException()) {
@@ -9272,7 +9272,7 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   Iterator* result = impl->keysForBinding(scriptState, exceptionState);
   if (exceptionState.HadException()) {
@@ -9286,7 +9286,7 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
   if (exceptionState.HadException()) {
@@ -9300,7 +9300,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   if (UNLIKELY(info.Length() < 1)) {
     exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
@@ -9329,7 +9329,7 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   if (UNLIKELY(info.Length() < 1)) {
     exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
@@ -9353,7 +9353,7 @@ static void getMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   if (UNLIKELY(info.Length() < 1)) {
     exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
@@ -9377,7 +9377,7 @@ static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   if (UNLIKELY(info.Length() < 1)) {
     exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
@@ -9401,7 +9401,7 @@ static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   if (UNLIKELY(info.Length() < 2)) {
     exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(2, info.Length()));
@@ -9442,7 +9442,7 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   Iterator* result = impl->GetIterator(scriptState, exceptionState);
   if (exceptionState.HadException()) {
@@ -9452,7 +9452,7 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 }
 
 static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
   ScriptValue result = impl->AnonymousNamedGetter(scriptState, name);
@@ -9462,7 +9462,7 @@ static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCall
 }
 
 static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
   V8StringResource<> propertyValue = v8Value;
@@ -9476,7 +9476,7 @@ static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v
 }
 
 static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
@@ -9489,7 +9489,7 @@ static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCal
 static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
   const CString& nameInUtf8 = name.Utf8();
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestObject", nameInUtf8.data());
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
@@ -9524,7 +9524,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
   if (index >= impl->length())
     return;  // Returns undefined due to out-of-range.
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   ScriptValue result = impl->item(scriptState, index);
   V8SetReturnValue(info, result.V8Value());
 }
@@ -9558,7 +9558,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
   if (!propertyValue.Prepare())
     return;
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   bool result = impl->setItem(scriptState, index, propertyValue);
   if (!result)
     return;
@@ -9570,7 +9570,7 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   DeleteResult result = impl->AnonymousIndexedDeleter(scriptState, index, exceptionState);
   if (exceptionState.HadException())
     return;
@@ -10218,7 +10218,7 @@ void V8TestObject::nestedUnionAtributeAttributeSetterCallback(const v8::Function
 }
 
 void V8TestObject::activityLoggingAccessForAllWorldsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     contextData->ActivityLogger()->LogGetter("TestObject.activityLoggingAccessForAllWorldsLongAttribute");
@@ -10230,7 +10230,7 @@ void V8TestObject::activityLoggingAccessForAllWorldsLongAttributeAttributeGetter
 void V8TestObject::activityLoggingAccessForAllWorldsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     contextData->ActivityLogger()->LogSetter("TestObject.activityLoggingAccessForAllWorldsLongAttribute", v8Value);
@@ -10240,7 +10240,7 @@ void V8TestObject::activityLoggingAccessForAllWorldsLongAttributeAttributeSetter
 }
 
 void V8TestObject::activityLoggingGetterForAllWorldsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     contextData->ActivityLogger()->LogGetter("TestObject.activityLoggingGetterForAllWorldsLongAttribute");
@@ -10262,7 +10262,7 @@ void V8TestObject::activityLoggingSetterForAllWorldsLongAttributeAttributeGetter
 void V8TestObject::activityLoggingSetterForAllWorldsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     contextData->ActivityLogger()->LogSetter("TestObject.activityLoggingSetterForAllWorldsLongAttribute", v8Value);
@@ -10488,7 +10488,7 @@ void V8TestObject::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeG
 }
 
 void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     contextData->ActivityLogger()->LogGetter("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute");
@@ -10500,7 +10500,7 @@ void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeGe
 void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     contextData->ActivityLogger()->LogSetter("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute", v8Value);
@@ -10510,7 +10510,7 @@ void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeSe
 }
 
 void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     contextData->ActivityLogger()->LogGetter("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute");
@@ -10522,7 +10522,7 @@ void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeGe
 void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     contextData->ActivityLogger()->LogSetter("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute", v8Value);
@@ -10532,7 +10532,7 @@ void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeSe
 }
 
 void V8TestObject::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     contextData->ActivityLogger()->LogGetter("TestObject.activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute");
@@ -10544,7 +10544,7 @@ void V8TestObject::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAtt
 void V8TestObject::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     contextData->ActivityLogger()->LogSetter("TestObject.activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute", v8Value);
@@ -10564,7 +10564,7 @@ void V8TestObject::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAtt
 }
 
 void V8TestObject::activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     contextData->ActivityLogger()->LogGetter("TestObject.activityLoggingGetterPerWorldBindingsLongAttribute");
@@ -10580,7 +10580,7 @@ void V8TestObject::activityLoggingGetterPerWorldBindingsLongAttributeAttributeSe
 }
 
 void V8TestObject::activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     contextData->ActivityLogger()->LogGetter("TestObject.activityLoggingGetterPerWorldBindingsLongAttribute");
@@ -10596,7 +10596,7 @@ void V8TestObject::activityLoggingGetterPerWorldBindingsLongAttributeAttributeSe
 }
 
 void V8TestObject::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     contextData->ActivityLogger()->LogGetter("TestObject.activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute");
@@ -11919,7 +11919,7 @@ void V8TestObject::voidMethodTreatNullAsNullStringStringArgMethodCallback(const 
 }
 
 void V8TestObject::activityLoggingAccessForAllWorldsMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "activityLoggingAccessForAllWorldsMethod");
@@ -12069,7 +12069,7 @@ void V8TestObject::postMessageMethodCallback(const v8::FunctionCallbackInfo<v8::
 }
 
 void V8TestObject::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "activityLoggingForAllWorldsPerWorldBindingsVoidMethod");
@@ -12080,7 +12080,7 @@ void V8TestObject::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCa
 }
 
 void V8TestObject::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "activityLoggingForAllWorldsPerWorldBindingsVoidMethod");
@@ -12091,7 +12091,7 @@ void V8TestObject::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCa
 }
 
 void V8TestObject::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
     ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod");
