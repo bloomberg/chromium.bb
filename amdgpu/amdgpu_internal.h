@@ -143,8 +143,6 @@ struct amdgpu_semaphore {
  * Functions.
  */
 
-drm_private void amdgpu_bo_free_internal(amdgpu_bo_handle bo);
-
 drm_private void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, uint64_t start,
 		       uint64_t max, uint64_t alignment);
 
@@ -187,37 +185,6 @@ static inline bool update_references(atomic_t *dst, atomic_t *src)
 		}
 	}
 	return false;
-}
-
-/**
- * Assignment between two amdgpu_bo pointers with reference counting.
- *
- * Usage:
- *    struct amdgpu_bo *dst = ... , *src = ...;
- *
- *    dst = src;
- *    // No reference counting. Only use this when you need to move
- *    // a reference from one pointer to another.
- *
- *    amdgpu_bo_reference(&dst, src);
- *    // Reference counters are updated. dst is decremented and src is
- *    // incremented. dst is freed if its reference counter is 0.
- */
-static inline void amdgpu_bo_reference(struct amdgpu_bo **dst,
-					struct amdgpu_bo *src)
-{
-	pthread_mutex_t *mlock;
-	struct amdgpu_bo* bo = *dst;
-
-	assert(bo != NULL);
-	mlock = &bo->dev->bo_table_mutex;
-	pthread_mutex_lock(mlock);
-
-	if (update_references(&bo->refcount, src?&src->refcount:NULL))
-		amdgpu_bo_free_internal(bo);
-
-	pthread_mutex_unlock(mlock);
-	*dst = src;
 }
 
 #endif
