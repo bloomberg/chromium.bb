@@ -120,6 +120,7 @@ void SelectionEditor::SetSelection(const SelectionInDOMTree& new_selection) {
 }
 
 void SelectionEditor::DidChangeChildren(const ContainerNode&) {
+  selection_.ResetDirectionCache();
   MarkCacheDirty();
   DidFinishDOMMutation();
 }
@@ -132,6 +133,7 @@ void SelectionEditor::DidFinishTextChange(const Position& new_base,
   }
   selection_.base_ = new_base;
   selection_.extent_ = new_extent;
+  selection_.ResetDirectionCache();
   MarkCacheDirty();
   DidFinishDOMMutation();
 }
