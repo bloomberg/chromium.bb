@@ -37,6 +37,7 @@ bool GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
     std::string switch_or_field_trial_group,
     bool displayed_sensitive_input_on_http,
     bool is_incognito,
+    const InsecureInputEventData* input_events,
     SecurityLevel* level,
     MarkHttpStatus* histogram_status) {
   if (switch_or_field_trial_group ==
@@ -50,7 +51,17 @@ bool GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
   if (switch_or_field_trial_group ==
       switches::kMarkHttpAsNonSecureWhileIncognitoOrEditing) {
     *histogram_status = NON_SECURE_WHILE_INCOGNITO_OR_EDITING;
-    *level = (is_incognito || displayed_sensitive_input_on_http)
+    *level = (is_incognito || displayed_sensitive_input_on_http ||
+              (input_events && input_events->insecure_field_edited))
+                 ? security_state::HTTP_SHOW_WARNING
+                 : NONE;
+    return true;
+  }
+  if (switch_or_field_trial_group ==
+      switches::kMarkHttpAsNonSecureAfterEditing) {
+    *histogram_status = NON_SECURE_AFTER_EDITING;
+    *level = (displayed_sensitive_input_on_http ||
+              (input_events && input_events->insecure_field_edited))
                  ? security_state::HTTP_SHOW_WARNING
                  : NONE;
     return true;
@@ -66,7 +77,8 @@ bool GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
 
 SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
     bool displayed_sensitive_input_on_http,
-    bool is_incognito) {
+    bool is_incognito,
+    const InsecureInputEventData* input_events) {
   std::string choice =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kMarkHttpAs);
@@ -80,11 +92,11 @@ SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
   // If the command-line switch is set, then it takes precedence over
   // the field trial group.
   if (!GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
-          choice, displayed_sensitive_input_on_http, is_incognito, &level,
-          &status)) {
+          choice, displayed_sensitive_input_on_http, is_incognito, input_events,
+          &level, &status)) {
     if (!GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
-            group, displayed_sensitive_input_on_http, is_incognito, &level,
-            &status)) {
+            group, displayed_sensitive_input_on_http, is_incognito,
+            input_events, &level, &status)) {
       status = HTTP_SHOW_WARNING_ON_SENSITIVE_FIELDS;
       level = displayed_sensitive_input_on_http
                   ? security_state::HTTP_SHOW_WARNING
@@ -152,7 +164,8 @@ SecurityLevel GetSecurityLevelForRequest(
       return GetSecurityLevelForNonSecureFieldTrial(
           visible_security_state.displayed_password_field_on_http ||
               visible_security_state.displayed_credit_card_field_on_http,
-          visible_security_state.is_incognito);
+          visible_security_state.is_incognito,
+          &visible_security_state.insecure_input_events);
     }
     return NONE;
   }
@@ -283,9 +296,9 @@ bool IsHttpWarningForIncognitoEnabled() {
   // If the command-line switch is set, then it takes precedence over
   // the field trial group.
   if (!GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
-          choice, false, true, &level, &status)) {
+          choice, false, true, nullptr, &level, &status)) {
     if (!GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
-            group, false, true, &level, &status)) {
+            group, false, true, nullptr, &level, &status)) {
       return false;
     }
   }

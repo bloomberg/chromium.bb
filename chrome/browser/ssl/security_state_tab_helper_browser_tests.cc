@@ -25,6 +25,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_state/content/ssl_status_input_event_data.h"
 #include "components/security_state/core/security_state.h"
 #include "components/security_state/core/switches.h"
 #include "components/strings/grit/components_strings.h"
@@ -33,6 +34,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/security_style_explanation.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/ssl_status.h"
@@ -68,7 +70,7 @@ enum CertificateStatus { VALID_CERTIFICATE, INVALID_CERTIFICATE };
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
 
-const std::string kTestCertificateIssuerName = "Test Root CA";
+const char kTestCertificateIssuerName[] = "Test Root CA";
 
 // Inject a script into every frame in the page. Used by tests that check for
 // visible password fields to wait for notifications about these
@@ -309,6 +311,23 @@ GURL GetURLWithNonLocalHostname(net::EmbeddedTestServer* server,
   replace_host.SetHostStr("example.test");
   return server->GetURL(path).ReplaceComponents(replace_host);
 }
+
+// A WebContentsObserver that allows the user to wait for a
+// DidChangeVisibleSecurityState event.
+class SecurityStateWebContentsObserver : public content::WebContentsObserver {
+ public:
+  explicit SecurityStateWebContentsObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  ~SecurityStateWebContentsObserver() override {}
+
+  void WaitForDidChangeVisibleSecurityState() { run_loop_.Run(); }
+
+  // WebContentsObserver:
+  void DidChangeVisibleSecurityState() override { run_loop_.Quit(); }
+
+ private:
+  base::RunLoop run_loop_;
+};
 
 class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
  public:
@@ -1216,6 +1235,83 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   ASSERT_TRUE(entry);
   EXPECT_FALSE(entry->GetSSL().content_status &
                content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+}
+
+// Tests that the security level of a HTTP page is downgraded to
+// HTTP_SHOW_WARNING after editing a form field in the relevant configurations.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+                       SecurityLevelDowngradedAfterEditing) {
+  // Set the mode using the command line flag rather than the field trial to
+  // ensure that fieldtrial_testing_config.json does not interfere.
+  base::test::ScopedCommandLine scoped_command_line;
+  scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      security_state::switches::kMarkHttpAs,
+      security_state::switches::kMarkHttpAsNonSecureWhileIncognitoOrEditing);
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+
+  // Navigate to an HTTP page. Use a non-local hostname so that it is
+  // not considered secure.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetURLWithNonLocalHostname(embedded_test_server(),
+                                 "/textinput/focus_input_on_load.html"));
+
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
+
+  // Type one character into the focused input control and wait for a security
+  // state change.
+  SecurityStateWebContentsObserver observer(contents);
+  content::SimulateKeyPress(contents, ui::DomKey::FromCharacter('A'),
+                            ui::DomCode::US_A, ui::VKEY_A, false, false, false,
+                            false);
+  observer.WaitForDidChangeVisibleSecurityState();
+
+  // Verify that the security state degrades as expected.
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+
+  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  security_state::SSLStatusInputEventData* input_events =
+      static_cast<security_state::SSLStatusInputEventData*>(
+          entry->GetSSL().user_data.get());
+  ASSERT_TRUE(input_events);
+  EXPECT_TRUE(input_events->input_events()->insecure_field_edited);
+
+  {
+    // Ensure the warning is still present when in the
+    // kMarkHttpAsNonSecureAfterEditing configuration.
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+        security_state::switches::kMarkHttpAs,
+        security_state::switches::kMarkHttpAsNonSecureAfterEditing);
+
+    helper->GetSecurityInfo(&security_info);
+    EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  }
+
+  // Verify security state stays degraded after same-page navigation.
+  ui_test_utils::NavigateToURL(
+      browser(), GetURLWithNonLocalHostname(
+                     embedded_test_server(),
+                     "/textinput/focus_input_on_load.html#fragment"));
+  content::WaitForLoadStop(contents);
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+
+  // Verify that after a refresh, the HTTP_SHOW_WARNING state is cleared.
+  contents->GetController().Reload(content::ReloadType::NORMAL, false);
+  content::WaitForLoadStop(contents);
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
 }
 
 // A Browser subclass that keeps track of messages that have been

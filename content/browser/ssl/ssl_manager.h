@@ -118,10 +118,9 @@ class CONTENT_EXPORT SSLManager {
   // |remove_content_status_flags| are bitmasks of SSLStatus::ContentStatusFlags
   // that will be added or removed from the |content_status| field. (Pass 0 to
   // add/remove no content status flags.) |remove_content_status_flags| are
-  // removed before |add_content_status_flags| are added. This method will
-  // notify the WebContents of an SSL state change if a change was actually
-  // made.
-  void UpdateEntry(NavigationEntryImpl* entry,
+  // removed before |add_content_status_flags| are added. If the final set of
+  // flags changes, this method will notify the WebContents and return true.
+  bool UpdateEntry(NavigationEntryImpl* entry,
                    int add_content_status_flags,
                    int remove_content_status_flags);
 

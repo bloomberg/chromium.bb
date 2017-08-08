@@ -208,11 +208,17 @@ void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
     // should reflect the current content, even if the navigation was to an
     // existing entry that already had content status flags set.
     remove_content_status_flags = ~0;
+    // Also clear any UserData from the SSLStatus.
+    if (entry)
+      entry->GetSSL().user_data = nullptr;
   }
-  UpdateEntry(entry, add_content_status_flags, remove_content_status_flags);
-  // Always notify the WebContents that the SSL state changed when a
-  // load is committed, in case the active navigation entry has changed.
-  NotifyDidChangeVisibleSSLState();
+
+  if (!UpdateEntry(entry, add_content_status_flags,
+                   remove_content_status_flags)) {
+    // Ensure the WebContents is notified that the SSL state changed when a
+    // load is committed, in case the active navigation entry has changed.
+    NotifyDidChangeVisibleSSLState();
+  }
 }
 
 void SSLManager::DidDisplayMixedContent() {
@@ -408,13 +414,13 @@ void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
       base::Bind(&OnAllowCertificateWithRecordDecision, true, callback));
 }
 
-void SSLManager::UpdateEntry(NavigationEntryImpl* entry,
+bool SSLManager::UpdateEntry(NavigationEntryImpl* entry,
                              int add_content_status_flags,
                              int remove_content_status_flags) {
   // We don't always have a navigation entry to update, for example in the
   // case of the Web Inspector.
   if (!entry)
-    return;
+    return false;
 
   SSLStatus original_ssl_status = entry->GetSSL();  // Copy!
   entry->GetSSL().initialized = true;
@@ -446,7 +452,10 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry,
   if (entry->GetSSL().initialized != original_ssl_status.initialized ||
       entry->GetSSL().content_status != original_ssl_status.content_status) {
     NotifyDidChangeVisibleSSLState();
+    return true;
   }
+
+  return false;
 }
 
 void SSLManager::UpdateLastCommittedEntry(int add_content_status_flags,
