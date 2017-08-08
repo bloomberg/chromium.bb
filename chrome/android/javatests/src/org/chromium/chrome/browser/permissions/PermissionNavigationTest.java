@@ -4,11 +4,9 @@
 
 package org.chromium.chrome.browser.permissions;
 
-import android.support.test.filters.MediumTest;
-
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -29,9 +27,11 @@ public class PermissionNavigationTest extends PermissionTestCaseBase {
      *
      * @throws Exception
      */
-    @MediumTest
-    @Feature({"Permissions"})
+    // @MediumTest
+    // @Feature({"Permissions"})
     @CommandLineFlags.Add({NO_GESTURE_FEATURE, FORCE_FIELDTRIAL, FORCE_FIELDTRIAL_PARAMS})
+    // Flaky on official bots, https://crbug.com/699851#c8
+    @DisabledTest
     public void testNavigationDismissesModalPermissionPrompt() throws Exception {
         setUpUrl(TEST_FILE);
         runJavaScriptCodeInCurrentTab("requestGeolocationPermission()");
