@@ -5,7 +5,7 @@
 cr.define('extensions', function() {
   'use strict';
 
-  var DetailView = Polymer({
+  const DetailView = Polymer({
     is: 'extensions-detail-view',
 
     behaviors: [I18nBehavior, Polymer.NeonAnimatableBehavior],

@@ -16,7 +16,7 @@ cr.define('extensions', function() {
     retryLoadUnpacked: assertNotReached,
   };
 
-  var LoadError = Polymer({
+  const LoadError = Polymer({
     is: 'extensions-load-error',
     properties: {
       /** @type {extensions.LoadErrorDelegate} */
@@ -47,12 +47,12 @@ cr.define('extensions', function() {
     /** @private */
     observeLoadErrorChanges_: function() {
       assert(this.loadError);
-      var source = this.loadError.source;
+      const source = this.loadError.source;
       // CodeSection expects a RequestFileSourceResponse, rather than an
       // ErrorFileSource. Massage into place.
       // TODO(devlin): Make RequestFileSourceResponse use ErrorFileSource.
       /** @type {!chrome.developerPrivate.RequestFileSourceResponse} */
-      var codeSectionProperties = {
+      const codeSectionProperties = {
         beforeHighlight: source ? source.beforeHighlight : '',
         highlight: source ? source.highlight : '',
         afterHighlight: source ? source.afterHighlight : '',

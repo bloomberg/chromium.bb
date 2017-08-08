@@ -6,7 +6,7 @@ cr.define('extensions', function() {
   'use strict';
 
   // The UI to display and manage keyboard shortcuts set for extension commands.
-  var KeyboardShortcuts = Polymer({
+  const KeyboardShortcuts = Polymer({
     is: 'extensions-keyboard-shortcuts',
 
     behaviors: [Polymer.NeonAnimatableBehavior],
@@ -21,7 +21,7 @@ cr.define('extensions', function() {
        */
       CommandScope_: {
         type: Object,
-        value: chrome.developerPrivate.CommandScope
+        value: chrome.developerPrivate.CommandScope,
       },
     },
 
