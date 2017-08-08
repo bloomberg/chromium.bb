@@ -13,11 +13,8 @@ namespace content {
 
 // Initializes the ShaderCacheFactory singleton instance. The singleton
 // instance is created and used in the thread associated with |task_runner|.
-// |cache_task_runner| is associated with the thread responsible for managing
-// the disk cache.
 CONTENT_EXPORT void InitShaderCacheFactorySingleton(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> cache_task_runner);
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
 // Returns an instance previously created by InitShaderCacheFactorySingleton().
 // This can return nullptr if an instance has not yet been created.
