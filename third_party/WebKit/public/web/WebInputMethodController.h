@@ -56,7 +56,14 @@ class WebInputMethodController {
   // that this query can be expensive for long fields, as it returns the
   // plain-text representation of the current editable element. Consider using
   // the lighter-weight textInputType() when appropriate.
+  // WebTextInputInfo.flags won't contain Next/Previous flags.
   virtual WebTextInputInfo TextInputInfo() { return WebTextInputInfo(); }
+
+  // This function returns a combination of
+  // kWebTextInputFlagHaveNextFocusableElement and
+  // kWebTextInputFlagHavePreviousFocusableElement This is splitted from
+  // TextInputInfo() due to expensive operations involved.
+  virtual int ComputeWebTextInputNextPreviousFlags() { return 0; }
 
   // Returns the type of current text input of this controller.
   virtual WebTextInputType TextInputType() { return kWebTextInputTypeNone; }

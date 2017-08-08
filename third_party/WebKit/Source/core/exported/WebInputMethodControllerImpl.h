@@ -42,6 +42,7 @@ class CORE_EXPORT WebInputMethodControllerImpl
   bool FinishComposingText(
       ConfirmCompositionBehavior selection_behavior) override;
   WebTextInputInfo TextInputInfo() override;
+  int ComputeWebTextInputNextPreviousFlags() override;
   WebTextInputType TextInputType() override;
   WebRange GetSelectionOffsets() const;
 

@@ -48,6 +48,8 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/FocusController.h"
+#include "core/page/Page.h"
 
 namespace blink {
 
@@ -1175,6 +1177,27 @@ int InputMethodController::TextInputFlags() const {
         NOTREACHED();
     }
   }
+
+  return flags;
+}
+
+int InputMethodController::ComputeWebTextInputNextPreviousFlags() const {
+  Element* const element = GetDocument().FocusedElement();
+  if (!element)
+    return kWebTextInputFlagNone;
+
+  Page* page = GetDocument().GetPage();
+  if (!page)
+    return kWebTextInputFlagNone;
+
+  int flags = kWebTextInputFlagNone;
+  if (page->GetFocusController().NextFocusableElementInForm(
+          element, kWebFocusTypeForward))
+    flags |= kWebTextInputFlagHaveNextFocusableElement;
+
+  if (page->GetFocusController().NextFocusableElementInForm(
+          element, kWebFocusTypeBackward))
+    flags |= kWebTextInputFlagHavePreviousFocusableElement;
 
   return flags;
 }
