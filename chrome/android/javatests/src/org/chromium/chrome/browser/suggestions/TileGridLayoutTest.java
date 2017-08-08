@@ -38,13 +38,15 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
+import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServerRule;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Instrumentation tests for the {@link TileGridLayout} on the New Tab Page.
@@ -80,30 +82,19 @@ public class TileGridLayoutTest {
     };
 
     private NewTabPage mNtp;
-    private String[] mSiteSuggestionUrls;
-    private FakeMostVisitedSites mMostVisitedSites;
 
     @Before
     public void setUp() throws Exception {
-        mSiteSuggestionUrls = mTestServerRule.getServer().getURLs(FAKE_MOST_VISITED_URLS);
-        String[] tmpSiteSuggestionUrls = new String[mSiteSuggestionUrls.length + 1];
-        System.arraycopy(
-                mSiteSuggestionUrls, 0, tmpSiteSuggestionUrls, 0, mSiteSuggestionUrls.length);
-        tmpSiteSuggestionUrls[tmpSiteSuggestionUrls.length - 1] = HOME_PAGE_URL;
-        mSiteSuggestionUrls = tmpSiteSuggestionUrls;
+        List<SiteSuggestion> siteSuggestions = new ArrayList<>();
+        for (String url : FAKE_MOST_VISITED_URLS) {
+            siteSuggestions.add(FakeMostVisitedSites.createSiteSuggestion(
+                    mTestServerRule.getServer().getURL(url)));
+        }
+        siteSuggestions.add(new SiteSuggestion("HOMEPAGE", HOME_PAGE_URL, "", TileSource.HOMEPAGE));
 
-        mMostVisitedSites = new FakeMostVisitedSites();
-        mSuggestionsDeps.getFactory().mostVisitedSites = mMostVisitedSites;
-
-        String[] whitelistIconPaths = new String[mSiteSuggestionUrls.length];
-        Arrays.fill(whitelistIconPaths, "");
-
-        int[] sources = new int[mSiteSuggestionUrls.length];
-        Arrays.fill(sources, TileSource.TOP_SITES);
-        sources[mSiteSuggestionUrls.length - 1] = TileSource.HOMEPAGE;
-
-        mMostVisitedSites.setTileSuggestions(
-                mSiteSuggestionUrls, mSiteSuggestionUrls.clone(), whitelistIconPaths, sources);
+        FakeMostVisitedSites mostVisitedSites = new FakeMostVisitedSites();
+        mostVisitedSites.setTileSuggestions(siteSuggestions);
+        mSuggestionsDeps.getFactory().mostVisitedSites = mostVisitedSites;
 
         mSuggestionsDeps.getFactory().suggestionsSource = new FakeSuggestionsSource();
 

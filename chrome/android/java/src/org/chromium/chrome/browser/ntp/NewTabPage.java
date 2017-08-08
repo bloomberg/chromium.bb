@@ -62,6 +62,7 @@ import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -260,7 +261,7 @@ public class NewTabPage
         }
 
         @Override
-        public void onLoadingComplete(Tile[] tiles) {
+        public void onLoadingComplete(List<Tile> tiles) {
             if (mIsDestroyed) return;
 
             super.onLoadingComplete(tiles);

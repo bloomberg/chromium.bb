@@ -33,7 +33,7 @@ public class TileView extends FrameLayout {
     }
 
     /** The url currently associated to this tile. */
-    private String mUrl;
+    private SiteSuggestion mSiteData;
 
     private TextView mTitleView;
     private View mIconBackgroundView;
@@ -66,7 +66,7 @@ public class TileView extends FrameLayout {
      */
     public void initialize(Tile tile, int titleLines, @Style int tileStyle) {
         mTitleView.setLines(titleLines);
-        mUrl = tile.getUrl();
+        mSiteData = tile.getData();
 
         Resources res = getResources();
 
@@ -102,12 +102,23 @@ public class TileView extends FrameLayout {
             mTitleView.setLayoutParams(titleParams);
         }
 
-        renderTile(tile);
+        mTitleView.setText(TitleUtil.getTitleForDisplay(tile.getTitle(), tile.getUrl()));
+        renderOfflineBadge(tile);
+        renderIcon(tile);
     }
 
     /** @return The url associated with this view. */
     public String getUrl() {
-        return mUrl;
+        return mSiteData.url;
+    }
+
+    public SiteSuggestion getData() {
+        return mSiteData;
+    }
+
+    /** @return The {@link TileSource} of the tile represented by this TileView */
+    public int getTileSource() {
+        return mSiteData.source;
     }
 
     /**
@@ -120,28 +131,5 @@ public class TileView extends FrameLayout {
     /** Shows or hides the offline badge to reflect the offline availability of the {@link Tile}. */
     public void renderOfflineBadge(Tile tile) {
         mBadgeView.setVisibility(tile.isOfflineAvailable() ? VISIBLE : GONE);
-    }
-
-    /** Updates the view if there have been changes since the last time. */
-    public void updateIfDataChanged(Tile tile) {
-        if (!isUpToDate(tile)) renderTile(tile);
-    }
-
-    private boolean isUpToDate(Tile tile) {
-        assert mUrl.equals(tile.getUrl());
-
-        if (tile.getIcon() != mIconView.getDrawable()) return false;
-        if (!tile.getTitle().equals(mTitleView.getText())) return false;
-        if (tile.isOfflineAvailable() != (mBadgeView.getVisibility() == VISIBLE)) return false;
-        return true;
-    }
-
-    private void renderTile(Tile tile) {
-        // A TileView should not be reused across tiles having different urls, as registered
-        // callbacks and handlers use it to look up the data and notify the rest of the system.
-        assert mUrl.equals(tile.getUrl());
-        mTitleView.setText(TitleUtil.getTitleForDisplay(tile.getTitle(), tile.getUrl()));
-        renderOfflineBadge(tile);
-        renderIcon(tile);
     }
 }

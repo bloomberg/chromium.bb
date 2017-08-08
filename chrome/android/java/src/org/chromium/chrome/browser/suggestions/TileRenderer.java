@@ -92,11 +92,11 @@ public class TileRenderer {
     public void renderTileSection(
             List<Tile> sectionTiles, ViewGroup parent, TileGroup.TileSetupDelegate setupDelegate) {
         // Map the old tile views by url so they can be reused later.
-        Map<String, TileView> oldTileViews = new HashMap<>();
+        Map<SiteSuggestion, TileView> oldTileViews = new HashMap<>();
         int childCount = parent.getChildCount();
         for (int i = 0; i < childCount; i++) {
             TileView tileView = (TileView) parent.getChildAt(i);
-            oldTileViews.put(tileView.getUrl(), tileView);
+            oldTileViews.put(tileView.getData(), tileView);
         }
 
         // Remove all views from the layout because even if they are reused later they'll have to be
@@ -104,11 +104,9 @@ public class TileRenderer {
         parent.removeAllViews();
 
         for (Tile tile : sectionTiles) {
-            TileView tileView = oldTileViews.get(tile.getUrl());
+            TileView tileView = oldTileViews.get(tile.getData());
             if (tileView == null) {
                 tileView = buildTileView(tile, parent, setupDelegate);
-            } else {
-                tileView.updateIfDataChanged(tile);
             }
 
             parent.addView(tileView);
@@ -131,7 +129,7 @@ public class TileRenderer {
 
         // Note: It is important that the callbacks below don't keep a reference to the tile or
         // modify them as there is no guarantee that the same tile would be used to update the view.
-        fetchIcon(tile, setupDelegate.createIconLoadCallback(tile));
+        fetchIcon(tile.getData(), setupDelegate.createIconLoadCallback(tile));
 
         TileGroup.TileInteractionDelegate delegate = setupDelegate.createInteractionDelegate(tile);
         tileView.setOnClickListener(delegate);
@@ -140,18 +138,19 @@ public class TileRenderer {
         return tileView;
     }
 
-    private void fetchIcon(final Tile tile, final LargeIconBridge.LargeIconCallback iconCallback) {
-        if (tile.getWhitelistIconPath().isEmpty()) {
-            mImageFetcher.makeLargeIconRequest(tile.getUrl(), mMinIconSize, iconCallback);
+    private void fetchIcon(
+            final SiteSuggestion siteData, final LargeIconBridge.LargeIconCallback iconCallback) {
+        if (siteData.whitelistIconPath.isEmpty()) {
+            mImageFetcher.makeLargeIconRequest(siteData.url, mMinIconSize, iconCallback);
             return;
         }
 
         AsyncTask<Void, Void, Bitmap> task = new AsyncTask<Void, Void, Bitmap>() {
             @Override
             protected Bitmap doInBackground(Void... params) {
-                Bitmap bitmap = BitmapFactory.decodeFile(tile.getWhitelistIconPath());
+                Bitmap bitmap = BitmapFactory.decodeFile(siteData.whitelistIconPath);
                 if (bitmap == null) {
-                    Log.d(TAG, "Image decoding failed: %s", tile.getWhitelistIconPath());
+                    Log.d(TAG, "Image decoding failed: %s", siteData.whitelistIconPath);
                 }
                 return bitmap;
             }
@@ -159,7 +158,7 @@ public class TileRenderer {
             @Override
             protected void onPostExecute(Bitmap icon) {
                 if (icon == null) {
-                    mImageFetcher.makeLargeIconRequest(tile.getUrl(), mMinIconSize, iconCallback);
+                    mImageFetcher.makeLargeIconRequest(siteData.url, mMinIconSize, iconCallback);
                 } else {
                     iconCallback.onLargeIconAvailable(icon, Color.BLACK, false);
                 }
@@ -168,8 +167,9 @@ public class TileRenderer {
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    public void updateIcon(Tile tile, LargeIconBridge.LargeIconCallback iconCallback) {
-        mImageFetcher.makeLargeIconRequest(tile.getUrl(), mMinIconSize, iconCallback);
+    public void updateIcon(
+            SiteSuggestion siteData, LargeIconBridge.LargeIconCallback iconCallback) {
+        mImageFetcher.makeLargeIconRequest(siteData.url, mMinIconSize, iconCallback);
     }
 
     public void setTileIconFromBitmap(Tile tile, Bitmap icon) {
