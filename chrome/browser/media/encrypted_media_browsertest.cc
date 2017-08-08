@@ -753,11 +753,14 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, InitializeCDMFail) {
 // When CDM crashes, we should still get a decode error and all sessions should
 // be closed.
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CDMCrashDuringDecode) {
-  // TODO(xhwang): Handle mojo CDM crash correctly. See http://crbug.com/730766
+// TODO(xhwang): This test times out when using mojo CDM, possibly due to the
+// crash pop-up dialog. See http://crbug.com/730766
+#if defined(OS_WIN)
   if (IsUsingMojoCdm()) {
     DVLOG(0) << "Skipping test; Not working with mojo CDM yet.";
     return;
   }
+#endif  // defined(OS_WIN)
 
   IgnorePluginCrash();
   TestNonPlaybackCases(kExternalClearKeyCrashKeySystem,
@@ -766,9 +769,9 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CDMCrashDuringDecode) {
 
 // Testing that the media browser test does fail on CDM crash.
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CDMExpectedCrash) {
-  // TODO(xhwang): Handle mojo CDM crash correctly. See http://crbug.com/730766
+  // PluginCrashed() is only called when the CDM is running as a plugin.
   if (IsUsingMojoCdm()) {
-    DVLOG(0) << "Skipping test; Not working with mojo CDM yet.";
+    DVLOG(0) << "Skipping test; Pepper CDM specific.";
     return;
   }
 

@@ -699,8 +699,12 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
   DVLOG(1) << __func__;
 
   // Trigger a crash on purpose for testing purpose.
-  if (key_system_ == kExternalClearKeyCrashKeySystem)
+  // Only do this after a session has been created since the test also checks
+  // that the session is properly closed.
+  if (!last_session_id_.empty() &&
+      key_system_ == kExternalClearKeyCrashKeySystem) {
     CHECK(false);
+  }
 
   scoped_refptr<media::DecoderBuffer> buffer;
   cdm::Status status = DecryptToMediaDecoderBuffer(encrypted_buffer, &buffer);
