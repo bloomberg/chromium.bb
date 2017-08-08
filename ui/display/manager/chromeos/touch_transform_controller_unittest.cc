@@ -21,7 +21,9 @@ namespace test {
 namespace {
 
 constexpr int kDisplayId1 = 1;
+constexpr int kDisplayId2 = 2;
 constexpr int kTouchId1 = 5;
+constexpr int kTouchId2 = 6;
 
 ManagedDisplayInfo CreateDisplayInfo(int64_t id,
                                      unsigned int touch_device_id,
@@ -101,12 +103,12 @@ class TouchTransformControllerTest : public testing::Test {
   TouchTransformControllerTest() {}
   ~TouchTransformControllerTest() override {}
 
-  gfx::Transform GetTouchTransform(const ManagedDisplayInfo& display,
-                                   const ManagedDisplayInfo& touch_display,
-                                   const ui::TouchscreenDevice& touchscreen,
-                                   const gfx::Size& framebuffer_size) const {
+  gfx::Transform GetTouchTransform(
+      const ManagedDisplayInfo& display,
+      const ManagedDisplayInfo& touch_display,
+      const ui::TouchscreenDevice& touchscreen) const {
     return touch_transform_controller_->GetTouchTransform(
-        display, touch_display, touchscreen, framebuffer_size);
+        display, touch_display, touchscreen);
   }
 
   double GetTouchResolutionScale(
@@ -160,8 +162,7 @@ TEST_F(TouchTransformControllerTest, MirrorModeLetterboxing) {
 
   gfx::Size fb_size(1920, 1200);
 
-  // Create the touchscreens with the same size as the framebuffer so we can
-  // share the tests between Ozone & X11.
+  // TODO(kylechar): Check the TouchscreenDevice size makes sense for Ozone.
   ui::TouchscreenDevice internal_touchscreen =
       CreateTouchscreenDevice(10, fb_size);
   ui::TouchscreenDevice external_touchscreen =
@@ -172,12 +173,12 @@ TEST_F(TouchTransformControllerTest, MirrorModeLetterboxing) {
   device_manager->UpdateTouchInfoForDisplay(
       internal_display_info.id(), internal_touchscreen.id,
       GetTouchTransform(internal_display_info, internal_display_info,
-                        internal_touchscreen, fb_size));
+                        internal_touchscreen));
 
   device_manager->UpdateTouchInfoForDisplay(
       internal_display_info.id(), external_touchscreen.id,
       GetTouchTransform(external_display_info, external_display_info,
-                        external_touchscreen, fb_size));
+                        external_touchscreen));
 
   EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(10));
   EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(11));
@@ -227,8 +228,7 @@ TEST_F(TouchTransformControllerTest, MirrorModePillarboxing) {
 
   gfx::Size fb_size(1024, 768);
 
-  // Create the touchscreens with the same size as the framebuffer so we can
-  // share the tests between Ozone & X11.
+  // TODO(kylechar): Check the TouchscreenDevice size makes sense for Ozone.
   ui::TouchscreenDevice internal_touchscreen =
       CreateTouchscreenDevice(10, fb_size);
   ui::TouchscreenDevice external_touchscreen =
@@ -239,12 +239,12 @@ TEST_F(TouchTransformControllerTest, MirrorModePillarboxing) {
   device_manager->UpdateTouchInfoForDisplay(
       internal_display_info.id(), internal_touchscreen.id,
       GetTouchTransform(internal_display_info, internal_display_info,
-                        internal_touchscreen, fb_size));
+                        internal_touchscreen));
 
   device_manager->UpdateTouchInfoForDisplay(
       internal_display_info.id(), external_touchscreen.id,
       GetTouchTransform(external_display_info, external_display_info,
-                        external_touchscreen, fb_size));
+                        external_touchscreen));
 
   EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(10));
   EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(11));
@@ -299,8 +299,7 @@ TEST_F(TouchTransformControllerTest, SoftwareMirrorMode) {
 
   gfx::Size fb_size(1920, 1990);
 
-  // Create the touchscreens with the same size as the framebuffer so we can
-  // share the tests between Ozone & X11.
+  // TODO(kylechar): Check the TouchscreenDevice size makes sense for Ozone.
   ui::TouchscreenDevice display1_touchscreen =
       CreateTouchscreenDevice(10, fb_size);
   ui::TouchscreenDevice display2_touchscreen =
@@ -310,13 +309,11 @@ TEST_F(TouchTransformControllerTest, SoftwareMirrorMode) {
 
   device_manager->UpdateTouchInfoForDisplay(
       display1_info.id(), display1_touchscreen.id,
-      GetTouchTransform(display1_info, display1_info, display1_touchscreen,
-                        fb_size));
+      GetTouchTransform(display1_info, display1_info, display1_touchscreen));
 
   device_manager->UpdateTouchInfoForDisplay(
       display1_info.id(), display2_touchscreen.id,
-      GetTouchTransform(display1_info, display2_info, display2_touchscreen,
-                        fb_size));
+      GetTouchTransform(display1_info, display2_info, display2_touchscreen));
 
   EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(10));
   EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(11));
@@ -370,8 +367,7 @@ TEST_F(TouchTransformControllerTest, ExtendedMode) {
       CreateDisplayInfo(2, 6u, gfx::Rect(0, 828, 2560, 1600));
   gfx::Size fb_size(2560, 2428);
 
-  // Create the touchscreens with the same size as the framebuffer so we can
-  // share the tests between Ozone & X11.
+  // TODO(kylechar): Check the TouchscreenDevice size makes sense for Ozone.
   ui::TouchscreenDevice touchscreen1 = CreateTouchscreenDevice(5, fb_size);
   ui::TouchscreenDevice touchscreen2 = CreateTouchscreenDevice(6, fb_size);
 
@@ -379,11 +375,11 @@ TEST_F(TouchTransformControllerTest, ExtendedMode) {
 
   device_manager->UpdateTouchInfoForDisplay(
       display1.id(), touchscreen1.id,
-      GetTouchTransform(display1, display1, touchscreen1, fb_size));
+      GetTouchTransform(display1, display1, touchscreen1));
 
   device_manager->UpdateTouchInfoForDisplay(
       display2.id(), touchscreen2.id,
-      GetTouchTransform(display2, display2, touchscreen2, fb_size));
+      GetTouchTransform(display2, display2, touchscreen2));
 
   EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(5));
   EXPECT_EQ(2, device_manager->GetTargetDisplayForTouchDevice(6));
@@ -407,26 +403,16 @@ TEST_F(TouchTransformControllerTest, ExtendedMode) {
   x = 0.0;
   y = 0.0;
   device_manager->ApplyTouchTransformer(6, &x, &y);
-#if defined(USE_OZONE)
   // On ozone we expect screen coordinates so add display origin.
   EXPECT_NEAR(0 + 0, x, 0.5);
   EXPECT_NEAR(0 + 828, y, 0.5);
-#else
-  EXPECT_NEAR(0, x, 0.5);
-  EXPECT_NEAR(0, y, 0.5);
-#endif
 
   x = 2559.0;
   y = 2427.0;
   device_manager->ApplyTouchTransformer(6, &x, &y);
-#if defined(USE_OZONE)
   // On ozone we expect screen coordinates so add display origin.
   EXPECT_NEAR(2559 + 0, x, 0.5);
   EXPECT_NEAR(1599 + 828, y, 0.5);
-#else
-  EXPECT_NEAR(2559, x, 0.5);
-  EXPECT_NEAR(1599, y, 0.5);
-#endif
 }
 
 TEST_F(TouchTransformControllerTest, TouchRadiusScale) {
@@ -441,16 +427,12 @@ TEST_F(TouchTransformControllerTest, TouchRadiusScale) {
 }
 
 TEST_F(TouchTransformControllerTest, OzoneTranslation) {
-#if defined(USE_OZONE)
   // The internal display has size 1920 x 1200. The external display has
   // size 1920x1200. The total frame buffer is 1920x2450,
   // where 2458 = 1200 + 50 (hidden gap) + 1200
   // and the second monitor is translated to Point (0, 1250) in the
   // framebuffer.
-  const int kDisplayId2 = 2;
-  const int kTouchId2 = 6;
   const gfx::Size kDisplaySize(1920, 1200);
-  const gfx::Size kTouchSize(1920, 1200);
   const int kHiddenGap = 50;
 
   ManagedDisplayInfo display1 = CreateDisplayInfo(
@@ -460,8 +442,6 @@ TEST_F(TouchTransformControllerTest, OzoneTranslation) {
       CreateDisplayInfo(kDisplayId2, kTouchId2,
                         gfx::Rect(0, kDisplaySize.height() + kHiddenGap,
                                   kDisplaySize.width(), kDisplaySize.height()));
-
-  gfx::Size fb_size(1920, 2450);
 
   ui::TouchscreenDevice touchscreen1 =
       CreateTouchscreenDevice(kTouchId1, kDisplaySize);
@@ -473,11 +453,11 @@ TEST_F(TouchTransformControllerTest, OzoneTranslation) {
   // Mirror displays. Touch screen 2 is associated to display 1.
   device_manager->UpdateTouchInfoForDisplay(
       display1.id(), touchscreen1.id,
-      GetTouchTransform(display1, display1, touchscreen1, kTouchSize));
+      GetTouchTransform(display1, display1, touchscreen1));
 
   device_manager->UpdateTouchInfoForDisplay(
       display1.id(), touchscreen2.id,
-      GetTouchTransform(display1, display2, touchscreen2, kTouchSize));
+      GetTouchTransform(display1, display2, touchscreen2));
 
   EXPECT_EQ(kDisplayId1,
             device_manager->GetTargetDisplayForTouchDevice(kTouchId1));
@@ -511,7 +491,7 @@ TEST_F(TouchTransformControllerTest, OzoneTranslation) {
   // Remove mirroring of displays.
   device_manager->UpdateTouchInfoForDisplay(
       display2.id(), touchscreen2.id,
-      GetTouchTransform(display2, display2, touchscreen2, kTouchSize));
+      GetTouchTransform(display2, display2, touchscreen2));
 
   x = 1920.0;
   y = 1200.0;
@@ -524,7 +504,6 @@ TEST_F(TouchTransformControllerTest, OzoneTranslation) {
   device_manager->ApplyTouchTransformer(kTouchId2, &x, &y);
   EXPECT_NEAR(1920, x, 0.5);
   EXPECT_NEAR(1200 + kDisplaySize.height() + kHiddenGap, y, 0.5);
-#endif  // USE_OZONE
 }
 
 TEST_F(TouchTransformControllerTest, AccurateUserTouchCalibration) {
@@ -549,8 +528,6 @@ TEST_F(TouchTransformControllerTest, AccurateUserTouchCalibration) {
 
   const std::string msg = GetTouchPointString(user_input);
 
-  gfx::Size fb_size(1920, 1200);
-
   ui::TouchscreenDevice touchscreen =
       CreateTouchscreenDevice(kTouchId1, kTouchSize);
 
@@ -558,7 +535,7 @@ TEST_F(TouchTransformControllerTest, AccurateUserTouchCalibration) {
 
   device_manager->UpdateTouchInfoForDisplay(
       display.id(), touchscreen.id,
-      GetTouchTransform(display, display, touchscreen, kTouchSize));
+      GetTouchTransform(display, display, touchscreen));
 
   EXPECT_EQ(kDisplayId1,
             device_manager->GetTargetDisplayForTouchDevice(kTouchId1));
@@ -601,7 +578,7 @@ TEST_F(TouchTransformControllerTest, ErrorProneUserTouchCalibration) {
 
   device_manager->UpdateTouchInfoForDisplay(
       display.id(), touchscreen.id,
-      GetTouchTransform(display, display, touchscreen, kTouchSize));
+      GetTouchTransform(display, display, touchscreen));
 
   EXPECT_EQ(kDisplayId1,
             device_manager->GetTargetDisplayForTouchDevice(kTouchId1));
@@ -646,7 +623,7 @@ TEST_F(TouchTransformControllerTest, ResolutionChangeUserTouchCalibration) {
 
   device_manager->UpdateTouchInfoForDisplay(
       display.id(), touchscreen.id,
-      GetTouchTransform(display, display, touchscreen, kTouchSize));
+      GetTouchTransform(display, display, touchscreen));
 
   EXPECT_EQ(kDisplayId1,
             device_manager->GetTargetDisplayForTouchDevice(kTouchId1));
@@ -686,7 +663,7 @@ TEST_F(TouchTransformControllerTest, DifferentBoundsUserTouchCalibration) {
 
   device_manager->UpdateTouchInfoForDisplay(
       display.id(), touchscreen.id,
-      GetTouchTransform(display, display, touchscreen, kTouchSize));
+      GetTouchTransform(display, display, touchscreen));
 
   EXPECT_EQ(kDisplayId1,
             device_manager->GetTargetDisplayForTouchDevice(kTouchId1));
@@ -718,12 +695,8 @@ TEST_F(TouchTransformControllerTest, LetterboxingUserTouchCalibration) {
       false)));
   internal_display_info.SetManagedDisplayModes(internal_modes);
 
-  gfx::Size fb_size(kDisplaySize);
-
-  // Create the touchscreens with the same size as the framebuffer so we can
-  // share the tests between Ozone & X11.
   ui::TouchscreenDevice internal_touchscreen =
-      CreateTouchscreenDevice(kTouchId1, fb_size);
+      CreateTouchscreenDevice(kTouchId1, kTouchSize);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
 
@@ -745,7 +718,7 @@ TEST_F(TouchTransformControllerTest, LetterboxingUserTouchCalibration) {
   device_manager->UpdateTouchInfoForDisplay(
       internal_display_info.id(), internal_touchscreen.id,
       GetTouchTransform(internal_display_info, internal_display_info,
-                        internal_touchscreen, fb_size));
+                        internal_touchscreen));
 
   EXPECT_EQ(kDisplayId1,
             device_manager->GetTargetDisplayForTouchDevice(kTouchId1));
@@ -793,12 +766,8 @@ TEST_F(TouchTransformControllerTest, PillarBoxingUserTouchCalibration) {
       false)));
   internal_display_info.SetManagedDisplayModes(internal_modes);
 
-  gfx::Size fb_size(kDisplaySize);
-
-  // Create the touchscreens with the same size as the framebuffer so we can
-  // share the tests between Ozone & X11.
   ui::TouchscreenDevice internal_touchscreen =
-      CreateTouchscreenDevice(kTouchId1, fb_size);
+      CreateTouchscreenDevice(kTouchId1, kDisplaySize);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
 
@@ -820,7 +789,7 @@ TEST_F(TouchTransformControllerTest, PillarBoxingUserTouchCalibration) {
   device_manager->UpdateTouchInfoForDisplay(
       internal_display_info.id(), internal_touchscreen.id,
       GetTouchTransform(internal_display_info, internal_display_info,
-                        internal_touchscreen, fb_size));
+                        internal_touchscreen));
 
   EXPECT_EQ(kDisplayId1,
             device_manager->GetTargetDisplayForTouchDevice(kTouchId1));

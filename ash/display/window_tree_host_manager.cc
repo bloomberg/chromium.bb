@@ -693,8 +693,7 @@ void WindowTreeHostManager::PreDisplayConfigurationChange(bool clear_focus) {
   cursor_location_in_native_coords_for_restore_ = point_in_native;
 }
 
-void WindowTreeHostManager::PostDisplayConfigurationChange(
-    bool must_clear_window) {
+void WindowTreeHostManager::PostDisplayConfigurationChange() {
   focus_activation_store_->Restore();
 
   display::DisplayManager* display_manager = GetDisplayManager();
