@@ -127,4 +127,15 @@ const std::string& ArcNotificationSurfaceImpl::GetNotificationKey() const {
   return surface_->notification_key();
 }
 
+void ArcNotificationSurfaceImpl::FocusSurfaceWindow() {
+  DCHECK(surface_->root_surface());
+  DCHECK(surface_->root_surface()->window());
+
+  // Focus the surface window manually to handle key events for notification.
+  // Message center is unactivatable by default, but we make it activatable when
+  // user is about to use Direct Reply. In that case, we also need to focus the
+  // surface window manually to send events to Android.
+  return surface_->root_surface()->window()->Focus();
+}
+
 }  // namespace arc

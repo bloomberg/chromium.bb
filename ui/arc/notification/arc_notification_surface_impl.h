@@ -30,6 +30,7 @@ class ArcNotificationSurfaceImpl : public ArcNotificationSurface {
   void Detach() override;
   bool IsAttached() const override;
   views::NativeViewHost* GetAttachedHost() const override;
+  void FocusSurfaceWindow() override;
 
   exo::NotificationSurface* surface() const { return surface_; }
 
