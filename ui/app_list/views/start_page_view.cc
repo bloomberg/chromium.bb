@@ -25,7 +25,6 @@
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/custom_launcher_page_view.h"
 #include "ui/app_list/views/expand_arrow_view.h"
-#include "ui/app_list/views/indicator_chip_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_container_view.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"
@@ -48,6 +47,7 @@ namespace {
 
 // Layout constants.
 constexpr int kInstantContainerSpacing = 24;
+constexpr int kSearchBoxBottomPadding = 12;
 constexpr int kSearchBoxAndTilesSpacing = 35;
 constexpr int kStartPageSearchBoxWidth = 480;
 constexpr int kStartPageSearchBoxWidthFullscreen = 544;
@@ -57,7 +57,7 @@ constexpr int kPreferredHeightFullscreen = 272;
 constexpr int kWebViewWidth = 700;
 constexpr int kWebViewHeight = 224;
 
-constexpr int kExpandArrowTopPadding = 28;
+constexpr int kExpandArrowTopPadding = 29;
 constexpr int kLauncherPageBackgroundWidth = 400;
 
 }  // namespace
@@ -122,12 +122,6 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
   // The view containing the start page WebContents and SearchBoxSpacerView.
   InitInstantContainer();
   AddChildView(instant_container_);
-
-  if (is_fullscreen_app_list_enabled_) {
-    indicator_ = new IndicatorChipView(
-        l10n_util::GetStringUTF16(IDS_SUGGESTED_APPS_INDICATOR));
-    AddChildView(indicator_);
-  }
 
   // The view containing the start page tiles.
   AddChildView(suggestions_container_);
@@ -257,17 +251,8 @@ void StartPageView::Layout() {
   bounds.set_height(instant_container_->GetHeightForWidth(bounds.width()));
   instant_container_->SetBoundsRect(bounds);
 
-  // For old launcher, tiles begin where the instant container ends; for
-  // fullscreen app list launcher, tiles begin where the |indicator_| ends.
+  // Tiles begin where the instant container ends.
   bounds.set_y(bounds.bottom());
-  if (indicator_) {
-    gfx::Rect indicator_rect(bounds);
-    indicator_rect.Offset(
-        (indicator_rect.width() - indicator_->GetPreferredSize().width()) / 2,
-        0);
-    indicator_->SetBoundsRect(indicator_rect);
-    bounds.Inset(0, indicator_->GetPreferredSize().height(), 0, 0);
-  }
   bounds.set_height(suggestions_container_->GetHeightForWidth(bounds.width()));
   if (is_fullscreen_app_list_enabled_) {
     bounds.Offset((bounds.width() - kGridTileWidth) / 2 -
@@ -441,10 +426,6 @@ int StartPageView::GetSelectedIndexForTest() const {
 void StartPageView::UpdateOpacity(float work_area_bottom, bool is_end_gesture) {
   work_area_bottom_ = work_area_bottom;
   is_end_gesture_ = is_end_gesture;
-
-  // Updates opacity of suggested apps indicator.
-  gfx::Rect indicator_bounds = indicator_->GetLabelBoundsInScreen();
-  UpdateOpacityOfItem(indicator_, indicator_bounds.CenterPoint().y());
 
   // Updates opacity of suggestions container.
   gfx::Rect suggestions_container_bounds =

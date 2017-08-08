@@ -133,7 +133,6 @@ const int kAppsGridLeftRightPaddingFullscreen = 28;
 // The padding around the outside of the search box (top and sides).
 const int kSearchBoxPadding = 16;
 const int kSearchBoxTopPadding = 24;
-const int kSearchBoxBottomPadding = 21;
 
 // The background border corner radius of the search box in fullscreen mode.
 const int kSearchBoxBorderCornerRadiusFullscreen = 24;
