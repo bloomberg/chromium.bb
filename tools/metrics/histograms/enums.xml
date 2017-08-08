@@ -23183,6 +23183,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-345838366" label="enable-hosted-apps-in-windows"/>
   <int value="-345324571" label="enable-quirks-client"/>
   <int value="-344343842" label="disable-experimental-app-list"/>
+  <int value="-343769596" label="ServiceWorkerScriptStreaming:disabled"/>
   <int value="-340622848" label="disable-javascript-harmony-shipping"/>
   <int value="-340255045" label="allow-nacl-socket-api"/>
   <int value="-340023285" label="WebNFC:enabled"/>
@@ -23427,6 +23428,7 @@ from previous Chrome versions.
   <int value="477967119" label="enable-unified-media-pipeline"/>
   <int value="479906041" label="RunAllFlashInAllowMode:disabled"/>
   <int value="480544447" label="NonValidatingReloadOnRefreshContentV2:enabled"/>
+  <int value="481506759" label="ServiceWorkerScriptStreaming:enabled"/>
   <int value="492113129" label="ExperimentalAppBanners:enabled"/>
   <int value="493903641" label="disable-appcontainer"/>
   <int value="494733611" label="disable-drop-sync-credential"/>

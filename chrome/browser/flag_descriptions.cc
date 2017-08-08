@@ -1053,6 +1053,13 @@ const char kServiceWorkerNavigationPreloadDescription[] =
     "Enable web pages to use the experimental service worker navigation "
     "preload API.";
 
+const char kServiceWorkerScriptStreamingName[] =
+    "Service worker script streaming.";
+const char kServiceWorkerScriptStreamingDescription[] =
+    "Installed scripts for a service worker are sent over a dedicated "
+    "message pipe and data pipes, and that is never be blocked on the main "
+    "thread.";
+
 const char kSettingsWindowName[] = "Show settings in a window";
 const char kSettingsWindowDescription[] =
     "Settings will be shown in a dedicated window instead of as a browser tab.";
