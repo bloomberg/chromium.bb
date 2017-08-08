@@ -2187,9 +2187,7 @@ static void init_txfm_param(const MACROBLOCKD *xd, TX_SIZE tx_size,
   txfm_param->tx_size = tx_size;
   txfm_param->eob = eob;
   txfm_param->lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
-#if CONFIG_HIGHBITDEPTH
   txfm_param->bd = xd->bd;
-#endif
 #if CONFIG_LGT
   txfm_param->is_inter = is_inter_block(&xd->mi[0]->mbmi);
 #endif
@@ -2222,19 +2220,14 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
   const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
   const int txb_width = block_size_wide[tx_bsize];
   const int txb_height = block_size_high[tx_bsize];
-  int r, c;
-#if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    for (r = 0; r < txb_height; r++)
-      for (c = 0; c < txb_width; c++)
+    for (int r = 0; r < txb_height; r++)
+      for (int c = 0; c < txb_width; c++)
         CONVERT_TO_SHORTPTR(dst)[r * stride + c] = 0;
   } else {
-#endif  // CONFIG_HIGHBITDEPTH
-    for (r = 0; r < txb_height; r++)
-      for (c = 0; c < txb_width; c++) dst[r * stride + c] = 0;
-#if CONFIG_HIGHBITDEPTH
+    for (int r = 0; r < txb_height; r++)
+      for (int c = 0; c < txb_width; c++) dst[r * stride + c] = 0;
   }
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_PVQ
   TxfmParam txfm_param;
   init_txfm_param(xd, tx_size, tx_type, eob, &txfm_param);
