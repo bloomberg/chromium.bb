@@ -554,7 +554,8 @@ void Compositor::DidSubmitCompositorFrame() {
     observer.OnCompositingStarted(this, start_time);
 }
 
-void Compositor::OnSurfaceCreated(const viz::SurfaceInfo& surface_info) {
+void Compositor::OnFirstSurfaceActivation(
+    const viz::SurfaceInfo& surface_info) {
   // TODO(fsamuel): Once surface synchronization is turned on, the fallback
   // surface should be set here.
 }

@@ -320,7 +320,8 @@ bool FrameSinkManagerImpl::ChildContains(
   return false;
 }
 
-void FrameSinkManagerImpl::OnSurfaceCreated(const SurfaceInfo& surface_info) {
+void FrameSinkManagerImpl::OnFirstSurfaceActivation(
+    const SurfaceInfo& surface_info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_GT(surface_info.device_scale_factor(), 0.0f);
 
@@ -330,7 +331,7 @@ void FrameSinkManagerImpl::OnSurfaceCreated(const SurfaceInfo& surface_info) {
   // temporary reference was created. It could be useful to let |client_| know
   // if it should find an owner.
   if (client_)
-    client_->OnSurfaceCreated(surface_info);
+    client_->OnFirstSurfaceActivation(surface_info);
 }
 
 bool FrameSinkManagerImpl::OnSurfaceDamaged(const SurfaceId& surface_id,

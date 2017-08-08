@@ -165,7 +165,8 @@ void HostFrameSinkManager::PerformAssignTemporaryReference(
   frame_sink_manager_->DropTemporaryReference(surface_id);
 }
 
-void HostFrameSinkManager::OnSurfaceCreated(const SurfaceInfo& surface_info) {
+void HostFrameSinkManager::OnFirstSurfaceActivation(
+    const SurfaceInfo& surface_info) {
   auto it = frame_sink_data_map_.find(surface_info.id().frame_sink_id());
   // If we've received a bogus or stale SurfaceId from Viz then just ignore it.
   if (it == frame_sink_data_map_.end()) {
@@ -177,7 +178,7 @@ void HostFrameSinkManager::OnSurfaceCreated(const SurfaceInfo& surface_info) {
 
   FrameSinkData& frame_sink_data = it->second;
   if (frame_sink_data.client)
-    frame_sink_data.client->OnSurfaceCreated(surface_info);
+    frame_sink_data.client->OnFirstSurfaceActivation(surface_info);
 
   if (frame_sink_manager_impl_ &&
       frame_sink_manager_impl_->surface_manager()->using_surface_references()) {

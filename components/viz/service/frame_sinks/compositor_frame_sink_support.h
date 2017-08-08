@@ -144,7 +144,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   const bool is_root_;
   const bool needs_sync_tokens_;
-  bool seen_first_frame_activation_ = false;
 
   // A callback that will be run at the start of the destructor if set.
   base::OnceCallback<void()> destruction_callback_;

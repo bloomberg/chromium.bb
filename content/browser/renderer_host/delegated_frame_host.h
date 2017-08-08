@@ -118,7 +118,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   void OnBeginFramePausedChanged(bool paused) override;
 
   // viz::HostFrameSinkClient implementation.
-  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
 
   // Public interface exposed to RenderWidgetHostView.
 

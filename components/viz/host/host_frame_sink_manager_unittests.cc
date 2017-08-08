@@ -46,7 +46,7 @@ class FakeHostFrameSinkClient : public HostFrameSinkClient {
   ~FakeHostFrameSinkClient() override = default;
 
   // HostFrameSinkClient implementation.
-  void OnSurfaceCreated(const SurfaceInfo& surface_info) override {}
+  void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeHostFrameSinkClient);
@@ -217,11 +217,12 @@ TEST_F(HostFrameSinkManagerTest, AssignTemporaryReference) {
   host_manager().RegisterFrameSinkHierarchy(kParentFrameSinkId,
                                             surface_id.frame_sink_id());
 
-  // When HostFrameSinkManager gets OnSurfaceCreated() it should assign the
-  // temporary reference to the registered parent |kParentFrameSinkId|.
+  // When HostFrameSinkManager gets OnFirstSurfaceActivation() it should assign
+  // the temporary reference to the registered parent |kParentFrameSinkId|.
   EXPECT_CALL(manager_impl(),
               AssignTemporaryReference(surface_id, kParentFrameSinkId));
-  GetFrameSinkManagerClient()->OnSurfaceCreated(MakeSurfaceInfo(surface_id));
+  GetFrameSinkManagerClient()->OnFirstSurfaceActivation(
+      MakeSurfaceInfo(surface_id));
 }
 
 TEST_F(HostFrameSinkManagerTest, DropTemporaryReference) {
@@ -229,10 +230,11 @@ TEST_F(HostFrameSinkManagerTest, DropTemporaryReference) {
   auto support = CreateCompositorFrameSinkSupport(surface_id.frame_sink_id(),
                                                   false /* is_root */);
 
-  // When HostFrameSinkManager gets OnSurfaceCreated() it should find no
+  // When HostFrameSinkManager gets OnFirstSurfaceActivation() it should find no
   // registered parent and drop the temporary reference.
   EXPECT_CALL(manager_impl(), DropTemporaryReference(surface_id));
-  GetFrameSinkManagerClient()->OnSurfaceCreated(MakeSurfaceInfo(surface_id));
+  GetFrameSinkManagerClient()->OnFirstSurfaceActivation(
+      MakeSurfaceInfo(surface_id));
 }
 
 TEST_F(HostFrameSinkManagerTest, DropTemporaryReferenceForStaleClient) {
@@ -258,7 +260,7 @@ TEST_F(HostFrameSinkManagerTest, DropTemporaryReferenceForStaleClient) {
       .Times(0);
   EXPECT_CALL(manager_impl(), AssignTemporaryReference(client_surface_id, _))
       .Times(1);
-  GetFrameSinkManagerClient()->OnSurfaceCreated(
+  GetFrameSinkManagerClient()->OnFirstSurfaceActivation(
       MakeSurfaceInfo(client_surface_id));
   testing::Mock::VerifyAndClearExpectations(&manager_impl());
 
@@ -269,7 +271,7 @@ TEST_F(HostFrameSinkManagerTest, DropTemporaryReferenceForStaleClient) {
   const SurfaceId client_surface_id2 = MakeSurfaceId(kClientFrameSinkId, 2);
   EXPECT_CALL(manager_impl(), DropTemporaryReference(client_surface_id2))
       .Times(1);
-  GetFrameSinkManagerClient()->OnSurfaceCreated(
+  GetFrameSinkManagerClient()->OnFirstSurfaceActivation(
       MakeSurfaceInfo(client_surface_id2));
 
   support_parent.reset();
@@ -281,11 +283,12 @@ TEST_F(HostFrameSinkManagerTest, DisplayRootTemporaryReference) {
   auto support = CreateCompositorFrameSinkSupport(surface_id.frame_sink_id(),
                                                   true /* is_root */);
 
-  // When HostFrameSinkManager gets OnSurfaceCreated() it should do nothing
-  // since |kParentFrameSinkId| is a display root.
+  // When HostFrameSinkManager gets OnFirstSurfaceActivation() it should do
+  // nothing since |kParentFrameSinkId| is a display root.
   EXPECT_CALL(manager_impl(), DropTemporaryReference(surface_id)).Times(0);
   EXPECT_CALL(manager_impl(), AssignTemporaryReference(surface_id, _)).Times(0);
-  GetFrameSinkManagerClient()->OnSurfaceCreated(MakeSurfaceInfo(surface_id));
+  GetFrameSinkManagerClient()->OnFirstSurfaceActivation(
+      MakeSurfaceInfo(surface_id));
 }
 
 }  // namespace test

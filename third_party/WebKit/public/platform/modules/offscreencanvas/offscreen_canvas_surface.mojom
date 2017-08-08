@@ -17,7 +17,7 @@ interface OffscreenCanvasSurface {
 };
 
 interface OffscreenCanvasSurfaceClient {
-  OnSurfaceCreated(cc.mojom.SurfaceInfo surface_info);
+  OnFirstSurfaceActivation(cc.mojom.SurfaceInfo surface_info);
 };
 
 // Creates OffscreenCanvasSurface and CompositorFrameSink instances for use

@@ -390,7 +390,7 @@ class COMPOSITOR_EXPORT Compositor
   void DidLoseLayerTreeFrameSink() override {}
 
   // viz::HostFrameSinkClient implementation.
-  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
 
   bool IsLocked() { return !active_locks_.empty(); }
 

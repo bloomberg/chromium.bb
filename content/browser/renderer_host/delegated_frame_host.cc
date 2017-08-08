@@ -513,7 +513,7 @@ void DelegatedFrameHost::OnBeginFramePausedChanged(bool paused) {
     renderer_compositor_frame_sink_->OnBeginFramePausedChanged(paused);
 }
 
-void DelegatedFrameHost::OnSurfaceCreated(
+void DelegatedFrameHost::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   // TODO(fsamuel): Once surface synchronization is turned on, the fallback
   // surface should be set here.

@@ -251,6 +251,7 @@ class VIZ_SERVICE_EXPORT Surface : public SurfaceDeadlineObserver {
   base::Optional<FrameData> pending_frame_data_;
   base::Optional<FrameData> active_frame_data_;
   bool closed_ = false;
+  bool seen_first_frame_activation_ = false;
   const bool needs_sync_tokens_;
   std::vector<SurfaceSequence> destruction_dependencies_;
 

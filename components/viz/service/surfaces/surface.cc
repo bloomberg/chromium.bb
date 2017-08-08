@@ -253,6 +253,11 @@ void Surface::ActivateFrame(FrameData frame_data) {
 
   UnrefFrameResourcesAndRunDrawCallback(std::move(previous_frame_data));
 
+  if (!seen_first_frame_activation_) {
+    seen_first_frame_activation_ = true;
+    surface_manager_->FirstSurfaceActivation(surface_info_);
+  }
+
   // TODO(fsamuel): If |surface_client_| is not available then we will not
   // immediately generate a display frame once the cc::CompositorFrame here
   // activates. This isn't a major issue though because this would only

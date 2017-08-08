@@ -40,7 +40,8 @@ void FakeSurfaceObserver::OnSurfaceWillDraw(const SurfaceId& surface_id) {
   will_draw_surfaces_.insert(surface_id);
 }
 
-void FakeSurfaceObserver::OnSurfaceCreated(const SurfaceInfo& surface_info) {
+void FakeSurfaceObserver::OnFirstSurfaceActivation(
+    const SurfaceInfo& surface_info) {
   last_created_surface_id_ = surface_info.id();
   last_surface_info_ = surface_info;
 }
