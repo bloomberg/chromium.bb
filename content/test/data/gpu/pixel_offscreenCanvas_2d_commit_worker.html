@@ -11,7 +11,7 @@ that the baseline images are regenerated on the next run.
 <title>OffscreenCanvas 2d commit flow on worker thread: Two Canvases</title>
 <style type="text/css">
 .nomargin {
-  margin: 0px auto;
+  margin: 0px;
 }
 </style>
 <script id="myWorker" type="text/worker">
@@ -34,7 +34,7 @@ self.onmessage = function(e) {
   g_ctx2 = e.data.offscreenCanvas2.getContext("2d");
 
   startTest();
-}  
+}
 
 function startTest() {
   g_ctx1.fillStyle = "green";
@@ -122,7 +122,7 @@ function main()
 {
   var offscreenCanvas1 = document.getElementById("canvas1").transferControlToOffscreen();
   var offscreenCanvas2 = document.getElementById("canvas2").transferControlToOffscreen();
-  
+
   var worker = makeWorker(document.getElementById("myWorker").textContent);
   worker.onmessage = function (e) {
       waitForFinish();
@@ -137,7 +137,7 @@ function main()
 <body onload="main()">
 <div style="position:relative; width:360px; height:200px; background-color:white">
 </div>
-<div id="container" style="position:absolute; top:0px; left:0px">
+<div id="container" style="position:absolute; top:0px; left:0px; font-size: 0">
 <canvas id="canvas1" width="180" height="200" class="nomargin"></canvas>
 <canvas id="canvas2" width="180" height="200" class="nomargin"></canvas>
 </div>
