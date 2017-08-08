@@ -87,10 +87,9 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       * wallpaper.
       * @param {string} maskColor Color for the gradient mask.
       * @param {string} scrollColor Color for the small pods container.
-      * @param {string} backgroundColor Color for the whole background.
       */
-     setOverlayColors: function(maskColor, scrollColor, backgroundColor) {
-      $('pod-row').setOverlayColors(maskColor, scrollColor, backgroundColor);
+     setOverlayColors: function(maskColor, scrollColor) {
+      $('pod-row').setOverlayColors(maskColor, scrollColor);
      },
 
     /**

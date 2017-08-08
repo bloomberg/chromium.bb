@@ -63,16 +63,6 @@
   pointer-events: none;
 }
 
-#login-shield {
-  background-color: rgba(0, 0, 0, 0.6);
-  display: block;
-  height: 100%;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 100%;
-}
-
 #oobe[md-mode] #progress-dots {
   display: none;
 }

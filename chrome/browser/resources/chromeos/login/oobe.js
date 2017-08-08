@@ -382,16 +382,11 @@ cr.define('cr.ui.Oobe', function() {
     setMDMode_: function() {
       if (loadTimeData.getString('newOobeUI') == 'on') {
         $('oobe').setAttribute('md-mode', 'true');
-        $('oobe-shield').setAttribute('md-mode', 'true');
         $('popup-overlay').setAttribute('md-mode', 'true');
       } else {
         $('oobe').removeAttribute('md-mode');
-        $('oobe-shield').removeAttribute('md-mode');
         $('popup-overlay').removeAttribute('md-mode');
       }
-
-      $('oobe-shield').hidden =
-          (loadTimeData.getString('hideOobeShield') == 'on');
     },
   };
 });

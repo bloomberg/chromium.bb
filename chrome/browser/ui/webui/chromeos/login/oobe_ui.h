@@ -20,10 +20,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "content/public/browser/web_ui_controller.h"
 
-namespace ash {
-class ScreenDimmer;
-}
-
 namespace base {
 class DictionaryValue;
 }  // namespace base
@@ -246,8 +242,6 @@ class OobeUI : public content::WebUIController,
 
   // Observer of CrosSettings watching the kRebootOnShutdown policy.
   std::unique_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
-
-  std::unique_ptr<ash::ScreenDimmer> screen_dimmer_;
 
   std::unique_ptr<OobeDisplayChooser> oobe_display_chooser_;
 
