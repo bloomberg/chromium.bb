@@ -42,7 +42,10 @@ NSString* const kUserInfo = @"kUserInfo";
 
 @interface RemotingService ()<RemotingAuthenticationDelegate> {
   id<RemotingAuthentication> _authentication;
-  remoting::HostListFetcher* _hostListFetcher;
+  std::unique_ptr<remoting::HostListFetcher> _hostListFetcher;
+
+  // TODO(yuweih): It's suspicious to use a raw C++ pointer here. Investigate
+  // its lifetime in ChromotingRuntime and change to unique_ptr if possible.
   remoting::IosClientRuntimeDelegate* _clientRuntimeDelegate;
 }
 @end
@@ -66,7 +69,6 @@ NSString* const kUserInfo = @"kUserInfo";
   self = [super init];
   if (self) {
     _hosts = nil;
-    _hostListFetcher = nil;
     // TODO(yuweih): Maybe better to just cancel the previous request.
     _hostListState = HostListStateNotFetched;
     // TODO(nicholss): This might need a pointer back to the service.
@@ -85,19 +87,30 @@ NSString* const kUserInfo = @"kUserInfo";
   }
   [self setHostListState:HostListStateFetching];
   if (!_hostListFetcher) {
-    _hostListFetcher = new remoting::HostListFetcher(
-        remoting::ChromotingClientRuntime::GetInstance()->url_requester());
+    _hostListFetcher.reset(new remoting::HostListFetcher(
+        remoting::ChromotingClientRuntime::GetInstance()->url_requester()));
   }
   _hostListFetcher->RetrieveHostlist(
       base::SysNSStringToUTF8(accessToken),
       base::BindBlockArc(^(int responseCode,
                            const std::vector<remoting::HostInfo>& hostlist) {
+        if (responseCode != net::HTTP_OK) {
+          if (responseCode !=
+              remoting::HostListFetcher::RESPONSE_CODE_CANCELLED) {
+            LOG(WARNING) << "Failed to fetch host list. Response code: "
+                         << responseCode;
+          }
 
-        if (responseCode == net::HTTP_UNAUTHORIZED) {
-          [[RemotingService instance].authentication logout];
+          if (responseCode == net::HTTP_UNAUTHORIZED) {
+            [[RemotingService instance].authentication logout];
+          }
+          // TODO(nicholss): There are more |responseCode|s that we might want
+          // to trigger on, look into that later.
+
+          [self setHostListState:HostListStateNotFetched];
+          _hosts = nil;
+          return;
         }
-        // TODO(nicholss): There are more |responseCode|s that we might want to
-        // trigger on, look into that later.
 
         NSMutableArray<HostInfo*>* hosts =
             [NSMutableArray arrayWithCapacity:hostlist.size()];
@@ -150,6 +163,9 @@ NSString* const kUserInfo = @"kUserInfo";
 
 - (void)userDidUpdate:(UserInfo*)user {
   NSDictionary* userInfo = nil;
+  if (_hostListFetcher) {
+    _hostListFetcher->CancelFetch();
+  }
   [self setHostListState:HostListStateNotFetched];
   if (user) {
     userInfo = [NSDictionary dictionaryWithObject:user forKey:kUserInfo];

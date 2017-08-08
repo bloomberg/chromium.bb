@@ -32,6 +32,14 @@ const char kHostListProdRequestUrl[] =
 // The public method is virtual to allow for mocking and fakes.
 class HostListFetcher : public net::URLFetcherDelegate {
  public:
+  // Imposible http response code. Used to signal that the request has been
+  // cancelled.
+  enum ResponseCode {
+    // URLFetcher::RESPONSE_CODE_INVALID = -1. Use -257 to (hopefully) prevent
+    // collisions.
+    RESPONSE_CODE_CANCELLED = -257,
+  };
+
   HostListFetcher(const scoped_refptr<net::URLRequestContextGetter>&
                       url_request_context_getter);
   ~HostListFetcher() override;
@@ -46,6 +54,11 @@ class HostListFetcher : public net::URLFetcherDelegate {
   // callback will be called once the HTTP request has completed.
   virtual void RetrieveHostlist(const std::string& access_token,
                                 const HostlistCallback& callback);
+
+  // Cancels the current fetch request and runs the host list callback with
+  // RESPONSE_CODE_CANCELLED. Nothing will happen if there is no ongoing fetch
+  // request.
+  virtual void CancelFetch();
 
  private:
   // Processes the response from the directory service.
