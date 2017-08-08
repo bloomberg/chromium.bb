@@ -58,9 +58,6 @@ class SearchCardView : public views::View {
           GetShadowForZHeight(kSearchResultZHeight)));
       content_view->SetBackground(
           views::CreateSolidBackground(kCardBackgroundColor));
-    } else {
-      content_view->SetBackground(
-          views::CreateSolidBackground(kCardBackgroundColorFullscreen));
     }
     SetLayoutManager(new views::FillLayout());
     AddChildView(content_view);
@@ -152,9 +149,11 @@ SearchResultPageView::SearchResultPageView()
         new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 0));
 
     // Hides this view behind the search box by using the same color and
-    // background border corner radius.
+    // background border corner radius. All child views' background should be
+    // set transparent so that the rounded corner is not overwritten.
     SetBackground(base::MakeUnique<SearchResultPageBackground>(
-        kSearchBoxBackgroundDefault, kSearchBoxBorderCornerRadiusFullscreen));
+        kCardBackgroundColorFullscreen,
+        kSearchBoxBorderCornerRadiusFullscreen));
   } else {
     gfx::ShadowValue shadow = GetShadowForZHeight(kSearchResultZHeight);
     std::unique_ptr<views::Border> border(new views::ShadowBorder(shadow));

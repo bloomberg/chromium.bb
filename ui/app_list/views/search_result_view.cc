@@ -328,9 +328,8 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
   const bool selected = list_view_->IsResultViewSelected(this);
   const bool hover = state() == STATE_HOVERED || state() == STATE_PRESSED;
 
-  canvas->FillRect(content_rect, is_fullscreen_app_list_enabled_
-                                     ? kCardBackgroundColorFullscreen
-                                     : kCardBackgroundColor);
+  if (!is_fullscreen_app_list_enabled_)
+    canvas->FillRect(content_rect, kCardBackgroundColor);
 
   // Possibly call FillRect a second time (these colours are partially
   // transparent, so the previous FillRect is not redundant).
