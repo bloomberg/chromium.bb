@@ -1179,6 +1179,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         var isManaged = opt_data && opt_data.enterpriseManaged;
         $('gaia-whitelist-error').textContent = loadTimeData.getValue(
             isManaged ? 'whitelistErrorEnterprise' : 'whitelistErrorConsumer');
+        // To make animations correct, we need to make sure Gaia is completely
+        // reloaded. Otherwise ChromeOS overlays hide and Gaia page is shown
+        // somewhere in the middle of animations.
+        if (this.screenMode_ == ScreenMode.DEFAULT)
+          this.gaiaAuthHost_.resetWebview();
       }
 
       this.classList.toggle('whitelist-error', show);
