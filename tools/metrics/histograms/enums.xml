@@ -34873,9 +34873,10 @@ from previous Chrome versions.
   <int value="2" label="Nothing found"/>
   <int value="3" label="Already prompted"/>
   <int value="4" label="Cleaner download failed"/>
-  <int value="5" label="Browser not available"/>
+  <int value="5" label="Browser not available (deprecated)"/>
   <int value="6" label="Not on idle state"/>
   <int value="7" label="IPC connection broken"/>
+  <int value="8" label="Waiting for browser"/>
 </enum>
 
 <enum name="SoftwareReporterPromptDialogResponse">
@@ -34884,6 +34885,12 @@ from previous Chrome versions.
   <int value="2" label="Cancelled"/>
   <int value="3" label="Dismissed"/>
   <int value="4" label="Closed without user interaction"/>
+</enum>
+
+<enum name="SoftwareReporterPromptShownWithType">
+  <int value="0" label="Legacy prompt shown"/>
+  <int value="1" label="On transition to infected state"/>
+  <int value="2" label="On browser window available"/>
 </enum>
 
 <enum name="SpareWebContentsStatus">
