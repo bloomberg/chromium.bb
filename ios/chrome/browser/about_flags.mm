@@ -67,6 +67,9 @@ const FeatureEntry::Choice kMarkHttpAsChoices[] = {
      security_state::switches::kMarkHttpAs,
      security_state::switches::kMarkHttpAsDangerous}};
 
+const FeatureEntry::FeatureParam kUseDdljsonApiTest0[] = {
+    {search_provider_logos::features::kDdljsonOverrideUrlParam,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios0.json"}};
 const FeatureEntry::FeatureParam kUseDdljsonApiTest1[] = {
     {search_provider_logos::features::kDdljsonOverrideUrlParam,
      "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios1.json"}};
@@ -81,6 +84,8 @@ const FeatureEntry::FeatureParam kUseDdljsonApiTest4[] = {
      "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios4.json"}};
 
 const FeatureEntry::FeatureVariation kUseDdljsonApiVariations[] = {
+    {"(force test doodle 0)", kUseDdljsonApiTest0,
+     arraysize(kUseDdljsonApiTest0), nullptr},
     {"(force test doodle 1)", kUseDdljsonApiTest1,
      arraysize(kUseDdljsonApiTest1), nullptr},
     {"(force test doodle 2)", kUseDdljsonApiTest2,
