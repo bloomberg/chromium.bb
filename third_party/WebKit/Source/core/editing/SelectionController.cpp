@@ -226,13 +226,13 @@ static SelectionInFlatTree ExtendSelectionAsDirectional(
 
 static SelectionInFlatTree ExtendSelectionAsNonDirectional(
     const PositionInFlatTree& position,
-    const VisibleSelectionInFlatTree& selection,
+    const SelectionInFlatTree& selection,
     TextGranularity granularity) {
   DCHECK(!selection.IsNone());
   DCHECK(position.IsNotNull());
   // Shift+Click deselects when selection was created right-to-left
-  const PositionInFlatTree& start = selection.Start();
-  const PositionInFlatTree& end = selection.End();
+  const PositionInFlatTree& start = selection.ComputeStartPosition();
+  const PositionInFlatTree& end = selection.ComputeEndPosition();
   if (position < start) {
     return SelectionInFlatTree::Builder()
         .SetBaseAndExtent(
@@ -334,7 +334,8 @@ bool SelectionController::HandleSingleClick(
         frame_->GetEditor().Behavior().ShouldConsiderSelectionAsDirectional()
             ? ExtendSelectionAsDirectional(pos, selection.AsSelection(),
                                            granularity)
-            : ExtendSelectionAsNonDirectional(pos, selection, granularity),
+            : ExtendSelectionAsNonDirectional(pos, selection.AsSelection(),
+                                              granularity),
         granularity, HandleVisibility::kNotVisible);
     return false;
   }
