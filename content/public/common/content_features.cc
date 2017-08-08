@@ -71,6 +71,12 @@ const base::Feature kCompositeOpaqueScrollers{"CompositeOpaqueScrollers",
 const base::Feature kCompositorTouchAction{"CompositorTouchAction",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether PreferCompositingToLCDText is forced off, even for
+// screens with high resolution.
+const base::Feature kDisablePreferCompositingToLCDTextOnLowEndAndroid{
+    "DisablePreferCompositingToLCDTextOnLowEndAndroid",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Throttle tasks in Blink background timer queues based on CPU budgets
 // for the background tab. Bug: https://crbug.com/639852.
 const base::Feature kExpensiveBackgroundTimerThrottling{
@@ -250,6 +256,11 @@ const base::Feature kResourceLoadScheduler{"ResourceLoadScheduler",
 const base::Feature kScrollAnchoring{"ScrollAnchoring",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Make sendBeacon throw for a Blob with a non simple type.
+const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
+    "SendBeaconThrowForBlobWithNonSimpleType",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Navigation preload feature of service workers.
 const base::Feature kServiceWorkerNavigationPreload{
     "ServiceWorkerNavigationPreload", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -382,11 +393,6 @@ const base::Feature kImageCaptureAPI{"ImageCaptureAPI",
 const base::Feature kWebVRExperimentalRendering{
     "WebVRExperimentalRendering", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Make sendBeacon throw for a Blob with a non simple type.
-const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
-    "SendBeaconThrowForBlobWithNonSimpleType",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if defined(OS_ANDROID)
 // Autofill Accessibility in Android.
 // crbug.com/627860
@@ -406,20 +412,19 @@ const base::Feature kServiceWorkerPaymentApps{
 // Controls whether the WebNFC API is enabled:
 // https://w3c.github.io/web-nfc/
 const base::Feature kWebNfc{"WebNFC", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
-// Controls whether PreferCompositingToLCDText is forced off, even for
-// screens with high resolution.
-const base::Feature kDisablePreferCompositingToLCDTextOnLowEndAndroid{
-    "DisablePreferCompositingToLCDTextOnLowEndAndroid",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
 // Emergency "off switch" for new Windows sandbox security mitigation,
 // sandbox::MITIGATION_EXTENSION_POINT_DISABLE.
 const base::Feature kWinSboxDisableExtensionPoints{
     "WinSboxDisableExtensionPoint", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
+
+// Emergency "off switch" for new Windows sandbox security mitigation,
+// sandbox::MITIGATION_FORCE_MS_SIGNED_BINS.
+const base::Feature kWinSboxForceMsSigned{"WinSboxForceMsSigned",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
 // Enables caching of media devices for the purpose of enumerating them.

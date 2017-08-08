@@ -763,13 +763,11 @@ sandbox::ResultCode StartSandboxedProcess(
       sandbox::MITIGATION_BOTTOM_UP_ASLR |
       sandbox::MITIGATION_DEP |
       sandbox::MITIGATION_DEP_NO_ATL_THUNK |
+      sandbox::MITIGATION_EXTENSION_POINT_DISABLE |
       sandbox::MITIGATION_SEHOP |
       sandbox::MITIGATION_NONSYSTEM_FONT_DISABLE |
       sandbox::MITIGATION_IMAGE_LOAD_NO_REMOTE |
       sandbox::MITIGATION_IMAGE_LOAD_NO_LOW_LABEL;
-
-  if (base::FeatureList::IsEnabled(features::kWinSboxDisableExtensionPoints))
-    mitigations |= sandbox::MITIGATION_EXTENSION_POINT_DISABLE;
 
   sandbox::ResultCode result = sandbox::SBOX_ERROR_GENERIC;
   result = policy->SetProcessMitigations(mitigations);
@@ -788,6 +786,8 @@ sandbox::ResultCode StartSandboxedProcess(
   // Post-startup mitigations.
   mitigations = sandbox::MITIGATION_STRICT_HANDLE_CHECKS |
                 sandbox::MITIGATION_DLL_SEARCH_ORDER;
+  if (base::FeatureList::IsEnabled(features::kWinSboxForceMsSigned))
+    mitigations |= sandbox::MITIGATION_FORCE_MS_SIGNED_BINS;
 
   result = policy->SetDelayedProcessMitigations(mitigations);
   if (result != sandbox::SBOX_ALL_OK)
