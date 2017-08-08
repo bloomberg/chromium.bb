@@ -3568,5 +3568,59 @@ TEST_F(SchedulerTest, BeginFrameAckForLateMissedBeginFrame) {
   client_->Reset();
 }
 
+TEST_F(SchedulerTest, CriticalBeginMainFrameToActivateIsFast) {
+  SetUpScheduler(EXTERNAL_BFS);
+
+  scheduler_->SetNeedsRedraw();
+  base::TimeDelta estimate_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(estimate_duration);
+
+  // If we have a scroll handler but the critical main frame is slow, we should
+  // still prioritize impl thread latency.
+  scheduler_->SetTreePrioritiesAndScrollState(
+      SMOOTHNESS_TAKES_PRIORITY,
+      ScrollHandlerState::SCROLL_AFFECTS_SCROLL_HANDLER);
+  scheduler_->SetNeedsRedraw();
+  // An interval of 2ms makes sure that the main frame is considered slow.
+  base::TimeDelta interval = base::TimeDelta::FromMilliseconds(2);
+  now_src_->Advance(interval);
+  viz::BeginFrameArgs args = viz::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, 0u, 1u, now_src_->NowTicks(),
+      now_src_->NowTicks() + interval, interval, viz::BeginFrameArgs::NORMAL);
+  fake_external_begin_frame_source_->TestOnBeginFrame(args);
+  EXPECT_TRUE(scheduler_->ImplLatencyTakesPriority());
+
+  task_runner().RunPendingTasks();  // Run posted deadline to finish the frame.
+  ASSERT_FALSE(client_->IsInsideBeginImplFrame());
+
+  // Set an interval of 10ms. The bmf_to_activate_interval should be 1*4 = 4ms,
+  // to account for queue + main_frame + pending_tree + activation durations.
+  // With a draw time of 1ms and fudge factor of 1ms, the interval available for
+  // the main frame to be activated is 8ms, so it should be considered fast.
+  scheduler_->SetNeedsRedraw();
+  interval = base::TimeDelta::FromMilliseconds(10);
+  now_src_->Advance(interval);
+  args = viz::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, 0u, 2u, now_src_->NowTicks(),
+      now_src_->NowTicks() + interval, interval, viz::BeginFrameArgs::NORMAL);
+  fake_external_begin_frame_source_->TestOnBeginFrame(args);
+  EXPECT_FALSE(scheduler_->ImplLatencyTakesPriority());
+
+  task_runner().RunPendingTasks();  // Run posted deadline to finish the frame.
+  ASSERT_FALSE(client_->IsInsideBeginImplFrame());
+
+  // Increase the draw duration to decrease the time available for the main
+  // frame. This should prioritize the impl thread.
+  scheduler_->SetNeedsRedraw();
+  fake_compositor_timing_history_->SetDrawDurationEstimate(
+      base::TimeDelta::FromMilliseconds(7));
+  now_src_->Advance(interval);
+  args = viz::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, 0u, 3u, now_src_->NowTicks(),
+      now_src_->NowTicks() + interval, interval, viz::BeginFrameArgs::NORMAL);
+  fake_external_begin_frame_source_->TestOnBeginFrame(args);
+  EXPECT_TRUE(scheduler_->ImplLatencyTakesPriority());
+}
+
 }  // namespace
 }  // namespace cc
