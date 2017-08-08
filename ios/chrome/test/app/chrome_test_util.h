@@ -58,9 +58,6 @@ void RemoveAllInfoBars();
 // Dismisses all presented views and modal dialogs.
 void ClearPresentedState();
 
-// Purges and recreates all web views.
-void ResetAllWebViews();
-
 // Sets the value of a boolean local state pref.
 // TODO(crbug.com/647022): Clean up other tests that use this helper function.
 void SetBooleanLocalStatePref(const char* pref_name, bool value);

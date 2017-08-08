@@ -573,12 +573,6 @@ std::unique_ptr<web::WebState> CreateWebState(
   [_observers tabModel:self didChangeTabSnapshot:tab withImage:image];
 }
 
-- (void)resetAllWebViews {
-  for (Tab* tab in self) {
-    [tab.webController reinitializeWebViewAndReload:(tab == self.currentTab)];
-  }
-}
-
 - (void)setWebUsageEnabled:(BOOL)webUsageEnabled {
   if (_webUsageEnabled == webUsageEnabled)
     return;

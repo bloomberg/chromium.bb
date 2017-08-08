@@ -235,11 +235,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // Records tab session metrics.
 - (void)recordSessionMetrics;
 
-// Purges the web views on all the tabs and reloads the frontmost one if there
-// is one. This is used when a userdefault changes and the web views need to be
-// re-created to pick it up.
-- (void)resetAllWebViews;
-
 // Sets whether the user is primarily interacting with this tab model.
 - (void)setPrimary:(BOOL)primary;
 
