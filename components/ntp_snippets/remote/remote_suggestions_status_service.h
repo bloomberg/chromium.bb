@@ -6,13 +6,8 @@
 #define COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTIONS_STATUS_SERVICE_H_
 
 #include "base/callback.h"
-#include "base/gtest_prod_util.h"
 #include "base/scoped_observer.h"
 #include "components/prefs/pref_change_registrar.h"
-
-class PrefRegistrySimple;
-class PrefService;
-class SigninManagerBase;
 
 namespace ntp_snippets {
 
@@ -32,58 +27,16 @@ class RemoteSuggestionsStatusService {
   using StatusChangeCallback =
       base::Callback<void(RemoteSuggestionsStatus old_status,
                           RemoteSuggestionsStatus new_status)>;
-
-  RemoteSuggestionsStatusService(SigninManagerBase* signin_manager,
-                                 PrefService* pref_service,
-                                 const std::string& additional_toggle_pref);
-
-  virtual ~RemoteSuggestionsStatusService();
-
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+  virtual ~RemoteSuggestionsStatusService() = default;
 
   // Starts listening for changes from the dependencies. |callback| will be
   // called when a significant change in state is detected.
-  void Init(const StatusChangeCallback& callback);
+  virtual void Init(const StatusChangeCallback& callback) = 0;
 
   // To be called when the signin state changed. Will compute the new
   // state considering the initialisation configuration and the preferences,
   // and notify via the registered callback if appropriate.
-  void OnSignInStateChanged();
-
- private:
-  // TODO(jkrcal): Rewrite the tests using the public API - observing status
-  // changes instead of calling private GetStatusFromDeps() directly.
-  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceTest,
-                           SigninNeededIfSpecifiedByParam);
-  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceTest, NoSigninNeeded);
-  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceTest, DisabledViaPref);
-
-  // Callback for the PrefChangeRegistrar.
-  void OnSnippetsEnabledChanged();
-
-  void OnStateChanged(RemoteSuggestionsStatus new_status);
-
-  bool IsSignedIn() const;
-
-  // Returns whether the service is explicitly disabled, by the user or by a
-  // policy for example.
-  bool IsExplicitlyDisabled() const;
-
-  RemoteSuggestionsStatus GetStatusFromDeps() const;
-
-  RemoteSuggestionsStatus status_;
-  StatusChangeCallback status_change_callback_;
-
-  // Name of a preference to be used as an additional toggle to guard the
-  // remote suggestions provider.
-  std::string additional_toggle_pref_;
-
-  SigninManagerBase* signin_manager_;
-  PrefService* pref_service_;
-
-  PrefChangeRegistrar pref_change_registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsStatusService);
+  virtual void OnSignInStateChanged() = 0;
 };
 
 }  // namespace ntp_snippets

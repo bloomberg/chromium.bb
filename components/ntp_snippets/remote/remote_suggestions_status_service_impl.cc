@@ -1,8 +1,8 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
+#include "components/ntp_snippets/remote/remote_suggestions_status_service_impl.h"
 
 #include <string>
 
@@ -16,7 +16,7 @@
 
 namespace ntp_snippets {
 
-RemoteSuggestionsStatusService::RemoteSuggestionsStatusService(
+RemoteSuggestionsStatusServiceImpl::RemoteSuggestionsStatusServiceImpl(
     SigninManagerBase* signin_manager,
     PrefService* pref_service,
     const std::string& additional_toggle_pref)
@@ -28,15 +28,16 @@ RemoteSuggestionsStatusService::RemoteSuggestionsStatusService(
       !IsExplicitlyDisabled());
 }
 
-RemoteSuggestionsStatusService::~RemoteSuggestionsStatusService() = default;
+RemoteSuggestionsStatusServiceImpl::~RemoteSuggestionsStatusServiceImpl() =
+    default;
 
 // static
-void RemoteSuggestionsStatusService::RegisterProfilePrefs(
+void RemoteSuggestionsStatusServiceImpl::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEnableSnippets, true);
 }
 
-void RemoteSuggestionsStatusService::Init(
+void RemoteSuggestionsStatusServiceImpl::Init(
     const StatusChangeCallback& callback) {
   DCHECK(status_change_callback_.is_null());
 
@@ -51,22 +52,23 @@ void RemoteSuggestionsStatusService::Init(
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
       prefs::kEnableSnippets,
-      base::Bind(&RemoteSuggestionsStatusService::OnSnippetsEnabledChanged,
+      base::Bind(&RemoteSuggestionsStatusServiceImpl::OnSnippetsEnabledChanged,
                  base::Unretained(this)));
 
   if (!additional_toggle_pref_.empty()) {
     pref_change_registrar_.Add(
         additional_toggle_pref_,
-        base::Bind(&RemoteSuggestionsStatusService::OnSnippetsEnabledChanged,
-                   base::Unretained(this)));
+        base::Bind(
+            &RemoteSuggestionsStatusServiceImpl::OnSnippetsEnabledChanged,
+            base::Unretained(this)));
   }
 }
 
-void RemoteSuggestionsStatusService::OnSnippetsEnabledChanged() {
+void RemoteSuggestionsStatusServiceImpl::OnSnippetsEnabledChanged() {
   OnStateChanged(GetStatusFromDeps());
 }
 
-void RemoteSuggestionsStatusService::OnStateChanged(
+void RemoteSuggestionsStatusServiceImpl::OnStateChanged(
     RemoteSuggestionsStatus new_status) {
   if (new_status == status_) {
     return;
@@ -76,17 +78,17 @@ void RemoteSuggestionsStatusService::OnStateChanged(
   status_ = new_status;
 }
 
-bool RemoteSuggestionsStatusService::IsSignedIn() const {
+bool RemoteSuggestionsStatusServiceImpl::IsSignedIn() const {
   // TODO(dgn): remove the SigninManager dependency. It should be possible to
   // replace it by passing the new state via OnSignInStateChanged().
   return signin_manager_ && signin_manager_->IsAuthenticated();
 }
 
-void RemoteSuggestionsStatusService::OnSignInStateChanged() {
+void RemoteSuggestionsStatusServiceImpl::OnSignInStateChanged() {
   OnStateChanged(GetStatusFromDeps());
 }
 
-bool RemoteSuggestionsStatusService::IsExplicitlyDisabled() const {
+bool RemoteSuggestionsStatusServiceImpl::IsExplicitlyDisabled() const {
   if (!pref_service_->GetBoolean(prefs::kEnableSnippets)) {
     DVLOG(1) << "[GetStatusFromDeps] Disabled via pref";
     return true;
@@ -102,7 +104,7 @@ bool RemoteSuggestionsStatusService::IsExplicitlyDisabled() const {
   return false;
 }
 
-RemoteSuggestionsStatus RemoteSuggestionsStatusService::GetStatusFromDeps()
+RemoteSuggestionsStatus RemoteSuggestionsStatusServiceImpl::GetStatusFromDeps()
     const {
   if (IsExplicitlyDisabled()) {
     return RemoteSuggestionsStatus::EXPLICITLY_DISABLED;

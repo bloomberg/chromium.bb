@@ -29,6 +29,7 @@
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
+#include "components/ntp_snippets/remote/remote_suggestions_status_service_impl.h"
 #include "components/ntp_snippets/switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -321,7 +322,7 @@ void RemoteSuggestionsProviderImpl::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kRemoteSuggestionCategories);
   registry->RegisterInt64Pref(prefs::kLastSuccessfulBackgroundFetchTime, 0);
 
-  RemoteSuggestionsStatusService::RegisterProfilePrefs(registry);
+  RemoteSuggestionsStatusServiceImpl::RegisterProfilePrefs(registry);
 }
 
 void RemoteSuggestionsProviderImpl::ReloadSuggestions() {

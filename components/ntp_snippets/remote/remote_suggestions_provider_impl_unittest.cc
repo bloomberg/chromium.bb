@@ -51,6 +51,7 @@
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
+#include "components/ntp_snippets/remote/remote_suggestions_status_service_impl.h"
 #include "components/ntp_snippets/remote/test_utils.h"
 #include "components/ntp_snippets/time_serialization.h"
 #include "components/ntp_snippets/user_classifier.h"
@@ -358,7 +359,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         observer_.get(), utils_.pref_service(), "fr", category_ranker_.get(),
         scheduler_.get(), std::move(mock_suggestions_fetcher),
         std::move(image_fetcher), std::move(database),
-        base::MakeUnique<RemoteSuggestionsStatusService>(
+        base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(
             utils_.fake_signin_manager(), utils_.pref_service(), std::string()),
         std::move(prefetched_pages_tracker), std::move(breaking_news_listener));
   }
