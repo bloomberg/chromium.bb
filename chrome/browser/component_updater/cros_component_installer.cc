@@ -18,11 +18,19 @@
 #include "chromeos/dbus/image_loader_client.h"
 #endif  // defined(OS_CHROMEOS)
 
-#define CONFIG_MAP_CONTENT        \
-  {{"epson-inkjet-printer-escpr", \
-    {{"env_version", "2.1"},      \
-     {"sha2hashstr",              \
-      "1913a5e0a6cad30b6f03e176177e0d7ed62c5d6700a9c66da556d7c3f5d6a47e"}}}};
+#define CONFIG_MAP_CONTENT                                                   \
+  {{"epson-inkjet-printer-escpr",                                            \
+    {{"env_version", "2.1"},                                                 \
+     {"sha2hashstr",                                                         \
+      "1913a5e0a6cad30b6f03e176177e0d7ed62c5d6700a9c66da556d7c3f5d6a47e"}}}, \
+   {"cros-termina",                                                          \
+    {{"env_version", "1.1"},                                                 \
+     {"sha2hashstr",                                                         \
+      "e9d960f84f628e1f42d05de4046bb5b3154b6f1f65c08412c6af57a29aecaffb"}}}, \
+   {"star-cups-driver",                                                      \
+    {{"env_version", "1.1"},                                                 \
+     {"sha2hashstr",                                                         \
+      "6d24de30f671da5aee6d463d9e446cafe9ddac672800a9defe86877dcde6c466"}}}};
 
 using content::BrowserThread;
 
