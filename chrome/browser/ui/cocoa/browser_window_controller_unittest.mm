@@ -760,15 +760,7 @@ TEST_F(BrowserWindowControllerTest, TabStripBackgroundViewRedrawTest) {
 TEST_F(BrowserWindowControllerTest, UsesAutoLayout) {
   // If Auto Layout is on, there will be synthesized constraints based on the
   // view's frame and autoresizing mask.
-  // TODO(sdy): Turn back on (or remove) after investigating a performance
-  // regression: https://crbug.com/706931
-  if (chrome::ShouldUseFullSizeContentView()) {
-    // FramedBrowserWindow relies on Auto Layout to position the window buttons
-    // when using a full size content view.
-    EXPECT_NE(0u, [[[controller_ chromeContentView] constraints] count]);
-  } else {
-    EXPECT_EQ(0u, [[[controller_ chromeContentView] constraints] count]);
-  }
+  EXPECT_EQ(0u, [[[controller_ chromeContentView] constraints] count]);
 }
 
 @interface BrowserWindowControllerFakeFullscreen : BrowserWindowController {

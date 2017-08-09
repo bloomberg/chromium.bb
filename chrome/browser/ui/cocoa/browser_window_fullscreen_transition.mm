@@ -359,7 +359,7 @@ class FrameAndStyleLock {
     NSRect relativeContentFinalFrame =
         NSMakeRect(contentViewOrigin.x, contentViewOrigin.y,
                    finalFrame_.size.width, finalFrame_.size.height);
-    [primaryWindow_ forceContentViewFrame:relativeContentFinalFrame];
+    [[primaryWindow_ contentView] setFrame:relativeContentFinalFrame];
 
     fullscreenTabStripBackgroundView_.reset(
         [[FullscreenTabStripBackgroundView alloc]

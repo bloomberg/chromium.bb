@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
+#import "chrome/browser/ui/cocoa/tabbed_browser_window.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_background_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -21,9 +22,7 @@
 - (void)setUseOverlay:(BOOL)useOverlay;
 
 // The tab strip background view should always be inserted as the back-most
-// subview of the root view. It cannot be a subview of the contentView, as that
-// would cause it to become layer backed, which would cause it to draw on top
-// of non-layer backed content like the window controls.
+// subview of the contentView.
 - (void)insertTabStripBackgroundViewIntoWindow:(NSWindow*)window
                                       titleBar:(BOOL)hasTitleBar;
 
@@ -93,8 +92,8 @@
 
   NSRect contentRect = NSMakeRect(60, 229, kDefaultWidth, kDefaultHeight);
   base::scoped_nsobject<FramedBrowserWindow> window(
-      [[FramedBrowserWindow alloc] initWithContentRect:contentRect
-                                           hasTabStrip:hasTabStrip]);
+      [(hasTabStrip ? [TabbedBrowserWindow alloc] : [FramedBrowserWindow alloc])
+          initWithContentRect:contentRect]);
   [window setReleasedWhenClosed:YES];
   [window setAutorecalculatesKeyViewLoop:YES];
 
@@ -423,7 +422,6 @@
 - (void)insertTabStripBackgroundViewIntoWindow:(NSWindow*)window
                                       titleBar:(BOOL)hasTitleBar {
   DCHECK(tabStripBackgroundView_);
-  NSView* rootView = [[window contentView] superview];
 
   // In Material Design on 10.10 and higher, the top portion of the window is
   // blurred using an NSVisualEffectView.
@@ -467,20 +465,18 @@
 
     [visualEffectWrapperView addSubview:visualEffectView_];
 
-    [chrome::ShouldUseFullSizeContentView() ? [window contentView] : rootView
-        addSubview:visualEffectWrapperView
-        positioned:NSWindowBelow
-        relativeTo:nil];
+    [[window contentView] addSubview:visualEffectWrapperView
+                          positioned:NSWindowBelow
+                          relativeTo:nil];
 
     // Make the |tabStripBackgroundView_| a child of the NSVisualEffectView.
     [tabStripBackgroundView_ setFrame:[visualEffectView_ bounds]];
     [visualEffectView_ addSubview:tabStripBackgroundView_];
   } else {
     DCHECK(!chrome::ShouldUseFullSizeContentView());
-    [rootView addSubview:tabStripBackgroundView_
-              positioned:NSWindowBelow
-              relativeTo:nil];
-    return;
+    [[window contentView] addSubview:tabStripBackgroundView_
+                          positioned:NSWindowBelow
+                          relativeTo:nil];
   }
 }
 
