@@ -712,7 +712,7 @@ void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
   MachPortMac mach_port_mac(p.GetMemoryObject());
   WriteParam(m, mach_port_mac);
 #elif defined(OS_WIN)
-  HandleWin handle_win(p.GetHandle(), HandleWin::DUPLICATE);
+  HandleWin handle_win(p.GetHandle());
   WriteParam(m, handle_win);
 #else
   if (p.OwnershipPassesToIPC()) {
@@ -830,7 +830,7 @@ void ParamTraits<PlatformFileForTransit>::Write(base::Pickle* m,
                                                 const param_type& p) {
   m->WriteBool(p.IsValid());
   if (p.IsValid()) {
-    HandleWin handle_win(p.GetHandle(), HandleWin::DUPLICATE);
+    HandleWin handle_win(p.GetHandle());
     ParamTraits<HandleWin>::Write(m, handle_win);
     ::CloseHandle(p.GetHandle());
   }

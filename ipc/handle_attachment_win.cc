@@ -9,29 +9,21 @@
 namespace IPC {
 namespace internal {
 
-HandleAttachmentWin::HandleAttachmentWin(const HANDLE& handle,
-                                         HandleWin::Permissions permissions)
-    : handle_(INVALID_HANDLE_VALUE),
-      permissions_(HandleWin::INVALID),
-      owns_handle_(true) {
+HandleAttachmentWin::HandleAttachmentWin(const HANDLE& handle) {
   HANDLE duplicated_handle;
   BOOL result =
       ::DuplicateHandle(GetCurrentProcess(), handle, GetCurrentProcess(),
                         &duplicated_handle, 0, FALSE, DUPLICATE_SAME_ACCESS);
   if (result) {
-    handle_ = duplicated_handle;
-    permissions_ = permissions;
+    handle_.Set(duplicated_handle);
   }
 }
 
 HandleAttachmentWin::HandleAttachmentWin(const HANDLE& handle,
                                          FromWire from_wire)
-    : handle_(handle), permissions_(HandleWin::INVALID), owns_handle_(true) {}
+    : handle_(handle) {}
 
-HandleAttachmentWin::~HandleAttachmentWin() {
-  if (handle_ != INVALID_HANDLE_VALUE && owns_handle_)
-    ::CloseHandle(handle_);
-}
+HandleAttachmentWin::~HandleAttachmentWin() {}
 
 MessageAttachment::Type HandleAttachmentWin::GetType() const {
   return Type::WIN_HANDLE;

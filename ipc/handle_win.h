@@ -28,28 +28,15 @@ namespace IPC {
 // discussion.
 class IPC_EXPORT HandleWin {
  public:
-  enum Permissions {
-    // A placeholder value to be used by the receiving IPC channel, since the
-    // permissions information is only used by the broker process.
-    INVALID,
-    // The new HANDLE will have the same permissions as the old HANDLE.
-    DUPLICATE,
-    // The new HANDLE will have file read and write permissions.
-    FILE_READ_WRITE,
-    MAX_PERMISSIONS = FILE_READ_WRITE
-  };
-
   // Default constructor makes an invalid HANDLE.
   HandleWin();
-  HandleWin(const HANDLE& handle, Permissions permissions);
+  explicit HandleWin(const HANDLE& handle);
 
   HANDLE get_handle() const { return handle_; }
   void set_handle(HANDLE handle) { handle_ = handle; }
-  Permissions get_permissions() const { return permissions_; }
 
  private:
   HANDLE handle_;
-  Permissions permissions_;
 };
 
 template <>

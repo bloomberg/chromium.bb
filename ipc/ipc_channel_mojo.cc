@@ -159,10 +159,9 @@ MojoResult WrapAttachmentImpl(MessageAttachment* attachment,
   DCHECK_EQ(attachment->GetType(), MessageAttachment::Type::WIN_HANDLE);
   internal::HandleAttachmentWin& handle_attachment =
       static_cast<internal::HandleAttachmentWin&>(*attachment);
-  MojoResult result = WrapPlatformHandle(
-      handle_attachment.get_handle(),
-      mojom::SerializedHandle::Type::WIN_HANDLE, serialized);
-  handle_attachment.reset_handle_ownership();
+  MojoResult result =
+      WrapPlatformHandle(handle_attachment.Take(),
+                         mojom::SerializedHandle::Type::WIN_HANDLE, serialized);
   return result;
 #else
   NOTREACHED();
