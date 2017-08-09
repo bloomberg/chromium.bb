@@ -49,3 +49,62 @@ component("controller") {
     configs += remove_webcore_symbols_config
   }
 }
+
+group("webkit_unit_tests_data") {
+  data = [
+    "../core/testing/data/",
+    "../core/paint/test_data/",
+  ]
+}
+
+test("webkit_unit_tests") {
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "*" ]
+
+  sources = [
+    "tests/RunAllTests.cpp",
+  ]
+  sources += bindings_unittest_files
+
+  deps = [
+    ":controller",
+    "//base",
+    "//base:i18n",
+    "//base/test:test_support",
+    "//content/test:test_support",
+    "//gpu:test_support",
+    "//services/device/public/interfaces:interfaces_blink",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/Source/core:unit_tests",
+    "//third_party/WebKit/Source/modules:unit_tests",
+    "//third_party/WebKit/Source/modules/exported:test_support",
+    "//third_party/WebKit/Source/platform:test_support",
+    "//third_party/WebKit/Source/platform:unit_tests",
+    "//third_party/WebKit/Source/platform/wtf",
+    "//third_party/libwebp",
+    "//third_party/zlib",
+    "//url",
+    "//v8",
+  ]
+
+  data_deps = [
+    ":webkit_unit_tests_data",
+    "//content/shell:pak",
+  ]
+
+  configs += [
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:inside_blink",
+    "//third_party/WebKit/Source/core:blink_core_pch",
+  ]
+
+  if (is_android) {
+    deps += [
+      "//base:base_java",
+      "//content/public/android:content_java",
+      "//content/shell/android:content_shell_assets",
+      "//net/android:net_java",
+    ]
+  }
+}

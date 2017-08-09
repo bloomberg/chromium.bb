@@ -41,12 +41,12 @@ group("all_blink") {
 
   public_deps = [
     "//third_party/WebKit/Source/controller",
+    "//third_party/WebKit/Source/controller:webkit_unit_tests",
     "//third_party/WebKit/Source/core",
     "//third_party/WebKit/Source/modules",
     "//third_party/WebKit/Source/platform:blink_platform_unittests",
     "//third_party/WebKit/Source/platform/heap:blink_heap_unittests",
     "//third_party/WebKit/Source/platform/wtf:wtf_unittests",
-    "//third_party/WebKit/Source/web:webkit_unit_tests",
   ]
 }
 
