@@ -545,6 +545,7 @@ void ContentsView::TransitionChanged() {
 int ContentsView::GetDisplayHeight() const {
   return display::Screen::GetScreen()
       ->GetDisplayNearestView(GetWidget()->GetNativeView())
+      .work_area()
       .size()
       .height();
 }
