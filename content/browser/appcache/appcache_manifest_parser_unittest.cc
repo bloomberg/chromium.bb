@@ -564,7 +564,8 @@ TEST(AppCacheManifestParserTest, IgnoreDangerousFallbacks) {
       "http://foo.com/out_of_scope/ fallback_url\r");
 
   // Scope matching depends on resolving "." as a relative url.
-  EXPECT_EQ(kUrl.Resolve(".").spec(), std::string("http://foo.com/scope/"));
+  EXPECT_EQ(kUrl.GetWithoutFilename().spec(),
+            std::string("http://foo.com/scope/"));
 
   AppCacheManifest manifest;
   EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),

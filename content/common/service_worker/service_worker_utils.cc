@@ -71,7 +71,7 @@ bool ServiceWorkerUtils::IsPathRestrictionSatisfied(
     }
     max_scope_string = max_scope.path();
   } else {
-    max_scope_string = script_url.Resolve(".").path();
+    max_scope_string = script_url.GetWithoutFilename().path();
   }
 
   std::string scope_string = scope.path();
