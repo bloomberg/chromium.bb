@@ -15,6 +15,7 @@
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/payments/ios_payment_instrument.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_util.h"
 #import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
@@ -111,20 +112,28 @@ using ::payment_request_util::
         *paymentMethod, _paymentRequest->billing_profiles());
     item.complete = paymentMethod->IsCompleteForPayment();
 
-    if (paymentMethod->type() == payments::PaymentInstrument::Type::AUTOFILL) {
-      payments::AutofillPaymentInstrument* autofillInstrument =
-          static_cast<payments::AutofillPaymentInstrument*>(paymentMethod);
-      autofill::AutofillProfile* billingAddress =
-          autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
-              autofillInstrument->credit_card()->billing_address_id(),
-              _paymentRequest->billing_profiles());
-      if (billingAddress) {
-        item.methodAddress =
-            GetBillingAddressLabelFromAutofillProfile(*billingAddress);
+    switch (paymentMethod->type()) {
+      case payments::PaymentInstrument::Type::AUTOFILL: {
+        payments::AutofillPaymentInstrument* autofillInstrument =
+            static_cast<payments::AutofillPaymentInstrument*>(paymentMethod);
+        autofill::AutofillProfile* billingAddress =
+            autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
+                autofillInstrument->credit_card()->billing_address_id(),
+                _paymentRequest->billing_profiles());
+        if (billingAddress) {
+          item.methodAddress =
+              GetBillingAddressLabelFromAutofillProfile(*billingAddress);
+        }
+        item.methodTypeIcon = NativeImage(paymentMethod->icon_resource_id());
+        break;
+      }
+      case payments::PaymentInstrument::Type::NATIVE_MOBILE_APP: {
+        payments::IOSPaymentInstrument* mobileApp =
+            static_cast<payments::IOSPaymentInstrument*>(paymentMethod);
+        item.methodTypeIcon = mobileApp->icon_image();
+        break;
       }
     }
-
-    item.methodTypeIcon = NativeImage(paymentMethod->icon_resource_id());
 
     item.reserveRoomForAccessoryType = YES;
     if (_paymentRequest->selected_payment_method() == paymentMethod)

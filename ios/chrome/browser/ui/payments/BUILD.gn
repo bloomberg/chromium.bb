@@ -236,6 +236,7 @@ source_set("eg_tests") {
     "//base",
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
+    "//components/image_fetcher/core",
     "//components/payments/core",
     "//components/strings",
     "//ios/chrome/app:app_internal",

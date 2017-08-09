@@ -6,6 +6,7 @@
 
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/region_data_loader.h"
+#include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_profile_comparator.h"
 #include "components/prefs/pref_service.h"
 #include "ios/web/public/payments/payment_request.h"
@@ -26,6 +27,14 @@ void TestPaymentRequest::ClearContactProfiles() {
 
 void TestPaymentRequest::ClearPaymentMethods() {
   payment_methods_.clear();
+}
+
+void TestPaymentRequest::ResetParsedPaymentMethodData() {
+  url_payment_method_identifiers_.clear();
+  supported_card_networks_.clear();
+  basic_card_specified_networks_.clear();
+  supported_card_types_set_.clear();
+  PaymentRequest::ParsePaymentMethodData();
 }
 
 AddressNormalizer* TestPaymentRequest::GetAddressNormalizer() {

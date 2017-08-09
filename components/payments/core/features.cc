@@ -10,6 +10,9 @@ namespace features {
 #if defined(OS_IOS)
 const base::Feature kWebPayments{"WebPayments",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kWebPaymentsNativeApps{"WebPaymentsNativeApps",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 const base::Feature kWebPaymentsMethodSectionOrderV2{

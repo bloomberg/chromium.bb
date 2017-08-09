@@ -115,6 +115,10 @@ class PaymentShippingOption;
 // Whether or not the PaymentRequest view controller is in a pending state.
 @property(nonatomic, assign, getter=isPending) BOOL pending;
 
+// Whether or not the user can cancel out of the Payment Request view
+// controller.
+@property(nonatomic, assign, getter=isCancellable) BOOL cancellable;
+
 // The delegate to be notified when the user confirms or cancels the request.
 @property(nonatomic, weak) id<PaymentRequestCoordinatorDelegate> delegate;
 
