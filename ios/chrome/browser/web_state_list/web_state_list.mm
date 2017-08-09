@@ -20,6 +20,15 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+// Returns whether the given flag is set in a flagset.
+bool IsInsertionFlagSet(int flagset, WebStateList::InsertionFlags flag) {
+  return (flagset & flag) == flag;
+}
+
+}  // namespace
+
 // Wrapper around a WebState stored in a WebStateList.
 class WebStateList::WebStateWrapper {
  public:
@@ -64,7 +73,7 @@ std::unique_ptr<web::WebState> WebStateList::WebStateWrapper::ReplaceWebState(
     std::unique_ptr<web::WebState> web_state) {
   DCHECK_NE(web_state.get(), web_state_.get());
   std::swap(web_state, web_state_);
-  opener_ = WebStateOpener(nullptr);
+  opener_ = WebStateOpener();
   return web_state;
 }
 
@@ -137,8 +146,19 @@ int WebStateList::GetIndexOfLastWebStateOpenedBy(const web::WebState* opener,
   return GetIndexOfNthWebStateOpenedBy(opener, start_index, use_group, INT_MAX);
 }
 
-void WebStateList::InsertWebState(int index,
-                                  std::unique_ptr<web::WebState> web_state) {
+int WebStateList::InsertWebState(int index,
+                                 std::unique_ptr<web::WebState> web_state,
+                                 int insertion_flags,
+                                 WebStateOpener opener) {
+  if (IsInsertionFlagSet(insertion_flags, INSERT_INHERIT_OPENER))
+    opener = WebStateOpener(GetActiveWebState());
+
+  if (!IsInsertionFlagSet(insertion_flags, INSERT_FORCE_INDEX)) {
+    index = order_controller_->DetermineInsertionIndex(opener.opener);
+    if (index < 0 || count() < index)
+      index = count();
+  }
+
   DCHECK(ContainsIndex(index) || index == count());
   delegate_->WillAddWebState(web_state.get());
 
@@ -150,22 +170,17 @@ void WebStateList::InsertWebState(int index,
   if (active_index_ >= index)
     ++active_index_;
 
+  const bool activating = IsInsertionFlagSet(insertion_flags, INSERT_ACTIVATE);
   for (auto& observer : observers_)
     observer.WebStateInsertedAt(this, web_state_ptr, index);
-}
-
-void WebStateList::AppendWebState(ui::PageTransition transition,
-                                  std::unique_ptr<web::WebState> web_state,
-                                  WebStateOpener opener) {
-  int index =
-      order_controller_->DetermineInsertionIndex(transition, opener.opener);
-  if (index < 0 || count() < index)
-    index = count();
-
-  InsertWebState(index, std::move(web_state));
 
   if (opener.opener)
     SetOpenerOfWebStateAt(index, opener);
+
+  if (activating)
+    ActivateWebStateAt(index);
+
+  return index;
 }
 
 void WebStateList::MoveWebStateAt(int from_index, int to_index) {
@@ -280,7 +295,7 @@ void WebStateList::ClearOpenersReferencing(int index) {
   web::WebState* old_web_state = web_state_wrappers_[index]->web_state();
   for (auto& web_state_wrapper : web_state_wrappers_) {
     if (web_state_wrapper->opener().opener == old_web_state)
-      web_state_wrapper->set_opener(WebStateOpener(nullptr));
+      web_state_wrapper->set_opener(WebStateOpener());
   }
 }
 

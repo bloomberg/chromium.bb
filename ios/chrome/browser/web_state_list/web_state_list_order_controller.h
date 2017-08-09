@@ -6,7 +6,6 @@
 #define IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_ORDER_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "ui/base/page_transition_types.h"
 
 class WebStateList;
 
@@ -21,10 +20,8 @@ class WebStateListOrderController {
   explicit WebStateListOrderController(WebStateList* web_state_list);
   ~WebStateListOrderController();
 
-  // Determines where to place a newly opened WebState by using the supplied
-  // transition, opener and background flag.
-  int DetermineInsertionIndex(ui::PageTransition transition,
-                              web::WebState* opener) const;
+  // Determines where to place a newly opened WebState given its opener.
+  int DetermineInsertionIndex(web::WebState* opener) const;
 
   // Determines where to shift the active index after a WebState is closed.
   int DetermineNewActiveIndex(int removing_index) const;

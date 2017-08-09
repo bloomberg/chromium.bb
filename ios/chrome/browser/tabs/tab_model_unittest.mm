@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/crw_session_storage.h"
@@ -1096,7 +1097,9 @@ TEST_F(TabModelTest, ParentTabModel) {
   Tab* tab = LegacyTabHelper::GetTabForWebState(web_state.get());
   EXPECT_NSEQ(nil, [tab parentTabModel]);
 
-  [tab_model_ webStateList]->InsertWebState(0, std::move(web_state));
+  [tab_model_ webStateList]->InsertWebState(0, std::move(web_state),
+                                            WebStateList::INSERT_FORCE_INDEX,
+                                            WebStateOpener());
   EXPECT_NSEQ(tab_model_, [tab parentTabModel]);
 }
 
@@ -1107,7 +1110,9 @@ TEST_F(TabModelTest, TabCreatedOnInsertion) {
   EXPECT_NSEQ(nil, LegacyTabHelper::GetTabForWebState(web_state.get()));
 
   web::WebState* web_state_ptr = web_state.get();
-  [tab_model_ webStateList]->InsertWebState(0, std::move(web_state));
+  [tab_model_ webStateList]->InsertWebState(0, std::move(web_state),
+                                            WebStateList::INSERT_FORCE_INDEX,
+                                            WebStateOpener());
   EXPECT_NSNE(nil, LegacyTabHelper::GetTabForWebState(web_state_ptr));
 }
 

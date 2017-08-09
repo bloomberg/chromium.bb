@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_consumer.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -49,7 +50,9 @@ class TabCollectionMediatorTest : public PlatformTest {
     TabIdTabHelper::CreateForWebState(web_state.get());
     GURL url("http://test/" + std::to_string(index));
     web_state->SetCurrentURL(url);
-    web_state_list_->InsertWebState(index, std::move(web_state));
+    web_state_list_->InsertWebState(index, std::move(web_state),
+                                    WebStateList::INSERT_FORCE_INDEX,
+                                    WebStateOpener());
   }
 
   web::TestWebState* GetWebStateAt(int index) {
