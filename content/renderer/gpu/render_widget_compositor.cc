@@ -724,6 +724,11 @@ bool RenderWidgetCompositor::SendMessageToMicroBenchmark(
   return layer_tree_host_->SendMessageToMicroBenchmark(id, std::move(value));
 }
 
+void RenderWidgetCompositor::SetViewportSize(
+    const gfx::Size& device_viewport_size) {
+  layer_tree_host_->SetViewportSize(device_viewport_size);
+}
+
 viz::FrameSinkId RenderWidgetCompositor::GetFrameSinkId() {
   return frame_sink_id_;
 }
@@ -739,11 +744,6 @@ void RenderWidgetCompositor::ClearRootLayer() {
 
 cc::AnimationHost* RenderWidgetCompositor::CompositorAnimationHost() {
   return animation_host_.get();
-}
-
-void RenderWidgetCompositor::SetViewportSize(
-    const WebSize& device_viewport_size) {
-  layer_tree_host_->SetViewportSize(device_viewport_size);
 }
 
 WebSize RenderWidgetCompositor::GetViewportSize() const {

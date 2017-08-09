@@ -36,7 +36,6 @@
 #include "core/frame/WebLocalFrameImpl.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "platform/testing/WebLayerTreeViewImplForTesting.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -333,6 +332,11 @@ WebRemoteFrameImpl* WebViewHelper::RemoteMainFrame() const {
   return ToWebRemoteFrameImpl(web_view_->MainFrame());
 }
 
+void WebViewHelper::SetViewportSize(const WebSize& viewport_size) {
+  test_web_view_client_->GetLayerTreeViewForTesting()->SetViewportSize(
+      viewport_size);
+}
+
 void WebViewHelper::Resize(WebSize size) {
   test_web_view_client_->ClearAnimationScheduled();
   WebView()->Resize(size);
@@ -423,6 +427,11 @@ void TestWebRemoteFrameClient::Bind(
 void TestWebRemoteFrameClient::FrameDetached(DetachType type) {
   frame_->Close();
   self_owned_.reset();
+}
+
+WebLayerTreeViewImplForTesting*
+TestWebViewClient::GetLayerTreeViewForTesting() {
+  return layer_tree_view_.get();
 }
 
 WebLayerTreeView* TestWebViewClient::InitializeLayerTreeView() {

@@ -40,6 +40,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "platform/testing/WebLayerTreeViewImplForTesting.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebMouseEvent.h"
@@ -258,6 +259,8 @@ class TestWebViewClient : public WebViewClient {
  public:
   ~TestWebViewClient() override {}
 
+  WebLayerTreeViewImplForTesting* GetLayerTreeViewForTesting();
+
   // WebViewClient:
   WebLayerTreeView* InitializeLayerTreeView() override;
   void ScheduleAnimation() override { animation_scheduled_ = true; }
@@ -269,7 +272,7 @@ class TestWebViewClient : public WebViewClient {
  private:
   friend class TestWebViewWidgetClient;
 
-  std::unique_ptr<WebLayerTreeView> layer_tree_view_;
+  std::unique_ptr<WebLayerTreeViewImplForTesting> layer_tree_view_;
   bool animation_scheduled_ = false;
 };
 
@@ -326,6 +329,8 @@ class WebViewHelper {
 
   WebLocalFrameImpl* LocalMainFrame() const;
   WebRemoteFrameImpl* RemoteMainFrame() const;
+
+  void SetViewportSize(const WebSize&);
 
  private:
   void InitializeWebView(TestWebViewClient*);
