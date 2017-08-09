@@ -89,11 +89,7 @@ class MediaStreamCaptureIndicator
 
   // Reference to our status icon - owned by the StatusTray. If null,
   // the platform doesn't support status icons.
-  StatusIcon* status_icon_;
-
-  // These images are owned by ResourceBundle and need not be destroyed.
-  gfx::ImageSkia* mic_image_;
-  gfx::ImageSkia* camera_image_;
+  StatusIcon* status_icon_ = nullptr;
 
   // A map that contains the usage counts of the opened capture devices for each
   // WebContents instance.

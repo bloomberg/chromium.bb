@@ -10,12 +10,12 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/infobars/core/infobar.h"
@@ -71,8 +71,8 @@ MediaStreamInfoBarDelegateAndroid::GetInfoBarType() const {
 }
 
 int MediaStreamInfoBarDelegateAndroid::GetIconId() const {
-  return request_->IsAskingForVideo() ? IDR_INFOBAR_MEDIA_STREAM_CAMERA
-                                      : IDR_INFOBAR_MEDIA_STREAM_MIC;
+  return request_->IsAskingForVideo() ? IDR_ANDROID_INFOBAR_MEDIA_STREAM_CAMERA
+                                      : IDR_ANDROID_INFOBAR_MEDIA_STREAM_MIC;
 }
 
 MediaStreamInfoBarDelegateAndroid::MediaStreamInfoBarDelegateAndroid(
