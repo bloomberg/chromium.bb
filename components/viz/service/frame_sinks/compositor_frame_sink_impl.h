@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_GPU_COMPOSITOR_FRAME_SINK_H_
-#define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_GPU_COMPOSITOR_FRAME_SINK_H_
+#ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_COMPOSITOR_FRAME_SINK_IMPL_H_
+#define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_COMPOSITOR_FRAME_SINK_IMPL_H_
 
 #include <memory>
 #include <vector>
@@ -20,16 +20,16 @@
 namespace viz {
 
 // Server side representation of a WindowSurface.
-class GpuCompositorFrameSink
+class CompositorFrameSinkImpl
     : public NON_EXPORTED_BASE(CompositorFrameSinkSupportClient),
       public NON_EXPORTED_BASE(mojom::CompositorFrameSink) {
  public:
-  GpuCompositorFrameSink(FrameSinkManagerImpl* frame_sink_manager,
-                         const FrameSinkId& frame_sink_id,
-                         mojom::CompositorFrameSinkRequest request,
-                         mojom::CompositorFrameSinkClientPtr client);
+  CompositorFrameSinkImpl(FrameSinkManagerImpl* frame_sink_manager,
+                          const FrameSinkId& frame_sink_id,
+                          mojom::CompositorFrameSinkRequest request,
+                          mojom::CompositorFrameSinkClientPtr client);
 
-  ~GpuCompositorFrameSink() override;
+  ~CompositorFrameSinkImpl() override;
 
   // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
@@ -57,9 +57,9 @@ class GpuCompositorFrameSink
   mojom::CompositorFrameSinkClientPtr client_;
   mojo::Binding<mojom::CompositorFrameSink> compositor_frame_sink_binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuCompositorFrameSink);
+  DISALLOW_COPY_AND_ASSIGN(CompositorFrameSinkImpl);
 };
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_SERVICE_FRAME_SINKS_GPU_COMPOSITOR_FRAME_SINK_H_
+#endif  // COMPONENTS_VIZ_SERVICE_FRAME_SINKS_COMPOSITOR_FRAME_SINK_IMPL_H_
