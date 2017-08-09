@@ -15,6 +15,7 @@ var ActionServiceUnitTest = class extends testing.Test {
   get extraLibraries() {
     return [
       '../../../../ui/webui/resources/js/cr.js',
+      'browser_proxy.js',
       'action_service.js',
     ];
   }

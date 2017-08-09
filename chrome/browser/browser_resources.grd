@@ -158,6 +158,8 @@
             <include name="IDR_MD_DOWNLOADS_DOWNLOADS_HTML" file="resources\md_downloads\downloads.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
             <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML" file="resources\md_downloads\action_service.html" type="BINDATA" />
             <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_JS" file="resources\md_downloads\action_service.js" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_BROWSER_PROXY_HTML" file="resources\md_downloads\browser_proxy.html" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_BROWSER_PROXY_JS" file="resources\md_downloads\browser_proxy.js" type="BINDATA" />
             <include name="IDR_MD_DOWNLOADS_CONSTANTS_HTML" file="resources\md_downloads\constants.html" type="BINDATA" />
             <include name="IDR_MD_DOWNLOADS_CONSTANTS_JS" file="resources\md_downloads\constants.js" type="BINDATA" />
             <include name="IDR_MD_DOWNLOADS_DOWNLOADS_JS" file="resources\md_downloads\downloads.js" type="BINDATA" />

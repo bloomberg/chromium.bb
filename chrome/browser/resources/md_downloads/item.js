@@ -74,7 +74,12 @@ cr.define('downloads', function() {
       'observeIsDangerous_(isDangerous_, data)',
     ],
 
+    /** @private {?downloads.BrowserProxy} */
+    browserProxy_: null,
+
+    /** @override */
     ready: function() {
+      this.browserProxy_ = downloads.BrowserProxy.getInstance();
       this.content = this.$.content;
     },
 
@@ -262,12 +267,12 @@ cr.define('downloads', function() {
 
     /** @private */
     onCancelTap_: function() {
-      downloads.ActionService.getInstance().cancel(this.data.id);
+      this.browserProxy_.cancel(this.data.id);
     },
 
     /** @private */
     onDiscardDangerousTap_: function() {
-      downloads.ActionService.getInstance().discardDangerous(this.data.id);
+      this.browserProxy_.discardDangerous(this.data.id);
     },
 
     /**
@@ -276,7 +281,7 @@ cr.define('downloads', function() {
      */
     onDragStart_: function(e) {
       e.preventDefault();
-      downloads.ActionService.getInstance().drag(this.data.id);
+      this.browserProxy_.drag(this.data.id);
     },
 
     /**
@@ -285,35 +290,35 @@ cr.define('downloads', function() {
      */
     onFileLinkTap_: function(e) {
       e.preventDefault();
-      downloads.ActionService.getInstance().openFile(this.data.id);
+      this.browserProxy_.openFile(this.data.id);
     },
 
     /** @private */
     onPauseOrResumeTap_: function() {
       if (this.isInProgress_)
-        downloads.ActionService.getInstance().pause(this.data.id);
+        this.browserProxy_.pause(this.data.id);
       else
-        downloads.ActionService.getInstance().resume(this.data.id);
+        this.browserProxy_.resume(this.data.id);
     },
 
     /** @private */
     onRemoveTap_: function() {
-      downloads.ActionService.getInstance().remove(this.data.id);
+      this.browserProxy_.remove(this.data.id);
     },
 
     /** @private */
     onRetryTap_: function() {
-      downloads.ActionService.getInstance().download(this.data.url);
+      this.browserProxy_.download(this.data.url);
     },
 
     /** @private */
     onSaveDangerousTap_: function() {
-      downloads.ActionService.getInstance().saveDangerous(this.data.id);
+      this.browserProxy_.saveDangerous(this.data.id);
     },
 
     /** @private */
     onShowTap_: function() {
-      downloads.ActionService.getInstance().show(this.data.id);
+      this.browserProxy_.show(this.data.id);
     },
   });
 
