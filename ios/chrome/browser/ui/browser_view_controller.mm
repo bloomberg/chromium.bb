@@ -100,6 +100,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/browser_container_view.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
+#import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -576,6 +577,12 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 // ones that cannot be scrolled off screen by full screen.
 @property(nonatomic, strong, readonly) NSArray<HeaderDefinition*>* headerViews;
 
+// Used to display in-product help promotion bubbles. Nil if no bubble has been
+// presented by this view controller yet. Once a presented bubble is dismissed,
+// remains allocated so |userEngaged| remains accessible.
+@property(nonatomic, strong)
+    BubbleViewControllerPresenter* bubbleViewControllerPresenter;
+
 // BVC initialization:
 // If the BVC is initialized with a valid browser state & tab model immediately,
 // the path is straightforward: functionality is enabled, and the UI is built
@@ -673,6 +680,18 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 // TODO(crbug.com/522721): Support size changes for all popups and modal
 // dialogs.
 - (void)dismissPopups;
+// Initializes |bubbleViewControllerPresenter|. |feature| is the
+// base::Feature object associated with the given promotion. If
+// feature_engagement::Tracker->ShouldTriggerHelpUI returns |false|, the bubble
+// is not shown. |direction| is the direction the bubble's arrow is pointing.
+// |alignment| is the alignment of the arrow on the button. |anchorPoint| is the
+// point at which the bubble is anchored in window coordinates. |text| is the
+// text displayed by the bubble.
+- (void)presentBubbleForFeature:(const base::Feature&)feature
+                      direction:(BubbleArrowDirection)direction
+                      alignment:(BubbleAlignment)alignment
+                    anchorPoint:(CGPoint)anchorPoint
+                           text:(NSString*)text;
 // Create and show the find bar.
 - (void)initFindBarForTab;
 // Search for find bar query string.
@@ -921,6 +940,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 @synthesize presenting = _presenting;
 @synthesize foregroundTabWasAddedCompletionBlock =
     _foregroundTabWasAddedCompletionBlock;
+@synthesize bubbleViewControllerPresenter = _bubbleViewControllerPresenter;
 
 #pragma mark - Object lifecycle
 
@@ -1235,6 +1255,26 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [super viewDidAppear:animated];
   self.viewVisible = YES;
   [self updateDialogPresenterActiveState];
+
+  __weak BrowserViewController* weakSelf = self;
+  void (^onInitializedBlock)(bool) = ^(bool successfullyLoaded) {
+    NSString* text =
+        l10n_util::GetNSStringWithFixup(IDS_IOS_NEW_TAB_IPH_PROMOTION_TEXT);
+    CGPoint tabSwitcherAnchor = [weakSelf.toolbarController
+        anchorPointForTabSwitcherButton:BubbleArrowDirectionUp];
+    [weakSelf presentBubbleForFeature:feature_engagement::kIPHNewTabTipFeature
+                            direction:BubbleArrowDirectionUp
+                            alignment:BubbleAlignmentTrailing
+                          anchorPoint:tabSwitcherAnchor
+                                 text:text];
+  };
+
+  // Because the new tab tip occurs on startup, the feature engagement tracker's
+  // database is not guaranteed to be loaded by this time. For the bubble to
+  // appear properly, a callback is used to guarantee the event data is loaded
+  // before the check to see if the promotion should be displayed.
+  feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
+      ->AddOnInitializedCallback(base::BindBlockArc(onInitializedBlock));
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -1955,6 +1995,41 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_toolbarController dismissToolsMenuPopup];
   [self hidePageInfoPopupForView:nil];
   [_toolbarController dismissTabHistoryPopup];
+  [self.bubbleViewControllerPresenter dismissAnimated:YES];
+}
+
+- (void)presentBubbleForFeature:(const base::Feature&)feature
+                      direction:(BubbleArrowDirection)direction
+                      alignment:(BubbleAlignment)alignment
+                    anchorPoint:(CGPoint)anchorPoint
+                           text:(NSString*)text {
+  if (!feature_engagement::TrackerFactory::GetForBrowserState(_browserState)
+           ->ShouldTriggerHelpUI(feature)) {
+    return;
+  }
+  // Capture |weakSelf| instead of the feature engagement tracker object
+  // because |weakSelf| will safely become |nil| if it is deallocated, whereas
+  // the feature engagement tracker will remain pointing to invalid memory if
+  // its owner (the ChromeBrowserState) is deallocated.
+  __weak BrowserViewController* weakSelf = self;
+  void (^dismissalCallback)(void) = ^() {
+    BrowserViewController* strongSelf = weakSelf;
+    if (strongSelf) {
+      feature_engagement::TrackerFactory::GetForBrowserState(
+          strongSelf.browserState)
+          ->Dismissed(feature);
+    }
+  };
+
+  self.bubbleViewControllerPresenter =
+      [[BubbleViewControllerPresenter alloc] initWithText:text
+                                           arrowDirection:direction
+                                                alignment:alignment
+                                        dismissalCallback:dismissalCallback];
+
+  [self.bubbleViewControllerPresenter presentInViewController:self
+                                                         view:self.view
+                                                  anchorPoint:anchorPoint];
 }
 
 #pragma mark - Tap handling
@@ -4268,6 +4343,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_toolbarController cancelOmniboxEdit];
   [_dialogPresenter cancelAllDialogs];
   [self hidePageInfoPopupForView:nil];
+  [self.bubbleViewControllerPresenter dismissAnimated:NO];
   if (_voiceSearchController)
     _voiceSearchController->DismissMicPermissionsHelp();
 
