@@ -416,33 +416,42 @@ void WorkerThread::InitializeOnWorkerThread(
       GetInstalledScriptsManager() &&
       GetInstalledScriptsManager()->IsScriptInstalled(script_url)) {
     // GetScriptData blocks until the script is received from the browser.
-    auto script_data = GetInstalledScriptsManager()->GetScriptData(script_url);
+    InstalledScriptsManager::ScriptData script_data;
+    InstalledScriptsManager::ScriptStatus status =
+        GetInstalledScriptsManager()->GetScriptData(script_url, &script_data);
 
-    // |script_data| could be null if an error occurred in the browser process
-    // while trying to read the installed script. In that case, the worker
-    // thread will terminate after initialization of the global scope since
-    // PrepareForShutdownOnWorkerThread() assumes the global scope has already
-    // been initialized.
-    if (!script_data) {
-      should_terminate = true;
-    } else {
-      DCHECK(source_code.IsEmpty());
-      DCHECK(!cached_meta_data);
-      source_code = script_data->TakeSourceText();
-      cached_meta_data = script_data->TakeMetaData();
+    // If an error occurred in the browser process while trying to read the
+    // installed script, the worker thread will terminate after initialization
+    // of the global scope since PrepareForShutdownOnWorkerThread() assumes the
+    // global scope has already been initialized.
+    switch (status) {
+      case InstalledScriptsManager::ScriptStatus::kTaken:
+        // InstalledScriptsManager::ScriptStatus::kTaken should not be returned
+        // since requesting the main script should be the first and no script
+        // has been taken until here.
+        NOTREACHED();
+      case InstalledScriptsManager::ScriptStatus::kFailed:
+        should_terminate = true;
+        break;
+      case InstalledScriptsManager::ScriptStatus::kSuccess:
+        DCHECK(source_code.IsEmpty());
+        DCHECK(!cached_meta_data);
+        source_code = script_data.TakeSourceText();
+        cached_meta_data = script_data.TakeMetaData();
 
-      global_scope_creation_params->content_security_policy_raw_headers =
-          script_data->GetContentSecurityPolicyResponseHeaders();
-      global_scope_creation_params->referrer_policy =
-          script_data->GetReferrerPolicy();
-      global_scope_creation_params->origin_trial_tokens =
-          script_data->CreateOriginTrialTokens();
-      // This may block until CSP and referrer policy are set on the main
-      // thread.
-      worker_reporting_proxy_.DidLoadInstalledScript(
-          global_scope_creation_params->content_security_policy_raw_headers
-              .value(),
-          global_scope_creation_params->referrer_policy);
+        global_scope_creation_params->content_security_policy_raw_headers =
+            script_data.GetContentSecurityPolicyResponseHeaders();
+        global_scope_creation_params->referrer_policy =
+            script_data.GetReferrerPolicy();
+        global_scope_creation_params->origin_trial_tokens =
+            script_data.CreateOriginTrialTokens();
+        // This may block until CSP and referrer policy are set on the main
+        // thread.
+        worker_reporting_proxy_.DidLoadInstalledScript(
+            global_scope_creation_params->content_security_policy_raw_headers
+                .value(),
+            global_scope_creation_params->referrer_policy);
+        break;
     }
   } else {
     source_code = std::move(global_scope_creation_params->source_code);
