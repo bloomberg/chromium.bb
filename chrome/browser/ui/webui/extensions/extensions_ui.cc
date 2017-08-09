@@ -260,10 +260,6 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
               GURL(extension_urls::GetWebstoreExtensionsCategoryURL()),
               g_browser_process->GetApplicationLocale()).spec()));
 
-  source->AddResourcePath("animation_helper.html",
-                          IDR_MD_EXTENSIONS_ANIMATION_HELPER_HTML);
-  source->AddResourcePath("animation_helper.js",
-                          IDR_MD_EXTENSIONS_ANIMATION_HELPER_JS);
   source->AddResourcePath("code_section.html",
                           IDR_MD_EXTENSIONS_CODE_SECTION_HTML);
   source->AddResourcePath("code_section.js", IDR_MD_EXTENSIONS_CODE_SECTION_JS);
@@ -324,6 +320,9 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddResourcePath("strings.html", IDR_MD_EXTENSIONS_STRINGS_HTML);
   source->AddResourcePath("toolbar.html", IDR_MD_EXTENSIONS_TOOLBAR_HTML);
   source->AddResourcePath("toolbar.js", IDR_MD_EXTENSIONS_TOOLBAR_JS);
+  source->AddResourcePath("view_manager.html",
+                          IDR_MD_EXTENSIONS_VIEW_MANAGER_HTML);
+  source->AddResourcePath("view_manager.js", IDR_MD_EXTENSIONS_VIEW_MANAGER_JS);
   source->SetDefaultResource(IDR_MD_EXTENSIONS_EXTENSIONS_HTML);
 
   return source;

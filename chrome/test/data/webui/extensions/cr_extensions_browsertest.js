@@ -464,3 +464,28 @@ TEST_F('CrExtensionsNavigationHelperTest', 'PushAndReplaceState', function() {
           extension_navigation_helper_tests.TestNames.PushAndReplaceState))
       .run();
 });
+
+////////////////////////////////////////////////////////////////////////////////
+// Extension View Manager Tests
+
+var CrExtensionsViewManagerTest = class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/view_manager.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'extension_view_manager_test.js',
+    ]);
+  }
+}
+
+TEST_F('CrExtensionsViewManagerTest', 'VisibilityTest', function() {
+  mocha.grep(assert(extension_view_manager_tests.TestNames.Visibility)).run();
+});
+
+TEST_F('CrExtensionsViewManagerTest', 'EventFiringTest', function() {
+  mocha.grep(assert(extension_view_manager_tests.TestNames.EventFiring)).run();
+});

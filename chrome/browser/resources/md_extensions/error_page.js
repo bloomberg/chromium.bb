@@ -31,8 +31,6 @@ cr.define('extensions', function() {
   const ErrorPage = Polymer({
     is: 'extensions-error-page',
 
-    behaviors: [Polymer.NeonAnimatableBehavior],
-
     properties: {
       /** @type {!chrome.developerPrivate.ExtensionInfo|undefined} */
       data: Object,
@@ -48,14 +46,6 @@ cr.define('extensions', function() {
       'observeDataChanges_(data)',
       'onSelectedErrorChanged_(selectedError_)',
     ],
-
-    ready: function() {
-      /** @type {!extensions.AnimationHelper} */
-      this.animationHelper = new extensions.AnimationHelper(this, this.$.main);
-      this.animationHelper.setEntryAnimations([extensions.Animation.FADE_IN]);
-      this.animationHelper.setExitAnimations([extensions.Animation.SCALE_DOWN]);
-      this.sharedElements = {hero: this.$.main};
-    },
 
     /**
      * Watches for changes to |data| in order to fetch the corresponding

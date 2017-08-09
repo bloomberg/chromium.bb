@@ -3,13 +3,12 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_drawer/cr_drawer.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/promise_resolver.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html">
 <link rel="import" href="chrome://extensions/detail_view.html">
 <link rel="import" href="chrome://extensions/drop_overlay.html">
 <link rel="import" href="chrome://extensions/error_page.html">
@@ -22,6 +21,7 @@
 <link rel="import" href="chrome://extensions/service.html">
 <link rel="import" href="chrome://extensions/sidebar.html">
 <link rel="import" href="chrome://extensions/toolbar.html">
+<link rel="import" href="chrome://extensions/view_manager.html">
 <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
 
 <dom-module id="extensions-manager">
@@ -41,25 +41,9 @@
         flex-basis: 256px;
       }
 
-      #pages {
+      #viewManager {
         flex-grow: 1;
         overflow-y: auto;
-      }
-
-      /* Neon-animated pages set the position of the content to be absolute,
-       * which is necessary for animations, but breaks sub-page layout. Apply a
-       * static position to the selected page. See
-       * https://github.com/PolymerElements/neon-animation/issues/101 for
-       * conversations.
-       * Note: Another proposed solution was
-       *   neon-animated-pages .iron-selected:not(.neon-animating) {
-       *     position: relative;
-       *   }
-       * but the below appears to work fine, and is in line with what settings
-       * does.
-       */
-      neon-animated-pages ::content > .iron-selected {
-        position: static;
       }
 
       extensions-item {
@@ -82,23 +66,22 @@
           <extensions-sidebar></extensions-sidebar>
         </div>
       </dialog>
-      <neon-animated-pages id="pages" attr-for-selected="id"
-          selected="items-list">
+      <extensions-view-manager id="viewManager">
         <extensions-item-list id="items-list" items="[[extensions]]"
             delegate="[[delegate]]" in-dev-mode="[[inDevMode]]"
-            filter="[[filter]]" hidden$="[[!didInitPage_]]">
+            filter="[[filter]]" hidden$="[[!didInitPage_]]" slot="view">
         </extensions-item-list>
         <extensions-detail-view id="details-view" delegate="[[delegate]]"
             in-dev-mode="[[inDevMode]]" data="[[detailViewItem_]]"
-            on-close="onDetailsViewClose_">
+            on-close="onDetailsViewClose_" slot="view">
         </extensions-detail-view>
         <extensions-keyboard-shortcuts id="keyboard-shortcuts"
-            items="[[extensions]]">
+            items="[[extensions]]" slot="view">
         </extensions-keyboard-shortcuts>
         <extensions-error-page id="error-page" on-close="onErrorPageClose_"
-            data="[[errorPageItem_]]" delegate="[[delegate]]">
+            data="[[errorPageItem_]]" delegate="[[delegate]]" slot="view">
         </extensions-error-page>
-      </neon-animated-pages>
+      </extensions-view-manager>
       <extensions-options-dialog id="options-dialog">
       </extensions-options-dialog>
       <extensions-pack-dialog id="pack-dialog" delegate="[[delegate]]">
