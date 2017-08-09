@@ -27794,11 +27794,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Network channel used for invalidations.</summary>
 </histogram>
 
+<histogram name="IOS.ContentExtension.DisplayCount" units="count">
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    The number of times the Content Extension was displayed since last Chrome
+    foregrounding. Reported when Chrome is put in foregrounded.
+  </summary>
+</histogram>
+
 <histogram name="IOS.MailtoURLRewritten" enum="Boolean">
   <owner>pkl@chromium.org</owner>
   <summary>
     Counts the times when a mailto: URL is tapped by user and whether the URL
     has been rewritten for an available native Mail client app or not.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SearchExtension.DisplayCount" units="count">
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    The number of times the Search Extension was displayed since last Chrome
+    foregrounding. Reported when Chrome is put in foreground.
   </summary>
 </histogram>
 

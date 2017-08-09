@@ -12,6 +12,7 @@
 #include "components/open_from_clipboard/clipboard_recent_content_impl_ios.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
+#include "ios/chrome/common/app_group/app_group_metrics.h"
 #import "ios/chrome/search_widget_extension/copied_url_view.h"
 #import "ios/chrome/search_widget_extension/search_widget_view.h"
 
@@ -44,6 +45,10 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 // application for a given |command| and |parameter|.
 + (NSDictionary*)dictForCommand:(NSString*)command
                       parameter:(NSString*)parameter;
+// Register a display of the widget in the app_group NSUserDefaults.
+// Metrics on the widget usage will be sent (if enabled) on the next Chrome
+// startup.
+- (void)registerWidgetDisplay;
 
 @end
 
@@ -116,6 +121,7 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
+  [self registerWidgetDisplay];
   [self updateWidget];
 }
 
@@ -211,6 +217,14 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 
 - (void)openAppWithCommand:(NSString*)command {
   return [self openAppWithCommand:command parameter:nil];
+}
+
+- (void)registerWidgetDisplay {
+  NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
+  NSInteger numberOfDisplay =
+      [sharedDefaults integerForKey:app_group::kSearchExtensionDisplayCount];
+  [sharedDefaults setInteger:numberOfDisplay + 1
+                      forKey:app_group::kSearchExtensionDisplayCount];
 }
 
 - (void)openAppWithCommand:(NSString*)command parameter:(NSString*)parameter {

@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/ntp/ntp_tile.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
+#include "ios/chrome/common/app_group/app_group_metrics.h"
 #include "ios/chrome/content_widget_extension/content_widget_view.h"
 #import "ios/chrome/content_widget_extension/most_visited_tile_view.h"
 
@@ -38,6 +39,10 @@ const CGFloat widgetCompactHeightIOS9 = 110;
 - (BOOL)updateWidget;
 // Expand the widget.
 - (void)setExpanded:(CGSize)maxSize;
+// Register a display of the widget in the app_group NSUserDefaults.
+// Metrics on the widget usage will be sent (if enabled) on the next Chrome
+// startup.
+- (void)registerWidgetDisplay;
 @end
 
 @implementation ContentWidgetViewController
@@ -83,6 +88,11 @@ const CGFloat widgetCompactHeightIOS9 = 110;
 
   self.widgetView.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(self.widgetView, self.view);
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  [self registerWidgetDisplay];
 }
 
 - (void)widgetPerformUpdateWithCompletionHandler:
@@ -149,7 +159,13 @@ const CGFloat widgetCompactHeightIOS9 = 110;
   return YES;
 }
 
-#pragma mark - ContentWidgetViewDelegate
+- (void)registerWidgetDisplay {
+  NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
+  NSInteger numberOfDisplay =
+      [sharedDefaults integerForKey:app_group::kContentExtensionDisplayCount];
+  [sharedDefaults setInteger:numberOfDisplay + 1
+                      forKey:app_group::kContentExtensionDisplayCount];
+}
 
 - (void)openURL:(NSURL*)URL {
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();

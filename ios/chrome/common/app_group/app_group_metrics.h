@@ -19,6 +19,14 @@ extern NSString* const kPendingLogFileSuffix;
 // upload.
 extern NSString* const kPendingLogFileDirectory;
 
+// An app_group key to the number of times Search Extension was displayed since
+// last Chrome launch.
+extern NSString* const kSearchExtensionDisplayCount;
+
+// An app_group key to the number of times Content Extension was displayed since
+// last Chrome launch.
+extern NSString* const kContentExtensionDisplayCount;
+
 // Offsets the sessionID to avoid collision. The sessionID is limited to 1<<23.
 int AppGroupSessionID(int sessionID, AppGroupApplications application);
 
