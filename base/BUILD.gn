@@ -862,6 +862,8 @@ component("base") {
     "threading/platform_thread_win.cc",
     "threading/post_task_and_reply_impl.cc",
     "threading/post_task_and_reply_impl.h",
+    "threading/scoped_may_block.cc",
+    "threading/scoped_may_block.h",
     "threading/sequence_local_storage_map.cc",
     "threading/sequence_local_storage_map.h",
     "threading/sequence_local_storage_slot.cc",
