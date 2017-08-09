@@ -14,6 +14,7 @@ USERS_TMP_FILE="$SCRIPT_FILE.users"
 PLIST=/Library/LaunchAgents/org.chromium.chromoting.plist
 ENABLED_FILE="$HELPERTOOLS/$SERVICE_NAME.me2me_enabled"
 ENABLED_FILE_BACKUP="$ENABLED_FILE.backup"
+PREF_PANE=/Library/PreferencePanes/ChromeRemoteDesktop.prefPane
 
 # In case of errors, log the fact, but continue to unload launchd jobs as much
 # as possible. When finished, this preflight script should exit successfully in
@@ -102,5 +103,9 @@ for uid in $(find_users_with_active_hosts); do
     $bootstrap_user $sudo_user $unload
   fi
 done
+
+# The installer no longer includes a preference-pane applet, so remove any
+# pref-pane from a previous installation.
+rm -rf "$PREF_PANE"
 
 exit 0

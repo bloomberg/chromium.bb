@@ -37,7 +37,6 @@ setup() {
   HOST_UNINSTALLER_NAME=$(read_property "HOST_UNINSTALLER_NAME")
   NATIVE_MESSAGING_HOST_BUNDLE_NAME=$(read_property\
     "NATIVE_MESSAGING_HOST_BUNDLE_NAME")
-  PREFPANE_BUNDLE_NAME=$(read_property "PREFPANE_BUNDLE_NAME")
   REMOTE_ASSISTANCE_HOST_BUNDLE_NAME=$(read_property\
     "REMOTE_ASSISTANCE_HOST_BUNDLE_NAME")
 
@@ -50,7 +49,6 @@ setup() {
                 `"${REMOTE_ASSISTANCE_HOST_BUNDLE_NAME}/Contents/MacOS/"`
                 `"remote_assistance_host"
   UNINSTALLER="Applications/${HOST_UNINSTALLER_NAME}.app"
-  PREFPANE="PreferencePanes/${PREFPANE_BUNDLE_NAME}"
 
   # The Chromoting Host installer is a meta-package that consists of 3
   # components:
@@ -145,7 +143,6 @@ sign_binaries() {
   sign "${input_dir}/${IT2ME_NM_HOST}" "${keychain}" "${id}"
   sign "${input_dir}/${ME2ME_HOST}" "${keychain}" "${id}"
   sign "${input_dir}/${UNINSTALLER}" "${keychain}" "${id}"
-  sign "${input_dir}/${PREFPANE}" "${keychain}" "${id}"
 }
 
 sign_installer() {
