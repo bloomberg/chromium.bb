@@ -7,11 +7,15 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -77,13 +81,20 @@ class BookmarkAppUrlRedirectorBrowserTest : public ExtensionBrowserTest {
 
     ASSERT_EQ(++num_extensions,
               ExtensionRegistry::Get(profile())->enabled_extensions().size());
+
+    test_bookmark_app_ =
+        content::Details<const Extension>(windowed_observer.details()).ptr();
   }
 
   Browser* OpenTestBookmarkApp() {
     GURL app_url = embedded_test_server()->GetURL(kAppUrlPath);
     ui_test_utils::UrlLoadObserver url_observer(
         app_url, content::NotificationService::AllSources());
-    ui_test_utils::NavigateToURL(browser(), app_url);
+
+    OpenApplication(AppLaunchParams(
+        profile(), test_bookmark_app_, extensions::LAUNCH_CONTAINER_WINDOW,
+        WindowOpenDisposition::CURRENT_TAB, SOURCE_CHROME_INTERNAL));
+
     url_observer.Wait();
 
     return chrome::FindLastActive();
@@ -123,6 +134,7 @@ class BookmarkAppUrlRedirectorBrowserTest : public ExtensionBrowserTest {
   void ResetFeatureList() { scoped_feature_list_.reset(); }
 
  private:
+  const Extension* test_bookmark_app_;
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
@@ -170,6 +182,58 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppUrlRedirectorBrowserTest,
 
   EXPECT_EQ(embedded_test_server()->GetURL(kAppUrlPath),
             initial_tab->GetLastCommittedURL());
+}
+
+// Tests that navigating to a in-scope URL using the omnibox *does not*
+// open the Bookmark App.
+IN_PROC_BROWSER_TEST_F(BookmarkAppUrlRedirectorBrowserTest,
+                       OmniboxNavigationInScope) {
+  InstallTestBookmarkApp();
+
+  content::WebContents* initial_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  int num_tabs = browser()->tab_strip_model()->count();
+  size_t num_browsers = chrome::GetBrowserCount(profile());
+
+  GURL in_scope_url = embedded_test_server()->GetURL(kInScopeUrlPath);
+  ui_test_utils::UrlLoadObserver url_observer(
+      in_scope_url, content::NotificationService::AllSources());
+  chrome::NavigateParams params(browser(), in_scope_url,
+                                ui::PAGE_TRANSITION_TYPED);
+  ui_test_utils::NavigateToURL(&params);
+  url_observer.Wait();
+
+  EXPECT_EQ(num_tabs, browser()->tab_strip_model()->count());
+  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(profile()));
+  EXPECT_EQ(browser(), chrome::FindLastActive());
+
+  EXPECT_EQ(in_scope_url, initial_tab->GetLastCommittedURL());
+}
+
+// Tests that navigating to an out-of-scope URL with the same origin as the
+// installed Bookmark App *does not* open the Bookmark App.
+IN_PROC_BROWSER_TEST_F(BookmarkAppUrlRedirectorBrowserTest,
+                       OmniboxNavigationOutOfScope) {
+  InstallTestBookmarkApp();
+
+  content::WebContents* initial_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  int num_tabs = browser()->tab_strip_model()->count();
+  size_t num_browsers = chrome::GetBrowserCount(profile());
+
+  GURL out_of_scope_url = embedded_test_server()->GetURL(kOutOfScopeUrlPath);
+  ui_test_utils::UrlLoadObserver url_observer(
+      out_of_scope_url, content::NotificationService::AllSources());
+  chrome::NavigateParams params(browser(), out_of_scope_url,
+                                ui::PAGE_TRANSITION_TYPED);
+  ui_test_utils::NavigateToURL(&params);
+  url_observer.Wait();
+
+  EXPECT_EQ(num_tabs, browser()->tab_strip_model()->count());
+  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(profile()));
+  EXPECT_EQ(browser(), chrome::FindLastActive());
+
+  EXPECT_EQ(out_of_scope_url, initial_tab->GetLastCommittedURL());
 }
 
 // Tests that clicking a link with target="_self" to the apps app_url opens the
