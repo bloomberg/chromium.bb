@@ -450,10 +450,12 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest,
   std::string message;
   bool use_native_bindings = FeatureSwitch::native_crx_bindings()->IsEnabled();
   if (use_native_bindings) {
-    // TODO(devlin): The "Error in event handler for browserAction.onClicked"
-    // portion may or may not be worth preserving. In most cases, it's
-    // unnecessary with the line number, but it could be useful in some cases.
-    message = "Uncaught ReferenceError: baz is not defined";
+    // TODO(devlin): The specific event name (here, 'browserAction.onClicked')
+    // may or may not be worth preserving. In most cases, it's unnecessary with
+    // the line number, but it could be useful in some cases.
+    message =
+        "Error in event handler: ReferenceError: "
+        "baz is not defined";
   } else {
     message =
         "Error in event handler for browserAction.onClicked: "
