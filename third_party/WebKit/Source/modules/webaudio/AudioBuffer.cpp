@@ -162,7 +162,7 @@ DOMFloat32Array* AudioBuffer::CreateFloat32ArrayOrNull(
 
   switch (policy) {
     case kZeroInitialize:
-      buffer = WTF::Float32Array::Create(length);
+      buffer = WTF::Float32Array::CreateOrNull(length);
       break;
     case kDontInitialize:
       buffer = WTF::Float32Array::CreateUninitializedOrNull(length);
