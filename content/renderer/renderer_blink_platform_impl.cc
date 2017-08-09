@@ -346,7 +346,7 @@ RendererBlinkPlatformImpl::CreateURLLoaderFactory() {
   // network URLLoader.
   if (base::FeatureList::IsEnabled(features::kOutOfBlinkCORS)) {
     mojom::URLLoaderFactoryPtr factory_ptr;
-    CORSURLLoaderFactory::CreateAndBind(std::move(url_loader_factory_),
+    CORSURLLoaderFactory::CreateAndBind(std::move(url_loader_factory),
                                         mojo::MakeRequest(&factory_ptr));
     url_loader_factory = std::move(factory_ptr);
   }

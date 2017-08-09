@@ -16,6 +16,8 @@ void CORSURLLoaderFactory::CreateAndBind(
     PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory>
         network_loader_factory,
     mojom::URLLoaderFactoryRequest request) {
+  DCHECK(network_loader_factory);
+
   mojo::MakeStrongBinding(
       base::MakeUnique<CORSURLLoaderFactory>(std::move(network_loader_factory)),
       std::move(request));
