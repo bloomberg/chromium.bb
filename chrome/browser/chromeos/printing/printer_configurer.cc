@@ -32,7 +32,10 @@ GetComponentizedFilters() {
   // A mapping from filter names to available components for downloads.
   static const auto* const componentized_filters =
       new std::map<const std::string, const std::string>{
-          {"epson-escpr-wrapper", "epson-inkjet-printer-escpr"}};
+          {"epson-escpr-wrapper", "epson-inkjet-printer-escpr"},
+          {"epson-escpr", "epson-inkjet-printer-escpr"},
+          {"rastertostar", "star-cups-driver"},
+          {"rastertostarlm", "star-cups-driver"}};
   return *componentized_filters;
 }
 
