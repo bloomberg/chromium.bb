@@ -772,10 +772,10 @@ static const int32_t intra_tx_size_cat_lookup[BLOCK_SIZES_ALL] = {
 #endif  // CONFIG_TX64X64
   // TODO(david.barker): Change these if we support rectangular transforms
   // for 4:1 shaped partitions
-  // 4x16,          16x4,              8x32
-  INT32_MIN,        INT32_MIN,         TX_8X8 - TX_8X8,
-  // 32x8,          16x64,             64x16
-  TX_8X8 - TX_8X8,  TX_16X16 - TX_8X8, TX_16X16 - TX_8X8
+  // 4x16,            16x4,               8x32
+  TX_8X8 - TX_8X8,    TX_8X8 - TX_8X8,    TX_8X8 - TX_8X8,
+  // 32x8,            16x64,              64x16
+  TX_8X8 - TX_8X8,    TX_16X16 - TX_8X8,  TX_16X16 - TX_8X8
 };
 #else
 // Same as "max_txsize_lookup[bsize] - TX_8X8", invalid for bsize < 8X8
@@ -809,10 +809,10 @@ static const int32_t intra_tx_size_cat_lookup[BLOCK_SIZES_ALL] = {
   TX_32X32 - TX_8X8,  TX_32X32 - TX_8X8,  TX_32X32 - TX_8X8,
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_TX64X64
-  // 4x16,            16x4,              8x32
-  INT32_MIN,          INT32_MIN,         TX_8X8 - TX_8X8,
-  // 32x8             16x64,             64x16
-  TX_8X8 - TX_8X8,    TX_16X16 - TX_8X8, TX_16X16 - TX_8X8
+  // 4x16,            16x4,               8x32
+  TX_8X8 - TX_8X8,    TX_8X8 - TX_8X8,    TX_8X8 - TX_8X8,
+  // 32x8             16x64,              64x16
+  TX_8X8 - TX_8X8,    TX_16X16 - TX_8X8,  TX_16X16 - TX_8X8
 };
 #endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
 
@@ -1115,8 +1115,8 @@ static const BLOCK_SIZE ss_size_lookup[BLOCK_SIZES_ALL][2][2] = {
   { { BLOCK_128X64, BLOCK_INVALID }, { BLOCK_64X64, BLOCK_64X32 } },
   { { BLOCK_128X128, BLOCK_128X64 }, { BLOCK_64X128, BLOCK_64X64 } },
 #endif  // CONFIG_EXT_PARTITION
-  { { BLOCK_4X16, BLOCK_4X8 }, { BLOCK_INVALID, BLOCK_INVALID } },
-  { { BLOCK_16X4, BLOCK_INVALID }, { BLOCK_8X4, BLOCK_INVALID } },
+  { { BLOCK_4X16, BLOCK_4X8 }, { BLOCK_INVALID, BLOCK_4X8 } },
+  { { BLOCK_16X4, BLOCK_INVALID }, { BLOCK_8X4, BLOCK_8X4 } },
   { { BLOCK_8X32, BLOCK_8X16 }, { BLOCK_INVALID, BLOCK_4X16 } },
   { { BLOCK_32X8, BLOCK_INVALID }, { BLOCK_16X8, BLOCK_16X4 } },
   { { BLOCK_16X64, BLOCK_16X32 }, { BLOCK_INVALID, BLOCK_8X32 } },

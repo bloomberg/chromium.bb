@@ -4300,7 +4300,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   // * Add support for BLOCK_16X16 once we support 2x8 and 8x2 blocks for the
   //   chroma plane
   // * Add support for supertx
-  if ((bsize == BLOCK_32X32 || bsize == BLOCK_64X64) &&
+  if ((bsize == BLOCK_64X64 || bsize == BLOCK_32X32 || bsize == BLOCK_16X16) &&
       partition_horz_allowed && !force_horz_split &&
       (do_rectangular_split || av1_active_h_edge(cpi, mi_row, mi_step))) {
     int i;
@@ -4356,7 +4356,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif
   }
   // PARTITION_VERT_4
-  if ((bsize == BLOCK_32X32 || bsize == BLOCK_64X64) &&
+  if ((bsize == BLOCK_64X64 || bsize == BLOCK_32X32 || bsize == BLOCK_16X16) &&
       partition_vert_allowed && !force_vert_split &&
       (do_rectangular_split || av1_active_v_edge(cpi, mi_row, mi_step))) {
     int i;

@@ -493,11 +493,11 @@ static INLINE void setup_pred_plane(struct buf_2d *dst, BLOCK_SIZE bsize,
                                     const struct scale_factors *scale,
                                     int subsampling_x, int subsampling_y) {
 #if CONFIG_CHROMA_SUB8X8
-  if (bsize < BLOCK_8X8) {
-    // Offset the buffer pointer
-    if (subsampling_y && (mi_row & 0x01)) mi_row -= 1;
-    if (subsampling_x && (mi_col & 0x01)) mi_col -= 1;
-  }
+  // Offset the buffer pointer
+  if (subsampling_y && (mi_row & 0x01) && (mi_size_high[bsize] == 1))
+    mi_row -= 1;
+  if (subsampling_x && (mi_col & 0x01) && (mi_size_wide[bsize] == 1))
+    mi_col -= 1;
 #else
   (void)bsize;
 #endif

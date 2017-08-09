@@ -667,11 +667,12 @@ static INLINE void set_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col) {
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     struct macroblockd_plane *const pd = &xd->plane[i];
 #if CONFIG_CHROMA_SUB8X8
-    if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8) {
-      // Offset the buffer pointer
-      if (pd->subsampling_y && (mi_row & 0x01)) row_offset = mi_row - 1;
-      if (pd->subsampling_x && (mi_col & 0x01)) col_offset = mi_col - 1;
-    }
+    // Offset the buffer pointer
+    const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
+    if (pd->subsampling_y && (mi_row & 0x01) && (mi_size_high[bsize] == 1))
+      row_offset = mi_row - 1;
+    if (pd->subsampling_x && (mi_col & 0x01) && (mi_size_wide[bsize] == 1))
+      col_offset = mi_col - 1;
 #endif
     int above_idx = col_offset << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
     int left_idx = (row_offset & MAX_MIB_MASK)
