@@ -485,20 +485,21 @@ bool SelectionController::UpdateSelectionForMouseDownDispatchingSelectStart(
       !target_node->GetLayoutObject()->IsSelectable())
     return false;
 
-  // TODO(editing-dev): We should compute visible selection after dispatching
-  // "selectstart", once we have |SelectionInFlatTree::IsValidFor()|.
-  const VisibleSelectionInFlatTree& visible_selection =
-      CreateVisibleSelection(selection);
-
-  if (DispatchSelectStart(target_node) != DispatchEventResult::kNotCanceled)
-    return false;
+  {
+    SelectionInFlatTree::InvalidSelectionResetter resetter(selection);
+    if (DispatchSelectStart(target_node) != DispatchEventResult::kNotCanceled)
+      return false;
+  }
 
   // |dispatchSelectStart()| can change document hosted by |m_frame|.
   if (!this->Selection().IsAvailable())
     return false;
 
-  if (!visible_selection.IsValidFor(this->Selection().GetDocument()))
-    return false;
+  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  const VisibleSelectionInFlatTree& visible_selection =
+      CreateVisibleSelection(selection);
 
   if (visible_selection.IsRange()) {
     selection_state_ = SelectionState::kExtendedSelection;
