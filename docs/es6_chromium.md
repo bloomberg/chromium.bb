@@ -432,6 +432,28 @@ Object.is(-0, +0)  // false, btw: -0 === +0 is true
 
 ---
 
+## for...of Loops
+
+Convenient operator to iterate over all values in an iterable collection. This
+differs from `for ...in`, which iterates over all enumerable properties of an
+object.
+
+**Usage Example:**
+
+```js
+// Given an iterable collection of Fibonacci numbers...
+for (let n of fibonacci) {
+  console.log(n);  // 1, 1, 2, 3, ...
+}
+```
+
+**Documentation:** [link1](http://www.ecma-international.org/ecma-262/6.0/#sec-for-in-and-for-of-statements)
+[link2](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of)
+
+**Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/d_2zUYQZJTg/-_PSji_OAQAJ)
+
+---
+
 # Banned Features
 
 The following features are banned for Chromium development.
@@ -751,27 +773,6 @@ Object.getOwnPropertySymbols(obj);  // [foo, bar]
 ```
 
 **Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-symbol-constructor)
-
-**Discussion Notes / Link to Thread:**
-
----
-
-## for...of Loops
-
-Convenient operator to iterate over all values in an iterable collection. This
-differs from `for ...in`, which iterates over all iterable properties.
-
-**Usage Example:**
-
-```js
-// Given an iterable collection fibonacci numbers...
-for (var n of fibonacci) {
-  console.log(n);  // 1, 1, 2, 3, ...
-}
-```
-
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-for-in-and-for-of-statements)
-[link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of)
 
 **Discussion Notes / Link to Thread:**
 
