@@ -124,10 +124,6 @@ crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-background-size.htm
 crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-overflow-position.html [ Failure Pass ]
 crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-tiled.html [ Failure Pass ]
 
-crbug.com/747502 paint/roundedrects/input-with-rounded-rect-and-shadow.html [ NeedsManualRebaseline ]
-crbug.com/747502 fast/borders/border-radius-with-box-shadow.html [ NeedsManualRebaseline ]
-crbug.com/747502 paint/roundedrects/circle-with-shadow.html [ NeedsManualRebaseline ]
-
 crbug.com/749760 compositing/overflow/relpos-under-abspos-border-radius.html [ Failure ]
 crbug.com/749760 virtual/prefer_compositing_to_lcd_text/compositing/overflow/relpos-under-abspos-border-radius.html [ Failure ]
 
