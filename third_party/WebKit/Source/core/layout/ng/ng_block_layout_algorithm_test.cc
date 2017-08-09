@@ -2771,5 +2771,26 @@ TEST_F(NGBlockLayoutAlgorithmTest, NewFcFirstChildIsZeroBlockSize) {
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(-10)), child->Offset());
 }
 
+// This test assumes that tables are not yet implemented in LayoutNG.
+TEST_F(NGBlockLayoutAlgorithmTest, RootFragmentOffsetInsideLegacy) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <div style="display:table-cell;">
+      <div id="innerNGRoot" style="margin-top:10px; margin-left:20px;"></div>
+    </div>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  const LayoutObject* innerNGRoot = GetLayoutObjectByElementId("innerNGRoot");
+
+  ASSERT_TRUE(innerNGRoot->IsLayoutNGBlockFlow());
+  RefPtr<NGPhysicalBoxFragment> fragment =
+      ToLayoutNGBlockFlow(innerNGRoot)->GetFragmentForTesting();
+
+  ASSERT_TRUE(fragment.Get());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(20), LayoutUnit(10)),
+            fragment->Offset());
+}
+
 }  // namespace
 }  // namespace blink

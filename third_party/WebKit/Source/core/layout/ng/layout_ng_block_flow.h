@@ -15,6 +15,7 @@ namespace blink {
 class NGBreakToken;
 class NGConstraintSpace;
 class NGLayoutResult;
+class NGPhysicalBoxFragment;
 
 // This overrides the default layout block algorithm to use Layout NG.
 class CORE_EXPORT LayoutNGBlockFlow final : public LayoutBlockFlow {
@@ -43,6 +44,10 @@ class CORE_EXPORT LayoutNGBlockFlow final : public LayoutBlockFlow {
                              NGBreakToken*,
                              RefPtr<NGLayoutResult>);
 
+  RefPtr<NGPhysicalBoxFragment> GetFragmentForTesting() const {
+    return physical_root_fragment_for_testing_;
+  }
+
  private:
   bool IsOfType(LayoutObjectType) const override;
 
@@ -52,6 +57,7 @@ class CORE_EXPORT LayoutNGBlockFlow final : public LayoutBlockFlow {
 
   RefPtr<NGLayoutResult> cached_result_;
   RefPtr<NGConstraintSpace> cached_constraint_space_;
+  RefPtr<NGPhysicalBoxFragment> physical_root_fragment_for_testing_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGBlockFlow, IsLayoutNGBlockFlow());
