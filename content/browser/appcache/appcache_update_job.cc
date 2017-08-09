@@ -485,7 +485,7 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher,
   DCHECK(internal_state_ == DOWNLOADING);
 
   UpdateRequestBase* request = fetcher->request();
-  const GURL& url = request->GetOriginalURL();
+  const GURL& url = request->GetURL();
   pending_url_fetches_.erase(url);
   NotifyAllProgress(url);
   ++url_fetches_completed_;
@@ -586,7 +586,7 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLFetcher* fetcher,
   // be called in CACHE_FAILURE state.
 
   UpdateRequestBase* request = fetcher->request();
-  const GURL& url = request->GetOriginalURL();
+  const GURL& url = request->GetURL();
   master_entry_fetches_.erase(url);
   ++master_entries_completed_;
 

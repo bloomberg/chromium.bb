@@ -51,12 +51,12 @@ class AppCacheUpdateJob::URLFetcher {
  private:
   void OnReceivedRedirect(const net::RedirectInfo& redirect_info);
   void OnResponseStarted(int net_error);
-  void OnReadCompleted(int bytes_read);
+  void OnReadCompleted(net::IOBuffer* buffer, int bytes_read);
 
   void AddConditionalHeaders(const net::HttpResponseHeaders* headers);
   void OnWriteComplete(int result);
   void ReadResponseData();
-  bool ConsumeResponseData(int bytes_read);
+  bool ConsumeResponseData(net::IOBuffer* buffer, int bytes_read);
   void OnResponseCompleted(int net_error);
   bool MaybeRetryRequest();
 
@@ -67,7 +67,6 @@ class AppCacheUpdateJob::URLFetcher {
   AppCacheUpdateJob* job_;
   FetchType fetch_type_;
   int retry_503_attempts_;
-  scoped_refptr<net::IOBuffer> buffer_;
   std::unique_ptr<UpdateRequestBase> request_;
   AppCacheEntry existing_entry_;
   scoped_refptr<net::HttpResponseHeaders> existing_response_headers_;

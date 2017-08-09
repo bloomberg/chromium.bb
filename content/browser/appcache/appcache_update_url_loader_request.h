@@ -7,16 +7,30 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 
 #include "base/macros.h"
 #include "content/browser/appcache/appcache_update_request_base.h"
+#include "content/common/net_adapters.h"
+#include "content/public/common/resource_request.h"
 #include "content/public/common/url_loader.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
+#include "net/base/io_buffer.h"
+
+namespace net {
+class HttpResponseInfo;
+}
 
 namespace content {
 
+class URLLoaderFactoryGetter;
+struct ResourceRequest;
+struct ResourceResponseHead;
+
 // URLLoaderClient subclass for the UpdateRequestBase class. Provides
 // functionality to update the AppCache using functionality provided by the
-// network URL loader
+// network URL loader.
 class AppCacheUpdateJob::UpdateURLLoaderRequest
     : public AppCacheUpdateJob::UpdateRequestBase,
       public mojom::URLLoaderClient {
@@ -27,7 +41,6 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
   void Start() override;
   void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers) override;
   GURL GetURL() const override;
-  GURL GetOriginalURL() const override;
   void SetLoadFlags(int flags) override;
   int GetLoadFlags() const override;
   std::string GetMimeType() const override;
@@ -35,9 +48,8 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
   void SetInitiator(const base::Optional<url::Origin>& initiator) override;
   net::HttpResponseHeaders* GetResponseHeaders() const override;
   int GetResponseCode() const override;
-  net::HttpResponseInfo GetResponseInfo() const override;
-  const net::URLRequestContext* GetRequestContext() const override;
-  int Read(net::IOBuffer* buf, int max_bytes) override;
+  const net::HttpResponseInfo& GetResponseInfo() const override;
+  void Read() override;
   int Cancel() override;
 
   // mojom::URLLoaderClient implementation.
@@ -58,13 +70,51 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
   void OnComplete(const ResourceRequestCompletionStatus& status) override;
 
  private:
-  UpdateURLLoaderRequest(net::URLRequestContext* request_context,
+  UpdateURLLoaderRequest(URLLoaderFactoryGetter* loader_factory_getter,
                          const GURL& url,
+                         int buffer_size,
                          URLFetcher* fetcher);
+
+  // Helper function to initiate an asynchronous read on the data pipe.
+  void StartReading(MojoResult unused);
+
+  // Helper function to setup the data pipe watcher to start reading from
+  // the pipe. We need to do this when the data pipe is available and there is
+  // a pending read.
+  void MaybeStartReading();
 
   friend class AppCacheUpdateJob::UpdateRequestBase;
 
   URLFetcher* fetcher_;
+  // Used to retrieve the network URLLoader interface to issue network
+  // requests
+  scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
+
+  ResourceRequest request_;
+  std::unique_ptr<ResourceResponseHead> response_;
+  ResourceRequestCompletionStatus response_status_;
+  // Response details.
+  std::unique_ptr<net::HttpResponseInfo> http_response_info_;
+  // Binds the URLLoaderClient interface to the channel.
+  mojo::Binding<mojom::URLLoaderClient> client_binding_;
+  // The network URL loader.
+  mojom::URLLoaderPtr url_loader_;
+  // Caller buffer size.
+  int buffer_size_;
+  // The mojo data pipe.
+  mojo::ScopedDataPipeConsumerHandle handle_;
+  // Used to watch the data pipe to initiate reads.
+  mojo::SimpleWatcher handle_watcher_;
+  // Set to true when the caller issues a read request. We set it to false in
+  // the StartReading() function when the mojo BeginReadData API returns a
+  // value indicating one of the following:
+  // 1. Data is available.
+  // 2. End of data has been reached.
+  // 3. Error.
+  // Please look at the StartReading() function for details.
+  bool read_requested_;
+  // Adapter for transferring data from a mojo data pipe to net.
+  scoped_refptr<MojoToNetPendingBuffer> pending_read_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateURLLoaderRequest);
 };

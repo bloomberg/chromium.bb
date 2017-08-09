@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "content/browser/url_loader_factory_getter.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/appcache_service.h"
@@ -182,6 +183,18 @@ class CONTENT_EXPORT AppCacheServiceImpl
   void set_force_keep_session_state() { force_keep_session_state_ = true; }
   bool force_keep_session_state() const { return force_keep_session_state_; }
 
+  // The following two functions are invoked in the network service world to
+  // set/get a pointer to the URLLoaderFactoryGetter instance which is used to
+  // get to the network URL loader factory.
+  void set_url_loader_factory_getter(
+      URLLoaderFactoryGetter* loader_factory_getter) {
+    url_loader_factory_getter_ = loader_factory_getter;
+  }
+
+  URLLoaderFactoryGetter* url_loader_factory_getter() const {
+    return url_loader_factory_getter_.get();
+  }
+
  protected:
   friend class content::AppCacheServiceImplTest;
   friend class content::AppCacheStorageImplTest;
@@ -219,6 +232,11 @@ class CONTENT_EXPORT AppCacheServiceImpl
   base::TimeDelta next_reinit_delay_;
   base::OneShotTimer reinit_timer_;
   base::ObserverList<Observer> observers_;
+
+  // In the network service world contains the pointer to the
+  // URLLoaderFactoryGetter instance which is used to get to the network
+  // URL loader factory.
+  scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
 
  private:
   base::WeakPtrFactory<AppCacheServiceImpl> weak_factory_;

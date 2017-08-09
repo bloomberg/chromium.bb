@@ -566,6 +566,9 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
         blob_context, partition->filesystem_context_);
   }
 
+  partition->appcache_service_->set_url_loader_factory_getter(
+      partition->url_loader_factory_getter_.get());
+
   return partition;
 }
 

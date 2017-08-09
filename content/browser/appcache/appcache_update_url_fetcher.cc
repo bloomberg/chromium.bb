@@ -4,10 +4,13 @@
 
 #include "content/browser/appcache/appcache_update_url_fetcher.h"
 
+#include "base/command_line.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/appcache/appcache_update_request_base.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_request_context.h"
 
 namespace content {
 
@@ -28,10 +31,8 @@ AppCacheUpdateJob::URLFetcher::URLFetcher(const GURL& url,
       job_(job),
       fetch_type_(fetch_type),
       retry_503_attempts_(0),
-      buffer_(new net::IOBuffer(buffer_size)),
-      request_(UpdateRequestBase::Create(job->service_->request_context(),
-                                         url,
-                                         this)),
+      request_(
+          UpdateRequestBase::Create(job->service_, url, buffer_size, this)),
       result_(AppCacheUpdateJob::UPDATE_OK),
       redirect_response_code_(-1),
       buffer_size_(buffer_size) {}
@@ -87,13 +88,10 @@ void AppCacheUpdateJob::URLFetcher::OnResponseStarted(int net_error) {
     // requested on the whatwg list.
     // See http://code.google.com/p/chromium/issues/detail?id=69594
     // TODO(michaeln): Consider doing this for cross-origin HTTP too.
-    const net::HttpNetworkSession::Params* session_params =
-        request_->GetRequestContext()->GetNetworkSessionParams();
-    bool ignore_cert_errors =
-        session_params && session_params->ignore_certificate_errors;
     if ((net::IsCertStatusError(
              request_->GetResponseInfo().ssl_info.cert_status) &&
-         !ignore_cert_errors) ||
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kIgnoreCertificateErrors)) ||
         (url_.GetOrigin() != job_->manifest_url_.GetOrigin() &&
          request_->GetResponseHeaders()->HasHeaderValue("cache-control",
                                                         "no-store"))) {
@@ -120,29 +118,19 @@ void AppCacheUpdateJob::URLFetcher::OnResponseStarted(int net_error) {
   }
 }
 
-void AppCacheUpdateJob::URLFetcher::OnReadCompleted(int bytes_read) {
+void AppCacheUpdateJob::URLFetcher::OnReadCompleted(net::IOBuffer* buffer,
+                                                    int bytes_read) {
   DCHECK(request_);
   DCHECK_NE(net::ERR_IO_PENDING, bytes_read);
-  bool data_consumed = true;
-  if (bytes_read > 0) {
-    job_->MadeProgress();
-    data_consumed = ConsumeResponseData(bytes_read);
-    if (data_consumed) {
-      while (true) {
-        bytes_read = request_->Read(buffer_.get(), buffer_size_);
-        if (bytes_read <= 0)
-          break;
-        data_consumed = ConsumeResponseData(bytes_read);
-        if (!data_consumed)
-          break;
-      }
-    }
+
+  if (bytes_read <= 0) {
+    OnResponseCompleted(bytes_read);
+    return;
   }
 
-  if (data_consumed && bytes_read != net::ERR_IO_PENDING) {
-    DCHECK_EQ(AppCacheUpdateJob::UPDATE_OK, result_);
-    OnResponseCompleted(bytes_read);
-  }
+  job_->MadeProgress();
+  if (ConsumeResponseData(buffer, bytes_read))
+    request_->Read();
 }
 
 void AppCacheUpdateJob::URLFetcher::AddConditionalHeaders(
@@ -188,26 +176,25 @@ void AppCacheUpdateJob::URLFetcher::ReadResponseData() {
       state == AppCacheUpdateJob::COMPLETED) {
     return;
   }
-  int bytes_read = request_->Read(buffer_.get(), buffer_size_);
-  if (bytes_read != net::ERR_IO_PENDING)
-    OnReadCompleted(bytes_read);
+  request_->Read();
 }
 
 // Returns false if response data is processed asynchronously, in which
 // case ReadResponseData will be invoked when it is safe to continue
 // reading more response data from the request.
-bool AppCacheUpdateJob::URLFetcher::ConsumeResponseData(int bytes_read) {
+bool AppCacheUpdateJob::URLFetcher::ConsumeResponseData(net::IOBuffer* buffer,
+                                                        int bytes_read) {
   DCHECK_GT(bytes_read, 0);
   switch (fetch_type_) {
     case MANIFEST_FETCH:
     case MANIFEST_REFETCH:
-      manifest_data_.append(buffer_->data(), bytes_read);
+      manifest_data_.append(buffer->data(), bytes_read);
       break;
     case URL_FETCH:
     case MASTER_ENTRY_FETCH:
       DCHECK(response_writer_.get());
       response_writer_->WriteData(
-          buffer_.get(), bytes_read,
+          buffer, bytes_read,
           base::Bind(&URLFetcher::OnWriteComplete, base::Unretained(this)));
       return false;  // wait for async write completion to continue reading
     default:
@@ -217,8 +204,11 @@ bool AppCacheUpdateJob::URLFetcher::ConsumeResponseData(int bytes_read) {
 }
 
 void AppCacheUpdateJob::URLFetcher::OnResponseCompleted(int net_error) {
-  if (net_error == net::OK)
+  if (net_error == net::OK) {
     job_->MadeProgress();
+  } else if (result_ == AppCacheUpdateJob::UPDATE_OK) {
+    result_ = AppCacheUpdateJob::NETWORK_ERROR;
+  }
 
   // Retry for 503s where retry-after is 0.
   if (net_error == net::OK && request_->GetResponseCode() == 503 &&
@@ -254,7 +244,7 @@ bool AppCacheUpdateJob::URLFetcher::MaybeRetryRequest() {
   ++retry_503_attempts_;
   result_ = AppCacheUpdateJob::UPDATE_OK;
   request_ =
-      UpdateRequestBase::Create(job_->service_->request_context(), url_, this);
+      UpdateRequestBase::Create(job_->service_, url_, buffer_size_, this);
   Start();
   return true;
 }
