@@ -351,6 +351,11 @@ public class WebappDataStorage {
         mPreferences.edit().putInt(KEY_SOURCE, source).apply();
     }
 
+    /** Returns the id stored in this object. */
+    public String getId() {
+        return mId;
+    }
+
     /**
      * Returns the last used time of this object, or -1 if it is not stored.
      */
