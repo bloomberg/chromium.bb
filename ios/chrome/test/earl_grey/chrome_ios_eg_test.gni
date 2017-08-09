@@ -139,6 +139,7 @@ template("chrome_ios_eg_test") {
       "CHROMIUM_URL_SCHEME_4=$url_channel_scheme",
       "EG_MAIN_APPLICATION_DELEGATE=$_eg_main_application_delegate",
       "SSOAUTH_URL_SCHEME=$url_ssoauth_scheme",
+      "CONTENT_WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.ContentTodayExtension",
     ]
     if (ios_automatically_manage_certs) {
       # Use the same bundle identifier for EarlGrey tests as for unit tests
