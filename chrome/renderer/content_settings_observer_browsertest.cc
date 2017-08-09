@@ -4,6 +4,9 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/common/render_messages.h"
@@ -57,6 +60,35 @@ bool MockContentSettingsObserver::Send(IPC::Message* message) {
   // Our super class deletes the message.
   return RenderFrameObserver::Send(message);
 }
+
+// Evaluates a boolean |predicate| every time a provisional load is committed in
+// the given |frame| while the instance of this class is in scope, and verifies
+// that the result matches the |expectation|.
+class CommitTimeConditionChecker : public content::RenderFrameObserver {
+ public:
+  using Predicate = base::RepeatingCallback<bool()>;
+
+  CommitTimeConditionChecker(content::RenderFrame* frame,
+                             const Predicate& predicate,
+                             bool expectation)
+      : content::RenderFrameObserver(frame),
+        predicate_(predicate),
+        expectation_(expectation) {}
+
+ protected:
+  // RenderFrameObserver:
+  void OnDestruct() override {}
+  void DidCommitProvisionalLoad(bool is_new_navigation,
+                                bool is_same_document_navigation) override {
+    EXPECT_EQ(expectation_, predicate_.Run());
+  }
+
+ private:
+  Predicate predicate_;
+  bool expectation_;
+
+  DISALLOW_COPY_AND_ASSIGN(CommitTimeConditionChecker);
+};
 
 }  // namespace
 
@@ -121,27 +153,27 @@ TEST_F(ChromeRenderViewTest, JSBlockSentAfterPageLoad) {
   base::RunLoop().RunUntilIdle();
   render_thread_->sink().ClearMessages();
 
-  // 3. Reload page.
+  const auto HasSentChromeViewHostMsgContentBlocked =
+      [](content::MockRenderThread* render_thread) {
+        return !!render_thread->sink().GetFirstMessageMatching(
+            ChromeViewHostMsg_ContentBlocked::ID);
+      };
+
+  // 3. Reload page. Verify that the notification that javascript was blocked
+  // has not yet been sent at the time when the navigation commits.
+  CommitTimeConditionChecker checker(
+      view_->GetMainRenderFrame(),
+      base::Bind(HasSentChromeViewHostMsgContentBlocked,
+                 base::Unretained(render_thread_.get())),
+      false);
+
   std::string url_str = "data:text/html;charset=utf-8,";
   url_str.append(kHtml);
   GURL url(url_str);
   Reload(url);
   base::RunLoop().RunUntilIdle();
 
-  // 4. Verify that the notification that javascript was blocked is sent after
-  //    the navigation notification is sent.
-  int navigation_index = -1;
-  int block_index = -1;
-  for (size_t i = 0; i < render_thread_->sink().message_count(); ++i) {
-    const IPC::Message* msg = render_thread_->sink().GetMessageAt(i);
-    if (msg->type() == GetNavigationIPCType())
-      navigation_index = i;
-    if (msg->type() == ChromeViewHostMsg_ContentBlocked::ID)
-      block_index = i;
-  }
-  EXPECT_NE(-1, navigation_index);
-  EXPECT_NE(-1, block_index);
-  EXPECT_LT(navigation_index, block_index);
+  EXPECT_TRUE(HasSentChromeViewHostMsgContentBlocked(render_thread_.get()));
 }
 
 TEST_F(ChromeRenderViewTest, PluginsTemporarilyAllowed) {
