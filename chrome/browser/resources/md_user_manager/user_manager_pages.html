@@ -20,7 +20,7 @@
       }
 
       /* neon-animated-pages does not automatically hide what's under content */
-      neon-animatable:not(.iron-selected) > ::content > * {
+      neon-animatable:not(.iron-selected) ::slotted(*) {
         display: none !important;
       }
     </style>
@@ -37,7 +37,7 @@
         </template>
       </neon-animatable>
       <neon-animatable id="user-pods-page">
-          <content></content>
+          <slot></slot>
       </neon-animatable>
       <neon-animatable id="supervised-learn-more-page">
         <template is="dom-if"
