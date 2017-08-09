@@ -35,6 +35,8 @@ static_library("browser") {
     "android_affiliation/test_affiliation_fetcher_factory.h",
     "browser_save_password_progress_logger.cc",
     "browser_save_password_progress_logger.h",
+    "credential_manager_impl.cc",
+    "credential_manager_impl.h",
     "credential_manager_logger.cc",
     "credential_manager_logger.h",
     "credential_manager_password_form_manager.cc",

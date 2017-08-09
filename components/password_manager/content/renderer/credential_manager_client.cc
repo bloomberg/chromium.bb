@@ -89,21 +89,21 @@ CredentialMediationRequirement GetCredentialMediationRequirementFromBlink(
 }
 
 blink::WebCredentialManagerError GetWebCredentialManagerErrorFromMojo(
-    mojom::CredentialManagerError error) {
+    CredentialManagerError error) {
   switch (error) {
-    case mojom::CredentialManagerError::DISABLED:
+    case CredentialManagerError::DISABLED:
       return blink::WebCredentialManagerError::
           kWebCredentialManagerDisabledError;
-    case mojom::CredentialManagerError::PENDINGREQUEST:
+    case CredentialManagerError::PENDINGREQUEST:
       return blink::WebCredentialManagerError::
           kWebCredentialManagerPendingRequestError;
-    case mojom::CredentialManagerError::PASSWORDSTOREUNAVAILABLE:
+    case CredentialManagerError::PASSWORDSTOREUNAVAILABLE:
       return blink::WebCredentialManagerError::
           kWebCredentialManagerPasswordStoreUnavailableError;
-    case mojom::CredentialManagerError::UNKNOWN:
+    case CredentialManagerError::UNKNOWN:
       return blink::WebCredentialManagerError::
           kWebCredentialManagerUnknownError;
-    case mojom::CredentialManagerError::SUCCESS:
+    case CredentialManagerError::SUCCESS:
       NOTREACHED();
       break;
   }
@@ -161,7 +161,7 @@ class RequestCallbacksWrapper {
 
   void NotifySuccess(const CredentialInfo& info);
 
-  void NotifyError(mojom::CredentialManagerError error);
+  void NotifyError(CredentialManagerError error);
 
  private:
   std::unique_ptr<blink::WebCredentialManagerClient::RequestCallbacks>
@@ -188,7 +188,7 @@ void RequestCallbacksWrapper::NotifySuccess(const CredentialInfo& info) {
   }
 }
 
-void RequestCallbacksWrapper::NotifyError(mojom::CredentialManagerError error) {
+void RequestCallbacksWrapper::NotifyError(CredentialManagerError error) {
   if (callbacks_) {
     callbacks_->OnError(GetWebCredentialManagerErrorFromMojo(error));
     callbacks_.reset();
@@ -201,9 +201,9 @@ void RespondToNotificationCallback(
 }
 
 void RespondToRequestCallback(RequestCallbacksWrapper* callbacks_wrapper,
-                              mojom::CredentialManagerError error,
+                              CredentialManagerError error,
                               const base::Optional<CredentialInfo>& info) {
-  if (error == mojom::CredentialManagerError::SUCCESS) {
+  if (error == CredentialManagerError::SUCCESS) {
     DCHECK(info);
     callbacks_wrapper->NotifySuccess(*info);
   } else {

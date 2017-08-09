@@ -6,12 +6,12 @@ static_library("browser") {
   sources = [
     "bad_message.cc",
     "bad_message.h",
+    "content_credential_manager.cc",
+    "content_credential_manager.h",
     "content_password_manager_driver.cc",
     "content_password_manager_driver.h",
     "content_password_manager_driver_factory.cc",
     "content_password_manager_driver_factory.h",
-    "credential_manager_impl.cc",
-    "credential_manager_impl.h",
     "password_manager_internals_service_factory.cc",
     "password_manager_internals_service_factory.h",
   ]
@@ -35,8 +35,8 @@ static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "content_credential_manager_unittest.cc",
     "content_password_manager_driver_unittest.cc",
-    "credential_manager_impl_unittest.cc",
   ]
   deps = [
     ":browser",

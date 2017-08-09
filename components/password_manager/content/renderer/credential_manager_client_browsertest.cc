@@ -63,14 +63,13 @@ class FakeCredentialManager : public mojom::CredentialManager {
     if (url == kTestCredentialPassword) {
       CredentialInfo info;
       info.type = CredentialType::CREDENTIAL_TYPE_PASSWORD;
-      std::move(callback).Run(mojom::CredentialManagerError::SUCCESS, info);
+      std::move(callback).Run(CredentialManagerError::SUCCESS, info);
     } else if (url == kTestCredentialEmpty) {
-      std::move(callback).Run(mojom::CredentialManagerError::SUCCESS,
+      std::move(callback).Run(CredentialManagerError::SUCCESS,
                               CredentialInfo());
     } else if (url == kTestCredentialReject) {
-      std::move(callback).Run(
-          mojom::CredentialManagerError::PASSWORDSTOREUNAVAILABLE,
-          base::nullopt);
+      std::move(callback).Run(CredentialManagerError::PASSWORDSTOREUNAVAILABLE,
+                              base::nullopt);
     }
   }
 

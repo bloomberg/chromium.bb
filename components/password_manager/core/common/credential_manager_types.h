@@ -33,6 +33,14 @@ enum class CredentialType {
   CREDENTIAL_TYPE_LAST = CREDENTIAL_TYPE_FEDERATED
 };
 
+enum class CredentialManagerError {
+  SUCCESS,
+  DISABLED,
+  PENDINGREQUEST,
+  PASSWORDSTOREUNAVAILABLE,
+  UNKNOWN,
+};
+
 enum class CredentialMediationRequirement { kSilent, kOptional, kRequired };
 
 std::string CredentialTypeToString(CredentialType value);
