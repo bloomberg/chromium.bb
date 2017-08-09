@@ -2043,10 +2043,13 @@ void ArcBluetoothBridge::EnqueueRemotePowerChange(
     ArcBluetoothBridge::AdapterPowerState powered,
     const EnableAdapterCallback& callback) {
   remote_power_changes_.push(powered);
+
+  bool turn_on = (powered == AdapterPowerState::TURN_ON);
   bluetooth_adapter_->SetPowered(
-      powered == AdapterPowerState::TURN_ON,
-      base::Bind(&ArcBluetoothBridge::OnPoweredOff, weak_factory_.GetWeakPtr(),
-                 callback),
+      turn_on,
+      base::Bind(turn_on ? &ArcBluetoothBridge::OnPoweredOn
+                         : &ArcBluetoothBridge::OnPoweredOff,
+                 weak_factory_.GetWeakPtr(), callback),
       base::Bind(&ArcBluetoothBridge::OnPoweredError,
                  weak_factory_.GetWeakPtr(), callback));
 }
