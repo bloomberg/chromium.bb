@@ -23,9 +23,7 @@ using instance_id::InstanceIDProfileServiceFactory;
 namespace {
 
 const char kScopeGCM[] = "GCM";
-
-// TODO(dewittj): Add prod sender ID when finalized.
-const char kStagingSenderId[] = "208433663017";
+const char kProdSenderId[] = "864229763856";
 
 }  // namespace
 
@@ -57,7 +55,7 @@ void PrefetchInstanceIDProxy::GetGCMToken(
   InstanceID* instance_id = service->driver()->GetInstanceID(app_id_);
   DCHECK(instance_id);
 
-  instance_id->GetToken(kStagingSenderId, kScopeGCM,
+  instance_id->GetToken(kProdSenderId, kScopeGCM,
                         std::map<std::string, std::string>(),
                         base::Bind(&PrefetchInstanceIDProxy::GotGCMToken,
                                    weak_factory_.GetWeakPtr(), callback));
