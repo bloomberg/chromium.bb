@@ -26,6 +26,7 @@ test("ios_clean_chrome_unittests") {
     "//ios/clean/chrome/browser/ui/find_in_page:unit_tests",
     "//ios/clean/chrome/browser/ui/ntp:unit_tests",
     "//ios/clean/chrome/browser/ui/omnibox:unit_tests",
+    "//ios/clean/chrome/browser/ui/overlays:unit_tests",
     "//ios/clean/chrome/browser/ui/recent_tabs:unit_tests",
     "//ios/clean/chrome/browser/ui/root:unit_tests",
     "//ios/clean/chrome/browser/ui/settings:unit_tests",

@@ -17,6 +17,7 @@ source_set("web_contents") {
     "//ios/chrome/browser",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/context_menu",
+    "//ios/clean/chrome/browser/ui/overlays",
     "//ios/shared/chrome/browser/ui/browser_list",
     "//ios/shared/chrome/browser/ui/commands",
     "//ios/shared/chrome/browser/ui/coordinators",
