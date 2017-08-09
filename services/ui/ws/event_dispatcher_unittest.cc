@@ -1733,6 +1733,8 @@ TEST_P(EventDispatcherTest, ModalWindowEventOutsideSystemModal) {
 
   ASSERT_TRUE(test_event_dispatcher_delegate()->last_event_target_not_found());
   ASSERT_FALSE(test_event_dispatcher_delegate()->has_queued_events());
+  EXPECT_EQ(w1.get(),
+            test_event_dispatcher_delegate()->window_that_blocked_event());
 }
 
 // Variant of ModalWindowEventOutsideSystemModal with

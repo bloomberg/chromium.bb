@@ -65,6 +65,15 @@ class ModalWindowController : public ServerWindowObserver,
   }
   const ServerWindow* GetToplevelWindow(const ServerWindow* window) const;
 
+  // Returns the system modal window that is visible and added/shown most
+  // recently, if any.
+  ServerWindow* GetActiveSystemModalWindow() {
+    return const_cast<ServerWindow*>(
+        const_cast<const ModalWindowController*>(this)
+            ->GetActiveSystemModalWindow());
+  }
+  const ServerWindow* GetActiveSystemModalWindow() const;
+
  private:
   friend class test::ModalWindowControllerTestApi;
   class TrackedBlockingContainers;
@@ -83,10 +92,6 @@ class ModalWindowController : public ServerWindowObserver,
   bool IsWindowInSystemModalContainer(const ServerWindow* window) const;
 
   const ServerWindow* GetMinContainer(const ServerWindow* window) const;
-
-  // Returns the system modal window that is visible and added/shown most
-  // recently, if any.
-  const ServerWindow* GetActiveSystemModalWindow() const;
 
   // Removes |window| from the data structures used by this class.
   void RemoveWindow(ServerWindow* window);

@@ -530,7 +530,8 @@ void EventDispatcher::ProcessPointerEventOnFoundTarget(
       delegate_->ReleaseNativeCapture();
   }
 
-  if (event.type() == ET_POINTER_DOWN) {
+  if (event.type() == ET_POINTER_DOWN &&
+      found_location_target.deepest_window.window) {
     // Use |found_location_target| as |location_target| has already been
     // adjusted for the modal window.
     ServerWindow* modal_transient = modal_window_controller_.GetModalTransient(
@@ -541,6 +542,12 @@ void EventDispatcher::ProcessPointerEventOnFoundTarget(
       DCHECK(toplevel);
       delegate_->SetFocusedWindowFromEventDispatcher(toplevel);
       delegate_->OnEventOccurredOutsideOfModalWindow(modal_transient);
+    } else if (found_location_target.deepest_window.window->IsDrawn() &&
+               modal_window_controller_.IsWindowBlocked(
+                   found_location_target.deepest_window.window) &&
+               modal_window_controller_.GetActiveSystemModalWindow()) {
+      delegate_->OnEventOccurredOutsideOfModalWindow(
+          modal_window_controller_.GetActiveSystemModalWindow());
     }
   }
 }
