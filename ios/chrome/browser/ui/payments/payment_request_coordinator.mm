@@ -63,6 +63,7 @@ const NSTimeInterval kUpdatePaymentSummaryItemIntervalSeconds = 10.0;
 @synthesize pageHost = _pageHost;
 @synthesize connectionSecure = _connectionSecure;
 @synthesize pending = _pending;
+@synthesize cancellable = _cancellable;
 @synthesize delegate = _delegate;
 
 - (void)start {
@@ -74,6 +75,8 @@ const NSTimeInterval kUpdatePaymentSummaryItemIntervalSeconds = 10.0;
   [_viewController setPageTitle:_pageTitle];
   [_viewController setPageHost:_pageHost];
   [_viewController setConnectionSecure:_connectionSecure];
+  [_viewController setPending:!_paymentRequest->payment_instruments_ready()];
+  [_viewController setCancellable:YES];
   [_viewController setDelegate:self];
   [_viewController setDataSource:_mediator];
   [_viewController loadModel];
@@ -123,13 +126,17 @@ const NSTimeInterval kUpdatePaymentSummaryItemIntervalSeconds = 10.0;
 
 - (void)setPending:(BOOL)pending {
   _pending = pending;
-  _viewController.view.userInteractionEnabled = !pending;
   [_viewController setPending:pending];
   [_viewController loadModel];
   [[_viewController collectionView] reloadData];
 }
 
-#pragma mark - Public methods
+- (void)setCancellable:(BOOL)cancellable {
+  _cancellable = cancellable;
+  [_viewController setCancellable:cancellable];
+}
+
+#pragma mark - Public Methods
 
 - (void)
 requestFullCreditCard:(const autofill::CreditCard&)card

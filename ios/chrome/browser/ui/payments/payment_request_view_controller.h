@@ -71,6 +71,9 @@ extern NSString* const kPaymentRequestCollectionViewID;
 // Whether or not the view is in a pending state.
 @property(nonatomic, assign, getter=isPending) BOOL pending;
 
+// Whether or not the user can cancel out of the view.
+@property(nonatomic, assign, getter=isCancellable) BOOL cancellable;
+
 // The delegate to be notified when the user confirms or cancels the request.
 @property(nonatomic, weak) id<PaymentRequestViewControllerDelegate> delegate;
 

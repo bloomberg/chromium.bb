@@ -14,6 +14,9 @@ namespace features {
 #if defined(OS_IOS)
 // Used to control the state of the Payment Request API feature.
 extern const base::Feature kWebPayments;
+
+// Used to control the support for iOS third party apps as payment methods.
+extern const base::Feature kWebPaymentsNativeApps;
 #endif
 
 // Used to control payment method section order on payment request UI. Payment

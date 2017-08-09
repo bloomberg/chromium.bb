@@ -47,6 +47,11 @@ const char kWebPaymentsName[] = "Web Payments";
 const char kWebPaymentsDescription[] =
     "Enable Payment Request API integration, a JavaScript API for merchants.";
 
+const char kWebPaymentsNativeAppsName[] = "Web Payments Native Apps";
+const char kWebPaymentsNativeAppsDescription[] =
+    "Enable third party iOS native apps as payments methods within Payment "
+    "Request.";
+
 const char kCaptivePortalName[] = "Captive Portal";
 const char kCaptivePortalDescription[] =
     "When enabled, the Captive Portal landing page will be displayed if it is "

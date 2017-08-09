@@ -90,6 +90,11 @@ class TestPaymentRequest : public PaymentRequest {
   // Removes all the payment methods.
   void ClearPaymentMethods();
 
+  // Clears all url payment method identifiers, supported card networks,
+  // basic card specified networks, and supported card types and then resets
+  // them.
+  void ResetParsedPaymentMethodData();
+
   // Sets the currently selected shipping option for this PaymentRequest flow.
   void set_selected_shipping_option(web::PaymentShippingOption* option) {
     selected_shipping_option_ = option;
