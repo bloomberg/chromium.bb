@@ -215,6 +215,13 @@ public class ChromeTabbedActivity
     /** The task id of the activity that tabs were merged into. */
     private static int sMergedInstanceTaskId;
 
+    /**
+     * Time in ms from when we last backgrounded Chrome until we show the bottom sheet at half.
+     * Time is 3 hours.
+     * crbug.com/706258
+     */
+    private static final long TIME_SINCE_BACKGROUNDED_TO_SHOW_BOTTOM_SHEET_HALF_MS = 10800000L;
+
     private final ActivityStopMetrics mActivityStopMetrics;
     private final MainIntentBehaviorMetrics mMainIntentMetrics;
 
@@ -656,7 +663,7 @@ public class ChromeTabbedActivity
             super.onNewIntentWithNative(intent);
             if (isMainIntentFromLauncher(intent)) {
                 if (IntentHandler.getUrlFromIntent(intent) == null) {
-                    maybeLaunchNtpFromMainIntent(intent);
+                    maybeLaunchNtpOrResetBottomSheetFromMainIntent(intent);
                 }
                 logMainIntentBehavior(intent);
             }
@@ -837,9 +844,7 @@ public class ChromeTabbedActivity
     private void logMainIntentBehavior(Intent intent) {
         assert isMainIntentFromLauncher(intent);
         long currentTime = System.currentTimeMillis();
-        long lastBackgroundedTimeMs = ContextUtils.getAppSharedPreferences().getLong(
-                LAST_BACKGROUNDED_TIME_MS_PREF, currentTime);
-        mMainIntentMetrics.onMainIntentWithNative(currentTime - lastBackgroundedTimeMs);
+        mMainIntentMetrics.onMainIntentWithNative(currentTime - getTimeSinceLastBackgroundedMs());
     }
 
     /** Access the main intent metrics for test validation. */
@@ -849,16 +854,23 @@ public class ChromeTabbedActivity
     }
 
     /**
-     * Determines if the intent should trigger an NTP and launches it if applicable.
+     * Determines if the intent should trigger an NTP and launches it if applicable. If Chrome Home
+     * is enabled, we reset the bottom sheet state to half after some time being backgrounded.
      *
      * @param intent The intent to check whether an NTP should be triggered.
      * @return Whether an NTP was triggered as a result of this intent.
      */
-    private boolean maybeLaunchNtpFromMainIntent(Intent intent) {
+    private boolean maybeLaunchNtpOrResetBottomSheetFromMainIntent(Intent intent) {
         assert isMainIntentFromLauncher(intent);
 
         if (!mIntentHandler.isIntentUserVisible()) return false;
-        if (FeatureUtilities.isChromeHomeEnabled()) return false;
+
+        if (FeatureUtilities.isChromeHomeEnabled()) {
+            BottomSheet bottomSheet = getBottomSheet();
+            assert bottomSheet != null;
+            maybeSetBottomSheetStateToHalfOnStartup(bottomSheet);
+            return false;
+        }
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_LAUNCH_AFTER_INACTIVITY)) {
             return false;
@@ -915,6 +927,26 @@ public class ChromeTabbedActivity
         return true;
     }
 
+    private boolean maybeSetBottomSheetStateToHalfOnStartup(BottomSheet bottomSheet) {
+        if (getTimeSinceLastBackgroundedMs()
+                >= TIME_SINCE_BACKGROUNDED_TO_SHOW_BOTTOM_SHEET_HALF_MS) {
+            bottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
+                    BottomSheetMetrics.OPENED_BY_STARTUP);
+            bottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns the number of milliseconds since Chrome was last backgrounded.
+     */
+    private long getTimeSinceLastBackgroundedMs() {
+        long lastBackgroundedTimeMs =
+                ContextUtils.getAppSharedPreferences().getLong(LAST_BACKGROUNDED_TIME_MS_PREF, -1);
+        return System.currentTimeMillis() - lastBackgroundedTimeMs;
+    }
+
     @Override
     public void initializeState() {
         // This method goes through 3 steps:
@@ -969,7 +1001,7 @@ public class ChromeTabbedActivity
                     if (IntentHandler.getUrlFromIntent(intent) == null) {
                         assert !mIntentWithEffect
                                 : "ACTION_MAIN should not have triggered any prior action";
-                        mIntentWithEffect = maybeLaunchNtpFromMainIntent(intent);
+                        mIntentWithEffect = maybeLaunchNtpOrResetBottomSheetFromMainIntent(intent);
                     }
                     logMainIntentBehavior(intent);
                 }
