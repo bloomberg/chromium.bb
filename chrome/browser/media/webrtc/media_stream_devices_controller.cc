@@ -44,11 +44,11 @@
 #if defined(OS_ANDROID)
 #include <vector>
 
+#include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
 #include "chrome/browser/media/webrtc/media_stream_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_dialog_delegate.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
-#include "chrome/grit/theme_resources.h"
 #include "ui/android/window_android.h"
 #else  // !defined(OS_ANDROID)
 #include "components/vector_icons/vector_icons.h"
@@ -164,8 +164,8 @@ bool MediaStreamDevicesController::Request::IsAskingForVideo() const {
 PermissionRequest::IconId MediaStreamDevicesController::Request::GetIconId()
     const {
 #if defined(OS_ANDROID)
-  return IsAskingForVideo() ? IDR_INFOBAR_MEDIA_STREAM_CAMERA
-                            : IDR_INFOBAR_MEDIA_STREAM_MIC;
+  return IsAskingForVideo() ? IDR_ANDROID_INFOBAR_MEDIA_STREAM_CAMERA
+                            : IDR_ANDROID_INFOBAR_MEDIA_STREAM_MIC;
 #else
   return IsAskingForVideo() ? vector_icons::kVideocamIcon
                             : vector_icons::kMicrophoneIcon;

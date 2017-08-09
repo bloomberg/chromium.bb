@@ -5,6 +5,7 @@
 #include "chrome/browser/permissions/permission_prompt_android.h"
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_dialog_delegate.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -128,7 +128,7 @@ int PermissionPromptAndroid::GetIconId() const {
   if (requests.size() == 1)
     return requests[0]->GetIconId();
   CheckValidRequestGroup(requests);
-  return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
+  return IDR_ANDROID_INFOBAR_MEDIA_STREAM_CAMERA;
 }
 
 base::string16 PermissionPromptAndroid::GetMessageText() const {

@@ -9,7 +9,6 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/url_formatter/elide_url.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -66,9 +65,9 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       return IDR_ANDROID_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-      return IDR_INFOBAR_MEDIA_STREAM_MIC;
+      return IDR_ANDROID_INFOBAR_MEDIA_STREAM_MIC;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-      return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
+      return IDR_ANDROID_INFOBAR_MEDIA_STREAM_CAMERA;
     default:
       NOTREACHED();
       return IDR_ANDROID_INFOBAR_WARNING;
