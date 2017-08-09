@@ -210,7 +210,7 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
   }
   void InitEventPath(Node&);
 
-  HeapVector<Member<EventTarget>> path(ScriptState*) const;
+  ScriptValue path(ScriptState*) const;
   HeapVector<Member<EventTarget>> composedPath(ScriptState*) const;
 
   bool IsBeingDispatched() const { return eventPhase(); }
