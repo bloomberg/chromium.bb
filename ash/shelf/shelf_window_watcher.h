@@ -7,10 +7,10 @@
 
 #include <set>
 
+#include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/display/display_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace ash {
@@ -24,7 +24,7 @@ class ShelfModel;
 // it until the window is closed, even if the window is transiently reparented
 // (e.g. during a drag).
 class ShelfWindowWatcher : public ::wm::ActivationChangeObserver,
-                           public display::DisplayObserver {
+                           public ShellObserver {
  public:
   explicit ShelfWindowWatcher(ShelfModel* model);
   ~ShelfWindowWatcher() override;
@@ -91,11 +91,8 @@ class ShelfWindowWatcher : public ::wm::ActivationChangeObserver,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
-  // display::DisplayObserver overrides:
-  void OnDisplayAdded(const display::Display& display) override;
-  void OnDisplayRemoved(const display::Display& old_display) override;
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t metrics) override;
+  // ShellObserver:
+  void OnRootWindowAdded(aura::Window* root_window) override;
 
   ShelfModel* model_;
 
