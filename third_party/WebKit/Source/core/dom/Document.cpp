@@ -666,6 +666,20 @@ Document::~Document() {
   // If a top document with a cache, verify that it was comprehensively
   // cleared during detach.
   DCHECK(!ax_object_cache_);
+
+  // As not all documents are destroyed before the process dies, this might miss
+  // some long-lived documents or leaked documents.
+  // TODO(hajimehoshi): Record outlive time of documents that are not destroyed
+  // before the process dies.
+  // TODO(hajimehoshi): There are some cases that a document can live after
+  // shutting down because the document can still be reffed (e.g. a document
+  // opened via window.open can be reffed by the opener even after shutting
+  // down). Detect those cases and record them independently.
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "Document.OutliveTimeAfterShutdown.DestroyedBeforeProcessDies",
+      ThreadState::Current()->GcAge() - gc_age_when_document_detached_ + 1,
+      101);
+
   InstanceCounters::DecrementCounter(InstanceCounters::kDocumentCounter);
 }
 
@@ -2726,6 +2740,8 @@ void Document::Shutdown() {
   // should be renamed, or this setting of the frame to 0 could be made
   // explicit in each of the callers of Document::detachLayoutTree().
   frame_ = nullptr;
+
+  gc_age_when_document_detached_ = ThreadState::Current()->GcAge();
 }
 
 void Document::RemoveAllEventListeners() {
