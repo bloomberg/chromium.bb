@@ -33,7 +33,6 @@
 #include "base/win/pe_image.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
-#include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/enumerate_input_method_editors_win.h"
@@ -47,7 +46,6 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_config.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_controller.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
 #include "chrome/browser/win/browser_util.h"
@@ -243,15 +241,9 @@ void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
 }
 
 void ShowCloseBrowserFirstMessageBox() {
-  int message_id = IDS_UNINSTALL_CLOSE_APP;
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      (shell_integration::GetDefaultBrowser() ==
-       shell_integration::IS_DEFAULT)) {
-    message_id = IDS_UNINSTALL_CLOSE_APP_IMMERSIVE;
-  }
-  chrome::ShowWarningMessageBox(NULL,
-                                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-                                l10n_util::GetStringUTF16(message_id));
+  chrome::ShowWarningMessageBox(
+      nullptr, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+      l10n_util::GetStringUTF16(IDS_UNINSTALL_CLOSE_APP));
 }
 
 void MaybePostSettingsResetPrompt() {

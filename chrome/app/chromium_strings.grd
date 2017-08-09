@@ -267,9 +267,6 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
         <message name="IDS_UNINSTALL_CLOSE_APP" desc="Message to user when uninstall detects other app instance running">
           Please close all Chromium windows and try again.
         </message>
-        <message name="IDS_UNINSTALL_CLOSE_APP_IMMERSIVE" desc="Message to user when uninstall detects other app instance running, possibly in the Windows 8 immersive mode">
-          Please close all Chromium windows (including those in Windows 8 mode) and try again.
-        </message>
         <message name="IDS_UNINSTALL_VERIFY" desc="Message to confirm user wants to uninstall">
           Are you sure you want to uninstall Chromium?
         </message>
