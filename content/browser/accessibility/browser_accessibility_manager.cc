@@ -349,8 +349,7 @@ bool BrowserAccessibilityManager::UseRootScrollOffsetsWhenComputingBounds() {
 }
 
 void BrowserAccessibilityManager::OnAccessibilityEvents(
-    const ui::AXTreeUpdate& update,
-    const std::vector<AXEventNotificationDetails>& events) {
+    const std::vector<AXEventNotificationDetails>& details) {
   TRACE_EVENT0("accessibility",
                "BrowserAccessibilityManager::OnAccessibilityEvents");
 
@@ -358,15 +357,18 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   if (delegate_ && !use_custom_device_scale_factor_for_testing_)
     device_scale_factor_ = delegate_->AccessibilityGetDeviceScaleFactor();
 
-  // Process the changes to the accessibility tree first.
-  if (!tree_->Unserialize(update)) {
-    if (delegate_) {
-      LOG(ERROR) << tree_->error();
-      delegate_->AccessibilityFatalError();
-    } else {
-      CHECK(false) << tree_->error();
+  // Process all changes to the accessibility tree first.
+  for (uint32_t index = 0; index < details.size(); ++index) {
+    const AXEventNotificationDetails& detail = details[index];
+    if (!tree_->Unserialize(detail.update)) {
+      if (delegate_) {
+        LOG(ERROR) << tree_->error();
+        delegate_->AccessibilityFatalError();
+      } else {
+        CHECK(false) << tree_->error();
+      }
+      return;
     }
-    return;
   }
 
   // If the root's parent is in another accessibility tree but it wasn't
@@ -420,16 +422,16 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   // renderer and fires native events based on them.
   //
   // See http://crbug.com/699438 for details.
-  for (uint32_t index = 0; index < events.size(); index++) {
-    const AXEventNotificationDetails& event_detail = events[index];
+  for (uint32_t index = 0; index < details.size(); index++) {
+    const AXEventNotificationDetails& detail = details[index];
 
     // Find the node corresponding to the id that's the target of the
     // event (which may not be the root of the update tree).
-    ui::AXNode* node = tree_->GetFromId(event_detail.id);
+    ui::AXNode* node = tree_->GetFromId(detail.id);
     if (!node)
       continue;
 
-    ui::AXEvent event_type = event_detail.event_type;
+    ui::AXEvent event_type = detail.event_type;
 
 // On Mac and Windows, nearly all events are now fired implicitly,
 // so we should ignore most events from the renderer.

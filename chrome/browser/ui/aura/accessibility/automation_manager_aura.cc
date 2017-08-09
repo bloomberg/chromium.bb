@@ -150,8 +150,8 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
   }
   processing_events_ = true;
 
-  ui::AXTreeUpdate update;
-  if (!current_tree_serializer_->SerializeChanges(aura_obj, &update)) {
+  ExtensionMsg_AccessibilityEventParams params;
+  if (!current_tree_serializer_->SerializeChanges(aura_obj, &params.update)) {
     LOG(ERROR) << "Unable to serialize one accessibility event.";
     return;
   }
@@ -160,18 +160,14 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
   views::AXAuraObjWrapper* focus =
       views::AXAuraObjCache::GetInstance()->GetFocus();
   if (focus)
-    current_tree_serializer_->SerializeChanges(focus, &update);
+    current_tree_serializer_->SerializeChanges(focus, &params.update);
 
-  std::vector<ExtensionMsg_AccessibilityEventParams> events;
-  ExtensionMsg_AccessibilityEventParams event;
-  event.id = aura_obj->GetID();
-  event.event_type = event_type;
-  event.mouse_location = aura::Env::GetInstance()->last_mouse_location();
-  events.push_back(event);
-
+  params.tree_id = 0;
+  params.id = aura_obj->GetID();
+  params.event_type = event_type;
+  params.mouse_location = aura::Env::GetInstance()->last_mouse_location();
   AutomationEventRouter* router = AutomationEventRouter::GetInstance();
-  router->DispatchAccessibilityEvents(
-      extensions::api::automation::kDesktopTreeID, update, events);
+  router->DispatchAccessibilityEvent(params);
 
   processing_events_ = false;
   auto pending_events_copy = pending_events_;

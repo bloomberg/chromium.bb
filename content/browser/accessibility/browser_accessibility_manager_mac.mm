@@ -357,12 +357,11 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
 }
 
 void BrowserAccessibilityManagerMac::OnAccessibilityEvents(
-    const ui::AXTreeUpdate& update,
-    const std::vector<AXEventNotificationDetails>& events) {
+    const std::vector<AXEventNotificationDetails>& details) {
   text_edits_.clear();
   // Call the base method last as it might delete the tree if it receives an
   // invalid message.
-  BrowserAccessibilityManager::OnAccessibilityEvents(update, events);
+  BrowserAccessibilityManager::OnAccessibilityEvents(details);
 }
 
 void BrowserAccessibilityManagerMac::OnTreeDataChanged(

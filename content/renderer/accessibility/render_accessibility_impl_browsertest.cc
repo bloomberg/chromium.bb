@@ -68,21 +68,28 @@ class RenderAccessibilityImplTest : public RenderViewTest {
 
   void SetMode(ui::AXMode mode) { frame()->OnSetAccessibilityMode(mode); }
 
-  void GetLastTreeUpdate(content::AXContentTreeUpdate* update) {
+  void GetAllAccEvents(
+      std::vector<AccessibilityHostMsg_EventParams>* param_list) {
     const IPC::Message* message =
         sink_->GetUniqueMessageMatching(AccessibilityHostMsg_Events::ID);
     ASSERT_TRUE(message);
-    std::tuple<content::AXContentTreeUpdate,
-               std::vector<AccessibilityHostMsg_EventParams>, int, int>
-        param;
+    std::tuple<std::vector<AccessibilityHostMsg_EventParams>, int, int> param;
     AccessibilityHostMsg_Events::Read(message, &param);
-    *update = std::get<0>(param);
+    *param_list = std::get<0>(param);
+  }
+
+  void GetLastAccEvent(
+      AccessibilityHostMsg_EventParams* params) {
+    std::vector<AccessibilityHostMsg_EventParams> param_list;
+    GetAllAccEvents(&param_list);
+    ASSERT_GE(param_list.size(), 1U);
+    *params = param_list[0];
   }
 
   int CountAccessibilityNodesSentToBrowser() {
-    content::AXContentTreeUpdate update;
-    GetLastTreeUpdate(&update);
-    return update.nodes.size();
+    AccessibilityHostMsg_EventParams event;
+    GetLastAccEvent(&event);
+    return event.update.nodes.size();
   }
 
  protected:
@@ -126,9 +133,9 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
   EXPECT_EQ(1, CountAccessibilityNodesSentToBrowser());
   {
     // Make sure it's the root object that was updated.
-    content::AXContentTreeUpdate update;
-    GetLastTreeUpdate(&update);
-    EXPECT_EQ(root_obj.AxID(), update.nodes[0].id);
+    AccessibilityHostMsg_EventParams event;
+    GetLastAccEvent(&event);
+    EXPECT_EQ(root_obj.AxID(), event.update.nodes[0].id);
   }
 
   // If we reload the page and send a event, we should send
@@ -198,15 +205,15 @@ TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {
       ui::AX_EVENT_CHILDREN_CHANGED);
 
   accessibility->SendPendingAccessibilityEvents();
-  content::AXContentTreeUpdate update;
-  GetLastTreeUpdate(&update);
-  ASSERT_EQ(2U, update.nodes.size());
+  AccessibilityHostMsg_EventParams event;
+  GetLastAccEvent(&event);
+  ASSERT_EQ(2U, event.update.nodes.size());
 
   // RenderAccessibilityImpl notices that 'C' is being reparented,
   // so it clears the subtree rooted at 'A', then updates 'A' and then 'C'.
-  EXPECT_EQ(node_a.AxID(), update.node_id_to_clear);
-  EXPECT_EQ(node_a.AxID(), update.nodes[0].id);
-  EXPECT_EQ(node_c.AxID(), update.nodes[1].id);
+  EXPECT_EQ(node_a.AxID(), event.update.node_id_to_clear);
+  EXPECT_EQ(node_a.AxID(), event.update.nodes[0].id);
+  EXPECT_EQ(node_c.AxID(), event.update.nodes[1].id);
   EXPECT_EQ(2, CountAccessibilityNodesSentToBrowser());
 }
 
@@ -248,14 +255,14 @@ TEST_F(RenderAccessibilityImplTest, ShowAccessibilityObject) {
       ui::AX_EVENT_CHILDREN_CHANGED);
 
   accessibility->SendPendingAccessibilityEvents();
-  content::AXContentTreeUpdate update;
-  GetLastTreeUpdate(&update);
+  AccessibilityHostMsg_EventParams event;
+  GetLastAccEvent(&event);
 
-  ASSERT_EQ(3U, update.nodes.size());
-  EXPECT_EQ(node_a.AxID(), update.node_id_to_clear);
-  EXPECT_EQ(node_a.AxID(), update.nodes[0].id);
-  EXPECT_EQ(node_b.AxID(), update.nodes[1].id);
-  EXPECT_EQ(node_c.AxID(), update.nodes[2].id);
+  ASSERT_EQ(3U, event.update.nodes.size());
+  EXPECT_EQ(node_a.AxID(), event.update.node_id_to_clear);
+  EXPECT_EQ(node_a.AxID(), event.update.nodes[0].id);
+  EXPECT_EQ(node_b.AxID(), event.update.nodes[1].id);
+  EXPECT_EQ(node_c.AxID(), event.update.nodes[2].id);
   EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
 }
 

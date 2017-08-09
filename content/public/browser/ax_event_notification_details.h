@@ -16,15 +16,17 @@
 namespace content {
 
 // Use this object in conjunction with the
-// |WebContentsObserver::AccessibilityEventsReceived| method.
+// |WebContentsObserver::AccessibilityEventReceived| method.
 struct CONTENT_EXPORT AXEventNotificationDetails {
  public:
   AXEventNotificationDetails();
   AXEventNotificationDetails(const AXEventNotificationDetails& other);
   ~AXEventNotificationDetails();
 
+  ui::AXTreeUpdate update;
   ui::AXEvent event_type;
   int id;
+  int ax_tree_id;
   ui::AXEventFrom event_from;
 };
 
@@ -38,6 +40,7 @@ struct CONTENT_EXPORT AXLocationChangeNotificationDetails {
   ~AXLocationChangeNotificationDetails();
 
   int id;
+  int ax_tree_id;
   ui::AXRelativeBounds new_location;
 };
 
