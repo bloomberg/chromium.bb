@@ -53,6 +53,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 namespace em = enterprise_management;
@@ -572,6 +573,9 @@ void GaiaScreenHandler::DoAdAuth(
     const Key& key,
     authpolicy::ErrorType error,
     const authpolicy::ActiveDirectoryAccountInfo& account_info) {
+  if (error != authpolicy::ERROR_NONE)
+    authpolicy_login_helper_->CancelRequestsAndRestart();
+
   switch (error) {
     case authpolicy::ERROR_NONE: {
       DCHECK(account_info.has_account_id() &&
@@ -596,29 +600,17 @@ void GaiaScreenHandler::DoAdAuth(
     case authpolicy::ERROR_BAD_USER_NAME:
       CallJS("invalidateAd", username,
              static_cast<int>(ActiveDirectoryErrorState::BAD_USERNAME));
-      return;
+      break;
     case authpolicy::ERROR_BAD_PASSWORD:
       CallJS("invalidateAd", username,
              static_cast<int>(ActiveDirectoryErrorState::BAD_PASSWORD));
-    case authpolicy::ERROR_UNKNOWN:
-    case authpolicy::ERROR_DBUS_FAILURE:
-    case authpolicy::ERROR_CANNOT_RESOLVE_KDC:
-    case authpolicy::ERROR_KINIT_FAILED:
-    case authpolicy::ERROR_NET_FAILED:
-    case authpolicy::ERROR_SMBCLIENT_FAILED:
-    case authpolicy::ERROR_PARSE_FAILED:
-    case authpolicy::ERROR_PARSE_PREG_FAILED:
-    case authpolicy::ERROR_BAD_GPOS:
-    case authpolicy::ERROR_LOCAL_IO:
-    case authpolicy::ERROR_NOT_JOINED:
-    case authpolicy::ERROR_NOT_LOGGED_IN:
-    case authpolicy::ERROR_STORE_POLICY_FAILED:
-      LoadAuthExtension(true, false /* offline */);
       break;
     default:
-      // TODO(rsorokin): Proper error handling.
       DLOG(WARNING) << "Unhandled error code: " << error;
       LoadAuthExtension(true, false /* offline */);
+      core_oobe_view_->ShowSignInError(
+          0, l10n_util::GetStringUTF8(IDS_AD_AUTH_UNKNOWN_ERROR), std::string(),
+          HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
   }
 }
 
