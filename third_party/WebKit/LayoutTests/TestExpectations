@@ -124,11 +124,6 @@ crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-background-size.htm
 crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-overflow-position.html [ Failure Pass ]
 crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-tiled.html [ Failure Pass ]
 
-crbug.com/746578 fast/css/transformed-mask.html [ NeedsManualRebaseline ]
-crbug.com/746578 fast/reflections/reflection-masks-opacity.html [ NeedsManualRebaseline ]
-crbug.com/746578 fast/reflections/reflection-masks.html [ NeedsManualRebaseline ]
-crbug.com/746578 svg/filters/feImage-preserveAspectratio.svg [ NeedsManualRebaseline ]
-
 crbug.com/747502 paint/roundedrects/input-with-rounded-rect-and-shadow.html [ NeedsManualRebaseline ]
 crbug.com/747502 fast/borders/border-radius-with-box-shadow.html [ NeedsManualRebaseline ]
 crbug.com/747502 paint/roundedrects/circle-with-shadow.html [ NeedsManualRebaseline ]
