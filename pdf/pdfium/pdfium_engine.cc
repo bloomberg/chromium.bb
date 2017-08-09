@@ -1791,7 +1791,8 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
 
     FORM_OnLButtonDown(form_, pages_[page_index]->GetPage(), 0, page_x, page_y);
     if (form_type > FPDF_FORMFIELD_UNKNOWN) {  // returns -1 sometimes...
-      mouse_down_state_.Set(PDFiumPage::FormTypeToArea(form_type), target);
+      DCHECK_EQ(area, PDFiumPage::FormTypeToArea(form_type));
+      mouse_down_state_.Set(area, target);
 
       // Destroy SelectionChangeInvalidator object before SetInFormTextArea()
       // changes plugin's focus to be in form text area. This way, regular text
@@ -1801,16 +1802,9 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
       // (not the Renderer).
       selection_invalidator.reset();
 
-      bool is_valid_control = (form_type == FPDF_FORMFIELD_TEXTFIELD ||
-                               form_type == FPDF_FORMFIELD_COMBOBOX);
-
-// TODO(bug_62400): figure out selection and copying
-// for XFA fields
-#if defined(PDF_ENABLE_XFA)
-      is_valid_control |= (form_type == FPDF_FORMFIELD_XFA);
-#endif
-      SetInFormTextArea(is_valid_control);
-      if (is_valid_control) {
+      bool is_form_text_area = area == PDFiumPage::FORM_TEXT_AREA;
+      SetInFormTextArea(is_form_text_area);
+      if (is_form_text_area) {
         FPDF_ANNOTATION annot = FPDFAnnot_GetFormFieldAtPoint(
             form_, pages_[last_page_mouse_down_]->GetPage(), page_x, page_y);
         if (annot) {
