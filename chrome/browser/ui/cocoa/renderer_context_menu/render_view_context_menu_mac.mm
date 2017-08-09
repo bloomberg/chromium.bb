@@ -339,7 +339,9 @@ void RenderViewContextMenuMac::AppendPlatformEditableItems() {
 }
 
 void RenderViewContextMenuMac::InitToolkitMenu() {
-  if (params_.selection_text.empty())
+  if (params_.selection_text.empty() ||
+      params_.input_field_type ==
+          blink::WebContextMenuData::kInputFieldTypePassword)
     return;
 
   if (params_.link_url.is_empty()) {

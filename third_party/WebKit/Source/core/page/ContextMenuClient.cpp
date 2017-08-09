@@ -348,12 +348,8 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
   }
 
   // HitTestResult::isSelected() ensures clean layout by performing a hit test.
-  if (r.IsSelected()) {
-    if (!isHTMLInputElement(*r.InnerNode()) ||
-        toHTMLInputElement(r.InnerNode())->type() != InputTypeNames::password) {
-      data.selected_text = selected_frame->SelectedText();
-    }
-  }
+  if (r.IsSelected())
+    data.selected_text = selected_frame->SelectedText();
 
   if (r.IsContentEditable()) {
     data.is_editable = true;

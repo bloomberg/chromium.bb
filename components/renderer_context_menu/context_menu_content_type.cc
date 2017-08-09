@@ -77,6 +77,8 @@ bool ContextMenuContentType::SupportsGroup(int group) {
 bool ContextMenuContentType::SupportsGroupInternal(int group) {
   const bool has_link = !params_.unfiltered_link_url.is_empty();
   const bool has_selection = !params_.selection_text.empty();
+  const bool is_password =
+      params_.input_field_type == WebContextMenuData::kInputFieldTypePassword;
 
   switch (group) {
     case ITEM_GROUP_CUSTOM:
@@ -136,7 +138,7 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
       return !params_.is_editable && has_selection;
 
     case ITEM_GROUP_SEARCH_PROVIDER:
-      return has_selection;
+      return has_selection && !is_password;
 
     case ITEM_GROUP_PRINT: {
       // Image menu items also imply print items.
