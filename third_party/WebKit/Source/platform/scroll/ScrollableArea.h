@@ -255,6 +255,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
   // of the top-level FrameView.
   virtual IntRect ScrollableAreaBoundingBox() const = 0;
 
+  virtual CompositorElementId GetCompositorElementId() const = 0;
   virtual bool ScrollAnimatorEnabled() const { return false; }
 
   // NOTE: Only called from Internals for testing.

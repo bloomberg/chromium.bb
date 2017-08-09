@@ -202,6 +202,7 @@ class CORE_EXPORT VisualViewport final
   IntRect ScrollableAreaBoundingBox() const override;
   bool UserInputScrollable(ScrollbarOrientation) const override;
   bool ShouldPlaceVerticalScrollbarOnLeft() const override { return false; }
+  CompositorElementId GetCompositorElementId() const override;
   bool ScrollAnimatorEnabled() const override;
   void ScrollControlWasSetNeedsPaintInvalidation() override {}
   void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;

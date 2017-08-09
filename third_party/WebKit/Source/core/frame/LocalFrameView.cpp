@@ -2813,6 +2813,16 @@ void LocalFrameView::NotifyPageThatContentAreaWillPaint() const {
   }
 }
 
+CompositorElementId LocalFrameView::GetCompositorElementId() const {
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    return CompositorElementIdFromDOMNodeId(
+        DOMNodeIds::IdForNode(&GetLayoutView()->GetDocument()),
+        CompositorElementIdNamespace::kRootScroll);
+  } else {
+    return PaintInvalidationCapableScrollableArea::GetCompositorElementId();
+  }
+}
+
 bool LocalFrameView::ScrollAnimatorEnabled() const {
   return frame_->GetSettings() &&
          frame_->GetSettings()->GetScrollAnimatorEnabled();
@@ -3197,6 +3207,7 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
         Optional<CompositorElementIdSet> composited_element_ids =
             CompositorElementIdSet();
         PushPaintArtifactToCompositor(composited_element_ids.value());
+        // TODO(wkorman): Add a call to UpdateCompositorScrollAnimations here.
         DocumentAnimations::UpdateAnimations(GetLayoutView()->GetDocument(),
                                              DocumentLifecycle::kPaintClean,
                                              composited_element_ids);

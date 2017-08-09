@@ -173,6 +173,9 @@ class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>,
  public:
   static FakeScrollableArea* Create() { return new FakeScrollableArea; }
 
+  CompositorElementId GetCompositorElementId() const override {
+    return CompositorElementId();
+  }
   bool IsActive() const override { return false; }
   int ScrollSize(ScrollbarOrientation) const override { return 100; }
   bool IsScrollCornerVisible() const override { return false; }

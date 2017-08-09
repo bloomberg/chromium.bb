@@ -435,6 +435,7 @@ class CORE_EXPORT LocalFrameView final
   // ScrollableArea interface
   void GetTickmarks(Vector<IntRect>&) const override;
   IntRect ScrollableAreaBoundingBox() const override;
+  CompositorElementId GetCompositorElementId() const override;
   bool ScrollAnimatorEnabled() const override;
   bool UsesCompositedScrolling() const override;
   bool ShouldScrollOnMainThread() const override;
