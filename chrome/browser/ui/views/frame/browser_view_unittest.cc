@@ -183,10 +183,8 @@ TEST_F(BrowserViewTest, RepeatedAccelerators) {
   EXPECT_TRUE(browser_view()->AcceleratorPressed(kNextTabRepeatAccel));
 }
 
-// Test that the bookmark bar view's parent is not set to nullptr when closing
-// the browser. If the parent is set to nullptr, then the bookmark bar
-// disappears before the browser is closed, which looks weird.
-TEST_F(BrowserViewTest, BookmarkBarParentIsNotNullOnShutdown) {
+// Test that bookmark bar view becomes invisible when closing the browser.
+TEST_F(BrowserViewTest, BookmarkBarInvisibleOnShutdown) {
   BookmarkBarView::DisableAnimationsForTesting(true);
 
   Browser* browser = browser_view()->browser();
@@ -198,11 +196,11 @@ TEST_F(BrowserViewTest, BookmarkBarParentIsNotNullOnShutdown) {
 
   BookmarkBarView* bookmark_bar = browser_view()->GetBookmarkBarView();
   chrome::ExecuteCommand(browser, IDC_SHOW_BOOKMARK_BAR);
-  EXPECT_NE(nullptr, bookmark_bar->parent());
+  EXPECT_TRUE(bookmark_bar->visible());
 
   tab_strip_model->CloseWebContentsAt(tab_strip_model->active_index(), 0);
   EXPECT_EQ(0, tab_strip_model->count());
-  EXPECT_NE(nullptr, bookmark_bar->parent());
+  EXPECT_FALSE(bookmark_bar->visible());
 
   BookmarkBarView::DisableAnimationsForTesting(false);
 }
