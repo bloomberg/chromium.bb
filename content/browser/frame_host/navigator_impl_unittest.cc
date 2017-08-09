@@ -27,6 +27,7 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_frame_host.h"
@@ -1009,9 +1010,10 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, DataUrls) {
 
   // Do a renderer-initiated navigation to a data url. The request should be
   // sent to the IO thread.
-  TestRenderFrameHost* main_rfh = main_test_rfh();
-  main_rfh->SendRendererInitiatedNavigationRequest(kUrl2, true);
-  EXPECT_TRUE(main_rfh->is_loading());
+  auto navigation_to_data_url =
+      NavigationSimulator::CreateRendererInitiated(kUrl2, main_test_rfh());
+  navigation_to_data_url->Start();
+  EXPECT_TRUE(main_test_rfh()->is_loading());
   EXPECT_TRUE(node->navigation_request());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 }

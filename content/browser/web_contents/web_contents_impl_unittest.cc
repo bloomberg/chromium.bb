@@ -46,6 +46,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
@@ -1041,10 +1042,7 @@ TEST_F(WebContentsImplTest, CrossSiteComparesAgainstCurrentPage) {
 
   // Simulate a link click in first contents to second site.  Doesn't switch
   // SiteInstances, because we don't intercept Blink navigations.
-  orig_rfh->SendRendererInitiatedNavigationRequest(url2, true);
-  orig_rfh->PrepareForCommit();
-  contents()->TestDidNavigate(orig_rfh, 0, true, url2,
-                              ui::PAGE_TRANSITION_TYPED);
+  NavigationSimulator::NavigateAndCommitFromDocument(url2, orig_rfh);
   SiteInstance* instance3 = contents()->GetSiteInstance();
   EXPECT_EQ(instance1, instance3);
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
@@ -3195,18 +3193,9 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
 
   // Navigate the frame to another URL, which will send again
   // DidStartLoading and DidStopLoading messages.
-  {
-    subframe->SendRendererInitiatedNavigationRequest(foo_url, false);
-    subframe->PrepareForCommit();
-    if (!IsBrowserSideNavigationEnabled()) {
-      subframe->OnMessageReceived(
-          FrameHostMsg_DidStartLoading(subframe->GetRoutingID(), true));
-    }
-    subframe->SendNavigateWithTransition(10, false, foo_url,
-                                         ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-    subframe->OnMessageReceived(
-        FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
-  }
+  NavigationSimulator::NavigateAndCommitFromDocument(foo_url, subframe);
+  subframe->OnMessageReceived(
+      FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
 
   // Since the main frame hasn't sent any DidStopLoading messages, it is
   // expected that the WebContents is still in loading state.
