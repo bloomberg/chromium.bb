@@ -1,7 +1,7 @@
 #define VERSION_MAJOR  1
 #define VERSION_MINOR  6
 #define VERSION_PATCH  1
-#define VERSION_EXTRA  "1007-gc22b17dce"
+#define VERSION_EXTRA  "1034-gcbb83ba4a"
 #define VERSION_PACKED ((VERSION_MAJOR<<16)|(VERSION_MINOR<<8)|(VERSION_PATCH))
-#define VERSION_STRING_NOSP "v1.6.1-1007-gc22b17dce"
-#define VERSION_STRING      " v1.6.1-1007-gc22b17dce"
+#define VERSION_STRING_NOSP "v1.6.1-1034-gcbb83ba4a"
+#define VERSION_STRING      " v1.6.1-1034-gcbb83ba4a"

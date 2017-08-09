@@ -24,6 +24,7 @@
 .set HAVE_AVX ,  0
 .set HAVE_AVX2 ,  0
 .set HAVE_VSX ,  0
+.set HAVE_MMI ,  0
 .set HAVE_VPX_PORTS ,  1
 .set HAVE_PTHREAD_H ,  1
 .set HAVE_UNISTD_H ,  0
