@@ -33,6 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "platform/Histogram.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCookieJar.h"
 #include "public/platform/WebURL.h"
@@ -49,6 +50,8 @@ String Cookies(const Document* document, const KURL& url) {
   WebCookieJar* cookie_jar = ToCookieJar(document);
   if (!cookie_jar)
     return String();
+
+  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.CookieJar.SyncCookiesTime");
   return cookie_jar->Cookies(url, document->FirstPartyForCookies());
 }
 
