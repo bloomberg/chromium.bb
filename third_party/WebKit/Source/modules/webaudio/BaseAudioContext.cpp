@@ -716,7 +716,9 @@ void BaseAudioContext::NotifyStateChange() {
 
 void BaseAudioContext::NotifySourceNodeFinishedProcessing(
     AudioHandler* handler) {
-  DCHECK(IsAudioThread());
+  // This can be called from either the main thread or the audio thread.  The
+  // mutex below protects access to |finished_source_handlers_| between the two
+  // threads.
   MutexLocker lock(finished_source_handlers_mutex_);
   finished_source_handlers_.push_back(handler);
 }
