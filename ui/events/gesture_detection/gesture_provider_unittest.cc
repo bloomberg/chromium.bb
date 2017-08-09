@@ -917,8 +917,11 @@ TEST_F(GestureProviderTest, FractionalScroll) {
 // Generate a scroll gesture and verify that the resulting scroll begin event
 // has the expected hint values.
 TEST_F(GestureProviderTest, ScrollBeginValues) {
-  const float delta_x = 13;
-  const float delta_y = 89;
+  const float delta_x = 14;
+  const float delta_y = 48;
+  // These are the deltas after subtracting slop region and railing.
+  const float delta_x_hint = 0;
+  const float delta_y_hint = 40.32f;
 
   const base::TimeTicks event_time = TimeTicks::Now();
 
@@ -944,8 +947,8 @@ TEST_F(GestureProviderTest, ScrollBeginValues) {
 
   const GestureEventData* scroll_begin_gesture = GetActiveScrollBeginEvent();
   ASSERT_TRUE(scroll_begin_gesture);
-  EXPECT_EQ(delta_x, scroll_begin_gesture->details.scroll_x_hint());
-  EXPECT_EQ(delta_y, scroll_begin_gesture->details.scroll_y_hint());
+  EXPECT_EQ(delta_x_hint, scroll_begin_gesture->details.scroll_x_hint());
+  EXPECT_EQ(delta_y_hint, scroll_begin_gesture->details.scroll_y_hint());
 }
 
 // The following three tests verify that slop regions are checked for
