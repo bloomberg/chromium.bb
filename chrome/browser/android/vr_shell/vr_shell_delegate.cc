@@ -108,10 +108,7 @@ void VrShellDelegate::SetDelegate(device::GvrDelegate* delegate,
   }
 
   if (pending_successful_present_request_) {
-    gvr_delegate_->ConnectPresentingService(
-        std::move(submit_client_), std::move(presentation_provider_request_));
-    base::ResetAndReturn(&present_callback_).Run(true);
-    pending_successful_present_request_ = false;
+    SetPresentResult(true);
   }
   JNIEnv* env = AttachCurrentThread();
   std::unique_ptr<VrCoreInfo> vr_core_info = MakeVrCoreInfo(env);
@@ -129,25 +126,30 @@ void VrShellDelegate::RemoveDelegate() {
 void VrShellDelegate::SetPresentResult(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj,
                                        jboolean success) {
+  SetPresentResult(static_cast<bool>(success));
+}
+
+void VrShellDelegate::SetPresentResult(bool success) {
   CHECK(!present_callback_.is_null());
+  if (!success) {
+    pending_successful_present_request_ = false;
+    base::ResetAndReturn(&present_callback_).Run(false);
+    return;
+  }
+
   if (!gvr_delegate_) {
-    if (success) {
-      // We have to wait until the GL thread is ready since we have to pass it
-      // the VRSubmitFrameClient.
-      pending_successful_present_request_ = true;
-    }
+    // We have to wait until the GL thread is ready since we have to pass it
+    // the VRSubmitFrameClient.
+    pending_successful_present_request_ = true;
     return;
   }
 
-  if (success) {
-    gvr_delegate_->ConnectPresentingService(
-        std::move(submit_client_), std::move(presentation_provider_request_));
-  }
+  gvr_delegate_->ConnectPresentingService(
+      std::move(submit_client_), std::move(presentation_provider_request_));
 
-  base::ResetAndReturn(&present_callback_).Run(success);
+  base::ResetAndReturn(&present_callback_).Run(true);
   pending_successful_present_request_ = false;
-  if (!success)
-    return;
+
   device::VRDisplayImpl* presenting_display =
       device_provider_->Device()->GetPresentingDisplay();
   CHECK(presenting_display);

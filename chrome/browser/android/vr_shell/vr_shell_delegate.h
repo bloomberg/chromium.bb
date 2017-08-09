@@ -97,6 +97,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void OnFocusedAndActivatable(device::VRDisplayImpl* display);
   void OnLostFocusedAndActivatable();
   void SetListeningForActivate(bool listening);
+  void SetPresentResult(bool success);
 
   std::unique_ptr<VrCoreInfo> MakeVrCoreInfo(JNIEnv* env);
 
