@@ -231,8 +231,16 @@ void SkiaTextRenderer::SetShader(sk_sp<cc::PaintShader> shader) {
 void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
                                    const uint16_t* glyphs,
                                    size_t glyph_count) {
-  const size_t byte_length = glyph_count * sizeof(glyphs[0]);
-  canvas_skia_->drawPosText(&glyphs[0], byte_length, &pos[0], flags_);
+  SkTextBlobBuilder builder;
+  const auto& run_buffer = builder.allocRunPos(flags_.ToSkPaint(), glyph_count);
+
+  static_assert(sizeof(*glyphs) == sizeof(*run_buffer.glyphs), "");
+  memcpy(run_buffer.glyphs, glyphs, glyph_count * sizeof(*glyphs));
+
+  static_assert(sizeof(*pos) == 2 * sizeof(*run_buffer.pos), "");
+  memcpy(run_buffer.pos, pos, glyph_count * sizeof(*pos));
+
+  canvas_skia_->drawTextBlob(builder.make(), 0, 0, flags_);
 }
 
 void SkiaTextRenderer::DrawUnderline(int x, int y, int width) {

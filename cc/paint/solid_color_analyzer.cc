@@ -206,7 +206,6 @@ base::Optional<SkColor> SolidColorAnalyzer::DetermineIfSolidColor(
       case PaintOpType::DrawLine:
       case PaintOpType::DrawOval:
       case PaintOpType::DrawPath:
-      case PaintOpType::DrawPosText:
         return base::nullopt;
       // TODO(vmpstr): Add more tests on exceeding max_ops_to_analyze.
       case PaintOpType::DrawRRect: {

@@ -73,19 +73,6 @@ class CC_PAINT_EXPORT DisplayItemList
     paint_op_buffer_.push<T>(std::forward<Args>(args)...);
   }
 
-  template <typename T, typename M, typename... Args>
-  void push_with_array(const void* data,
-                       size_t bytes,
-                       const M* array,
-                       size_t count,
-                       Args&&... args) {
-    DCHECK(in_painting_);
-    if (usage_hint_ == kTopLevelDisplayItemList)
-      offsets_.push_back(paint_op_buffer_.next_op_offset());
-    paint_op_buffer_.push_with_array<T>(data, bytes, array, count,
-                                        std::forward<Args>(args)...);
-  }
-
   void EndPaintOfUnpaired(const gfx::Rect& visual_rect) {
     in_painting_ = false;
     if (usage_hint_ == kToBeReleasedAsPaintOpBuffer)

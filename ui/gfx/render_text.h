@@ -64,6 +64,7 @@ class GFX_EXPORT SkiaTextRenderer {
   void SetForegroundColor(SkColor foreground);
   void SetShader(sk_sp<cc::PaintShader> shader);
   void DrawSelection(const std::vector<Rect>& selection, SkColor color);
+  // TODO(vmpstr): Change this API to mimic SkCanvas::drawTextBlob instead.
   virtual void DrawPosText(const SkPoint* pos,
                            const uint16_t* glyphs,
                            size_t glyph_count);
