@@ -26,7 +26,6 @@ class HEADLESS_EXPORT MockGenericURLRequestJobDelegate
   ~MockGenericURLRequestJobDelegate() override;
 
   // GenericURLRequestJob::Delegate methods:
-  void OnPendingRequest(PendingRequest* pending_request) override;
   void OnResourceLoadFailed(const Request* request, net::Error error) override;
   void OnResourceLoadComplete(
       const Request* request,
@@ -35,14 +34,7 @@ class HEADLESS_EXPORT MockGenericURLRequestJobDelegate
       const char* body,
       size_t body_size) override;
 
-  using Policy = base::Callback<void(PendingRequest* pending_request)>;
-
-  void SetPolicy(Policy policy);
-
  private:
-  void ApplyPolicy(PendingRequest* pending_request);
-
-  Policy policy_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MockGenericURLRequestJobDelegate);

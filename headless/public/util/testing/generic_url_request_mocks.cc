@@ -22,28 +22,6 @@ MockGenericURLRequestJobDelegate::MockGenericURLRequestJobDelegate()
 
 MockGenericURLRequestJobDelegate::~MockGenericURLRequestJobDelegate() {}
 
-// GenericURLRequestJob::Delegate methods:
-void MockGenericURLRequestJobDelegate::OnPendingRequest(
-    PendingRequest* pending_request) {
-  // Simulate the client acknowledging the callback from a different thread.
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MockGenericURLRequestJobDelegate::ApplyPolicy,
-                            base::Unretained(this), pending_request));
-}
-
-void MockGenericURLRequestJobDelegate::SetPolicy(Policy policy) {
-  policy_ = std::move(policy);
-}
-
-void MockGenericURLRequestJobDelegate::ApplyPolicy(
-    PendingRequest* pending_request) {
-  if (policy_.is_null()) {
-    pending_request->AllowRequest();
-  } else {
-    policy_.Run(pending_request);
-  }
-}
-
 void MockGenericURLRequestJobDelegate::OnResourceLoadFailed(
     const Request* request,
     net::Error error) {}

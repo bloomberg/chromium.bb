@@ -22,11 +22,6 @@ class DeterministicHttpProtocolHandler::NopGenericURLRequestJobDelegate
   NopGenericURLRequestJobDelegate() {}
   ~NopGenericURLRequestJobDelegate() override {}
 
-  // GenericURLRequestJob::Delegate methods:
-  void OnPendingRequest(PendingRequest* pending_request) override {
-    pending_request->AllowRequest();
-  }
-
   void OnResourceLoadFailed(const Request* request, net::Error error) override {
   }
 

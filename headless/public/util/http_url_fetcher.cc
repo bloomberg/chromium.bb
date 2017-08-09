@@ -4,6 +4,7 @@
 
 #include "headless/public/util/http_url_fetcher.h"
 
+#include "headless/public/util/generic_url_request_job.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -229,14 +230,12 @@ HttpURLFetcher::HttpURLFetcher(
 
 HttpURLFetcher::~HttpURLFetcher() {}
 
-void HttpURLFetcher::StartFetch(const GURL& rewritten_url,
-                                const std::string& method,
-                                const std::string& post_data,
-                                const net::HttpRequestHeaders& request_headers,
+void HttpURLFetcher::StartFetch(const Request* request,
                                 ResultListener* result_listener) {
-  delegate_.reset(new Delegate(rewritten_url, method, post_data,
-                               request_headers, url_request_context_,
-                               result_listener));
+  delegate_.reset(new Delegate(
+      request->GetURLRequest()->url(), request->GetURLRequest()->method(),
+      request->GetPostData(), request->GetHttpRequestHeaders(),
+      url_request_context_, result_listener));
 }
 
 }  // namespace headless

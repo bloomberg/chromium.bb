@@ -17,11 +17,11 @@
 #include "url/gurl.h"
 
 namespace net {
-class HttpRequestHeaders;
 class HttpResponseHeaders;
 }  // namespace net
 
 namespace headless {
+class Request;
 
 // An interface for fetching URLs. Note these are only intended to be used once.
 class HEADLESS_EXPORT URLFetcher {
@@ -62,10 +62,7 @@ class HEADLESS_EXPORT URLFetcher {
     DISALLOW_COPY_AND_ASSIGN(ResultListener);
   };
 
-  virtual void StartFetch(const GURL& url,
-                          const std::string& method,
-                          const std::string& post_data,
-                          const net::HttpRequestHeaders& request_headers,
+  virtual void StartFetch(const Request* request,
                           ResultListener* result_listener) = 0;
 
  private:
