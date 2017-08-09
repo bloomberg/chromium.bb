@@ -145,9 +145,7 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
   CompositingReasons direct_reasons = kCompositingReasonNone;
   LayoutObject& layout_object = layer->GetLayoutObject();
 
-  // TODO(chrishtr): remove this hammer in favor of something more targeted.
-  // See crbug.com/749349.
-  if (layer->ClipParent() && layer->GetLayoutObject().IsOutOfFlowPositioned())
+  if (layer->ClipParent())
     direct_reasons |= kCompositingReasonOutOfFlowClipping;
 
   if (layer->NeedsCompositedScrolling())

@@ -209,24 +209,14 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
                 ? &parent_layer_on_clipping_container_chain->GetLayoutObject()
                 : parent_layer_on_clipping_container_chain->ClippingContainer();
 
-        const PaintLayer* clipping_layer =
-            properties.clipping_container
-                ? properties.clipping_container->EnclosingLayer()
-                : layer->Compositor()->RootLayer();
-
-        if (!layer->SubtreeIsInvisible()) {
-          if (layer->GetLayoutObject().IsOutOfFlowPositioned()) {
-            if (HasClippedStackingAncestor(layer, clipping_layer))
-              properties.clip_parent = clipping_layer;
-          } else {
-            if (clipping_layer && clipping_layer->CompositingContainer() ==
-                                      layer->CompositingContainer()) {
-              // If the clipping container of |layer| is a sibling in the
-              // stacking tree, and it escapes a stacking ancestor clip,
-              // this layer should escape that clip also.
-              properties.clip_parent = clipping_layer;
-            }
-          }
+        if (layer->GetLayoutObject().IsOutOfFlowPositioned() &&
+            !layer->SubtreeIsInvisible()) {
+          const PaintLayer* clipping_layer =
+              properties.clipping_container
+                  ? properties.clipping_container->EnclosingLayer()
+                  : layer->Compositor()->RootLayer();
+          if (HasClippedStackingAncestor(layer, clipping_layer))
+            properties.clip_parent = clipping_layer;
         }
       }
 
