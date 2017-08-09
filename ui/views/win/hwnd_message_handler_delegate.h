@@ -188,6 +188,10 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // handled by the delegate.
   virtual bool HandleMouseEvent(const ui::MouseEvent& event) = 0;
 
+  // Called when a pointer event is received. Returns true if the event was
+  // handled by the delegate.
+  virtual bool HandlePointerEvent(ui::PointerEvent* event) = 0;
+
   // Called when an untranslated key event is received (i.e. pre-IME
   // translation).
   virtual void HandleKeyEvent(ui::KeyEvent* event) = 0;
