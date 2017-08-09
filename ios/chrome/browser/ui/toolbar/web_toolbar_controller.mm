@@ -30,6 +30,8 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
+#include "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -229,13 +231,14 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 // TODO(crbug.com/619982) Remove this block and add CAAnimationDelegate when we
 // switch the main bots to Xcode 8.
 #if defined(__IPHONE_10_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0)
-@interface WebToolbarController ()<CAAnimationDelegate,
-                                   ToolbarAssistiveKeyboardDelegate>
+@interface WebToolbarController ()<CAAnimationDelegate>
 @end
 #endif
 
-@interface WebToolbarController ()<LocationBarDelegate,
+@interface WebToolbarController ()<DropAndNavigateDelegate,
+                                   LocationBarDelegate,
                                    OmniboxPopupPositioner,
+                                   ToolbarAssistiveKeyboardDelegate,
                                    ToolbarFrameDelegate> {
   // Top-level view for web content.
   UIView* _webToolbar;
@@ -285,6 +288,10 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   // View controller for displaying tab history when the user long presses the
   // back or forward button. nil if not visible.
   TabHistoryPopupController* _tabHistoryPopupController;
+
+#if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
+  API_AVAILABLE(ios(11.0)) DropAndNavigateInteraction* _dropInteraction;
+#endif
 
   // The current browser state.
   ios::ChromeBrowserState* _browserState;  // weak
@@ -676,6 +683,13 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   }
   [self.view setDelegate:self];
 
+#if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
+  if (@available(iOS 11, *)) {
+    _dropInteraction =
+        [[DropAndNavigateInteraction alloc] initWithDelegate:self];
+    [self.view addInteraction:_dropInteraction];
+  }
+#endif
   return self;
 }
 
@@ -1492,6 +1506,18 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 - (void)keyPressed:(NSString*)title {
   NSString* text = [self updateTextForDotCom:title];
   [_omniBox insertTextWhileEditing:text];
+}
+
+#pragma mark -
+#pragma mark DropAndNavigateDelegate
+
+- (void)URLWasDropped:(GURL const&)gurl {
+  ui::PageTransition transition =
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  [self.urlLoader loadURL:gurl
+                 referrer:web::Referrer()
+               transition:transition
+        rendererInitiated:NO];
 }
 
 #pragma mark -
