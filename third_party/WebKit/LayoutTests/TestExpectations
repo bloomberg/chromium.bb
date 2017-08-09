@@ -1092,6 +1092,8 @@ crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
+# Skia roll
+crbug.com/630695 svg/custom/massive-coordinates.svg [ NeedsManualRebaseline ]
 
 crbug.com/658305 css3/filters/buffer-offset.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-all-on-background-hw.html [ Failure Pass ]
