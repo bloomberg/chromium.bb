@@ -56666,6 +56666,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Platform.Vpd.UnknownKeys">
+  <owner>tnagel@chromium.org</owner>
+  <summary>
+    Number of unknown RW_VPD entries on Chrome OS, sent once per boot.
+  </summary>
+</histogram>
+
 <histogram name="Platform.WriteSectorsLong">
   <owner>gwendal@google.com</owner>
   <summary>
