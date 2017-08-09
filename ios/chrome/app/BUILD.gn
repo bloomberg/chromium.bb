@@ -294,6 +294,7 @@ ios_app_bundle("chrome") {
   }
 
   extra_substitutions = [
+    "CONTENT_WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.ContentTodayExtension",
     "CHROMIUM_BUNDLE_ID=$chromium_bundle_id",
     "CHROMIUM_HANDOFF_ID=$chromium_handoff_id",
     "CHROMIUM_SHORT_NAME=$chromium_short_name",

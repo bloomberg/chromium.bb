@@ -52,6 +52,7 @@ ios_app_bundle("chrome_clean_skeleton") {
   bundle_deps = [ "//ios/chrome/app/resources" ]
 
   extra_substitutions = [
+    "CONTENT_WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.ContentTodayExtension",
     "CHROMIUM_BUNDLE_ID=$output_name",
     "CHROMIUM_HANDOFF_ID=$chromium_handoff_id",
     "CHROMIUM_SHORT_NAME=$output_name",
