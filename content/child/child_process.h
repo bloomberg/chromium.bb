@@ -87,8 +87,6 @@ class CONTENT_EXPORT ChildProcess {
   // on the main thread.
   static ChildProcess* current();
 
-  static void WaitForDebugger(const std::string& label);
-
  private:
   int ref_count_;
 

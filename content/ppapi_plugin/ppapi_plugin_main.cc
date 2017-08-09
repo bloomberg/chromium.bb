@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/content_switches_internal.h"
 #include "content/ppapi_plugin/ppapi_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -70,13 +71,12 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 #endif
 
   // If |g_target_services| is not null this process is sandboxed. One side
-  // effect is that we can't pop dialogs like ChildProcess::WaitForDebugger()
-  // does.
+  // effect is that we can't pop dialogs like WaitForDebugger() does.
   if (command_line.HasSwitch(switches::kPpapiStartupDialog)) {
     if (g_target_services)
       base::debug::WaitForDebugger(2*60, false);
     else
-      ChildProcess::WaitForDebugger("Ppapi");
+      WaitForDebugger("Ppapi");
   }
 
   // Set the default locale to be the current UI language. WebKit uses ICU's

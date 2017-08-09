@@ -64,6 +64,9 @@ const char kBlinkSettings[]                 = "blink-settings";
 // Causes the browser process to crash on startup.
 const char kBrowserCrashTest[]              = "crash-test";
 
+// Causes the browser process to display a dialog on launch.
+const char kBrowserStartupDialog[]          = "browser-startup-dialog";
+
 // Path to the exe to run for the renderer and plugin subprocesses.
 const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 
@@ -903,6 +906,9 @@ const char kUtilityProcess[]                = "utility";
 const char kUtilityProcessAllowedDir[]      = "utility-allowed-dir";
 
 const char kUtilityProcessRunningElevated[] = "utility-run-elevated";
+
+// Causes the utility process to display a dialog on launch.
+const char kUtilityStartupDialog[]          = "utility-startup-dialog";
 
 // In debug builds, asserts that the stream of input events is valid.
 const char kValidateInputEventStream[] = "validate-input-event-stream";
