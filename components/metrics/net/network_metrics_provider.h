@@ -65,6 +65,8 @@ class NetworkMetricsProvider
   FRIEND_TEST_ALL_PREFIXES(NetworkMetricsProviderTest, EffectiveConnectionType);
   FRIEND_TEST_ALL_PREFIXES(NetworkMetricsProviderTest,
                            ECTAmbiguousOnConnectionTypeChange);
+  FRIEND_TEST_ALL_PREFIXES(NetworkMetricsProviderTest,
+                           ECTNotAmbiguousOnOffline);
 
   // Listens to the changes in the effective conection type.
   class EffectiveConnectionTypeObserver;

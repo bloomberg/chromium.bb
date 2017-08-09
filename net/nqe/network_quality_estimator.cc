@@ -353,7 +353,7 @@ void NetworkQualityEstimator::NotifyStartTransaction(
     base::TimeTicks now = tick_clock_->NowTicks();
     last_main_frame_request_ = now;
 
-    MaybeComputeEffectiveConnectionType();
+    ComputeEffectiveConnectionType();
     effective_connection_type_at_last_main_frame_ = effective_connection_type_;
     estimated_quality_at_last_main_frame_ = network_quality_;
 
@@ -377,6 +377,8 @@ void NetworkQualityEstimator::NotifyStartTransaction(
                      weak_ptr_factory_.GetWeakPtr(), measuring_delay),
           measuring_delay);
     }
+  } else {
+    MaybeComputeEffectiveConnectionType();
   }
   throughput_analyzer_->NotifyStartTransaction(request);
 }
