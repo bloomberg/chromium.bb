@@ -5,6 +5,8 @@
 """Tests for chromite.lib.cloud_trace."""
 from __future__ import print_function
 
+import os
+
 from chromite.lib import cloud_trace
 from chromite.lib import cros_test_lib
 
@@ -27,28 +29,29 @@ class SpanStackTest(cros_test_lib.MockTestCase):
   """Tests for the SpanStack class."""
 
   def setUp(self):
-    self.create_span_mock = self.PatchObject(cloud_trace, 'CreateSpans')
+    self.log_span_mock = self.PatchObject(cloud_trace, 'LogSpan')
 
-  def testCreateSingleSpan(self):
-    """Tests that SpanStack.Span creates a span and sends it."""
+  def testLogSingleSpan(self):
+    """Tests that SpanStack.Span logs a span and sends it."""
     stack = cloud_trace.SpanStack()
     context = stack.Span('foo')
-    self.assertEqual(0, self.create_span_mock.call_count)
+    self.assertEqual(0, self.log_span_mock.call_count)
     with context:
-      self.assertEqual(0, self.create_span_mock.call_count)
-    self.assertEqual(1, self.create_span_mock.call_count)
+      self.assertEqual(0, self.log_span_mock.call_count)
+    self.assertEqual(1, self.log_span_mock.call_count)
 
-  def testCallCreateSpanAtCloseOfStack(self):
-    """Test that CreateSpans is called once at the end of a stack."""
+  def testCallLogSpanAtCloseOfStack(self):
+    """Test that LogSpans is called after each span is popped."""
     stack = cloud_trace.SpanStack()
     with stack.Span('foo'):
-      self.assertEqual(0, self.create_span_mock.call_count)
+      self.assertEqual(0, self.log_span_mock.call_count)
       with stack.Span('bar'):
-        self.assertEqual(0, self.create_span_mock.call_count)
+        self.assertEqual(0, self.log_span_mock.call_count)
         with stack.Span('zap'):
-          self.assertEqual(0, self.create_span_mock.call_count)
-      self.assertEqual(0, self.create_span_mock.call_count)
-    self.assertEqual(1, self.create_span_mock.call_count)
+          self.assertEqual(0, self.log_span_mock.call_count)
+        self.assertEqual(1, self.log_span_mock.call_count)
+      self.assertEqual(2, self.log_span_mock.call_count)
+    self.assertEqual(3, self.log_span_mock.call_count)
 
   def testSpannedDecorator(self):
     """Tests that @stack.Spanned() works."""
@@ -57,6 +60,25 @@ class SpanStackTest(cros_test_lib.MockTestCase):
     def decorated():
       pass
 
-    self.assertEqual(0, self.create_span_mock.call_count)
+    self.assertEqual(0, self.log_span_mock.call_count)
     decorated()
-    self.assertEqual(1, self.create_span_mock.call_count)
+    self.assertEqual(1, self.log_span_mock.call_count)
+
+
+class SpanLogTest(cros_test_lib.MockTestCase, cros_test_lib.TempDirTestCase):
+  """Tests that spans can be logged correctly."""
+
+  def setUp(self):
+    self._old_log = cloud_trace.SPANS_LOG
+    cloud_trace.SPANS_LOG = os.path.join(self.tempdir, '{pid}.json')
+
+  def tearDown(self):
+    cloud_trace.SPANS_LOG = self._old_log
+
+  def testCanSendLog(self):
+    """Tests that Spans are sent to a log."""
+    stack = cloud_trace.SpanStack()
+    with stack.Span('foo'):
+      pass
+    self.assertTrue(os.path.exists(
+        cloud_trace.SPANS_LOG.format(pid=os.getpid())))

@@ -6,10 +6,14 @@
 from __future__ import print_function
 
 import contextlib
+import errno
 import functools
+import json
 import os
 import random
 
+from chromite.lib import cros_logging as log
+from chromite.lib import factory
 from chromite.lib import structured
 
 from googleapiclient import discovery
@@ -20,46 +24,66 @@ import google.protobuf.internal.well_known_types as types
 CREDS_PATH = '/creds/service_accounts/service-account-trace.json'
 SCOPES = ['https://www.googleapis.com/auth/trace.append']
 PROJECT_ID = 'google.com:chromeos-infra-logging'
+SPANS_LOG = '/var/log/trace/{pid}.json'
+
+#--- Code for logging spans to a file for later processing. --------------------
+
+# Singleton for serializing and unserializing spans to the span log.
+# TODO(phobbs) this doesn't work with multiprocessing (although we don't need
+# it to, now). Consider using a filelock instead if we need it.
+@factory.CachedFunctionCall
+def GetSpanLogFileHandle():
+  """Gets the singleton span log file handle, catching common errors."""
+  log_path = SPANS_LOG.format(pid=os.getpid())
+  try:
+    fh = open(log_path, 'w')
+    _SPAN_LOG_FH = fh
+    return fh
+
+  # Permissions errors
+  except OSError as error:
+    if error.errno == errno.EPERM:
+      log.warning(
+          'Received permissions error while trying to open the span log file.')
+      return None
+    elif error.errno == errno.ENOENT:
+      log.warning('/var/log/traces does not exist; skipping trace log.')
+      return None
+    else:
+      raise
 
 
-def MakeCreds():
-  """Creates a GoogleCredentials object with the trace.append scope."""
+def LogSpan(span):
+  """Serializes and logs a Span to a file.
+
+  Args:
+    fh: A log filehandle.
+    span: A Span instance to serialize.
+  """
+  fh = GetSpanLogFileHandle()
+  fh.write(json.dumps(span.ToDict()))
+  # Flush to avoid dropping spans if our process is killed
+  fh.flush()
+
+
+#-- Code for talking to the trace API. -----------------------------------------
+def MakeCreds(creds_path):
+  """Creates a GoogleCredentials object with the trace.append scope.
+
+  Args:
+    creds_path: Path to the credentials file to use.
+  """
   return GoogleCredentials.from_stream(
-      os.path.expanduser(CREDS_PATH)
+      os.path.expanduser(creds_path)
   ).create_scoped(SCOPES)
 
 
-def Client():
+def Client(creds_path=CREDS_PATH):
   """Returns a Cloud Trace API client object."""
-  return discovery.build('cloudtrace', 'v1', credentials=MakeCreds())
+  return discovery.build('cloudtrace', 'v1', credentials=MakeCreds(creds_path))
 
 
-def CreateSpans(traceId, spans, client=None):
-  """Creates spans with a call to the /patchTraces endpoint.
-
-  See endpoint documentation here:
-  https://cloud.google.com/trace/docs/reference/v1/rest/v1/projects/patchTraces
-
-  Args:
-    traceId: A 32-byte hex string, which is the id of the trace containing the
-        spans.
-    spans: A list of dictionaries representing a TraceSpan. See the doc:
-        https://cloud.google.com/trace/docs/reference/v1/rest/v1/projects.traces#TraceSpan
-    client: An optional API client object to use. If None, a new client is
-        created.
-  """
-  client = client or Client()
-  return client.projects().patchTraces(projectId=PROJECT_ID, body={
-      'traces': [
-          {
-              'traceId': traceId,
-              'projectId': PROJECT_ID,
-              'spans': spans
-          }
-      ]
-  })
-
-
+#-- User-facing API ------------------------------------------------------------
 class Span(structured.Structured):
   """An object corresponding to a cloud trace Span."""
 
@@ -123,13 +147,26 @@ class Span(structured.Structured):
 
 class SpanStack(object):
   """A stack of Span contexts."""
-  def __init__(self, traceId=None, parentSpanId=None, labels=None, client=None):
+  def __init__(self, traceId=None, parentSpanId=None, labels=None):
     self.traceId = traceId
     self.spans = []
-    self.requests = []
     self.last_span_id = parentSpanId
     self.labels = labels
-    self.client = client
+
+  def _CreateSpan(self, name, **kwargs):
+    """Creates a span instance, setting certain defaults.
+
+    Args:
+      name: The name of the span
+      **kwargs: The keyword arguments to configure the span with.
+    """
+    kwargs.setdefault('traceId', self.traceId)
+    kwargs.setdefault('labels', self.labels)
+    kwargs.setdefault('parentSpanId', self.last_span_id)
+    span = Span(name, **kwargs)
+    if self.traceId is None:
+      self.traceId = span.traceId
+    return span
 
   @contextlib.contextmanager
   def Span(self, name, **kwargs):
@@ -141,38 +178,23 @@ class SpanStack(object):
 
     Side effect:
       Appends the new span object to |spans|, and yields span while in its
-      context. While leaving this context, send all pending span requests to
-      the cloud trace API.
+      context. Pops the span object when exiting the context.
 
     Returns:
       A contextmanager whose __enter__() returns the new Span.
     """
-    kwargs.setdefault('traceId', self.traceId)
-    kwargs.setdefault('labels', self.labels)
-    kwargs.setdefault('parentSpanId', self.last_span_id)
-
-    span = Span(name, **kwargs)
-    if self.traceId is None:
-      self.traceId = span.traceId
-
+    span = self._CreateSpan(name, **kwargs)
     old_span_id, self.last_span_id = self.last_span_id, span.spanId
     self.spans.append(span)
 
     with span:
       yield span
 
-    self.requests.append(span.ToDict())
     self.spans.pop()
     self.last_span_id = old_span_id
 
-    # TODO(phobbs) this is quite slow. Consider sending spans in a thread,
-    # or logging to a file to be sent by a separate process.
-    # On the last pop, send a batched request to the API.
-    if not self.spans:
-      self.SendSpans()
-
-  def SendSpans(self):
-    return CreateSpans(self.traceId, self.requests).execute()
+    # Log each span to a file for later processing.
+    LogSpan(span)
 
   # pylint: disable=docstring-misnamed-args
   def Spanned(self, *span_args, **span_kwargs):
