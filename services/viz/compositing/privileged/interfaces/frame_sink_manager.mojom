@@ -7,10 +7,10 @@ module viz.mojom;
 import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_surface_id.mojom";
 import "cc/ipc/surface_id.mojom";
-import "cc/ipc/surface_info.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
 import "mojo/common/time.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
+import "services/viz/public/interfaces/compositing/surface_info.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 import "services/viz/compositing/privileged/interfaces/renderer_settings.mojom";
@@ -56,7 +56,7 @@ interface FrameSinkManager {
   CreateRootCompositorFrameSink(
       cc.mojom.FrameSinkId frame_sink_id,
       gpu.mojom.SurfaceHandle widget,
-      viz.mojom.RendererSettings renderer_settings,
+      RendererSettings renderer_settings,
       associated CompositorFrameSink& compositor_frame_sink,
       CompositorFrameSinkClient compositor_frame_sink_client,
       associated DisplayPrivate& display_private);
@@ -97,7 +97,7 @@ interface FrameSinkManager {
 interface FrameSinkManagerClient {
   // Called by the frame sink manager when a CompositorFrame with a new
   // SurfaceId activates for the first time.
-  OnFirstSurfaceActivation(cc.mojom.SurfaceInfo surface_info);
+  OnFirstSurfaceActivation(SurfaceInfo surface_info);
 
   // The CompositorFrameSink pipe for |frame_sink_id| was closed. The client
   // cannot submit any CompositorFrames to viz after this occurs.

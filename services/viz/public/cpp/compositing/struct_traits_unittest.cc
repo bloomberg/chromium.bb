@@ -30,6 +30,7 @@
 #include "components/viz/common/resources/resource_settings.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "gpu/ipc/common/mailbox_holder_struct_traits.h"
 #include "gpu/ipc/common/mailbox_struct_traits.h"
@@ -40,8 +41,10 @@
 #include "services/viz/public/cpp/compositing/compositor_frame_struct_traits.h"
 #include "services/viz/public/cpp/compositing/resource_settings_struct_traits.h"
 #include "services/viz/public/cpp/compositing/returned_resource_struct_traits.h"
+#include "services/viz/public/cpp/compositing/surface_info_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame.mojom.h"
 #include "services/viz/public/interfaces/compositing/returned_resource.mojom.h"
+#include "services/viz/public/interfaces/compositing/surface_info.mojom.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "skia/public/interfaces/blur_image_filter_tile_mode_struct_traits.h"
 #include "skia/public/interfaces/image_filter_struct_traits.h"
@@ -215,6 +218,23 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   EXPECT_EQ(color2, out_solid_color_draw_quad->color);
   EXPECT_EQ(force_anti_aliasing_off,
             out_solid_color_draw_quad->force_anti_aliasing_off);
+}
+
+TEST_F(StructTraitsTest, SurfaceInfo) {
+  const SurfaceId surface_id(
+      FrameSinkId(1234, 4321),
+      LocalSurfaceId(5678,
+                     base::UnguessableToken::Deserialize(143254, 144132)));
+  constexpr float device_scale_factor = 1.234f;
+  constexpr gfx::Size size(987, 123);
+
+  const SurfaceInfo input(surface_id, device_scale_factor, size);
+  SurfaceInfo output;
+  SerializeAndDeserialize<mojom::SurfaceInfo>(input, &output);
+
+  EXPECT_EQ(input.id(), output.id());
+  EXPECT_EQ(input.size_in_pixels(), output.size_in_pixels());
+  EXPECT_EQ(input.device_scale_factor(), output.device_scale_factor());
 }
 
 TEST_F(StructTraitsTest, ReturnedResource) {
