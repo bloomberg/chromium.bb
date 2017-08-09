@@ -270,7 +270,7 @@ void FeedbackPrivateReadLogSourceFunction::OnCompleted(
 }
 #endif  // defined(OS_CHROMEOS)
 
-bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
+ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
   std::unique_ptr<feedback_private::SendFeedback::Params> params(
       feedback_private::SendFeedback::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -332,15 +332,14 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
       browser_context(), feedback_data,
       base::Bind(&FeedbackPrivateSendFeedbackFunction::OnCompleted, this));
 
-  return true;
+  return RespondLater();
 }
 
 void FeedbackPrivateSendFeedbackFunction::OnCompleted(
     bool success) {
-  results_ = feedback_private::SendFeedback::Results::Create(
-      success ? feedback_private::STATUS_SUCCESS :
-                feedback_private::STATUS_DELAYED);
-  SendResponse(true);
+  Respond(OneArgument(base::MakeUnique<base::Value>(
+      feedback_private::ToString(success ? feedback_private::STATUS_SUCCESS
+                                         : feedback_private::STATUS_DELAYED))));
 
   if (!success) {
     // Sending the feedback has been delayed as the user is offline. Show a

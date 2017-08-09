@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/feedback_private.h"
 #include "components/feedback/system_logs/system_logs_source.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -129,15 +128,14 @@ class FeedbackPrivateReadLogSourceFunction : public UIThreadExtensionFunction {
 #endif  // defined(OS_CHROMEOS)
 };
 
-class FeedbackPrivateSendFeedbackFunction
-    : public ChromeAsyncExtensionFunction {
+class FeedbackPrivateSendFeedbackFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("feedbackPrivate.sendFeedback",
                              FEEDBACKPRIVATE_SENDFEEDBACK);
 
  protected:
   ~FeedbackPrivateSendFeedbackFunction() override {}
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   void OnCompleted(bool success);
