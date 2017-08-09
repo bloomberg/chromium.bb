@@ -22,7 +22,10 @@ namespace {
 constexpr gfx::Rect g_large_rect(-200000, -200000, 400000, 400000);
 void AppendDisplayItemToCcDisplayItemList(const DisplayItem& display_item,
                                           cc::DisplayItemList& list) {
-  DCHECK(DisplayItem::IsDrawingType(display_item.GetType()));
+  // TODO(pdr): Change this to a DCHECK once scroll hit test display items
+  // are no longer appended (crbug.com/738613).
+  if (!display_item.IsDrawing())
+    return;
 
   sk_sp<const PaintRecord> record =
       static_cast<const DrawingDisplayItem&>(display_item).GetPaintRecord();

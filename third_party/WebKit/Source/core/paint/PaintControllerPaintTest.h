@@ -150,6 +150,7 @@ const DisplayItem::Type kForegroundType =
     DisplayItem::PaintPhaseToDrawingType(kPaintPhaseForeground);
 const DisplayItem::Type kDocumentBackgroundType =
     DisplayItem::kDocumentBackground;
+const DisplayItem::Type kScrollHitTestType = DisplayItem::kScrollHitTest;
 
 }  // namespace blink
 
