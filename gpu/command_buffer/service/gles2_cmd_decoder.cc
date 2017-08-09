@@ -17053,8 +17053,8 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   bool unpack_premultiply_alpha_change =
       (unpack_premultiply_alpha ^ unpack_unmultiply_alpha) != 0;
   // TODO(qiankun.miao@intel.com): Support level > 0 for CopyTexImage.
-  if (image && dest_level == 0 && !unpack_flip_y &&
-      !unpack_premultiply_alpha_change) {
+  if (image && internal_format == source_internal_format && dest_level == 0 &&
+      !unpack_flip_y && !unpack_premultiply_alpha_change) {
     glBindTexture(dest_binding_target, dest_texture->service_id());
     if (image->CopyTexImage(dest_target))
       return;
@@ -17263,8 +17263,8 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
   bool unpack_premultiply_alpha_change =
       (unpack_premultiply_alpha ^ unpack_unmultiply_alpha) != 0;
   // TODO(qiankun.miao@intel.com): Support level > 0 for CopyTexSubImage.
-  if (image && dest_level == 0 && !unpack_flip_y &&
-      !unpack_premultiply_alpha_change) {
+  if (image && dest_internal_format == source_internal_format &&
+      dest_level == 0 && !unpack_flip_y && !unpack_premultiply_alpha_change) {
     ScopedTextureBinder binder(&state_, dest_texture->service_id(),
                                dest_binding_target);
     if (image->CopyTexSubImage(dest_target, gfx::Point(xoffset, yoffset),
