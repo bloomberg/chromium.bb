@@ -662,17 +662,19 @@ HistogramBase* Histogram::DeserializeInfoImpl(PickleIterator* iter) {
 
   if (!ReadHistogramArguments(iter, &histogram_name, &flags, &declared_min,
                               &declared_max, &bucket_count, &range_checksum)) {
-    return NULL;
+    return nullptr;
   }
 
   // Find or create the local version of the histogram in this process.
   HistogramBase* histogram = Histogram::FactoryGet(
       histogram_name, declared_min, declared_max, bucket_count, flags);
+  if (!histogram)
+    return nullptr;
 
-  if (!ValidateRangeChecksum(*histogram, range_checksum)) {
-    // The serialized histogram might be corrupted.
-    return NULL;
-  }
+  // The serialized histogram might be corrupted.
+  if (!ValidateRangeChecksum(*histogram, range_checksum))
+    return nullptr;
+
   return histogram;
 }
 
@@ -886,8 +888,8 @@ HistogramBase* LinearHistogram::FactoryGet(const std::string& name,
                                            Sample maximum,
                                            uint32_t bucket_count,
                                            int32_t flags) {
-  return FactoryGetWithRangeDescription(
-      name, minimum, maximum, bucket_count, flags, NULL);
+  return FactoryGetWithRangeDescription(name, minimum, maximum, bucket_count,
+                                        flags, nullptr);
 }
 
 HistogramBase* LinearHistogram::FactoryTimeGet(const std::string& name,
@@ -1023,14 +1025,14 @@ HistogramBase* LinearHistogram::DeserializeInfoImpl(PickleIterator* iter) {
 
   if (!ReadHistogramArguments(iter, &histogram_name, &flags, &declared_min,
                               &declared_max, &bucket_count, &range_checksum)) {
-    return NULL;
+    return nullptr;
   }
 
   HistogramBase* histogram = LinearHistogram::FactoryGet(
       histogram_name, declared_min, declared_max, bucket_count, flags);
   if (!ValidateRangeChecksum(*histogram, range_checksum)) {
     // The serialized histogram might be corrupted.
-    return NULL;
+    return nullptr;
   }
   return histogram;
 }
@@ -1115,14 +1117,14 @@ HistogramBase* BooleanHistogram::DeserializeInfoImpl(PickleIterator* iter) {
 
   if (!ReadHistogramArguments(iter, &histogram_name, &flags, &declared_min,
                               &declared_max, &bucket_count, &range_checksum)) {
-    return NULL;
+    return nullptr;
   }
 
   HistogramBase* histogram = BooleanHistogram::FactoryGet(
       histogram_name, flags);
   if (!ValidateRangeChecksum(*histogram, range_checksum)) {
     // The serialized histogram might be corrupted.
-    return NULL;
+    return nullptr;
   }
   return histogram;
 }
@@ -1267,7 +1269,7 @@ HistogramBase* CustomHistogram::DeserializeInfoImpl(PickleIterator* iter) {
 
   if (!ReadHistogramArguments(iter, &histogram_name, &flags, &declared_min,
                               &declared_max, &bucket_count, &range_checksum)) {
-    return NULL;
+    return nullptr;
   }
 
   // First and last ranges are not serialized.
@@ -1275,14 +1277,14 @@ HistogramBase* CustomHistogram::DeserializeInfoImpl(PickleIterator* iter) {
 
   for (uint32_t i = 0; i < sample_ranges.size(); ++i) {
     if (!iter->ReadInt(&sample_ranges[i]))
-      return NULL;
+      return nullptr;
   }
 
   HistogramBase* histogram = CustomHistogram::FactoryGet(
       histogram_name, sample_ranges, flags);
   if (!ValidateRangeChecksum(*histogram, range_checksum)) {
     // The serialized histogram might be corrupted.
-    return NULL;
+    return nullptr;
   }
   return histogram;
 }
