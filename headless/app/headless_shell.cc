@@ -20,6 +20,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "build/build_config.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -601,8 +602,12 @@ int HeadlessShellMain(int argc, const char** argv) {
 #endif  // defined(OS_WIN)
   HeadlessShell shell;
 
-  const base::CommandLine& command_line(
-      *base::CommandLine::ForCurrentProcess());
+#if defined(OS_FUCHSIA)
+  // TODO(fuchsia): Remove this when GPU accelerated compositing is ready.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(::switches::kDisableGpu);
+#endif
+
+  base::CommandLine& command_line(*base::CommandLine::ForCurrentProcess());
   if (!ValidateCommandLine(command_line))
     return EXIT_FAILURE;
 
