@@ -11,6 +11,7 @@ import android.graphics.RectF;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
@@ -33,10 +34,10 @@ public class TabListSceneLayer extends SceneLayer {
      * let them be rendered on the screen.  This should only be called when the Compositor has
      * disabled ScheduleComposite calls as this will change the tree and could subsequently cause
      * unnecessary follow up renders.
-     * @param context         The {@link Context} to use to query device information.
-     * @param viewport        The viewport for the screen.
+     * @param context The {@link Context} to use to query device information.
+     * @param viewport The viewport for the screen.
      * @param contentViewport The visible viewport.
-     * @param layout          The {@link Layout} to push to the screen.
+     * @param layout The {@link Layout} to push to the screen.
      * @param layerTitleCache An object for accessing tab layer titles.
      * @param tabContentManager An object for accessing tab content.
      * @param resourceManager An object for accessing static and dynamic resources.
@@ -64,9 +65,12 @@ public class TabListSceneLayer extends SceneLayer {
             assert t.isVisible() : "LayoutTab in that list should be visible";
             final float decoration = t.getDecorationAlpha();
 
-            int defaultThemeColor = t.isIncognito()
-                    ? ApiCompatibilityUtils.getColor(res, R.color.incognito_primary_color)
-                    : ApiCompatibilityUtils.getColor(res, R.color.default_primary_color);
+            boolean useModernDesign = fullscreenManager.areBrowserControlsAtBottom()
+                    && ChromeFeatureList.isInitialized()
+                    && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT);
+
+            int defaultThemeColor =
+                    ColorUtils.getDefaultThemeColor(res, useModernDesign, t.isIncognito());
 
             int toolbarBackgroundColor = t.getToolbarBackgroundColor();
             int textBoxBackgroundColor = t.getTextBoxBackgroundColor();
@@ -74,8 +78,10 @@ public class TabListSceneLayer extends SceneLayer {
             if (t.getForceDefaultThemeColor()) {
                 toolbarBackgroundColor = defaultThemeColor;
                 textBoxBackgroundColor = ColorUtils.getTextBoxColorForToolbarBackground(
-                        res, false, toolbarBackgroundColor);
-                textBoxAlpha = t.isIncognito() ? textBoxAlpha : 1f;
+                        res, false, toolbarBackgroundColor, useModernDesign);
+                // In the modern design, the text box is always drawn in the Java layer rather
+                // than the compositor layer.
+                textBoxAlpha = useModernDesign ? 0.f : t.isIncognito() ? textBoxAlpha : 1f;
             }
 
             int closeButtonColor =
@@ -139,12 +145,16 @@ public class TabListSceneLayer extends SceneLayer {
     }
 
     private native long nativeInit();
+
     private native void nativeBeginBuildingFrame(long nativeTabListSceneLayer);
+
     private native void nativeFinishBuildingFrame(long nativeTabListSceneLayer);
+
     private native void nativeUpdateLayer(long nativeTabListSceneLayer, int backgroundColor,
             float viewportX, float viewportY, float viewportWidth, float viewportHeight,
             LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
             ResourceManager resourceManager);
+
     private native void nativePutTabLayer(long nativeTabListSceneLayer, int id,
             int toolbarResourceId, int closeButtonResourceId, int shadowResourceId,
             int contourResourceId, int backLogoResourceId, int borderResourceId,

@@ -28,7 +28,6 @@ import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.PopupWindow.OnDismissListener;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
@@ -491,11 +490,15 @@ public class Tab
         mWindowAndroid = window;
         mLaunchType = type;
         if (mLaunchType == TabLaunchType.FROM_DETACHED) mIsDetached = true;
+
+        boolean useModernDesign = getActivity() != null && getActivity().getBottomSheet() != null
+                && ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT);
+
         Resources resources = mThemedApplicationContext.getResources();
         mIdealFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
-        mDefaultThemeColor = mIncognito
-                ? ApiCompatibilityUtils.getColor(resources, R.color.incognito_primary_color)
-                : ApiCompatibilityUtils.getColor(resources, R.color.default_primary_color);
+        mDefaultThemeColor =
+                ColorUtils.getDefaultThemeColor(resources, useModernDesign, mIncognito);
         mThemeColor = calculateThemeColor(false);
 
         // Restore data from the TabState, if it existed.
