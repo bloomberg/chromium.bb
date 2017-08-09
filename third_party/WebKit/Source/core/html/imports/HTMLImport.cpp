@@ -110,25 +110,4 @@ void HTMLImport::RecalcTreeState(HTMLImport* root) {
     import->StateDidChange();
 }
 
-#if !defined(NDEBUG)
-void HTMLImport::Show() {
-  Root()->ShowTree(this, 0);
-}
-
-void HTMLImport::ShowTree(HTMLImport* highlight, unsigned depth) {
-  for (unsigned i = 0; i < depth * 4; ++i)
-    fprintf(stderr, " ");
-
-  fprintf(stderr, "%s", this == highlight ? "*" : " ");
-  ShowThis();
-  fprintf(stderr, "\n");
-  for (HTMLImport* child = FirstChild(); child; child = child->Next())
-    child->ShowTree(highlight, depth + 1);
-}
-
-void HTMLImport::ShowThis() {
-  fprintf(stderr, "%p state=%d", this, state_.PeekValueForDebug());
-}
-#endif
-
 }  // namespace blink

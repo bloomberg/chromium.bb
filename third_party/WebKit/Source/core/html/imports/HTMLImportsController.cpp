@@ -79,22 +79,26 @@ HTMLImportChild* HTMLImportsController::CreateChild(
                       WebFeature::kHTMLImportsAsyncAttribute);
   }
 
-  HTMLImportChild* child = new HTMLImportChild(url, loader, mode);
-  child->SetClient(client);
+  HTMLImportChild* child = new HTMLImportChild(url, loader, client, mode);
   parent->AppendImport(child);
   loader->AddImport(child);
   return root_->Add(child);
 }
 
-HTMLImportChild* HTMLImportsController::Load(HTMLImport* parent,
+HTMLImportChild* HTMLImportsController::Load(const Document& parent_document,
                                              HTMLImportChildClient* client,
                                              FetchParameters& params) {
+  DCHECK(client);
+
+  HTMLImportLoader* parent_loader = LoaderFor(parent_document);
+  HTMLImport* parent =
+      parent_loader ? static_cast<HTMLImport*>(parent_loader->FirstImport())
+                    : static_cast<HTMLImport*>(root_);
+
   const KURL& url = params.Url();
 
   DCHECK(!url.IsEmpty());
   DCHECK(url.IsValid());
-  DCHECK(parent == root_ || ToHTMLImportChild(parent)->Loader()->IsFirstImport(
-                                ToHTMLImportChild(parent)));
 
   if (HTMLImportChild* child_to_share_with = root_->Find(url)) {
     HTMLImportLoader* loader = child_to_share_with->Loader();

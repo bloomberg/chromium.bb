@@ -1041,14 +1041,18 @@ void Document::ClearImportsController() {
   imports_controller_ = nullptr;
 }
 
-void Document::CreateImportsController() {
-  DCHECK(!imports_controller_);
-  imports_controller_ = HTMLImportsController::Create(*this);
+HTMLImportsController* Document::EnsureImportsController() {
+  if (!imports_controller_) {
+    DCHECK(frame_);
+    imports_controller_ = HTMLImportsController::Create(*this);
+  }
+
+  return imports_controller_;
 }
 
 HTMLImportLoader* Document::ImportLoader() const {
   if (!imports_controller_)
-    return 0;
+    return nullptr;
   return imports_controller_->LoaderFor(*this);
 }
 
