@@ -565,8 +565,8 @@ SpeechRecognizerImpl::FSMState SpeechRecognizerImpl::PrepareRecognition(
   DCHECK(recognition_engine_.get() != NULL);
   DCHECK(!IsCapturingAudio());
   GetAudioSystem()->GetInputStreamParameters(
-      device_id_, base::Bind(&SpeechRecognizerImpl::OnDeviceInfo,
-                             weak_ptr_factory_.GetWeakPtr()));
+      device_id_, base::BindOnce(&SpeechRecognizerImpl::OnDeviceInfo,
+                                 weak_ptr_factory_.GetWeakPtr()));
 
   listener()->OnRecognitionStart(session_id());
   return STATE_PREPARING;
