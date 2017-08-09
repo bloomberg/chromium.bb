@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "cc/ipc/compositor_frame_metadata_struct_traits.h"
+
+#include "base/trace_event/trace_event.h"
 #include "cc/ipc/begin_frame_args_struct_traits.h"
 #include "cc/ipc/selection_struct_traits.h"
 #include "cc/ipc/surface_id_struct_traits.h"
@@ -16,6 +18,8 @@ bool StructTraits<cc::mojom::CompositorFrameMetadataDataView,
                   cc::CompositorFrameMetadata>::
     Read(cc::mojom::CompositorFrameMetadataDataView data,
          cc::CompositorFrameMetadata* out) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
+               "StructTraits::CompositorFrameMetadata::Read");
   out->device_scale_factor = data.device_scale_factor();
   if (!data.ReadRootScrollOffset(&out->root_scroll_offset))
     return false;

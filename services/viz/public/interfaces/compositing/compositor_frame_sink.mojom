@@ -29,13 +29,18 @@ interface CompositorFrameSink {
   // to screen the next time frames from all CompositorFrameSinks are aggregated
   // to produce a display CompositorFrame. If a client wishes to allocate a new
   // surface (e.g. during resize), then it can simply allocate a new
-  // |local_surface_id|.
+  // |local_surface_id|. Submit time is set to when this function is called to
+  // used for tracing how much time is spend between a CompositorFrame is sent
+  // and received.
+  // TODO(weiliangc): Submit time is recorded in microseconds right now and
+  // should be changed to use TimeTicks when Blink can send base types directly.
   // For successful swaps, the implementation must call
   // DidReceiveCompositorFrameAck() asynchronously when the frame has been
   // processed in order to unthrottle the next frame.
   SubmitCompositorFrame(cc.mojom.LocalSurfaceId local_surface_id,
                         viz.mojom.CompositorFrame frame,
-                        viz.mojom.HitTestRegionList? hit_test_region_list);
+                        viz.mojom.HitTestRegionList? hit_test_region_list,
+                        uint64 submit_time);
 
   // Notifies the frame sink that a BeginFrame was completed, but that no
   // CompositorFrame was produced as a result of it.

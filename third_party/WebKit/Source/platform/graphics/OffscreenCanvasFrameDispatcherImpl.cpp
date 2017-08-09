@@ -309,7 +309,7 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
 
   pending_compositor_frames_++;
   sink_->SubmitCompositorFrame(current_local_surface_id_, std::move(frame),
-                               nullptr);
+                               nullptr, 0);
 }
 
 void OffscreenCanvasFrameDispatcherImpl::DidReceiveCompositorFrameAck(

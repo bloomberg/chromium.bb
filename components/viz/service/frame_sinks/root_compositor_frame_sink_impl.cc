@@ -81,7 +81,8 @@ void RootCompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
 void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame,
-    mojom::HitTestRegionListPtr hit_test_region_list) {
+    mojom::HitTestRegionListPtr hit_test_region_list,
+    uint64_t submit_time) {
   // This call to SubmitCompositorFrame is only used for CompositorFrames
   // created by FrameGenerator that do not require hit test information.
   DCHECK(!hit_test_region_list);
