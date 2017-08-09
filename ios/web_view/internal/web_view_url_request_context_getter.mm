@@ -45,10 +45,8 @@ namespace ios_web_view {
 
 WebViewURLRequestContextGetter::WebViewURLRequestContextGetter(
     const base::FilePath& base_path,
-    const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner)
     : base_path_(base_path),
-      file_task_runner_(file_task_runner),
       network_task_runner_(network_task_runner),
       proxy_config_service_(new net::ProxyConfigServiceIOS),
       net_log_(new net::NetLog()) {}
@@ -103,7 +101,9 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
         base::WrapUnique(new net::CTPolicyEnforcer));
     transport_security_persister_.reset(new net::TransportSecurityPersister(
         url_request_context_->transport_security_state(), base_path_,
-        file_task_runner_, false));
+        base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::BACKGROUND}),
+        false));
     storage_->set_channel_id_service(base::MakeUnique<net::ChannelIDService>(
         new net::DefaultChannelIDStore(nullptr)));
     storage_->set_http_server_properties(
