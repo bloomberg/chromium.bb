@@ -45,9 +45,9 @@ template <>
 struct CONTENT_EXPORT
     StructTraits<blink::mojom::BackgroundFetchRegistrationDataView,
                  content::BackgroundFetchRegistration> {
-  static const std::string& tag(
+  static const std::string& id(
       const content::BackgroundFetchRegistration& registration) {
-    return registration.tag;
+    return registration.id;
   }
   static const std::vector<content::IconDefinition>& icons(
       const content::BackgroundFetchRegistration& registration) {

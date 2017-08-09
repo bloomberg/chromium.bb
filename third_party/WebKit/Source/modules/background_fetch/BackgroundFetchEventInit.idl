@@ -5,5 +5,5 @@
 // https://wicg.github.io/background-fetch/#background-fetch-event
 
 dictionary BackgroundFetchEventInit : ExtendableEventInit {
-    required DOMString tag;
+    required DOMString id;
 };

@@ -418,11 +418,11 @@ interface BackgroundFetchManager
     method constructor
     method fetch
     method get
-    method getTags
+    method getIds
 interface BackgroundFetchRegistration
     attribute @@toStringTag
     getter icons
-    getter tag
+    getter id
     getter title
     getter totalDownloadSize
     method abort

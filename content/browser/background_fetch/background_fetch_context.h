@@ -64,9 +64,9 @@ class CONTENT_EXPORT BackgroundFetchContext
                   const BackgroundFetchOptions& options,
                   blink::mojom::BackgroundFetchService::FetchCallback callback);
 
-  // Returns a vector with the tags of the active fetches for the given |origin|
+  // Returns a vector with the ids of the active fetches for the given |origin|
   // and |service_worker_registration_id|.
-  std::vector<std::string> GetActiveTagsForServiceWorkerRegistration(
+  std::vector<std::string> GetActiveIdsForServiceWorkerRegistration(
       int64_t service_worker_registration_id,
       const url::Origin& origin) const;
 

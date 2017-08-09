@@ -18,7 +18,7 @@ const workerUrl = 'resources/empty-worker.js';
 const scope = 'resources/scope/' + location.pathname;
 
 promise_test(function(test) {
-  const tag = 'my-background-fetch';
+  const id = 'my-background-fetch';
 
   let registration = null;
   let backgroundFetchRegistration = null;
@@ -28,7 +28,7 @@ promise_test(function(test) {
       registration = r;
       return wait_for_state(test, r.installing, 'activated');
     })
-    .then(() => registration.backgroundFetch.fetch(tag, ['resources/non-existing-file.png']))
+    .then(() => registration.backgroundFetch.fetch(id, ['resources/non-existing-file.png']))
     .then(r => {
       backgroundFetchRegistration = r;
 

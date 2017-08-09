@@ -9,5 +9,5 @@
     Exposed=ServiceWorker,
     RuntimeEnabled=BackgroundFetch
 ] interface BackgroundFetchEvent : ExtendableEvent {
-    readonly attribute DOMString tag;
+    readonly attribute DOMString id;
 };
