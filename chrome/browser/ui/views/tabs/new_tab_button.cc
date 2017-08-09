@@ -6,9 +6,11 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/feature_promos/new_tab_promo_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
@@ -77,11 +79,18 @@ int NewTabButton::GetTopOffset() {
          GetLayoutSize(NEW_TAB_BUTTON).height();
 }
 
+// static
+void NewTabButton::ShowPromoForLastActiveBrowser() {
+  BrowserView* browser = static_cast<BrowserView*>(
+      BrowserList::GetInstance()->GetLastActive()->window());
+  browser->tabstrip()->new_tab_button()->ShowPromo();
+}
+
 void NewTabButton::ShowPromo() {
   // Owned by its native widget. Will be destroyed as its widget is destroyed.
   new_tab_promo_ = NewTabPromoBubbleView::CreateOwned(GetVisibleBounds());
   new_tab_promo_observer_.Add(new_tab_promo_->GetWidget());
-  NewTabButton::SchedulePaint();
+  SchedulePaint();
 }
 
 #if defined(OS_WIN)
@@ -188,7 +197,7 @@ void NewTabButton::OnWidgetDestroying(views::Widget* widget) {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
   feature_engagement::NewTabTrackerFactory::GetInstance()
       ->GetForProfile(tab_strip_->controller()->GetProfile())
-      ->DismissNewTabTracker();
+      ->OnPromoClosed();
 #endif
   new_tab_promo_observer_.Remove(widget);
   // When the promo widget is destroyed, the NewTabButton needs to be

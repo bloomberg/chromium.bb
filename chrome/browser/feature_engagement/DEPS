@@ -1,4 +1,11 @@
 include_rules = [
+  "+chrome/browser/ui/views/tabs/new_tab_button.h",
   "+components/feature_engagement",
   "+components/keyed_service",
 ]
+
+specific_include_rules = {
+  ".*test.*": [
+    "+chrome/browser/ui/views",
+  ],
+}

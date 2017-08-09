@@ -38,6 +38,9 @@ class NewTabButton : public views::ImageButton,
   // button's visible region begins.
   static int GetTopOffset();
 
+  // Retrieves the last active BrowserView instance to display the NewTabPromo.
+  static void ShowPromoForLastActiveBrowser();
+
   // Shows the NewTabPromo when the NewTabFeatureEngagementTracker calls for it.
   void ShowPromo();
 
