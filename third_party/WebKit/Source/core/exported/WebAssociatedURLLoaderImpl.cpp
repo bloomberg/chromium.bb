@@ -41,7 +41,6 @@
 #include "platform/Timer.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
-#include "platform/loader/fetch/CrossOriginAccessControl.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -50,6 +49,7 @@
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebCORS.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURLError.h"
@@ -222,14 +222,13 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
     return;
   }
 
-  HTTPHeaderSet exposed_headers;
-  CrossOriginAccessControl::ExtractCorsExposedHeaderNamesList(response,
-                                                              exposed_headers);
-  HTTPHeaderSet blocked_headers;
+  WebCORS::HTTPHeaderSet exposed_headers;
+  WebCORS::ExtractCorsExposedHeaderNamesList(WrappedResourceResponse(response),
+                                             exposed_headers);
+  WebCORS::HTTPHeaderSet blocked_headers;
   for (const auto& header : response.HttpHeaderFields()) {
     if (FetchUtils::IsForbiddenResponseHeaderName(header.key) ||
-        (!CrossOriginAccessControl::IsOnAccessControlResponseHeaderWhitelist(
-             header.key) &&
+        (!WebCORS::IsOnAccessControlResponseHeaderWhitelist(header.key) &&
          !exposed_headers.Contains(header.key)))
       blocked_headers.insert(header.key);
   }

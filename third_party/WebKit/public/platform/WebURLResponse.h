@@ -249,6 +249,7 @@ class WebURLResponse {
 
   // The headers that should be exposed according to CORS. Only guaranteed
   // to be set if the response was served by a ServiceWorker.
+  BLINK_PLATFORM_EXPORT WebVector<WebString> CorsExposedHeaderNames() const;
   BLINK_PLATFORM_EXPORT void SetCorsExposedHeaderNames(
       const WebVector<WebString>&);
 

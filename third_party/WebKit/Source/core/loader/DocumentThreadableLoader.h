@@ -193,7 +193,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   Member<RawResource> resource_;
   // End of ResourceOwner re-implementation, see above.
 
-  const SecurityOrigin* GetSecurityOrigin() const;
+  SecurityOrigin* GetSecurityOrigin() const;
 
   // TODO(kinuko): Remove dependency to document.
   Document* GetDocument() const;

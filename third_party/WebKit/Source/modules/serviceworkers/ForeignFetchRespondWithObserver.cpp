@@ -7,7 +7,7 @@
 #include "bindings/modules/v8/V8ForeignFetchResponse.h"
 #include "modules/fetch/Response.h"
 #include "modules/serviceworkers/ForeignFetchResponse.h"
-#include "platform/loader/fetch/CrossOriginAccessControl.h"
+#include "public/platform/WebCORS.h"
 
 namespace blink {
 
@@ -68,16 +68,16 @@ void ForeignFetchRespondWithObserver::OnResponseFulfilled(
         kWebServiceWorkerResponseErrorForeignFetchMismatchedOrigin);
     return;
   } else if (!is_opaque) {
-    HTTPHeaderSet headers;
+    WebCORS::HTTPHeaderSet headers;
     if (foreign_fetch_response.hasHeaders()) {
       for (const String& header : foreign_fetch_response.headers())
         headers.insert(header);
       if (response->GetResponse()->GetType() == FetchResponseData::kCORSType) {
-        const HTTPHeaderSet& existing_headers =
+        const WebCORS::HTTPHeaderSet& existing_headers =
             response->GetResponse()->CorsExposedHeaderNames();
-        HTTPHeaderSet headers_to_remove;
-        for (HTTPHeaderSet::iterator it = headers.begin(); it != headers.end();
-             ++it) {
+        WebCORS::HTTPHeaderSet headers_to_remove;
+        for (WebCORS::HTTPHeaderSet::iterator it = headers.begin();
+             it != headers.end(); ++it) {
           if (!existing_headers.Contains(*it))
             headers_to_remove.insert(*it);
         }
