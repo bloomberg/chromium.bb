@@ -8070,12 +8070,12 @@ TEST_F(URLRequestTestHTTP, Post302RedirectGet) {
   // Check that the post-specific headers were stripped:
   EXPECT_FALSE(ContainsString(data, "Content-Length:"));
   EXPECT_FALSE(ContainsString(data, "Content-Type:"));
-  EXPECT_FALSE(ContainsString(data, "Origin:"));
 
   // These extra request headers should not have been stripped.
   EXPECT_TRUE(ContainsString(data, "Accept:"));
   EXPECT_TRUE(ContainsString(data, "Accept-Language:"));
   EXPECT_TRUE(ContainsString(data, "Accept-Charset:"));
+  EXPECT_TRUE(ContainsString(data, "Origin: http://localhost:1337"));
 }
 
 // The following tests check that we handle mutating the request for HTTP
@@ -8096,9 +8096,8 @@ TEST_F(URLRequestTestHTTP, Redirect301Tests) {
 
   HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null");
-  HTTPRedirectOriginHeaderTest(url, "POST", "GET", std::string());
-  HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "GET",
-                               std::string());
+  HTTPRedirectOriginHeaderTest(url, "POST", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "GET", "null");
 }
 
 TEST_F(URLRequestTestHTTP, Redirect302Tests) {
@@ -8114,9 +8113,8 @@ TEST_F(URLRequestTestHTTP, Redirect302Tests) {
 
   HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null");
-  HTTPRedirectOriginHeaderTest(url, "POST", "GET", std::string());
-  HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "GET",
-                               std::string());
+  HTTPRedirectOriginHeaderTest(url, "POST", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "GET", "null");
 }
 
 TEST_F(URLRequestTestHTTP, Redirect303Tests) {
@@ -8132,9 +8130,8 @@ TEST_F(URLRequestTestHTTP, Redirect303Tests) {
 
   HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "GET", "GET", "null");
-  HTTPRedirectOriginHeaderTest(url, "POST", "GET", std::string());
-  HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "GET",
-                               std::string());
+  HTTPRedirectOriginHeaderTest(url, "POST", "GET", url.GetOrigin().spec());
+  HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "GET", "null");
 }
 
 TEST_F(URLRequestTestHTTP, Redirect307Tests) {
