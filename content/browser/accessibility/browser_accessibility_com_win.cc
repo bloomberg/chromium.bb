@@ -3245,22 +3245,16 @@ LONG BrowserAccessibilityComWin::FindBoundary(
         AXPlatformPositionInstance position =
             owner()->CreatePositionAt(static_cast<int>(start_offset), affinity);
         AXPlatformPositionInstance next_word =
-            position->CreateNextWordStartPosition();
-        if (next_word->anchor_id() != owner()->GetId())
-          next_word = position->CreatePositionAtEndOfAnchor();
+            position->CreateNextWordStartPosition(
+                ui::AXBoundaryBehavior::StopAtAnchorBoundary);
         return next_word->text_offset();
       }
       case ui::BACKWARDS_DIRECTION: {
         AXPlatformPositionInstance position =
             owner()->CreatePositionAt(static_cast<int>(start_offset), affinity);
-        AXPlatformPositionInstance previous_word;
-        if (!position->AtStartOfWord()) {
-          previous_word = position->CreatePreviousWordStartPosition();
-          if (previous_word->anchor_id() != owner()->GetId())
-            previous_word = position->CreatePositionAtStartOfAnchor();
-        } else {
-          previous_word = std::move(position);
-        }
+        AXPlatformPositionInstance previous_word =
+            position->CreatePreviousWordStartPosition(
+                ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
         return previous_word->text_offset();
       }
     }
@@ -3272,22 +3266,16 @@ LONG BrowserAccessibilityComWin::FindBoundary(
         AXPlatformPositionInstance position =
             owner()->CreatePositionAt(static_cast<int>(start_offset), affinity);
         AXPlatformPositionInstance next_line =
-            position->CreateNextLineStartPosition();
-        if (next_line->anchor_id() != owner()->GetId())
-          next_line = position->CreatePositionAtEndOfAnchor();
+            position->CreateNextLineStartPosition(
+                ui::AXBoundaryBehavior::StopAtAnchorBoundary);
         return next_line->text_offset();
       }
       case ui::BACKWARDS_DIRECTION: {
         AXPlatformPositionInstance position =
             owner()->CreatePositionAt(static_cast<int>(start_offset), affinity);
-        AXPlatformPositionInstance previous_line;
-        if (!position->AtStartOfLine()) {
-          previous_line = position->CreatePreviousLineStartPosition();
-          if (previous_line->anchor_id() != owner()->GetId())
-            previous_line = position->CreatePositionAtStartOfAnchor();
-        } else {
-          previous_line = std::move(position);
-        }
+        AXPlatformPositionInstance previous_line =
+            position->CreatePreviousLineStartPosition(
+                ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
         return previous_line->text_offset();
       }
     }
