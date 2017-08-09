@@ -126,7 +126,7 @@ void Process::Close() {
 }
 
 bool Process::Terminate(int exit_code, bool wait) const {
-  // exit_code isn't supportable.
+  // exit_code isn't supportable. https://crbug.com/753490.
   mx_status_t status = mx_task_kill(process_.get());
   // TODO(scottmg): Put these LOG/CHECK back to DLOG/DCHECK after
   // https://crbug.com/750756 is diagnosed.
