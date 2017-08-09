@@ -52,7 +52,7 @@ class AppCacheStorageImplTest;
 class AppCacheTest;
 class AppCacheUpdateJobTest;
 
-typedef base::Callback<void(AppCacheStatus, void*)> GetStatusCallback;
+typedef base::OnceCallback<void(AppCacheStatus, void*)> GetStatusCallback;
 typedef base::Callback<void(bool, void*)> StartUpdateCallback;
 typedef base::Callback<void(bool, void*)> SwapCacheCallback;
 
@@ -92,8 +92,7 @@ class CONTENT_EXPORT AppCacheHost
   bool SelectCacheForSharedWorker(int64_t appcache_id);
   bool MarkAsForeignEntry(const GURL& document_url,
                           int64_t cache_document_was_loaded_from);
-  void GetStatusWithCallback(const GetStatusCallback& callback,
-                             void* callback_param);
+  void GetStatusWithCallback(GetStatusCallback callback, void* callback_param);
   void StartUpdateWithCallback(const StartUpdateCallback& callback,
                                void* callback_param);
   void SwapCacheWithCallback(const SwapCacheCallback& callback,

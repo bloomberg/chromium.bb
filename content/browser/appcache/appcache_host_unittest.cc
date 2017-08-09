@@ -25,9 +25,8 @@ namespace content {
 class AppCacheHostTest : public testing::Test {
  public:
   AppCacheHostTest() {
-    get_status_callback_ =
-        base::Bind(&AppCacheHostTest::GetStatusCallback,
-                   base::Unretained(this));
+    get_status_callback_ = base::BindRepeating(
+        &AppCacheHostTest::GetStatusCallback, base::Unretained(this));
     start_update_callback_ =
         base::Bind(&AppCacheHostTest::StartUpdateCallback,
                    base::Unretained(this));
@@ -177,7 +176,8 @@ TEST_F(AppCacheHostTest, Basic) {
   // See that the callbacks are delivered immediately
   // and respond as if there is no cache selected.
   last_status_result_ = APPCACHE_STATUS_OBSOLETE;
-  host.GetStatusWithCallback(get_status_callback_, reinterpret_cast<void*>(1));
+  host.GetStatusWithCallback(std::move(get_status_callback_),
+                             reinterpret_cast<void*>(1));
   EXPECT_EQ(APPCACHE_STATUS_UNCACHED, last_status_result_);
   EXPECT_EQ(reinterpret_cast<void*>(1), last_callback_param_);
 
@@ -301,7 +301,8 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
   // The callback should not occur until we finish cache selection.
   last_status_result_ = APPCACHE_STATUS_OBSOLETE;
   last_callback_param_ = reinterpret_cast<void*>(-1);
-  host.GetStatusWithCallback(get_status_callback_, reinterpret_cast<void*>(1));
+  host.GetStatusWithCallback(std::move(get_status_callback_),
+                             reinterpret_cast<void*>(1));
   EXPECT_EQ(APPCACHE_STATUS_OBSOLETE, last_status_result_);
   EXPECT_EQ(reinterpret_cast<void*>(-1), last_callback_param_);
 
@@ -332,7 +333,8 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
   // The callback should not occur until we finish cache selection.
   last_status_result_ = APPCACHE_STATUS_OBSOLETE;
   last_callback_param_ = reinterpret_cast<void*>(-1);
-  host.GetStatusWithCallback(get_status_callback_, reinterpret_cast<void*>(1));
+  host.GetStatusWithCallback(std::move(get_status_callback_),
+                             reinterpret_cast<void*>(1));
   EXPECT_EQ(APPCACHE_STATUS_OBSOLETE, last_status_result_);
   EXPECT_EQ(reinterpret_cast<void*>(-1), last_callback_param_);
 
