@@ -895,12 +895,12 @@ function commonPrefixOf(str1, str2) {
 /**
  * @param {string} passedInputText
  * @param {function(!Selection)|string}
- * @param {string} expectedText
+ * @param {string} passedExpectedText
  * @param {Object=} opt_options
  * @return {!Sample}
  */
 function assertSelection(
-    passedInputText, tester, expectedText, opt_options = {}) {
+    passedInputText, tester, passedExpectedText, opt_options = {}) {
   const kDescription = 'description';
   const kDumpAs = 'dumpAs';
   const kRemoveSampleIfSucceeded = 'removeSampleIfSucceeded';
@@ -925,6 +925,14 @@ function assertSelection(
     if (Array.isArray(passedInputText))
       return passedInputText.join("");
     throw new Error('InputText must be a string or an array of strings.');
+  })();
+
+  const expectedText = (() => {
+    if (typeof(passedExpectedText) === 'string')
+      return passedExpectedText;
+    if (Array.isArray(passedExpectedText))
+      return passedExpectedText.join("");
+    throw new Error('ExpectedText must be a string or an array of strings.');
   })();
 
   checkExpectedText(expectedText);
