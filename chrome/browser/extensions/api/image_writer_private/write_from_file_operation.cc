@@ -25,20 +25,19 @@ WriteFromFileOperation::WriteFromFileOperation(
 WriteFromFileOperation::~WriteFromFileOperation() {}
 
 void WriteFromFileOperation::StartImpl() {
+  DCHECK(IsRunningInCorrectSequence());
   if (!base::PathExists(image_path_) || base::DirectoryExists(image_path_)) {
     DLOG(ERROR) << "Source must exist and not be a directory.";
     Error(error::kImageInvalid);
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::BindOnce(
-          &WriteFromFileOperation::Unzip, this,
-          base::Bind(
-              &WriteFromFileOperation::Write, this,
-              base::Bind(&WriteFromFileOperation::VerifyWrite, this,
-                         base::Bind(&WriteFromFileOperation::Finish, this)))));
+  PostTask(base::BindOnce(
+      &WriteFromFileOperation::Unzip, this,
+      base::Bind(
+          &WriteFromFileOperation::Write, this,
+          base::Bind(&WriteFromFileOperation::VerifyWrite, this,
+                     base::Bind(&WriteFromFileOperation::Finish, this)))));
 }
 
 }  // namespace image_writer

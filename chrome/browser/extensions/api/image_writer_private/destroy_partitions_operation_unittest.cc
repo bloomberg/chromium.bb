@@ -24,6 +24,20 @@ TEST_F(ImageWriterDestroyPartitionsOperationTest, EndToEnd) {
   TestingProfile profile;
   MockOperationManager manager(&profile);
 
+#if !defined(OS_CHROMEOS)
+  auto set_up_utility_client_progress_simulation =
+      [](FakeImageWriterClient* client) {
+        std::vector<int> progress_list{0, 50, 100};
+        bool will_succeed = true;
+        client->SimulateProgressOnWrite(progress_list, will_succeed);
+        client->SimulateProgressOnVerifyWrite(progress_list, will_succeed);
+      };
+  // Sets up client for simulating Operation::Progress() on Operation::Write and
+  // Operation::VerifyWrite.
+  test_utils_.RunOnUtilityClientCreation(
+      base::BindOnce(set_up_utility_client_progress_simulation));
+#endif
+
   scoped_refptr<DestroyPartitionsOperation> operation(
       new DestroyPartitionsOperation(
           manager.AsWeakPtr(),
@@ -47,18 +61,8 @@ TEST_F(ImageWriterDestroyPartitionsOperationTest, EndToEnd) {
   EXPECT_CALL(manager, OnComplete(kDummyExtensionId)).Times(1);
   EXPECT_CALL(manager, OnError(kDummyExtensionId, _, _, _)).Times(0);
 
-  operation->Start();
-
-  base::RunLoop().RunUntilIdle();
-
-#if !defined(OS_CHROMEOS)
-  test_utils_.GetUtilityClient()->Progress(0);
-  test_utils_.GetUtilityClient()->Progress(50);
-  test_utils_.GetUtilityClient()->Progress(100);
-  test_utils_.GetUtilityClient()->Success();
-
-  base::RunLoop().RunUntilIdle();
-#endif
+  operation->PostTask(base::Bind(&Operation::Start, operation));
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 } // namespace
