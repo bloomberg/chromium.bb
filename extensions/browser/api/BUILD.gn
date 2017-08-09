@@ -52,6 +52,7 @@ source_set("api") {
     "//extensions/browser/api/cast_channel",
     "//extensions/browser/api/declarative",
     "//extensions/browser/api/declarative_content",
+    "//extensions/browser/api/declarative_net_request",
     "//extensions/browser/api/declarative_webrequest",
     "//extensions/browser/api/display_source",
     "//extensions/browser/api/dns",
