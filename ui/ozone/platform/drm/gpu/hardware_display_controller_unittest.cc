@@ -400,7 +400,7 @@ TEST_F(HardwareDisplayControllerTest, FailPageFlipping) {
   EXPECT_EQ(1, page_flips_);
 }
 
-TEST_F(HardwareDisplayControllerTest, FailPageFlippingDueToNoPrimaryPlane) {
+TEST_F(HardwareDisplayControllerTest, CheckNoPrimaryPlane) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
                           1, gfx::OVERLAY_TRANSFORM_NONE,
@@ -413,7 +413,7 @@ TEST_F(HardwareDisplayControllerTest, FailPageFlippingDueToNoPrimaryPlane) {
                          base::Unretained(this)));
 
   drm_->RunCallbacks();
-  EXPECT_EQ(gfx::SwapResult::SWAP_FAILED, last_swap_result_);
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
   EXPECT_EQ(1, page_flips_);
 }
 

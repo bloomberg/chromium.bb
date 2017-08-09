@@ -107,7 +107,7 @@ bool HardwareDisplayController::ActualSchedulePageFlip(
             [](const OverlayPlane& l, const OverlayPlane& r) {
               return l.z_order < r.z_order;
             });
-  if (pending_planes.front().z_order != 0) {
+  if (pending_planes.front().z_order < 0) {
     std::move(callback).Run(gfx::SwapResult::SWAP_FAILED);
     return false;
   }
