@@ -303,6 +303,7 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
   self.leftMargin =
       content_suggestions::centeredTilesMarginForWidth([self viewWidth]);
   [self updateConstraintsForWidth:[self viewWidth]];
+  [self updateSearchField];
   // Invalidate layout to handle the cases where the layout is changed when the
   // NTP is not presented (e.g. tab backgrounded).
   [[_mostVisitedView collectionViewLayout] invalidateLayout];
