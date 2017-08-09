@@ -40,8 +40,9 @@ void InvokePaymentAppCallback(
   *called = true;
 }
 
-void CanMakePaymentCallback(bool* out_can_make_payment, bool can_make_payment) {
-  *out_can_make_payment = can_make_payment;
+void PaymentEventResultCallback(bool* out_payment_event_result,
+                                bool payment_event_result) {
+  *out_payment_event_result = payment_event_result;
 }
 
 }  // namespace
@@ -80,16 +81,42 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
 
   void CanMakePayment(int64_t registration_id,
                       payments::mojom::CanMakePaymentEventDataPtr event_data,
-                      PaymentAppProvider::CanMakePaymentCallback callback) {
+                      PaymentAppProvider::PaymentEventResultCallback callback) {
     PaymentAppProviderImpl::GetInstance()->CanMakePayment(
         browser_context(), registration_id, std::move(event_data),
         std::move(callback));
     base::RunLoop().RunUntilIdle();
   }
 
+  void AbortPayment(int64_t registration_id,
+                    PaymentAppProvider::PaymentEventResultCallback callback) {
+    PaymentAppProviderImpl::GetInstance()->AbortPayment(
+        browser_context(), registration_id, std::move(callback));
+    base::RunLoop().RunUntilIdle();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentAppProviderTest);
 };
+
+TEST_F(PaymentAppProviderTest, AbortPaymentTest) {
+  PaymentManager* manager = CreatePaymentManager(
+      GURL("https://example.com"), GURL("https://example.com/script.js"));
+
+  PaymentHandlerStatus status;
+  SetPaymentInstrument(manager, "payment_instrument_key",
+                       payments::mojom::PaymentInstrument::New(),
+                       base::Bind(&SetPaymentInstrumentCallback, &status));
+
+  PaymentAppProvider::PaymentApps apps;
+  GetAllPaymentApps(base::Bind(&GetAllPaymentAppsCallback, &apps));
+  ASSERT_EQ(1U, apps.size());
+
+  bool payment_aborted = false;
+  AbortPayment(last_sw_registration_id(),
+               base::BindOnce(&PaymentEventResultCallback, &payment_aborted));
+  ASSERT_TRUE(payment_aborted);
+}
 
 TEST_F(PaymentAppProviderTest, CanMakePaymentTest) {
   PaymentManager* manager = CreatePaymentManager(
@@ -112,8 +139,9 @@ TEST_F(PaymentAppProviderTest, CanMakePaymentTest) {
   event_data->method_data.push_back(std::move(methodData));
 
   bool can_make_payment = false;
-  CanMakePayment(last_sw_registration_id(), std::move(event_data),
-                 base::BindOnce(&CanMakePaymentCallback, &can_make_payment));
+  CanMakePayment(
+      last_sw_registration_id(), std::move(event_data),
+      base::BindOnce(&PaymentEventResultCallback, &can_make_payment));
   ASSERT_TRUE(can_make_payment);
 }
 

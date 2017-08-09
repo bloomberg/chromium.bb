@@ -70500,6 +70500,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.AbortPaymentEvent.Time" units="ms">
+  <owner>jinho.bang@samsung.com</owner>
+  <summary>
+    The time taken between dispatching an AbortPaymentEvent to a Service Worker
+    and receiving a message that it finished handling the event. Includes the
+    time for the waitUntil() promise to settle.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time"
     units="ms">
   <owner>horo@chromium.org</owner>

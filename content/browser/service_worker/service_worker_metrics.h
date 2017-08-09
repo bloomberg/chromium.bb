@@ -128,6 +128,7 @@ class ServiceWorkerMetrics {
     BACKGROUND_FETCHED = 26,
     NAVIGATION_HINT = 27,
     CAN_MAKE_PAYMENT = 28,
+    ABORT_PAYMENT = 29,
     // Add new events to record here.
     NUM_TYPES
   };

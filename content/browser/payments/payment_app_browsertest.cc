@@ -6,6 +6,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
@@ -39,10 +40,10 @@ void GetAllPaymentAppsCallback(const base::Closure& done_callback,
   done_callback.Run();
 }
 
-void CanMakePaymentCallback(const base::Closure& done_callback,
-                            bool* out_can_make_payment,
-                            bool can_make_payment) {
-  *out_can_make_payment = can_make_payment;
+void PaymentEventResultCallback(const base::Closure& done_callback,
+                                bool* out_payment_event_result,
+                                bool payment_event_result) {
+  *out_payment_event_result = payment_event_result;
   done_callback.Run();
 }
 
@@ -110,17 +111,29 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     return registrationIds;
   }
 
+  bool AbortPayment(int64_t registration_id) {
+    base::RunLoop run_loop;
+    bool payment_aborted = false;
+    PaymentAppProvider::GetInstance()->AbortPayment(
+        shell()->web_contents()->GetBrowserContext(), registration_id,
+        base::Bind(&PaymentEventResultCallback, run_loop.QuitClosure(),
+                   &payment_aborted));
+    run_loop.Run();
+
+    return payment_aborted;
+  }
+
   bool CanMakePaymentWithTestData(int64_t registration_id,
                                   const std::string& supported_method) {
     CanMakePaymentEventDataPtr event_data =
         CreateCanMakePaymentEventData(supported_method);
 
     base::RunLoop run_loop;
-    bool can_make_payment;
+    bool can_make_payment = false;
     PaymentAppProvider::GetInstance()->CanMakePayment(
         shell()->web_contents()->GetBrowserContext(), registration_id,
         std::move(event_data),
-        base::Bind(&CanMakePaymentCallback, run_loop.QuitClosure(),
+        base::Bind(&PaymentEventResultCallback, run_loop.QuitClosure(),
                    &can_make_payment));
     run_loop.Run();
 
@@ -219,6 +232,31 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(PaymentAppBrowserTest);
 };
+
+IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest,
+                       AbortPaymentWithInvalidRegistrationId) {
+  RegisterPaymentApp();
+
+  std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
+  ASSERT_EQ(1U, registrationIds.size());
+
+  bool payment_aborted = AbortPayment(kInvalidServiceWorkerRegistrationId);
+  ASSERT_FALSE(payment_aborted);
+
+  ClearStoragePartitionData();
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, AbortPayment) {
+  RegisterPaymentApp();
+
+  std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
+  ASSERT_EQ(1U, registrationIds.size());
+
+  bool payment_aborted = AbortPayment(registrationIds[0]);
+  ASSERT_TRUE(payment_aborted);
+
+  ClearStoragePartitionData();
+}
 
 IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, CanMakePayment) {
   RegisterPaymentApp();

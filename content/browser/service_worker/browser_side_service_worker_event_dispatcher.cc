@@ -108,6 +108,13 @@ void BrowserSideServiceWorkerEventDispatcher::DispatchSyncEvent(
   NOTREACHED();
 }
 
+void BrowserSideServiceWorkerEventDispatcher::DispatchAbortPaymentEvent(
+    int payment_request_id,
+    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+    DispatchAbortPaymentEventCallback callback) {
+  NOTREACHED();
+}
+
 void BrowserSideServiceWorkerEventDispatcher::DispatchCanMakePaymentEvent(
     int payment_request_id,
     payments::mojom::CanMakePaymentEventDataPtr event_data,
