@@ -50,6 +50,11 @@ const char kCpuOnlinePathSuffixFormat[] = "/cpu%d/online";
 const char kCpuFreqTimeInStatePathSuffixFormat[] =
     "/cpu%d/cpufreq/stats/time_in_state";
 
+// Format of the suffix of the path to the folder which contains time in state
+// file. If the folder does not exist, current platform does not produce
+// discrete CPU frequency data.
+const char kCpuFreqStatsPathSuffixFormat[] = "/cpu%d/cpufreq/stats";
+
 // The path to the file which contains cpu freq state information of a CPU
 // in 3.14.0 or newer kernels.
 const char kCpuFreqAllTimeInStatePath[] =
@@ -235,12 +240,23 @@ void SampleCpuFreqData(
             return;
           }
         } else {
+          freq_samples->clear();
+          const std::string cpu_freq_stats_path_format = base::StringPrintf(
+              "%s%s", kCpuDataPathBase, kCpuFreqStatsPathSuffixFormat);
+          const base::FilePath cpu_freq_stats_path(
+              base::StringPrintf(cpu_freq_stats_path_format.c_str(), cpu));
+          if (!base::PathExists(cpu_freq_stats_path)) {
+            // If the path to 'stats' folder for a single CPU is missing, then
+            // current platform does not produce discrete CPU frequency data.
+            // This could happen when intel_pstate driver is used for cpufreq
+            // governor. Error message should not printed in this case.
+            return;
+          }
           // If the path to the 'time_in_state' for a single CPU is missing,
           // then 'time_in_state' for all CPUs is missing. This could happen
           // on a VM where the 'cpufreq_stats' kernel module is not loaded.
           LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
               << "CPU freq stats not available in sysfs.";
-          freq_samples->clear();
           return;
         }
       }
