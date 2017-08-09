@@ -415,7 +415,6 @@ class SmoothnessSimpleMobilePages(_Smoothness):
     return StoryExpectations()
 
 
-@benchmark.Disabled('all') # http://crbug.com/631015
 @benchmark.Owner(emails=['bokan@chromium.org'])
 class SmoothnessToughPinchZoomCases(_Smoothness):
   """Measures rendering statistics for pinch-zooming in the tough pinch zoom
@@ -453,10 +452,7 @@ class SmoothnessDesktopToughPinchZoomCases(_Smoothness):
     return StoryExpectations()
 
 
-# This benchmark runs only on android by it is disabled on android as well
-# because of http://crbug.com/610021
-# @benchmark.Enabled('android')
-@benchmark.Disabled('all')
+@benchmark.Enabled('android')
 @benchmark.Owner(emails=['ericrk@chromium.org'])
 class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
   """Measures rendering statistics for pinch-zooming in the tough pinch zoom
@@ -527,7 +523,6 @@ class SmoothnessToughScrollingCases(_Smoothness):
     return StoryExpectations()
 
 
-@benchmark.Disabled('all')  # crbug.com/667489
 @benchmark.Owner(emails=['ericrk@chromium.org'])
 class SmoothnessGpuRasterizationToughScrollingCases(_Smoothness):
   tag = 'gpu_rasterization'
