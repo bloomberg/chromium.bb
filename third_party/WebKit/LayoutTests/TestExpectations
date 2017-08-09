@@ -2607,7 +2607,6 @@ crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attribu
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.onlyspace.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.percent.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.trailingjunk.worker.html [ Failure ]
-crbug.com/709227 external/wpt/performance-timeline/po-disconnect.any.worker.html [ Failure ]
 crbug.com/709227 external/wpt/user-timing/invoke_with_timing_attributes.worker.html [ Failure ]
 crbug.com/709227 external/wpt/websockets/closing-handshake/002.html?wss [ Failure ]
 crbug.com/709227 external/wpt/websockets/closing-handshake/003.html?wss [ Failure ]
@@ -2663,7 +2662,6 @@ crbug.com/709227 external/wpt/websockets/unload-a-document/002.html [ Failure ]
 crbug.com/709227 external/wpt/websockets/unload-a-document/002.html?wss [ Failure ]
 crbug.com/709227 external/wpt/performance-timeline/po-callback-mutate.any.html [ Failure ]
 crbug.com/709227 external/wpt/performance-timeline/po-callback-mutate.any.worker.html [ Failure ]
-crbug.com/709227 external/wpt/performance-timeline/po-disconnect.any.html [ Failure ]
 
 # Timeouts
 crbug.com/709227 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-idb.any.worker.html [ Timeout ]

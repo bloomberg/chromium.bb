@@ -111,7 +111,7 @@ TEST_F(PerformanceBaseTest, Activate) {
 
   base_->UnregisterPerformanceObserver(*observer_.Get());
   EXPECT_EQ(0, base_->NumObservers());
-  EXPECT_EQ(0, base_->NumActiveObservers());
+  EXPECT_EQ(1, base_->NumActiveObservers());
 }
 
 TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
