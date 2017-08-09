@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.app.Activity;
 import android.view.View;
 
 import org.chromium.base.ActivityState;
@@ -62,13 +61,10 @@ public class DownloadSheetContent implements BottomSheetContent {
         // own ActivityStateListener. If multiple tabs are showing the downloads page, multiple
         // requests to check for externally removed downloads will be issued when the activity is
         // resumed.
-        mActivityStateListener = new ActivityStateListener() {
-            @Override
-            public void onActivityStateChange(Activity activity, int newState) {
-                if (newState == ActivityState.RESUMED) {
-                    DownloadUtils.checkForExternallyRemovedDownloads(
-                            mDownloadManager.getBackendProvider(), isIncognito);
-                }
+        mActivityStateListener = (activity1, newState) -> {
+            if (newState == ActivityState.RESUMED) {
+                DownloadUtils.checkForExternallyRemovedDownloads(
+                        mDownloadManager.getBackendProvider(), isIncognito);
             }
         };
         ApplicationStatus.registerStateListenerForActivity(mActivityStateListener, activity);

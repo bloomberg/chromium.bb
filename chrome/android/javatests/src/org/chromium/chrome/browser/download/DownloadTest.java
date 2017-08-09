@@ -47,7 +47,6 @@ import org.chromium.net.test.util.TestWebServer;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 /**
  * Tests Chrome download feature by attempting to download some files.
@@ -175,12 +174,8 @@ public class DownloadTest implements CustomMainActivityStart {
         Assert.assertTrue(mDownloadTestRule.hasDownload(FILENAME_GZIP, null));
 
         CriteriaHelper.pollUiThread(
-                Criteria.equals(initialTabCount, new Callable<Integer>() {
-                    @Override
-                    public Integer call() {
-                        return mDownloadTestRule.getActivity().getCurrentTabModel().getCount();
-                    }
-                }));
+                Criteria.equals(initialTabCount,
+                        () -> mDownloadTestRule.getActivity().getCurrentTabModel().getCount()));
     }
 
     @Test
@@ -330,12 +325,8 @@ public class DownloadTest implements CustomMainActivityStart {
         final TabModel model = mDownloadTestRule.getActivity().getCurrentTabModel();
         final int count = model.getCount();
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                TabModelUtils.setIndex(model, count - 1);
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                (Runnable) () -> TabModelUtils.setIndex(model, count - 1));
 
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
@@ -438,13 +429,9 @@ public class DownloadTest implements CustomMainActivityStart {
         try {
             final DownloadManagerRequestInterceptorForTest interceptor =
                     new DownloadManagerRequestInterceptorForTest();
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    DownloadManagerService.getDownloadManagerService()
-                            .setDownloadManagerRequestInterceptor(interceptor);
-                }
-            });
+            ThreadUtils.runOnUiThreadBlocking(
+                    () -> DownloadManagerService.getDownloadManagerService()
+                            .setDownloadManagerRequestInterceptor(interceptor));
             List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
             headers.add(Pair.create("Content-Type", "application/vnd.oma.drm.message"));
             final String url = webServer.setResponse("/test.dm", "testdata", headers);
