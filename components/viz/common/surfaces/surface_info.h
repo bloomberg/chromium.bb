@@ -13,13 +13,11 @@ template <class T>
 struct ParamTraits;
 }  // namespace IPC
 
-namespace cc {
+namespace viz {
+
 namespace mojom {
 class SurfaceInfoDataView;
-}
-}  // namespace cc
-
-namespace viz {
+}  // namespace mojom
 
 // This class contains information about the surface that is being embedded.
 class SurfaceInfo {
@@ -50,7 +48,7 @@ class SurfaceInfo {
   const gfx::Size& size_in_pixels() const { return size_in_pixels_; }
 
  private:
-  friend struct mojo::StructTraits<cc::mojom::SurfaceInfoDataView, SurfaceInfo>;
+  friend struct mojo::StructTraits<mojom::SurfaceInfoDataView, SurfaceInfo>;
   friend struct IPC::ParamTraits<SurfaceInfo>;
 
   SurfaceId id_;
