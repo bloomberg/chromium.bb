@@ -18,13 +18,13 @@ function test()
         function testRevealFunctionDefinition(next)
         {
             InspectorTest.addSniffer(panel, "showUISourceCode", showUISourceCodeHook);
-            UI.context.flavor(SDK.ExecutionContext).evaluate("jumpToMe", "", false, true, false, false, false, didGetFunction);
+            UI.context.flavor(SDK.ExecutionContext).evaluate({expression: "jumpToMe", silent:true}).then(didGetFunction);
 
-            function didGetFunction(funcObject, exceptionDetails)
+            function didGetFunction(result)
             {
-                var error = !funcObject || !!exceptionDetails;
+                var error = !result.object || !!result.exceptionDetails;
                 InspectorTest.assertTrue(!error);
-                panel._showFunctionDefinition(funcObject);
+                panel._showFunctionDefinition(result.object);
             }
 
             function showUISourceCodeHook(uiSourceCode, lineNumber, columnNumber, forceShowInPanel)

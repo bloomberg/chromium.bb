@@ -644,7 +644,7 @@ InspectorTest.selectThread = function(target)
 
 InspectorTest.evaluateOnCurrentCallFrame = function(code)
 {
-    return new Promise(succ => InspectorTest.debuggerModel.evaluateOnSelectedCallFrame(code, "console", false, true, false, false, InspectorTest.safeWrap(succ)));
+    return InspectorTest.debuggerModel.evaluateOnSelectedCallFrame({expression: code, objectGroup: "console"});
 }
 
 InspectorTest.waitJavaScriptSourceFrameBreakpoints = function(sourceFrame, inline)
