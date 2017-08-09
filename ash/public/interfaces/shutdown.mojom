@@ -11,4 +11,8 @@ interface ShutdownController {
   // when the user initiates a shutdown via an UI element. Used in enterprise
   // environments for devices that should not be shut down.
   SetRebootOnShutdown(bool reboot_on_shutdown);
+
+  // Triggers an animated shutdown after the login screen shutdown button was
+  // pressed.
+  RequestShutdownFromLoginScreen();
 };
