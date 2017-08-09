@@ -109,15 +109,11 @@ bool ResourceCoordinatorWebContentsObserver::IsEnabled() {
 }
 
 void ResourceCoordinatorWebContentsObserver::WasShown() {
-  tab_resource_coordinator_->SendEvent(
-      resource_coordinator::EventType::kOnWebContentsShown);
   tab_resource_coordinator_->SetProperty(
       resource_coordinator::mojom::PropertyType::kVisible, true);
 }
 
 void ResourceCoordinatorWebContentsObserver::WasHidden() {
-  tab_resource_coordinator_->SendEvent(
-      resource_coordinator::EventType::kOnWebContentsHidden);
   tab_resource_coordinator_->SetProperty(
       resource_coordinator::mojom::PropertyType::kVisible, false);
 }
@@ -143,6 +139,19 @@ void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(
   auto* process_resource_coordinator =
       render_frame_host->GetProcess()->GetProcessResourceCoordinator();
   process_resource_coordinator->AddChild(*frame_resource_coordinator);
+}
+
+void ResourceCoordinatorWebContentsObserver::TitleWasSet(
+    content::NavigationEntry* entry,
+    bool explicit_set) {
+  // Ignore first time title updated event, since it happens as part of loading
+  // process.
+  if (!first_time_title_updated_) {
+    first_time_title_updated_ = true;
+    return;
+  }
+  tab_resource_coordinator_->SendEvent(
+      resource_coordinator::mojom::Event::kTitleUpdated);
 }
 
 void ResourceCoordinatorWebContentsObserver::UpdateUkmRecorder(

@@ -29,6 +29,8 @@ constexpr base::TimeDelta kMaxAudioSlientTime = base::TimeDelta::FromMinutes(1);
 
 const char kTabFromBackgroundedToFirstAudioStartsUMA[] =
     "TabManager.Heuristics.FromBackgroundedToFirstAudioStarts";
+const char kTabFromBackgroundedToFirstTitleUpdatedUMA[] =
+    "TabManager.Heuristics.FromBackgroundedToFirstTitleUpdated";
 
 // Gets the number of tabs that are co-resident in all of the render processes
 // associated with a |CoordinationUnitType::kWebContents| coordination unit.
@@ -74,31 +76,29 @@ void MetricsCollector::OnBeforeCoordinationUnitDestroyed(
 }
 
 void MetricsCollector::OnFramePropertyChanged(
-    const FrameCoordinationUnitImpl* frame_coordination_unit,
+    const FrameCoordinationUnitImpl* frame_cu,
     const mojom::PropertyType property_type,
     int64_t value) {
-  FrameData& frame_data = frame_data_map_[frame_coordination_unit->id()];
+  FrameData& frame_data = frame_data_map_[frame_cu->id()];
   if (property_type == mojom::PropertyType::kAudible) {
     bool audible = static_cast<bool>(value);
     if (!audible) {
       frame_data.last_audible_time = clock_->NowTicks();
       return;
     }
-    auto* web_contents_coordination_unit =
-        frame_coordination_unit->GetWebContentsCoordinationUnit();
+    auto* web_contents_cu = frame_cu->GetWebContentsCoordinationUnit();
     // Only record metrics while it is backgrounded.
-    if (!web_contents_coordination_unit ||
-        web_contents_coordination_unit->IsVisible())
+    if (!web_contents_cu || web_contents_cu->IsVisible())
       return;
     // Audio is considered to have started playing if the tab has never
     // previously played audio, or has been silent for at least one minute.
     auto now = clock_->NowTicks();
     if (frame_data.last_audible_time + kMaxAudioSlientTime < now) {
       MetricsReportRecord& record =
-          metrics_report_record_map_[web_contents_coordination_unit->id()];
-      const WebContentsData web_contents_data =
-          web_contents_data_map_[web_contents_coordination_unit->id()];
+          metrics_report_record_map_[web_contents_cu->id()];
       if (!record.first_audible_after_backgrounded_reported) {
+        const WebContentsData web_contents_data =
+            web_contents_data_map_[web_contents_cu->id()];
         HEURISTICS_HISTOGRAM(kTabFromBackgroundedToFirstAudioStartsUMA,
                              now - web_contents_data.last_invisible_time);
         record.first_audible_after_backgrounded_reported = true;
@@ -108,29 +108,49 @@ void MetricsCollector::OnFramePropertyChanged(
 }
 
 void MetricsCollector::OnWebContentsPropertyChanged(
-    const WebContentsCoordinationUnitImpl* web_contents_coordination_unit,
+    const WebContentsCoordinationUnitImpl* web_contents_cu,
     const mojom::PropertyType property_type,
     int64_t value) {
-  const auto web_contents_cu_id = web_contents_coordination_unit->id();
+  const auto web_contents_cu_id = web_contents_cu->id();
   if (property_type == mojom::PropertyType::kVisible) {
     if (value) {
       // The web contents becomes visible again, clear all record in order to
       // report metrics when web contents becomes invisible next time.
-      ResetMetricsReportRecord(web_contents_coordination_unit->id());
+      ResetMetricsReportRecord(web_contents_cu_id);
       return;
     }
     web_contents_data_map_[web_contents_cu_id].last_invisible_time =
         clock_->NowTicks();
   } else if (property_type == mojom::PropertyType::kCPUUsage) {
     if (IsCollectingCPUUsageForUkm(web_contents_cu_id)) {
-      RecordCPUUsageForUkm(
-          web_contents_cu_id, static_cast<double>(value) / 1000,
-          GetNumCoresidentTabs(web_contents_coordination_unit));
+      RecordCPUUsageForUkm(web_contents_cu_id,
+                           static_cast<double>(value) / 1000,
+                           GetNumCoresidentTabs(web_contents_cu));
     }
   } else if (property_type == mojom::PropertyType::kUKMSourceId) {
     ukm::SourceId ukm_source_id = value;
 
     UpdateUkmSourceIdForWebContents(web_contents_cu_id, ukm_source_id);
+  }
+}
+
+void MetricsCollector::OnWebContentsEventReceived(
+    const WebContentsCoordinationUnitImpl* web_contents_cu,
+    const mojom::Event event) {
+  if (event == mojom::Event::kTitleUpdated) {
+    // Only record metrics while it is backgrounded.
+    if (web_contents_cu->IsVisible())
+      return;
+    auto now = clock_->NowTicks();
+    MetricsReportRecord& record =
+        metrics_report_record_map_[web_contents_cu->id()];
+    if (!record.first_title_updated_after_backgrounded_reported) {
+      const WebContentsData web_contents_data =
+          web_contents_data_map_[web_contents_cu->id()];
+      HEURISTICS_HISTOGRAM(kTabFromBackgroundedToFirstTitleUpdatedUMA,
+                           now - web_contents_data.last_invisible_time);
+      record.first_title_updated_after_backgrounded_reported = true;
+    }
   }
 }
 
@@ -186,10 +206,12 @@ void MetricsCollector::ResetMetricsReportRecord(CoordinationUnitID cu_id) {
 }
 
 MetricsCollector::MetricsReportRecord::MetricsReportRecord()
-    : first_audible_after_backgrounded_reported(false) {}
+    : first_audible_after_backgrounded_reported(false),
+      first_title_updated_after_backgrounded_reported(false) {}
 
 void MetricsCollector::MetricsReportRecord::Reset() {
   first_audible_after_backgrounded_reported = false;
+  first_title_updated_after_backgrounded_reported = false;
 }
 
 }  // namespace resource_coordinator

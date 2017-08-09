@@ -28,6 +28,7 @@ class WebContentsCoordinationUnitImpl : public CoordinationUnitImpl {
 
  private:
   // CoordinationUnitImpl implementation.
+  void OnEventReceived(const mojom::Event event) override;
   void OnPropertyChanged(const mojom::PropertyType property_type,
                          int64_t value) override;
   double CalculateCPUUsage();

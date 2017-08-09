@@ -53,11 +53,11 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
   void Bind(mojom::CoordinationUnitRequest request);
 
   // Overridden from mojom::CoordinationUnit:
-  void SendEvent(mojom::EventPtr event) override;
   void GetID(const GetIDCallback& callback) override;
   void AddBinding(mojom::CoordinationUnitRequest request) override;
   void AddChild(const CoordinationUnitID& child_id) override;
   void RemoveChild(const CoordinationUnitID& child_id) override;
+  void SendEvent(mojom::Event event) override;
   void SetProperty(mojom::PropertyType property_type, int64_t value) override;
   // TODO(crbug.com/691886) Consider removing this.
   void SetCoordinationPolicyCallback(
@@ -92,6 +92,7 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
  protected:
   friend class FrameCoordinationUnitImpl;
 
+  virtual void OnEventReceived(const mojom::Event event);
   virtual void OnPropertyChanged(const mojom::PropertyType property_type,
                                  int64_t value);
   // Propagate property change to relevant |CoordinationUnitImpl| instances.

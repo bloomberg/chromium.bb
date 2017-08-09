@@ -20,8 +20,6 @@ class Connector;
 
 namespace resource_coordinator {
 
-using EventType = mojom::EventType;
-
 class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
     ResourceCoordinatorInterface {
  public:
@@ -36,7 +34,7 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
 
   ~ResourceCoordinatorInterface();
 
-  void SendEvent(const mojom::EventType& event_type);
+  void SendEvent(const mojom::Event event);
   void SetProperty(mojom::PropertyType property_type, int64_t value);
   void AddBinding(mojom::CoordinationUnitRequest request);
   void AddChild(const ResourceCoordinatorInterface& child);
