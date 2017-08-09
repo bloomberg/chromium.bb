@@ -265,7 +265,7 @@ ImageBuffer* OffscreenCanvas::GetOrCreateImageBuffer() {
 
     image_buffer_ = ImageBuffer::Create(std::move(surface));
 
-    if (needs_matrix_clip_restore_) {
+    if (image_buffer_ && needs_matrix_clip_restore_) {
       needs_matrix_clip_restore_ = false;
       context_->RestoreCanvasMatrixClipStack(image_buffer_->Canvas());
     }
