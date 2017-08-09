@@ -268,55 +268,6 @@ TEST_F(PaintOpAppendTest, MoveThenReappendOperatorEq) {
   VerifyOps(&original);
 }
 
-// Verify that PaintOps with arrays are stored properly.
-TEST(PaintOpBufferTest, PaintOpArray) {
-  PaintOpBuffer buffer;
-  buffer.push<SaveOp>();
-
-  // arbitrary data
-  std::string texts[] = {"xyz", "abcdefg", "thingerdoo"};
-  SkPoint point1[] = {SkPoint::Make(1, 2), SkPoint::Make(2, 3),
-                      SkPoint::Make(3, 4)};
-  SkPoint point2[] = {SkPoint::Make(8, -12)};
-  SkPoint point3[] = {SkPoint::Make(0, 0),   SkPoint::Make(5, 6),
-                      SkPoint::Make(-1, -1), SkPoint::Make(9, 9),
-                      SkPoint::Make(50, 50), SkPoint::Make(100, 100)};
-  SkPoint* points[] = {point1, point2, point3};
-  size_t counts[] = {arraysize(point1), arraysize(point2), arraysize(point3)};
-
-  for (size_t i = 0; i < arraysize(texts); ++i) {
-    PaintFlags flags;
-    flags.setAlpha(i);
-    buffer.push_with_array<DrawPosTextOp>(texts[i].c_str(), texts[i].length(),
-                                          points[i], counts[i], flags);
-  }
-
-  PaintOpBuffer::Iterator iter(&buffer);
-  PaintOp* save_op = *iter;
-  EXPECT_EQ(save_op->GetType(), PaintOpType::Save);
-  ++iter;
-
-  for (size_t i = 0; i < arraysize(texts); ++i) {
-    ASSERT_EQ(iter->GetType(), PaintOpType::DrawPosText);
-    DrawPosTextOp* op = static_cast<DrawPosTextOp*>(*iter);
-
-    EXPECT_EQ(op->flags.getAlpha(), i);
-
-    EXPECT_EQ(op->bytes, texts[i].length());
-    const void* data = op->GetData();
-    EXPECT_EQ(memcmp(data, texts[i].c_str(), op->bytes), 0);
-
-    EXPECT_EQ(op->count, counts[i]);
-    const SkPoint* op_points = op->GetArray();
-    for (size_t k = 0; k < op->count; ++k)
-      EXPECT_EQ(op_points[k], points[i][k]);
-
-    ++iter;
-  }
-
-  EXPECT_FALSE(iter);
-}
-
 // Verify that a SaveLayerAlpha / Draw / Restore can be optimized to just
 // a draw with opacity.
 TEST(PaintOpBufferTest, SaveDrawRestore) {
@@ -1793,19 +1744,6 @@ void PushDrawPathOps(PaintOpBuffer* buffer) {
     buffer->push<DrawPathOp>(test_paths[i], test_flags[i]);
 }
 
-void PushDrawPosTextOps(PaintOpBuffer* buffer) {
-  size_t len = std::min(std::min(test_flags.size(), test_strings.size()),
-                        test_point_arrays.size());
-  for (size_t i = 0; i < len; ++i) {
-    // Make sure empty array works fine.
-    SkPoint* array =
-        test_point_arrays[i].size() > 0 ? &test_point_arrays[i][0] : nullptr;
-    buffer->push_with_array<DrawPosTextOp>(
-        test_strings[i].c_str(), test_strings[i].size() + 1, array,
-        test_point_arrays[i].size(), test_flags[i]);
-  }
-}
-
 void PushDrawRectOps(PaintOpBuffer* buffer) {
   size_t len = std::min(test_rects.size(), test_flags.size());
   for (size_t i = 0; i < len; ++i)
@@ -2036,19 +1974,6 @@ void CompareDrawPathOp(const DrawPathOp* original, const DrawPathOp* written) {
   EXPECT_TRUE(original->path == written->path);
 }
 
-void CompareDrawPosTextOp(const DrawPosTextOp* original,
-                          const DrawPosTextOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareFlags(original->flags, written->flags);
-  ASSERT_EQ(original->bytes, written->bytes);
-  EXPECT_EQ(std::string(static_cast<const char*>(original->GetData())),
-            std::string(static_cast<const char*>(written->GetData())));
-  ASSERT_EQ(original->count, written->count);
-  for (size_t i = 0; i < original->count; ++i)
-    EXPECT_EQ(original->GetArray()[i], written->GetArray()[i]);
-}
-
 void CompareDrawRectOp(const DrawRectOp* original, const DrawRectOp* written) {
   EXPECT_TRUE(original->IsValid());
   EXPECT_TRUE(written->IsValid());
@@ -2226,9 +2151,6 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
       case PaintOpType::DrawPath:
         PushDrawPathOps(&buffer_);
         break;
-      case PaintOpType::DrawPosText:
-        PushDrawPosTextOps(&buffer_);
-        break;
       case PaintOpType::DrawRecord:
         // Not supported.
         break;
@@ -2341,10 +2263,6 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
       case PaintOpType::DrawPath:
         CompareDrawPathOp(static_cast<const DrawPathOp*>(original),
                           static_cast<const DrawPathOp*>(written));
-        break;
-      case PaintOpType::DrawPosText:
-        CompareDrawPosTextOp(static_cast<const DrawPosTextOp*>(original),
-                             static_cast<const DrawPosTextOp*>(written));
         break;
       case PaintOpType::DrawRecord:
         // Not supported.

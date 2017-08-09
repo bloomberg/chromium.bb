@@ -303,16 +303,6 @@ void RecordPaintCanvas::drawBitmap(const SkBitmap& bitmap,
             left, top, flags);
 }
 
-void RecordPaintCanvas::drawPosText(const void* text,
-                                    size_t byte_length,
-                                    const SkPoint pos[],
-                                    const PaintFlags& flags) {
-  // TODO(enne): implement countText in PaintFlags??
-  SkPaint paint = flags.ToSkPaint();
-  size_t count = paint.countText(text, byte_length);
-  list_->push_with_array<DrawPosTextOp>(text, byte_length, pos, count, flags);
-}
-
 void RecordPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
                                      SkScalar x,
                                      SkScalar y,

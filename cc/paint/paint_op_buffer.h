@@ -72,7 +72,6 @@ enum class PaintOpType : uint8_t {
   DrawLine,
   DrawOval,
   DrawPath,
-  DrawPosText,
   DrawRecord,
   DrawRect,
   DrawRRect,
@@ -215,73 +214,6 @@ class CC_PAINT_EXPORT PaintOpWithFlags : public PaintOp {
 
  protected:
   PaintOpWithFlags() = default;
-};
-
-class CC_PAINT_EXPORT PaintOpWithArrayBase : public PaintOpWithFlags {
- public:
-  explicit PaintOpWithArrayBase(const PaintFlags& flags)
-      : PaintOpWithFlags(flags) {}
-
- protected:
-  PaintOpWithArrayBase() = default;
-};
-
-template <typename M>
-class CC_PAINT_EXPORT PaintOpWithArray : public PaintOpWithArrayBase {
- public:
-  // Paint op that has a M[count] and a char[bytes].
-  // Array data is stored first so that it can be aligned with T's alignment
-  // with the arbitrary unaligned char data after it.
-  // Memory layout here is: | op | M[count] | char[bytes] | padding | next op |
-  // Next op is located at (char*)(op) + op->skip.
-  PaintOpWithArray(const PaintFlags& flags, size_t bytes, size_t count)
-      : PaintOpWithArrayBase(flags), bytes(bytes), count(count) {}
-
-  size_t bytes;
-  size_t count;
-
- protected:
-  PaintOpWithArray() = default;
-
-  template <typename T>
-  const void* GetDataForThis(const T* op) const {
-    static_assert(std::is_convertible<T, PaintOpWithArrayBase>::value,
-                  "T is not a PaintOpWithArray");
-    const char* start_array =
-        reinterpret_cast<const char*>(GetArrayForThis(op));
-    return start_array + sizeof(M) * count;
-  }
-
-  template <typename T>
-  void* GetDataForThis(T* op) {
-    return const_cast<void*>(
-        const_cast<const PaintOpWithArray*>(this)->GetDataForThis(
-            const_cast<T*>(op)));
-  }
-
-  template <typename T>
-  const M* GetArrayForThis(const T* op) const {
-    static_assert(std::is_convertible<T, PaintOpWithArrayBase>::value,
-                  "T is not a PaintOpWithArray");
-    // As an optimization to not have to store an additional offset,
-    // assert that T has the same or more alignment requirements than M.  Thus,
-    // if T is aligned, and M's alignment needs are a multiple of T's size, then
-    // M will also be aligned when placed immediately after T.
-    static_assert(
-        sizeof(T) % alignof(M) == 0,
-        "T must be padded such that an array of M is aligned after it");
-    static_assert(
-        alignof(T) >= alignof(M),
-        "T must have not have less alignment requirements than the array data");
-    return reinterpret_cast<const M*>(op + 1);
-  }
-
-  template <typename T>
-  M* GetArrayForThis(T* op) {
-    return const_cast<M*>(
-        const_cast<const PaintOpWithArray*>(this)->GetArrayForThis(
-            const_cast<T*>(op)));
-  }
 };
 
 class CC_PAINT_EXPORT AnnotateOp final : public PaintOp {
@@ -643,28 +575,6 @@ class CC_PAINT_EXPORT DrawPathOp final : public PaintOpWithFlags {
   DrawPathOp() = default;
 };
 
-class CC_PAINT_EXPORT DrawPosTextOp final : public PaintOpWithArray<SkPoint> {
- public:
-  static constexpr PaintOpType kType = PaintOpType::DrawPosText;
-  static constexpr bool kIsDrawOp = true;
-  DrawPosTextOp(size_t bytes, size_t count, const PaintFlags& flags);
-  ~DrawPosTextOp();
-  static void RasterWithFlags(const DrawPosTextOp* op,
-                              const PaintFlags* flags,
-                              SkCanvas* canvas,
-                              const PlaybackParams& params);
-  bool IsValid() const { return flags.IsValid(); }
-  HAS_SERIALIZATION_FUNCTIONS();
-
-  const void* GetData() const { return GetDataForThis(this); }
-  void* GetData() { return GetDataForThis(this); }
-  const SkPoint* GetArray() const { return GetArrayForThis(this); }
-  SkPoint* GetArray() { return GetArrayForThis(this); }
-
- private:
-  DrawPosTextOp();
-};
-
 class CC_PAINT_EXPORT DrawRecordOp final : public PaintOp {
  public:
   static constexpr PaintOpType kType = PaintOpType::DrawRecord;
@@ -944,40 +854,16 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   template <typename T, typename... Args>
   void push(Args&&... args) {
     static_assert(std::is_convertible<T, PaintOp>::value, "T not a PaintOp.");
-    static_assert(!std::is_convertible<T, PaintOpWithArrayBase>::value,
-                  "Type needs to use push_with_array");
-    push_internal<T>(0, std::forward<Args>(args)...);
-  }
+    static_assert(alignof(T) <= PaintOpAlign, "");
 
-  template <typename T, typename M, typename... Args>
-  void push_with_array(const void* data,
-                       size_t bytes,
-                       const M* array,
-                       size_t count,
-                       Args&&... args) {
-    static_assert(std::is_convertible<T, PaintOpWithArray<M>>::value,
-                  "T is not a PaintOpWithArray");
-    size_t array_size = sizeof(M) * count;
-    size_t total_size = bytes + array_size;
-    T* op =
-        push_internal<T>(total_size, bytes, count, std::forward<Args>(args)...);
-    memcpy(op->GetData(), data, bytes);
-    memcpy(op->GetArray(), array, array_size);
+    auto pair = AllocatePaintOp(sizeof(T));
+    T* op = reinterpret_cast<T*>(pair.first);
+    size_t skip = pair.second;
 
-#if DCHECK_IS_ON()
-    // Double check data and array don't clobber op, next op, or each other
-    char* op_start = reinterpret_cast<char*>(op);
-    char* op_end = op_start + sizeof(T);
-    char* array_start = reinterpret_cast<char*>(op->GetArray());
-    char* array_end = array_start + array_size;
-    char* data_start = reinterpret_cast<char*>(op->GetData());
-    char* data_end = data_start + bytes;
-    char* next_op = op_start + op->skip;
-    DCHECK_GE(array_start, op_end);
-    DCHECK_LE(array_start, data_start);
-    DCHECK_GE(data_start, array_end);
-    DCHECK_LE(data_end, next_op);
-#endif
+    new (op) T{std::forward<Args>(args)...};
+    op->type = static_cast<uint32_t>(T::kType);
+    op->skip = skip;
+    AnalyzeAddedOp(op);
   }
 
   class CC_PAINT_EXPORT Iterator {
@@ -1175,22 +1061,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   void ReallocBuffer(size_t new_size);
   // Returns the allocated op and the number of bytes to skip in |data_| to get
   // to the next op.
-  std::pair<void*, size_t> AllocatePaintOp(size_t sizeof_op, size_t bytes);
-
-  template <typename T, typename... Args>
-  T* push_internal(size_t bytes, Args&&... args) {
-    static_assert(alignof(T) <= PaintOpAlign, "");
-
-    auto pair = AllocatePaintOp(sizeof(T), bytes);
-    T* op = reinterpret_cast<T*>(pair.first);
-    size_t skip = pair.second;
-
-    new (op) T{std::forward<Args>(args)...};
-    op->type = static_cast<uint32_t>(T::kType);
-    op->skip = skip;
-    AnalyzeAddedOp(op);
-    return op;
-  }
+  std::pair<void*, size_t> AllocatePaintOp(size_t sizeof_op);
 
   template <typename T>
   void AnalyzeAddedOp(const T* op) {

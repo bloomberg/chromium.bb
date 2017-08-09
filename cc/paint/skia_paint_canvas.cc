@@ -269,14 +269,6 @@ void SkiaPaintCanvas::drawBitmap(const SkBitmap& bitmap,
   }
 }
 
-void SkiaPaintCanvas::drawPosText(const void* text,
-                                  size_t byte_length,
-                                  const SkPoint pos[],
-                                  const PaintFlags& flags) {
-  SkPaint paint = flags.ToSkPaint();
-  canvas_->drawPosText(text, byte_length, pos, paint);
-}
-
 void SkiaPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
                                    SkScalar x,
                                    SkScalar y,
