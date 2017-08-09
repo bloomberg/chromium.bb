@@ -22,6 +22,20 @@
 
 namespace sandbox {
 
+namespace {
+
+bool CsrssDisconnectSupported() {
+  // This functionality has not been verified on versions before Win10.
+  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+    return false;
+#if !defined(_WIN64)
+  // Does not work on 32-bit. See crbug.com/751809.
+  return false;
+#endif  // !defined(_WIN64)
+  return true;
+}
+
+}  // namespace
 // Converts LCID to std::wstring for passing to sbox tests.
 std::wstring LcidToWString(LCID lcid) {
   wchar_t buff[10] = {0};
@@ -179,7 +193,8 @@ SBOX_TESTS_COMMAND int Lpc_TestValidProcessHeaps(int argc, wchar_t** argv) {
   return SBOX_TEST_SUCCEEDED;
 }
 
-TEST(LpcPolicyTest, TestValidProcessHeaps) {
+// Disabled see crbug.com/751809.
+TEST(LpcPolicyTest, DISABLED_TestValidProcessHeaps) {
   TestRunner runner;
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"Lpc_TestValidProcessHeaps"));
 }
@@ -187,8 +202,7 @@ TEST(LpcPolicyTest, TestValidProcessHeaps) {
 // All processes should have a shared heap with csrss.exe. This test ensures
 // that this heap can be found.
 TEST(LpcPolicyTest, TestCanFindCsrPortHeap) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
-    // This functionality has not been verified on versions before Win10.
+  if (!CsrssDisconnectSupported()) {
     return;
   }
   HANDLE csr_port_handle = sandbox::FindCsrPortHeap();
@@ -196,7 +210,7 @@ TEST(LpcPolicyTest, TestCanFindCsrPortHeap) {
 }
 
 TEST(LpcPolicyTest, TestHeapFlags) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
+  if (!CsrssDisconnectSupported()) {
     // This functionality has not been verified on versions before Win10.
     return;
   }
