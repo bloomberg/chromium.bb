@@ -138,6 +138,11 @@ interface ServiceWorkerEventDispatcher {
                     blink.mojom.BackgroundSyncEventLastChance last_chance)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
+  DispatchAbortPaymentEvent(
+      int32 event_id,
+      payments.mojom.PaymentHandlerResponseCallback result_of_abort_payment)
+          => (blink.mojom.ServiceWorkerEventStatus status,
+              mojo.common.mojom.Time dispatch_event_time);
   DispatchCanMakePaymentEvent(
       int32 event_id,
       payments.mojom.CanMakePaymentEventData event_data,

@@ -383,6 +383,16 @@ struct ServiceWorkerContextClient::WorkerContextData {
   // Pending callbacks for Background Sync Events.
   SyncEventCallbacksMap sync_event_callbacks;
 
+  // Pending callbacks for result of AbortPayment.
+  std::map<int /* abort_payment_event_id */,
+           payments::mojom::PaymentHandlerResponseCallbackPtr>
+      abort_payment_result_callbacks;
+
+  // Pending callbacks for AbortPayment Events.
+  std::map<int /* abort_payment_event_id */,
+           DispatchCanMakePaymentEventCallback>
+      abort_payment_event_callbacks;
+
   // Pending callbacks for result of CanMakePayment.
   std::map<int /* can_make_payment_event_id */,
            payments::mojom::PaymentHandlerResponseCallbackPtr>
@@ -1113,6 +1123,28 @@ void ServiceWorkerContextClient::DidHandleSyncEvent(
   context_->sync_event_callbacks.Remove(request_id);
 }
 
+void ServiceWorkerContextClient::RespondToAbortPaymentEvent(
+    int event_id,
+    bool payment_aborted,
+    double dispatch_event_time) {
+  const payments::mojom::PaymentHandlerResponseCallbackPtr& result_callback =
+      context_->abort_payment_result_callbacks[event_id];
+  result_callback->OnResponseForAbortPayment(
+      payment_aborted, base::Time::FromDoubleT(dispatch_event_time));
+  context_->abort_payment_result_callbacks.erase(event_id);
+}
+
+void ServiceWorkerContextClient::DidHandleAbortPaymentEvent(
+    int event_id,
+    blink::WebServiceWorkerEventResult result,
+    double dispatch_event_time) {
+  DispatchAbortPaymentEventCallback callback =
+      std::move(context_->abort_payment_event_callbacks[event_id]);
+  std::move(callback).Run(EventResultToStatus(result),
+                          base::Time::FromDoubleT(dispatch_event_time));
+  context_->abort_payment_event_callbacks.erase(event_id);
+}
+
 void ServiceWorkerContextClient::RespondToCanMakePaymentEvent(
     int event_id,
     bool can_make_payment,
@@ -1265,6 +1297,19 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
   // https://crrev.com/1768063002/ lands.
   proxy_->DispatchSyncEvent(request_id, blink::WebString::FromUTF8(tag),
                             web_last_chance);
+}
+
+void ServiceWorkerContextClient::DispatchAbortPaymentEvent(
+    int event_id,
+    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+    DispatchAbortPaymentEventCallback callback) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerContextClient::DispatchAbortPaymentEvent");
+  context_->abort_payment_result_callbacks.insert(
+      std::make_pair(event_id, std::move(response_callback)));
+  context_->abort_payment_event_callbacks.insert(
+      std::make_pair(event_id, std::move(callback)));
+  proxy_->DispatchAbortPaymentEvent(event_id);
 }
 
 void ServiceWorkerContextClient::DispatchCanMakePaymentEvent(

@@ -257,6 +257,16 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
     NOTIMPLEMENTED();
   }
 
+  void DispatchAbortPaymentEvent(
+      int payment_request_id,
+      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+      DispatchAbortPaymentEventCallback callback) override {
+    if (!helper_)
+      return;
+    helper_->OnAbortPaymentEventStub(std::move(response_callback),
+                                     std::move(callback));
+  }
+
   void DispatchCanMakePaymentEvent(
       int payment_request_id,
       payments::mojom::CanMakePaymentEventDataPtr event_data,
@@ -542,6 +552,14 @@ void EmbeddedWorkerTestHelper::OnNotificationCloseEvent(
   std::move(callback).Run(SERVICE_WORKER_OK, base::Time::Now());
 }
 
+void EmbeddedWorkerTestHelper::OnAbortPaymentEvent(
+    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+    mojom::ServiceWorkerEventDispatcher::DispatchAbortPaymentEventCallback
+        callback) {
+  response_callback->OnResponseForAbortPayment(true, base::Time::Now());
+  std::move(callback).Run(SERVICE_WORKER_OK, base::Time::Now());
+}
+
 void EmbeddedWorkerTestHelper::OnCanMakePaymentEvent(
     payments::mojom::CanMakePaymentEventDataPtr event_data,
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
@@ -815,6 +833,16 @@ void EmbeddedWorkerTestHelper::OnPushEventStub(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnPushEvent, AsWeakPtr(),
                             payload, base::Passed(&callback)));
+}
+
+void EmbeddedWorkerTestHelper::OnAbortPaymentEventStub(
+    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+    mojom::ServiceWorkerEventDispatcher::DispatchAbortPaymentEventCallback
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&EmbeddedWorkerTestHelper::OnAbortPaymentEvent, AsWeakPtr(),
+                 base::Passed(&response_callback), base::Passed(&callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnCanMakePaymentEventStub(

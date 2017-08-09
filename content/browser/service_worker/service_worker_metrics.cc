@@ -91,6 +91,8 @@ std::string EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_NAVIGATION_HINT";
     case ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT:
       return "_CAN_MAKE_PAYMENT";
+    case ServiceWorkerMetrics::EventType::ABORT_PAYMENT:
+      return "_ABORT_PAYMENT";
     case ServiceWorkerMetrics::EventType::NUM_TYPES:
       NOTREACHED() << static_cast<int>(event_type);
   }
@@ -336,6 +338,8 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Navigation Hint";
     case EventType::CAN_MAKE_PAYMENT:
       return "Can Make Payment";
+    case ServiceWorkerMetrics::EventType::ABORT_PAYMENT:
+      return "Abort Payment";
     case EventType::NUM_TYPES:
       break;
   }
@@ -735,6 +739,9 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
     case EventType::CAN_MAKE_PAYMENT:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.CanMakePaymentEvent.Time",
                                  time);
+      break;
+    case EventType::ABORT_PAYMENT:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.AbortPaymentEvent.Time", time);
       break;
 
     case EventType::NAVIGATION_HINT:

@@ -27,7 +27,10 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
   void CanMakePayment(BrowserContext* browser_context,
                       int64_t registration_id,
                       payments::mojom::CanMakePaymentEventDataPtr event_data,
-                      CanMakePaymentCallback callback) override;
+                      PaymentEventResultCallback callback) override;
+  void AbortPayment(BrowserContext* browser_context,
+                    int64_t registration_id,
+                    PaymentEventResultCallback callback) override;
 
  private:
   PaymentAppProviderImpl();

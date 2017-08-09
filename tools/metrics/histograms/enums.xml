@@ -33805,6 +33805,7 @@ from previous Chrome versions.
   <int value="26" label="BACKGROUND_FETCHED"/>
   <int value="27" label="NAVIGATION_HINT"/>
   <int value="28" label="CAN_MAKE_PAYMENT"/>
+  <int value="29" label="ABORT_PAYMENT"/>
 </enum>
 
 <enum name="ServiceWorkerPreparationType">

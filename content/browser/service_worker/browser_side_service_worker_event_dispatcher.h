@@ -83,6 +83,10 @@ class BrowserSideServiceWorkerEventDispatcher
       const std::string& tag,
       blink::mojom::BackgroundSyncEventLastChance last_chance,
       DispatchSyncEventCallback callback) override;
+  void DispatchAbortPaymentEvent(
+      int payment_request_id,
+      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+      DispatchAbortPaymentEventCallback callback) override;
   void DispatchCanMakePaymentEvent(
       int payment_request_id,
       payments::mojom::CanMakePaymentEventDataPtr event_data,

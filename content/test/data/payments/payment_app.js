@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+self.addEventListener('abortpayment', e => {
+  e.respondWith(true);
+});
+
 self.addEventListener('canmakepayment', e => {
   // Note that the following postMessage operations are not normal usage
   // in CanMakePaymentEvent. They are only used for testing purpose.
