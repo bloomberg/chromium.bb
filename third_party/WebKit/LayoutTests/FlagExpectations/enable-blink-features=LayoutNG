@@ -12483,7 +12483,6 @@ crbug.com/591099 http/tests/security/xssAuditor/block-does-not-leak-location.htm
 crbug.com/591099 http/tests/security/xssAuditor/cached-frame.html [ Crash Failure ]
 crbug.com/591099 http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
 crbug.com/591099 http/tests/security/xssAuditor/embed-tag-in-path-unterminated.html [ Failure ]
-crbug.com/591099 http/tests/security/xssAuditor/form-action-token-fragment.html [ Failure ]
 crbug.com/591099 http/tests/security/xssAuditor/full-block-base-href.html [ Failure ]
 crbug.com/591099 http/tests/security/xssAuditor/full-block-iframe-javascript-url.html [ Failure ]
 crbug.com/591099 http/tests/security/xssAuditor/full-block-iframe-no-inherit.php [ Failure ]
