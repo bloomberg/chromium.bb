@@ -2083,7 +2083,7 @@ static bool EnabledVisibleSelection(LocalFrame& frame,
   // The term "visible" here includes a caret in editable text or a range in any
   // text.
   const VisibleSelection& selection =
-      frame.GetEditor().SelectionForCommand(event);
+      CreateVisibleSelection(frame.GetEditor().SelectionForCommand(event));
   return (selection.IsCaret() && selection.IsContentEditable()) ||
          selection.IsRange();
 }
@@ -2098,7 +2098,7 @@ static bool EnabledVisibleSelectionAndMark(LocalFrame& frame,
     return false;
 
   const VisibleSelection& selection =
-      frame.GetEditor().SelectionForCommand(event);
+      CreateVisibleSelection(frame.GetEditor().SelectionForCommand(event));
   return ((selection.IsCaret() && selection.IsContentEditable()) ||
           selection.IsRange()) &&
          !frame.GetEditor().Mark().IsNone();
@@ -2113,7 +2113,7 @@ static bool EnableCaretInEditableText(LocalFrame& frame,
       !frame.Selection().SelectionHasFocus())
     return false;
   const VisibleSelection& selection =
-      frame.GetEditor().SelectionForCommand(event);
+      CreateVisibleSelection(frame.GetEditor().SelectionForCommand(event));
   return selection.IsCaret() && selection.IsContentEditable();
 }
 
@@ -2142,7 +2142,10 @@ static bool EnabledInEditableText(LocalFrame& frame,
   if (source == kCommandFromMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
-  return frame.GetEditor().SelectionForCommand(event).RootEditableElement();
+  const SelectionInDOMTree selection =
+      frame.GetEditor().SelectionForCommand(event);
+  return RootEditableElementOf(
+      CreateVisiblePosition(selection.Base()).DeepEquivalent());
 }
 
 static bool EnabledDelete(LocalFrame& frame,
@@ -2228,7 +2231,7 @@ static bool EnabledUnselect(LocalFrame& frame,
   // The term "visible" here includes a caret in editable text or a range in any
   // text.
   const VisibleSelection& selection =
-      frame.GetEditor().SelectionForCommand(event);
+      CreateVisibleSelection(frame.GetEditor().SelectionForCommand(event));
   return (selection.IsCaret() && selection.IsContentEditable()) ||
          selection.IsRange();
 }
