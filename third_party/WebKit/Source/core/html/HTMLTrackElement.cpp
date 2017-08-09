@@ -93,7 +93,7 @@ void HTMLTrackElement::ParseAttribute(
     // As the kind, label, and srclang attributes are set, changed, or removed,
     // the text track must update accordingly...
   } else if (name == kindAttr) {
-    AtomicString lower_case_value = params.new_value.DeprecatedLower();
+    AtomicString lower_case_value = params.new_value.LowerASCII();
     // 'missing value default' ("subtitles")
     if (lower_case_value.IsNull())
       lower_case_value = TextTrack::SubtitlesKeyword();
