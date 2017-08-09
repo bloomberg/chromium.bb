@@ -85,17 +85,20 @@ class ReferenceWriter {
   virtual void PutNext(Reference reference) = 0;
 };
 
+// Position of the most significant bit of offset_t.
+constexpr offset_t kIndexMarkBitPosition = sizeof(offset_t) * 8 - 1;
+
 // Helper functions to mark an offset_t, so we can distinguish file offsets from
-// Label indexes. Implementation: Marking is flagged by the most significant bit
+// Label indices. Implementation: Marking is flagged by the most significant bit
 // (MSB).
 constexpr inline bool IsMarked(offset_t value) {
-  return value >> (sizeof(offset_t) * 8 - 1) != 0;
+  return value >> kIndexMarkBitPosition != 0;
 }
 constexpr inline offset_t MarkIndex(offset_t value) {
-  return value | (offset_t(1) << (sizeof(offset_t) * 8 - 1));
+  return value | (offset_t(1) << kIndexMarkBitPosition);
 }
 constexpr inline offset_t UnmarkIndex(offset_t value) {
-  return value & ~(offset_t(1) << (sizeof(offset_t) * 8 - 1));
+  return value & ~(offset_t(1) << kIndexMarkBitPosition);
 }
 
 // An Equivalence is a block of length |length| that approximately match in
