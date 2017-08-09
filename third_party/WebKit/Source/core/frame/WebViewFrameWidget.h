@@ -15,7 +15,7 @@
 
 namespace blink {
 
-class WebViewBase;
+class WebViewImpl;
 class WebWidgetClient;
 
 // Shim class to help normalize the widget interfaces in the Blink public API.
@@ -29,7 +29,7 @@ class WebWidgetClient;
 // and just forwards almost everything to it.
 // After the embedder starts using a WebFrameWidget for the main frame,
 // WebView will be updated to no longer inherit WebWidget. The eventual goal is
-// to unfork the widget code duplicated in WebFrameWidgetImpl and WebViewBase
+// to unfork the widget code duplicated in WebFrameWidgetImpl and WebViewImpl
 // into one class.
 // A more detailed writeup of this transition can be read at
 // https://goo.gl/7yVrnb.
@@ -38,7 +38,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
 
  public:
   explicit WebViewFrameWidget(WebWidgetClient&,
-                              WebViewBase&,
+                              WebViewImpl&,
                               WebLocalFrameImpl&);
   virtual ~WebViewFrameWidget();
 
@@ -110,7 +110,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
 
  private:
   WebWidgetClient* client_;
-  RefPtr<WebViewBase> web_view_;
+  RefPtr<WebViewImpl> web_view_;
   Member<WebLocalFrameImpl> main_frame_;
 
   SelfKeepAlive<WebViewFrameWidget> self_keep_alive_;

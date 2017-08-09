@@ -12150,7 +12150,7 @@ TEST_P(ParameterizedWebFrameTest, ContextMenuDataSelectedText) {
 TEST_P(ParameterizedWebFrameTest, ContextMenuDataPasswordSelectedText) {
   ContextMenuWebFrameClient frame;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.Initialize(&frame);
+  WebViewImpl* web_view = web_view_helper.Initialize(&frame);
   const std::string& html = "<input type='password' value='password'>";
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(), html,
                                    ToKURL("about:blank"));

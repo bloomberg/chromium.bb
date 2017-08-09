@@ -212,6 +212,46 @@ const double WebView::kTextSizeMultiplierRatio = 1.2;
 const double WebView::kMinTextSizeMultiplier = 0.5;
 const double WebView::kMaxTextSizeMultiplier = 3.0;
 
+const WebInputEvent* WebViewImpl::current_input_event_ = nullptr;
+
+const WebInputEvent* WebViewImpl::CurrentInputEvent() {
+  return current_input_event_;
+}
+
+// Used to defer all page activity in cases where the embedder wishes to run
+// a nested event loop. Using a stack enables nesting of message loop
+// invocations.
+static Vector<std::unique_ptr<ScopedPageSuspender>>& PageSuspenderStack() {
+  DEFINE_STATIC_LOCAL(Vector<std::unique_ptr<ScopedPageSuspender>>,
+                      suspender_stack, ());
+  return suspender_stack;
+}
+
+void WebView::WillEnterModalLoop() {
+  PageSuspenderStack().push_back(WTF::MakeUnique<ScopedPageSuspender>());
+}
+
+void WebView::DidExitModalLoop() {
+  DCHECK(PageSuspenderStack().size());
+  PageSuspenderStack().pop_back();
+}
+
+// static
+HashSet<WebViewImpl*>& WebViewImpl::AllInstances() {
+  DEFINE_STATIC_LOCAL(HashSet<WebViewImpl*>, all_instances, ());
+  return all_instances;
+}
+
+static bool g_should_use_external_popup_menus = false;
+
+void WebView::SetUseExternalPopupMenus(bool use_external_popup_menus) {
+  g_should_use_external_popup_menus = use_external_popup_menus;
+}
+
+bool WebViewImpl::UseExternalPopupMenus() {
+  return g_should_use_external_popup_menus;
+}
+
 namespace {
 
 class EmptyEventListener final : public EventListener {
@@ -257,7 +297,7 @@ WebView* WebView::Create(WebViewClient* client,
   return WebViewImpl::Create(client, visibility_state);
 }
 
-WebViewBase* WebViewImpl::Create(WebViewClient* client,
+WebViewImpl* WebViewImpl::Create(WebViewClient* client,
                                  WebPageVisibilityState visibility_state) {
   // Pass the WebViewImpl's self-reference to the caller.
   return AdoptRef(new WebViewImpl(client, visibility_state)).LeakRef();

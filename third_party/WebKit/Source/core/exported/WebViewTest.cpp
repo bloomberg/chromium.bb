@@ -1642,7 +1642,7 @@ TEST_P(
   const std::string test_file =
       "advance_focus_in_form_with_key_event_listeners.html";
   RegisterMockedHttpURLLoad(test_file);
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + test_file);
   web_view->SetInitialFocus(false);
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
@@ -1868,7 +1868,7 @@ TEST_P(
   const std::string test_file =
       "advance_focus_in_form_with_key_event_listeners.html";
   RegisterMockedHttpURLLoad(test_file);
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + test_file);
   web_view->SetInitialFocus(false);
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
@@ -1967,7 +1967,7 @@ TEST_P(WebViewTest, MoveFocusToNextFocusableElementInFormWithTabIndexElements) {
   const std::string test_file =
       "advance_focus_in_form_with_tabindex_elements.html";
   RegisterMockedHttpURLLoad(test_file);
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + test_file);
   web_view->SetInitialFocus(false);
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
@@ -2066,7 +2066,7 @@ TEST_P(WebViewTest,
   const std::string test_file =
       "advance_focus_in_form_with_disabled_and_readonly_elements.html";
   RegisterMockedHttpURLLoad(test_file);
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + test_file);
   web_view->SetInitialFocus(false);
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();

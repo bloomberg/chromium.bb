@@ -85,7 +85,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   ~EmptyChromeClient() override {}
   void ChromeDestroyed() override {}
 
-  WebViewBase* GetWebView() const override { return nullptr; }
+  WebViewImpl* GetWebView() const override { return nullptr; }
   void SetWindowRect(const IntRect&, LocalFrame&) override {}
   IntRect RootWindowRect() override { return IntRect(); }
 
