@@ -664,7 +664,7 @@ TEST_F(NativeWidgetMacTest, AccessibilityIntegration) {
   NSPoint midpoint = NSMakePoint(NSMidX(nsrect), NSMidY(nsrect));
 
   id hit = [widget->GetNativeWindow() accessibilityHitTest:midpoint];
-  id title = [hit accessibilityAttributeValue:NSAccessibilityTitleAttribute];
+  id title = [hit accessibilityAttributeValue:NSAccessibilityValueAttribute];
   EXPECT_NSEQ(title, @"Green");
 
   widget->CloseNow();

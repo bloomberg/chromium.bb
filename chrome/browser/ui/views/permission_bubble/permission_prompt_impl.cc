@@ -73,6 +73,7 @@ class PermissionsBubbleDialogDelegateView
 
   // BubbleDialogDelegateView:
   ui::AXRole GetAccessibleWindowRole() const override;
+  base::string16 GetAccessibleWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
   void AddedToWidget() override;
@@ -171,6 +172,12 @@ void PermissionsBubbleDialogDelegateView::CloseBubble() {
 ui::AXRole PermissionsBubbleDialogDelegateView::GetAccessibleWindowRole()
     const {
   return ui::AX_ROLE_ALERT_DIALOG;
+}
+
+base::string16 PermissionsBubbleDialogDelegateView::GetAccessibleWindowTitle()
+    const {
+  return l10n_util::GetStringFUTF16(IDS_PERMISSIONS_BUBBLE_ACCESSIBLE_TITLE,
+                                    display_origin_);
 }
 
 bool PermissionsBubbleDialogDelegateView::ShouldShowCloseButton() const {

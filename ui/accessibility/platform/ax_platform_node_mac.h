@@ -36,6 +36,10 @@ class AXPlatformNodeMac : public AXPlatformNodeBase {
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeMac);
 };
 
+// Convenience function to determine whether an internal object role should
+// expose its accessible name in AXValue (as opposed to AXTitle/AXDescription).
+AX_EXPORT bool IsNameExposedInAXValueForRole(AXRole role);
+
 }  // namespace ui
 
 AX_EXPORT
