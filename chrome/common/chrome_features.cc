@@ -371,7 +371,7 @@ const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
 // Enables or disables UI in MD Settings to view content settings grouped by
 // origin.
 const base::Feature kSiteDetails{"SiteDetails",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
+                                 base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if !defined(OS_ANDROID)
 // Enables delaying the navigation of background tabs in order to improve
