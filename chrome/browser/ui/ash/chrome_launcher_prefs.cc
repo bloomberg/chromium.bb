@@ -269,10 +269,13 @@ std::unique_ptr<ChromeLauncherPrefsObserver>
 ChromeLauncherPrefsObserver::CreateIfNecessary(Profile* profile) {
   sync_preferences::PrefServiceSyncable* prefs =
       PrefServiceSyncableFromProfile(profile);
-  if (!prefs->FindPreference(ash::prefs::kShelfAlignmentLocal)
-           ->HasUserSetting() ||
-      !prefs->FindPreference(ash::prefs::kShelfAutoHideBehaviorLocal)
-           ->HasUserSetting()) {
+  const PrefService::Preference* alignment_preference =
+      prefs->FindPreference(ash::prefs::kShelfAlignmentLocal);
+  const PrefService::Preference* auto_hide_preference =
+      prefs->FindPreference(ash::prefs::kShelfAutoHideBehaviorLocal);
+  // TODO(crbug.com/753823): Ash prefs may not yet be registered in chrome.
+  if ((alignment_preference && !alignment_preference->HasUserSetting()) ||
+      (auto_hide_preference && !auto_hide_preference->HasUserSetting())) {
     return base::WrapUnique(new ChromeLauncherPrefsObserver(prefs));
   }
   return nullptr;
