@@ -34,6 +34,10 @@ namespace arc {
 // check, so it is ok to access them directly.
 bool IsArcAvailable();
 
+// Returns true if ARC is not installed and the current device is not supported
+// to run ARC.
+bool IsWebstoreSearchEnabled();
+
 // Returns true if ARC image has Play Store package.
 bool IsPlayStoreAvailable();
 
