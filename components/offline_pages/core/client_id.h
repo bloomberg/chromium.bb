@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_CLIENT_ID_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_CLIENT_ID_H_
 
+#include <iosfwd>
 #include <string>
 
 namespace offline_pages {
@@ -21,6 +22,8 @@ struct ClientId {
 
   bool operator<(const ClientId& client_id) const;
 
+  std::string ToString() const;
+
   // The namespace that identifies the client (of course 'namespace' is a
   // reserved word, so...).
   std::string name_space;
@@ -30,6 +33,8 @@ struct ClientId {
   // internally as an identifier.
   std::string id;
 };
+
+std::ostream& operator<<(std::ostream& out, const ClientId& cid);
 
 }  // namespace offline_pages
 

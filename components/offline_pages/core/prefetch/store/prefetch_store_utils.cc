@@ -7,7 +7,6 @@
 #include <limits>
 
 #include "base/rand_util.h"
-#include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 

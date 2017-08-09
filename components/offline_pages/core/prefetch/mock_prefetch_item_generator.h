@@ -29,8 +29,13 @@ class MockPrefetchItemGenerator {
   ~MockPrefetchItemGenerator();
 
   // Creates a new item using all set prefixes and an internal counter to set
-  // reasonable and unique values to all fields.
+  // reasonable and unique values to all fields including the instance-unique
+  // offline ID.
   PrefetchItem CreateItem(PrefetchItemState state);
+
+  // Generates a unique offline ID within the context of this generator
+  // instance. Values will not be unique among different instances.
+  int64_t GenerateTestOfflineId();
 
   // Setters for all prefixes.
   void set_client_namespace(std::string client_namespace) {
@@ -61,6 +66,10 @@ class MockPrefetchItemGenerator {
   std::string final_url_prefix_ = kFinalUrlPrefix;
   std::string operation_name_prefix_ = kOperationNamePrefix;
   std::string archive_body_name_prefix_ = kArchiveBodyNamePrefix;
+
+  // Test offline IDs start at an arbitrary, non-zero value to ease recognizing
+  // generated ID values among other integer values while debugging.
+  int64_t offline_id_counter_ = 1000;
 };
 
 }  // namespace offline_pages
