@@ -52,6 +52,10 @@
             <option id="block" value$="[[ContentSetting.BLOCK]]">
               $i18n{siteSettingsActionBlock}
             </option>
+            <option id="ask" value$="[[ContentSetting.ASK]]"
+                hidden$="[[!isNonDefaultAsk_(site.setting, site.source)]]">
+              $i18n{siteSettingsActionAsk}
+            </option>
           </select>
           <span class="md-select-underline"></span>
         </div>
