@@ -2998,6 +2998,9 @@ crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/modu
 # Geolocation tests
 crbug.com/745079 external/wpt/geolocation-API/PositionOptions.https.html [ Failure ]
 
+# ResizeObserver
+crbug.com/735830 resize-observer/garbage_collection.html [ Failure ]
+
 # Sheriff failures 2017-07-03
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
 crbug.com/708994 virtual/mojo-loading/http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
