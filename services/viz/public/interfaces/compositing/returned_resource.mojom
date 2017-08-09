@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module cc.mojom;
+module viz.mojom;
 
 import "gpu/ipc/common/sync_token.mojom";
 
-// See src/cc/resources/returned_resource.h.
+// See components/viz/common/resources/returned_resource.h.
 struct ReturnedResource {
   uint32 id;
   gpu.mojom.SyncToken sync_token;
