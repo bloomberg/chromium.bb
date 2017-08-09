@@ -25,9 +25,10 @@
 namespace data_use_measurement {
 
 // static
-const void* const
-    ChromeDataUseAscriber::DataUseRecorderEntryAsUserData::kUserDataKey =
-        &ChromeDataUseAscriber::DataUseRecorderEntryAsUserData::kUserDataKey;
+const void* const ChromeDataUseAscriber::DataUseRecorderEntryAsUserData::
+    kDataUseAscriberUserDataKey =
+        &ChromeDataUseAscriber::DataUseRecorderEntryAsUserData::
+            kDataUseAscriberUserDataKey;
 
 ChromeDataUseAscriber::DataUseRecorderEntryAsUserData::
     DataUseRecorderEntryAsUserData(DataUseRecorderEntry entry)
@@ -67,8 +68,9 @@ ChromeDataUseRecorder* ChromeDataUseAscriber::GetDataUseRecorder(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // If a DataUseRecorder has already been set as user data, then return that.
-  auto* user_data = static_cast<DataUseRecorderEntryAsUserData*>(
-      request.GetUserData(DataUseRecorderEntryAsUserData::kUserDataKey));
+  auto* user_data =
+      static_cast<DataUseRecorderEntryAsUserData*>(request.GetUserData(
+          DataUseRecorderEntryAsUserData::kDataUseAscriberUserDataKey));
   return user_data ? &(*user_data->recorder_entry()) : nullptr;
 }
 
@@ -78,8 +80,9 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // If a DataUseRecorder has already been set as user data, then return that.
-  auto* user_data = static_cast<DataUseRecorderEntryAsUserData*>(
-      request->GetUserData(DataUseRecorderEntryAsUserData::kUserDataKey));
+  auto* user_data =
+      static_cast<DataUseRecorderEntryAsUserData*>(request->GetUserData(
+          DataUseRecorderEntryAsUserData::kDataUseAscriberUserDataKey));
   if (user_data)
     return user_data->recorder_entry();
 
@@ -457,8 +460,9 @@ void ChromeDataUseAscriber::AscribeRecorderWithRequest(
     net::URLRequest* request,
     DataUseRecorderEntry entry) {
   entry->AddPendingURLRequest(request);
-  request->SetUserData(DataUseRecorderEntryAsUserData::kUserDataKey,
-                       base::MakeUnique<DataUseRecorderEntryAsUserData>(entry));
+  request->SetUserData(
+      DataUseRecorderEntryAsUserData::kDataUseAscriberUserDataKey,
+      base::MakeUnique<DataUseRecorderEntryAsUserData>(entry));
 }
 
 void ChromeDataUseAscriber::WasShownOrHidden(int main_render_process_id,
