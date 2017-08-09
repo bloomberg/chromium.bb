@@ -1281,8 +1281,13 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testTouchScrollElement(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/touch_action_tests.html'))
-    scroll_left = 'return document.documentElement.scrollLeft;'
-    scroll_top = 'return document.documentElement.scrollTop;'
+    major_version = int(self._driver.capabilities['version'].split('.')[0])
+    if major_version >= 61:
+      scroll_left = 'return document.documentElement.scrollLeft;'
+      scroll_top = 'return document.documentElement.scrollTop;'
+    else:
+      scroll_left = 'return document.body.scrollLeft;'
+      scroll_top = 'return document.body.scrollTop;'
     self.assertEquals(0, self._driver.ExecuteScript(scroll_left))
     self.assertEquals(0, self._driver.ExecuteScript(scroll_top))
     target = self._driver.FindElement('id', 'target')

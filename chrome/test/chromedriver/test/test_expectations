@@ -274,6 +274,8 @@ _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
          # https://bugs.chromium.org/p/chromedriver/issues/detail?id=998
         'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
+         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1852
+        'CorrectEventFiringTest.testShouldFireMouseDownEventWhenClicking',
     ]
 )
 
