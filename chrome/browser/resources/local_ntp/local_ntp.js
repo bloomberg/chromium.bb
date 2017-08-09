@@ -218,11 +218,34 @@ function renderTheme() {
 
 
 /**
+ * Updates the OneGoogleBar (if it is loaded) based on the current theme.
+ * @private
+ */
+function renderOneGoogleBarTheme() {
+  if (!window.gbar) {
+    return;
+  }
+  try {
+    var oneGoogleBarApi = window.gbar.a;
+    var oneGoogleBarPromise = oneGoogleBarApi.bf();
+    oneGoogleBarPromise.then(function(oneGoogleBar) {
+      var isThemeDark = getIsThemeDark(ntpApiHandle.themeBackgroundInfo);
+      var setForegroundStyle = oneGoogleBar.pc.bind(oneGoogleBar);
+      setForegroundStyle(isThemeDark ? 1 : 0);
+    });
+  } catch (err) {
+    console.log('Failed setting OneGoogleBar theme:\n' + err);
+  }
+}
+
+
+/**
  * Callback for embeddedSearch.newTabPage.onthemechange.
  * @private
  */
 function onThemeChange() {
   renderTheme();
+  renderOneGoogleBarTheme();
 }
 
 
@@ -684,6 +707,8 @@ function injectOneGoogleBar(ogb) {
   inHeadScript.type = 'text/javascript';
   inHeadScript.appendChild(document.createTextNode(ogb.inHeadScript));
   document.head.appendChild(inHeadScript);
+
+  renderOneGoogleBarTheme();
 
   var ogElem = $('one-google');
   ogElem.innerHTML = ogb.barHtml;
