@@ -40,6 +40,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/insets.h"
@@ -947,9 +948,12 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateDataSourceRow() {
   default_style.color = data_source_label->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LabelDisabledColor);
   data_source_label->SetDefaultStyle(default_style);
+
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink();
+  link_style.color = gfx::kGoogleBlue700;
   data_source_label->AddStyleRange(
-      gfx::Range(link_begin, link_begin + link_length),
-      views::StyledLabel::RangeStyleInfo::CreateForLink());
+      gfx::Range(link_begin, link_begin + link_length), link_style);
   data_source_label->SizeToFit(0);
   content_view->AddChildView(data_source_label.release());
   return content_view;
