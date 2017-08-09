@@ -258,13 +258,10 @@ void Surface::ActivateFrame(FrameData frame_data) {
     surface_manager_->FirstSurfaceActivation(surface_info_);
   }
 
-  // TODO(fsamuel): If |surface_client_| is not available then we will not
-  // immediately generate a display frame once the cc::CompositorFrame here
-  // activates. This isn't a major issue though because this would only
-  // happen if the client that generated the surface has went away and so
-  // we likely don't care to preserve the surface for long anyway.
   if (surface_client_)
     surface_client_->OnSurfaceActivated(this);
+
+  surface_manager_->SurfaceActivated(this);
 }
 
 void Surface::UpdateActivationDependencies(

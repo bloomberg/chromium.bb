@@ -1606,6 +1606,7 @@ TEST_F(SurfaceSynchronizationTest, FrameActivationAfterFrameSinkDestruction) {
   EXPECT_TRUE(parent_surface()->has_deadline());
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
+  surface_observer().Reset();
 
   // Destroy the parent CompositorFrameSink. The parent_surface will be kept
   // alive by the display.
@@ -1626,6 +1627,7 @@ TEST_F(SurfaceSynchronizationTest, FrameActivationAfterFrameSinkDestruction) {
   // The parent surface stays alive through the display.
   parent_surface = GetSurfaceForId(parent_id);
   EXPECT_NE(nullptr, parent_surface);
+  EXPECT_TRUE(surface_observer().IsSurfaceDamaged(parent_id));
 
   // Submitting a new CompositorFrame to the display should free the parent.
   display_support().SubmitCompositorFrame(display_id.local_surface_id(),

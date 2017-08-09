@@ -334,6 +334,8 @@ void FrameSinkManagerImpl::OnFirstSurfaceActivation(
     client_->OnFirstSurfaceActivation(surface_info);
 }
 
+void FrameSinkManagerImpl::OnSurfaceActivated(const SurfaceId& surface_id) {}
+
 bool FrameSinkManagerImpl::OnSurfaceDamaged(const SurfaceId& surface_id,
                                             const BeginFrameAck& ack) {
   return false;

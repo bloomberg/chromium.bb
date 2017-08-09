@@ -14,14 +14,17 @@ struct BeginFrameArgs;
 
 class SurfaceObserver {
  public:
-  // Runs when a CompositorFrame with a new SurfaceId activates for the first
+  // Called when a CompositorFrame with a new SurfaceId activates for the first
   // time.
   virtual void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) = 0;
 
-  // Runs when a Surface was marked to be destroyed.
+  // Called when a CompositorFrame within |surface| activates.
+  virtual void OnSurfaceActivated(const SurfaceId& surface_id) = 0;
+
+  // Called when a Surface was marked to be destroyed.
   virtual void OnSurfaceDestroyed(const SurfaceId& surface_id) = 0;
 
-  // Runs when a Surface is modified, e.g. when a CompositorFrame is
+  // Called when a Surface is modified, e.g. when a CompositorFrame is
   // activated, its producer confirms that no CompositorFrame will be submitted
   // in response to a BeginFrame, or a CopyOutputRequest is issued.
   //
@@ -33,12 +36,12 @@ class SurfaceObserver {
   // Called when a surface is garbage-collected.
   virtual void OnSurfaceDiscarded(const SurfaceId& surface_id) = 0;
 
-  // Runs when a Surface's CompositorFrame producer has received a BeginFrame
+  // Called when a Surface's CompositorFrame producer has received a BeginFrame
   // and, thus, is expected to produce damage soon.
   virtual void OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                        const BeginFrameArgs& args) = 0;
 
-  // Runs when a surface has been added to the aggregated CompositorFrame.
+  // Called when a surface has been added to the aggregated CompositorFrame.
   virtual void OnSurfaceWillDraw(const SurfaceId& surface_id) = 0;
 };
 
