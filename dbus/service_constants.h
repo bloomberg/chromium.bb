@@ -1011,4 +1011,12 @@ const char kCreateSecureMessageMethod[] = "CreateSecureMessage";
 const char kUnwrapSecureMessageMethod[] = "UnwrapSecureMessage";
 }  // namespace easy_unlock
 
+namespace arc_oemcrypto {
+const char kArcOemCryptoServiceInterface[] = "org.chromium.ArcOemCrypto";
+const char kArcOemCryptoServiceName[] = "org.chromium.ArcOemCrypto";
+const char kArcOemCryptoServicePath[] = "/org/chromium/ArcOemCrypto";
+// Methods
+const char kBootstrapMojoConnection[] = "BootstrapMojoConnection";
+}  // namespace arc_oemcrypto
+
 #endif  // SYSTEM_API_DBUS_SERVICE_CONSTANTS_H_
