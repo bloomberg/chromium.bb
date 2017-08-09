@@ -48,7 +48,8 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
-    fake_auth_policy_client()->DisableOperationDelayForTesting();
+    fake_auth_policy_client()->set_operation_delay(
+        base::TimeDelta::FromSeconds(0));
 
     TestingBrowserProcess::GetGlobal()->SetNotificationUIManager(
         base::MakeUnique<StubNotificationUIManager>());
