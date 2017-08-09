@@ -78,7 +78,7 @@ class TestImporter(object):
         _, show_ref_output = self.run(['git', 'show-ref', 'origin/master'], cwd=local_wpt.path)
         import_commit = 'wpt@%s' % show_ref_output.split()[0]
 
-        _log.info('Importing wpt@%s to Chromium %s', import_commit, chromium_commit)
+        _log.info('Importing %s to Chromium %s', import_commit, chromium_commit)
 
         commit_message = self._commit_message(chromium_commit, import_commit)
 
