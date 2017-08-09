@@ -32,7 +32,6 @@ class SVGPathQuery {
 
   float GetTotalLength() const;
   FloatPoint GetPointAtLength(float length) const;
-  unsigned GetPathSegIndexAtLength(float length) const;
 
  private:
   const SVGPathByteStream& path_byte_stream_;

@@ -9,9 +9,5 @@ test(function() {
   assert_throws(new TypeError(), function() { pathElement.getPointAtLength(); });
   assert_throws(new TypeError(), function() { pathElement.getPointAtLength(NaN); });
   assert_throws(new TypeError(), function() { pathElement.getPointAtLength(Infinity); });
-
-  assert_throws(new TypeError(), function() { pathElement.getPathSegAtLength(); });
-  assert_throws(new TypeError(), function() { pathElement.getPathSegAtLength(NaN); });
-  assert_throws(new TypeError(), function() { pathElement.getPathSegAtLength(Infinity); });
 });
 </script>

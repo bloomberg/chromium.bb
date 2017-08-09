@@ -24,11 +24,6 @@ test(function() {
 }, "Test for getPointAtLength using computed style");
 test(function() {
     var test = document.getElementById("test");
-    assert_equals(test.getPathSegAtLength(50), 2);
-}, "Test for getPathSegAtLength using computed style");
-
-test(function() {
-    var test = document.getElementById("test");
     assert_equals(getComputedStyle(test).d, "path('M 0 0 H 30 V 40')");
 }, "Test for CSS d using computed style");
 test(function() {

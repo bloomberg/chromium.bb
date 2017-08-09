@@ -27,5 +27,4 @@
 // https://svgwg.org/svg2-draft/paths.html#InterfaceSVGPathElement
 
 interface SVGPathElement : SVGGeometryElement {
-    [DeprecateAs=V8SVGPathElement_GetPathSegAtLength_Method] unsigned long getPathSegAtLength(float distance);
 };

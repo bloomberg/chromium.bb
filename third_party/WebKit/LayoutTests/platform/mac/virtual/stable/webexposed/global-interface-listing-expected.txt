@@ -5356,7 +5356,6 @@ interface SVGNumberList
 interface SVGPathElement : SVGGeometryElement
     attribute @@toStringTag
     method constructor
-    method getPathSegAtLength
 interface SVGPatternElement : SVGElement
     attribute @@toStringTag
     getter height

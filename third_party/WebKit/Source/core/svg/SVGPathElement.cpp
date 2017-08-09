@@ -75,11 +75,6 @@ SVGPointTearOff* SVGPathElement::getPointAtLength(float length) {
   return SVGPointTearOff::CreateDetached(point);
 }
 
-unsigned SVGPathElement::getPathSegAtLength(float length) {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-  return SVGPathQuery(PathByteStream()).GetPathSegIndexAtLength(length);
-}
-
 void SVGPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == SVGNames::dAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);

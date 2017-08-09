@@ -1449,7 +1449,6 @@ enum WebFeature {
   kWebkitCSSMatrixConstructFromString = 1913,
   kCanRequestURLHTTPContainingNewline = 1914,
   kGetGamepads = 1916,
-  kV8SVGPathElement_GetPathSegAtLength_Method = 1917,
   kMediaStreamConstraintsAudio = 1918,
   kMediaStreamConstraintsAudioUnconstrained = 1919,
   kMediaStreamConstraintsVideo = 1920,

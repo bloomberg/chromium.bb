@@ -107,13 +107,6 @@ void ExecuteQuery(const SVGPathByteStream& path_byte_stream,
 SVGPathQuery::SVGPathQuery(const SVGPathByteStream& path_byte_stream)
     : path_byte_stream_(path_byte_stream) {}
 
-unsigned SVGPathQuery::GetPathSegIndexAtLength(float length) const {
-  SVGPathTraversalState traversal_state(
-      PathTraversalState::kTraversalSegmentAtLength, length);
-  ExecuteQuery(path_byte_stream_, traversal_state);
-  return traversal_state.SegmentIndex();
-}
-
 float SVGPathQuery::GetTotalLength() const {
   SVGPathTraversalState traversal_state(
       PathTraversalState::kTraversalTotalLength);
