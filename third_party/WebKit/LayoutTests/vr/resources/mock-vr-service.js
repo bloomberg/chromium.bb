@@ -13,7 +13,7 @@ class MockVRDisplay {
     }
   }
 
-  requestPresent(secureOrigin, submitFrameClient, request) {
+  requestPresent(submitFrameClient, request) {
     this.presentation_provider_.bind(submitFrameClient, request);
     return Promise.resolve({success: true});
   }

@@ -26,7 +26,6 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
   void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
                       mojom::VRPresentationProviderRequest request,
                       const base::Callback<void(bool)>& callback) override;
-  void SetSecureOrigin(bool secure_origin) override;
   void ExitPresent() override;
   void GetNextMagicWindowPose(
       VRDisplayImpl* display,
@@ -41,7 +40,6 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
   GvrDelegate* GetGvrDelegate();
 
   GvrDeviceProvider* gvr_provider_;
-  bool secure_origin_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GvrDevice);
 };

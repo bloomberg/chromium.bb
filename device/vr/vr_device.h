@@ -34,7 +34,6 @@ class DEVICE_VR_EXPORT VRDevice {
   virtual void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
                               mojom::VRPresentationProviderRequest request,
                               const base::Callback<void(bool)>& callback) = 0;
-  virtual void SetSecureOrigin(bool secure_origin) = 0;
   virtual void ExitPresent() = 0;
   virtual void GetNextMagicWindowPose(
       VRDisplayImpl* display,
@@ -48,6 +47,7 @@ class DEVICE_VR_EXPORT VRDevice {
 
   bool IsAccessAllowed(VRDisplayImpl* display);
   bool CheckPresentingDisplay(VRDisplayImpl* display);
+  VRDisplayImpl* GetPresentingDisplay() { return presenting_display_; }
 
   void OnChanged();
   void OnExitPresent();

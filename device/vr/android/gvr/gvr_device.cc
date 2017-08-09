@@ -48,13 +48,6 @@ void GvrDevice::RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
                                          std::move(request), callback);
 }
 
-void GvrDevice::SetSecureOrigin(bool secure_origin) {
-  secure_origin_ = secure_origin;
-  GvrDelegate* delegate = GetGvrDelegate();
-  if (delegate)
-    delegate->SetWebVRSecureOrigin(secure_origin_);
-}
-
 void GvrDevice::ExitPresent() {
   GvrDelegateProvider* delegate_provider = gvr_provider_->GetDelegateProvider();
   if (delegate_provider)
@@ -95,11 +88,6 @@ void GvrDevice::OnListeningForActivateChanged(VRDisplayImpl* display) {
 }
 
 void GvrDevice::OnDelegateChanged() {
-  GvrDelegate* delegate = GetGvrDelegate();
-  // Notify the clients that this device has changed
-  if (delegate)
-    delegate->SetWebVRSecureOrigin(secure_origin_);
-
   OnChanged();
 }
 

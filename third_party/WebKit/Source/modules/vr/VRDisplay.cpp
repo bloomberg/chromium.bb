@@ -420,8 +420,6 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
     // original request returns.
     pending_present_resolvers_.push_back(resolver);
   } else if (first_present) {
-    bool secure_context =
-        ExecutionContext::From(script_state)->IsSecureContext();
     if (!display_) {
       ForceExitPresent();
       DOMException* exception = DOMException::Create(
@@ -435,7 +433,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
     submit_frame_client_binding_.Close();
     submit_frame_client_binding_.Bind(mojo::MakeRequest(&submit_frame_client));
     display_->RequestPresent(
-        secure_context, std::move(submit_frame_client),
+        std::move(submit_frame_client),
         mojo::MakeRequest(&vr_presentation_provider_),
         ConvertToBaseCallback(
             WTF::Bind(&VRDisplay::OnPresentComplete, WrapPersistent(this))));

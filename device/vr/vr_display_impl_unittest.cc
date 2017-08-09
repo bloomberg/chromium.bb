@@ -53,7 +53,7 @@ class VRDisplayImplTest : public testing::Test {
     device::mojom::VRSubmitFrameClientPtr submit_client = nullptr;
     device::mojom::VRPresentationProviderRequest request = nullptr;
     display_impl->RequestPresent(
-        true, std::move(submit_client), std::move(request),
+        std::move(submit_client), std::move(request),
         base::Bind(&VRDisplayImplTest::onPresentComplete,
                    base::Unretained(this)));
   }

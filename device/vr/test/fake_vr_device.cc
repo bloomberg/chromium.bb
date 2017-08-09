@@ -65,8 +65,6 @@ void FakeVRDevice::RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
   callback.Run(true);
 }
 
-void FakeVRDevice::SetSecureOrigin(bool secure_origin) {}
-
 void FakeVRDevice::ExitPresent() {
   OnExitPresent();
 }
