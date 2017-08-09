@@ -44,7 +44,7 @@ class LayoutUnit;
 class LayoutObject;
 struct CompositedSelectionBound;
 
-class RenderedPosition {
+class CORE_EXPORT RenderedPosition {
   STACK_ALLOCATED();
 
  public:
@@ -70,8 +70,8 @@ class RenderedPosition {
   bool AtRightBoundaryOfBidiRun() const {
     return AtRightBoundaryOfBidiRun(kIgnoreBidiLevel, 0);
   }
-  // The following two functions return true only if the current position is at
-  // the end of the bidi run of the specified bidi embedding level.
+  // The following two functions return true only if the current position is
+  // at the end of the bidi run of the specified bidi embedding level.
   bool AtLeftBoundaryOfBidiRun(unsigned char bidi_level_of_run) const {
     return AtLeftBoundaryOfBidiRun(kMatchBidiLevel, bidi_level_of_run);
   }
@@ -86,6 +86,10 @@ class RenderedPosition {
 
   void PositionInGraphicsLayerBacking(CompositedSelectionBound&,
                                       bool selection_start) const;
+
+  // Returns whether this position is not visible on the screen (because
+  // clipped out).
+  bool IsVisible(bool selection_start);
 
  private:
   bool operator==(const RenderedPosition&) const { return false; }
@@ -103,6 +107,11 @@ class RenderedPosition {
                                unsigned char bidi_level_of_run) const;
   bool AtRightBoundaryOfBidiRun(ShouldMatchBidiLevel,
                                 unsigned char bidi_level_of_run) const;
+
+  void GetLocalSelectionEndpoints(bool selection_start,
+                                  LayoutPoint& edge_top_in_layer,
+                                  LayoutPoint& edge_bottom_in_layer,
+                                  bool& is_text_direction_rtl) const;
 
   FloatPoint LocalToInvalidationBackingPoint(
       const LayoutPoint& local_point,
