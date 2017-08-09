@@ -190,8 +190,19 @@ def FetchRemoteTarballs(storage_dir, urls, desc, allow_none=False):
 
 
 def CreateChroot(chroot_path, sdk_tarball, toolchains_overlay_tarball,
-                 cache_dir, nousepkg=False, useimage=False):
-  """Creates a new chroot from a given SDK"""
+                 cache_dir, nousepkg=False):
+  """Creates a new chroot from a given SDK.
+
+  Args:
+    chroot_path: Path where the new chroot will be created.
+    sdk_tarball: Path to a downloaded Gentoo Stage3 or Chromium OS SDK tarball.
+    toolchains_overlay_tarball: Optional path to a second tarball that will be
+        unpacked into the chroot on top of the SDK tarball.
+    cache_dir: Path to a directory that will be used for caching portage files,
+        etc.
+    nousepkg: If True, pass --nousepkg to cros_setup_toolchains inside the
+        chroot.
+  """
 
   cmd = MAKE_CHROOT + ['--stage3_path', sdk_tarball,
                        '--chroot', chroot_path,
@@ -202,9 +213,6 @@ def CreateChroot(chroot_path, sdk_tarball, toolchains_overlay_tarball,
 
   if nousepkg:
     cmd.append('--nousepkg')
-
-  if useimage:
-    cmd.append('--useimage')
 
   logging.notice('Creating chroot. This may take a few minutes...')
   try:
@@ -259,6 +267,21 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
   # see it (nor will they be checking the exit code manually).
   if ret.returncode != 0 and additional_args:
     raise SystemExit(ret.returncode)
+
+
+def _ImageFileForChroot(chroot):
+  """Find the image file that should be associated with |chroot|.
+
+  This function does not check if the image exists; it simply returns the
+  filename that would be used.
+
+  Args:
+    chroot: Path to the chroot.
+
+  Returns:
+    Path to an image file that would be associated with chroot.
+  """
+  return chroot.rstrip('/') + '.img'
 
 
 def _FindSubmounts(*args):
@@ -622,6 +645,7 @@ def main(argv):
   _ReportMissing(osutils.FindMissingBinaries(NEEDED_TOOLS))
   if options.proxy_sim:
     _ReportMissing(osutils.FindMissingBinaries(PROXY_NEEDED_TOOLS))
+  missing_image_tools = osutils.FindMissingBinaries(IMAGE_NEEDED_TOOLS)
 
   if (sdk_latest_version == '<unknown>' or
       bootstrap_latest_version == '<unknown>'):
@@ -633,6 +657,10 @@ def main(argv):
         '  http://www.chromium.org/chromium-os/developer-guide')
 
   _ReExecuteIfNeeded([sys.argv[0]] + argv)
+
+  lock_path = os.path.dirname(options.chroot)
+  lock_path = os.path.join(
+      lock_path, '.%s_lock' % os.path.basename(options.chroot).lstrip('.'))
 
   # Expand out the aliases...
   if options.replace:
@@ -654,9 +682,38 @@ def main(argv):
     parser.error("Trying to enter the chroot when --delete "
                  "was specified makes no sense.")
 
+  # Clean up potential leftovers from previous interrupted builds.
+  # TODO(bmgordon): Remove this at the end of 2017.  That should be long enough
+  # to get rid of them all.
+  chroot_build_path = options.chroot + '.build'
+  if options.use_image and os.path.exists(chroot_build_path):
+    try:
+      with cgroups.SimpleContainChildren('cros_sdk'):
+        with locking.FileLock(lock_path, 'chroot lock') as lock:
+          logging.notice('Cleaning up leftover build directory %s',
+                         chroot_build_path)
+          lock.write_lock()
+          osutils.UmountTree(chroot_build_path)
+          osutils.RmDir(chroot_build_path)
+    except cros_build_lib.RunCommandError as e:
+      logging.warning("Unable to remove %s: %s", chroot_build_path, e)
+
   # Discern if we need to create the chroot.
-  chroot_exists = os.path.exists(os.path.join(
-      options.chroot, 'etc', 'cros_chroot_version'))
+  chroot_ver_file = os.path.join(options.chroot, 'etc', 'cros_chroot_version')
+  chroot_exists = os.path.exists(chroot_ver_file)
+  if (options.use_image and not chroot_exists and not options.delete and
+      not missing_image_tools and
+      os.path.exists(_ImageFileForChroot(options.chroot))):
+    # Try to re-mount an existing image in case the user has rebooted.
+    with cgroups.SimpleContainChildren('cros_sdk'):
+      with locking.FileLock(lock_path, 'chroot lock') as lock:
+        logging.debug('Checking if existing chroot image can be mounted.')
+        lock.write_lock()
+        cros_build_lib.MountChroot(options.chroot, create=False)
+        chroot_exists = os.path.exists(chroot_ver_file)
+        if chroot_exists:
+          logging.notice('Mounted existing image %s on chroot',
+                         _ImageFileForChroot(options.chroot))
   if options.create or options.enter:
     # Only create if it's being wiped, or if it doesn't exist.
     if not options.delete and chroot_exists:
@@ -668,53 +725,49 @@ def main(argv):
   if options.enter:
     options.create |= not chroot_exists
 
-  # If we're going to be using a loopback image for the chroot, we need
-  # LVM tools installed.  We can skip the check if something that looks
-  # like a chroot is already visible in the expected place, since we won't
-  # actually call any LVM commands in that case.
-  if options.use_image and options.create:
-    missing = osutils.FindMissingBinaries(IMAGE_NEEDED_TOOLS)
-    if missing:
-      raise SystemExit(
-          'The tool(s) %s were not found.\n'
-          'Please make sure the lvm2 and thin-provisioning-tools packages '
-          'are installed on your host.\n'
-          'Example(ubuntu):\n'
-          '  sudo apt-get install lvm2 thin-provisioning-tools\n\n'
-          'If you want to run without lvm2, pass --nouse-image (chroot '
-          'snapshots will be unavailable).'
-          % ', '.join(missing))
-
-  # This dance is to support mounting the chroot inside a separate mount
-  # namespace.  While we're here in the original namespace, we set up a
-  # temporary shared subtree
-  # (https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt) and
-  # then let CreateChroot operate inside there.  Since it's shared, we can see
-  # the mount that gets created.  make_chroot.sh marks its mount private inside
-  # the namespace, so none of the inner mounts leak out.  After the chroot has
-  # been created, we will return to this mount namespace (using an fd that we
-  # open here and save) and move the mount from the temporary spot to the
-  # requested final location.  Once this is done, future uses of the same chroot
-  # don't have to jump through any of these hoops until it gets unmounted.  If
-  # we're running on a system where things are mounted shared by default then
-  # all this isn't necessary, but it seems safer to assume we need this setup
-  # rather than try to detect it.
-  if options.use_image:
-    chroot_temp_parent = options.chroot + '.build'
-    chroot_temp_mount = os.path.join(chroot_temp_parent, 'chroot')
-    already_mounted = [m for m in osutils.IterateMountPoints()
-                       if m.destination == chroot_temp_parent]
-    if not already_mounted and options.create:
-      osutils.SafeMakedirsNonRoot(chroot_temp_mount)
-      osutils.Mount(chroot_temp_parent, chroot_temp_parent, '', osutils.MS_BIND)
-      osutils.Mount('', chroot_temp_parent, '', osutils.MS_SHARED)
-    parent_ns_file = open('/proc/%d/ns/mnt' % (os.getppid(),))
-    parent_ns = parent_ns_file.fileno()
-
   # If we're going to delete, also make sure the chroot isn't mounted
-  # before we enter the new mount namespace.
+  # before we enter the new mount namespace.  We do this regardless of
+  # the use_image flag so that a previously-created loopback chroot can
+  # also be cleaned up.
+  # TODO(bmgordon): See if the DeleteChroot call below can be removed in
+  # favor of this block.
+  chroot_deleted = False
   if options.delete:
-    osutils.UmountTree(options.chroot)
+    with cgroups.SimpleContainChildren('cros_sdk'):
+      with locking.FileLock(lock_path, 'chroot lock') as lock:
+        lock.write_lock()
+        if missing_image_tools:
+          logging.notice('Unmounting chroot.')
+          osutils.UmountTree(options.chroot)
+        else:
+          logging.notice('Deleting chroot.')
+          cros_build_lib.CleanupChrootMount(options.chroot, delete_image=True)
+          osutils.RmDir(options.chroot, ignore_missing=True)
+          chroot_deleted = True
+
+  # If we're going to create a new chroot, set it up before we change
+  # mount namespaces so that it will be visible to processes other than
+  # cros_sdk's children.
+  if options.create and options.use_image:
+    if missing_image_tools:
+      raise SystemExit(
+          '''The tool(s) %s were not found.
+Please make sure the lvm2 and thin-provisioning-tools packages
+are installed on your host.
+Example(ubuntu):
+  sudo apt-get install lvm2 thin-provisioning-tools
+
+If you want to run without lvm2, pass --nouse-image (chroot
+snapshots will be unavailable).''' % ', '.join(missing_image_tools))
+    logging.debug('Making sure chroot image is mounted.')
+    with cgroups.SimpleContainChildren('cros_sdk'):
+      with locking.FileLock(lock_path, 'chroot lock') as lock:
+        lock.write_lock()
+        if not cros_build_lib.MountChroot(options.chroot, create=True):
+          cros_build_lib.Die('Unable to mount %s on chroot',
+                             _ImageFileForChroot(options.chroot))
+        logging.notice('Mounted %s on chroot',
+                       _ImageFileForChroot(options.chroot))
 
   namespaces.SimpleUnshare()
   if options.ns_pid:
@@ -751,9 +804,6 @@ def main(argv):
       toolchains_overlay_urls = GetToolchainsOverlayUrls(sdk_version,
                                                          toolchains)
 
-  lock_path = os.path.dirname(options.chroot)
-  lock_path = os.path.join(
-      lock_path, '.%s_lock' % os.path.basename(options.chroot).lstrip('.'))
   with cgroups.SimpleContainChildren('cros_sdk', pid=first_pid):
     with locking.FileLock(lock_path, 'chroot lock') as lock:
       toolchains_overlay_tarball = None
@@ -761,8 +811,9 @@ def main(argv):
       if options.proxy_sim:
         _ProxySimSetup(options)
 
-      if options.delete and (os.path.exists(options.chroot) or
-                             os.path.exists(options.chroot + '.img')):
+      if (options.delete and not chroot_deleted and
+          (os.path.exists(options.chroot) or
+           os.path.exists(_ImageFileForChroot(options.chroot)))):
         lock.write_lock()
         DeleteChroot(options.chroot)
 
@@ -808,8 +859,7 @@ def main(argv):
         lock.write_lock()
         CreateChroot(options.chroot, sdk_tarball, toolchains_overlay_tarball,
                      options.cache_dir,
-                     nousepkg=(options.bootstrap or options.nousepkg),
-                     useimage=options.use_image)
+                     nousepkg=(options.bootstrap or options.nousepkg))
 
       if options.enter:
         lock.read_lock()
@@ -817,30 +867,3 @@ def main(argv):
                     options.chrome_root_mount, options.workspace,
                     options.goma_dir, options.goma_client_json,
                     chroot_command)
-
-  # Remount the inner chroot mount back up to the original namespace.  See above
-  # for details.
-  if options.use_image and options.create:
-    vg, lv = cros_build_lib.FindChrootMountSource(chroot_temp_mount)
-
-    # Clean up inside the child mount namespace.  Normally these will disappear
-    # as soon as the last process exits the mount namespace, but we want to be
-    # able to clean up the underlying directories without waiting for the forked
-    # "init" copes of cros_sdk to exit the namespace.  This is safe to do even
-    # with multiple processes in the same chroot because the other cros_sdk
-    # copies will have their own mount namespace.
-    chroot_mounts = _FindSubmounts(chroot_temp_parent, options.chroot)
-    osutils.UmountTree(chroot_temp_parent)
-    osutils.UmountTree(options.chroot)
-
-    namespaces.SetNS(parent_ns, 0)
-    chroot_mounts = _FindSubmounts(chroot_temp_parent, options.chroot)
-    if not options.chroot in chroot_mounts:
-      if not vg or not lv:
-        cros_build_lib.Die('Unable to find VG/LV mounted on %s after building '
-                           'chroot.' % chroot_temp_mount)
-      osutils.UmountTree(chroot_temp_parent)
-      osutils.RmDir(chroot_temp_parent, ignore_missing=True)
-
-      chroot_dev_path = '/dev/mapper/%s-%s' % (vg, lv)
-      osutils.Mount(chroot_dev_path, options.chroot, 'ext4', osutils.MS_NOATIME)
