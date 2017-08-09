@@ -34,6 +34,17 @@ import java.util.UUID;
  */
 public class DownloadNotificationServiceTest extends
         ServiceTestCase<MockDownloadNotificationService> {
+    /**
+     * Implementation of DownloadBroadcastManager that skips loading the native to just propagate
+     * interactions through for testing purposes.
+     */
+    private static class MockDownloadBroadcastManager extends DownloadBroadcastManager {
+        @Override
+        void loadNativeAndPropagateInteraction(Context context, Intent intent) {
+            // Skip loading the native and just propagate interaction.
+            propagateInteraction(intent);
+        }
+    }
 
     private static class MockDownloadManagerService extends DownloadManagerService {
         final List<DownloadItem> mDownloads = new ArrayList<DownloadItem>();
@@ -352,6 +363,7 @@ public class DownloadNotificationServiceTest extends
         ThreadUtils.runOnUiThreadBlocking(
                 (Runnable) () -> DownloadManagerService.setDownloadManagerService(manager));
         DownloadManagerService.setIsNetworkMeteredForTest(true);
+        service.setDownloadBroadcastManager(new MockDownloadBroadcastManager());
         resumeAllDownloads(service);
         assertEquals(1, manager.mDownloads.size());
         assertEquals(manager.mDownloads.get(0).getDownloadInfo().getDownloadGuid(), guid2);
