@@ -10772,7 +10772,8 @@
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "hard_timeout": 1800
+          "hard_timeout": 1800,
+          "shards": 5
         },
         "test": "mash_browser_tests"
       },
