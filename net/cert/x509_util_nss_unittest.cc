@@ -60,4 +60,25 @@ TEST(X509UtilNSSTest, GetCERTNameDisplayName_O) {
   EXPECT_EQ(test_cert->subject().GetDisplayName(), name);
 }
 
+TEST(X509UtilNSSTest, ParseClientSubjectAltNames) {
+  base::FilePath certs_dir = GetTestCertsDirectory();
+
+  // This cert contains one rfc822Name field, and one Microsoft UPN
+  // otherName field.
+  scoped_refptr<X509Certificate> san_cert =
+      ImportCertFromFile(certs_dir, "client_3.pem");
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), san_cert.get());
+
+  std::vector<std::string> rfc822_names;
+  x509_util::GetRFC822SubjectAltNames(san_cert->os_cert_handle(),
+                                      &rfc822_names);
+  ASSERT_EQ(1U, rfc822_names.size());
+  EXPECT_EQ("santest@example.com", rfc822_names[0]);
+
+  std::vector<std::string> upn_names;
+  x509_util::GetUPNSubjectAltNames(san_cert->os_cert_handle(), &upn_names);
+  ASSERT_EQ(1U, upn_names.size());
+  EXPECT_EQ("santest@ad.corp.example.com", upn_names[0]);
+}
+
 }  // namespace net
