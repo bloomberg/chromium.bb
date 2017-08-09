@@ -26,6 +26,7 @@
 #ifndef InputMethodController_h
 #define InputMethodController_h
 
+#include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/CompositionUnderline.h"
@@ -170,6 +171,9 @@ class CORE_EXPORT InputMethodController final
 
   // Returns true if selection offsets were successfully set.
   bool SetSelectionOffsets(const PlainTextRange&, TypingContinuation);
+
+  FRIEND_TEST_ALL_PREFIXES(InputMethodControllerTest,
+                           InputModeOfFocusedElement);
 };
 
 }  // namespace blink

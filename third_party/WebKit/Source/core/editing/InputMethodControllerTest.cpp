@@ -2302,4 +2302,18 @@ TEST_F(InputMethodControllerTest, MaxLength) {
   EXPECT_STREQ("abcd", input->value().Utf8().data());
 }
 
+TEST_F(InputMethodControllerTest, InputModeOfFocusedElement) {
+  InsertHTMLElement("<input id='a' inputmode='KataKana'>", "a")->focus();
+  EXPECT_EQ(kWebTextInputModeKataKana,
+            Controller().InputModeOfFocusedElement());
+
+  // U+212A + "atakana"
+  InsertHTMLElement(
+      "<input id='b' inputmode='\xE2\x84\xAA"
+      "atakana'>",
+      "b")
+      ->focus();
+  EXPECT_EQ(kWebTextInputModeDefault, Controller().InputModeOfFocusedElement());
+}
+
 }  // namespace blink
