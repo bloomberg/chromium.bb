@@ -11172,6 +11172,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="377" label="NoteTakingAppsLockScreenWhitelist"/>
   <int value="378" label="CastReceiverEnabled"/>
   <int value="379" label="CastReceiverName"/>
+  <int value="380" label="DeviceOffHours"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

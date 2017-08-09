@@ -143,7 +143,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 379
+#   For your editing convenience: highest ID currently used: 380
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -9854,8 +9854,89 @@
           'desc': '''Determine the name advertised as a <ph name="PRODUCT_NAME">Google Cast</ph> destination.
 
           If this policy is set to a non empty string, that string will be used as the name of the <ph name="PRODUCT_NAME">Google Cast</ph> destination. Otherwise, the destination name will be the device name. If this policy is not set, the destination name will be the device name and the device owner will be allowed to change it. The name is limited to 24 characters.'''
-        },
+        }
       ]
+    },
+    {
+      'name': 'DeviceOffHours',
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'interval': {
+            'type': 'array',
+            'items': {
+              'type': 'object',
+              'id': 'DeviceOffHoursIntervals',
+              'properties': {
+                'start': {
+                  'type': 'object',
+                  'id': 'WeeklyTime',
+                  'properties': {
+                    'weekday': {
+                      'type': 'string',
+                      'enum': [
+                        'MONDAY',
+                        'TUESDAY',
+                        'WEDNESDAY',
+                        'THURSDAY',
+                        'FRIDAY',
+                        'SATURDAY',
+                        'SUNDAY'
+                      ]
+                    },
+                    'time': { 'type': 'integer'}
+                  }
+                },
+                'end': {
+                  '$ref': 'WeeklyTime'
+                }
+              }
+            }
+          },
+          'timezone': { 'type': 'string' },
+          'ignored_policy': {
+            'type': 'array',
+            'items': { 'type':'string' }
+          }
+        }
+      },
+      'supported_on': ['chrome_os:62-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True
+      },
+      'example_value': {
+        'interval':
+        [
+          {
+            'start': {
+              'weekday': 'MONDAY',
+              'time': 12840000
+            },
+            'end': {
+              'weekday': 'MONDAY',
+              'time': 21720000
+            }
+          },
+          {
+            'start': {
+              'weekday': 'FRIDAY',
+              'time': 38640000
+            },
+            'end': {
+              'weekday': 'FRIDAY',
+              'time': 57600000
+            }
+          }
+        ],
+        'timezone': 'GMT',
+        'ignored_policy': ['allow_new_users', 'guest_mode_enabled']
+      },
+      'id': 380,
+      'caption': '''Off hours intervals when device OffHours |ignored_policy| are released''',
+      'tags': [],
+      'desc': '''If "OffHours" policy is set, then the specified device policies are ignored (use the default settings of these policies) during the defined time intervals. Device policies are re-applied by Chrome on every event when "OffHours" period starts or ends. User will be notified and forced to sign out when "OffHours" time end and device policy settings are changed (i.e. when user is logged in not with an allowed account).''',
     }
   ],
   'messages': {

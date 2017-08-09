@@ -3177,5 +3177,10 @@
   },
 
   "SkipMetadataCheck": {
+  },
+
+  "DeviceOffHours": {
+    "os": ["chromeos"],
+    "test_policy": {"DeviceOffHours": {"interval": [{"start" : {"weekday" : 1, "time": 12840000}, "end": {"weekday" : 1, "time": 21720000}}], "timezone" : "GMT", "ignored_policy": ["allow_new_users", "guest_mode_enabled"]}}
   }
 }

@@ -820,6 +820,45 @@ message CastReceiverNameProto {
   optional string name = 1;
 }
 
+// Day of the week and time settings for DeviceOffHoursIntervalProto.
+message WeeklyTimeProto {
+  enum Weekday {
+    MONDAY = 1;
+    TUESDAY = 2;
+    WEDNESDAY = 3;
+    THURSDAY = 4;
+    FRIDAY = 5;
+    SATURDAY = 6;
+    SUNDAY = 7;
+  }
+  // Day of week.
+  optional Weekday weekday = 1;
+  // Time of day in milliseconds from beginning of the day
+  // in timezone that is defined in DeviceOffHoursProto.
+  optional int32 time = 2;
+}
+
+// Start and end interval settings for DeviceOffHoursProto.
+message DeviceOffHoursIntervalProto {
+  optional WeeklyTimeProto start = 1;
+  optional WeeklyTimeProto end = 2;
+}
+
+// Allow less restricted using of Chromebooks that are managed by school,
+// while the device is not at school ("OffHours").
+message DeviceOffHoursProto {
+  // List of intervals when ignored policies are not applied.
+  repeated DeviceOffHoursIntervalProto interval = 1;
+  // Timezone in the same format as SystemTimezoneProto.timezone.
+  // If timezone isn't set then "GMT" will be used
+  optional string timezone = 2;
+  // List of policies which settings are ignored during OffHours mode.
+  // List contains policy names from ChromeDeviceSettingsProto
+  // (i.e. "device_policy_refresh_rate")
+  // During OffHoursMode default settings of ignored policies are used.
+  repeated string ignored_policy = 3;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -883,4 +922,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceSecondFactorAuthenticationProto
       device_second_factor_authentication = 52;
   optional CastReceiverNameProto cast_receiver_name = 53;
+  optional DeviceOffHoursProto device_off_hours = 54;
 }

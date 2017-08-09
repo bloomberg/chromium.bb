@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -108,6 +109,30 @@ std::unique_ptr<base::Value> DecodeConnectionType(int value) {
     return nullptr;
 
   return base::MakeUnique<base::Value>(kConnectionTypes[value]);
+}
+
+// Parse Timestamp to Dictionary
+std::unique_ptr<base::DictionaryValue> ParseWeeklyTime(
+    const em::WeeklyTimeProto& weekly_time) {
+  auto weekly_time_res = base::MakeUnique<base::DictionaryValue>();
+  if (!weekly_time.has_weekday()) {
+    LOG(ERROR) << "Day of week in interval can't be absent.";
+    return nullptr;
+  }
+  if (!weekly_time.has_time()) {
+    LOG(ERROR) << "Time in interval can't be absent.";
+    return nullptr;
+  }
+  weekly_time_res->SetInteger("weekday", weekly_time.weekday());
+  int time_of_day = weekly_time.time();
+  const int kMillisecondsInDay = base::TimeDelta::FromDays(1).InMilliseconds();
+  if (!(time_of_day >= 0 && time_of_day < kMillisecondsInDay)) {
+    LOG(ERROR) << "Invalid time value: " << time_of_day
+               << ", the value should be in [0; " << kMillisecondsInDay << ").";
+    return nullptr;
+  }
+  weekly_time_res->SetInteger("time", time_of_day);
+  return weekly_time_res;
 }
 
 void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -887,8 +912,43 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                   POLICY_SOURCE_CLOUD, DecodeIntegerValue(container.mode()),
                   nullptr);
   }
-}
 
+  if (policy.has_device_off_hours()) {
+    const em::DeviceOffHoursProto& container(policy.device_off_hours());
+    auto off_hours = base::MakeUnique<base::DictionaryValue>();
+    auto intervals = base::MakeUnique<base::ListValue>();
+    for (const auto& entry : container.interval()) {
+      auto interval = base::MakeUnique<base::DictionaryValue>();
+      if (entry.has_start()) {
+        auto start = ParseWeeklyTime(entry.start());
+        if (!start) {
+          continue;
+        }
+        interval->SetDictionary("start", std::move(start));
+      }
+      if (entry.has_end()) {
+        auto end = ParseWeeklyTime(entry.end());
+        if (!end) {
+          continue;
+        }
+        interval->SetDictionary("end", std::move(end));
+      }
+      intervals->Append(std::move(interval));
+    }
+    off_hours->SetList("intervals", std::move(intervals));
+    auto policy = base::MakeUnique<base::ListValue>();
+    for (const auto& entry : container.ignored_policy()) {
+      policy->AppendString(entry);
+    }
+    off_hours->SetList("ignored_policies", std::move(policy));
+    if (container.has_timezone()) {
+      off_hours->SetString("timezone", container.timezone());
+    }
+    policies->Set(key::kDeviceOffHours, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                  std::move(off_hours), nullptr);
+  }
+}
 }  // namespace
 
 void DecodeDevicePolicy(const em::ChromeDeviceSettingsProto& policy,
