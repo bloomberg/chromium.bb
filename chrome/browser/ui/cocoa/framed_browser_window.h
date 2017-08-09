@@ -9,16 +9,6 @@
 
 #include "chrome/browser/ui/cocoa/chrome_browser_window.h"
 
-// Offsets from the top/left of the window frame to the top of the window
-// controls (zoom, close, miniaturize) for a window with a tabstrip.
-const NSInteger kFramedWindowButtonsWithTabStripOffsetFromTop = 11;
-const NSInteger kFramedWindowButtonsWithTabStripOffsetFromLeft = 11;
-
-// Offsets from the top/left of the window frame to the top of the window
-// controls (zoom, close, miniaturize) for a window without a tabstrip.
-const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromTop = 3;
-const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromLeft = 7;
-
 // Cocoa class representing a framed browser window.
 // We need to override NSWindow with our own class since we need access to all
 // unhandled keyboard events and subclassing NSWindow is the only method to do
@@ -26,25 +16,26 @@ const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromLeft = 7;
 @interface FramedBrowserWindow : ChromeBrowserWindow {
  @private
   BOOL shouldHideTitle_;
-  BOOL hasTabStrip_;
-  NSButton* closeButton_;
-  NSButton* miniaturizeButton_;
-  NSButton* zoomButton_;
 
   // Locks the window's frame and style mask. If it's set to YES, then the
   // frame and the style mask cannot be changed.
   BOOL styleMaskLock_;
-
-  CGFloat windowButtonsInterButtonSpacing_;
 }
 
 // The amount of window background image that is painted at the top of the
 // window, so that it shows behind the tap strip area.
 + (CGFloat)browserFrameViewPaintHeight;
 
-// Designated initializer.
-- (id)initWithContentRect:(NSRect)contentRect
-              hasTabStrip:(BOOL)hasTabStrip;
+// The style mask which -initWithContentRect: will use to create the window.
+// May be overridden by subclasses.
++ (NSUInteger)defaultStyleMask;
+
+- (id)initWithContentRect:(NSRect)contentRect NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithContentRect:(NSRect)contentRect
+                          styleMask:(NSWindowStyleMask)style
+                            backing:(NSBackingStoreType)bufferingType
+                              defer:(BOOL)flag NS_UNAVAILABLE;
 
 // Tells the window to suppress title drawing.
 - (void)setShouldHideTitle:(BOOL)flag;
@@ -58,13 +49,6 @@ const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromLeft = 7;
 // This method is overridden to prevent AppKit from  setting the style mask
 // when frameAndStyleMaskLock_ is set to true.
 - (void)setStyleMask:(NSUInteger)styleMask;
-
-// Returns the desired spacing between window control views.
-- (CGFloat)windowButtonsInterButtonSpacing;
-
-// Called by CustomFrameView to determine a custom location for the Lion
-// fullscreen button. Returns NSZeroPoint to use the Lion default.
-- (NSPoint)fullScreenButtonOriginAdjustment;
 
 // Draws the window theme into the specified rect. Returns whether a theme was
 // drawn (whether incognito or full pattern theme; an overlay image doesn't

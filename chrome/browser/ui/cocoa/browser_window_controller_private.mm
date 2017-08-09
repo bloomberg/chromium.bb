@@ -26,7 +26,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_fullscreen_transition.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
-#import "chrome/browser/ui/cocoa/custom_frame_view.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
@@ -60,6 +59,16 @@
 
 using content::RenderWidgetHostView;
 using content::WebContents;
+
+@interface NSView (PrivateAPI)
+// Returns the fullscreen button's origin in window coordinates. This method is
+// only available on NSThemeFrame (the contentView's superview), and it should
+// not be relied on to exist on macOS >10.9 (which doesn't have a separate
+// fullscreen button). TabbedBrowserWindow's NSThemeFrame subclass centers it
+// vertically in the tabstrip (if there is a tabstrip), and shifts it to the
+// left of the old-style avatar icon if necessary.
+- (NSPoint)_fullScreenButtonOrigin;
+@end
 
 namespace {
 
