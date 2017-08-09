@@ -1767,6 +1767,22 @@ Bug(none) fast/dynamic/anonymous-block-layer-lost.html [ Failure ]
 Bug(none) fast/layers/opacity-stacking.html [ Failure ]
 Bug(none) paint/invalidation/column-float-under-stacked-inline.html [ Failure ]
 
+# ScrollHitTest display items cause extra, incorrect, invalidations.
+crbug.com/738613 paint/invalidation/destroy-overlay-scrollbar.html [ Failure ]
+crbug.com/738613 paint/invalidation/destroy-scrollbar.html [ Failure ]
+crbug.com/738613 paint/invalidation/overflow-auto-in-overflow-auto-scrolled.html [ Failure ]
+crbug.com/738613 paint/invalidation/overflow-scroll-composited-non-stacking-child.html [ Failure ]
+crbug.com/738613 paint/invalidation/overflow-scroll-in-overflow-scroll-scrolled.html [ Failure ]
+crbug.com/738613 paint/invalidation/resize-iframe-text.html [ Failure ]
+crbug.com/738613 paint/invalidation/resize-scrollable-iframe.html [ Failure ]
+crbug.com/738613 paint/invalidation/scroll-inside-table-cell.html [ Failure ]
+crbug.com/738613 paint/invalidation/scroll-relative-table-inside-table-cell.html [ Failure ]
+crbug.com/738613 paint/invalidation/svg/nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Failure ]
+crbug.com/738613 paint/invalidation/svg/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Failure ]
+crbug.com/738613 paint/invalidation/table-overflow-auto-in-overflow-auto-scrolled.html [ Failure ]
+crbug.com/738613 paint/invalidation/table-overflow-scroll-in-overflow-scroll-scrolled.html [ Failure ]
+crbug.com/738613 paint/invalidation/textarea-caret.html [ Failure ]
+
 # See comment regarding this test in NeverFixTests. It also fails for other
 # reasons, in particular that the composited layerization algorithm provides
 # different results.

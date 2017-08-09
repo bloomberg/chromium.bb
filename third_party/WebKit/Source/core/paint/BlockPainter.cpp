@@ -23,6 +23,8 @@
 #include "core/paint/ScrollableAreaPainter.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipRecorder.h"
+#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
+#include "platform/graphics/paint/ScrollHitTestDisplayItem.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {
@@ -164,6 +166,48 @@ void BlockPainter::PaintInlineBox(const InlineBox& inline_box,
       .PaintAllPhasesAtomically(paint_info, child_point);
 }
 
+void BlockPainter::PaintScrollHitTestDisplayItem(const PaintInfo& paint_info) {
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  // Without RootLayerScrolling, the LayoutView will not create scroll paint
+  // properties and will rely on the LocalFrameView providing a scroll
+  // translation property.
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
+      layout_block_.IsLayoutView()) {
+    auto* view = layout_block_.GetFrame()->View();
+    auto* contents_state = view->TotalPropertyTreeStateForContents();
+    // Paint chunk properties should already be setup to be under the root
+    // frame's scroll translation node so a property scope is not needed.
+    DCHECK(paint_info.context.GetPaintController()
+               .CurrentPaintChunkProperties()
+               .property_tree_state.Transform() == contents_state->Transform());
+    if (contents_state->Transform()->ScrollNode()) {
+      ScrollHitTestDisplayItem::Record(paint_info.context, layout_block_,
+                                       DisplayItem::kScrollHitTest);
+    }
+    // The LayoutView should not create a scroll translation or scroll node,
+    // instead relying on the LocalFrameView's scroll translation and scroll.
+    const auto* properties =
+        layout_block_.FirstFragment()
+            ? layout_block_.FirstFragment()->PaintProperties()
+            : nullptr;
+    DCHECK(!properties ||
+           (!properties->ScrollTranslation() && !properties->Scroll()));
+    return;
+  }
+
+  const auto* properties =
+      layout_block_.FirstFragment()
+          ? layout_block_.FirstFragment()->PaintProperties()
+          : nullptr;
+  if (properties && properties->Scroll()) {
+    ScopedPaintChunkProperties scroll_properties(
+        paint_info.context.GetPaintController(), layout_block_,
+        layout_block_.FirstFragment()->ContentsProperties());
+    ScrollHitTestDisplayItem::Record(paint_info.context, layout_block_,
+                                     DisplayItem::kScrollHitTest);
+  }
+}
+
 DISABLE_CFI_PERF
 void BlockPainter::PaintObject(const PaintInfo& paint_info,
                                const LayoutPoint& paint_offset) {
@@ -176,6 +220,11 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
     if (layout_block_.Style()->Visibility() == EVisibility::kVisible &&
         layout_block_.HasBoxDecorationBackground())
       layout_block_.PaintBoxDecorationBackground(paint_info, paint_offset);
+    // Record the scroll hit test after the background so background squashing
+    // is not affected. Hit test order would be equivalent if this were
+    // immediately before the background.
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+      PaintScrollHitTestDisplayItem(paint_info);
     // We're done. We don't bother painting any children.
     if (paint_phase == kPaintPhaseSelfBlockBackgroundOnly)
       return;

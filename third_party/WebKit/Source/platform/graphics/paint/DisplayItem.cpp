@@ -129,6 +129,13 @@ static String ForeignLayerTypeAsDebugString(DisplayItem::Type type) {
   }
 }
 
+static String ScrollHitTestTypeAsDebugString(DisplayItem::Type type) {
+  switch (type) {
+    DEBUG_STRING_CASE(ScrollHitTest);
+    DEFAULT_CASE;
+  }
+}
+
 static WTF::String ClipTypeAsDebugString(DisplayItem::Type type) {
   PAINT_PHASE_BASED_DEBUG_STRINGS(ClipBox);
   PAINT_PHASE_BASED_DEBUG_STRINGS(ClipColumnBounds);
@@ -193,6 +200,9 @@ WTF::String DisplayItem::TypeAsDebugString(Type type) {
   if (IsEndTransform3DType(type))
     return "End" + Transform3DTypeAsDebugString(
                        endTransform3DTypeToTransform3DType(type));
+
+  if (IsScrollHitTestType(type))
+    return ScrollHitTestTypeAsDebugString(type);
 
   switch (type) {
     DEBUG_STRING_CASE(BeginFilter);

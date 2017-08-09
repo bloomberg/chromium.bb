@@ -192,8 +192,9 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, FrameScrollingContents) {
   auto& div4 = *GetLayoutObjectByElementId("div4");
 
   // Initial cull rect: (0,0 4800x4600)
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 3,
+  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 4,
                       TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+                      TestDisplayItem(GetLayoutView(), kScrollHitTestType),
                       TestDisplayItem(div1, kBackgroundType),
                       TestDisplayItem(div2, kBackgroundType));
 
@@ -202,8 +203,9 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, FrameScrollingContents) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Cull rect after scroll: (1000,1000 8800x8600)
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 4,
+  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 5,
                       TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+                      TestDisplayItem(GetLayoutView(), kScrollHitTestType),
                       TestDisplayItem(div2, kBackgroundType),
                       TestDisplayItem(div3, kBackgroundType),
                       TestDisplayItem(div4, kBackgroundType));
@@ -235,8 +237,9 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2,
   auto& div4 = *GetLayoutObjectByElementId("div4");
 
   // Initial cull rect: (0,0 4200x4200)
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 3,
+  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 4,
                       TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+                      TestDisplayItem(container, kScrollHitTestType),
                       TestDisplayItem(div1, kBackgroundType),
                       TestDisplayItem(div2, kBackgroundType));
 
@@ -245,11 +248,156 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2,
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Cull rect after scroll: (1000,1000 8100x8100)
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 4,
+  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 5,
                       TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+                      TestDisplayItem(container, kScrollHitTestType),
                       TestDisplayItem(div2, kBackgroundType),
                       TestDisplayItem(div3, kBackgroundType),
                       TestDisplayItem(div4, kBackgroundType));
+}
+
+TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ScrollHitTestOrder) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  ::-webkit-scrollbar { display: none }"
+      "  body { margin: 0 }"
+      "  #container { width: 200px; height: 200px;"
+      "              overflow: scroll; background: red; }"
+      "  #child { width: 100px; height: 300px; background: green; }"
+      "  #forceDocumentScroll { height: 1000px; }"
+      "</style>"
+      "<div id='container'>"
+      "  <div id='child'></div>"
+      "</div>"
+      "<div id='forceDocumentScroll'/>");
+
+  auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto& child = *GetLayoutObjectByElementId("child");
+
+  // The container's items should all be after the document's scroll hit test
+  // to ensure the container is hit before the document. Similarly, the child's
+  // items should all be after the container's scroll hit test.
+  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 5,
+                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+                      TestDisplayItem(GetLayoutView(), kScrollHitTestType),
+                      TestDisplayItem(container, kBackgroundType),
+                      TestDisplayItem(container, kScrollHitTestType),
+                      TestDisplayItem(child, kBackgroundType));
+}
+
+TEST_P(PaintControllerPaintTestForSlimmingPaintV2,
+       NonStackingScrollHitTestOrder) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  ::-webkit-scrollbar { display: none }"
+      "  body { margin: 0 }"
+      "  #container { width: 200px; height: 200px;"
+      "              overflow: scroll; background: blue;"
+      "              position: relative; z-index: auto; }"
+      "  #child { width: 80px; height: 20px; background: white; }"
+      "  #negZChild { width: 60px; height: 300px; background: purple;"
+      "               position: absolute; z-index: -1; top: 0; }"
+      "  #posZChild { width: 40px; height: 300px; background: yellow;"
+      "               position: absolute; z-index: 1; top: 0; }"
+      "</style>"
+      "<div id='container'>"
+      "  <div id='child'></div>"
+      "  <div id='negZChild'></div>"
+      "  <div id='posZChild'></div>"
+      "</div>");
+
+  auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto& child = *GetLayoutObjectByElementId("child");
+  auto& neg_z_child = *GetLayoutObjectByElementId("negZChild");
+  auto& pos_z_child = *GetLayoutObjectByElementId("posZChild");
+
+  // Container is not a stacking context because no z-index is auto.
+  // Negative z-index descendants are painted before the background and
+  // positive z-index descendants are painted after the background. Scroll hit
+  // testing should hit positive descendants, the container, and then negative
+  // descendants so the ScrollHitTest item should be immediately after the
+  // background.
+  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 6,
+                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+                      TestDisplayItem(neg_z_child, kBackgroundType),
+                      TestDisplayItem(container, kBackgroundType),
+                      TestDisplayItem(container, kScrollHitTestType),
+                      TestDisplayItem(child, kBackgroundType),
+                      TestDisplayItem(pos_z_child, kBackgroundType));
+}
+
+TEST_P(PaintControllerPaintTestForSlimmingPaintV2, StackingScrollHitTestOrder) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  ::-webkit-scrollbar { display: none }"
+      "  body { margin: 0 }"
+      "  #container { width: 200px; height: 200px;"
+      "              overflow: scroll; background: blue;"
+      "              position: relative; z-index: 0; }"
+      "  #child { width: 80px; height: 20px; background: white; }"
+      "  #negZChild { width: 60px; height: 300px; background: purple;"
+      "               position: absolute; z-index: -1; top: 0; }"
+      "  #posZChild { width: 40px; height: 300px; background: yellow;"
+      "               position: absolute; z-index: 1; top: 0; }"
+      "</style>"
+      "<div id='container'>"
+      "  <div id='child'></div>"
+      "  <div id='negZChild'></div>"
+      "  <div id='posZChild'></div>"
+      "</div>");
+
+  auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto& child = *GetLayoutObjectByElementId("child");
+  auto& neg_z_child = *GetLayoutObjectByElementId("negZChild");
+  auto& pos_z_child = *GetLayoutObjectByElementId("posZChild");
+
+  // Container is a stacking context because z-index is non-auto.
+  // Both positive and negative z-index descendants are painted after the
+  // background. The scroll hit test should be after the background but before
+  // the z-index descendants to ensure hit test order is correct.
+  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 6,
+                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+                      TestDisplayItem(container, kBackgroundType),
+                      TestDisplayItem(container, kScrollHitTestType),
+                      TestDisplayItem(neg_z_child, kBackgroundType),
+                      TestDisplayItem(child, kBackgroundType),
+                      TestDisplayItem(pos_z_child, kBackgroundType));
+}
+
+TEST_P(PaintControllerPaintTestForSlimmingPaintV2,
+       NonStackingScrollHitTestOrderWithoutBackground) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  ::-webkit-scrollbar { display: none }"
+      "  body { margin: 0 }"
+      "  #container { width: 200px; height: 200px;"
+      "              overflow: scroll; background: transparent;"
+      "              position: relative; z-index: auto; }"
+      "  #child { width: 80px; height: 20px; background: white; }"
+      "  #negZChild { width: 60px; height: 300px; background: purple;"
+      "               position: absolute; z-index: -1; top: 0; }"
+      "  #posZChild { width: 40px; height: 300px; background: yellow;"
+      "               position: absolute; z-index: 1; top: 0; }"
+      "</style>"
+      "<div id='container'>"
+      "  <div id='child'></div>"
+      "  <div id='negZChild'></div>"
+      "  <div id='posZChild'></div>"
+      "</div>");
+
+  auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto& child = *GetLayoutObjectByElementId("child");
+  auto& neg_z_child = *GetLayoutObjectByElementId("negZChild");
+  auto& pos_z_child = *GetLayoutObjectByElementId("posZChild");
+
+  // Even though container does not paint a background, the scroll hit test item
+  // should still be between the negative z-index child and the regular child.
+  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 5,
+                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+                      TestDisplayItem(neg_z_child, kBackgroundType),
+                      TestDisplayItem(container, kScrollHitTestType),
+                      TestDisplayItem(child, kBackgroundType),
+                      TestDisplayItem(pos_z_child, kBackgroundType));
 }
 
 }  // namespace blink

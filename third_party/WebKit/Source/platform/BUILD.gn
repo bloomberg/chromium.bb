@@ -1138,6 +1138,8 @@ component("platform") {
     "graphics/paint/ScopedPaintChunkProperties.h",
     "graphics/paint/ScrollDisplayItem.cpp",
     "graphics/paint/ScrollDisplayItem.h",
+    "graphics/paint/ScrollHitTestDisplayItem.cpp",
+    "graphics/paint/ScrollHitTestDisplayItem.h",
     "graphics/paint/ScrollPaintPropertyNode.cpp",
     "graphics/paint/ScrollPaintPropertyNode.h",
     "graphics/paint/SubsequenceRecorder.h",

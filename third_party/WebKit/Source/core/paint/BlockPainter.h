@@ -46,6 +46,9 @@ class BlockPainter {
                            const LayoutPoint& adjusted_paint_offset) const;
 
  private:
+  // Paint scroll hit test placeholders in the correct paint order (see:
+  // ScrollHitTestDisplayItem.h).
+  void PaintScrollHitTestDisplayItem(const PaintInfo&);
   void PaintCarets(const PaintInfo&, const LayoutPoint&);
 
   const LayoutBlock& layout_block_;

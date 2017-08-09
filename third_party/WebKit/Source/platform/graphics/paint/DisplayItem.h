@@ -173,6 +173,7 @@ class PLATFORM_EXPORT DisplayItem {
     kEndTransform,
     kBeginClipPath,
     kEndClipPath,
+    kScrollHitTest,
     kUninitializedType,
     kTypeLast = kUninitializedType
   };
@@ -307,6 +308,10 @@ class PLATFORM_EXPORT DisplayItem {
 
   DEFINE_PAIRED_CATEGORY_METHODS(Transform3D, transform3D)
 
+  static bool IsScrollHitTestType(Type type) { return type == kScrollHitTest; }
+  bool IsScrollHitTest() const { return IsScrollHitTestType(type_); }
+
+  // TODO(pdr): Should this return true for IsScrollHitTestType too?
   static bool IsCacheableType(Type type) { return IsDrawingType(type); }
   bool IsCacheable() const { return !SkippedCache() && IsCacheableType(type_); }
 

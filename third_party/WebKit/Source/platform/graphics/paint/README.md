@@ -170,6 +170,13 @@ of the normal Blink paint system (for example, a plugin). Since they always map
 to a `cc::Layer`, they are always the only display item in their paint chunk,
 and are ineligible for squashing with other layers.
 
+#### [ScrollHitTestDisplayItem](ScrollHitTestDisplayItem.h)
+
+Placeholder for creating a cc::Layer for scrolling in paint order. Hit testing
+in the compositor requires both property trees (scroll nodes) and a scrollable
+`cc::layer` in paint order. This should be associated with the scroll
+translation paint property node as well as any overflow clip nodes.
+
 ### Paired begin/end display items
 
 *** aside
