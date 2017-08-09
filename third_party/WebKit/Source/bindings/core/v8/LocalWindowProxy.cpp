@@ -116,10 +116,14 @@ void LocalWindowProxy::DisposeContext(Lifecycle next_status,
 void LocalWindowProxy::Initialize() {
   TRACE_EVENT1("v8", "LocalWindowProxy::initialize", "isMainWindow",
                GetFrame()->IsMainFrame());
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
-      GetFrame()->IsMainFrame()
-          ? "Blink.Binding.InitializeMainLocalWindowProxy"
-          : "Blink.Binding.InitializeNonMainLocalWindowProxy");
+  DEFINE_STATIC_LOCAL(
+      CustomCountHistogram, main_frame_hist,
+      ("Blink.Binding.InitializeMainLocalWindowProxy", 0, 10000000, 50));
+  DEFINE_STATIC_LOCAL(
+      CustomCountHistogram, non_main_frame_hist,
+      ("Blink.Binding.InitializeNonMainLocalWindowProxy", 0, 10000000, 50));
+  ScopedUsHistogramTimer timer(GetFrame()->IsMainFrame() ? main_frame_hist
+                                                         : non_main_frame_hist);
 
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
 
