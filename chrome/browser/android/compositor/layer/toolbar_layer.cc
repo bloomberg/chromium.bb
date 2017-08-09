@@ -71,7 +71,8 @@ void ToolbarLayer::PushResource(
       gfx::PointF(resource->toolbar_rect().origin()));
   toolbar_background_layer_->SetBackgroundColor(toolbar_background_color);
 
-  bool url_bar_visible = (resource->location_bar_content_rect().width() != 0);
+  bool url_bar_visible =
+      (resource->location_bar_content_rect().width() != 0) && url_bar_alpha > 0;
   url_bar_background_layer_->SetHideLayerAndSubtree(!url_bar_visible);
   if (url_bar_visible) {
     ui::NinePatchResource* url_bar_background_resource =

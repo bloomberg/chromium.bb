@@ -147,6 +147,7 @@
 
     <!-- Theme colors. Also used for toolbar background -->
     <color name="incognito_primary_color">#505050</color>
+    <color name="modern_primary_color">@android:color/white</color>
 
     <!-- LocationBar colors -->
     <color name="locationbar_dark_hint_text">@color/black_alpha_54</color>

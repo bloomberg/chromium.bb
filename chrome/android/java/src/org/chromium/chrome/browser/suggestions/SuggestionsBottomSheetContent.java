@@ -53,7 +53,6 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                                                       BottomSheetNewTabController.Observer,
                                                       TemplateUrlServiceObserver {
     private final View mView;
-    private final FadingShadowView mShadowView;
     private final SuggestionsRecyclerView mRecyclerView;
     private final ContextMenuManager mContextMenuManager;
     private final SuggestionsUiDelegateImpl mSuggestionsUiDelegate;
@@ -173,17 +172,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
             }
         };
 
-        mShadowView = (FadingShadowView) mView.findViewById(R.id.shadow);
-        mShadowView.init(ApiCompatibilityUtils.getColor(resources, R.color.toolbar_shadow_color),
-                FadingShadow.POSITION_TOP);
-
-        mRecyclerView.addOnScrollListener(new OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                boolean shadowVisible = mRecyclerView.canScrollVertically(-1);
-                mShadowView.setVisibility(shadowVisible ? View.VISIBLE : View.GONE);
-            }
-        });
+        initializeShadow();
 
         final LocationBar locationBar = (LocationBar) sheet.findViewById(R.id.location_bar);
         mRecyclerView.setOnTouchListener(new View.OnTouchListener() {
@@ -269,6 +258,27 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         updateSearchProviderHasLogo();
         loadSearchProviderLogo();
         updateLogoTransition();
+    }
+
+    private void initializeShadow() {
+        final FadingShadowView shadowView = (FadingShadowView) mView.findViewById(R.id.shadow);
+
+        if (SuggestionsConfig.useModern()) {
+            ((ViewGroup) mView).removeView(shadowView);
+            return;
+        }
+
+        shadowView.init(
+                ApiCompatibilityUtils.getColor(mView.getResources(), R.color.toolbar_shadow_color),
+                FadingShadow.POSITION_TOP);
+
+        mRecyclerView.addOnScrollListener(new OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                boolean shadowVisible = mRecyclerView.canScrollVertically(-1);
+                shadowView.setVisibility(shadowVisible ? View.VISIBLE : View.GONE);
+            }
+        });
     }
 
     private void maybeUpdateContextualSuggestions() {

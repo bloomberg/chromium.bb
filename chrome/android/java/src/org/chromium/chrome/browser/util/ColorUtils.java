@@ -53,15 +53,33 @@ public class ColorUtils {
     }
 
     /**
+     * Determines the default theme color based on the provided parameters.
+     * @param res {@link Resources} used to retrieve colors.
+     * @param useModernDesign Whether to use the "modern" visual design.
+     * @param isIncognito Whether to retrieve the default theme color for incognito mode.
+     * @return The default theme color.
+     */
+    public static int getDefaultThemeColor(
+            Resources res, boolean useModernDesign, boolean isIncognito) {
+        return isIncognito ? ApiCompatibilityUtils.getColor(res, R.color.incognito_primary_color)
+                : useModernDesign
+                    ? ApiCompatibilityUtils.getColor(res, R.color.modern_primary_color)
+                    : ApiCompatibilityUtils.getColor(res, R.color.default_primary_color);
+    }
+
+    /**
      * @return The base color for the textbox given a toolbar background color.
      */
-    public static int getTextBoxColorForToolbarBackground(Resources res, boolean isNtp, int color) {
+    public static int getTextBoxColorForToolbarBackground(
+            Resources res, boolean isNtp, int color, boolean useModernDesign) {
         if (shouldUseOpaqueTextboxBackground(color)) {
             // NTP should have no visible textbox in the toolbar, so just return the toolbar's
             // background color.
             if (isNtp) return ApiCompatibilityUtils.getColor(res, R.color.ntp_bg);
 
-            return Color.WHITE;
+            return useModernDesign
+                    ? ApiCompatibilityUtils.getColor(res, R.color.default_primary_color)
+                    : Color.WHITE;
         }
         return getColorWithOverlay(color, Color.WHITE, LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA);
     }

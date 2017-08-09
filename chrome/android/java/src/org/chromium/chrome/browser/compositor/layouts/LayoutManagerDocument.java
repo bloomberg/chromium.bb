@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentViewDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
@@ -235,10 +236,13 @@ public class LayoutManagerDocument extends LayoutManager
                 tab.getContentViewCore() != null && !tab.isShowingSadTab() && !isNativePage;
 
         boolean isNtp = tab.getNativePage() instanceof NewTabPage;
+        boolean useModernDesign = tab.getActivity() != null
+                && tab.getActivity().getBottomSheet() != null && ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT);
         boolean needsUpdate = layoutTab.initFromHost(tab.getBackgroundColor(), tab.shouldStall(),
                 canUseLiveTexture, themeColor,
                 ColorUtils.getTextBoxColorForToolbarBackground(
-                        mContext.getResources(), isNtp, themeColor),
+                        mContext.getResources(), isNtp, themeColor, useModernDesign),
                 ColorUtils.getTextBoxAlphaForToolbarBackground(tab));
         if (needsUpdate) requestUpdate();
 
