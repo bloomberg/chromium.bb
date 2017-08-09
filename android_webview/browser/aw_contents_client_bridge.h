@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "android_webview/browser/aw_safe_browsing_resource_throttle.h"
+#include "android_webview/browser/aw_url_checker_delegate_impl.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
@@ -100,12 +100,12 @@ class AwContentsClientBridge {
                        int error_code,
                        bool safebrowsing_hit);
 
-  void OnSafeBrowsingHit(const AwWebResourceRequest& request,
-                         const safe_browsing::SBThreatType& threat_type,
-                         const std::string& privacy_policy_url,
-                         const base::Callback<void(
-                             AwSafeBrowsingResourceThrottle::SafeBrowsingAction,
-                             bool)>& callback);
+  void OnSafeBrowsingHit(
+      const AwWebResourceRequest& request,
+      const safe_browsing::SBThreatType& threat_type,
+      const std::string& privacy_policy_url,
+      const base::Callback<void(AwUrlCheckerDelegateImpl::SafeBrowsingAction,
+                                bool)>& callback);
 
   // Called when a response from the server is received with status code >= 400.
   void OnReceivedHttpError(
@@ -141,7 +141,7 @@ class AwContentsClientBridge {
   typedef const base::Callback<void(content::CertificateRequestResultType)>
       CertErrorCallback;
   typedef const base::Callback<
-      void(AwSafeBrowsingResourceThrottle::SafeBrowsingAction, bool)>
+      void(AwUrlCheckerDelegateImpl::SafeBrowsingAction, bool)>
       SafeBrowsingActionCallback;
   IDMap<std::unique_ptr<CertErrorCallback>> pending_cert_error_callbacks_;
   IDMap<std::unique_ptr<SafeBrowsingActionCallback>> safe_browsing_callbacks_;

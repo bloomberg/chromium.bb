@@ -50,6 +50,12 @@ class AwContentRendererClient : public content::ContentRendererClient {
       override;
   std::unique_ptr<blink::WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle() override;
+  bool WillSendRequest(
+      blink::WebLocalFrame* frame,
+      ui::PageTransition transition_type,
+      const blink::WebURL& url,
+      std::vector<std::unique_ptr<content::URLLoaderThrottle>>* throttles,
+      GURL* new_url) override;
 
   bool HandleNavigation(content::RenderFrame* render_frame,
                         bool is_content_initiated,

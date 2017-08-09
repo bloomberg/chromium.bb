@@ -553,7 +553,7 @@ void AwContentsClientBridge::TakeSafeBrowsingAction(JNIEnv*,
     return;
   }
   callback->Run(
-      static_cast<AwSafeBrowsingResourceThrottle::SafeBrowsingAction>(action),
+      static_cast<AwUrlCheckerDelegateImpl::SafeBrowsingAction>(action),
       reporting);
   safe_browsing_callbacks_.Remove(request_id);
 }

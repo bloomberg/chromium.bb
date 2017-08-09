@@ -15,6 +15,21 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::ToJavaArrayOfStrings;
 
 namespace android_webview {
+namespace {
+
+void ConvertRequestHeadersToVectors(const net::HttpRequestHeaders& headers,
+                                    std::vector<std::string>* header_names,
+                                    std::vector<std::string>* header_values) {
+  DCHECK(header_names->empty());
+  DCHECK(header_values->empty());
+  net::HttpRequestHeaders::Iterator headers_iterator(headers);
+  while (headers_iterator.GetNext()) {
+    header_names->push_back(headers_iterator.name());
+    header_values->push_back(headers_iterator.value());
+  }
+}
+
+}  // namespace
 
 AwWebResourceRequest::AwWebResourceRequest(const net::URLRequest& request)
     : url(request.url().spec()), method(request.method()) {
@@ -27,11 +42,21 @@ AwWebResourceRequest::AwWebResourceRequest(const net::URLRequest& request)
   net::HttpRequestHeaders headers;
   if (!request.GetFullRequestHeaders(&headers))
     headers = request.extra_request_headers();
-  net::HttpRequestHeaders::Iterator headers_iterator(headers);
-  while (headers_iterator.GetNext()) {
-    header_names.push_back(headers_iterator.name());
-    header_values.push_back(headers_iterator.value());
-  }
+
+  ConvertRequestHeadersToVectors(headers, &header_names, &header_values);
+}
+
+AwWebResourceRequest::AwWebResourceRequest(
+    const std::string& in_url,
+    const std::string& in_method,
+    bool in_is_main_frame,
+    bool in_has_user_gesture,
+    const net::HttpRequestHeaders& in_headers)
+    : url(in_url),
+      method(in_method),
+      is_main_frame(in_is_main_frame),
+      has_user_gesture(in_has_user_gesture) {
+  ConvertRequestHeadersToVectors(in_headers, &header_names, &header_values);
 }
 
 AwWebResourceRequest::AwWebResourceRequest(AwWebResourceRequest&& other) =
