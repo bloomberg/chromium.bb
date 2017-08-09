@@ -11,13 +11,20 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/extensions/api/image_writer_private/operation.h"
 #include "chrome/common/extensions/removable_storage_writer.mojom.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace extensions {
+namespace image_writer {
+
+namespace {
 constexpr int64_t kTestFileSize = 1 << 15;  // 32 kB
+}  // namespace
 
 class ImageWriterUtilityClientTest : public InProcessBrowserTest {
  public:
@@ -62,10 +69,9 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     verify_ = (option == VERIFY);
     cancel_ = (option == CANCEL);
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ImageWriterUtilityClientTest::StartWriteTest,
-                   base::Unretained(this)));
+    CreateTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&ImageWriterUtilityClientTest::StartWriteTest,
+                              base::Unretained(this)));
     run_loop.Run();
 
     EXPECT_TRUE(quit_called_);
@@ -77,11 +83,10 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
 
     ASSERT_NE(option, WRITE);  // Verify tests do not WRITE.
     cancel_ = (option == CANCEL);
-
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ImageWriterUtilityClientTest::StartVerifyTest,
-                   base::Unretained(this)));
+    CreateTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ImageWriterUtilityClientTest::StartVerifyTest,
+                       base::Unretained(this)));
     run_loop.Run();
 
     EXPECT_TRUE(quit_called_);
@@ -93,7 +98,7 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
 
  private:
   void StartWriteTest() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+    DCHECK(IsRunningInCorrectSequence());
 
     if (!image_writer_utility_client_)
       image_writer_utility_client_ = new ImageWriterUtilityClient();
@@ -111,7 +116,7 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
   }
 
   void Progress(int64_t progress) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+    DCHECK(IsRunningInCorrectSequence());
 
     progress_ = progress;
     if (!cancel_)
@@ -122,7 +127,7 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
   }
 
   void Success() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+    DCHECK(IsRunningInCorrectSequence());
 
     EXPECT_EQ(kTestFileSize, progress_);
     EXPECT_FALSE(cancel_);
@@ -133,14 +138,13 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
       return;
     }
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ImageWriterUtilityClientTest::Shutdown,
-                   base::Unretained(this)));
+    GetTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&ImageWriterUtilityClientTest::Shutdown,
+                              base::Unretained(this)));
   }
 
   void StartVerifyTest() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+    DCHECK(IsRunningInCorrectSequence());
 
     if (!image_writer_utility_client_)
       image_writer_utility_client_ = new ImageWriterUtilityClient();
@@ -158,33 +162,31 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
   }
 
   void Failure(const std::string& error) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+    DCHECK(IsRunningInCorrectSequence());
 
     EXPECT_FALSE(error.empty());
     success_ = false;
     error_ = error;
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ImageWriterUtilityClientTest::Shutdown,
-                   base::Unretained(this)));
+    GetTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&ImageWriterUtilityClientTest::Shutdown,
+                              base::Unretained(this)));
   }
 
   void Verified() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+    DCHECK(IsRunningInCorrectSequence());
 
     EXPECT_EQ(kTestFileSize, progress_);
     EXPECT_FALSE(cancel_);
     success_ = !cancel_;
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ImageWriterUtilityClientTest::Shutdown,
-                   base::Unretained(this)));
+    GetTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&ImageWriterUtilityClientTest::Shutdown,
+                              base::Unretained(this)));
   }
 
   void Cancelled() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+    DCHECK(IsRunningInCorrectSequence());
 
     EXPECT_TRUE(cancel_);
     success_ = cancel_;
@@ -195,7 +197,7 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
   }
 
   void Shutdown() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+    DCHECK(IsRunningInCorrectSequence());
 
     image_writer_utility_client_->Shutdown();
 
@@ -209,6 +211,24 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     EXPECT_TRUE(base::WriteFile(path, fill.data(), kTestFileSize));
   }
 
+  base::SequencedTaskRunner* CreateTaskRunner() {
+    DCHECK(!task_runner_.get());
+    task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+        Operation::blocking_task_traits());
+    return task_runner_.get();
+  }
+
+  base::SequencedTaskRunner* GetTaskRunner() {
+    DCHECK(task_runner_.get())
+        << "Called GetTaskRunner before creating TaskRunner.";
+    return task_runner_.get();
+  }
+
+  bool IsRunningInCorrectSequence() const {
+    base::ThreadRestrictions::AssertIOAllowed();
+    return task_runner_->RunsTasksInCurrentSequence();
+  }
+
   base::ScopedTempDir temp_dir_;
   base::FilePath test_device_;
   base::FilePath device_;
@@ -217,12 +237,14 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
   base::Closure quit_closure_;
   bool quit_called_ = false;
 
+  // Lives on |task_runner_|.
   scoped_refptr<ImageWriterUtilityClient> image_writer_utility_client_;
   int64_t progress_ = 0;
   bool success_ = false;
   bool verify_ = false;
   bool cancel_ = false;
   std::string error_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageWriterUtilityClientTest);
 };
@@ -318,3 +340,6 @@ IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, VerifyCancel) {
   EXPECT_TRUE(success());
   EXPECT_TRUE(error().empty());
 }
+
+}  // namespace image_writer
+}  // namespace extensions

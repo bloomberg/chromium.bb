@@ -35,7 +35,7 @@ void ClearImageBurner() {
 }  // namespace
 
 void Operation::Write(const base::Closure& continuation) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(IsRunningInCorrectSequence());
   SetStage(image_writer_api::STAGE_WRITE);
 
   // Note this has to be run on the FILE thread to avoid concurrent access.
@@ -47,7 +47,7 @@ void Operation::Write(const base::Closure& continuation) {
 }
 
 void Operation::VerifyWrite(const base::Closure& continuation) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(IsRunningInCorrectSequence());
 
   // No verification is available in Chrome OS currently.
   continuation.Run();
@@ -66,7 +66,7 @@ void Operation::UnmountVolumesCallback(const base::Closure& continuation,
 
   if (!success) {
     LOG(ERROR) << "Volume unmounting failed.";
-    Error(error::kUnmountVolumesError);
+    PostTask(base::Bind(&Operation::Error, this, error::kUnmountVolumesError));
     return;
   }
 
@@ -77,7 +77,7 @@ void Operation::UnmountVolumesCallback(const base::Closure& continuation,
 
   if (iter == disks.end()) {
     LOG(ERROR) << "Disk not found in disk list after unmounting volumes.";
-    Error(error::kUnmountVolumesError);
+    PostTask(base::Bind(&Operation::Error, this, error::kUnmountVolumesError));
     return;
   }
 
@@ -106,11 +106,12 @@ void Operation::OnBurnFinished(const base::Closure& continuation,
                                bool success,
                                const std::string& error) {
   if (success) {
-    SetProgress(kProgressComplete);
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, continuation);
+    PostTask(base::BindOnce(&Operation::SetProgress, this, kProgressComplete));
+    PostTask(continuation);
   } else {
     DLOG(ERROR) << "Error encountered while burning: " << error;
-    Error(error::kChromeOSImageBurnerError);
+    PostTask(base::BindOnce(&Operation::Error, this,
+                            error::kChromeOSImageBurnerError));
   }
 }
 
@@ -118,11 +119,12 @@ void Operation::OnBurnProgress(const std::string& target_path,
                                int64_t num_bytes_burnt,
                                int64_t total_size) {
   int progress = kProgressComplete * num_bytes_burnt / total_size;
-  SetProgress(progress);
+  PostTask(base::BindOnce(&Operation::SetProgress, this, progress));
 }
 
 void Operation::OnBurnError() {
-  Error(error::kChromeOSImageBurnerError);
+  PostTask(base::BindOnce(&Operation::Error, this,
+                          error::kChromeOSImageBurnerError));
 }
 
 }  // namespace image_writer

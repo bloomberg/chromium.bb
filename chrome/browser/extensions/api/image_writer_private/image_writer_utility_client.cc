@@ -9,14 +9,21 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/common/extensions/removable_storage_writer.mojom.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_mojo_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace extensions {
+namespace image_writer {
+
+namespace {
+ImageWriterUtilityClient::ImageWriterUtilityClientFactory*
+    g_factory_for_testing = nullptr;
+}  // namespace
 
 class ImageWriterUtilityClient::RemovableStorageWriterClientImpl
     : public extensions::mojom::RemovableStorageWriterClient {
@@ -26,7 +33,7 @@ class ImageWriterUtilityClient::RemovableStorageWriterClientImpl
       extensions::mojom::RemovableStorageWriterClientPtr* interface)
       : binding_(this, mojo::MakeRequest(interface)),
         image_writer_utility_client_(owner) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+    base::ThreadRestrictions::AssertIOAllowed();
 
     binding_.set_connection_error_handler(
         base::BindOnce(&ImageWriterUtilityClient::UtilityProcessError,
@@ -59,12 +66,25 @@ ImageWriterUtilityClient::ImageWriterUtilityClient() = default;
 
 ImageWriterUtilityClient::~ImageWriterUtilityClient() = default;
 
+// static
+scoped_refptr<ImageWriterUtilityClient> ImageWriterUtilityClient::Create() {
+  if (g_factory_for_testing)
+    return g_factory_for_testing->Run();
+  return make_scoped_refptr(new ImageWriterUtilityClient());
+}
+
+// static
+void ImageWriterUtilityClient::SetFactoryForTesting(
+    ImageWriterUtilityClientFactory* factory) {
+  g_factory_for_testing = factory;
+}
+
 void ImageWriterUtilityClient::Write(const ProgressCallback& progress_callback,
                                      const SuccessCallback& success_callback,
                                      const ErrorCallback& error_callback,
                                      const base::FilePath& source,
                                      const base::FilePath& target) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!removable_storage_writer_client_);
 
   progress_callback_ = progress_callback;
@@ -86,7 +106,7 @@ void ImageWriterUtilityClient::Verify(const ProgressCallback& progress_callback,
                                       const ErrorCallback& error_callback,
                                       const base::FilePath& source,
                                       const base::FilePath& target) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!removable_storage_writer_client_);
 
   progress_callback_ = progress_callback;
@@ -104,22 +124,22 @@ void ImageWriterUtilityClient::Verify(const ProgressCallback& progress_callback,
 }
 
 void ImageWriterUtilityClient::Cancel(const CancelCallback& cancel_callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(cancel_callback);
 
   ResetRequest();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, cancel_callback);
+  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, cancel_callback);
 }
 
 void ImageWriterUtilityClient::Shutdown() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ResetRequest();
   utility_process_mojo_client_.reset();
 }
 
 void ImageWriterUtilityClient::StartUtilityProcessIfNeeded() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (utility_process_mojo_client_)
     return;
@@ -140,7 +160,7 @@ void ImageWriterUtilityClient::StartUtilityProcessIfNeeded() {
 }
 
 void ImageWriterUtilityClient::UtilityProcessError() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   OperationFailed("Utility process crashed or failed.");
   utility_process_mojo_client_.reset();
@@ -173,3 +193,6 @@ void ImageWriterUtilityClient::ResetRequest() {
   success_callback_.Reset();
   error_callback_.Reset();
 }
+
+}  // namespace image_writer
+}  // namespace extensions

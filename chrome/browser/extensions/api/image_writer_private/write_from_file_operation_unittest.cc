@@ -16,6 +16,19 @@ using testing::Lt;
 using testing::AnyNumber;
 using testing::AtLeast;
 
+namespace {
+
+#if !defined(OS_CHROMEOS)
+void SetUpImageWriteClientProgressSimulation(FakeImageWriterClient* client) {
+  std::vector<int> progress_list{0, 50, 100};
+  bool will_succeed = true;
+  client->SimulateProgressOnWrite(progress_list, will_succeed);
+  client->SimulateProgressOnVerifyWrite(progress_list, will_succeed);
+}
+#endif
+
+}  // namespace
+
 class ImageWriterFromFileTest : public ImageWriterUnitTestBase {
  protected:
   ImageWriterFromFileTest()
@@ -42,13 +55,18 @@ TEST_F(ImageWriterFromFileTest, InvalidFile) {
                       0,
                       error::kImageInvalid)).Times(1);
 
-  op->Start();
-
-  base::RunLoop().RunUntilIdle();
+  op->PostTask(base::BindOnce(&Operation::Start, op));
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 // Runs the entire WriteFromFile operation.
 TEST_F(ImageWriterFromFileTest, WriteFromFileEndToEnd) {
+#if !defined(OS_CHROMEOS)
+  // Sets up simulating Operation::Progress() and Operation::Success().
+  test_utils_.RunOnUtilityClientCreation(
+      base::BindOnce(&SetUpImageWriteClientProgressSimulation));
+#endif
+
   scoped_refptr<WriteFromFileOperation> op =
       new WriteFromFileOperation(manager_.AsWeakPtr(),
                                  kDummyExtensionId,
@@ -84,21 +102,8 @@ TEST_F(ImageWriterFromFileTest, WriteFromFileEndToEnd) {
   EXPECT_CALL(manager_, OnComplete(kDummyExtensionId)).Times(1);
   EXPECT_CALL(manager_, OnError(kDummyExtensionId, _, _, _)).Times(0);
 
-  op->Start();
-
-  base::RunLoop().RunUntilIdle();
-#if !defined(OS_CHROMEOS)
-  test_utils_.GetUtilityClient()->Progress(0);
-  test_utils_.GetUtilityClient()->Progress(50);
-  test_utils_.GetUtilityClient()->Progress(100);
-  test_utils_.GetUtilityClient()->Success();
-  base::RunLoop().RunUntilIdle();
-  test_utils_.GetUtilityClient()->Progress(0);
-  test_utils_.GetUtilityClient()->Progress(50);
-  test_utils_.GetUtilityClient()->Progress(100);
-  test_utils_.GetUtilityClient()->Success();
-  base::RunLoop().RunUntilIdle();
-#endif
+  op->PostTask(base::BindOnce(&Operation::Start, op));
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 }  // namespace image_writer

@@ -11,9 +11,12 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequence_checker.h"
 #include "chrome/common/extensions/removable_storage_writer.mojom.h"
 #include "content/public/browser/utility_process_mojo_client.h"
+
+namespace extensions {
+namespace image_writer {
 
 // Writes a disk image to a device inside the utility process. This
 // class lives on the FILE thread.
@@ -24,8 +27,12 @@ class ImageWriterUtilityClient
   typedef base::Callback<void()> SuccessCallback;
   typedef base::Callback<void(int64_t)> ProgressCallback;
   typedef base::Callback<void(const std::string&)> ErrorCallback;
+  using ImageWriterUtilityClientFactory =
+      base::Callback<scoped_refptr<ImageWriterUtilityClient>()>;
 
-  ImageWriterUtilityClient();
+  static scoped_refptr<ImageWriterUtilityClient> Create();
+
+  static void SetFactoryForTesting(ImageWriterUtilityClientFactory* factory);
 
   // Starts the write operation.
   // |progress_callback|: Called periodically with the count of bytes processed.
@@ -61,7 +68,9 @@ class ImageWriterUtilityClient
 
  protected:
   friend class base::RefCountedThreadSafe<ImageWriterUtilityClient>;
+  friend class ImageWriterUtilityClientTest;
 
+  ImageWriterUtilityClient();
   virtual ~ImageWriterUtilityClient();
 
  private:
@@ -87,7 +96,12 @@ class ImageWriterUtilityClient
   std::unique_ptr<RemovableStorageWriterClientImpl>
       removable_storage_writer_client_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(ImageWriterUtilityClient);
 };
+
+}  // namespace image_writer
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_IMAGE_WRITER_UTILITY_CLIENT_H_
