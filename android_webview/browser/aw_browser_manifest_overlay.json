@@ -1,6 +1,13 @@
 {
   "name": "content_browser",
   "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "renderer": [
+          "safe_browsing::mojom::SafeBrowsing"
+        ]
+      }
+    },
     "navigation:frame": {
       "provides": {
         "renderer": [

@@ -11,11 +11,16 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "content/public/browser/content_browser_client.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
 class RenderFrameHost;
+}
+
+namespace safe_browsing {
+class UrlCheckerDelegate;
 }
 
 namespace android_webview {
@@ -137,14 +142,26 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void ExposeInterfacesToRenderer(
+      service_manager::BinderRegistry* registry,
+      content::AssociatedInterfaceRegistry* associated_registry,
+      content::RenderProcessHost* render_process_host) override;
+  std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+  CreateURLLoaderThrottles(
+      const base::Callback<content::WebContents*()>& wc_getter) override;
 
  private:
+  safe_browsing::UrlCheckerDelegate* GetSafeBrowsingUrlCheckerDelegate();
+
   // Android WebView currently has a single global (non-off-the-record) browser
   // context.
   std::unique_ptr<AwBrowserContext> browser_context_;
 
   service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>
       frame_interfaces_;
+
+  scoped_refptr<safe_browsing::UrlCheckerDelegate>
+      safe_browsing_url_checker_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AwContentBrowserClient);
 };

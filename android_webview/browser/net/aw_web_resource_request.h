@@ -12,6 +12,7 @@
 #include "base/android/jni_string.h"
 
 namespace net {
+class HttpRequestHeaders;
 class URLRequest;
 }
 
@@ -19,8 +20,15 @@ namespace android_webview {
 
 // A passive data structure only used to carry request information. This
 // class should be copyable.
+// The fields are ultimately guided by android.webkit.WebResourceRequest:
+// https://developer.android.com/reference/android/webkit/WebResourceRequest.html
 struct AwWebResourceRequest final {
   explicit AwWebResourceRequest(const net::URLRequest& request);
+  AwWebResourceRequest(const std::string& in_url,
+                       const std::string& in_method,
+                       bool in_is_main_frame,
+                       bool in_has_user_gesture,
+                       const net::HttpRequestHeaders& in_headers);
 
   // Add default copy/move/assign operators. Adding explicit destructor
   // prevents generating move operator.

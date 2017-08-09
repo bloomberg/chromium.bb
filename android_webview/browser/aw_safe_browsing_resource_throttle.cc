@@ -12,7 +12,6 @@
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
-#include "components/security_interstitials/core/urls.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/resource_type.h"
@@ -55,12 +54,15 @@ AwSafeBrowsingResourceThrottle::AwSafeBrowsingResourceThrottle(
           database_manager,
           ui_manager),
       request_(request),
-      whitelist_manager_(whitelist_manager) {}
+      url_checker_delegate_(
+          new AwUrlCheckerDelegateImpl(std::move(database_manager),
+                                       std::move(ui_manager),
+                                       whitelist_manager)) {}
 
 AwSafeBrowsingResourceThrottle::~AwSafeBrowsingResourceThrottle() {}
 
 bool AwSafeBrowsingResourceThrottle::CheckUrl(const GURL& gurl) {
-  if (whitelist_manager_->IsURLWhitelisted(gurl)) {
+  if (url_checker_delegate_->IsUrlWhitelisted(gurl)) {
     return true;
   }
   return BaseResourceThrottle::CheckUrl(gurl);
@@ -68,89 +70,37 @@ bool AwSafeBrowsingResourceThrottle::CheckUrl(const GURL& gurl) {
 
 void AwSafeBrowsingResourceThrottle::StartDisplayingBlockingPageHelper(
     security_interstitials::UnsafeResource resource) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&AwSafeBrowsingResourceThrottle::StartApplicationResponse,
-                 AsWeakPtr(), ui_manager(), resource,
-                 AwWebResourceRequest(*request_)));
+  resource.callback =
+      base::Bind(&AwSafeBrowsingResourceThrottle::OnBlockingPageComplete,
+                 AsWeakPtr(), resource.callback);
+
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request_);
+  bool is_main_frame =
+      info && info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME;
+  bool has_user_gesture = info && info->HasUserGesture();
+
+  net::HttpRequestHeaders headers;
+  if (!request_->GetFullRequestHeaders(&headers))
+    headers = request_->extra_request_headers();
+
+  url_checker_delegate_->StartDisplayingBlockingPageHelper(
+      resource, request_->method(), headers, is_main_frame, has_user_gesture);
 }
 
 // static
-void AwSafeBrowsingResourceThrottle::StartApplicationResponse(
+void AwSafeBrowsingResourceThrottle::OnBlockingPageComplete(
     const base::WeakPtr<BaseResourceThrottle>& throttle,
-    scoped_refptr<safe_browsing::BaseUIManager> ui_manager,
-    const security_interstitials::UnsafeResource& resource,
-    const AwWebResourceRequest& request) {
-  content::WebContents* web_contents = resource.web_contents_getter.Run();
-  AwContentsClientBridge* client =
-      AwContentsClientBridge::FromWebContents(web_contents);
-
-  if (client) {
-    base::Callback<void(SafeBrowsingAction, bool)> callback =
-        base::Bind(&AwSafeBrowsingResourceThrottle::DoApplicationResponse,
-                   throttle, ui_manager, resource);
-
-    client->OnSafeBrowsingHit(
-        request, resource.threat_type,
-        security_interstitials::kSafeBrowsingPrivacyPolicyUrl, callback);
-  }
-}
-
-// static
-void AwSafeBrowsingResourceThrottle::DoApplicationResponse(
-    const base::WeakPtr<BaseResourceThrottle>& throttle,
-    scoped_refptr<safe_browsing::BaseUIManager> ui_manager,
-    const security_interstitials::UnsafeResource& resource,
-    SafeBrowsingAction action,
-    bool reporting) {
-  if (!reporting) {
-    AwSafeBrowsingUIManager* aw_ui_manager =
-        static_cast<AwSafeBrowsingUIManager*>(ui_manager.get());
-    aw_ui_manager->SetExtendedReportingAllowed(false);
-  }
-  // TODO(ntfschr): fully handle reporting once we add support (crbug/688629)
-  bool proceed;
-  switch (action) {
-    case SafeBrowsingAction::SHOW_INTERSTITIAL:
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI, FROM_HERE,
-          base::Bind(&BaseResourceThrottle::StartDisplayingBlockingPage,
-                     throttle, ui_manager, resource));
-      return;
-    case SafeBrowsingAction::PROCEED:
-      proceed = true;
-      break;
-    case SafeBrowsingAction::BACK_TO_SAFETY:
-      proceed = false;
-      break;
-    default:
-      NOTREACHED();
+    const base::Callback<void(bool)>& forward_callback,
+    bool proceed) {
+  if (throttle && !proceed) {
+    AwSafeBrowsingResourceThrottle* aw_throttle =
+        static_cast<AwSafeBrowsingResourceThrottle*>(throttle.get());
+    aw_throttle->request_->SetUserData(
+        kUserDataKey, base::MakeUnique<base::SupportsUserData::Data>());
   }
 
-  content::WebContents* web_contents = resource.web_contents_getter.Run();
-  content::NavigationEntry* entry = resource.GetNavigationEntryForResource();
-  GURL main_frame_url = entry ? entry->GetURL() : GURL();
-
-  // Navigate back for back-to-safety on subresources
-  if (!proceed && resource.is_subframe) {
-    if (web_contents->GetController().CanGoBack()) {
-      web_contents->GetController().GoBack();
-    } else {
-      web_contents->GetController().LoadURL(
-          ui_manager->default_safe_page(), content::Referrer(),
-          ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
-    }
-  }
-
-  ui_manager->OnBlockingPageDone(
-      std::vector<security_interstitials::UnsafeResource>{resource}, proceed,
-      web_contents, main_frame_url);
-}
-
-void AwSafeBrowsingResourceThrottle::CancelResourceLoad() {
-  request_->SetUserData(kUserDataKey,
-                        base::MakeUnique<base::SupportsUserData::Data>());
-  Cancel();
+  forward_callback.Run(proceed);
 }
 
 }  // namespace android_webview

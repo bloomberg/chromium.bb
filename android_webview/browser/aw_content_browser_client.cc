@@ -16,6 +16,7 @@
 #include "android_webview/browser/aw_printing_message_filter.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
 #include "android_webview/browser/aw_settings.h"
+#include "android_webview/browser/aw_url_checker_delegate_impl.h"
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
@@ -30,6 +31,7 @@
 #include "base/base_paths_android.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/scoped_file.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
@@ -38,6 +40,8 @@
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/safe_browsing/browser/browser_url_loader_throttle.h"
+#include "components/safe_browsing/browser/mojo_safe_browsing_impl.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -50,9 +54,11 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/web_preferences.h"
 #include "device/geolocation/access_token_store.h"
 #include "device/geolocation/geolocation_delegate.h"
@@ -549,6 +555,53 @@ void AwContentBrowserClient::BindInterfaceRequestFromFrame(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   frame_interfaces_.TryBindInterface(interface_name, &interface_pipe,
                                      render_frame_host);
+}
+
+void AwContentBrowserClient::ExposeInterfacesToRenderer(
+    service_manager::BinderRegistry* registry,
+    content::AssociatedInterfaceRegistry* associated_registry,
+    content::RenderProcessHost* render_process_host) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    registry->AddInterface(
+        base::Bind(
+            &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate,
+            render_process_host->GetID(),
+            base::Bind(
+                &AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
+                base::Unretained(this))),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+  }
+}
+
+std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+AwContentBrowserClient::CreateURLLoaderThrottles(
+    const base::Callback<content::WebContents*()>& wc_getter) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+
+  std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
+
+  auto safe_browsing_throttle =
+      safe_browsing::BrowserURLLoaderThrottle::MaybeCreate(
+          GetSafeBrowsingUrlCheckerDelegate(), wc_getter);
+  if (safe_browsing_throttle)
+    result.push_back(std::move(safe_browsing_throttle));
+
+  return result;
+}
+
+safe_browsing::UrlCheckerDelegate*
+AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!safe_browsing_url_checker_delegate_) {
+    safe_browsing_url_checker_delegate_ = new AwUrlCheckerDelegateImpl(
+        browser_context_->GetSafeBrowsingDBManager(),
+        browser_context_->GetSafeBrowsingUIManager(),
+        browser_context_->GetSafeBrowsingWhitelistManager());
+  }
+
+  return safe_browsing_url_checker_delegate_.get();
 }
 
 }  // namespace android_webview

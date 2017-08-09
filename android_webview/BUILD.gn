@@ -101,7 +101,7 @@ java_cpp_enum("aw_error_ui") {
 
 java_cpp_enum("aw_safe_browsing_action") {
   sources = [
-    "browser/aw_safe_browsing_resource_throttle.h",
+    "browser/aw_url_checker_delegate_impl.h",
   ]
 }
 
@@ -521,6 +521,8 @@ source_set("common") {
     "browser/aw_settings.h",
     "browser/aw_ssl_host_state_delegate.cc",
     "browser/aw_ssl_host_state_delegate.h",
+    "browser/aw_url_checker_delegate_impl.cc",
+    "browser/aw_url_checker_delegate_impl.h",
     "browser/aw_web_contents_delegate.cc",
     "browser/aw_web_contents_delegate.h",
     "browser/aw_web_contents_view_delegate.cc",

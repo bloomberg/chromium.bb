@@ -27,6 +27,7 @@
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/printing/renderer/print_render_frame_helper.h"
+#include "components/safe_browsing/renderer/renderer_url_loader_throttle.h"
 #include "components/safe_browsing/renderer/websocket_sb_handshake_throttle.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/supervised_user_error_page/gin_wrapper.h"
@@ -309,6 +310,23 @@ AwContentRendererClient::CreateWebSocketHandshakeThrottle() {
     return nullptr;
   return base::MakeUnique<safe_browsing::WebSocketSBHandshakeThrottle>(
       safe_browsing_.get());
+}
+
+bool AwContentRendererClient::WillSendRequest(
+    blink::WebLocalFrame* frame,
+    ui::PageTransition transition_type,
+    const blink::WebURL& url,
+    std::vector<std::unique_ptr<content::URLLoaderThrottle>>* throttles,
+    GURL* new_url) {
+  if (UsingSafeBrowsingMojoService()) {
+    content::RenderFrame* render_frame =
+        content::RenderFrame::FromWebFrame(frame);
+    throttles->push_back(
+        base::MakeUnique<safe_browsing::RendererURLLoaderThrottle>(
+            safe_browsing_.get(), render_frame->GetRoutingID()));
+  }
+
+  return false;
 }
 
 bool AwContentRendererClient::ShouldUseMediaPlayerForURL(const GURL& url) {

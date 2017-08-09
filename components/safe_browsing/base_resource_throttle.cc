@@ -284,31 +284,6 @@ void BaseResourceThrottle::OnCheckBrowseUrlResult(
   StartDisplayingBlockingPageHelper(resource);
 }
 
-void BaseResourceThrottle::StartDisplayingBlockingPageHelper(
-    security_interstitials::UnsafeResource resource) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&BaseResourceThrottle::StartDisplayingBlockingPage,
-                 AsWeakPtr(), ui_manager_, resource));
-}
-
-// Static
-void BaseResourceThrottle::StartDisplayingBlockingPage(
-    const base::WeakPtr<BaseResourceThrottle>& throttle,
-    scoped_refptr<BaseUIManager> ui_manager,
-    const security_interstitials::UnsafeResource& resource) {
-  content::WebContents* web_contents = resource.web_contents_getter.Run();
-  if (web_contents) {
-    ui_manager->DisplayBlockingPage(resource);
-    return;
-  }
-
-  // Tab is gone or it's being prerendered.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&BaseResourceThrottle::Cancel, throttle));
-}
-
 void BaseResourceThrottle::OnBlockingPageComplete(bool proceed) {
   CHECK_EQ(state_, STATE_DISPLAYING_BLOCKING_PAGE);
   state_ = STATE_NONE;
