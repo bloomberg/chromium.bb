@@ -42,20 +42,30 @@ void ControllerClient::SetReportingPreference(bool report) {
              : MetricsHelper::SET_EXTENDED_REPORTING_DISABLED);
 }
 
-void ControllerClient::OpenExtendedReportingPrivacyPolicy() {
+void ControllerClient::OpenExtendedReportingPrivacyPolicy(
+    bool open_links_in_new_tab) {
   metrics_helper_->RecordUserInteraction(MetricsHelper::SHOW_PRIVACY_POLICY);
   GURL privacy_url(kSafeBrowsingPrivacyPolicyUrl);
   privacy_url =
       google_util::AppendGoogleLocaleParam(privacy_url, GetApplicationLocale());
-  OpenUrlInNewForegroundTab(privacy_url);
+  OpenURL(open_links_in_new_tab, privacy_url);
 }
 
-void ControllerClient::OpenExtendedReportingWhitepaper() {
+void ControllerClient::OpenExtendedReportingWhitepaper(
+    bool open_links_in_new_tab) {
   metrics_helper_->RecordUserInteraction(MetricsHelper::SHOW_WHITEPAPER);
   GURL whitepaper_url(kSafeBrowsingWhitePaperUrl);
   whitepaper_url = google_util::AppendGoogleLocaleParam(whitepaper_url,
                                                         GetApplicationLocale());
-  OpenUrlInNewForegroundTab(whitepaper_url);
+  OpenURL(open_links_in_new_tab, whitepaper_url);
+}
+
+void ControllerClient::OpenURL(bool open_links_in_new_tab, const GURL& url) {
+  if (open_links_in_new_tab) {
+    OpenUrlInNewForegroundTab(url);
+  } else {
+    OpenUrlInCurrentTab(url);
+  }
 }
 
 GURL ControllerClient::GetBaseHelpCenterUrl() const {

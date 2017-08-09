@@ -240,10 +240,10 @@ void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
           safe_browsing::SBER_OPTIN_SITE_SECURITY_INTERSTITIAL);
       break;
     case security_interstitials::CMD_OPEN_REPORTING_PRIVACY:
-      controller()->OpenExtendedReportingPrivacyPolicy();
+      controller()->OpenExtendedReportingPrivacyPolicy(true);
       break;
     case security_interstitials::CMD_OPEN_WHITEPAPER:
-      controller()->OpenExtendedReportingWhitepaper();
+      controller()->OpenExtendedReportingWhitepaper(true);
       break;
     case security_interstitials::CMD_ERROR:
     case security_interstitials::CMD_TEXT_FOUND:

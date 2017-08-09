@@ -199,10 +199,10 @@ void SSLErrorUI::HandleCommand(SecurityInterstitialCommands command) {
       controller_->Reload();
       break;
     case CMD_OPEN_REPORTING_PRIVACY:
-      controller_->OpenExtendedReportingPrivacyPolicy();
+      controller_->OpenExtendedReportingPrivacyPolicy(true);
       break;
     case CMD_OPEN_WHITEPAPER:
-      controller_->OpenExtendedReportingWhitepaper();
+      controller_->OpenExtendedReportingWhitepaper(true);
       break;
     case CMD_OPEN_DATE_SETTINGS:
     case CMD_OPEN_DIAGNOSTIC:
