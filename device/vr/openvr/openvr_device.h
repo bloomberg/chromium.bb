@@ -33,7 +33,6 @@ class OpenVRDevice : public VRDevice {
   void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
                       mojom::VRPresentationProviderRequest request,
                       const base::Callback<void(bool)>& callback) override;
-  void SetSecureOrigin(bool secure_origin) override;
   void ExitPresent() override;
   void GetNextMagicWindowPose(
       mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) override;

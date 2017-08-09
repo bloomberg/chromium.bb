@@ -197,10 +197,6 @@ void OpenVRDevice::RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
   // We don't support presentation currently.
 }
 
-void OpenVRDevice::SetSecureOrigin(bool secure_origin) {
-  // We don't support presentation currently, so don't do anything.
-}
-
 void OpenVRDevice::ExitPresent() {
   // We don't support presentation currently, so don't do anything.
 }

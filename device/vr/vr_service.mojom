@@ -84,16 +84,17 @@ interface VRSubmitFrameClient {
   OnSubmitFrameRendered();
 };
 
-// Represents a physical VR device that can be used to present WebVR content, or get orientation
-// data (VRPose) when not presenting (aka magic window).
+// Represents a physical VR device that can be used to present WebVR content,
+// or get orientation data (VRPose) when not presenting (aka magic window).
 interface VRDisplay {
-  RequestPresent(bool secure_origin, VRSubmitFrameClient client,
+  RequestPresent(VRSubmitFrameClient client,
                  VRPresentationProvider& request) => (bool success);
   ExitPresent();
   GetNextMagicWindowPose() => (VRPose? pose);
 };
 
-// Provides the necessary functionality for a presenting WebVR page to draw frames for a VrDisplay.
+// Provides the necessary functionality for a presenting WebVR page to draw
+// frames for a VrDisplay.
 interface VRPresentationProvider {
   enum VSyncStatus { SUCCESS, CLOSING };
 

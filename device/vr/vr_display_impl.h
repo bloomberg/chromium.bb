@@ -48,15 +48,13 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRDisplay {
  private:
   friend class VRDisplayImplTest;
 
-  void RequestPresent(bool secure_origin,
-                      mojom::VRSubmitFrameClientPtr submit_client,
+  void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
                       mojom::VRPresentationProviderRequest request,
                       RequestPresentCallback callback) override;
   void ExitPresent() override;
   void GetNextMagicWindowPose(GetNextMagicWindowPoseCallback callback) override;
 
   void RequestPresentResult(RequestPresentCallback callback,
-                            bool secure_origin,
                             bool success);
 
   mojo::Binding<mojom::VRDisplay> binding_;
