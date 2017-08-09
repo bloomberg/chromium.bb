@@ -873,6 +873,14 @@ void WebPluginContainerImpl::HandleKeyboardEvent(KeyboardEvent* event) {
         return;
       }
     }
+    // Invoke "PasteAndMatchStyle" using Ctrl + Shift + V to paste as plain
+    // text.
+    if (input_modifiers == (kEditingModifier | WebInputEvent::kShiftKey) &&
+        web_event.windows_key_code == VKEY_V && web_plugin_->CanEditText() &&
+        ExecuteEditCommand("PasteAndMatchStyle", "")) {
+      event->SetDefaultHandled();
+      return;
+    }
   }
 
   // Give the client a chance to issue edit comamnds.
