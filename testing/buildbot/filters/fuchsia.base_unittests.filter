@@ -32,7 +32,6 @@
 -ProcessMemoryDumpTest.CountResidentBytes
 -ProcessMemoryDumpTest.CountResidentBytesInSharedMemory
 -ProcessMemoryDumpTest.TakeAllDumpsFrom
--ProcessTest.Move
 -ProcessTest.Terminate
 -ProcessTest.TerminateCurrentProcessImmediatelyWithNonZeroExitCode
 -ProcessTest.TerminateCurrentProcessImmediatelyWithZeroExitCode

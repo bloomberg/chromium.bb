@@ -23,12 +23,14 @@ Process::~Process() {
 Process::Process(Process&& other)
     : process_(other.process_), is_current_process_(other.is_current_process_) {
   other.process_ = kNullProcessHandle;
+  other.is_current_process_ = false;
 }
 
 Process& Process::operator=(Process&& other) {
   process_ = other.process_;
   other.process_ = kNullProcessHandle;
   is_current_process_ = other.is_current_process_;
+  other.is_current_process_ = false;
   return *this;
 }
 
