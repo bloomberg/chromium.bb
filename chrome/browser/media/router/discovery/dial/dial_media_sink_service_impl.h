@@ -18,6 +18,17 @@ namespace media_router {
 class DeviceDescriptionService;
 class DialRegistry;
 
+// An observer class registered with DialMediaSinkService to receive
+// notifications when DIAL sinks are added or removed from DialMediaSinkService
+class DialMediaSinkServiceObserver {
+ public:
+  virtual ~DialMediaSinkServiceObserver() {}
+
+  // Invoked when |sink| is added to DialMediaSinkServiceImpl instance.
+  // |sink|: must be a DIAL sink.
+  virtual void OnDialSinkAdded(const MediaSinkInternal& sink) = 0;
+};
+
 // A service which can be used to start background discovery and resolution of
 // DIAL devices (Smart TVs, Game Consoles, etc.).
 // This class is not thread safe. All methods must be called from the IO thread.
@@ -27,6 +38,13 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   DialMediaSinkServiceImpl(const OnSinksDiscoveredCallback& callback,
                            net::URLRequestContextGetter* request_context);
   ~DialMediaSinkServiceImpl() override;
+
+  // Does not take ownership of |observer|. Caller should make sure |observer|
+  // object outlives |this|.
+  void SetObserver(DialMediaSinkServiceObserver* observer);
+
+  // Sets |observer_| to nullptr.
+  void ClearObserver(DialMediaSinkServiceObserver* observer);
 
   // MediaSinkService implementation
   void Start() override;
@@ -77,6 +95,8 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
 
   // Device data list from current round of discovery.
   DialRegistry::DeviceList current_devices_;
+
+  DialMediaSinkServiceObserver* observer_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 

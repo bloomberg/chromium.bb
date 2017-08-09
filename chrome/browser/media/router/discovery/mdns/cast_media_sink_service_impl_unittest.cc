@@ -16,8 +16,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SaveArg;
+using ::testing::WithArgs;
+using cast_channel::ChannelError;
 
 namespace {
 
@@ -42,6 +45,19 @@ media_router::MediaSinkInternal CreateCastSink(int num) {
   extra_data.cast_channel_id = num;
   extra_data.capabilities = cast_channel::CastDeviceCapability::AUDIO_OUT |
                             cast_channel::CastDeviceCapability::VIDEO_OUT;
+  return media_router::MediaSinkInternal(sink, extra_data);
+}
+
+media_router::MediaSinkInternal CreateDialSink(int num) {
+  std::string friendly_name = base::StringPrintf("friendly name %d", num);
+  std::string unique_id = base::StringPrintf("id %d", num);
+  net::IPEndPoint ip_endpoint = CreateIPEndPoint(num);
+
+  media_router::MediaSink sink(unique_id, friendly_name,
+                               media_router::SinkIconType::GENERIC);
+  media_router::DialSinkExtraData extra_data;
+  extra_data.ip_address = ip_endpoint.address();
+  extra_data.model_name = base::StringPrintf("model name %d", num);
   return media_router::MediaSinkInternal(sink, extra_data);
 }
 
@@ -86,8 +102,9 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnChannelOpened) {
   media_sink_service_impl_.OnChannelOpened(cast_sink, &socket);
 
   // Verify sink content
-  EXPECT_EQ(media_sink_service_impl_.current_sinks_,
-            std::set<MediaSinkInternal>({cast_sink}));
+  EXPECT_CALL(mock_sink_discovered_cb_,
+              Run(std::vector<MediaSinkInternal>({cast_sink})));
+  media_sink_service_impl_.OnFetchCompleted();
 }
 
 TEST_F(CastMediaSinkServiceImplTest, TestMultipleOnChannelOpened) {
@@ -110,8 +127,10 @@ TEST_F(CastMediaSinkServiceImplTest, TestMultipleOnChannelOpened) {
   media_sink_service_impl_.OnChannelOpened(cast_sink2, &socket2);
   media_sink_service_impl_.OnChannelOpened(cast_sink3, &socket3);
 
-  EXPECT_EQ(media_sink_service_impl_.current_sinks_,
-            std::set<MediaSinkInternal>({cast_sink2, cast_sink3}));
+  // Verify sink content
+  EXPECT_CALL(mock_sink_discovered_cb_,
+              Run(std::vector<MediaSinkInternal>({cast_sink2, cast_sink3})));
+  media_sink_service_impl_.OnFetchCompleted();
 }
 
 TEST_F(CastMediaSinkServiceImplTest, TestTimer) {
@@ -187,8 +206,10 @@ TEST_F(CastMediaSinkServiceImplTest, TestMultipleOpenChannels) {
   media_sink_service_impl_.OnChannelOpened(cast_sink1, &socket1);
   media_sink_service_impl_.OnChannelOpened(cast_sink3, &socket3);
 
-  EXPECT_EQ(media_sink_service_impl_.current_sinks_,
-            std::set<MediaSinkInternal>({cast_sink1, cast_sink2, cast_sink3}));
+  EXPECT_CALL(mock_sink_discovered_cb_,
+              Run(std::vector<MediaSinkInternal>(
+                  {cast_sink1, cast_sink2, cast_sink3})));
+  media_sink_service_impl_.OnFetchCompleted();
 }
 
 TEST_F(CastMediaSinkServiceImplTest, TestOnChannelError) {
@@ -200,12 +221,83 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnChannelError) {
   media_sink_service_impl_.current_service_ip_endpoints_.insert(ip_endpoint1);
   media_sink_service_impl_.OnChannelOpened(cast_sink, &socket);
 
-  EXPECT_EQ(1u, media_sink_service_impl_.current_sinks_.size());
+  EXPECT_EQ(1u, media_sink_service_impl_.current_sinks_by_mdns_.size());
 
   socket.SetIPEndpoint(ip_endpoint1);
   media_sink_service_impl_.OnError(
       socket, cast_channel::ChannelError::CHANNEL_NOT_OPEN);
-  EXPECT_TRUE(media_sink_service_impl_.current_sinks_.empty());
+  EXPECT_TRUE(media_sink_service_impl_.current_sinks_by_mdns_.empty());
+}
+
+TEST_F(CastMediaSinkServiceImplTest, TestOnDialSinkAdded) {
+  MediaSinkInternal dial_sink1 = CreateDialSink(1);
+  MediaSinkInternal dial_sink2 = CreateDialSink(2);
+  net::IPEndPoint ip_endpoint1(dial_sink1.dial_data().ip_address,
+                               CastMediaSinkServiceImpl::kCastControlPort);
+  net::IPEndPoint ip_endpoint2(dial_sink2.dial_data().ip_address,
+                               CastMediaSinkServiceImpl::kCastControlPort);
+
+  cast_channel::MockCastSocket socket1;
+  cast_channel::MockCastSocket socket2;
+  socket1.set_id(1);
+  socket2.set_id(2);
+
+  // Channel 1, 2 opened.
+  EXPECT_CALL(*mock_cast_socket_service_,
+              OpenSocketInternal(ip_endpoint1, _, _, _))
+      .WillOnce(DoAll(
+          WithArgs<2>(Invoke(
+              [&](const base::Callback<void(cast_channel::CastSocket * socket)>&
+                      callback) { std::move(callback).Run(&socket1); })),
+          Return(1)));
+  EXPECT_CALL(*mock_cast_socket_service_,
+              OpenSocketInternal(ip_endpoint2, _, _, _))
+      .WillOnce(DoAll(
+          WithArgs<2>(Invoke(
+              [&](const base::Callback<void(cast_channel::CastSocket * socket)>&
+                      callback) { std::move(callback).Run(&socket2); })),
+          Return(2)));
+
+  // Invoke CastSocketService::OpenSocket on the IO thread.
+  media_sink_service_impl_.OnDialSinkAdded(dial_sink1);
+  base::RunLoop().RunUntilIdle();
+
+  // Invoke CastSocketService::OpenSocket on the IO thread.
+  media_sink_service_impl_.OnDialSinkAdded(dial_sink2);
+  base::RunLoop().RunUntilIdle();
+  // Verify sink content.
+  EXPECT_EQ(2u, media_sink_service_impl_.current_sinks_by_dial_.size());
+}
+
+TEST_F(CastMediaSinkServiceImplTest, TestOnFetchCompleted) {
+  std::vector<MediaSinkInternal> sinks;
+  EXPECT_CALL(mock_sink_discovered_cb_, Run(_)).WillOnce(SaveArg<0>(&sinks));
+
+  auto cast_sink1 = CreateCastSink(1);
+  auto cast_sink2 = CreateCastSink(2);
+  auto cast_sink3 = CreateCastSink(3);
+  net::IPEndPoint ip_endpoint1 = CreateIPEndPoint(1);
+  net::IPEndPoint ip_endpoint2 = CreateIPEndPoint(2);
+  net::IPEndPoint ip_endpoint3 = CreateIPEndPoint(3);
+
+  // Cast sink 1, 2 from mDNS discovery
+  media_sink_service_impl_.current_sinks_by_mdns_[ip_endpoint1] = cast_sink1;
+  media_sink_service_impl_.current_sinks_by_mdns_[ip_endpoint2] = cast_sink2;
+  // Cast sink 2, 3 from dial discovery
+  auto extra_data = cast_sink2.cast_data();
+  extra_data.discovered_by_dial = true;
+  extra_data.model_name += " dial";
+
+  media_sink_service_impl_.current_sinks_by_dial_[ip_endpoint2] = cast_sink2;
+  media_sink_service_impl_.current_sinks_by_dial_[ip_endpoint3] = cast_sink3;
+
+  // Callback returns Cast sink 1, 2, 3
+  media_sink_service_impl_.OnFetchCompleted();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(base::ContainsValue(sinks, cast_sink1));
+  EXPECT_TRUE(base::ContainsValue(sinks, cast_sink2));
+  EXPECT_TRUE(base::ContainsValue(sinks, cast_sink3));
 }
 
 }  // namespace media_router

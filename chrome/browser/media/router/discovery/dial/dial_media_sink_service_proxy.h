@@ -25,6 +25,7 @@ class URLRequestContextGetter;
 namespace media_router {
 
 class DialMediaSinkServiceImpl;
+class DialMediaSinkServiceObserver;
 
 // A wrapper class of DialMediaSinkService handling thread hopping between UI
 // and IO threads. This class is thread safe. Public APIs should be invoked on
@@ -50,6 +51,13 @@ class DialMediaSinkServiceProxy
   // Start() is cleared.
   void Stop() override;
 
+  // Does not take ownership of |observer|. Caller should make sure |observer|
+  // object outlives |this|.
+  void SetObserver(DialMediaSinkServiceObserver* observer);
+
+  // Sets |observer_| to nullptr.
+  void ClearObserver(DialMediaSinkServiceObserver* observer);
+
   void SetDialMediaSinkServiceForTest(
       std::unique_ptr<DialMediaSinkServiceImpl> dial_media_sink_service);
 
@@ -74,6 +82,8 @@ class DialMediaSinkServiceProxy
 
  private:
   std::unique_ptr<DialMediaSinkServiceImpl> dial_media_sink_service_;
+
+  DialMediaSinkServiceObserver* observer_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 

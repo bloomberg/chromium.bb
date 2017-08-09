@@ -16,7 +16,9 @@ namespace media_router {
 DialMediaSinkServiceImpl::DialMediaSinkServiceImpl(
     const OnSinksDiscoveredCallback& callback,
     net::URLRequestContextGetter* request_context)
-    : MediaSinkServiceBase(callback), request_context_(request_context) {
+    : MediaSinkServiceBase(callback),
+      observer_(nullptr),
+      request_context_(request_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(request_context_);
 }
@@ -59,6 +61,18 @@ DeviceDescriptionService* DialMediaSinkServiceImpl::GetDescriptionService() {
                    base::Unretained(this))));
   }
   return description_service_.get();
+}
+
+void DialMediaSinkServiceImpl::SetObserver(
+    DialMediaSinkServiceObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  observer_ = observer;
+}
+
+void DialMediaSinkServiceImpl::ClearObserver(
+    DialMediaSinkServiceObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  observer_ = nullptr;
 }
 
 void DialMediaSinkServiceImpl::SetDialRegistryForTest(
@@ -115,7 +129,10 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable(
     return;
   }
 
-  current_sinks_.insert(MediaSinkInternal(sink, extra_data));
+  MediaSinkInternal dial_sink(sink, extra_data);
+  current_sinks_.insert(dial_sink);
+  if (observer_)
+    observer_->OnDialSinkAdded(dial_sink);
 
   // Start fetch timer again if device description comes back after
   // |finish_timer_| fires.

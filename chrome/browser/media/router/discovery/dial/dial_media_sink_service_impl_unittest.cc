@@ -109,7 +109,7 @@ TEST_F(DialMediaSinkServiceImplTest, TestOnDeviceDescriptionAvailable) {
   media_sink_service_->OnDeviceDescriptionAvailable(device_data,
                                                     device_description);
 
-  EXPECT_EQ(size_t(1), media_sink_service_->current_sinks_.size());
+  EXPECT_EQ(1u, media_sink_service_->current_sinks_.size());
 }
 
 TEST_F(DialMediaSinkServiceImplTest, TestTimer) {
