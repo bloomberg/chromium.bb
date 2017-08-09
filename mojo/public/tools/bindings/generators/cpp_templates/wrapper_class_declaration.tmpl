@@ -13,10 +13,13 @@ class {{export_attribute}} {{struct.name}} {
   static {{constant|format_constant_declaration(nested=True)}};
 {%- endfor %}
 
+{%- set in_place_marker = "WTF::in_place"
+        if for_blink else "base::in_place" %}
+
   template <typename... Args>
   static {{struct.name}}Ptr New(Args&&... args) {
     return {{struct.name}}Ptr(
-        base::in_place,
+        {{in_place_marker}},
         std::forward<Args>(args)...);
   }
 
@@ -112,4 +115,3 @@ class {{export_attribute}} {{struct.name}} {
   DISALLOW_COPY_AND_ASSIGN({{struct.name}});
 {%- endif %}
 };
-
