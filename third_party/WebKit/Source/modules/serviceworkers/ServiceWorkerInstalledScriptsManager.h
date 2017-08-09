@@ -20,7 +20,8 @@ class ServiceWorkerInstalledScriptsManager : public InstalledScriptsManager {
 
   // InstalledScriptsManager implementation.
   bool IsScriptInstalled(const KURL& script_url) const override;
-  Optional<ScriptData> GetScriptData(const KURL& script_url) override;
+  ScriptStatus GetScriptData(const KURL& script_url,
+                             ScriptData* out_script_data) override;
 
  private:
   std::unique_ptr<WebServiceWorkerInstalledScriptsManager> manager_;

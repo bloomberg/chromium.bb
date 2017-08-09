@@ -216,6 +216,7 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest, GetRawScriptData) {
     // Wait for the script's arrival.
     get_raw_script_data_waiter->Wait();
     ASSERT_TRUE(script_data);
+    EXPECT_TRUE(script_data->IsValid());
     ASSERT_EQ(1u, script_data->ScriptTextChunks().size());
     ASSERT_EQ(kExpectedBody.size() + 1,
               script_data->ScriptTextChunks()[0].size());
@@ -269,16 +270,17 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
 
     // Wait for the script's arrival.
     get_raw_script_data_waiter->Wait();
-    // |script_data| should be nullptr since the data pipe for body gets
-    // disconnected during sending.
-    EXPECT_FALSE(script_data);
+    // script_data->IsValid() should return false since the data pipe for body
+    // gets disconnected during sending.
+    ASSERT_TRUE(script_data);
+    EXPECT_FALSE(script_data->IsValid());
   }
 
   {
     std::unique_ptr<RawScriptData> script_data;
     GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data)->Wait();
     // This should not be blocked because the script won't arrive. nullptr will
-    // be returned after disconnection.
+    // be returned when reading again.
     EXPECT_EQ(nullptr, script_data.get());
   }
 }
@@ -300,8 +302,8 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
 
     // Start transferring the script.
     // Meta data is expected to be 100 bytes larger than kExpectedMetaData, but
-    // sender only sends kExpectedBody and a null byte (kExpectedMetaData.size()
-    // + 1 bytes in total).
+    // sender only sends kExpectedMetaData and a null byte
+    // (kExpectedMetaData.size() + 1 bytes in total).
     EXPECT_EQ(kScriptUrl,
               sender.TransferInstalledScript(kExpectedBody.size() + 1,
                                              kExpectedMetaData.size() + 100));
@@ -315,16 +317,17 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
 
     // Wait for the script's arrival.
     get_raw_script_data_waiter->Wait();
-    // |script_data| should be nullptr since the data pipe for body gets
-    // disconnected during sending.
-    EXPECT_FALSE(script_data);
+    // script_data->IsValid() should return false since the data pipe for meta
+    // data gets disconnected during sending.
+    ASSERT_TRUE(script_data);
+    EXPECT_FALSE(script_data->IsValid());
   }
 
   {
     std::unique_ptr<RawScriptData> script_data;
     GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data)->Wait();
     // This should not be blocked because the script won't arrive. nullptr will
-    // be returned after disconnection.
+    // be returned when reading again.
     EXPECT_EQ(nullptr, script_data.get());
   }
 }

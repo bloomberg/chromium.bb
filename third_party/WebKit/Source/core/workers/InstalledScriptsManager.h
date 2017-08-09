@@ -22,10 +22,13 @@ class InstalledScriptsManager {
 
   class CORE_EXPORT ScriptData {
    public:
+    ScriptData() = default;
     ScriptData(const KURL& script_url,
                String source_text,
                std::unique_ptr<Vector<char>> meta_data,
                std::unique_ptr<CrossThreadHTTPHeaderMapData>);
+    ScriptData(ScriptData&& other) = default;
+    ScriptData& operator=(ScriptData&& other) = default;
 
     String TakeSourceText() { return std::move(source_text_); }
     std::unique_ptr<Vector<char>> TakeMetaData() {
@@ -38,23 +41,35 @@ class InstalledScriptsManager {
     std::unique_ptr<Vector<String>> CreateOriginTrialTokens();
 
    private:
-    const KURL script_url_;
+    KURL script_url_;
     String source_text_;
     std::unique_ptr<Vector<char>> meta_data_;
     HTTPHeaderMap headers_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScriptData);
   };
 
   // Used on the main or worker thread. Returns true if the script has been
   // installed.
   virtual bool IsScriptInstalled(const KURL& script_url) const = 0;
 
-  // Used on the worker thread. This is possible to return WTF::nullopt when the
-  // script has already been served from this manager (i.e. the same script is
-  // read more than once) or when receiving the script from the browser has
-  // failed. This can be blocked if the script is not streamed yet.
-  virtual Optional<ScriptData> GetScriptData(const KURL& script_url) = 0;
+  enum class ScriptStatus { kSuccess, kTaken, kFailed };
+  // Used on the worker thread. GetScriptData() can provide a script for the
+  // |script_url| only once. When GetScriptData returns
+  // - ScriptStatus::kSuccess: the script has been received correctly. Sets the
+  //                           script to |out_script_data|.
+  // - ScriptStatus::kTaken: the script has been served from this manager
+  //                         (i.e. the same script is read more than once).
+  //                         |out_script_data| is left as is.
+  // - ScriptStatus::kFailed: an error happened while receiving the script from
+  //                          the browser process.
+  //                         |out_script_data| is left as is.
+  // This can block if the script has not been received from the browser process
+  // yet.
+  virtual ScriptStatus GetScriptData(const KURL& script_url,
+                                     ScriptData* out_script_data) = 0;
 };
 
 }  // namespace blink
 
-#endif  // WorkerInstalledScriptsManager_h
+#endif  // InstalledScriptsManager_h

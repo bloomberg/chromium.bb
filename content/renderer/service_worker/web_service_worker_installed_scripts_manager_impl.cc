@@ -180,6 +180,8 @@ class Internal : public mojom::ServiceWorkerInstalledScriptsManager {
 
   // Called on the IO thread.
   void OnScriptReceived(mojom::ServiceWorkerScriptInfoPtr script_info) {
+    using RawScriptData =
+        blink::WebServiceWorkerInstalledScriptsManager::RawScriptData;
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     const GURL& script_url = script_info->script_url;
     auto iter = running_receivers_.find(script_url);
@@ -188,19 +190,15 @@ class Internal : public mojom::ServiceWorkerInstalledScriptsManager {
     DCHECK(receivers);
     if (!receivers->body()->has_received_all_data() ||
         !receivers->meta_data()->has_received_all_data()) {
-      // TODO(shimazu): Add a RawScriptData with a failure flag to
-      // |script_container_| in order to distinguish failure of receiving the
-      // script from getting the script twice.
+      script_container_->AddOnIOThread(script_url,
+                                       RawScriptData::CreateInvalidInstance());
       running_receivers_.erase(iter);
-      script_container_->OnAllDataAddedOnIOThread();
       return;
     }
 
-    auto script_data =
-        blink::WebServiceWorkerInstalledScriptsManager::RawScriptData::Create(
-            blink::WebString::FromUTF8(script_info->encoding),
-            receivers->body()->TakeChunks(),
-            receivers->meta_data()->TakeChunks());
+    auto script_data = RawScriptData::Create(
+        blink::WebString::FromUTF8(script_info->encoding),
+        receivers->body()->TakeChunks(), receivers->meta_data()->TakeChunks());
     for (const auto& entry : script_info->headers) {
       script_data->AddHeader(blink::WebString::FromUTF8(entry.first),
                              blink::WebString::FromUTF8(entry.second));

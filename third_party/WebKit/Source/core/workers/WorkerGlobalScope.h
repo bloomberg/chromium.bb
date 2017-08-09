@@ -167,6 +167,33 @@ class CORE_EXPORT WorkerGlobalScope
   void RemoveURLFromMemoryCache(const KURL&) final;
 
  private:
+  // |kNotHandled| is used when the script was not in
+  // InstalledScriptsManager, which means either it was not an installed script
+  // or it was already taken.
+  enum class LoadResult { kSuccess, kFailed, kNotHandled };
+
+  // Tries to load the script synchronously from the
+  // InstalledScriptsManager, which holds scripts that are sent from the browser
+  // upon starting an installed worker. This blocks until the script is
+  // received. If the script load could not be handled by the
+  // InstalledScriptsManager, e.g. when the script was not an installed script,
+  // returns LoadResult::kNotHandled.
+  // TODO(crbug.com/753350): Factor out LoadingScriptFrom* into a new class
+  // which provides the worker's scripts.
+  LoadResult LoadingScriptFromInstalledScriptsManager(
+      const KURL& script_url,
+      KURL* out_response_url,
+      String* out_source_code,
+      std::unique_ptr<Vector<char>>* out_cached_meta_data);
+  // Tries to load the script synchronously from the WorkerScriptLoader, which
+  // requests the script from the browser. This
+  // blocks until the script is received.
+  LoadResult LoadingScriptFromWorkerScriptLoader(
+      const KURL& script_url,
+      KURL* out_response_url,
+      String* out_source_code,
+      std::unique_ptr<Vector<char>>* out_cached_meta_data);
+
   // ExecutionContext
   EventTarget* ErrorEventTarget() final { return this; }
   const KURL& VirtualURL() const final { return url_; }

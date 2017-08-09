@@ -21,14 +21,18 @@ bool ServiceWorkerInstalledScriptsManager::IsScriptInstalled(
   return manager_->IsScriptInstalled(script_url);
 }
 
-Optional<InstalledScriptsManager::ScriptData>
-ServiceWorkerInstalledScriptsManager::GetScriptData(const KURL& script_url) {
+InstalledScriptsManager::ScriptStatus
+ServiceWorkerInstalledScriptsManager::GetScriptData(
+    const KURL& script_url,
+    InstalledScriptsManager::ScriptData* out_script_data) {
   DCHECK(!IsMainThread());
   // This blocks until the script is received from the browser.
   std::unique_ptr<WebServiceWorkerInstalledScriptsManager::RawScriptData>
       raw_script_data = manager_->GetRawScriptData(script_url);
   if (!raw_script_data)
-    return WTF::nullopt;
+    return ScriptStatus::kTaken;
+  if (!raw_script_data->IsValid())
+    return ScriptStatus::kFailed;
 
   // This is from WorkerScriptLoader::DidReceiveData.
   std::unique_ptr<TextResourceDecoder> decoder;
@@ -59,7 +63,8 @@ ServiceWorkerInstalledScriptsManager::GetScriptData(const KURL& script_url) {
   InstalledScriptsManager::ScriptData script_data(
       script_url, source_text_builder.ToString(), std::move(meta_data),
       raw_script_data->TakeHeaders());
-  return Optional<ScriptData>(std::move(script_data));
+  *out_script_data = std::move(script_data);
+  return ScriptStatus::kSuccess;
 }
 
 }  // namespace blink
