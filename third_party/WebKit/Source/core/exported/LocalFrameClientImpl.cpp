@@ -46,7 +46,7 @@
 #include "core/exported/WebDevToolsFrontendImpl.h"
 #include "core/exported/WebDocumentLoaderImpl.h"
 #include "core/exported/WebPluginContainerImpl.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/WebLocalFrameImpl.h"
@@ -468,7 +468,7 @@ void LocalFrameClientImpl::DispatchDidChangeThemeColor() {
 }
 
 static bool AllowCreatingBackgroundTabs() {
-  const WebInputEvent* input_event = WebViewBase::CurrentInputEvent();
+  const WebInputEvent* input_event = WebViewImpl::CurrentInputEvent();
   if (!input_event || (input_event->GetType() != WebInputEvent::kMouseUp &&
                        (input_event->GetType() != WebInputEvent::kRawKeyDown &&
                         input_event->GetType() != WebInputEvent::kKeyDown) &&
@@ -654,7 +654,7 @@ void LocalFrameClientImpl::LoadErrorPage(int reason) {
 }
 
 bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
-  WebViewBase* webview = web_frame_->ViewImpl();
+  WebViewImpl* webview = web_frame_->ViewImpl();
   if (!webview->Client())
     return false;
 
@@ -963,7 +963,7 @@ void LocalFrameClientImpl::DispatchDidChangeManifest() {
 }
 
 unsigned LocalFrameClientImpl::BackForwardLength() {
-  WebViewBase* webview = web_frame_->ViewImpl();
+  WebViewImpl* webview = web_frame_->ViewImpl();
   if (!webview || !webview->Client())
     return 0;
   return webview->Client()->HistoryBackListCount() + 1 +

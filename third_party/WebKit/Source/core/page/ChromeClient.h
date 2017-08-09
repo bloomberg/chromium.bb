@@ -79,7 +79,7 @@ class WebFrameScheduler;
 class WebImage;
 class WebLayer;
 class WebLayerTreeView;
-class WebViewBase;
+class WebViewImpl;
 
 struct CompositedSelection;
 struct DateTimeChooserParameters;
@@ -167,7 +167,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
                             String& result);
   virtual bool TabsToLinks() = 0;
 
-  virtual WebViewBase* GetWebView() const = 0;
+  virtual WebViewImpl* GetWebView() const = 0;
 
   // Methods used by PlatformChromeClient.
   virtual WebScreenInfo GetScreenInfo() const = 0;
@@ -235,13 +235,13 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
 
   // Pass nullptr as the GraphicsLayer to detach the root layer.
   // This sets the graphics layer for the LocalFrame's WebWidget, if it has
-  // one. Otherwise it sets it for the WebViewBase.
+  // one. Otherwise it sets it for the WebViewImpl.
   virtual void AttachRootGraphicsLayer(GraphicsLayer*,
                                        LocalFrame* local_root) = 0;
 
   // Pass nullptr as the WebLayer to detach the root layer.
   // This sets the WebLayer for the LocalFrame's WebWidget, if it has
-  // one. Otherwise it sets it for the WebViewBase.
+  // one. Otherwise it sets it for the WebViewImpl.
   virtual void AttachRootLayer(WebLayer*, LocalFrame* local_root) = 0;
 
   virtual void AttachCompositorAnimationTimeline(CompositorAnimationTimeline*,

@@ -39,7 +39,7 @@
 #include "core/CoreProbeSink.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebSettingsImpl.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
@@ -162,7 +162,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
 
     // 1. Disable input events.
     WebFrameWidgetBase::SetIgnoreInputEvents(true);
-    for (const auto view : WebViewBase::AllInstances())
+    for (const auto view : WebViewImpl::AllInstances())
       view->GetChromeClient().NotifyPopupOpeningObservers();
 
     // 2. Notify embedder about pausing.
@@ -236,7 +236,7 @@ WebDevToolsAgentImpl* WebDevToolsAgentImpl::Create(
     return agent;
   }
 
-  WebViewBase* view = frame->ViewImpl();
+  WebViewImpl* view = frame->ViewImpl();
   WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, true);
   agent->LayerTreeViewChanged(view->LayerTreeView());
   return agent;

@@ -44,7 +44,7 @@
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebSettingsImpl.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -156,23 +156,23 @@ const char* DismissalTypeToString(Document::PageDismissalType dismissal_type) {
 
 class CompositorAnimationTimeline;
 
-ChromeClientImpl::ChromeClientImpl(WebViewBase* web_view)
+ChromeClientImpl::ChromeClientImpl(WebViewImpl* web_view)
     : web_view_(web_view),
       cursor_overridden_(false),
       did_request_non_empty_tool_tip_(false) {}
 
 ChromeClientImpl::~ChromeClientImpl() {}
 
-ChromeClientImpl* ChromeClientImpl::Create(WebViewBase* web_view) {
+ChromeClientImpl* ChromeClientImpl::Create(WebViewImpl* web_view) {
   return new ChromeClientImpl(web_view);
 }
 
-WebViewBase* ChromeClientImpl::GetWebView() const {
+WebViewImpl* ChromeClientImpl::GetWebView() const {
   return web_view_;
 }
 
 void ChromeClientImpl::ChromeDestroyed() {
-  // Our lifetime is bound to the WebViewBase.
+  // Our lifetime is bound to the WebViewImpl.
 }
 
 void ChromeClientImpl::SetWindowRect(const IntRect& r, LocalFrame& frame) {
@@ -272,8 +272,8 @@ Page* ChromeClientImpl::CreateWindow(LocalFrame* frame,
   const AtomicString& frame_name =
       !EqualIgnoringASCIICase(r.FrameName(), "_blank") ? r.FrameName()
                                                        : g_empty_atom;
-  WebViewBase* new_view =
-      static_cast<WebViewBase*>(web_view_->Client()->CreateView(
+  WebViewImpl* new_view =
+      static_cast<WebViewImpl*>(web_view_->Client()->CreateView(
           WebLocalFrameImpl::FromFrame(frame),
           WrappedResourceRequest(r.GetResourceRequest()), features, frame_name,
           static_cast<WebNavigationPolicy>(navigation_policy),
@@ -783,7 +783,7 @@ PopupMenu* ChromeClientImpl::OpenPopupMenu(LocalFrame& frame,
     return nullptr;
 
   NotifyPopupOpeningObservers();
-  if (WebViewBase::UseExternalPopupMenus())
+  if (WebViewImpl::UseExternalPopupMenus())
     return new ExternalPopupMenu(frame, select, *web_view_);
 
   DCHECK(RuntimeEnabledFeatures::PagePopupEnabled());
@@ -959,7 +959,7 @@ void ChromeClientImpl::SetTouchAction(LocalFrame* frame,
 }
 
 const WebInputEvent* ChromeClientImpl::GetCurrentInputEvent() const {
-  return WebViewBase::CurrentInputEvent();
+  return WebViewImpl::CurrentInputEvent();
 }
 
 bool ChromeClientImpl::RequestPointerLock(LocalFrame* frame) {

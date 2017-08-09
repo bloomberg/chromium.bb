@@ -5,7 +5,7 @@
 #include "core/inspector/DevToolsEmulator.h"
 
 #include "core/events/WebInputEventConversion.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
@@ -59,7 +59,7 @@ static float calculateDeviceScaleAdjustment(int width,
 
 namespace blink {
 
-DevToolsEmulator::DevToolsEmulator(WebViewBase* web_view)
+DevToolsEmulator::DevToolsEmulator(WebViewImpl* web_view)
     : web_view_(web_view),
       device_metrics_enabled_(false),
       emulate_mobile_enabled_(false),
@@ -102,7 +102,7 @@ DevToolsEmulator::DevToolsEmulator(WebViewBase* web_view)
 
 DevToolsEmulator::~DevToolsEmulator() {}
 
-DevToolsEmulator* DevToolsEmulator::Create(WebViewBase* web_view_base) {
+DevToolsEmulator* DevToolsEmulator::Create(WebViewImpl* web_view_base) {
   return new DevToolsEmulator(web_view_base);
 }
 

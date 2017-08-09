@@ -131,7 +131,7 @@
 #include "core/exported/WebDocumentLoaderImpl.h"
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/exported/WebRemoteFrameImpl.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/PageScaleConstraintsSet.h"
@@ -1537,7 +1537,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
   WebLocalFrameImpl* frame = new WebLocalFrameImpl(WebTreeScopeType::kDocument,
                                                    client, interface_registry);
   frame->SetOpener(opener);
-  Page& page = *static_cast<WebViewBase*>(web_view)->GetPage();
+  Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   DCHECK(!page.MainFrame());
   frame->InitializeCoreFrame(page, nullptr, name);
   // Can't force sandbox flags until there's a core frame.
@@ -1717,7 +1717,7 @@ void WebLocalFrameImpl::CreateFrameView() {
   DCHECK(GetFrame());  // If frame() doesn't exist, we probably didn't init
                        // properly.
 
-  WebViewBase* web_view = ViewImpl();
+  WebViewImpl* web_view = ViewImpl();
 
   // Check if we're shutting down.
   if (!web_view->GetPage())
@@ -1766,7 +1766,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::FromFrameOwnerElement(Element* element) {
       ToLocalFrame(ToHTMLFrameOwnerElement(element)->ContentFrame()));
 }
 
-WebViewBase* WebLocalFrameImpl::ViewImpl() const {
+WebViewImpl* WebLocalFrameImpl::ViewImpl() const {
   if (!GetFrame())
     return nullptr;
   return GetFrame()->GetPage()->GetChromeClient().GetWebView();

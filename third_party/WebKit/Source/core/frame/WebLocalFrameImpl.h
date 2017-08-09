@@ -71,7 +71,7 @@ class WebPlugin;
 class WebScriptExecutionCallback;
 class WebSpellCheckPanelHostClient;
 class WebView;
-class WebViewBase;
+class WebViewImpl;
 enum class WebFrameLoadType;
 struct WebContentSecurityPolicyViolation;
 struct WebPrintParams;
@@ -359,7 +359,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   static WebLocalFrameImpl* FromFrame(LocalFrame&);
   static WebLocalFrameImpl* FromFrameOwnerElement(Element*);
 
-  WebViewBase* ViewImpl() const;
+  WebViewImpl* ViewImpl() const;
 
   LocalFrameView* GetFrameView() const {
     return GetFrame() ? GetFrame()->View() : 0;

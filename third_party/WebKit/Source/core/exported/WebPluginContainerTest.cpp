@@ -565,7 +565,7 @@ TEST_F(WebPluginContainerTest, PasteInsertKeyboardEventsTest) {
   // Use TestPluginWithEditableText for testing "Paste".
   plugin_web_frame_client.SetHasEditableText(true);
 
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
@@ -618,7 +618,7 @@ TEST_F(WebPluginContainerTest, PasteAndMatchStyleKeyboardEventsTest) {
   // Use TestPluginWithEditableText for testing "PasteAndMatchStyle".
   plugin_web_frame_client.SetHasEditableText(true);
 
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 

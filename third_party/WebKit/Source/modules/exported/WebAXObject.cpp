@@ -36,7 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/editing/markers/DocumentMarker.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameImpl.h"
@@ -919,7 +919,7 @@ void WebAXObject::ShowContextMenu() const {
   if (!frame)
     return;
 
-  WebViewBase* view = WebLocalFrameImpl::FromFrame(frame)->ViewImpl();
+  WebViewImpl* view = WebLocalFrameImpl::FromFrame(frame)->ViewImpl();
   if (!view)
     return;
 

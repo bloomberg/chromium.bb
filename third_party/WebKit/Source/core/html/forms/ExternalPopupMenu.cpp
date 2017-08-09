@@ -33,7 +33,6 @@
 #include "build/build_config.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameImpl.h"
