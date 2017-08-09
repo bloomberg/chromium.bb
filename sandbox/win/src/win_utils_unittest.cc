@@ -7,7 +7,10 @@
 
 #include <vector>
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/path_service.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "sandbox/win/src/nt_internals.h"
@@ -208,4 +211,59 @@ TEST(WinUtils, GetProcessBaseAddress) {
   }
   EXPECT_EQ(base_address,
             GetProcessBaseAddress(scoped_proc_info.process_handle()));
+}
+
+// This test requires an elevated prompt to setup.
+TEST(WinUtils, ConvertToLongPath) {
+  // Test setup.
+  base::FilePath orig_path;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &orig_path));
+  orig_path = orig_path.Append(L"calc.exe");
+
+  base::FilePath temp_path;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_PROGRAM_FILES, &temp_path));
+  temp_path = temp_path.Append(L"test_calc.exe");
+
+  ASSERT_TRUE(base::CopyFile(orig_path, temp_path));
+  // No more asserts until cleanup.
+
+  // WIN32 long path: "c:\Program Files\test_calc.exe"
+  wchar_t short_path[MAX_PATH] = {};
+  DWORD size =
+      ::GetShortPathNameW(temp_path.value().c_str(), short_path, MAX_PATH);
+  EXPECT_TRUE(size > 0 && size < MAX_PATH);
+  // WIN32 short path: "C:\PROGRA~1\TEST_C~1.exe"
+
+  // Sanity check that we actually got a short path above!  Small chance
+  // it was disabled in the filesystem setup.
+  EXPECT_NE(temp_path.value().length(), ::wcslen(short_path));
+
+  base::string16 short_form_native_path;
+  EXPECT_TRUE(sandbox::GetNtPathFromWin32Path(base::string16(short_path),
+                                              &short_form_native_path));
+  // NT short path: "\Device\HarddiskVolume4\PROGRA~1\TEST_C~1.EXE"
+
+  // Test 1: convert win32 short path to long:
+  base::string16 test1(short_path);
+  EXPECT_TRUE(sandbox::ConvertToLongPath(&test1));
+  EXPECT_TRUE(::wcsicmp(temp_path.value().c_str(), test1.c_str()) == 0);
+  // Expected result: "c:\Program Files\test_calc.exe"
+
+  // Test 2: convert native short path to long:
+  base::string16 drive_letter = temp_path.value().substr(0, 3);
+  base::string16 test2(short_form_native_path);
+  EXPECT_TRUE(sandbox::ConvertToLongPath(&test2, &drive_letter));
+
+  size_t index = short_form_native_path.find_first_of(
+      L'\\', ::wcslen(L"\\Device\\HarddiskVolume"));
+  EXPECT_TRUE(index != base::string16::npos);
+  base::string16 expected_result = short_form_native_path.substr(0, index + 1);
+  expected_result.append(temp_path.value().substr(3));
+  EXPECT_TRUE(::wcsicmp(expected_result.c_str(), test2.c_str()) == 0);
+  // Expected result: "\Device\HarddiskVolumeX\Program Files\test_calc.exe"
+
+  // clean up
+  EXPECT_TRUE(base::DeleteFileW(temp_path, false));
+
+  return;
 }
