@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/search_box_model_observer.h"
 #include "ui/app_list/speech_ui_model_observer.h"
 #include "ui/gfx/shadow_value.h"
@@ -50,7 +51,8 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
                                       public views::TextfieldController,
                                       public views::ButtonListener,
                                       public SearchBoxModelObserver,
-                                      public SpeechUIModelObserver {
+                                      public SpeechUIModelObserver,
+                                      public AppListViewDelegateObserver {
  public:
   SearchBoxView(SearchBoxViewDelegate* delegate,
                 AppListViewDelegate* view_delegate,
@@ -158,8 +160,8 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   // Updates the search icon.
   void UpdateSearchIcon();
 
-  // Gets the wallpaper prominent colors, returning empty if there aren't any.
-  const std::vector<SkColor>& GetWallpaperProminentColors() const;
+  // Gets the wallpaper prominent colors.
+  void GetWallpaperProminentColors(std::vector<SkColor>* colors);
 
   // Sets the background color.
   void SetBackgroundColor(SkColor light_vibrant);
@@ -189,11 +191,13 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   void HintTextChanged() override;
   void SelectionModelChanged() override;
   void Update() override;
-  void WallpaperProminentColorsChanged() override;
 
   // Overridden from SpeechUIModelObserver:
   void OnSpeechRecognitionStateChanged(
       SpeechRecognitionState new_state) override;
+
+  // Overridden from AppListViewDelegateObserver:
+  void OnWallpaperColorsChanged() override;
 
   void SetDefaultBorder();
 

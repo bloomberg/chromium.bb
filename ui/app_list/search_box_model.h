@@ -74,12 +74,6 @@ class APP_LIST_EXPORT SearchBoxModel {
   const base::string16& text() const { return text_; }
   bool is_voice_query() const { return is_voice_query_; }
 
-  // Sets/gets the wallpaper prominent colors.
-  void SetWallpaperProminentColors(const std::vector<SkColor>& colors);
-  const std::vector<SkColor>& wallpaper_prominent_colors() const {
-    return wallpaper_prominent_colors_;
-  }
-
   void AddObserver(SearchBoxModelObserver* observer);
   void RemoveObserver(SearchBoxModelObserver* observer);
 
@@ -90,7 +84,6 @@ class APP_LIST_EXPORT SearchBoxModel {
   gfx::SelectionModel selection_model_;
   base::string16 text_;
   bool is_voice_query_ = false;
-  std::vector<SkColor> wallpaper_prominent_colors_;
 
   base::ObserverList<SearchBoxModelObserver> observers_;
 

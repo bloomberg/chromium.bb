@@ -24,9 +24,6 @@ class APP_LIST_EXPORT SearchBoxModelObserver {
   // Invoked when text or voice search flag is changed.
   virtual void Update() = 0;
 
-  // Invoked when wallpaper prominent colors are changed.
-  virtual void WallpaperProminentColorsChanged() = 0;
-
  protected:
   virtual ~SearchBoxModelObserver() {}
 };
