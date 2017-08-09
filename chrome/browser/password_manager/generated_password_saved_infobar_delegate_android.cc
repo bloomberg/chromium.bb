@@ -7,9 +7,9 @@
 #include <stddef.h>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/android/preferences/preferences_launcher.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
@@ -45,5 +45,5 @@ GeneratedPasswordSavedInfoBarDelegateAndroid::GetIdentifier() const {
 }
 
 int GeneratedPasswordSavedInfoBarDelegateAndroid::GetIconId() const {
-  return IDR_INFOBAR_SAVE_PASSWORD;
+  return IDR_ANDROID_INFOBAR_SAVE_PASSWORD;
 }
