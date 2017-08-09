@@ -17,7 +17,7 @@ struct WebSelectionBound {
   enum Type { kCaret, kSelectionLeft, kSelectionRight };
 
   explicit WebSelectionBound(Type type)
-      : type(type), layer_id(0), is_text_direction_rtl(false) {}
+      : type(type), layer_id(0), is_text_direction_rtl(false), hidden(false) {}
 
   // The logical type of the endpoint. Note that this is dependent not only on
   // the bound's relative location, but also the underlying text direction.
@@ -33,6 +33,9 @@ struct WebSelectionBound {
 
   // Whether the text direction at this location is RTL.
   bool is_text_direction_rtl;
+
+  // Whether this bound is hidden (clipped out/occluded).
+  bool hidden;
 };
 
 }  // namespace blink

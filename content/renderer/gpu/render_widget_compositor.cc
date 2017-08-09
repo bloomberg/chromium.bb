@@ -186,6 +186,7 @@ cc::LayerSelectionBound ConvertWebSelectionBound(
   cc_bound.layer_id = web_bound.layer_id;
   cc_bound.edge_top = gfx::Point(web_bound.edge_top_in_layer);
   cc_bound.edge_bottom = gfx::Point(web_bound.edge_bottom_in_layer);
+  cc_bound.hidden = web_bound.hidden;
   return cc_bound;
 }
 
