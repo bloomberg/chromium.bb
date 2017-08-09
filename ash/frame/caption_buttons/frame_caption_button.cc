@@ -124,6 +124,10 @@ void FrameCaptionButton::OnGestureEvent(ui::GestureEvent* event) {
   CustomButton::OnGestureEvent(event);
 }
 
+views::PaintInfo::ScaleType FrameCaptionButton::GetPaintScaleType() const {
+  return views::PaintInfo::ScaleType::kScaleToScaleFactor;
+}
+
 void FrameCaptionButton::PaintButtonContents(gfx::Canvas* canvas) {
   SkAlpha bg_alpha = SK_AlphaTRANSPARENT;
   if (hover_animation().is_animating())

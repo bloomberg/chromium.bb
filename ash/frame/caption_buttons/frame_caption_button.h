@@ -49,6 +49,7 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   // views::View overrides:
   const char* GetClassName() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  views::PaintInfo::ScaleType GetPaintScaleType() const override;
 
   void set_paint_as_active(bool paint_as_active) {
     paint_as_active_ = paint_as_active;
