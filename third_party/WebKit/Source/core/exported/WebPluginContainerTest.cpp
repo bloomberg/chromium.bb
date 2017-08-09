@@ -153,7 +153,7 @@ class TestPluginWithEditableText : public FakeWebPlugin {
       cut_called_ = true;
       return true;
     }
-    if (name == "Paste") {
+    if (name == "Paste" || name == "PasteAndMatchStyle") {
       paste_called_ = true;
       return true;
     }
@@ -604,6 +604,46 @@ TEST_F(WebPluginContainerTest, PasteInsertKeyboardEventsTest) {
                                VKEY_INSERT);
 
   // Check that "Paste" command is invoked.
+  EXPECT_TRUE(test_plugin->IsPasteCalled());
+}
+
+// Verifies |Ctrl-Shift-V| keyboard event results in the "PasteAndMatchStyle"
+// command being invoked.
+TEST_F(WebPluginContainerTest, PasteAndMatchStyleKeyboardEventsTest) {
+  RegisterMockedURL("plugin_container.html");
+  // Must outlive |web_view_helper|.
+  TestPluginWebFrameClient plugin_web_frame_client;
+  FrameTestHelpers::WebViewHelper web_view_helper;
+
+  // Use TestPluginWithEditableText for testing "PasteAndMatchStyle".
+  plugin_web_frame_client.SetHasEditableText(true);
+
+  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+      base_url_ + "plugin_container.html", &plugin_web_frame_client);
+  EnablePlugins(web_view, WebSize(300, 300));
+
+  WebElement plugin_container_one_element =
+      web_view->MainFrameImpl()->GetDocument().GetElementById(
+          WebString::FromUTF8("translated-plugin"));
+
+  WebPlugin* plugin =
+      ToWebPluginContainerImpl(plugin_container_one_element.PluginContainer())
+          ->Plugin();
+  TestPluginWithEditableText* test_plugin =
+      static_cast<TestPluginWithEditableText*>(plugin);
+
+  WebInputEvent::Modifiers modifier_key = static_cast<WebInputEvent::Modifiers>(
+      WebInputEvent::kControlKey | WebInputEvent::kShiftKey |
+      WebInputEvent::kNumLockOn | WebInputEvent::kIsLeft);
+#if defined(OS_MACOSX)
+  modifier_key = static_cast<WebInputEvent::Modifiers>(
+      WebInputEvent::kMetaKey | WebInputEvent::kShiftKey |
+      WebInputEvent::kNumLockOn | WebInputEvent::kIsLeft);
+#endif
+  CreateAndHandleKeyboardEvent(&plugin_container_one_element, modifier_key,
+                               VKEY_V);
+
+  // Check that "PasteAndMatchStyle" command is invoked.
   EXPECT_TRUE(test_plugin->IsPasteCalled());
 }
 

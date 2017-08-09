@@ -310,7 +310,11 @@ bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name,
     instance_->ReplaceSelection("");
     return true;
   }
-  if (name == "Paste") {
+  // If the clipboard contains something other than text (e.g. an image),
+  // WebClipboard::ReadPlainText() returns an empty string. The empty string is
+  // then pasted, replacing any selected text. This behavior is consistent with
+  // that of HTML text form fields.
+  if (name == "Paste" || name == "PasteAndMatchStyle") {
     if (!CanEditText())
       return false;
 
