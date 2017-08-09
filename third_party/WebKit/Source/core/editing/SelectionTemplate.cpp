@@ -85,6 +85,17 @@ bool SelectionTemplate<Strategy>::IsRange() const {
 }
 
 template <typename Strategy>
+bool SelectionTemplate<Strategy>::IsValidFor(const Document& document) const {
+  if (IsNone())
+    return true;
+  if (base_.GetDocument() != document)
+    return false;
+  if (extent_.GetDocument() != document)
+    return false;
+  return !base_.IsOrphan() && !extent_.IsOrphan();
+}
+
+template <typename Strategy>
 bool SelectionTemplate<Strategy>::AssertValidFor(
     const Document& document) const {
   if (!AssertValid())
@@ -327,6 +338,37 @@ typename SelectionTemplate<Strategy>::Builder&
 SelectionTemplate<Strategy>::Builder::SetIsDirectional(bool is_directional) {
   selection_.is_directional_ = is_directional;
   return *this;
+}
+
+// ---
+
+template <typename Strategy>
+SelectionTemplate<Strategy>::InvalidSelectionResetter::InvalidSelectionResetter(
+    const SelectionTemplate<Strategy>& selection)
+    : document_(selection.GetDocument()),
+      selection_(const_cast<SelectionTemplate&>(selection)) {
+  DCHECK(selection_.AssertValid());
+}
+
+template <typename Strategy>
+SelectionTemplate<
+    Strategy>::InvalidSelectionResetter::~InvalidSelectionResetter() {
+  if (selection_.IsNone())
+    return;
+  DCHECK(document_);
+  if (!selection_.IsValidFor(*document_)) {
+    selection_ = SelectionTemplate<Strategy>();
+    return;
+  }
+#if DCHECK_IS_ON()
+  selection_.dom_tree_version_ = document_->DomTreeVersion();
+#endif
+  selection_.ResetDirectionCache();
+}
+
+template <typename Strategy>
+DEFINE_TRACE(SelectionTemplate<Strategy>::InvalidSelectionResetter) {
+  visitor->Trace(document_);
 }
 
 template class CORE_TEMPLATE_EXPORT SelectionTemplate<EditingStrategy>;
