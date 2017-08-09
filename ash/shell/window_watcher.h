@@ -16,10 +16,6 @@
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ash {
 namespace shell {
 

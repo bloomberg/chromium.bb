@@ -11,6 +11,8 @@
 #include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/palette_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell/context_menu.h"
 #include "ash/shell/example_factory.h"
@@ -102,7 +104,11 @@ std::unique_ptr<keyboard::KeyboardUI> ShellDelegateImpl::CreateKeyboardUI() {
 
 void ShellDelegateImpl::OpenUrlFromArc(const GURL& url) {}
 
-void ShellDelegateImpl::ShelfInit() {}
+void ShellDelegateImpl::ShelfInit() {
+  Shelf* shelf = Shell::GetPrimaryRootWindowController()->shelf();
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+}
 
 void ShellDelegateImpl::ShelfShutdown() {}
 
