@@ -62,6 +62,7 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
   void StartListening(
       OnNewRemoteSuggestionCallback on_new_remote_suggestion_callback) override;
   void StopListening() override;
+  bool IsListening() const override;
 
   // GCMAppHandler overrides.
   void ShutdownHandler() override;
@@ -105,8 +106,6 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
   // Called in case the received suggestion JSON inside the GCM has a parse
   // error.
   void OnJsonError(const std::string& json_str, const std::string& error);
-
-  bool IsListening() const;
 
   gcm::GCMDriver* const gcm_driver_;
   instance_id::InstanceIDDriver* const instance_id_driver_;

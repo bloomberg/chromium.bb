@@ -74,6 +74,7 @@ BreakingNewsGCMAppHandler::~BreakingNewsGCMAppHandler() {
 
 void BreakingNewsGCMAppHandler::StartListening(
     OnNewRemoteSuggestionCallback on_new_remote_suggestion_callback) {
+  DCHECK(!IsListening());
   DCHECK(!on_new_remote_suggestion_callback.is_null());
   on_new_remote_suggestion_callback_ =
       std::move(on_new_remote_suggestion_callback);
@@ -89,6 +90,10 @@ void BreakingNewsGCMAppHandler::StopListening() {
   gcm_driver_->RemoveAppHandler(kBreakingNewsGCMAppID);
   on_new_remote_suggestion_callback_ = OnNewRemoteSuggestionCallback();
   subscription_manager_->Unsubscribe();
+}
+
+bool BreakingNewsGCMAppHandler::IsListening() const {
+  return !on_new_remote_suggestion_callback_.is_null();
 }
 
 void BreakingNewsGCMAppHandler::Subscribe(bool force_token_retrieval) {
@@ -281,10 +286,6 @@ void BreakingNewsGCMAppHandler::OnJsonError(const std::string& json_str,
                                             const std::string& error) {
   LOG(WARNING) << "Error parsing JSON:" << error
                << " when parsing:" << json_str;
-}
-
-bool BreakingNewsGCMAppHandler::IsListening() const {
-  return !on_new_remote_suggestion_callback_.is_null();
 }
 
 }  // namespace ntp_snippets

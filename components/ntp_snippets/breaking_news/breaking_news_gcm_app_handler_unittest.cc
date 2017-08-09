@@ -33,6 +33,7 @@ using gcm::InstanceIDHandler;
 using instance_id::InstanceID;
 using instance_id::InstanceIDDriver;
 using testing::_;
+using testing::AnyNumber;
 using testing::AtMost;
 using testing::NiceMock;
 using testing::StrictMock;
@@ -464,6 +465,73 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
   EXPECT_CALL(*mock_subscription_manager(), Subscribe(_)).Times(0);
   EXPECT_CALL(*mock_subscription_manager(), Resubscribe(_)).Times(0);
   task_runner->RunUntilIdle();
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest,
+       IsListeningShouldReturnFalseBeforeListening) {
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+  auto handler = MakeHandler(task_runner);
+
+  EXPECT_FALSE(handler->IsListening());
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest,
+       IsListeningShouldReturnTrueAfterStartListening) {
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+  auto handler = MakeHandler(task_runner);
+  ASSERT_FALSE(handler->IsListening());
+
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+      .WillRepeatedly(
+          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+  handler->StartListening(
+      base::Bind([](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}));
+
+  EXPECT_TRUE(handler->IsListening());
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest,
+       IsListeningShouldReturnFalseAfterStopListening) {
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+  auto handler = MakeHandler(task_runner);
+  ASSERT_FALSE(handler->IsListening());
+
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+      .WillRepeatedly(
+          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+  handler->StartListening(
+      base::Bind([](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}));
+  ASSERT_TRUE(handler->IsListening());
+
+  handler->StopListening();
+
+  EXPECT_FALSE(handler->IsListening());
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest,
+       IsListeningShouldReturnTrueAfterSecondStartListening) {
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+  auto handler = MakeHandler(task_runner);
+  ASSERT_FALSE(handler->IsListening());
+
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+      .WillRepeatedly(
+          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+  handler->StartListening(
+      base::Bind([](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}));
+  ASSERT_TRUE(handler->IsListening());
+
+  handler->StopListening();
+  ASSERT_FALSE(handler->IsListening());
+
+  handler->StartListening(
+      base::Bind([](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}));
+
+  EXPECT_TRUE(handler->IsListening());
 }
 
 }  // namespace ntp_snippets
