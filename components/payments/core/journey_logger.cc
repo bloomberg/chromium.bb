@@ -133,13 +133,11 @@ void JourneyLogger::SetRequestedInformation(bool requested_shipping,
 }
 
 void JourneyLogger::SetCompleted() {
-  UMA_HISTOGRAM_BOOLEAN("PaymentRequest.CheckoutFunnel.Completed", true);
-
   RecordJourneyStatsHistograms(COMPLETION_STATUS_COMPLETED);
 }
 
 void JourneyLogger::SetAborted(AbortReason reason) {
-  // Don't log abort reasons if the Payment Request was triggered.
+  // Don't log abort reasons if the Payment Request was not triggered.
   if (WasPaymentRequestTriggered()) {
     base::UmaHistogramEnumeration("PaymentRequest.CheckoutFunnel.Aborted",
                                   reason, ABORT_REASON_MAX);
@@ -155,10 +153,6 @@ void JourneyLogger::SetAborted(AbortReason reason) {
 void JourneyLogger::SetNotShown(NotShownReason reason) {
   base::UmaHistogramEnumeration("PaymentRequest.CheckoutFunnel.NoShow", reason,
                                 NOT_SHOWN_REASON_MAX);
-
-  // Record that that Payment Request was initiated here, because nothing else
-  // will be recorded for a Payment Request that was not shown to the user.
-  UMA_HISTOGRAM_BOOLEAN("PaymentRequest.CheckoutFunnel.Initiated", true);
 }
 
 void JourneyLogger::RecordJourneyStatsHistograms(
@@ -166,7 +160,6 @@ void JourneyLogger::RecordJourneyStatsHistograms(
   DCHECK(!has_recorded_);
   has_recorded_ = true;
 
-  RecordCheckoutFlowMetrics();
   RecordCanMakePaymentStats(completion_status);
   RecordUrlKeyedMetrics(completion_status);
   RecordEventsMetric(completion_status);
@@ -177,23 +170,6 @@ void JourneyLogger::RecordJourneyStatsHistograms(
     RecordPaymentMethodMetric();
     RecordSectionSpecificStats(completion_status);
   }
-}
-
-void JourneyLogger::RecordCheckoutFlowMetrics() {
-  UMA_HISTOGRAM_BOOLEAN("PaymentRequest.CheckoutFunnel.Initiated", true);
-
-  if (events_ & EVENT_SHOWN)
-    UMA_HISTOGRAM_BOOLEAN("PaymentRequest.CheckoutFunnel.Shown", true);
-
-  if (events_ & EVENT_PAY_CLICKED)
-    UMA_HISTOGRAM_BOOLEAN("PaymentRequest.CheckoutFunnel.PayClicked", true);
-
-  if (events_ & EVENT_RECEIVED_INSTRUMENT_DETAILS)
-    UMA_HISTOGRAM_BOOLEAN(
-        "PaymentRequest.CheckoutFunnel.ReceivedInstrumentDetails", true);
-
-  if (events_ & EVENT_SKIPPED_SHOW)
-    UMA_HISTOGRAM_BOOLEAN("PaymentRequest.CheckoutFunnel.SkippedShow", true);
 }
 
 void JourneyLogger::RecordPaymentMethodMetric() {

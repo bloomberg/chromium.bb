@@ -87,23 +87,6 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
                 DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
 
-        // Make sure all the steps were logged.
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.CheckoutFunnel.Initiated", 1));
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.CheckoutFunnel.Shown", 1));
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.CheckoutFunnel.PayClicked", 1));
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.CheckoutFunnel.ReceivedInstrumentDetails", 1));
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.CheckoutFunnel.Completed", 1));
-
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.PAY_CLICKED | Event.RECEIVED_INSTRUMENT_DETAILS
                 | Event.COMPLETED | Event.HAD_INITIAL_FORM_OF_PAYMENT
@@ -394,14 +377,6 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.triggerUIAndWait(
                 "androidPaySkipUiBuy", mPaymentRequestTestRule.getResultReady());
 
-        // The "SkippedShow" step should be logged instead of "Shown".
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.CheckoutFunnel.SkippedShow", 1));
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.CheckoutFunnel.Shown", 1));
-
         assertOnlySpecificSelectedPaymentMethodMetricLogged(SelectedPaymentMethod.ANDROID_PAY);
 
         // Make sure the events were logged correctly.
@@ -434,14 +409,6 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
-
-        // The "Shown" step should be logged, not "SkippedShow".
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.CheckoutFunnel.Shown", 1));
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.CheckoutFunnel.SkippedShow", 1));
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
@@ -479,11 +446,6 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
-
-        // Make sure "Shown" is logged only once.
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.CheckoutFunnel.Shown", 1));
 
         // Make sure only one set of events was logged.
         Assert.assertEquals(

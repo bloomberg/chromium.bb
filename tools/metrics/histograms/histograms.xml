@@ -54361,11 +54361,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PaymentRequest.CheckoutFunnel.Completed" enum="BooleanHit">
+  <obsolete>
+    M62+ Part of PaymentRequest.Events
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>When the merchant has processed the user's Payment Request.</summary>
 </histogram>
 
 <histogram name="PaymentRequest.CheckoutFunnel.Initiated" enum="BooleanHit">
+  <obsolete>
+    M62+ Part of PaymentRequest.Events
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>When a Payment Request gets initiated by the user.</summary>
 </histogram>
@@ -54379,6 +54385,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PaymentRequest.CheckoutFunnel.PayClicked" enum="BooleanHit">
+  <obsolete>
+    M62+ Part of PaymentRequest.Events
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>
     When the user clicks the &quot;pay&quot; button in the Payment Request UI.
@@ -54387,6 +54396,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PaymentRequest.CheckoutFunnel.ReceivedInstrumentDetails"
     enum="BooleanHit">
+  <obsolete>
+    M62+ Part of PaymentRequest.Events
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>
     When the browser retrieves the instrument details from the payment app to
@@ -54395,6 +54407,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PaymentRequest.CheckoutFunnel.Shown" enum="BooleanHit">
+  <obsolete>
+    M62+ Part of PaymentRequest.Events
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>
     When the Payment Request UI gets shown after initialization.
@@ -54403,6 +54418,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PaymentRequest.CheckoutFunnel.SkippedShow"
     enum="BooleanSkipped">
+  <obsolete>
+    M62+ Part of PaymentRequest.Events
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>
     When the Payment Request UI gets skipped to go directly to the payment app.
