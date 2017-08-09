@@ -31,7 +31,7 @@ extern const size_t kMaxFilesFromSingleSource;
 
 // Provides a list of recently modified files.
 //
-// All member functions must be called on the IO thread unless stated otherwise.
+// All member functions must be called on the UI thread.
 class RecentModel : public KeyedService {
  public:
   using RecentFileList = std::vector<storage::FileSystemURL>;
@@ -41,11 +41,9 @@ class RecentModel : public KeyedService {
   ~RecentModel() override;
 
   // Returns an instance for the given profile.
-  // This function must be called on the UI thread.
   static RecentModel* GetForProfile(Profile* profile);
 
   // Creates an instance with given sources. Only for testing.
-  // This function can be called on any thread.
   static std::unique_ptr<RecentModel> CreateForTest(
       std::vector<std::unique_ptr<RecentSource>> sources);
 

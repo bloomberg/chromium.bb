@@ -15,7 +15,7 @@ namespace chromeos {
 
 // Fake implementation of RecentSource that returns a canned set of files.
 //
-// All member functions must be called on the IO thread.
+// All member functions must be called on the UI thread.
 class FakeRecentSource : public RecentSource {
  public:
   FakeRecentSource();

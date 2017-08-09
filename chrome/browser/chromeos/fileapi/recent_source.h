@@ -22,7 +22,7 @@ class RecentContext;
 // local directories and cloud storages. To provide files to Recent file
 // system, this interface should be implemented for each source.
 //
-// All member functions must be called on the IO thread.
+// All member functions must be called on the UI thread.
 class RecentSource {
  public:
   using RecentFileList = std::vector<storage::FileSystemURL>;
