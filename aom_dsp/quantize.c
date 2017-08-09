@@ -125,8 +125,8 @@ void highbd_quantize_b_helper_c(
           abs_coeff + ROUND_POWER_OF_TWO(round_ptr[rc != 0], log_scale);
       const int64_t tmpw = tmp1 * wt;
       const int64_t tmp2 = ((tmpw * quant_ptr[rc != 0]) >> 16) + tmpw;
-      const uint32_t abs_qcoeff = (uint32_t)(
-          (tmp2 * quant_shift_ptr[rc != 0]) >> (16 - log_scale + AOM_QM_BITS));
+      const int abs_qcoeff = (int)((tmp2 * quant_shift_ptr[rc != 0]) >>
+                                   (16 - log_scale + AOM_QM_BITS));
       qcoeff_ptr[rc] = (tran_low_t)((abs_qcoeff ^ coeff_sign) - coeff_sign);
       dequant = (dequant_ptr[rc != 0] * iwt + (1 << (AOM_QM_BITS - 1))) >>
                 AOM_QM_BITS;
