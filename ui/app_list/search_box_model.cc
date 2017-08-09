@@ -84,16 +84,6 @@ void SearchBoxModel::Update(const base::string16& text, bool is_voice_query) {
     observer.Update();
 }
 
-void SearchBoxModel::SetWallpaperProminentColors(
-    const std::vector<SkColor>& colors) {
-  if (wallpaper_prominent_colors_ == colors)
-    return;
-
-  wallpaper_prominent_colors_ = colors;
-  for (auto& observer : observers_)
-    observer.WallpaperProminentColorsChanged();
-}
-
 void SearchBoxModel::AddObserver(SearchBoxModelObserver* observer) {
   observers_.AddObserver(observer);
 }

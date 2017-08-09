@@ -47,6 +47,7 @@
 #include "extensions/common/manifest_handlers/launcher_page_info.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/app_list/app_list_switches.h"
+#include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_controller.h"
 #include "ui/app_list/speech_ui_model.h"
@@ -266,10 +267,12 @@ void AppListViewDelegate::SetUpCustomLauncherPages() {
 
 void AppListViewDelegate::OnWallpaperColorsChanged(
     const std::vector<SkColor>& prominent_colors) {
-  if (!model_)
+  if (wallpaper_prominent_colors_ == prominent_colors)
     return;
 
-  model_->search_box()->SetWallpaperProminentColors(prominent_colors);
+  wallpaper_prominent_colors_ = prominent_colors;
+  for (auto& observer : observers_)
+    observer.OnWallpaperColorsChanged();
 }
 
 void AppListViewDelegate::OnHotwordStateChanged(bool started) {
@@ -527,6 +530,21 @@ bool AppListViewDelegate::IsSpeechRecognitionEnabled() {
   app_list::StartPageService* service =
       app_list::StartPageService::Get(profile_);
   return service && service->GetSpeechRecognitionContents();
+}
+
+void AppListViewDelegate::GetWallpaperProminentColors(
+    std::vector<SkColor>* colors) {
+  *colors = wallpaper_prominent_colors_;
+}
+
+void AppListViewDelegate::AddObserver(
+    app_list::AppListViewDelegateObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AppListViewDelegate::RemoveObserver(
+    app_list::AppListViewDelegateObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void AppListViewDelegate::OnTemplateURLServiceChanged() {

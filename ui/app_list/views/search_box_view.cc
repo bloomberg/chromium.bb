@@ -229,12 +229,16 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   }
 
   view_delegate_->GetSpeechUI()->AddObserver(this);
+  if (is_fullscreen_app_list_enabled_)
+    view_delegate_->AddObserver(this);
   ModelChanged();
 }
 
 SearchBoxView::~SearchBoxView() {
   view_delegate_->GetSpeechUI()->RemoveObserver(this);
   model_->search_box()->RemoveObserver(this);
+  if (is_fullscreen_app_list_enabled_)
+    view_delegate_->RemoveObserver(this);
 }
 
 void SearchBoxView::ModelChanged() {
@@ -246,9 +250,10 @@ void SearchBoxView::ModelChanged() {
   if (is_fullscreen_app_list_enabled_)
     UpdateSearchIcon();
   model_->search_box()->AddObserver(this);
+
   SpeechRecognitionButtonPropChanged();
   HintTextChanged();
-  WallpaperProminentColorsChanged();
+  OnWallpaperColorsChanged();
 }
 
 bool SearchBoxView::HasSearch() const {
@@ -835,11 +840,12 @@ void SearchBoxView::Update() {
   NotifyQueryChanged();
 }
 
-void SearchBoxView::WallpaperProminentColorsChanged() {
+void SearchBoxView::OnWallpaperColorsChanged() {
   if (!is_fullscreen_app_list_enabled_)
     return;
 
-  const std::vector<SkColor> prominent_colors = GetWallpaperProminentColors();
+  std::vector<SkColor> prominent_colors;
+  GetWallpaperProminentColors(&prominent_colors);
   if (prominent_colors.empty())
     return;
   DCHECK_EQ(static_cast<size_t>(ColorProfileType::NUM_OF_COLOR_PROFILES),
@@ -880,8 +886,8 @@ void SearchBoxView::UpdateSearchIcon() {
       gfx::CreateVectorIcon(icon, kSearchIconSize, search_box_color_));
 }
 
-const std::vector<SkColor>& SearchBoxView::GetWallpaperProminentColors() const {
-  return model_->search_box()->wallpaper_prominent_colors();
+void SearchBoxView::GetWallpaperProminentColors(std::vector<SkColor>* colors) {
+  view_delegate_->GetWallpaperProminentColors(colors);
 }
 
 void SearchBoxView::SetBackgroundColor(SkColor light_vibrant) {

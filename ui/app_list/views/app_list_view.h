@@ -12,6 +12,7 @@
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "ui/app_list/app_list_export.h"
+#include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/speech_ui_model_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
@@ -39,7 +40,8 @@ class AppListViewTestApi;
 // and hosts a AppsGridView and passes AppListModel to it for display.
 class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
                                     public SpeechUIModelObserver,
-                                    public display::DisplayObserver {
+                                    public display::DisplayObserver,
+                                    public AppListViewDelegateObserver {
  public:
   // The height/width of the shelf from the bottom/side of the screen.
   static constexpr int kShelfSize = 48;
@@ -50,6 +52,12 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
 
   // The opacity of the app list background.
   static constexpr float kAppListOpacity = 0.8;
+
+  // The preferred blend alpha with wallpaper color for background.
+  static constexpr int kDarkMutedBlendAlpha = 0x7F;
+
+  // The defualt color of the app list background.
+  static constexpr SkColor kDefaultBackgroundColor = SK_ColorBLACK;
 
   enum AppListState {
     // Closes |app_list_main_view_| and dismisses the delegate.
@@ -229,6 +237,12 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
 
   // Gets app list background opacity during dragging.
   float GetAppListBackgroundOpacityDuringDragging();
+
+  // Overridden from AppListViewDelegateObserver:
+  void OnWallpaperColorsChanged() override;
+
+  void GetWallpaperProminentColors(std::vector<SkColor>* colors);
+  void SetBackgroundShieldColor();
 
   AppListViewDelegate* delegate_;  // Weak. Owned by AppListService.
 

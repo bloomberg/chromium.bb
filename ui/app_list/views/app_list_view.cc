@@ -12,6 +12,7 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "components/wallpaper/wallpaper_color_profile.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
@@ -47,6 +48,8 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_types.h"
+
+using wallpaper::ColorProfileType;
 
 namespace app_list {
 
@@ -189,12 +192,16 @@ AppListView::AppListView(AppListViewDelegate* delegate)
   CHECK(delegate);
   delegate_->GetSpeechUI()->AddObserver(this);
 
-  if (is_fullscreen_app_list_enabled_)
+  if (is_fullscreen_app_list_enabled_) {
     display_observer_.Add(display::Screen::GetScreen());
+    delegate_->AddObserver(this);
+  }
 }
 
 AppListView::~AppListView() {
   delegate_->GetSpeechUI()->RemoveObserver(this);
+  if (is_fullscreen_app_list_enabled_)
+    delegate_->RemoveObserver(this);
   animation_observer_.reset();
   // Remove child views first to ensure no remaining dependencies on delegate_.
   RemoveAllChildViews(true);
@@ -223,8 +230,7 @@ void AppListView::Initialize(gfx::NativeView parent,
   if (is_fullscreen_app_list_enabled_)
     SetState(app_list_state_);
 
-  if (delegate_)
-    delegate_->ViewInitialized();
+  delegate_->ViewInitialized();
 
   UMA_HISTOGRAM_TIMES("Apps.AppListCreationTime",
                       base::Time::Now() - start_time);
@@ -345,8 +351,8 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
     // makes it transparent.
     app_list_background_shield_ = new views::View;
     app_list_background_shield_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-    app_list_background_shield_->layer()->SetColor(SK_ColorBLACK);
     app_list_background_shield_->layer()->SetOpacity(kAppListOpacity);
+    SetBackgroundShieldColor();
     if (features::IsBackgroundBlurEnabled()) {
       app_list_background_shield_->layer()->SetBackgroundBlur(
           kAppListBlurRadius);
@@ -1113,6 +1119,37 @@ float AppListView::GetAppListBackgroundOpacityDuringDragging() {
   float coefficient =
       std::min(dragging_height / (kNumOfShelfSize * kShelfSize), 1.0f);
   return coefficient * kAppListOpacity;
+}
+
+void AppListView::GetWallpaperProminentColors(std::vector<SkColor>* colors) {
+  delegate_->GetWallpaperProminentColors(colors);
+}
+
+void AppListView::OnWallpaperColorsChanged() {
+  SetBackgroundShieldColor();
+}
+
+void AppListView::SetBackgroundShieldColor() {
+  // There is a chance when AppListView::OnWallpaperColorsChanged called from
+  // AppListViewDelegate and the app_list_background_shield_ is not initialized.
+  if (!is_fullscreen_app_list_enabled_ && !app_list_background_shield_)
+    return;
+
+  std::vector<SkColor> prominent_colors;
+  GetWallpaperProminentColors(&prominent_colors);
+
+  if (prominent_colors.empty()) {
+    app_list_background_shield_->layer()->SetColor(kDefaultBackgroundColor);
+  } else {
+    DCHECK_EQ(static_cast<size_t>(ColorProfileType::NUM_OF_COLOR_PROFILES),
+              prominent_colors.size());
+
+    const SkColor dark_muted =
+        prominent_colors[static_cast<int>(ColorProfileType::DARK_MUTED)];
+    const SkColor dark_muted_mixed = color_utils::AlphaBlend(
+        SK_ColorBLACK, dark_muted, kDarkMutedBlendAlpha);
+    app_list_background_shield_->layer()->SetColor(dark_muted_mixed);
+  }
 }
 
 }  // namespace app_list

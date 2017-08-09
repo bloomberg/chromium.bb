@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/app_list_export.h"
 
 namespace gfx {
@@ -21,6 +22,7 @@ class View;
 namespace app_list {
 
 class AppListModel;
+class AppListViewDelegateObserver;
 class SearchResult;
 class SpeechUIModel;
 
@@ -88,6 +90,13 @@ class APP_LIST_EXPORT AppListViewDelegate {
 
   // Returns true if the delegate supports speech recognition.
   virtual bool IsSpeechRecognitionEnabled() = 0;
+
+  // Gets the wallpaper prominent colors.
+  virtual void GetWallpaperProminentColors(std::vector<SkColor>* colors) = 0;
+
+  // Add/remove observer for AppListViewDelegate.
+  virtual void AddObserver(AppListViewDelegateObserver* observer) = 0;
+  virtual void RemoveObserver(AppListViewDelegateObserver* observer) = 0;
 };
 
 }  // namespace app_list
