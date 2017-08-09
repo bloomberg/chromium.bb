@@ -92,8 +92,12 @@ void PrefetchDispatcherImpl::BeginBackgroundTask(
 
   background_task_ = std::move(background_task);
 
-  // TODO(dimich): add QueueReconcilers() here when at least one is implemented.
+  QueueReconcileTasks();
   QueueActionTasks();
+}
+
+void PrefetchDispatcherImpl::QueueReconcileTasks() {
+  // TODO(dimich): add Reconcile tasks here.
 }
 
 void PrefetchDispatcherImpl::QueueActionTasks() {
