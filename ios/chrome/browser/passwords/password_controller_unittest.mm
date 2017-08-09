@@ -47,6 +47,7 @@
 
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
+using testing::NiceMock;
 using testing::Return;
 
 namespace {
@@ -95,7 +96,7 @@ PasswordController* CreatePasswordController(
     web::WebState* web_state,
     password_manager::PasswordStore* store,
     MockPasswordManagerClient** weak_client) {
-  auto client = base::MakeUnique<MockPasswordManagerClient>(store);
+  auto client = base::MakeUnique<NiceMock<MockPasswordManagerClient>>(store);
   if (weak_client)
     *weak_client = client.get();
   return [[PasswordController alloc] initWithWebState:web_state
