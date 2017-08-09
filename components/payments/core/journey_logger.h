@@ -219,10 +219,6 @@ class JourneyLogger {
   // either been completed or aborted.
   void RecordJourneyStatsHistograms(CompletionStatus completion_status);
 
-  // Records the histograms for all the steps of a complete checkout flow that
-  // were reached.
-  void RecordCheckoutFlowMetrics();
-
   // Records the metric about the selected payment method.
   void RecordPaymentMethodMetric();
 
