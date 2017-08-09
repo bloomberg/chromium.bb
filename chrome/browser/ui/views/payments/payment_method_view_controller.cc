@@ -233,7 +233,7 @@ PaymentMethodViewController::CreateExtraFooterView() {
                            kPaymentRequestButtonSpacing));
 
   views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_CREDITCARD_CAPTION));
+      this, l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_CARD));
   button->set_tag(static_cast<int>(
       PaymentMethodViewControllerTags::ADD_CREDIT_CARD_BUTTON));
   button->set_id(
