@@ -38,8 +38,17 @@ void MessageCenter::Shutdown() {
 
 // static
 bool MessageCenter::IsNewStyleNotificationEnabled() {
+// For Chrome OS, the default is Enabled.
+// For other platforms, the default is Disabled.
+#if defined(OS_CHROMEOS)
+  // Returns true if not explicitly disabled.
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableMessageCenterNewStyleNotification);
+#else
+  // Returns true if explicitly enabled.
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableMessageCenterNewStyleNotification);
+#endif
 }
 
 MessageCenter::MessageCenter() {
