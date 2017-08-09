@@ -49,6 +49,9 @@ struct CastSinkExtraData {
   // browser reconnects to a device.
   int cast_channel_id = 0;
 
+  // True if Cast channel is opened from DIAL sink.
+  bool discovered_by_dial = false;
+
   CastSinkExtraData();
   CastSinkExtraData(const CastSinkExtraData& other);
   ~CastSinkExtraData();

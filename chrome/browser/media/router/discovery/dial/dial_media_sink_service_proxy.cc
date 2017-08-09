@@ -14,7 +14,7 @@ namespace media_router {
 DialMediaSinkServiceProxy::DialMediaSinkServiceProxy(
     const MediaSinkService::OnSinksDiscoveredCallback& callback,
     content::BrowserContext* context)
-    : MediaSinkService(callback) {
+    : MediaSinkService(callback), observer_(nullptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* profile = Profile::FromBrowserContext(context);
   request_context_ = profile->GetRequestContext();
@@ -39,6 +39,18 @@ void DialMediaSinkServiceProxy::Stop() {
       base::BindOnce(&DialMediaSinkServiceProxy::StopOnIOThread, this));
 }
 
+void DialMediaSinkServiceProxy::SetObserver(
+    DialMediaSinkServiceObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  observer_ = observer;
+}
+
+void DialMediaSinkServiceProxy::ClearObserver(
+    DialMediaSinkServiceObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  observer_ = nullptr;
+}
+
 void DialMediaSinkServiceProxy::SetDialMediaSinkServiceForTest(
     std::unique_ptr<DialMediaSinkServiceImpl> dial_media_sink_service) {
   DCHECK(dial_media_sink_service);
@@ -54,6 +66,7 @@ void DialMediaSinkServiceProxy::StartOnIOThread() {
         base::Bind(&DialMediaSinkServiceProxy::OnSinksDiscoveredOnIOThread,
                    this),
         request_context_.get());
+    dial_media_sink_service_->SetObserver(observer_);
   }
 
   dial_media_sink_service_->Start();
@@ -64,6 +77,7 @@ void DialMediaSinkServiceProxy::StopOnIOThread() {
     return;
 
   dial_media_sink_service_->Stop();
+  dial_media_sink_service_->ClearObserver(observer_);
   dial_media_sink_service_.reset();
 }
 

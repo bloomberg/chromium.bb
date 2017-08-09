@@ -24,7 +24,7 @@ class MediaSinkServiceBase : public MediaSinkService {
   void SetTimerForTest(std::unique_ptr<base::Timer> timer);
 
   // Called when |finish_timer_| expires.
-  void OnFetchCompleted();
+  virtual void OnFetchCompleted();
 
   // Helper function to start |finish_timer_|. Create a new timer if none
   // exists.

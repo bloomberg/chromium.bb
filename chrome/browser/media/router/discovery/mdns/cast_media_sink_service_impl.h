@@ -42,10 +42,14 @@ class CastMediaSinkServiceImpl
   void Stop() override;
 
   // MediaSinkServiceBase implementation
+  // Called when the discovery loop timer expires.
+  void OnFetchCompleted() override;
   void RecordDeviceCounts() override;
 
   // Opens cast channels on the IO thread.
   virtual void OpenChannels(std::vector<MediaSinkInternal> cast_sinks);
+
+  void OnDialSinkAdded(const MediaSinkInternal& sink);
 
  private:
   friend class CastMediaSinkServiceImplTest;
@@ -56,6 +60,8 @@ class CastMediaSinkServiceImpl
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            TestMultipleOpenChannels);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest, TestOnChannelError);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest, TestOnDialSinkAdded);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest, TestOnFetchCompleted);
 
   // CastSocket::Observer implementation.
   void OnError(const cast_channel::CastSocket& socket,
@@ -78,6 +84,14 @@ class CastMediaSinkServiceImpl
 
   // Set of mDNS service IP endpoints from current round of discovery.
   std::set<net::IPEndPoint> current_service_ip_endpoints_;
+
+  using MediaSinkInternalMap = std::map<net::IPEndPoint, MediaSinkInternal>;
+
+  // Map of sinks from current round of mDNS discovery keyed by IP address.
+  MediaSinkInternalMap current_sinks_by_mdns_;
+
+  // Map of sinks from current round of DIAL discovery keyed by IP address.
+  MediaSinkInternalMap current_sinks_by_dial_;
 
   // Raw pointer of leaky singleton CastSocketService, which manages adding and
   // removing Cast channels.

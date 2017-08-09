@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_registry.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
@@ -29,6 +30,7 @@ class CastMediaSinkServiceImpl;
 // Public APIs should be invoked on the UI thread.
 class CastMediaSinkService
     : public MediaSinkService,
+      public DialMediaSinkServiceObserver,
       public DnsSdRegistry::DnsSdObserver,
       public base::RefCountedThreadSafe<CastMediaSinkService> {
  public:
@@ -54,7 +56,6 @@ class CastMediaSinkService
   ~CastMediaSinkService() override;
 
  private:
-
   friend class base::RefCountedThreadSafe<CastMediaSinkService>;
   friend class CastMediaSinkServiceTest;
 
@@ -70,6 +71,9 @@ class CastMediaSinkService
   // DnsSdRegistry::DnsSdObserver implementation
   void OnDnsSdEvent(const std::string& service_type,
                     const DnsSdRegistry::DnsSdServiceList& services) override;
+
+  // DialMediaSinkServiceObserver implementation
+  void OnDialSinkAdded(const MediaSinkInternal& sink) override;
 
   // Raw pointer to DnsSdRegistry instance, which is a global leaky singleton
   // and lives as long as the browser process.

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_registry.h"
@@ -66,6 +67,11 @@ ErrorType CreateCastMediaSink(const media_router::DnsSdService& service,
   extra_data.ip_address = ip_address;
   extra_data.port = service.service_host_port.port();
   extra_data.model_name = service_data["md"];
+  extra_data.capabilities = cast_channel::CastDeviceCapability::NONE;
+
+  unsigned capacities;
+  if (base::StringToUint(service_data["ca"], &capacities))
+    extra_data.capabilities = capacities;
 
   cast_sink->set_sink(sink);
   cast_sink->set_cast_data(extra_data);
@@ -173,6 +179,11 @@ void CastMediaSinkService::OnDnsSdEvent(
       base::BindOnce(&CastMediaSinkServiceImpl::OpenChannels,
                      cast_media_sink_service_impl_->AsWeakPtr(),
                      std::move(cast_sinks)));
+}
+
+void CastMediaSinkService::OnDialSinkAdded(const MediaSinkInternal& sink) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  cast_media_sink_service_impl_->OnDialSinkAdded(sink);
 }
 
 void CastMediaSinkService::OnSinksDiscoveredOnIOThread(
