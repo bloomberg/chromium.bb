@@ -958,11 +958,10 @@ void URLRequest::Redirect(const RedirectInfo& redirect_info) {
   // not set to "null", a POST request from origin A to a malicious origin M
   // could be redirected by M back to A.
   //
-  // This behavior is specified in step 1 of step 10 of the 301, 302, 303, 307,
-  // 308 block of step 5 of Section 4.2 of Fetch[1] (which supercedes the
-  // behavior outlined in RFC 6454[2].
+  // This behavior is specified in step 10 of the HTTP-redirect fetch
+  // algorithm[1] (which supercedes the behavior outlined in RFC 6454[2].
   //
-  // [1]: https://fetch.spec.whatwg.org/#concept-http-fetch
+  // [1]: https://fetch.spec.whatwg.org/#http-redirect-fetch
   // [2]: https://tools.ietf.org/html/rfc6454#section-7
   //
   // TODO(jww): This is a layering violation and should be refactored somewhere
