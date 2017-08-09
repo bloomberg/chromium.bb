@@ -166,8 +166,7 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       has_pointer_focus_(false),
       modal_dialog_counter_(0),
       close_widget_factory_(this),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
   window()->ClearProperty(kHostForRootWindow);
@@ -1530,7 +1529,10 @@ void DesktopWindowTreeHostX11::InitX11Window(
   if (window_icon) {
     SetWindowIcons(gfx::ImageSkia(), *window_icon);
   }
-  CreateCompositor();
+  // Disable compositing on tooltips as a workaround for
+  // https://crbug.com/442111.
+  CreateCompositor(viz::FrameSinkId(),
+                   params.type == Widget::InitParams::TYPE_TOOLTIP);
   OnAcceleratedWidgetAvailable();
 }
 

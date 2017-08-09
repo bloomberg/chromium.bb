@@ -344,6 +344,10 @@ static bool ShouldCreateGpuLayerTreeFrameSink(ui::Compositor* compositor) {
   // Software fallback does not happen on Chrome OS.
   return true;
 #endif
+
+  if (compositor->force_software_compositor())
+    return false;
+
 #if defined(OS_WIN)
   if (::GetProp(compositor->widget(), kForceSoftwareCompositor) &&
       ::RemoveProp(compositor->widget(), kForceSoftwareCompositor))
