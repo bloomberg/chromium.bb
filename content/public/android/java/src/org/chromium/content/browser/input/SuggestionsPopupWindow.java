@@ -87,14 +87,22 @@ public class SuggestionsPopupWindow
         mPopupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
         mPopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Set the background on the PopupWindow instead of on mContentView (where we set it for
+            // pre-Lollipop) since the popup will not properly dismiss on pre-Marshmallow unless it
+            // has a background set.
+            mPopupWindow.setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
+                    mContext.getResources(), R.drawable.floating_popup_background_light));
             // On Lollipop and later, we use elevation to create a drop shadow effect.
-            // On pre-Lollipop, we use a background image instead (in the layout file).
+            // On pre-Lollipop, we instead use a background image on mContentView (in
+            // initContentView).
             mPopupWindow.setElevation(mContext.getResources().getDimensionPixelSize(
                     R.dimen.text_suggestion_popup_elevation));
         } else {
-            // The PopupWindow does not properly dismiss on Jelly Bean without the following line.
+            // The PopupWindow does not properly dismiss pre-Marshmallow unless it has a background
+            // set.
             mPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
+
         mPopupWindow.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
         mPopupWindow.setFocusable(true);
         mPopupWindow.setClippingEnabled(false);
@@ -107,10 +115,9 @@ public class SuggestionsPopupWindow
         mContentView =
                 (LinearLayout) inflater.inflate(R.layout.text_edit_suggestion_container, null);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mContentView.setBackground(ApiCompatibilityUtils.getDrawable(
-                    mContext.getResources(), R.drawable.floating_popup_background_light));
-        } else {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            // Set this on the content view instead of on the PopupWindow so we can retrieve the
+            // padding later.
             mContentView.setBackground(ApiCompatibilityUtils.getDrawable(
                     mContext.getResources(), R.drawable.dropdown_popup_background));
         }
