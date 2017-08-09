@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_IPC_RETURNED_RESOURCE_STRUCT_TRAITS_H_
-#define CC_IPC_RETURNED_RESOURCE_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_RETURNED_RESOURCE_STRUCT_TRAITS_H_
+#define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_RETURNED_RESOURCE_STRUCT_TRAITS_H_
 
-#include "cc/ipc/returned_resource.mojom-shared.h"
 #include "components/viz/common/resources/returned_resource.h"
+#include "gpu/ipc/common/sync_token_struct_traits.h"
+#include "services/viz/public/interfaces/compositing/returned_resource.mojom-shared.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::ReturnedResourceDataView,
+struct StructTraits<viz::mojom::ReturnedResourceDataView,
                     viz::ReturnedResource> {
   static uint32_t id(const viz::ReturnedResource& resource) {
     return resource.id;
@@ -30,7 +31,7 @@ struct StructTraits<cc::mojom::ReturnedResourceDataView,
     return resource.lost;
   }
 
-  static bool Read(cc::mojom::ReturnedResourceDataView data,
+  static bool Read(viz::mojom::ReturnedResourceDataView data,
                    viz::ReturnedResource* out) {
     if (!data.ReadSyncToken(&out->sync_token))
       return false;
@@ -43,4 +44,4 @@ struct StructTraits<cc::mojom::ReturnedResourceDataView,
 
 }  // namespace mojo
 
-#endif  // CC_IPC_RETURNED_RESOURCE_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_RETURNED_RESOURCE_STRUCT_TRAITS_H_

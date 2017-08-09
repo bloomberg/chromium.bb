@@ -82,11 +82,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     std::move(callback).Run(std::move(r));
   }
 
-  void EchoReturnedResource(const viz::ReturnedResource& r,
-                            EchoReturnedResourceCallback callback) override {
-    std::move(callback).Run(r);
-  }
-
   void EchoSelection(const Selection<gfx::SelectionBound>& s,
                      EchoSelectionCallback callback) override {
     std::move(callback).Run(s);
@@ -846,32 +841,6 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   EXPECT_EQ(transform_to_root, output->transform_to_root_target);
   EXPECT_EQ(has_transparent_background, output->has_transparent_background);
   EXPECT_EQ(color_space, output->color_space);
-}
-
-TEST_F(StructTraitsTest, ReturnedResource) {
-  const RenderPassId id = 1337u;
-  const gpu::CommandBufferNamespace command_buffer_namespace = gpu::IN_PROCESS;
-  const int32_t extra_data_field = 0xbeefbeef;
-  const gpu::CommandBufferId command_buffer_id(
-      gpu::CommandBufferId::FromUnsafeValue(0xdeadbeef));
-  const uint64_t release_count = 0xdeadbeefdead;
-  const gpu::SyncToken sync_token(command_buffer_namespace, extra_data_field,
-                                  command_buffer_id, release_count);
-  const int count = 1234;
-  const bool lost = true;
-
-  viz::ReturnedResource input;
-  input.id = id;
-  input.sync_token = sync_token;
-  input.count = count;
-  input.lost = lost;
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  viz::ReturnedResource output;
-  proxy->EchoReturnedResource(input, &output);
-  EXPECT_EQ(id, output.id);
-  EXPECT_EQ(sync_token, output.sync_token);
-  EXPECT_EQ(count, output.count);
-  EXPECT_EQ(lost, output.lost);
 }
 
 TEST_F(StructTraitsTest, Selection) {

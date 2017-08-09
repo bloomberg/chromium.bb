@@ -15,7 +15,6 @@
 #include "cc/ipc/local_surface_id_struct_traits.h"
 #include "cc/ipc/quads_struct_traits.h"
 #include "cc/ipc/render_pass_struct_traits.h"
-#include "cc/ipc/returned_resource_struct_traits.h"
 #include "cc/ipc/selection_struct_traits.h"
 #include "cc/ipc/shared_quad_state_struct_traits.h"
 #include "cc/ipc/surface_id_struct_traits.h"
@@ -29,6 +28,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/resource_format.h"
 #include "components/viz/common/resources/resource_settings.h"
+#include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "gpu/ipc/common/mailbox_holder_struct_traits.h"
@@ -39,7 +39,9 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/viz/public/cpp/compositing/compositor_frame_struct_traits.h"
 #include "services/viz/public/cpp/compositing/resource_settings_struct_traits.h"
+#include "services/viz/public/cpp/compositing/returned_resource_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame.mojom.h"
+#include "services/viz/public/interfaces/compositing/returned_resource.mojom.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "skia/public/interfaces/blur_image_filter_tile_mode_struct_traits.h"
 #include "skia/public/interfaces/image_filter_struct_traits.h"
@@ -57,6 +59,22 @@ namespace {
 
 using StructTraitsTest = testing::Test;
 
+// Test StructTrait serialization and deserialization for copyable type. |input|
+// will be serialized and then deserialized into |output|.
+template <class MojomType, class Type>
+void SerializeAndDeserialize(const Type& input, Type* output) {
+  MojomType::Deserialize(MojomType::Serialize(&input), output);
+}
+
+// Test StructTrait serialization and deserialization for move only type.
+// |input| will be serialized and then deserialized into |output|.
+template <class MojomType, class Type>
+void SerializeAndDeserialize(Type&& input, Type* output) {
+  MojomType::Deserialize(MojomType::Serialize(&input), output);
+}
+
+}  // namespace
+
 TEST_F(StructTraitsTest, ResourceSettings) {
   constexpr size_t kArbitrarySize = 32;
   constexpr bool kArbitraryBool = true;
@@ -67,8 +85,8 @@ TEST_F(StructTraitsTest, ResourceSettings) {
       DefaultBufferToTextureTargetMapForTesting();
 
   ResourceSettings output;
-  mojom::ResourceSettings::Deserialize(
-      mojom::ResourceSettings::Serialize(&input), &output);
+  SerializeAndDeserialize<mojom::ResourceSettings>(input, &output);
+
   EXPECT_EQ(input.texture_id_allocation_chunk_size,
             output.texture_id_allocation_chunk_size);
   EXPECT_EQ(input.use_gpu_memory_buffer_resources,
@@ -148,8 +166,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   input.metadata.begin_frame_ack = begin_frame_ack;
 
   cc::CompositorFrame output;
-  mojom::CompositorFrame::Deserialize(mojom::CompositorFrame::Serialize(&input),
-                                      &output);
+  SerializeAndDeserialize<mojom::CompositorFrame>(input, &output);
 
   EXPECT_EQ(device_scale_factor, output.metadata.device_scale_factor);
   EXPECT_EQ(root_scroll_offset, output.metadata.root_scroll_offset);
@@ -200,6 +217,31 @@ TEST_F(StructTraitsTest, CompositorFrame) {
             out_solid_color_draw_quad->force_anti_aliasing_off);
 }
 
-}  // namespace
+TEST_F(StructTraitsTest, ReturnedResource) {
+  const cc::RenderPassId id = 1337u;
+  const gpu::CommandBufferNamespace command_buffer_namespace = gpu::IN_PROCESS;
+  const int32_t extra_data_field = 0xbeefbeef;
+  const gpu::CommandBufferId command_buffer_id(
+      gpu::CommandBufferId::FromUnsafeValue(0xdeadbeef));
+  const uint64_t release_count = 0xdeadbeefdead;
+  const gpu::SyncToken sync_token(command_buffer_namespace, extra_data_field,
+                                  command_buffer_id, release_count);
+  const int count = 1234;
+  const bool lost = true;
+
+  ReturnedResource input;
+  input.id = id;
+  input.sync_token = sync_token;
+  input.count = count;
+  input.lost = lost;
+
+  ReturnedResource output;
+  SerializeAndDeserialize<mojom::ReturnedResource>(input, &output);
+
+  EXPECT_EQ(id, output.id);
+  EXPECT_EQ(sync_token, output.sync_token);
+  EXPECT_EQ(count, output.count);
+  EXPECT_EQ(lost, output.lost);
+}
 
 }  // namespace viz
