@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_signin_promo_cell.h"
 
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -12,6 +13,10 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+const NSInteger kSigninPromoMargin = 8;
+}
 
 @implementation BookmarkSigninPromoCell {
   SigninPromoView* _signinPromoView;
@@ -36,8 +41,16 @@
     _signinPromoView = [[SigninPromoView alloc] initWithFrame:self.bounds];
     _signinPromoView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_signinPromoView];
-    AddSameConstraints(_signinPromoView, contentView);
-
+    _signinPromoView.layer.borderColor =
+        [UIColor colorWithWhite:0.0 alpha:0.08].CGColor;
+    _signinPromoView.layer.borderWidth = 1.0f;
+    NSArray* visualConstraints = @[
+      @"V:|-0-[signin_promo_view]-(margin)-|",
+      @"H:|-(margin)-[signin_promo_view]-(margin)-|",
+    ];
+    NSDictionary* views = @{@"signin_promo_view" : _signinPromoView};
+    NSDictionary* metrics = @{ @"margin" : @(kSigninPromoMargin) };
+    ApplyVisualConstraintsWithMetrics(visualConstraints, views, metrics);
     _signinPromoView.closeButton.hidden = NO;
     [_signinPromoView.closeButton addTarget:self
                                      action:@selector(closeButtonAction:)
