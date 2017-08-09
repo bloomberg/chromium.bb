@@ -392,7 +392,6 @@ void PaymentRequest::ParsePaymentMethodData() {
 void PaymentRequest::CreateNativeAppPaymentMethods() {
   if (!base::FeatureList::IsEnabled(
           payments::features::kWebPaymentsNativeApps)) {
-    url_payment_method_identifiers_ = std::vector<GURL>();
     PopulatePaymentMethodCache(
         std::vector<std::unique_ptr<IOSPaymentInstrument>>());
     return;
