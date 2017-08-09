@@ -281,6 +281,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   bool VaInitialize(const base::Closure& report_error_to_uma_cb);
   bool GetSupportedVaProfiles(std::vector<VAProfile>* profiles);
 
+  // Free all memory allocated in CreateSurfaces.
+  void DestroySurfaces_Locked();
+
   // Check if |va_profile| supports |entrypoint| or not. |va_lock_| must be
   // held on entry.
   bool IsEntrypointSupported_Locked(VAProfile va_profile,

@@ -548,7 +548,7 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
 
   VA_LOG_ON_ERROR(va_res, "vaCreateContext failed");
   if (va_res != VA_STATUS_SUCCESS) {
-    DestroySurfaces();
+    DestroySurfaces_Locked();
     return false;
   }
 
@@ -560,6 +560,12 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
 void VaapiWrapper::DestroySurfaces() {
   base::AutoLock auto_lock(*va_lock_);
   DVLOG(2) << "Destroying " << va_surface_ids_.size() << " surfaces";
+
+  DestroySurfaces_Locked();
+}
+
+void VaapiWrapper::DestroySurfaces_Locked() {
+  va_lock_->AssertAcquired();
 
   if (va_context_id_ != VA_INVALID_ID) {
     VAStatus va_res = vaDestroyContext(va_display_, va_context_id_);
