@@ -62,6 +62,7 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
   void OnResponseBodyStreamReady(MojoResult result);
   void DeleteIfNeeded();
   void SendResponseToClient();
+  void CompletePendingWrite();
 
   NetworkContext* context_;
   int32_t options_;

@@ -217,6 +217,7 @@ void URLLoaderImpl::Cleanup() {
 void URLLoaderImpl::FollowRedirect() {
   if (!url_request_) {
     NotifyCompleted(net::ERR_UNEXPECTED);
+    // |this| may have been deleted.
     return;
   }
 
@@ -251,6 +252,7 @@ void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request,
 
   if (net_error != net::OK) {
     NotifyCompleted(net_error);
+    // |this| may have been deleted.
     return;
   }
 
@@ -323,17 +325,19 @@ void URLLoaderImpl::ReadMore() {
   } else if (url_request_->status().is_success() && bytes_read > 0) {
     DidRead(static_cast<uint32_t>(bytes_read), true);
   } else {
-    NotifyCompleted(net::OK);
     writable_handle_watcher_.Cancel();
-    pending_write_->Complete(pending_write_buffer_offset_);
-    pending_write_ = nullptr;  // This closes the data pipe.
-    DeleteIfNeeded();
+    CompletePendingWrite();
+
+    // Close body pipe.
+    response_body_stream_.reset();
+
+    NotifyCompleted(url_request_->status().ToNetError());
+    // |this| may have been deleted.
     return;
   }
 }
 
 void URLLoaderImpl::DidRead(uint32_t num_bytes, bool completed_synchronously) {
-  total_written_bytes_ += num_bytes;
   pending_write_buffer_offset_ += num_bytes;
   DCHECK(url_request_->status().is_success());
   bool complete_read = true;
@@ -356,9 +360,7 @@ void URLLoaderImpl::DidRead(uint32_t num_bytes, bool completed_synchronously) {
   }
 
   if (complete_read) {
-    response_body_stream_ =
-        pending_write_->Complete(pending_write_buffer_offset_);
-    pending_write_ = nullptr;
+    CompletePendingWrite();
   }
   if (completed_synchronously) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -375,8 +377,14 @@ void URLLoaderImpl::OnReadCompleted(net::URLRequest* url_request,
 
   if (!url_request->status().is_success()) {
     writable_handle_watcher_.Cancel();
-    pending_write_ = nullptr;  // This closes the data pipe.
-    DeleteIfNeeded();
+    CompletePendingWrite();
+
+    // This closes the data pipe.
+    // TODO(mmenke): Should NotifyCompleted close the data pipe itself instead?
+    response_body_stream_.reset();
+
+    NotifyCompleted(url_request_->status().ToNetError());
+    // |this| may have been deleted.
     return;
   }
 
@@ -448,6 +456,13 @@ void URLLoaderImpl::SendResponseToClient() {
 
   url_loader_client_->OnStartLoadingResponseBody(std::move(consumer_handle_));
   response_ = nullptr;
+}
+
+void URLLoaderImpl::CompletePendingWrite() {
+  response_body_stream_ =
+      pending_write_->Complete(pending_write_buffer_offset_);
+  pending_write_ = nullptr;
+  total_written_bytes_ += pending_write_buffer_offset_;
 }
 
 }  // namespace content
