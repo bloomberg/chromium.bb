@@ -5,9 +5,12 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
 #import "chrome/browser/ui/cocoa/permission_bubble/permission_bubble_cocoa.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_impl.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace {
 
@@ -19,6 +22,12 @@ bool UseViewsBubbles() {
          !base::FeatureList::IsEnabled(kCocoaPermissionBubbles);
 }
 
+views::BubbleDialogDelegateView* BubbleForWindow(gfx::NativeWindow window) {
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  DCHECK(widget);
+  return widget->widget_delegate()->AsBubbleDialogDelegate();
+}
+
 }  // namespace
 
 // static
@@ -26,7 +35,14 @@ std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(
     content::WebContents* web_contents,
     Delegate* delegate) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (UseViewsBubbles())
-    return base::MakeUnique<PermissionPromptImpl>(browser, delegate);
+  if (UseViewsBubbles()) {
+    auto prompt = base::MakeUnique<PermissionPromptImpl>(browser, delegate);
+    // Note the PermissionPromptImpl constructor always shows the bubble, which
+    // is necessary to call TrackBubbleState().
+    TrackBubbleState(
+        BubbleForWindow(prompt->GetNativeWindow()),
+        GetPageInfoDecoration(web_contents->GetTopLevelNativeWindow()));
+    return prompt;
+  }
   return base::MakeUnique<PermissionBubbleCocoa>(browser, delegate);
 }
