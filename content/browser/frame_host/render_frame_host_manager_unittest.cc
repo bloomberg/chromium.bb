@@ -46,6 +46,7 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
@@ -3124,7 +3125,9 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
 
   // The initial RFH receives a BeginNavigation IPC. The navigation should not
   // start.
-  initial_rfh->SendRendererInitiatedNavigationRequest(kUrl3, true);
+  auto navigation =
+      NavigationSimulator::CreateRendererInitiated(kUrl3, initial_rfh);
+  navigation->Start();
   EXPECT_FALSE(main_test_rfh()->frame_tree_node()->navigation_request());
 }
 
