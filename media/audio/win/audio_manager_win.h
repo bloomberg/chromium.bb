@@ -28,7 +28,6 @@ class MEDIA_EXPORT AudioManagerWin : public AudioManagerBase {
   bool HasAudioOutputDevices() override;
   bool HasAudioInputDevices() override;
   base::string16 GetAudioInputDeviceModel() override;
-  void ShowAudioInputSettings() override;
   void GetAudioInputDeviceNames(AudioDeviceNames* device_names) override;
   void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) override;
   AudioParameters GetInputStreamParameters(

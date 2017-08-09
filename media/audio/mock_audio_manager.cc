@@ -34,9 +34,6 @@ base::string16 MockAudioManager::GetAudioInputDeviceModel() {
   return base::string16();
 }
 
-void MockAudioManager::ShowAudioInputSettings() {
-}
-
 void MockAudioManager::GetAudioInputDeviceDescriptions(
     AudioDeviceDescriptions* device_descriptions) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());

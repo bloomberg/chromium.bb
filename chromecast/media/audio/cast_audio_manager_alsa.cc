@@ -48,10 +48,6 @@ bool CastAudioManagerAlsa::HasAudioInputDevices() {
   return true;
 }
 
-void CastAudioManagerAlsa::ShowAudioInputSettings() {
-  LOG(WARNING) << "No support for input audio devices";
-}
-
 void CastAudioManagerAlsa::GetAudioInputDeviceNames(
     ::media::AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());

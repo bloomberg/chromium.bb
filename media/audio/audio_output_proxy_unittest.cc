@@ -140,7 +140,6 @@ class MockAudioManager : public AudioManagerBase {
   MOCK_METHOD0(HasAudioOutputDevices, bool());
   MOCK_METHOD0(HasAudioInputDevices, bool());
   MOCK_METHOD0(GetAudioInputDeviceModel, base::string16());
-  MOCK_METHOD0(ShowAudioInputSettings, void());
   MOCK_METHOD1(GetAudioInputDeviceNames,
                void(media::AudioDeviceNames* device_name));
   MOCK_METHOD2(GetPreferredOutputStreamParameters, AudioParameters(

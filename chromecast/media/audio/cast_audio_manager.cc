@@ -56,10 +56,6 @@ bool CastAudioManager::HasAudioInputDevices() {
   return false;
 }
 
-void CastAudioManager::ShowAudioInputSettings() {
-  LOG(WARNING) << "No support for input audio devices";
-}
-
 void CastAudioManager::GetAudioInputDeviceNames(
     ::media::AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
