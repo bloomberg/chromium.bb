@@ -41,7 +41,6 @@
     </style>
     <div id="outerRow" noSubLabel$="[[!subLabel]]">
       <div class="flex" id="labelWrapper" on-tap="onLabelWrapperTap_"
-          actionable$="[[!controlDisabled_(disabled, pref.*)]]"
           hidden="[[!label]]">
         <div id="label" class="label">[[label]]</div>
         <div id="subLabel" class="secondary label">[[subLabel]]</div>
@@ -54,7 +53,8 @@
       <paper-toggle-button id="control" checked="{{checked}}"
           on-change="notifyChangedByUserInteraction" aria-labelledby="label"
           aria-describedby="subLabel" on-up="resetTrackLock_"
-          disabled="[[controlDisabled_(disabled, pref)]]">
+          disabled="[[controlDisabled_(disabled, pref)]]"
+          on-tap="onToggleTap_">
       </paper-toggle-button>
     </div>
   </template>

@@ -104,9 +104,10 @@
           </div>
 </if>
         </div>
-        <div class="settings-box"
+        <div class="settings-box" id="homeButton"
             hidden="[[!pageVisibility.homeButton]]">
-          <settings-toggle-button class="start" elide-label
+          <settings-toggle-button action-target="[[$$('#homeButton')]]"
+              class="start" elide-label
               pref="{{prefs.browser.show_home_button}}"
               label="$i18n{showHomeButton}"
               sub-label="[[getShowHomeSubLabel_(
@@ -144,9 +145,10 @@
             </settings-radio-group>
           </div>
         </template>
-        <div class="settings-box"
+        <div class="settings-box" id="bookmarksBar"
             hidden="[[!pageVisibility.bookmarksBar]]">
           <settings-toggle-button class="start"
+              action-target="[[$$('#bookmarksBar')]]"
               pref="{{prefs.bookmark_bar.show_on_all_tabs}}"
               label="$i18n{showBookmarksBar}">
           </settings-toggle-button>
