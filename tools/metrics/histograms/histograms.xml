@@ -5609,6 +5609,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Blink.CookieJar.SyncCookiesTime" units="microseconds">
+  <owner>kinuko@chromium.org</owner>
+  <owner>dcheng@chromium.org</owner>
+  <summary>Microseconds per sync IPC call to fetch cookies.</summary>
+</histogram>
+
 <histogram name="Blink.DecodedImage.CanvasExpanded"
     enum="BooleanCanvasExpanded">
   <obsolete>
