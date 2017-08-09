@@ -11,7 +11,7 @@
 // interest.
 @interface BubbleViewController : UIViewController
 
-// Initializes the bubble with the given text, arrow direction, and alignment.
+// Initialize the bubble with the given text, arrow direction, and alignment.
 - (instancetype)initWithText:(NSString*)text
               arrowDirection:(BubbleArrowDirection)direction
                    alignment:(BubbleAlignment)alignment
@@ -24,10 +24,10 @@
 
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
-// Animates the bubble in with a fade-in.
+// Animate the bubble view in with a fade-in and sink-down animation.
 - (void)animateContentIn;
 
-// Dismisses the bubble. If |animated| is true, the bubble fades out.
+// Dismiss the bubble. If |animated| is true, the bubble fades out.
 - (void)dismissAnimated:(BOOL)animated;
 
 @end
