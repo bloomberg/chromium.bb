@@ -1790,10 +1790,27 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
     double page_y;
     DeviceToPage(page_index, point.x(), point.y(), &page_x, &page_y);
 
-    FPDF_PAGE page = pages_[page_index]->GetPage();
-    FORM_OnLButtonDown(form_, page, 0, page_x, page_y);
+    bool is_form_text_area = false;
     if (form_type != FPDF_FORMFIELD_UNKNOWN) {
       DCHECK_EQ(area, PDFiumPage::FormTypeToArea(form_type));
+      is_form_text_area = area == PDFiumPage::FORM_TEXT_AREA;
+    }
+
+    FPDF_PAGE page = pages_[page_index]->GetPage();
+    bool is_editable_form_text_area = false;
+    if (is_form_text_area) {
+      FPDF_ANNOTATION annot =
+          FPDFAnnot_GetFormFieldAtPoint(form_, page, page_x, page_y);
+      DCHECK(annot);
+
+      int flags = FPDFAnnot_GetFormFieldFlags(page, annot);
+      is_editable_form_text_area =
+          CheckIfEditableFormTextArea(flags, form_type);
+      FPDFPage_CloseAnnot(annot);
+    }
+
+    FORM_OnLButtonDown(form_, page, 0, page_x, page_y);
+    if (form_type != FPDF_FORMFIELD_UNKNOWN) {
       // Destroy SelectionChangeInvalidator object before SetInFormTextArea()
       // changes plugin's focus to be in form text area. This way, regular text
       // selection can be cleared when a user clicks into a form text area
@@ -1802,17 +1819,8 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
       // (not the Renderer).
       selection_invalidator.reset();
 
-      bool is_form_text_area = area == PDFiumPage::FORM_TEXT_AREA;
       SetInFormTextArea(is_form_text_area);
-      if (is_form_text_area) {
-        FPDF_ANNOTATION annot =
-            FPDFAnnot_GetFormFieldAtPoint(form_, page, page_x, page_y);
-        DCHECK(annot);
-        int flags = FPDFAnnot_GetFormFieldFlags(page, annot);
-        editable_form_text_area_ =
-            CheckIfEditableFormTextArea(flags, form_type);
-        FPDFPage_CloseAnnot(annot);
-      }
+      editable_form_text_area_ = is_editable_form_text_area;
       return true;  // Return now before we get into the selection code.
     }
   }
