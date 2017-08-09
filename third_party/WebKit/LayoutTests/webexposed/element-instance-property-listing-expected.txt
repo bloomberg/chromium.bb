@@ -1001,6 +1001,8 @@ html element thead
     property insertRow
     property rows
     property vAlign
+html element time
+    property dateTime
 html element title
     property text
 html element tr

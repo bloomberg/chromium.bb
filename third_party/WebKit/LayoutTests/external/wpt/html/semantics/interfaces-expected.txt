@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 293 tests; 286 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 293 tests; 288 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Interfaces for a 
 PASS Interfaces for A 
 PASS Interfaces for abbr 
@@ -269,8 +269,8 @@ PASS Interfaces for th
 PASS Interfaces for TH 
 PASS Interfaces for thead 
 PASS Interfaces for THEAD 
-FAIL Interfaces for time assert_equals: Element time should have HTMLTimeElement as its primary interface. expected "[object HTMLTimeElement]" but got "[object HTMLUnknownElement]"
-FAIL Interfaces for TIME assert_equals: Element TIME should have HTMLTimeElement as its primary interface. expected "[object HTMLTimeElement]" but got "[object HTMLUnknownElement]"
+PASS Interfaces for time 
+PASS Interfaces for TIME 
 PASS Interfaces for title 
 PASS Interfaces for TITLE 
 PASS Interfaces for tr 

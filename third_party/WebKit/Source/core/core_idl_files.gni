@@ -245,6 +245,7 @@ core_idl_files =
                     "html/HTMLTableSectionElement.idl",
                     "html/HTMLTemplateElement.idl",
                     "html/HTMLTextAreaElement.idl",
+                    "html/HTMLTimeElement.idl",
                     "html/HTMLTitleElement.idl",
                     "html/HTMLTrackElement.idl",
                     "html/HTMLUListElement.idl",
