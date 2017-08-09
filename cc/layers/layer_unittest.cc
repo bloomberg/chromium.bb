@@ -1434,7 +1434,7 @@ TEST_F(LayerTest, ElementIdAndMutablePropertiesArePushed) {
   EXPECT_EQ(MutableProperty::kTransform, impl_layer->mutable_properties());
 }
 
-TEST_F(LayerTest, NotUsingLayerListsManagesElementId) {
+TEST_F(LayerTest, SetLayerTreeHostNotUsingLayerListsManagesElementId) {
   scoped_refptr<Layer> test_layer = Layer::Create();
   ElementId element_id = ElementId(2);
   test_layer->SetElementId(element_id);
@@ -1459,6 +1459,28 @@ TEST_F(LayerTest, NotUsingLayerListsManagesElementId) {
   EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
 }
 
+TEST_F(LayerTest, SetElementIdNotUsingLayerLists) {
+  scoped_refptr<Layer> test_layer = Layer::Create();
+  test_layer->SetLayerTreeHost(layer_tree_host_.get());
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
+  ElementId element_id = ElementId(2);
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
+
+  test_layer->SetElementId(element_id);
+  // Layer should now be registered by element id.
+  EXPECT_EQ(test_layer, layer_tree_host_->LayerByElementId(element_id));
+
+  ElementId other_element_id = ElementId(3);
+  test_layer->SetElementId(other_element_id);
+  // The layer should have been unregistered from the original element
+  // id and registered with the new one.
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
+  EXPECT_EQ(test_layer, layer_tree_host_->LayerByElementId(other_element_id));
+
+  test_layer->SetLayerTreeHost(nullptr);
+}
+
 class LayerTestWithLayerLists : public LayerTest {
  protected:
   void SetUp() override {
@@ -1467,7 +1489,8 @@ class LayerTestWithLayerLists : public LayerTest {
   }
 };
 
-TEST_F(LayerTestWithLayerLists, UsingLayerListsDoesNotManageElementId) {
+TEST_F(LayerTestWithLayerLists,
+       SetLayerTreeHostUsingLayerListsDoesNotManageElementId) {
   scoped_refptr<Layer> test_layer = Layer::Create();
   ElementId element_id = ElementId(2);
   test_layer->SetElementId(element_id);
@@ -1488,6 +1511,15 @@ TEST_F(LayerTestWithLayerLists, UsingLayerListsDoesNotManageElementId) {
   EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
 
   test_layer->SetLayerTreeHost(nullptr);
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
+}
+
+TEST_F(LayerTestWithLayerLists, SetElementIdUsingLayerLists) {
+  scoped_refptr<Layer> test_layer = Layer::Create();
+  ElementId element_id = ElementId(2);
+  test_layer->SetElementId(element_id);
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(0);
   EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
 }
 
