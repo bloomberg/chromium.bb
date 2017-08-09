@@ -10,14 +10,15 @@
 #include "media/mojo/clients/mojo_video_decoder.h"
 #include "media/mojo/features.h"
 #include "media/mojo/interfaces/audio_decoder.mojom.h"
-#include "services/service_manager/public/cpp/connect.h"
+#include "media/mojo/interfaces/interface_factory.mojom.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace media {
 
 MojoDecoderFactory::MojoDecoderFactory(
-    service_manager::mojom::InterfaceProvider* interface_provider)
-    : interface_provider_(interface_provider) {
-  DCHECK(interface_provider_);
+    media::mojom::InterfaceFactory* interface_factory)
+    : interface_factory_(interface_factory) {
+  DCHECK(interface_factory_);
 }
 
 MojoDecoderFactory::~MojoDecoderFactory() {}
@@ -27,8 +28,7 @@ void MojoDecoderFactory::CreateAudioDecoders(
     std::vector<std::unique_ptr<AudioDecoder>>* audio_decoders) {
 #if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
   mojom::AudioDecoderPtr audio_decoder_ptr;
-  service_manager::GetInterface<mojom::AudioDecoder>(interface_provider_,
-                                                     &audio_decoder_ptr);
+  interface_factory_->CreateAudioDecoder(mojo::MakeRequest(&audio_decoder_ptr));
 
   audio_decoders->push_back(base::MakeUnique<MojoAudioDecoder>(
       task_runner, std::move(audio_decoder_ptr)));
@@ -41,11 +41,11 @@ void MojoDecoderFactory::CreateVideoDecoders(
     MediaLog* media_log,
     std::vector<std::unique_ptr<VideoDecoder>>* video_decoders) {
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
-  mojom::VideoDecoderPtr remote_decoder;
-  service_manager::GetInterface<mojom::VideoDecoder>(interface_provider_,
-                                                     &remote_decoder);
+  mojom::VideoDecoderPtr video_decoder_ptr;
+  interface_factory_->CreateVideoDecoder(mojo::MakeRequest(&video_decoder_ptr));
+
   video_decoders->push_back(base::MakeUnique<MojoVideoDecoder>(
-      task_runner, gpu_factories, media_log, std::move(remote_decoder)));
+      task_runner, gpu_factories, media_log, std::move(video_decoder_ptr)));
 #endif
 }
 
