@@ -363,6 +363,7 @@ Polymer({
     if (this.networkLastSelectedGuid_ == '' &&
         state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
       this.onSelectedNetworkConnected_();
+      return;
     }
 
     // If user has previously selected another network, there
