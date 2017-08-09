@@ -497,6 +497,7 @@ public class OfflinePageBridge {
     /**
      * Schedules to download a page from |url| and categorize under |nameSpace|.
      * The duplicate pages or requests will be checked.
+     * Origin is presumed to be Chrome.
      *
      * @param webContents Web contents upon which the infobar is shown.
      * @param nameSpace Namespace of the page to save.
@@ -505,7 +506,23 @@ public class OfflinePageBridge {
      */
     public void scheduleDownload(
             WebContents webContents, String nameSpace, String url, int uiAction) {
-        nativeScheduleDownload(mNativeOfflinePageBridge, webContents, nameSpace, url, uiAction);
+        scheduleDownload(webContents, nameSpace, url, uiAction, new OfflinePageOrigin());
+    }
+
+    /**
+     * Schedules to download a page from |url| and categorize under |namespace| from |origin|.
+     * The duplicate pages or requests will be checked.
+     *
+     * @param webContents Web contents upon which the infobar is shown.
+     * @param nameSpace Namespace of the page to save.
+     * @param url URL of the page to save.
+     * @param uiAction UI action, like showing infobar or toast on certain case.
+     * @param origin Origin of the page.
+     */
+    public void scheduleDownload(WebContents webContents, String nameSpace, String url,
+            int uiAction, OfflinePageOrigin origin) {
+        nativeScheduleDownload(mNativeOfflinePageBridge, webContents, nameSpace, url, uiAction,
+                origin.encodeAsJsonString());
     }
 
     /**
@@ -577,17 +594,18 @@ public class OfflinePageBridge {
     @CalledByNative
     private static void createOfflinePageAndAddToList(List<OfflinePageItem> offlinePagesList,
             String url, long offlineId, String clientNamespace, String clientId, String filePath,
-            long fileSize, long creationTime, int accessCount, long lastAccessTimeMs) {
+            long fileSize, long creationTime, int accessCount, long lastAccessTimeMs,
+            String requestOrigin) {
         offlinePagesList.add(createOfflinePageItem(url, offlineId, clientNamespace, clientId,
-                filePath, fileSize, creationTime, accessCount, lastAccessTimeMs));
+                filePath, fileSize, creationTime, accessCount, lastAccessTimeMs, requestOrigin));
     }
 
     @CalledByNative
     private static OfflinePageItem createOfflinePageItem(String url, long offlineId,
             String clientNamespace, String clientId, String filePath, long fileSize,
-            long creationTime, int accessCount, long lastAccessTimeMs) {
-        return new OfflinePageItem(url, offlineId, clientNamespace, clientId, filePath,
-                fileSize, creationTime, accessCount, lastAccessTimeMs);
+            long creationTime, int accessCount, long lastAccessTimeMs, String requestOrigin) {
+        return new OfflinePageItem(url, offlineId, clientNamespace, clientId, filePath, fileSize,
+                creationTime, accessCount, lastAccessTimeMs, requestOrigin);
     }
 
     @CalledByNative
@@ -650,7 +668,7 @@ public class OfflinePageBridge {
     private native boolean nativeIsShowingDownloadButtonInErrorPage(
             long nativeOfflinePageBridge, WebContents webContents);
     private native void nativeScheduleDownload(long nativeOfflinePageBridge,
-            WebContents webContents, String nameSpace, String url, int uiAction);
+            WebContents webContents, String nameSpace, String url, int uiAction, String origin);
     private native boolean nativeIsOfflinePage(
             long nativeOfflinePageBridge, WebContents webContents);
     private native OfflinePageItem nativeGetOfflinePage(

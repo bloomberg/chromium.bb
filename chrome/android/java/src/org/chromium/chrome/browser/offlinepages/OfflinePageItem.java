@@ -18,10 +18,11 @@ public class OfflinePageItem {
     private final long mCreationTimeMs;
     private final int mAccessCount;
     private final long mLastAccessTimeMs;
+    private final String mRequestOrigin;
 
     public OfflinePageItem(String url, long offlineId, String clientNamespace, String clientId,
             String filePath, long fileSize, long creationTimeMs, int accessCount,
-            long lastAccessTimeMs) {
+            long lastAccessTimeMs, String requestOrigin) {
         mUrl = url;
         mOfflineId = offlineId;
         mClientId = new ClientId(clientNamespace, clientId);
@@ -30,6 +31,7 @@ public class OfflinePageItem {
         mCreationTimeMs = creationTimeMs;
         mAccessCount = accessCount;
         mLastAccessTimeMs = lastAccessTimeMs;
+        mRequestOrigin = requestOrigin;
     }
 
     /** @return URL of the offline page. */
@@ -78,5 +80,11 @@ public class OfflinePageItem {
     @VisibleForTesting
     public long getLastAccessTimeMs() {
         return mLastAccessTimeMs;
+    }
+
+    /** @return The originating application of the request. */
+    @VisibleForTesting
+    public String getRequestOrigin() {
+        return mRequestOrigin;
     }
 }

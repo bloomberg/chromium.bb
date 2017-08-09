@@ -55,10 +55,10 @@ class OfflinePageDownloadBridge : public DownloadUIAdapter::Observer {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_guid);
 
-  void StartDownload(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& j_tab);
+  void StartDownload(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     const base::android::JavaParamRef<jobject>& j_tab,
+                     const base::android::JavaParamRef<jstring>& j_origin);
 
   void CancelDownload(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj,

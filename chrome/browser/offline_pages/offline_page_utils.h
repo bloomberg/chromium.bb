@@ -127,6 +127,12 @@ class OfflinePageUtils {
   static void ScheduleDownload(content::WebContents* web_contents,
                                const std::string& name_space,
                                const GURL& url,
+                               DownloadUIActionFlags ui_action,
+                               const std::string& request_origin);
+
+  static void ScheduleDownload(content::WebContents* web_contents,
+                               const std::string& name_space,
+                               const GURL& url,
                                DownloadUIActionFlags ui_action);
 
   // Determines if offline page download should be triggered based on MIME type

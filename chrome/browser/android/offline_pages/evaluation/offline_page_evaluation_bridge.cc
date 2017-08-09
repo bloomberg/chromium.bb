@@ -65,7 +65,8 @@ void ToJavaOfflinePageList(JNIEnv* env,
         ConvertUTF8ToJavaString(env, offline_page.client_id.id),
         ConvertUTF8ToJavaString(env, offline_page.file_path.value()),
         offline_page.file_size, offline_page.creation_time.ToJavaTime(),
-        offline_page.access_count, offline_page.last_access_time.ToJavaTime());
+        offline_page.access_count, offline_page.last_access_time.ToJavaTime(),
+        ConvertUTF8ToJavaString(env, offline_page.request_origin));
   }
 }
 

@@ -206,6 +206,7 @@ void OfflineInternalsUIMessageHandler::HandleStoredPagesCallback(
     offline_page->SetDouble("lastAccessTime", page.last_access_time.ToJsTime());
     offline_page->SetInteger("accessCount", page.access_count);
     offline_page->SetString("originalUrl", page.original_url.spec());
+    offline_page->SetString("requestOrigin", page.request_origin);
     results.Append(std::move(offline_page));
   }
   ResolveJavascriptCallback(base::Value(callback_id), results);
@@ -230,6 +231,7 @@ void OfflineInternalsUIMessageHandler::HandleRequestQueueCallback(
       save_page_request->SetString("id", std::to_string(request->request_id()));
       save_page_request->SetString("originalUrl",
                                    request->original_url().spec());
+      save_page_request->SetString("requestOrigin", request->request_origin());
       save_page_requests.Append(std::move(save_page_request));
     }
   }
