@@ -78,8 +78,8 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeLeadingWithTargetOnLeftUp) {
       leftAlignedAnchorPoint_, BubbleArrowDirectionUp, BubbleAlignmentLeading,
       containerSize_, false /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({430.0f + kTestBubbleAlignmentOffset, 350.0f},
-                                leftAlignedSize));
+  EXPECT_FLOAT_EQ(430.0f + kTestBubbleAlignmentOffset, leftAlignedSize.width);
+  EXPECT_FLOAT_EQ(350.0f, leftAlignedSize.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is leading aligned, the
@@ -90,8 +90,8 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeLeadingWithTargetOnCenterDown) {
       centerAlignedAnchorPoint_, BubbleArrowDirectionDown,
       BubbleAlignmentLeading, containerSize_, false /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({200.0f + kTestBubbleAlignmentOffset, 250.0f},
-                                centerAlignedSize));
+  EXPECT_FLOAT_EQ(200.0f + kTestBubbleAlignmentOffset, centerAlignedSize.width);
+  EXPECT_FLOAT_EQ(250.0f, centerAlignedSize.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is leading aligned, the
@@ -102,8 +102,8 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeLeadingWithTargetOnRightUp) {
       rightAlignedAnchorPoint_, BubbleArrowDirectionUp, BubbleAlignmentLeading,
       containerSize_, false /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({50.0f + kTestBubbleAlignmentOffset, 350.0f},
-                                rightAlignedSize));
+  EXPECT_FLOAT_EQ(50.0f + kTestBubbleAlignmentOffset, rightAlignedSize.width);
+  EXPECT_FLOAT_EQ(350.0f, rightAlignedSize.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is center aligned, the target
@@ -114,7 +114,8 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeCenterWithTargetOnLeftDown) {
       leftAlignedAnchorPoint_, BubbleArrowDirectionDown, BubbleAlignmentCenter,
       containerSize_, false /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({140.0f, 250.0f}, leftAlignedSize));
+  EXPECT_FLOAT_EQ(140.0f, leftAlignedSize.width);
+  EXPECT_FLOAT_EQ(250.0f, leftAlignedSize.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is center aligned, the target
@@ -125,7 +126,8 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeCenterWithTargetOnCenterUp) {
       centerAlignedAnchorPoint_, BubbleArrowDirectionUp, BubbleAlignmentCenter,
       containerSize_, false /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({400.0f, 350.0f}, centerAlignedSize));
+  EXPECT_FLOAT_EQ(400.0f, centerAlignedSize.width);
+  EXPECT_FLOAT_EQ(350.0f, centerAlignedSize.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is center aligned, the target
@@ -136,7 +138,8 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeCenterWithTargetOnRightDown) {
       rightAlignedAnchorPoint_, BubbleArrowDirectionDown, BubbleAlignmentCenter,
       containerSize_, false /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({100.0f, 250.0f}, rightAlignedSize));
+  EXPECT_FLOAT_EQ(100.0f, rightAlignedSize.width);
+  EXPECT_FLOAT_EQ(250.0f, rightAlignedSize.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is trailing aligned, the
@@ -147,8 +150,8 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeTrailingWithTargetOnLeftUp) {
       leftAlignedAnchorPoint_, BubbleArrowDirectionUp, BubbleAlignmentTrailing,
       containerSize_, false /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({70.0f + kTestBubbleAlignmentOffset, 350.0f},
-                                leftAlignedSize));
+  EXPECT_FLOAT_EQ(70.0f + kTestBubbleAlignmentOffset, leftAlignedSize.width);
+  EXPECT_FLOAT_EQ(350.0f, leftAlignedSize.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is trailing aligned, the
@@ -159,8 +162,8 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeTrailingWithTargetOnCenterDown) {
       centerAlignedAnchorPoint_, BubbleArrowDirectionDown,
       BubbleAlignmentTrailing, containerSize_, false /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({300.0f + kTestBubbleAlignmentOffset, 250.0f},
-                                centerAlignedSize));
+  EXPECT_FLOAT_EQ(300.0f + kTestBubbleAlignmentOffset, centerAlignedSize.width);
+  EXPECT_FLOAT_EQ(250.0f, centerAlignedSize.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is trailing aligned, the
@@ -171,8 +174,8 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeTrailingWithTargetOnRightUp) {
       rightAlignedAnchorPoint_, BubbleArrowDirectionUp, BubbleAlignmentTrailing,
       containerSize_, false /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({450.0f + kTestBubbleAlignmentOffset, 350.0f},
-                                rightAlignedSize));
+  EXPECT_FLOAT_EQ(450.0f + kTestBubbleAlignmentOffset, rightAlignedSize.width);
+  EXPECT_FLOAT_EQ(350.0f, rightAlignedSize.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is leading aligned, the
@@ -183,8 +186,8 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeLeadingWithTargetOnLeftDownRTL) {
       leftAlignedAnchorPoint_, BubbleArrowDirectionDown, BubbleAlignmentLeading,
       containerSize_, true /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({70.0f + kTestBubbleAlignmentOffset, 250.0f},
-                                leftAlignedSizeRTL));
+  EXPECT_FLOAT_EQ(70.0f + kTestBubbleAlignmentOffset, leftAlignedSizeRTL.width);
+  EXPECT_FLOAT_EQ(250.0f, leftAlignedSizeRTL.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is leading aligned, the
@@ -195,8 +198,9 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeLeadingWithTargetOnCenterUpRTL) {
       centerAlignedAnchorPoint_, BubbleArrowDirectionUp, BubbleAlignmentLeading,
       containerSize_, true /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({300.0f + kTestBubbleAlignmentOffset, 350.0f},
-                                centerAlignedSizeRTL));
+  EXPECT_FLOAT_EQ(300.0f + kTestBubbleAlignmentOffset,
+                  centerAlignedSizeRTL.width);
+  EXPECT_FLOAT_EQ(350.0f, centerAlignedSizeRTL.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is leading aligned, the
@@ -207,8 +211,9 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeLeadingWithTargetOnRightDownRTL) {
       rightAlignedAnchorPoint_, BubbleArrowDirectionDown,
       BubbleAlignmentLeading, containerSize_, true /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({450.0f + kTestBubbleAlignmentOffset, 250.0f},
-                                rightAlignedSizeRTL));
+  EXPECT_FLOAT_EQ(450.0f + kTestBubbleAlignmentOffset,
+                  rightAlignedSizeRTL.width);
+  EXPECT_FLOAT_EQ(250.0f, rightAlignedSizeRTL.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is center aligned, the target
@@ -219,7 +224,8 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeCenterWithTargetOnLeftUpRTL) {
       leftAlignedAnchorPoint_, BubbleArrowDirectionUp, BubbleAlignmentCenter,
       containerSize_, true /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({140.0f, 350.0f}, leftAlignedSizeRTL));
+  EXPECT_FLOAT_EQ(140.0f, leftAlignedSizeRTL.width);
+  EXPECT_FLOAT_EQ(350.0f, leftAlignedSizeRTL.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is center aligned, the target
@@ -230,7 +236,8 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeCenterWithTargetOnCenterDownRTL) {
       centerAlignedAnchorPoint_, BubbleArrowDirectionDown,
       BubbleAlignmentCenter, containerSize_, true /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({400.0f, 250.0f}, centerAlignedSizeRTL));
+  EXPECT_FLOAT_EQ(400.0f, centerAlignedSizeRTL.width);
+  EXPECT_FLOAT_EQ(250.0f, centerAlignedSizeRTL.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is center aligned, the target
@@ -241,7 +248,8 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeCenterWithTargetOnRightUpRTL) {
       rightAlignedAnchorPoint_, BubbleArrowDirectionUp, BubbleAlignmentCenter,
       containerSize_, true /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({100.0f, 350.0f}, rightAlignedSizeRTL));
+  EXPECT_FLOAT_EQ(100.0f, rightAlignedSizeRTL.width);
+  EXPECT_FLOAT_EQ(350.0f, rightAlignedSizeRTL.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is trailing aligned, the
@@ -252,8 +260,9 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeTrailingWithTargetOnLeftDownRTL) {
       leftAlignedAnchorPoint_, BubbleArrowDirectionDown,
       BubbleAlignmentTrailing, containerSize_, true /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({430.0f + kTestBubbleAlignmentOffset, 250.0f},
-                                leftAlignedSizeRTL));
+  EXPECT_FLOAT_EQ(430.0f + kTestBubbleAlignmentOffset,
+                  leftAlignedSizeRTL.width);
+  EXPECT_FLOAT_EQ(250.0f, leftAlignedSizeRTL.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is trailing aligned, the
@@ -264,8 +273,9 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeTrailingWithTargetOnCenterUpRTL) {
       centerAlignedAnchorPoint_, BubbleArrowDirectionUp,
       BubbleAlignmentTrailing, containerSize_, true /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({200.0f + kTestBubbleAlignmentOffset, 350.0f},
-                                centerAlignedSizeRTL));
+  EXPECT_FLOAT_EQ(200.0f + kTestBubbleAlignmentOffset,
+                  centerAlignedSizeRTL.width);
+  EXPECT_FLOAT_EQ(350.0f, centerAlignedSizeRTL.height);
 }
 
 // Test the |BubbleMaxSize| method when the bubble is trailing aligned, the
@@ -276,8 +286,9 @@ TEST_F(BubbleUtilTest, BubbleMaxSizeTrailingWithTargetOnRightDownRTL) {
       rightAlignedAnchorPoint_, BubbleArrowDirectionDown,
       BubbleAlignmentTrailing, containerSize_, true /* isRTL */);
 
-  EXPECT_TRUE(CGSizeEqualToSize({50.0f + kTestBubbleAlignmentOffset, 250.0f},
-                                rightAlignedSizeRTL));
+  EXPECT_FLOAT_EQ(50.0f + kTestBubbleAlignmentOffset,
+                  rightAlignedSizeRTL.width);
+  EXPECT_FLOAT_EQ(250.0f, rightAlignedSizeRTL.height);
 }
 
 // Test |BubbleFrame| when the bubble's direction is
@@ -287,9 +298,10 @@ TEST_F(BubbleUtilTest, BubbleFrameUpLeadingLTR) {
   CGRect bubbleFrame = bubble_util::BubbleFrame(
       centerAlignedAnchorPoint_, bubbleSize_, BubbleArrowDirectionUp,
       BubbleAlignmentLeading, containerSize_.width, false /* isRTL */);
-  EXPECT_EQ(300.0f - kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
-  EXPECT_EQ(250.0f, bubbleFrame.origin.y);
-  EXPECT_TRUE(CGSizeEqualToSize(bubbleSize_, bubbleFrame.size));
+  EXPECT_FLOAT_EQ(300.0f - kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
+  EXPECT_FLOAT_EQ(250.0f, bubbleFrame.origin.y);
+  EXPECT_FLOAT_EQ(bubbleSize_.width, CGRectGetWidth(bubbleFrame));
+  EXPECT_FLOAT_EQ(bubbleSize_.height, CGRectGetHeight(bubbleFrame));
 }
 
 // Test |BubbleFrame| when the bubble's direction is
@@ -299,9 +311,10 @@ TEST_F(BubbleUtilTest, BubbleFrameUpLeadingRTL) {
   CGRect bubbleFrame = bubble_util::BubbleFrame(
       centerAlignedAnchorPoint_, bubbleSize_, BubbleArrowDirectionUp,
       BubbleAlignmentLeading, containerSize_.width, true /* isRTL */);
-  EXPECT_EQ(-100.0f + kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
-  EXPECT_EQ(250.0f, bubbleFrame.origin.y);
-  EXPECT_TRUE(CGSizeEqualToSize(bubbleSize_, bubbleFrame.size));
+  EXPECT_FLOAT_EQ(-100.0f + kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
+  EXPECT_FLOAT_EQ(250.0f, bubbleFrame.origin.y);
+  EXPECT_FLOAT_EQ(bubbleSize_.width, CGRectGetWidth(bubbleFrame));
+  EXPECT_FLOAT_EQ(bubbleSize_.height, CGRectGetHeight(bubbleFrame));
 }
 
 // Test |BubbleFrame| when the bubble's direction is
@@ -311,9 +324,10 @@ TEST_F(BubbleUtilTest, BubbleFrameUpCenteredLTR) {
   CGRect bubbleFrame = bubble_util::BubbleFrame(
       centerAlignedAnchorPoint_, bubbleSize_, BubbleArrowDirectionUp,
       BubbleAlignmentCenter, containerSize_.width, false /* isRTL */);
-  EXPECT_EQ(150.0f, bubbleFrame.origin.x);
-  EXPECT_EQ(250.0f, bubbleFrame.origin.y);
-  EXPECT_TRUE(CGSizeEqualToSize(bubbleSize_, bubbleFrame.size));
+  EXPECT_FLOAT_EQ(150.0f, bubbleFrame.origin.x);
+  EXPECT_FLOAT_EQ(250.0f, bubbleFrame.origin.y);
+  EXPECT_FLOAT_EQ(bubbleSize_.width, CGRectGetWidth(bubbleFrame));
+  EXPECT_FLOAT_EQ(bubbleSize_.height, CGRectGetHeight(bubbleFrame));
 }
 
 // Test |BubbleFrame| when the bubble's direction is
@@ -323,9 +337,10 @@ TEST_F(BubbleUtilTest, BubbleFrameUpCenteredRTL) {
   CGRect bubbleFrame = bubble_util::BubbleFrame(
       centerAlignedAnchorPoint_, bubbleSize_, BubbleArrowDirectionUp,
       BubbleAlignmentCenter, containerSize_.width, true /* isRTL */);
-  EXPECT_EQ(50.0f, bubbleFrame.origin.x);
-  EXPECT_EQ(250.0f, bubbleFrame.origin.y);
-  EXPECT_TRUE(CGSizeEqualToSize(bubbleSize_, bubbleFrame.size));
+  EXPECT_FLOAT_EQ(50.0f, bubbleFrame.origin.x);
+  EXPECT_FLOAT_EQ(250.0f, bubbleFrame.origin.y);
+  EXPECT_FLOAT_EQ(bubbleSize_.width, CGRectGetWidth(bubbleFrame));
+  EXPECT_FLOAT_EQ(bubbleSize_.height, CGRectGetHeight(bubbleFrame));
 }
 
 // Test |BubbleFrame| when the bubble's direction is
@@ -335,9 +350,10 @@ TEST_F(BubbleUtilTest, BubbleFrameUpTrailingLTR) {
   CGRect bubbleFrame = bubble_util::BubbleFrame(
       centerAlignedAnchorPoint_, bubbleSize_, BubbleArrowDirectionUp,
       BubbleAlignmentTrailing, containerSize_.width, false /* isRTL */);
-  EXPECT_EQ(kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
-  EXPECT_EQ(250.0f, bubbleFrame.origin.y);
-  EXPECT_TRUE(CGSizeEqualToSize(bubbleSize_, bubbleFrame.size));
+  EXPECT_FLOAT_EQ(kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
+  EXPECT_FLOAT_EQ(250.0f, bubbleFrame.origin.y);
+  EXPECT_FLOAT_EQ(bubbleSize_.width, CGRectGetWidth(bubbleFrame));
+  EXPECT_FLOAT_EQ(bubbleSize_.height, CGRectGetHeight(bubbleFrame));
 }
 
 // Test |BubbleFrame| when the bubble's direction is
@@ -347,9 +363,10 @@ TEST_F(BubbleUtilTest, BubbleFrameUpTrailingRTL) {
   CGRect bubbleFrame = bubble_util::BubbleFrame(
       centerAlignedAnchorPoint_, bubbleSize_, BubbleArrowDirectionUp,
       BubbleAlignmentTrailing, containerSize_.width, true /* isRTL */);
-  EXPECT_EQ(200.0f - kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
-  EXPECT_EQ(250.0f, bubbleFrame.origin.y);
-  EXPECT_TRUE(CGSizeEqualToSize(bubbleSize_, bubbleFrame.size));
+  EXPECT_FLOAT_EQ(200.0f - kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
+  EXPECT_FLOAT_EQ(250.0f, bubbleFrame.origin.y);
+  EXPECT_FLOAT_EQ(bubbleSize_.width, CGRectGetWidth(bubbleFrame));
+  EXPECT_FLOAT_EQ(bubbleSize_.height, CGRectGetHeight(bubbleFrame));
 }
 
 // Test |BubbleFrame| when the bubble's direction is
@@ -359,9 +376,10 @@ TEST_F(BubbleUtilTest, BubbleFrameDownLeadingLTR) {
   CGRect bubbleFrame = bubble_util::BubbleFrame(
       centerAlignedAnchorPoint_, bubbleSize_, BubbleArrowDirectionDown,
       BubbleAlignmentLeading, containerSize_.width, false /* isRTL */);
-  EXPECT_EQ(300.0f - kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
-  EXPECT_EQ(150.0f, bubbleFrame.origin.y);
-  EXPECT_TRUE(CGSizeEqualToSize(bubbleSize_, bubbleFrame.size));
+  EXPECT_FLOAT_EQ(300.0f - kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
+  EXPECT_FLOAT_EQ(150.0f, bubbleFrame.origin.y);
+  EXPECT_FLOAT_EQ(bubbleSize_.width, CGRectGetWidth(bubbleFrame));
+  EXPECT_FLOAT_EQ(bubbleSize_.height, CGRectGetHeight(bubbleFrame));
 }
 
 // Test |BubbleFrame| when the bubble's direction is
@@ -371,9 +389,10 @@ TEST_F(BubbleUtilTest, BubbleFrameDownLeadingRTL) {
   CGRect bubbleFrame = bubble_util::BubbleFrame(
       centerAlignedAnchorPoint_, bubbleSize_, BubbleArrowDirectionDown,
       BubbleAlignmentLeading, containerSize_.width, true /* isRTL */);
-  EXPECT_EQ(-100.0f + kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
-  EXPECT_EQ(150.0f, bubbleFrame.origin.y);
-  EXPECT_TRUE(CGSizeEqualToSize(bubbleSize_, bubbleFrame.size));
+  EXPECT_FLOAT_EQ(-100.0f + kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
+  EXPECT_FLOAT_EQ(150.0f, bubbleFrame.origin.y);
+  EXPECT_FLOAT_EQ(bubbleSize_.width, CGRectGetWidth(bubbleFrame));
+  EXPECT_FLOAT_EQ(bubbleSize_.height, CGRectGetHeight(bubbleFrame));
 }
 
 // Test |BubbleFrame| when the bubble's direction is
@@ -383,9 +402,10 @@ TEST_F(BubbleUtilTest, BubbleFrameDownCenteredLTR) {
   CGRect bubbleFrame = bubble_util::BubbleFrame(
       centerAlignedAnchorPoint_, bubbleSize_, BubbleArrowDirectionDown,
       BubbleAlignmentCenter, containerSize_.width, false /* isRTL */);
-  EXPECT_EQ(150.0f, bubbleFrame.origin.x);
-  EXPECT_EQ(150.0f, bubbleFrame.origin.y);
-  EXPECT_TRUE(CGSizeEqualToSize(bubbleSize_, bubbleFrame.size));
+  EXPECT_FLOAT_EQ(150.0f, bubbleFrame.origin.x);
+  EXPECT_FLOAT_EQ(150.0f, bubbleFrame.origin.y);
+  EXPECT_FLOAT_EQ(bubbleSize_.width, CGRectGetWidth(bubbleFrame));
+  EXPECT_FLOAT_EQ(bubbleSize_.height, CGRectGetHeight(bubbleFrame));
 }
 
 // Test |BubbleFrame| when the bubble's direction is
@@ -395,9 +415,10 @@ TEST_F(BubbleUtilTest, BubbleFrameDownCenteredRTL) {
   CGRect bubbleFrame = bubble_util::BubbleFrame(
       centerAlignedAnchorPoint_, bubbleSize_, BubbleArrowDirectionDown,
       BubbleAlignmentCenter, containerSize_.width, true /* isRTL */);
-  EXPECT_EQ(50.0f, bubbleFrame.origin.x);
-  EXPECT_EQ(150.0f, bubbleFrame.origin.y);
-  EXPECT_TRUE(CGSizeEqualToSize(bubbleSize_, bubbleFrame.size));
+  EXPECT_FLOAT_EQ(50.0f, bubbleFrame.origin.x);
+  EXPECT_FLOAT_EQ(150.0f, bubbleFrame.origin.y);
+  EXPECT_FLOAT_EQ(bubbleSize_.width, CGRectGetWidth(bubbleFrame));
+  EXPECT_FLOAT_EQ(bubbleSize_.height, CGRectGetHeight(bubbleFrame));
 }
 
 // Test |BubbleFrame| when the bubble's direction is
@@ -407,9 +428,10 @@ TEST_F(BubbleUtilTest, BubbleFrameDownTrailingLTR) {
   CGRect bubbleFrame = bubble_util::BubbleFrame(
       centerAlignedAnchorPoint_, bubbleSize_, BubbleArrowDirectionDown,
       BubbleAlignmentTrailing, containerSize_.width, false /* isRTL */);
-  EXPECT_EQ(kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
-  EXPECT_EQ(150.0f, bubbleFrame.origin.y);
-  EXPECT_TRUE(CGSizeEqualToSize(bubbleSize_, bubbleFrame.size));
+  EXPECT_FLOAT_EQ(kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
+  EXPECT_FLOAT_EQ(150.0f, bubbleFrame.origin.y);
+  EXPECT_FLOAT_EQ(bubbleSize_.width, CGRectGetWidth(bubbleFrame));
+  EXPECT_FLOAT_EQ(bubbleSize_.height, CGRectGetHeight(bubbleFrame));
 }
 
 // Test |BubbleFrame| when the bubble's direction is
@@ -419,7 +441,8 @@ TEST_F(BubbleUtilTest, BubbleFrameDownTrailingRTL) {
   CGRect bubbleFrame = bubble_util::BubbleFrame(
       centerAlignedAnchorPoint_, bubbleSize_, BubbleArrowDirectionDown,
       BubbleAlignmentTrailing, containerSize_.width, true /* isRTL */);
-  EXPECT_EQ(200.0f - kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
-  EXPECT_EQ(150.0f, bubbleFrame.origin.y);
-  EXPECT_TRUE(CGSizeEqualToSize(bubbleSize_, bubbleFrame.size));
+  EXPECT_FLOAT_EQ(200.0f - kTestBubbleAlignmentOffset, bubbleFrame.origin.x);
+  EXPECT_FLOAT_EQ(150.0f, bubbleFrame.origin.y);
+  EXPECT_FLOAT_EQ(bubbleSize_.width, CGRectGetWidth(bubbleFrame));
+  EXPECT_FLOAT_EQ(bubbleSize_.height, CGRectGetHeight(bubbleFrame));
 }
