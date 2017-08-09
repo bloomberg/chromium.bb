@@ -76,6 +76,8 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
          prefs::kEnableTouchpadThreeFingerClick, true},
         {switches::kEnableUnifiedDesktop,
          prefs::kUnifiedDesktopEnabledByDefault, true},
+        {chromeos::switches::kEnableCastReceiver, prefs::kCastReceiverEnabled,
+         true},
 #endif
         {switches::kUnsafePacUrl, prefs::kPacHttpsUrlStrippingEnabled, false},
         {switches::kEnableLocalSyncBackend,
