@@ -53,7 +53,7 @@ function PDFScriptingAPI(window, plugin) {
   this.pendingScriptingMessages_ = [];
   this.setPlugin(plugin);
 
-  window.addEventListener('message', function(event) {
+  window.addEventListener('message', event => {
     if (event.origin != 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai' &&
         event.origin != 'chrome://print') {
       console.error(
@@ -95,7 +95,7 @@ function PDFScriptingAPI(window, plugin) {
           this.keyEventCallback_(DeserializeKeyEvent(event.data.keyEvent));
         break;
     }
-  }.bind(this), false);
+  }, false);
 }
 
 PDFScriptingAPI.prototype = {

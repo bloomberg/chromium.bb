@@ -397,10 +397,10 @@ Viewport.prototype = {
     newZoom = Math.max(
         Viewport.ZOOM_FACTOR_RANGE.min,
         Math.min(newZoom, Viewport.ZOOM_FACTOR_RANGE.max));
-    this.mightZoom_(function() {
+    this.mightZoom_(() => {
       this.setZoomInternal_(newZoom);
       this.updateViewport_();
-    }.bind(this));
+    });
   },
 
   /**
@@ -409,7 +409,7 @@ Viewport.prototype = {
    * @param {number} oldBrowserZoom the previous value of the browser zoom.
    */
   updateZoomFromBrowserChange: function(oldBrowserZoom) {
-    this.mightZoom_(function() {
+    this.mightZoom_(() => {
       // Record the scroll position (relative to the top-left of the window).
       var oldZoom = oldBrowserZoom * this.internalZoom_;
       var currentScrollPos = {
@@ -423,7 +423,7 @@ Viewport.prototype = {
         y: currentScrollPos.y * this.zoom
       };
       this.updateViewport_();
-    }.bind(this));
+    });
   },
 
   /**
@@ -565,7 +565,7 @@ Viewport.prototype = {
    * Zoom the viewport so that the page-width consumes the entire viewport.
    */
   fitToWidth: function() {
-    this.mightZoom_(function() {
+    this.mightZoom_(() => {
       this.fittingType_ = Viewport.FittingType.FIT_TO_WIDTH;
       if (!this.documentDimensions_)
         return;
@@ -575,7 +575,7 @@ Viewport.prototype = {
           this.computeFittingZoom_(this.documentDimensions_, true));
       var page = this.getMostVisiblePage();
       this.updateViewport_();
-    }.bind(this));
+    });
   },
 
   /**
@@ -586,7 +586,7 @@ Viewport.prototype = {
    *     should remain at the current scroll position.
    */
   fitToPageInternal_: function(scrollToTopOfPage) {
-    this.mightZoom_(function() {
+    this.mightZoom_(() => {
       this.fittingType_ = Viewport.FittingType.FIT_TO_PAGE;
       if (!this.documentDimensions_)
         return;
@@ -601,7 +601,7 @@ Viewport.prototype = {
         this.position = {x: 0, y: this.pageDimensions_[page].y * this.zoom};
       }
       this.updateViewport_();
-    }.bind(this));
+    });
   },
 
   /**
@@ -616,7 +616,7 @@ Viewport.prototype = {
    * Zoom out to the next predefined zoom level.
    */
   zoomOut: function() {
-    this.mightZoom_(function() {
+    this.mightZoom_(() => {
       this.fittingType_ = Viewport.FittingType.NONE;
       var nextZoom = Viewport.ZOOM_FACTORS[0];
       for (var i = 0; i < Viewport.ZOOM_FACTORS.length; i++) {
@@ -625,14 +625,14 @@ Viewport.prototype = {
       }
       this.setZoomInternal_(nextZoom);
       this.updateViewport_();
-    }.bind(this));
+    });
   },
 
   /**
    * Zoom in to the next predefined zoom level.
    */
   zoomIn: function() {
-    this.mightZoom_(function() {
+    this.mightZoom_(() => {
       this.fittingType_ = Viewport.FittingType.NONE;
       var nextZoom = Viewport.ZOOM_FACTORS[Viewport.ZOOM_FACTORS.length - 1];
       for (var i = Viewport.ZOOM_FACTORS.length - 1; i >= 0; i--) {
@@ -641,7 +641,7 @@ Viewport.prototype = {
       }
       this.setZoomInternal_(nextZoom);
       this.updateViewport_();
-    }.bind(this));
+    });
   },
 
   /**
@@ -649,7 +649,7 @@ Viewport.prototype = {
    * @param {!Object} e The pinch event.
    */
   pinchZoom: function(e) {
-    this.mightZoom_(function() {
+    this.mightZoom_(() => {
       this.pinchPhase_ = e.direction == 'out' ?
           Viewport.PinchPhase.PINCH_UPDATE_ZOOM_OUT :
           Viewport.PinchPhase.PINCH_UPDATE_ZOOM_IN;
@@ -684,7 +684,7 @@ Viewport.prototype = {
       this.setPinchZoomInternal_(scaleDelta, frameToPluginCoordinate(e.center));
       this.updateViewport_();
       this.prevScale_ = e.startScaleRatio;
-    }.bind(this));
+    });
   },
 
   pinchZoomStart: function(e) {
@@ -701,14 +701,14 @@ Viewport.prototype = {
   },
 
   pinchZoomEnd: function(e) {
-    this.mightZoom_(function() {
+    this.mightZoom_(() => {
       this.pinchPhase_ = Viewport.PinchPhase.PINCH_END;
       var scaleDelta = e.startScaleRatio / this.prevScale_;
       this.pinchCenter_ = e.center;
 
       this.setPinchZoomInternal_(scaleDelta, frameToPluginCoordinate(e.center));
       this.updateViewport_();
-    }.bind(this));
+    });
 
     this.pinchPhase_ = Viewport.PinchPhase.PINCH_NONE;
     this.pinchPanVector_ = null;
@@ -721,7 +721,7 @@ Viewport.prototype = {
    * @param {number} page the index of the page to go to. zero-based.
    */
   goToPage: function(page) {
-    this.mightZoom_(function() {
+    this.mightZoom_(() => {
       if (this.pageDimensions_.length === 0)
         return;
       if (page < 0)
@@ -740,7 +740,7 @@ Viewport.prototype = {
         y: dimensions.y * this.zoom - toolbarOffset
       };
       this.updateViewport_();
-    }.bind(this));
+    });
   },
 
   /**
@@ -748,7 +748,7 @@ Viewport.prototype = {
    * @param {Object} documentDimensions the dimensions of the document
    */
   setDocumentDimensions: function(documentDimensions) {
-    this.mightZoom_(function() {
+    this.mightZoom_(() => {
       var initialDimensions = !this.documentDimensions_;
       this.documentDimensions_ = documentDimensions;
       this.pageDimensions_ = this.documentDimensions_.pageDimensions;
@@ -760,7 +760,7 @@ Viewport.prototype = {
       }
       this.contentSizeChanged_();
       this.resize_();
-    }.bind(this));
+    });
   },
 
   /**

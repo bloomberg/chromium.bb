@@ -123,9 +123,9 @@ function PDFViewer(browserApi) {
   this.errorScreen_ = $('error-screen');
   // Can only reload if we are in a normal tab.
   if (chrome.tabs && this.browserApi_.getStreamInfo().tabId != -1) {
-    this.errorScreen_.reloadFn = function() {
+    this.errorScreen_.reloadFn = () => {
       chrome.tabs.reload(this.browserApi_.getStreamInfo().tabId);
-    }.bind(this);
+    };
   }
 
   // Create the viewport.
@@ -216,16 +216,16 @@ function PDFViewer(browserApi) {
     this.toolbar_.docTitle = getFilenameFromURL(this.originalUrl_);
   }
 
-  document.body.addEventListener('change-page', function(e) {
+  document.body.addEventListener('change-page', e => {
     this.viewport_.goToPage(e.detail.page);
-  }.bind(this));
+  });
 
-  document.body.addEventListener('navigate', function(e) {
+  document.body.addEventListener('navigate', e => {
     var disposition = e.detail.newtab ?
         Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB :
         Navigator.WindowOpenDisposition.CURRENT_TAB;
     this.navigator_.navigate(e.detail.uri, disposition);
-  }.bind(this));
+  });
 
   this.toolbarManager_ =
       new ToolbarManager(window, this.toolbar_, this.zoomToolbar_);
@@ -274,7 +274,7 @@ PDFViewer.prototype = {
 
     this.toolbarManager_.hideToolbarsAfterTimeout(e);
 
-    var pageUpHandler = function() {
+    var pageUpHandler = () => {
       // Go to the previous page if we are fit-to-page.
       if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
         this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
@@ -284,8 +284,8 @@ PDFViewer.prototype = {
         position.y -= this.viewport.size.height;
         this.viewport.position = position;
       }
-    }.bind(this);
-    var pageDownHandler = function() {
+    };
+    var pageDownHandler = () => {
       // Go to the next page if we are fit-to-page.
       if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
         this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
@@ -295,7 +295,7 @@ PDFViewer.prototype = {
         position.y += this.viewport.size.height;
         this.viewport.position = position;
       }
-    }.bind(this);
+    };
 
     switch (e.keyCode) {
       case 9:  // Tab key.
@@ -718,10 +718,10 @@ PDFViewer.prototype = {
     // Throttle number of pinch events to one per frame.
     if (!this.sentPinchEvent_) {
       this.sentPinchEvent_ = true;
-      window.requestAnimationFrame(function() {
+      window.requestAnimationFrame(() => {
         this.sentPinchEvent_ = false;
         this.viewport_.pinchZoom(e);
-      }.bind(this));
+      });
     }
   },
 
@@ -733,9 +733,9 @@ PDFViewer.prototype = {
   onPinchEnd_: function(e) {
     // Using rAF for pinch end prevents pinch updates scheduled by rAF getting
     // sent after the pinch end.
-    window.requestAnimationFrame(function() {
+    window.requestAnimationFrame(() => {
       this.viewport_.pinchZoomEnd(e);
-    }.bind(this));
+    });
   },
 
   /**
