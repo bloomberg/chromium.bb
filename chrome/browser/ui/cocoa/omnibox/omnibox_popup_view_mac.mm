@@ -87,6 +87,7 @@ bool OmniboxPopupViewMac::IsOpen() const {
 
 void OmniboxPopupViewMac::UpdatePopupAppearance() {
   DCHECK([NSThread isMainThread]);
+  model_->autocomplete_controller()->InlineTailPrefixes();
   const AutocompleteResult& result = GetResult();
   const size_t rows = result.size();
   if (rows == 0) {

@@ -44,7 +44,6 @@ TEST_F(OmniboxPopupCellTest, Image) {
   AutocompleteMatch match;
   cellData_.reset([[OmniboxPopupCellData alloc]
        initWithMatch:match
-      contentsOffset:0
                image:[NSImage imageNamed:NSImageNameInfo]
          answerImage:nil
         forDarkTheme:NO]);
@@ -57,7 +56,6 @@ TEST_F(OmniboxPopupCellTest, Title) {
   match.contents =
       base::ASCIIToUTF16("The quick brown fox jumps over the lazy dog.");
   cellData_.reset([[OmniboxPopupCellData alloc] initWithMatch:match
-                                               contentsOffset:0
                                                         image:nil
                                                   answerImage:nil
                                                  forDarkTheme:NO]);
@@ -84,7 +82,6 @@ TEST_F(OmniboxPopupCellTest, AnswerStyle) {
   match.answer = SuggestionAnswer::ParseAnswer(dictionary);
   EXPECT_TRUE(match.answer);
   cellData_.reset([[OmniboxPopupCellData alloc] initWithMatch:match
-                                               contentsOffset:0
                                                         image:nil
                                                   answerImage:nil
                                                  forDarkTheme:NO]);
@@ -141,7 +138,6 @@ TEST_F(OmniboxPopupCellTest, DefinitionAnswerStyle) {
   match.answer = SuggestionAnswer::ParseAnswer(dictionary);
   EXPECT_TRUE(match.answer);
   cellData_.reset([[OmniboxPopupCellData alloc] initWithMatch:match
-                                               contentsOffset:0
                                                         image:nil
                                                   answerImage:nil
                                                  forDarkTheme:NO]);

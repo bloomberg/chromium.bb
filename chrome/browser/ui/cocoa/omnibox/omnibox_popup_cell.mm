@@ -366,10 +366,6 @@ NSAttributedString* CreateClassifiedAttributedString(
                   origin:(NSPoint)origin
             withMaxWidth:(int)maxWidth
             forDarkTheme:(BOOL)isDarkTheme;
-- (CGFloat)drawMatchPrefixWithFrame:(NSRect)cellFrame
-                          tableView:(OmniboxPopupMatrix*)tableView
-               withContentsMaxWidth:(int*)contentsMaxWidth
-                       forDarkTheme:(BOOL)isDarkTheme;
 - (void)drawMatchWithFrame:(NSRect)cellFrame inView:(NSView*)controlView;
 @end
 
@@ -381,21 +377,18 @@ NSAttributedString* CreateClassifiedAttributedString(
 @synthesize image = image_;
 @synthesize incognitoImage = incognitoImage_;
 @synthesize answerImage = answerImage_;
-@synthesize contentsOffset = contentsOffset_;
 @synthesize isContentsRTL = isContentsRTL_;
 @synthesize isAnswer = isAnswer_;
 @synthesize matchType = matchType_;
 @synthesize maxLines = maxLines_;
 
 - (instancetype)initWithMatch:(const AutocompleteMatch&)match
-               contentsOffset:(CGFloat)contentsOffset
                         image:(NSImage*)image
                   answerImage:(NSImage*)answerImage
                  forDarkTheme:(BOOL)isDarkTheme {
   if ((self = [super init])) {
     image_ = [image retain];
     answerImage_ = [answerImage retain];
-    contentsOffset_ = contentsOffset;
 
     isContentsRTL_ =
         (base::i18n::RIGHT_TO_LEFT ==
@@ -523,14 +516,6 @@ NSAttributedString* CreateClassifiedAttributedString(
   if (isVerticalLayout && descriptionMaxWidth == 0)
     origin.y += halfLineHeight;
 
-  if ([cellData matchType] == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
-    // Tail suggestions are rendered with a prefix (usually ellipsis), which
-    // appear vertically stacked.
-    origin.x += [self drawMatchPrefixWithFrame:cellFrame
-                                     tableView:tableView
-                          withContentsMaxWidth:&contentsMaxWidth
-                                  forDarkTheme:isDarkTheme];
-  }
   origin.x += [self drawMatchPart:[cellData contents]
                         withFrame:cellFrame
                            origin:origin
@@ -577,54 +562,6 @@ NSAttributedString* CreateClassifiedAttributedString(
            withMaxWidth:descriptionMaxWidth
            forDarkTheme:isDarkTheme];
   }
-}
-
-- (CGFloat)drawMatchPrefixWithFrame:(NSRect)cellFrame
-                          tableView:(OmniboxPopupMatrix*)tableView
-               withContentsMaxWidth:(int*)contentsMaxWidth
-                       forDarkTheme:(BOOL)isDarkTheme {
-  OmniboxPopupCellData* cellData =
-      base::mac::ObjCCastStrict<OmniboxPopupCellData>([self objectValue]);
-  CGFloat offset = 0.0f;
-  CGFloat remainingWidth =
-      [OmniboxPopupCell getTextContentAreaWidth:[tableView contentMaxWidth]];
-  CGFloat prefixWidth = [[cellData prefix] size].width;
-
-  CGFloat prefixOffset = 0.0f;
-  if (base::i18n::IsRTL() != [cellData isContentsRTL]) {
-    // The contents is rendered between the contents offset extending towards
-    // the start edge, while prefix is rendered in opposite direction. Ideally
-    // the prefix should be rendered at |contentsOffset_|. If that is not
-    // sufficient to render the widest suggestion, we increase it to
-    // |maxMatchContentsWidth|.  If |remainingWidth| is not sufficient to
-    // accommodate that, we reduce the offset so that the prefix gets rendered.
-    prefixOffset = std::min(
-        remainingWidth - prefixWidth,
-        std::max([cellData contentsOffset], [tableView maxMatchContentsWidth]));
-    offset = std::max<CGFloat>(0.0, prefixOffset - *contentsMaxWidth);
-  } else { // The direction of contents is same as UI direction.
-    // Ideally the offset should be |contentsOffset_|. If the max total width
-    // (|prefixWidth| + |maxMatchContentsWidth|) from offset will exceed the
-    // |remainingWidth|, then we shift the offset to the left , so that all
-    // tail suggestions are visible.
-    // We have to render the prefix, so offset has to be at least |prefixWidth|.
-    offset =
-        std::max(prefixWidth,
-                 std::min(remainingWidth - [tableView maxMatchContentsWidth],
-                          [cellData contentsOffset]));
-    prefixOffset = offset - prefixWidth;
-  }
-  *contentsMaxWidth = std::min((int)ceilf(remainingWidth - prefixWidth),
-                               *contentsMaxWidth);
-  NSPoint origin = NSMakePoint(
-      prefixOffset + kMaterialTextStartOffset + [tableView contentLeftPadding],
-      0);
-  [self drawMatchPart:[cellData prefix]
-            withFrame:cellFrame
-               origin:origin
-         withMaxWidth:prefixWidth
-         forDarkTheme:isDarkTheme];
-  return offset;
 }
 
 - (CGFloat)drawMatchPart:(NSAttributedString*)attributedString
