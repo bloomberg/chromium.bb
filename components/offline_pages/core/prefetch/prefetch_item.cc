@@ -4,6 +4,11 @@
 
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 
+#include <ostream>
+
+#include "base/strings/string_number_conversions.h"
+#include "components/offline_pages/core/offline_time_utils.h"
+
 namespace offline_pages {
 
 PrefetchItem::PrefetchItem() = default;
@@ -40,6 +45,30 @@ bool PrefetchItem::operator!=(const PrefetchItem& other) const {
 
 bool PrefetchItem::operator<(const PrefetchItem& other) const {
   return offline_id < other.offline_id;
+}
+
+std::string PrefetchItem::ToString() const {
+  std::string s("PrefetchItem(");
+  s.append(base::Int64ToString(offline_id)).append(", ");
+  s.append(guid).append(", ");
+  s.append(client_id.ToString()).append(", ");
+  s.append(base::IntToString(static_cast<int>(state))).append(", ");
+  s.append(url.possibly_invalid_spec()).append(", ");
+  s.append(final_archived_url.possibly_invalid_spec()).append(", ");
+  s.append(base::IntToString(generate_bundle_attempts)).append(", ");
+  s.append(base::IntToString(get_operation_attempts)).append(", ");
+  s.append(base::IntToString(download_initiation_attempts)).append(", ");
+  s.append(operation_name).append(", ");
+  s.append(archive_body_name).append(", ");
+  s.append(base::IntToString(archive_body_length)).append(", ");
+  s.append(base::Int64ToString(ToDatabaseTime(creation_time))).append(", ");
+  s.append(base::Int64ToString(ToDatabaseTime(freshness_time))).append(", ");
+  s.append(base::IntToString(static_cast<int>(error_code))).append(")");
+  return s;
+}
+
+std::ostream& operator<<(std::ostream& out, const PrefetchItem& pi) {
+  return out << pi.ToString();
 }
 
 }  // namespace offline_pages

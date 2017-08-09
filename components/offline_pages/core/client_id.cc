@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/client_id.h"
 
+#include <ostream>
+
 namespace offline_pages {
 
 ClientId::ClientId() {}
@@ -20,6 +22,18 @@ bool ClientId::operator<(const ClientId& client_id) const {
     return (id < client_id.id);
 
   return name_space < client_id.name_space;
+}
+
+std::string ClientId::ToString() const {
+  return std::string("ClientId(")
+      .append(name_space)
+      .append(", ")
+      .append(id)
+      .append(")");
+}
+
+std::ostream& operator<<(std::ostream& out, const ClientId& cid) {
+  return out << cid.ToString();
 }
 
 }  // namespace offline_pages

@@ -6,6 +6,7 @@
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_ITEM_H_
 
 #include <stdint.h>
+#include <iosfwd>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -34,6 +35,8 @@ struct PrefetchItem {
   bool operator==(const PrefetchItem& other) const;
   bool operator!=(const PrefetchItem& other) const;
   bool operator<(const PrefetchItem& other) const;
+
+  std::string ToString() const;
 
   // Primary key that stays consistent between prefetch item, request and
   // offline page.
@@ -112,6 +115,8 @@ struct PrefetchItem {
   // The size of the archive file.
   int64_t file_size = 0;
 };
+
+std::ostream& operator<<(std::ostream& out, const PrefetchItem& pi);
 
 }  // namespace offline_pages
 

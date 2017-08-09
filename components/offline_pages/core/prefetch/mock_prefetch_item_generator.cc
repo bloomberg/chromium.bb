@@ -8,7 +8,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/client_id.h"
-#include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -37,7 +36,7 @@ PrefetchItem MockPrefetchItemGenerator::CreateItem(PrefetchItemState state) {
   // Values set with non prefix based values.
   new_item.state = state;
   new_item.guid = base::GenerateGUID();
-  new_item.offline_id = PrefetchStoreUtils::GenerateOfflineId();
+  new_item.offline_id = GenerateTestOfflineId();
   new_item.creation_time = base::Time::Now();
   new_item.freshness_time = new_item.creation_time;
 
@@ -61,6 +60,10 @@ PrefetchItem MockPrefetchItemGenerator::CreateItem(PrefetchItemState state) {
 
   ++item_counter;
   return new_item;
+}
+
+int64_t MockPrefetchItemGenerator::GenerateTestOfflineId() {
+  return ++offline_id_counter_;
 }
 
 }  // namespace offline_pages

@@ -14,7 +14,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/offline_store_types.h"
-#include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"

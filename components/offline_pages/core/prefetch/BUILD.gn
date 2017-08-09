@@ -39,8 +39,6 @@ static_library("prefetch") {
     "prefetch_gcm_handler.h",
     "prefetch_importer.cc",
     "prefetch_importer.h",
-    "prefetch_item.cc",
-    "prefetch_item.h",
     "prefetch_network_request_factory.h",
     "prefetch_network_request_factory_impl.cc",
     "prefetch_network_request_factory_impl.h",
@@ -90,6 +88,8 @@ static_library("test_support") {
   sources = [
     "mock_prefetch_item_generator.cc",
     "mock_prefetch_item_generator.h",
+    "prefetch_item.cc",
+    "prefetch_item.h",
     "prefetch_request_test_base.cc",
     "prefetch_request_test_base.h",
     "prefetch_service_test_taco.cc",
