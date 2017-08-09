@@ -42,6 +42,8 @@ const base::Feature kAutofillSuppressDisusedAddresses{
     "AutofillSuppressDisusedAddresses", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamRequestCvcIfMissing{
     "AutofillUpstreamRequestCvcIfMissing", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillUpstreamShowNewUi{
+    "AutofillUpstreamShowNewUi", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamUseAutofillProfileComparator{
     "AutofillUpstreamUseAutofillProfileComparator",
     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -260,6 +262,14 @@ bool IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled() {
   return false;
 #else
   return base::FeatureList::IsEnabled(kAutofillUpstreamRequestCvcIfMissing);
+#endif
+}
+
+bool IsAutofillUpstreamShowNewUiExperimentEnabled() {
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return base::FeatureList::IsEnabled(kAutofillUpstreamShowNewUi);
 #endif
 }
 

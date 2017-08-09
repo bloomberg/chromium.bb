@@ -12,11 +12,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -534,6 +536,10 @@ TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_Reshows_LearnMore) {
 }
 
 TEST_F(SaveCardBubbleControllerImplTest, Metrics_Upload_FirstShow_LearnMore) {
+  // Learn More link only appears on upload if new UI is disabled.
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndDisableFeature(kAutofillUpstreamShowNewUi);
+
   ShowUploadBubble();
 
   base::HistogramTester histogram_tester;
@@ -545,6 +551,10 @@ TEST_F(SaveCardBubbleControllerImplTest, Metrics_Upload_FirstShow_LearnMore) {
 }
 
 TEST_F(SaveCardBubbleControllerImplTest, Metrics_Upload_Reshows_LearnMore) {
+  // Learn More link only appears on upload if new UI is disabled.
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndDisableFeature(kAutofillUpstreamShowNewUi);
+
   ShowUploadBubble();
   CloseAndReshowBubble();
 

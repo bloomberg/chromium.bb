@@ -42,47 +42,63 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
 
   void Show(DisplayReason reason);
 
-  // SaveCardBubbleView
+  // SaveCardBubbleView:
   void Hide() override;
 
-  // views::BubbleDialogDelegateView
+  // views::BubbleDialogDelegateView:
   views::View* CreateExtraView() override;
   views::View* CreateFootnoteView() override;
   bool Accept() override;
   bool Cancel() override;
   bool Close() override;
+  int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
 
-  // views::View
+  // views::View:
   gfx::Size CalculatePreferredSize() const override;
 
-  // views::WidgetDelegate
+  // views::WidgetDelegate:
+  bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
 
-  // views::LinkListener
+  // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  // views::StyledLabelListener
+  // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
                               int event_flags) override;
 
-  // views::TextfieldController
+  // views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override;
 
  private:
+  // The current step of the save card flow.  Accounts for:
+  //  1) Local save vs. Upload save
+  //  2) Upload save can have all information or be missing CVC
+  enum CurrentFlowStep {
+    UNKNOWN_STEP,
+    LOCAL_SAVE_ONLY_STEP,
+    UPLOAD_SAVE_ONLY_STEP,
+    UPLOAD_SAVE_CVC_FIX_FLOW_STEP_1_OFFER_UPLOAD,
+    UPLOAD_SAVE_CVC_FIX_FLOW_STEP_2_REQUEST_CVC,
+  };
+
   ~SaveCardBubbleViews() override;
 
+  CurrentFlowStep GetCurrentFlowStep() const;
   std::unique_ptr<views::View> CreateMainContentView();
   std::unique_ptr<views::View> CreateRequestCvcView();
 
-  // views::BubbleDialogDelegateView
+  // views::BubbleDialogDelegateView:
   void Init() override;
 
   SaveCardBubbleController* controller_;  // Weak reference.
+
+  views::View* footnote_view_ = nullptr;
 
   ViewStack* view_stack_ = nullptr;
 

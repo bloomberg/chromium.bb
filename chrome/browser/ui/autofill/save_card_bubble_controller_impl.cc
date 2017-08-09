@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -108,6 +109,7 @@ void SaveCardBubbleControllerImpl::HideBubble() {
     save_card_bubble_view_->Hide();
     save_card_bubble_view_ = nullptr;
   }
+  show_upload_confirm_title_ = false;
 }
 
 void SaveCardBubbleControllerImpl::ReshowBubble() {
@@ -135,15 +137,30 @@ SaveCardBubbleView* SaveCardBubbleControllerImpl::save_card_bubble_view()
 }
 
 base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(
-      is_uploading_ ? IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD
-                    : IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
+  if (is_uploading_) {
+    if (show_upload_confirm_title_) {
+      return l10n_util::GetStringFUTF16(
+          IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_TITLE,
+          card_.NetworkAndLastFourDigits());
+    } else if (IsAutofillUpstreamShowNewUiExperimentEnabled()) {
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V2);
+    }
+    return l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD);
+  }
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
 }
 
 base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
-  return is_uploading_ ? l10n_util::GetStringUTF16(
-                             IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION)
-                       : base::string16();
+  if (is_uploading_) {
+    return IsAutofillUpstreamShowNewUiExperimentEnabled()
+               ? l10n_util::GetStringUTF16(
+                     IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2)
+               : l10n_util::GetStringUTF16(
+                     IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION);
+  }
+  return base::string16();
 }
 
 const CreditCard SaveCardBubbleControllerImpl::GetCard() const {
@@ -215,11 +232,17 @@ void SaveCardBubbleControllerImpl::OnLegalMessageLinkClicked(const GURL& url) {
 void SaveCardBubbleControllerImpl::OnBubbleClosed() {
   save_card_bubble_view_ = nullptr;
   UpdateIcon();
+  show_upload_confirm_title_ = false;
 }
 
 const LegalMessageLines& SaveCardBubbleControllerImpl::GetLegalMessageLines()
     const {
   return legal_message_lines_;
+}
+
+void SaveCardBubbleControllerImpl::SetShowUploadConfirmTitle(
+    bool show_upload_confirm_title) {
+  show_upload_confirm_title_ = show_upload_confirm_title;
 }
 
 bool SaveCardBubbleControllerImpl::InputCvcIsValid(

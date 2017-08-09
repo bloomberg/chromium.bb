@@ -255,6 +255,12 @@ const char kEnableAutofillCreditCardUploadCvcPromptDescription[] =
     "If enabled, requests missing CVC when offering to upload credit cards to "
     "Google Payments.";
 
+const char kEnableAutofillCreditCardUploadNewUiName[] =
+    "Enable updated UI for Autofill credit card upload";
+const char kEnableAutofillCreditCardUploadNewUiDescription[] =
+    "If enabled, displays a new save card bubble/infobar design when offering "
+    "to upload credit cards to Google Payments.";
+
 const char kEnableBreakingNewsPushName[] = "Breaking News Push";
 const char kEnableBreakingNewsPushDescription[] =
     "Listen for breaking news content suggestions (e.g. for New Tab Page) "

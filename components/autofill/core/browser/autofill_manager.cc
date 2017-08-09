@@ -1326,6 +1326,11 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
       return;
     }
 
+    if (IsAutofillUpstreamShowNewUiExperimentEnabled()) {
+      upload_request_.active_experiments.push_back(
+          kAutofillUpstreamShowNewUi.name);
+    }
+
     // All required data is available, start the upload process.
     payments_client_->GetUploadDetails(upload_request_.profiles,
                                        upload_request_.active_experiments,

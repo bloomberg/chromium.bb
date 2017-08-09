@@ -191,6 +191,12 @@
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT" desc="Text to show for the Autofill save credit card prompt accept button. The prompt can be either a bubble or an infobar.">
     Save
   </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_NEXT" desc="Text to show for the Autofill upload save credit card prompt accept button when more information (e.g., CVC) is needed in order to save the card.">
+    Next
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CONFIRM" desc="Text to show for the Autofill upload save credit card prompt accept button when more information (e.g., CVC) was needed in order to save the card and was entered.">
+    Confirm
+  </message>
   <if expr="_google_chrome">
     <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL" desc="Title text for the Autofill save card prompt when the card is to be saved locally. The prompt can be either a bubble or an infobar.">
       Do you want Chrome to save this card?
@@ -208,17 +214,34 @@
       </message>
     </then>
     <else>
-      <!-- TODO(crbug/714920): Rename IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD to IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_AND_LOCAL -->
       <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally. The prompt can be either a bubble or an infobar.">
         Do you want to save this card to your Google Account and on this device?
       </message>
     </else>
   </if>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V2" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to June 2017 UI guidelines. The prompt can be either a bubble or an infobar.">
+    Save this card for faster checkout?
+  </message>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally. The prompt can be either a bubble or an infobar.">
     Pay quickly on sites and apps across devices using cards you have saved with Google.
   </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC" desc="Text displayed in the Autofill save credit card prompt explaining that the card needs additional CVC information in order to be saved to Google Payments.">
-    Please verify your CVC
+  <if expr="is_linux and not is_chromeos">
+    <then>
+      <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to June 2017 UI guidelines. The prompt will be shown in a bubble below the omnibox.">
+        Your card will be saved in your Google Account
+      </message>
+    </then>
+    <else>
+      <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally, according to June 2017 UI guidelines. The prompt can be either a bubble or an infobar.">
+        Your card will be saved in your Google Account and on this device
+      </message>
+    </else>
+  </if>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_TITLE" desc="Title text to show for the Autofill upload save credit card prompt when more information (e.g., CVC) is needed in order to save the card.  It will display the network and last four digits of the card to be saved.">
+    Confirm <ph name="CREDIT_CARD">$1<ex>Visa - 5678</ex></ph>
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_EXPLANATION" desc="Text displayed in the Autofill save credit card prompt explaining the usage of the additional CVC information needed in order to save the card to Google Payments.">
+    The CVC is used to validate your card and won't be saved in your account
   </message>
 
   <!-- Autofill credit card suggestion popup -->

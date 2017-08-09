@@ -72,6 +72,21 @@ int GetOffScreenLength(const gfx::Rect& available_bounds,
 
 }  // namespace
 
+// A container that changes visibility with its contents.
+class FootnoteContainerView : public View {
+ public:
+  FootnoteContainerView() {}
+
+  // View:
+  void ChildVisibilityChanged(View* child) override {
+    DCHECK_EQ(child_count(), 1);
+    SetVisible(child->visible());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FootnoteContainerView);
+};
+
 // static
 const char BubbleFrameView::kViewClassName[] = "BubbleFrameView";
 
@@ -145,7 +160,9 @@ Button* BubbleFrameView::CreateCloseButton(ButtonListener* listener) {
 gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
   gfx::Rect client_bounds = GetContentsBounds();
   client_bounds.Inset(GetInsets());
-  if (footnote_container_) {
+  // Only account for footnote_container_'s height if it's visible, because
+  // content_margins_ adds extra padding even if all child views are invisible.
+  if (footnote_container_ && footnote_container_->visible()) {
     client_bounds.set_height(client_bounds.height() -
                              footnote_container_->height());
   }
@@ -364,7 +381,9 @@ void BubbleFrameView::Layout() {
   title_icon_->SetBounds(bounds.x(), bounds.y(), title_icon_pref_size.width(),
                          title_height);
 
-  if (footnote_container_) {
+  // Only account for footnote_container_'s height if it's visible, because
+  // content_margins_ adds extra padding even if all child views are invisible.
+  if (footnote_container_ && footnote_container_->visible()) {
     const int width = contents_bounds.width();
     const int height = footnote_container_->GetHeightForWidth(width);
     footnote_container_->SetBounds(
@@ -435,7 +454,7 @@ void BubbleFrameView::SetFootnoteView(View* view) {
     return;
 
   DCHECK(!footnote_container_);
-  footnote_container_ = new views::View();
+  footnote_container_ = new FootnoteContainerView();
   footnote_container_->SetLayoutManager(
       new BoxLayout(BoxLayout::kVertical, content_margins_, 0));
   footnote_container_->SetBackground(
@@ -443,6 +462,7 @@ void BubbleFrameView::SetFootnoteView(View* view) {
   footnote_container_->SetBorder(
       CreateSolidSidedBorder(1, 0, 0, 0, kFootnoteBorderColor));
   footnote_container_->AddChildView(view);
+  footnote_container_->SetVisible(view->visible());
   AddChildView(footnote_container_);
 }
 
@@ -568,7 +588,9 @@ gfx::Size BubbleFrameView::GetSizeForClientSize(
   size.Enlarge(client_insets.width(), client_insets.height());
   size.SetToMax(gfx::Size(title_bar_width, 0));
 
-  if (footnote_container_)
+  // Only account for footnote_container_'s height if it's visible, because
+  // content_margins_ adds extra padding even if all child views are invisible.
+  if (footnote_container_ && footnote_container_->visible())
     size.Enlarge(0, footnote_container_->GetHeightForWidth(size.width()));
 
   DialogDelegate* dialog_delegate =
