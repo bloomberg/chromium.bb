@@ -1078,6 +1078,8 @@ void ThreadState::PostSweep() {
     default:
       NOTREACHED();
   }
+
+  gc_age_++;
 }
 
 #if DCHECK_IS_ON()

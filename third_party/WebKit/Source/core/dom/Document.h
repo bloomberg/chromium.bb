@@ -1720,6 +1720,8 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<NetworkStateObserver> network_state_observer_;
 
   bool has_high_media_engagement_;
+
+  int gc_age_when_document_detached_ = 0;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

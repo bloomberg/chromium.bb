@@ -562,6 +562,8 @@ class PLATFORM_EXPORT ThreadState {
     return &FromObject(object)->Heap() == &Heap();
   }
 
+  int GcAge() const { return gc_age_; }
+
  private:
   template <typename T>
   friend class PrefinalizerRegistration;
@@ -714,6 +716,8 @@ class PLATFORM_EXPORT ThreadState {
   size_t allocated_object_size_;
   size_t marked_object_size_;
   size_t reported_memory_to_v8_;
+
+  int gc_age_ = 0;
 };
 
 template <ThreadAffinity affinity>

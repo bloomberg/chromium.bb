@@ -14150,6 +14150,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Result of DNS probes sent by the probe service.</summary>
 </histogram>
 
+<histogram name="Document.OutliveTimeAfterShutdown.DestroyedBeforeProcessDies">
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>keishi@chromium.org</owner>
+  <summary>
+    Records the GC count between the time when the document is shut down and and
+    the time when the document is actually destroyed. This only counts documents
+    that are destroyed before the process dies.
+  </summary>
+</histogram>
+
 <histogram name="DocumentActivity.Enabled" enum="RunningMode">
   <obsolete>
     Removed 9/2016.
