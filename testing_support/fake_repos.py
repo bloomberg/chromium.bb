@@ -562,6 +562,11 @@ deps_os ={
       'DEPS': """
 deps = {
   'src/repo8': '/repo_8',
+
+  # This entry should appear in flattened file,
+  # but not recursed into, since it's not
+  # in recursedeps.
+  'src/repo7': '/repo_7',
 }
 recursedeps = [
   'src/repo8',

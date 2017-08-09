@@ -1762,7 +1762,8 @@ class Flattener(object):
     """
     self._allowed_hosts.update(dep.allowed_hosts)
 
-    assert dep.name not in self._deps
+    assert dep.name not in self._deps or self._deps[dep.name] == dep, (
+        dep.name, self._deps.get(dep.name))
     self._deps[dep.name] = dep
 
     for key, value in dep.get_vars().iteritems():
@@ -1775,14 +1776,18 @@ class Flattener(object):
     self._pre_deps_hooks.extend([(dep, hook) for hook in dep.pre_deps_hooks])
 
     for sub_dep in dep.dependencies:
-      assert sub_dep.name not in self._deps
+      assert (sub_dep.name not in self._deps or
+              self._deps[sub_dep.name] == sub_dep), (
+                 dep, sub_dep, self._deps.get(sub_dep.name))
       self._deps[sub_dep.name] = sub_dep
 
     for hook_os, os_hooks in dep.os_deps_hooks.iteritems():
       self._hooks_os.setdefault(hook_os, []).extend(
           [(dep, hook) for hook in os_hooks])
 
-    self._add_deps_os(dep)
+    for dep_os, os_deps in dep.os_dependencies.iteritems():
+      for os_dep in os_deps:
+        self._deps_os.setdefault(dep_os, {})[os_dep.name] = os_dep
 
     # Process recursedeps.
     deps_by_name = dict((d.name, d) for d in dep.dependencies)
@@ -1794,20 +1799,7 @@ class Flattener(object):
         if os_dep.name not in deps_by_name:
           deps_by_name[os_dep.name] = os_dep
     for recurse_dep_name in (dep.recursedeps or []):
-      for sub_dep in deps_by_name[recurse_dep_name].dependencies:
-        self._flatten_dep(sub_dep)
-
-      self._add_deps_os(deps_by_name[recurse_dep_name])
-
-  def _add_deps_os(self, dep):
-    """Helper for flatten that collects deps_os from |dep|.
-
-    Arguments:
-      dep (Dependency): dependency to process
-    """
-    for dep_os, os_deps in dep.os_dependencies.iteritems():
-      for os_dep in os_deps:
-        self._deps_os.setdefault(dep_os, {})[os_dep.name] = os_dep
+      self._flatten_dep(deps_by_name[recurse_dep_name])
 
 
 def CMDflatten(parser, args):
