@@ -2559,11 +2559,24 @@ bool WebMediaPlayerImpl::IsBackgroundOptimizationCandidate() const {
 
 void WebMediaPlayerImpl::UpdateBackgroundVideoOptimizationState() {
   if (IsHidden()) {
-    if (ShouldPauseVideoWhenHidden())
+    if (ShouldPauseVideoWhenHidden()) {
       PauseVideoIfNeeded();
-    else
-      DisableVideoTrackIfNeeded();
+    } else if (update_background_status_cb_.IsCancelled()) {
+      // Only trigger updates when we don't have one already scheduled.
+      update_background_status_cb_.Reset(
+          base::Bind(&WebMediaPlayerImpl::DisableVideoTrackIfNeeded,
+                     base::Unretained(this)));
+
+      // Defer disable track until we're sure the clip will be backgrounded for
+      // some time. Resuming may take half a second, so frequent tab switches
+      // will yield a poor user experience otherwise. http://crbug.com/709302
+      // may also cause AV sync issues if disable/enable happens too fast.
+      main_task_runner_->PostDelayedTask(
+          FROM_HERE, update_background_status_cb_.callback(),
+          base::TimeDelta::FromSeconds(10));
+    }
   } else {
+    update_background_status_cb_.Cancel();
     EnableVideoTrackIfNeeded();
   }
 }
