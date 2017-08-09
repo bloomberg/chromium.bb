@@ -397,8 +397,10 @@ void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(
     const gfx::Rect& rect) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  VLOG(1) << "Start voice interaction.";
   if (!Profile::FromBrowserContext(context_)->GetPrefs()->GetBoolean(
           prefs::kArcVoiceInteractionValuePropAccepted)) {
+    VLOG(1) << "Voice interaction feature not accepted.";
     // If voice interaction value prop already showing, return.
     if (chromeos::LoginDisplayHost::default_host())
       return;
@@ -413,6 +415,7 @@ void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(
   }
 
   if (!arc_bridge_service_->voice_interaction_framework()->has_instance()) {
+    VLOG(1) << "Instance not ready.";
     SetArcCpuRestriction(false);
     is_request_pending_ = true;
     return;
@@ -436,6 +439,7 @@ void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(
     DCHECK(framework_instance);
     framework_instance->StartVoiceInteractionSessionForRegion(rect);
   }
+  VLOG(1) << "Sent voice interaction request.";
 }
 
 bool ArcVoiceInteractionFrameworkService::ValidateTimeSinceUserInteraction() {
@@ -475,6 +479,7 @@ bool ArcVoiceInteractionFrameworkService::InitiateUserInteraction() {
       context_request_remaining_count_) {
     // If next request starts too soon and there is an active session in action,
     // we should drop it.
+    VLOG(1) << "Rejected voice interaction request.";
     return false;
   }
   user_interaction_start_time_ = start_time;
