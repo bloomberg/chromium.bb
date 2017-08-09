@@ -106,17 +106,19 @@ TEST_F(WebStateListSerializationTest, SerializationEmpty) {
 
 TEST_F(WebStateListSerializationTest, SerializationRoundTrip) {
   WebStateList original_web_state_list(web_state_list_delegate());
-  original_web_state_list.InsertWebState(0, SerializableTestWebState::Create());
-  original_web_state_list.InsertWebState(1, SerializableTestWebState::Create());
-  original_web_state_list.InsertWebState(2, SerializableTestWebState::Create());
-  original_web_state_list.InsertWebState(3, SerializableTestWebState::Create());
-  original_web_state_list.SetOpenerOfWebStateAt(
-      1, WebStateOpener(original_web_state_list.GetWebStateAt(0), 3));
-  original_web_state_list.SetOpenerOfWebStateAt(
-      2, WebStateOpener(original_web_state_list.GetWebStateAt(0), 2));
-  original_web_state_list.SetOpenerOfWebStateAt(
-      3, WebStateOpener(original_web_state_list.GetWebStateAt(1), 1));
-  original_web_state_list.ActivateWebStateAt(1);
+  original_web_state_list.InsertWebState(0, SerializableTestWebState::Create(),
+                                         WebStateList::INSERT_FORCE_INDEX,
+                                         WebStateOpener());
+  original_web_state_list.InsertWebState(
+      1, SerializableTestWebState::Create(),
+      WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE,
+      WebStateOpener(original_web_state_list.GetWebStateAt(0), 3));
+  original_web_state_list.InsertWebState(
+      2, SerializableTestWebState::Create(), WebStateList::INSERT_FORCE_INDEX,
+      WebStateOpener(original_web_state_list.GetWebStateAt(0), 2));
+  original_web_state_list.InsertWebState(
+      3, SerializableTestWebState::Create(), WebStateList::INSERT_FORCE_INDEX,
+      WebStateOpener(original_web_state_list.GetWebStateAt(1), 1));
 
   SessionWindowIOS* session_window =
       SerializeWebStateList(&original_web_state_list);
@@ -126,7 +128,9 @@ TEST_F(WebStateListSerializationTest, SerializationRoundTrip) {
 
   // Create a deserialized WebStateList and verify its contents.
   WebStateList restored_web_state_list(web_state_list_delegate());
-  restored_web_state_list.InsertWebState(0, SerializableTestWebState::Create());
+  restored_web_state_list.InsertWebState(0, SerializableTestWebState::Create(),
+                                         WebStateList::INSERT_FORCE_INDEX,
+                                         WebStateOpener());
   ASSERT_EQ(1, restored_web_state_list.count());
 
   DeserializeWebStateList(

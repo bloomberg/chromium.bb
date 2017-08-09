@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,8 +65,9 @@ class WebStateListFastEnumerationHelperTest : public PlatformTest {
       auto test_web_state = base::MakeUnique<web::TestWebState>();
       test_web_state->SetCurrentURL(GURL(urls[index]));
 
-      web_state_list_.InsertWebState(web_state_list_.count(),
-                                     std::move(test_web_state));
+      web_state_list_.InsertWebState(
+          web_state_list_.count(), std::move(test_web_state),
+          WebStateList::INSERT_FORCE_INDEX, WebStateOpener());
     }
   }
 

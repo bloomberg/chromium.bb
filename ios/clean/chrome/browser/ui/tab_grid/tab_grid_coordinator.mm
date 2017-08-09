@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/clean/chrome/browser/ui/commands/context_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
@@ -179,8 +180,9 @@
   std::unique_ptr<web::WebState> webState =
       web::WebState::Create(webStateCreateParams);
   webState->SetWebUsageEnabled(true);
-  self.webStateList.InsertWebState(self.webStateList.count(),
-                                   std::move(webState));
+  self.webStateList.InsertWebState(
+      self.webStateList.count(), std::move(webState),
+      WebStateList::INSERT_FORCE_INDEX, WebStateOpener());
   [self showTabGridTabAtIndex:self.webStateList.count() - 1];
 }
 

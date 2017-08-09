@@ -19,6 +19,9 @@ struct WebStateOpener {
   // WebState was open. Value is undefined if |opener| is null.
   int navigation_index;
 
+  // Creates WebStateOpener with a null |opener|.
+  WebStateOpener();
+
   // Creates WebStateOpener initialising the members from |opener| (the
   // |navigation_index| will be initialised from |opener|'s navigation
   // manager if |opener| is not null).
@@ -26,9 +29,6 @@ struct WebStateOpener {
 
   // Creates WebStateOpener initialising the members from the parameters.
   WebStateOpener(web::WebState* opener, int navigation_index);
-
-  // Forbids default construction.
-  WebStateOpener() = delete;
 };
 
 #endif  // IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_OPENER_H_

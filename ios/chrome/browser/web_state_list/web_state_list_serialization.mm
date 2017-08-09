@@ -175,8 +175,9 @@ void DeserializeWebStateList(WebStateList* web_state_list,
   int old_count = web_state_list->count();
   for (CRWSessionStorage* session in session_window.sessions) {
     std::unique_ptr<web::WebState> web_state = web_state_factory.Run(session);
-    web_state_list->InsertWebState(web_state_list->count(),
-                                   std::move(web_state));
+    web_state_list->InsertWebState(
+        web_state_list->count(), std::move(web_state),
+        WebStateList::INSERT_FORCE_INDEX, WebStateOpener());
   }
 
   RestoreRelationship(web_state_list, old_count);

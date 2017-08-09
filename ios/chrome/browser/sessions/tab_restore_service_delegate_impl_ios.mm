@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -89,10 +90,12 @@ sessions::LiveTab* TabRestoreServiceDelegateImplIOS::AddRestoredTab(
   web_state->GetNavigationManagerImpl().ReplaceSessionHistory(
       std::move(items), selected_navigation);
 
-  WebStateList* web_state_list = [tab_model() webStateList];
-  web_state_list->InsertWebState(tab_index, std::move(web_state));
   // TODO(crbug.com/661636): Handle tab-switch animation somehow...
-  web_state_list->ActivateWebStateAt(tab_index);
+  WebStateList* web_state_list = [tab_model() webStateList];
+  web_state_list->InsertWebState(
+      tab_index, std::move(web_state),
+      WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE,
+      WebStateOpener());
   return nullptr;
 }
 

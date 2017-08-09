@@ -471,37 +471,38 @@ std::unique_ptr<web::WebState> CreateWebState(
 
   web::WebState::CreateParams createParams(self.browserState);
   createParams.created_with_opener = openedByDOM;
-  std::unique_ptr<web::WebState> webState = web::WebState::Create(createParams);
 
-  web::WebState* webStatePtr = webState.get();
-  if (index == TabModelConstants::kTabPositionAutomatically) {
-    _webStateList->AppendWebState(loadParams.transition_type,
-                                  std::move(webState),
-                                  WebStateOpener(parentTab.webState));
-  } else {
+  int insertionIndex = WebStateList::kInvalidIndex;
+  int insertionFlags = WebStateList::INSERT_NO_FLAGS;
+  if (index != TabModelConstants::kTabPositionAutomatically) {
     DCHECK_LE(index, static_cast<NSUInteger>(INT_MAX));
-    const int insertion_index = static_cast<int>(index);
-    _webStateList->InsertWebState(insertion_index, std::move(webState));
-    if (parentTab.webState) {
-      _webStateList->SetOpenerOfWebStateAt(insertion_index,
-                                           WebStateOpener(parentTab.webState));
-    }
+    insertionIndex = static_cast<int>(index);
+    insertionFlags |= WebStateList::INSERT_FORCE_INDEX;
+  } else if (!ui::PageTransitionCoreTypeIs(loadParams.transition_type,
+                                           ui::PAGE_TRANSITION_LINK)) {
+    insertionIndex = _webStateList->count();
+    insertionFlags |= WebStateList::INSERT_FORCE_INDEX;
   }
 
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webStatePtr);
+  insertionIndex = _webStateList->InsertWebState(
+      insertionIndex, web::WebState::Create(createParams), insertionFlags,
+      WebStateOpener(parentTab.webState));
+
+  web::WebState* webState = _webStateList->GetWebStateAt(insertionIndex);
+  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   DCHECK(tab);
 
-  webStatePtr->SetWebUsageEnabled(_webUsageEnabled ? true : false);
+  webState->SetWebUsageEnabled(_webUsageEnabled ? true : false);
 
   if (!inBackground && _tabUsageRecorder)
     _tabUsageRecorder->TabCreatedForSelection(tab);
 
-  webStatePtr->GetNavigationManager()->LoadURLWithParams(loadParams);
+  webState->GetNavigationManager()->LoadURLWithParams(loadParams);
 
   // Force the page to start loading even if it's in the background.
   // TODO(crbug.com/705819): Remove this call.
   if (_webUsageEnabled)
-    webStatePtr->GetView();
+    webState->GetView();
 
   NSDictionary* userInfo = @{
     kTabModelTabKey : tab,
@@ -512,6 +513,9 @@ std::unique_ptr<web::WebState> CreateWebState(
                     object:self
                   userInfo:userInfo];
 
+  // TODO(crbug.com/620083): INSERT_ACTIVATE should be set in insertionFlags
+  // if inBackground is YES instead of calling -setCurrentTab: here. As this
+  // requires further refactoring, it will be done in a followup CL.
   if (!inBackground)
     [self setCurrentTab:tab];
 
