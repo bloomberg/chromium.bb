@@ -87,7 +87,8 @@ class RecentTabHelper
   // Note #2: Currently this method only accepts download requests from the
   // downloads namespace.
   void ObserveAndDownloadCurrentPage(const ClientId& client_id,
-                                     int64_t request_id);
+                                     int64_t request_id,
+                                     const std::string& origin);
 
  private:
   struct SnapshotProgressInfo;

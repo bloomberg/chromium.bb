@@ -64,7 +64,8 @@ void ToJavaOfflinePageList(JNIEnv* env,
         ConvertUTF8ToJavaString(env, offline_page.client_id.id),
         ConvertUTF8ToJavaString(env, offline_page.file_path.value()),
         offline_page.file_size, offline_page.creation_time.ToJavaTime(),
-        offline_page.access_count, offline_page.last_access_time.ToJavaTime());
+        offline_page.access_count, offline_page.last_access_time.ToJavaTime(),
+        ConvertUTF8ToJavaString(env, offline_page.request_origin));
   }
 }
 
@@ -78,7 +79,8 @@ ScopedJavaLocalRef<jobject> ToJavaOfflinePageItem(
       ConvertUTF8ToJavaString(env, offline_page.client_id.id),
       ConvertUTF8ToJavaString(env, offline_page.file_path.value()),
       offline_page.file_size, offline_page.creation_time.ToJavaTime(),
-      offline_page.access_count, offline_page.last_access_time.ToJavaTime());
+      offline_page.access_count, offline_page.last_access_time.ToJavaTime(),
+      ConvertUTF8ToJavaString(env, offline_page.request_origin));
 }
 
 ScopedJavaLocalRef<jobject> ToJavaDeletedPageInfo(
@@ -676,13 +678,15 @@ void OfflinePageBridge::ScheduleDownload(
     const base::android::JavaParamRef<jobject>& j_web_contents,
     const JavaParamRef<jstring>& j_namespace,
     const JavaParamRef<jstring>& j_url,
-    int ui_action) {
+    int ui_action,
+    const JavaParamRef<jstring>& j_origin) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
   OfflinePageUtils::ScheduleDownload(
       web_contents, ConvertJavaStringToUTF8(env, j_namespace),
       GURL(ConvertJavaStringToUTF8(env, j_url)),
-      static_cast<OfflinePageUtils::DownloadUIActionFlags>(ui_action));
+      static_cast<OfflinePageUtils::DownloadUIActionFlags>(ui_action),
+      ConvertJavaStringToUTF8(env, j_origin));
 }
 
 jboolean OfflinePageBridge::IsOfflinePage(

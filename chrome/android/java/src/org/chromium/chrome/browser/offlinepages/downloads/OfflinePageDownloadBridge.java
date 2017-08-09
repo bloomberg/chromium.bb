@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadServiceDelegate;
 import org.chromium.chrome.browser.download.ui.BackendProvider.OfflinePageDelegate;
+import org.chromium.chrome.browser.offlinepages.OfflinePageOrigin;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -215,10 +216,12 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
      * background and killed, the background request remains that will
      * eventually load the page in background and obtain its offline
      * snapshot.
+     *
      * @param tab a tab contents of which will be saved locally.
+     * @param origin the object encapsulating application origin of the request.
      */
-    public void startDownload(Tab tab) {
-        nativeStartDownload(mNativeOfflinePageDownloadBridge, tab);
+    public void startDownload(Tab tab, OfflinePageOrigin origin) {
+        nativeStartDownload(mNativeOfflinePageDownloadBridge, tab, origin.encodeAsJsonString());
     }
 
     /**
@@ -319,6 +322,6 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
     native void nativeResumeDownload(long nativeOfflinePageDownloadBridge, String guid);
     native void nativeDeleteItemByGuid(long nativeOfflinePageDownloadBridge, String guid);
     native long nativeGetOfflineIdByGuid(long nativeOfflinePageDownloadBridge, String guid);
-    native void nativeStartDownload(long nativeOfflinePageDownloadBridge, Tab tab);
+    native void nativeStartDownload(long nativeOfflinePageDownloadBridge, Tab tab, String origin);
     native void nativeResumePendingRequestImmediately(long nativeOfflinePageDownloadBridge);
 }

@@ -21,9 +21,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-
 import java.text.SimpleDateFormat;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -248,16 +246,17 @@ public class OfflinePageEvaluationBridge {
     @CalledByNative
     private static void createOfflinePageAndAddToList(List<OfflinePageItem> offlinePagesList,
             String url, long offlineId, String clientNamespace, String clientId, String filePath,
-            long fileSize, long creationTime, int accessCount, long lastAccessTimeMs) {
+            long fileSize, long creationTime, int accessCount, long lastAccessTimeMs,
+            String requestOrigin) {
         offlinePagesList.add(createOfflinePageItem(url, offlineId, clientNamespace, clientId,
-                filePath, fileSize, creationTime, accessCount, lastAccessTimeMs));
+                filePath, fileSize, creationTime, accessCount, lastAccessTimeMs, requestOrigin));
     }
 
     private static OfflinePageItem createOfflinePageItem(String url, long offlineId,
             String clientNamespace, String clientId, String filePath, long fileSize,
-            long creationTime, int accessCount, long lastAccessTimeMs) {
+            long creationTime, int accessCount, long lastAccessTimeMs, String requestOrigin) {
         return new OfflinePageItem(url, offlineId, clientNamespace, clientId, filePath, fileSize,
-                creationTime, accessCount, lastAccessTimeMs);
+                creationTime, accessCount, lastAccessTimeMs, requestOrigin);
     }
 
     private native long nativeCreateBridgeForProfile(

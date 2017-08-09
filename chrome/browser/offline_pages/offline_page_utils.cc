@@ -283,14 +283,24 @@ void OfflinePageUtils::CheckDuplicateDownloads(
 void OfflinePageUtils::ScheduleDownload(content::WebContents* web_contents,
                                         const std::string& name_space,
                                         const GURL& url,
-                                        DownloadUIActionFlags ui_action) {
+                                        DownloadUIActionFlags ui_action,
+                                        const std::string& request_origin) {
   DCHECK(web_contents);
 
   OfflinePageTabHelper* tab_helper =
       OfflinePageTabHelper::FromWebContents(web_contents);
   if (!tab_helper)
     return;
-  tab_helper->ScheduleDownloadHelper(web_contents, name_space, url, ui_action);
+  tab_helper->ScheduleDownloadHelper(web_contents, name_space, url, ui_action,
+                                     request_origin);
+}
+
+// static
+void OfflinePageUtils::ScheduleDownload(content::WebContents* web_contents,
+                                        const std::string& name_space,
+                                        const GURL& url,
+                                        DownloadUIActionFlags ui_action) {
+  ScheduleDownload(web_contents, name_space, url, ui_action, "");
 }
 
 // static

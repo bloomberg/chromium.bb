@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -357,6 +358,48 @@ public class OfflinePageBridgeTest {
         Assert.assertEquals(
                 "The offline ID of the page saved in an alternate namespace does not match.",
                 offlineIdToIgnore, asyncPages.get(0).getOfflineId());
+    }
+
+    @Test
+    @SmallTest
+    @RetryOnFailure
+    public void testDownloadPage() throws Exception {
+        final OfflinePageOrigin origin =
+                new OfflinePageOrigin("abc.xyz", new String[] {"deadbeef"});
+        mActivityTestRule.loadUrl(mTestPage);
+        final String originString = origin.encodeAsJsonString();
+        final Semaphore semaphore = new Semaphore(0);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertNotNull(
+                        "Tab is null", mActivityTestRule.getActivity().getActivityTab());
+                Assert.assertEquals("URL does not match requested.", mTestPage,
+                        mActivityTestRule.getActivity().getActivityTab().getUrl());
+                Assert.assertNotNull("WebContents is null",
+                        mActivityTestRule.getActivity().getActivityTab().getWebContents());
+
+                // Use Downloadbridge, because scheduler does not work in test.
+                OfflinePageDownloadBridge downloadBridge =
+                        new OfflinePageDownloadBridge(Profile.getLastUsedProfile());
+
+                mOfflinePageBridge.addObserver(new OfflinePageModelObserver() {
+                    @Override
+                    public void offlinePageAdded(OfflinePageItem newPage) {
+                        mOfflinePageBridge.removeObserver(this);
+                        semaphore.release();
+                    }
+                });
+
+                downloadBridge.startDownload(
+                        mActivityTestRule.getActivity().getActivityTab(), origin);
+            }
+        });
+        Assert.assertTrue("Semaphore acquire failed. Timed out.",
+                semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        List<OfflinePageItem> pages = getAllPages();
+        Assert.assertEquals(originString, pages.get(0).getRequestOrigin());
     }
 
     // Returns offline ID.

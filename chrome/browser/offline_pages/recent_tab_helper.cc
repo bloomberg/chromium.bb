@@ -67,8 +67,10 @@ using PageQuality = SnapshotController::PageQuality;
 struct RecentTabHelper::SnapshotProgressInfo {
  public:
   // For a downloads snapshot request, where the |request_id| is defined.
-  SnapshotProgressInfo(const ClientId& client_id, int64_t request_id)
-      : client_id(client_id), request_id(request_id) {}
+  SnapshotProgressInfo(const ClientId& client_id,
+                       int64_t request_id,
+                       const std::string& origin)
+      : client_id(client_id), request_id(request_id), origin(origin) {}
 
   // For a last_n snapshot request.
   explicit SnapshotProgressInfo(const ClientId& client_id)
@@ -89,6 +91,10 @@ struct RecentTabHelper::SnapshotProgressInfo {
   // valid for successfully saved snapshots.
   SnapshotController::PageQuality expected_page_quality =
       SnapshotController::PageQuality::POOR;
+
+  // The app that created the tab - either a package name of the CCT origin
+  // or empty, meaning chrome.
+  std::string origin = "";
 };
 
 RecentTabHelper::RecentTabHelper(content::WebContents* web_contents)
@@ -107,13 +113,14 @@ void RecentTabHelper::SetDelegate(
   delegate_ = std::move(delegate);
 }
 
-void RecentTabHelper::ObserveAndDownloadCurrentPage(
-    const ClientId& client_id, int64_t request_id) {
+void RecentTabHelper::ObserveAndDownloadCurrentPage(const ClientId& client_id,
+                                                    int64_t request_id,
+                                                    const std::string& origin) {
   // Note: as this implementation only supports one client namespace, enforce
   // that the call is from Downloads.
   DCHECK_EQ(kDownloadNamespace, client_id.name_space);
   auto new_downloads_snapshot_info =
-      base::MakeUnique<SnapshotProgressInfo>(client_id, request_id);
+      base::MakeUnique<SnapshotProgressInfo>(client_id, request_id, origin);
 
   // If this tab helper is not enabled, immediately give the job back to
   // RequestCoordinator.
@@ -388,7 +395,8 @@ void RecentTabHelper::SaveSnapshotForDownloads(bool replace_latest) {
     DCHECK(!downloads_ongoing_snapshot_info_);
     downloads_ongoing_snapshot_info_ = base::MakeUnique<SnapshotProgressInfo>(
         downloads_latest_saved_snapshot_info_->client_id,
-        downloads_latest_saved_snapshot_info_->request_id);
+        downloads_latest_saved_snapshot_info_->request_id,
+        downloads_latest_saved_snapshot_info_->origin);
     std::vector<int64_t> ids{downloads_latest_saved_snapshot_info_->request_id};
     ContinueSnapshotWithIdsToPurge(downloads_ongoing_snapshot_info_.get(), ids);
   } else {
@@ -439,6 +447,7 @@ void RecentTabHelper::ContinueSnapshotAfterPurge(
   save_page_params.is_background = false;
   save_page_params.original_url =
       OfflinePageUtils::GetOriginalURLFromWebContents(web_contents());
+  save_page_params.request_origin = snapshot_info->origin;
   page_model_->SavePage(
       save_page_params, delegate_->CreatePageArchiver(web_contents()),
       base::Bind(&RecentTabHelper::SavePageCallback,

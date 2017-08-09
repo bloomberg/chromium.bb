@@ -57,11 +57,11 @@ class OfflinePageTabHelper :
   // OfflinePageTabHelper instance is tied with the associated |web_contents|
   // and thus the callback will be automatically invalidated if |web_contents|
   // is gone.
-  void ScheduleDownloadHelper(
-      content::WebContents* web_contents,
-      const std::string& name_space,
-      const GURL& url,
-      OfflinePageUtils::DownloadUIActionFlags ui_action);
+  void ScheduleDownloadHelper(content::WebContents* web_contents,
+                              const std::string& name_space,
+                              const GURL& url,
+                              OfflinePageUtils::DownloadUIActionFlags ui_action,
+                              const std::string& request_origin);
 
  private:
   friend class content::WebContentsUserData<OfflinePageTabHelper>;
@@ -99,11 +99,13 @@ class OfflinePageTabHelper :
       const std::string& name_space,
       const GURL& url,
       OfflinePageUtils::DownloadUIActionFlags ui_action,
+      const std::string& request_origin,
       OfflinePageUtils::DuplicateCheckResult result);
   void DoDownloadPageLater(content::WebContents* web_contents,
                            const std::string& name_space,
                            const GURL& url,
-                           OfflinePageUtils::DownloadUIActionFlags ui_action);
+                           OfflinePageUtils::DownloadUIActionFlags ui_action,
+                           const std::string& request_origin);
 
   // The provisional info about the offline page being loaded. This is set when
   // the offline interceptor decides to serve the offline page and it will be
