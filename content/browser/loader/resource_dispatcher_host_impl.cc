@@ -1858,12 +1858,13 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(
     // Don't cancel navigations that are expected to live beyond this process.
     if (IsTransferredNavigation(id))
       any_requests_transferring = true;
-    if (info->detachable_handler()) {
-      info->detachable_handler()->Detach();
-    } else if (!info->IsDownload() && !info->is_stream() &&
-               !IsTransferredNavigation(id) &&
-               (cancel_all_routes || route_id == info->GetRenderFrameID())) {
-      matching_requests.push_back(id);
+    if (cancel_all_routes || route_id == info->GetRenderFrameID()) {
+      if (info->detachable_handler()) {
+        info->detachable_handler()->Detach();
+      } else if (!info->IsDownload() && !info->is_stream() &&
+                 !IsTransferredNavigation(id)) {
+        matching_requests.push_back(id);
+      }
     }
   }
 

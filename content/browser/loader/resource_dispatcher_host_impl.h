@@ -357,6 +357,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                            DetachableResourceTimesOut);
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            TestProcessCancelDetachableTimesOut);
+  FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest, CancelRequestsForRoute);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessIgnoreCertErrorsBrowserTest,
                            CrossSiteRedirectCertificateStore);
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest, LoadInfo);

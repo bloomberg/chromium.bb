@@ -1124,6 +1124,14 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
     return filter->requester_info_for_test();
   }
 
+  bool IsDetached(net::URLRequest* request) {
+    auto* request_info = ResourceRequestInfoImpl::ForRequest(request);
+    if (!request_info)
+      return false;
+    return request_info->detachable_handler() &&
+           request_info->detachable_handler()->is_detached();
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<TestURLRequestJobFactory> job_factory_;
@@ -1854,6 +1862,52 @@ TEST_F(ResourceDispatcherHostTest, CancelInDelegate) {
   ASSERT_EQ(1U, msgs[0].size());
 
   CheckRequestCompleteErrorCode(msgs[0][0], net::ERR_ACCESS_DENIED);
+}
+
+TEST_F(ResourceDispatcherHostTest, CancelRequestsForRoute) {
+  job_factory_->SetDelayedStartJobGeneration(true);
+  MakeTestRequestWithRenderFrame(0, 11, 1, net::URLRequestTestJob::test_url_1(),
+                                 RESOURCE_TYPE_XHR);
+  EXPECT_EQ(1, host_.pending_requests());
+
+  MakeTestRequestWithRenderFrame(0, 12, 2, net::URLRequestTestJob::test_url_2(),
+                                 RESOURCE_TYPE_XHR);
+  EXPECT_EQ(2, host_.pending_requests());
+
+  MakeTestRequestWithRenderFrame(0, 11, 3, net::URLRequestTestJob::test_url_3(),
+                                 RESOURCE_TYPE_PING);
+  EXPECT_EQ(3, host_.pending_requests());
+
+  MakeTestRequestWithRenderFrame(0, 12, 4, net::URLRequestTestJob::test_url_4(),
+                                 RESOURCE_TYPE_PING);
+  EXPECT_EQ(4, host_.pending_requests());
+
+  EXPECT_TRUE(host_.GetURLRequest(GlobalRequestID(filter_->child_id(), 1)));
+  EXPECT_TRUE(host_.GetURLRequest(GlobalRequestID(filter_->child_id(), 2)));
+  EXPECT_TRUE(host_.GetURLRequest(GlobalRequestID(filter_->child_id(), 3)));
+  EXPECT_TRUE(host_.GetURLRequest(GlobalRequestID(filter_->child_id(), 4)));
+
+  host_.CancelRequestsForRoute(GlobalFrameRoutingId(filter_->child_id(), 11));
+
+  EXPECT_FALSE(host_.GetURLRequest(GlobalRequestID(filter_->child_id(), 1)));
+  EXPECT_TRUE(host_.GetURLRequest(GlobalRequestID(filter_->child_id(), 2)));
+  ASSERT_TRUE(host_.GetURLRequest(GlobalRequestID(filter_->child_id(), 3)));
+  ASSERT_TRUE(host_.GetURLRequest(GlobalRequestID(filter_->child_id(), 4)));
+
+  EXPECT_TRUE(
+      IsDetached(host_.GetURLRequest(GlobalRequestID(filter_->child_id(), 3))));
+  EXPECT_FALSE(
+      IsDetached(host_.GetURLRequest(GlobalRequestID(filter_->child_id(), 4))));
+
+  CompleteStartRequest(2);
+  CompleteStartRequest(3);
+  CompleteStartRequest(4);
+
+  while (host_.pending_requests() > 0) {
+    while (net::URLRequestTestJob::ProcessOnePendingMessage()) {
+    }
+    content::RunAllBlockingPoolTasksUntilIdle();
+  }
 }
 
 // Tests CancelRequestsForProcess
