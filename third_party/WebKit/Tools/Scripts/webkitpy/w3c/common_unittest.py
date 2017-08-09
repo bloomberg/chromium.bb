@@ -10,16 +10,20 @@ from webkitpy.common.system.executive_mock import mock_git_commands
 from webkitpy.w3c.chromium_commit import ChromiumCommit
 from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
 from webkitpy.w3c.common import _exportable_commits_since
+from webkitpy.w3c.common import _is_commit_exportable
 from webkitpy.w3c.common import read_credentials
-from webkitpy.w3c.common import is_exportable
 from webkitpy.w3c.wpt_github import PullRequest
 from webkitpy.w3c.wpt_github_mock import MockWPTGitHub
 
 
 class MockLocalWPT(object):
 
-    def test_patch(self, *_):
-        return 'patch'
+    def __init__(self, patch_success=True, patch_error=''):
+        self.patch_success = patch_success
+        self.patch_error = patch_error
+
+    def test_patch(self, _):
+        return self.patch_success, self.patch_error
 
 
 class CommonTest(unittest.TestCase):
@@ -39,7 +43,7 @@ class CommonTest(unittest.TestCase):
             'footers': 'cr-rev-position',
         })
 
-        commits = _exportable_commits_since(
+        commits, _ = _exportable_commits_since(
             'beefcafe', host, MockLocalWPT(), MockWPTGitHub(pull_requests=[]))
         self.assertEqual(len(commits), 1)
         self.assertIsInstance(commits[0], ChromiumCommit)
@@ -54,38 +58,38 @@ class CommonTest(unittest.TestCase):
             ['git', 'format-patch', '-1', '--stdout', 'add087a97844f4b9e307d9a216940582d96db306', '--', 'some', 'files'],
         ])
 
-    def test_is_exportable(self):
+    def test_is_commit_exportable(self):
         commit = MockChromiumCommit(MockHost())
         github = MockWPTGitHub(pull_requests=[])
-        self.assertTrue(is_exportable(commit, MockLocalWPT(), github))
+        self.assertEqual(_is_commit_exportable(commit, MockLocalWPT(), github), (True, ''))
 
     def test_commit_with_noexport_is_not_exportable(self):
         commit = MockChromiumCommit(MockHost(), body='Message\nNo-Export: true')
         github = MockWPTGitHub(pull_requests=[])
-        self.assertFalse(is_exportable(commit, MockLocalWPT(), github))
+        self.assertEqual(_is_commit_exportable(commit, MockLocalWPT(), github), (False, ''))
 
         # The older NOEXPORT tag also makes it non-exportable.
         old_commit = MockChromiumCommit(MockHost(), body='Message\nNOEXPORT=true')
-        self.assertFalse(is_exportable(old_commit, MockLocalWPT(), github))
+        self.assertEqual(_is_commit_exportable(old_commit, MockLocalWPT(), github), (False, ''))
 
         # No-Export/NOEXPORT in a revert CL also makes it non-exportable.
         revert = MockChromiumCommit(MockHost(), body='Revert of Message\n> No-Export: true')
-        self.assertFalse(is_exportable(revert, MockLocalWPT(), github))
+        self.assertEqual(_is_commit_exportable(revert, MockLocalWPT(), github), (False, ''))
         old_revert = MockChromiumCommit(MockHost(), body='Revert of Message\n> NOEXPORT=true')
-        self.assertFalse(is_exportable(old_revert, MockLocalWPT(), github))
+        self.assertEqual(_is_commit_exportable(old_revert, MockLocalWPT(), github), (False, ''))
 
     def test_commit_that_starts_with_import_is_not_exportable(self):
         commit = MockChromiumCommit(MockHost(), subject='Import message')
         github = MockWPTGitHub(pull_requests=[])
-        self.assertFalse(is_exportable(commit, MockLocalWPT(), github))
+        self.assertEqual(_is_commit_exportable(commit, MockLocalWPT(), github), (False, ''))
 
-    def test_commit_that_has_open_pr_is_exportable(self):
+    def test_commit_that_has_open_pr_is_commit_exportable(self):
         commit = MockChromiumCommit(MockHost(), change_id='I00decade')
         github = MockWPTGitHub(pull_requests=[
             PullRequest('PR1', 1, 'body\nChange-Id: I00c0ffee', 'closed', []),
             PullRequest('PR2', 2, 'body\nChange-Id: I00decade', 'open', []),
         ])
-        self.assertTrue(is_exportable(commit, MockLocalWPT(), github))
+        self.assertEqual(_is_commit_exportable(commit, MockLocalWPT(), github), (True, ''))
 
     def test_commit_that_has_closed_pr_is_not_exportable(self):
         commit = MockChromiumCommit(MockHost(), change_id='I00decade')
@@ -93,7 +97,17 @@ class CommonTest(unittest.TestCase):
             PullRequest('PR1', 1, 'body\nChange-Id: I00c0ffee', 'closed', []),
             PullRequest('PR2', 2, 'body\nChange-Id: I00decade', 'closed', []),
         ])
-        self.assertFalse(is_exportable(commit, MockLocalWPT(), github))
+        self.assertEqual(_is_commit_exportable(commit, MockLocalWPT(), github), (False, ''))
+
+    def test_commit_that_produces_errors(self):
+        commit = MockChromiumCommit(MockHost())
+        github = MockWPTGitHub(pull_requests=[])
+        self.assertEqual(_is_commit_exportable(commit, MockLocalWPT(False, 'error'), github), (False, 'error'))
+
+    def test_commit_that_produces_empty_diff(self):
+        commit = MockChromiumCommit(MockHost())
+        github = MockWPTGitHub(pull_requests=[])
+        self.assertEqual(_is_commit_exportable(commit, MockLocalWPT(False, ''), github), (False, ''))
 
     def test_get_credentials_empty(self):
         host = MockHost()
