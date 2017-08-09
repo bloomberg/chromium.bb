@@ -61,6 +61,9 @@ constexpr int kDragBufferPx = 20;
 // Padding space in pixels between pages.
 constexpr int kPagePadding = 40;
 
+// Extra page padding which ensures that the page break space for apps are 48px.
+constexpr int kExtraPagePdding = 36;
+
 // Preferred tile size when showing in fixed layout.
 constexpr int kPreferredTileWidth = 100;
 constexpr int kPreferredTileHeight = 100;
@@ -1303,22 +1306,24 @@ void AppsGridView::CalculateIdealBounds() {
     gfx::Vector2d offset = CalculateTransitionOffset(view_index.page);
     const PaginationModel::Transition& transition =
         pagination_model_.transition();
-    // When transition is progressing, eliminate empty spaces between pages.
     if (is_fullscreen_app_list_enabled_ && transition.progress > 0) {
       const int current_page = pagination_model_.selected_page();
       const bool forward = transition.target_page > current_page ? true : false;
-      // When transiting to previous page, eliminate empty space from just
-      // previous page since only the previous page is visiable; vice versa.
+      // When transiting to previous page, ensure 48px page break space from
+      // just previous page since only the previous page could be visiable;
+      // and vice versa.
       if (!forward && view_index.page == current_page - 1) {
         if (view_index.page == 0) {
           offset.set_y(offset.y() + GetHeightOnTopOfAllAppsTiles(0) -
                        GetHeightOnTopOfAllAppsTiles(1) -
-                       2 * kTileVerticalPadding);
+                       2 * kTileVerticalPadding - kExtraPagePdding);
         } else {
-          offset.set_y(offset.y() + GetHeightOnTopOfAllAppsTiles(current_page));
+          offset.set_y(offset.y() + GetHeightOnTopOfAllAppsTiles(current_page) -
+                       kExtraPagePdding);
         }
       } else if (forward && view_index.page == current_page + 1) {
-        offset.set_y(offset.y() - GetHeightOnTopOfAllAppsTiles(current_page));
+        offset.set_y(offset.y() - GetHeightOnTopOfAllAppsTiles(current_page) +
+                     kExtraPagePdding);
       }
     }
     tile_slot.Offset(offset.x(), offset.y());
