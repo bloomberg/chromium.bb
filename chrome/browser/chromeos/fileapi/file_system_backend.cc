@@ -54,8 +54,7 @@ bool FileSystemBackend::CanHandleURL(const storage::FileSystemURL& url) {
          url.type() == storage::kFileSystemTypeProvided ||
          url.type() == storage::kFileSystemTypeDeviceMediaAsFileStorage ||
          url.type() == storage::kFileSystemTypeArcContent ||
-         url.type() == storage::kFileSystemTypeArcDocumentsProvider ||
-         url.type() == storage::kFileSystemTypeRecent;
+         url.type() == storage::kFileSystemTypeArcDocumentsProvider;
 }
 
 FileSystemBackend::FileSystemBackend(
@@ -64,7 +63,6 @@ FileSystemBackend::FileSystemBackend(
     std::unique_ptr<FileSystemBackendDelegate> mtp_delegate,
     std::unique_ptr<FileSystemBackendDelegate> arc_content_delegate,
     std::unique_ptr<FileSystemBackendDelegate> arc_documents_provider_delegate,
-    std::unique_ptr<FileSystemBackendDelegate> recent_delegate,
     scoped_refptr<storage::ExternalMountPoints> mount_points,
     storage::ExternalMountPoints* system_mount_points)
     : file_access_permissions_(new FileAccessPermissions()),
@@ -75,7 +73,6 @@ FileSystemBackend::FileSystemBackend(
       arc_content_delegate_(std::move(arc_content_delegate)),
       arc_documents_provider_delegate_(
           std::move(arc_documents_provider_delegate)),
-      recent_delegate_(std::move(recent_delegate)),
       mount_points_(mount_points),
       system_mount_points_(system_mount_points) {}
 
@@ -113,7 +110,6 @@ bool FileSystemBackend::CanHandleType(storage::FileSystemType type) const {
     case storage::kFileSystemTypeProvided:
     case storage::kFileSystemTypeArcContent:
     case storage::kFileSystemTypeArcDocumentsProvider:
-    case storage::kFileSystemTypeRecent:
       return true;
     default:
       return false;
@@ -289,8 +285,6 @@ storage::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
       return arc_content_delegate_->GetAsyncFileUtil(type);
     case storage::kFileSystemTypeArcDocumentsProvider:
       return arc_documents_provider_delegate_->GetAsyncFileUtil(type);
-    case storage::kFileSystemTypeRecent:
-      return recent_delegate_->GetAsyncFileUtil(type);
     default:
       NOTREACHED();
   }
@@ -348,8 +342,7 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
          url.type() == storage::kFileSystemTypeDrive ||
          url.type() == storage::kFileSystemTypeProvided ||
          url.type() == storage::kFileSystemTypeArcContent ||
-         url.type() == storage::kFileSystemTypeArcDocumentsProvider ||
-         url.type() == storage::kFileSystemTypeRecent);
+         url.type() == storage::kFileSystemTypeArcDocumentsProvider);
   return storage::FileSystemOperation::Create(
       url, context,
       base::MakeUnique<storage::FileSystemOperationContext>(context));
@@ -361,8 +354,7 @@ bool FileSystemBackend::SupportsStreaming(
          url.type() == storage::kFileSystemTypeProvided ||
          url.type() == storage::kFileSystemTypeDeviceMediaAsFileStorage ||
          url.type() == storage::kFileSystemTypeArcContent ||
-         url.type() == storage::kFileSystemTypeArcDocumentsProvider ||
-         url.type() == storage::kFileSystemTypeRecent;
+         url.type() == storage::kFileSystemTypeArcDocumentsProvider;
 }
 
 bool FileSystemBackend::HasInplaceCopyImplementation(
@@ -376,7 +368,6 @@ bool FileSystemBackend::HasInplaceCopyImplementation(
     case storage::kFileSystemTypeRestrictedNativeLocal:
     case storage::kFileSystemTypeArcContent:
     case storage::kFileSystemTypeArcDocumentsProvider:
-    case storage::kFileSystemTypeRecent:
       return false;
     default:
       NOTREACHED();
@@ -417,9 +408,6 @@ FileSystemBackend::CreateFileStreamReader(
     case storage::kFileSystemTypeArcDocumentsProvider:
       return arc_documents_provider_delegate_->CreateFileStreamReader(
           url, offset, max_bytes_to_read, expected_modification_time, context);
-    case storage::kFileSystemTypeRecent:
-      return recent_delegate_->CreateFileStreamReader(
-          url, offset, max_bytes_to_read, expected_modification_time, context);
     default:
       NOTREACHED();
   }
@@ -453,7 +441,6 @@ FileSystemBackend::CreateFileStreamWriter(
     case storage::kFileSystemTypeRestrictedNativeLocal:
     case storage::kFileSystemTypeArcContent:
     case storage::kFileSystemTypeArcDocumentsProvider:
-    case storage::kFileSystemTypeRecent:
       return std::unique_ptr<storage::FileStreamWriter>();
     default:
       NOTREACHED();
@@ -490,7 +477,6 @@ void FileSystemBackend::GetRedirectURLForContents(
     case storage::kFileSystemTypeRestrictedNativeLocal:
     case storage::kFileSystemTypeArcContent:
     case storage::kFileSystemTypeArcDocumentsProvider:
-    case storage::kFileSystemTypeRecent:
       callback.Run(GURL());
       return;
     default:

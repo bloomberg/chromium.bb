@@ -246,7 +246,6 @@
 #include "chrome/browser/chromeos/file_system_provider/fileapi/backend_delegate.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/fileapi/mtp_file_system_backend_delegate.h"
-#include "chrome/browser/chromeos/fileapi/recent_backend_delegate.h"
 #include "chrome/browser/chromeos/login/signin/merge_session_navigation_throttle.h"
 #include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -2726,7 +2725,6 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
           storage_partition_path),
       base::MakeUnique<arc::ArcContentFileSystemBackendDelegate>(),
       base::MakeUnique<arc::ArcDocumentsProviderBackendDelegate>(),
-      base::MakeUnique<chromeos::RecentBackendDelegate>(),
       external_mount_points, storage::ExternalMountPoints::GetSystemInstance());
   backend->AddSystemMountPoints();
   DCHECK(backend->CanHandleType(storage::kFileSystemTypeExternal));
