@@ -60,6 +60,12 @@ bool WebContentsCoordinationUnitImpl::IsVisible() const {
   return is_visible;
 }
 
+void WebContentsCoordinationUnitImpl::OnEventReceived(
+    const mojom::Event event) {
+  for (auto& observer : observers())
+    observer.OnWebContentsEventReceived(this, event);
+}
+
 void WebContentsCoordinationUnitImpl::OnPropertyChanged(
     const mojom::PropertyType property_type,
     int64_t value) {

@@ -70,9 +70,7 @@ class TestCoordinationUnit : public mojom::CoordinationPolicyCallback {
   void ForcePolicyUpdates() {
     base::RunLoop callback;
     SetPolicyClosure(callback.QuitClosure());
-    mojom::EventPtr event = mojom::Event::New();
-    event->type = mojom::EventType::kTestEvent;
-    coordination_unit_->SendEvent(std::move(event));
+    coordination_unit_->SendEvent(mojom::Event::kTestEvent);
     callback.Run();
   }
 
@@ -131,9 +129,7 @@ TEST_F(CoordinationUnitImplTest, AddChild) {
     child_unit.SetPolicyClosure(child_callback.QuitClosure());
 
     // This event should force the policy to recalculated for all children.
-    mojom::EventPtr event = mojom::Event::New();
-    event->type = mojom::EventType::kTestEvent;
-    parent_unit.interface()->SendEvent(std::move(event));
+    parent_unit.interface()->SendEvent(mojom::Event::kTestEvent);
 
     parent_callback.Run();
     child_callback.Run();

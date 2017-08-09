@@ -4,7 +4,7 @@
 
 module resource_coordinator.mojom;
 
-import "events.mojom";
+import "signals.mojom";
 import "mojo/common/values.mojom";
 
 // Any new type here needs to be mirrored between coordination_unit_types.h and
@@ -30,20 +30,7 @@ interface CoordinationPolicyCallback {
   SetCoordinationPolicy(CoordinationPolicy policy);
 };
 
-// Defines the Storage property keys that can be get/set on the
-// CoordinationUnitImpl internal key-value store.
-enum PropertyType {
-  kTest,
-  kAudible,
-  kCPUUsage,
-  kNetworkIdle,
-  kVisible,
-  kUKMSourceId,
-};
-
 interface CoordinationUnit {
-  SendEvent(Event event);
-
   // Mainly used to force a round-trip to the service over the pipe for
   // a specific unit, so we don't have to deal with possibly-not-yet-created
   // children in AddChild()
@@ -61,6 +48,9 @@ interface CoordinationUnit {
   RemoveChild(CoordinationUnitID child_id);
   SetCoordinationPolicyCallback(CoordinationPolicyCallback callback);
 
-  // Sets a property on the CoordinationUnitImpl's internal key-value store.
+  // Sends event signal to CoordinationUnit, an event signal are non-persistent.
+  SendEvent(Event event);
+
+  // Sets a property on the CoordinationUnit's internal key-value store.
   SetProperty(PropertyType property_type, int64 value);
 };
