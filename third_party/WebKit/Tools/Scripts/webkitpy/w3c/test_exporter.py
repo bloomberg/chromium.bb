@@ -38,7 +38,9 @@ class TestExporter(object):
         open_gerrit_cls = self.gerrit.query_exportable_open_cls()
         self.process_gerrit_cls(open_gerrit_cls)
 
-        exportable_commits = self.get_exportable_commits()
+        exportable_commits, errors = self.get_exportable_commits()
+        for error in errors:
+            _log.warn(error)
         for exportable_commit in exportable_commits:
             pull_request = self.wpt_github.pr_for_chromium_commit(exportable_commit)
 
@@ -153,9 +155,13 @@ class TestExporter(object):
         updating = bool(pull_request)
         action_str = 'updating' if updating else 'creating'
 
-        if self.local_wpt.test_patch(patch) == '':
-            _log.error('Gerrit CL patch did not apply cleanly.')
-            _log.error('First 500 characters of patch: %s', patch[0:500])
+        success, message = self.local_wpt.test_patch(patch)
+        if not success:
+            _log.error('Gerrit CL patch did not apply cleanly:')
+            _log.error(message)
+            _log.error('First 500 characters of patch: << END_OF_PATCH_EXCERPT')
+            _log.error(patch[0:500])
+            _log.error('END_OF_PATCH_EXCERPT')
             return
 
         if self.dry_run:

@@ -116,7 +116,7 @@ class TestImporterTest(LoggingTestCase):
                 '+++ b/third_party/WebKit/LayoutTests/external/wpt/css/css-ui-3/outline-004.html\n'
                 '@@ -20,7 +20,7 @@\n'
                 '...'))
-        importer.exportable_but_not_exported_commits = lambda _: [fake_commit]
+        importer.exportable_but_not_exported_commits = lambda _: ([fake_commit], [])
         applied = importer.apply_exportable_commits_locally(LocalWPT(host))
         self.assertEqual(applied, [fake_commit])
         self.assertEqual(host.executive.full_calls, [
@@ -145,9 +145,9 @@ class TestImporterTest(LoggingTestCase):
         wpt_github = MockWPTGitHub(pull_requests=[])
         importer = TestImporter(host, wpt_github=wpt_github)
         commit = MockChromiumCommit(host, subject='My fake commit')
-        importer.exportable_but_not_exported_commits = lambda _: [commit]
+        importer.exportable_but_not_exported_commits = lambda _: ([commit], [])
         local_wpt = LocalWPT(host)
-        local_wpt.apply_patch = lambda _: None  # Failure to apply patch.
+        local_wpt.apply_patch = lambda _: 'Failed'  # Failure to apply patch.
         applied = importer.apply_exportable_commits_locally(local_wpt)
         self.assertIsNone(applied)
 
