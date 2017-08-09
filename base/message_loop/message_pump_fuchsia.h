@@ -6,6 +6,7 @@
 #define BASE_MESSAGE_LOOP_MESSAGE_PUMP_FUCHSIA_H_
 
 #include "base/base_export.h"
+#include "base/fuchsia/scoped_mx_handle.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -98,7 +99,6 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump {
   };
 
   MessagePumpFuchsia();
-  ~MessagePumpFuchsia() override;
 
   bool WatchFileDescriptor(int fd,
                            bool persistent,
@@ -116,7 +116,7 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump {
   // This flag is set to false when Run should return.
   bool keep_running_;
 
-  mx_handle_t port_;
+  ScopedMxHandle port_;
 
   // The time at which we should call DoDelayedWork.
   TimeTicks delayed_work_time_;
