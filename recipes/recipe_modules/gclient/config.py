@@ -272,9 +272,9 @@ def infra(c):
   c.got_revision_mapping['infra'] = 'got_revision'
 
   p = c.patch_projects
-  p['luci-py'] = ('infra/luci', 'HEAD')
+  p['infra/luci/luci-py'] = ('infra/luci', 'HEAD')
   # TODO(phajdan.jr): remove recipes-py when it's not used for project name.
-  p['recipes-py'] = ('infra/recipes-py', 'HEAD')
+  p['infra/luci/recipes-py'] = ('infra/recipes-py', 'HEAD')
   p['recipe_engine'] = ('infra/recipes-py', 'HEAD')
 
 @config_ctx()
