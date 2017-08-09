@@ -1,8 +1,0 @@
-This test shows that the XSSAuditor can not be induced to fire against a leading substring of an otherwise unknown attribute. 
-
---------
-Frame: '<!--framePath //<!--frame0-->-->'
---------
-This is an iframe with a injected form
-
-
