@@ -24,11 +24,19 @@ var AccessibilityTest = AccessibilityTest || {};
 AccessibilityTest.AxeOptions;
 
 /**
+ * The violation filter object maps individual audit rule IDs to functions that
+ * return true for elements to filter from that rule's violations.
+ * @typedef {Object<string, function(!axe.NodeResult): boolean>}
+ */
+AccessibilityTest.ViolationFilter;
+
+/**
  * @typedef {{
  *   name: string,
  *   axeOptions: ?AccessibilityTest.AxeOptions,
  *   setup: ?function,
- *   tests: Object<string, function(): ?Promise>
+ *   tests: Object<string, function(): ?Promise>,
+ *   violationFilter: ?AccessibilityTest.ViolationFilter
  * }}
  */
 AccessibilityTest.Definition;
@@ -36,32 +44,63 @@ AccessibilityTest.Definition;
 /**
  * Run aXe-core accessibility audit, print console-friendly representation
  * of violations to console, and fail the test.
- * @param {AccessibilityTest.AxeOptions} options Dictionary disabling specific
- *    audit rules.
+ * @param {!AccessibilityTest.Definition} testDef Object configuring the audit.
  * @return {Promise} A promise that will be resolved with the accessibility
  *    audit is complete.
  */
-AccessibilityTest.runAudit_ = function(options) {
+AccessibilityTest.runAudit_ = function(testDef) {
   // Ignore iron-iconset-svg elements that have duplicate ids and result in
   // false postives from the audit.
   var context = {exclude: ['iron-iconset-svg']};
-  options = options || {};
+  options = testDef.axeOptions || {};
+  // Element references needed for filtering audit results.
+  options.elementRef = true;
 
   return new Promise((resolve, reject) => {
     axe.run(context, options, (err, results) => {
       if (err)
         reject(err);
 
-      var violationCount = results.violations.length;
+      var filteredViolations = AccessibilityTest.filterViolations_(
+          results.violations, testDef.violationFilter || {});
+
+      var violationCount = filteredViolations.length;
       if (violationCount) {
-        // Pretty print out the violations detected by the audit.
-        console.log(JSON.stringify(results.violations, null, 4));
+        AccessibilityTest.print_(filteredViolations);
         reject('Found ' + violationCount + ' accessibility violations.');
       } else {
         resolve();
       }
     });
   });
+};
+
+/*
+ * Get list of filtered audit violations.
+ * @param {!Array<axe.Result>} violations List of accessibility violations.
+ * @param {!AccessibilityTest.ViolationFilter} filter Object specifying set of
+ *    violations to filter from the results.
+ * @return {!Array<axe.Result>} List of filtered violations.
+ */
+AccessibilityTest.filterViolations_ = function(violations, filter) {
+  if (Object.keys(filter).length == 0) {
+    return violations;
+  }
+
+  var filteredViolations = [];
+  // Check for and remove any nodes specified by filter.
+  for (let violation of violations) {
+    if (violation.id in filter) {
+      var exclusionRule = filter[violation.id];
+      violation.nodes = violation.nodes.filter(
+          (node) => !exclusionRule(node));
+    }
+
+    if (violation.nodes.length > 0) {
+      filteredViolations.push(violation);
+    }
+  }
+  return filteredViolations;
 };
 
 /**
@@ -123,10 +162,31 @@ AccessibilityTest.getMochaTest_ = function(testMember, testDef) {
     // accessibility audit.
     var promise = testDef.tests[testMember].call(testDef);
     if (promise) {
-      return promise.then(
-          () => AccessibilityTest.runAudit_(testDef.axeOptions));
+      return promise.then(() => AccessibilityTest.runAudit_(testDef));
     } else {
-      return AccessibilityTest.runAudit_(testDef.axeOptions);
+      return AccessibilityTest.runAudit_(testDef);
     }
   };
+};
+
+/**
+ * Remove circular references in |violations| and print violations to the
+ * console.
+ * @param {!Array<axe.Result>} List of violations to display
+ */
+AccessibilityTest.print_ = function(violations) {
+  // Elements have circular references and must be removed before printing.
+  for (let violation of violations) {
+    for (let node of violation.nodes) {
+      delete node['element'];
+      ['all', 'any', 'none'].forEach((attribute) => {
+        for (let checkResult of node[attribute]) {
+          for (let relatedNode of checkResult.relatedNodes) {
+            delete relatedNode['element'];
+          }
+        }
+      });
+    }
+  }
+  console.log(JSON.stringify(violations, null, 4));
 };
