@@ -19,6 +19,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
@@ -655,10 +656,14 @@ void VoiceInteractionOverlay::StartAnimation(bool show_icon) {
   transform.Scale(scale_factor, scale_factor);
   icon_layer_->SetTransform(transform);
 
+  const bool is_tablet_mode = Shell::Get()
+                                  ->tablet_mode_controller()
+                                  ->IsTabletModeWindowManagerEnabled();
+  const int icon_x_offset = is_tablet_mode ? 0 : kIconOffsetDip;
   // Setup icon animation.
   scale_factor = kIconSizeDip / kIconInitSizeDip;
   transform.MakeIdentity();
-  transform.Translate(center.x() - kIconSizeDip / 2 + kIconOffsetDip,
+  transform.Translate(center.x() - kIconSizeDip / 2 + icon_x_offset,
                       center.y() - kIconSizeDip / 2 - kIconOffsetDip);
   transform.Scale(scale_factor, scale_factor);
 
@@ -686,7 +691,7 @@ void VoiceInteractionOverlay::StartAnimation(bool show_icon) {
   // Setup background animation.
   scale_factor = kBackgroundSizeDip / kBackgroundInitSizeDip;
   transform.MakeIdentity();
-  transform.Translate(center.x() - kBackgroundSizeDip / 2 + kIconOffsetDip,
+  transform.Translate(center.x() - kBackgroundSizeDip / 2 + icon_x_offset,
                       center.y() - kBackgroundSizeDip / 2 - kIconOffsetDip);
   transform.Scale(scale_factor, scale_factor);
 
@@ -769,7 +774,11 @@ void VoiceInteractionOverlay::BurstAnimation() {
   // We want to animate from the background's current position into a larger
   // size. The animation moves the background's center point while morphing from
   // circle to a rectangle.
-  float x_offset = center.x() - kBackgroundSizeDip / 2 + kIconOffsetDip;
+  const bool is_tablet_mode = Shell::Get()
+                                  ->tablet_mode_controller()
+                                  ->IsTabletModeWindowManagerEnabled();
+  const int icon_x_offset = is_tablet_mode ? 0 : kIconOffsetDip;
+  float x_offset = center.x() - kBackgroundSizeDip / 2 + icon_x_offset;
   float y_offset = center.y() - kBackgroundSizeDip / 2 - kIconOffsetDip;
 
   background_layer_->AnimateToLarge(
