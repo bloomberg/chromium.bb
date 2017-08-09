@@ -77,7 +77,7 @@ typedef HDC     EGLNativeDisplayType;
 typedef HBITMAP EGLNativePixmapType;
 typedef HWND    EGLNativeWindowType;
 
-#elif defined(__WINSCW__) || defined(__SYMBIAN32__) || defined(__Fuchsia__)
+#elif defined(__WINSCW__) || defined(__SYMBIAN32__)
 
 typedef int   EGLNativeDisplayType;
 typedef void *EGLNativeWindowType;

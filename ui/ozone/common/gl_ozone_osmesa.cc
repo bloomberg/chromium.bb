@@ -4,6 +4,7 @@
 
 #include "ui/ozone/common/gl_ozone_osmesa.h"
 
+#include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_context_osmesa.h"
@@ -27,7 +28,14 @@ bool GLOzoneOSMesa::InitializeGLOneOffPlatform() {
 
 bool GLOzoneOSMesa::InitializeStaticGLBindings(
     gl::GLImplementation implementation) {
+#if defined(OS_FUCHSIA)
+  // TODO(fuchsia): Enable this once there's EGL available, see
+  // https://crbug.com/750943.
+  NOTIMPLEMENTED();
+  return false;
+#else
   return gl::InitializeStaticGLBindingsOSMesaGL();
+#endif
 }
 
 void GLOzoneOSMesa::InitializeDebugGLBindings() {

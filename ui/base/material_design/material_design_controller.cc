@@ -20,7 +20,7 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/threading/thread_restrictions.h"
-#include "ui/events/ozone/evdev/event_device_info.h"
+#include "ui/events/ozone/evdev/event_device_info.h"  // nogncheck
 #endif  // defined(USE_OZONE)
 
 #endif  // defined(OS_CHROMEOS)
