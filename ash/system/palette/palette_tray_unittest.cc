@@ -5,6 +5,8 @@
 #include "ash/system/palette/palette_tray.h"
 
 #include "ash/ash_switches.h"
+#include "ash/highlighter/highlighter_controller.h"
+#include "ash/highlighter/highlighter_controller_test_api.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"
 #include "ash/session/test_session_controller_client.h"
@@ -66,6 +68,10 @@ class PaletteTrayTest : public AshTestBase {
   }
 
  protected:
+  TestPaletteDelegate* test_palette_delegate() {
+    return static_cast<TestPaletteDelegate*>(Shell::Get()->palette_delegate());
+  }
+
   PaletteTray* palette_tray_ = nullptr;  // not owned
   TestingPrefServiceSimple pref_service_;
 
@@ -182,6 +188,76 @@ TEST_F(PaletteTrayTest, ModeToolDeactivatedAutomatically) {
   // the capture region tool.
   EXPECT_FALSE(test_api_->GetTrayBubbleWrapper());
   EXPECT_FALSE(palette_tray_->is_active());
+}
+
+TEST_F(PaletteTrayTest, MetalayerToolActivatesHighlighter) {
+  HighlighterController highlighter_controller;
+  HighlighterControllerTestApi highlighter_test_api(&highlighter_controller);
+  test_palette_delegate()->set_highlighter_test_api(&highlighter_test_api);
+  GetEventGenerator().EnterPenPointerMode();
+
+  test_palette_delegate()->SetMetalayerSupported(true);
+
+  // Press/drag does not activate the highlighter unless the palette tool is
+  // activated.
+  GetEventGenerator().MoveTouch(gfx::Point(1, 1));
+  GetEventGenerator().PressTouch();
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  GetEventGenerator().MoveTouch(gfx::Point(2, 2));
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  GetEventGenerator().ReleaseTouch();
+
+  // Activate the palette tool, still no highlighter.
+  test_api_->GetPaletteToolManager()->ActivateTool(PaletteToolId::METALAYER);
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+
+  // Press over a regular (non-palette) location. This should activate the
+  // highlighter.
+  EXPECT_FALSE(palette_utils::PaletteContainsPointInScreen(gfx::Point(1, 1)));
+  GetEventGenerator().MoveTouch(gfx::Point(1, 1));
+  GetEventGenerator().PressTouch();
+  EXPECT_TRUE(highlighter_test_api.IsShowingHighlighter());
+  GetEventGenerator().ReleaseTouch();
+
+  // Disable/enable the palette tool to hide the highlighter.
+  test_api_->GetPaletteToolManager()->DeactivateTool(PaletteToolId::METALAYER);
+  test_api_->GetPaletteToolManager()->ActivateTool(PaletteToolId::METALAYER);
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+
+  // Press/drag over the palette button. This should not activate the
+  // highlighter.
+  gfx::Point palette_point = palette_tray_->GetBoundsInScreen().CenterPoint();
+  EXPECT_TRUE(palette_utils::PaletteContainsPointInScreen(palette_point));
+  GetEventGenerator().MoveTouch(palette_point);
+  GetEventGenerator().PressTouch();
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  palette_point += gfx::Vector2d(1, 1);
+  EXPECT_TRUE(palette_utils::PaletteContainsPointInScreen(palette_point));
+  GetEventGenerator().MoveTouch(palette_point);
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  GetEventGenerator().ReleaseTouch();
+
+  // The previous gesture should have disabled the palette tool.
+  EXPECT_FALSE(test_api_->GetPaletteToolManager()->IsToolActive(
+      PaletteToolId::METALAYER));
+
+  // Disabling metalayer support in the delegate should disable the palette
+  // tool.
+  test_api_->GetPaletteToolManager()->ActivateTool(PaletteToolId::METALAYER);
+  test_palette_delegate()->SetMetalayerSupported(false);
+  EXPECT_FALSE(test_api_->GetPaletteToolManager()->IsToolActive(
+      PaletteToolId::METALAYER));
+
+  // With the metalayer disabled again, press/drag does not activate the
+  // highlighter.
+  GetEventGenerator().MoveTouch(gfx::Point(1, 1));
+  GetEventGenerator().PressTouch();
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  GetEventGenerator().MoveTouch(gfx::Point(2, 2));
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  GetEventGenerator().ReleaseTouch();
+
+  test_palette_delegate()->set_highlighter_test_api(nullptr);
 }
 
 // Base class for tests that need to simulate an internal stylus.
