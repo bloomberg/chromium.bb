@@ -180,7 +180,6 @@ public class ShortcutHelper {
                         backgroundColor, iconUrl.isEmpty());
                 shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(context, url));
                 shortcutIntent.putExtra(EXTRA_SOURCE, source);
-                shortcutIntent.setPackage(context.getPackageName());
                 return shortcutIntent;
             }
             @Override
@@ -363,7 +362,8 @@ public class ShortcutHelper {
             boolean isIconGenerated) {
         // Create an intent as a launcher icon for a full-screen Activity.
         Intent shortcutIntent = new Intent();
-        shortcutIntent.setAction(action)
+        shortcutIntent.setPackage(ContextUtils.getApplicationContext().getPackageName())
+                .setAction(action)
                 .putExtra(EXTRA_ID, id)
                 .putExtra(EXTRA_URL, url)
                 .putExtra(EXTRA_SCOPE, scope)
