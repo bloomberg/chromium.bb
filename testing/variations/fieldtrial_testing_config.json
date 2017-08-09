@@ -1730,6 +1730,29 @@
             ]
         }
     ],
+    "NonDelayableThrottlesDelayable": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "NonDelayableWeight2",
+                    "params": {
+                        "MaxEffectiveConnectionType": "3G",
+                        "NonDelayableWeight": "2.0"
+                    },
+                    "enable_features": [
+                        "NonDelayableThrottlesDelayable"
+                    ]
+                }
+            ]
+        }
+    ],
     "OffMainThreadFetch": [
         {
             "platforms": [
