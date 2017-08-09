@@ -69,6 +69,7 @@
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebSelection.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/color_space_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
@@ -550,7 +551,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       base::SharedMemory::GetHandleLimit() / 3;
 
   settings.disallow_non_exact_resource_reuse =
-      cmd.HasSwitch(cc::switches::kDisallowNonExactResourceReuse);
+      cmd.HasSwitch(switches::kDisallowNonExactResourceReuse);
 
   settings.wait_for_all_pipeline_stages_before_draw =
       cmd.HasSwitch(cc::switches::kRunAllCompositorStagesBeforeDraw);

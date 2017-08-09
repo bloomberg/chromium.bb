@@ -21,9 +21,6 @@ const char kEnablePixelOutputInTests[] = "enable-pixel-output-in-tests";
 // maximum.
 const char kLimitFps[] = "limit-fps";
 
-// Disable partial swap which is needed for some OpenGL drivers / emulators.
-const char kUIDisablePartialSwap[] = "ui-disable-partial-swap";
-
 const char kUIEnableRGBA4444Textures[] = "ui-enable-rgba-4444-textures";
 
 const char kUIEnableZeroCopy[] = "ui-enable-zero-copy";

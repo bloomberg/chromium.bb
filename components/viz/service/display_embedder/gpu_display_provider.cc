@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "ui/base/ui_base_switches.h"
 
 #if defined(USE_OZONE)
 #include "components/viz/service/display_embedder/display_output_surface_ozone.h"
@@ -92,7 +93,6 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
   auto scheduler = base::MakeUnique<DisplayScheduler>(
       synthetic_begin_frame_source.get(), task_runner_.get(),
       max_frames_pending);
-
 
   // The ownership of the BeginFrameSource is transfered to the caller.
   *begin_frame_source = std::move(synthetic_begin_frame_source);

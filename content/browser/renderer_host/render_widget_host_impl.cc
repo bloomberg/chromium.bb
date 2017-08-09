@@ -85,6 +85,7 @@
 #include "storage/browser/fileapi/isolated_context.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/event.h"

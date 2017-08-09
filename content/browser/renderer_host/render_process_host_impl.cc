@@ -2594,7 +2594,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     // also be added to chrome/browser/chromeos/login/chrome_restart_request.cc.
     cc::switches::kDisableCompositedAntialiasing,
     cc::switches::kDisableThreadedAnimation,
-    cc::switches::kDisallowNonExactResourceReuse,
     cc::switches::kEnableGpuBenchmarking,
     cc::switches::kEnableLayerLists,
     cc::switches::kEnableTileCompression,
@@ -2625,6 +2624,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
     switches::kEnableLowEndDeviceMode,
     switches::kDisableLowEndDeviceMode,
+    switches::kDisallowNonExactResourceReuse,
 #if defined(OS_ANDROID)
     switches::kDisableMediaSessionAPI,
     switches::kRendererWaitForJavaDebugger,

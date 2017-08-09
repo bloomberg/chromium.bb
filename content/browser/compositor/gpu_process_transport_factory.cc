@@ -29,6 +29,7 @@
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "components/viz/host/renderer_settings_creation.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
@@ -60,7 +61,6 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_constants.h"
 #include "ui/compositor/compositor_switches.h"
-#include "ui/compositor/compositor_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/types/display_snapshot.h"
@@ -235,7 +235,7 @@ GpuProcessTransportFactory::GpuProcessTransportFactory(
     scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner)
     : frame_sink_id_allocator_(kDefaultClientId),
       renderer_settings_(
-          ui::CreateRendererSettings(CreateBufferToTextureTargetMap())),
+          viz::CreateRendererSettings(CreateBufferToTextureTargetMap())),
       resize_task_runner_(std::move(resize_task_runner)),
       task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
       callback_factory_(this) {

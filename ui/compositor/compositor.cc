@@ -39,6 +39,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/compositor_vsync_manager.h"
@@ -170,7 +171,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
       gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
 
   settings.disallow_non_exact_resource_reuse =
-      command_line->HasSwitch(cc::switches::kDisallowNonExactResourceReuse);
+      command_line->HasSwitch(switches::kDisallowNonExactResourceReuse);
 
   settings.wait_for_all_pipeline_stages_before_draw =
       command_line->HasSwitch(cc::switches::kRunAllCompositorStagesBeforeDraw);

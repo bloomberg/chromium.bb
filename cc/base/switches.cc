@@ -62,13 +62,6 @@ const char kCompositedRenderPassBorders[] = "renderpass";
 const char kCompositedSurfaceBorders[] = "surface";
 const char kCompositedLayerBorders[] = "layer";
 
-// TODO(dcastagna): Draw debug quad borders only when it is actually
-// an overlay candidate.
-// Renders a border around GL composited overlay candidate quads to
-// help debug and study overlay support.
-const char kGlCompositedOverlayCandidateQuadBorder[] =
-    "gl-composited-overlay-candidate-quad-border";
-
 // Draws a heads-up-display showing Frames Per Second as well as GPU memory
 // usage. If you also use --enable-logging=stderr --vmodule="head*=1" then FPS
 // will also be output to the console log.
@@ -97,18 +90,6 @@ const char kUIShowScreenSpaceRects[] = "ui-show-screenspace-rects";
 const char kEnableLayerLists[] = "enable-layer-lists";
 const char kUIEnableLayerLists[] = "ui-enable-layer-lists";
 
-// Visualize overdraw by color-coding elements based on if they have other
-// elements drawn underneath. This is good for showing where the UI might be
-// doing more rendering work than necessary. The colors are hinting at the
-// amount of overdraw on your screen for each pixel, as follows:
-//
-// True color: No overdraw.
-// Blue: Overdrawn once.
-// Green: Overdrawn twice.
-// Pink: Overdrawn three times.
-// Red: Overdrawn four or more times.
-const char kShowOverdrawFeedback[] = "show-overdraw-feedback";
-
 // Prevents the layer tree unit tests from timing out.
 const char kCCLayerTreeTestNoTimeout[] = "cc-layer-tree-test-no-timeout";
 
@@ -117,11 +98,6 @@ const char kCCLayerTreeTestLongTimeout[] = "cc-layer-tree-test-long-timeout";
 
 // Makes pixel tests write their output instead of read it.
 const char kCCRebaselinePixeltests[] = "cc-rebaseline-pixeltests";
-
-// Disable re-use of non-exact resources to fulfill ResourcePool requests.
-// Intended only for use in layout or pixel tests to reduce noise.
-const char kDisallowNonExactResourceReuse[] =
-    "disallow-non-exact-resource-reuse";
 
 }  // namespace switches
 }  // namespace cc
