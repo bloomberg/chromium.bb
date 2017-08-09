@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_restrictions.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/common/app_group/app_group_metrics.h"
@@ -20,6 +21,18 @@ namespace app_group {
 namespace main_app {
 
 void ProcessPendingLogs(ProceduralBlockWithData callback) {
+  NSUserDefaults* shared_defaults = GetGroupUserDefaults();
+  int content_extension_count =
+      [shared_defaults integerForKey:kContentExtensionDisplayCount];
+  UMA_HISTOGRAM_COUNTS_1000("IOS.ContentExtension.DisplayCount",
+                            content_extension_count);
+  [shared_defaults setInteger:0 forKey:kContentExtensionDisplayCount];
+  int search_extension_count =
+      [shared_defaults integerForKey:kSearchExtensionDisplayCount];
+  UMA_HISTOGRAM_COUNTS_1000("IOS.SearchExtension.DisplayCount",
+                            search_extension_count);
+  [shared_defaults setInteger:0 forKey:kSearchExtensionDisplayCount];
+
   base::ThreadRestrictions::AssertIOAllowed();
   NSFileManager* file_manager = [NSFileManager defaultManager];
   NSURL* store_url = [file_manager
@@ -49,8 +62,7 @@ void EnableMetrics(NSString* client_id,
                    NSString* brand_code,
                    int64_t install_date,
                    int64_t enable_metrics_date) {
-  NSUserDefaults* shared_defaults =
-      [[NSUserDefaults alloc] initWithSuiteName:ApplicationGroup()];
+  NSUserDefaults* shared_defaults = GetGroupUserDefaults();
   [shared_defaults setObject:client_id forKey:@(kChromeAppClientID)];
 
   [shared_defaults
@@ -67,6 +79,8 @@ void DisableMetrics() {
   NSUserDefaults* shared_defaults =
       [[NSUserDefaults alloc] initWithSuiteName:ApplicationGroup()];
   [shared_defaults removeObjectForKey:@(kChromeAppClientID)];
+  [shared_defaults removeObjectForKey:kContentExtensionDisplayCount];
+  [shared_defaults removeObjectForKey:kSearchExtensionDisplayCount];
 }
 
 }  // namespace main_app
