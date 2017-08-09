@@ -59,6 +59,7 @@ source_set("search_widget") {
   deps = [
     "//base",
     "//components/open_from_clipboard:open_from_clipboard_impl",
+    "//ios/chrome/browser/ui/util:constraints_ui",
     "//ios/chrome/common/app_group",
   ]
 
