@@ -54,15 +54,17 @@ RecentModel::RecentModel(Profile* profile)
     : RecentModel(CreateDefaultSources(profile)) {}
 
 RecentModel::RecentModel(std::vector<std::unique_ptr<RecentSource>> sources)
-    : sources_(std::move(sources)), weak_ptr_factory_(this) {}
+    : sources_(std::move(sources)), weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
 RecentModel::~RecentModel() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void RecentModel::GetRecentFiles(RecentContext context,
                                  GetRecentFilesCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Use cache if available.
   if (cached_files_.has_value()) {
@@ -95,7 +97,7 @@ void RecentModel::GetRecentFiles(RecentContext context,
 }
 
 void RecentModel::OnGetRecentFiles(RecentFileList files) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK_LT(0, num_inflight_sources_);
 
@@ -109,7 +111,7 @@ void RecentModel::OnGetRecentFiles(RecentFileList files) {
 }
 
 void RecentModel::OnGetRecentFilesCompleted() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK_EQ(0, num_inflight_sources_);
   DCHECK(!cached_files_.has_value());
@@ -135,7 +137,7 @@ void RecentModel::OnGetRecentFilesCompleted() {
 }
 
 void RecentModel::ClearCache() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   cached_files_.reset();
 }
