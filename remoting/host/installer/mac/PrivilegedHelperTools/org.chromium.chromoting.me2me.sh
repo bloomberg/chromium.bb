@@ -6,13 +6,11 @@
 
 NAME=org.chromium.chromoting
 HOST_BUNDLE_NAME=@@HOST_BUNDLE_NAME@@
-PREFPANE_BUNDLE_NAME=@@PREFPANE_BUNDLE_NAME@@
 CONFIG_DIR=/Library/PrivilegedHelperTools
 ENABLED_FILE=$CONFIG_DIR/$NAME.me2me_enabled
 CONFIG_FILE=$CONFIG_DIR/$NAME.json
 HOST_EXE=$CONFIG_DIR/$HOST_BUNDLE_NAME/Contents/MacOS/remoting_me2me_host
 PLIST_FILE=$CONFIG_DIR/$HOST_BUNDLE_NAME/Contents/Info.plist
-PREF_PANE_BUNDLE=/Library/PreferencePanes/$PREFPANE_BUNDLE_NAME
 
 # The exit code returned by 'wait' when a process is terminated by SIGTERM.
 SIGTERM_EXIT_CODE=143
@@ -148,11 +146,6 @@ elif [[ "$1" = "--save-config" ]]; then
   cat > "$CONFIG_FILE"
 elif [[ "$1" = "--host-version" ]]; then
   /usr/libexec/PlistBuddy -c "Print CFBundleVersion" "$PLIST_FILE"
-elif [[ "$1" = "--relaunch-prefpane" ]]; then
-  # Wait for the parent (System Preferences applet) to die, by reading from
-  # stdin until the pipe is broken.
-  cat 2>/dev/null || true
-  open "$PREF_PANE_BUNDLE"
 elif [[ "$1" = "--run-from-launchd" ]]; then
   echo Host started for user $USER at $"$(date)"
   run_host

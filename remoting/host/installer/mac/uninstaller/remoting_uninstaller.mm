@@ -137,7 +137,6 @@ const char kKeystonePID[] = "com.google.chrome_remote_desktop";
   [self sudoDelete:remoting::kHostBinaryPath usingAuth:authRef];
   [self sudoDelete:remoting::kHostHelperScriptPath usingAuth:authRef];
   [self sudoDelete:remoting::kHostConfigFilePath usingAuth:authRef];
-  [self sudoDelete:remoting::kPrefPaneFilePath usingAuth:authRef];
   [self sudoDelete:remoting::kLogFilePath usingAuth:authRef];
   [self sudoDelete:remoting::kLogFileConfigPath usingAuth:authRef];
   [self sudoDelete:remoting::kNativeMessagingManifestPath usingAuth:authRef];
