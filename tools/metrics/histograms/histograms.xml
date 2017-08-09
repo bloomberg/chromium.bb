@@ -47806,6 +47806,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Notifications.ExtensionNotificationIdLength"
+    units="characters">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    The length, in characters, of the id given to an extension notification.
+    These can be automatically generated, in which case they will be either 36
+    bytes (GUID) or 16 bytes (random data) in length, or provided by the
+    developer. Measured when the notification is being displayed through the
+    chrome.notifications.create() extension API.
+  </summary>
+</histogram>
+
 <histogram name="Notifications.ExtensionNotificationType"
     enum="ExtensionNotificationType">
   <owner>dewittj@chromium.org</owner>
