@@ -1401,7 +1401,7 @@
       "reference_board_name": "reef-uni",
       "arch": "X86_INTERNAL",
       "builder": "RELEASE",
-      "experimental": false,
+      "experimental": true,
       "models": [
         {
           "board_name": "reef-uni",
