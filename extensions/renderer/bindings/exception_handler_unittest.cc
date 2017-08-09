@@ -12,6 +12,7 @@
 #include "extensions/renderer/bindings/api_binding_test.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "gin/converter.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace extensions {
 
@@ -51,7 +52,7 @@ TEST_F(ExceptionHandlerTest, TestBasicHandling) {
   ThrowException(context, "new Error('some error')", &handler);
 
   ASSERT_TRUE(logged_error);
-  EXPECT_EQ("handled: Uncaught Error: some error", *logged_error);
+  EXPECT_THAT(*logged_error, testing::StartsWith("handled: Error: some error"));
 }
 
 TEST_F(ExceptionHandlerTest, PerContextHandlers) {
@@ -73,9 +74,9 @@ TEST_F(ExceptionHandlerTest, PerContextHandlers) {
   handler.SetHandlerForContext(context_a, custom_handler);
   ThrowException(context_a, "new Error('context a error')", &handler);
   EXPECT_FALSE(logged_error);
-  EXPECT_EQ("\"handled: Uncaught Error: context a error\"",
-            GetStringPropertyFromObject(context_a->Global(), context_a,
-                                        "loggedMessage"));
+  EXPECT_THAT(GetStringPropertyFromObject(context_a->Global(), context_a,
+                                          "loggedMessage"),
+              testing::StartsWith("\"handled: Error: context a error"));
   EXPECT_EQ("\"context a error\"",
             GetStringPropertyFromObject(context_a->Global(), context_a,
                                         "loggedExceptionMessage"));
@@ -94,7 +95,8 @@ TEST_F(ExceptionHandlerTest, PerContextHandlers) {
 
   ThrowException(context_b, "new Error('context b error')", &handler);
   ASSERT_TRUE(logged_error);
-  EXPECT_EQ("handled: Uncaught Error: context b error", *logged_error);
+  EXPECT_THAT(*logged_error,
+              testing::StartsWith("handled: Error: context b error"));
   EXPECT_EQ("undefined", GetStringPropertyFromObject(
                              context_a->Global(), context_a, "loggedMessage"));
   EXPECT_EQ("undefined",
@@ -139,6 +141,69 @@ TEST_F(ExceptionHandlerTest, ThrowingNonErrors) {
       GetStringPropertyFromObject(context->Global(), context, "loggedMessage"));
   EXPECT_EQ("\"hello\"", GetStringPropertyFromObject(context->Global(), context,
                                                      "loggedException"));
+}
+
+TEST_F(ExceptionHandlerTest, StackTraces) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  base::Optional<std::string> logged_error;
+  ExceptionHandler handler(base::Bind(&PopulateError, &logged_error),
+                           base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+
+  {
+    v8::TryCatch try_catch(isolate());
+    v8::Local<v8::Script> script =
+        v8::Script::Compile(context,
+                            gin::StringToV8(context->GetIsolate(),
+                                            "throw new Error('simple');"))
+            .ToLocalChecked();
+    script->Run();
+    ASSERT_TRUE(try_catch.HasCaught());
+    handler.HandleException(context, "handled", &try_catch);
+
+    ASSERT_TRUE(logged_error);
+    EXPECT_EQ("handled: Error: simple\n    at <anonymous>:1:7", *logged_error);
+  }
+
+  logged_error.reset();
+
+  {
+    v8::TryCatch try_catch(isolate());
+    v8::Local<v8::Function> throw_error_function = FunctionFromString(
+        context, "(function() { throw new Error('function'); })");
+    ignore_result(throw_error_function->Call(context, v8::Undefined(isolate()),
+                                             0, nullptr));
+    ASSERT_TRUE(try_catch.HasCaught());
+    handler.HandleException(context, "handled", &try_catch);
+    ASSERT_TRUE(logged_error);
+    EXPECT_EQ("handled: Error: function\n    at <anonymous>:1:21",
+              *logged_error);
+  }
+
+  logged_error.reset();
+
+  {
+    v8::TryCatch try_catch(isolate());
+    const char kNestedCall[] =
+        "function throwError() { throw new Error('nested'); }\n"
+        "function callThrowError() { throwError(); }\n"
+        "callThrowError()\n";
+    v8::Local<v8::Script> script =
+        v8::Script::Compile(context,
+                            gin::StringToV8(context->GetIsolate(), kNestedCall))
+            .ToLocalChecked();
+    script->Run();
+    ASSERT_TRUE(try_catch.HasCaught());
+    handler.HandleException(context, "handled", &try_catch);
+    ASSERT_TRUE(logged_error);
+    const char kExpectedError[] =
+        "handled: Error: nested\n"
+        "    at throwError (<anonymous>:1:31)\n"
+        "    at callThrowError (<anonymous>:2:29)\n"
+        "    at <anonymous>:3:1";
+    EXPECT_EQ(kExpectedError, *logged_error);
+  }
 }
 
 }  // namespace extensions

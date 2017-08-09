@@ -57,11 +57,22 @@ void ExceptionHandler::HandleException(v8::Local<v8::Context> context,
   v8::Isolate* isolate = context->GetIsolate();
   v8::HandleScope handle_scope(isolate);
 
-  v8::Local<v8::Message> v8_message = try_catch->Message();
+  v8::Local<v8::Value> message_value;
+  {
+    v8::TryCatch inner_try_catch(context->GetIsolate());
+    inner_try_catch.SetVerbose(true);
+    v8::Local<v8::Value> stack_trace_value;
+    if (try_catch->StackTrace(context).ToLocal(&stack_trace_value)) {
+      message_value = stack_trace_value;
+    } else if (!try_catch->Message().IsEmpty()) {
+      message_value = try_catch->Message()->Get();
+    }
+  }
+
   std::string full_message =
-      !v8_message.IsEmpty()
+      !message_value.IsEmpty()
           ? base::StringPrintf("%s: %s", message.c_str(),
-                               gin::V8ToString(v8_message->Get()).c_str())
+                               gin::V8ToString(message_value).c_str())
           : message;
   HandleException(context, full_message, try_catch->Exception());
   try_catch->Reset();  // Reset() to avoid handling the error more than once.
