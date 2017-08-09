@@ -17,7 +17,6 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
-#include "net/cert/cert_type.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/net_features.h"
 
@@ -153,12 +152,6 @@ class NET_EXPORT X509Certificate
   // Returns NULL on failure.
   static scoped_refptr<X509Certificate> CreateFromBytes(const char* data,
                                                         size_t length);
-
-#if defined(USE_NSS_CERTS)
-  // The default nickname of the certificate, based on the certificate type
-  // passed in.
-  std::string GetDefaultNickname(CertType type) const;
-#endif
 
   // Create an X509Certificate from the representation stored in the given
   // pickle.  The data for this object is found relative to the given

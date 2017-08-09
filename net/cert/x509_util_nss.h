@@ -11,8 +11,10 @@
 #include <vector>
 
 #include "net/base/net_export.h"
+#include "net/cert/cert_type.h"
 
 typedef struct CERTCertificateStr CERTCertificate;
+typedef struct CERTNameStr CERTName;
 typedef struct PK11SlotInfoStr PK11SlotInfo;
 typedef struct SECItemStr SECItem;
 
@@ -49,16 +51,15 @@ NET_EXPORT void GetRFC822SubjectAltNames(CERTCertificate* cert_handle,
 NET_EXPORT void GetUPNSubjectAltNames(CERTCertificate* cert_handle,
                                       std::vector<std::string>* names);
 
-// Generates a unique nickname for |slot|, returning |nickname| if it is
-// already unique.
-//
-// Note: The nickname returned will NOT include the token name, thus the
-// token name must be prepended if calling an NSS function that expects
-// <token>:<nickname>.
-// TODO(gspencer): Internationalize this: it's wrong to hard-code English.
-std::string GetUniqueNicknameForSlot(const std::string& nickname,
-                                     const SECItem* subject,
-                                     PK11SlotInfo* slot);
+// Generates a unique nickname for |nss_cert| based on the |type| and |slot|.
+NET_EXPORT std::string GetDefaultUniqueNickname(CERTCertificate* nss_cert,
+                                                CertType type,
+                                                PK11SlotInfo* slot);
+
+// Returns a name that can be used to represent the principal.  It tries in
+// this order: CN, O and OU and returns the first non-empty one found.
+// This mirrors net::CertPrincipal::GetDisplayName.
+NET_EXPORT std::string GetCERTNameDisplayName(CERTName* name);
 
 } // namespace x509_util
 
