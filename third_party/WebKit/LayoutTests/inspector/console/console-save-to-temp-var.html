@@ -40,14 +40,14 @@ function test()
             return;
         }
 
-        function didEvaluate(result, exceptionDetails)
+        function didEvaluate(result)
         {
-            InspectorTest.assertTrue(!exceptionDetails, "FAIL: was thrown. Expression: " + expression);
-            UI.panels.sources._saveToTempVariable(result);
+            InspectorTest.assertTrue(!result.exceptionDetails, "FAIL: was thrown. Expression: " + expression);
+            UI.panels.sources._saveToTempVariable(result.object);
             InspectorTest.waitUntilNthMessageReceived(2, evaluateNext);
         }
 
-        UI.context.flavor(SDK.ExecutionContext).evaluate(expression, "console", true, undefined, undefined, undefined, undefined, didEvaluate);
+        UI.context.flavor(SDK.ExecutionContext).evaluate({expression: expression, objectGroup:"console"}).then(didEvaluate);
     }
 
     function dumpConsoleMessages()

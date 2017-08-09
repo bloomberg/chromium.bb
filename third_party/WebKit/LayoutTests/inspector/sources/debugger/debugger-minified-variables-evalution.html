@@ -4,9 +4,9 @@
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script src="resources/resolve-expressions-compressed.js"></script>
 <script>
+
 function test()
 {
-    Runtime.experiments.enableForTest("resolveVariableNames");
     InspectorTest.startDebuggerTest(step1);
 
     function step1()
@@ -46,7 +46,7 @@ function test()
     {
         return Sources.SourceMapNamesResolver.resolveExpression(UI.context.flavor(SDK.DebuggerModel.CallFrame), position.originText, uiSourceCode, position.line, position.startColumn, position.endColumn)
             .then(InspectorTest.evaluateOnCurrentCallFrame)
-            .then(remoteObject => InspectorTest.addResult(remoteObject.description));
+            .then(result => InspectorTest.addResult(result.object.description));
     }
 }
 

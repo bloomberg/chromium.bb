@@ -14,7 +14,7 @@ var test = function()
         str += "var s = document.createElement(\"script\");";
         str += "s.src = \"resources/silent_script.js\";";
         str += "document.head.appendChild(s);";
-        UI.context.flavor(SDK.ExecutionContext).evaluate(str, "console", true, undefined, undefined, undefined, undefined, function(){});
+        UI.context.flavor(SDK.ExecutionContext).evaluate({expression: str, objectGroup: "console"});
     }
 
     function onRequest(event)
