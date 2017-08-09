@@ -35,11 +35,7 @@ PlatformSensorFusion::PlatformSensorFusion(
 }
 
 mojom::ReportingMode PlatformSensorFusion::GetReportingMode() {
-  for (const auto& sensor : source_sensors_) {
-    if (sensor->GetReportingMode() == mojom::ReportingMode::ON_CHANGE)
-      return mojom::ReportingMode::ON_CHANGE;
-  }
-  return mojom::ReportingMode::CONTINUOUS;
+  return reporting_mode_;
 }
 
 PlatformSensorConfiguration PlatformSensorFusion::GetDefaultConfiguration() {
@@ -150,8 +146,13 @@ void PlatformSensorFusion::CreateSensorSucceeded() {
   if (num_sensors_created_ != source_sensors_.size())
     return;
 
-  for (const auto& sensor : source_sensors_)
+  reporting_mode_ = mojom::ReportingMode::CONTINUOUS;
+
+  for (const auto& sensor : source_sensors_) {
     sensor->AddClient(this);
+    if (sensor->GetReportingMode() == mojom::ReportingMode::ON_CHANGE)
+      reporting_mode_ = mojom::ReportingMode::ON_CHANGE;
+  }
 
   fusion_algorithm_->set_fusion_sensor(this);
 
