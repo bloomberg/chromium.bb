@@ -188,10 +188,6 @@ constexpr const wchar_t* const kMediaFoundationVideoDecoderDLLs[] = {
     L"mf.dll", L"mfplat.dll", L"msmpeg2vdec.dll",
 };
 
-// Vectored exception handlers are global to the entire process, so use TLS to
-// ensure only the thread with the ScopedExceptionCatcher dumps anything.
-base::ThreadLocalStorage::StaticSlot g_catcher_tls_slot = TLS_INITIALIZER;
-
 uint64_t GetCurrentQPC() {
   LARGE_INTEGER perf_counter_now = {};
   // Use raw QueryPerformanceCounter to avoid grabbing locks or allocating
@@ -200,47 +196,9 @@ uint64_t GetCurrentQPC() {
   return perf_counter_now.QuadPart;
 }
 
-// This is information about the last exception. Writing into it may be racy,
-// but that should be ok because the information is only used for debugging.
-DWORD g_last_exception_code;
-uint64_t g_last_exception_time;
 uint64_t g_last_process_output_time;
 HRESULT g_last_unhandled_error;
 HRESULT g_last_device_removed_reason;
-
-LONG CALLBACK VectoredCrashHandler(EXCEPTION_POINTERS* exception_pointers) {
-  if (g_catcher_tls_slot.Get()) {
-    g_last_exception_code = exception_pointers->ExceptionRecord->ExceptionCode;
-    g_last_exception_time = GetCurrentQPC();
-  }
-  return EXCEPTION_CONTINUE_SEARCH;
-}
-
-// The MS VP9 MFT swallows driver exceptions and later hangs because it gets
-// into a weird state. Add a vectored exception handler so information about
-// the exception can be retrieved. See http://crbug.com/636158
-class ScopedExceptionCatcher {
- public:
-  explicit ScopedExceptionCatcher(bool handle_exception) {
-    if (handle_exception) {
-      DCHECK(g_catcher_tls_slot.initialized());
-      g_catcher_tls_slot.Set(static_cast<void*>(this));
-      handler_ = AddVectoredExceptionHandler(1, &VectoredCrashHandler);
-    }
-  }
-
-  ~ScopedExceptionCatcher() {
-    if (handler_) {
-      g_catcher_tls_slot.Set(nullptr);
-      RemoveVectoredExceptionHandler(handler_);
-    }
-  }
-
- private:
-  void* handler_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedExceptionCatcher);
-};
 
 }  // namespace
 
@@ -1250,7 +1208,6 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
 
 // static
 void DXVAVideoDecodeAccelerator::PreSandboxInitialization() {
-  g_catcher_tls_slot.Initialize(nullptr);
   for (const wchar_t* mfdll : kMediaFoundationVideoDecoderDLLs)
     ::LoadLibrary(mfdll);
   ::LoadLibrary(L"dxva2.dll");
@@ -1809,13 +1766,10 @@ void DXVAVideoDecodeAccelerator::DoDecode(const gfx::ColorSpace& color_space) {
     MFT_OUTPUT_DATA_BUFFER output_data_buffer = {0};
     DWORD status = 0;
     HRESULT hr;
-    {
-      ScopedExceptionCatcher catcher(using_ms_vp9_mft_);
-      g_last_process_output_time = GetCurrentQPC();
-      hr = decoder_->ProcessOutput(0,  // No flags
-                                   1,  // # of out streams to pull from
-                                   &output_data_buffer, &status);
-    }
+    g_last_process_output_time = GetCurrentQPC();
+    hr = decoder_->ProcessOutput(0,  // No flags
+                                 1,  // # of out streams to pull from
+                                 &output_data_buffer, &status);
     IMFCollection* events = output_data_buffer.pEvents;
     if (events != NULL) {
       DVLOG(1) << "Got events from ProcessOuput, but discarding";
@@ -2069,9 +2023,6 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
 void DXVAVideoDecodeAccelerator::StopDecoderThread() {
   // Try to determine what, if any exception last happened before a hang. See
   // http://crbug.com/613701
-  DWORD last_exception_code = g_last_exception_code;
-  HRESULT last_unhandled_error = g_last_unhandled_error;
-  uint64_t last_exception_time = g_last_exception_time;
   uint64_t last_process_output_time = g_last_process_output_time;
   HRESULT last_device_removed_reason = g_last_device_removed_reason;
   LARGE_INTEGER perf_frequency;
@@ -2086,9 +2037,6 @@ void DXVAVideoDecodeAccelerator::StopDecoderThread() {
       stale_output_picture_buffers_.size();
   PictureBufferMechanism mechanism = GetPictureBufferMechanism();
 
-  base::debug::Alias(&last_exception_code);
-  base::debug::Alias(&last_unhandled_error);
-  base::debug::Alias(&last_exception_time);
   base::debug::Alias(&last_process_output_time);
   base::debug::Alias(&last_device_removed_reason);
   base::debug::Alias(&perf_frequency.QuadPart);
@@ -2292,10 +2240,7 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
                              this);
   }
   inputs_before_decode_++;
-  {
-    ScopedExceptionCatcher catcher(using_ms_vp9_mft_);
-    hr = decoder_->ProcessInput(0, sample.Get(), 0);
-  }
+  hr = decoder_->ProcessInput(0, sample.Get(), 0);
   // As per msdn if the decoder returns MF_E_NOTACCEPTING then it means that it
   // has enough data to produce one or more output samples. In this case the
   // recommended options are to
