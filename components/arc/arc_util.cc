@@ -66,8 +66,19 @@ bool IsArcAvailable() {
   // TODO(hidehiko): Remove this and clean up whole this function, when
   // session_manager supports a new flag.
   return command_line->HasSwitch(chromeos::switches::kEnableArc) ||
-      (command_line->HasSwitch(chromeos::switches::kArcAvailable) &&
-       base::FeatureList::IsEnabled(kEnableArcFeature));
+         (command_line->HasSwitch(chromeos::switches::kArcAvailable) &&
+          base::FeatureList::IsEnabled(kEnableArcFeature));
+}
+
+bool IsWebstoreSearchEnabled() {
+  const auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kArcAvailability)) {
+    const std::string value =
+        command_line->GetSwitchValueASCII(chromeos::switches::kArcAvailability);
+
+    return value == kAvailabilityNone;
+  }
+  return true;
 }
 
 bool IsPlayStoreAvailable() {
