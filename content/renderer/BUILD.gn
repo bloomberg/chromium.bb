@@ -973,8 +973,8 @@ target(link_target_type, "renderer") {
 
   if (enable_mojo_media) {
     sources += [
-      "media/media_interface_provider.cc",
-      "media/media_interface_provider.h",
+      "media/media_interface_factory.cc",
+      "media/media_interface_factory.h",
     ]
   }
 
