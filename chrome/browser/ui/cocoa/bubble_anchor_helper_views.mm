@@ -16,13 +16,17 @@
 
 namespace {
 
+// Whether frame changes on the parent window are observed or ignored.
+enum AnchorType { OBSERVE_PARENT, IGNORE_PARENT };
+
 // Self-deleting object that hosts Objective-C observers watching for parent
 // window resizes to reposition a bubble Widget. Deletes itself when the bubble
 // Widget closes.
 class BubbleAnchorHelper : public views::WidgetObserver {
  public:
   BubbleAnchorHelper(views::BubbleDialogDelegateView* bubble,
-                     LocationBarDecoration* decoration);
+                     LocationBarDecoration* decoration,
+                     AnchorType type);
 
  private:
   // Observe |name| on the bubble parent window with a block to call ReAnchor().
@@ -71,11 +75,17 @@ LocationBarDecoration* GetPageInfoDecoration(gfx::NativeWindow window) {
 
 void KeepBubbleAnchored(views::BubbleDialogDelegateView* bubble,
                         LocationBarDecoration* decoration) {
-  new BubbleAnchorHelper(bubble, decoration);
+  new BubbleAnchorHelper(bubble, decoration, OBSERVE_PARENT);
+}
+
+void TrackBubbleState(views::BubbleDialogDelegateView* bubble,
+                      LocationBarDecoration* decoration) {
+  new BubbleAnchorHelper(bubble, decoration, IGNORE_PARENT);
 }
 
 BubbleAnchorHelper::BubbleAnchorHelper(views::BubbleDialogDelegateView* bubble,
-                                       LocationBarDecoration* decoration)
+                                       LocationBarDecoration* decoration,
+                                       AnchorType type)
     : observer_tokens_([[NSMutableArray alloc] init]),
       bubble_(bubble),
       decoration_(decoration) {
@@ -85,6 +95,9 @@ BubbleAnchorHelper::BubbleAnchorHelper(views::BubbleDialogDelegateView* bubble,
 
   if (decoration_)
     decoration_->SetActive(true);
+
+  if (type == IGNORE_PARENT)
+    return;
 
   NSRect parent_frame = [[bubble->parent_window() window] frame];
   NSRect bubble_frame = [bubble->GetWidget()->GetNativeWindow() frame];
