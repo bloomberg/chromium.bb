@@ -195,7 +195,8 @@ class COMPOSITOR_EXPORT Compositor
              scoped_refptr<base::SingleThreadTaskRunner> task_runner,
              bool enable_surface_synchronization,
              bool enable_pixel_canvas,
-             bool external_begin_frames_enabled = false);
+             bool external_begin_frames_enabled = false,
+             bool force_software_compositor = false);
   ~Compositor() override;
 
   ui::ContextFactory* context_factory() { return context_factory_; }
@@ -320,6 +321,8 @@ class COMPOSITOR_EXPORT Compositor
   // Called by the ContextFactory to signal whether BeginFrames are needed by
   // the compositor if the enable_external_begin_frames setting is true.
   void OnNeedsExternalBeginFrames(bool needs_begin_frames);
+
+  bool force_software_compositor() { return force_software_compositor_; }
 
   // Returns the main thread task runner this compositor uses. Users of the
   // compositor generally shouldn't use this.
@@ -460,6 +463,8 @@ class COMPOSITOR_EXPORT Compositor
   bool external_begin_frames_enabled_;
   ExternalBeginFrameClient* external_begin_frame_client_ = nullptr;
   bool needs_external_begin_frames_ = false;
+
+  const bool force_software_compositor_;
 
   // The device scale factor of the monitor that this compositor is compositing
   // layers on.
