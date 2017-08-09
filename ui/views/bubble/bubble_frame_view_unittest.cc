@@ -168,6 +168,20 @@ TEST_F(BubbleFrameViewTest, GetBoundsForClientViewWithClose) {
             frame.GetBoundsForClientView().y());
 }
 
+TEST_F(BubbleFrameViewTest,
+       FootnoteContainerViewShouldMatchVisibilityOfFirstChild) {
+  TestBubbleFrameView frame(this);
+  View* footnote_dummy_view = new StaticSizedView(gfx::Size(200, 200));
+  footnote_dummy_view->SetVisible(false);
+  frame.SetFootnoteView(footnote_dummy_view);
+  View* footnote_container_view = footnote_dummy_view->parent();
+  EXPECT_FALSE(footnote_container_view->visible());
+  footnote_dummy_view->SetVisible(true);
+  EXPECT_TRUE(footnote_container_view->visible());
+  footnote_dummy_view->SetVisible(false);
+  EXPECT_FALSE(footnote_container_view->visible());
+}
+
 // Tests that the arrow is mirrored as needed to better fit the screen.
 TEST_F(BubbleFrameViewTest, GetUpdatedWindowBounds) {
   TestBubbleFrameView frame(this);
@@ -465,6 +479,7 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsCenterArrows) {
 }
 
 TEST_F(BubbleFrameViewTest, GetPreferredSize) {
+  // Test border/insets.
   TestBubbleFrameView frame(this);
   gfx::Rect preferred_rect(frame.GetPreferredSize());
   // Expect that a border has been added to the preferred size.
@@ -473,6 +488,29 @@ TEST_F(BubbleFrameViewTest, GetPreferredSize) {
   gfx::Size expected_size(kPreferredClientWidth + kExpectedAdditionalWidth,
                           kPreferredClientHeight + kExpectedAdditionalHeight);
   EXPECT_EQ(expected_size, preferred_rect.size());
+}
+
+TEST_F(BubbleFrameViewTest, GetPreferredSizeWithFootnote) {
+  // Test footnote view: adding a footnote should increase the preferred size,
+  // but only when the footnote is visible.
+  TestBubbleFrameView frame(this);
+
+  constexpr int kFootnoteHeight = 20;
+  const gfx::Size no_footnote_size = frame.GetPreferredSize();
+  View* footnote = new StaticSizedView(gfx::Size(10, kFootnoteHeight));
+  footnote->SetVisible(false);
+  frame.SetFootnoteView(footnote);
+  EXPECT_EQ(no_footnote_size, frame.GetPreferredSize());  // No change.
+
+  footnote->SetVisible(true);
+  gfx::Size with_footnote_size = no_footnote_size;
+  constexpr int kFootnoteTopBorderThickness = 1;
+  with_footnote_size.Enlarge(0, kFootnoteHeight + kFootnoteTopBorderThickness +
+                                    frame.content_margins().height());
+  EXPECT_EQ(with_footnote_size, frame.GetPreferredSize());
+
+  footnote->SetVisible(false);
+  EXPECT_EQ(no_footnote_size, frame.GetPreferredSize());
 }
 
 TEST_F(BubbleFrameViewTest, GetMinimumSize) {
