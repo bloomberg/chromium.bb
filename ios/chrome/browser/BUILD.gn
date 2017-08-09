@@ -117,6 +117,7 @@ source_set("browser") {
     "//google_apis",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/ssl:features",
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/common",
