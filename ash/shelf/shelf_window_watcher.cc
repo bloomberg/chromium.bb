@@ -20,8 +20,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -168,13 +166,13 @@ ShelfWindowWatcher::ShelfWindowWatcher(ShelfModel* model)
       observed_container_windows_(&container_window_observer_),
       observed_user_windows_(&user_window_observer_) {
   Shell::Get()->activation_client()->AddObserver(this);
-  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays())
-    OnDisplayAdded(display);
-  display::Screen::GetScreen()->AddObserver(this);
+  Shell::Get()->AddShellObserver(this);
+  for (aura::Window* window : Shell::GetAllRootWindows())
+    OnRootWindowAdded(window);
 }
 
 ShelfWindowWatcher::~ShelfWindowWatcher() {
-  display::Screen::GetScreen()->RemoveObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
 }
 
@@ -259,31 +257,15 @@ void ShelfWindowWatcher::OnWindowActivated(ActivationReason reason,
     OnUserWindowPropertyChanged(lost_active);
 }
 
-void ShelfWindowWatcher::OnDisplayAdded(const display::Display& new_display) {
-  aura::Window* root = Shell::GetRootWindowForDisplayId(new_display.id());
-
-  // When the primary root window's display is removed, the existing root window
-  // is taken over by the new display, and the observer is already set.
-  aura::Window* default_container =
-      root->GetChildById(kShellWindowId_DefaultContainer);
-  if (!observed_container_windows_.IsObserving(default_container)) {
-    for (aura::Window* window : default_container->children())
+void ShelfWindowWatcher::OnRootWindowAdded(aura::Window* root_window) {
+  constexpr int container_ids[] = {kShellWindowId_DefaultContainer,
+                                   kShellWindowId_PanelContainer};
+  for (const int container_id : container_ids) {
+    aura::Window* container = root_window->GetChildById(container_id);
+    for (aura::Window* window : container->children())
       OnUserWindowAdded(window);
-    observed_container_windows_.Add(default_container);
-  }
-  aura::Window* panel_container =
-      root->GetChildById(kShellWindowId_PanelContainer);
-  if (!observed_container_windows_.IsObserving(panel_container)) {
-    for (aura::Window* window : panel_container->children())
-      OnUserWindowAdded(window);
-    observed_container_windows_.Add(panel_container);
+    observed_container_windows_.Add(container);
   }
 }
-
-void ShelfWindowWatcher::OnDisplayRemoved(const display::Display& old_display) {
-}
-
-void ShelfWindowWatcher::OnDisplayMetricsChanged(const display::Display&,
-                                                 uint32_t) {}
 
 }  // namespace ash
