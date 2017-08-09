@@ -348,7 +348,7 @@ MojoResult ReadMessage(MessagePipeHandle handle, Message* message);
 // Reports the currently dispatching Message as bad. Note that this is only
 // legal to call from directly within the stack frame of a message dispatch. If
 // you need to do asynchronous work before you can determine the legitimacy of
-// a message, use TakeBadMessageCallback() and retain its result until you're
+// a message, use GetBadMessageCallback() and retain its result until you're
 // ready to invoke or discard it.
 MOJO_CPP_BINDINGS_EXPORT
 void ReportBadMessage(const std::string& error);
