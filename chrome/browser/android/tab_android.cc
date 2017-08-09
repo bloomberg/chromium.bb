@@ -162,6 +162,11 @@ base::string16 TabAndroid::GetTitle() const {
       Java_Tab_getTitle(env, weak_java_tab_.get(env)));
 }
 
+bool TabAndroid::IsNativePage() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_Tab_isNativePage(env, weak_java_tab_.get(env));
+}
+
 GURL TabAndroid::GetURL() const {
   JNIEnv* env = base::android::AttachCurrentThread();
   return GURL(base::android::ConvertJavaStringToUTF8(
