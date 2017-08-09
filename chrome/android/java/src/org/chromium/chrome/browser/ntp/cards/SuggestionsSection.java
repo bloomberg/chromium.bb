@@ -471,6 +471,9 @@ public class SuggestionsSection extends InnerNode {
 
     /** Fetches additional suggestions only for this section. */
     public void fetchSuggestions() {
+        // We want to disable the action item while we are fetching suggestions in order to
+        // avoid fetching the same suggestions twice. See crbug.com/739648.
+        mMoreButton.setEnabled(false);
         mSuggestionsSource.fetchSuggestions(mCategoryInfo.getCategory(),
                 getDisplayedSuggestionIds(), new Callback<List<SnippetArticle>>() {
                     @Override
@@ -479,6 +482,7 @@ public class SuggestionsSection extends InnerNode {
 
                         mProgressIndicator.setVisible(false);
                         appendSuggestions(additionalSuggestions, /*keepSectionSize=*/false);
+                        mMoreButton.setEnabled(true);
                     }
                 });
 
