@@ -27,11 +27,13 @@ public class ActionItem extends OptionalLeaf {
 
     private boolean mImpressionTracked;
     private int mPerSectionRank = -1;
+    private boolean mEnabled;
 
     public ActionItem(SuggestionsSection section, SuggestionsRanker ranker) {
         mCategoryInfo = section.getCategoryInfo();
         mParentSection = section;
         mSuggestionsRanker = ranker;
+        mEnabled = true;
         setVisibilityInternal(
                 mCategoryInfo.getAdditionalAction() != ContentSuggestionsAdditionalAction.NONE);
     }
@@ -68,6 +70,8 @@ public class ActionItem extends OptionalLeaf {
 
     @VisibleForTesting
     void performAction(SuggestionsUiDelegate uiDelegate) {
+        if (!mEnabled) return;
+
         uiDelegate.getEventReporter().onMoreButtonClicked(this);
 
         switch (mCategoryInfo.getAdditionalAction()) {
@@ -88,6 +92,11 @@ public class ActionItem extends OptionalLeaf {
                 // Should never be reached.
                 assert false;
         }
+    }
+
+    /** Used to enable/disable the action of this item. */
+    public void setEnabled(boolean enabled) {
+        mEnabled = enabled;
     }
 
     /** ViewHolder associated to {@link ItemViewType#ACTION}. */
