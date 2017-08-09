@@ -1798,6 +1798,14 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
+InputEventAckState RenderWidgetHostViewAndroid::FilterChildGestureEvent(
+    const blink::WebGestureEvent& gesture_event) {
+  if (overscroll_controller_ &&
+      overscroll_controller_->WillHandleGestureEvent(gesture_event))
+    return INPUT_EVENT_ACK_STATE_CONSUMED;
+  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+}
+
 BrowserAccessibilityManager*
     RenderWidgetHostViewAndroid::CreateBrowserAccessibilityManager(
         BrowserAccessibilityDelegate* delegate, bool for_root_frame) {
@@ -2415,6 +2423,13 @@ void RenderWidgetHostViewAndroid::CreateOverscrollControllerIfPossible() {
 
   overscroll_controller_ = base::MakeUnique<OverscrollControllerAndroid>(
       overscroll_refresh_handler, compositor, view_.GetDipScale());
+}
+
+void RenderWidgetHostViewAndroid::SetOverscrollControllerForTesting(
+    ui::OverscrollRefreshHandler* overscroll_refresh_handler) {
+  overscroll_controller_ = base::MakeUnique<OverscrollControllerAndroid>(
+      overscroll_refresh_handler, view_.GetWindowAndroid()->GetCompositor(),
+      view_.GetDipScale());
 }
 
 }  // namespace content
