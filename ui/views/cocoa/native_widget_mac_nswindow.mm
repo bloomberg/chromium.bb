@@ -21,6 +21,7 @@
 - (ViewsNSWindowDelegate*)viewsNSWindowDelegate;
 - (views::Widget*)viewsWidget;
 - (BOOL)hasViewsMenuActive;
+- (id)rootAccessibilityObject;
 
 // Private API on NSWindow, determines whether the title is drawn on the title
 // bar. The title is still visible in menus, Expose, etc.
@@ -72,6 +73,11 @@
   views::MenuController* menuController =
       views::MenuController::GetActiveInstance();
   return menuController && menuController->owner() == [self viewsWidget];
+}
+
+- (id)rootAccessibilityObject {
+  views::Widget* widget = [self viewsWidget];
+  return widget ? widget->GetRootView()->GetNativeViewAccessible() : nil;
 }
 
 // NSWindow overrides.
@@ -220,6 +226,41 @@
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
   return [commandDispatcher_ validateUserInterfaceItem:item
                                             forHandler:commandHandler_];
+}
+
+// NSWindow overrides (NSAccessibility informal protocol implementation).
+
+- (id)accessibilityFocusedUIElement {
+  // The SDK documents this as "The deepest descendant of the accessibility
+  // hierarchy that has the focus" and says "if a child element does not have
+  // the focus, either return self or, if available, invoke the superclass's
+  // implementation."
+  // The behavior of NSWindow is usually to return null, except when the window
+  // is first shown, when it returns self. But in the second case, we can
+  // provide richer a11y information by reporting the views::RootView instead.
+  // Additionally, if we don't do this, VoiceOver reads out the partial a11y
+  // properties on the NSWindow and repeats them when focusing an item in the
+  // RootView's a11y group. See http://crbug.com/748221.
+  views::Widget* widget = [self viewsWidget];
+  id superFocus = [super accessibilityFocusedUIElement];
+  if (!widget || superFocus != self)
+    return superFocus;
+
+  return widget->GetRootView()->GetNativeViewAccessible();
+}
+
+- (id)accessibilityAttributeValue:(NSString*)attribute {
+  // Check when NSWindow is asked for its title to provide the title given by
+  // the views::RootView (and WidgetDelegate::GetAccessibleWindowTitle()). For
+  // all other attributes, use what NSWindow provides by default since diverging
+  // from NSWindow's behavior can easily break VoiceOver integration.
+  if (![attribute isEqualToString:NSAccessibilityTitleAttribute])
+    return [super accessibilityAttributeValue:attribute];
+
+  id viewsValue =
+      [[self rootAccessibilityObject] accessibilityAttributeValue:attribute];
+  return viewsValue ? viewsValue
+                    : [super accessibilityAttributeValue:attribute];
 }
 
 @end
