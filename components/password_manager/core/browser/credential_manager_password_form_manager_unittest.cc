@@ -14,7 +14,6 @@
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
-#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,7 +40,6 @@ class CredentialManagerPasswordFormManagerTest : public testing::Test {
   base::MessageLoop message_loop_;
 
   StubPasswordManagerClient client_;
-  StubPasswordManagerDriver driver_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerPasswordFormManagerTest);
 };
@@ -51,9 +49,9 @@ TEST_F(CredentialManagerPasswordFormManagerTest, AbortEarly) {
   PasswordForm observed_form;
   MockDelegate delegate;
   auto form_manager = base::MakeUnique<CredentialManagerPasswordFormManager>(
-      &client_, driver_.AsWeakPtr(), observed_form,
-      base::MakeUnique<PasswordForm>(observed_form), &delegate,
-      base::MakeUnique<StubFormSaver>(), base::MakeUnique<FakeFormFetcher>());
+      &client_, observed_form, base::MakeUnique<PasswordForm>(observed_form),
+      &delegate, base::MakeUnique<StubFormSaver>(),
+      base::MakeUnique<FakeFormFetcher>());
   form_manager->Init(nullptr);
 
   auto deleter = [&form_manager]() { form_manager.reset(); };
@@ -81,9 +79,9 @@ TEST_F(CredentialManagerPasswordFormManagerTest, GetCredentialSource) {
   PasswordForm observed_form;
   MockDelegate delegate;
   auto form_manager = base::MakeUnique<CredentialManagerPasswordFormManager>(
-      &client_, driver_.AsWeakPtr(), observed_form,
-      base::MakeUnique<PasswordForm>(observed_form), &delegate,
-      base::MakeUnique<StubFormSaver>(), base::MakeUnique<FakeFormFetcher>());
+      &client_, observed_form, base::MakeUnique<PasswordForm>(observed_form),
+      &delegate, base::MakeUnique<StubFormSaver>(),
+      base::MakeUnique<FakeFormFetcher>());
   form_manager->Init(nullptr);
   ASSERT_EQ(metrics_util::CredentialSourceType::kCredentialManagementAPI,
             form_manager->GetCredentialSource());

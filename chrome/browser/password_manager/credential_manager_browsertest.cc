@@ -89,9 +89,9 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
   // be serviced in the context of the initial document.
   //
   // If |preestablish_mojo_pipe| is set, then the CredentialManagerClient will
-  // establish the Mojo connection to the CredentialManagerImpl ahead of time,
-  // instead of letting the Mojo connection be established on-demand when the
-  // call to store() triggered from the unload handler.
+  // establish the Mojo connection to the ContentCredentialManager ahead of
+  // time, instead of letting the Mojo connection be established on-demand when
+  // the call to store() triggered from the unload handler.
   void TestStoreInUnloadHandlerForSameSiteNavigation(
       bool preestablish_mojo_pipe) {
     // Use URLs that differ on subdomains so we can tell which one was used for
@@ -124,7 +124,7 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
     ASSERT_EQ(old_rfh, WebContents()->GetMainFrame());
 
     // Ensure that the old document no longer has a Mojo connection to the
-    // CredentialManagerImpl, nor can it get one later.
+    // ContentCredentialManager, nor can it get one later.
     //
     // The sequence of events for same-RFH navigations is as follows:
     //  1.) FrameHostMsg_DidStartProvisionalLoad
@@ -138,10 +138,10 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
     //
     // After Step 2.1, the old Document cannot issue a new Mojo InterfaceRequest
     // anymore. Plus, because the AssociatedInterfaceRegistry, through which the
-    // associated interface to the CredentialManagerImpl is retrieved, is itself
-    // Channel-associated, any InterfaceRequest messages that may have been
-    // issued before or during Step 2.1, will be guaranteed to arrive to the
-    // browser side before FrameHostMsg_DidCommitProvisionalLoad in Step 3.
+    // associated interface to the ContentCredentialManager is retrieved, is
+    // itself Channel-associated, any InterfaceRequest messages that may have
+    // been issued before or during Step 2.1, will be guaranteed to arrive to
+    // the browser side before FrameHostMsg_DidCommitProvisionalLoad in Step 3.
     //
     // Hence it is sufficient to check that the Mojo connection is closed now.
     EXPECT_FALSE(client->has_binding_for_credential_manager());
@@ -181,9 +181,9 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
   // handler before a cross-site transfer navigation, the request is ignored.
   //
   // If |preestablish_mojo_pipe| is set, then the CredentialManagerClient will
-  // establish the Mojo connection to the CredentialManagerImpl ahead of time,
-  // instead of letting the Mojo connection be established on-demand when the
-  // call to store() triggered from the unload handler.
+  // establish the Mojo connection to the ContentCredentialManager ahead of
+  // time, instead of letting the Mojo connection be established on-demand when
+  // the call to store() triggered from the unload handler.
   void TestStoreInUnloadHandlerForCrossSiteNavigation(
       bool preestablish_mojo_pipe) {
     const GURL a_url = https_test_server().GetURL("a.com", "/title1.html");
@@ -216,8 +216,9 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
     // Ensure that the navigator.credentials.store() call is never serviced.
     // The sufficient conditions for this are:
     //  -- The swapped out RFH is destroyed, so the RenderFrame cannot
-    //     establish a new Mojo connection to CredentialManagerImpl anymore.
-    //  -- There is no already existing Mojo connection to CredentialManagerImpl
+    //     establish a new Mojo connection to ContentCredentialManager anymore.
+    //  -- There is no already existing Mojo connection to
+    //  ContentCredentialManager
     //     either, which could be used to call store() in the future.
     //  -- There have not been any calls to store() in the past.
     rfh_destruction_observer.WaitUntilDeleted();
