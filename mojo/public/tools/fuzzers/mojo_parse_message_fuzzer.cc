@@ -2,52 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/tools/fuzzers/fuzz.mojom.h"
-
-/* Dummy implementation of the FuzzInterface. */
-class FuzzImpl : public fuzz::mojom::FuzzInterface {
- public:
-  explicit FuzzImpl(fuzz::mojom::FuzzInterfaceRequest request)
-      : binding_(this, std::move(request)) {}
-
-  void FuzzBasic() override {}
-
-  void FuzzBasicResp(FuzzBasicRespCallback callback) override {
-    std::move(callback).Run();
-  }
-
-  void FuzzBasicSyncResp(FuzzBasicSyncRespCallback callback) override {
-    std::move(callback).Run();
-  }
-
-  void FuzzArgs(fuzz::mojom::FuzzStructPtr a,
-                fuzz::mojom::FuzzStructPtr b) override {}
-
-  void FuzzArgsResp(fuzz::mojom::FuzzStructPtr a,
-                    fuzz::mojom::FuzzStructPtr b,
-                    FuzzArgsRespCallback callback) override {
-    std::move(callback).Run();
-  };
-
-  void FuzzArgsSyncResp(fuzz::mojom::FuzzStructPtr a,
-                        fuzz::mojom::FuzzStructPtr b,
-                        FuzzArgsSyncRespCallback callback) override {
-    std::move(callback).Run();
-  };
-
-  ~FuzzImpl() override {}
-
-  /* Expose the binding to the fuzz harness. */
-  mojo::Binding<FuzzInterface> binding_;
-};
+#include "mojo/public/tools/fuzzers/fuzz_impl.h"
 
 void FuzzMessage(const uint8_t* data, size_t size, base::RunLoop* run) {
   fuzz::mojom::FuzzInterfacePtr fuzz;

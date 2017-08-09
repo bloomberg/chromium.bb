@@ -20,10 +20,28 @@ mojom("fuzz_mojom") {
 
 fuzzer_test("mojo_parse_message_fuzzer") {
   sources = [
+    "fuzz_impl.cc",
     "mojo_parse_message_fuzzer.cc",
   ]
   deps = [
     ":fuzz_mojom",
     "//mojo/edk/system",
   ]
+  seed_corpus = "//mojo/public/tools/fuzzers/message_corpus"
+}
+
+# MessageDumper is not meant to work on Windows.
+if (!is_win) {
+  executable("mojo_fuzzer_message_dump") {
+    sources = [
+      "fuzz_impl.cc",
+      "mojo_fuzzer_message_dump.cc",
+    ]
+    deps = [
+      ":fuzz_mojom",
+      "//base",
+      "//build/config:exe_and_shlib_deps",
+      "//mojo/edk/system",
+    ]
+  }
 }
