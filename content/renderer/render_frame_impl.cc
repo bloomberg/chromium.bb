@@ -874,7 +874,7 @@ bool RenderFrameImpl::UniqueNameFrameAdapter::IsMainFrame() const {
 }
 
 bool RenderFrameImpl::UniqueNameFrameAdapter::IsCandidateUnique(
-    const std::string& name) const {
+    base::StringPiece name) const {
   // This method is currently O(N), where N = number of frames in the tree.
   DCHECK(!name.empty());
 

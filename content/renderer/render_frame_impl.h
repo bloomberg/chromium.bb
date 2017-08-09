@@ -1199,7 +1199,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
     // FrameAdapter overrides:
     bool IsMainFrame() const override;
-    bool IsCandidateUnique(const std::string& name) const override;
+    bool IsCandidateUnique(base::StringPiece name) const override;
     int GetSiblingCount() const override;
     int GetChildCount() const override;
     std::vector<base::StringPiece> CollectAncestorNames(

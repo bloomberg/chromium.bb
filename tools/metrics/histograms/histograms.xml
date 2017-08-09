@@ -71827,13 +71827,67 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SessionRestore.FrameUniqueNameFromRequestedNameSize"
+    units="characters">
+  <owner>dcheng@chromium.org</owner>
+  <summary>
+    The size of a unique name derived from the browsing context name. Emitted
+    when generating a unique name for a new subframe or when a subframe's
+    browsing context name is changed before the first real load is committed.
+    Only applies to subframes as main frames always have an empty unique name.
+  </summary>
+</histogram>
+
 <histogram name="SessionRestore.FrameUniqueNameLength" units="bytes">
+  <obsolete>
+    Deprecated 2017-08 due to unique name generation change. Please use
+    SessionRestore.FrameUniqueNameFromRequestedNameSize and
+    SessionRestore.FrameUniqueNameWithFramePathSize instead.
+  </obsolete>
   <owner>dcheng@chromium.org</owner>
   <summary>
     Records the length of unique names for web frames that are saved as part of
     session restore data. It is logged each time the unique name changes, which
     typically happens when a web frame is first created or its name is changed
     by mutating window.name.
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.FrameUniqueNameOriginalRequestedNameSize"
+    units="characters">
+  <owner>dcheng@chromium.org</owner>
+  <summary>
+    The size of the browsing context name (based on the iframe name attribute or
+    window.name) when generating the unique name. Emitted when generating a
+    unique name for a new subframe or when a subframe's browsing context name is
+    changed before the first real load is committed. Only applies to subframes
+    as main frames always have an empty unique name.
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.FrameUniqueNameWithFramePathSize"
+    units="characters">
+  <owner>dcheng@chromium.org</owner>
+  <summary>
+    The size of a unique name when falling back to the frame path algorithm. The
+    fallback path is used when the browsing context name is empty or non-unique.
+    Emitted when generating a unique name for a new subframe or when a
+    subframe's browsing context name is changed before the first real load is
+    committed. Only applies to subframes as main frames always have an empty
+    unique name.
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.FrameUniqueNameWithFramePathSizePerComponent"
+    units="characters per depth">
+  <owner>dcheng@chromium.org</owner>
+  <summary>
+    The size of a unique name when falling back to the frame path algorithm,
+    divided by the depth of the frame. Used to normalize sizes for deeper nodes
+    in a frame tree. Emitted when generating a unique name for a new subframe or
+    when a subframe's browsing context name is changed before the first real
+    load is committed. Only applies to subframes as main frames always have an
+    empty unique name.
   </summary>
 </histogram>
 
