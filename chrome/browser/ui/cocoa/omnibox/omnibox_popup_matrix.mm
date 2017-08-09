@@ -35,29 +35,18 @@ const NSInteger kMiddleButtonNumber = 2;
                          answerImage:(NSImage*)answerImage {
   base::scoped_nsobject<NSMutableArray> array([[NSMutableArray alloc] init]);
   BOOL isDarkTheme = [tableView hasDarkTheme];
-  CGFloat maxMatchContentsWidth = 0.0f;
-  CGFloat contentsOffset = -1.0f;
   for (const AutocompleteMatch& match : result) {
-    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL &&
-        contentsOffset < 0.0f)
-      contentsOffset = [OmniboxPopupCell computeContentsOffset:match];
     base::scoped_nsobject<OmniboxPopupCellData> cellData(
         [[OmniboxPopupCellData alloc]
              initWithMatch:match
-            contentsOffset:contentsOffset
                      image:popupView.ImageForMatch(match)
                answerImage:(match.answer ? answerImage : nil)
               forDarkTheme:isDarkTheme]);
     if (isDarkTheme)
       [cellData setIncognitoImage:popupView.ImageForMatch(match)];
     [array addObject:cellData];
-    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
-      maxMatchContentsWidth =
-          std::max(maxMatchContentsWidth, [cellData getMatchContentsWidth]);
-    }
   }
 
-  [tableView setMaxMatchContentsWidth:maxMatchContentsWidth];
   return [self initWithArray:array];
 }
 
