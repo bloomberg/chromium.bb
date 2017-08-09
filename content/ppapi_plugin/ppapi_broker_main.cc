@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/content_switches_internal.h"
 #include "content/ppapi_plugin/ppapi_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -17,9 +18,8 @@ namespace content {
 // Main function for starting the PPAPI broker process.
 int PpapiBrokerMain(const MainFunctionParams& parameters) {
   const base::CommandLine& command_line = parameters.command_line;
-  if (command_line.HasSwitch(switches::kPpapiStartupDialog)) {
-    ChildProcess::WaitForDebugger("PpapiBroker");
-  }
+  if (command_line.HasSwitch(switches::kPpapiStartupDialog))
+    WaitForDebugger("PpapiBroker");
 
   base::MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrPPAPIBrokerMain");

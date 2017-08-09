@@ -12,6 +12,7 @@
 #include "base/timer/hi_res_timer_manager.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
+#include "content/common/content_switches_internal.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
@@ -33,6 +34,9 @@ int UtilityMain(const MainFunctionParams& parameters) {
   // The main message loop of the utility process.
   base::MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrUtilityMain");
+
+  if (parameters.command_line.HasSwitch(switches::kUtilityStartupDialog))
+    WaitForDebugger("Utility");
 
 #if defined(OS_LINUX)
   // Initializes the sandbox before any threads are created.

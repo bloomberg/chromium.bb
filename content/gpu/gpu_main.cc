@@ -21,8 +21,8 @@
 #include "base/timer/hi_res_timer_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "content/child/child_process.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/content_switches_internal.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
 #include "content/public/common/content_client.h"
@@ -175,9 +175,8 @@ int GpuMain(const MainFunctionParams& parameters) {
       kTraceEventGpuProcessSortIndex);
 
   const base::CommandLine& command_line = parameters.command_line;
-  if (command_line.HasSwitch(switches::kGpuStartupDialog)) {
-    ChildProcess::WaitForDebugger("Gpu");
-  }
+  if (command_line.HasSwitch(switches::kGpuStartupDialog))
+    WaitForDebugger("Gpu");
 
   base::Time start_time = base::Time::Now();
 

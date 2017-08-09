@@ -22,6 +22,8 @@ ProgressBarCompletion GetProgressBarCompletionPolicy();
 
 CONTENT_EXPORT bool IsUseZoomForDSFEnabled();
 
+void WaitForDebugger(const std::string& label);
+
 } // namespace content
 
 #endif  // CONTENT_COMMON_CONTENT_SWITCHES_INTERNAL_H_
