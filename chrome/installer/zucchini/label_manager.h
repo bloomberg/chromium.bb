@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/logging.h"
 #include "chrome/installer/zucchini/image_utils.h"
 
 namespace zucchini {
@@ -19,14 +20,14 @@ namespace zucchini {
 // - Get the offset of a stored index.
 // - Get the index of a stored offset.
 // - Create new Labels.
-// A LabelManager allows to have a bijection between offsets and indexes.
-// Since not all targets have associated labels from LabelManager, we need mixed
-// representation of targets as offsets or indexes. Hence, indexes are
+// A LabelManager allows to have a bijection between offsets and indices.
+// Since not all targets have associated labels from LabelManager, targets
+// represented both as offset or indices are mixed. Hence, indices are
 // represented as "marked" values (implemented by setting the MSB), and offsets
 // are "unmarked". So when working with stored targets:
 // - IsMarked() distinguishes offsets (false) from indexes (true).
 // - MarkIndex() is used to encode indexes to their stored value.
-// - UnmarkIndex() is used to decode indexes to their actual value.
+// - UnmarkIndex() is used to decode stored indexes to their actual value.
 // - Target offsets are stored verbatim, but they must not be marked. This
 //   affects reference parsing, where we reject all references whose offsets
 //   happen to be marked.
@@ -44,22 +45,22 @@ class BaseLabelManager {
 
   // Returns whether |offset_or_marked_index| is a valid offset.
   static constexpr bool IsOffset(offset_t offset_or_marked_index) {
-    return offset_or_marked_index != kUnusedIndex &&
-           !IsMarked(offset_or_marked_index);
+    return !IsMarked(offset_or_marked_index);
   }
 
   // Returns whether |offset_or_marked_index| is a valid marked index.
   static constexpr bool IsMarkedIndex(offset_t offset_or_marked_index) {
-    return offset_or_marked_index != kUnusedIndex &&
-           IsMarked(offset_or_marked_index);
+    return IsMarked(offset_or_marked_index) &&
+           offset_or_marked_index != kUnusedIndex;
   }
 
   // Returns whether a given (unmarked) |index| is used by a stored Label.
   bool IsIndexStored(offset_t index) const {
+    DCHECK(!IsMarked(index));
     return index < labels_.size() && labels_[index] != kUnusedIndex;
   }
 
-  // Returns the offset of a given (unmarked) |index| if it is associated to a
+  // Returns the offset of a given (unmarked) |index| if it is associated with a
   // stored Label, or |kUnusedIndex| otherwise.
   offset_t OffsetOfIndex(offset_t index) const {
     return index < labels_.size() ? labels_[index] : kUnusedIndex;
