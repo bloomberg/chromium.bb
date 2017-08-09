@@ -22,7 +22,6 @@ LINK_RESOURCE_ID(IDR_INFOBAR_3D_BLOCKED, R.drawable.infobar_3d_blocked)
 LINK_RESOURCE_ID(IDR_INFOBAR_AUTOFILL_CC, R.drawable.infobar_autofill_cc)
 LINK_RESOURCE_ID(IDR_INFOBAR_MEDIA_STREAM_CAMERA, R.drawable.infobar_camera)
 LINK_RESOURCE_ID(IDR_INFOBAR_MEDIA_STREAM_MIC, R.drawable.infobar_microphone)
-LINK_RESOURCE_ID(IDR_INFOBAR_SAVE_PASSWORD, R.drawable.infobar_savepassword)
 LINK_RESOURCE_ID(IDR_INFOBAR_TRANSLATE, R.drawable.infobar_translate)
 LINK_RESOURCE_ID(IDR_BLOCKED_POPUPS, R.drawable.infobar_blocked_popups)
 
@@ -41,6 +40,8 @@ DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_PREVIEWS,
                     R.drawable.infobar_chrome)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_PROTECTED_MEDIA_IDENTIFIER,
                     R.drawable.infobar_protected_media_identifier)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_SAVE_PASSWORD,
+                    R.drawable.infobar_savepassword)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_SUBRESOURCE_FILTERING,
                     R.drawable.infobar_chrome)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_WARNING, R.drawable.infobar_warning)
@@ -54,7 +55,8 @@ DECLARE_RESOURCE_ID(IDR_PAGEINFO_WARNING_MINOR, R.drawable.pageinfo_warning)
 DECLARE_RESOURCE_ID(IDR_PAGEINFO_BAD, R.drawable.pageinfo_bad)
 // Should never occur, use warning just in case:
 // Enterprise managed: ChromeOS only.
-DECLARE_RESOURCE_ID(IDR_PAGEINFO_ENTERPRISE_MANAGED, R.drawable.pageinfo_warning)
+DECLARE_RESOURCE_ID(IDR_PAGEINFO_ENTERPRISE_MANAGED,
+                    R.drawable.pageinfo_warning)
 // Info: Only shown on chrome:// urls, which don't show the connection info
 // popup.
 DECLARE_RESOURCE_ID(IDR_PAGEINFO_INFO, R.drawable.pageinfo_warning)

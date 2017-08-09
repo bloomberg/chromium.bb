@@ -4,8 +4,8 @@
 
 #include "chrome/browser/password_manager/password_manager_infobar_delegate_android.h"
 
+#include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -26,7 +26,7 @@ PasswordManagerInfoBarDelegate::GetInfoBarAutomationType() const {
 }
 
 int PasswordManagerInfoBarDelegate::GetIconId() const {
-  return IDR_INFOBAR_SAVE_PASSWORD;
+  return IDR_ANDROID_INFOBAR_SAVE_PASSWORD;
 }
 
 bool PasswordManagerInfoBarDelegate::ShouldExpire(
