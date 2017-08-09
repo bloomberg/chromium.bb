@@ -183,19 +183,36 @@ TEST_F(OneGoogleBarFetcherImplTest, ParsesFullResponse) {
   EXPECT_THAT(data->end_of_body_script, Eq("end_of_body_script_value"));
 }
 
+class MockURLFetcherDelegateForTests
+    : public net::TestURLFetcher::DelegateForTests {
+ public:
+  MOCK_METHOD1(OnRequestStart, void(int fetcher_id));
+  MOCK_METHOD1(OnChunkUpload, void(int fetcher_id));
+  MOCK_METHOD1(OnRequestEnd, void(int fetcher_id));
+};
+
+TEST_F(OneGoogleBarFetcherImplTest, SecondRequestOverridesFirst) {
+  // Trigger the first request.
+  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> first_callback;
+  one_google_bar_fetcher()->Fetch(first_callback.Get());
+  net::TestURLFetcher* first_fetcher = GetRunningURLFetcher();
+  testing::StrictMock<MockURLFetcherDelegateForTests> first_mock_delegate;
+  first_fetcher->SetDelegateForTests(&first_mock_delegate);
+
+  // Trigger a second request. That should cancel the first one.
+  EXPECT_CALL(first_mock_delegate, OnRequestEnd(0));
+  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> second_callback;
+  one_google_bar_fetcher()->Fetch(second_callback.Get());
+}
+
 TEST_F(OneGoogleBarFetcherImplTest, CoalescesMultipleRequests) {
   // Trigger two requests.
   base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> first_callback;
   one_google_bar_fetcher()->Fetch(first_callback.Get());
-  net::URLFetcher* first_fetcher = GetRunningURLFetcher();
   base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> second_callback;
   one_google_bar_fetcher()->Fetch(second_callback.Get());
-  net::URLFetcher* second_fetcher = GetRunningURLFetcher();
 
-  // Expect that only one fetcher handles both requests.
-  EXPECT_THAT(first_fetcher, Eq(second_fetcher));
-
-  // But both callbacks should get called.
+  // Make sure that a single response causes both callbacks to be called.
   base::Optional<OneGoogleBarData> first_data;
   base::Optional<OneGoogleBarData> second_data;
 

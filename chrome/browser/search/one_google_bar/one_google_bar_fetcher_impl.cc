@@ -239,19 +239,15 @@ OneGoogleBarFetcherImpl::~OneGoogleBarFetcherImpl() = default;
 
 void OneGoogleBarFetcherImpl::Fetch(OneGoogleCallback callback) {
   callbacks_.push_back(std::move(callback));
-  IssueRequestIfNoneOngoing();
-}
-
-void OneGoogleBarFetcherImpl::IssueRequestIfNoneOngoing() {
-  // If there is an ongoing request, let it complete.
-  if (pending_request_.get()) {
-    return;
-  }
 
   GURL google_base_url = google_util::CommandLineGoogleBaseURL();
   if (!google_base_url.is_valid()) {
     google_base_url = google_url_tracker_->google_url();
   }
+
+  // Note: If there is an ongoing request, abandon it. It's possible that
+  // something has changed in the meantime (e.g. signin state) that would make
+  // the result obsolete.
   pending_request_ = base::MakeUnique<AuthenticatedURLFetcher>(
       request_context_, google_base_url,
       base::BindOnce(&OneGoogleBarFetcherImpl::FetchDone,
