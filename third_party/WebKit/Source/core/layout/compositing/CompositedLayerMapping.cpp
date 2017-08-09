@@ -298,9 +298,15 @@ bool CompositedLayerMapping::UsesCompositedStickyPosition() const {
 
 void CompositedLayerMapping::UpdateStickyConstraints(
     const ComputedStyle& style) {
+  WebLayerStickyPositionConstraint web_constraint;
+  if (!UsesCompositedStickyPosition()) {
+    // Clear the previous sticky position constraint - if set.
+    graphics_layer_->SetStickyPositionConstraint(web_constraint);
+    return;
+  }
+
   const PaintLayer* ancestor_overflow_layer =
       owning_layer_.AncestorOverflowLayer();
-  WebLayerStickyPositionConstraint web_constraint;
   const StickyConstraintsMap& constraints_map =
       ancestor_overflow_layer->GetScrollableArea()->GetStickyConstraintsMap();
   const StickyPositionScrollingConstraints& constraints =
@@ -1097,8 +1103,7 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
                                           graphics_layer_parent_location);
   UpdateContentsOffsetInCompositingLayer(
       snapped_offset_from_composited_ancestor, graphics_layer_parent_location);
-  if (UsesCompositedStickyPosition())
-    UpdateStickyConstraints(GetLayoutObject().StyleRef());
+  UpdateStickyConstraints(GetLayoutObject().StyleRef());
   UpdateSquashingLayerGeometry(
       graphics_layer_parent_location, compositing_container, squashed_layers_,
       squashing_layer_.get(),

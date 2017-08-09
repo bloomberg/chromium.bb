@@ -2101,4 +2101,53 @@ TEST_P(CompositedLayerMappingTest, TransformedRasterizationForInlineTransform) {
       target_graphics_layer->ContentLayer()->TransformedRasterizationAllowed());
 }
 
+// This tests that when the scroller becomes no longer scrollable if a sticky
+// element is promoted for another reason we do remove its composited sticky
+// constraint as it doesn't need to move on the compositor.
+TEST_P(CompositedLayerMappingTest, CompositedStickyConstraintRemovedAndAdded) {
+  SetBodyInnerHTML(
+      "<style>"
+      ".scroller { overflow: auto; height: 200px; }"
+      ".sticky { position: sticky; top: 0; width: 10px; height: 10px; }"
+      ".composited { will-change: transform; }"
+      "</style>"
+      "<div class='composited scroller'>"
+      "  <div id='sticky' class='composited sticky'></div>"
+      "  <div id='spacer' style='height: 2000px;'></div>"
+      "</div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  PaintLayer* sticky_layer =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"))->Layer();
+  EXPECT_TRUE(sticky_layer->GraphicsLayerBacking()
+                  ->PlatformLayer()
+                  ->StickyPositionConstraint()
+                  .is_sticky);
+
+  // Make the scroller no longer scrollable.
+  GetDocument().getElementById("spacer")->setAttribute(HTMLNames::styleAttr,
+                                                       "height: 0;");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // The sticky position element is composited due to a compositing trigger but
+  // should no longer have a sticky position constraint on the compositor.
+  sticky_layer =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"))->Layer();
+  EXPECT_FALSE(sticky_layer->GraphicsLayerBacking()
+                   ->PlatformLayer()
+                   ->StickyPositionConstraint()
+                   .is_sticky);
+
+  // Make the scroller scrollable again.
+  GetDocument().getElementById("spacer")->setAttribute(HTMLNames::styleAttr,
+                                                       "height: 2000px;");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  sticky_layer =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"))->Layer();
+  EXPECT_TRUE(sticky_layer->GraphicsLayerBacking()
+                  ->PlatformLayer()
+                  ->StickyPositionConstraint()
+                  .is_sticky);
+}
+
 }  // namespace blink
