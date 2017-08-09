@@ -104,16 +104,17 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
                         TX_SIZE tx_size, TX_TYPE tx_type, const int16_t *dq,
 #if CONFIG_NEW_QUANT
                         dequant_val_type_nuq *dq_val,
-#endif  // CONFIG_NEW_QUANT
+#else
 #if CONFIG_AOM_QM
                         const qm_val_t *iqm[2][TX_SIZES_ALL],
 #endif  // CONFIG_AOM_QM
+#endif  // CONFIG_NEW_QUANT
                         int ctx, const int16_t *scan, const int16_t *nb,
                         int16_t *max_scan_line, aom_reader *r) {
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   const int max_eob = tx_size_2d[tx_size];
   const int ref = is_inter_block(&xd->mi[0]->mbmi);
-#if CONFIG_AOM_QM
+#if CONFIG_AOM_QM && !CONFIG_NEW_QUANT
   const qm_val_t *iqmatrix = iqm[!ref][tx_size];
 #else
   (void)tx_type;
@@ -300,10 +301,11 @@ int av1_decode_block_tokens(AV1_COMMON *cm, MACROBLOCKD *const xd, int plane,
       decode_coefs(xd, pd->plane_type, pd->dqcoeff, tx_size, tx_type, dequant,
 #if CONFIG_NEW_QUANT
                    pd->seg_dequant_nuq[seg_id][dq],
-#endif  // CONFIG_NEW_QUANT
+#else
 #if CONFIG_AOM_QM
                    pd->seg_iqmatrix[seg_id],
 #endif  // CONFIG_AOM_QM
+#endif  // CONFIG_NEW_QUANT
                    ctx, sc->scan, sc->neighbors, max_scan_line, r);
   av1_set_contexts(xd, pd, plane, tx_size, eob > 0, x, y);
 #if CONFIG_ADAPT_SCAN

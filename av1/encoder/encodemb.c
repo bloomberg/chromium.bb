@@ -483,7 +483,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   TX_TYPE tx_type =
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
 
-#if CONFIG_AOM_QM || CONFIG_NEW_QUANT
+#if (CONFIG_AOM_QM || CONFIG_NEW_QUANT) && !CONFIG_PVQ
   const int is_inter = is_inter_block(mbmi);
 #endif
 
@@ -493,7 +493,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   uint16_t *const eob = &p->eobs[block];
   const int diff_stride = block_size_wide[plane_bsize];
-#if CONFIG_AOM_QM
+#if CONFIG_AOM_QM && !CONFIG_PVQ
   int seg_id = mbmi->segment_id;
   // Use a flat matrix (i.e. no weighting) for 1D and Identity transforms
   const qm_val_t *qmatrix =
