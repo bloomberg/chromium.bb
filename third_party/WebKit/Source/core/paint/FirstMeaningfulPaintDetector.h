@@ -50,6 +50,7 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   void NotifyPaint();
   void CheckNetworkStable();
   void ReportSwapTime(PaintEvent, bool did_swap, double timestamp);
+  void NotifyFirstContentfulPaint(double swap_stamp);
 
   DECLARE_TRACE();
 
@@ -57,6 +58,12 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
 
  private:
   friend class FirstMeaningfulPaintDetectorTest;
+
+  enum DeferFirstMeaningfulPaint {
+    kDoNotDefer,
+    kDeferOutstandingSwapPromises,
+    kDeferFirstContentfulPaintNotSet
+  };
 
   // The page is n-quiet if there are no more than n active network requests for
   // this duration of time.
@@ -88,6 +95,8 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   double first_meaningful_paint0_quiet_ = 0.0;
   double first_meaningful_paint2_quiet_ = 0.0;
   double first_meaningful_paint2_quiet_swap_ = 0.0;
+  unsigned outstanding_swap_promise_count_ = 0;
+  DeferFirstMeaningfulPaint defer_first_meaningful_paint_ = kDoNotDefer;
   TaskRunnerTimer<FirstMeaningfulPaintDetector> network0_quiet_timer_;
   TaskRunnerTimer<FirstMeaningfulPaintDetector> network2_quiet_timer_;
 };
