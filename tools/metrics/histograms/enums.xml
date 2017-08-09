@@ -4200,6 +4200,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Omnibox Focus"/>
   <int value="2" label="New Tab Creation"/>
   <int value="3" label="Expand Button Pressed"/>
+  <int value="4" label="Browser Startup"/>
 </enum>
 
 <enum name="ChromeNotifierServiceActionType">
