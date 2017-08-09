@@ -23,7 +23,7 @@ static int test_suggestChunks() {
 }
 
 int main(int argc, char **argv) {
-	loadTable("test-table.ctb");
+	loadTable("tests/tables/table-dev-nocross.ctb");
 	if (test_toLowercase())
 		return 1;
 	if (test_suggestChunks())

@@ -14,16 +14,9 @@ def exit_if_not(expression):
 
 exit_if_not(liblouis.lou_charSize() == 4)
 
-try:
-    # Linux
-    liblouis_dev = _loader["liblouis-table-dev.so.0"]
-except OSError:
-    # Mac OS
-    liblouis_dev = _loader["liblouis-table-dev.dylib"]
-
-liblouis_dev.isLetter.argtypes = (c_wchar,)
-liblouis_dev.toLowercase.argtypes = (c_wchar,)
-liblouis_dev.toLowercase.restype = c_wchar
+liblouis.isLetter.argtypes = (c_wchar,)
+liblouis.toLowercase.argtypes = (c_wchar,)
+liblouis.toLowercase.restype = c_wchar
 
 def println(line=""):
     sys.stdout.write(("%s\n" % line))
@@ -120,18 +113,18 @@ def load_table(new_table):
     global table
     table = new_table
     table = table.encode("ASCII") if isinstance(table, str) else bytes(table)
-    liblouis_dev.loadTable(table);
+    liblouis.loadTable(table);
 
 def is_letter(text):
-    return all([liblouis_dev.isLetter(c) for c in text])
+    return all([liblouis.isLetter(c) for c in text])
 
 def to_lowercase(text):
-    return "".join([liblouis_dev.toLowercase(c) for c in text])
+    return "".join([liblouis.toLowercase(c) for c in text])
 
 def to_dot_pattern(braille):
     c_braille = create_unicode_buffer(braille)
     c_dots = create_string_buffer(9 * len(braille))
-    liblouis_dev.toDotPattern(c_braille, c_dots)
+    liblouis.toDotPattern(c_braille, c_dots)
     return c_dots.value.decode('ascii')
 
 def hyphenate(text):
@@ -156,7 +149,7 @@ def translate(text):
 
 def get_rule(c_rule_pointer):
     c_rule_string = create_unicode_buffer(u"", 128)
-    if not liblouis_dev.printRule(cast(c_rule_pointer, c_void_p), c_rule_string):
+    if not liblouis.printRule(cast(c_rule_pointer, c_void_p), c_rule_string):
         return None
     return tuple(c_rule_string.value.split(" "))
 
@@ -164,7 +157,7 @@ def suggest_chunks(text, braille):
     c_text = create_unicode_buffer(text)
     c_braille = create_unicode_buffer(braille)
     c_hyphen_string = create_string_buffer(len(text) + 2)
-    if not liblouis_dev.suggestChunks(c_text, c_braille, c_hyphen_string):
+    if not liblouis.suggestChunks(c_text, c_braille, c_hyphen_string):
         return None;
     hyphen_string = c_hyphen_string.value.decode('ascii')
     hyphen_string = hyphen_string[1:len(hyphen_string)-1]
@@ -179,7 +172,7 @@ def find_relevant_rules(text):
         c_rules[i] = create_unicode_buffer(c_rules[i], 128)
         c_rules[i] = cast(c_rules[i], c_wchar_p)
     c_rules = (c_wchar_p * (max_rules + 1))(*c_rules)
-    liblouis_dev.findRelevantRules(c_text, c_rules)
+    liblouis.findRelevantRules(c_text, c_rules)
     return map(lambda x: tuple(x.split(" ")), takewhile(lambda x: x, c_rules))
 
 def open_dictionary(dictionary):

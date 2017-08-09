@@ -198,6 +198,7 @@ TAGS
 /tests/resolve_table
 /tests/resolve_table.h
 /tests/squash_space
+/tests/table-dev
 /tests/typeform
 /tests/typeform_for_emphclass
 /tests/uplow_with_unicode
@@ -281,18 +282,6 @@ TAGS
 /tools/gnulib/unistr/*.lo
 
 # /table-dev/
-/table-dev/.deps/
-/table-dev/.libs/
-/table-dev/*.o
-/table-dev/*.la
-/table-dev/*.lo
-/table-dev/*.pyc
-/table-dev/Makefile
-/table-dev/Makefile.in
-/table-dev/test-table-dev
-/table-dev/*.log
-/table-dev/*.trs
-/table-dev/test-suite.log
 /table-dev/make-patterns.mk
 
 # stuff used with /tools/lou_compare

@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+
+CURDIR=$(cd $(dirname "$0") && pwd)
+
+if ! make --version 2>/dev/null | grep 'GNU Make' >/dev/null; then
+    echo "ERROR: GNU make is required to run this program" >&2
+    exit 1
+fi
+if ! which patgen >/dev/null; then
+    echo "ERROR: patgen is required to run this program" >&2
+    exit 1
+fi
+if ! which python3 >/dev/null; then
+    echo "ERROR: python3 is required to run this program" >&2
+    exit 1
+fi
+
+if ! python3 -c "from louis import liblouis" 2>/dev/null; then
+    echo "ERROR: the Liblouis python bindings must be installed to run this program" >&2
+    exit 1
+fi
+
+function print_help {
+    echo "Usage: $0 [OPTIONS] [CMD]" >&2
+    echo "" >&2
+    echo "Commands:" >&2
+    echo "  clean               clean up generated files" >&2
+    echo "" >&2
+    echo "Options:" >&2
+    echo "  --config=FILE       read configuration options from FILE (required)"
+    echo "  -h, --help          display this help and exit" >&2
+    echo "  -v, --version       display version information and exit" >&2
+    echo "" >&2
+    echo "Configuration options:" >&2
+    echo "  CONTRACTIONS_TABLE  location of file where contraction rules are moved to" >&2
+    echo "                      from the working file" >&2
+    echo "  PATTERNS_TABLE      location of file where generated hyphenation patterns" >&2
+    echo "                      are stored" >&2
+    echo "  BASE_TABLE          base translation table that is augmented with the" >&2
+    echo "                      generated contractions and patterns tables in order to" >&2
+    echo "                      get the final result" >&2
+    echo "  DICTIONARY          location of SQLite database that contains the certified" >&2
+    echo "                      braille translations of words and where chunk data will" >&2
+    echo "                      be stored" >&2
+    echo "  WORKING_FILE        location of file where suggestions for new contraction" >&2
+    echo "                      rules are written and from which changes to contraction" >&2
+    echo "                      table and dictionary are read" >&2
+    echo "" >&2
+    echo "Environment variables:" >&2
+    echo "  LOUIS_TABLEPATH     colon-separated list of directories that is searched" >&2
+    echo "                      to resolve the base table" >&2
+    echo "  EDITOR              program that is used to open the working file" >&2
+    echo "" >&2
+    echo "Report bugs to liblouis-liblouisxml@freelists.org." >&2
+    echo "Liblouis home page: <http://www.liblouis.org>" >&2
+}
+
+HELP=false
+VERSION=false
+VERBOSE=false
+
+function unexpected_argument {
+    echo "ERROR: Unexpected argument: $1" >&2
+    echo "" >&2
+    print_help
+    exit 1
+}
+
+while [ $# -gt 0 ]; do
+    if [[ -n ${CMD+x} ]]; then
+        unexpected_argument
+    fi
+    case $1 in
+        -h|--help)
+            if $HELP; then
+                unexpected_argument
+            fi
+            HELP=true
+            ;;
+        -v|--version)
+            if $VERSION; then
+                unexpected_argument
+            fi
+            VERSION=true
+            ;;
+        --verbose)
+            if $VERBOSE; then
+                unexpected_argument
+            fi
+            VERBOSE=true
+            ;;
+        --config=*)
+            if [[ -n ${CONFIG_FILE+x} ]]; then
+                unexpected_argument
+            fi
+            CONFIG_FILE=${1#--config=}
+            ;;
+        clean)
+            CMD=clean
+            ;;
+        *)
+            unexpected_argument
+            ;;
+    esac
+    shift
+done
+
+if $HELP; then
+    print_help
+    exit 0
+fi
+
+if $VERSION; then
+    echo "lou_maketable (Liblouis) 3.2.0" >&2
+    echo "Copyright (C) 2017 Bert Frees." >&2
+    echo "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>." >&2
+    echo "This is free software: you are free to change and redistribute it." >&2
+    echo "There is NO WARRANTY, to the extent permitted by law." >&2
+    echo "" >&2
+    echo "Written by Bert Frees." >&2
+    exit 0
+fi
+
+if [[ -n ${CONFIG_FILE+x} ]]; then
+    if ! [ -e "$CONFIG_FILE" ]; then
+        echo "ERROR: Unexisting file: $CONFIG_FILE" >&2
+        exit 1
+    fi
+else
+    echo "ERROR: Please specify a configuration file" >&2
+    echo "" >&2
+    print_help
+    exit 1
+fi
+
+if ! [[ -n ${CMD+x} ]]; then
+    CMD=suggestions
+fi
+
+make -f $CURDIR/lou_maketable.d/lou_maketable.mk VERBOSE=$VERBOSE CONFIG_FILE=$CONFIG_FILE $CMD

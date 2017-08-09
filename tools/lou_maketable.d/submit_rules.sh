@@ -1,14 +1,15 @@
+CURDIR=$(cd $(dirname "$0") && pwd)
 WORKING_FILE=${1}
 CONTRACTIONS_TABLE=${2}
 BASE_TABLE=${3}
 RULE_GREP="^[ \t]*[+-]\?\(nocross\|syllable\*\|always\|word\|begword\|endword\)"
 set -e
-set -x
+[[ $VERBOSE == true ]] && set -x
 if [ -e $WORKING_FILE ]; then
 	cat $WORKING_FILE | grep -v "^$" | grep -v "^#" > tmp || true
 	mv tmp $WORKING_FILE
 	if cat $WORKING_FILE | grep "$RULE_GREP" > tmp; then
-		bash wrap_python.sh submit_rules.py -t $BASE_TABLE tmp $CONTRACTIONS_TABLE > tmp2
+		python3 $CURDIR/submit_rules.py -t $BASE_TABLE tmp $CONTRACTIONS_TABLE > tmp2
 		mv tmp2 tmp
 		cat <<- EOF > $CONTRACTIONS_TABLE
 			##################################

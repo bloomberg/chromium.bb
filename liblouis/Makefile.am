@@ -43,7 +43,8 @@ liblouis_la_SOURCES =				\
 	findTable.c 				\
 	pattern.c				\
 	logging.c				\
-	utils.c
+	utils.c				\
+	table-dev.c
 
 # Don't include liblouis.h in dist, this will break subdir builds
 # when dist is configured with a different ucs-option than the build,

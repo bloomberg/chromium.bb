@@ -194,6 +194,5 @@ AC_CONFIG_FILES([
 	python/louis/Makefile
 	tools/Makefile
 	tools/gnulib/Makefile
-	table-dev/Makefile
 	gnulib/Makefile])
 AC_OUTPUT

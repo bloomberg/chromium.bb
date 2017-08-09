@@ -1,28 +1,6 @@
-noinst_LTLIBRARIES = liblouis-table-dev.la
+MAKEFILE_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 
-liblouis_table_dev_la_SOURCES = table-dev.c
-
-liblouis_table_dev_la_LDFLAGS = -rpath /nowhere
-
-liblouis_table_dev_la_LIBADD = $(top_builddir)/liblouis/liblouis.la
-
-check_PROGRAMS = test-table-dev
-
-test_table_dev_SOURCES = test-table-dev.c
-
-test_table_dev_LDADD = $(top_builddir)/table-dev/liblouis-table-dev.la
-
-TESTS =	$(check_PROGRAMS)
-
-TESTS_ENVIRONMENT =	LD_LIBRARY_PATH=$(top_srcdir)/table-dev/.libs
-
-#################################################################
-
-BASE_TABLE         = base.cti
-PATTERNS_TABLE     = patterns.dic
-CONTRACTIONS_TABLE = contractions.ctb
-DICTIONARY         = dictionary.sqlite
-WORKING_FILE       = working_file.txt
+include $(CONFIG_FILE)
 
 HYPH_LEVELS       =  1    2    3
 LEFT_HYPHEN_MIN   =  1    1    1
@@ -48,16 +26,16 @@ dictionary : $(DICTIONARY)
 suggestions : $(CONTRACTIONS_TABLE) $(PATTERNS_TABLE)
 
 suggestions :
-	bash wrap_python.sh make_suggestions.py -d $(DICTIONARY) -t $(BASE_TABLE),$(CONTRACTIONS_TABLE),$(PATTERNS_TABLE) --auto-chunk true >$(WORKING_FILE)
+	python3 $(MAKEFILE_DIR)make_suggestions.py -d $(DICTIONARY) -t $(BASE_TABLE),$(CONTRACTIONS_TABLE),$(PATTERNS_TABLE) --auto-chunk true >$(WORKING_FILE)
 	$(EDITOR) $(WORKING_FILE)
 
 .INTERMEDIATE : $(WORKING_FILE)
 
 $(CONTRACTIONS_TABLE) : $(WORKING_FILE)
-	bash submit_rules.sh $< $@ $(BASE_TABLE)
+	bash $(MAKEFILE_DIR)submit_rules.sh $< $@ $(BASE_TABLE)
 
 $(DICTIONARY) : $(WORKING_FILE)
-	bash submit_rows.sh $< $@ $(BASE_TABLE)
+	bash $(MAKEFILE_DIR)submit_rows.sh $< $@ $(BASE_TABLE)
 
 $(PATTERNS_TABLE) : patterns.$(MAX_HYPH_LEVEL).dic check-patterns
 	cp $< $@
@@ -68,7 +46,7 @@ check-patterns : dictionary.$(MAX_HYPH_LEVEL)
 	if cat $< | grep '\.[^0]\|-' >/dev/null; then false; else true; fi
 
 -include make-patterns.mk
-make-patterns.mk : Makefile
+make-patterns.mk : $(CONFIG_FILE)
 	@while true; do \
 		echo "patterns.0 :" && \
 		echo "	touch \$$@" && \
@@ -77,13 +55,13 @@ make-patterns.mk : Makefile
 		echo "	echo \"UTF-8\" >\$$@" && \
 		echo "" && \
 		echo "dictionary.0 : \$$(DICTIONARY)" && \
-		echo "	bash wrap_python.sh export_chunked_words.py -d \$$< >\$$@" && \
+		echo "	python3 $(MAKEFILE_DIR)export_chunked_words.py -d \$$< >\$$@" && \
 		echo "" && \
 		prev_level=0 && \
 		for level in $(HYPH_LEVELS); do \
 			echo "patterns.$$level : dictionary.$$prev_level patterns.$$prev_level alphabet" && \
 			echo "	if cat $$< | grep '\.[^0]\|-' >/dev/null; then \\" && \
-			echo "		bash wrap_patgen.sh \$$< \$$(word 2,\$$^) \$$@ \$$(word 3,\$$^) \\" && \
+			echo "		bash $(MAKEFILE_DIR)wrap_patgen.sh \$$< \$$(word 2,\$$^) \$$@ \$$(word 3,\$$^) \\" && \
 			echo "			\$$(word $$level,\$$(LEFT_HYPHEN_MIN)) \\" && \
 			echo "			\$$(word $$level,\$$(RIGHT_HYPHEN_MIN)) \\" && \
 			echo "			$$level \\" && \
@@ -101,7 +79,7 @@ make-patterns.mk : Makefile
 			echo "" && \
 			echo "dictionary.$$level : \$$(DICTIONARY) patterns.$$level.dic" && \
 			echo "	if [ -e pattmp.$$level ]; then \\" && \
-			echo "		bash wrap_python.sh export_chunked_words.py -d \$$< -t \$$(BASE_TABLE),\$$(word 2,\$$^) >\$$@ && \\" && \
+			echo "		python3 $(MAKEFILE_DIR)export_chunked_words.py -d \$$< -t \$$(BASE_TABLE),\$$(word 2,\$$^) >\$$@ && \\" && \
 			echo "		diff \$$@ pattmp.$$level >/dev/null; \\" && \
 			echo "	else \\" && \
 			echo "		cp dictionary.$$prev_level \$$@; \\" && \
@@ -109,7 +87,7 @@ make-patterns.mk : Makefile
 			echo "" && \
 			echo "patterns.$$level.dic : %.dic : % patterns.$$prev_level.dic" && \
 			echo "	if [ -e pattmp.$$level ]; then \\" && \
-			echo "		perl substrings.pl \$$< tmp >substrings.log && \\" && \
+			echo "		perl $(MAKEFILE_DIR)substrings.pl \$$< tmp >substrings.log && \\" && \
 			echo "		rm substrings.log && \\" && \
 			echo "		echo \"UTF-8\\\n\\" && \
 			echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\\\n\\" && \
@@ -132,10 +110,14 @@ make-patterns.mk : Makefile
 	done >$@
 
 alphabet : $(DICTIONARY)
-	bash wrap_python.sh generate_alphabet.py -d $< -t $(BASE_TABLE) >$@
+	python3 $(MAKEFILE_DIR)generate_alphabet.py -d $< -t $(BASE_TABLE) >$@
 
 clean : clean-table-dev
 
 .PHONY : clean-table-dev
 clean-table-dev : clean-patterns
 	rm -f alphabet $(WORKING_FILE) make-patterns.mk substrings.log patgen.log
+
+ifneq ($(VERBOSE), true)
+.SILENT:
+endif
