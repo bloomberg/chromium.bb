@@ -47,7 +47,6 @@ def SmokeTestGenerator(benchmark, num_pages=1):
   # disable it in tools/perf/benchmarks/*.
   @benchmark_module.Disabled('chromeos')  # crbug.com/351114
   @benchmark_module.Disabled('android')  # crbug.com/641934
-  @benchmark_module.Disabled('all')  # crbug.com/753542
   def BenchmarkSmokeTest(self):
     # Only measure a single page so that this test cycles reasonably quickly.
     benchmark.options['pageset_repeat'] = 1
