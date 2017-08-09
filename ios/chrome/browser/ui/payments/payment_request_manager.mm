@@ -10,6 +10,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/feature_list.h"
 #include "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
 #include "base/json/json_reader.h"
@@ -26,6 +27,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/payments/core/can_make_payment_query.h"
+#include "components/payments/core/features.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_instrument.h"
@@ -444,7 +446,9 @@ struct PendingPaymentResponse {
   }
 
   if (paymentRequest->supported_card_networks().empty() &&
-      paymentRequest->url_payment_method_identifiers().empty()) {
+      (!base::FeatureList::IsEnabled(
+           payments::features::kWebPaymentsNativeApps) ||
+       paymentRequest->url_payment_method_identifiers().empty())) {
     paymentRequest->journey_logger().SetNotShown(
         payments::JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
     // TODO(crbug.com/602666): Reject the promise with an error of
