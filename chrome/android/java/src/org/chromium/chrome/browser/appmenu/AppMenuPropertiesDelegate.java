@@ -184,7 +184,7 @@ public class AppMenuPropertiesDelegate {
                     && !isChromeScheme && !isFileScheme && !isContentScheme && !isIncognito;
             prepareAddToHomescreenMenuItem(menu, currentTab, canShowHomeScreenMenuItem);
 
-            updateRequestDesktopSiteMenuItem(menu, currentTab);
+            updateRequestDesktopSiteMenuItem(menu, currentTab, true /* can show */);
 
             // Only display reader mode settings menu option if the current page is in reader mode.
             menu.findItem(R.id.reader_mode_prefs_id)
@@ -380,7 +380,8 @@ public class AppMenuPropertiesDelegate {
      * @param menu {@link Menu} for request desktop site.
      * @param currentTab      Current tab being displayed.
      */
-    protected void updateRequestDesktopSiteMenuItem(Menu menu, Tab currentTab) {
+    protected void updateRequestDesktopSiteMenuItem(
+            Menu menu, Tab currentTab, boolean canShowRequestDekstopSite) {
         MenuItem requestMenuRow = menu.findItem(R.id.request_desktop_site_row_menu_id);
         MenuItem requestMenuLabel = menu.findItem(R.id.request_desktop_site_id);
         MenuItem requestMenuCheck = menu.findItem(R.id.request_desktop_site_check_id);
@@ -391,8 +392,11 @@ public class AppMenuPropertiesDelegate {
                 || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
         // Also hide request desktop site on Reader Mode.
         boolean isDistilledPage = DomDistillerUrlUtils.isDistilledPage(url);
-        requestMenuRow.setVisible(
-                (!isChromeScheme || currentTab.isNativePage()) && !isDistilledPage);
+
+        boolean itemVisible = canShowRequestDekstopSite
+                && (!isChromeScheme || currentTab.isNativePage()) && !isDistilledPage;
+        requestMenuRow.setVisible(itemVisible);
+        if (!itemVisible) return;
 
         // Mark the checkbox if RDS is activated on this page.
         requestMenuCheck.setChecked(currentTab.getUseDesktopUserAgent());
