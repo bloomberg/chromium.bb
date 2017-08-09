@@ -283,16 +283,6 @@ class NET_EXPORT X509Certificate
   static OSCertHandle CreateOSCertHandleFromBytes(const char* data,
                                                   size_t length);
 
-#if defined(USE_NSS_CERTS)
-  // Creates an OS certificate handle from the DER-encoded representation.
-  // Returns NULL on failure.  Sets the default nickname if |nickname| is
-  // non-NULL.
-  static OSCertHandle CreateOSCertHandleFromBytesWithNickname(
-      const char* data,
-      size_t length,
-      const char* nickname);
-#endif
-
   // Creates all possible OS certificate handles from |data| encoded in a
   // specific |format|. Returns an empty collection on failure.
   static OSCertHandles CreateOSCertHandlesFromBytes(const char* data,
