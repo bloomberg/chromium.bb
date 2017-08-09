@@ -1,8 +1,5 @@
 # TODO(fuchsia): Being ported, see https://crbug.com/706592.
 
--ActivityTrackerTest.CreateWithFileTest
--ActivityTrackerTest.ProcessDeathTest
--ActivityTrackerTest.ThreadDeathTest
 -FilePathWatcherTest.DeleteAndRecreate
 -FilePathWatcherTest.DeleteDuringNotify
 -FilePathWatcherTest.DeletedFile
