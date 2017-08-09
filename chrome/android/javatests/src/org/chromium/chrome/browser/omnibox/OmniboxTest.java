@@ -18,7 +18,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.junit.Assert;
@@ -31,7 +30,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.ScalableTimeout;
@@ -56,6 +54,7 @@ import org.chromium.content.browser.test.util.KeyUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.ServerCertificate;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.HashMap;
@@ -594,20 +593,16 @@ public class OmniboxTest {
     }
 
     /**
-     * Test to verify security-icon "lock or globe" on visiting http and secured Urls.
-     * @EnormousTest
+     * Test to verify that the security icon is present when visiting http:// URLs.
      */
     @Test
-    @FlakyTest(message = "crbug.com/414353")
-    public void testSecurityIcon() throws InterruptedException {
+    @MediumTest
+    public void testSecurityIconOnHTTP() throws InterruptedException {
         EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
         try {
             final String testUrl = testServer.getURL("/chrome/test/data/android/omnibox/one.html");
-            final String securedExternalUrl = "https://www.google.com";
 
-            ImageView navigationButton = (ImageView) mActivityTestRule.getActivity().findViewById(
-                    R.id.navigation_button);
             ImageButton securityButton = (ImageButton) mActivityTestRule.getActivity().findViewById(
                     R.id.security_button);
 
@@ -617,20 +612,39 @@ public class OmniboxTest {
                             R.id.location_bar);
             boolean securityIcon = locationBar.isSecurityButtonShown();
             Assert.assertFalse("Omnibox should not have a Security icon", securityIcon);
-            Assert.assertEquals("navigation_button with wrong resource-id", R.id.navigation_button,
-                    navigationButton.getId());
-            Assert.assertTrue(navigationButton.isShown());
             Assert.assertFalse(securityButton.isShown());
+        } finally {
+            testServer.stopAndDestroyServer();
+        }
+    }
 
-            mActivityTestRule.loadUrl(securedExternalUrl);
-            securityIcon = locationBar.isSecurityButtonShown();
+    /**
+     * Test to verify that the security icon is present when visiting https:// URLs.
+     */
+    @Test
+    @MediumTest
+    public void testSecurityIconOnHTTPS() throws InterruptedException {
+        EmbeddedTestServer httpsTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
+                InstrumentationRegistry.getInstrumentation().getContext(),
+                ServerCertificate.CERT_OK);
+        try {
+            final String testHttpsUrl =
+                    httpsTestServer.getURL("/chrome/test/data/android/omnibox/one.html");
+
+            ImageButton securityButton = (ImageButton) mActivityTestRule.getActivity().findViewById(
+                    R.id.security_button);
+
+            mActivityTestRule.loadUrl(testHttpsUrl);
+            final LocationBarLayout locationBar =
+                    (LocationBarLayout) mActivityTestRule.getActivity().findViewById(
+                            R.id.location_bar);
+            boolean securityIcon = locationBar.isSecurityButtonShown();
             Assert.assertTrue("Omnibox should have a Security icon", securityIcon);
             Assert.assertEquals("security_button with wrong resource-id", R.id.security_button,
                     securityButton.getId());
             Assert.assertTrue(securityButton.isShown());
-            Assert.assertFalse(navigationButton.isShown());
         } finally {
-            testServer.stopAndDestroyServer();
+            httpsTestServer.stopAndDestroyServer();
         }
     }
 
