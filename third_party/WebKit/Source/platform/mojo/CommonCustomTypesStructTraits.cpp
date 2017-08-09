@@ -31,12 +31,12 @@ ConstCArray<uint16_t> StructTraits<common::mojom::String16DataView,
 
   if (contextObject) {
     return ConstCArray<uint16_t>(
-        contextObject->size(),
-        reinterpret_cast<const uint16_t*>(contextObject->data()));
+        reinterpret_cast<const uint16_t*>(contextObject->data()),
+        contextObject->size());
   }
 
   return ConstCArray<uint16_t>(
-      input.length(), reinterpret_cast<const uint16_t*>(input.Characters16()));
+      reinterpret_cast<const uint16_t*>(input.Characters16()), input.length());
 }
 
 // static

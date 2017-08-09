@@ -14,8 +14,8 @@ template <>
 struct StructTraits<net::interfaces::IPAddressDataView, net::IPAddress> {
   static mojo::ConstCArray<uint8_t> address_bytes(
       const net::IPAddress& ip_address) {
-    return mojo::ConstCArray<uint8_t>(ip_address.bytes().size(),
-                                      ip_address.bytes().data());
+    return mojo::ConstCArray<uint8_t>(ip_address.bytes().data(),
+                                      ip_address.bytes().size());
   }
 
   static bool Read(net::interfaces::IPAddressDataView obj, net::IPAddress* out);

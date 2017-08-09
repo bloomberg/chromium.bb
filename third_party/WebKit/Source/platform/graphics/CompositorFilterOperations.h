@@ -33,7 +33,7 @@ class PLATFORM_EXPORT CompositorFilterOperations {
   void AppendOpacityFilter(float amount);
   void AppendBlurFilter(float amount);
   void AppendDropShadowFilter(IntPoint offset, float std_deviation, Color);
-  void AppendColorMatrixFilter(SkScalar matrix[20]);
+  void AppendColorMatrixFilter(const cc::FilterOperation::Matrix&);
   void AppendZoomFilter(float amount, int inset);
   void AppendSaturatingBrightnessFilter(float amount);
 

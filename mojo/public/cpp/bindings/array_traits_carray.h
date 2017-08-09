@@ -6,53 +6,85 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_ARRAY_TRAITS_CARRAY_H_
 
 #include <cstddef>
+
 #include "mojo/public/cpp/bindings/array_traits.h"
 
 namespace mojo {
 
 template <typename T>
-struct CArray {
-  CArray() : size(0), max_size(0), data(nullptr) {}
-  CArray(size_t size, size_t max_size, T* data)
-      : size(size), max_size(max_size), data(data) {}
-  size_t size;
-  const size_t max_size;
-  T* data;
+class CArray {
+ public:
+  constexpr CArray() noexcept : size_(0), data_(nullptr) {}
+  constexpr CArray(T* data, size_t size) noexcept : size_(size), data_(data) {}
+  template <size_t N>
+  constexpr CArray(T (&array)[N]) noexcept : size_(N), data_(array) {}
+
+  constexpr size_t size() const noexcept { return size_; }
+  constexpr T* data() const noexcept { return data_; }
+
+  constexpr CArray subspan(size_t pos, size_t count) const {
+    // Note: ideally this would DCHECK, but it requires fairly horrible
+    // contortions.
+    return CArray(data_ + pos, count);
+  }
+
+ private:
+  size_t size_;
+  T* data_;
 };
 
+// TODO(dcheng): Not sure if this is needed. Maybe code should just use
+// CArray<const T> rather than ConstCArray<T>?
 template <typename T>
-struct ConstCArray {
-  ConstCArray() : size(0), data(nullptr) {}
-  ConstCArray(size_t size, const T* data) : size(size), data(data) {}
-  size_t size;
-  const T* data;
+class ConstCArray {
+ public:
+  constexpr ConstCArray() noexcept : size_(0), data_(nullptr) {}
+  constexpr ConstCArray(const T* data, size_t size) noexcept
+      : size_(size), data_(data) {}
+  template <size_t N>
+  constexpr ConstCArray(const T (&array)[N]) noexcept
+      : size_(N), data_(array) {}
+
+  constexpr size_t size() const noexcept { return size_; }
+  constexpr const T* data() const noexcept { return data_; }
+
+  constexpr ConstCArray subspan(size_t pos, size_t count) const {
+    // Note: ideally this would DCHECK, but it requires fairly horrible
+    // contortions.
+    return ConstCArray(data_ + pos, count);
+  }
+
+ private:
+  size_t size_;
+  const T* data_;
 };
 
 template <typename T>
 struct ArrayTraits<CArray<T>> {
   using Element = T;
 
-  static bool IsNull(const CArray<T>& input) { return !input.data; }
+  static bool IsNull(const CArray<T>& input) { return !input.data(); }
 
-  static void SetToNull(CArray<T>* output) { output->data = nullptr; }
+  static void SetToNull(CArray<T>* output) { *output = CArray<T>(); }
 
-  static size_t GetSize(const CArray<T>& input) { return input.size; }
+  static size_t GetSize(const CArray<T>& input) { return input.size(); }
 
-  static T* GetData(CArray<T>& input) { return input.data; }
+  static T* GetData(CArray<T>& input) { return input.data(); }
 
-  static const T* GetData(const CArray<T>& input) { return input.data; }
+  static const T* GetData(const CArray<T>& input) { return input.data(); }
 
-  static T& GetAt(CArray<T>& input, size_t index) { return input.data[index]; }
+  static T& GetAt(CArray<T>& input, size_t index) {
+    return input.data()[index];
+  }
 
   static const T& GetAt(const CArray<T>& input, size_t index) {
-    return input.data[index];
+    return input.data()[index];
   }
 
   static bool Resize(CArray<T>& input, size_t size) {
-    if (size > input.max_size)
+    if (size > input.size())
       return false;
-
-    input.size = size;
+    input = input.subspan(0, size);
     return true;
   }
 };
@@ -61,14 +93,16 @@ template <typename T>
 struct ArrayTraits<ConstCArray<T>> {
   using Element = T;
 
-  static bool IsNull(const ConstCArray<T>& input) { return !input.data; }
+  static bool IsNull(const ConstCArray<T>& input) { return !input.data(); }
 
-  static size_t GetSize(const ConstCArray<T>& input) { return input.size; }
+  static void SetToNull(ConstCArray<T>* output) { *output = ConstCArray<T>(); }
 
-  static const T* GetData(const ConstCArray<T>& input) { return input.data; }
+  static size_t GetSize(const ConstCArray<T>& input) { return input.size(); }
+
+  static const T* GetData(const ConstCArray<T>& input) { return input.data(); }
 
   static const T& GetAt(const ConstCArray<T>& input, size_t index) {
-    return input.data[index];
+    return input.data()[index];
   }
 };
 

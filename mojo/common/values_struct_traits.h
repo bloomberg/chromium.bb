@@ -183,8 +183,8 @@ struct UnionTraits<common::mojom::ValueDataView, base::Value> {
     if (!value.is_blob())
       NOTREACHED();
     return mojo::ConstCArray<uint8_t>(
-        value.GetBlob().size(),
-        reinterpret_cast<const uint8_t*>(value.GetBlob().data()));
+        reinterpret_cast<const uint8_t*>(value.GetBlob().data()),
+        value.GetBlob().size());
   }
 
   static const base::ListValue& list_value(const base::Value& value) {
