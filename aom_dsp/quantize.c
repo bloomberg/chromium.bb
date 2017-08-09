@@ -36,8 +36,8 @@ void quantize_b_helper_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
       const qm_val_t wt = qm_ptr != NULL ? qm_ptr[rc] : (1 << AOM_QM_BITS);
       const int coeff = coeff_ptr[rc] * wt;
 
-      if (coeff < (zbins[rc != 0] << AOM_QM_BITS) &&
-          coeff > (nzbins[rc != 0] << AOM_QM_BITS))
+      if (coeff < (zbins[rc != 0] * (1 << AOM_QM_BITS)) &&
+          coeff > (nzbins[rc != 0] * (1 << AOM_QM_BITS)))
         non_zero_count--;
       else
         break;
@@ -107,8 +107,8 @@ void highbd_quantize_b_helper_c(
 
       // If the coefficient is out of the base ZBIN range, keep it for
       // quantization.
-      if (coeff >= (zbins[rc != 0] << AOM_QM_BITS) ||
-          coeff <= (nzbins[rc != 0] << AOM_QM_BITS))
+      if (coeff >= (zbins[rc != 0] * (1 << AOM_QM_BITS)) ||
+          coeff <= (nzbins[rc != 0] * (1 << AOM_QM_BITS)))
         idx_arr[idx++] = i;
     }
 
