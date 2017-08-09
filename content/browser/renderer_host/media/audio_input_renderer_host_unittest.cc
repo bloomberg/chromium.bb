@@ -116,7 +116,6 @@ class AudioInputRendererHostWithInterception : public AudioInputRendererHost {
 
  private:
   bool Send(IPC::Message* message) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     bool handled = true;
 
     IPC_BEGIN_MESSAGE_MAP(AudioInputRendererHostWithInterception, *message)
