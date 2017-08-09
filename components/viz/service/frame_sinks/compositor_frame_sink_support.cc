@@ -58,17 +58,11 @@ void CompositorFrameSinkSupport::SetDestructionCallback(
 }
 
 void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
+  DCHECK(surface);
   DCHECK(surface->HasActiveFrame());
-  const cc::CompositorFrame& frame = surface->GetActiveFrame();
   DCHECK(surface->active_referenced_surfaces());
   UpdateSurfaceReferences(surface->surface_id().local_surface_id(),
                           *surface->active_referenced_surfaces());
-  if (!surface_manager_->SurfaceModified(surface->surface_id(),
-                                         frame.metadata.begin_frame_ack)) {
-    TRACE_EVENT_INSTANT0("cc", "Damage not visible.", TRACE_EVENT_SCOPE_THREAD);
-    surface->RunDrawCallback();
-  }
-  surface_manager_->SurfaceActivated(surface);
 }
 
 void CompositorFrameSinkSupport::RefResources(

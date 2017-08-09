@@ -49,6 +49,7 @@ class VIZ_SERVICE_EXPORT HitTestAggregator : public SurfaceObserver {
  protected:
   // SurfaceObserver:
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override {}
+  void OnSurfaceActivated(const SurfaceId& surface_id) override {}
   void OnSurfaceDestroyed(const SurfaceId& surface_id) override {}
   bool OnSurfaceDamaged(const SurfaceId& surface_id,
                         const BeginFrameAck& ack) override;
