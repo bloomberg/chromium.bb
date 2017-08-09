@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_HOST_HOST_FRAME_SINK_MANAGER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
@@ -68,6 +69,18 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // message pipe to the client will be closed.
   void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id);
 
+  // Creates a connection for a display root to viz. Provides the same
+  // interfaces as CreateCompositorFramesink() plus the priviledged
+  // DisplayPrivate interface. When no longer needed, call
+  // InvalidateFrameSinkId().
+  void CreateRootCompositorFrameSink(
+      const FrameSinkId& frame_sink_id,
+      gpu::SurfaceHandle surface_handle,
+      const RendererSettings& renderer_settings,
+      mojom::CompositorFrameSinkAssociatedRequest request,
+      mojom::CompositorFrameSinkClientPtr client,
+      mojom::DisplayPrivateAssociatedRequest display_private_request);
+
   // Creates a connection between client to viz, using |request| and |client|,
   // that allows the client to submit CompositorFrames. When no longer needed,
   // call InvalidateFrameSinkId().
@@ -75,12 +88,11 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
                                  mojom::CompositorFrameSinkRequest request,
                                  mojom::CompositorFrameSinkClientPtr client);
 
-  // Registers FrameSink hierarchy. Clients can call this multiple times to
-  // reparent without calling UnregisterFrameSinkHierarchy().
+  // Registers frame sink hierarchy. A frame sink can have multiple parents.
   void RegisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
                                   const FrameSinkId& child_frame_sink_id);
 
-  // Unregisters FrameSink hierarchy. Client must have registered FrameSink
+  // Unregisters FrameSink hierarchy. Client must have registered frame sink
   // hierarchy before unregistering.
   void UnregisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
                                     const FrameSinkId& child_frame_sink_id);
@@ -101,13 +113,16 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
     ~FrameSinkData();
     FrameSinkData& operator=(FrameSinkData&& other);
 
+    bool IsFrameSinkRegistered() const { return client != nullptr; }
+
     bool HasCompositorFrameSinkData() const {
       return has_created_compositor_frame_sink || support;
     }
 
     // Returns true if there is nothing in FrameSinkData and it can be deleted.
     bool IsEmpty() const {
-      return !HasCompositorFrameSinkData() && !parent.has_value() && !client;
+      return !IsFrameSinkRegistered() && !HasCompositorFrameSinkData() &&
+             parents.empty() && children.empty();
     }
 
     // The client to be notified of changes to this FrameSink.
@@ -116,9 +131,6 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
     // If the frame sink is a root that corresponds to a Display.
     bool is_root = false;
 
-    // The FrameSinkId registered as the parent in the BeginFrame hierarchy.
-    base::Optional<FrameSinkId> parent;
-
     // If a mojom::CompositorFrameSink was created for this FrameSinkId. This
     // will always be false if not using Mojo.
     bool has_created_compositor_frame_sink = false;
@@ -126,13 +138,17 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
     // This will be null if using Mojo.
     CompositorFrameSinkSupport* support = nullptr;
 
+    // Track frame sink hierarchy in both directions.
+    std::vector<FrameSinkId> parents;
+    std::vector<FrameSinkId> children;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(FrameSinkData);
   };
 
-  // Destroys a client connection. Will call UnregisterFrameSinkHierarchy() with
-  // the registered parent if there is one.
-  void DestroyCompositorFrameSink(const FrameSinkId& frame_sink_id);
+  // Provided as a callback to clear state when a CompositorFrameSinkSupport is
+  // destroyed.
+  void CompositorFrameSinkSupportDestroyed(const FrameSinkId& frame_sink_id);
 
   // Assigns the temporary reference to the frame sink that is expected to
   // embeded |surface_id|, otherwise drops the temporary reference.

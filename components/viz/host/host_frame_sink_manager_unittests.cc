@@ -210,6 +210,10 @@ TEST_F(HostFrameSinkManagerTest, CreateCompositorFrameSinkSupport) {
 }
 
 TEST_F(HostFrameSinkManagerTest, AssignTemporaryReference) {
+  FakeHostFrameSinkClient client;
+  host_manager().RegisterFrameSinkId(kParentFrameSinkId, &client);
+  host_manager().RegisterFrameSinkId(kClientFrameSinkId, &client);
+
   const SurfaceId surface_id = MakeSurfaceId(kClientFrameSinkId, 1);
   auto support = CreateCompositorFrameSinkSupport(surface_id.frame_sink_id(),
                                                   false /* is_root */);
@@ -237,6 +241,8 @@ TEST_F(HostFrameSinkManagerTest, DropTemporaryReference) {
       MakeSurfaceInfo(surface_id));
 }
 
+// Verify that we drop the temporary reference to a new surface if the frame
+// sink that corresponds to the new surface has been invalidated.
 TEST_F(HostFrameSinkManagerTest, DropTemporaryReferenceForStaleClient) {
   FakeHostFrameSinkClient client;
   host_manager().RegisterFrameSinkId(kClientFrameSinkId, &client);
@@ -258,7 +264,8 @@ TEST_F(HostFrameSinkManagerTest, DropTemporaryReferenceForStaleClient) {
   const SurfaceId client_surface_id = MakeSurfaceId(kClientFrameSinkId, 1);
   EXPECT_CALL(manager_impl(), DropTemporaryReference(client_surface_id))
       .Times(0);
-  EXPECT_CALL(manager_impl(), AssignTemporaryReference(client_surface_id, _))
+  EXPECT_CALL(manager_impl(),
+              AssignTemporaryReference(client_surface_id, kParentFrameSinkId))
       .Times(1);
   GetFrameSinkManagerClient()->OnFirstSurfaceActivation(
       MakeSurfaceInfo(client_surface_id));
@@ -271,11 +278,60 @@ TEST_F(HostFrameSinkManagerTest, DropTemporaryReferenceForStaleClient) {
   const SurfaceId client_surface_id2 = MakeSurfaceId(kClientFrameSinkId, 2);
   EXPECT_CALL(manager_impl(), DropTemporaryReference(client_surface_id2))
       .Times(1);
+  EXPECT_CALL(manager_impl(), AssignTemporaryReference(client_surface_id2, _))
+      .Times(0);
   GetFrameSinkManagerClient()->OnFirstSurfaceActivation(
       MakeSurfaceInfo(client_surface_id2));
 
   support_parent.reset();
   host_manager().InvalidateFrameSinkId(kParentFrameSinkId);
+}
+
+// Verify that we drop the temporary reference to a new surface if the only
+// frame sink registered as an embedder has been invalidated.
+TEST_F(HostFrameSinkManagerTest, DropTemporaryReferenceForInvalidatedParent) {
+  FakeHostFrameSinkClient client;
+  host_manager().RegisterFrameSinkId(kClientFrameSinkId, &client);
+  auto support_client =
+      CreateCompositorFrameSinkSupport(kClientFrameSinkId, false /* is_root */);
+  EXPECT_TRUE(FrameSinkDataExists(kClientFrameSinkId));
+
+  host_manager().RegisterFrameSinkId(kParentFrameSinkId, &client);
+  auto support_parent =
+      CreateCompositorFrameSinkSupport(kParentFrameSinkId, true /* is_root */);
+  EXPECT_TRUE(FrameSinkDataExists(kParentFrameSinkId));
+
+  // Register should call through to FrameSinkManagerImpl.
+  EXPECT_CALL(manager_impl(), RegisterFrameSinkHierarchy(kParentFrameSinkId,
+                                                         kClientFrameSinkId));
+  host_manager().RegisterFrameSinkHierarchy(kParentFrameSinkId,
+                                            kClientFrameSinkId);
+
+  const SurfaceId client_surface_id = MakeSurfaceId(kClientFrameSinkId, 1);
+  EXPECT_CALL(manager_impl(), DropTemporaryReference(client_surface_id))
+      .Times(0);
+  EXPECT_CALL(manager_impl(),
+              AssignTemporaryReference(client_surface_id, kParentFrameSinkId))
+      .Times(1);
+  GetFrameSinkManagerClient()->OnFirstSurfaceActivation(
+      MakeSurfaceInfo(client_surface_id));
+  testing::Mock::VerifyAndClearExpectations(&manager_impl());
+
+  // Invaidating the parent should cause the next SurfaceId to be dropped
+  // because there is no registered frame sink as the parent.
+  support_parent.reset();
+  host_manager().InvalidateFrameSinkId(kParentFrameSinkId);
+
+  const SurfaceId client_surface_id2 = MakeSurfaceId(kClientFrameSinkId, 2);
+  EXPECT_CALL(manager_impl(), DropTemporaryReference(client_surface_id2))
+      .Times(1);
+  EXPECT_CALL(manager_impl(), AssignTemporaryReference(client_surface_id2, _))
+      .Times(0);
+  GetFrameSinkManagerClient()->OnFirstSurfaceActivation(
+      MakeSurfaceInfo(client_surface_id2));
+
+  support_client.reset();
+  host_manager().InvalidateFrameSinkId(kClientFrameSinkId);
 }
 
 TEST_F(HostFrameSinkManagerTest, DisplayRootTemporaryReference) {
