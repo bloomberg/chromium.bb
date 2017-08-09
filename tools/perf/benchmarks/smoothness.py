@@ -588,7 +588,6 @@ class SmoothnessImageDecodingCases(_Smoothness):
     return StoryExpectations()
 
 
-@benchmark.Disabled('android')  # http://crbug.com/513699
 @benchmark.Owner(emails=['cblume@chromium.org'])
 class SmoothnessGpuImageDecodingCases(_Smoothness):
   """Measures decoding statistics for jpeg images with GPU rasterization.
