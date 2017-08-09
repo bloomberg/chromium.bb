@@ -145,8 +145,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Keep a separate set of failures for the R7 240, since it can use a new
     # and updated driver. The older drivers won't ever get fixes from AMD.
     # Use ['win', ('amd', 0x6613)] for the R7 240 devices.
-    self.Fail('deqp/functional/gles3/buffercopy.html',
-        ['win', ('amd', 0x6613)], bug=752681)
 
     # Have seen this time out. Think it may be because it's currently
     # the first test that runs in the shard, and the browser might not
