@@ -2919,9 +2919,18 @@ crbug.com/736177 [ Mac10.12 ] fast/css/clip-zooming.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] fast/css/h1-in-section-elements.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] fast/css/rem-calc-dynamic-scaling.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] fast/css/rem-dynamic-scaling.html [ Failure Pass ]
+crbug.com/736177 [ Mac10.12 ] fast/css/text-overflow-input.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] fast/dom/HTMLMeterElement/meter-optimums.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] fast/dynamic/012.html [ Failure Pass ]
+crbug.com/736177 [ Mac10.12 ] fast/forms/control-restrict-line-height.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] fast/forms/form-element-geometry.html [ Failure Pass ]
+crbug.com/736177 [ Mac10.12 ] fast/forms/input-appearance-height.html [ Failure Pass ]
+crbug.com/736177 [ Mac10.12 ] fast/forms/placeholder-position.html [ Failure Pass ]
+crbug.com/736177 [ Mac10.12 ] fast/forms/search/search-appearance-basic.html [ Failure Pass ]
+crbug.com/736177 [ Mac10.12 ] fast/forms/search/search-cancel-button-style-sharing.html [ Failure Pass ]
+crbug.com/736177 [ Mac10.12 ] fast/forms/search/search-display-none-cancel-button.html [ Failure Pass ]
+crbug.com/736177 [ Mac10.12 ] fast/forms/search/search-rtl.html [ Failure Pass ]
+crbug.com/736177 [ Mac10.12 ] fast/forms/search/searchfield-heights.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] fast/inline/absolute-positioned-inline-in-centred-block.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] fast/inline/left-right-center-inline-alignment-in-ltr-and-rtl-blocks.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] fast/lists/ordered-list-with-no-ol-tag.html [ Failure Pass ]
@@ -3029,9 +3038,11 @@ crbug.com/626703 [ Win7 ] external/wpt/html/semantics/tabular-data/processing-mo
 
 # Sheriff failure 2017-08-07
 crbug.com/708499 [ Win7 Mac10.11 Retina Debug ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Failure Pass ]
-crbug.com/752845 [ Win7 Debug ] inspector/sha1.html [ Crash ]
+crbug.com/752845 [ Win ] inspector/sha1.html [ Pass Crash ]
 
 # Ganesh dither changes
 crbug.com/753462 virtual/gpu/fast/canvas/canvas-text-alignment.html [ NeedsManualRebaseline ]
 crbug.com/753462 virtual/gpu/fast/canvas/fillrect_gradient.html [ NeedsManualRebaseline ]
 crbug.com/753462 virtual/gpu/fast/canvas/gradient-add-second-start-end-stop.html [ NeedsManualRebaseline ]
+
+crbug.com/746904 [ Win ] fast/text/ellipsis-in-relative-inline.html [ Failure Pass ]
