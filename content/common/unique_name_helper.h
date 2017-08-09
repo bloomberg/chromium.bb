@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
@@ -64,17 +65,17 @@ namespace content {
 //                   [ framePosition-forParent? ]
 //
 // retryNumber ::= smallest non-negative integer resulting in unique name
-class UniqueNameHelper {
+class CONTENT_EXPORT UniqueNameHelper {
  public:
   // Adapter class so UniqueNameHelper can be used with both RenderFrameImpl and
   // ExplodedFrameState.
-  class FrameAdapter {
+  class CONTENT_EXPORT FrameAdapter {
    public:
     FrameAdapter() {}
     virtual ~FrameAdapter();
 
     virtual bool IsMainFrame() const = 0;
-    virtual bool IsCandidateUnique(const std::string& name) const = 0;
+    virtual bool IsCandidateUnique(base::StringPiece name) const = 0;
     // Returns the number of sibling frames of this frame. Note this should not
     // include this frame in the count.
     virtual int GetSiblingCount() const = 0;
@@ -106,6 +107,13 @@ class UniqueNameHelper {
     DISALLOW_COPY_AND_ASSIGN(FrameAdapter);
   };
 
+  struct Replacement {
+    Replacement(std::string old_name, std::string new_name);
+
+    const std::string old_name;
+    const std::string new_name;
+  };
+
   explicit UniqueNameHelper(FrameAdapter* frame);
   ~UniqueNameHelper();
 
@@ -133,6 +141,19 @@ class UniqueNameHelper {
   // initial empty document, as unique name changes after that point will break
   // history navigations. See https://crbug.com/607205.
   void UpdateName(const std::string& name);
+
+  // Helper to update legacy names generated for PageState v24 and earlier. This
+  // function should be invoked starting from the root of the tree, traversing
+  // downwards. The exact traversal order is unimportant as long as this
+  // function has been called on all ancestor frames of the node associated with
+  // |legacy_name|. A single instance of |replacements| should be used per frame
+  // tree.
+  static std::string UpdateLegacyNameFromV24(
+      std::string legacy_name,
+      std::vector<Replacement>* replacements);
+
+  static std::string CalculateLegacyNameForTesting(const FrameAdapter* frame,
+                                                   const std::string& name);
 
  private:
   FrameAdapter* const frame_;

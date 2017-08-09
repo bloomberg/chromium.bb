@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "content/common/unique_name_helper.h"
 #include "content/public/common/resource_request_body.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -197,12 +198,13 @@ struct SerializeObject {
 // 22: Add scroll restoration type.
 // 23: Remove frame sequence number, there are easier ways.
 // 24: Add did save scroll or scale state.
+// 25: Limit the length of unique names: https://crbug.com/626202
 //
 // NOTE: If the version is -1, then the pickle contains only a URL string.
 // See ReadPageState.
 //
 const int kMinVersion = 11;
-const int kCurrentVersion = 24;
+const int kCurrentVersion = 25;
 
 // A bunch of convenience functions to read/write to SerializeObjects.  The
 // de-serializers assume the input data will be in the correct format and fall
@@ -550,8 +552,11 @@ void WriteFrameState(
     WriteFrameState(children[i], obj, false);
 }
 
-void ReadFrameState(SerializeObject* obj, bool is_top,
-                    ExplodedFrameState* state) {
+void ReadFrameState(
+    SerializeObject* obj,
+    bool is_top,
+    std::vector<UniqueNameHelper::Replacement>* unique_name_replacements,
+    ExplodedFrameState* state) {
   if (obj->version < 14 && !is_top)
     ReadInteger(obj);  // Skip over redundant version field.
 
@@ -561,6 +566,13 @@ void ReadFrameState(SerializeObject* obj, bool is_top,
     ReadString(obj);  // Skip obsolete original url string field.
 
   state->target = ReadString(obj);
+  if (obj->version < 25 && !state->target.is_null()) {
+    state->target = base::NullableString16(
+        base::UTF8ToUTF16(UniqueNameHelper::UpdateLegacyNameFromV24(
+            base::UTF16ToUTF8(state->target.string()),
+            unique_name_replacements)),
+        false);
+  }
   if (obj->version < 15) {
     ReadString(obj);  // Skip obsolete parent field.
     ReadString(obj);  // Skip obsolete title field.
@@ -660,7 +672,7 @@ void ReadFrameState(SerializeObject* obj, bool is_top,
       ReadAndValidateVectorSize(obj, sizeof(ExplodedFrameState));
   state->children.resize(num_children);
   for (size_t i = 0; i < num_children; ++i)
-    ReadFrameState(obj, false, &state->children[i]);
+    ReadFrameState(obj, false, unique_name_replacements, &state->children[i]);
 }
 
 void WritePageState(const ExplodedPageState& state, SerializeObject* obj) {
@@ -689,7 +701,8 @@ void ReadPageState(SerializeObject* obj, ExplodedPageState* state) {
   if (obj->version >= 14)
     ReadStringVector(obj, &state->referenced_files);
 
-  ReadFrameState(obj, true, &state->top);
+  std::vector<UniqueNameHelper::Replacement> unique_name_replacements;
+  ReadFrameState(obj, true, &unique_name_replacements, &state->top);
 
   if (obj->version < 14)
     RecursivelyAppendReferencedFiles(state->top, &state->referenced_files);
@@ -763,11 +776,23 @@ bool DecodePageState(const std::string& encoded, ExplodedPageState* exploded) {
   return !obj.parse_error;
 }
 
-void EncodePageState(const ExplodedPageState& exploded, std::string* encoded) {
+static void EncodePageStateInternal(const ExplodedPageState& exploded,
+                                    int version,
+                                    std::string* encoded) {
   SerializeObject obj;
-  obj.version = kCurrentVersion;
+  obj.version = version;
   WritePageState(exploded, &obj);
   *encoded = obj.GetAsString();
+}
+
+void EncodePageState(const ExplodedPageState& exploded, std::string* encoded) {
+  EncodePageStateInternal(exploded, kCurrentVersion, encoded);
+}
+
+void EncodePageStateForTesting(const ExplodedPageState& exploded,
+                               int version,
+                               std::string* encoded) {
+  EncodePageStateInternal(exploded, version, encoded);
 }
 
 #if defined(OS_ANDROID)

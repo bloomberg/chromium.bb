@@ -74,6 +74,9 @@ CONTENT_EXPORT bool DecodePageState(const std::string& encoded,
                                     ExplodedPageState* exploded);
 CONTENT_EXPORT void EncodePageState(const ExplodedPageState& exploded,
                                     std::string* encoded);
+CONTENT_EXPORT void EncodePageStateForTesting(const ExplodedPageState& exploded,
+                                              int version,
+                                              std::string* encoded);
 
 #if defined(OS_ANDROID)
 CONTENT_EXPORT bool DecodePageStateWithDeviceScaleFactorForTesting(

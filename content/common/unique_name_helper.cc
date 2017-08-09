@@ -5,10 +5,13 @@
 #include "content/common/unique_name_helper.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "crypto/sha2.h"
 
 namespace content {
 
@@ -22,7 +25,7 @@ class PendingChildFrameAdapter : public UniqueNameHelper::FrameAdapter {
 
   // FrameAdapter overrides:
   bool IsMainFrame() const override { return false; }
-  bool IsCandidateUnique(const std::string& name) const override {
+  bool IsCandidateUnique(base::StringPiece name) const override {
     return parent_->IsCandidateUnique(name);
   }
   int GetSiblingCount() const override {
@@ -53,6 +56,11 @@ class PendingChildFrameAdapter : public UniqueNameHelper::FrameAdapter {
 constexpr char kFramePathPrefix[] = "<!--framePath /";
 constexpr int kFramePathPrefixLength = 15;
 constexpr int kFramePathSuffixLength = 3;
+
+// 80% of unique names are shorter than this, and it also guarantees that this
+// won't ever increase the length of a unique name, as a hashed unique name is
+// exactly 80 characters.
+constexpr size_t kMaxRequestedNameSize = 80;
 
 bool IsNameWithFramePath(base::StringPiece name) {
   return name.starts_with(kFramePathPrefix) && name.ends_with("-->") &&
@@ -130,10 +138,10 @@ std::string AppendUniqueSuffix(const FrameAdapter* frame,
   return candidate;
 }
 
-std::string CalculateNewName(const FrameAdapter* frame,
-                             const std::string& name) {
+std::string CalculateNameInternal(const FrameAdapter* frame,
+                                  base::StringPiece name) {
   if (!name.empty() && frame->IsCandidateUnique(name) && name != "_blank")
-    return name;
+    return name.as_string();
 
   std::string candidate = GenerateCandidate(frame);
   if (frame->IsCandidateUnique(candidate))
@@ -143,9 +151,38 @@ std::string CalculateNewName(const FrameAdapter* frame,
   return AppendUniqueSuffix(frame, candidate, likely_unique_suffix);
 }
 
+std::string CalculateFrameHash(base::StringPiece name) {
+  DCHECK_GT(name.size(), kMaxRequestedNameSize);
+
+  std::string hashed_name;
+  uint8_t result[crypto::kSHA256Length];
+  crypto::SHA256HashString(name, result, arraysize(result));
+  hashed_name += "<!--frameHash";
+  hashed_name += base::HexEncode(result, arraysize(result));
+  hashed_name += "-->";
+  return hashed_name;
+}
+
+std::string CalculateNewName(const FrameAdapter* frame,
+                             base::StringPiece name) {
+  std::string hashed_name;
+  // By default, |name| is the browsing context name, which can be arbitrarily
+  // long. Since the generated name is part of history entries and FrameState,
+  // hash pathologically long names to avoid using a lot of memory.
+  if (name.size() > kMaxRequestedNameSize) {
+    hashed_name = CalculateFrameHash(name);
+    name = hashed_name;
+  }
+  return CalculateNameInternal(frame, name);
+}
+
 }  // namespace
 
 UniqueNameHelper::FrameAdapter::~FrameAdapter() {}
+
+UniqueNameHelper::Replacement::Replacement(std::string old_name,
+                                           std::string new_name)
+    : old_name(std::move(old_name)), new_name(std::move(new_name)) {}
 
 UniqueNameHelper::UniqueNameHelper(FrameAdapter* frame) : frame_(frame) {}
 
@@ -165,6 +202,76 @@ void UniqueNameHelper::UpdateName(const std::string& name) {
   // calculation checks for collisions with existing unique names.
   unique_name_.clear();
   unique_name_ = CalculateNewName(frame_, name);
+}
+
+// |replacements| is used for two purposes:
+// - when processing a non-frame path unique name that exceeds the max size,
+//   this collection records the original name and the hashed name.
+// - when processing a frame path unique name, this collection is used to fix up
+//   ancestor frames in the frame path with an updated unique name.
+//
+std::string UniqueNameHelper::UpdateLegacyNameFromV24(
+    std::string legacy_name,
+    std::vector<Replacement>* replacements) {
+  if (IsNameWithFramePath(legacy_name)) {
+    // Frame paths can embed ancestor's unique names. Since the contract of this
+    // function is that names must be updated beginning from the root of the
+    // tree and go down from there, it is impossible for a frame path to contain
+    // a unique name (which needs a replacement) that has not already been seen
+    // and inserted into |replacements|.
+    size_t index = 0;
+    for (const auto& replacement : *replacements) {
+      size_t next_index = legacy_name.find(replacement.old_name);
+      if (next_index == std::string::npos)
+        continue;
+      legacy_name.replace(next_index, replacement.old_name.size(),
+                          replacement.new_name);
+      index = next_index -
+              (replacement.old_name.size() - replacement.new_name.size());
+    }
+    return legacy_name;
+  }
+
+  if (legacy_name.size() > kMaxRequestedNameSize) {
+    std::string hashed_name = CalculateFrameHash(legacy_name);
+    // Suppose 'aaa' and 'caaab' are unique names in the same tree. A
+    // hypothetical frame path might look like:
+    //   <!--framePath //aaa/caaab/<!--frame0-->-->
+    //
+    // In this case, it's important to avoid matching 'aaa' against the
+    // substring in 'caaab'. To try to avoid this, the search and the
+    // replacement strings are wrapped in '/' to try to match the path delimiter
+    // in generated frame paths.
+    //
+    // However, nothing prevents a browsing context name from containing a
+    // literal '/', which could lead to an ambiguous parse. Consider the case
+    // where 'aaa', 'bbb', and 'aaa/bbb' are unique names in the same tree. The
+    // following frame path is ambiguous:
+    //   <!--framePath //aaa/bbb/<!--frame0-->-->
+    //
+    // While it's possible to use the depth of the frame tree as a hint for
+    // disambiguating this, the number of ways to split up the frame path
+    // quickly becomes quite large. This code takes the simple approach and
+    // simply aims to implement a best effort update, accepting that there may
+    // be some names that are updated incorrectly.
+    std::string original_string = "/";
+    original_string += legacy_name;
+    original_string += "/";
+    std::string new_string = "/";
+    new_string += hashed_name;
+    new_string += "/";
+    replacements->emplace_back(std::move(original_string),
+                               std::move(new_string));
+    return hashed_name;
+  }
+
+  return legacy_name;
+}
+
+std::string UniqueNameHelper::CalculateLegacyNameForTesting(
+    const FrameAdapter* frame,
+    const std::string& name) {
+  return CalculateNameInternal(frame, name);
 }
 
 }  // namespace content
