@@ -457,7 +457,6 @@ libvpx_srcs_x86_avx2 = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/sad4d_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/sad_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/variance_avx2.c",
-  "//third_party/libvpx/source/libvpx/vpx_dsp/x86/variance_impl_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/vpx_subpixel_8t_intrin_avx2.c",
 ]
 libvpx_srcs_x86_64 = [
@@ -921,7 +920,6 @@ libvpx_srcs_x86_64_avx2 = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/sad4d_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/sad_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/variance_avx2.c",
-  "//third_party/libvpx/source/libvpx/vpx_dsp/x86/variance_impl_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/vpx_subpixel_8t_intrin_avx2.c",
 ]
 libvpx_srcs_arm = [
@@ -1588,6 +1586,7 @@ libvpx_srcs_arm_neon = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/idct_neon.h",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/intrapred_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/mem_neon.h",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/arm/quantize_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/sad4d_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/sad_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/subpel_variance_neon.c",
@@ -2076,6 +2075,7 @@ libvpx_srcs_arm_neon_cpu_detect_neon = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/idct8x8_1_add_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/idct8x8_add_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/intrapred_neon.c",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/arm/quantize_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/sad4d_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/sad_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/subpel_variance_neon.c",
@@ -2409,6 +2409,7 @@ libvpx_srcs_arm64 = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/intrapred_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/loopfilter_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/mem_neon.h",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/arm/quantize_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/sad4d_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/sad_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/subpel_variance_neon.c",
