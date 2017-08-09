@@ -173,6 +173,7 @@ void txfm_stage_range_check(const int8_t *stage_range, int stage_num,
   }
   for (int i = 0; i < stage_num - 1; ++i) {
     // make sure there is no overflow while doing half_btf()
+    EXPECT_LE(stage_range[i] + cos_bit[i], high_range);
     EXPECT_LE(stage_range[i + 1] + cos_bit[i], high_range);
   }
 }
