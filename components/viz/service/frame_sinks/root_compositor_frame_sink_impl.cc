@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/frame_sinks/gpu_root_compositor_frame_sink.h"
+#include "components/viz/service/frame_sinks/root_compositor_frame_sink_impl.h"
 
 #include <utility>
 
@@ -13,7 +13,7 @@
 
 namespace viz {
 
-GpuRootCompositorFrameSink::GpuRootCompositorFrameSink(
+RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
     FrameSinkManagerImpl* frame_sink_manager,
     const FrameSinkId& frame_sink_id,
     std::unique_ptr<Display> display,
@@ -35,50 +35,50 @@ GpuRootCompositorFrameSink::GpuRootCompositorFrameSink(
       hit_test_aggregator_(this) {
   DCHECK(display_begin_frame_source_);
   compositor_frame_sink_binding_.set_connection_error_handler(
-      base::Bind(&GpuRootCompositorFrameSink::OnClientConnectionLost,
+      base::Bind(&RootCompositorFrameSinkImpl::OnClientConnectionLost,
                  base::Unretained(this)));
   frame_sink_manager->RegisterBeginFrameSource(
       display_begin_frame_source_.get(), frame_sink_id);
   display_->Initialize(this, frame_sink_manager->surface_manager());
 }
 
-GpuRootCompositorFrameSink::~GpuRootCompositorFrameSink() {
+RootCompositorFrameSinkImpl::~RootCompositorFrameSinkImpl() {
   support_->frame_sink_manager()->UnregisterBeginFrameSource(
       display_begin_frame_source_.get());
 }
 
-void GpuRootCompositorFrameSink::SetDisplayVisible(bool visible) {
+void RootCompositorFrameSinkImpl::SetDisplayVisible(bool visible) {
   DCHECK(display_);
   display_->SetVisible(visible);
 }
 
-void GpuRootCompositorFrameSink::ResizeDisplay(const gfx::Size& size) {
+void RootCompositorFrameSinkImpl::ResizeDisplay(const gfx::Size& size) {
   DCHECK(display_);
   display_->Resize(size);
 }
 
-void GpuRootCompositorFrameSink::SetDisplayColorSpace(
+void RootCompositorFrameSinkImpl::SetDisplayColorSpace(
     const gfx::ColorSpace& color_space) {
   DCHECK(display_);
   display_->SetColorSpace(color_space, color_space);
 }
 
-void GpuRootCompositorFrameSink::SetOutputIsSecure(bool secure) {
+void RootCompositorFrameSinkImpl::SetOutputIsSecure(bool secure) {
   DCHECK(display_);
   display_->SetOutputIsSecure(secure);
 }
 
-void GpuRootCompositorFrameSink::SetLocalSurfaceId(
+void RootCompositorFrameSinkImpl::SetLocalSurfaceId(
     const LocalSurfaceId& local_surface_id,
     float scale_factor) {
   display_->SetLocalSurfaceId(local_surface_id, scale_factor);
 }
 
-void GpuRootCompositorFrameSink::SetNeedsBeginFrame(bool needs_begin_frame) {
+void RootCompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
   support_->SetNeedsBeginFrame(needs_begin_frame);
 }
 
-void GpuRootCompositorFrameSink::SubmitCompositorFrame(
+void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame,
     mojom::HitTestRegionListPtr hit_test_region_list) {
@@ -91,12 +91,12 @@ void GpuRootCompositorFrameSink::SubmitCompositorFrame(
   }
 }
 
-void GpuRootCompositorFrameSink::DidNotProduceFrame(
+void RootCompositorFrameSinkImpl::DidNotProduceFrame(
     const BeginFrameAck& begin_frame_ack) {
   support_->DidNotProduceFrame(begin_frame_ack);
 }
 
-void GpuRootCompositorFrameSink::OnAggregatedHitTestRegionListUpdated(
+void RootCompositorFrameSinkImpl::OnAggregatedHitTestRegionListUpdated(
     mojo::ScopedSharedBufferHandle active_handle,
     uint32_t active_handle_size,
     mojo::ScopedSharedBufferHandle idle_handle,
@@ -106,53 +106,53 @@ void GpuRootCompositorFrameSink::OnAggregatedHitTestRegionListUpdated(
       std::move(idle_handle), idle_handle_size);
 }
 
-void GpuRootCompositorFrameSink::SwitchActiveAggregatedHitTestRegionList(
+void RootCompositorFrameSinkImpl::SwitchActiveAggregatedHitTestRegionList(
     uint8_t active_handle_index) {
   support_->frame_sink_manager()->SwitchActiveAggregatedHitTestRegionList(
       support_->frame_sink_id(), active_handle_index);
 }
 
-void GpuRootCompositorFrameSink::DisplayOutputSurfaceLost() {
+void RootCompositorFrameSinkImpl::DisplayOutputSurfaceLost() {
   // TODO(staraz): Implement this. Client should hear about context/output
   // surface lost.
 }
 
-void GpuRootCompositorFrameSink::DisplayWillDrawAndSwap(
+void RootCompositorFrameSinkImpl::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
     const cc::RenderPassList& render_pass) {
   hit_test_aggregator_.PostTaskAggregate(display_->CurrentSurfaceId());
 }
 
-void GpuRootCompositorFrameSink::DisplayDidDrawAndSwap() {}
+void RootCompositorFrameSinkImpl::DisplayDidDrawAndSwap() {}
 
-void GpuRootCompositorFrameSink::DidReceiveCompositorFrameAck(
+void RootCompositorFrameSinkImpl::DidReceiveCompositorFrameAck(
     const std::vector<ReturnedResource>& resources) {
   if (client_)
     client_->DidReceiveCompositorFrameAck(resources);
 }
 
-void GpuRootCompositorFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
+void RootCompositorFrameSinkImpl::OnBeginFrame(const BeginFrameArgs& args) {
   hit_test_aggregator_.Swap();
   if (client_)
     client_->OnBeginFrame(args);
 }
 
-void GpuRootCompositorFrameSink::OnBeginFramePausedChanged(bool paused) {
+void RootCompositorFrameSinkImpl::OnBeginFramePausedChanged(bool paused) {
   if (client_)
     client_->OnBeginFramePausedChanged(paused);
 }
 
-void GpuRootCompositorFrameSink::ReclaimResources(
+void RootCompositorFrameSinkImpl::ReclaimResources(
     const std::vector<ReturnedResource>& resources) {
   if (client_)
     client_->ReclaimResources(resources);
 }
 
-void GpuRootCompositorFrameSink::WillDrawSurface(
+void RootCompositorFrameSinkImpl::WillDrawSurface(
     const LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {}
 
-void GpuRootCompositorFrameSink::OnClientConnectionLost() {
+void RootCompositorFrameSinkImpl::OnClientConnectionLost() {
   support_->frame_sink_manager()->OnClientConnectionLost(
       support_->frame_sink_id());
 }

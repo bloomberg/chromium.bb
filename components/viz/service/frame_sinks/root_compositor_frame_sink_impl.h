@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_GPU_ROOT_COMPOSITOR_FRAME_SINK_H_
-#define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_GPU_ROOT_COMPOSITOR_FRAME_SINK_H_
+#ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_ROOT_COMPOSITOR_FRAME_SINK_IMPL_H_
+#define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_ROOT_COMPOSITOR_FRAME_SINK_IMPL_H_
 
 #include <memory>
 
@@ -25,14 +25,14 @@ class CompositorFrameSinkSupport;
 class Display;
 class FrameSinkManagerImpl;
 
-class GpuRootCompositorFrameSink
+class RootCompositorFrameSinkImpl
     : public NON_EXPORTED_BASE(CompositorFrameSinkSupportClient),
       public NON_EXPORTED_BASE(mojom::CompositorFrameSink),
       public NON_EXPORTED_BASE(mojom::DisplayPrivate),
       public NON_EXPORTED_BASE(DisplayClient),
       public HitTestAggregatorDelegate {
  public:
-  GpuRootCompositorFrameSink(
+  RootCompositorFrameSinkImpl(
       FrameSinkManagerImpl* frame_sink_manager,
       const FrameSinkId& frame_sink_id,
       std::unique_ptr<Display> display,
@@ -41,7 +41,7 @@ class GpuRootCompositorFrameSink
       mojom::CompositorFrameSinkClientPtr client,
       mojom::DisplayPrivateAssociatedRequest display_private_request);
 
-  ~GpuRootCompositorFrameSink() override;
+  ~RootCompositorFrameSinkImpl() override;
 
   // mojom::DisplayPrivate:
   void SetDisplayVisible(bool visible) override;
@@ -89,7 +89,7 @@ class GpuRootCompositorFrameSink
 
   std::unique_ptr<CompositorFrameSinkSupport> support_;
 
-  // GpuRootCompositorFrameSink holds a Display and its BeginFrameSource if
+  // RootCompositorFrameSinkImpl holds a Display and its BeginFrameSource if
   // it was created with a non-null gpu::SurfaceHandle.
   std::unique_ptr<BeginFrameSource> display_begin_frame_source_;
   std::unique_ptr<Display> display_;
@@ -101,9 +101,9 @@ class GpuRootCompositorFrameSink
 
   HitTestAggregator hit_test_aggregator_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuRootCompositorFrameSink);
+  DISALLOW_COPY_AND_ASSIGN(RootCompositorFrameSinkImpl);
 };
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_SERVICE_FRAME_SINKS_GPU_ROOT_COMPOSITOR_FRAME_SINK_H_
+#endif  // COMPONENTS_VIZ_SERVICE_FRAME_SINKS_ROOT_COMPOSITOR_FRAME_SINK_IMPL_H_

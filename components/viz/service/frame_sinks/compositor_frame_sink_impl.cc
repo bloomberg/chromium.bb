@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/frame_sinks/gpu_compositor_frame_sink.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_impl.h"
 
 #include <utility>
 
@@ -10,30 +10,31 @@
 
 namespace viz {
 
-GpuCompositorFrameSink::GpuCompositorFrameSink(
+CompositorFrameSinkImpl::CompositorFrameSinkImpl(
     FrameSinkManagerImpl* frame_sink_manager,
     const FrameSinkId& frame_sink_id,
     mojom::CompositorFrameSinkRequest request,
     mojom::CompositorFrameSinkClientPtr client)
-    : support_(CompositorFrameSinkSupport::Create(
-          this,
-          frame_sink_manager,
-          frame_sink_id,
-          false /* is_root */,
-          true /* needs_sync_points */)),
+    : support_(
+          CompositorFrameSinkSupport::Create(this,
+                                             frame_sink_manager,
+                                             frame_sink_id,
+                                             false /* is_root */,
+                                             true /* needs_sync_points */)),
       client_(std::move(client)),
       compositor_frame_sink_binding_(this, std::move(request)) {
-  compositor_frame_sink_binding_.set_connection_error_handler(base::Bind(
-      &GpuCompositorFrameSink::OnClientConnectionLost, base::Unretained(this)));
+  compositor_frame_sink_binding_.set_connection_error_handler(
+      base::Bind(&CompositorFrameSinkImpl::OnClientConnectionLost,
+                 base::Unretained(this)));
 }
 
-GpuCompositorFrameSink::~GpuCompositorFrameSink() = default;
+CompositorFrameSinkImpl::~CompositorFrameSinkImpl() = default;
 
-void GpuCompositorFrameSink::SetNeedsBeginFrame(bool needs_begin_frame) {
+void CompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
   support_->SetNeedsBeginFrame(needs_begin_frame);
 }
 
-void GpuCompositorFrameSink::SubmitCompositorFrame(
+void CompositorFrameSinkImpl::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame,
     mojom::HitTestRegionListPtr hit_test_region_list) {
@@ -45,38 +46,38 @@ void GpuCompositorFrameSink::SubmitCompositorFrame(
   }
 }
 
-void GpuCompositorFrameSink::DidNotProduceFrame(
+void CompositorFrameSinkImpl::DidNotProduceFrame(
     const BeginFrameAck& begin_frame_ack) {
   support_->DidNotProduceFrame(begin_frame_ack);
 }
 
-void GpuCompositorFrameSink::DidReceiveCompositorFrameAck(
+void CompositorFrameSinkImpl::DidReceiveCompositorFrameAck(
     const std::vector<ReturnedResource>& resources) {
   if (client_)
     client_->DidReceiveCompositorFrameAck(resources);
 }
 
-void GpuCompositorFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
+void CompositorFrameSinkImpl::OnBeginFrame(const BeginFrameArgs& args) {
   if (client_)
     client_->OnBeginFrame(args);
 }
 
-void GpuCompositorFrameSink::OnBeginFramePausedChanged(bool paused) {
+void CompositorFrameSinkImpl::OnBeginFramePausedChanged(bool paused) {
   if (client_)
     client_->OnBeginFramePausedChanged(paused);
 }
 
-void GpuCompositorFrameSink::ReclaimResources(
+void CompositorFrameSinkImpl::ReclaimResources(
     const std::vector<ReturnedResource>& resources) {
   if (client_)
     client_->ReclaimResources(resources);
 }
 
-void GpuCompositorFrameSink::WillDrawSurface(
+void CompositorFrameSinkImpl::WillDrawSurface(
     const LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {}
 
-void GpuCompositorFrameSink::OnClientConnectionLost() {
+void CompositorFrameSinkImpl::OnClientConnectionLost() {
   support_->frame_sink_manager()->OnClientConnectionLost(
       support_->frame_sink_id());
 }
