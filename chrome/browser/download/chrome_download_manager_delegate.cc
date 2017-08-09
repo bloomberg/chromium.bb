@@ -251,8 +251,18 @@ ChromeDownloadManagerDelegate::GetDownloadIdReceiverCallback() {
 void ChromeDownloadManagerDelegate::SetNextId(uint32_t next_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!profile_->IsOffTheRecord());
-  DCHECK_NE(content::DownloadItem::kInvalidId, next_id);
-  next_download_id_ = next_id;
+
+  // |content::DownloadItem::kInvalidId| will be returned only when download
+  // database failed to initialize.
+  bool download_db_available = (next_id != content::DownloadItem::kInvalidId);
+  RecordDatabaseAvailability(download_db_available);
+  if (download_db_available) {
+    next_download_id_ = next_id;
+  } else {
+    // Still download files without download database, all download history in
+    // this browser session will not be persisted.
+    next_download_id_ = content::DownloadItem::kInvalidId + 1;
+  }
 
   IdCallbackVector callbacks;
   id_callbacks_.swap(callbacks);

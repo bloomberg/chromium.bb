@@ -90,4 +90,8 @@ void RecordOpenedDangerousConfirmDialog(
 // Record how a download was opened.
 void RecordDownloadOpenMethod(ChromeDownloadOpenMethod open_method);
 
+// Record if the database is available to provide the next download id before
+// starting all downloads.
+void RecordDatabaseAvailability(bool is_available);
+
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_
