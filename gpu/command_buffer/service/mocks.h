@@ -109,8 +109,9 @@ class MockShaderTranslator : public ShaderTranslatorInterface {
                           VaryingMap* varying_map,
                           InterfaceBlockMap* interface_block_map,
                           OutputVariableList* output_variable_list));
-  MOCK_CONST_METHOD0(
-      GetStringForOptionsThatWouldAffectCompilation, std::string());
+  MOCK_CONST_METHOD0(GetStringForOptionsThatWouldAffectCompilation,
+                     OptionsAffectingCompilationString*());
+
  private:
   ~MockShaderTranslator() override;
 };

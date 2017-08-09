@@ -29,6 +29,7 @@
 
 using ::testing::_;
 using ::testing::DoAll;
+using ::testing::Exactly;
 using ::testing::InSequence;
 using ::testing::MatcherCast;
 using ::testing::Pointee;
@@ -437,11 +438,11 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
     TestHelper::SetShaderStates(gl_.get(), vshader, true, nullptr, nullptr,
                                 shader_version, &vertex_attrib_map,
                                 &vertex_uniform_map, &vertex_varying_map,
-                                nullptr, &vertex_output_variable_list);
+                                nullptr, &vertex_output_variable_list, nullptr);
     TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                                 shader_version, &frag_attrib_map,
                                 &frag_uniform_map, &frag_varying_map, nullptr,
-                                &frag_output_variable_list);
+                                &frag_output_variable_list, nullptr);
 
     // Set up program
     Program* program =
@@ -942,13 +943,13 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
   ASSERT_TRUE(vshader != NULL);
   TestHelper::SetShaderStates(gl_.get(), vshader, true, nullptr, nullptr,
                               nullptr, &attrib_map, &uniform_map, &varying_map,
-                              nullptr, &output_variable_list);
+                              nullptr, &output_variable_list, nullptr);
   Shader* fshader = shader_manager_.CreateShader(
       kFragmentShaderClientId, kFragmentShaderServiceId, GL_FRAGMENT_SHADER);
   ASSERT_TRUE(fshader != NULL);
   TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                               nullptr, &attrib_map, &uniform_map, &varying_map,
-                              nullptr, &output_variable_list);
+                              nullptr, &output_variable_list, nullptr);
   static ProgramManagerWithShaderTest::AttribInfo kAttribs[] = {
     { kAttrib1Name, kAttrib1Size, kAttrib1Type, kAttrib1Location, },
     { kAttrib2Name, kAttrib2Size, kAttrib2BadType, kAttrib2Location, },
@@ -1612,7 +1613,7 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
   // Set Status
   TestHelper::SetShaderStates(gl_.get(), vshader, true, nullptr, nullptr,
                               nullptr, &attrib_map, nullptr, nullptr, nullptr,
-                              nullptr);
+                              nullptr, nullptr);
   // Check attrib infos got copied.
   for (AttributeMap::const_iterator it = attrib_map.begin();
        it != attrib_map.end(); ++it) {
@@ -1627,7 +1628,7 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
   }
   TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                               nullptr, &attrib_map, nullptr, nullptr, nullptr,
-                              nullptr);
+                              nullptr, nullptr);
   // Set up program
   Program* program =
       manager_->CreateProgram(kClientProgramId, kServiceProgramId);
@@ -1695,10 +1696,10 @@ TEST_F(ProgramManagerWithShaderTest, UniformsPrecisionMismatch) {
   // Set Status
   TestHelper::SetShaderStates(gl_.get(), vshader, true, nullptr, nullptr,
                               nullptr, nullptr, &vertex_uniform_map, nullptr,
-                              nullptr, nullptr);
+                              nullptr, nullptr, nullptr);
   TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                               nullptr, nullptr, &frag_uniform_map, nullptr,
-                              nullptr, nullptr);
+                              nullptr, nullptr, nullptr);
   // Set up program
   Program* program =
       manager_->CreateProgram(kClientProgramId, kServiceProgramId);
@@ -1817,7 +1818,7 @@ TEST_F(ProgramManagerWithShaderTest, FragmentOutputTypes) {
       kVertexShaderClientId, kVertexShaderServiceId, GL_VERTEX_SHADER);
   TestHelper::SetShaderStates(gl_.get(), vshader, true, nullptr, nullptr,
                               nullptr, nullptr, nullptr, nullptr, nullptr,
-                              nullptr);
+                              nullptr, nullptr);
   Shader* fshader = shader_manager_.CreateShader(
       kFragmentShaderClientId, kFragmentShaderServiceId, GL_FRAGMENT_SHADER);
   ASSERT_TRUE(vshader && fshader);
@@ -1830,7 +1831,7 @@ TEST_F(ProgramManagerWithShaderTest, FragmentOutputTypes) {
   {  // No outputs.
     TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                                 nullptr, nullptr, nullptr, nullptr, nullptr,
-                                nullptr);
+                                nullptr, nullptr);
     EXPECT_TRUE(LinkAsExpected(program, true));
     EXPECT_EQ(0u, program->fragment_output_type_mask());
     EXPECT_EQ(0u, program->fragment_output_written_mask());
@@ -1844,7 +1845,7 @@ TEST_F(ProgramManagerWithShaderTest, FragmentOutputTypes) {
     fragment_outputs.push_back(var);
     TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                                 nullptr, nullptr, nullptr, nullptr, nullptr,
-                                &fragment_outputs);
+                                &fragment_outputs, nullptr);
     EXPECT_TRUE(LinkAsExpected(program, true));
     EXPECT_EQ(0x3u, program->fragment_output_type_mask());
     EXPECT_EQ(0x3u, program->fragment_output_written_mask());
@@ -1858,7 +1859,7 @@ TEST_F(ProgramManagerWithShaderTest, FragmentOutputTypes) {
     fragment_outputs.push_back(var);
     TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                                 nullptr, nullptr, nullptr, nullptr, nullptr,
-                                &fragment_outputs);
+                                &fragment_outputs, nullptr);
     EXPECT_TRUE(LinkAsExpected(program, true));
     EXPECT_EQ(0xFFFFu, program->fragment_output_type_mask());
     EXPECT_EQ(0xFFFFu, program->fragment_output_written_mask());
@@ -1876,7 +1877,7 @@ TEST_F(ProgramManagerWithShaderTest, FragmentOutputTypes) {
     fragment_outputs.push_back(var);
     TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                                 nullptr, nullptr, nullptr, nullptr, nullptr,
-                                &fragment_outputs);
+                                &fragment_outputs, nullptr);
     EXPECT_TRUE(LinkAsExpected(program, true));
     EXPECT_EQ(0x3u, program->fragment_output_type_mask());
     EXPECT_EQ(0x3u, program->fragment_output_written_mask());
@@ -1890,7 +1891,7 @@ TEST_F(ProgramManagerWithShaderTest, FragmentOutputTypes) {
     fragment_outputs.push_back(var);
     TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                                 nullptr, nullptr, nullptr, nullptr, nullptr,
-                                &fragment_outputs);
+                                &fragment_outputs, nullptr);
     EXPECT_TRUE(LinkAsExpected(program, true));
     EXPECT_EQ(0x2u, program->fragment_output_type_mask());
     EXPECT_EQ(0x3u, program->fragment_output_written_mask());
@@ -1904,7 +1905,7 @@ TEST_F(ProgramManagerWithShaderTest, FragmentOutputTypes) {
     fragment_outputs.push_back(var);
     TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                                 nullptr, nullptr, nullptr, nullptr, nullptr,
-                                &fragment_outputs);
+                                &fragment_outputs, nullptr);
     EXPECT_TRUE(LinkAsExpected(program, true));
     EXPECT_EQ(0x2u, program->fragment_output_type_mask());
     EXPECT_EQ(0x3u, program->fragment_output_written_mask());
@@ -1922,7 +1923,7 @@ TEST_F(ProgramManagerWithShaderTest, FragmentOutputTypes) {
     fragment_outputs.push_back(var);
     TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                                 nullptr, nullptr, nullptr, nullptr, nullptr,
-                                &fragment_outputs);
+                                &fragment_outputs, nullptr);
     EXPECT_TRUE(LinkAsExpected(program, true));
     EXPECT_EQ(0xF1u, program->fragment_output_type_mask());
     EXPECT_EQ(0xF3u, program->fragment_output_written_mask());
@@ -2201,6 +2202,13 @@ class ProgramManagerWithCacheTest : public ProgramManagerTestBase {
     TestHelper::SetShaderStates(gl_.get(), fragment_shader_, true);
   }
 
+  void SetShadersCompiled(const std::string& compilation_options_string) {
+    TestHelper::SetShaderStates(gl_.get(), vertex_shader_, true,
+                                compilation_options_string);
+    TestHelper::SetShaderStates(gl_.get(), fragment_shader_, true,
+                                compilation_options_string);
+  }
+
   void SetProgramCached() {
     cache_->LinkedProgramCacheSuccess(
         vertex_shader_->source(), fragment_shader_->source(),
@@ -2278,6 +2286,16 @@ class ProgramManagerWithCacheTest : public ProgramManagerTestBase {
     TestHelper::SetupProgramSuccessExpectations(
         gl_.get(), feature_info_.get(), nullptr, 0, nullptr, 0, nullptr, 0,
         nullptr, 0, service_program_id);
+  }
+
+  void SetExpectationsForProgramNotLoaded() {
+    EXPECT_CALL(*cache_.get(),
+                LoadLinkedProgram(
+                    program_->service_id(), vertex_shader_, fragment_shader_,
+                    &program_->bind_attrib_location_map(),
+                    program_->effective_transform_feedback_varyings(),
+                    program_->effective_transform_feedback_buffer_mode(), _))
+        .Times(Exactly(0));
   }
 
   void SetExpectationsForProgramLink() {
@@ -2368,6 +2386,17 @@ TEST_F(ProgramManagerWithCacheTest, LoadProgramOnProgramCacheHit) {
   EXPECT_TRUE(program_->Link(NULL, Program::kCountOnlyStaticallyUsed, this));
 }
 
+TEST_F(ProgramManagerWithCacheTest, RelinkOnChangedCompileOptions) {
+  SetShadersCompiled("a");
+  SetProgramCached();
+  SetExpectationsForProgramCached();
+
+  SetShadersCompiled("b");
+  SetExpectationsForProgramLink();
+  SetExpectationsForProgramNotLoaded();
+  EXPECT_TRUE(program_->Link(NULL, Program::kCountOnlyStaticallyUsed, this));
+}
+
 class ProgramManagerWithPathRenderingTest
     : public ProgramManagerWithShaderTest,
       public testing::WithParamInterface<
@@ -2454,10 +2483,10 @@ TEST_P(ProgramManagerWithPathRenderingTest, BindFragmentInputLocation) {
       kFragmentInput3StaticUse, kFragmentInput3Name);
   TestHelper::SetShaderStates(gl_.get(), vshader, true, nullptr, nullptr,
                               nullptr, nullptr, nullptr, &varying_map, nullptr,
-                              nullptr);
+                              nullptr, nullptr);
   TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                               nullptr, nullptr, nullptr, &varying_map, nullptr,
-                              nullptr);
+                              nullptr, nullptr);
   Program* program =
       manager_->CreateProgram(kClientProgramId, kServiceProgramId);
   ASSERT_TRUE(program != NULL);

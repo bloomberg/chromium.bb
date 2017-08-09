@@ -1917,7 +1917,8 @@ void GLES2DecoderTestBase::SetupShader(
 
   TestHelper::SetShaderStates(gl_.get(), GetShader(vertex_shader_client_id),
                               true, nullptr, nullptr, &shader_language_version_,
-                              nullptr, nullptr, nullptr, nullptr, nullptr);
+                              nullptr, nullptr, nullptr, nullptr, nullptr,
+                              nullptr);
 
   OutputVariableList frag_output_variable_list;
   frag_output_variable_list.push_back(TestHelper::ConstructOutputVariable(
@@ -1927,7 +1928,7 @@ void GLES2DecoderTestBase::SetupShader(
   TestHelper::SetShaderStates(gl_.get(), GetShader(fragment_shader_client_id),
                               true, nullptr, nullptr, &shader_language_version_,
                               nullptr, nullptr, nullptr, nullptr,
-                              &frag_output_variable_list);
+                              &frag_output_variable_list, nullptr);
 
   cmds::AttachShader attach_cmd;
   attach_cmd.Init(program_client_id, vertex_shader_client_id);

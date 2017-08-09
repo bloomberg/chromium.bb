@@ -418,13 +418,13 @@ TEST_F(ShaderTranslatorTest, OptionsString) {
                                  false));
 
   std::string options_1(
-      translator_1->GetStringForOptionsThatWouldAffectCompilation());
+      translator_1->GetStringForOptionsThatWouldAffectCompilation()->data);
   std::string options_2(
-      translator_1->GetStringForOptionsThatWouldAffectCompilation());
+      translator_1->GetStringForOptionsThatWouldAffectCompilation()->data);
   std::string options_3(
-      translator_2->GetStringForOptionsThatWouldAffectCompilation());
+      translator_2->GetStringForOptionsThatWouldAffectCompilation()->data);
   std::string options_4(
-      translator_3->GetStringForOptionsThatWouldAffectCompilation());
+      translator_3->GetStringForOptionsThatWouldAffectCompilation()->data);
 
   EXPECT_EQ(options_1, options_2);
   EXPECT_NE(options_1, options_3);

@@ -51,6 +51,10 @@ void Shader::RequestCompile(scoped_refptr<ShaderTranslatorInterface> translator,
                             TranslatedShaderSourceType type) {
   shader_state_ = kShaderStateCompileRequested;
   translator_ = translator;
+  if (translator_) {
+    options_affecting_compilation_ =
+        translator_->GetStringForOptionsThatWouldAffectCompilation();
+  }
   source_type_ = type;
   last_compiled_source_ = source_;
 }
@@ -121,6 +125,9 @@ void Shader::DoCompile() {
         << "\n--translated-shader--\n" << source_for_driver
         << "\n--info-log--\n" << log_info_;
   }
+
+  // Translator is no longer required and can be released
+  translator_ = nullptr;
 }
 
 void Shader::RefreshTranslatedShaderSource() {
