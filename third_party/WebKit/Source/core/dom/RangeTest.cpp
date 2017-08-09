@@ -8,7 +8,7 @@
 #include "bindings/core/v8/StringOrArrayBufferOrArrayBufferView.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/css/FontFaceDescriptors.h"
-#include "core/css/FontFaceSet.h"
+#include "core/css/FontFaceSetDocument.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/Text.h"
@@ -271,8 +271,8 @@ static void LoadAhem(DummyPageHolder& page_holder, Document& document) {
   ScriptState* script_state =
       ToScriptStateForMainWorld(&page_holder.GetFrame());
   DummyExceptionStateForTesting exception_state;
-  FontFaceSet::From(document)->addForBinding(script_state, ahem,
-                                             exception_state);
+  FontFaceSetDocument::From(document)->addForBinding(script_state, ahem,
+                                                     exception_state);
 }
 
 TEST_F(RangeTest, BoundingRectMustIndependentFromSelection) {

@@ -54,7 +54,7 @@
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSTiming.h"
-#include "core/css/FontFaceSet.h"
+#include "core/css/FontFaceSetDocument.h"
 #include "core/css/MediaQueryMatcher.h"
 #include "core/css/PropertyRegistry.h"
 #include "core/css/StylePropertySet.h"
@@ -6996,8 +6996,9 @@ DEFINE_TRACE_WRAPPERS(Document) {
   // Cannot trace in Supplementable<Document> as it is part of platform/ and
   // thus cannot refer to ScriptWrappableVisitor.
   visitor->TraceWrappersWithManualWriteBarrier(
-      static_cast<FontFaceSet*>(Supplementable<Document>::supplements_.at(
-          FontFaceSet::SupplementName())));
+      static_cast<FontFaceSetDocument*>(
+          Supplementable<Document>::supplements_.at(
+              FontFaceSetDocument::SupplementName())));
   ContainerNode::TraceWrappers(visitor);
 }
 

@@ -31,7 +31,7 @@
 #include "core/HTMLNames.h"
 #include "core/MediaTypeNames.h"
 #include "core/animation/DocumentAnimations.h"
-#include "core/css/FontFaceSet.h"
+#include "core/css/FontFaceSetDocument.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/ElementVisibilityObserver.h"
@@ -1013,9 +1013,9 @@ std::unique_ptr<TracedValue> LocalFrameView::AnalyzerCounters() {
   value->SetInteger("contentsHeightAfterLayout",
                     GetLayoutViewItem().DocumentRect().Height());
   value->SetInteger("visibleHeight", VisibleHeight());
-  value->SetInteger(
-      "approximateBlankCharacterCount",
-      FontFaceSet::ApproximateBlankCharacterCount(*frame_->GetDocument()));
+  value->SetInteger("approximateBlankCharacterCount",
+                    FontFaceSetDocument::ApproximateBlankCharacterCount(
+                        *frame_->GetDocument()));
   return value;
 }
 
@@ -2570,7 +2570,7 @@ void LocalFrameView::PerformPostLayoutTasks() {
 
   DCHECK(frame_->GetDocument());
 
-  FontFaceSet::DidLayout(*frame_->GetDocument());
+  FontFaceSetDocument::DidLayout(*frame_->GetDocument());
   // Cursor update scheduling is done by the local root, which is the main frame
   // if there are no RemoteFrame ancestors in the frame tree. Use of
   // localFrameRoot() is discouraged but will change when cursor update

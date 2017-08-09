@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/CSSValueList.h"
-#include "core/css/FontFaceSet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"

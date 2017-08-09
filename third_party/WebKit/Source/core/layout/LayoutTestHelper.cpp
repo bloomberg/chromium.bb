@@ -7,7 +7,7 @@
 #include "bindings/core/v8/StringOrArrayBufferOrArrayBufferView.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/css/FontFaceDescriptors.h"
-#include "core/css/FontFaceSet.h"
+#include "core/css/FontFaceSetDocument.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "platform/loader/fetch/MemoryCache.h"
@@ -89,7 +89,7 @@ void RenderingTest::LoadAhem() {
   ScriptState* script_state =
       ToScriptStateForMainWorld(&page_holder_->GetFrame());
   DummyExceptionStateForTesting exception_state;
-  FontFaceSet::From(GetDocument())
+  FontFaceSetDocument::From(GetDocument())
       ->addForBinding(script_state, ahem, exception_state);
 }
 

@@ -4,7 +4,7 @@
 
 #include "core/paint/FirstMeaningfulPaintDetector.h"
 
-#include "core/css/FontFaceSet.h"
+#include "core/css/FontFaceSetDocument.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/paint/PaintTiming.h"
 #include "platform/Histogram.h"
@@ -72,7 +72,7 @@ void FirstMeaningfulPaintDetector::MarkNextPaintAsMeaningfulIfNeeded(
   // If the page has many blank characters, the significance value is
   // accumulated until the text become visible.
   int approximate_blank_character_count =
-      FontFaceSet::ApproximateBlankCharacterCount(*GetDocument());
+      FontFaceSetDocument::ApproximateBlankCharacterCount(*GetDocument());
   if (approximate_blank_character_count > kBlankCharactersThreshold) {
     accumulated_significance_while_having_blank_text_ += significance;
   } else {
