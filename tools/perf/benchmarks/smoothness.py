@@ -196,6 +196,8 @@ class SmoothnessKeyDesktopMoveCases(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
+        self.PermanentlyDisableBenchmark(
+            [story_module.expectations.ALL_MOBILE], 'Desktop benchmark.')
         self.DisableStory('https://mail.google.com/mail/',
                           [story_module.expectations.ALL_WIN],
                           'crbug.com/750131')
