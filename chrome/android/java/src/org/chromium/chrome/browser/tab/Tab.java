@@ -1020,6 +1020,7 @@ public class Tab
     /**
      * @return Whether or not the {@link Tab} represents a {@link NativePage}.
      */
+    @CalledByNative
     public boolean isNativePage() {
         return mNativePage != null;
     }

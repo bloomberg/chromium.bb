@@ -91,6 +91,7 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   int GetAndroidId() const;
   int GetSyncId() const;
+  bool IsNativePage() const;
 
   // Return the tab title.
   base::string16 GetTitle() const;

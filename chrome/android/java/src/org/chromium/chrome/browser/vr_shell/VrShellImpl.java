@@ -214,9 +214,9 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
                     // We need the CVC to think it has Window Focus so it doesn't blur the page,
                     // even though we're drawing VR layouts over top of it.
                     mContentViewCore.onWindowFocusChanged(true);
-                    nativeSwapContents(mNativeVrShell, mContentViewCore.getWebContents(), null);
+                    nativeSwapContents(mNativeVrShell, tab, null);
                 } else {
-                    nativeSwapContents(mNativeVrShell, null, mAndroidUiGestureTarget);
+                    nativeSwapContents(mNativeVrShell, tab, mAndroidUiGestureTarget);
                 }
                 updateHistoryButtonsVisibility();
             }
@@ -771,8 +771,8 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
             boolean reprojectedRendering);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeSetSplashScreenIcon(long nativeVrShell, Bitmap bitmap);
-    private native void nativeSwapContents(long nativeVrShell, WebContents webContents,
-            AndroidUiGestureTarget androidUiGestureTarget);
+    private native void nativeSwapContents(
+            long nativeVrShell, Tab tab, AndroidUiGestureTarget androidUiGestureTarget);
     private native void nativeDestroy(long nativeVrShell);
     private native void nativeOnTriggerEvent(long nativeVrShell, boolean touched);
     private native void nativeOnPause(long nativeVrShell);
