@@ -1002,8 +1002,9 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   tester().ExpectTotalCount(kSafeBrowsingCheckTime, 2);
 }
 
+// Disabled due to flaky failures: https://crbug.com/753669.
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
-       ListMatchedOnStartWithRedirect_NoActivation) {
+       DISABLED_ListMatchedOnStartWithRedirect_NoActivation) {
   const GURL url(kURL);
   const GURL redirect_url(kRedirectURL);
   ConfigureForMatchParam(url);
