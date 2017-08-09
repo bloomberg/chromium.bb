@@ -439,6 +439,8 @@ ui::AXMarkerType AXMarkerTypeFromBlink(blink::WebAXMarkerType marker_type) {
       return ui::AX_MARKER_TYPE_TEXT_MATCH;
     case blink::kWebAXMarkerTypeActiveSuggestion:
       return ui::AX_MARKER_TYPE_ACTIVE_SUGGESTION;
+    case blink::kWebAXMarkerTypeSuggestion:
+      return ui::AX_MARKER_TYPE_SUGGESTION;
   }
   NOTREACHED();
   return ui::AX_MARKER_TYPE_NONE;

@@ -100,4 +100,5 @@ STATIC_ASSERT_ENUM(kWebAXMarkerTypeGrammar, DocumentMarker::kGrammar);
 STATIC_ASSERT_ENUM(kWebAXMarkerTypeTextMatch, DocumentMarker::kTextMatch);
 STATIC_ASSERT_ENUM(kWebAXMarkerTypeActiveSuggestion,
                    DocumentMarker::kActiveSuggestion);
+STATIC_ASSERT_ENUM(kWebAXMarkerTypeSuggestion, DocumentMarker::kSuggestion);
 }  // namespace blink
