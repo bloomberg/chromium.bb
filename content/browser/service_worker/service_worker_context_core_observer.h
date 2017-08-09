@@ -29,6 +29,11 @@ class ServiceWorkerContextCoreObserver {
           line_number(line),
           column_number(column),
           source_url(url) {}
+    ErrorInfo(const ErrorInfo& info)
+        : error_message(info.error_message),
+          line_number(info.line_number),
+          column_number(info.column_number),
+          source_url(info.source_url) {}
     const base::string16 error_message;
     const int line_number;
     const int column_number;
