@@ -241,12 +241,16 @@ function gen_rtcd_header {
     $BASE_DIR/$LIBVPX_SRC_DIR/vp8/common/rtcd_defs.pl \
     > $BASE_DIR/$LIBVPX_CONFIG_DIR/$1/vp8_rtcd.h
 
+  clang-format -i $BASE_DIR/$LIBVPX_CONFIG_DIR/$1/vp8_rtcd.h
+
   $BASE_DIR/$LIBVPX_SRC_DIR/build/make/rtcd.pl \
     --arch=$2 \
     --sym=vp9_rtcd $DISABLE_AVX $3 \
     --config=$BASE_DIR/$TEMP_DIR/libvpx.config \
     $BASE_DIR/$LIBVPX_SRC_DIR/vp9/common/vp9_rtcd_defs.pl \
     > $BASE_DIR/$LIBVPX_CONFIG_DIR/$1/vp9_rtcd.h
+
+  clang-format -i $BASE_DIR/$LIBVPX_CONFIG_DIR/$1/vp9_rtcd.h
 
   $BASE_DIR/$LIBVPX_SRC_DIR/build/make/rtcd.pl \
     --arch=$2 \
@@ -255,12 +259,16 @@ function gen_rtcd_header {
     $BASE_DIR/$LIBVPX_SRC_DIR/vpx_scale/vpx_scale_rtcd.pl \
     > $BASE_DIR/$LIBVPX_CONFIG_DIR/$1/vpx_scale_rtcd.h
 
+  clang-format -i $BASE_DIR/$LIBVPX_CONFIG_DIR/$1/vpx_scale_rtcd.h
+
   $BASE_DIR/$LIBVPX_SRC_DIR/build/make/rtcd.pl \
     --arch=$2 \
     --sym=vpx_dsp_rtcd $DISABLE_AVX $3 \
     --config=$BASE_DIR/$TEMP_DIR/libvpx.config \
     $BASE_DIR/$LIBVPX_SRC_DIR/vpx_dsp/vpx_dsp_rtcd_defs.pl \
     > $BASE_DIR/$LIBVPX_CONFIG_DIR/$1/vpx_dsp_rtcd.h
+
+  clang-format -i $BASE_DIR/$LIBVPX_CONFIG_DIR/$1/vpx_dsp_rtcd.h
 
   rm -rf $BASE_DIR/$TEMP_DIR/libvpx.config
 }
