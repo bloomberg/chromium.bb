@@ -562,7 +562,6 @@ class SmoothnessToughImageDecodeCases(_Smoothness):
     return StoryExpectations()
 
 
-@benchmark.Disabled('android')  # http://crbug.com/610015
 @benchmark.Owner(emails=['cblume@chromium.org'])
 class SmoothnessImageDecodingCases(_Smoothness):
   """Measures decoding statistics for jpeg images.
@@ -576,10 +575,6 @@ class SmoothnessImageDecodingCases(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.image_decoding_cases'
-
-  @classmethod
-  def ShouldDisable(cls, possible_browser):
-    return cls.IsSvelte(possible_browser)  # http://crbug.com/563974
 
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
