@@ -124,8 +124,6 @@ class SmoothnessToughPathRenderingCases(_Smoothness):
     return StoryExpectations()
 
 
-@benchmark.Disabled('android')  # crbug.com/526901
-@benchmark.Disabled('linux')  # crbug.com/715607
 @benchmark.Owner(emails=['junov@chromium.org'])
 class SmoothnessToughCanvasCases(_Smoothness):
   """Measures frame rate and a variety of other statistics.
@@ -157,8 +155,6 @@ class SmoothnessToughCanvasCases(_Smoothness):
     return StoryExpectations()
 
 
-@benchmark.Disabled('android')  # crbug.com/373812
-@benchmark.Disabled('win-reference')  # crbug.com/612810
 @benchmark.Owner(emails=['kbr@chromium.org', 'zmo@chromium.org'])
 class SmoothnessToughWebGLCases(_Smoothness):
   page_set = page_sets.ToughWebglCasesPageSet
