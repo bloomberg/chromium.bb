@@ -31,7 +31,8 @@ Color StyleableMarker::BackgroundColor() const {
 bool IsStyleableMarker(const DocumentMarker& marker) {
   DocumentMarker::MarkerType type = marker.GetType();
   return type == DocumentMarker::kComposition ||
-         type == DocumentMarker::kActiveSuggestion;
+         type == DocumentMarker::kActiveSuggestion ||
+         type == DocumentMarker::kSuggestion;
 }
 
 }  // namespace blink

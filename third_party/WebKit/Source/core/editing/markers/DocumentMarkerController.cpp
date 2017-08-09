@@ -43,6 +43,8 @@
 #include "core/editing/markers/GrammarMarkerListImpl.h"
 #include "core/editing/markers/SpellingMarker.h"
 #include "core/editing/markers/SpellingMarkerListImpl.h"
+#include "core/editing/markers/SuggestionMarker.h"
+#include "core/editing/markers/SuggestionMarkerListImpl.h"
 #include "core/editing/markers/TextMatchMarker.h"
 #include "core/editing/markers/TextMatchMarkerListImpl.h"
 #include "core/frame/LocalFrameView.h"
@@ -69,6 +71,8 @@ DocumentMarker::MarkerTypeIndex MarkerTypeToMarkerIndex(
       return DocumentMarker::kCompositionMarkerIndex;
     case DocumentMarker::kActiveSuggestion:
       return DocumentMarker::kActiveSuggestionMarkerIndex;
+    case DocumentMarker::kSuggestion:
+      return DocumentMarker::kSuggestionMarkerIndex;
   }
 
   NOTREACHED();
@@ -85,6 +89,8 @@ DocumentMarkerList* CreateListForType(DocumentMarker::MarkerType type) {
       return new SpellingMarkerListImpl();
     case DocumentMarker::kGrammar:
       return new GrammarMarkerListImpl();
+    case DocumentMarker::kSuggestion:
+      return new SuggestionMarkerListImpl();
     case DocumentMarker::kTextMatch:
       return new TextMatchMarkerListImpl();
   }
@@ -180,6 +186,23 @@ void DocumentMarkerController::AddActiveSuggestionMarker(
     return new ActiveSuggestionMarker(start_offset, end_offset, underline_color,
                                       thickness, background_color);
   });
+}
+
+void DocumentMarkerController::AddSuggestionMarker(
+    const EphemeralRange& range,
+    const Vector<String>& suggestions,
+    Color suggestion_highlight_color,
+    Color underline_color,
+    StyleableMarker::Thickness thickness,
+    Color background_color) {
+  DCHECK(!document_->NeedsLayoutTreeUpdate());
+  AddMarkerInternal(
+      range, [this, &suggestions, suggestion_highlight_color, underline_color,
+              thickness, background_color](int start_offset, int end_offset) {
+        return new SuggestionMarker(start_offset, end_offset, suggestions,
+                                    suggestion_highlight_color, underline_color,
+                                    thickness, background_color);
+      });
 }
 
 void DocumentMarkerController::PrepareForDestruction() {
