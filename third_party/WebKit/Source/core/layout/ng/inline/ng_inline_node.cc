@@ -216,10 +216,8 @@ String GetTextForInlineCollection<NGOffsetMappingBuilder>(
       // Reaches here if the LayoutTextFragment is due to a LayoutQuote.
       return layout_text.GetText();
     }
-    unsigned first_letter_length = node->GetLayoutObject()->TextStartOffset();
-    if (text_fragment.IsRemainingTextLayoutObject())
-      return node->data().Substring(first_letter_length);
-    return node->data().Substring(0, first_letter_length);
+    return node->data().Substring(text_fragment.Start(),
+                                  text_fragment.FragmentLength());
   }
 
   Node* node = layout_text.GetNode();
