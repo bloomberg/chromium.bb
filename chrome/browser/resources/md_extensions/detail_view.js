@@ -8,7 +8,7 @@ cr.define('extensions', function() {
   const DetailView = Polymer({
     is: 'extensions-detail-view',
 
-    behaviors: [I18nBehavior, Polymer.NeonAnimatableBehavior],
+    behaviors: [I18nBehavior],
 
     properties: {
       /**
@@ -22,12 +22,6 @@ cr.define('extensions', function() {
 
       /** Whether the user has enabled the UI's developer mode. */
       inDevMode: Boolean,
-    },
-
-    ready: function() {
-      this.sharedElements = {hero: this.$.main};
-      /** @type {!extensions.AnimationHelper} */
-      this.animationHelper = new extensions.AnimationHelper(this, this.$.main);
     },
 
     /** @private */

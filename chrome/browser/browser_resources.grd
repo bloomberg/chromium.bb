@@ -181,8 +181,6 @@
         <include name="IDR_EXTENSIONS_SHORTCUT_UTIL_HTML" file="resources\extensions\shortcut_util.html" type="BINDATA" />
         <include name="IDR_EXTENSIONS_SHORTCUT_UTIL_JS" file="resources\extensions\shortcut_util.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_EXTENSIONS_JS" file="resources\md_extensions\extensions.js" type="BINDATA" />
-        <include name="IDR_MD_EXTENSIONS_ANIMATION_HELPER_HTML" file="resources\md_extensions\animation_helper.html" type="BINDATA" />
-        <include name="IDR_MD_EXTENSIONS_ANIMATION_HELPER_JS" file="resources\md_extensions\animation_helper.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_CODE_SECTION_HTML" file="resources\md_extensions\code_section.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_CODE_SECTION_JS" file="resources\md_extensions\code_section.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_DETAIL_VIEW_HTML" file="resources\md_extensions\detail_view.html" type="BINDATA" />
@@ -221,6 +219,8 @@
         <include name="IDR_MD_EXTENSIONS_TOOLBAR_HTML" file="resources\md_extensions\toolbar.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_TOOLBAR_JS" file="resources\md_extensions\toolbar.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_STRINGS_HTML" file="resources\md_extensions\strings.html" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_VIEW_MANAGER_HTML" file="resources\md_extensions\view_manager.html" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_VIEW_MANAGER_JS" file="resources\md_extensions\view_manager.js" type="BINDATA" />
       </if>
       <include name="IDR_FEEDBACK_MANIFEST" file="resources\feedback\manifest.json" type="BINDATA" />
       <if expr="not is_android">

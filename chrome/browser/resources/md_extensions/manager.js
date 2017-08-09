@@ -78,12 +78,6 @@ cr.define('extensions', function() {
        */
       navigationHelper_: Object,
 
-      /**
-       * The current page being shown.
-       * @private {!PageState}
-       */
-      currentPage_: Object,
-
       /** @type {!Array<!chrome.developerPrivate.ExtensionInfo>} */
       extensions: {
         type: Array,
@@ -115,6 +109,13 @@ cr.define('extensions', function() {
       'items-list.extension-item-show-errors': 'onShouldShowItemErrors_',
     },
 
+    /**
+     * The current page being shown. Default to null, and initPage will figure
+     * out the initial page based on url.
+     * @private {?PageState}
+     */
+    currentPage_: null,
+
     created: function() {
       this.readyPromiseResolver = new PromiseResolver();
     },
@@ -128,7 +129,6 @@ cr.define('extensions', function() {
       this.listHelper_ = new ListHelper(this);
       this.sidebar.setListDelegate(this.listHelper_);
       this.readyPromiseResolver.resolve();
-      this.currentPage_ = {page: Page.LIST};
       this.navigationHelper_ = new extensions.NavigationHelper(newPage => {
         this.changePage(newPage, true);
       });
@@ -137,7 +137,7 @@ cr.define('extensions', function() {
         // still on the details page. We could be on a different page if the
         // user hit back while the options dialog was visible; in that case, the
         // new page is already correct.
-        if (this.currentPage_.page == Page.DETAILS) {
+        if (this.currentPage_ && this.currentPage_.page == Page.DETAILS) {
           // This will update the currentPage_ and the NavigationHelper; since
           // the active page is already the details page, no main page
           // transition occurs.
@@ -280,11 +280,11 @@ cr.define('extensions', function() {
       // that the DOM will have stale data, but there's no point in causing the
       // extra work.
       if (this.detailViewItem_ && this.detailViewItem_.id == item.id &&
-          this.$.pages.selected == Page.DETAILS) {
+          this.currentPage_.page == Page.DETAILS) {
         this.detailViewItem_ = item;
       } else if (
           this.errorPageItem_ && this.errorPageItem_.id == item.id &&
-          this.$.pages.selected == Page.ERRORS) {
+          this.currentPage_.page == Page.ERRORS) {
         this.errorPageItem_ = item;
       }
     },
@@ -329,7 +329,7 @@ cr.define('extensions', function() {
      *     of the change.
      */
     changePage: function(newPage, isSilent) {
-      if (this.currentPage_.page == newPage.page &&
+      if (this.currentPage_ && this.currentPage_.page == newPage.page &&
           this.currentPage_.subpage == newPage.subpage &&
           this.currentPage_.extensionId == newPage.extensionId) {
         return;
@@ -339,7 +339,7 @@ cr.define('extensions', function() {
       if (this.optionsDialog.open)
         this.optionsDialog.close();
 
-      const fromPage = this.$.pages.selected;
+      const fromPage = this.currentPage_ ? this.currentPage_.page : null;
       const toPage = newPage.page;
       let data;
       if (newPage.extensionId)
@@ -351,27 +351,8 @@ cr.define('extensions', function() {
         this.errorPageItem_ = assert(data);
 
       if (fromPage != toPage) {
-        let entry;
-        let exit;
-        if (fromPage == Page.LIST &&
-            (toPage == Page.DETAILS || toPage == Page.ERRORS)) {
-          this.$['items-list'].willShowItemSubpage(data.id);
-          entry = [extensions.Animation.HERO];
-          // The item grid can be larger than the detail view that we're
-          // hero'ing into, so we want to also fade out to avoid any jarring.
-          exit = [extensions.Animation.HERO, extensions.Animation.FADE_OUT];
-        } else if (toPage == Page.LIST) {
-          entry = [extensions.Animation.FADE_IN];
-          exit = [extensions.Animation.SCALE_DOWN];
-        } else {
-          assert(toPage == Page.DETAILS || toPage == Page.SHORTCUTS);
-          entry = [extensions.Animation.FADE_IN];
-          exit = [extensions.Animation.FADE_OUT];
-        }
-
-        this.getPage_(fromPage).animationHelper.setExitAnimations(exit);
-        this.getPage_(toPage).animationHelper.setEntryAnimations(entry);
-        this.$.pages.selected = toPage;
+        /** @type {extensions.ViewManager} */ (this.$.viewManager)
+            .switchView(toPage);
       }
 
       if (newPage.subpage) {

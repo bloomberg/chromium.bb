@@ -9,8 +9,6 @@ cr.define('extensions', function() {
   const KeyboardShortcuts = Polymer({
     is: 'extensions-keyboard-shortcuts',
 
-    behaviors: [Polymer.NeonAnimatableBehavior],
-
     properties: {
       /** @type {Array<!chrome.developerPrivate.ExtensionInfo>} */
       items: Array,
@@ -23,14 +21,6 @@ cr.define('extensions', function() {
         type: Object,
         value: chrome.developerPrivate.CommandScope,
       },
-    },
-
-    ready: function() {
-      /** @type {!extensions.AnimationHelper} */
-      this.animationHelper = new extensions.AnimationHelper(this, this.$.main);
-      this.animationHelper.setEntryAnimations([extensions.Animation.FADE_IN]);
-      this.animationHelper.setExitAnimations([extensions.Animation.SCALE_DOWN]);
-      this.sharedElements = {hero: this.$.main};
     },
 
     /**
