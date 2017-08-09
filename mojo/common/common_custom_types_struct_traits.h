@@ -27,8 +27,8 @@ namespace mojo {
 template <>
 struct StructTraits<common::mojom::String16DataView, base::StringPiece16> {
   static ConstCArray<uint16_t> data(base::StringPiece16 str) {
-    return ConstCArray<uint16_t>(str.size(),
-                                 reinterpret_cast<const uint16_t*>(str.data()));
+    return ConstCArray<uint16_t>(reinterpret_cast<const uint16_t*>(str.data()),
+                                 str.size());
   }
 };
 

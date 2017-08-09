@@ -92,10 +92,10 @@ struct StructTraits<device::mojom::GamepadDataView, device::Gamepad> {
   static bool connected(const device::Gamepad& r) { return r.connected; }
   static uint64_t timestamp(const device::Gamepad& r) { return r.timestamp; }
   static ConstCArray<double> axes(const device::Gamepad& r) {
-    return {r.axes_length, &r.axes[0]};
+    return ConstCArray<double>(r.axes, r.axes_length);
   }
   static ConstCArray<device::GamepadButton> buttons(const device::Gamepad& r) {
-    return {r.buttons_length, &r.buttons[0]};
+    return ConstCArray<device::GamepadButton>(r.buttons, r.buttons_length);
   }
   static const device::GamepadPose& pose(const device::Gamepad& r) {
     return r.pose;

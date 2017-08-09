@@ -12,8 +12,8 @@ StructTraits<chrome_cleaner::mojom::FilePathDataView, base::FilePath>::value(
     const base::FilePath& file_path) {
 #if defined(OS_WIN)
   return ConstCArray<uint16_t>(
-      file_path.value().size(),
-      reinterpret_cast<const uint16_t*>(file_path.value().data()));
+      reinterpret_cast<const uint16_t*>(file_path.value().data()),
+      file_path.value().size());
 #else
   NOTREACHED();
   return ConstCArray<uint16_t>();

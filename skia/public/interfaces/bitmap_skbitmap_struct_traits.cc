@@ -157,7 +157,7 @@ uint64_t StructTraits<skia::mojom::BitmapDataView, SkBitmap>::row_bytes(
 // static
 BitmapBuffer StructTraits<skia::mojom::BitmapDataView, SkBitmap>::pixel_data(
     const SkBitmap& b) {
-  return {b.getSize(), b.getSize(), static_cast<uint8_t*>(b.getPixels())};
+  return BitmapBuffer(static_cast<uint8_t*>(b.getPixels()), b.getSize());
 }
 
 // static
@@ -188,9 +188,10 @@ bool StructTraits<skia::mojom::BitmapDataView, SkBitmap>::Read(
     return false;
   }
 
-  BitmapBuffer bitmap_buffer = {0, b->getSize(),
-                                static_cast<uint8_t*>(b->getPixels())};
-  if (!data.ReadPixelData(&bitmap_buffer) || bitmap_buffer.size != b->getSize())
+  BitmapBuffer bitmap_buffer(static_cast<uint8_t*>(b->getPixels()),
+                             b->getSize());
+  if (!data.ReadPixelData(&bitmap_buffer) ||
+      bitmap_buffer.size() != b->getSize())
     return false;
 
   b->notifyPixelsChanged();

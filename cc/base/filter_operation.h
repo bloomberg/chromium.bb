@@ -30,6 +30,7 @@ namespace cc {
 
 class CC_BASE_EXPORT FilterOperation {
  public:
+  using Matrix = SkScalar[20];
   enum FilterType {
     GRAYSCALE,
     SEPIA,
@@ -83,7 +84,7 @@ class CC_BASE_EXPORT FilterOperation {
     return image_filter_;
   }
 
-  const SkScalar* matrix() const {
+  const Matrix& matrix() const {
     DCHECK_EQ(type_, COLOR_MATRIX);
     return matrix_;
   }
@@ -148,7 +149,7 @@ class CC_BASE_EXPORT FilterOperation {
     return FilterOperation(DROP_SHADOW, offset, std_deviation, color);
   }
 
-  static FilterOperation CreateColorMatrixFilter(SkScalar matrix[20]) {
+  static FilterOperation CreateColorMatrixFilter(const Matrix& matrix) {
     return FilterOperation(COLOR_MATRIX, matrix);
   }
 
@@ -211,7 +212,7 @@ class CC_BASE_EXPORT FilterOperation {
     image_filter_ = std::move(image_filter);
   }
 
-  void set_matrix(const SkScalar matrix[20]) {
+  void set_matrix(const Matrix& matrix) {
     DCHECK_EQ(type_, COLOR_MATRIX);
     for (unsigned i = 0; i < 20; ++i)
       matrix_[i] = matrix[i];
@@ -264,7 +265,7 @@ class CC_BASE_EXPORT FilterOperation {
                   float stdDeviation,
                   SkColor color);
 
-  FilterOperation(FilterType, SkScalar matrix[20]);
+  FilterOperation(FilterType, const Matrix& matrix);
 
   FilterOperation(FilterType type, float amount, int inset);
 
@@ -281,7 +282,7 @@ class CC_BASE_EXPORT FilterOperation {
   gfx::Point drop_shadow_offset_;
   SkColor drop_shadow_color_;
   sk_sp<SkImageFilter> image_filter_;
-  SkScalar matrix_[20];
+  Matrix matrix_;
   int zoom_inset_;
   SkRegion region_;
   SkBlurImageFilter::TileMode blur_tile_mode_;

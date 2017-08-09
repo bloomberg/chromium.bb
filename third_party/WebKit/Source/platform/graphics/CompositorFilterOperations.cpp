@@ -64,7 +64,8 @@ void CompositorFilterOperations::AppendDropShadowFilter(IntPoint offset,
       gfx_offset, std_deviation, color.Rgb()));
 }
 
-void CompositorFilterOperations::AppendColorMatrixFilter(SkScalar matrix[20]) {
+void CompositorFilterOperations::AppendColorMatrixFilter(
+    const cc::FilterOperation::Matrix& matrix) {
   filter_operations_.Append(
       cc::FilterOperation::CreateColorMatrixFilter(matrix));
 }

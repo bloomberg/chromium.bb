@@ -82,7 +82,7 @@ FilterOperation::FilterOperation(FilterType type,
   memset(matrix_, 0, sizeof(matrix_));
 }
 
-FilterOperation::FilterOperation(FilterType type, SkScalar matrix[20])
+FilterOperation::FilterOperation(FilterType type, const Matrix& matrix)
     : type_(type),
       amount_(0),
       outer_threshold_(0),
@@ -171,8 +171,7 @@ static FilterOperation CreateNoOpFilter(FilterOperation::FilterType type) {
       return FilterOperation::CreateDropShadowFilter(gfx::Point(0, 0), 0.f,
                                                      SK_ColorTRANSPARENT);
     case FilterOperation::COLOR_MATRIX: {
-      SkScalar matrix[20];
-      memset(matrix, 0, 20 * sizeof(SkScalar));
+      FilterOperation::Matrix matrix = {};
       matrix[0] = matrix[6] = matrix[12] = matrix[18] = 1.f;
       return FilterOperation::CreateColorMatrixFilter(matrix);
     }

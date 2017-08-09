@@ -24,7 +24,7 @@ struct StructTraits<extensions::mojom::AttachedImageDataView,
     // TODO(dcheng): perhaps metadata::AttachedImage should consider passing the
     // image data around in a std::vector<uint8_t>.
     return ConstCArray<uint8_t>(
-        image.data.size(), reinterpret_cast<const uint8_t*>(image.data.data()));
+        reinterpret_cast<const uint8_t*>(image.data.data()), image.data.size());
   }
 
   static bool Read(extensions::mojom::AttachedImageDataView view,

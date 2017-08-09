@@ -55,7 +55,7 @@ void MessagePort::PostMessage(const uint8_t* encoded_message,
 
   MessagePortMessage msg;
   msg.encoded_message =
-      mojo::ConstCArray<uint8_t>(encoded_message_size, encoded_message);
+      mojo::ConstCArray<uint8_t>(encoded_message, encoded_message_size);
   msg.ports.resize(ports.size());
   for (size_t i = 0; i < ports.size(); ++i)
     msg.ports[i] = ports[i].ReleaseHandle();

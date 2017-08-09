@@ -15,7 +15,7 @@ bool StructTraits<content::mojom::MessagePortMessage::DataView,
     return false;
 
   out->encoded_message = mojo::ConstCArray<uint8_t>(
-      out->owned_encoded_message.size(), out->owned_encoded_message.data());
+      out->owned_encoded_message.data(), out->owned_encoded_message.size());
   return true;
 }
 

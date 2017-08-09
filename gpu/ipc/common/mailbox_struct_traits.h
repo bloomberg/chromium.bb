@@ -11,13 +11,11 @@
 
 namespace mojo {
 
-// A buffer used to read bytes directly from MailboxDataView to gpu::Mailbox
-// name.
-using MailboxName = CArray<int8_t>;
-
 template <>
 struct StructTraits<gpu::mojom::MailboxDataView, gpu::Mailbox> {
-  static MailboxName name(const gpu::Mailbox& mailbox);
+  static ConstCArray<int8_t> name(const gpu::Mailbox& mailbox) {
+    return mailbox.name;
+  }
   static bool Read(gpu::mojom::MailboxDataView data, gpu::Mailbox* out);
 };
 
