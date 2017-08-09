@@ -420,12 +420,29 @@ void HTMLInputElement::UpdateType() {
     PseudoStateChanged(CSSSelector::kPseudoRequired);
     PseudoStateChanged(CSSSelector::kPseudoOptional);
   }
+  if (input_type_->SupportsReadOnly() != new_type->SupportsReadOnly()) {
+    PseudoStateChanged(CSSSelector::kPseudoReadOnly);
+    PseudoStateChanged(CSSSelector::kPseudoReadWrite);
+  }
+
+  bool placeholder_changed =
+      input_type_->SupportsPlaceholder() != new_type->SupportsPlaceholder();
 
   input_type_ = new_type;
   input_type_view_ = input_type_->CreateView();
   input_type_view_->CreateShadowSubtree();
 
   SetNeedsWillValidateCheck();
+
+  if (placeholder_changed) {
+    // We need to update the UA shadow and then the placeholder visibility flag
+    // here. Otherwise it would happen as part of attaching the layout tree
+    // which would be too late in order to make style invalidation work for
+    // the upcoming frame.
+    UpdatePlaceholderText();
+    UpdatePlaceholderVisibility();
+    PseudoStateChanged(CSSSelector::kPseudoPlaceholderShown);
+  }
 
   ValueMode new_value_mode = input_type_->GetValueMode();
 
