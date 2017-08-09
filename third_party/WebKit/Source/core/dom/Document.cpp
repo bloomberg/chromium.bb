@@ -6428,16 +6428,12 @@ TouchList* Document::createTouchList(HeapVector<Member<Touch>>& touches) const {
 
 DocumentLoader* Document::Loader() const {
   if (!frame_)
-    return 0;
-
-  DocumentLoader* loader = frame_->Loader().GetDocumentLoader();
-  if (!loader)
-    return 0;
+    return nullptr;
 
   if (frame_->GetDocument() != this)
-    return 0;
+    return nullptr;
 
-  return loader;
+  return frame_->Loader().GetDocumentLoader();
 }
 
 Node* EventTargetNodeForDocument(Document* doc) {
