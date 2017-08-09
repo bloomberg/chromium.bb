@@ -13,6 +13,15 @@
 #include "base/logging.h"
 
 namespace zucchini {
+
+// Describes a region within a buffer, with starting offset and size.
+struct BufferRegion {
+  // size_t is used to match BufferViewBase::size_type, which is used when
+  // indexing in a buffer view.
+  size_t offset;
+  size_t size;
+};
+
 namespace internal {
 
 // BufferViewBase should not be used directly; it is an implementation used for
@@ -55,11 +64,21 @@ class BufferViewBase {
 
   // Element access
 
+  // Returns a BufferRegion describing the full view.
+  BufferRegion region() const { return BufferRegion{0, size()}; }
+
   // Returns the raw value at specified location |pos|.
   // If |pos| is not within the range of the buffer, the process is terminated.
   reference operator[](size_type pos) const {
     CHECK_LT(pos, size());
     return first_[pos];
+  }
+
+  // Returns a sub-buffer described by |region|.
+  BufferViewBase operator[](BufferRegion region) const {
+    DCHECK_LE(region.offset, size());
+    DCHECK_LE(region.size, size() - region.offset);
+    return {begin() + region.offset, region.size};
   }
 
   template <class U>
