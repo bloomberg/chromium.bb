@@ -208,8 +208,7 @@ void LockStateController::SetLockScreenDisplayedCallback(
   lock_screen_displayed_callback_ = std::move(callback);
 }
 
-void LockStateController::OnHostCloseRequested(
-    const aura::WindowTreeHost* host) {
+void LockStateController::OnHostCloseRequested(aura::WindowTreeHost* host) {
   Shell::Get()->shell_delegate()->Exit();
 }
 

@@ -106,7 +106,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   void SetLockScreenDisplayedCallback(base::OnceClosure callback);
 
   // aura::WindowTreeHostObserver override:
-  void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
+  void OnHostCloseRequested(aura::WindowTreeHost* host) override;
 
   // SessionObserver overrides:
   void OnChromeTerminating() override;

@@ -94,7 +94,7 @@ class ShellDesktopControllerAura
 #endif
 
   // aura::WindowTreeHostObserver overrides:
-  void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
+  void OnHostCloseRequested(aura::WindowTreeHost* host) override;
 
   // ui::internal::InputMethodDelegate overrides:
   ui::EventDispatchDetails DispatchKeyEventPostIME(

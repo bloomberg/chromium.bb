@@ -475,12 +475,12 @@ void AshTestBase::OnHostInitialized(aura::WindowTreeHost* host) {
   OnHostResized(host);
 }
 
-void AshTestBase::OnHostResized(const aura::WindowTreeHost* host) {
+void AshTestBase::OnHostResized(aura::WindowTreeHost* host) {
   // The local surface id comes from the window server. However, there is no
   // window server in tests. So a fake id is assigned so that the layer
   // compositor can submit compositor frames.
   viz::LocalSurfaceId id(1, base::UnguessableToken::Create());
-  const_cast<aura::WindowTreeHost*>(host)->compositor()->SetLocalSurfaceId(id);
+  host->compositor()->SetLocalSurfaceId(id);
 }
 
 }  // namespace ash

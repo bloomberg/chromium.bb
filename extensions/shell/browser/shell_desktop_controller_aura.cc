@@ -277,7 +277,7 @@ void ShellDesktopControllerAura::OnDisplayModeChanged(
 #endif
 
 void ShellDesktopControllerAura::OnHostCloseRequested(
-    const aura::WindowTreeHost* host) {
+    aura::WindowTreeHost* host) {
   DCHECK_EQ(host_.get(), host);
   CloseAppWindows();
   base::ThreadTaskRunnerHandle::Get()->PostTask(

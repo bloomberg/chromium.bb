@@ -641,10 +641,9 @@ void WindowTreeHostManager::OnDisplayMetricsChanged(
   SetDisplayPropertiesOnHost(ash_host, display);
 }
 
-void WindowTreeHostManager::OnHostResized(const aura::WindowTreeHost* host) {
+void WindowTreeHostManager::OnHostResized(aura::WindowTreeHost* host) {
   display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(
-          const_cast<aura::Window*>(host->window()));
+      display::Screen::GetScreen()->GetDisplayNearestWindow(host->window());
 
   display::DisplayManager* display_manager = GetDisplayManager();
   if (display_manager->UpdateDisplayBounds(display.id(),

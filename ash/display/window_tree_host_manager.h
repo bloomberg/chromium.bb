@@ -164,7 +164,7 @@ class ASH_EXPORT WindowTreeHostManager
                                uint32_t metrics) override;
 
   // aura::WindowTreeHostObserver overrides:
-  void OnHostResized(const aura::WindowTreeHost* host) override;
+  void OnHostResized(aura::WindowTreeHost* host) override;
 
   // display::DisplayManager::Delegate overrides:
   void CreateOrUpdateMirroringDisplay(

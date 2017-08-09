@@ -231,10 +231,10 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
   // Overridden from aura::WindowTreeHostObserver:
-  void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
-  void OnHostResized(const aura::WindowTreeHost* host) override;
-  void OnHostWorkspaceChanged(const aura::WindowTreeHost* host) override;
-  void OnHostMovedInPixels(const aura::WindowTreeHost* host,
+  void OnHostCloseRequested(aura::WindowTreeHost* host) override;
+  void OnHostResized(aura::WindowTreeHost* host) override;
+  void OnHostWorkspaceChanged(aura::WindowTreeHost* host) override;
+  void OnHostMovedInPixels(aura::WindowTreeHost* host,
                            const gfx::Point& new_origin_in_pixels) override;
 
  private:

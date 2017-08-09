@@ -1878,7 +1878,7 @@ class CloseWindowWindowTreeHostObserver : public aura::WindowTreeHostObserver {
   bool root_destroyed() const { return root_destroyed_; }
 
   // aura::WindowTreeHostObserver::
-  void OnHostCloseRequested(const aura::WindowTreeHost* host) override {
+  void OnHostCloseRequested(aura::WindowTreeHost* host) override {
     root_destroyed_ = true;
   }
 
