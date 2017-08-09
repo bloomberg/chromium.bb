@@ -24,6 +24,7 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_task_runner.h"
+#include "content/browser/download/download_utils.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -437,29 +438,17 @@ void DownloadRequestCore::OnResponseCompleted(
     has_strong_validators =
         request()->response_headers()->HasStrongValidators();
   }
-  DownloadInterruptReason reason = HandleRequestStatus(
-      status, has_strong_validators);
 
-  if (status.error() == net::ERR_ABORTED) {
-    // ERR_ABORTED == something outside of the network
-    // stack cancelled the request.  There aren't that many things that
-    // could do this to a download request (whose lifetime is separated from
-    // the tab from which it came).  We map this to USER_CANCELLED as the
-    // case we know about (system suspend because of laptop close) corresponds
-    // to a user action.
-    // TODO(asanka): A lid close or other power event should result in an
-    // interruption that doesn't discard the partial state, unlike
-    // USER_CANCELLED. (https://crbug.com/166179)
-    if (net::IsCertStatusError(request()->ssl_info().cert_status)) {
-      reason = DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM;
-    } else {
-      reason = DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
-    }
-  } else if (abort_reason_ != DOWNLOAD_INTERRUPT_REASON_NONE) {
-    // If a more specific interrupt reason was specified before the request
-    // was explicitly cancelled, then use it.
-    reason = abort_reason_;
+  net::Error error_code = net::OK;
+  if (!status.is_success()) {
+    error_code = static_cast<net::Error>(status.error());  // Normal case.
+    // Make sure that at least the fact of failure comes through.
+    if (error_code == net::OK)
+      error_code = net::ERR_FAILED;
   }
+  DownloadInterruptReason reason = HandleRequestCompletionStatus(
+      error_code, has_strong_validators, request()->ssl_info().cert_status,
+      abort_reason_);
 
   std::string accept_ranges;
   if (request()->response_headers()) {
@@ -533,40 +522,6 @@ std::string DownloadRequestCore::DebugString() const {
       " }",
       reinterpret_cast<const void*>(this),
       request() ? request()->url().spec().c_str() : "<NULL request>");
-}
-
-// static
-DownloadInterruptReason DownloadRequestCore::HandleRequestStatus(
-    const net::URLRequestStatus& status, bool has_strong_validators) {
-  net::Error error_code = net::OK;
-  if (!status.is_success()) {
-    error_code = static_cast<net::Error>(status.error());  // Normal case.
-    // Make sure that at least the fact of failure comes through.
-    if (error_code == net::OK)
-      error_code = net::ERR_FAILED;
-  }
-
-  // ERR_CONTENT_LENGTH_MISMATCH can be caused by 1 of the following reasons:
-  // 1. Server or proxy closes the connection too early.
-  // 2. The content-length header is wrong.
-  // If the download has strong validators, we can interrupt the download
-  // and let it resume automatically. Otherwise, resuming the download will
-  // cause it to restart and the download may never complete if the error was
-  // caused by reason 2. As a result, downloads without strong validators are
-  // treated as completed here.
-  // TODO(qinmin): check the metrics from downloads with strong validators,
-  // and decide whether we should interrupt downloads without strong validators
-  // rather than complete them.
-  if (error_code == net::ERR_CONTENT_LENGTH_MISMATCH &&
-      !has_strong_validators) {
-    error_code = net::OK;
-    RecordDownloadCount(COMPLETED_WITH_CONTENT_LENGTH_MISMATCH_COUNT);
-  }
-
-  DownloadInterruptReason reason = ConvertNetErrorToInterruptReason(
-      error_code, DOWNLOAD_INTERRUPT_FROM_NETWORK);
-
-  return reason;
 }
 
 // static
