@@ -292,7 +292,7 @@ void MirrorWindowController::Close(bool delay_host_deletion) {
   }
 }
 
-void MirrorWindowController::OnHostResized(const aura::WindowTreeHost* host) {
+void MirrorWindowController::OnHostResized(aura::WindowTreeHost* host) {
   for (auto& pair : mirroring_host_info_map_) {
     MirroringHostInfo* info = pair.second;
     if (info->ash_host->AsWindowTreeHost() == host) {

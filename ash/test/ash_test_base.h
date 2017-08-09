@@ -203,7 +203,7 @@ class AshTestBase : public testing::Test,
   void OnHostInitialized(aura::WindowTreeHost* host) override;
 
   // aura::WindowTreeHostObserver:
-  void OnHostResized(const aura::WindowTreeHost* host) override;
+  void OnHostResized(aura::WindowTreeHost* host) override;
 
   bool setup_called_;
   bool teardown_called_;
