@@ -2140,6 +2140,7 @@ source_set("unit_tests") {
     "graphics/ImageLayerChromiumTest.cpp",
     "graphics/gpu/DrawingBufferSoftwareRenderingTest.cpp",
     "graphics/test/FakeGLES2Interface.h",
+    "graphics/test/FakeScrollableArea.h",
     "graphics/test/FakeWebGraphicsContext3DProvider.h",
     "graphics/test/MockImageDecoder.h",
     "graphics/test/MockPaintCanvas.h",
