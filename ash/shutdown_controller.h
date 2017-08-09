@@ -36,6 +36,7 @@ class ASH_EXPORT ShutdownController
  private:
   // mojom::ShutdownController:
   void SetRebootOnShutdown(bool reboot_on_shutdown) override;
+  void RequestShutdownFromLoginScreen() override;
 
   // Cached copy of the DeviceRebootOnShutdown policy from chrome.
   bool reboot_on_shutdown_ = false;

@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shutdown_reason.h"
+#include "ash/wm/lock_state_controller.h"
 #include "base/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -41,6 +42,11 @@ void ShutdownController::ShutDownOrReboot(ShutdownReason reason) {
 
 void ShutdownController::SetRebootOnShutdown(bool reboot_on_shutdown) {
   reboot_on_shutdown_ = reboot_on_shutdown;
+}
+
+void ShutdownController::RequestShutdownFromLoginScreen() {
+  Shell::Get()->lock_state_controller()->RequestShutdown(
+      ShutdownReason::LOGIN_SHUT_DOWN_BUTTON);
 }
 
 void ShutdownController::BindRequest(mojom::ShutdownControllerRequest request) {
