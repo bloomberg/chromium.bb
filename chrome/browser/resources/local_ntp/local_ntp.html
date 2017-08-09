@@ -18,13 +18,19 @@
   <div id="one-google" class="hidden"></div>
 
   <div id="ntp-contents">
-    <div id="logo" title="Google"></div>
-    <div id="fakebox">
-      <div id="fakebox-text"></div>
-      <input id="fakebox-input" autocomplete="off" tabIndex="-1" type="url"
-          aria-hidden="true">
-      <div id="fakebox-cursor"></div>
-      <div id="fakebox-speech" tabIndex="0" hidden></div>
+    <div id="search">
+      <!-- Container for the logo, whether default or doodle. -->
+      <div id="logo">
+        <!-- The logo that is displayed in the absence of a doodle. -->
+        <div id="logo-default" title="Google"></div>
+      </div>
+      <div id="fakebox">
+        <div id="fakebox-text"></div>
+        <input id="fakebox-input" autocomplete="off" tabIndex="-1" type="url"
+            aria-hidden="true">
+        <div id="fakebox-cursor"></div>
+        <div id="fakebox-speech" tabIndex="0" hidden></div>
+      </div>
     </div>
     <div id="most-visited">
       <!-- The container for the tiles. The MV iframe goes in here. -->
