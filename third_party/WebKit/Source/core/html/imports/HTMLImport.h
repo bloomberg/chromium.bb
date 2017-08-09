@@ -75,12 +75,6 @@ class HTMLImport : public GarbageCollectedFinalized<HTMLImport>,
 
   static void RecalcTreeState(HTMLImport* root);
 
-#if !defined(NDEBUG)
-  void Show();
-  void ShowTree(HTMLImport* highlight, unsigned depth);
-  virtual void ShowThis();
-#endif
-
  private:
   HTMLImportState state_;
   unsigned sync_ : 1;

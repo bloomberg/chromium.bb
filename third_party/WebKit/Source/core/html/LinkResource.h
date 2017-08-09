@@ -66,6 +66,7 @@ class CORE_EXPORT LinkResource
   void Load();
 
   Document& GetDocument();
+  const Document& GetDocument() const;
   WTF::TextEncoding GetCharset() const;
 
   Member<HTMLLinkElement> owner_;
