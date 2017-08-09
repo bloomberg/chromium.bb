@@ -21,7 +21,7 @@
 namespace blink {
 
 ScrollAnimatorCompositorCoordinator::ScrollAnimatorCompositorCoordinator()
-    : compositor_animation_attached_to_element_id_(),
+    : element_id_(),
       run_state_(RunState::kIdle),
       compositor_animation_id_(0),
       compositor_animation_group_id_(0),
@@ -180,34 +180,26 @@ void ScrollAnimatorCompositorCoordinator::CompositorAnimationFinished(
 bool ScrollAnimatorCompositorCoordinator::ReattachCompositorPlayerIfNeeded(
     CompositorAnimationTimeline* timeline) {
   bool reattached = false;
-  CompositorElementId compositor_animation_attached_to_element_id;
-  if (GetScrollableArea()->LayerForScrolling()) {
-    compositor_animation_attached_to_element_id = GetScrollableArea()
-                                                      ->LayerForScrolling()
-                                                      ->PlatformLayer()
-                                                      ->GetElementId();
-    DCHECK(compositor_animation_attached_to_element_id);
-  }
+  CompositorElementId element_id = GetScrollElementId();
+  DCHECK(element_id || (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+                        !GetScrollableArea()->LayerForScrolling()));
 
-  if (compositor_animation_attached_to_element_id !=
-      compositor_animation_attached_to_element_id_) {
+  if (element_id != element_id_) {
     if (compositor_player_ && timeline) {
       // Detach from old layer (if any).
-      if (compositor_animation_attached_to_element_id_) {
+      if (element_id_) {
         if (compositor_player_->IsElementAttached())
           compositor_player_->DetachElement();
         timeline->PlayerDestroyed(*this);
       }
       // Attach to new layer (if any).
-      if (compositor_animation_attached_to_element_id) {
+      if (element_id) {
         DCHECK(!compositor_player_->IsElementAttached());
         timeline->PlayerAttached(*this);
-        compositor_player_->AttachElement(
-            compositor_animation_attached_to_element_id);
+        compositor_player_->AttachElement(element_id);
         reattached = true;
       }
-      compositor_animation_attached_to_element_id_ =
-          compositor_animation_attached_to_element_id;
+      element_id_ = element_id;
     }
   }
 
@@ -253,15 +245,23 @@ bool ScrollAnimatorCompositorCoordinator::HasImplOnlyAnimationUpdate() const {
          impl_only_animation_takeover_;
 }
 
+CompositorElementId ScrollAnimatorCompositorCoordinator::GetScrollElementId()
+    const {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return GetScrollableArea()->GetCompositorElementId();
+
+  GraphicsLayer* layer = GetScrollableArea()->LayerForScrolling();
+  return layer ? layer->PlatformLayer()->GetElementId() : CompositorElementId();
+}
+
 void ScrollAnimatorCompositorCoordinator::UpdateImplOnlyCompositorAnimations() {
   if (!HasImplOnlyAnimationUpdate())
     return;
 
-  GraphicsLayer* layer = GetScrollableArea()->LayerForScrolling();
   CompositorAnimationHost* host =
       GetScrollableArea()->GetCompositorAnimationHost();
-  if (layer && host) {
-    CompositorElementId element_id = layer->PlatformLayer()->GetElementId();
+  CompositorElementId element_id = GetScrollElementId();
+  if (host && element_id) {
     if (!impl_only_animation_adjustment_.IsZero()) {
       host->AdjustImplOnlyScrollOffsetAnimation(
           element_id, gfx::Vector2dF(impl_only_animation_adjustment_.Width(),

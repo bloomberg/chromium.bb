@@ -444,6 +444,10 @@ bool RootFrameViewport::ScrollAnimatorEnabled() const {
   return LayoutViewport().ScrollAnimatorEnabled();
 }
 
+CompositorElementId RootFrameViewport::GetCompositorElementId() const {
+  return LayoutViewport().GetCompositorElementId();
+}
+
 PlatformChromeClient* RootFrameViewport::GetChromeClient() const {
   return LayoutViewport().GetChromeClient();
 }

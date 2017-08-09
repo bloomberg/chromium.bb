@@ -502,6 +502,11 @@ bool VisualViewport::VisualViewportSuppliesScrollbars() const {
   return GetPage().GetSettings().GetViewportEnabled();
 }
 
+CompositorElementId VisualViewport::GetCompositorElementId() const {
+  // TODO(chrishtr): Implement http://crbug.com/638473.
+  return CompositorElementId();
+}
+
 bool VisualViewport::ScrollAnimatorEnabled() const {
   return GetPage().GetSettings().GetScrollAnimatorEnabled();
 }

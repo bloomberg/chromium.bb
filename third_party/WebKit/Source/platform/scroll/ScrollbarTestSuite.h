@@ -61,6 +61,9 @@ class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>,
   }
   int VisibleHeight() const override { return 768; }
   int VisibleWidth() const override { return 1024; }
+  CompositorElementId GetCompositorElementId() const override {
+    return CompositorElementId();
+  }
   bool ScrollAnimatorEnabled() const override { return false; }
   int PageStep(ScrollbarOrientation) const override { return 0; }
   void ScrollControlWasSetNeedsPaintInvalidation() {}

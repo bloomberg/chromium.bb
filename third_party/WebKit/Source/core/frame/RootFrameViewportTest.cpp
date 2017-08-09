@@ -79,6 +79,9 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
         viewport_size_(viewport_size),
         contents_size_(contents_size) {}
 
+  CompositorElementId GetCompositorElementId() const override {
+    return CompositorElementId();
+  }
   void UpdateScrollOffset(const ScrollOffset& offset, ScrollType) override {
     scroll_offset_ = offset;
   }
