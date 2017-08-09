@@ -76,6 +76,7 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1819
     'ChromeExtensionsCapabilityTest.testIFrameWithExtensionsSource',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1918
+    'ChromeDriverTest.testWindowMaximize',
     'ChromeDriverTest.testWindowPosition',
     'ChromeDriverTest.testWindowSize',
     'ChromeLoggingCapabilityTest.testPerformanceLogger',
