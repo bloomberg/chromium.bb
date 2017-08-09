@@ -62,6 +62,16 @@ Polymer({
       this.$.permission.disabled =
           site.source != settings.SiteSettingSource.EMBARGO;
     }
+
+    if (this.isNonDefaultAsk_(site.setting, site.source)) {
+      assert(
+          this.$.permission.disabled,
+          'The \'Ask\' entry is for display-only and cannot be set by the ' +
+              'user.');
+      assert(
+          this.$.permission.value == settings.ContentSetting.ASK,
+          '\'Ask\' should only show up when it\'s currently selected.');
+    }
   },
 
   /**
@@ -121,9 +131,8 @@ Polymer({
 
   /**
    * Returns true if there's a string to display that describes the source of
-   * this permission's setting.
-   * Note |source| is a subproperty of |this.site|, so this will only be called
-   * when |this.site| is updated.
+   * this permission's setting. Currently, this only gets called when
+   * |this.site| is updated.
    * @param {!settings.SiteSettingSource} source The source of the permission.
    * @private
    */
@@ -134,9 +143,28 @@ Polymer({
   },
 
   /**
+   * Returns true if the permission is set to a non-default 'ask'. Currently,
+   * this only gets called when |this.site| is updated.
+   * @param {!settings.ContentSetting} setting The setting of the permission.
+   * @param {!settings.SiteSettingSource} source The source of the permission.
+   * @private
+   */
+  isNonDefaultAsk_: function(setting, source) {
+    if (setting != settings.ContentSetting.ASK ||
+        source == settings.SiteSettingSource.DEFAULT) {
+      return false;
+    }
+
+    assert(
+        source == settings.SiteSettingSource.EXTENSION ||
+            source == settings.SiteSettingSource.POLICY,
+        'Only extensions or enterprise policy can change the setting to ASK.');
+    return true;
+  },
+
+  /**
    * Updates the string used to describe the source of this permission setting.
-   * Note |source| is a subproperty of |this.site|, so this will only be called
-   * when |this.site| is updated.
+   * Currently, this only gets called when |this.site| is updated.
    * @param {!settings.SiteSettingSource} source The source of the permission.
    * @param {!string} embargoString
    * @param {!string} insecureOriginString

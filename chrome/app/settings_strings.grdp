@@ -2242,11 +2242,15 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_BLOCK_DEFAULT_MENU" desc="Label for the default menu item to block a permission for a particular site.">
     Block (default)
   </message>
+  <!-- TODO(https://crbug.com/753173): Consolidate these strings with those used in the Page Info bubble. -->
   <message name="IDS_SETTINGS_SITE_SETTINGS_ALLOW_MENU" desc="Label for the menu item to allow permission for a particular site.">
     Allow
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_BLOCK_MENU" desc="Label for the menu item to block permission for a particular site.">
     Block
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_MENU" desc="Label for the menu item to ask for permission for a particular site.">
+    Ask
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_RESET_MENU" desc="Label for the menu item to remove the permission for a particular site (make it ask you again next time).">
     Remove
