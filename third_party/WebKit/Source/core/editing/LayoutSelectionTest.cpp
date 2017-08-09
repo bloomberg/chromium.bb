@@ -58,6 +58,7 @@ class LayoutSelectionTest : public EditingTestBase {
     return true;
   }
   LayoutObject* Current() { return current_; }
+  void Reset() { current_ = nullptr; }
 #ifndef NDEBUG
   void PrintLayoutTreeForDebug() {
     std::stringstream stream;
@@ -182,6 +183,50 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectCrossingShadowBoundary) {
   TEST_NEXT(&LayoutObject::IsLayoutInline, SelectionState::kNone);
   TEST_NEXT("bar1", SelectionState::kNone);
   TEST_NO_NEXT_LAYOUT_OBJECT();
+}
+
+// crbug.com/752715
+TEST_F(LayoutSelectionTest,
+       InvalidationShouldNotChangeRefferedLayoutObjectState) {
+  SetBodyContent(
+      "<div id='d1'>div1</div><div id='d2'>foo<span>bar</span>baz</div>");
+  Node* span = GetDocument().QuerySelector("span");
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(Position(span->firstChild(), 0),
+                            Position(span->firstChild(), 3))
+          .Build());
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(&LayoutObject::IsLayoutBlock, SelectionState::kStartAndEnd);
+  TEST_NEXT(&LayoutObject::IsLayoutBlockFlow, SelectionState::kNone);
+  TEST_NEXT("div1", SelectionState::kNone);
+  TEST_NEXT(&LayoutObject::IsLayoutBlockFlow, SelectionState::kStartAndEnd);
+  TEST_NEXT("foo", SelectionState::kNone);
+  TEST_NEXT(&LayoutObject::IsLayoutInline, SelectionState::kNone);
+  TEST_NEXT("bar", SelectionState::kStartAndEnd);
+  TEST_NEXT("baz", SelectionState::kNone);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
+
+  Node* d1 = GetDocument().QuerySelector("#d1");
+  Node* d2 = GetDocument().QuerySelector("#d2");
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(Position(d1, 0), Position(d2, 0))
+          .Build());
+  // This commit should not crash.
+  Selection().CommitAppearanceIfNeeded();
+  Reset();
+  TEST_NEXT(&LayoutObject::IsLayoutBlock, SelectionState::kEnd);
+  TEST_NEXT(&LayoutObject::IsLayoutBlockFlow, SelectionState::kStart);
+  TEST_NEXT("div1", SelectionState::kStart);
+  TEST_NEXT(&LayoutObject::IsLayoutBlockFlow, SelectionState::kEnd);
+  TEST_NEXT("foo", SelectionState::kNone);
+  TEST_NEXT(&LayoutObject::IsLayoutInline, SelectionState::kNone);
+  // TODO(yoichio) : Introduce enum class InvalidateOption and confirm
+  // "bar" is SelectionState::kNone and ShouldInvalidation.
+  // TEST_NEXT("bar", SelectionState::kNone);
+  // TEST_NEXT("baz", SelectionState::kNone);
+  // TEST_NO_NEXT_LAYOUT_OBJECT();
 }
 
 }  // namespace blink

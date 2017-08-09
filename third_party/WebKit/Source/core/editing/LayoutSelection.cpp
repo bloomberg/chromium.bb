@@ -441,14 +441,6 @@ static SelectionMarkingRange CalcSelectionRangeAndSetSelectionState(
     InsertLayoutObjectAndAncestorBlocks(&invalidation_set, end_layout_object);
   }
 
-  // TODO(yoichio): If start == end, they should be kStartAndEnd.
-  // If not, start.SelectionState == kStart and vice versa.
-  DCHECK(start_layout_object->GetSelectionState() == SelectionState::kStart ||
-         start_layout_object->GetSelectionState() ==
-             SelectionState::kStartAndEnd);
-  DCHECK(end_layout_object->GetSelectionState() == SelectionState::kEnd ||
-         end_layout_object->GetSelectionState() ==
-             SelectionState::kStartAndEnd);
   return {start_layout_object, start_editing_offset, end_layout_object,
           end_pos.ComputeEditingOffset(), std::move(invalidation_set)};
 }
@@ -472,6 +464,43 @@ void LayoutSelection::Commit() {
   DCHECK(!frame_selection_->GetDocument().NeedsLayoutTreeUpdate());
   SetShouldInvalidateSelection(new_range, paint_range_);
   paint_range_ = new_range.ToPaintRange();
+  // TODO(yoichio): Remove this if state.
+  // This SelectionState reassignment is ad-hoc patch for
+  // prohibiting use-after-free(crbug.com/752715).
+  // LayoutText::setSelectionState(state) propergates |state| to ancestor
+  // LayoutObjects, which can accidentally change start/end LayoutObject state
+  // then LayoutObject::IsSelectionBorder() returns false although we should
+  // clear selection at LayoutObject::WillBeRemoved().
+  // We should make LayoutObject::setSelectionState() trivial and remove
+  // such propagation or at least do it in LayoutSelection.
+  if ((paint_range_.StartLayoutObject()->GetSelectionState() !=
+           SelectionState::kStart &&
+       paint_range_.StartLayoutObject()->GetSelectionState() !=
+           SelectionState::kStartAndEnd) ||
+      (paint_range_.EndLayoutObject()->GetSelectionState() !=
+           SelectionState::kEnd &&
+       paint_range_.EndLayoutObject()->GetSelectionState() !=
+           SelectionState::kStartAndEnd)) {
+    if (paint_range_.StartLayoutObject() == paint_range_.EndLayoutObject()) {
+      paint_range_.StartLayoutObject()->SetSelectionStateIfNeeded(
+          SelectionState::kStartAndEnd);
+    } else {
+      paint_range_.StartLayoutObject()->SetSelectionStateIfNeeded(
+          SelectionState::kStart);
+      paint_range_.EndLayoutObject()->SetSelectionStateIfNeeded(
+          SelectionState::kEnd);
+    }
+  }
+  // TODO(yoichio): If start == end, they should be kStartAndEnd.
+  // If not, start.SelectionState == kStart and vice versa.
+  DCHECK(paint_range_.StartLayoutObject()->GetSelectionState() ==
+             SelectionState::kStart ||
+         paint_range_.StartLayoutObject()->GetSelectionState() ==
+             SelectionState::kStartAndEnd);
+  DCHECK(paint_range_.EndLayoutObject()->GetSelectionState() ==
+             SelectionState::kEnd ||
+         paint_range_.EndLayoutObject()->GetSelectionState() ==
+             SelectionState::kStartAndEnd);
 }
 
 void LayoutSelection::OnDocumentShutdown() {
