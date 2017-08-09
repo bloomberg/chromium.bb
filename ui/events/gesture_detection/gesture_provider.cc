@@ -323,8 +323,8 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
     if (!scroll_event_sent_) {
       // Note that scroll start hints are in distance traveled, where
       // scroll deltas are in the opposite direction.
-      GestureEventDetails scroll_details(
-          ET_GESTURE_SCROLL_BEGIN, -raw_distance_x, -raw_distance_y);
+      GestureEventDetails scroll_details(ET_GESTURE_SCROLL_BEGIN, -distance_x,
+                                         -distance_y);
       scroll_details.set_device_type(GestureDeviceType::DEVICE_TOUCHSCREEN);
 
       // Scroll focus point always starts with the first touch down point.

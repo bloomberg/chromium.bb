@@ -1700,8 +1700,8 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   EXPECT_TRUE(delegate->tap_cancel());
   EXPECT_TRUE(delegate->scroll_begin());
   EXPECT_TRUE(delegate->scroll_update());
-  EXPECT_EQ(15, delegate->scroll_x_hint());
-  EXPECT_EQ(15, delegate->scroll_y_hint());
+  EXPECT_EQ(10, delegate->scroll_x_hint());
+  EXPECT_EQ(10, delegate->scroll_y_hint());
 
   delegate->Reset();
 
@@ -3709,7 +3709,7 @@ TEST_F(GestureRecognizerTest, NoDriftInScroll) {
   EXPECT_TRUE(delegate->scroll_update());
   // 3 px consumed by touch slop region.
   EXPECT_EQ(-1, delegate->scroll_y());
-  EXPECT_EQ(-4, delegate->scroll_y_hint());
+  EXPECT_EQ(-1, delegate->scroll_y_hint());
 
   delegate->Reset();
 
@@ -4096,7 +4096,7 @@ TEST_F(GestureRecognizerTest, TestExceedingSlopSlowly) {
   EXPECT_TRUE(delegate->scroll_begin());
   EXPECT_TRUE(delegate->scroll_update());
   EXPECT_NEAR(0.1, delegate->scroll_x(), 0.0001);
-  EXPECT_FLOAT_EQ(3.1f, delegate->scroll_x_hint());
+  EXPECT_NEAR(0.1, delegate->scroll_x_hint(), 0.0001);
   delegate->Reset();
 
   ui::TouchEvent move4(
