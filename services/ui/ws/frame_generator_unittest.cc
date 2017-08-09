@@ -44,7 +44,8 @@ class TestClientBinding : public viz::mojom::CompositorFrameSink,
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& local_surface_id,
       cc::CompositorFrame frame,
-      viz::mojom::HitTestRegionListPtr hit_test_region_list) override {
+      viz::mojom::HitTestRegionListPtr hit_test_region_list,
+      uint64_t submit_time) override {
     ++frames_submitted_;
     last_frame_ = std::move(frame);
     last_begin_frame_ack_ = last_frame_.metadata.begin_frame_ack;

@@ -5,6 +5,7 @@
 #include "cc/ipc/render_pass_struct_traits.h"
 
 #include "base/numerics/safe_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/ipc/shared_quad_state_struct_traits.h"
 
 namespace mojo {
@@ -14,6 +15,8 @@ bool StructTraits<cc::mojom::RenderPassDataView,
                   std::unique_ptr<cc::RenderPass>>::
     Read(cc::mojom::RenderPassDataView data,
          std::unique_ptr<cc::RenderPass>* out) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
+               "StructTraits::RenderPass::Read");
   *out = cc::RenderPass::Create();
   if (!data.ReadOutputRect(&(*out)->output_rect) ||
       !data.ReadDamageRect(&(*out)->damage_rect) ||

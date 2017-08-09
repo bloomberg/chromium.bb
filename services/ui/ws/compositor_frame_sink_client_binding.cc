@@ -26,7 +26,8 @@ void CompositorFrameSinkClientBinding::SetNeedsBeginFrame(
 void CompositorFrameSinkClientBinding::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame,
-    viz::mojom::HitTestRegionListPtr hit_test_region_list) {
+    viz::mojom::HitTestRegionListPtr hit_test_region_list,
+    uint64_t submit_time) {
   if (local_surface_id != local_surface_id_) {
     local_surface_id_ = local_surface_id;
     gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
@@ -35,7 +36,8 @@ void CompositorFrameSinkClientBinding::SubmitCompositorFrame(
                                         frame.metadata.device_scale_factor);
   }
   compositor_frame_sink_->SubmitCompositorFrame(
-      local_surface_id_, std::move(frame), std::move(hit_test_region_list));
+      local_surface_id_, std::move(frame), std::move(hit_test_region_list),
+      submit_time);
 }
 
 void CompositorFrameSinkClientBinding::DidNotProduceFrame(

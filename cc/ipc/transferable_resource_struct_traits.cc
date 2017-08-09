@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/ipc/transferable_resource_struct_traits.h"
+#include "base/trace_event/trace_event.h"
 #include "gpu/ipc/common/mailbox_holder_struct_traits.h"
 #include "gpu/ipc/common/mailbox_struct_traits.h"
 #include "gpu/ipc/common/sync_token_struct_traits.h"
@@ -15,6 +16,8 @@ bool StructTraits<cc::mojom::TransferableResourceDataView,
                   viz::TransferableResource>::
     Read(cc::mojom::TransferableResourceDataView data,
          viz::TransferableResource* out) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
+               "StructTraits::TransferableResource::Read");
   if (!data.ReadSize(&out->size) ||
       !data.ReadMailboxHolder(&out->mailbox_holder) ||
       !data.ReadColorSpace(&out->color_space))
