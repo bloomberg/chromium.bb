@@ -573,7 +573,24 @@
     text_match_active_suggestion = 20,
     spelling_text_match_active_suggestion = 21,
     grammar_text_match_active_suggestion = 22,
-    spelling_grammar_text_match_active_suggestion = 23
+    spelling_grammar_text_match_active_suggestion = 23,
+    suggestion = 32,
+    spelling_suggestion = 33,
+    grammar_suggestion = 34,
+    spelling_grammar_suggestion = 35,
+    text_match_suggestion = 36,
+    spelling_text_match_suggestion = 37,
+    grammar_text_match_suggestion = 38,
+    spelling_grammar_text_match_suggestion = 39,
+    // We again skip over DocumentMarker::MarkerType::Composition = 8 here
+    active_suggestion_suggestion = 48,
+    spelling_active_suggestion_suggestion = 49,
+    grammar_active_suggestion_suggestion = 50,
+    spelling_grammar_active_suggestion_suggestion = 51,
+    text_match_active_suggestion_suggestion = 52,
+    spelling_text_match_active_suggestion_suggestion = 53,
+    grammar_text_match_active_suggestion_suggestion = 54,
+    spelling_grammar_text_match_active_suggestion_suggestion = 55
   };
 
   enum AXTextDirection {

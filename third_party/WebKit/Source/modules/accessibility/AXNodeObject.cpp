@@ -1521,7 +1521,8 @@ namespace {
 bool MarkerTypeIsUsedForAccessibility(DocumentMarker::MarkerType type) {
   return DocumentMarker::MarkerTypes(
              DocumentMarker::kSpelling | DocumentMarker::kGrammar |
-             DocumentMarker::kTextMatch | DocumentMarker::kActiveSuggestion)
+             DocumentMarker::kTextMatch | DocumentMarker::kActiveSuggestion |
+             DocumentMarker::kSuggestion)
       .Contains(type);
 }
 

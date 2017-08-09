@@ -980,6 +980,8 @@ std::string AXNodeData::ToString() const {
             types_str += "text_match&";
           if (type & AX_MARKER_TYPE_ACTIVE_SUGGESTION)
             types_str += "active_suggestion&";
+          if (type & AX_MARKER_TYPE_SUGGESTION)
+            types_str += "suggestion&";
 
           if (!types_str.empty())
             types_str = types_str.substr(0, types_str.size() - 1);

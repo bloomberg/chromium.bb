@@ -291,6 +291,7 @@ enum WebAXMarkerType {
   kWebAXMarkerTypeTextMatch = 1 << 2,
   // Skip DocumentMarker::MarkerType::Composition
   kWebAXMarkerTypeActiveSuggestion = 1 << 4,
+  kWebAXMarkerTypeSuggestion = 1 << 5,
 };
 
 // Used for exposing text attributes.
