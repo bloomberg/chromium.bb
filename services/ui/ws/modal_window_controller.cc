@@ -243,6 +243,16 @@ const ServerWindow* ModalWindowController::GetToplevelWindow(
   return nullptr;
 }
 
+const ServerWindow* ModalWindowController::GetActiveSystemModalWindow() const {
+  for (auto it = system_modal_windows_.rbegin();
+       it != system_modal_windows_.rend(); it++) {
+    ServerWindow* modal = *it;
+    if (modal->IsDrawn() && IsWindowInSystemModalContainer(modal))
+      return modal;
+  }
+  return nullptr;
+}
+
 bool ModalWindowController::IsWindowBlockedBySystemModalOrMinContainer(
     const ServerWindow* window) const {
   const ServerWindow* system_modal_window = GetActiveSystemModalWindow();
@@ -287,16 +297,6 @@ const ServerWindow* ModalWindowController::GetMinContainer(
   for (auto& blocking_containers : all_blocking_containers_) {
     if (blocking_containers->IsInDisplayWithRoot(root))
       return blocking_containers->min_container();
-  }
-  return nullptr;
-}
-
-const ServerWindow* ModalWindowController::GetActiveSystemModalWindow() const {
-  for (auto it = system_modal_windows_.rbegin();
-       it != system_modal_windows_.rend(); it++) {
-    ServerWindow* modal = *it;
-    if (modal->IsDrawn() && IsWindowInSystemModalContainer(modal))
-      return modal;
   }
   return nullptr;
 }
