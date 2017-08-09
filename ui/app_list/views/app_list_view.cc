@@ -1130,9 +1130,9 @@ void AppListView::OnWallpaperColorsChanged() {
 }
 
 void AppListView::SetBackgroundShieldColor() {
-  // There is a chance when AppListView::OnWallpaperColorsChanged called from
-  // AppListViewDelegate and the app_list_background_shield_ is not initialized.
-  if (!is_fullscreen_app_list_enabled_ && !app_list_background_shield_)
+  // There is a chance when AppListView::OnWallpaperColorsChanged is called from
+  // AppListViewDelegate, the |app_list_background_shield_| is not initialized.
+  if (!is_fullscreen_app_list_enabled_ || !app_list_background_shield_)
     return;
 
   std::vector<SkColor> prominent_colors;
