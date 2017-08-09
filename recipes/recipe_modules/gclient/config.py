@@ -289,22 +289,22 @@ def luci_gae(c):
   # luci/gae is checked out as a part of infra.git solution at HEAD.
   c.revisions['infra'] = 'origin/master'
   # luci/gae is developed together with luci-go, which should be at HEAD.
-  c.revisions['infra/go/src/github.com/luci/luci-go'] = 'origin/master'
-  c.revisions['infra/go/src/github.com/luci/gae'] = (
+  c.revisions['infra/go/src/go.chromium.org/luci'] = 'origin/master'
+  c.revisions['infra/go/src/go.chromium.org/gae'] = (
       gclient_api.RevisionFallbackChain('origin/master'))
   m = c.got_revision_mapping
   del m['infra']
-  m['infra/go/src/github.com/luci/gae'] = 'got_revision'
+  m['infra/go/src/go.chromium.org/gae'] = 'got_revision'
 
 @config_ctx(includes=['infra'])
 def luci_go(c):
   # luci-go is checked out as a part of infra.git solution at HEAD.
   c.revisions['infra'] = 'origin/master'
-  c.revisions['infra/go/src/github.com/luci/luci-go'] = (
+  c.revisions['infra/go/src/go.chromium.org/luci'] = (
       gclient_api.RevisionFallbackChain('origin/master'))
   m = c.got_revision_mapping
   del m['infra']
-  m['infra/go/src/github.com/luci/luci-go'] = 'got_revision'
+  m['infra/go/src/go.chromium.org/luci'] = 'got_revision'
 
 @config_ctx(includes=['infra'])
 def luci_py(c):
@@ -332,8 +332,7 @@ def recipes_py(c):
 def recipes_py_bare(c):
   soln = c.solutions.add()
   soln.name = 'recipes-py'
-  soln.url = ('https://chromium.googlesource.com/external/github.com/'
-              'luci/recipes-py')
+  soln.url = 'https://chromium.googlesource.com/infra/luci/recipes-py'
   c.got_revision_mapping['recipes-py'] = 'got_revision'
 
 @config_ctx()
