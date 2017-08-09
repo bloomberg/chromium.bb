@@ -48,10 +48,6 @@ class SafeBrowsingLoudErrorUI
   void PopulateHarmfulLoadTimeData(base::DictionaryValue* load_time_data);
   void PopulatePhishingLoadTimeData(base::DictionaryValue* load_time_data);
 
-  // Helper method which either opens a URL in a new tab or a the current tab
-  // based on the display options setting.
-  void OpenURL(const GURL& url);
-
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingLoudErrorUI);
 };
 

@@ -31,6 +31,7 @@ import org.chromium.android_webview.ErrorCodeConversionHelper;
 import org.chromium.android_webview.SafeBrowsingAction;
 import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedError2Helper;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
+import org.chromium.base.LocaleUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -373,19 +374,21 @@ public class SafeBrowsingTest extends AwTestBase {
     }
 
     private void clickBackToSafety() {
-        final String script = "document.getElementById('primary-button').click();";
-        evaluateJavaScriptOnInterstitialOnUiThread(script, null);
+        clickLinkById("primary-button");
     }
 
     private void clickVisitUnsafePageQuietInterstitial() {
-        final String script = "document.getElementById('details-link').click();"
-                + "document.getElementById('proceed-link').click();";
-        evaluateJavaScriptOnInterstitialOnUiThread(script, null);
+        clickLinkById("details-link");
+        clickLinkById("proceed-link");
     }
 
     private void clickVisitUnsafePage() {
-        final String script = "document.getElementById('details-button').click();"
-                + "document.getElementById('proceed-link').click();";
+        clickLinkById("details-button");
+        clickLinkById("proceed-link");
+    }
+
+    private void clickLinkById(String id) {
+        final String script = "document.getElementById('" + id + "').click();";
         evaluateJavaScriptOnInterstitialOnUiThread(script, null);
     }
 
@@ -883,5 +886,81 @@ public class SafeBrowsingTest extends AwTestBase {
         loadUrlAsync(mAwContents, WEB_UI_PHISHING_URL);
         mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
         waitForInterstitialToLoad();
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingClickLearnMoreLink() throws Throwable {
+        loadInterstitialAndClickLink(PHISHING_HTML_PATH, "learn-more-link",
+                appendLocale("https://support.google.com/chrome/?p=cpn_safe_browsing_wv"));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingClickReportErrorLink() throws Throwable {
+        // Only phishing interstitials have the report-error-link
+        loadInterstitialAndClickLink(PHISHING_HTML_PATH, "report-error-link",
+                appendLocale("https://www.google.com/safebrowsing/report_error/"));
+    }
+
+    private String appendLocale(String url) throws Exception {
+        return Uri.parse(url)
+                .buildUpon()
+                .appendQueryParameter("hl", LocaleUtils.getDefaultLocaleString())
+                .toString();
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingClickDiagnosticLink() throws Throwable {
+        // Only malware interstitials have the diagnostic-link
+        final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
+        final String diagnosticUrl =
+                Uri.parse("https://www.google.com/safebrowsing/diagnostic")
+                        .buildUpon()
+                        .appendQueryParameter("site", responseUrl)
+                        .appendQueryParameter("client", "chromium")
+                        .appendQueryParameter("hl", LocaleUtils.getDefaultLocaleString())
+                        .toString();
+        loadInterstitialAndClickLink(MALWARE_HTML_PATH, "diagnostic-link", diagnosticUrl);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingClickWhitePaperLink() throws Throwable {
+        final String whitepaperUrl =
+                Uri.parse("https://www.google.com/chrome/browser/privacy/whitepaper.html")
+                        .buildUpon()
+                        .appendQueryParameter("hl", LocaleUtils.getDefaultLocaleString())
+                        .fragment("extendedreport")
+                        .toString();
+        loadInterstitialAndClickLink(PHISHING_HTML_PATH, "whitepaper-link", whitepaperUrl);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingClickPrivacyPolicy() throws Throwable {
+        final String privacyPolicyUrl =
+                Uri.parse("https://www.google.com/chrome/browser/privacy/")
+                        .buildUpon()
+                        .appendQueryParameter("hl", LocaleUtils.getDefaultLocaleString())
+                        .fragment("safe-browsing-policies")
+                        .toString();
+        loadInterstitialAndClickLink(PHISHING_HTML_PATH, "privacy-link", privacyPolicyUrl);
+    }
+
+    private void loadInterstitialAndClickLink(String path, String linkId, String linkUrl)
+            throws Exception {
+        loadPathAndWaitForInterstitial(path);
+        waitForInterstitialToLoad();
+        int pageFinishedCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
+        clickLinkById(linkId);
+        mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
+        assertEquals(linkUrl, mAwContents.getUrl());
     }
 }

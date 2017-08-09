@@ -169,7 +169,7 @@ void SafeBrowsingLoudErrorUI::HandleCommand(
           learn_more_url, "p", get_help_center_article_link());
       learn_more_url =
           google_util::AppendGoogleLocaleParam(learn_more_url, app_locale());
-      OpenURL(learn_more_url);
+      controller()->OpenURL(should_open_links_in_new_tab(), learn_more_url);
       break;
     }
     case CMD_RELOAD: {
@@ -180,11 +180,13 @@ void SafeBrowsingLoudErrorUI::HandleCommand(
     }
     case CMD_OPEN_REPORTING_PRIVACY: {
       // User pressed on the SB Extended Reporting "privacy policy" link.
-      controller()->OpenExtendedReportingPrivacyPolicy();
+      controller()->OpenExtendedReportingPrivacyPolicy(
+          should_open_links_in_new_tab());
       break;
     }
     case CMD_OPEN_WHITEPAPER: {
-      controller()->OpenExtendedReportingWhitepaper();
+      controller()->OpenExtendedReportingWhitepaper(
+          should_open_links_in_new_tab());
       break;
     }
     case CMD_OPEN_DIAGNOSTIC: {
@@ -196,7 +198,7 @@ void SafeBrowsingLoudErrorUI::HandleCommand(
       GURL diagnostic_url(diagnostic);
       diagnostic_url =
           google_util::AppendGoogleLocaleParam(diagnostic_url, app_locale());
-      OpenURL(diagnostic_url);
+      controller()->OpenURL(should_open_links_in_new_tab(), diagnostic_url);
       break;
     }
     case CMD_REPORT_PHISHING_ERROR: {
@@ -205,7 +207,7 @@ void SafeBrowsingLoudErrorUI::HandleCommand(
       GURL phishing_error_url(kReportPhishingErrorUrl);
       phishing_error_url = google_util::AppendGoogleLocaleParam(
           phishing_error_url, app_locale());
-      OpenURL(phishing_error_url);
+      controller()->OpenURL(should_open_links_in_new_tab(), phishing_error_url);
       break;
     }
     case CMD_OPEN_DATE_SETTINGS:
@@ -303,14 +305,6 @@ void SafeBrowsingLoudErrorUI::PopulateExtendedReportingOption(
                                 base::UTF8ToUTF16(privacy_link)));
   load_time_data->SetBoolean(security_interstitials::kBoxChecked,
                              is_extended_reporting_enabled());
-}
-
-void SafeBrowsingLoudErrorUI::OpenURL(const GURL& url) {
-  if (should_open_links_in_new_tab()) {
-    controller()->OpenUrlInNewForegroundTab(url);
-  } else {
-    controller()->OpenUrlInCurrentTab(url);
-  }
 }
 
 int SafeBrowsingLoudErrorUI::GetHTMLTemplateId() const {

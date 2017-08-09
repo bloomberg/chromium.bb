@@ -61,8 +61,13 @@ class ControllerClient {
 
   // Handle the user's reporting preferences.
   void SetReportingPreference(bool report);
-  void OpenExtendedReportingPrivacyPolicy();
-  void OpenExtendedReportingWhitepaper();
+
+  void OpenExtendedReportingPrivacyPolicy(bool open_links_in_new_tab);
+  void OpenExtendedReportingWhitepaper(bool open_links_in_new_tab);
+
+  // Helper method which either opens a URL in a new tab or a the current tab
+  // based on the display options setting.
+  void OpenURL(bool open_links_in_new_tab, const GURL& url);
 
   // If available, open the operating system's date/time settings.
   virtual bool CanLaunchDateAndTimeSettings() = 0;
