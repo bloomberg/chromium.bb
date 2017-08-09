@@ -1,6 +1,6 @@
 Name: opus
-URL: https://git.xiph.org/?p=opus.git;a=snapshot;h=ed08a3b0ba736d007c1a87b9c5c077b01170e7be;sf=tgz
-Version: ed08a3b0ba736d007c1a87b9c5c077b01170e7be
+URL: https://git.xiph.org/?p=opus.git;a=snapshot;h=3fe744ea04fdcc418fb85c2c133d13372ebb019b;sf=tgz
+Version: 3fe744ea04fdcc418fb85c2c133d13372ebb019b
 License: BSD
 License File: src/COPYING
 Security Critical: yes
