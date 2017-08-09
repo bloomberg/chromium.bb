@@ -324,6 +324,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/dom_distiller/ReaderModeTabInfo.java",
   "java/src/org/chromium/chrome/browser/download/ChromeDownloadDelegate.java",
   "java/src/org/chromium/chrome/browser/download/DownloadActivity.java",
+  "java/src/org/chromium/chrome/browser/download/DownloadBroadcastManager.java",
   "java/src/org/chromium/chrome/browser/download/DownloadBroadcastReceiver.java",
   "java/src/org/chromium/chrome/browser/download/DownloadController.java",
   "java/src/org/chromium/chrome/browser/download/DownloadInfo.java",
