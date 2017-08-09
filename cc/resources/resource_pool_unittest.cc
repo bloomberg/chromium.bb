@@ -346,13 +346,23 @@ TEST_F(ResourcePoolTest, ReuseResource) {
                                                    color_space));
 
   // Try some cases that are smaller than 100x100, but within 2x area. Reuse
-  // should succeed.
-  CheckAndReturnResource(
-      resource_pool_->ReuseResource(gfx::Size(50, 100), format, color_space));
-  CheckAndReturnResource(
-      resource_pool_->ReuseResource(gfx::Size(100, 50), format, color_space));
-  CheckAndReturnResource(
-      resource_pool_->ReuseResource(gfx::Size(71, 71), format, color_space));
+  // should succeed if non-exact requests are supported. Some platforms never
+  // support these.
+  if (resource_pool_->AllowsNonExactReUseForTesting()) {
+    CheckAndReturnResource(
+        resource_pool_->ReuseResource(gfx::Size(50, 100), format, color_space));
+    CheckAndReturnResource(
+        resource_pool_->ReuseResource(gfx::Size(100, 50), format, color_space));
+    CheckAndReturnResource(
+        resource_pool_->ReuseResource(gfx::Size(71, 71), format, color_space));
+  } else {
+    EXPECT_EQ(nullptr, resource_pool_->ReuseResource(gfx::Size(50, 100), format,
+                                                     color_space));
+    EXPECT_EQ(nullptr, resource_pool_->ReuseResource(gfx::Size(100, 50), format,
+                                                     color_space));
+    EXPECT_EQ(nullptr, resource_pool_->ReuseResource(gfx::Size(71, 71), format,
+                                                     color_space));
+  }
 
   // 100x100 is an exact match and should succeed. A subsequent request for
   // the same size should fail (the resource is already in use).
@@ -434,7 +444,7 @@ TEST_F(ResourcePoolTest, ExactRequestsRespected) {
       resource_pool_->CreateResource(gfx::Size(100, 100), format, color_space));
 
   // Try some cases that are smaller than 100x100, but within 2x area which
-  // would typically allow reuse. Reuse should fail due to the .
+  // would typically allow reuse. Reuse should fail.
   EXPECT_EQ(nullptr, resource_pool_->ReuseResource(gfx::Size(50, 100), format,
                                                    color_space));
   EXPECT_EQ(nullptr, resource_pool_->ReuseResource(gfx::Size(100, 50), format,
