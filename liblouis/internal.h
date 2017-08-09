@@ -299,7 +299,6 @@ typedef enum { /*Op codes */
                CTO_ExactDots,
                CTO_NoCross,
                CTO_Syllable,
-               CTO_Syllable_,
                CTO_NoCont,
                CTO_CompBrl,
                CTO_Literal,

@@ -176,9 +176,6 @@ static int find_matching_rules(widechar *text,
 				if (rule->charslen == text_len)
 					break;
 				goto next_rule;
-			case CTO_Syllable_:
-				if (data[-1] != '1' && data[-1] != '^')
-					goto next_rule;
 			case CTO_NoCross:
 				for (k = 0; k < rule->charslen - 1; k++)
 					if (data[k + 1] == '>')
@@ -208,8 +205,7 @@ static int find_matching_rules(widechar *text,
 			
 			/* fill data */
 			switch (rule->opcode) {
-			case CTO_NoCross:
-			case CTO_Syllable_: // deferred: see success
+			case CTO_NoCross: // deferred: see success
 				break;
 			default:
 				k = 0;
@@ -222,7 +218,7 @@ static int find_matching_rules(widechar *text,
 						data[k++] = '0';
 					else
 						data[k++] = 'x'; }}
-			if (rule->opcode == CTO_Syllable_ || data[rule->charslen] == '>' || data[rule->charslen] == '|') {
+			if (data[rule->charslen] == '>' || data[rule->charslen] == '|') {
 				data[rule->charslen - 1] = '1';
 				memset(&data[rule->charslen], '-', text_len - rule->charslen); }
 			else if (data[rule->charslen - 1] == '|')
@@ -274,10 +270,6 @@ static int find_matching_rules(widechar *text,
 				data[rule->charslen - 1] = '>';
 				debug("%s", data);
 				goto next_rule;
-			case CTO_Syllable_:
-				data[rule->charslen - 1] = '|';
-				debug("%s", data);
-				goto next_rule;
 			default:
 				goto abort; }
 			
@@ -285,7 +277,6 @@ static int find_matching_rules(widechar *text,
 			/* fill data (deferred) */
 			switch (rule->opcode) {
 			case CTO_NoCross:
-			case CTO_Syllable_:
 				memset(data, '0', rule->charslen - 1);
 				debug("%s", data); }
 			return 1;
@@ -359,7 +350,6 @@ extern void findRelevantRules(widechar *text, widechar **rules_str) {
 				case CTO_BegWord:
 				case CTO_EndWord:
 				case CTO_NoCross:
-				case CTO_Syllable_:
 					break;
 				default:
 					goto next_rule; }
