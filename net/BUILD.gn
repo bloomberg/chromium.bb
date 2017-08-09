@@ -2524,6 +2524,8 @@ static_library("test_support") {
     "dns/mock_host_resolver.h",
     "dns/mock_mdns_socket_factory.cc",
     "dns/mock_mdns_socket_factory.h",
+    "filter/filter_source_stream_test_util.cc",
+    "filter/filter_source_stream_test_util.h",
     "filter/mock_source_stream.cc",
     "filter/mock_source_stream.h",
     "http/http_stream_factory_test_util.cc",
@@ -2634,7 +2636,9 @@ static_library("test_support") {
     "//url",
   ]
 
-  deps = []
+  deps = [
+    "//third_party/zlib",
+  ]
 
   data = [
     "data/",
@@ -4759,8 +4763,6 @@ test("net_unittests") {
     "extras/sqlite/sqlite_channel_id_store_unittest.cc",
     "extras/sqlite/sqlite_persistent_cookie_store_unittest.cc",
     "filter/brotli_source_stream_unittest.cc",
-    "filter/filter_source_stream_test_util.cc",
-    "filter/filter_source_stream_test_util.h",
     "filter/filter_source_stream_unittest.cc",
     "filter/gzip_source_stream_unittest.cc",
     "filter/sdch_policy_delegate_unittest.cc",
