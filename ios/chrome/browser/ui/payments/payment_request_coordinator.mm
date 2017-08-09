@@ -154,7 +154,9 @@ requestFullCreditCard:(const autofill::CreditCard&)card
   BOOL totalValueChanged =
       (_paymentRequest->payment_details().total != paymentDetails.total);
   [_mediator setTotalValueChanged:totalValueChanged];
-  // Update the payment summary item.
+
+  _paymentRequest->UpdatePaymentDetails(paymentDetails);
+
   [_viewController updatePaymentSummaryItem];
 
   if (totalValueChanged) {
@@ -167,8 +169,6 @@ requestFullCreditCard:(const autofill::CreditCard&)card
                               userInfo:nil
                                repeats:NO];
   }
-
-  _paymentRequest->UpdatePaymentDetails(paymentDetails);
 
   // If a shipping address has been selected and there are available shipping
   // options, set it as the selected shipping address.
