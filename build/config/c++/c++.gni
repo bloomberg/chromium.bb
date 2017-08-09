@@ -12,7 +12,7 @@ declare_args() {
   # is not supported.
   use_custom_libcxx =
       is_msan || is_fuchsia ||
-      (is_linux &&
+      (is_linux && is_clang &&
        (!is_chromeos || default_toolchain != "//build/toolchain/cros:target"))
 
   # ASan, MSan and TSan builds need to override operator new, operator delete,
