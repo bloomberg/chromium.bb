@@ -93,11 +93,11 @@ Polymer({
    */
   playAnimation_: function(isEntry) {
     this.animation_ = isEntry ? this.animateEntry_() : this.animateExit_();
-    this.animation_.onfinish = function() {
+    this.animation_.onfinish = () => {
       this.animation_ = null;
       if (!this.dropdownOpen)
         this.$.dropdown.style.display = 'none';
-    }.bind(this);
+    };
   },
 
   animateEntry_: function() {

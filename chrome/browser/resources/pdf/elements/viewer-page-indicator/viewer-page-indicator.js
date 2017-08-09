@@ -47,10 +47,10 @@ Polymer({
     this.style.opacity = 1;
     clearTimeout(this.timerId);
 
-    this.timerId = setTimeout(function() {
+    this.timerId = setTimeout(() => {
       this.style.opacity = 0;
       this.timerId = undefined;
-    }.bind(this), displayTime);
+    }, displayTime);
   },
 
   pageLabelsChanged: function() {
