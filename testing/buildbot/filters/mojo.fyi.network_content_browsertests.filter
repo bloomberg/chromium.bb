@@ -157,3 +157,7 @@
 -WorkerTest.SharedWorkerHttpAuth
 -WorkerTest.WorkerHttpAuth
 -WorkerTest.WorkerTlsClientAuth
+
+# content/network/url_loader_impl.cc should handle failure in
+# URLLoaderImpl::OnResponseBodyStreamRead().
+-SRC_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
