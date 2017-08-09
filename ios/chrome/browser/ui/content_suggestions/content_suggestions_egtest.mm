@@ -5,11 +5,19 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
+#include <vector>
+
+#include "base/mac/foundation_util.h"
+#include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_command_line.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
+#include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
+#include "components/ntp_snippets/mock_content_suggestions_provider.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model.h"
+#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
@@ -28,13 +36,27 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/strings/grit/ui_strings.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using namespace ntp_snippets;
+
 namespace {
+
+// Returns a suggestion created from the |category|, |suggestion_id| and the
+// |url|.
+ContentSuggestion Suggestion(Category category,
+                             std::string suggestion_id,
+                             GURL url) {
+  ContentSuggestion suggestion(category, suggestion_id, url);
+  suggestion.set_title(base::UTF8ToUTF16(url.spec()));
+
+  return suggestion;
+}
 
 // Select the cell with the |matcher| by scrolling the collection.
 // 150 is a reasonable scroll displacement that works for all UI elements, while
@@ -48,7 +70,52 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
                                [ContentSuggestionsViewController
                                    collectionAccessibilityIdentifier])];
 }
+
+}  // namespace
+
+// Singleton allowing to register the provider in the +setup and still access it
+// from inside the tests.
+@interface ContentSuggestionsTestSingleton : NSObject
+
+// Shared instance of this singleton.
++ (instancetype)sharedInstance;
+
+// Returns the provider registered.
+- (MockContentSuggestionsProvider*)provider;
+// Registers a provider in the |service|.
+- (void)registerArticleProvider:(ContentSuggestionsService*)service;
+
+@end
+
+@implementation ContentSuggestionsTestSingleton {
+  MockContentSuggestionsProvider* _provider;
 }
+
++ (instancetype)sharedInstance {
+  static ContentSuggestionsTestSingleton* sharedInstance = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    sharedInstance = [[self alloc] init];
+  });
+  return sharedInstance;
+}
+
+- (MockContentSuggestionsProvider*)provider {
+  return _provider;
+}
+
+- (void)registerArticleProvider:(ContentSuggestionsService*)service {
+  Category articles = Category::FromKnownCategory(KnownCategories::ARTICLES);
+  std::unique_ptr<MockContentSuggestionsProvider> provider =
+      base::MakeUnique<MockContentSuggestionsProvider>(
+          service, std::vector<Category>{articles});
+  _provider = provider.get();
+  service->RegisterProvider(std::move(provider));
+}
+
+@end
+
+#pragma mark - TestCase
 
 // Test case for the ContentSuggestion UI.
 @interface ContentSuggestionsTestCase : ChromeTestCase {
@@ -57,6 +124,10 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
 // Current non-incognito browser state.
 @property(nonatomic, assign, readonly) ios::ChromeBrowserState* browserState;
+// Mock provider from the singleton.
+@property(nonatomic, assign, readonly) MockContentSuggestionsProvider* provider;
+// Article category, used by the singleton.
+@property(nonatomic, assign, readonly) Category category;
 
 @end
 
@@ -74,12 +145,14 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   // service with no provider registered, allowing to register fake providers
   // which do not require internet connection. The previous service is deleted.
   IOSChromeContentSuggestionsServiceFactory::GetInstance()->SetTestingFactory(
-      browserState, ntp_snippets::CreateChromeContentSuggestionsService);
+      browserState, CreateChromeContentSuggestionsService);
 
-  ntp_snippets::RegisterReadingListProvider(
+  ContentSuggestionsService* service =
       IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
-          browserState),
-      browserState);
+          browserState);
+  RegisterReadingListProvider(service, browserState);
+  [[ContentSuggestionsTestSingleton sharedInstance]
+      registerArticleProvider:service];
 }
 
 + (void)tearDown {
@@ -91,23 +164,64 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   // Resets the Service associated with this browserState to a service with
   // default providers. The previous service is deleted.
   IOSChromeContentSuggestionsServiceFactory::GetInstance()->SetTestingFactory(
-      browserState,
-      ntp_snippets::CreateChromeContentSuggestionsServiceWithProviders);
+      browserState, CreateChromeContentSuggestionsServiceWithProviders);
   [super tearDown];
 }
-
-#pragma mark - Tests
 
 - (void)setUp {
   // The command line is set up before [super setUp] in order to have the NTP
   // opened with the command line already setup.
   base::CommandLine* commandLine = _scopedCommandLine.GetProcessCommandLine();
   commandLine->AppendSwitch(switches::kEnableSuggestionsUI);
+  self.provider->FireCategoryStatusChanged(self.category,
+                                           CategoryStatus::AVAILABLE);
 
   ReadingListModel* readingListModel =
       ReadingListModelFactory::GetForBrowserState(self.browserState);
   readingListModel->DeleteAllEntries();
   [super setUp];
+}
+
+- (void)tearDown {
+  self.provider->FireCategoryStatusChanged(
+      self.category, CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED);
+  [super tearDown];
+}
+
+#pragma mark - Tests
+
+// Tests that a switch for the ContentSuggestions exists in the settings. The
+// behavior depends on having a real remote provider, so it cannot be tested
+// here.
+- (void)testPrivacySwitch {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:chrome_test_util::SettingsMenuPrivacyButton()];
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::StaticTextWithAccessibilityLabelId(
+                     IDS_IOS_OPTIONS_CONTENT_SUGGESTIONS)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that the section titles are displayed only if there are two sections.
+- (void)testSectionTitle {
+  ReadingListModel* readingListModel =
+      ReadingListModelFactory::GetForBrowserState(self.browserState);
+  readingListModel->AddEntry(GURL("http://chromium.org"), "test title",
+                             reading_list::ADDED_VIA_CURRENT_APP);
+
+  [CellWithMatcher(chrome_test_util::StaticTextWithAccessibilityLabelId(
+      IDS_NTP_READING_LIST_SUGGESTIONS_SECTION_HEADER))
+      assertWithMatcher:grey_nil()];
+
+  std::vector<ContentSuggestion> suggestions;
+  suggestions.emplace_back(
+      Suggestion(self.category, "chromium", GURL("http://chromium.org")));
+  self.provider->FireSuggestionsChanged(self.category, std::move(suggestions));
+
+  [CellWithMatcher(chrome_test_util::StaticTextWithAccessibilityLabelId(
+      IDS_NTP_READING_LIST_SUGGESTIONS_SECTION_HEADER))
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Tests that the "Learn More" cell is present.
@@ -202,6 +316,14 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
 - (ios::ChromeBrowserState*)browserState {
   return chrome_test_util::GetOriginalBrowserState();
+}
+
+- (MockContentSuggestionsProvider*)provider {
+  return [[ContentSuggestionsTestSingleton sharedInstance] provider];
+}
+
+- (Category)category {
+  return Category::FromKnownCategory(KnownCategories::ARTICLES);
 }
 
 @end
