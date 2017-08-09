@@ -496,14 +496,11 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       logging.info('No build-events.json file to archive')
 
     if self._update_metadata:
-      # TODO: Consider moving this into its own stage if there are other similar
-      # things to do after build_packages.
-      # sjg@chromium.org: Considered, but gosh there are a lot of stages
-      # already. What is the benefit?
-
       # Extract firmware version information from the newly created updater.
-      main, ec = commands.GetFirmwareVersions(self._build_root,
-                                              self._current_board)
+      fw_versions = commands.GetFirmwareVersions(self._build_root,
+                                                 self._current_board)
+      main = fw_versions.main_rw or fw_versions.main
+      ec = fw_versions.ec_rw or fw_versions.ec
       update_dict = {'main-firmware-version': main, 'ec-firmware-version': ec}
       self._run.attrs.metadata.UpdateBoardDictWithDict(
           self._current_board, update_dict)
@@ -517,10 +514,22 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       # Get a list of models supported by this board.
       models = commands.GetModels(self._build_root, self._current_board)
       self._run.attrs.metadata.UpdateWithDict({'unibuild': bool(models)})
-      # TODO(sjg@chromium.org): Adjust the code above to write the firmware
-      # version for each model, rather than for the build as a whole. This
-      # will require an updated chromeos-firmwareupdate tool as well as an
-      # updated firmware package.
+      if models:
+        all_fw_versions = commands.GetAllFirmwareVersions(self._build_root,
+                                                          self._current_board)
+        models_data = {}
+        for model in models:
+          if model in all_fw_versions:
+            fw_versions = all_fw_versions[model]
+            ec = fw_versions.ec_rw or fw_versions.ec
+            main_ro = fw_versions.main
+            main_rw = fw_versions.main_rw
+            models_data[model] = {'main-readonly-firmware-version': main_ro,
+                                  'main-readwrite-firmware-version': main_rw,
+                                  'ec-firmware-version': ec}
+        if models_data:
+          self._run.attrs.metadata.UpdateBoardDictWithDict(
+              self._current_board, {'models': models_data})
 
 
 class BuildImageStage(BuildPackagesStage):

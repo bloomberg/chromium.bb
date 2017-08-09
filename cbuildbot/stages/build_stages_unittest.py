@@ -342,6 +342,52 @@ class BuildPackagesStageTest(AllConfigsTestCase,
                        expected_ec_firmware_version)
       self.assertFalse(self._run.attrs.metadata.GetDict()['unibuild'])
 
+  def testFirmwareVersionsUnibuild(self):
+    """Test that firmware versions are extracted correctly for unibuilds."""
+
+    def _HookRunCommand(rc):
+      rc.AddCmdResult(partial_mock.ListRegex('fdtget'), output='reef\npyro')
+      rc.AddCmdResult(partial_mock.ListRegex('chromeos-firmwareupdate'),
+                      output='''
+BIOS image:
+BIOS version: Google_Reef.9042.87.1
+BIOS (RW) version: Google_Reef.9042.110.0
+EC version:   reef_v1.1.5900-ab1ee51
+EC (RW) version: reef_v1.1.5909-bd1f0c9
+
+BIOS image:
+BIOS version: Google_Pyro.9042.87.1
+BIOS (RW) version: Google_Pyro.9042.110.0
+EC version:   pyro_v1.1.5900-ab1ee51
+EC (RW) version: pyro_v1.1.5909-bd1f0c9
+''')
+
+    self._update_metadata = True
+    update = os.path.join(
+        self.build_root,
+        'chroot/build/x86-generic/usr/sbin/chromeos-firmwareupdate')
+    osutils.Touch(update, makedirs=True)
+
+    fdtget = os.path.join(self.build_root, 'chroot/usr/bin/fdtget')
+    osutils.Touch(fdtget, makedirs=True)
+
+    self._mock_configurator = _HookRunCommand
+    self.RunTestsWithBotId('x86-generic-paladin', options_tests=False)
+    board_metadata = (self._run.attrs.metadata.GetDict()['board-metadata']
+                      .get('x86-generic'))
+    self.assertIsNotNone(board_metadata)
+
+    if 'models' in board_metadata:
+      reef = board_metadata['models']['reef']
+      self.assertEquals('Google_Reef.9042.87.1',
+                        reef['main-readonly-firmware-version'])
+      self.assertEquals('Google_Reef.9042.110.0',
+                        reef['main-readwrite-firmware-version'])
+      self.assertEquals('reef_v1.1.5909-bd1f0c9',
+                        reef['ec-firmware-version'])
+
+      self.assertIn('pyro', board_metadata['models'])
+
   def testUnifiedBuilds(self):
     """Test that unified builds are marked as such."""
     def _HookRunCommandFdtget(rc):

@@ -462,9 +462,98 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
 
 FirmwareVersions = collections.namedtuple(
     'FirmwareVersions',
-    ['main', 'ec']
+    ['model', 'main', 'main_rw', 'ec', 'ec_rw']
 )
 
+def GetFirmwareVersionCmdResult(buildroot, board):
+  """Gets the raw result output of the firmware updater version command.
+
+  Args:
+    buildroot: The buildroot of the current build.
+    board: The board the firmware is for.
+
+  Returns:
+    Command execution result.
+  """
+  updater = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR,
+                         cros_build_lib.GetSysroot(board).lstrip(os.path.sep),
+                         'usr', 'sbin', 'chromeos-firmwareupdate')
+  if not os.path.isfile(updater):
+    return ''
+  updater = path_util.ToChrootPath(updater)
+
+  return cros_build_lib.RunCommand([updater, '-V'], enter_chroot=True,
+                                   capture_output=True, log_output=True,
+                                   cwd=buildroot).output
+
+def FindFirmwareVersions(cmd_output):
+  """Finds firmware version output via regex matches against the cmd_output.
+
+  Args:
+    cmd_output: The raw output to search against.
+
+  Returns:
+    FirmwareVersions namedtuple with results.
+    Each element will either be set to the string output by the firmware
+    updater shellball, or None if there is no match.
+  """
+
+  # Sometimes a firmware bundle includes a special combination of RO+RW
+  # firmware.  In this case, the RW firmware version is indicated with a "(RW)
+  # version" field.  In other cases, the "(RW) version" field is not present.
+  # Therefore, search for the "(RW)" fields first and if they aren't present,
+  # fallback to the other format. e.g. just "BIOS version:".
+  # TODO(aaboagye): Use JSON once the firmware updater supports it.
+  main = None
+  main_rw = None
+  ec = None
+  ec_rw = None
+  model = None
+
+  match = re.search(r'BIOS version:\s*(?P<version>.*)', cmd_output)
+  if match:
+    main = match.group('version')
+
+  match = re.search(r'BIOS \(RW\) version:\s*(?P<version>.*)', cmd_output)
+  if match:
+    main_rw = match.group('version')
+
+  match = re.search(r'EC version:\s*(?P<version>.*)', cmd_output)
+  if match:
+    ec = match.group('version')
+
+  match = re.search(r'EC \(RW\) version:\s*(?P<version>.*)', cmd_output)
+  if match:
+    ec_rw = match.group('version')
+
+  ec_match_input = ec or ec_rw
+  if ec_match_input:
+    match = re.search(r'(?P<model>.*)_v\d+\.\d+\..*', ec_match_input)
+    if match:
+      model = match.group('model')
+
+  return FirmwareVersions(model, main, main_rw, ec, ec_rw)
+
+def GetAllFirmwareVersions(buildroot, board):
+  """Extract firmware version for all models present.
+
+  Args:
+    buildroot: The buildroot of the current build.
+    board: The board the firmware is for.
+
+  Returns:
+    A dict of FirmwareVersions namedtuple instances by model.
+    Each element will be populated based on whether it was present in the
+    command output.
+  """
+  result = {}
+  cmd_result = GetFirmwareVersionCmdResult(buildroot, board)
+  firmware_version_payloads = cmd_result.split('BIOS image:')
+  for firmware_version_payload in firmware_version_payloads:
+    if 'BIOS' in firmware_version_payload:
+      firmware_version = FindFirmwareVersions(firmware_version_payload)
+      result[firmware_version.model] = firmware_version
+  return result
 
 def GetFirmwareVersions(buildroot, board):
   """Extract version information from the firmware updater, if one exists.
@@ -474,35 +563,15 @@ def GetFirmwareVersions(buildroot, board):
     board: The board the firmware is for.
 
   Returns:
-    (main fw version, ec fw version)
+    A FirmwareVersions namedtuple instance.
     Each element will either be set to the string output by the firmware
     updater shellball, or None if there is no firmware updater.
   """
-  updater = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR,
-                         cros_build_lib.GetSysroot(board).lstrip(os.path.sep),
-                         'usr', 'sbin', 'chromeos-firmwareupdate')
-  if not os.path.isfile(updater):
-    return FirmwareVersions(None, None)
-  updater = path_util.ToChrootPath(updater)
-
-  result = cros_build_lib.RunCommand([updater, '-V'], enter_chroot=True,
-                                     capture_output=True, log_output=True,
-                                     cwd=buildroot)
-  # Sometimes a firmware bundle includes a special combination of RO+RW
-  # firmware.  In this case, the RW firmware version is indicated with a "(RW)
-  # version" field.  In other cases, the "(RW) version" field is not present.
-  # Therefore, search for the "(RW)" fields first and if they aren't present,
-  # fallback to the other format. e.g. just "BIOS version:".
-  # TODO(aaboagye): Use JSON once the firmware updater supports it.
-  main = re.search(r'BIOS \(RW\) version:\s*(?P<version>.*)', result.output)
-  if not main:
-    main = re.search(r'BIOS version:\s*(?P<version>.*)', result.output)
-  ec = re.search(r'EC \(RW\) version:\s*(?P<version>.*)', result.output)
-  if not ec:
-    ec = re.search(r'EC version:\s*(?P<version>.*)', result.output)
-  return (main.group('version') if main else None,
-          ec.group('version') if ec else None)
-
+  cmd_result = GetFirmwareVersionCmdResult(buildroot, board)
+  if cmd_result:
+    return FindFirmwareVersions(cmd_result)
+  else:
+    return FirmwareVersions(None, None, None, None, None)
 
 def GetModels(buildroot, board):
   """Obtain a list of models supported by a unified board
