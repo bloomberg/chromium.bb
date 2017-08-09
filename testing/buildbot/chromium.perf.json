@@ -2644,6 +2644,67 @@
       },
       {
         "args": [
+          "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build13-b1--device7",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 72000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build13-b1--device7",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 72000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
           "smoothness.key_desktop_move_cases",
           "-v",
           "--upload-results",
@@ -3275,7 +3336,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
@@ -3306,7 +3367,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": true,
           "io_timeout": 3600,
@@ -3702,7 +3763,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
@@ -3733,7 +3794,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": true,
           "io_timeout": 3600,
@@ -7661,6 +7722,67 @@
       },
       {
         "args": [
+          "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build73-b1--device7",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 72000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build73-b1--device7",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 72000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
           "smoothness.key_desktop_move_cases",
           "-v",
           "--upload-results",
@@ -8292,7 +8414,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
@@ -8323,7 +8445,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": true,
           "io_timeout": 3600,
@@ -8719,7 +8841,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
@@ -8750,7 +8872,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": true,
           "io_timeout": 3600,
@@ -11428,6 +11550,37 @@
       },
       {
         "args": [
+          "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-webview",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
+        ],
+        "isolate_name": "telemetry_perf_webview_tests",
+        "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+        "override_compile_targets": [
+          "telemetry_perf_webview_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build165-b1--device3",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 72000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
           "smoothness.key_desktop_move_cases",
           "-v",
           "--upload-results",
@@ -11760,7 +11913,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
@@ -11977,7 +12130,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
@@ -15306,6 +15459,67 @@
       },
       {
         "args": [
+          "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build15-b1--device7",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 72000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build15-b1--device7",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 72000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
           "smoothness.key_desktop_move_cases",
           "-v",
           "--upload-results",
@@ -15937,7 +16151,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
@@ -15968,7 +16182,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": true,
           "io_timeout": 3600,
@@ -16364,7 +16578,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
@@ -16395,7 +16609,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": true,
           "io_timeout": 3600,
@@ -19104,6 +19318,37 @@
       },
       {
         "args": [
+          "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-webview",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
+        ],
+        "isolate_name": "telemetry_perf_webview_tests",
+        "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+        "override_compile_targets": [
+          "telemetry_perf_webview_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build113-b1--device3",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 72000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
           "smoothness.key_desktop_move_cases",
           "-v",
           "--upload-results",
@@ -19436,7 +19681,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
@@ -19653,7 +19898,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
@@ -22982,6 +23227,67 @@
       },
       {
         "args": [
+          "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build9-b1--device7",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 72000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build9-b1--device7",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 72000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
           "smoothness.key_desktop_move_cases",
           "-v",
           "--upload-results",
@@ -23613,7 +23919,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
@@ -23644,7 +23950,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": true,
           "io_timeout": 3600,
@@ -24040,7 +24346,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
@@ -24071,7 +24377,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": true,
           "io_timeout": 3600,
@@ -27877,6 +28183,67 @@
       },
       {
         "args": [
+          "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build47-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 72000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build47-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 72000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
           "smoothness.key_desktop_move_cases",
           "-v",
           "--upload-results",
@@ -28508,7 +28875,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
@@ -28539,7 +28906,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": true,
           "io_timeout": 3600,
@@ -28935,7 +29302,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
@@ -28966,7 +29333,7 @@
               "pool": "Chrome-perf"
             }
           ],
-          "expiration": 36000,
+          "expiration": 72000,
           "hard_timeout": 10800,
           "ignore_task_failure": true,
           "io_timeout": 3600,
