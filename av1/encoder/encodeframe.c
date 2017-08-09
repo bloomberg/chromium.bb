@@ -4872,6 +4872,10 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 
   av1_setup_across_tile_boundary_info(cm, tile_info);
 
+#if CONFIG_LV_MAP
+  av1_fill_coeff_costs(&td->mb, cm->fc);
+#endif
+
   for (mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
        mi_row += cm->mib_size) {
     encode_rd_sb_row(cpi, td, this_tile, mi_row, &tok);

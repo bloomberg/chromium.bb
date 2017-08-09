@@ -430,6 +430,41 @@ void av1_set_mvcost(MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame, int ref,
   x->nmvjointcost = x->nmv_vec_cost[nmv_ctx];
 }
 
+#if CONFIG_LV_MAP
+static void get_rate_cost(aom_prob p, int cost[2]) {
+  cost[0] = av1_cost_bit(p, 0);
+  cost[1] = av1_cost_bit(p, 1);
+}
+
+void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
+  for (TX_SIZE tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
+    for (int plane = 0; plane < PLANE_TYPES; ++plane) {
+      LV_MAP_COEFF_COST *pcost = &x->coeff_costs[tx_size][plane];
+
+      for (int ctx = 0; ctx < TXB_SKIP_CONTEXTS; ++ctx)
+        get_rate_cost(fc->txb_skip[tx_size][ctx], pcost->txb_skip_cost[ctx]);
+
+      for (int ctx = 0; ctx < SIG_COEF_CONTEXTS; ++ctx)
+        get_rate_cost(fc->nz_map[tx_size][plane][ctx], pcost->nz_map_cost[ctx]);
+
+      for (int ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx)
+        get_rate_cost(fc->eob_flag[tx_size][plane][ctx], pcost->eob_cost[ctx]);
+
+      for (int ctx = 0; ctx < DC_SIGN_CONTEXTS; ++ctx)
+        get_rate_cost(fc->dc_sign[plane][ctx], pcost->dc_sign_cost[ctx]);
+
+      for (int layer = 0; layer < NUM_BASE_LEVELS; ++layer)
+        for (int ctx = 0; ctx < COEFF_BASE_CONTEXTS; ++ctx)
+          get_rate_cost(fc->coeff_base[tx_size][plane][layer][ctx],
+                        pcost->base_cost[layer][ctx]);
+
+      for (int ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx)
+        get_rate_cost(fc->coeff_lps[tx_size][plane][ctx], pcost->lps_cost[ctx]);
+    }
+  }
+}
+#endif
+
 void av1_fill_token_costs_from_cdf(av1_coeff_cost *cost,
                                    coeff_cdf_model (*cdf)[PLANE_TYPES]) {
   for (int tx = 0; tx < TX_SIZES; ++tx) {

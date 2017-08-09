@@ -63,6 +63,17 @@ typedef struct macroblock_plane {
 typedef int av1_coeff_cost[PLANE_TYPES][REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
                           [TAIL_TOKENS];
 
+#if CONFIG_LV_MAP
+typedef struct {
+  int txb_skip_cost[TXB_SKIP_CONTEXTS][2];
+  int nz_map_cost[SIG_COEF_CONTEXTS][2];
+  int eob_cost[EOB_COEF_CONTEXTS][2];
+  int dc_sign_cost[DC_SIGN_CONTEXTS][2];
+  int base_cost[NUM_BASE_LEVELS][COEFF_BASE_CONTEXTS][2];
+  int lps_cost[LEVEL_CONTEXTS][2];
+} LV_MAP_COEFF_COST;
+#endif
+
 typedef struct {
   int_mv ref_mvs[MODE_CTX_REF_FRAMES][MAX_MV_REF_CANDIDATES];
   int16_t mode_context[MODE_CTX_REF_FRAMES];
@@ -161,6 +172,10 @@ struct macroblock {
 
 #if CONFIG_CB4X4
   int skip_chroma_rd;
+#endif
+
+#if CONFIG_LV_MAP
+  LV_MAP_COEFF_COST coeff_costs[TX_SIZES][PLANE_TYPES];
 #endif
 
   av1_coeff_cost token_head_costs[TX_SIZES];
