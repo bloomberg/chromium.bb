@@ -222,9 +222,9 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK_HI(cfg, rc_max_quantizer, 63);
   RANGE_CHECK_HI(cfg, rc_min_quantizer, cfg->rc_max_quantizer);
   RANGE_CHECK_BOOL(extra_cfg, lossless);
-  RANGE_CHECK(extra_cfg, aq_mode, 0, AQ_MODE_COUNT - 1);
+  RANGE_CHECK_HI(extra_cfg, aq_mode, AQ_MODE_COUNT - 1);
 #if CONFIG_EXT_DELTA_Q
-  RANGE_CHECK(extra_cfg, deltaq_mode, 0, DELTAQ_MODE_COUNT - 1);
+  RANGE_CHECK_HI(extra_cfg, deltaq_mode, DELTAQ_MODE_COUNT - 1);
 #endif
   RANGE_CHECK_HI(extra_cfg, frame_periodic_boost, 1);
   RANGE_CHECK_HI(cfg, g_threads, 64);
