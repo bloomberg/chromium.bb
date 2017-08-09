@@ -184,11 +184,9 @@ Editor::RevealSelectionScope::~RevealSelectionScope() {
 
 // When an event handler has moved the selection outside of a text control
 // we should use the target control's selection for this editing operation.
-// TODO(yosin): We should make |Editor::selectionForCommand()| to return
-// |SelectionInDOMTree| instead of |VisibleSelection|.
-VisibleSelection Editor::SelectionForCommand(Event* event) {
-  const VisibleSelection selection =
-      GetFrame().Selection().ComputeVisibleSelectionInDOMTree();
+SelectionInDOMTree Editor::SelectionForCommand(Event* event) {
+  const SelectionInDOMTree selection =
+      GetFrame().Selection().GetSelectionInDOMTree();
   if (!event)
     return selection;
   // If the target is a text control, and the current selection is outside of
@@ -196,16 +194,16 @@ VisibleSelection Editor::SelectionForCommand(Event* event) {
   if (!IsTextControlElement(*event->target()->ToNode()))
     return selection;
   TextControlElement* text_control_of_selection_start =
-      EnclosingTextControl(selection.Start());
+      EnclosingTextControl(selection.Base());
   TextControlElement* text_control_of_target =
       ToTextControlElement(event->target()->ToNode());
-  if (selection.Start().IsNotNull() &&
+  if (!selection.IsNone() &&
       text_control_of_target == text_control_of_selection_start)
     return selection;
   const SelectionInDOMTree& select = text_control_of_target->Selection();
   if (select.IsNone())
     return selection;
-  return CreateVisibleSelection(select);
+  return select;
 }
 
 // Function considers Mac editing behavior a fallback when Page or Settings is
@@ -1053,7 +1051,8 @@ bool Editor::InsertTextWithoutSendingTextEvent(
     bool select_inserted_text,
     TextEvent* triggering_event,
     InputEvent::InputType input_type) {
-  const VisibleSelection& selection = SelectionForCommand(triggering_event);
+  const VisibleSelection& selection =
+      CreateVisibleSelection(SelectionForCommand(triggering_event));
   if (!selection.IsContentEditable())
     return false;
 
