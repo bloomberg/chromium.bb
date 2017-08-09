@@ -70,7 +70,8 @@ class DirectoryOwnersExtractor(object):
         # not raise an assertion.
         if directory == self.finder.layout_tests_dir():
             return None, None
-        assert directory.startswith(external_root)
+        assert directory.startswith(external_root), '%s must start with %s' % (
+            directory, external_root)
         while directory != external_root:
             owners_file = self.filesystem.join(directory, 'OWNERS')
             if self.filesystem.isfile(self.finder.path_from_chromium_base(owners_file)):
