@@ -166,14 +166,13 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   text2.id = 2;
   text2.role = ui::AX_ROLE_STATIC_TEXT;
   text2.SetName("new text");
-  ui::AXTreeUpdate update;
-  update.nodes.push_back(text2);
   AXEventNotificationDetails param;
   param.event_type = ui::AX_EVENT_CHILDREN_CHANGED;
+  param.update.nodes.push_back(text2);
   param.id = text2.id;
   std::vector<AXEventNotificationDetails> events;
   events.push_back(param);
-  manager->OnAccessibilityEvents(update, events);
+  manager->OnAccessibilityEvents(events);
 
   // Query for the text IAccessible and verify that it now returns "new text"
   // as its value.
@@ -233,14 +232,13 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   // Notify the BrowserAccessibilityManager that the div node and its children
   // were removed and ensure that only one BrowserAccessibility instance exists.
   root.child_ids.clear();
-  ui::AXTreeUpdate update;
-  update.nodes.push_back(root);
   AXEventNotificationDetails param;
   param.event_type = ui::AX_EVENT_CHILDREN_CHANGED;
+  param.update.nodes.push_back(root);
   param.id = root.id;
   std::vector<AXEventNotificationDetails> events;
   events.push_back(param);
-  manager->OnAccessibilityEvents(update, events);
+  manager->OnAccessibilityEvents(events);
 
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.
@@ -656,16 +654,15 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   tree1_2.role = ui::AX_ROLE_TEXT_FIELD;
 
   // Process a load complete.
-  ui::AXTreeUpdate update;
-  update.root_id = tree1_1.id;
-  update.nodes.push_back(tree1_1);
-  update.nodes.push_back(tree1_2);
-  std::vector<AXEventNotificationDetails> events;
-  events.push_back(AXEventNotificationDetails());
-  AXEventNotificationDetails* msg = &events[0];
+  std::vector<AXEventNotificationDetails> params;
+  params.push_back(AXEventNotificationDetails());
+  AXEventNotificationDetails* msg = &params[0];
   msg->event_type = ui::AX_EVENT_LOAD_COMPLETE;
+  msg->update.root_id = tree1_1.id;
+  msg->update.nodes.push_back(tree1_1);
+  msg->update.nodes.push_back(tree1_2);
   msg->id = tree1_1.id;
-  manager->OnAccessibilityEvents(update, events);
+  manager->OnAccessibilityEvents(params);
 
   // Save for later comparison.
   BrowserAccessibility* acc1_2 = manager->GetFromID(2);
@@ -687,13 +684,13 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   tree2_2.id = 3;
   tree2_2.role = ui::AX_ROLE_BUTTON;
 
-  update.nodes.clear();
-  update.nodes.push_back(tree2_1);
-  update.nodes.push_back(tree2_2);
+  msg->update.nodes.clear();
+  msg->update.nodes.push_back(tree2_1);
+  msg->update.nodes.push_back(tree2_2);
   msg->id = tree2_1.id;
 
   // Fire another load complete.
-  manager->OnAccessibilityEvents(update, events);
+  manager->OnAccessibilityEvents(params);
 
   BrowserAccessibility* acc2_2 = manager->GetFromID(3);
 
@@ -2384,13 +2381,12 @@ TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
   // Try adding one more relation.
   std::vector<int32_t> labelledby_ids = {3};
   child1.AddIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS, labelledby_ids);
-  ui::AXTreeUpdate update;
-  update.nodes.push_back(child1);
   AXEventNotificationDetails event;
   event.event_type = ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED;
+  event.update.nodes.push_back(child1);
   event.id = child1.id;
   std::vector<AXEventNotificationDetails> events = {event};
-  manager->OnAccessibilityEvents(update, events);
+  manager->OnAccessibilityEvents(events);
 
   EXPECT_HRESULT_SUCCEEDED(ax_child1->GetCOM()->get_nRelations(&n_relations));
   EXPECT_EQ(2, n_relations);
