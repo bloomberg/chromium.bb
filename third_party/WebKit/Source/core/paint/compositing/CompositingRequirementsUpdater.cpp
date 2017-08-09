@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/compositing/CompositingRequirementsUpdater.h"
+#include "core/paint/compositing/CompositingRequirementsUpdater.h"
 
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerStackingNode.h"
 #include "core/paint/PaintLayerStackingNodeIterator.h"
+#include "core/paint/compositing/PaintLayerCompositor.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
@@ -538,9 +538,10 @@ void CompositingRequirementsUpdater::UpdateRecursive(
     }
 
     if (will_be_composited_or_squashed &&
-        layer->GetLayoutObject().Style()->HasBlendMode())
+        layer->GetLayoutObject().Style()->HasBlendMode()) {
       current_recursion_data.has_unisolated_composited_blending_descendant_ =
           true;
+    }
 
     // Tell the parent it has compositing descendants.
     if (will_be_composited_or_squashed)

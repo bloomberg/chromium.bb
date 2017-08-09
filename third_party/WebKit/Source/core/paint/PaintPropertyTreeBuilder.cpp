@@ -11,7 +11,6 @@
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositingReasonFinder.h"
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
@@ -22,6 +21,7 @@
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/SVGRootPainter.h"
+#include "core/paint/compositing/CompositingReasonFinder.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/wtf/PtrUtil.h"
 

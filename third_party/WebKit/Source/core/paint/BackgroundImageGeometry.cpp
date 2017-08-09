@@ -10,8 +10,8 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableCol.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/compositing/CompositedLayerMapping.h"
 #include "platform/LayoutUnit.h"
 #include "platform/geometry/LayoutRect.h"
 

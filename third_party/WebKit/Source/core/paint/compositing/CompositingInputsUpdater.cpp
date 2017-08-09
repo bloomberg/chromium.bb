@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/compositing/CompositingInputsUpdater.h"
+#include "core/paint/compositing/CompositingInputsUpdater.h"
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/compositing/CompositedLayerMapping.h"
+#include "core/paint/compositing/PaintLayerCompositor.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
@@ -148,9 +148,10 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
     info.enclosing_composited_layer = layer;
 
   if (layer->NeedsCompositingInputsUpdate()) {
-    if (info.enclosing_composited_layer)
+    if (info.enclosing_composited_layer) {
       info.enclosing_composited_layer->GetCompositedLayerMapping()
           ->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
+    }
     update_type = kForceUpdate;
   }
 
@@ -228,9 +229,10 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
 
         properties.ancestor_scrolling_layer =
             parent_layer_on_containing_block_chain->AncestorScrollingLayer();
-        if (parent_layer_on_containing_block_chain->ScrollsOverflow())
+        if (parent_layer_on_containing_block_chain->ScrollsOverflow()) {
           properties.ancestor_scrolling_layer =
               parent_layer_on_containing_block_chain;
+        }
 
         if (layer->StackingNode()->IsStacked() &&
             properties.ancestor_scrolling_layer &&

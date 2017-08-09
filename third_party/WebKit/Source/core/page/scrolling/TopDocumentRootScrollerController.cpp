@@ -11,13 +11,13 @@
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/OverscrollController.h"
 #include "core/page/scrolling/RootScrollerUtil.h"
 #include "core/page/scrolling/ViewportScrollCallback.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/compositing/PaintLayerCompositor.h"
 #include "platform/scroll/ScrollableArea.h"
 
 namespace blink {

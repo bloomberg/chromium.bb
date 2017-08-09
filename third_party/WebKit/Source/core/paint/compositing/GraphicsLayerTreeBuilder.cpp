@@ -24,14 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/compositing/GraphicsLayerTreeBuilder.h"
+#include "core/paint/compositing/GraphicsLayerTreeBuilder.h"
 
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/layout/LayoutEmbeddedContent.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/compositing/CompositedLayerMapping.h"
+#include "core/paint/compositing/PaintLayerCompositor.h"
 
 namespace blink {
 
@@ -82,9 +82,10 @@ void GraphicsLayerTreeBuilder::Rebuild(PaintLayer& layer,
     // If a negative z-order child is compositing, we get a foreground layer
     // which needs to get parented.
     if (has_composited_layer_mapping &&
-        current_composited_layer_mapping->ForegroundLayer())
+        current_composited_layer_mapping->ForegroundLayer()) {
       layer_vector_for_children->push_back(
           current_composited_layer_mapping->ForegroundLayer());
+    }
   }
 
   PaintLayerStackingNodeIterator iterator(
@@ -102,9 +103,10 @@ void GraphicsLayerTreeBuilder::Rebuild(PaintLayer& layer,
     if (!parented)
       current_composited_layer_mapping->SetSublayers(this_layer_children);
 
-    if (ShouldAppendLayer(layer))
+    if (ShouldAppendLayer(layer)) {
       child_layers.push_back(
           current_composited_layer_mapping->ChildForSuperlayers());
+    }
   }
 
   if (layer.ScrollParent() &&

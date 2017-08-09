@@ -48,8 +48,8 @@
 #include <memory>
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/compositing/PaintLayerCompositor.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 

@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/compositing/CompositingLayerAssigner.h"
+#include "core/paint/compositing/CompositingLayerAssigner.h"
 
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/paint/compositing/CompositedLayerMapping.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
@@ -53,10 +53,11 @@ void CompositingLayerAssigner::Assign(
   SquashingState squashing_state;
   AssignLayersToBackingsInternal(update_root, squashing_state,
                                  layers_needing_paint_invalidation);
-  if (squashing_state.has_most_recent_mapping)
+  if (squashing_state.has_most_recent_mapping) {
     squashing_state.most_recent_mapping->FinishAccumulatingSquashingLayers(
         squashing_state.next_squashed_layer_index,
         layers_needing_paint_invalidation);
+  }
 }
 
 void CompositingLayerAssigner::SquashingState::
@@ -65,9 +66,10 @@ void CompositingLayerAssigner::SquashingState::
         bool has_new_composited_layer_mapping,
         Vector<PaintLayer*>& layers_needing_paint_invalidation) {
   // The most recent backing is done accumulating any more squashing layers.
-  if (has_most_recent_mapping)
+  if (has_most_recent_mapping) {
     most_recent_mapping->FinishAccumulatingSquashingLayers(
         next_squashed_layer_index, layers_needing_paint_invalidation);
+  }
 
   next_squashed_layer_index = 0;
   bounding_rect = IntRect();
@@ -322,9 +324,10 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
   if (layer->StackingNode()->IsStackingContext()) {
     PaintLayerStackingNodeIterator iterator(*layer->StackingNode(),
                                             kNegativeZOrderChildren);
-    while (PaintLayerStackingNode* cur_node = iterator.Next())
+    while (PaintLayerStackingNode* cur_node = iterator.Next()) {
       AssignLayersToBackingsInternal(cur_node->Layer(), squashing_state,
                                      layers_needing_paint_invalidation);
+    }
   }
 
   // At this point, if the layer is to be separately composited, then its
@@ -344,14 +347,16 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
 
   PaintLayerStackingNodeIterator iterator(
       *layer->StackingNode(), kNormalFlowChildren | kPositiveZOrderChildren);
-  while (PaintLayerStackingNode* cur_node = iterator.Next())
+  while (PaintLayerStackingNode* cur_node = iterator.Next()) {
     AssignLayersToBackingsInternal(cur_node->Layer(), squashing_state,
                                    layers_needing_paint_invalidation);
+  }
 
   if (squashing_state.has_most_recent_mapping &&
-      &squashing_state.most_recent_mapping->OwningLayer() == layer)
+      &squashing_state.most_recent_mapping->OwningLayer() == layer) {
     squashing_state.have_assigned_backings_to_entire_squashing_layer_subtree =
         true;
+  }
 }
 
 }  // namespace blink

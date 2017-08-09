@@ -6,7 +6,6 @@
 
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/ClipPathClipper.h"
 #include "core/paint/FilterPainter.h"
 #include "core/paint/LayerClipRecorder.h"
@@ -17,6 +16,7 @@
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/Transform3DRecorder.h"
+#include "core/paint/compositing/CompositedLayerMapping.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/graphics/GraphicsLayer.h"

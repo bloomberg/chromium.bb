@@ -36,8 +36,8 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/html/TextControlElement.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
-#include "core/layout/compositing/CompositedSelectionBound.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/compositing/CompositedSelectionBound.h"
 
 namespace blink {
 

@@ -5,8 +5,8 @@
 #include "core/paint/PaintLayerPainter.h"
 
 #include "core/layout/LayoutBoxModelObject.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/PaintControllerPaintTest.h"
+#include "core/paint/compositing/CompositedLayerMapping.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 

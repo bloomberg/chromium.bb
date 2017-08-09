@@ -32,7 +32,7 @@
 #define CompositedSelection_h
 
 #include "core/editing/SelectionType.h"
-#include "core/layout/compositing/CompositedSelectionBound.h"
+#include "core/paint/compositing/CompositedSelectionBound.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/wtf/Allocator.h"

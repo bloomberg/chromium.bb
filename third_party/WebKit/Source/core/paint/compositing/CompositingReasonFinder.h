@@ -6,7 +6,7 @@
 #define CompositingReasonFinder_h
 
 #include "core/CoreExport.h"
-#include "core/layout/compositing/CompositingTriggers.h"
+#include "core/paint/compositing/CompositingTriggers.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
