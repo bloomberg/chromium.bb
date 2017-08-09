@@ -103,7 +103,7 @@ void SensorDeviceManager::OnDeviceAdded(udev_device* dev) {
     }
 
     if (sensor_file_names.empty() ||
-        sensor_file_names.size() > SensorReading::kValuesCount)
+        sensor_file_names.size() > SensorReadingRaw::kValuesCount)
       continue;
 
     const std::string scaling_value =

@@ -30,15 +30,18 @@ Magnetometer::Magnetometer(ExecutionContext* execution_context,
              SensorType::MAGNETOMETER) {}
 
 double Magnetometer::x(bool& is_null) const {
-  return ReadingValue(0, is_null);
+  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
+  return proxy()->reading().magn.x;
 }
 
 double Magnetometer::y(bool& is_null) const {
-  return ReadingValue(1, is_null);
+  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
+  return proxy()->reading().magn.y;
 }
 
 double Magnetometer::z(bool& is_null) const {
-  return ReadingValue(2, is_null);
+  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
+  return proxy()->reading().magn.z;
 }
 
 DEFINE_TRACE(Magnetometer) {

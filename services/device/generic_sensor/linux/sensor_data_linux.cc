@@ -31,7 +31,7 @@ void InitAmbientLightSensorData(SensorPathsLinux* data) {
   data->sensor_scale_name = "in_intensity_scale";
   data->apply_scaling_func = base::Bind(
       [](double scaling_value, double offset, SensorReading& reading) {
-        reading.values[0] = scaling_value * (reading.values[0] + offset);
+        reading.als.value = scaling_value * (reading.als.value + offset);
       });
   data->default_configuration = PlatformSensorConfiguration(
       SensorTraits<SensorType::AMBIENT_LIGHT>::kDefaultFrequency);
@@ -80,9 +80,9 @@ void InitAccelerometerSensorData(SensorPathsLinux* data) {
   data->apply_scaling_func = base::Bind(
       [](double scaling_value, double offset, SensorReading& reading) {
         double scaling = kMeanGravity / scaling_value;
-        reading.values[0] = scaling * (reading.values[0] + offset);
-        reading.values[1] = scaling * (reading.values[1] + offset);
-        reading.values[2] = scaling * (reading.values[2] + offset);
+        reading.accel.x = scaling * (reading.accel.x + offset);
+        reading.accel.y = scaling * (reading.accel.y + offset);
+        reading.accel.z = scaling * (reading.accel.z + offset);
       });
 #else
   data->sensor_scale_name = "in_accel_scale";
@@ -91,9 +91,9 @@ void InitAccelerometerSensorData(SensorPathsLinux* data) {
   data->apply_scaling_func = base::Bind(
       [](double scaling_value, double offset, SensorReading& reading) {
         // Adapt Linux reading values to generic sensor api specs.
-        reading.values[0] = -scaling_value * (reading.values[0] + offset);
-        reading.values[1] = -scaling_value * (reading.values[1] + offset);
-        reading.values[2] = -scaling_value * (reading.values[2] + offset);
+        reading.accel.x = -scaling_value * (reading.accel.x + offset);
+        reading.accel.y = -scaling_value * (reading.accel.y + offset);
+        reading.accel.z = -scaling_value * (reading.accel.z + offset);
       });
 #endif
 
@@ -117,9 +117,9 @@ void InitGyroscopeSensorData(SensorPathsLinux* data) {
       [](double scaling_value, double offset, SensorReading& reading) {
         double scaling = kMeanGravity * kRadiansInDegrees / scaling_value;
         // Adapt CrOS reading values to generic sensor api specs.
-        reading.values[0] = -scaling * (reading.values[0] + offset);
-        reading.values[1] = -scaling * (reading.values[1] + offset);
-        reading.values[2] = -scaling * (reading.values[2] + offset);
+        reading.gyro.x = -scaling * (reading.gyro.x + offset);
+        reading.gyro.y = -scaling * (reading.gyro.y + offset);
+        reading.gyro.z = -scaling * (reading.gyro.z + offset);
       });
 #else
   data->sensor_scale_name = "in_anglvel_scale";
@@ -127,9 +127,9 @@ void InitGyroscopeSensorData(SensorPathsLinux* data) {
   data->sensor_frequency_file_name = "in_anglvel_sampling_frequency";
   data->apply_scaling_func = base::Bind(
       [](double scaling_value, double offset, SensorReading& reading) {
-        reading.values[0] = scaling_value * (reading.values[0] + offset);
-        reading.values[1] = scaling_value * (reading.values[1] + offset);
-        reading.values[2] = scaling_value * (reading.values[2] + offset);
+        reading.gyro.x = scaling_value * (reading.gyro.x + offset);
+        reading.gyro.y = scaling_value * (reading.gyro.y + offset);
+        reading.gyro.z = scaling_value * (reading.gyro.z + offset);
       });
 #endif
 
@@ -152,9 +152,9 @@ void InitMagnitometerSensorData(SensorPathsLinux* data) {
   data->apply_scaling_func = base::Bind(
       [](double scaling_value, double offset, SensorReading& reading) {
         double scaling = scaling_value * kMicroteslaInGauss;
-        reading.values[0] = scaling * (reading.values[0] + offset);
-        reading.values[1] = scaling * (reading.values[1] + offset);
-        reading.values[2] = scaling * (reading.values[2] + offset);
+        reading.magn.x = scaling * (reading.magn.x + offset);
+        reading.magn.y = scaling * (reading.magn.y + offset);
+        reading.magn.z = scaling * (reading.magn.z + offset);
       });
 
   MaybeCheckKernelVersionAndAssignFileNames(file_names_x, file_names_y,

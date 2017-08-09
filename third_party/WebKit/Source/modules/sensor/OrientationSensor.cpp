@@ -13,12 +13,9 @@ namespace blink {
 
 Vector<double> OrientationSensor::quaternion(bool& is_null) {
   reading_dirty_ = false;
-  is_null = !CanReturnReadings();
-  return is_null ? Vector<double>()
-                 : Vector<double>({ReadingValueUnchecked(0),    // Vx
-                                   ReadingValueUnchecked(1),    // Vy
-                                   ReadingValueUnchecked(2),    // Vz
-                                   ReadingValueUnchecked(3)});  // W
+  INIT_IS_NULL_AND_RETURN(is_null, Vector<double>());
+  const auto& quat = proxy()->reading().orientation_quat;
+  return Vector<double>({quat.x, quat.y, quat.z, quat.w});
 }
 
 template <typename T>
@@ -95,12 +92,9 @@ void OrientationSensor::PopulateMatrixInternal(
     return;
   }
 
-  double x = ReadingValueUnchecked(0);
-  double y = ReadingValueUnchecked(1);
-  double z = ReadingValueUnchecked(2);
-  double w = ReadingValueUnchecked(3);
+  const auto& quat = proxy()->reading().orientation_quat;
 
-  DoPopulateMatrix(target_matrix, x, y, z, w);
+  DoPopulateMatrix(target_matrix, quat.x, quat.y, quat.z, quat.w);
 }
 
 void OrientationSensor::populateMatrix(

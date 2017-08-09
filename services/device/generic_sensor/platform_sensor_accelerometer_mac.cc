@@ -23,12 +23,11 @@ constexpr double kGravityThreshold = kMeanGravity * 0.01;
 
 bool IsSignificantlyDifferent(const device::SensorReading& reading1,
                               const device::SensorReading& reading2) {
-  return (std::fabs(reading1.values[0] - reading2.values[0]) >=
+  return (std::fabs(reading1.accel.x - reading2.accel.x) >=
           kGravityThreshold) ||
-         (std::fabs(reading1.values[1] - reading2.values[1]) >=
+         (std::fabs(reading1.accel.y - reading2.accel.y) >=
           kGravityThreshold) ||
-         (std::fabs(reading1.values[2] - reading2.values[2]) >=
-          kGravityThreshold);
+         (std::fabs(reading1.accel.z - reading2.accel.z) >= kGravityThreshold);
 }
 
 }  // namespace
@@ -91,10 +90,11 @@ void PlatformSensorAccelerometerMac::PollForData() {
     return;
 
   SensorReading reading;
-  reading.timestamp = (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
-  reading.values[0] = axis_value[0] * kMeanGravity;
-  reading.values[1] = axis_value[1] * kMeanGravity;
-  reading.values[2] = axis_value[2] * kMeanGravity;
+  reading.accel.timestamp =
+      (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+  reading.accel.x = axis_value[0] * kMeanGravity;
+  reading.accel.y = axis_value[1] * kMeanGravity;
+  reading.accel.z = axis_value[2] * kMeanGravity;
 
   if (IsSignificantlyDifferent(reading_, reading)) {
     reading_ = reading;

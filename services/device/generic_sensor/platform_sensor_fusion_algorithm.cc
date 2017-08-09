@@ -15,10 +15,12 @@ PlatformSensorFusionAlgorithm::~PlatformSensorFusionAlgorithm() = default;
 bool PlatformSensorFusionAlgorithm::IsReadingSignificantlyDifferent(
     const SensorReading& reading1,
     const SensorReading& reading2) {
-  return (std::fabs(reading1.values[0] - reading2.values[0]) >= threshold_) ||
-         (std::fabs(reading1.values[1] - reading2.values[1]) >= threshold_) ||
-         (std::fabs(reading1.values[2] - reading2.values[2]) >= threshold_) ||
-         (std::fabs(reading1.values[3] - reading2.values[3]) >= threshold_);
+  for (size_t i = 0; i < SensorReadingRaw::kValuesCount; ++i) {
+    if (std::fabs(reading1.raw.values[i] - reading2.raw.values[i]) >=
+        threshold_)
+      return true;
+  }
+  return false;
 }
 
 void PlatformSensorFusionAlgorithm::Reset() {}

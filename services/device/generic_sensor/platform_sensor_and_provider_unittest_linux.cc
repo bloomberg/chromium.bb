@@ -503,7 +503,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckAmbientLightReadings) {
 
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
-  EXPECT_THAT(buffer->reading.values[0], sensor_value[0]);
+  EXPECT_THAT(buffer->reading.als.value, sensor_value[0]);
 }
 
 // Tests that Accelerometer readings are correctly converted.
@@ -545,16 +545,16 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
 #if defined(OS_CHROMEOS)
   double scaling = kMeanGravity / kAccelerometerScalingValue;
-  EXPECT_THAT(buffer->reading.values[0], scaling * sensor_values[0]);
-  EXPECT_THAT(buffer->reading.values[1], scaling * sensor_values[1]);
-  EXPECT_THAT(buffer->reading.values[2], scaling * sensor_values[2]);
+  EXPECT_THAT(buffer->reading.accel.x, scaling * sensor_values[0]);
+  EXPECT_THAT(buffer->reading.accel.y, scaling * sensor_values[1]);
+  EXPECT_THAT(buffer->reading.accel.z, scaling * sensor_values[2]);
 #else
   double scaling = kAccelerometerScalingValue;
-  EXPECT_THAT(buffer->reading.values[0],
+  EXPECT_THAT(buffer->reading.accel.x,
               -scaling * (sensor_values[0] + kAccelerometerOffsetValue));
-  EXPECT_THAT(buffer->reading.values[1],
+  EXPECT_THAT(buffer->reading.accel.y,
               -scaling * (sensor_values[1] + kAccelerometerOffsetValue));
-  EXPECT_THAT(buffer->reading.values[2],
+  EXPECT_THAT(buffer->reading.accel.z,
               -scaling * (sensor_values[2] + kAccelerometerOffsetValue));
 #endif
 }
@@ -596,16 +596,16 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckGyroscopeReadingConversion) {
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
 #if defined(OS_CHROMEOS)
   double scaling = kMeanGravity * kRadiansInDegrees / kGyroscopeScalingValue;
-  EXPECT_THAT(buffer->reading.values[0], -scaling * sensor_values[0]);
-  EXPECT_THAT(buffer->reading.values[1], -scaling * sensor_values[1]);
-  EXPECT_THAT(buffer->reading.values[2], -scaling * sensor_values[2]);
+  EXPECT_THAT(buffer->reading.gyro.x, -scaling * sensor_values[0]);
+  EXPECT_THAT(buffer->reading.gyro.y, -scaling * sensor_values[1]);
+  EXPECT_THAT(buffer->reading.gyro.z, -scaling * sensor_values[2]);
 #else
   double scaling = kGyroscopeScalingValue;
-  EXPECT_THAT(buffer->reading.values[0],
+  EXPECT_THAT(buffer->reading.gyro.x,
               scaling * (sensor_values[0] + kGyroscopeOffsetValue));
-  EXPECT_THAT(buffer->reading.values[1],
+  EXPECT_THAT(buffer->reading.gyro.y,
               scaling * (sensor_values[1] + kGyroscopeOffsetValue));
-  EXPECT_THAT(buffer->reading.values[2],
+  EXPECT_THAT(buffer->reading.gyro.z,
               scaling * (sensor_values[2] + kGyroscopeOffsetValue));
 #endif
 }
@@ -647,11 +647,11 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckMagnetometerReadingConversion) {
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
   double scaling = kMagnetometerScalingValue * kMicroteslaInGauss;
-  EXPECT_THAT(buffer->reading.values[0],
+  EXPECT_THAT(buffer->reading.magn.x,
               scaling * (sensor_values[0] + kMagnetometerOffsetValue));
-  EXPECT_THAT(buffer->reading.values[1],
+  EXPECT_THAT(buffer->reading.magn.y,
               scaling * (sensor_values[1] + kMagnetometerOffsetValue));
-  EXPECT_THAT(buffer->reading.values[2],
+  EXPECT_THAT(buffer->reading.magn.z,
               scaling * (sensor_values[2] + kMagnetometerOffsetValue));
 }
 

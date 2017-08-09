@@ -74,11 +74,10 @@ class Sensor : public EventTargetWithInlineData,
   // parameters if needed.
   virtual SensorConfigurationPtr CreateSensorConfig();
 
-  double ReadingValue(int index, bool& is_null) const;
-  double ReadingValueUnchecked(int index) const;
   bool CanReturnReadings() const;
   bool IsActivated() const { return state_ == SensorState::kActivated; }
   bool IsIdleOrErrored() const;
+  const SensorProxy* proxy() const { return sensor_proxy_; }
 
   // SensorProxy::Observer overrides.
   void OnSensorInitialized() override;
@@ -121,5 +120,12 @@ class Sensor : public EventTargetWithInlineData,
 };
 
 }  // namespace blink
+
+// To be used in getters in concrete sensors
+// bindings code.
+#define INIT_IS_NULL_AND_RETURN(is_null, x) \
+  is_null = !CanReturnReadings();           \
+  if (is_null)                              \
+  return (x)
 
 #endif  // Sensor_h

@@ -81,16 +81,16 @@ bool OrientationEulerAnglesFusionAlgorithmUsingQuaternion::GetFusedData(
   if (!fusion_sensor_->GetLatestReading(0, &reading))
     return false;
 
-  double x = reading.values[0].value();
-  double y = reading.values[1].value();
-  double z = reading.values[2].value();
-  double w = reading.values[3].value();
+  double x = reading.orientation_quat.x;
+  double y = reading.orientation_quat.y;
+  double z = reading.orientation_quat.z;
+  double w = reading.orientation_quat.w;
   double alpha, beta, gamma;
   ComputeEulerAnglesFromQuaternion(x, y, z, w, &alpha, &beta, &gamma);
-  fused_reading->values[0].value() = beta;
-  fused_reading->values[1].value() = gamma;
-  fused_reading->values[2].value() = alpha;
-  fused_reading->values[3].value() = 0.0;
+
+  fused_reading->orientation_euler.x = beta;
+  fused_reading->orientation_euler.y = gamma;
+  fused_reading->orientation_euler.z = alpha;
 
   return true;
 }

@@ -121,8 +121,8 @@ void SensorProxy::UpdateSensorReading() {
     return;
   }
 
-  if (reading_.timestamp != reading_data.timestamp) {
-    DCHECK_GT(reading_data.timestamp, reading_.timestamp)
+  if (reading_.timestamp() != reading_data.timestamp()) {
+    DCHECK_GT(reading_data.timestamp(), reading_.timestamp())
         << "Timestamps must increase monotonically";
     reading_ = reading_data;
     for (Observer* observer : observers_)

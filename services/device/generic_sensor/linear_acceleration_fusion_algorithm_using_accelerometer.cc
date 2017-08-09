@@ -48,17 +48,17 @@ bool LinearAccelerationFusionAlgorithmUsingAccelerometer::GetFusedData(
 
   // First reading.
   if (initial_timestamp_ == 0.0) {
-    initial_timestamp_ = reading.timestamp;
+    initial_timestamp_ = reading.timestamp();
     return false;
   }
 
   double delivery_rate =
-      (reading.timestamp - initial_timestamp_) / reading_updates_count_;
+      (reading.timestamp() - initial_timestamp_) / reading_updates_count_;
   double alpha = time_constant_ / (time_constant_ + delivery_rate);
 
-  double acceleration_x = reading.values[0].value();
-  double acceleration_y = reading.values[1].value();
-  double acceleration_z = reading.values[2].value();
+  double acceleration_x = reading.accel.x;
+  double acceleration_y = reading.accel.y;
+  double acceleration_z = reading.accel.z;
 
   // Isolate gravity.
   gravity_x_ = alpha * gravity_x_ + (1 - alpha) * acceleration_x;
@@ -66,9 +66,9 @@ bool LinearAccelerationFusionAlgorithmUsingAccelerometer::GetFusedData(
   gravity_z_ = alpha * gravity_z_ + (1 - alpha) * acceleration_z;
 
   // Get linear acceleration.
-  fused_reading->values[0].value() = acceleration_x - gravity_x_;
-  fused_reading->values[1].value() = acceleration_y - gravity_y_;
-  fused_reading->values[2].value() = acceleration_z - gravity_z_;
+  fused_reading->accel.x = acceleration_x - gravity_x_;
+  fused_reading->accel.y = acceleration_y - gravity_y_;
+  fused_reading->accel.z = acceleration_z - gravity_z_;
 
   return true;
 }

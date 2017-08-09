@@ -10,7 +10,7 @@
 namespace device {
 
 class PlatformSensorConfiguration;
-struct SensorReading;
+union SensorReading;
 
 // This structure represents a context that is used to identify a udev device
 // and create a type specific SensorInfoLinux. For example, when a

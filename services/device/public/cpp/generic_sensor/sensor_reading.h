@@ -38,95 +38,149 @@ class SensorReadingField {
   Storage storage_;
 };
 
-// This structure represents sensor reading data: timestamp and 4 values.
-struct SensorReading {
-  SensorReading();
-  ~SensorReading();
-  SensorReading(const SensorReading& other);
+struct SensorReadingBase {
+  SensorReadingBase();
+  ~SensorReadingBase();
   SensorReadingField<double> timestamp;
-  constexpr static int kValuesCount = 4;
-  // AMBIENT_LIGHT:
-  // values[0]: ambient light level in SI lux units.
-  //
-  // PROXIMITY:
-  // values[0]: proximity sensor distance measured in centimeters.
-  //
-  // ACCELEROMETER:
-  // values[0]: acceleration minus Gx on the x-axis in SI meters per second
-  // squared (m/s^2) units.
-  // values[1]: acceleration minus Gy on the y-axis in SI meters per second
-  // squared (m/s^2) units.
-  // values[2]: acceleration minus Gz on the z-axis in SI meters per second
-  // squared (m/s^2) units.
-  //
-  // LINEAR_ACCELERATION:
-  // values[0]: acceleration on the x-axis in SI meters per second squared
-  // (m/s^2) units.
-  // values[1]: acceleration on the y-axis in SI meters per second squared
-  // (m/s^2) units.
-  // values[2]: acceleration on the z-axis in SI meters per second squared
-  // (m/s^2) units.
-  //
-  // GYROSCOPE:
-  // values[0]: angular speed around the x-axis in radians/second.
-  // values[1]: angular speed around the y-axis in radians/second.
-  // values[2]: angular speed around the z-axis in radians/second.
-  //
-  // MAGNETOMETER:
-  // values[0]: ambient magnetic field in the x-axis in micro-Tesla (uT).
-  // values[1]: ambient magnetic field in the y-axis in micro-Tesla (uT).
-  // values[2]: ambient magnetic field in the z-axis in micro-Tesla (uT).
-  //
-  // PRESSURE:
-  // values[0]: atmospheric pressure in hPa (millibar).
-  //
-  // ABSOLUTE_ORIENTATION_EULER_ANGLES:
-  // values[0]: x-axis angle in degrees representing the orientation of the
-  // device in 3D space. It corresponds to the beta value in the W3C
-  // DeviceOrientation Event Specification. This value is in [180, 180).
-  // values[1]: y-axis angle in degrees representing the orientation of the
-  // device in 3D space. It corresponds to the gamma value in the W3C
-  // DeviceOrientation Event Specification. This value is in [-90, 90).
-  // values[2]: z-axis angle in degrees representing the orientation of the
-  // device in 3D space. It corresponds to the alpha value in the W3C
-  // DeviceOrientation Event Specification. This value is in [0, 360).
-  //
-  // ABSOLUTE_ORIENTATION_QUATERNION:
-  // values[0]: x value of a quaternion representing the orientation of the
-  // device in 3D space.
-  // values[1]: y value of a quaternion representing the orientation of the
-  // device in 3D space.
-  // values[2]: z value of a quaternion representing the orientation of the
-  // device in 3D space.
-  // values[3]: w value of a quaternion representing the orientation of the
-  // device in 3D space.
-  //
-  // RELATIVE_ORIENTATION_EULER_ANGLES:
-  // (Identical to ABSOLUTE_ORIENTATION_EULER_ANGLES except that it doesn't use
-  // the geomagnetic field.)
-  // values[0]: x-axis angle in degrees representing the orientation of the
-  // device in 3D space. It corresponds to the beta value in the W3C
-  // DeviceOrientation Event Specification. This value is in [180, 180).
-  // values[1]: y-axis angle in degrees representing the orientation of the
-  // device in 3D space. It corresponds to the gamma value in the W3C
-  // DeviceOrientation Event Specification. This value is in [-90, 90).
-  // values[2]: z-axis angle in degrees representing the orientation of the
-  // device in 3D space. It corresponds to the alpha value in the W3C
-  // DeviceOrientation Event Specification. This value is in [0, 360).
-  //
-  // RELATIVE_ORIENTATION_QUATERNION:
-  // (Identical to ABSOLUTE_ORIENTATION_QUATERNION except that it doesn't use
-  // the geomagnetic field.)
-  // values[0]: x value of a quaternion representing the orientation of the
-  // device in 3D space.
-  // values[1]: y value of a quaternion representing the orientation of the
-  // device in 3D space.
-  // values[2]: z value of a quaternion representing the orientation of the
-  // device in 3D space.
-  // values[3]: w value of a quaternion representing the orientation of the
-  // device in 3D space.
+};
+
+// Represents raw sensor reading data: timestamp and 4 values.
+struct SensorReadingRaw : public SensorReadingBase {
+  SensorReadingRaw();
+  ~SensorReadingRaw();
+
+  constexpr static size_t kValuesCount = 4;
   SensorReadingField<double> values[kValuesCount];
 };
+
+// Represents a single data value.
+struct SensorReadingSingle : public SensorReadingBase {
+  SensorReadingSingle();
+  ~SensorReadingSingle();
+  SensorReadingField<double> value;
+};
+
+// Represents a vector in 3d coordinate system.
+struct SensorReadingXYZ : public SensorReadingBase {
+  SensorReadingXYZ();
+  ~SensorReadingXYZ();
+  SensorReadingField<double> x;
+  SensorReadingField<double> y;
+  SensorReadingField<double> z;
+};
+
+// Represents quaternion.
+struct SensorReadingQuat : public SensorReadingXYZ {
+  SensorReadingQuat();
+  ~SensorReadingQuat();
+  SensorReadingField<double> w;
+};
+
+// A common type to represent sensor reading.
+// For every implemented sensor type, the reading is stored as described below:
+//
+// AMBIENT_LIGHT:
+// als.value: ambient light level in SI lux units.
+//
+// PROXIMITY:
+// proximity.value: proximity sensor distance measured in centimeters.
+//
+// ACCELEROMETER:
+// accel.x: acceleration minus Gx on the x-axis in SI meters per second
+// squared (m/s^2) units.
+// accel.y: acceleration minus Gy on the y-axis in SI meters per second
+// squared (m/s^2) units.
+// accel.z: acceleration minus Gz on the z-axis in SI meters per second
+// squared (m/s^2) units.
+//
+// LINEAR_ACCELERATION:
+// accel.x: acceleration on the x-axis in SI meters per second squared
+// (m/s^2) units.
+// accel.y: acceleration on the y-axis in SI meters per second squared
+// (m/s^2) units.
+// accel.z: acceleration on the z-axis in SI meters per second squared
+// (m/s^2) units.
+//
+// GYROSCOPE:
+// gyro.x: angular speed around the x-axis in radians/second.
+// gyro.y: angular speed around the y-axis in radians/second.
+// gyro.z: angular speed around the z-axis in radians/second.
+//
+// MAGNETOMETER:
+// magn.x: ambient magnetic field in the x-axis in micro-Tesla (uT).
+// magn.y: ambient magnetic field in the y-axis in micro-Tesla (uT).
+// magn.z: ambient magnetic field in the z-axis in micro-Tesla (uT).
+//
+// PRESSURE:
+// pressure.value: atmospheric pressure in hPa (millibar).
+//
+// ABSOLUTE_ORIENTATION_EULER_ANGLES:
+// orientation_euler.x: x-axis angle in degrees representing the orientation of
+// the device in 3D space. It corresponds to the beta value in the W3C
+// DeviceOrientation Event Specification. This value is in [180, 180).
+// orientation_euler.y: y-axis angle in degrees representing the orientation of
+// the device in 3D space. It corresponds to the gamma value in the W3C
+// DeviceOrientation Event Specification. This value is in [-90, 90).
+// orientation_euler.z: z-axis angle in degrees representing the orientation of
+// the device in 3D space. It corresponds to the alpha value in the W3C
+// DeviceOrientation Event Specification. This value is in [0, 360).
+//
+// ABSOLUTE_ORIENTATION_QUATERNION:
+// orientation_quat.x: x value of a quaternion representing the orientation of
+// the device in 3D space.
+// orientation_quat.y: y value of a quaternion representing the orientation of
+// the device in 3D space.
+// orientation_quat.z: z value of a quaternion representing the orientation of
+// the device in 3D space.
+// orientation_quat.w: w value of a quaternion representing the orientation of
+// the device in 3D space.
+//
+// RELATIVE_ORIENTATION_EULER_ANGLES:
+// (Identical to ABSOLUTE_ORIENTATION_EULER_ANGLES except that it doesn't use
+// the geomagnetic field.)
+// orientation_euler.x: x-axis angle in degrees representing the orientation of
+// the device in 3D space. It corresponds to the beta value in the W3C
+// DeviceOrientation Event Specification. This value is in [180, 180).
+// orientation_euler.y: y-axis angle in degrees representing the orientation of
+// the device in 3D space. It corresponds to the gamma value in the W3C
+// DeviceOrientation Event Specification. This value is in [-90, 90).
+// orientation_euler.z: z-axis angle in degrees representing the orientation of
+// the device in 3D space. It corresponds to the alpha value in the W3C
+// DeviceOrientation Event Specification. This value is in [0, 360).
+//
+// RELATIVE_ORIENTATION_QUATERNION:
+// (Identical to ABSOLUTE_ORIENTATION_QUATERNION except that it doesn't use
+// the geomagnetic field.)
+// orientation_quat.x: x value of a quaternion representing the orientation of
+// the device in 3D space.
+// orientation_quat.y: y value of a quaternionrepresenting the orientation of
+// the device in 3D space.
+// orientation_quat.z: z value of a quaternion representing the orientation of
+// the device in 3D space.
+// orientation_quat.w: w value of a quaternion representing the orientation of
+// the device in 3D space.
+
+union SensorReading {
+  SensorReadingRaw raw;
+  SensorReadingSingle als;             // AMBIENT_LIGHT
+  SensorReadingSingle proximity;       // PROXIMITY
+  SensorReadingSingle pressure;        // PRESSURE
+  SensorReadingXYZ accel;              // ACCELEROMETER, LINEAR_ACCELERATION
+  SensorReadingXYZ gyro;               // GYROSCOPE
+  SensorReadingXYZ magn;               // MAGNETOMETER
+  SensorReadingQuat orientation_quat;  // ABSOLUTE_ORIENTATION_QUATERNION,
+                                       // RELATIVE_ORIENTATION_QUATERNION
+  SensorReadingXYZ orientation_euler;  // ABSOLUTE_ORIENTATION_EULER_ANGLES,
+                                       // RELATIVE_ORIENTATION_EULER_ANGLES
+
+  double timestamp() const { return raw.timestamp; }
+
+  SensorReading();
+  ~SensorReading();
+};
+
+static_assert(sizeof(SensorReading) == sizeof(SensorReadingRaw),
+              "Check SensorReading size.");
 
 // This structure represents sensor reading buffer: sensor reading and seqlock
 // for synchronization.
