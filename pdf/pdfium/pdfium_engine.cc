@@ -1789,7 +1789,8 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
     double page_y;
     DeviceToPage(page_index, point.x(), point.y(), &page_x, &page_y);
 
-    FORM_OnLButtonDown(form_, pages_[page_index]->GetPage(), 0, page_x, page_y);
+    FPDF_PAGE page = pages_[page_index]->GetPage();
+    FORM_OnLButtonDown(form_, page, 0, page_x, page_y);
     if (form_type > FPDF_FORMFIELD_UNKNOWN) {  // returns -1 sometimes...
       DCHECK_EQ(area, PDFiumPage::FormTypeToArea(form_type));
       mouse_down_state_.Set(area, target);
@@ -1805,17 +1806,13 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
       bool is_form_text_area = area == PDFiumPage::FORM_TEXT_AREA;
       SetInFormTextArea(is_form_text_area);
       if (is_form_text_area) {
-        FPDF_ANNOTATION annot = FPDFAnnot_GetFormFieldAtPoint(
-            form_, pages_[last_page_mouse_down_]->GetPage(), page_x, page_y);
-        if (annot) {
-          int flags = FPDFAnnot_GetFormFieldFlags(
-              pages_[last_page_mouse_down_]->GetPage(), annot);
-
-          editable_form_text_area_ =
-              CheckIfEditableFormTextArea(flags, form_type);
-
-          FPDFPage_CloseAnnot(annot);
-        }
+        FPDF_ANNOTATION annot =
+            FPDFAnnot_GetFormFieldAtPoint(form_, page, page_x, page_y);
+        DCHECK(annot);
+        int flags = FPDFAnnot_GetFormFieldFlags(page, annot);
+        editable_form_text_area_ =
+            CheckIfEditableFormTextArea(flags, form_type);
+        FPDFPage_CloseAnnot(annot);
       }
       return true;  // Return now before we get into the selection code.
     }
