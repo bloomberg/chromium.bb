@@ -20,6 +20,9 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     return -1;
   }
 
+  if (!content::android::OnJNIOnLoadInit())
+    return false;
+
   content::Compositor::Initialize();
   content::SetContentMainDelegate(new chromecast::shell::CastMainDelegate);
   return JNI_VERSION_1_4;
