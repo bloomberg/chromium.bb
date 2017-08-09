@@ -83,6 +83,27 @@ StringPiece MakeStringPiece(const leveldb::Slice& s) {
   return StringPiece(s.data(), s.size());
 }
 
+class ComparatorAdapter : public leveldb::Comparator {
+ public:
+  explicit ComparatorAdapter(const LevelDBComparator* comparator)
+      : comparator_(comparator) {}
+
+  int Compare(const leveldb::Slice& a, const leveldb::Slice& b) const override {
+    return comparator_->Compare(MakeStringPiece(a), MakeStringPiece(b));
+  }
+
+  const char* Name() const override { return comparator_->Name(); }
+
+  // TODO(jsbell): Support the methods below in the future.
+  void FindShortestSeparator(std::string* start,
+                             const leveldb::Slice& limit) const override {}
+
+  void FindShortSuccessor(std::string* key) const override {}
+
+ private:
+  const LevelDBComparator* comparator_;
+};
+
 size_t DefaultBlockCacheSize() {
   if (base::SysInfo::IsLowEndDevice())
     return 512 * 1024;  // 512KB
@@ -232,27 +253,6 @@ void HistogramLevelDBError(const std::string& histogram_name,
 }
 
 }  // namespace
-
-LevelDBDatabase::ComparatorAdapter::ComparatorAdapter(
-    const LevelDBComparator* comparator)
-    : comparator_(comparator) {}
-
-int LevelDBDatabase::ComparatorAdapter::Compare(const leveldb::Slice& a,
-                                                const leveldb::Slice& b) const {
-  return comparator_->Compare(MakeStringPiece(a), MakeStringPiece(b));
-}
-
-const char* LevelDBDatabase::ComparatorAdapter::Name() const {
-  return comparator_->Name();
-}
-
-// TODO(jsbell): Support the methods below in the future.
-void LevelDBDatabase::ComparatorAdapter::FindShortestSeparator(
-    std::string* start,
-    const leveldb::Slice& limit) const {}
-
-void LevelDBDatabase::ComparatorAdapter::FindShortSuccessor(
-    std::string* key) const {}
 
 LevelDBSnapshot::LevelDBSnapshot(LevelDBDatabase* db)
     : db_(db->db_.get()), snapshot_(db_->GetSnapshot()) {}
