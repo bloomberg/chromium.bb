@@ -325,7 +325,7 @@ bool SearchBoxView::MoveArrowFocus(const ui::KeyEvent& event) {
       NOTREACHED();
   }
 
-  SetSelected(focused_view_ == FOCUS_SEARCH_BOX);
+  SetSelected(search_box_->text().empty() && focused_view_ == FOCUS_SEARCH_BOX);
   return (focused_view_ < FOCUS_CONTENTS_VIEW);
 }
 
