@@ -33,7 +33,7 @@ bool MessagePumpFuchsia::FileDescriptorWatcher::StopWatchingFileDescriptor() {
   if (!weak_pump_ || handle_ == MX_HANDLE_INVALID)
     return true;
 
-  int result = mx_port_cancel(weak_pump_->port_, handle_, wait_key());
+  int result = mx_port_cancel(weak_pump_->port_.get(), handle_, wait_key());
   DLOG_IF(ERROR, result != MX_OK)
       << "mx_port_cancel(handle=" << handle_
       << ") failed: " << mx_status_get_string(result);
@@ -44,14 +44,7 @@ bool MessagePumpFuchsia::FileDescriptorWatcher::StopWatchingFileDescriptor() {
 
 MessagePumpFuchsia::MessagePumpFuchsia()
     : keep_running_(true), weak_factory_(this) {
-  CHECK_EQ(MX_OK, mx_port_create(0, &port_));
-}
-
-MessagePumpFuchsia::~MessagePumpFuchsia() {
-  mx_status_t status = mx_handle_close(port_);
-  if (status != MX_OK) {
-    DLOG(ERROR) << "mx_handle_close failed: " << mx_status_get_string(status);
-  }
+  CHECK_EQ(MX_OK, mx_port_create(0, port_.receive()));
 }
 
 bool MessagePumpFuchsia::WatchFileDescriptor(int fd,
@@ -103,12 +96,13 @@ bool MessagePumpFuchsia::FileDescriptorWatcher::WaitBegin() {
     return false;
   }
 
-  mx_status_t status = mx_object_wait_async(
-      handle_, weak_pump_->port_, wait_key(), signals, MX_WAIT_ASYNC_ONCE);
+  mx_status_t status =
+      mx_object_wait_async(handle_, weak_pump_->port_.get(), wait_key(),
+                           signals, MX_WAIT_ASYNC_ONCE);
   if (status != MX_OK) {
     DLOG(ERROR) << "mx_object_wait_async failed: "
                 << mx_status_get_string(status)
-                << " (port=" << weak_pump_->port_ << ")";
+                << " (port=" << weak_pump_->port_.get() << ")";
     return false;
   }
   return true;
@@ -157,7 +151,8 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
                              : delayed_work_time_.ToMXTime();
     mx_port_packet_t packet;
 
-    const mx_status_t wait_status = mx_port_wait(port_, deadline, &packet, 0);
+    const mx_status_t wait_status =
+        mx_port_wait(port_.get(), deadline, &packet, 0);
     if (wait_status != MX_OK && wait_status != MX_ERR_TIMED_OUT) {
       NOTREACHED() << "unexpected wait status: "
                    << mx_status_get_string(wait_status);
@@ -210,9 +205,9 @@ void MessagePumpFuchsia::ScheduleWork() {
   // wakes up.
   mx_port_packet_t packet = {};
   packet.type = MX_PKT_TYPE_USER;
-  mx_status_t status = mx_port_queue(port_, &packet, 0);
+  mx_status_t status = mx_port_queue(port_.get(), &packet, 0);
   DLOG_IF(ERROR, status != MX_OK)
-      << "mx_port_queue failed: " << status << " (port=" << port_ << ")";
+      << "mx_port_queue failed: " << status << " (port=" << port_.get() << ")";
 }
 
 void MessagePumpFuchsia::ScheduleDelayedWork(

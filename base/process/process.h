@@ -15,6 +15,10 @@
 #include "base/win/scoped_handle.h"
 #endif
 
+#if defined(OS_FUCHSIA)
+#include "base/fuchsia/scoped_mx_handle.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "base/feature_list.h"
 #include "base/process/port_provider_mac.h"
@@ -167,6 +171,8 @@ class BASE_EXPORT Process {
  private:
 #if defined(OS_WIN)
   win::ScopedHandle process_;
+#elif defined(OS_FUCHSIA)
+  ScopedMxHandle process_;
 #else
   ProcessHandle process_;
 #endif
