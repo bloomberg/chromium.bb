@@ -195,7 +195,7 @@ AtomicString GetInputModeAttribute(Element* element) {
 
   // TODO(dtapuska): We may wish to restrict this to a yet to be proposed
   // <contenteditable> or <richtext> element Mozilla discussed at TPAC 2016.
-  return element->FastGetAttribute(HTMLNames::inputmodeAttr).DeprecatedLower();
+  return element->FastGetAttribute(HTMLNames::inputmodeAttr).LowerASCII();
 }
 
 constexpr int kInvalidDeletionLength = -1;
