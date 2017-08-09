@@ -58,6 +58,17 @@ TEST_F(ProximityAuthProfilePrefManagerTest, IsEasyUnlockAllowed) {
   EXPECT_FALSE(pref_manager.IsEasyUnlockAllowed());
 }
 
+TEST_F(ProximityAuthProfilePrefManagerTest, IsEasyUnlockEnabled) {
+  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
+  EXPECT_FALSE(pref_manager.IsEasyUnlockEnabled());
+
+  pref_manager.SetIsEasyUnlockEnabled(true);
+  EXPECT_TRUE(pref_manager.IsEasyUnlockEnabled());
+
+  pref_manager.SetIsEasyUnlockEnabled(false);
+  EXPECT_FALSE(pref_manager.IsEasyUnlockEnabled());
+}
+
 TEST_F(ProximityAuthProfilePrefManagerTest, LastPasswordEntryTimestamp) {
   ProximityAuthProfilePrefManager pref_manager(&pref_service_);
   EXPECT_EQ(0L, pref_manager.GetLastPasswordEntryTimestampMs());
@@ -122,13 +133,17 @@ TEST_F(ProximityAuthProfilePrefManagerTest, SyncsToLocalPrefOnChange) {
   local_pref_manager.SetActiveUser(account_id);
 
   profile_pref_manager.SetIsChromeOSLoginEnabled(true);
+  profile_pref_manager.SetIsEasyUnlockEnabled(true);
   profile_pref_manager.SetProximityThreshold(kProximityThreshold1);
   EXPECT_TRUE(local_pref_manager.IsChromeOSLoginEnabled());
+  EXPECT_TRUE(local_pref_manager.IsEasyUnlockEnabled());
   EXPECT_EQ(kProximityThreshold1, local_pref_manager.GetProximityThreshold());
 
   profile_pref_manager.SetIsChromeOSLoginEnabled(false);
+  profile_pref_manager.SetIsEasyUnlockEnabled(false);
   profile_pref_manager.SetProximityThreshold(kProximityThreshold2);
   EXPECT_FALSE(local_pref_manager.IsChromeOSLoginEnabled());
+  EXPECT_FALSE(local_pref_manager.IsEasyUnlockEnabled());
   EXPECT_EQ(kProximityThreshold2, local_pref_manager.GetProximityThreshold());
 
   // Test changing the kEasyUnlockAllowed pref value directly (e.g. through

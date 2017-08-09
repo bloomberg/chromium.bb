@@ -21,8 +21,16 @@ class ProximityAuthPrefManager {
   virtual ~ProximityAuthPrefManager() {}
 
   // Returns true if EasyUnlock is allowed. Note: there is no corresponding
-  // setter because this pref is pushed through an enterprise policy.
+  // setter because this pref is pushed through an enterprise policy. Note that
+  // this pref completely disables EasyUnlock, hiding even the UI. See
+  // IsEasyUnlockEnabled() for comparison.
   virtual bool IsEasyUnlockAllowed() const = 0;
+
+  // Returns true if EasyUnlock is enabled, i.e. the user has gone through the
+  // setup flow and has at least one phone as an unlock key. Compare to
+  // IsEasyUnlockAllowed(), which completely removes the feature from existence.
+  virtual void SetIsEasyUnlockEnabled(bool is_easy_unlock_enabled) const = 0;
+  virtual bool IsEasyUnlockEnabled() const = 0;
 
   // Setter and getter for the timestamp of the last password entry. This
   // preference is used to enforce reauthing with the password after a given

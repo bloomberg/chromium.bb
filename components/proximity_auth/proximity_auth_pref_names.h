@@ -9,6 +9,7 @@ namespace proximity_auth {
 namespace prefs {
 
 extern const char kEasyUnlockAllowed[];
+extern const char kEasyUnlockEnabled[];
 extern const char kEasyUnlockProximityThreshold[];
 extern const char kEasyUnlockLocalStateUserPrefs[];
 extern const char kProximityAuthLastPasswordEntryTimestampMs[];

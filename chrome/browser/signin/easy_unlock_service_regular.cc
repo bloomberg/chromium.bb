@@ -104,7 +104,9 @@ EasyUnlockServiceRegular::~EasyUnlockServiceRegular() {
 }
 
 void EasyUnlockServiceRegular::LoadRemoteDevices() {
-  if (GetCryptAuthDeviceManager()->GetUnlockKeys().empty()) {
+  bool has_unlock_keys = !GetCryptAuthDeviceManager()->GetUnlockKeys().empty();
+  pref_manager_->SetIsEasyUnlockEnabled(has_unlock_keys);
+  if (!has_unlock_keys) {
     SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceList());
     return;
   }
@@ -565,6 +567,22 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() const {
 #endif
 }
 
+bool EasyUnlockServiceRegular::IsEnabled() const {
+#if defined(OS_CHROMEOS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
+    // The feature is enabled iff there are any paired devices set by the
+    // component app.
+    const base::ListValue* devices = GetRemoteDevices();
+    return devices && !devices->empty();
+  }
+
+  return pref_manager_ && pref_manager_->IsEasyUnlockEnabled();
+#else
+  return false;
+#endif
+}
+
 void EasyUnlockServiceRegular::OnWillFinalizeUnlock(bool success) {
   will_unlock_using_easy_unlock_ = success;
 }
@@ -600,10 +618,17 @@ void EasyUnlockServiceRegular::OnSyncFinished(
   if (public_keys_before_sync == public_keys_after_sync)
     return;
 
-  // Show the appropriate notification if an unlock key is first synced or if it
-  // changes an existing key.
-  // Note: We do not show a notification when EasyUnlock is disabled by sync.
-  if (public_keys_after_sync.size() > 0) {
+// Show the appropriate notification if an unlock key is first synced or if it
+// changes an existing key.
+// Note: We do not show a notification when EasyUnlock is disabled by sync nor
+// if EasyUnlock was enabled through the setup app.
+#if defined(OS_CHROMEOS)
+  bool is_setup_fresh =
+      short_lived_user_context_ && short_lived_user_context_->user_context();
+#else
+  bool is_setup_fresh = true;
+#endif
+  if (public_keys_after_sync.size() > 0 && !is_setup_fresh) {
     if (public_keys_before_sync.size() == 0) {
       notification_controller_->ShowChromebookAddedNotification();
     } else {
@@ -697,8 +722,10 @@ void EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete(
       cryptauth::InvocationReason::INVOCATION_REASON_FEATURE_TOGGLED);
   EasyUnlockService::ResetLocalStateForUser(GetAccountId());
   SetRemoteDevices(base::ListValue());
+  SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceList());
   SetTurnOffFlowStatus(IDLE);
   ReloadAppAndLockScreen();
+  pref_manager_->SetIsEasyUnlockEnabled(false);
 }
 
 void EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed(
