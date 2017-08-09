@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
+#include "chrome/installer/zucchini/buffer_view.h"
 #include "chrome/installer/zucchini/typed_value.h"
 
 namespace zucchini {
@@ -136,9 +138,18 @@ enum ExecutableType : uint32_t {
 // |exe_type| can be kExeTypeNoOp, in which case the Element descibes a region
 // of raw data.
 struct Element {
+  Element() = default;
+  constexpr Element(ExecutableType exe_type, offset_t offset, offset_t length)
+      : exe_type(exe_type), offset(offset), length(length) {}
+  constexpr explicit Element(BufferRegion region)
+      : exe_type(kExeTypeNoOp),
+        offset(base::checked_cast<offset_t>(region.offset)),
+        length(base::checked_cast<offset_t>(region.size)) {}
+
   ExecutableType exe_type;
   offset_t offset;
   offset_t length;
+  // TODO(huangs): Use BufferRegion.
 
   // Returns the end offset of this element.
   offset_t EndOffset() const { return offset + length; }
@@ -148,6 +159,8 @@ struct Element {
   bool FitsIn(offset_t total_size) const {
     return offset <= total_size && total_size - offset >= length;
   }
+
+  BufferRegion region() const { return {offset, length}; }
 };
 
 // A matched pair of Elements.

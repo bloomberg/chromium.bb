@@ -52,6 +52,14 @@ TEST_F(BufferViewTest, FromRange) {
       ConstBufferView::FromRange(std::begin(bytes_) + 1, std::begin(bytes_)));
 }
 
+TEST_F(BufferViewTest, Region) {
+  ConstBufferView view(std::begin(bytes_), kLen);
+
+  BufferRegion region = view.region();
+  EXPECT_EQ(0U, region.offset);
+  EXPECT_EQ(kLen, region.size);
+}
+
 TEST_F(BufferViewTest, Subscript) {
   ConstBufferView view(std::begin(bytes_), kLen);
 
@@ -64,6 +72,14 @@ TEST_F(BufferViewTest, Subscript) {
   EXPECT_EQ(&bytes_[0], &mutable_view[0]);
   mutable_view[0] = 42;
   EXPECT_EQ(42, mutable_view[0]);
+}
+
+TEST_F(BufferViewTest, SubRegion) {
+  ConstBufferView view(std::begin(bytes_), kLen);
+
+  ConstBufferView sub_view = view[{2, 4}];
+  EXPECT_EQ(view.begin() + 2, sub_view.begin());
+  EXPECT_EQ(size_t(4), sub_view.size());
 }
 
 TEST_F(BufferViewTest, Shrink) {
