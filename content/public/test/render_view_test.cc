@@ -527,10 +527,6 @@ void RenderViewTest::Reload(const GURL& url) {
   view_->GetWebView()->UpdateAllLifecyclePhases();
 }
 
-uint32_t RenderViewTest::GetNavigationIPCType() {
-  return FrameHostMsg_DidCommitProvisionalLoad::ID;
-}
-
 void RenderViewTest::Resize(gfx::Size new_size,
                             bool is_fullscreen_granted) {
   ResizeParams params;
