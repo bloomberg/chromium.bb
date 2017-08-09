@@ -124,6 +124,12 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider,
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::ResourcePool", task_runner_.get());
 
+#if defined(OS_ANDROID)
+  // TODO(ericrk): This feature appears to be causing visual corruption on
+  // certain android devices. Will investigate and re-enable. crbug.com/746931
+  disallow_non_exact_reuse_ = true;
+#endif
+
   // Register this component with base::MemoryCoordinatorClientRegistry.
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }

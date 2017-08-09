@@ -101,6 +101,9 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   size_t GetBusyResourceCountForTesting() const {
     return busy_resources_.size();
   }
+  bool AllowsNonExactReUseForTesting() const {
+    return !disallow_non_exact_reuse_;
+  }
 
  protected:
   // Constructor for creating GPU memory buffer resources.
