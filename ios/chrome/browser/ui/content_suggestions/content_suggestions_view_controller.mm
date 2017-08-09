@@ -295,6 +295,8 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
                             insetForSectionAtIndex:section];
   if ([self.collectionUpdater isHeaderSection:section]) {
     parentInset.top = 0;
+    parentInset.left = 0;
+    parentInset.right = 0;
   } else if ([self.collectionUpdater isMostVisitedSection:section] ||
              [self.collectionUpdater isPromoSection:section]) {
     CGFloat margin = content_suggestions::centeredTilesMarginForWidth(
