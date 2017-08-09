@@ -95,7 +95,7 @@ class GraphicsLayerTest : public ::testing::Test {
   std::unique_ptr<FakeGraphicsLayer> clip_layer_;
 
  private:
-  std::unique_ptr<WebLayerTreeView> layer_tree_view_;
+  std::unique_ptr<WebLayerTreeViewImplForTesting> layer_tree_view_;
   FakeGraphicsLayerClient client_;
 };
 

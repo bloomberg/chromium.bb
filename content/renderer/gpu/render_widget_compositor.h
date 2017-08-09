@@ -118,13 +118,13 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SetIsForOopif(bool is_for_oopif);
   void SetContentSourceId(uint32_t source_id);
   void SetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id);
+  void SetViewportSize(const gfx::Size& device_viewport_size);
 
   // WebLayerTreeView implementation.
   viz::FrameSinkId GetFrameSinkId() override;
   void SetRootLayer(const blink::WebLayer& layer) override;
   void ClearRootLayer() override;
   cc::AnimationHost* CompositorAnimationHost() override;
-  void SetViewportSize(const blink::WebSize& device_viewport_size) override;
   blink::WebSize GetViewportSize() const override;
   virtual blink::WebFloatPoint adjustEventPointForPinchZoom(
       const blink::WebFloatPoint& point) const;

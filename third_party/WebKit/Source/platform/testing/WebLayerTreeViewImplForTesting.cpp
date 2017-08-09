@@ -53,6 +53,13 @@ bool WebLayerTreeViewImplForTesting::HasLayer(const WebLayer& layer) {
          layer_tree_host_.get();
 }
 
+void WebLayerTreeViewImplForTesting::SetViewportSize(
+    const WebSize& device_viewport_size) {
+  gfx::Size gfx_size(std::max(0, device_viewport_size.width),
+                     std::max(0, device_viewport_size.height));
+  layer_tree_host_->SetViewportSize(gfx_size);
+}
+
 void WebLayerTreeViewImplForTesting::SetRootLayer(const blink::WebLayer& root) {
   layer_tree_host_->SetRootLayer(
       static_cast<const cc_blink::WebLayerImpl*>(&root)->layer());
@@ -64,21 +71,6 @@ void WebLayerTreeViewImplForTesting::ClearRootLayer() {
 
 cc::AnimationHost* WebLayerTreeViewImplForTesting::CompositorAnimationHost() {
   return animation_host_.get();
-}
-
-void WebLayerTreeViewImplForTesting::SetViewportSize(
-    const WebSize& unused_deprecated,
-    const WebSize& device_viewport_size) {
-  gfx::Size gfx_size(std::max(0, device_viewport_size.width),
-                     std::max(0, device_viewport_size.height));
-  layer_tree_host_->SetViewportSize(gfx_size);
-}
-
-void WebLayerTreeViewImplForTesting::SetViewportSize(
-    const WebSize& device_viewport_size) {
-  gfx::Size gfx_size(std::max(0, device_viewport_size.width),
-                     std::max(0, device_viewport_size.height));
-  layer_tree_host_->SetViewportSize(gfx_size);
 }
 
 WebSize WebLayerTreeViewImplForTesting::GetViewportSize() const {

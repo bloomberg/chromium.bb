@@ -246,6 +246,10 @@ class WebViewTest
   }
 
  protected:
+  void SetViewportSize(const WebSize& size) {
+    web_view_helper_.SetViewportSize(size);
+  }
+
   std::string RegisterMockedHttpURLLoad(const std::string& file_name) {
     return URLTestHelpers::RegisterMockedURLLoadFromBase(
                WebString::FromUTF8(base_url_), testing::CoreTestDataPath(),
@@ -4598,7 +4602,7 @@ TEST_P(WebViewTest, ForceAndResetViewport) {
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->Resize(WebSize(100, 150));
-  web_view_impl->LayerTreeView()->SetViewportSize(WebSize(100, 150));
+  SetViewportSize(WebSize(100, 150));
   VisualViewport* visual_viewport =
       &web_view_impl->GetPage()->GetVisualViewport();
   DevToolsEmulator* dev_tools_emulator = web_view_impl->GetDevToolsEmulator();
@@ -4673,7 +4677,7 @@ TEST_P(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->Resize(WebSize(100, 150));
-  web_view_impl->LayerTreeView()->SetViewportSize(WebSize(100, 150));
+  SetViewportSize(WebSize(100, 150));
   LocalFrameView* frame_view =
       web_view_impl->MainFrameImpl()->GetFrame()->View();
   DevToolsEmulator* dev_tools_emulator = web_view_impl->GetDevToolsEmulator();

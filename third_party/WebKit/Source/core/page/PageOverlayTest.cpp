@@ -90,6 +90,8 @@ class PageOverlayTest : public ::testing::Test {
         WTF::MakeUnique<SolidColorOverlay>(SK_ColorYELLOW));
   }
 
+  void SetViewportSize(const WebSize& size) { helper_.SetViewportSize(size); }
+
   template <typename OverlayType>
   void RunPageOverlayTestWithAcceleratedCompositing();
 
@@ -117,8 +119,7 @@ class MockPageOverlayCanvas : public SkCanvas {
 
 TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing) {
   Initialize(kAcceleratedCompositing);
-  GetWebView()->LayerTreeView()->SetViewportSize(
-      WebSize(kViewportWidth, kViewportHeight));
+  SetViewportSize(WebSize(kViewportWidth, kViewportHeight));
 
   std::unique_ptr<PageOverlay> page_overlay = CreateSolidYellowOverlay();
   page_overlay->Update();

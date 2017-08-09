@@ -70,7 +70,6 @@ class WebLayerTreeView {
   // View properties ---------------------------------------------------
 
   // Viewport size is given in physical pixels.
-  virtual void SetViewportSize(const WebSize& device_viewport_size) {}
   virtual WebSize GetViewportSize() const { return WebSize(); }
 
   virtual void SetDeviceScaleFactor(float) {}

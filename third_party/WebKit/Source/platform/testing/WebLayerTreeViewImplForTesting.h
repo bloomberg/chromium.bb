@@ -36,14 +36,12 @@ class WebLayerTreeViewImplForTesting
   static cc::LayerTreeSettings DefaultLayerTreeSettings();
   cc::LayerTreeHost* GetLayerTreeHost() { return layer_tree_host_.get(); }
   bool HasLayer(const WebLayer&);
+  void SetViewportSize(const blink::WebSize&);
 
   // blink::WebLayerTreeView implementation.
   void SetRootLayer(const blink::WebLayer&) override;
   void ClearRootLayer() override;
   cc::AnimationHost* CompositorAnimationHost() override;
-  virtual void SetViewportSize(const blink::WebSize& unused_deprecated,
-                               const blink::WebSize& device_viewport_size);
-  void SetViewportSize(const blink::WebSize&) override;
   WebSize GetViewportSize() const override;
   void SetDeviceScaleFactor(float) override;
   void SetBackgroundColor(blink::WebColor) override;
