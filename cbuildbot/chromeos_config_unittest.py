@@ -250,6 +250,8 @@ class UnifiedBuildConfigTestCase(object):
         self._site_config, self._fake_ge_build_config)
     chromeos_config.ReleaseBuilders(
         self._site_config, self._boards_dict, self._fake_ge_build_config)
+    chromeos_config.CqBuilders(
+        self._site_config, self._boards_dict, self._fake_ge_build_config)
 
 class UnifiedBuildReleaseBuilders(
     cros_test_lib.OutputTestCase, UnifiedBuildConfigTestCase):
@@ -267,6 +269,23 @@ class UnifiedBuildReleaseBuilders(
 
     master_release = self._site_config['master-release']
     self.assertIn('reef-uni-release', master_release['slave_configs'])
+
+class UnifiedBuildCqBuilders(
+    cros_test_lib.OutputTestCase, UnifiedBuildConfigTestCase):
+  """Tests that verify how unified builder CQ configs are generated"""
+
+  def setUp(self):
+    UnifiedBuildConfigTestCase.setUp(self)
+
+  def testUnifiedCqBuilders(self):
+    reef_uni_paladin = self._site_config['reef-uni-paladin']
+    self.assertIsNotNone(reef_uni_paladin)
+    models = reef_uni_paladin['models']
+    self.assertIn('reef', models)
+    self.assertNotIn('pyro', models)
+
+    master_paladin = self._site_config['master-paladin']
+    self.assertIn('reef-uni-paladin', master_paladin['slave_configs'])
 
 
 class ConfigPickleTest(ChromeosConfigTestBase):
