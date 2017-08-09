@@ -2867,6 +2867,8 @@ split_static_library("ui") {
         "cocoa/fullscreen/immersive_fullscreen_controller.mm",
         "cocoa/fullscreen_low_power_coordinator.h",
         "cocoa/fullscreen_low_power_coordinator.mm",
+        "cocoa/fullscreen_placeholder_view.h",
+        "cocoa/fullscreen_placeholder_view.mm",
         "cocoa/fullscreen_window.h",
         "cocoa/fullscreen_window.mm",
         "cocoa/global_error_bubble_controller.h",
