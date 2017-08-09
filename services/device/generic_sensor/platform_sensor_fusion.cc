@@ -90,7 +90,8 @@ bool PlatformSensorFusion::CheckSensorConfiguration(
 
 void PlatformSensorFusion::OnSensorReadingChanged(mojom::SensorType type) {
   SensorReading reading;
-  reading.timestamp = (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+  reading.raw.timestamp =
+      (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
 
   if (!fusion_algorithm_->GetFusedData(type, &reading))
     return;

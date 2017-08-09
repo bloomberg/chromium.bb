@@ -28,15 +28,18 @@ Accelerometer::Accelerometer(ExecutionContext* execution_context,
     : Sensor(execution_context, options, exception_state, sensor_type) {}
 
 double Accelerometer::x(bool& is_null) const {
-  return ReadingValue(0, is_null);
+  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
+  return proxy()->reading().accel.x;
 }
 
 double Accelerometer::y(bool& is_null) const {
-  return ReadingValue(1, is_null);
+  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
+  return proxy()->reading().accel.y;
 }
 
 double Accelerometer::z(bool& is_null) const {
-  return ReadingValue(2, is_null);
+  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
+  return proxy()->reading().accel.z;
 }
 
 DEFINE_TRACE(Accelerometer) {

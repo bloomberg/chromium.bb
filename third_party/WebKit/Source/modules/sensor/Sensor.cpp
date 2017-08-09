@@ -98,7 +98,7 @@ DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
   is_null = false;
 
   return performance->MonotonicTimeToDOMHighResTimeStamp(
-      sensor_proxy_->reading().timestamp);
+      sensor_proxy_->reading().timestamp());
 }
 
 DEFINE_TRACE(Sensor) {
@@ -132,17 +132,6 @@ auto Sensor::CreateSensorConfig() -> SensorConfigurationPtr {
 
   result->frequency = frequency;
   return result;
-}
-
-double Sensor::ReadingValue(int index, bool& is_null) const {
-  is_null = !CanReturnReadings();
-  return is_null ? 0.0 : ReadingValueUnchecked(index);
-}
-
-double Sensor::ReadingValueUnchecked(int index) const {
-  DCHECK(sensor_proxy_);
-  DCHECK(index >= 0 && index < device::SensorReading::kValuesCount);
-  return sensor_proxy_->reading().values[index];
 }
 
 void Sensor::InitSensorProxyIfNeeded() {
@@ -182,7 +171,7 @@ void Sensor::OnSensorReadingChanged() {
     return;
 
   double elapsedTime =
-      sensor_proxy_->reading().timestamp - last_reported_timestamp_;
+      sensor_proxy_->reading().timestamp() - last_reported_timestamp_;
   DCHECK_GT(elapsedTime, 0.0);
 
   DCHECK_GT(configuration_->frequency, 0.0);
@@ -317,7 +306,7 @@ void Sensor::HandleError(ExceptionCode code,
 
 void Sensor::NotifyReading() {
   DCHECK_EQ(state_, SensorState::kActivated);
-  last_reported_timestamp_ = sensor_proxy_->reading().timestamp;
+  last_reported_timestamp_ = sensor_proxy_->reading().timestamp();
   DispatchEvent(Event::Create(EventTypeNames::reading));
 }
 
@@ -349,7 +338,7 @@ bool Sensor::CanReturnReadings() const {
   if (!IsActivated())
     return false;
   DCHECK(sensor_proxy_);
-  return sensor_proxy_->reading().timestamp != 0.0;
+  return sensor_proxy_->reading().timestamp() != 0.0;
 }
 
 bool Sensor::IsIdleOrErrored() const {

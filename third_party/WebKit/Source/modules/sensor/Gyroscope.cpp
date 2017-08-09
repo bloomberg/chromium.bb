@@ -30,15 +30,18 @@ Gyroscope::Gyroscope(ExecutionContext* execution_context,
              SensorType::GYROSCOPE) {}
 
 double Gyroscope::x(bool& is_null) const {
-  return ReadingValue(0, is_null);
+  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
+  return proxy()->reading().gyro.x;
 }
 
 double Gyroscope::y(bool& is_null) const {
-  return ReadingValue(1, is_null);
+  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
+  return proxy()->reading().gyro.y;
 }
 
 double Gyroscope::z(bool& is_null) const {
-  return ReadingValue(2, is_null);
+  INIT_IS_NULL_AND_RETURN(is_null, 0.0);
+  return proxy()->reading().gyro.z;
 }
 
 DEFINE_TRACE(Gyroscope) {

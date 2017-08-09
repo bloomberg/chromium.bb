@@ -98,7 +98,7 @@ void PollingSensorReader::PollForData() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   SensorReading readings;
-  DCHECK_LE(sensor_file_paths_.size(), arraysize(readings.values));
+  DCHECK_LE(sensor_file_paths_.size(), arraysize(readings.raw.values));
   int i = 0;
   for (const auto& path : sensor_file_paths_) {
     std::string new_read_value;
@@ -115,7 +115,7 @@ void PollingSensorReader::PollForData() {
       StopFetchingData();
       return;
     }
-    readings.values[i++] = new_value;
+    readings.raw.values[i++] = new_value;
   }
   if (!apply_scaling_func_.is_null())
     apply_scaling_func_.Run(scaling_value_, offset_value_, readings);
