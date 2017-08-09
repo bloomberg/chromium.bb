@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
@@ -44,7 +45,9 @@ void HostFrameSinkManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
                                                HostFrameSinkClient* client) {
   DCHECK(frame_sink_id.is_valid());
   DCHECK(client);
+
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
+  DCHECK(!data.IsFrameSinkRegistered());
   DCHECK(!data.HasCompositorFrameSinkData());
   data.client = client;
   frame_sink_manager_->RegisterFrameSinkId(frame_sink_id);
@@ -53,10 +56,36 @@ void HostFrameSinkManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
 void HostFrameSinkManager::InvalidateFrameSinkId(
     const FrameSinkId& frame_sink_id) {
   DCHECK(frame_sink_id.is_valid());
-  auto it = frame_sink_data_map_.find(frame_sink_id);
-  DCHECK(it != frame_sink_data_map_.end());
-  frame_sink_data_map_.erase(it);
+
+  FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
+  DCHECK(data.IsFrameSinkRegistered());
+
+  // This will destroy |frame_sink_id| if using mojom::CompositorFrameSink.
   frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id);
+  data.has_created_compositor_frame_sink = false;
+  data.client = nullptr;
+
+  // There may be frame sink hierarchy information left in FrameSinkData.
+  if (data.IsEmpty())
+    frame_sink_data_map_.erase(frame_sink_id);
+}
+
+void HostFrameSinkManager::CreateRootCompositorFrameSink(
+    const FrameSinkId& frame_sink_id,
+    gpu::SurfaceHandle surface_handle,
+    const RendererSettings& renderer_settings,
+    mojom::CompositorFrameSinkAssociatedRequest request,
+    mojom::CompositorFrameSinkClientPtr client,
+    mojom::DisplayPrivateAssociatedRequest display_private_request) {
+  FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
+  DCHECK(!data.HasCompositorFrameSinkData());
+
+  data.is_root = true;
+  data.has_created_compositor_frame_sink = true;
+
+  frame_sink_manager_->CreateRootCompositorFrameSink(
+      frame_sink_id, surface_handle, renderer_settings, std::move(request),
+      std::move(client), std::move(display_private_request));
 }
 
 void HostFrameSinkManager::CreateCompositorFrameSink(
@@ -80,25 +109,34 @@ void HostFrameSinkManager::RegisterFrameSinkHierarchy(
   frame_sink_manager_->RegisterFrameSinkHierarchy(parent_frame_sink_id,
                                                   child_frame_sink_id);
 
-  frame_sink_data_map_[child_frame_sink_id].parent = parent_frame_sink_id;
+  FrameSinkData& child_data = frame_sink_data_map_[child_frame_sink_id];
+  DCHECK(!base::ContainsValue(child_data.parents, parent_frame_sink_id));
+  child_data.parents.push_back(parent_frame_sink_id);
+
+  FrameSinkData& parent_data = frame_sink_data_map_[parent_frame_sink_id];
+  DCHECK(!base::ContainsValue(parent_data.children, child_frame_sink_id));
+  parent_data.children.push_back(child_frame_sink_id);
 }
 
 void HostFrameSinkManager::UnregisterFrameSinkHierarchy(
     const FrameSinkId& parent_frame_sink_id,
     const FrameSinkId& child_frame_sink_id) {
-  auto iter = frame_sink_data_map_.find(child_frame_sink_id);
-  DCHECK(iter != frame_sink_data_map_.end());
-
-  FrameSinkData& data = iter->second;
-  DCHECK_EQ(data.parent.value(), parent_frame_sink_id);
-  data.parent.reset();
-
   // Unregister and clear the stored parent.
+  FrameSinkData& child_data = frame_sink_data_map_[child_frame_sink_id];
+  DCHECK(base::ContainsValue(child_data.parents, parent_frame_sink_id));
+  base::Erase(child_data.parents, parent_frame_sink_id);
+
+  FrameSinkData& parent_data = frame_sink_data_map_[parent_frame_sink_id];
+  DCHECK(base::ContainsValue(parent_data.children, child_frame_sink_id));
+  base::Erase(parent_data.children, child_frame_sink_id);
+
   frame_sink_manager_->UnregisterFrameSinkHierarchy(parent_frame_sink_id,
                                                     child_frame_sink_id);
 
-  if (data.IsEmpty())
-    frame_sink_data_map_.erase(iter);
+  if (child_data.IsEmpty())
+    frame_sink_data_map_.erase(child_frame_sink_id);
+  if (parent_data.IsEmpty())
+    frame_sink_data_map_.erase(parent_frame_sink_id);
 }
 
 std::unique_ptr<CompositorFrameSinkSupport>
@@ -116,7 +154,7 @@ HostFrameSinkManager::CreateCompositorFrameSinkSupport(
       client, frame_sink_manager_impl_, frame_sink_id, is_root,
       needs_sync_points);
   support->SetDestructionCallback(
-      base::BindOnce(&HostFrameSinkManager::DestroyCompositorFrameSink,
+      base::BindOnce(&HostFrameSinkManager::CompositorFrameSinkSupportDestroyed,
                      weak_ptr_factory_.GetWeakPtr(), frame_sink_id));
 
   data.support = support.get();
@@ -125,20 +163,13 @@ HostFrameSinkManager::CreateCompositorFrameSinkSupport(
   return support;
 }
 
-void HostFrameSinkManager::DestroyCompositorFrameSink(
+void HostFrameSinkManager::CompositorFrameSinkSupportDestroyed(
     const FrameSinkId& frame_sink_id) {
   auto iter = frame_sink_data_map_.find(frame_sink_id);
   DCHECK(iter != frame_sink_data_map_.end());
 
-  FrameSinkData& data = iter->second;
-  DCHECK(data.HasCompositorFrameSinkData());
-  if (data.has_created_compositor_frame_sink) {
-    data.has_created_compositor_frame_sink = false;
-  } else {
-    data.support = nullptr;
-  }
-
-  if (data.IsEmpty())
+  iter->second.support = nullptr;
+  if (iter->second.IsEmpty())
     frame_sink_data_map_.erase(iter);
 }
 
@@ -154,11 +185,26 @@ void HostFrameSinkManager::PerformAssignTemporaryReference(
   if (data.is_root)
     return;
 
-  if (data.parent.has_value()) {
-    frame_sink_manager_impl_->AssignTemporaryReference(surface_id,
-                                                       data.parent.value());
+  // If the frame sink has already been invalidated then we just drop the
+  // temporary reference.
+  if (!data.IsFrameSinkRegistered()) {
+    frame_sink_manager_->DropTemporaryReference(surface_id);
     return;
   }
+
+  // Find the oldest non-invalidated parent.
+  for (const FrameSinkId& parent_id : data.parents) {
+    const FrameSinkData& parent_data = frame_sink_data_map_[parent_id];
+    if (parent_data.IsFrameSinkRegistered()) {
+      frame_sink_manager_impl_->AssignTemporaryReference(surface_id, parent_id);
+      return;
+    }
+  }
+  // TODO(kylechar): We might need to handle the case where there are multiple
+  // embedders better, so that the owner doesn't remove a surface reference
+  // until the other embedder has added a surface reference. Maybe just letting
+  // the client know what is the owner is sufficient, so the client can handle
+  // this.
 
   // We don't have any hierarchy information for what will embed the new
   // surface, drop the temporary reference.
