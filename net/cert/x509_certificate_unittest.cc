@@ -942,20 +942,6 @@ TEST(X509CertificateTest, FreeNullHandle) {
   X509Certificate::FreeOSCertHandle(NULL);
 }
 
-#if defined(USE_NSS_CERTS)
-TEST(X509CertificateTest, GetDefaultNickname) {
-  base::FilePath certs_dir = GetTestCertsDirectory();
-
-  scoped_refptr<X509Certificate> test_cert(
-      ImportCertFromFile(certs_dir, "no_subject_common_name_cert.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
-
-  std::string nickname = test_cert->GetDefaultNickname(USER_CERT);
-  EXPECT_EQ("wtc@google.com's COMODO Client Authentication and "
-            "Secure Email CA ID", nickname);
-}
-#endif
-
 const struct CertificateFormatTestData {
   const char* file_name;
   X509Certificate::Format format;

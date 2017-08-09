@@ -4703,6 +4703,7 @@ test("net_unittests") {
     "cert/x509_cert_types_unittest.cc",
     "cert/x509_certificate_unittest.cc",
     "cert/x509_util_ios_and_mac_unittest.cc",
+    "cert/x509_util_nss_unittest.cc",
     "cert/x509_util_unittest.cc",
     "cert_net/cert_net_fetcher_impl_unittest.cc",
     "cert_net/nss_ocsp_unittest.cc",
@@ -5349,6 +5350,7 @@ test("net_unittests") {
     sources -= [
       "cert/internal/trust_store_nss_unittest.cc",
       "cert/nss_cert_database_unittest.cc",
+      "cert/x509_util_nss_unittest.cc",
       "ssl/client_cert_store_nss_unittest.cc",
       "ssl/ssl_platform_key_nss_unittest.cc",
     ]
