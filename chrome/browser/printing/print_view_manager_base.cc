@@ -274,6 +274,19 @@ void PrintViewManagerBase::RenderFrameDeleted(
   }
 }
 
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+void PrintViewManagerBase::SystemDialogCancelled() {
+  // System dialog was cancelled. Clean up the print job and notify the
+  // BackgroundPrintingManager.
+  ReleasePrinterQuery();
+  TerminatePrintJob(true);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PRINT_JOB_RELEASED,
+      content::Source<content::WebContents>(web_contents()),
+      content::NotificationService::NoDetails());
+}
+#endif
+
 bool PrintViewManagerBase::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {

@@ -96,6 +96,9 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
   void OnCheckForCancel(int32_t preview_ui_id,
                         int preview_request_id,
                         bool* cancel);
+#if defined(OS_WIN)
+  void NotifySystemDialogCancelled(int routing_id);
+#endif
 #endif
 
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>

@@ -48,6 +48,12 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // Whether printing is enabled or not.
   void UpdatePrintingEnabled();
 
+// Notifies the print view manager that the system dialog has been cancelled
+// after being opened from Print Preview.
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  void SystemDialogCancelled();
+#endif
+
   // PrintedPagesSource implementation.
   base::string16 RenderSourceName() override;
 
