@@ -2448,11 +2448,10 @@ void CompositedLayerMapping::UpdateClipParent(const PaintLayer* scroll_parent) {
   bool have_ancestor_mask_layer = false;
   OwningLayerClippedOrMaskedByLayerNotAboveCompositedAncestor(
       scroll_parent, have_ancestor_clip_layer, have_ancestor_mask_layer);
-  if (!have_ancestor_clip_layer) {
-    clip_parent = owning_layer_.ClipParent();
-    if (clip_parent)
-      clip_parent =
-          clip_parent->EnclosingLayerWithCompositedLayerMapping(kIncludeSelf);
+  clip_parent = owning_layer_.ClipParent();
+  if (clip_parent) {
+    clip_parent =
+        clip_parent->EnclosingLayerWithCompositedLayerMapping(kIncludeSelf);
   }
 
   if (ScrollingCoordinator* scrolling_coordinator =

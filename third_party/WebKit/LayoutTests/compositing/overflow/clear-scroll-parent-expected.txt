@@ -65,7 +65,8 @@
     {
       "name": "Squashing Containment Layer",
       "shouldFlattenTransform": false,
-      "hasScrollParent": true
+      "hasScrollParent": true,
+      "hasClipParent": true
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box'",
