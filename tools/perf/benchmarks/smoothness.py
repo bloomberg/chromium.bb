@@ -686,7 +686,6 @@ class SmoothnessToughWebGLAdCases(_Smoothness):
     return StoryExpectations()
 
 
-@benchmark.Disabled('reference')  # crbug.com/549428
 @benchmark.Owner(emails=['skyostil@chromium.org', 'brianderson@chromium.org'])
 class SmoothnessToughSchedulingCases(_Smoothness):
   """Measures rendering statistics while interacting with pages that have
