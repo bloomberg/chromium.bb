@@ -139,6 +139,7 @@ js2gtest("unit_tests_js") {
   ]
   extra_js_files = [
     "../../../browser/resources/md_downloads/action_service.js",
+    "../../../browser/resources/md_downloads/browser_proxy.js",
     "../../../browser/resources/print_preview/data/measurement_system.js",
     "../../../browser/resources/print_preview/print_preview_utils.js",
     "../../../renderer/resources/extensions/notifications_custom_bindings.js",

@@ -3,10 +3,14 @@
 // found in the LICENSE file.
 
 cr.define('downloads', function() {
+  // TODO(dpapad): Rename to SearchService.
   class ActionService {
     constructor() {
-      /** @private {Array<string>} */
+      /** @private {!Array<string>} */
       this.searchTerms_ = [];
+
+      /** @private {!downloads.BrowserProxy} */
+      this.browserProxy_ = downloads.BrowserProxy.getInstance();
     }
 
     /**
@@ -18,40 +22,17 @@ cr.define('downloads', function() {
       return searchText.split(/"([^"]*)"/).map(s => s.trim()).filter(s => !!s);
     }
 
-    /** @param {string} id ID of the download to cancel. */
-    cancel(id) {
-      chrome.send('cancel', [id]);
-    }
-
     /** Instructs the browser to clear all finished downloads. */
     clearAll() {
       if (loadTimeData.getBoolean('allowDeletingHistory')) {
-        chrome.send('clearAll');
+        this.browserProxy_.clearAll();
         this.search('');
       }
     }
 
-    /** @param {string} id ID of the dangerous download to discard. */
-    discardDangerous(id) {
-      chrome.send('discardDangerous', [id]);
-    }
-
-    /** @param {string} url URL of a file to download. */
-    download(url) {
-      const a = document.createElement('a');
-      a.href = url;
-      a.setAttribute('download', '');
-      a.click();
-    }
-
-    /** @param {string} id ID of the download that the user started dragging. */
-    drag(id) {
-      chrome.send('drag', [id]);
-    }
-
     /** Loads more downloads with the current search terms. */
     loadMore() {
-      chrome.send('getDownloads', this.searchTerms_);
+      this.browserProxy_.getDownloads(this.searchTerms_);
     }
 
     /**
@@ -60,41 +41,6 @@ cr.define('downloads', function() {
      */
     isSearching() {
       return this.searchTerms_.length > 0;
-    }
-
-    /** Opens the current local destination for downloads. */
-    openDownloadsFolder() {
-      chrome.send('openDownloadsFolderRequiringGesture');
-    }
-
-    /**
-     * @param {string} id ID of the download to run locally on the user's box.
-     */
-    openFile(id) {
-      chrome.send('openFileRequiringGesture', [id]);
-    }
-
-    /** @param {string} id ID the of the progressing download to pause. */
-    pause(id) {
-      chrome.send('pause', [id]);
-    }
-
-    /** @param {string} id ID of the finished download to remove. */
-    remove(id) {
-      chrome.send('remove', [id]);
-    }
-
-    /** @param {string} id ID of the paused download to resume. */
-    resume(id) {
-      chrome.send('resume', [id]);
-    }
-
-    /**
-     * @param {string} id ID of the dangerous download to save despite
-     *     warnings.
-     */
-    saveDangerous(id) {
-      chrome.send('saveDangerousRequiringGesture', [id]);
     }
 
     /**
@@ -116,19 +62,6 @@ cr.define('downloads', function() {
       this.searchTerms_ = searchTerms;
       this.loadMore();
       return true;
-    }
-
-    /**
-     * Shows the local folder a finished download resides in.
-     * @param {string} id ID of the download to show.
-     */
-    show(id) {
-      chrome.send('show', [id]);
-    }
-
-    /** Undo download removal. */
-    undo() {
-      chrome.send('undo');
     }
   }
 
