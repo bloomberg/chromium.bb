@@ -121,12 +121,9 @@ int AutofillPopupLayoutModel::GetDesiredPopupWidth() const {
 int AutofillPopupLayoutModel::RowWidthWithoutText(int row,
                                                   bool has_subtext) const {
   std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
-  bool is_warning_message = (suggestions[row].frontend_id ==
-                             POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
-  const bool is_row_with_ =
-      (is_warning_message || (suggestions[row].frontend_id ==
-                              POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY));
-
+  const bool is_warning_message =
+      (suggestions[row].frontend_id ==
+       POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
   int row_size = 2 * (kEndPadding + kPopupBorderThickness);
   if (has_subtext)
     row_size += is_warning_message ? kHttpWarningNamePadding : kNamePadding;
@@ -135,7 +132,7 @@ int AutofillPopupLayoutModel::RowWidthWithoutText(int row,
   const base::string16& icon = suggestions[row].icon;
   if (!icon.empty()) {
     row_size += GetIconImage(row).width() +
-                (is_row_with_ ? kPaddingAfterLeadingIcon : kIconPadding);
+                (is_warning_message ? kPaddingAfterLeadingIcon : kIconPadding);
   }
   return row_size;
 }
@@ -223,11 +220,6 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
   if (icon_str == base::ASCIIToUTF16("httpsInvalid")) {
     return gfx::CreateVectorIcon(toolbar::kHttpsInvalidIcon, kIconSize,
                                  gfx::kGoogleRed700);
-  }
-
-  if (icon_str == base::ASCIIToUTF16("showAllSavedPasswords")) {
-    return gfx::CreateVectorIcon(kOpenInNewIcon, kIconSize,
-                                 gfx::kChromeIconGrey);
   }
 
   // For other suggestion entries, get icon from PNG files.

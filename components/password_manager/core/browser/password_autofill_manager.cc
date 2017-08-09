@@ -263,16 +263,14 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
   if (base::FeatureList::IsEnabled(
           password_manager::features::kEnableManualFallbacksFilling) &&
       (options & autofill::IS_PASSWORD_FIELD)) {
-    std::string all_saved_passwords_icon;
 #if !defined(OS_ANDROID)
     suggestions.push_back(autofill::Suggestion());
     suggestions.back().frontend_id = autofill::POPUP_ITEM_ID_SEPARATOR;
-    all_saved_passwords_icon = "showAllSavedPasswords";
 #endif
 
     autofill::Suggestion all_saved_passwords(
         l10n_util::GetStringUTF8(IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK),
-        std::string(), all_saved_passwords_icon,
+        std::string(), std::string(),
         autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
     suggestions.push_back(all_saved_passwords);
   }
@@ -311,7 +309,7 @@ void PasswordAutofillManager::OnShowManualFallbackSuggestion(
   std::vector<autofill::Suggestion> suggestions;
   autofill::Suggestion all_saved_passwords(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK),
-      std::string(), "showAllSavedPasswords",
+      std::string(), std::string(),
       autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
   suggestions.push_back(all_saved_passwords);
   autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
