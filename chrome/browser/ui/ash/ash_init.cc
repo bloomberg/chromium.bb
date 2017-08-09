@@ -161,6 +161,11 @@ AshInit::AshInit() {
 }
 
 AshInit::~AshInit() {
+  // ImageCursorsSet may indirectly hold a reference to CursorDataFactoryOzone,
+  // which is indirectly owned by Shell. Make sure we destroy the
+  // ImageCursorsSet before the Shell to avoid potential use after free.
+  g_browser_process->platform_part()->DestroyImageCursorsSet();
+
   // |window_manager_| deletes the Shell.
   if (!window_manager_ && ash::Shell::HasInstance()) {
     ash::Shell::DeleteInstance();
