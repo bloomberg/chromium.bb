@@ -108,7 +108,7 @@ void SymbolMap::Populate() {
     DPLOG(WARNING)
         << "Couldn't get name, falling back to 'app' for program name: "
         << status;
-    strlcpy(app_name, "app", sizeof(app_name));
+    strlcat(app_name, "app", sizeof(app_name));
   }
 
   // Retrieve the debug info struct.
@@ -139,8 +139,7 @@ void SymbolMap::Populate() {
 
     next_entry->addr = reinterpret_cast<void*>(lmap->l_addr);
     char* name_to_use = lmap->l_name[0] ? lmap->l_name : app_name;
-    size_t name_len = strnlen(name_to_use, MX_MAX_NAME_LEN);
-    strncpy(next_entry->name, name_to_use, name_len + 1);
+    strlcpy(next_entry->name, name_to_use, sizeof(next_entry->name));
     lmap = lmap->l_next;
   }
 
