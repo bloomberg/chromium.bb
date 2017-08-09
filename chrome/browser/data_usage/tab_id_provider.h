@@ -64,7 +64,7 @@ class TabIdProvider : public base::SupportsUserData::Data {
 
   base::WeakPtr<TabIdProvider> GetWeakPtr();
 
-  static const void* const kUserDataKey;
+  static const void* const kTabIdProviderUserDataKey;
 
  private:
   class CallbackRunner;

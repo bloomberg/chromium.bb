@@ -76,7 +76,7 @@ void TabIdAnnotator::Annotate(net::URLRequest* request,
   DCHECK(data_use);
 
   TabIdProvider* existing_tab_id_provider = reinterpret_cast<TabIdProvider*>(
-      request->GetUserData(TabIdProvider::kUserDataKey));
+      request->GetUserData(TabIdProvider::kTabIdProviderUserDataKey));
   if (existing_tab_id_provider) {
     existing_tab_id_provider->ProvideTabId(
         base::Bind(&AnnotateDataUse, base::Passed(&data_use), callback));
@@ -112,7 +112,8 @@ void TabIdAnnotator::Annotate(net::URLRequest* request,
   tab_id_provider->ProvideTabId(
       base::Bind(&AnnotateDataUse, base::Passed(&data_use), callback));
 
-  request->SetUserData(TabIdProvider::kUserDataKey, std::move(tab_id_provider));
+  request->SetUserData(TabIdProvider::kTabIdProviderUserDataKey,
+                       std::move(tab_id_provider));
 }
 
 }  // namespace chrome_browser_data_usage
