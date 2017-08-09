@@ -347,10 +347,6 @@ deps_os = {
     'src/third_party/mingw-w64/mingw/bin':
       Var('chromium_git') + '/native_client/deps/third_party/mingw-w64/mingw/bin.git' + '@' + '3cc8b140b883a9fe4986d12cfd46c16a093d3527',
 
-    # Dependencies used by libjpeg-turbo
-    'src/third_party/yasm/binaries':
-      Var('chromium_git') + '/chromium/deps/yasm/binaries.git' + '@' + '52f9b3f4b0aa06da24ef8b123058bb61ee468881',
-
     # Binaries for nacl sdk.
     'src/third_party/nacl_sdk_binaries':
       Var('chromium_git') + '/chromium/deps/nacl_sdk_binaries.git' + '@' + '759dfca03bdc774da7ecbf974f6e2b84f43699a5',
