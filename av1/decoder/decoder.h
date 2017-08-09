@@ -150,12 +150,10 @@ int av1_get_raw_frame(struct AV1Decoder *pbi, YV12_BUFFER_CONFIG *sd);
 
 int av1_get_frame_to_show(struct AV1Decoder *pbi, YV12_BUFFER_CONFIG *frame);
 
-aom_codec_err_t av1_copy_reference_dec(struct AV1Decoder *pbi,
-                                       AOM_REFFRAME ref_frame_flag,
+aom_codec_err_t av1_copy_reference_dec(struct AV1Decoder *pbi, int idx,
                                        YV12_BUFFER_CONFIG *sd);
 
-aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm,
-                                      AOM_REFFRAME ref_frame_flag,
+aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm, int idx,
                                       YV12_BUFFER_CONFIG *sd);
 
 static INLINE uint8_t read_marker(aom_decrypt_cb decrypt_cb,

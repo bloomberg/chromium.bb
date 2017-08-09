@@ -184,106 +184,35 @@ static int equal_dimensions(const YV12_BUFFER_CONFIG *a,
          a->uv_height == b->uv_height && a->uv_width == b->uv_width;
 }
 
-aom_codec_err_t av1_copy_reference_dec(AV1Decoder *pbi,
-                                       AOM_REFFRAME ref_frame_flag,
+aom_codec_err_t av1_copy_reference_dec(AV1Decoder *pbi, int idx,
                                        YV12_BUFFER_CONFIG *sd) {
   AV1_COMMON *cm = &pbi->common;
 
-  /* TODO(jkoleszar): The decoder doesn't have any real knowledge of what the
-   * encoder is using the frame buffers for. This is just a stub to keep the
-   * aomenc --test-decode functionality working, and will be replaced in a
-   * later commit that adds AV1-specific controls for this functionality.
-   */
-  if (ref_frame_flag == AOM_LAST_FLAG) {
-    const YV12_BUFFER_CONFIG *const cfg = get_ref_frame(cm, 0);
-    if (cfg == NULL) {
-      aom_internal_error(&cm->error, AOM_CODEC_ERROR,
-                         "No 'last' reference frame");
-      return AOM_CODEC_ERROR;
-    }
-    if (!equal_dimensions(cfg, sd))
-      aom_internal_error(&cm->error, AOM_CODEC_ERROR,
-                         "Incorrect buffer dimensions");
-    else
-      aom_yv12_copy_frame(cfg, sd);
-  } else {
-    aom_internal_error(&cm->error, AOM_CODEC_ERROR, "Invalid reference frame");
+  const YV12_BUFFER_CONFIG *const cfg = get_ref_frame(cm, idx);
+  if (cfg == NULL) {
+    aom_internal_error(&cm->error, AOM_CODEC_ERROR, "No reference frame");
+    return AOM_CODEC_ERROR;
   }
+  if (!equal_dimensions(cfg, sd))
+    aom_internal_error(&cm->error, AOM_CODEC_ERROR,
+                       "Incorrect buffer dimensions");
+  else
+    aom_yv12_copy_frame(cfg, sd);
 
   return cm->error.error_code;
 }
 
-aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm,
-                                      AOM_REFFRAME ref_frame_flag,
+aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm, int idx,
                                       YV12_BUFFER_CONFIG *sd) {
-  int idx;
   YV12_BUFFER_CONFIG *ref_buf = NULL;
 
-  // TODO(jkoleszar): The decoder doesn't have any real knowledge of what the
-  // encoder is using the frame buffers for. This is just a stub to keep the
-  // aomenc --test-decode functionality working, and will be replaced in a
-  // later commit that adds AV1-specific controls for this functionality.
-
-  // (Yunqing) The set_reference control depends on the following setting in
-  // encoder.
-  //   cpi->lst_fb_idx = 0;
-  // #if CONFIG_EXT_REFS
-  //   cpi->lst2_fb_idx = 1;
-  //   cpi->lst3_fb_idx = 2;
-  //   cpi->gld_fb_idx = 3;
-  //   cpi->bwd_fb_idx = 4;
-  // #if CONFIG_ALTREF2
-  //   cpi->alt2_fb_idx = 5;
-  //   cpi->alt_fb_idx = 6;
-  // #else  // !CONFIG_ALTREF2
-  //   cpi->alt_fb_idx = 5;
-  // #endif  // CONFIG_ALTREF2
-  // #else  // CONFIG_EXT_REFS
-  //   cpi->gld_fb_idx = 1;
-  //   cpi->alt_fb_idx = 2;
-  // #endif  // CONFIG_EXT_REFS
-
-  // TODO(zoeliu): To revisit following code and reconsider what assumption we
-  // may take on the reference frame buffer virtual indexes
-  if (ref_frame_flag == AOM_LAST_FLAG) {
-    idx = cm->ref_frame_map[0];
-#if CONFIG_EXT_REFS
-  } else if (ref_frame_flag == AOM_LAST2_FLAG) {
-    idx = cm->ref_frame_map[1];
-  } else if (ref_frame_flag == AOM_LAST3_FLAG) {
-    idx = cm->ref_frame_map[2];
-  } else if (ref_frame_flag == AOM_GOLD_FLAG) {
-    idx = cm->ref_frame_map[3];
-  } else if (ref_frame_flag == AOM_BWD_FLAG) {
-    idx = cm->ref_frame_map[4];
-#if CONFIG_ALTREF2
-  } else if (ref_frame_flag == AOM_ALT2_FLAG) {
-    idx = cm->ref_frame_map[5];
-  } else if (ref_frame_flag == AOM_ALT_FLAG) {
-    idx = cm->ref_frame_map[6];
-#else   // !CONFIG_ALTREF2
-  } else if (ref_frame_flag == AOM_ALT_FLAG) {
-    idx = cm->ref_frame_map[5];
-#endif  // CONFIG_ALTREF2
-#else   // !CONFIG_EXT_REFS
-  } else if (ref_frame_flag == AOM_GOLD_FLAG) {
-    idx = cm->ref_frame_map[1];
-  } else if (ref_frame_flag == AOM_ALT_FLAG) {
-    idx = cm->ref_frame_map[2];
-#endif  // CONFIG_EXT_REFS
-  } else {
-    aom_internal_error(&cm->error, AOM_CODEC_ERROR, "Invalid reference frame");
-    return cm->error.error_code;
-  }
-
-  if (idx < 0 || idx >= FRAME_BUFFERS) {
-    aom_internal_error(&cm->error, AOM_CODEC_ERROR,
-                       "Invalid reference frame map");
-    return cm->error.error_code;
-  }
-
   // Get the destination reference buffer.
-  ref_buf = &cm->buffer_pool->frame_bufs[idx].buf;
+  ref_buf = get_ref_frame(cm, idx);
+
+  if (ref_buf == NULL) {
+    aom_internal_error(&cm->error, AOM_CODEC_ERROR, "No reference frame");
+    return AOM_CODEC_ERROR;
+  }
 
   if (!equal_dimensions(ref_buf, sd)) {
     aom_internal_error(&cm->error, AOM_CODEC_ERROR,

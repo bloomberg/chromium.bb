@@ -876,7 +876,7 @@ static aom_codec_err_t decoder_set_fb_fn(
 
 static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
-  aom_ref_frame_t *const data = va_arg(args, aom_ref_frame_t *);
+  av1_ref_frame_t *const data = va_arg(args, av1_ref_frame_t *);
 
   // Only support this function in serial decode.
   if (ctx->frame_parallel_decode) {
@@ -885,13 +885,12 @@ static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
   }
 
   if (data) {
-    aom_ref_frame_t *const frame = (aom_ref_frame_t *)data;
+    av1_ref_frame_t *const frame = data;
     YV12_BUFFER_CONFIG sd;
     AVxWorker *const worker = ctx->frame_workers;
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     image2yuvconfig(&frame->img, &sd);
-    return av1_set_reference_dec(&frame_worker_data->pbi->common,
-                                 ref_frame_to_av1_reframe(frame->frame_type),
+    return av1_set_reference_dec(&frame_worker_data->pbi->common, frame->idx,
                                  &sd);
   } else {
     return AOM_CODEC_INVALID_PARAM;
@@ -900,7 +899,7 @@ static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
 
 static aom_codec_err_t ctrl_copy_reference(aom_codec_alg_priv_t *ctx,
                                            va_list args) {
-  const aom_ref_frame_t *const frame = va_arg(args, aom_ref_frame_t *);
+  const av1_ref_frame_t *const frame = va_arg(args, av1_ref_frame_t *);
 
   // Only support this function in serial decode.
   if (ctx->frame_parallel_decode) {
@@ -913,8 +912,7 @@ static aom_codec_err_t ctrl_copy_reference(aom_codec_alg_priv_t *ctx,
     AVxWorker *const worker = ctx->frame_workers;
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     image2yuvconfig(&frame->img, &sd);
-    return av1_copy_reference_dec(frame_worker_data->pbi,
-                                  (AOM_REFFRAME)frame->frame_type, &sd);
+    return av1_copy_reference_dec(frame_worker_data->pbi, frame->idx, &sd);
   } else {
     return AOM_CODEC_INVALID_PARAM;
   }
@@ -1209,10 +1207,10 @@ static aom_codec_err_t ctrl_set_inspection_callback(aom_codec_alg_priv_t *ctx,
 }
 
 static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
-  { AOM_COPY_REFERENCE, ctrl_copy_reference },
+  { AV1_COPY_REFERENCE, ctrl_copy_reference },
 
   // Setters
-  { AOM_SET_REFERENCE, ctrl_set_reference },
+  { AV1_SET_REFERENCE, ctrl_set_reference },
   { AOM_SET_POSTPROC, ctrl_set_postproc },
   { AOM_SET_DBG_COLOR_REF_FRAME, ctrl_set_dbg_options },
   { AOM_SET_DBG_COLOR_MB_MODES, ctrl_set_dbg_options },

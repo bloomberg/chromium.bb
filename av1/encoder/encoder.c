@@ -3052,35 +3052,9 @@ void av1_update_reference(AV1_COMP *cpi, int ref_frame_flags) {
   cpi->ext_refresh_frame_flags_pending = 1;
 }
 
-static YV12_BUFFER_CONFIG *get_av1_ref_frame_buffer(
-    AV1_COMP *cpi, AOM_REFFRAME ref_frame_flag) {
-  MV_REFERENCE_FRAME ref_frame = NONE_FRAME;
-  if (ref_frame_flag == AOM_LAST_FLAG) ref_frame = LAST_FRAME;
-#if CONFIG_EXT_REFS
-  else if (ref_frame_flag == AOM_LAST2_FLAG)
-    ref_frame = LAST2_FRAME;
-  else if (ref_frame_flag == AOM_LAST3_FLAG)
-    ref_frame = LAST3_FRAME;
-#endif  // CONFIG_EXT_REFS
-  else if (ref_frame_flag == AOM_GOLD_FLAG)
-    ref_frame = GOLDEN_FRAME;
-#if CONFIG_EXT_REFS
-  else if (ref_frame_flag == AOM_BWD_FLAG)
-    ref_frame = BWDREF_FRAME;
-#if CONFIG_ALTREF2
-  else if (ref_frame_flag == AOM_ALT2_FLAG)
-    ref_frame = ALTREF2_FRAME;
-#endif  // CONFIG_ALTREF2
-#endif  // CONFIG_EXT_REFS
-  else if (ref_frame_flag == AOM_ALT_FLAG)
-    ref_frame = ALTREF_FRAME;
-
-  return ref_frame == NONE_FRAME ? NULL : get_ref_frame_buffer(cpi, ref_frame);
-}
-
-int av1_copy_reference_enc(AV1_COMP *cpi, AOM_REFFRAME ref_frame_flag,
-                           YV12_BUFFER_CONFIG *sd) {
-  YV12_BUFFER_CONFIG *cfg = get_av1_ref_frame_buffer(cpi, ref_frame_flag);
+int av1_copy_reference_enc(AV1_COMP *cpi, int idx, YV12_BUFFER_CONFIG *sd) {
+  AV1_COMMON *const cm = &cpi->common;
+  YV12_BUFFER_CONFIG *cfg = get_ref_frame(cm, idx);
   if (cfg) {
     aom_yv12_copy_frame(cfg, sd);
     return 0;
@@ -3089,9 +3063,9 @@ int av1_copy_reference_enc(AV1_COMP *cpi, AOM_REFFRAME ref_frame_flag,
   }
 }
 
-int av1_set_reference_enc(AV1_COMP *cpi, AOM_REFFRAME ref_frame_flag,
-                          YV12_BUFFER_CONFIG *sd) {
-  YV12_BUFFER_CONFIG *cfg = get_av1_ref_frame_buffer(cpi, ref_frame_flag);
+int av1_set_reference_enc(AV1_COMP *cpi, int idx, YV12_BUFFER_CONFIG *sd) {
+  AV1_COMMON *const cm = &cpi->common;
+  YV12_BUFFER_CONFIG *cfg = get_ref_frame(cm, idx);
   if (cfg) {
     aom_yv12_copy_frame(sd, cfg);
     return 0;

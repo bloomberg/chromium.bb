@@ -1294,14 +1294,13 @@ static const aom_codec_cx_pkt_t *encoder_get_cxdata(aom_codec_alg_priv_t *ctx,
 
 static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
-  aom_ref_frame_t *const frame = va_arg(args, aom_ref_frame_t *);
+  av1_ref_frame_t *const frame = va_arg(args, av1_ref_frame_t *);
 
   if (frame != NULL) {
     YV12_BUFFER_CONFIG sd;
 
     image2yuvconfig(&frame->img, &sd);
-    av1_set_reference_enc(ctx->cpi, ref_frame_to_av1_reframe(frame->frame_type),
-                          &sd);
+    av1_set_reference_enc(ctx->cpi, frame->idx, &sd);
     return AOM_CODEC_OK;
   } else {
     return AOM_CODEC_INVALID_PARAM;
@@ -1310,14 +1309,13 @@ static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
 
 static aom_codec_err_t ctrl_copy_reference(aom_codec_alg_priv_t *ctx,
                                            va_list args) {
-  aom_ref_frame_t *const frame = va_arg(args, aom_ref_frame_t *);
+  av1_ref_frame_t *const frame = va_arg(args, av1_ref_frame_t *);
 
   if (frame != NULL) {
     YV12_BUFFER_CONFIG sd;
 
     image2yuvconfig(&frame->img, &sd);
-    av1_copy_reference_enc(ctx->cpi,
-                           ref_frame_to_av1_reframe(frame->frame_type), &sd);
+    av1_copy_reference_enc(ctx->cpi, frame->idx, &sd);
     return AOM_CODEC_OK;
   } else {
     return AOM_CODEC_INVALID_PARAM;
@@ -1500,11 +1498,11 @@ static aom_codec_err_t ctrl_set_ans_window_size_log2(aom_codec_alg_priv_t *ctx,
 #endif
 
 static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
-  { AOM_COPY_REFERENCE, ctrl_copy_reference },
+  { AV1_COPY_REFERENCE, ctrl_copy_reference },
   { AOME_USE_REFERENCE, ctrl_use_reference },
 
   // Setters
-  { AOM_SET_REFERENCE, ctrl_set_reference },
+  { AV1_SET_REFERENCE, ctrl_set_reference },
   { AOM_SET_POSTPROC, ctrl_set_previewpp },
   { AOME_SET_ROI_MAP, ctrl_set_roi_map },
   { AOME_SET_ACTIVEMAP, ctrl_set_active_map },

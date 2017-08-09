@@ -633,11 +633,9 @@ int av1_use_as_reference(AV1_COMP *cpi, int ref_frame_flags);
 
 void av1_update_reference(AV1_COMP *cpi, int ref_frame_flags);
 
-int av1_copy_reference_enc(AV1_COMP *cpi, AOM_REFFRAME ref_frame_flag,
-                           YV12_BUFFER_CONFIG *sd);
+int av1_copy_reference_enc(AV1_COMP *cpi, int idx, YV12_BUFFER_CONFIG *sd);
 
-int av1_set_reference_enc(AV1_COMP *cpi, AOM_REFFRAME ref_frame_flag,
-                          YV12_BUFFER_CONFIG *sd);
+int av1_set_reference_enc(AV1_COMP *cpi, int idx, YV12_BUFFER_CONFIG *sd);
 
 int av1_update_entropy(AV1_COMP *cpi, int update);
 
