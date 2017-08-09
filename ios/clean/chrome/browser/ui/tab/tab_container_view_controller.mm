@@ -5,6 +5,8 @@
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
 
 #import "base/logging.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_constants.h"
 #import "ios/clean/chrome/browser/ui/transitions/animators/swap_from_above_animator.h"
 #import "ios/clean/chrome/browser/ui/transitions/containment_transition_context.h"
 #import "ios/clean/chrome/browser/ui/transitions/containment_transitioning_delegate.h"
@@ -28,6 +30,11 @@ CGFloat kTabStripHeight = 120.0f;
 @property(nonatomic, strong) UIView* toolbarView;
 @property(nonatomic, strong) UIView* contentView;
 
+// Status Bar background view. Its size is directly linked to the difference
+// between this VC's view topLayoutGuide top anchor and bottom anchor. This
+// means that this view will not be displayed on landscape.
+@property(nonatomic, strong) UIView* statusBarBackgroundView;
+
 // Height constraints for tabStripView and toolbarView.
 @property(nonatomic, strong) NSLayoutConstraint* tabStripHeightConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* toolbarHeightConstraint;
@@ -49,6 +56,7 @@ CGFloat kTabStripHeight = 120.0f;
 @synthesize tabStripView = _tabStripView;
 @synthesize toolbarView = _toolbarView;
 @synthesize contentView = _contentView;
+@synthesize statusBarBackgroundView = _statusBarBackgroundView;
 @synthesize tabStripHeightConstraint = _tabStripHeightConstraint;
 @synthesize toolbarHeightConstraint = _toolbarHeightConstraint;
 @synthesize containmentTransitioningDelegate =
@@ -63,19 +71,24 @@ CGFloat kTabStripHeight = 120.0f;
   self.tabStripView = [[UIView alloc] init];
   self.toolbarView = [[UIView alloc] init];
   self.contentView = [[UIView alloc] init];
+  self.statusBarBackgroundView = [[UIView alloc] init];
   self.findBarView.translatesAutoresizingMaskIntoConstraints = NO;
   self.tabStripView.translatesAutoresizingMaskIntoConstraints = NO;
   self.toolbarView.translatesAutoresizingMaskIntoConstraints = NO;
   self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.statusBarBackgroundView.translatesAutoresizingMaskIntoConstraints = NO;
   self.view.backgroundColor = [UIColor blackColor];
   self.findBarView.backgroundColor = [UIColor clearColor];
   self.tabStripView.backgroundColor = [UIColor blackColor];
   self.toolbarView.backgroundColor = [UIColor blackColor];
   self.contentView.backgroundColor = [UIColor blackColor];
+  self.statusBarBackgroundView.backgroundColor =
+      UIColorFromRGB(kToolbarBackgroundColor);
   self.findBarView.clipsToBounds = YES;
 
   // Views that are added last have the highest z-order.
   [self.view addSubview:self.tabStripView];
+  [self.view addSubview:self.statusBarBackgroundView];
   [self.view addSubview:self.toolbarView];
   [self.view addSubview:self.contentView];
   [self.view addSubview:self.findBarView];
@@ -249,6 +262,15 @@ animationControllerForAddingChildController:(UIViewController*)addedChild
 // Override with constraints that place the toolbar on top.
 - (Constraints*)subviewConstraints {
   return @[
+    [self.statusBarBackgroundView.topAnchor
+        constraintEqualToAnchor:self.topLayoutGuide.topAnchor],
+    [self.statusBarBackgroundView.bottomAnchor
+        constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor],
+    [self.statusBarBackgroundView.leadingAnchor
+        constraintEqualToAnchor:self.view.leadingAnchor],
+    [self.statusBarBackgroundView.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+
     [self.tabStripView.topAnchor
         constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor],
     [self.tabStripView.leadingAnchor
@@ -290,6 +312,15 @@ animationControllerForAddingChildController:(UIViewController*)addedChild
 // Override with constraints that place the toolbar on bottom.
 - (Constraints*)subviewConstraints {
   return @[
+    [self.statusBarBackgroundView.topAnchor
+        constraintEqualToAnchor:self.topLayoutGuide.topAnchor],
+    [self.statusBarBackgroundView.bottomAnchor
+        constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor],
+    [self.statusBarBackgroundView.leadingAnchor
+        constraintEqualToAnchor:self.view.leadingAnchor],
+    [self.statusBarBackgroundView.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+
     [self.tabStripView.topAnchor
         constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor],
     [self.tabStripView.leadingAnchor
