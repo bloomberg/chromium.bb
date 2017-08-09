@@ -47,9 +47,8 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
       const EncryptionScheme& encryption_scheme,
       base::TimeDelta presentation_time);
   void QueueEOS(int input_buffer_index);
-  MediaCodecStatus DequeueInputBuffer(base::TimeDelta timeout, int* index);
+  MediaCodecStatus DequeueInputBuffer(int* index);
   MediaCodecStatus DequeueOutputBuffer(
-      base::TimeDelta timeout,
       base::TimeDelta* presentation_time,
       bool* end_of_stream,
       std::unique_ptr<CodecOutputBuffer>* codec_buffer);
@@ -237,19 +236,17 @@ void CodecWrapperImpl::QueueEOS(int input_buffer_index) {
   state_ = State::kDraining;
 }
 
-MediaCodecStatus CodecWrapperImpl::DequeueInputBuffer(base::TimeDelta timeout,
-                                                      int* index) {
+MediaCodecStatus CodecWrapperImpl::DequeueInputBuffer(int* index) {
   DVLOG(4) << __func__;
   base::AutoLock l(lock_);
   DCHECK(codec_ && state_ != State::kError);
-  auto status = codec_->DequeueInputBuffer(timeout, index);
+  auto status = codec_->DequeueInputBuffer(base::TimeDelta(), index);
   if (status == MEDIA_CODEC_ERROR)
     state_ = State::kError;
   return status;
 }
 
 MediaCodecStatus CodecWrapperImpl::DequeueOutputBuffer(
-    base::TimeDelta timeout,
     base::TimeDelta* presentation_time,
     bool* end_of_stream,
     std::unique_ptr<CodecOutputBuffer>* codec_buffer) {
@@ -267,9 +264,9 @@ MediaCodecStatus CodecWrapperImpl::DequeueOutputBuffer(
     size_t unused_offset = 0;
     size_t unused_size = 0;
     bool* unused_key_frame = nullptr;
-    auto status = codec_->DequeueOutputBuffer(timeout, &index, &unused_offset,
-                                              &unused_size, presentation_time,
-                                              end_of_stream, unused_key_frame);
+    auto status = codec_->DequeueOutputBuffer(
+        base::TimeDelta(), &index, &unused_offset, &unused_size,
+        presentation_time, end_of_stream, unused_key_frame);
     switch (status) {
       case MEDIA_CODEC_OK: {
         if (end_of_stream && *end_of_stream)
@@ -409,17 +406,15 @@ void CodecWrapper::QueueEOS(int input_buffer_index) {
   impl_->QueueEOS(input_buffer_index);
 }
 
-MediaCodecStatus CodecWrapper::DequeueInputBuffer(base::TimeDelta timeout,
-                                                  int* index) {
-  return impl_->DequeueInputBuffer(timeout, index);
+MediaCodecStatus CodecWrapper::DequeueInputBuffer(int* index) {
+  return impl_->DequeueInputBuffer(index);
 }
 
 MediaCodecStatus CodecWrapper::DequeueOutputBuffer(
-    base::TimeDelta timeout,
     base::TimeDelta* presentation_time,
     bool* end_of_stream,
     std::unique_ptr<CodecOutputBuffer>* codec_buffer) {
-  return impl_->DequeueOutputBuffer(timeout, presentation_time, end_of_stream,
+  return impl_->DequeueOutputBuffer(presentation_time, end_of_stream,
                                     codec_buffer);
 }
 

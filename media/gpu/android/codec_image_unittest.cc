@@ -75,7 +75,7 @@ class CodecImageTest : public testing::Test {
       ImageKind kind,
       CodecImage::DestructionCb destruction_cb = kNoop) {
     std::unique_ptr<CodecOutputBuffer> buffer;
-    wrapper_->DequeueOutputBuffer(base::TimeDelta(), nullptr, nullptr, &buffer);
+    wrapper_->DequeueOutputBuffer(nullptr, nullptr, &buffer);
     return new CodecImage(std::move(buffer),
                           kind == kSurfaceTexture ? surface_texture_ : nullptr,
                           std::move(destruction_cb));

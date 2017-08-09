@@ -112,7 +112,7 @@ class MEDIA_GPU_EXPORT CodecWrapper {
       const EncryptionScheme& encryption_scheme,
       base::TimeDelta presentation_time);
   void QueueEOS(int input_buffer_index);
-  MediaCodecStatus DequeueInputBuffer(base::TimeDelta timeout, int* index);
+  MediaCodecStatus DequeueInputBuffer(int* index);
 
   // Like MediaCodecBridge::DequeueOutputBuffer() but it outputs a
   // CodecOutputBuffer instead of an index. And it's guaranteed to not return
@@ -120,7 +120,6 @@ class MEDIA_GPU_EXPORT CodecWrapper {
   // MEDIA_CODEC_OUTPUT_FORMAT_CHANGED. It will try to dequeue another
   // buffer instead. |*codec_buffer| must be null.
   MediaCodecStatus DequeueOutputBuffer(
-      base::TimeDelta timeout,
       base::TimeDelta* presentation_time,
       bool* end_of_stream,
       std::unique_ptr<CodecOutputBuffer>* codec_buffer);
