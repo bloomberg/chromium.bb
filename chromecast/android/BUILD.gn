@@ -42,6 +42,20 @@ cast_shared_library("libcast_shell_android") {
     "//skia",
   ]
 
+  # Explicit dependencies required for JNI registration to be able to find the
+  # native side functions.
+  if (is_component_build) {
+    deps += [
+      "//device/bluetooth",
+      "//device/gamepad",
+      "//device/sensors",
+      "//media/midi",
+      "//ui/android",
+      "//ui/events/devices",
+      "//ui/shell_dialogs",
+    ]
+  }
+
   if (chromecast_branding == "public") {
     sources += [ "platform_jni_loader_stub.cc" ]
   }
