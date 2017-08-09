@@ -8,11 +8,11 @@
 #include "base/memory/ptr_util.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/host/renderer_settings_creation.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor_switches.h"
-#include "ui/compositor/compositor_util.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_bindings.h"
@@ -40,7 +40,7 @@ viz::BufferToTextureTargetMap CreateBufferToTextureTargetMap() {
 MusContextFactory::MusContextFactory(ui::Gpu* gpu)
     : gpu_(gpu),
       resource_settings_(
-          ui::CreateResourceSettings(CreateBufferToTextureTargetMap())),
+          viz::CreateResourceSettings(CreateBufferToTextureTargetMap())),
       weak_ptr_factory_(this) {}
 
 MusContextFactory::~MusContextFactory() {}

@@ -31,6 +31,9 @@ const char kDisableMergeKeyCharEvents[]     = "disable-merge-key-char-events";
 const char kEnableMergeKeyCharEvents[]     = "enable-merge-key-char-events";
 #endif
 
+// Disables layer-edge anti-aliasing in the compositor.
+const char kDisableCompositedAntialiasing[] = "disable-composited-antialiasing";
+
 // Disables use of DWM composition for top level windows.
 const char kDisableDwmComposition[] = "disable-dwm-composition";
 
@@ -42,6 +45,13 @@ const char kDisableTouchDragDrop[] = "disable-touch-drag-drop";
 
 // Enables touch event based drag and drop.
 const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
+
+// TODO(dcastagna): Draw debug quad borders only when it is actually
+// an overlay candidate.
+// Renders a border around GL composited overlay candidate quads to
+// help debug and study overlay support.
+const char kGlCompositedOverlayCandidateQuadBorder[] =
+    "gl-composited-overlay-candidate-quad-border";
 
 // The language file that we want to try to open. Of the form
 // language[-country] where language is the 2 letter code from ISO-639.
@@ -78,5 +88,25 @@ const char kDisableNewVirtualKeyboardBehavior[] =
 // Applies the material design mode passed via --top-chrome-md to elements
 // throughout Chrome (not just top Chrome).
 const char kExtendMdToSecondaryUi[] = "secondary-ui-md";
+
+// Disable partial swap which is needed for some OpenGL drivers / emulators.
+const char kUIDisablePartialSwap[] = "ui-disable-partial-swap";
+
+// Visualize overdraw by color-coding elements based on if they have other
+// elements drawn underneath. This is good for showing where the UI might be
+// doing more rendering work than necessary. The colors are hinting at the
+// amount of overdraw on your screen for each pixel, as follows:
+//
+// True color: No overdraw.
+// Blue: Overdrawn once.
+// Green: Overdrawn twice.
+// Pink: Overdrawn three times.
+// Red: Overdrawn four or more times.
+const char kShowOverdrawFeedback[] = "show-overdraw-feedback";
+
+// Disable re-use of non-exact resources to fulfill ResourcePool requests.
+// Intended only for use in layout or pixel tests to reduce noise.
+const char kDisallowNonExactResourceReuse[] =
+    "disallow-non-exact-resource-reuse";
 
 }  // namespace switches

@@ -7,12 +7,12 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "cc/base/switches.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_delegate.h"
+#include "ui/base/ui_base_switches.h"
 
 namespace ui {
 namespace ws {
@@ -37,7 +37,7 @@ void ServerWindowCompositorFrameSinkManager::CreateRootCompositorFrameSink(
   viz::RendererSettings settings;
   settings.show_overdraw_feedback =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          cc::switches::kShowOverdrawFeedback);
+          switches::kShowOverdrawFeedback);
 
   // TODO(fsamuel): AcceleratedWidget cannot be transported over IPC for Mac
   // or Android. We should instead use GpuSurfaceTracker here on those
