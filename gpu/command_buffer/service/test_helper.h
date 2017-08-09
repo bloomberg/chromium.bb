@@ -197,11 +197,17 @@ class TestHelper {
       const UniformMap* const expected_uniform_map,
       const VaryingMap* const expected_varying_map,
       const InterfaceBlockMap* const expected_interface_block_map,
-      const OutputVariableList* const expected_output_variable_list);
+      const OutputVariableList* const expected_output_variable_list,
+      OptionsAffectingCompilationString* options_affecting_compilation);
 
   static void SetShaderStates(::gl::MockGLInterface* gl,
                               Shader* shader,
                               bool valid);
+
+  static void SetShaderStates(::gl::MockGLInterface* gl,
+                              Shader* shader,
+                              bool valid,
+                              const std::string& options_affecting_compilation);
 
   static sh::Attribute ConstructAttribute(
       GLenum type, GLint array_size, GLenum precision,

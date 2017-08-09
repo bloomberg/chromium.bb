@@ -220,9 +220,10 @@ TEST_F(ShaderManagerTest, DoCompile) {
           kInterfaceBlock1Name, kInterfaceBlock1InstanceName,
           interface_block1_fields);
 
-  TestHelper::SetShaderStates(
-      gl_.get(), shader1, true, &kLog, &kTranslatedSource, nullptr, &attrib_map,
-      &uniform_map, &varying_map, &interface_block_map, &output_variable_list);
+  TestHelper::SetShaderStates(gl_.get(), shader1, true, &kLog,
+                              &kTranslatedSource, nullptr, &attrib_map,
+                              &uniform_map, &varying_map, &interface_block_map,
+                              &output_variable_list, nullptr);
 
   EXPECT_TRUE(shader1->valid());
   // When compilation succeeds, no log is recorded.
@@ -325,9 +326,10 @@ TEST_F(ShaderManagerTest, DoCompile) {
   }
 
   // Compile failure case.
-  TestHelper::SetShaderStates(
-      gl_.get(), shader1, false, &kLog, &kTranslatedSource, nullptr,
-      &attrib_map, &uniform_map, &varying_map, nullptr, &output_variable_list);
+  TestHelper::SetShaderStates(gl_.get(), shader1, false, &kLog,
+                              &kTranslatedSource, nullptr, &attrib_map,
+                              &uniform_map, &varying_map, nullptr,
+                              &output_variable_list, nullptr);
   EXPECT_FALSE(shader1->valid());
   EXPECT_STREQ(kLog.c_str(), shader1->log_info().c_str());
   EXPECT_STREQ("", shader1->translated_source().c_str());

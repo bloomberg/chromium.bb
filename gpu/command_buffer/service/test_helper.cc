@@ -1119,7 +1119,8 @@ void TestHelper::SetShaderStates(
     const UniformMap* const expected_uniform_map,
     const VaryingMap* const expected_varying_map,
     const InterfaceBlockMap* const expected_interface_block_map,
-    const OutputVariableList* const expected_output_variable_list) {
+    const OutputVariableList* const expected_output_variable_list,
+    OptionsAffectingCompilationString* options_affecting_compilation) {
   const std::string empty_log_info;
   const std::string* log_info = (expected_log_info && !expected_valid) ?
       expected_log_info : &empty_log_info;
@@ -1167,6 +1168,9 @@ void TestHelper::SetShaderStates(
           SetArgPointee<7>(*interface_block_map),
           SetArgPointee<8>(*output_variable_list), Return(expected_valid)))
       .RetiresOnSaturation();
+  EXPECT_CALL(*mock_translator, GetStringForOptionsThatWouldAffectCompilation())
+      .WillOnce(Return(options_affecting_compilation))
+      .RetiresOnSaturation();
   if (expected_valid) {
     EXPECT_CALL(*gl, ShaderSource(shader->service_id(), 1, _, NULL))
         .Times(1)
@@ -1188,7 +1192,20 @@ void TestHelper::SetShaderStates(::gl::MockGLInterface* gl,
                                  Shader* shader,
                                  bool valid) {
   SetShaderStates(gl, shader, valid, nullptr, nullptr, nullptr, nullptr,
-                  nullptr, nullptr, nullptr, nullptr);
+                  nullptr, nullptr, nullptr, nullptr, nullptr);
+}
+
+// static
+void TestHelper::SetShaderStates(
+    ::gl::MockGLInterface* gl,
+    Shader* shader,
+    bool valid,
+    const std::string& options_affecting_compilation) {
+  scoped_refptr<OptionsAffectingCompilationString> options =
+      base::MakeRefCounted<OptionsAffectingCompilationString>(
+          options_affecting_compilation);
+  SetShaderStates(gl, shader, valid, nullptr, nullptr, nullptr, nullptr,
+                  nullptr, nullptr, nullptr, nullptr, options.get());
 }
 
 // static

@@ -85,9 +85,8 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   }
 
   std::string last_compiled_signature() const {
-    if (translator_.get()) {
-      return last_compiled_source_ +
-             translator_->GetStringForOptionsThatWouldAffectCompilation();
+    if (options_affecting_compilation_) {
+      return last_compiled_source_ + options_affecting_compilation_->data;
     }
     return last_compiled_source_;
   }
@@ -235,6 +234,8 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
 
   // Translator to use, set when shader was last requested to be compiled.
   scoped_refptr<ShaderTranslatorInterface> translator_;
+  scoped_refptr<OptionsAffectingCompilationString>
+      options_affecting_compilation_;
 
   // True if compilation succeeded.
   bool valid_;

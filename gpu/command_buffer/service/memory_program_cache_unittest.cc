@@ -149,11 +149,11 @@ class MemoryProgramCacheTest : public GpuServiceTest,
     TestHelper::SetShaderStates(gl_.get(), vertex_shader_, true, nullptr,
                                 nullptr, nullptr, &vertex_attrib_map,
                                 &vertex_uniform_map, &vertex_varying_map,
-                                nullptr, &vertex_output_variable_list);
-    TestHelper::SetShaderStates(gl_.get(), fragment_shader_, true, nullptr,
-                                nullptr, nullptr, &fragment_attrib_map,
-                                &fragment_uniform_map, &fragment_varying_map,
-                                nullptr, &fragment_output_variable_list);
+                                nullptr, &vertex_output_variable_list, nullptr);
+    TestHelper::SetShaderStates(
+        gl_.get(), fragment_shader_, true, nullptr, nullptr, nullptr,
+        &fragment_attrib_map, &fragment_uniform_map, &fragment_varying_map,
+        nullptr, &fragment_output_variable_list, nullptr);
   }
 
   void SetExpectationsForSaveLinkedProgram(
