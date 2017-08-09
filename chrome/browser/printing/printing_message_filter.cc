@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/print_job_manager.h"
+#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -60,7 +61,7 @@ class ShutdownNotifierFactory
   DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
 };
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || (defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW))
 content::WebContents* GetWebContentsForRenderFrame(int render_process_id,
                                                    int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -69,6 +70,7 @@ content::WebContents* GetWebContentsForRenderFrame(int render_process_id,
   return frame ? content::WebContents::FromRenderFrameHost(frame) : nullptr;
 }
 
+#if defined(OS_ANDROID)
 PrintViewManagerBasic* GetPrintManager(int render_process_id,
                                        int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -77,7 +79,18 @@ PrintViewManagerBasic* GetPrintManager(int render_process_id,
   return web_contents ? PrintViewManagerBasic::FromWebContents(web_contents)
                       : nullptr;
 }
+#else  // defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+PrintViewManager* GetPrintViewManager(int render_process_id,
+                                      int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::WebContents* web_contents =
+      GetWebContentsForRenderFrame(render_process_id, render_frame_id);
+  return web_contents ? PrintViewManager::FromWebContents(web_contents)
+                      : nullptr;
+}
 #endif
+#endif  // defined(OS_ANDROID) || (defined(OS_WIN) &&
+        // BUILDFLAG(ENABLE_PRINT_PREVIEW))
 
 }  // namespace
 
@@ -309,6 +322,14 @@ void PrintingMessageFilter::OnUpdatePrintSettings(
                  printer_query, reply_msg));
 }
 
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+void PrintingMessageFilter::NotifySystemDialogCancelled(int routing_id) {
+  PrintViewManager* manager =
+      GetPrintViewManager(render_process_id_, routing_id);
+  manager->SystemDialogCancelled();
+}
+#endif
+
 void PrintingMessageFilter::OnUpdatePrintSettingsReply(
     scoped_refptr<PrinterQuery> printer_query,
     IPC::Message* reply_msg) {
@@ -323,6 +344,15 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
   }
   bool canceled = printer_query.get() &&
                   (printer_query->last_status() == PrintingContext::CANCEL);
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  if (canceled) {
+    int routing_id = reply_msg->routing_id();
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&PrintingMessageFilter::NotifySystemDialogCancelled, this,
+                   routing_id));
+  }
+#endif
   PrintHostMsg_UpdatePrintSettings::WriteReplyParams(reply_msg, params,
                                                      canceled);
   Send(reply_msg);
