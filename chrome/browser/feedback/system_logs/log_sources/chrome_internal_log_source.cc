@@ -203,13 +203,12 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
 
 void ChromeInternalLogSource::PopulateExtensionInfoLogs(
     SystemLogsResponse* response) {
-  Profile* primary_profile =
-      g_browser_process->profile_manager()->GetPrimaryUserProfile();
-  if (!primary_profile)
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  if (!profile)
     return;
 
   extensions::ExtensionRegistry* extension_registry =
-      extensions::ExtensionRegistry::Get(primary_profile);
+      extensions::ExtensionRegistry::Get(profile);
   std::string extensions_list;
   for (const scoped_refptr<const extensions::Extension>& extension :
        extension_registry->enabled_extensions()) {
