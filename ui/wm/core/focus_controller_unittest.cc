@@ -149,6 +149,39 @@ class RecordingActivationAndFocusChangeObserver
   DISALLOW_COPY_AND_ASSIGN(RecordingActivationAndFocusChangeObserver);
 };
 
+// Hides a window when activation changes.
+class HideOnLoseActivationChangeObserver : public ActivationChangeObserver {
+ public:
+  explicit HideOnLoseActivationChangeObserver(aura::Window* window_to_hide)
+      : root_(window_to_hide->GetRootWindow()),
+        window_to_hide_(window_to_hide) {
+    GetActivationClient(root_)->AddObserver(this);
+  }
+
+  ~HideOnLoseActivationChangeObserver() override {
+    GetActivationClient(root_)->RemoveObserver(this);
+  }
+
+  aura::Window* window_to_hide() { return window_to_hide_; }
+
+ private:
+  // Overridden from ActivationChangeObserver:
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override {
+    if (window_to_hide_) {
+      aura::Window* window_to_hide = window_to_hide_;
+      window_to_hide_ = nullptr;
+      window_to_hide->Hide();
+    }
+  }
+
+  aura::Window* root_;
+  aura::Window* window_to_hide_;
+
+  DISALLOW_COPY_AND_ASSIGN(HideOnLoseActivationChangeObserver);
+};
+
 // ActivationChangeObserver that deletes the window losing activation.
 class DeleteOnLoseActivationChangeObserver : public ActivationChangeObserver,
                                              public WindowDeleter {
@@ -465,6 +498,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
   virtual void ChangeFocusWhenNothingFocusedAndCaptured() {}
   virtual void DontPassDeletedWindow() {}
   virtual void StackWindowAtTopOnActivation() {}
+  virtual void HideFocusedWindowDuringActivationLoss() {}
 
  private:
   std::unique_ptr<FocusController> focus_controller_;
@@ -863,6 +897,22 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     ActivateWindow(window1.get());
     EXPECT_EQ(window1.get(), root_window()->children().back());
     EXPECT_EQ(window1.get(), GetActiveWindow());
+  }
+
+  // Verifies focus isn't left when during notification of an activation change
+  // the focused window is hidden.
+  void HideFocusedWindowDuringActivationLoss() override {
+    aura::Window* w11 = root_window()->GetChildById(11);
+    FocusWindow(w11);
+    EXPECT_EQ(11, GetFocusedWindowId());
+    EXPECT_EQ(1, GetActiveWindowId());
+    {
+      HideOnLoseActivationChangeObserver observer(w11);
+      ActivateWindowById(2);
+      EXPECT_EQ(nullptr, observer.window_to_hide());
+      EXPECT_EQ(2, GetActiveWindowId());
+      EXPECT_EQ(2, GetFocusedWindowId());
+    }
   }
 
  private:
@@ -1310,6 +1360,9 @@ FOCUS_CONTROLLER_TEST(FocusControllerApiTest,
 FOCUS_CONTROLLER_TEST(FocusControllerApiTest, DontPassDeletedWindow);
 
 FOCUS_CONTROLLER_TEST(FocusControllerApiTest, StackWindowAtTopOnActivation);
+
+FOCUS_CONTROLLER_TEST(FocusControllerApiTest,
+                      HideFocusedWindowDuringActivationLoss);
 
 // See description above TransientChildWindowActivationTest() for details.
 FOCUS_CONTROLLER_TEST(FocusControllerParentHideTest,
