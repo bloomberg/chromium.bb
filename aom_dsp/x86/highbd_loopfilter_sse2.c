@@ -13,39 +13,22 @@
 
 #include "./aom_dsp_rtcd.h"
 #include "aom_dsp/x86/lpf_common_sse2.h"
-#include "aom_ports/mem.h"
 #include "aom_ports/emmintrin_compat.h"
+#include "aom_ports/mem.h"
 
-static INLINE __m128i signed_char_clamp_bd_sse2(__m128i value, int bd) {
-  __m128i ubounded;
-  __m128i lbounded;
-  __m128i retval;
+static INLINE void pixel_clamp(const __m128i *min, const __m128i *max,
+                               __m128i *pixel) {
+  __m128i clamped, mask;
 
-  const __m128i zero = _mm_set1_epi16(0);
-  const __m128i one = _mm_set1_epi16(1);
-  __m128i t80, max, min;
+  mask = _mm_cmpgt_epi16(*pixel, *max);
+  clamped = _mm_andnot_si128(mask, *pixel);
+  mask = _mm_and_si128(mask, *max);
+  clamped = _mm_or_si128(mask, clamped);
 
-  if (bd == 8) {
-    t80 = _mm_set1_epi16(0x80);
-    max = _mm_subs_epi16(_mm_subs_epi16(_mm_slli_epi16(one, 8), one), t80);
-  } else if (bd == 10) {
-    t80 = _mm_set1_epi16(0x200);
-    max = _mm_subs_epi16(_mm_subs_epi16(_mm_slli_epi16(one, 10), one), t80);
-  } else {  // bd == 12
-    t80 = _mm_set1_epi16(0x800);
-    max = _mm_subs_epi16(_mm_subs_epi16(_mm_slli_epi16(one, 12), one), t80);
-  }
-
-  min = _mm_subs_epi16(zero, t80);
-
-  ubounded = _mm_cmpgt_epi16(value, max);
-  lbounded = _mm_cmplt_epi16(value, min);
-  retval = _mm_andnot_si128(_mm_or_si128(ubounded, lbounded), value);
-  ubounded = _mm_and_si128(ubounded, max);
-  lbounded = _mm_and_si128(lbounded, min);
-  retval = _mm_or_si128(retval, ubounded);
-  retval = _mm_or_si128(retval, lbounded);
-  return retval;
+  mask = _mm_cmpgt_epi16(clamped, *min);
+  clamped = _mm_and_si128(mask, clamped);
+  mask = _mm_andnot_si128(mask, *min);
+  *pixel = _mm_or_si128(clamped, mask);
 }
 
 // TODO(debargha, peter): Break up large functions into smaller ones
@@ -156,31 +139,51 @@ void aom_highbd_lpf_horizontal_edge_8_sse2(uint16_t *s, int p,
   ps0 = _mm_subs_epi16(p0, t80);
   qs0 = _mm_subs_epi16(q0, t80);
 
-  filt = _mm_and_si128(signed_char_clamp_bd_sse2(_mm_subs_epi16(ps1, qs1), bd),
-                       hev);
+  const __m128i pmax =
+      _mm_subs_epi16(_mm_subs_epi16(_mm_slli_epi16(one, bd), one), t80);
+  const __m128i pmin = _mm_subs_epi16(zero, t80);
+
+  filt = _mm_subs_epi16(ps1, qs1);
+  pixel_clamp(&pmin, &pmax, &filt);
+  filt = _mm_and_si128(filt, hev);
+
   work_a = _mm_subs_epi16(qs0, ps0);
   filt = _mm_adds_epi16(filt, work_a);
   filt = _mm_adds_epi16(filt, work_a);
-  filt = signed_char_clamp_bd_sse2(_mm_adds_epi16(filt, work_a), bd);
+
+  filt = _mm_adds_epi16(filt, work_a);
+  pixel_clamp(&pmin, &pmax, &filt);
+
   filt = _mm_and_si128(filt, mask);
-  filter1 = signed_char_clamp_bd_sse2(_mm_adds_epi16(filt, t4), bd);
-  filter2 = signed_char_clamp_bd_sse2(_mm_adds_epi16(filt, t3), bd);
+
+  filter1 = _mm_adds_epi16(filt, t4);
+  pixel_clamp(&pmin, &pmax, &filter1);
+  filter2 = _mm_adds_epi16(filt, t3);
+  pixel_clamp(&pmin, &pmax, &filter2);
 
   // Filter1 >> 3
   filter1 = _mm_srai_epi16(filter1, 0x3);
   filter2 = _mm_srai_epi16(filter2, 0x3);
 
-  qs0 = _mm_adds_epi16(
-      signed_char_clamp_bd_sse2(_mm_subs_epi16(qs0, filter1), bd), t80);
-  ps0 = _mm_adds_epi16(
-      signed_char_clamp_bd_sse2(_mm_adds_epi16(ps0, filter2), bd), t80);
+  qs0 = _mm_subs_epi16(qs0, filter1);
+  pixel_clamp(&pmin, &pmax, &qs0);
+  qs0 = _mm_adds_epi16(qs0, t80);
+
+  ps0 = _mm_adds_epi16(ps0, filter2);
+  pixel_clamp(&pmin, &pmax, &ps0);
+  ps0 = _mm_adds_epi16(ps0, t80);
+
   filt = _mm_adds_epi16(filter1, t1);
   filt = _mm_srai_epi16(filt, 1);
   filt = _mm_andnot_si128(hev, filt);
-  qs1 = _mm_adds_epi16(signed_char_clamp_bd_sse2(_mm_subs_epi16(qs1, filt), bd),
-                       t80);
-  ps1 = _mm_adds_epi16(signed_char_clamp_bd_sse2(_mm_adds_epi16(ps1, filt), bd),
-                       t80);
+
+  qs1 = _mm_subs_epi16(qs1, filt);
+  pixel_clamp(&pmin, &pmax, &qs1);
+  qs1 = _mm_adds_epi16(qs1, t80);
+
+  ps1 = _mm_adds_epi16(ps1, filt);
+  pixel_clamp(&pmin, &pmax, &ps1);
+  ps1 = _mm_adds_epi16(ps1, t80);
 
   // end highbd_filter4
   // loopfilter done
@@ -636,41 +639,48 @@ void aom_highbd_lpf_horizontal_8_sse2(uint16_t *s, int p,
   _mm_store_si128((__m128i *)&flat_oq2[0], workp_shft);
 
   // lp filter
-  filt = signed_char_clamp_bd_sse2(_mm_subs_epi16(ps1, qs1), bd);
+  const __m128i pmax =
+      _mm_subs_epi16(_mm_subs_epi16(_mm_slli_epi16(one, bd), one), t80);
+  const __m128i pmin = _mm_subs_epi16(zero, t80);
+
+  filt = _mm_subs_epi16(ps1, qs1);
+  pixel_clamp(&pmin, &pmax, &filt);
+
   filt = _mm_and_si128(filt, hev);
   work_a = _mm_subs_epi16(qs0, ps0);
   filt = _mm_adds_epi16(filt, work_a);
   filt = _mm_adds_epi16(filt, work_a);
   filt = _mm_adds_epi16(filt, work_a);
   // (aom_filter + 3 * (qs0 - ps0)) & mask
-  filt = signed_char_clamp_bd_sse2(filt, bd);
+  pixel_clamp(&pmin, &pmax, &filt);
   filt = _mm_and_si128(filt, mask);
 
   filter1 = _mm_adds_epi16(filt, t4);
   filter2 = _mm_adds_epi16(filt, t3);
 
   // Filter1 >> 3
-  filter1 = signed_char_clamp_bd_sse2(filter1, bd);
+  pixel_clamp(&pmin, &pmax, &filter1);
   filter1 = _mm_srai_epi16(filter1, 3);
 
   // Filter2 >> 3
-  filter2 = signed_char_clamp_bd_sse2(filter2, bd);
+  pixel_clamp(&pmin, &pmax, &filter2);
   filter2 = _mm_srai_epi16(filter2, 3);
 
   // filt >> 1
   filt = _mm_adds_epi16(filter1, t1);
   filt = _mm_srai_epi16(filt, 1);
-  // filter = ROUND_POWER_OF_TWO(filter1, 1) & ~hev;
   filt = _mm_andnot_si128(hev, filt);
 
-  work_a = signed_char_clamp_bd_sse2(_mm_subs_epi16(qs0, filter1), bd);
+  work_a = _mm_subs_epi16(qs0, filter1);
+  pixel_clamp(&pmin, &pmax, &work_a);
   work_a = _mm_adds_epi16(work_a, t80);
   q0 = _mm_load_si128((__m128i *)flat_oq0);
   work_a = _mm_andnot_si128(flat, work_a);
   q0 = _mm_and_si128(flat, q0);
   q0 = _mm_or_si128(work_a, q0);
 
-  work_a = signed_char_clamp_bd_sse2(_mm_subs_epi16(qs1, filt), bd);
+  work_a = _mm_subs_epi16(qs1, filt);
+  pixel_clamp(&pmin, &pmax, &work_a);
   work_a = _mm_adds_epi16(work_a, t80);
   q1 = _mm_load_si128((__m128i *)flat_oq1);
   work_a = _mm_andnot_si128(flat, work_a);
@@ -683,14 +693,16 @@ void aom_highbd_lpf_horizontal_8_sse2(uint16_t *s, int p,
   q2 = _mm_and_si128(flat, q2);
   q2 = _mm_or_si128(work_a, q2);
 
-  work_a = signed_char_clamp_bd_sse2(_mm_adds_epi16(ps0, filter2), bd);
+  work_a = _mm_adds_epi16(ps0, filter2);
+  pixel_clamp(&pmin, &pmax, &work_a);
   work_a = _mm_adds_epi16(work_a, t80);
   p0 = _mm_load_si128((__m128i *)flat_op0);
   work_a = _mm_andnot_si128(flat, work_a);
   p0 = _mm_and_si128(flat, p0);
   p0 = _mm_or_si128(work_a, p0);
 
-  work_a = signed_char_clamp_bd_sse2(_mm_adds_epi16(ps1, filt), bd);
+  work_a = _mm_adds_epi16(ps1, filt);
+  pixel_clamp(&pmin, &pmax, &work_a);
   work_a = _mm_adds_epi16(work_a, t80);
   p1 = _mm_load_si128((__m128i *)flat_op1);
   work_a = _mm_andnot_si128(flat, work_a);
@@ -829,18 +841,27 @@ void aom_highbd_lpf_horizontal_4_sse2(uint16_t *s, int p,
   mask = _mm_cmpeq_epi16(mask, zero);
 
   // filter4
-  filt = signed_char_clamp_bd_sse2(_mm_subs_epi16(ps1, qs1), bd);
+  const __m128i pmax =
+      _mm_subs_epi16(_mm_subs_epi16(_mm_slli_epi16(one, bd), one), t80);
+  const __m128i pmin = _mm_subs_epi16(zero, t80);
+
+  filt = _mm_subs_epi16(ps1, qs1);
+  pixel_clamp(&pmin, &pmax, &filt);
   filt = _mm_and_si128(filt, hev);
   work_a = _mm_subs_epi16(qs0, ps0);
   filt = _mm_adds_epi16(filt, work_a);
   filt = _mm_adds_epi16(filt, work_a);
-  filt = signed_char_clamp_bd_sse2(_mm_adds_epi16(filt, work_a), bd);
+  filt = _mm_adds_epi16(filt, work_a);
+  pixel_clamp(&pmin, &pmax, &filt);
 
   // (aom_filter + 3 * (qs0 - ps0)) & mask
   filt = _mm_and_si128(filt, mask);
 
-  filter1 = signed_char_clamp_bd_sse2(_mm_adds_epi16(filt, t4), bd);
-  filter2 = signed_char_clamp_bd_sse2(_mm_adds_epi16(filt, t3), bd);
+  filter1 = _mm_adds_epi16(filt, t4);
+  pixel_clamp(&pmin, &pmax, &filter1);
+
+  filter2 = _mm_adds_epi16(filt, t3);
+  pixel_clamp(&pmin, &pmax, &filter2);
 
   // Filter1 >> 3
   work_a = _mm_cmpgt_epi16(zero, filter1);  // get the values that are <0
@@ -866,14 +887,21 @@ void aom_highbd_lpf_horizontal_4_sse2(uint16_t *s, int p,
 
   filt = _mm_andnot_si128(hev, filt);
 
-  q0 = _mm_adds_epi16(
-      signed_char_clamp_bd_sse2(_mm_subs_epi16(qs0, filter1), bd), t80);
-  q1 = _mm_adds_epi16(signed_char_clamp_bd_sse2(_mm_subs_epi16(qs1, filt), bd),
-                      t80);
-  p0 = _mm_adds_epi16(
-      signed_char_clamp_bd_sse2(_mm_adds_epi16(ps0, filter2), bd), t80);
-  p1 = _mm_adds_epi16(signed_char_clamp_bd_sse2(_mm_adds_epi16(ps1, filt), bd),
-                      t80);
+  q0 = _mm_subs_epi16(qs0, filter1);
+  pixel_clamp(&pmin, &pmax, &q0);
+  q0 = _mm_adds_epi16(q0, t80);
+
+  q1 = _mm_subs_epi16(qs1, filt);
+  pixel_clamp(&pmin, &pmax, &q1);
+  q1 = _mm_adds_epi16(q1, t80);
+
+  p0 = _mm_adds_epi16(ps0, filter2);
+  pixel_clamp(&pmin, &pmax, &p0);
+  p0 = _mm_adds_epi16(p0, t80);
+
+  p1 = _mm_adds_epi16(ps1, filt);
+  pixel_clamp(&pmin, &pmax, &p1);
+  p1 = _mm_adds_epi16(p1, t80);
 
   _mm_storeu_si128((__m128i *)(s - 2 * p), p1);
   _mm_storeu_si128((__m128i *)(s - 1 * p), p0);
