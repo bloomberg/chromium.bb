@@ -354,7 +354,20 @@ void EasyUnlockServiceSignin::ShutdownInternal() {
 
 bool EasyUnlockServiceSignin::IsAllowedInternal() const {
   return service_active_ && account_id_.is_valid() &&
-         !chromeos::LoginState::Get()->IsUserLoggedIn();
+         !chromeos::LoginState::Get()->IsUserLoggedIn() &&
+         (pref_manager_ && pref_manager_->IsEasyUnlockAllowed());
+}
+
+bool EasyUnlockServiceSignin::IsEnabled() const {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
+    // In EasyUnlock v1, we used the presence of the hardlock state as an
+    // indicator of whether EasyUnlock is enabled.
+    EasyUnlockScreenlockStateHandler::HardlockState hardlock_state;
+    return GetPersistedHardlockState(&hardlock_state);
+  }
+
+  return pref_manager_->IsEasyUnlockEnabled();
 }
 
 void EasyUnlockServiceSignin::OnWillFinalizeUnlock(bool success) {
@@ -407,6 +420,11 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   user_pod_last_focused_timestamp_ = base::TimeTicks::Now();
 
   ResetScreenlockState();
+
+  pref_manager_->SetActiveUser(account_id);
+  if (!IsAllowed() || !IsEnabled())
+    return;
+
   ShowInitialUserState();
 
   // ShowInitialUserState() will display a tooltip explaining that the user must
@@ -418,8 +436,6 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
           proximity_auth::switches::kEnableChromeOSLogin)) {
     return;
   }
-
-  pref_manager_->SetActiveUser(account_id);
 
   if (should_update_app_state) {
     UpdateAppState();

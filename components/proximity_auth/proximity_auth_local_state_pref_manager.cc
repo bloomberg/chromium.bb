@@ -31,6 +31,11 @@ void ProximityAuthLocalStatePrefManager::RegisterPrefs(
   registry->RegisterDictionaryPref(prefs::kEasyUnlockLocalStateUserPrefs);
 }
 
+void ProximityAuthLocalStatePrefManager::SetIsEasyUnlockEnabled(
+    bool is_easy_unlock_enabled) const {
+  NOTREACHED();
+}
+
 void ProximityAuthLocalStatePrefManager::SetActiveUser(
     const AccountId& active_user) {
   active_user_ = active_user;
@@ -79,6 +84,17 @@ bool ProximityAuthLocalStatePrefManager::IsEasyUnlockAllowed() const {
                          prefs::kEasyUnlockAllowed, &pref_value)) {
     PA_LOG(ERROR) << "Failed to get easyunlock_allowed.";
     return true;
+  }
+  return pref_value;
+}
+
+bool ProximityAuthLocalStatePrefManager::IsEasyUnlockEnabled() const {
+  bool pref_value;
+  const base::DictionaryValue* user_prefs = GetActiveUserPrefsDictionary();
+  if (!user_prefs || !user_prefs->GetBooleanWithoutPathExpansion(
+                         prefs::kEasyUnlockEnabled, &pref_value)) {
+    PA_LOG(ERROR) << "Failed to get easyunlock_enabled.";
+    return false;
   }
   return pref_value;
 }

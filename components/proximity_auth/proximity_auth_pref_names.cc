@@ -11,6 +11,10 @@ namespace prefs {
 // through an enterprise policy.
 const char kEasyUnlockAllowed[] = "easy_unlock.allowed";
 
+// Whether or not EasyUnlock has been enabled by the user (i.e. they went
+// through the setup flow and there is at least one unlock key).
+const char kEasyUnlockEnabled[] = "easy_unlock.enabled";
+
 // How close the remote and the local device should be in order to use Easy
 // Unlock.
 const char kEasyUnlockProximityThreshold[] = "easy_unlock.proximity_threshold";

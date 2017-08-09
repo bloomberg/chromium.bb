@@ -99,6 +99,7 @@ class EasyUnlockServiceRegular
   void InitializeInternal() override;
   void ShutdownInternal() override;
   bool IsAllowedInternal() const override;
+  bool IsEnabled() const override;
   void OnWillFinalizeUnlock(bool success) override;
   void OnSuspendDoneInternal() override;
 #if defined(OS_CHROMEOS)
