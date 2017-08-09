@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
-#include "cc/output/bsp_compare_result.h"
 #include "cc/quads/draw_quad.h"
 
 namespace {
