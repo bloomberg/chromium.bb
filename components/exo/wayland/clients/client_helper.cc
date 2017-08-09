@@ -25,19 +25,21 @@
   }                                                          \
   }
 
-DEFAULT_DELETER(wl_display, wl_display_disconnect)
-DEFAULT_DELETER(wl_compositor, wl_compositor_destroy)
-DEFAULT_DELETER(wl_shm, wl_shm_destroy)
-DEFAULT_DELETER(wl_shm_pool, wl_shm_pool_destroy)
 DEFAULT_DELETER(wl_buffer, wl_buffer_destroy)
-DEFAULT_DELETER(wl_surface, wl_surface_destroy)
+DEFAULT_DELETER(wl_callback, wl_callback_destroy)
+DEFAULT_DELETER(wl_compositor, wl_compositor_destroy)
+DEFAULT_DELETER(wl_display, wl_display_disconnect)
+DEFAULT_DELETER(wl_pointer, wl_pointer_destroy)
 DEFAULT_DELETER(wl_region, wl_region_destroy)
+DEFAULT_DELETER(wl_seat, wl_seat_destroy)
 DEFAULT_DELETER(wl_shell, wl_shell_destroy)
 DEFAULT_DELETER(wl_shell_surface, wl_shell_surface_destroy)
-DEFAULT_DELETER(wl_seat, wl_seat_destroy)
-DEFAULT_DELETER(wl_pointer, wl_pointer_destroy)
+DEFAULT_DELETER(wl_shm, wl_shm_destroy)
+DEFAULT_DELETER(wl_shm_pool, wl_shm_pool_destroy)
+DEFAULT_DELETER(wl_subcompositor, wl_subcompositor_destroy)
+DEFAULT_DELETER(wl_subsurface, wl_subsurface_destroy)
+DEFAULT_DELETER(wl_surface, wl_surface_destroy)
 DEFAULT_DELETER(wl_touch, wl_touch_destroy)
-DEFAULT_DELETER(wl_callback, wl_callback_destroy)
 DEFAULT_DELETER(wp_presentation, wp_presentation_destroy)
 DEFAULT_DELETER(struct wp_presentation_feedback,
                 wp_presentation_feedback_destroy)
@@ -45,8 +47,8 @@ DEFAULT_DELETER(zwp_linux_buffer_params_v1, zwp_linux_buffer_params_v1_destroy)
 DEFAULT_DELETER(zwp_linux_dmabuf_v1, zwp_linux_dmabuf_v1_destroy)
 
 #if defined(OZONE_PLATFORM_GBM)
-DEFAULT_DELETER(gbm_device, gbm_device_destroy)
 DEFAULT_DELETER(gbm_bo, gbm_bo_destroy)
+DEFAULT_DELETER(gbm_device, gbm_device_destroy)
 #endif
 
 namespace exo {
