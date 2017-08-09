@@ -1419,7 +1419,8 @@ void Layer::RunMicroBenchmark(MicroBenchmark* benchmark) {
 
 void Layer::SetElementId(ElementId id) {
   DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.element_id == id)
+  if ((layer_tree_host_ && layer_tree_host_->GetSettings().use_layer_lists) ||
+      inputs_.element_id == id)
     return;
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "Layer::SetElementId", "element", id.AsValue().release());
