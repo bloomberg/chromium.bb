@@ -46,8 +46,7 @@ class CodecWrapperTest : public testing::Test {
   std::unique_ptr<CodecOutputBuffer> DequeueCodecOutputBuffer() {
     std::unique_ptr<CodecOutputBuffer> codec_buffer;
     bool eos = false;
-    wrapper_->DequeueOutputBuffer(base::TimeDelta(), nullptr, &eos,
-                                  &codec_buffer);
+    wrapper_->DequeueOutputBuffer(nullptr, &eos, &codec_buffer);
     return codec_buffer;
   }
 
@@ -166,8 +165,7 @@ TEST_F(CodecWrapperTest, FormatChangedStatusIsSwallowed) {
       .WillOnce(Return(MEDIA_CODEC_OUTPUT_FORMAT_CHANGED))
       .WillOnce(Return(MEDIA_CODEC_TRY_AGAIN_LATER));
   std::unique_ptr<CodecOutputBuffer> codec_buffer;
-  auto status = wrapper_->DequeueOutputBuffer(base::TimeDelta(), nullptr,
-                                              nullptr, &codec_buffer);
+  auto status = wrapper_->DequeueOutputBuffer(nullptr, nullptr, &codec_buffer);
   ASSERT_EQ(status, MEDIA_CODEC_TRY_AGAIN_LATER);
 }
 
@@ -176,8 +174,7 @@ TEST_F(CodecWrapperTest, BuffersChangedStatusIsSwallowed) {
       .WillOnce(Return(MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED))
       .WillOnce(Return(MEDIA_CODEC_TRY_AGAIN_LATER));
   std::unique_ptr<CodecOutputBuffer> codec_buffer;
-  auto status = wrapper_->DequeueOutputBuffer(base::TimeDelta(), nullptr,
-                                              nullptr, &codec_buffer);
+  auto status = wrapper_->DequeueOutputBuffer(nullptr, nullptr, &codec_buffer);
   ASSERT_EQ(status, MEDIA_CODEC_TRY_AGAIN_LATER);
 }
 
@@ -185,8 +182,7 @@ TEST_F(CodecWrapperTest, MultipleFormatChangedStatusesIsAnError) {
   EXPECT_CALL(*codec_, DequeueOutputBuffer(_, _, _, _, _, _, _))
       .WillRepeatedly(Return(MEDIA_CODEC_OUTPUT_FORMAT_CHANGED));
   std::unique_ptr<CodecOutputBuffer> codec_buffer;
-  auto status = wrapper_->DequeueOutputBuffer(base::TimeDelta(), nullptr,
-                                              nullptr, &codec_buffer);
+  auto status = wrapper_->DequeueOutputBuffer(nullptr, nullptr, &codec_buffer);
   ASSERT_EQ(status, MEDIA_CODEC_ERROR);
 }
 
