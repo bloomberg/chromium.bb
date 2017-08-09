@@ -38,6 +38,15 @@ bool ShouldOverrideNavigation(
     const Extension* app,
     content::WebContents* source,
     const navigation_interception::NavigationParams& params) {
+  DVLOG(1) << "ShouldOverrideNavigation called for: " << params.url();
+
+  ui::PageTransition transition_type = params.transition_type();
+  if (!(PageTransitionCoreTypeIs(transition_type, ui::PAGE_TRANSITION_LINK))) {
+    DVLOG(1) << "Don't override: Transition type is "
+             << PageTransitionGetCoreTransitionString(transition_type);
+    return false;
+  }
+
   Browser* browser = chrome::FindBrowserWithWebContents(source);
   if (browser == nullptr) {
     DVLOG(1) << "Don't override: No browser, can't know if already in app.";
