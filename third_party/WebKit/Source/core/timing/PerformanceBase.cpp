@@ -452,12 +452,6 @@ void PerformanceBase::RegisterPerformanceObserver(
 
 void PerformanceBase::UnregisterPerformanceObserver(
     PerformanceObserver& old_observer) {
-  // Deliver any pending observations on this observer before unregistering.
-  if (active_observers_.Contains(&old_observer) &&
-      !old_observer.ShouldBeSuspended()) {
-    old_observer.Deliver();
-    active_observers_.erase(&old_observer);
-  }
   observers_.erase(&old_observer);
   UpdatePerformanceObserverFilterOptions();
   UpdateLongTaskInstrumentation();
