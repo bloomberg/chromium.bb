@@ -1629,6 +1629,7 @@ test("browser_tests") {
       "//components/dom_distiller/content/browser",
       "//components/dom_distiller/content/renderer",
       "//components/dom_distiller/core:test_support",
+      "//components/feature_engagement/test:test_support",
       "//components/policy:chrome_settings_proto_generated_compile",
       "//components/resources",
       "//components/safe_browsing_db:test_database_manager",
@@ -2107,6 +2108,7 @@ test("browser_tests") {
       ]
       if (!is_chromeos && (!is_mac || mac_views_browser)) {
         sources += [
+          "../browser/feature_engagement/new_tab/new_tab_tracker_browsertest.cc",
           "../browser/ui/views/profiles/forced_reauthentication_dialog_view_browsertest.cc",
           "../browser/ui/views/profiles/profile_chooser_view_browsertest.cc",
         ]

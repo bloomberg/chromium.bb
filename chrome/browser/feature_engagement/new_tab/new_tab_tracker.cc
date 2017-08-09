@@ -4,10 +4,12 @@
 
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
 
+#include "base/feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/common/pref_names.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -38,10 +40,6 @@ void NewTabTracker::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kSessionTimeTotal, 0);
 }
 
-void NewTabTracker::DismissNewTabTracker() {
-  GetFeatureTracker()->Dismissed(kIPHNewTabFeature);
-}
-
 void NewTabTracker::OnNewTabOpened() {
   GetFeatureTracker()->NotifyEvent(events::kNewTabOpened);
 }
@@ -57,6 +55,10 @@ void NewTabTracker::OnSessionTimeMet() {
 void NewTabTracker::OnOmniboxFocused() {
   if (ShouldShowPromo())
     ShowPromo();
+}
+
+void NewTabTracker::OnPromoClosed() {
+  GetFeatureTracker()->Dismissed(kIPHNewTabFeature);
 }
 
 bool NewTabTracker::ShouldShowPromo() {
@@ -77,10 +79,7 @@ bool NewTabTracker::HasEnoughSessionTimeElapsed() {
 }
 
 void NewTabTracker::ShowPromo() {
-  // TODO(crbug.com/737830): Call the promo.
-
-  // Clears the flag for whether there is any in-product help being displayed.
-  GetFeatureTracker()->Dismissed(kIPHNewTabFeature);
+  NewTabButton::ShowPromoForLastActiveBrowser();
 }
 
 Tracker* NewTabTracker::GetFeatureTracker() {

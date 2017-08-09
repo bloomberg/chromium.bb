@@ -26,8 +26,6 @@ class NewTabTracker : public metrics::DesktopSessionDurationTracker::Observer,
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Clears the flag for whether there is any in-product help being displayed.
-  void DismissNewTabTracker();
   // Alerts the new tab tracker that a new tab was opened.
   void OnNewTabOpened();
   // Alerts the new tab tracker that the omnibox has been used.
@@ -36,6 +34,8 @@ class NewTabTracker : public metrics::DesktopSessionDurationTracker::Observer,
   void OnSessionTimeMet();
   // Checks if the promo should be displayed since the omnibox is on focus.
   void OnOmniboxFocused();
+  // Clears the flag for whether there is any in-product help being displayed.
+  void OnPromoClosed();
   // Returns whether or not the promo should be displayed.
   bool ShouldShowPromo();
 
@@ -53,9 +53,6 @@ class NewTabTracker : public metrics::DesktopSessionDurationTracker::Observer,
   // more than two hours.
   bool HasEnoughSessionTimeElapsed();
 
-  // Returns whether the NewTabInProductHelp field trial is enabled.
-  bool IsIPHNewTabEnabled();
-
   // Sets the NewTabInProductHelp pref to true and calls the New Tab Promo.
   void ShowPromo();
 
@@ -66,7 +63,7 @@ class NewTabTracker : public metrics::DesktopSessionDurationTracker::Observer,
 
   // Updates the pref that stores active session time per user unless the
   // new tab in-product help has been displayed already.
-  virtual void UpdateSessionTime(base::TimeDelta elapsed);
+  void UpdateSessionTime(base::TimeDelta elapsed);
 
   // metrics::DesktopSessionDurationTracker::Observer::
   void OnSessionEnded(base::TimeDelta delta) override;
