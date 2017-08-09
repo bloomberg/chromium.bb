@@ -17,11 +17,11 @@
 .new-note-action-container {
   display: flex;
   flex: 0;
-  height: 56px;
+  height: 48px;
   justify-content: flex-end;
-  min-width: 56px;
+  min-width: 48px;
   overflow: hidden;
-  width: 56px;
+  width: 48px;
   z-index: 1;
 }
 
@@ -42,13 +42,13 @@
 .new-note-action {
   -webkit-tap-highlight-color: transparent;
   background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 0 0 0 48px;
+  border-radius: 0 0 0 44px;
   cursor: pointer;
   display: flex;
-  height: 48px;
+  height: 44px;
   justify-content: flex-end;
   transition: all 300ms ease-in;
-  width: 48px;
+  width: 44px;
   z-index: 1;
 }
 
@@ -66,20 +66,20 @@
 }
 
 html[dir=rtl] .new-note-action {
-  border-radius: 0 0 48px 0;
+  border-radius: 0 0 44px 0;
 }
 
 .new-note-action:hover,
 .new-note-action:focus {
-  border-radius: 0 0 0 56px;
-  height: 56px;
+  border-radius: 0 0 0 48px;
+  height: 48px;
   outline: none;
-  width: 56px;
+  width: 48px;
 }
 
 html[dir=rtl] .new-note-action:hover,
 html[dir=rtl] .new-note-action:focus {
-  border-radius: 0 0 56px 0;
+  border-radius: 0 0 48px 0;
 }
 
 .new-note-action-container-activated > .new-note-action {
@@ -97,8 +97,9 @@ html[dir=rtl] .new-note-action-container-activated > .new-note-action {
 }
 
 .new-note-action-icon {
+  -webkit-padding-end: 11px;
   height: 16px;
-  padding: 16px;
+  padding-top: 12px;
   width: 16px;
 }
 
