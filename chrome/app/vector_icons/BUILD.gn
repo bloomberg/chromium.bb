@@ -69,7 +69,6 @@ aggregate_vector_icons("chrome_vector_icons") {
     "remove_box.icon",
     "sad_tab.icon",
     "settings.icon",
-    "open_in_new.icon",
     "smartphone.icon",
     "subresource_filter_active.icon",
     "supervisor_account.icon",
