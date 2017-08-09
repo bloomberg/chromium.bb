@@ -31,7 +31,7 @@ class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   explicit TestProtocolHandler(
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
-      : test_delegate_(new TestDelegate(this)),
+      : test_delegate_(new TestDelegate()),
         dispatcher_(new ExpeditedDispatcher(io_thread_task_runner)),
         headless_browser_context_(nullptr) {}
 
@@ -65,17 +65,15 @@ class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
 
   class MockURLFetcher : public URLFetcher {
    public:
-    explicit MockURLFetcher(const TestProtocolHandler* protocol_handler)
+    explicit MockURLFetcher(TestProtocolHandler* protocol_handler)
         : protocol_handler_(protocol_handler) {}
     ~MockURLFetcher() override {}
 
     // URLFetcher implementation:
-    void StartFetch(const GURL& url,
-                    const std::string& method,
-                    const std::string& post_data,
-                    const net::HttpRequestHeaders& request_headers,
+    void StartFetch(const Request* request,
                     ResultListener* result_listener) override {
-      EXPECT_EQ("GET", method);
+      GURL url = request->GetURLRequest()->url();
+      EXPECT_EQ("GET", request->GetURLRequest()->method());
 
       const Response* response = protocol_handler_->GetResponse(url.spec());
       if (!response)
@@ -84,31 +82,25 @@ class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
       net::LoadTimingInfo load_timing_info;
       result_listener->OnFetchCompleteExtractHeaders(
           url, response->data.c_str(), response->data.size(), load_timing_info);
+
+      int frame_tree_node_id = request->GetFrameTreeNodeId();
+      DCHECK_NE(frame_tree_node_id, -1) << " For url " << url;
+      protocol_handler_->url_to_frame_tree_node_id_[url.spec()] =
+          frame_tree_node_id;
     }
 
    private:
-    const TestProtocolHandler* protocol_handler_;
+    TestProtocolHandler* protocol_handler_;
 
     DISALLOW_COPY_AND_ASSIGN(MockURLFetcher);
   };
 
   class TestDelegate : public GenericURLRequestJob::Delegate {
    public:
-    explicit TestDelegate(TestProtocolHandler* protocol_handler)
-        : protocol_handler_(protocol_handler) {}
-
+    TestDelegate() {}
     ~TestDelegate() override {}
 
     // GenericURLRequestJob::Delegate implementation:
-    void OnPendingRequest(PendingRequest* pending_request) override {
-      const Request* request = pending_request->GetRequest();
-      std::string url = request->GetURLRequest()->url().spec();
-      int frame_tree_node_id = request->GetFrameTreeNodeId();
-      DCHECK_NE(frame_tree_node_id, -1) << " For url " << url;
-      protocol_handler_->url_to_frame_tree_node_id_[url] = frame_tree_node_id;
-      pending_request->AllowRequest();
-    }
-
     void OnResourceLoadFailed(const Request* request,
                               net::Error error) override {}
 
@@ -120,7 +112,6 @@ class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
         size_t body_size) override {}
 
    private:
-    TestProtocolHandler* protocol_handler_;  // NOT OWNED
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner_;
 
     DISALLOW_COPY_AND_ASSIGN(TestDelegate);
@@ -132,8 +123,9 @@ class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
       net::NetworkDelegate* network_delegate) const override {
     return new GenericURLRequestJob(
         request, network_delegate, dispatcher_.get(),
-        base::MakeUnique<MockURLFetcher>(this), test_delegate_.get(),
-        headless_browser_context_);
+        base::MakeUnique<MockURLFetcher>(
+            const_cast<TestProtocolHandler*>(this)),
+        test_delegate_.get(), headless_browser_context_);
   }
 
   std::map<std::string, int> url_to_frame_tree_node_id_;
