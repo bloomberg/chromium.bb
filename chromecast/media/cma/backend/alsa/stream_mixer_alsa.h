@@ -165,6 +165,8 @@ class StreamMixerAlsa {
     return mixer_task_runner_;
   }
 
+  int filter_frame_alignment() const { return filter_frame_alignment_; }
+
   // Adds an input to the mixer. The input will live at least until
   // RemoveInput(input) is called. Can be called on any thread.
   void AddInput(std::unique_ptr<InputQueue> input);
@@ -199,6 +201,10 @@ class StreamMixerAlsa {
   // Sends configuration string |config| to processor |name|.
   void SetPostProcessorConfig(const std::string& name,
                               const std::string& config);
+
+  // Sets filter data alignment, required by some processors.
+  // Must be called before audio playback starts.
+  void SetFilterFrameAlignmentForTest(int filter_frame_alignment);
 
  protected:
   StreamMixerAlsa();
@@ -294,6 +300,11 @@ class StreamMixerAlsa {
   FilterGroup* mix_filter_;
   FilterGroup* linearize_filter_;
   std::vector<uint8_t> interleaved_;
+
+  // Force data to be filtered in multiples of |filter_frame_alignment_| frames.
+  // Must be a multiple of 4 for some NEON implementations. Some
+  // AudioPostProcessors require stricter alignment conditions.
+  int filter_frame_alignment_;
 
   std::vector<CastMediaShlib::LoopbackAudioObserver*> loopback_observers_;
 
