@@ -14,14 +14,6 @@ var SIZE_DIFFERENCE_FIXED_STANDARD_ = 3;
 /**
  * 'settings-appearance-page' is the settings page containing appearance
  * settings.
- *
- * Example:
- *
- *    <iron-animated-pages>
- *      <settings-appearance-page prefs="{{prefs}}">
- *      </settings-appearance-page>
- *      ... other pages ...
- *    </iron-animated-pages>
  */
 Polymer({
   is: 'settings-appearance-page',

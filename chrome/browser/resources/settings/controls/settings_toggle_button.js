@@ -16,7 +16,23 @@ Polymer({
       type: Boolean,
       reflectToAttribute: true,
     },
+
+    /**
+     * Which element will trigger state changes. Defaults to |this|.
+     * @type {HTMLElement}
+     */
+    actionTarget: {
+      observer: 'onActionTargetChange_',
+      type: Object,
+      value: function() {
+        return this;
+      },
+    },
   },
+
+  observers: [
+    'onDisableOrPrefChange_(disabled, pref.*, actionTarget)',
+  ],
 
   /** @override */
   focus: function() {
@@ -24,12 +40,49 @@ Polymer({
   },
 
   /** @private */
-  onLabelWrapperTap_: function() {
+  onActionTargetChange_: function(current, prior) {
+    if (prior) {
+      this.unlisten(prior, 'tap', 'onLabelWrapperTap_');
+    }
+    if (current) {
+      this.listen(current, 'tap', 'onLabelWrapperTap_');
+    }
+  },
+
+  /**
+   * Handle taps directly on the toggle (see: onLabelWrapperTap_ for non-toggle
+   * taps).
+   * @param {!Event} e
+   * @private
+   */
+  onToggleTap_: function(e) {
+    // Stop the event from propagating to avoid firing two 'changed' events.
+    e.stopPropagation();
+  },
+
+  /** @private */
+  onDisableOrPrefChange_: function() {
+    if (this.controlDisabled_()) {
+      this.actionTarget.removeAttribute('actionable');
+    } else {
+      this.actionTarget.setAttribute('actionable', '');
+    }
+  },
+
+  /**
+   * Handle non-toggle button taps (see: onToggleTap_ for toggle taps).
+   * @param {!Event} e
+   * @private
+   */
+  onLabelWrapperTap_: function(e) {
+    // Stop the event from propagating to avoid firing two 'changed' events.
+    e.stopPropagation();
     if (this.controlDisabled_())
       return;
 
     this.checked = !this.checked;
     this.notifyChangedByUserInteraction();
+    this.fire('change');
   },
 
   /**

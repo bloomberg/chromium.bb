@@ -261,18 +261,17 @@ cr.define('languages_page_tests', function() {
       });
 
       test('test translate.enable toggle', function() {
-        var settingsToggle = languagesPage.$.offerTranslateOtherLangs;
+        var settingsToggle = languagesPage.$.offerTranslateOtherLanguages;
         assertTrue(!!settingsToggle);
-        var paperToggle = settingsToggle.$$('paper-toggle-button');
-        assertTrue(!!paperToggle);
+        assertTrue(!!settingsToggle.actionTarget);
 
         // Clicking on the toggle switches it to false.
-        MockInteractions.tap(paperToggle);
+        MockInteractions.tap(settingsToggle.actionTarget);
         var newToggleValue = languageHelper.prefs.translate.enabled.value;
         assertFalse(newToggleValue);
 
         // Clicking on the toggle switches it to true again.
-        MockInteractions.tap(paperToggle);
+        MockInteractions.tap(settingsToggle.actionTarget);
         newToggleValue = languageHelper.prefs.translate.enabled.value;
         assertTrue(newToggleValue);
       });
