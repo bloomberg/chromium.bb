@@ -18,9 +18,6 @@
 -FilePathWatcherTest.NonExistentDirectory
 -FilePathWatcherTest.RecursiveWatch
 -FilePathWatcherTest.WatchDirectory
--FilePersistentMemoryAllocatorTest.AcceptableTest
--FilePersistentMemoryAllocatorTest.CreationTest
--FilePersistentMemoryAllocatorTest.ExtendTest
 -FileProxyTest.SetTimes
 -FileUtilProxyTest.Touch
 -FileUtilTest.FileToFILE
