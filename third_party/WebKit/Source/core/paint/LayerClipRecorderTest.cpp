@@ -5,10 +5,10 @@
 #include "core/paint/LayerClipRecorder.h"
 
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintControllerPaintTest.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/compositing/PaintLayerCompositor.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/PaintController.h"

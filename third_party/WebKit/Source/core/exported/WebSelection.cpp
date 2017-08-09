@@ -5,7 +5,7 @@
 #include "public/web/WebSelection.h"
 
 #include "core/editing/SelectionType.h"
-#include "core/layout/compositing/CompositedSelection.h"
+#include "core/paint/compositing/CompositedSelection.h"
 
 namespace blink {
 

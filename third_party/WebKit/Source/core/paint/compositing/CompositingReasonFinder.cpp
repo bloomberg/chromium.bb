@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/compositing/CompositingReasonFinder.h"
+#include "core/paint/compositing/CompositingReasonFinder.h"
 
 #include "core/CSSPropertyNames.h"
 #include "core/dom/Document.h"
@@ -236,9 +236,10 @@ bool CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(
   // container, e.g. transformed elements.  They will stay fixed wrt the
   // container rather than the enclosing frame.
   EPosition position = layer->GetLayoutObject().Style()->GetPosition();
-  if (position == EPosition::kFixed)
+  if (position == EPosition::kFixed) {
     return layer->FixedToViewport() &&
            layout_view_.GetFrameView()->IsScrollable();
+  }
   DCHECK_EQ(position, EPosition::kSticky);
 
   // Don't promote sticky position elements that cannot move with scrolls.

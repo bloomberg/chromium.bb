@@ -6,7 +6,6 @@
 
 #include "core/layout/LayoutReplaced.h"
 #include "core/layout/api/SelectionState.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
@@ -14,6 +13,7 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/RoundedInnerRectClipper.h"
+#include "core/paint/compositing/CompositedLayerMapping.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {

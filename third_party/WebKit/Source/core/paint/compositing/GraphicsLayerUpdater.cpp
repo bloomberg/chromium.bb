@@ -24,14 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/compositing/GraphicsLayerUpdater.h"
+#include "core/paint/compositing/GraphicsLayerUpdater.h"
 
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/LayoutBlock.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/compositing/CompositedLayerMapping.h"
+#include "core/paint/compositing/PaintLayerCompositor.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
@@ -121,18 +121,20 @@ void GraphicsLayerUpdater::UpdateRecursive(
 
   UpdateContext child_context(context, layer);
   for (PaintLayer* child = layer.FirstChild(); child;
-       child = child->NextSibling())
+       child = child->NextSibling()) {
     UpdateRecursive(*child, update_type, child_context,
                     layers_needing_paint_invalidation);
+  }
 }
 
 #if DCHECK_IS_ON()
 
 void GraphicsLayerUpdater::AssertNeedsToUpdateGraphicsLayerBitsCleared(
     PaintLayer& layer) {
-  if (layer.HasCompositedLayerMapping())
+  if (layer.HasCompositedLayerMapping()) {
     layer.GetCompositedLayerMapping()
         ->AssertNeedsToUpdateGraphicsLayerBitsCleared();
+  }
 
   for (PaintLayer* child = layer.FirstChild(); child;
        child = child->NextSibling())

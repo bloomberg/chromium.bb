@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/paint/compositing/PaintLayerCompositor.h"
 
 #include "core/animation/Animation.h"
 #include "core/animation/ElementAnimation.h"
@@ -23,7 +23,7 @@ class PaintLayerCompositorTest : public RenderingTest {
     EnableCompositing();
   }
 };
-}
+}  // namespace
 
 TEST_F(PaintLayerCompositorTest, AdvancingToCompositingInputsClean) {
   SetBodyInnerHTML("<div id='box' style='position: relative'></div>");
@@ -85,4 +85,4 @@ TEST_F(PaintLayerCompositorTest,
   EXPECT_EQ(boxAnimations.front()->CompositorGroup(),
             otherBoxAnimations.front()->CompositorGroup());
 }
-}
+}  // namespace blink

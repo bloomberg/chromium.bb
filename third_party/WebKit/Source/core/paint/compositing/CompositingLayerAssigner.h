@@ -27,7 +27,7 @@
 #ifndef CompositingLayerAssigner_h
 #define CompositingLayerAssigner_h
 
-#include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/paint/compositing/PaintLayerCompositor.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/SquashingDisallowedReasons.h"

@@ -15,9 +15,9 @@
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/api/LayoutViewItem.h"
-#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
+#include "core/paint/compositing/PaintLayerCompositor.h"
 #include "platform/graphics/ColorSpaceGamut.h"
 #include "public/platform/WebScreenInfo.h"
 

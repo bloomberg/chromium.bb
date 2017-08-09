@@ -6,11 +6,11 @@
 
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
+#include "core/paint/compositing/CompositedLayerMapping.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {

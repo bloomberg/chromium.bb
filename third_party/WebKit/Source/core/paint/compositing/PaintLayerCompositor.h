@@ -29,7 +29,7 @@
 #include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/DocumentLifecycle.h"
-#include "core/layout/compositing/CompositingReasonFinder.h"
+#include "core/paint/compositing/CompositingReasonFinder.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/wtf/HashMap.h"
 
