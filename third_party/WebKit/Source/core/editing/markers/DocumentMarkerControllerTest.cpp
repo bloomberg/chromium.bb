@@ -37,6 +37,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/EphemeralRange.h"
+#include "core/editing/markers/SuggestionMarker.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/wtf/RefPtr.h"
@@ -350,6 +351,25 @@ TEST_F(DocumentMarkerControllerTest,
   EXPECT_EQ(DocumentMarker::kSpelling, result->GetType());
   EXPECT_EQ(0u, result->StartOffset());
   EXPECT_EQ(3u, result->EndOffset());
+}
+
+TEST_F(DocumentMarkerControllerTest, SuggestionMarkersHaveUniqueTags) {
+  SetBodyContent("<div contenteditable>foo</div>");
+  Element* div = GetDocument().QuerySelector("div");
+  Node* text = div->firstChild();
+
+  MarkerController().AddSuggestionMarker(
+      EphemeralRange(Position(text, 0), Position(text, 1)), Vector<String>(),
+      Color::kBlack, Color::kBlack, StyleableMarker::Thickness::kThick,
+      Color::kBlack);
+  MarkerController().AddSuggestionMarker(
+      EphemeralRange(Position(text, 0), Position(text, 1)), Vector<String>(),
+      Color::kBlack, Color::kBlack, StyleableMarker::Thickness::kThick,
+      Color::kBlack);
+
+  EXPECT_EQ(2u, MarkerController().Markers().size());
+  EXPECT_NE(ToSuggestionMarker(MarkerController().Markers()[0])->Tag(),
+            ToSuggestionMarker(MarkerController().Markers()[1])->Tag());
 }
 
 }  // namespace blink

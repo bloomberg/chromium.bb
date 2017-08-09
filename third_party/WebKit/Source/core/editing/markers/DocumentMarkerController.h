@@ -34,6 +34,7 @@
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/CompositionMarker.h"
 #include "core/editing/markers/DocumentMarker.h"
+#include "core/editing/markers/SuggestionMarker.h"
 #include "core/editing/markers/TextMatchMarker.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
@@ -68,6 +69,12 @@ class CORE_EXPORT DocumentMarkerController final
                                  Color underline_color,
                                  StyleableMarker::Thickness,
                                  Color background_color);
+  void AddSuggestionMarker(const EphemeralRange&,
+                           const Vector<String>& suggestions,
+                           Color suggestion_highlight_color,
+                           Color underline_color,
+                           StyleableMarker::Thickness,
+                           Color background_color);
 
   void MoveMarkers(Node* src_node, int length, Node* dst_node);
 
