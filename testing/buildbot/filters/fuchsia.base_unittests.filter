@@ -44,11 +44,6 @@
 -SysInfoTest.AmountOfMem
 -SysInfoTest.AmountOfTotalDiskSpace
 -TrackedObjectsTest.ReuseRetiredThreadData
--VerifyPathControlledByUserTest.BadPaths
--VerifyPathControlledByUserTest.GroupWriteTest
--VerifyPathControlledByUserTest.OwnershipChecks
--VerifyPathControlledByUserTest.Symlinks
--VerifyPathControlledByUserTest.WriteBitChecks
 
 # CancelableSyncSocket tests fail: https://crbug.com/741783
 -CancelableSyncSocket*
