@@ -24,12 +24,9 @@ class MEDIA_EXPORT AudioManagerAlsa : public AudioManagerBase {
                    AudioLogFactory* audio_log_factory);
   ~AudioManagerAlsa() override;
 
-  static void ShowLinuxAudioInputSettings();
-
   // Implementation of AudioManager.
   bool HasAudioOutputDevices() override;
   bool HasAudioInputDevices() override;
-  void ShowAudioInputSettings() override;
   void GetAudioInputDeviceNames(AudioDeviceNames* device_names) override;
   void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) override;
   AudioParameters GetInputStreamParameters(

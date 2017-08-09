@@ -165,10 +165,6 @@ AudioManagerCras::AudioManagerCras(std::unique_ptr<AudioThread> audio_thread,
 
 AudioManagerCras::~AudioManagerCras() = default;
 
-void AudioManagerCras::ShowAudioInputSettings() {
-  NOTIMPLEMENTED();
-}
-
 void AudioManagerCras::GetAudioDeviceNamesImpl(bool is_input,
                                                AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());

@@ -16,11 +16,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/path_service.h"
-#include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
@@ -235,15 +232,6 @@ base::string16 AudioManagerWin::GetAudioInputDeviceModel() {
   }
 
   return base::string16();
-}
-
-void AudioManagerWin::ShowAudioInputSettings() {
-  base::FilePath path;
-  PathService::Get(base::DIR_SYSTEM, &path);
-  path = path.Append(L"control.exe");
-  base::CommandLine command_line(path);
-  command_line.AppendArg("mmsys.cpl,,1");
-  base::LaunchProcess(command_line, base::LaunchOptions());
 }
 
 void AudioManagerWin::GetAudioDeviceNamesImpl(bool input,

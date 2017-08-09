@@ -214,12 +214,6 @@ class MEDIA_EXPORT AudioManager {
   // input device for this computer.
   virtual base::string16 GetAudioInputDeviceModel() = 0;
 
-  // Opens the platform default audio input settings UI.
-  // Note: This could invoke an external application/preferences pane, so
-  // ideally must not be called from the UI thread or other time sensitive
-  // threads to avoid blocking the rest of the application.
-  virtual void ShowAudioInputSettings() = 0;
-
   // Appends a list of available input devices to |device_descriptions|,
   // which must initially be empty. It is not guaranteed that all the
   // devices in the list support all formats and sample rates for

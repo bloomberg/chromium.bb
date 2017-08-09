@@ -28,7 +28,6 @@ class CastAudioManager : public ::media::AudioManagerBase {
   // AudioManagerBase implementation.
   bool HasAudioOutputDevices() override;
   bool HasAudioInputDevices() override;
-  void ShowAudioInputSettings() override;
   void GetAudioInputDeviceNames(
       ::media::AudioDeviceNames* device_names) override;
   ::media::AudioParameters GetInputStreamParameters(
