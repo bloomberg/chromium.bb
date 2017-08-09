@@ -1816,6 +1816,7 @@ crbug.com/626703 external/wpt/encoding/eof-utf-8-three.html [ Failure ]
 crbug.com/626703 external/wpt/encoding/eof-utf-8-two.html [ Failure ]
 crbug.com/626703 external/wpt/fetch/api/abort/general.html [ Timeout ]
 crbug.com/626703 virtual/mojo-blobs/external/wpt/fetch/api/abort/general.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/abort/general.html [ Timeout ]
 crbug.com/626703 external/wpt/page-visibility/onvisibilitychange.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCIceTransport.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-answer.html [ Timeout ]
@@ -2740,12 +2741,15 @@ crbug.com/680407 [ Mac ] fast/forms/select/menulist-appearance-basic.html [ Need
 # Importing 'fetch' tests from WPT.
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 crbug.com/705490 virtual/mojo-blobs/external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
+crbug.com/705490 virtual/outofblink-cors/external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 
 # Non-deterministic output, as the failing subtests dump timestamps.
 crbug.com/705490 external/wpt/fetch/api/request/request-cache-reload.html [ Failure ]
 crbug.com/705490 external/wpt/fetch/api/request/request-cache-no-store.html [ Failure ]
 crbug.com/705490 virtual/mojo-blobs/external/wpt/fetch/api/request/request-cache-reload.html [ Failure ]
 crbug.com/705490 virtual/mojo-blobs/external/wpt/fetch/api/request/request-cache-no-store.html [ Failure ]
+crbug.com/705490 virtual/outofblink-cors/external/wpt/fetch/api/request/request-cache-reload.html [ Failure ]
+crbug.com/705490 virtual/outofblink-cors/external/wpt/fetch/api/request/request-cache-no-store.html [ Failure ]
 
 # This test has device ID strings in failure messages which change on every test run.
 crbug.com/679742 external/wpt/mediacapture-streams/MediaStreamTrack-getSettings.https.html [ Failure ]
@@ -3018,8 +3022,6 @@ crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/contr
 crbug.com/626703 [ Win7 ] external/wpt/image-decodes/image-decode-path-changes.html [ Pass Crash ]
 
 # Sheriff failures 2017-07-20
-crbug.com/746926 [ Win Debug ] virtual/outofblink-cors/webexposed/global-interface-listing.html [ Timeout ]
-
 crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-applyConstraints.html [ Pass Crash ]
 crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-getSettings.html [ Pass Crash ]
 
