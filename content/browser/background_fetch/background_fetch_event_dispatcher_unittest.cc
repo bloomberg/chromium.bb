@@ -19,8 +19,8 @@
 namespace content {
 namespace {
 
-const char kExampleTag[] = "my-tag";
-const char kExampleTag2[] = "my-second-tag";
+const char kExampleId[] = "my-id";
+const char kExampleId2[] = "my-second-id";
 
 class BackgroundFetchEventDispatcherTest : public BackgroundFetchTestBase {
  public:
@@ -37,7 +37,7 @@ class BackgroundFetchEventDispatcherTest : public BackgroundFetchTestBase {
 
 TEST_F(BackgroundFetchEventDispatcherTest, DispatchInvalidRegistration) {
   BackgroundFetchRegistrationId invalid_registration_id(
-      9042 /* random invalid id */, origin(), kExampleTag);
+      9042 /* random invalid id */, origin(), kExampleId);
 
   base::RunLoop run_loop;
   event_dispatcher_.DispatchBackgroundFetchAbortEvent(invalid_registration_id,
@@ -55,7 +55,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchInvalidRegistration) {
 
 TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
   BackgroundFetchRegistrationId registration_id;
-  ASSERT_TRUE(CreateRegistrationId(kExampleTag, &registration_id));
+  ASSERT_TRUE(CreateRegistrationId(kExampleId, &registration_id));
 
   {
     base::RunLoop run_loop;
@@ -65,8 +65,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_tag().has_value());
-  EXPECT_EQ(kExampleTag, embedded_worker_test_helper()->last_tag().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
+  EXPECT_EQ(kExampleId, embedded_worker_test_helper()->last_id().value());
 
   histogram_tester_.ExpectUniqueSample(
       "BackgroundFetch.EventDispatchResult.AbortEvent",
@@ -76,7 +76,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
 
   BackgroundFetchRegistrationId second_registration_id(
       registration_id.service_worker_registration_id(),
-      registration_id.origin(), kExampleTag2);
+      registration_id.origin(), kExampleId2);
 
   {
     base::RunLoop run_loop;
@@ -86,8 +86,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_tag().has_value());
-  EXPECT_EQ(kExampleTag2, embedded_worker_test_helper()->last_tag().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
+  EXPECT_EQ(kExampleId2, embedded_worker_test_helper()->last_id().value());
 
   histogram_tester_.ExpectBucketCount(
       "BackgroundFetch.EventDispatchResult.AbortEvent",
@@ -102,7 +102,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
 
 TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
   BackgroundFetchRegistrationId registration_id;
-  ASSERT_TRUE(CreateRegistrationId(kExampleTag, &registration_id));
+  ASSERT_TRUE(CreateRegistrationId(kExampleId, &registration_id));
 
   {
     base::RunLoop run_loop;
@@ -113,8 +113,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_tag().has_value());
-  EXPECT_EQ(kExampleTag, embedded_worker_test_helper()->last_tag().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
+  EXPECT_EQ(kExampleId, embedded_worker_test_helper()->last_id().value());
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_state().has_value());
   EXPECT_EQ(mojom::BackgroundFetchState::PENDING,
@@ -128,7 +128,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
 
   BackgroundFetchRegistrationId second_registration_id(
       registration_id.service_worker_registration_id(),
-      registration_id.origin(), kExampleTag2);
+      registration_id.origin(), kExampleId2);
 
   {
     base::RunLoop run_loop;
@@ -139,8 +139,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_tag().has_value());
-  EXPECT_EQ(kExampleTag2, embedded_worker_test_helper()->last_tag().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
+  EXPECT_EQ(kExampleId2, embedded_worker_test_helper()->last_id().value());
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_state().has_value());
   EXPECT_EQ(mojom::BackgroundFetchState::SUCCEEDED,
@@ -159,7 +159,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
 
 TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
   BackgroundFetchRegistrationId registration_id;
-  ASSERT_TRUE(CreateRegistrationId(kExampleTag, &registration_id));
+  ASSERT_TRUE(CreateRegistrationId(kExampleId, &registration_id));
 
   std::vector<BackgroundFetchSettledFetch> fetches;
   fetches.push_back(BackgroundFetchSettledFetch());
@@ -172,8 +172,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_tag().has_value());
-  EXPECT_EQ(kExampleTag, embedded_worker_test_helper()->last_tag().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
+  EXPECT_EQ(kExampleId, embedded_worker_test_helper()->last_id().value());
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
   EXPECT_EQ(fetches.size(),
@@ -189,7 +189,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
 
   BackgroundFetchRegistrationId second_registration_id(
       registration_id.service_worker_registration_id(),
-      registration_id.origin(), kExampleTag2);
+      registration_id.origin(), kExampleId2);
 
   {
     base::RunLoop run_loop;
@@ -199,8 +199,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_tag().has_value());
-  EXPECT_EQ(kExampleTag2, embedded_worker_test_helper()->last_tag().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
+  EXPECT_EQ(kExampleId2, embedded_worker_test_helper()->last_id().value());
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
   EXPECT_EQ(fetches.size(),
@@ -219,7 +219,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
 
 TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
   BackgroundFetchRegistrationId registration_id;
-  ASSERT_TRUE(CreateRegistrationId(kExampleTag, &registration_id));
+  ASSERT_TRUE(CreateRegistrationId(kExampleId, &registration_id));
 
   std::vector<BackgroundFetchSettledFetch> fetches;
   fetches.push_back(BackgroundFetchSettledFetch());
@@ -232,8 +232,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_tag().has_value());
-  EXPECT_EQ(kExampleTag, embedded_worker_test_helper()->last_tag().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
+  EXPECT_EQ(kExampleId, embedded_worker_test_helper()->last_id().value());
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
   EXPECT_EQ(fetches.size(),
@@ -249,7 +249,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
 
   BackgroundFetchRegistrationId second_registration_id(
       registration_id.service_worker_registration_id(),
-      registration_id.origin(), kExampleTag2);
+      registration_id.origin(), kExampleId2);
 
   {
     base::RunLoop run_loop;
@@ -259,8 +259,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_tag().has_value());
-  EXPECT_EQ(kExampleTag2, embedded_worker_test_helper()->last_tag().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
+  EXPECT_EQ(kExampleId2, embedded_worker_test_helper()->last_id().value());
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
   EXPECT_EQ(fetches.size(),

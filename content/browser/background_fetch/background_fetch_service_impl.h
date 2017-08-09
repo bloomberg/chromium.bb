@@ -41,31 +41,31 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   // blink::mojom::BackgroundFetchService implementation.
   void Fetch(int64_t service_worker_registration_id,
              const url::Origin& origin,
-             const std::string& tag,
+             const std::string& id,
              const std::vector<ServiceWorkerFetchRequest>& requests,
              const BackgroundFetchOptions& options,
              FetchCallback callback) override;
   void UpdateUI(int64_t service_worker_registration_id,
                 const url::Origin& origin,
-                const std::string& tag,
+                const std::string& id,
                 const std::string& title,
                 UpdateUICallback callback) override;
   void Abort(int64_t service_worker_registration_id,
              const url::Origin& origin,
-             const std::string& tag,
+             const std::string& id,
              AbortCallback callback) override;
   void GetRegistration(int64_t service_worker_registration_id,
                        const url::Origin& origin,
-                       const std::string& tag,
+                       const std::string& id,
                        GetRegistrationCallback callback) override;
-  void GetTags(int64_t service_worker_registration_id,
-               const url::Origin& origin,
-               GetTagsCallback callback) override;
+  void GetIds(int64_t service_worker_registration_id,
+              const url::Origin& origin,
+              GetIdsCallback callback) override;
 
  private:
-  // Validates and returns whether the |tag| contains a valid value. The
+  // Validates and returns whether the |id| contains a valid value. The
   // renderer will be flagged for having send a bad message if it isn't.
-  bool ValidateTag(const std::string& tag) WARN_UNUSED_RESULT;
+  bool ValidateId(const std::string& id) WARN_UNUSED_RESULT;
 
   // Validates and returns whether |requests| contains at least a valid request.
   // The renderer will be flagged for having send a bad message if it isn't.

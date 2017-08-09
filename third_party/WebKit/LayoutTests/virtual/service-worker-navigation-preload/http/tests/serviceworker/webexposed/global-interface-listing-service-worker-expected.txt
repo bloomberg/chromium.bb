@@ -6,7 +6,7 @@ interface BackgroundFetchClickEvent : BackgroundFetchEvent
     getter state
     method constructor
 interface BackgroundFetchEvent : ExtendableEvent
-    getter tag
+    getter id
     method constructor
 interface BackgroundFetchFailEvent : BackgroundFetchEvent
     getter fetches
@@ -18,10 +18,10 @@ interface BackgroundFetchManager
     method constructor
     method fetch
     method get
-    method getTags
+    method getIds
 interface BackgroundFetchRegistration
     getter icons
-    getter tag
+    getter id
     getter title
     getter totalDownloadSize
     method abort

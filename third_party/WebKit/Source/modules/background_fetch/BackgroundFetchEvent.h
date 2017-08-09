@@ -35,7 +35,7 @@ class MODULES_EXPORT BackgroundFetchEvent : public ExtendableEvent {
   ~BackgroundFetchEvent() override;
 
   // Web Exposed attribute defined in the IDL file.
-  String tag() const;
+  String id() const;
 
   // ExtendableEvent interface.
   const AtomicString& InterfaceName() const override;
@@ -45,7 +45,7 @@ class MODULES_EXPORT BackgroundFetchEvent : public ExtendableEvent {
                        const BackgroundFetchEventInit&,
                        WaitUntilObserver*);
 
-  String tag_;
+  String id_;
 };
 
 }  // namespace blink

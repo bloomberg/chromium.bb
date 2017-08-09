@@ -40,7 +40,7 @@ BackgroundFetchManager::BackgroundFetchManager(
 
 ScriptPromise BackgroundFetchManager::fetch(
     ScriptState* script_state,
-    const String& tag,
+    const String& id,
     const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
     const BackgroundFetchOptions& options,
     ExceptionState& exception_state) {
@@ -60,7 +60,7 @@ ScriptPromise BackgroundFetchManager::fetch(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  bridge_->Fetch(tag, std::move(web_requests), options,
+  bridge_->Fetch(id, std::move(web_requests), options,
                  WTF::Bind(&BackgroundFetchManager::DidFetch,
                            WrapPersistent(this), WrapPersistent(resolver)));
 
@@ -76,14 +76,14 @@ void BackgroundFetchManager::DidFetch(
       DCHECK(registration);
       resolver->Resolve(registration);
       return;
-    case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
+    case mojom::blink::BackgroundFetchError::DUPLICATED_ID:
       DCHECK(!registration);
       resolver->Reject(DOMException::Create(
           kInvalidStateError,
-          "There already is a registration for the given tag."));
+          "There already is a registration for the given id."));
       return;
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
-    case mojom::blink::BackgroundFetchError::INVALID_TAG:
+    case mojom::blink::BackgroundFetchError::INVALID_ID:
       // Not applicable for this callback.
       break;
   }
@@ -92,7 +92,7 @@ void BackgroundFetchManager::DidFetch(
 }
 
 ScriptPromise BackgroundFetchManager::get(ScriptState* script_state,
-                                          const String& tag) {
+                                          const String& id) {
   if (!registration_->active()) {
     return ScriptPromise::Reject(
         script_state,
@@ -105,8 +105,8 @@ ScriptPromise BackgroundFetchManager::get(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   bridge_->GetRegistration(
-      tag, WTF::Bind(&BackgroundFetchManager::DidGetRegistration,
-                     WrapPersistent(this), WrapPersistent(resolver)));
+      id, WTF::Bind(&BackgroundFetchManager::DidGetRegistration,
+                    WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }
@@ -176,10 +176,10 @@ void BackgroundFetchManager::DidGetRegistration(
     BackgroundFetchRegistration* registration) {
   switch (error) {
     case mojom::blink::BackgroundFetchError::NONE:
-    case mojom::blink::BackgroundFetchError::INVALID_TAG:
+    case mojom::blink::BackgroundFetchError::INVALID_ID:
       resolver->Resolve(registration);
       return;
-    case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
+    case mojom::blink::BackgroundFetchError::DUPLICATED_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
       // Not applicable for this callback.
       break;
@@ -188,7 +188,7 @@ void BackgroundFetchManager::DidGetRegistration(
   NOTREACHED();
 }
 
-ScriptPromise BackgroundFetchManager::getTags(ScriptState* script_state) {
+ScriptPromise BackgroundFetchManager::getIds(ScriptState* script_state) {
   if (!registration_->active()) {
     return ScriptPromise::Reject(
         script_state,
@@ -200,23 +200,22 @@ ScriptPromise BackgroundFetchManager::getTags(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  bridge_->GetTags(WTF::Bind(&BackgroundFetchManager::DidGetTags,
-                             WrapPersistent(this), WrapPersistent(resolver)));
+  bridge_->GetIds(WTF::Bind(&BackgroundFetchManager::DidGetIds,
+                            WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }
 
-void BackgroundFetchManager::DidGetTags(
-    ScriptPromiseResolver* resolver,
-    mojom::blink::BackgroundFetchError error,
-    const Vector<String>& tags) {
+void BackgroundFetchManager::DidGetIds(ScriptPromiseResolver* resolver,
+                                       mojom::blink::BackgroundFetchError error,
+                                       const Vector<String>& ids) {
   switch (error) {
     case mojom::blink::BackgroundFetchError::NONE:
-      resolver->Resolve(tags);
+      resolver->Resolve(ids);
       return;
-    case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
+    case mojom::blink::BackgroundFetchError::DUPLICATED_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
-    case mojom::blink::BackgroundFetchError::INVALID_TAG:
+    case mojom::blink::BackgroundFetchError::INVALID_ID:
       // Not applicable for this callback.
       break;
   }

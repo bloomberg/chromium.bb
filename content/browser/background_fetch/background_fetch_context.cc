@@ -94,7 +94,7 @@ void BackgroundFetchContext::DidCreateRegistration(
   // Create the BackgroundFetchRegistration the renderer process will receive,
   // which enables it to resolve the promise telling the developer it worked.
   BackgroundFetchRegistration registration;
-  registration.tag = registration_id.tag();
+  registration.id = registration_id.id();
   registration.icons = options.icons;
   registration.title = options.title;
   registration.total_download_size = options.total_download_size;
@@ -104,25 +104,25 @@ void BackgroundFetchContext::DidCreateRegistration(
 }
 
 std::vector<std::string>
-BackgroundFetchContext::GetActiveTagsForServiceWorkerRegistration(
+BackgroundFetchContext::GetActiveIdsForServiceWorkerRegistration(
     int64_t service_worker_registration_id,
     const url::Origin& origin) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  std::vector<std::string> tags;
+  std::vector<std::string> ids;
   for (const auto& pair : active_fetches_) {
     const BackgroundFetchRegistrationId& registration_id =
         pair.second->registration_id();
 
-    // Only return the tags when the origin and SW registration id match.
+    // Only return the ids when the origin and SW registration id match.
     if (registration_id.origin() == origin &&
         registration_id.service_worker_registration_id() ==
             service_worker_registration_id) {
-      tags.push_back(pair.second->registration_id().tag());
+      ids.push_back(pair.second->registration_id().id());
     }
   }
 
-  return tags;
+  return ids;
 }
 
 BackgroundFetchJobController* BackgroundFetchContext::GetActiveFetch(

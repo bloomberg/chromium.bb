@@ -28,7 +28,7 @@ bool StructTraits<blink::mojom::BackgroundFetchRegistrationDataView,
                   content::BackgroundFetchRegistration>::
     Read(blink::mojom::BackgroundFetchRegistrationDataView data,
          content::BackgroundFetchRegistration* registration) {
-  if (!data.ReadTag(&registration->tag) ||
+  if (!data.ReadId(&registration->id) ||
       !data.ReadIcons(&registration->icons) ||
       !data.ReadTitle(&registration->title)) {
     return false;

@@ -150,7 +150,7 @@ void BackgroundFetchDataManager::CreateRegistration(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (registrations_.find(registration_id) != registrations_.end()) {
-    std::move(callback).Run(blink::mojom::BackgroundFetchError::DUPLICATED_TAG);
+    std::move(callback).Run(blink::mojom::BackgroundFetchError::DUPLICATED_ID);
     return;
   }
 
@@ -293,7 +293,7 @@ void BackgroundFetchDataManager::DeleteRegistration(
 
   auto iter = registrations_.find(registration_id);
   if (iter == registrations_.end()) {
-    std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_TAG);
+    std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_ID);
     return;
   }
 

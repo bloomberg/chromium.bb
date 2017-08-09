@@ -18,7 +18,7 @@
 namespace content {
 namespace {
 
-const char kExampleTag[] = "my-example-tag";
+const char kExampleId[] = "my-example-id";
 
 }  // namespace
 
@@ -87,7 +87,7 @@ TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
   // registration that's already known to the system.
 
   BackgroundFetchRegistrationId registration_id;
-  ASSERT_TRUE(CreateRegistrationId(kExampleTag, &registration_id));
+  ASSERT_TRUE(CreateRegistrationId(kExampleId, &registration_id));
 
   std::vector<ServiceWorkerFetchRequest> requests;
   BackgroundFetchOptions options;
@@ -96,7 +96,7 @@ TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
 
   // Deleting the not-yet-created registration should fail.
   ASSERT_NO_FATAL_FAILURE(DeleteRegistration(registration_id, &error));
-  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_TAG);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ID);
 
   // Creating the initial registration should succeed.
   ASSERT_NO_FATAL_FAILURE(
@@ -106,7 +106,7 @@ TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
   // Attempting to create it again should yield an error.
   ASSERT_NO_FATAL_FAILURE(
       CreateRegistration(registration_id, requests, options, &error));
-  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::DUPLICATED_TAG);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::DUPLICATED_ID);
 
   // Deleting the registration should succeed.
   ASSERT_NO_FATAL_FAILURE(DeleteRegistration(registration_id, &error));

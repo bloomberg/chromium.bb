@@ -8,7 +8,7 @@
     Exposed=(Window,Worker),
     RuntimeEnabled=BackgroundFetch
 ] interface BackgroundFetchManager {
-    [CallWith=ScriptState, RaisesException] Promise<BackgroundFetchRegistration> fetch(DOMString tag, (RequestInfo or sequence<RequestInfo>) requests, optional BackgroundFetchOptions options);
-    [CallWith=ScriptState] Promise<BackgroundFetchRegistration?> get(DOMString tag);
-    [CallWith=ScriptState] Promise<FrozenArray<DOMString>> getTags();
+    [CallWith=ScriptState, RaisesException] Promise<BackgroundFetchRegistration> fetch(DOMString id, (RequestInfo or sequence<RequestInfo>) requests, optional BackgroundFetchOptions options);
+    [CallWith=ScriptState] Promise<BackgroundFetchRegistration?> get(DOMString id);
+    [CallWith=ScriptState] Promise<FrozenArray<DOMString>> getIds();
 };

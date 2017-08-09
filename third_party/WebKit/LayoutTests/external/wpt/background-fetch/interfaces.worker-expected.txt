@@ -10,13 +10,13 @@ PASS BackgroundFetchManager interface: existence and properties of interface pro
 PASS BackgroundFetchManager interface: existence and properties of interface prototype object's "constructor" property 
 PASS BackgroundFetchManager interface: operation fetch(DOMString,[object Object],[object Object],BackgroundFetchOptions) 
 PASS BackgroundFetchManager interface: operation get(DOMString) 
-PASS BackgroundFetchManager interface: operation getTags() 
+PASS BackgroundFetchManager interface: operation getIds() 
 PASS BackgroundFetchRegistration interface: existence and properties of interface object 
 PASS BackgroundFetchRegistration interface object length 
 PASS BackgroundFetchRegistration interface object name 
 PASS BackgroundFetchRegistration interface: existence and properties of interface prototype object 
 PASS BackgroundFetchRegistration interface: existence and properties of interface prototype object's "constructor" property 
-PASS BackgroundFetchRegistration interface: attribute tag 
+PASS BackgroundFetchRegistration interface: attribute id 
 PASS BackgroundFetchRegistration interface: attribute icons 
 PASS BackgroundFetchRegistration interface: attribute totalDownloadSize 
 PASS BackgroundFetchRegistration interface: attribute title 

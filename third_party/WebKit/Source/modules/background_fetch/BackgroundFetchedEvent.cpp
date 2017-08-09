@@ -61,7 +61,7 @@ ScriptPromise BackgroundFetchedEvent::updateUI(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   BackgroundFetchBridge::From(registration_)
-      ->UpdateUI(tag(), title,
+      ->UpdateUI(id(), title,
                  WTF::Bind(&BackgroundFetchedEvent::DidUpdateUI,
                            WrapPersistent(this), WrapPersistent(resolver)));
 
@@ -73,10 +73,10 @@ void BackgroundFetchedEvent::DidUpdateUI(
     mojom::blink::BackgroundFetchError error) {
   switch (error) {
     case mojom::blink::BackgroundFetchError::NONE:
-    case mojom::blink::BackgroundFetchError::INVALID_TAG:
+    case mojom::blink::BackgroundFetchError::INVALID_ID:
       resolver->Resolve();
       return;
-    case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
+    case mojom::blink::BackgroundFetchError::DUPLICATED_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
       // Not applicable for this callback.
       break;

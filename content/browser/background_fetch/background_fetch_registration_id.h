@@ -20,7 +20,7 @@ class CONTENT_EXPORT BackgroundFetchRegistrationId {
   BackgroundFetchRegistrationId();
   BackgroundFetchRegistrationId(int64_t service_worker_registration_id,
                                 const url::Origin& origin,
-                                const std::string& tag);
+                                const std::string& id);
   BackgroundFetchRegistrationId(const BackgroundFetchRegistrationId& other);
   BackgroundFetchRegistrationId(BackgroundFetchRegistrationId&& other);
   ~BackgroundFetchRegistrationId();
@@ -43,12 +43,12 @@ class CONTENT_EXPORT BackgroundFetchRegistrationId {
     return service_worker_registration_id_;
   }
   const url::Origin& origin() const { return origin_; }
-  const std::string& tag() const { return tag_; }
+  const std::string& id() const { return id_; }
 
  private:
   int64_t service_worker_registration_id_;
   url::Origin origin_;
-  std::string tag_;
+  std::string id_;
 };
 
 }  // namespace content

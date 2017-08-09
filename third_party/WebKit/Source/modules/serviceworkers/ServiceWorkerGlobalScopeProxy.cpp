@@ -130,12 +130,12 @@ void ServiceWorkerGlobalScopeProxy::SetRegistration(
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
     int event_id,
-    const WebString& tag) {
+    const WebString& id) {
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchAbort, event_id);
 
   BackgroundFetchClickEventInit init;
-  init.setTag(tag);
+  init.setId(id);
 
   BackgroundFetchEvent* event = BackgroundFetchEvent::Create(
       EventTypeNames::backgroundfetchabort, init, observer);
@@ -145,13 +145,13 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
     int event_id,
-    const WebString& tag,
+    const WebString& id,
     BackgroundFetchState status) {
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchClick, event_id);
 
   BackgroundFetchClickEventInit init;
-  init.setTag(tag);
+  init.setId(id);
 
   switch (status) {
     case BackgroundFetchState::kPending:
@@ -173,13 +173,13 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
     int event_id,
-    const WebString& tag,
+    const WebString& id,
     const WebVector<WebBackgroundFetchSettledFetch>& fetches) {
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchFail, event_id);
 
   BackgroundFetchFailEventInit init;
-  init.setTag(tag);
+  init.setId(id);
 
   ScriptState* script_state =
       WorkerGlobalScope()->ScriptController()->GetScriptState();
@@ -194,13 +194,13 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchedEvent(
     int event_id,
-    const WebString& tag,
+    const WebString& id,
     const WebVector<WebBackgroundFetchSettledFetch>& fetches) {
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetched, event_id);
 
   BackgroundFetchedEventInit init;
-  init.setTag(tag);
+  init.setId(id);
 
   ScriptState* script_state =
       WorkerGlobalScope()->ScriptController()->GetScriptState();
@@ -450,11 +450,11 @@ void ServiceWorkerGlobalScopeProxy::DispatchPushEvent(int event_id,
 
 void ServiceWorkerGlobalScopeProxy::DispatchSyncEvent(
     int event_id,
-    const WebString& tag,
+    const WebString& id,
     LastChanceOption last_chance) {
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kSync, event_id);
-  Event* event = SyncEvent::Create(EventTypeNames::sync, tag,
+  Event* event = SyncEvent::Create(EventTypeNames::sync, id,
                                    last_chance == kIsLastChance, observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }

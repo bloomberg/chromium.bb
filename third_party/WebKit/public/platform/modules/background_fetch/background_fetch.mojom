@@ -9,9 +9,9 @@ import "url/mojo/origin.mojom";
 
 enum BackgroundFetchError {
   NONE,
-  DUPLICATED_TAG,
+  DUPLICATED_ID,
   INVALID_ARGUMENT,
-  INVALID_TAG
+  INVALID_ID
 };
 
 // Represents the definition of an icon developers can optionally provide with a
@@ -36,49 +36,49 @@ struct BackgroundFetchOptions {
 // Analogous to the following structure in the spec:
 // https://wicg.github.io/background-fetch/#background-fetch-registration
 struct BackgroundFetchRegistration {
-  string tag;
+  string id;
   array<IconDefinition> icons;
   int64 total_download_size;
   string title;
 };
 
 interface BackgroundFetchService {
-  // Creates a new Background Fetch registration identified by |tag| with the
+  // Creates a new Background Fetch registration identified by |id| with the
   // given |options| for the sequence of |requests|.
   Fetch(int64 service_worker_registration_id,
         url.mojom.Origin origin,
-        string tag,
+        string id,
         array<FetchAPIRequest> requests,
         BackgroundFetchOptions options)
       => (BackgroundFetchError error,
           BackgroundFetchRegistration? registration);
 
   // Updates the user interface for the Background Fetch identified by the
-  // |service_worker_registration_id| and the |tag|.
+  // |service_worker_registration_id| and the |id|.
   UpdateUI(int64 service_worker_registration_id,
            url.mojom.Origin origin,
-           string tag,
+           string id,
            string title)
       => (BackgroundFetchError error);
 
   // Aborts the Background Fetch registration identified by the
-  // |service_worker_registration_id| and the |tag|.
+  // |service_worker_registration_id| and the |id|.
   Abort(int64 service_worker_registration_id,
         url.mojom.Origin origin,
-        string tag)
+        string id)
       => (BackgroundFetchError error);
 
   // Gets the Background Fetch registration identified by the
-  // |service_worker_registration_id| and the |tag|.
+  // |service_worker_registration_id| and the |id|.
   GetRegistration(int64 service_worker_registration_id,
                   url.mojom.Origin origin,
-                  string tag)
+                  string id)
       => (BackgroundFetchError error,
           BackgroundFetchRegistration? registration);
 
-  // Gets the sequence of tags for active Background Fetch registrations given
+  // Gets the sequence of ids for active Background Fetch registrations given
   // the |service_worker_registration_id|.
-  GetTags(int64 service_worker_registration_id, url.mojom.Origin origin)
+  GetIds(int64 service_worker_registration_id, url.mojom.Origin origin)
       => (BackgroundFetchError error,
-          array<string> tags);
+          array<string> ids);
 };
