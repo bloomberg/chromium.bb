@@ -228,7 +228,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
 
     # Update setting
     self._cmd_kwargs = {}
-    self._cmd_kwargs_omit_error = {}
+    self._cmd_kwargs_omit_error = {'error_code_ok': True}
     self._do_stateful_update = do_stateful_update
     self._do_rootfs_update = do_rootfs_update
     self._disable_verification = disable_verification
@@ -982,7 +982,6 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
       self._cmd_kwargs_omit_error['log_stdout_to_file'] = log_file
       self._cmd_kwargs_omit_error['append_to_file'] = True
       self._cmd_kwargs_omit_error['combine_stdout_stderr'] = True
-      self._cmd_kwargs_omit_error['error_code_ok'] = True
 
     self.inactive_kernel = None
     if local_devserver:
