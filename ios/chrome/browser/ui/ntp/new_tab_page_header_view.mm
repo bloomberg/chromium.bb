@@ -142,6 +142,9 @@ const CGFloat kMaxTopMarginDiff = 4;
     percent = MIN(1, MAX(0, animatingOffset / ntp_header::kAnimationDistance));
   }
 
+  if (self.bounds.size.height == 0)
+    return;
+
   CGFloat searchFieldNormalWidth =
       content_suggestions::searchFieldWidth(self.bounds.size.width);
 
