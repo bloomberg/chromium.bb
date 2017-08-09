@@ -282,6 +282,7 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id) {
 }
 
 void WindowTreeHost::InitCompositor() {
+  DCHECK(!compositor_->root_layer());
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
   compositor_->SetScaleAndSize(display.device_scale_factor(),
