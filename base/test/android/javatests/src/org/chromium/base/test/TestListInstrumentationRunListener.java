@@ -9,7 +9,6 @@ import android.support.test.internal.runner.listener.InstrumentationRunListener;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.runner.Description;
-import org.junit.runner.Result;
 
 import org.chromium.base.Log;
 
@@ -36,12 +35,6 @@ public class TestListInstrumentationRunListener extends InstrumentationRunListen
             Arrays.asList(new String[] {"toString", "hashCode", "annotationType", "equals"}));
 
     private final Map<Class<?>, JSONObject> mTestClassJsonMap = new HashMap<>();
-    private final String mOutputPath;
-
-    public TestListInstrumentationRunListener(String outputPath) {
-        super();
-        mOutputPath = outputPath;
-    }
 
     /**
      * Store the test method description to a Map at the beginning of a test run.
@@ -65,10 +58,9 @@ public class TestListInstrumentationRunListener extends InstrumentationRunListen
     /**
      * Create a JSONArray with all the test class JSONObjects and save it to listed output path.
      */
-    @Override
-    public void testRunFinished(Result result) throws IOException {
+    public void saveTestsToJson(String outputPath) throws IOException {
         Writer writer = null;
-        File file = new File(mOutputPath);
+        File file = new File(outputPath);
         try {
             writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
             JSONArray allTestClassesJSON = new JSONArray(mTestClassJsonMap.values());

@@ -18,6 +18,8 @@ import android.support.test.runner.AndroidJUnitRunner;
 import org.chromium.base.Log;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 
+import java.io.IOException;
+
 /**
  * A custom AndroidJUnitRunner that supports multidex installer and list out test information.
  *
@@ -28,6 +30,20 @@ import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     private static final String LIST_ALL_TESTS_FLAG =
             "org.chromium.base.test.BaseChromiumAndroidJUnitRunner.TestList";
+
+    /**
+     * The following arguments are corresponding to AndroidJUnitRunner command line arguments.
+     * `annotation`: run with only the argument annotation
+     * `notAnnotation`: run all tests except the ones with argument annotation
+     * `log`: run in log only mode, do not execute tests
+     *
+     * For more detail, please check
+     * https://developer.android.com/reference/android/support/test/runner/AndroidJUnitRunner.html
+     */
+    private static final String ARGUMENT_ANNOTATION = "annotation";
+    private static final String ARGUMENT_NOT_ANNOTATION = "notAnnotation";
+    private static final String ARGUMENT_LOG_ONLY = "log";
+
     private static final String TAG = "BaseJUnitRunner";
 
     private Bundle mArguments;
@@ -66,13 +82,29 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
 
     private void listTests() {
         Bundle results = new Bundle();
+        TestListInstrumentationRunListener listener = new TestListInstrumentationRunListener();
         try {
             TestExecutor.Builder executorBuilder = new TestExecutor.Builder(this);
-            executorBuilder.addRunListener(new TestListInstrumentationRunListener(
-                    mArguments.getString(LIST_ALL_TESTS_FLAG)));
-            TestRequest listTestRequest = createListTestRequest(mArguments);
-            results = executorBuilder.build().execute(listTestRequest);
-        } catch (RuntimeException e) {
+            executorBuilder.addRunListener(listener);
+            Bundle junit3Arguments = new Bundle(mArguments);
+            junit3Arguments.putString(ARGUMENT_NOT_ANNOTATION, "org.junit.runner.RunWith");
+            TestRequest listJUnit3TestRequest = createListTestRequest(junit3Arguments);
+            results = executorBuilder.build().execute(listJUnit3TestRequest);
+
+            Bundle junit4Arguments = new Bundle(mArguments);
+            junit4Arguments.putString(ARGUMENT_ANNOTATION, "org.junit.runner.RunWith");
+
+            // Do not use Log runner from android test support.
+            //
+            // Test logging and execution skipping is handled by BaseJUnit4ClassRunner,
+            // having ARGUMENT_LOG_ONLY in argument bundle here causes AndroidJUnitRunner
+            // to use its own log-only class runner instead of BaseJUnit4ClassRunner.
+            junit4Arguments.remove(ARGUMENT_LOG_ONLY);
+
+            TestRequest listJUnit4TestRequest = createListTestRequest(junit4Arguments);
+            results.putAll(executorBuilder.build().execute(listJUnit4TestRequest));
+            listener.saveTestsToJson(mArguments.getString(LIST_ALL_TESTS_FLAG));
+        } catch (IOException | RuntimeException e) {
             String msg = "Fatal exception when running tests";
             Log.e(TAG, msg, e);
             // report the exception to instrumentation out
@@ -89,5 +121,9 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         builder.addApkToScan(getContext().getPackageCodePath());
         builder.addFromRunnerArgs(runnerArgs);
         return builder.build();
+    }
+
+    static boolean shouldListTests(Bundle arguments) {
+        return arguments != null && arguments.getString(LIST_ALL_TESTS_FLAG) != null;
     }
 }
