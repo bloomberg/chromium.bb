@@ -574,6 +574,26 @@ class BuildSpecsManager(object):
     return (self._latest_build and
             self._latest_build['status'] == constants.BUILDER_STATUS_FAILED)
 
+  def _FetchCurrentBuildersArray(self, builders_array):
+    """Fetch the current important slave builds.
+
+    Args:
+      builders_array: A list of slave build configs to check.
+
+    Returns:
+      An updated list of slave build configs for a master build which uses
+      Buildbucket to schedule slaves; or the origin builders_array for other
+      masters.
+    """
+    if (self.config is not None and
+        self.metadata is not None and
+        config_lib.UseBuildbucketScheduler(self.config)):
+      scheduled_buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
+          self.metadata)
+      return scheduled_buildbucket_info_dict.keys()
+    else:
+      return builders_array
+
   def GetBuildersStatus(self, master_build_id, db, builders_array, pool=None,
                         timeout=3 * 60):
     """Get the statuses of the slave builders of the master.
@@ -598,13 +618,7 @@ class BuildSpecsManager(object):
         builder_status_lib.BuilderStatus instances; or an empty dict if no
         slaves were scheduled.
     """
-    if (self.config is not None and
-        self.metadata is not None and
-        config_lib.UseBuildbucketScheduler(self.config)):
-      scheduled_buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
-          self.metadata)
-      builders_array = scheduled_buildbucket_info_dict.keys()
-
+    builders_array = self._FetchCurrentBuildersArray(builders_array)
     logging.info('Getting slave BuilderStatuses for builders array: %s',
                  builders_array)
 
@@ -636,6 +650,8 @@ class BuildSpecsManager(object):
       logging.error('Not all builds finished before timeout (%d minutes)'
                     ' reached.', int((timeout / 60) + 0.5))
 
+    # Refetch as the list may get changed in metadata in the waiting loop.
+    builders_array = self._FetchCurrentBuildersArray(builders_array)
     return self._GetSlaveBuilderStatus(master_build_id, db, builders_array)
 
   def _GetSlaveBuilderStatus(self, master_build_id, db, builders_array):
