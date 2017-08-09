@@ -14,6 +14,6 @@ const char kDisableGpuWatchdog[] = "disable-gpu-watchdog";
 const char kGpuSandboxStartEarly[] = "gpu-sandbox-start-early";
 
 const base::Feature kDirectCompositionOverlays{
-    "DirectCompositionOverlays", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DirectCompositionOverlays", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace switches
