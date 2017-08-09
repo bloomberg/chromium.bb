@@ -214,9 +214,7 @@ public class ChromeFullscreenManager
         updateControlOffset();
     }
 
-    /**
-     * @return Whether or not the browser controls are attached to the bottom of the screen.
-     */
+    @Override
     public boolean areBrowserControlsAtBottom() {
         return mIsBottomControls;
     }
@@ -313,11 +311,8 @@ public class ChromeFullscreenManager
         };
     }
 
-    /**
-     * @return The ratio that the browser controls are off screen; this will be a number [0,1]
-     *         where 1 is completely hidden and 0 is completely shown.
-     */
-    private float getBrowserControlHiddenRatio() {
+    @Override
+    public float getBrowserControlHiddenRatio() {
         return mControlOffsetRatio;
     }
 
