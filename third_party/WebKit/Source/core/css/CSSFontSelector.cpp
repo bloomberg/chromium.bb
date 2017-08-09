@@ -29,7 +29,7 @@
 #include "build/build_config.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/CSSValueList.h"
-#include "core/css/FontFaceSet.h"
+#include "core/css/FontFaceSetDocument.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
@@ -54,7 +54,8 @@ CSSFontSelector::CSSFontSelector(Document* document)
   DCHECK(document_);
   DCHECK(document_->GetFrame());
   FontCache::GetFontCache()->AddClient(this);
-  FontFaceSet::From(*document)->AddFontFacesToFontFaceCache(&font_face_cache_);
+  FontFaceSetDocument::From(*document)->AddFontFacesToFontFaceCache(
+      &font_face_cache_);
 }
 
 CSSFontSelector::~CSSFontSelector() {}

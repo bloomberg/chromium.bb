@@ -25,15 +25,15 @@
 
 #include "core/css/CSSFontFace.h"
 
+#include <algorithm>
 #include "core/css/CSSFontFaceSource.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSSegmentedFontFace.h"
-#include "core/css/FontFaceSet.h"
+#include "core/css/FontFaceSetDocument.h"
 #include "core/css/RemoteFontFaceSource.h"
 #include "core/frame/UseCounter.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
-#include <algorithm>
 
 namespace blink {
 
@@ -187,7 +187,7 @@ void CSSFontFace::SetLoadStatus(FontFace::LoadStatusType new_status) {
     return;
   Document* document = ToDocument(font_face_->GetExecutionContext());
   if (document && new_status == FontFace::kLoading)
-    FontFaceSet::From(*document)->BeginFontLoading(font_face_);
+    FontFaceSetDocument::From(*document)->BeginFontLoading(font_face_);
 }
 
 DEFINE_TRACE(CSSFontFace) {
