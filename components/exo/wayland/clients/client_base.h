@@ -13,6 +13,7 @@
 #include "components/exo/wayland/clients/client_helper.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/scoped_make_current.h"
@@ -43,7 +44,6 @@ class ClientBase {
     bool transparent_background = false;
     bool use_drm = false;
     std::string use_drm_value;
-    int32_t drm_format = 0;
   };
 
   struct Globals {
@@ -56,6 +56,7 @@ class ClientBase {
     std::unique_ptr<zwp_linux_dmabuf_v1> linux_dmabuf;
     std::unique_ptr<wl_shell> shell;
     std::unique_ptr<wl_seat> seat;
+    std::unique_ptr<wl_subcompositor> subcompositor;
   };
 
   struct Buffer {
@@ -81,9 +82,11 @@ class ClientBase {
  protected:
   ClientBase();
   virtual ~ClientBase();
+  std::unique_ptr<Buffer> CreateBuffer(const gfx::Size& size);
+  std::unique_ptr<Buffer> CreateDRMBuffer(const gfx::Size& size,
+                                          int32_t drm_format);
 
-  size_t width_ = 256;
-  size_t height_ = 256;
+  gfx::Size size_ = gfx::Size(256, 256);
   int scale_ = 1;
   bool fullscreen_ = false;
   bool transparent_background_ = false;
@@ -103,9 +106,6 @@ class ClientBase {
   unsigned egl_sync_type_ = 0;
   std::vector<std::unique_ptr<Buffer>> buffers_;
   sk_sp<GrContext> gr_context_;
-
- private:
-  std::unique_ptr<Buffer> CreateBuffer(int32_t drm_format);
 
   DISALLOW_COPY_AND_ASSIGN(ClientBase);
 };

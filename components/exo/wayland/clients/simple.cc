@@ -56,7 +56,8 @@ void SimpleClient::Run(const ClientBase::InitParams& params) {
       glFinish();
     }
     wl_surface_set_buffer_scale(surface_.get(), scale_);
-    wl_surface_damage(surface_.get(), 0, 0, width_ / scale_, height_ / scale_);
+    wl_surface_damage(surface_.get(), 0, 0, size_.width() / scale_,
+                      size_.height() / scale_);
     wl_surface_attach(surface_.get(), buffer->buffer.get(), 0, 0);
 
     frame_callback.reset(wl_surface_frame(surface_.get()));

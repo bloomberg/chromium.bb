@@ -91,6 +91,7 @@ source_set("unit_tests") {
     "//third_party/wayland:wayland_client",
   ]
 }
+
 source_set("client_lib") {
   sources = [
     "clients/client_base.cc",
@@ -150,6 +151,33 @@ executable("wayland_rects_client") {
 executable("wayland_simple_client") {
   sources = [
     "clients/simple.cc",
+  ]
+
+  deps = [
+    ":client_lib",
+    "//base",
+    "//build/config:exe_and_shlib_deps",
+    "//skia",
+    "//third_party/wayland:wayland_client",
+    "//third_party/wayland-protocols:linux_dmabuf_protocol",
+    "//third_party/wayland-protocols:presentation_time_protocol",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
+
+  if (ozone_platform_gbm) {
+    configs += [
+      ":libdrm",
+      "//ui/gl:gl_config",
+    ]
+    defines = [ "OZONE_PLATFORM_GBM" ]
+    deps += [ "//third_party/minigbm" ]
+  }
+}
+
+executable("wayland_subsurface_client") {
+  sources = [
+    "clients/subsurface.cc",
   ]
 
   deps = [
