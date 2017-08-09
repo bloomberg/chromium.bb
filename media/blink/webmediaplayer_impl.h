@@ -807,6 +807,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   OverlayInfo overlay_info_;
 
+  base::CancelableClosure update_background_status_cb_;
+
   mojom::WatchTimeRecorderProvider* watch_time_recorder_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
