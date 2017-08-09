@@ -2007,24 +2007,6 @@ void Document::InheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
     GetLayoutViewItem().SetStyle(new_style);
     SetupFontBuilder(*new_style);
   }
-
-  if (body) {
-    if (const ComputedStyle* style = body->GetComputedStyle()) {
-      if (style->Direction() != root_direction ||
-          style->GetWritingMode() != root_writing_mode)
-        body->SetNeedsStyleRecalc(kSubtreeStyleChange,
-                                  StyleChangeReasonForTracing::Create(
-                                      StyleChangeReason::kWritingModeChange));
-    }
-  }
-
-  if (const ComputedStyle* style = documentElement()->GetComputedStyle()) {
-    if (style->Direction() != root_direction ||
-        style->GetWritingMode() != root_writing_mode)
-      documentElement()->SetNeedsStyleRecalc(
-          kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                                   StyleChangeReason::kWritingModeChange));
-  }
 }
 
 #if DCHECK_IS_ON()
