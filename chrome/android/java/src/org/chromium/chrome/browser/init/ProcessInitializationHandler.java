@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.WorkerThread;
 import android.view.View;
@@ -402,6 +403,13 @@ public class ProcessInitializationHandler {
                 BackgroundTaskSchedulerFactory.getScheduler().checkForOSUpgrade(application);
             }
         });
+
+        deferredStartupHandler.addDeferredTask(new Runnable() {
+            @Override
+            public void run() {
+                logEGLShaderCacheSizeHistogram();
+            }
+        });
     }
 
     private void initChannelsAsync() {
@@ -642,5 +650,54 @@ public class ProcessInitializationHandler {
             boolean match = systemLocale.getLanguage().equalsIgnoreCase(keyboardLanguage);
             RecordHistogram.recordBooleanHistogram("InputMethod.MatchesSystemLanguage", match);
         }
+    }
+
+    /**
+     * Logs a histogram with the size of the Android EGL shader cache.
+     */
+    private static void logEGLShaderCacheSizeHistogram() {
+        // To simplify logic, only log this value on Android N+.
+        if (Build.VERSION.SDK_INT < 24) {
+            return;
+        }
+        final Context cacheContext =
+                ContextUtils.getApplicationContext().createDeviceProtectedStorageContext();
+
+        // Must log async, as we're doing a file access.
+        new AsyncTask<Void, Void, Void>() {
+            // Record file sizes between 1-2560KB. Expected range is 1-2048KB, so this gives
+            // us a bit of buffer. These values cannot be changed, as doing so will alter
+            // histogram bucketing and confuse the dashboard.
+            private static final int MIN_CACHE_FILE_SIZE_KB = 1;
+            private static final int MAX_CACHE_FILE_SIZE_KB = 2560;
+
+            @Override
+            protected Void doInBackground(Void... unused) {
+                File codeCacheDir = cacheContext.getCodeCacheDir();
+                if (codeCacheDir == null) {
+                    return null;
+                }
+                // This filename is defined in core/java/android/view/HardwareRenderer.java,
+                // and has been located in the codeCacheDir since Android M.
+                File cacheFile = new File(codeCacheDir, "com.android.opengl.shaders_cache");
+                if (!cacheFile.exists()) {
+                    return null;
+                }
+                long cacheFileSizeKb = cacheFile.length() / 1024;
+                // Clamp size to [minFileSizeKb, maxFileSizeKb). This also guarantees that the
+                // int-cast below is safe.
+                if (cacheFileSizeKb < MIN_CACHE_FILE_SIZE_KB) {
+                    cacheFileSizeKb = MIN_CACHE_FILE_SIZE_KB;
+                }
+                if (cacheFileSizeKb >= MAX_CACHE_FILE_SIZE_KB) {
+                    cacheFileSizeKb = MAX_CACHE_FILE_SIZE_KB - 1;
+                }
+                String histogramName = "Memory.Experimental.Browser.EGLShaderCacheSize.Android";
+                RecordHistogram.recordCustomCountHistogram(histogramName, (int) cacheFileSizeKb,
+                        MIN_CACHE_FILE_SIZE_KB, MAX_CACHE_FILE_SIZE_KB, 50);
+                return null;
+            }
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 }

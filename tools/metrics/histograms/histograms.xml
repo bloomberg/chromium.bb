@@ -32789,6 +32789,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Memory.Experimental.Browser.EGLShaderCacheSize.Android"
+    units="KB">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    The size of the EGL_ANDROID_blob_cache cache file on disk. Recorded once per
+    Chrome launch, after the first page has loaded.
+  </summary>
+</histogram>
+
 <histogram name="Memory.Experimental.Browser.PrivateMemoryFootprint.MacOS"
     units="MB">
   <owner>erikchen@chromium.org</owner>
