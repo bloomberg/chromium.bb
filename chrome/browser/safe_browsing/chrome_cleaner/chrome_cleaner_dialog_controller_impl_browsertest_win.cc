@@ -23,6 +23,7 @@ namespace safe_browsing {
 namespace {
 
 using ::testing::_;
+using ::testing::InvokeWithoutArgs;
 using ::testing::StrictMock;
 using ::testing::Return;
 
@@ -80,14 +81,18 @@ IN_PROC_BROWSER_TEST_F(ChromeCleanerPromptUserTest,
 
 // Disabled due to flaky failures: https://crbug.com/753632
 IN_PROC_BROWSER_TEST_F(ChromeCleanerPromptUserTest,
-                       DISABLED_OnInfectedBrowserNotAvailable) {
+                       OnInfectedBrowserNotAvailable) {
   browser()->window()->Minimize();
   base::RunLoop().RunUntilIdle();
   dialog_controller_->OnInfected(std::set<base::FilePath>());
 
+  base::RunLoop run_loop;
   // We only set the expectation here because we want to make sure that the
   // prompt is shown only when the window is restored.
-  EXPECT_CALL(mock_delegate_, ShowChromeCleanerPrompt(_, _, _)).Times(1);
+  EXPECT_CALL(mock_delegate_, ShowChromeCleanerPrompt(_, _, _)).WillOnce(
+          InvokeWithoutArgs([&run_loop]() {
+                  run_loop.QuitClosure().Run();
+               }));
 
   browser()->window()->Restore();
   base::RunLoop().RunUntilIdle();
@@ -102,12 +107,17 @@ IN_PROC_BROWSER_TEST_F(ChromeCleanerPromptUserTest, AllBrowsersClosed) {
   base::RunLoop().RunUntilIdle();
   dialog_controller_->OnInfected(std::set<base::FilePath>());
 
+  base::RunLoop run_loop;
+
   // We only set the expectation here because we want to make sure that the
   // prompt is shown only when the window is restored.
-  EXPECT_CALL(mock_delegate_, ShowChromeCleanerPrompt(_, _, _)).Times(1);
+  EXPECT_CALL(mock_delegate_, ShowChromeCleanerPrompt(_, _, _)).WillOnce(
+          InvokeWithoutArgs([&run_loop]() {
+                  run_loop.QuitClosure().Run();
+               }));
 
   CreateBrowser(ProfileManager::GetActiveUserProfile());
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
 }
 
 }  // namespace
