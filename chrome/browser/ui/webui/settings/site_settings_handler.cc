@@ -19,6 +19,7 @@
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -536,6 +537,12 @@ void SiteSettingsHandler::HandleSetOriginPermissions(
     PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
         profile_, origin, origin, content_type,
         PermissionSourceUI::SITE_SETTINGS);
+
+    // Clear any existing embargo status if the new setting isn't block.
+    if (setting != CONTENT_SETTING_BLOCK) {
+      PermissionDecisionAutoBlocker::GetForProfile(profile_)
+          ->RemoveEmbargoByUrl(origin, content_type);
+    }
     map->SetContentSettingDefaultScope(origin, origin, content_type,
                                        std::string(), setting);
     WebSiteSettingsUmaUtil::LogPermissionChange(content_type, setting);
