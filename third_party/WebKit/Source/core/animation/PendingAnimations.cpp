@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/CompositorPendingAnimations.h"
+#include "core/animation/PendingAnimations.h"
 
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeEffect.h"
@@ -39,7 +39,7 @@
 
 namespace blink {
 
-void CompositorPendingAnimations::Add(Animation* animation) {
+void PendingAnimations::Add(Animation* animation) {
   DCHECK(animation);
   DCHECK_EQ(pending_.Find(animation), kNotFound);
   pending_.push_back(animation);
@@ -54,7 +54,7 @@ void CompositorPendingAnimations::Add(Animation* animation) {
   }
 }
 
-bool CompositorPendingAnimations::Update(
+bool PendingAnimations::Update(
     const Optional<CompositorElementIdSet>& composited_element_ids,
     bool start_on_compositor) {
   HeapVector<Member<Animation>> waiting_for_start_time;
@@ -140,11 +140,10 @@ bool CompositorPendingAnimations::Update(
   return false;
 }
 
-void CompositorPendingAnimations::NotifyCompositorAnimationStarted(
+void PendingAnimations::NotifyCompositorAnimationStarted(
     double monotonic_animation_start_time,
     int compositor_group) {
-  TRACE_EVENT0("blink",
-               "CompositorPendingAnimations::notifyCompositorAnimationStarted");
+  TRACE_EVENT0("blink", "PendingAnimations::notifyCompositorAnimationStarted");
   HeapVector<Member<Animation>> animations;
   animations.swap(waiting_for_compositor_animation_start_);
 
@@ -167,7 +166,7 @@ void CompositorPendingAnimations::NotifyCompositorAnimationStarted(
   }
 }
 
-DEFINE_TRACE(CompositorPendingAnimations) {
+DEFINE_TRACE(PendingAnimations) {
   visitor->Trace(pending_);
   visitor->Trace(waiting_for_compositor_animation_start_);
 }

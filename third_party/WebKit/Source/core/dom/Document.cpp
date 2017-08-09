@@ -47,9 +47,9 @@
 #include "core/SVGNames.h"
 #include "core/XMLNSNames.h"
 #include "core/XMLNames.h"
-#include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/DocumentAnimations.h"
 #include "core/animation/DocumentTimeline.h"
+#include "core/animation/PendingAnimations.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleSheet.h"
@@ -586,7 +586,7 @@ Document::Document(const DocumentInit& initializer,
           this,
           &Document::ElementDataCacheClearTimerFired),
       timeline_(DocumentTimeline::Create(this)),
-      compositor_pending_animations_(new CompositorPendingAnimations(*this)),
+      pending_animations_(new PendingAnimations(*this)),
       template_document_host_(nullptr),
       did_associate_form_controls_timer_(
           TaskRunnerHelper::Get(TaskType::kUnspecedLoading, this),
@@ -6940,7 +6940,7 @@ DEFINE_TRACE(Document) {
   visitor->Trace(user_action_elements_);
   visitor->Trace(svg_extensions_);
   visitor->Trace(timeline_);
-  visitor->Trace(compositor_pending_animations_);
+  visitor->Trace(pending_animations_);
   visitor->Trace(context_document_);
   visitor->Trace(canvas_font_cache_);
   visitor->Trace(intersection_observer_controller_);

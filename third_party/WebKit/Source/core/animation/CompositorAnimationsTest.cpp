@@ -32,10 +32,10 @@
 
 #include <memory>
 #include "core/animation/Animation.h"
-#include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffect.h"
+#include "core/animation/PendingAnimations.h"
 #include "core/animation/animatable/AnimatableDouble.h"
 #include "core/animation/animatable/AnimatableFilterOperations.h"
 #include "core/animation/animatable/AnimatableTransform.h"
@@ -270,8 +270,8 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
 
   void SimulateFrame(double time) {
     document_->GetAnimationClock().UpdateTime(time);
-    document_->GetCompositorPendingAnimations().Update(
-        Optional<CompositorElementIdSet>(), false);
+    document_->GetPendingAnimations().Update(Optional<CompositorElementIdSet>(),
+                                             false);
     timeline_->ServiceAnimations(kTimingUpdateForAnimationFrame);
   }
 
