@@ -76,7 +76,7 @@ TEST(DriveMetadataDBMigrationUtilTest, RollbackFromV4ToV3) {
   base::ScopedTempDir base_dir;
   ASSERT_TRUE(base_dir.CreateUniqueTempDir());
   {
-    leveldb::Options options;
+    leveldb_env::Options options;
     options.create_if_missing = true;
     std::string db_dir =
         storage::FilePathToString(base_dir.GetPath().Append(kDatabaseName));

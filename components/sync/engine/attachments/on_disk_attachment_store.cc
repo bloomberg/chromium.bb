@@ -360,9 +360,8 @@ AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
   base::FilePath leveldb_path = path.Append(kLeveldbDirectory);
 
   std::unique_ptr<leveldb::DB> db;
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.create_if_missing = true;
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   // TODO(pavely): crbug/424287 Consider adding info_log, block_cache and
   // filter_policy to options.
   leveldb::Status status =

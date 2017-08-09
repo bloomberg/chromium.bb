@@ -47,14 +47,13 @@ void LevelDBServiceImpl::OpenWithOptions(
         memory_dump_id,
     leveldb::mojom::LevelDBDatabaseAssociatedRequest database,
     OpenCallback callback) {
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.create_if_missing = open_options->create_if_missing;
   options.error_if_exists = open_options->error_if_exists;
   options.paranoid_checks = open_options->paranoid_checks;
   options.write_buffer_size = open_options->write_buffer_size;
   options.max_open_files = open_options->max_open_files;
 
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   options.compression = leveldb::kSnappyCompression;
 
   // Register our directory with the file thread.
@@ -86,7 +85,7 @@ void LevelDBServiceImpl::OpenInMemory(
         memory_dump_id,
     leveldb::mojom::LevelDBDatabaseAssociatedRequest database,
     OpenCallback callback) {
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.create_if_missing = true;
   options.max_open_files = 0;  // Use minimum.
 
@@ -110,7 +109,7 @@ void LevelDBServiceImpl::OpenInMemory(
 void LevelDBServiceImpl::Destroy(filesystem::mojom::DirectoryPtr directory,
                                  const std::string& dbname,
                                  DestroyCallback callback) {
-  leveldb::Options options;
+  leveldb_env::Options options;
   // Register our directory with the file thread.
   LevelDBMojoProxy::OpaqueDir* dir =
       thread_->RegisterDirectory(std::move(directory));

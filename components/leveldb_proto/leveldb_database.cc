@@ -36,7 +36,7 @@ namespace leveldb_proto {
 // static
 bool LevelDB::Destroy(const base::FilePath& database_dir) {
   const leveldb::Status s =
-      leveldb::DestroyDB(database_dir.AsUTF8Unsafe(), leveldb::Options());
+      leveldb::DestroyDB(database_dir.AsUTF8Unsafe(), leveldb_env::Options());
   return s.ok();
 }
 
@@ -57,7 +57,7 @@ LevelDB::~LevelDB() {
 }
 
 bool LevelDB::InitWithOptions(const base::FilePath& database_dir,
-                              const leveldb::Options& options) {
+                              const leveldb_env::Options& options) {
   DFAKE_SCOPED_LOCK(thread_checker_);
 
   std::string path = database_dir.AsUTF8Unsafe();
@@ -91,10 +91,9 @@ static size_t DefaultBlockCacheSize() {
 }
 
 bool LevelDB::Init(const leveldb_proto::Options& options) {
-  leveldb::Options leveldb_options;
+  leveldb_env::Options leveldb_options;
   leveldb_options.create_if_missing = true;
   leveldb_options.max_open_files = 0;  // Use minimum.
-  leveldb_options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
 
   static leveldb::Cache* default_block_cache =
       leveldb::NewLRUCache(DefaultBlockCacheSize());

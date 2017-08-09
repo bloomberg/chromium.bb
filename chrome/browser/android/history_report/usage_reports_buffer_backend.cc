@@ -33,7 +33,7 @@ UsageReportsBufferBackend::UsageReportsBufferBackend(const base::FilePath& dir)
 UsageReportsBufferBackend::~UsageReportsBufferBackend() {}
 
 bool UsageReportsBufferBackend::Init() {
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.create_if_missing = true;
   options.max_open_files = 0;  // Use minimum number of files.
   std::string path = db_file_name_.value();

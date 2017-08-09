@@ -15,6 +15,7 @@
 #include "base/threading/thread_collision_warner.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/leveldb_proto/options.h"
+#include "third_party/leveldatabase/env_chromium.h"
 
 namespace base {
 class FilePath;
@@ -60,7 +61,7 @@ class LevelDB : public base::trace_event::MemoryDumpProvider {
 
  protected:
   virtual bool InitWithOptions(const base::FilePath& database_dir,
-                               const leveldb::Options& options);
+                               const leveldb_env::Options& options);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProtoDatabaseImplLevelDBTest, TestDBInitFail);

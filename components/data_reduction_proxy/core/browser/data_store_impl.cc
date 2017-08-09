@@ -114,7 +114,7 @@ DataStore::Status DataStoreImpl::Delete(base::StringPiece key) {
 DataStore::Status DataStoreImpl::OpenDB() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.create_if_missing = true;
   options.paranoid_checks = true;
   // Deletes to buckets not found are stored in the log. Use a new log so that

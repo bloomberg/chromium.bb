@@ -215,11 +215,10 @@ SyncStatusCode OpenDatabase(const base::FilePath& path,
   DCHECK(created);
   DCHECK(path.IsAbsolute());
 
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
   options.paranoid_checks = true;
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   if (env_override)
     options.env = env_override;
   std::unique_ptr<leveldb::DB> db;

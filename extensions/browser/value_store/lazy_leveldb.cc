@@ -64,10 +64,9 @@ leveldb::Status DeleteValue(leveldb::DB* db, const std::string& key) {
 
 LazyLevelDb::LazyLevelDb(const std::string& uma_client_name,
                          const base::FilePath& path)
-    : db_path_(path) {
+    : db_path_(path), open_options_(leveldb_env::Options()) {
   open_options_.create_if_missing = true;
   open_options_.paranoid_checks = true;
-  open_options_.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
 
   read_options_.verify_checksums = true;
 
@@ -175,7 +174,8 @@ ValueStore::BackingStoreRestoreStatus LazyLevelDb::FixCorruption(
   ValueStore::BackingStoreRestoreStatus restore_status =
       ValueStore::RESTORE_NONE;
 
-  leveldb::Options repair_options;
+  leveldb_env::Options repair_options;
+  repair_options.reuse_logs = false;
   repair_options.create_if_missing = true;
   repair_options.paranoid_checks = true;
 
