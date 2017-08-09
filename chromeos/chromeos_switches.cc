@@ -250,6 +250,9 @@ const char kEnableArc[] = "enable-arc";
 // Enables ARC OptIn flow in OOBE.
 const char kEnableArcOOBEOptIn[] = "enable-arc-oobe-optin";
 
+// Enables the Cast Receiver.
+const char kEnableCastReceiver[] = "enable-cast-receiver";
+
 // Enables native ChromeVox support for Arc.
 const char kEnableChromeVoxArcSupport[] = "enable-chromevox-arc-support";
 
