@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
-#include "services/ui/common/image_cursors_set.h"
 
 namespace chromeos {
 class ChromeSessionManager;
@@ -38,6 +37,7 @@ class BrowserPolicyConnectorChromeOS;
 }
 
 namespace ui {
+class ImageCursorsSet;
 class InputDeviceControllerClient;
 }
 
@@ -105,6 +105,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   chromeos::system::SystemClock* GetSystemClock();
   void DestroySystemClock();
 
+  void DestroyImageCursorsSet();
+
   void AddCompatibleCrOSComponent(const std::string& name);
 
   bool IsCompatibleCrOSComponent(const std::string& name);
@@ -142,7 +144,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   base::flat_set<std::string> compatible_cros_components_;
 
   // Used by the UI Service.
-  ui::ImageCursorsSet image_cursors_set_;
+  std::unique_ptr<ui::ImageCursorsSet> image_cursors_set_;
 
 #if defined(USE_OZONE)
   std::unique_ptr<ui::InputDeviceControllerClient>

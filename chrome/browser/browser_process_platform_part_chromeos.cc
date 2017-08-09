@@ -44,6 +44,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/ui/common/image_cursors_set.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/service.h"
 
@@ -292,9 +293,10 @@ void BrowserProcessPlatformPart::RegisterInProcessServices(
 
   if (chromeos::GetAshConfig() == ash::Config::MUS) {
     service_manager::EmbeddedServiceInfo info;
+    image_cursors_set_ = base::MakeUnique<ui::ImageCursorsSet>();
     info.factory = base::Bind(&CreateEmbeddedUIService,
                               base::ThreadTaskRunnerHandle::Get(),
-                              image_cursors_set_.GetWeakPtr(),
+                              image_cursors_set_->GetWeakPtr(),
                               content::GetDiscardableSharedMemoryManager());
     info.use_own_thread = true;
     info.message_loop_type = base::MessageLoop::TYPE_UI;
@@ -311,6 +313,10 @@ chromeos::system::SystemClock* BrowserProcessPlatformPart::GetSystemClock() {
 
 void BrowserProcessPlatformPart::DestroySystemClock() {
   system_clock_.reset();
+}
+
+void BrowserProcessPlatformPart::DestroyImageCursorsSet() {
+  image_cursors_set_.reset();
 }
 
 void BrowserProcessPlatformPart::AddCompatibleCrOSComponent(

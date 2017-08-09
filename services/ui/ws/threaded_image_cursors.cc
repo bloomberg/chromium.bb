@@ -82,7 +82,7 @@ ThreadedImageCursors::ThreadedImageCursors(
   ui_service_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   // Create and initialize the ImageCursors object here and then set it on
-  // |image_cursors_set_weak_ptr__|. Note that it is essential to initialize
+  // |image_cursors_set_weak_ptr_|. Note that it is essential to initialize
   // the ImageCursors object on the UI Service's thread if we are using Ozone,
   // so that it uses the right (thread-local) CursorFactoryOzone instance.
   std::unique_ptr<ui::ImageCursors> image_cursors =
