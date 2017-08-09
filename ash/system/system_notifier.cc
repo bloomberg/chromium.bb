@@ -20,7 +20,7 @@ namespace {
 const char* kAlwaysShownSystemNotifierIds[] = {
     kNotifierAccessibility, kNotifierDeprecatedAccelerator, kNotifierBattery,
     kNotifierDisplay, kNotifierDisplayError, kNotifierNetworkError,
-    kNotifierPower,
+    kNotifierPower, kNotifierStylusBattery,
     // Note: Order doesn't matter here, so keep this in alphabetic order, don't
     // just add your stuff at the end!
     NULL};
@@ -76,6 +76,7 @@ const char kNotifierScreenCapture[] = "ash.screen-capture";
 const char kNotifierScreenShare[] = "ash.screen-share";
 const char kNotifierSessionLengthTimeout[] = "ash.session-length-timeout";
 const char kNotifierSms[] = "ash.sms";
+const char kNotifierStylusBattery[] = "ash.stylus-battery";
 const char kNotifierSupervisedUser[] = "ash.locally-managed-user";
 const char kNotifierTether[] = "ash.tether";
 const char kNotifierWebUsb[] = "ash.webusb";

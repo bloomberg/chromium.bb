@@ -24,9 +24,12 @@ class PeripheralBatteryObserverTest;
 
 // This observer listens for peripheral device battery status and shows
 // notifications for low battery conditions.
+// TODO(sammiequon): Investigate whether we can move this class to //ash.
 class PeripheralBatteryObserver : public PowerManagerClient::Observer,
                                   public device::BluetoothAdapter::Observer {
  public:
+  static const char kStylusNotificationId[];
+
   // This class registers/unregisters itself as an observer in ctor/dtor.
   PeripheralBatteryObserver();
   ~PeripheralBatteryObserver() override;
@@ -51,19 +54,10 @@ class PeripheralBatteryObserver : public PowerManagerClient::Observer,
   FRIEND_TEST_ALL_PREFIXES(PeripheralBatteryObserverTest, DeviceRemove);
 
   struct BatteryInfo {
-    BatteryInfo() : level(-1) {}
-    BatteryInfo(const std::string& name,
-                int level,
-                base::TimeTicks notification_timestamp)
-        : name(name),
-          level(level),
-          last_notification_timestamp(notification_timestamp) {
-    }
-
     // Human readable name for the device. It is changeable.
     std::string name;
     // Battery level within range [0, 100], and -1 for unknown level.
-    int level;
+    int level = -1;
     base::TimeTicks last_notification_timestamp;
   };
 
