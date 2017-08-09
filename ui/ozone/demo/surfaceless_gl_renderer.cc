@@ -115,6 +115,7 @@ bool SurfacelessGlRenderer::Initialize() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
+  disable_primary_plane_ = command_line->HasSwitch("disable-primary-plane");
   PostRenderFrameTask(gfx::SwapResult::SWAP_ACK);
   return true;
 }
@@ -178,9 +179,11 @@ void SurfacelessGlRenderer::RenderFrame() {
   glClearColor(1 - fraction, 0.0, fraction, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  surface_->ScheduleOverlayPlane(0, gfx::OVERLAY_TRANSFORM_NONE,
-                                 buffers_[back_buffer_]->image(),
-                                 gfx::Rect(size_), gfx::RectF(0, 0, 1, 1));
+  if (!disable_primary_plane_) {
+    surface_->ScheduleOverlayPlane(0, gfx::OVERLAY_TRANSFORM_NONE,
+                                   buffers_[back_buffer_]->image(),
+                                   gfx::Rect(size_), gfx::RectF(0, 0, 1, 1));
+  }
 
   if (overlay_buffer_) {
     gfx::Rect overlay_rect(overlay_buffer_->size());

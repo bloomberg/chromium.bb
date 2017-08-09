@@ -81,20 +81,19 @@ bool CrtcController::SchedulePageFlip(
   DCHECK(!page_flip_request_.get() || test_only);
   DCHECK(!is_disabled_);
   const OverlayPlane* primary = OverlayPlane::GetPrimaryPlane(overlays);
-  if (!primary) {
-    LOG(ERROR) << "No primary plane to display on crtc " << crtc_;
-    page_flip_request->Signal(gfx::SwapResult::SWAP_ACK);
-    return true;
-  }
-  DCHECK(primary->buffer.get());
-
-  if (primary->buffer->GetSize() != gfx::Size(mode_.hdisplay, mode_.vdisplay)) {
-    VLOG(2) << "Trying to pageflip a buffer with the wrong size. Expected "
-            << mode_.hdisplay << "x" << mode_.vdisplay << " got "
-            << primary->buffer->GetSize().ToString() << " for"
-            << " crtc=" << crtc_ << " connector=" << connector_;
-    page_flip_request->Signal(gfx::SwapResult::SWAP_ACK);
-    return true;
+  if (primary) {
+    DCHECK(primary->buffer.get());
+    // TODO(dcastagna): Get rid of this. Scaling on the primary plane is
+    // supported on all the devices.
+    if (primary->buffer->GetSize() !=
+        gfx::Size(mode_.hdisplay, mode_.vdisplay)) {
+      VLOG(2) << "Trying to pageflip a buffer with the wrong size. Expected "
+              << mode_.hdisplay << "x" << mode_.vdisplay << " got "
+              << primary->buffer->GetSize().ToString() << " for"
+              << " crtc=" << crtc_ << " connector=" << connector_;
+      page_flip_request->Signal(gfx::SwapResult::SWAP_ACK);
+      return true;
+    }
   }
 
   if (!drm_->plane_manager()->AssignOverlayPlanes(plane_list, overlays, crtc_,
