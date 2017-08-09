@@ -82,8 +82,8 @@ typedef struct {
   double new_mv_count;
   double duration;
   double count;
-#if CONFIG_EXT_REFS
-  // Standard deviation for (0,0) motion prediction error
+#if CONFIG_EXT_REFS || CONFIG_BGSPRITE
+  // standard deviation for (0, 0) motion prediction error
   double raw_error_stdev;
 #endif  // CONFIG_EXT_REFS
 } FIRSTPASS_STATS;

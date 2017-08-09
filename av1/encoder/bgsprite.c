@@ -32,7 +32,12 @@
  * 0 = Median
  * 1 = Mean
  */
-#define BGSPRITE_BLENDING_MODE 0
+#define BGSPRITE_BLENDING_MODE 1
+
+// Enable removal of outliers from mean blending mode.
+#if BGSPRITE_BLENDING_MODE == 1
+#define BGSPRITE_MEAN_REMOVE_OUTLIERS 0
+#endif  // BGSPRITE_BLENDING_MODE == 1
 
 /* Interpolation for panorama alignment sampling:
  * 0 = Nearest neighbor
@@ -40,10 +45,17 @@
  */
 #define BGSPRITE_INTERPOLATION 0
 
+// Enable turning off bgsprite from firstpass metrics in define_gf_group.
+#define BGSPRITE_ENABLE_METRICS 1
+
+// Enable foreground/backgrond segmentation and combine with temporal filter.
 #define BGSPRITE_ENABLE_SEGMENTATION 1
+
+// Enable alignment using global motion.
 #define BGSPRITE_ENABLE_GME 0
 
-#define TRANSFORM_MAT_DIM 3
+// Block size for foreground mask.
+#define BGSPRITE_MASK_BLOCK_SIZE 4
 
 typedef struct {
 #if CONFIG_HIGHBITDEPTH
@@ -98,6 +110,8 @@ static void matrix_to_params(const double *const matrix, double *target) {
     target[i] = matrix[matrix_to_params_map[i]];
   }
 }
+
+#define TRANSFORM_MAT_DIM 3
 
 // Do matrix multiplication on params.
 static void multiply_params(double *const m1, double *const m2,
@@ -228,7 +242,7 @@ static void build_image_stack(YV12_BUFFER_CONFIG **const frames,
                               const int *const y_min, const int *const y_max,
                               int pano_x_min, int pano_y_min,
                               YuvPixel ***img_stack) {
-  // Re-sample images onto panorama (pre-median filtering).
+  // Re-sample images onto panorama (pre-filtering).
   const int x_offset = -pano_x_min;
   const int y_offset = -pano_y_min;
   const int frame_width = frames[0]->y_width;
@@ -480,6 +494,37 @@ static void blend_mean(const int width, const int height, const int num_frames,
           ++count;
         }
       }
+
+#if BGSPRITE_MEAN_REMOVE_OUTLIERS
+      if (count > 1) {
+        double stdev = 0;
+        double y_mean = (double)y_sum / count;
+        for (int i = 0; i < num_frames; ++i) {
+          if (image_stack[y][x][i].exists) {
+            stdev += pow(y_mean - image_stack[y][x][i].y, 2);
+          }
+        }
+        stdev = sqrt(stdev / count);
+
+        uint32_t inlier_y_sum = 0;
+        uint32_t inlier_u_sum = 0;
+        uint32_t inlier_v_sum = 0;
+        uint32_t inlier_count = 0;
+        for (int i = 0; i < num_frames; ++i) {
+          if (image_stack[y][x][i].exists &&
+              fabs(image_stack[y][x][i].y - y_mean) <= 1.5 * stdev) {
+            inlier_y_sum += image_stack[y][x][i].y;
+            inlier_u_sum += image_stack[y][x][i].u;
+            inlier_v_sum += image_stack[y][x][i].v;
+            ++inlier_count;
+          }
+        }
+        count = inlier_count;
+        y_sum = inlier_y_sum;
+        u_sum = inlier_u_sum;
+        v_sum = inlier_v_sum;
+      }
+#endif  // BGSPRITE_MEAN_REMOVE_OUTLIERS
 
       if (count != 0) {
         blended_img[y][x].exists = 1;
@@ -833,18 +878,19 @@ static void combine_arf(YV12_BUFFER_CONFIG *const temporal_arf,
     blended_img[i] = aom_malloc(width * sizeof(**blended_img));
   }
 
-  const int block_2_size = 4;
-  const int block_2_height = (height / block_2_size + 1);
-  const int block_2_width = (width / block_2_size + 1);
+  const int block_2_height = (height / BGSPRITE_MASK_BLOCK_SIZE) +
+                             (height % BGSPRITE_MASK_BLOCK_SIZE != 0 ? 1 : 0);
+  const int block_2_width = (width / BGSPRITE_MASK_BLOCK_SIZE) +
+                            (width % BGSPRITE_MASK_BLOCK_SIZE != 0 ? 1 : 0);
 
   for (int block_y = 0; block_y < block_2_height; ++block_y) {
     for (int block_x = 0; block_x < block_2_width; ++block_x) {
       int count = 0;
       int total = 0;
-      for (int sub_y = 0; sub_y < block_2_size; ++sub_y) {
-        for (int sub_x = 0; sub_x < block_2_size; ++sub_x) {
-          const int img_y = block_y * block_2_size + sub_y;
-          const int img_x = block_x * block_2_size + sub_x;
+      for (int sub_y = 0; sub_y < BGSPRITE_MASK_BLOCK_SIZE; ++sub_y) {
+        for (int sub_x = 0; sub_x < BGSPRITE_MASK_BLOCK_SIZE; ++sub_x) {
+          const int img_y = block_y * BGSPRITE_MASK_BLOCK_SIZE + sub_y;
+          const int img_x = block_x * BGSPRITE_MASK_BLOCK_SIZE + sub_x;
           const int mask_y = (y_offset + img_y) / block_size;
           const int mask_x = (x_offset + img_x) / block_size;
 
@@ -859,10 +905,10 @@ static void combine_arf(YV12_BUFFER_CONFIG *const temporal_arf,
 
       const double threshold = 0.30;
       const int amount = (int)(threshold * total);
-      for (int sub_y = 0; sub_y < block_2_size; ++sub_y) {
-        for (int sub_x = 0; sub_x < block_2_size; ++sub_x) {
-          const int y = block_y * block_2_size + sub_y;
-          const int x = block_x * block_2_size + sub_x;
+      for (int sub_y = 0; sub_y < BGSPRITE_MASK_BLOCK_SIZE; ++sub_y) {
+        for (int sub_x = 0; sub_x < BGSPRITE_MASK_BLOCK_SIZE; ++sub_x) {
+          const int y = block_y * BGSPRITE_MASK_BLOCK_SIZE + sub_y;
+          const int x = block_x * BGSPRITE_MASK_BLOCK_SIZE + sub_x;
           if (y < height && x < width) {
             blended_img[y][x].exists = 1;
             const int ychannel_idx = y * temporal_arf->y_stride + x;
@@ -964,7 +1010,7 @@ static void stitch_images(AV1_COMP *cpi, YV12_BUFFER_CONFIG **const frames,
 #if BGSPRITE_BLENDING_MODE == 1
   blend_mean(width, height, num_frames, (const YuvPixel ***)pano_stack,
              blended_img, panorama->flags & YV12_FLAG_HIGHBITDEPTH);
-#else
+#else   // BGSPRITE_BLENDING_MODE != 1
   blend_median(width, height, num_frames, (const YuvPixel ***)pano_stack,
                blended_img);
 #endif  // BGSPRITE_BLENDING_MODE == 1
@@ -1004,8 +1050,8 @@ static void stitch_images(AV1_COMP *cpi, YV12_BUFFER_CONFIG **const frames,
 
   // Block size constants for gaussian model.
   const int N_1 = 2;
-  const int y_block_height = (height / N_1) + 1;
-  const int x_block_width = (width / N_1) + 1;
+  const int y_block_height = (height / N_1) + (height % N_1 != 0 ? 1 : 0);
+  const int x_block_width = (width / N_1) + (height % N_1 != 0 ? 1 : 0);
   YuvPixelGaussian **gauss = aom_malloc(y_block_height * sizeof(*gauss));
   for (int i = 0; i < y_block_height; ++i) {
     gauss[i] = aom_calloc(x_block_width, sizeof(**gauss));
@@ -1051,7 +1097,7 @@ static void stitch_images(AV1_COMP *cpi, YV12_BUFFER_CONFIG **const frames,
   }
   aom_free(gauss);
   aom_free(mask);
-#else
+#else   // !BGSPRITE_ENABLE_SEGMENTATION
   av1_temporal_filter(cpi, &bgsprite, panorama, distance);
 #endif  // BGSPRITE_ENABLE_SEGMENTATION
 
@@ -1068,6 +1114,13 @@ static void stitch_images(AV1_COMP *cpi, YV12_BUFFER_CONFIG **const frames,
 }
 
 int av1_background_sprite(AV1_COMP *cpi, int distance) {
+#if BGSPRITE_ENABLE_METRICS
+  // Do temporal filter if firstpass stats disable bgsprite.
+  if (!cpi->bgsprite_allowed) {
+    return 1;
+  }
+#endif  // BGSPRITE_ENABLE_METRICS
+
   YV12_BUFFER_CONFIG *frames[MAX_LAG_BUFFERS] = { NULL };
   static const double identity_params[MAX_PARAMDIM - 1] = {
     0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0
@@ -1193,3 +1246,12 @@ int av1_background_sprite(AV1_COMP *cpi, int distance) {
 
   return 0;
 }
+
+#undef _POSIX_C_SOURCE
+#undef BGSPRITE_BLENDING_MODE
+#undef BGSPRITE_INTERPOLATION
+#undef BGSPRITE_ENABLE_METRICS
+#undef BGSPRITE_ENABLE_SEGMENTATION
+#undef BGSPRITE_ENABLE_GME
+#undef BGSPRITE_MASK_BLOCK_SIZE
+#undef TRANSFORM_MAT_DIM

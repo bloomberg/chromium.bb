@@ -599,6 +599,10 @@ typedef struct AV1_COMP {
   int extra_arf_allowed;
   int bwd_ref_allowed;
 #endif  // CONFIG_EXT_REFS
+
+#if CONFIG_BGSPRITE
+  int bgsprite_allowed;
+#endif  // CONFIG_BGSPRITE
 } AV1_COMP;
 
 void av1_initialize_enc(void);
