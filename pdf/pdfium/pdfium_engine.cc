@@ -1772,6 +1772,7 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
   pp::Point point = event.GetPosition();
   PDFiumPage::Area area =
       GetCharIndex(point, &page_index, &char_index, &form_type, &target);
+  DCHECK_GE(form_type, FPDF_FORMFIELD_UNKNOWN);
   mouse_down_state_.Set(area, target);
 
   // Decide whether to open link or not based on user action in mouse up and
@@ -1791,10 +1792,8 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
 
     FPDF_PAGE page = pages_[page_index]->GetPage();
     FORM_OnLButtonDown(form_, page, 0, page_x, page_y);
-    if (form_type > FPDF_FORMFIELD_UNKNOWN) {  // returns -1 sometimes...
+    if (form_type != FPDF_FORMFIELD_UNKNOWN) {
       DCHECK_EQ(area, PDFiumPage::FormTypeToArea(form_type));
-      mouse_down_state_.Set(area, target);
-
       // Destroy SelectionChangeInvalidator object before SetInFormTextArea()
       // changes plugin's focus to be in form text area. This way, regular text
       // selection can be cleared when a user clicks into a form text area
