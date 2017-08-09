@@ -8,12 +8,12 @@
 #include <memory>
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/loader/fetch/CrossOriginAccessControl.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/AtomicString.h"
+#include "public/platform/WebCORS.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 
@@ -60,7 +60,7 @@ class MODULES_EXPORT FetchResponseData final
   // Creates a CORS filtered response with an explicit set of exposed header
   // names.
   FetchResponseData* CreateCORSFilteredResponse(
-      const HTTPHeaderSet& exposed_headers) const;
+      const WebCORS::HTTPHeaderSet& exposed_headers) const;
   FetchResponseData* CreateOpaqueFilteredResponse() const;
   FetchResponseData* CreateOpaqueRedirectFilteredResponse() const;
 
@@ -84,7 +84,7 @@ class MODULES_EXPORT FetchResponseData final
   String InternalMIMEType() const;
   Time ResponseTime() const { return response_time_; }
   String CacheStorageCacheName() const { return cache_storage_cache_name_; }
-  const HTTPHeaderSet& CorsExposedHeaderNames() const {
+  const WebCORS::HTTPHeaderSet& CorsExposedHeaderNames() const {
     return cors_exposed_header_names_;
   }
 
@@ -101,7 +101,7 @@ class MODULES_EXPORT FetchResponseData final
   void SetCacheStorageCacheName(const String& cache_storage_cache_name) {
     cache_storage_cache_name_ = cache_storage_cache_name;
   }
-  void SetCorsExposedHeaderNames(const HTTPHeaderSet& header_names) {
+  void SetCorsExposedHeaderNames(const WebCORS::HTTPHeaderSet& header_names) {
     cors_exposed_header_names_ = header_names;
   }
 
@@ -132,7 +132,7 @@ class MODULES_EXPORT FetchResponseData final
   String mime_type_;
   Time response_time_;
   String cache_storage_cache_name_;
-  HTTPHeaderSet cors_exposed_header_names_;
+  WebCORS::HTTPHeaderSet cors_exposed_header_names_;
 };
 
 }  // namespace blink

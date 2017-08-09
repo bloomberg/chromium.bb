@@ -25,7 +25,6 @@
 
 #include "platform/loader/fetch/FetchParameters.h"
 
-#include "platform/loader/fetch/CrossOriginAccessControl.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"

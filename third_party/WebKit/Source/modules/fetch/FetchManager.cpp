@@ -31,8 +31,8 @@
 #include "platform/HTTPNames.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ThrowException.h"
+#include "platform/exported/WrappedResourceResponse.h"
 #include "platform/loader/SubresourceIntegrity.h"
-#include "platform/loader/fetch/CrossOriginAccessControl.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -46,6 +46,7 @@
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebCORS.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
@@ -468,9 +469,9 @@ void FetchManager::Loader::DidReceiveResponse(
         tainted_response = response_data->CreateBasicFilteredResponse();
         break;
       case FetchRequestData::kCORSTainting: {
-        HTTPHeaderSet header_names;
-        CrossOriginAccessControl::ExtractCorsExposedHeaderNamesList(
-            response, header_names);
+        WebCORS::HTTPHeaderSet header_names;
+        WebCORS::ExtractCorsExposedHeaderNamesList(
+            WrappedResourceResponse(response), header_names);
         tainted_response =
             response_data->CreateCORSFilteredResponse(header_names);
         break;

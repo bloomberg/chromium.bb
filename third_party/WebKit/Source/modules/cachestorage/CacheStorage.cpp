@@ -14,6 +14,7 @@
 #include "modules/cachestorage/CacheStorageError.h"
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
+#include "platform/HTTPNames.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
