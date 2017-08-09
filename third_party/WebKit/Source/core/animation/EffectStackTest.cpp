@@ -4,16 +4,16 @@
 
 #include "core/animation/EffectStack.h"
 
+#include <memory>
 #include "core/animation/AnimationClock.h"
-#include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/LegacyStyleInterpolation.h"
+#include "core/animation/PendingAnimations.h"
 #include "core/animation/animatable/AnimatableDouble.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -171,8 +171,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   Play(MakeKeyframeEffect(
            MakeEffectModel(CSSPropertyFontSize, AnimatableDouble::Create(3))),
        4);
-  document->GetCompositorPendingAnimations().Update(
-      Optional<CompositorElementIdSet>());
+  document->GetPendingAnimations().Update(Optional<CompositorElementIdSet>());
   ActiveInterpolationsMap interpolations;
 
   UpdateTimeline(11);

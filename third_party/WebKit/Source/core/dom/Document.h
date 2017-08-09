@@ -85,7 +85,6 @@ class CDATASection;
 class CSSStyleSheet;
 class CanvasFontCache;
 class ChromeClient;
-class CompositorPendingAnimations;
 class Comment;
 class ComputedStyle;
 class ConsoleMessage;
@@ -144,6 +143,7 @@ class NodeIterator;
 class NthIndexCache;
 class OriginAccessEntry;
 class Page;
+class PendingAnimations;
 class ProcessingInstruction;
 class PropertyRegistry;
 class QualifiedName;
@@ -1207,9 +1207,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   AnimationClock& GetAnimationClock();
   DocumentTimeline& Timeline() const { return *timeline_; }
-  CompositorPendingAnimations& GetCompositorPendingAnimations() {
-    return *compositor_pending_animations_;
-  }
+  PendingAnimations& GetPendingAnimations() { return *pending_animations_; }
 
   void AddToTopLayer(Element*, const Element* before = nullptr);
   void RemoveFromTopLayer(Element*);
@@ -1675,7 +1673,7 @@ class CORE_EXPORT Document : public ContainerNode,
   LocaleIdentifierToLocaleMap locale_cache_;
 
   Member<DocumentTimeline> timeline_;
-  Member<CompositorPendingAnimations> compositor_pending_animations_;
+  Member<PendingAnimations> pending_animations_;
 
   Member<Document> template_document_;
   Member<Document> template_document_host_;

@@ -33,9 +33,9 @@
 #include <memory>
 #include "core/animation/AnimationClock.h"
 #include "core/animation/AnimationEffectReadOnly.h"
-#include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/animation/KeyframeEffectModel.h"
+#include "core/animation/PendingAnimations.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/QualifiedName.h"
@@ -76,8 +76,8 @@ class AnimationDocumentTimelineTest : public ::testing::Test {
 
   void UpdateClockAndService(double time) {
     document->GetAnimationClock().UpdateTime(time);
-    document->GetCompositorPendingAnimations().Update(
-        Optional<CompositorElementIdSet>(), false);
+    document->GetPendingAnimations().Update(Optional<CompositorElementIdSet>(),
+                                            false);
     timeline->ServiceAnimations(kTimingUpdateForAnimationFrame);
     timeline->ScheduleNextService();
   }

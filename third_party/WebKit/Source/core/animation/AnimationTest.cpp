@@ -32,10 +32,10 @@
 
 #include <memory>
 #include "core/animation/AnimationClock.h"
-#include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffect.h"
+#include "core/animation/PendingAnimations.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
@@ -84,8 +84,7 @@ class AnimationAnimationTest : public RenderingTest {
                      Optional<CompositorElementIdSet> composited_element_ids =
                          Optional<CompositorElementIdSet>()) {
     document->GetAnimationClock().UpdateTime(time);
-    document->GetCompositorPendingAnimations().Update(composited_element_ids,
-                                                      false);
+    document->GetPendingAnimations().Update(composited_element_ids, false);
     // The timeline does not know about our animation, so we have to explicitly
     // call update().
     return animation->Update(kTimingUpdateForAnimationFrame);

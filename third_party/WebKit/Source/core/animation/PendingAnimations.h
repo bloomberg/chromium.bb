@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CompositorPendingAnimations_h
-#define CompositorPendingAnimations_h
+#ifndef PendingAnimations_h
+#define PendingAnimations_h
 
 #include "core/CoreExport.h"
 #include "core/animation/Animation.h"
@@ -42,18 +42,26 @@
 
 namespace blink {
 
+// Handles starting animations when they could potentially require
+// interaction with the compositor. This can include both main-thread
+// and compositor thread animations. For example, when the Document
+// changes visibility state, all animations for the document's
+// timeline are set to "compositor pending" which will include them in
+// a consideration pass here.
+//
 // Manages the starting of pending animations on the compositor following a
 // compositing update.
+//
 // For CSS Animations, used to synchronize the start of main-thread animations
 // with compositor animations when both classes of CSS Animations are triggered
-// by the same recalc
-class CORE_EXPORT CompositorPendingAnimations final
-    : public GarbageCollectedFinalized<CompositorPendingAnimations> {
+// by the same recalc.
+class CORE_EXPORT PendingAnimations final
+    : public GarbageCollectedFinalized<PendingAnimations> {
  public:
-  explicit CompositorPendingAnimations(Document& document)
+  explicit PendingAnimations(Document& document)
       : timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &document),
                this,
-               &CompositorPendingAnimations::TimerFired),
+               &PendingAnimations::TimerFired),
         compositor_group_(1) {}
 
   void Add(Animation*);
@@ -73,7 +81,7 @@ class CORE_EXPORT CompositorPendingAnimations final
 
   HeapVector<Member<Animation>> pending_;
   HeapVector<Member<Animation>> waiting_for_compositor_animation_start_;
-  TaskRunnerTimer<CompositorPendingAnimations> timer_;
+  TaskRunnerTimer<PendingAnimations> timer_;
   int compositor_group_;
 };
 
