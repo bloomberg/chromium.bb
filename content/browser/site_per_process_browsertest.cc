@@ -76,6 +76,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/mock_overscroll_observer.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_security_test_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -101,7 +102,10 @@
 #include "ui/native_theme/native_theme_features.h"
 
 #if defined(USE_AURA)
+#include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#include "content/public/browser/overscroll_configuration.h"
+#include "content/test/mock_overscroll_controller_delegate_aura.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -116,6 +120,7 @@
 #include "content/browser/android/ime_adapter_android.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_manager_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
+#include "content/test/mock_overscroll_refresh_handler_android.h"
 #include "ui/gfx/geometry/point_f.h"
 #endif
 
@@ -1411,6 +1416,209 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   DCHECK_EQ(filter->last_rect().x(), 0);
   DCHECK_EQ(filter->last_rect().y(), 0);
 }
+
+#if defined(USE_AURA) || defined(OS_ANDROID)
+
+// When unconsumed scrolls in a child bubble to the root and start an
+// overscroll gesture, the subsequent gesture scroll update events should be
+// consumed by the root. The child should not be able to scroll during the
+// overscroll gesture.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       RootConsumesScrollDuringOverscrollGesture) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child_node = root->child_at(0);
+
+#if defined(USE_AURA)
+  // The child must be horizontally scrollable.
+  GURL child_url(embedded_test_server()->GetURL("b.com", "/wide_page.html"));
+#elif defined(OS_ANDROID)
+  // The child must be vertically scrollable.
+  GURL child_url(embedded_test_server()->GetURL("b.com", "/tall_page.html"));
+#endif
+  NavigateFrameToURL(child_node, child_url);
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  RenderWidgetHostViewChildFrame* rwhv_child =
+      static_cast<RenderWidgetHostViewChildFrame*>(
+          child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  WaitForChildFrameSurfaceReady(child_node->current_frame_host());
+
+  ASSERT_EQ(gfx::Vector2dF(), rwhv_root->GetLastScrollOffset());
+  ASSERT_EQ(gfx::Vector2dF(), rwhv_child->GetLastScrollOffset());
+
+  RenderWidgetHostInputEventRouter* router =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetInputEventRouter();
+
+  {
+    // Set up the RenderWidgetHostInputEventRouter to send the gesture stream
+    // to the child.
+    const gfx::Rect root_bounds = rwhv_root->GetViewBounds();
+    const gfx::Rect child_bounds = rwhv_child->GetViewBounds();
+    const float page_scale_factor = GetPageScaleFactor(shell());
+    const gfx::Point point_in_child(
+        gfx::ToCeiledInt((child_bounds.x() - root_bounds.x() + 10) *
+                         page_scale_factor),
+        gfx::ToCeiledInt((child_bounds.y() - root_bounds.y() + 10) *
+                         page_scale_factor));
+    gfx::Point dont_care;
+    ASSERT_EQ(rwhv_child->GetRenderWidgetHost(),
+              router->GetRenderWidgetHostAtPoint(rwhv_root, point_in_child,
+                                                 &dont_care));
+
+    blink::WebTouchEvent touch_event(
+        blink::WebInputEvent::kTouchStart, blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::kTimeStampForTesting);
+    touch_event.touches_length = 1;
+    touch_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
+    touch_event.touches[0].SetPositionInWidget(point_in_child.x(),
+                                               point_in_child.y());
+    touch_event.unique_touch_event_id = 1;
+    router->RouteTouchEvent(rwhv_root, &touch_event,
+                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+
+    blink::WebGestureEvent gesture_event(
+        blink::WebInputEvent::kGestureTapDown,
+        blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::kTimeStampForTesting);
+    gesture_event.source_device = blink::kWebGestureDeviceTouchscreen;
+    gesture_event.unique_touch_event_id = touch_event.unique_touch_event_id;
+    router->RouteGestureEvent(rwhv_root, &gesture_event,
+                              ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  }
+
+#if defined(USE_AURA)
+  RenderWidgetHostViewAura* rwhva =
+      static_cast<RenderWidgetHostViewAura*>(rwhv_root);
+  std::unique_ptr<MockOverscrollControllerDelegateAura>
+      mock_overscroll_delegate =
+          base::MakeUnique<MockOverscrollControllerDelegateAura>(rwhva);
+  rwhva->overscroll_controller()->set_delegate(mock_overscroll_delegate.get());
+  MockOverscrollObserver* mock_overscroll_observer =
+      mock_overscroll_delegate.get();
+#elif defined(OS_ANDROID)
+  RenderWidgetHostViewAndroid* rwhv_android =
+      static_cast<RenderWidgetHostViewAndroid*>(rwhv_root);
+  std::unique_ptr<MockOverscrollRefreshHandlerAndroid> mock_overscroll_handler =
+      base::MakeUnique<MockOverscrollRefreshHandlerAndroid>();
+  rwhv_android->SetOverscrollControllerForTesting(
+      mock_overscroll_handler.get());
+  MockOverscrollObserver* mock_overscroll_observer =
+      mock_overscroll_handler.get();
+#endif  // defined(USE_AURA)
+
+  std::unique_ptr<InputEventAckWaiter> gesture_begin_observer_child =
+      base::MakeUnique<InputEventAckWaiter>(
+          blink::WebInputEvent::kGestureScrollBegin);
+  child_node->current_frame_host()
+      ->GetRenderWidgetHost()
+      ->AddInputEventObserver(gesture_begin_observer_child.get());
+  std::unique_ptr<InputEventAckWaiter> gesture_end_observer_child =
+      base::MakeUnique<InputEventAckWaiter>(
+          blink::WebInputEvent::kGestureScrollEnd);
+  child_node->current_frame_host()
+      ->GetRenderWidgetHost()
+      ->AddInputEventObserver(gesture_end_observer_child.get());
+
+  // First we need our scroll to initiate an overscroll gesture in the root
+  // via unconsumed scrolls in the child.
+  blink::WebGestureEvent gesture_scroll_begin(
+      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  gesture_scroll_begin.source_device = blink::kWebGestureDeviceTouchscreen;
+  gesture_scroll_begin.unique_touch_event_id = 1;
+  gesture_scroll_begin.data.scroll_begin.delta_hint_units =
+      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+  gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
+  gesture_scroll_begin.data.scroll_begin.delta_y_hint = 0.f;
+  router->RouteGestureEvent(rwhv_root, &gesture_scroll_begin,
+                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+
+  // Make sure the child is indeed receiving the gesture stream.
+  gesture_begin_observer_child->Wait();
+
+  blink::WebGestureEvent gesture_scroll_update(
+      blink::WebGestureEvent::kGestureScrollUpdate,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  gesture_scroll_update.source_device = blink::kWebGestureDeviceTouchscreen;
+  gesture_scroll_update.unique_touch_event_id = 1;
+  gesture_scroll_update.data.scroll_update.delta_units =
+      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+  gesture_scroll_update.data.scroll_update.delta_x = 0.f;
+  gesture_scroll_update.data.scroll_update.delta_y = 0.f;
+#if defined(USE_AURA)
+  const float threshold =
+      GetOverscrollConfig(OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN);
+  // For aura, we scroll horizontally to activate an overscroll navigation.
+  float* delta = &gesture_scroll_update.data.scroll_update.delta_x;
+#elif defined(OS_ANDROID)
+  const float threshold = 0.f;
+  // For android, we scroll vertically to activate pull-to-refresh.
+  float* delta = &gesture_scroll_update.data.scroll_update.delta_y;
+#endif
+  *delta = threshold + 1;
+  mock_overscroll_observer->Reset();
+  // This will bring us into an overscroll gesture.
+  router->RouteGestureEvent(rwhv_root, &gesture_scroll_update,
+                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  // Note that in addition to verifying that we get the overscroll update, it
+  // is necessary to wait before sending the next event to prevent our multiple
+  // GestureScrollUpdates from being coalesced.
+  mock_overscroll_observer->WaitForUpdate();
+
+  // This scroll is in the same direction and so it will contribute to the
+  // overscroll.
+  *delta = 10.0f;
+  mock_overscroll_observer->Reset();
+  router->RouteGestureEvent(rwhv_root, &gesture_scroll_update,
+                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  mock_overscroll_observer->WaitForUpdate();
+
+  // Now we reverse direction. The child could scroll in this direction, but
+  // since we're in an overscroll gesture, the root should consume it.
+  *delta = -5.0f;
+  mock_overscroll_observer->Reset();
+  router->RouteGestureEvent(rwhv_root, &gesture_scroll_update,
+                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  mock_overscroll_observer->WaitForUpdate();
+
+  blink::WebGestureEvent gesture_scroll_end(
+      blink::WebGestureEvent::kGestureScrollEnd,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  gesture_scroll_end.source_device = blink::kWebGestureDeviceTouchscreen;
+  gesture_scroll_end.unique_touch_event_id = 1;
+  gesture_scroll_end.data.scroll_end.delta_units =
+      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+  mock_overscroll_observer->Reset();
+  router->RouteGestureEvent(rwhv_root, &gesture_scroll_end,
+                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  mock_overscroll_observer->WaitForEnd();
+
+  // Ensure that the method of providing the child's scroll events to the root
+  // does not leave the child in an invalid state.
+  gesture_end_observer_child->Wait();
+}
+#endif  // defined(USE_AURA) || defined(OS_ANDROID)
 
 // Test that an ET_SCROLL event sent to an out-of-process iframe correctly
 // results in a scroll. This is only handled by RenderWidgetHostViewAura

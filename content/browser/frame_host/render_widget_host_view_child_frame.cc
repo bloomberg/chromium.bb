@@ -816,10 +816,22 @@ InputEventAckState RenderWidgetHostViewChildFrame::FilterInputEvent(
     }
   }
 
-  // TODO(mcnee): Allow the root RWHV to consume the child's
-  // GestureScrollUpdates. This is needed to prevent the child from consuming
-  // them after the root has started an overscroll.
-  // See crbug.com/713368
+  // Allow the root RWHV a chance to consume the child's GestureScrollUpdates
+  // in case the root needs to prevent the child from scrolling. For example,
+  // if the root has started an overscroll gesture, it needs to process the
+  // scroll events that would normally be processed by the child.
+  // TODO(mcnee): Once BrowserPlugin is removed, investigate routing these
+  // GestureScrollUpdates directly to the root RWHV during an overscroll
+  // gesture. The way resending of scroll events from a plugin works would cause
+  // issues with this approach in terms of valid input streams.
+  // See crbug.com/751782
+  if (frame_connector_ &&
+      input_event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
+    const blink::WebGestureEvent& gesture_event =
+        static_cast<const blink::WebGestureEvent&>(input_event);
+    return frame_connector_->GetRootRenderWidgetHostView()
+        ->FilterChildGestureEvent(gesture_event);
+  }
 
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
