@@ -23,10 +23,10 @@ platform.
 | GYROSCOPE                         | TYPE_GYROSCOPE            | in_anglvel                            |                                       | SENSOR_TYPE_GYROMETER_3D                  |
 | MAGNETOMETER                      | TYPE_MAGNETIC_FIELD       | in_magn                               |                                       | SENSOR_TYPE_COMPASS_3D                    |
 | PRESSURE                          |                           |                                       |                                       |                                           |
-| ABSOLUTE_ORIENTATION_EULER_ANGLES |                           |                                       |                                       | SENSOR_TYPE_INCLINOMETER_3D               |
-| ABSOLUTE_ORIENTATION_QUATERNION   | TYPE_ROTATION_VECTOR      |                                       |                                       | SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION |
-| RELATIVE_ORIENTATION_EULER_ANGLES |                           | ACCELEROMETER (*)                     | ACCELEROMETER (*)                     |                                           |
-| RELATIVE_ORIENTATION_QUATERNION   | TYPE_GAME_ROTATION_VECTOR | RELATIVE_ORIENTATION_EULER_ANGLES (*) | RELATIVE_ORIENTATION_EULER_ANGLES (*) |                                           |
+| ABSOLUTE_ORIENTATION_EULER_ANGLES | See below                 |                                       |                                       | SENSOR_TYPE_INCLINOMETER_3D               |
+| ABSOLUTE_ORIENTATION_QUATERNION   | See below                 |                                       |                                       | SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION |
+| RELATIVE_ORIENTATION_EULER_ANGLES | See below                 | ACCELEROMETER (*)                     | ACCELEROMETER (*)                     |                                           |
+| RELATIVE_ORIENTATION_QUATERNION   | See below                 | RELATIVE_ORIENTATION_EULER_ANGLES (*) | RELATIVE_ORIENTATION_EULER_ANGLES (*) |                                           |
 
 (Note: "*" means the sensor type is provided by sensor fusion.)
 
@@ -34,9 +34,27 @@ platform.
 
 Sensors are implemented by passing through values provided by the
 [Sensor](https://developer.android.com/reference/android/hardware/Sensor.html)
-class. The values in the "Android" column of the table above correspond to the
-integer constants from the android.hardware.Sensor used to provide data for a
+class. The TYPE_* values in the below descriptions correspond to the integer
+constants from the android.hardware.Sensor used to provide data for a
 SensorType.
+
+For ABSOLUTE_ORIENTATION_EULER_ANGLES, the following sensor fallback is used:
+1. ABSOLUTE_ORIENTATION_QUATERNION (if it uses TYPE_ROTATION_VECTOR
+     directly)
+2. Combination of ACCELEROMETER and MAGNETOMETER
+
+For ABSOLUTE_ORIENTATION_QUATERNION, the following sensor fallback is used:
+1. Use TYPE_ROTATION_VECTOR directly
+2. ABSOLUTE_ORIENTATION_EULER_ANGLES
+
+For RELATIVE_ORIENTATION_EULER_ANGLES, the following sensor fallback is used:
+1. RELATIVE_ORIENTATION_QUATERNION (if it uses TYPE_GAME_ROTATION_VECTOR
+     directly)
+2. ACCELEROMETER
+
+For RELATIVE_ORIENTATION_QUATERNION, the following sensor fallback is used:
+1. Use TYPE_GAME_ROTATION_VECTOR directly
+2. RELATIVE_ORIENTATION_EULER_ANGLES
 
 ### Linux (and Chrome OS)
 
