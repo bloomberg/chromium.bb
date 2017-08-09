@@ -213,8 +213,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
 
   void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
-    fake_auth_policy_client()->set_operation_delay(
-        base::TimeDelta::FromSeconds(0));
+    fake_auth_policy_client()->DisableOperationDelayForTesting();
   }
 
   void MarkAsActiveDirectoryEnterprise() {

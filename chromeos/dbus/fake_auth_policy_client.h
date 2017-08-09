@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 
 #include "chromeos/dbus/auth_policy_client.h"
 
@@ -23,19 +24,43 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
   // DBusClient overrides.
   void Init(dbus::Bus* bus) override;
   // AuthPolicyClient overrides.
+
+  // Performs basic checks on |machine_name| and |user_principal|. Could fail
+  // with ERROR_MACHINE_NAME_TOO_LONG, ERROR_INVALID_MACHINE_NAME or
+  // ERROR_PARSE_UPN_FAILED. Otherwise succeeds.
   void JoinAdDomain(const std::string& machine_name,
                     const std::string& user_principal_name,
                     int password_fd,
                     JoinCallback callback) override;
+
+  // Runs |callback| with |auth_error_|.
   void AuthenticateUser(const std::string& user_principal_name,
                         const std::string& object_guid,
                         int password_fd,
                         AuthCallback callback) override;
+
+  // Runs |callback| with |password_status_| and |tgt_status_|. Also calls
+  // |on_get_status_closure_| after that.
   void GetUserStatus(const std::string& object_guid,
                      GetUserStatusCallback callback) override;
-  void RefreshDevicePolicy(RefreshPolicyCallback calllback) override;
+
+  // Runs |callback| with Kerberos files.
+  void GetUserKerberosFiles(const std::string& object_guid,
+                            GetUserKerberosFilesCallback callback) override;
+
+  // Writes device policy file and runs callback.
+  void RefreshDevicePolicy(RefreshPolicyCallback callback) override;
+
+  // Writes user policy file and runs callback.
   void RefreshUserPolicy(const AccountId& account_id,
                          RefreshPolicyCallback callback) override;
+
+  // Runs |on_connected_callback| with success. Then runs |signal_callback|
+  // once.
+  void ConnectToSignal(
+      const std::string& signal_name,
+      dbus::ObjectProxy::SignalCallback signal_callback,
+      dbus::ObjectProxy::OnConnectedCallback on_connected_callback) override;
 
   // Mark service as started. It's getting started by the
   // UpstartClient::StartAuthPolicyService on the Active Directory managed
@@ -70,8 +95,9 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
     on_get_status_closure_ = std::move(on_get_status_closure);
   }
 
-  void set_operation_delay(const base::TimeDelta operation_delay) {
-    operation_delay_ = operation_delay;
+  void DisableOperationDelayForTesting() {
+    dbus_operation_delay_ = disk_operation_delay_ =
+        base::TimeDelta::FromSeconds(0);
   }
 
  private:
@@ -85,7 +111,10 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
       authpolicy::ActiveDirectoryUserStatus::PASSWORD_VALID;
   authpolicy::ActiveDirectoryUserStatus::TgtStatus tgt_status_ =
       authpolicy::ActiveDirectoryUserStatus::TGT_VALID;
-  base::TimeDelta operation_delay_;
+  // Delay operations to be more realistic.
+  base::TimeDelta dbus_operation_delay_ = base::TimeDelta::FromSeconds(3);
+  base::TimeDelta disk_operation_delay_ =
+      base::TimeDelta::FromMilliseconds(100);
   DISALLOW_COPY_AND_ASSIGN(FakeAuthPolicyClient);
 };
 
