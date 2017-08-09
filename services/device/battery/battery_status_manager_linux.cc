@@ -307,6 +307,10 @@ mojom::BatteryStatus ComputeWebBatteryStatus(BatteryProperties* properties) {
   return status;
 }
 
+void OnSignalConnectedDoNothing(const std::string& interface_name,
+                                const std::string& signal_name,
+                                bool success) {}
+
 }  // namespace
 
 // Class that represents a dedicated thread which communicates with DBus to
@@ -314,7 +318,7 @@ mojom::BatteryStatus ComputeWebBatteryStatus(BatteryProperties* properties) {
 class BatteryStatusManagerLinux::BatteryStatusNotificationThread
     : public base::Thread {
  public:
-  BatteryStatusNotificationThread(
+  explicit BatteryStatusNotificationThread(
       const BatteryStatusService::BatteryUpdateCallback& callback)
       : base::Thread(kBatteryNotifierThreadName), callback_(callback) {}
 
@@ -345,14 +349,12 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
         kUPowerServiceName, kUPowerSignalDeviceAdded,
         base::Bind(&BatteryStatusNotificationThread::DeviceAdded,
                    base::Unretained(this)),
-        base::Bind(&BatteryStatusNotificationThread::OnSignalConnected,
-                   base::Unretained(this)));
+        base::Bind(&OnSignalConnectedDoNothing));
     upower_->proxy()->ConnectToSignal(
         kUPowerServiceName, kUPowerSignalDeviceRemoved,
         base::Bind(&BatteryStatusNotificationThread::DeviceRemoved,
                    base::Unretained(this)),
-        base::Bind(&BatteryStatusNotificationThread::OnSignalConnected,
-                   base::Unretained(this)));
+        base::Bind(&OnSignalConnectedDoNothing));
 
     FindBatteryDevice();
   }
@@ -365,7 +367,9 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
   void SetDBusForTesting(dbus::Bus* bus) { system_bus_ = bus; }
 
  private:
-  bool OnWatcherThread() { return task_runner()->BelongsToCurrentThread(); }
+  bool OnWatcherThread() const {
+    return task_runner()->BelongsToCurrentThread();
+  }
 
   void InitDBus() {
     DCHECK(OnWatcherThread());
@@ -373,16 +377,20 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
     dbus::Bus::Options options;
     options.bus_type = dbus::Bus::SYSTEM;
     options.connection_type = dbus::Bus::PRIVATE;
-    system_bus_ = make_scoped_refptr(new dbus::Bus(options));
+    system_bus_ = base::MakeRefCounted<dbus::Bus>(options);
   }
 
   bool IsDaemonVersionBelow_0_99() {
+    DCHECK(OnWatcherThread());
+
     base::Version daemon_version = upower_->properties()->daemon_version();
     return daemon_version.IsValid() &&
            daemon_version.CompareTo(base::Version("0.99")) < 0;
   }
 
   void FindBatteryDevice() {
+    DCHECK(OnWatcherThread());
+
     // If ShutdownDBusConnection() has been called, the DBus connection will be
     // destroyed eventually. In the meanwhile, pending tasks can still end up
     // calling this class. Ignore these calls.
@@ -456,30 +464,25 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
           kUPowerDeviceInterfaceName, kUPowerDeviceSignalChanged,
           base::Bind(&BatteryStatusNotificationThread::BatteryChanged,
                      base::Unretained(this)),
-          base::Bind(&BatteryStatusNotificationThread::OnSignalConnected,
-                     base::Unretained(this)));
+          base::Bind(&OnSignalConnectedDoNothing));
     }
   }
 
   void ShutdownDBusConnection() {
     DCHECK(OnWatcherThread());
 
-    if (!system_bus_.get())
+    if (!system_bus_)
       return;
 
-    battery_.reset();  // before the system_bus_ is shut down.
+    battery_.reset();  // before the |system_bus_| is shut down.
     upower_.reset();
 
     // Shutdown DBus connection later because there may be pending tasks on
     // this thread.
     message_loop()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&dbus::Bus::ShutdownAndBlock, system_bus_));
-    system_bus_ = NULL;
+    system_bus_ = nullptr;
   }
-
-  void OnSignalConnected(const std::string& interface_name,
-                         const std::string& signal_name,
-                         bool success) {}
 
   std::unique_ptr<BatteryObject> CreateBattery(
       const dbus::ObjectPath& device_path) {
@@ -489,13 +492,17 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
                    base::Unretained(this)));
   }
 
-  void DeviceAdded(dbus::Signal* signal /* unused */) {
+  void DeviceAdded(dbus::Signal* /* signal */) {
+    DCHECK(OnWatcherThread());
+
     // Re-iterate all devices to see if we need to monitor the added battery
     // instead of the currently monitored battery.
     FindBatteryDevice();
   }
 
   void DeviceRemoved(dbus::Signal* signal) {
+    DCHECK(OnWatcherThread());
+
     if (!battery_)
       return;
 
@@ -523,15 +530,18 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
     }
 
     if (!removed_device_path.IsValid() ||
-        battery_->proxy()->object_path() == removed_device_path)
+        battery_->proxy()->object_path() == removed_device_path) {
       FindBatteryDevice();
+    }
   }
 
-  void BatteryPropertyChanged(const std::string& property_name) {
+  void BatteryPropertyChanged(const std::string& /* property_name */) {
+    DCHECK(OnWatcherThread());
     NotifyBatteryStatus();
   }
 
-  void BatteryChanged(dbus::Signal* signal /* unsused */) {
+  void BatteryChanged(dbus::Signal* /* signal */) {
+    DCHECK(OnWatcherThread());
     DCHECK(battery_);
     battery_->properties()->Invalidate();
     NotifyBatteryStatus();
@@ -540,7 +550,7 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
   void NotifyBatteryStatus() {
     DCHECK(OnWatcherThread());
 
-    if (!system_bus_.get() || !battery_ || notifying_battery_status_)
+    if (!system_bus_ || !battery_ || notifying_battery_status_)
       return;
 
     // If the system uses a UPower daemon older than version 0.99
@@ -556,7 +566,7 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
     notifying_battery_status_ = false;
   }
 
-  BatteryStatusService::BatteryUpdateCallback callback_;
+  const BatteryStatusService::BatteryUpdateCallback callback_;
   scoped_refptr<dbus::Bus> system_bus_;
   std::unique_ptr<UPowerObject> upower_;
   std::unique_ptr<BatteryObject> battery_;
