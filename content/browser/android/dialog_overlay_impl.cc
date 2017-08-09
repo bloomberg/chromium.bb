@@ -36,6 +36,10 @@ static jlong Init(JNIEnv* env,
   if (!rfhi->IsCurrent() || web_contents_impl->IsHidden())
     return 0;
 
+  // Dialog-based overlays are not supported for persistent video.
+  if (web_contents_impl->HasPersistentVideo())
+    return 0;
+
   ContentViewCore* cvc = ContentViewCore::FromWebContents(web_contents_impl);
 
   if (!cvc)
