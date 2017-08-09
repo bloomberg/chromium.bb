@@ -62,5 +62,14 @@ test_with_window((w) => {
   assert_not_equals(new A().localName, 'defined-name',
                     'localName should not be defined-name');
 }, 'localName set to data element interface for extends');
+
+test_with_window((w) => {
+  class A extends w.HTMLTimeElement {}
+  w.customElements.define('defined-name', A, { extends: 'time' });
+  assert_equals(new A().localName, 'time',
+                'localName should be time element interface for extends');
+  assert_not_equals(new A().localName, 'defined-name',
+                    'localName should not be defined-name');
+}, 'localName set to time element interface for extends');
 </script>
 </body>

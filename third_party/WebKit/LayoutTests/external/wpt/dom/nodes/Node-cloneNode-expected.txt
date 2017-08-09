@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 133 tests; 130 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 133 tests; 131 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS createElement(a) 
 PASS createElement(abbr) 
 PASS createElement(acronym) 
@@ -111,7 +111,7 @@ PASS createElement(td)
 PASS createElement(template) 
 PASS createElement(textarea) 
 PASS createElement(th) 
-FAIL createElement(time) assert_true: HTMLTimeElement is not supported expected true got false
+PASS createElement(time) 
 PASS createElement(title) 
 PASS createElement(tr) 
 PASS createElement(tt) 
