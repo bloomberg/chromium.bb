@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_base.h"
 #include "extensions/browser/value_store/value_store.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace leveldb {
@@ -80,7 +81,7 @@ class LazyLevelDb {
   // The path to the underlying leveldb.
   const base::FilePath db_path_;
   // The options to be used when this database is lazily opened.
-  leveldb::Options open_options_;
+  leveldb_env::Options open_options_;
   // The options to be used for all database read operations.
   leveldb::ReadOptions read_options_;
   // The options to be used for all database write operations.

@@ -81,10 +81,9 @@ bool SandboxOriginDatabase::Init(InitOption init_option,
     return false;
 
   std::string path = FilePathToString(db_path);
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   if (env_override_)
     options.env = env_override_;
   leveldb::Status status = leveldb_env::OpenDB(options, path, &db_);
@@ -128,7 +127,8 @@ bool SandboxOriginDatabase::Init(InitOption init_option,
 
 bool SandboxOriginDatabase::RepairDatabase(const std::string& db_path) {
   DCHECK(!db_.get());
-  leveldb::Options options;
+  leveldb_env::Options options;
+  options.reuse_logs = false;
   options.max_open_files = 0;  // Use minimum.
   if (env_override_)
     options.env = env_override_;

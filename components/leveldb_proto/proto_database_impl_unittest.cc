@@ -24,6 +24,7 @@
 #include "components/leveldb_proto/testing/proto/test.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 
 using base::MessageLoop;
@@ -596,7 +597,7 @@ TEST(ProtoDatabaseImplLevelDBTest, TestDBInitFail) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.create_if_missing = false;
   std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
 

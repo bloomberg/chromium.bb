@@ -89,7 +89,7 @@ class SessionStorageDatabase::DBOperation {
       // No other operations are ongoing and the data is bad -> delete it now.
       session_storage_database_->db_.reset();
       leveldb::DestroyDB(session_storage_database_->file_path_.AsUTF8Unsafe(),
-                         leveldb::Options());
+                         leveldb_env::Options());
       session_storage_database_->invalid_db_deleted_ = true;
     }
   }
@@ -432,13 +432,12 @@ bool SessionStorageDatabase::LazyOpen(bool create_if_needed) {
 
 leveldb::Status SessionStorageDatabase::TryToOpen(
     std::unique_ptr<leveldb::DB>* db) {
-  leveldb::Options options;
+  leveldb_env::Options options;
   // The directory exists but a valid leveldb database might not exist inside it
   // (e.g., a subset of the needed files might be missing). Handle this
   // situation gracefully by creating the database now.
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   // Default write_buffer_size is 4 MB but that might leave a 3.999
   // memory allocation in RAM from a log file recovery.
   options.write_buffer_size = 64 * 1024;

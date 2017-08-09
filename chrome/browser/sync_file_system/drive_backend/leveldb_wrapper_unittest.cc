@@ -76,7 +76,7 @@ class LevelDBWrapperTest : public testing::Test {
  private:
   void InitializeLevelDB() {
     std::unique_ptr<leveldb::DB> db;
-    leveldb::Options options;
+    leveldb_env::Options options;
     options.create_if_missing = true;
     options.max_open_files = 0;  // Use minimum.
     options.env = in_memory_env_.get();

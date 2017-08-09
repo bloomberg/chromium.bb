@@ -270,10 +270,9 @@ bool ResourceMetadataStorage::UpgradeOldDB(
 
   // Open DB.
   std::unique_ptr<leveldb::DB> resource_map;
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = false;
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   leveldb::Status status = leveldb_env::OpenDB(
       options, resource_map_path.AsUTF8Unsafe(), &resource_map);
   if (!status.ok())
@@ -553,10 +552,9 @@ bool ResourceMetadataStorage::Initialize() {
   }
 
   // Try to open the existing DB.
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = false;
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
 
   DBInitStatus open_existing_result = DB_INIT_NOT_FOUND;
   leveldb::Status status;
@@ -604,10 +602,10 @@ bool ResourceMetadataStorage::Initialize() {
     MoveIfPossible(resource_map_path, preserved_resource_map_path);
 
     // Create DB.
+    options = leveldb_env::Options();
     options.max_open_files = 0;  // Use minimum.
     options.create_if_missing = true;
     options.error_if_exists = true;
-    options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
 
     status = leveldb_env::OpenDB(options, resource_map_path.AsUTF8Unsafe(),
                                  &resource_map_);
@@ -660,10 +658,10 @@ void ResourceMetadataStorage::RecoverCacheInfoFromTrashedResourceMap(
   if (!base::PathExists(trashed_resource_map_path))
     return;
 
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = false;
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
+  options.reuse_logs = false;
 
   // Trashed DB may be broken, repair it first.
   leveldb::Status status;

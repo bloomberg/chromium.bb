@@ -23,7 +23,6 @@
 
 using leveldb::DB;
 using leveldb::Env;
-using leveldb::Options;
 using leveldb::ReadOptions;
 using leveldb::Slice;
 using leveldb::Status;
@@ -32,6 +31,7 @@ using leveldb::WriteOptions;
 using leveldb_env::ChromiumEnv;
 using leveldb_env::DBTracker;
 using leveldb_env::MethodID;
+using leveldb_env::Options;
 
 TEST(ErrorEncoding, OnlyAMethod) {
   const MethodID in_method = leveldb_env::kSequentialFileRead;

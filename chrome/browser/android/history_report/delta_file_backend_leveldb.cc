@@ -91,7 +91,7 @@ DeltaFileBackend::DeltaFileBackend(const base::FilePath& dir)
 DeltaFileBackend::~DeltaFileBackend() {}
 
 bool DeltaFileBackend::Init() {
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.create_if_missing = true;
   options.max_open_files = 0;  // Use minimum number of files.
   options.comparator = leveldb_cmp_.get();

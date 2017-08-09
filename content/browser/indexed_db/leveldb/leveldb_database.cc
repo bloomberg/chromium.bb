@@ -118,12 +118,11 @@ leveldb::Status OpenDB(
     std::unique_ptr<leveldb::DB>* db,
     std::unique_ptr<const leveldb::FilterPolicy>* filter_policy) {
   filter_policy->reset(leveldb::NewBloomFilterPolicy(10));
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.comparator = comparator;
   options.create_if_missing = true;
   options.paranoid_checks = true;
   options.filter_policy = filter_policy->get();
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   options.compression = leveldb::kSnappyCompression;
   options.write_buffer_size =
       leveldb_env::WriteBufferSize(base::SysInfo::AmountOfTotalDiskSpace(path));
@@ -288,7 +287,7 @@ void LevelDBDatabase::CloseDatabase() {
 
 // static
 leveldb::Status LevelDBDatabase::Destroy(const base::FilePath& file_name) {
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.env = LevelDBEnv::Get();
   // ChromiumEnv assumes UTF8, converts back to FilePath before using.
   return leveldb::DestroyDB(file_name.AsUTF8Unsafe(), options);

@@ -10,6 +10,7 @@
 #include "base/test/histogram_tester.h"
 #include "components/sync/protocol/model_type_store_schema_descriptor.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
@@ -295,7 +296,7 @@ TEST_F(ModelTypeStoreBackendTest, RecoverAfterCorruption) {
 
   // Cleanup directory after the test.
   backend = nullptr;
-  s = leveldb::DestroyDB(path, leveldb::Options());
+  s = leveldb::DestroyDB(path, leveldb_env::Options());
   EXPECT_TRUE(s.ok()) << s.ToString();
 
   // Check that both recovery and consecutive initialization are recorded in

@@ -1220,9 +1220,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
     }
   }
 
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.create_if_missing = create_if_missing;
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   if (IsDatabaseInMemory()) {
     env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     options.env = env_.get();

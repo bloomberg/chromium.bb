@@ -178,9 +178,8 @@ ModelTypeStore::Result ModelTypeStoreBackend::Init(
 
 leveldb::Status ModelTypeStoreBackend::OpenDatabase(const std::string& path,
                                                     leveldb::Env* env) {
-  leveldb::Options options;
+  leveldb_env::Options options;
   options.create_if_missing = true;
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   options.paranoid_checks = true;
   if (env)
     options.env = env;
@@ -190,7 +189,7 @@ leveldb::Status ModelTypeStoreBackend::OpenDatabase(const std::string& path,
 
 leveldb::Status ModelTypeStoreBackend::DestroyDatabase(const std::string& path,
                                                        leveldb::Env* env) {
-  leveldb::Options options;
+  leveldb_env::Options options;
   if (env)
     options.env = env;
   return leveldb::DestroyDB(path, options);
