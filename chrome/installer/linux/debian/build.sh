@@ -88,6 +88,22 @@ stage_install_debian() {
   chmod 755 "${STAGEDIR}/DEBIAN/postrm"
 }
 
+verify_package() {
+  local DEPENDS="$1"
+  echo ${DEPENDS} | sed 's/, /\n/g' | LANG=C sort > expected_deb_depends
+  dpkg -I "${PACKAGE}-${CHANNEL}_${VERSIONFULL}_${ARCHITECTURE}.deb" | \
+      grep '^ Depends: ' | sed 's/^ Depends: //' | sed 's/, /\n/g' | \
+      LANG=C sort > actual_deb_depends
+  BAD_DIFF=0
+  diff -u expected_deb_depends actual_deb_depends || BAD_DIFF=1
+  if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
+    echo
+    echo "ERROR: bad dpkg dependencies!"
+    echo
+    exit $BAD_DIFF
+  fi
+}
+
 # Actually generate the package file.
 do_package() {
   echo "Packaging ${ARCHITECTURE}..."
@@ -103,22 +119,7 @@ do_package() {
     gen_control
   fi
   fakeroot dpkg-deb -Zxz -z9 -b "${STAGEDIR}" .
-}
-
-verify_package() {
-  DEPENDS="${COMMON_DEPS}"  # This needs to match do_package() above.
-  echo ${DEPENDS} | sed 's/, /\n/g' | LANG=C sort > expected_deb_depends
-  dpkg -I "${PACKAGE}-${CHANNEL}_${VERSIONFULL}_${ARCHITECTURE}.deb" | \
-      grep '^ Depends: ' | sed 's/^ Depends: //' | sed 's/, /\n/g' | \
-      LANG=C sort > actual_deb_depends
-  BAD_DIFF=0
-  diff -u expected_deb_depends actual_deb_depends || BAD_DIFF=1
-  if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
-    echo
-    echo "ERROR: bad dpkg dependencies!"
-    echo
-    exit $BAD_DIFF
-  fi
+  verify_package "$DEPENDS"
 }
 
 # Remove temporary files and unwanted packaging output.
@@ -356,4 +357,3 @@ REPOCONFIGREGEX+="[[:space:]]*) https?://${BASEREPOCONFIG}"
 stage_install_debian
 
 do_package
-verify_package

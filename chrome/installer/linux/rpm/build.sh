@@ -54,6 +54,27 @@ stage_install_rpm() {
   chmod 755 "${STAGEDIR}/etc/cron.daily/${PACKAGE}"
 }
 
+verify_package() {
+  local DEPENDS="$1"
+  local ADDITIONAL_RPM_DEPENDS="/bin/sh, \
+  rpmlib(CompressedFileNames) <= 3.0.4-1, \
+  rpmlib(PayloadFilesHavePrefix) <= 4.0-1, \
+  rpmlib(PayloadIsXz) <= 5.2-1, \
+  /usr/sbin/update-alternatives"
+  echo "${DEPENDS}" "${ADDITIONAL_RPM_DEPENDS}" | sed 's/,/\n/g' | \
+      sed 's/^ *//' | LANG=C sort > expected_rpm_depends
+  rpm -qpR "${OUTPUTDIR}/${PKGNAME}.${ARCHITECTURE}.rpm" | LANG=C sort | uniq \
+      > actual_rpm_depends
+  BAD_DIFF=0
+  diff -u expected_rpm_depends actual_rpm_depends || BAD_DIFF=1
+  if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
+    echo
+    echo "ERROR: bad rpm dependencies!"
+    echo
+    exit $BAD_DIFF
+  fi
+}
+
 # Actually generate the package file.
 do_package() {
   echo "Packaging ${ARCHITECTURE}..."
@@ -176,8 +197,10 @@ do_package() {
      "${OUTPUTDIR}"
   # Make sure the package is world-readable, otherwise it causes problems when
   # copied to share drive.
-  chmod a+r "${OUTPUTDIR}/${PKGNAME}.$ARCHITECTURE.rpm"
+  chmod a+r "${OUTPUTDIR}/${PKGNAME}.${ARCHITECTURE}.rpm"
   rm -rf "$RPMBUILD_DIR"
+
+  verify_package "$DEPENDS"
 }
 
 # Remove temporary files and unwanted packaging output.
