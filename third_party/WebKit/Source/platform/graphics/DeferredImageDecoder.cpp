@@ -47,14 +47,12 @@ struct DeferredFrameData {
       : orientation_(kDefaultImageOrientation),
         duration_(0),
         is_received_(false),
-        frame_bytes_(0),
-        unique_id_(DecodingImageGenerator::kNeedNewImageUniqueID) {}
+        frame_bytes_(0) {}
 
   ImageOrientation orientation_;
   float duration_;
   bool is_received_;
   size_t frame_bytes_;
-  uint32_t unique_id_;
 };
 
 std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::Create(
@@ -97,34 +95,47 @@ String DeferredImageDecoder::FilenameExtension() const {
                          : filename_extension_;
 }
 
-sk_sp<SkImage> DeferredImageDecoder::CreateFrameAtIndex(size_t index) {
+sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGeneratorAtIndex(
+    size_t index) {
   if (frame_generator_ && frame_generator_->DecodeFailed())
     return nullptr;
 
   PrepareLazyDecodedFrames();
 
-  if (index < frame_data_.size()) {
-    DeferredFrameData* frame_data = &frame_data_[index];
-    if (actual_decoder_)
-      frame_data->frame_bytes_ = actual_decoder_->FrameBytesAtIndex(index);
-    else
-      frame_data->frame_bytes_ = size_.Area() * sizeof(ImageFrame::PixelData);
-    // ImageFrameGenerator has the latest known alpha state. There will be a
-    // performance boost if this frame is opaque.
-    DCHECK(frame_generator_);
-    return CreateFrameImageAtIndex(index, !frame_generator_->HasAlpha(index));
-  }
-
-  if (!actual_decoder_ || actual_decoder_->Failed())
+  // PrepareLazyDecodedFrames should have populated the |frame_data_| for each
+  // frame in this image.
+  if (index >= frame_data_.size())
     return nullptr;
 
-  ImageFrame* frame = actual_decoder_->DecodeFrameBufferAtIndex(index);
-  if (!frame || frame->GetStatus() == ImageFrame::kFrameEmpty)
-    return nullptr;
+  DeferredFrameData* frame_data = &frame_data_[index];
+  if (actual_decoder_)
+    frame_data->frame_bytes_ = actual_decoder_->FrameBytesAtIndex(index);
+  else
+    frame_data->frame_bytes_ = size_.Area() * sizeof(ImageFrame::PixelData);
 
-  return (frame->GetStatus() == ImageFrame::kFrameComplete)
-             ? frame->FinalizePixelsAndGetImage()
-             : SkImage::MakeFromBitmap(frame->Bitmap());
+  // ImageFrameGenerator has the latest known alpha state. There will be a
+  // performance boost if this frame is opaque.
+  DCHECK(frame_generator_);
+  const SkISize& decoded_size = frame_generator_->GetFullSize();
+  DCHECK_GT(decoded_size.width(), 0);
+  DCHECK_GT(decoded_size.height(), 0);
+
+  sk_sp<SkROBuffer> ro_buffer(rw_buffer_->makeROBufferSnapshot());
+  RefPtr<SegmentReader> segment_reader =
+      SegmentReader::CreateFromSkROBuffer(std::move(ro_buffer));
+  const bool known_to_be_opaque = !frame_generator_->HasAlpha(index);
+
+  SkImageInfo info = SkImageInfo::MakeN32(
+      decoded_size.width(), decoded_size.height(),
+      known_to_be_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType,
+      color_space_for_sk_images_);
+
+  auto generator = sk_make_sp<DecodingImageGenerator>(
+      frame_generator_, info, std::move(segment_reader), all_data_received_,
+      index);
+  generator->SetCanYUVDecode(can_yuv_decode_);
+
+  return generator;
 }
 
 PassRefPtr<SharedBuffer> DeferredImageDecoder::Data() {
@@ -307,43 +318,6 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
     actual_decoder_.reset();
     // Hold on to m_rwBuffer, which is still needed by createFrameAtIndex.
   }
-}
-
-sk_sp<SkImage> DeferredImageDecoder::CreateFrameImageAtIndex(
-    size_t index,
-    bool known_to_be_opaque) {
-  const SkISize& decoded_size = frame_generator_->GetFullSize();
-  DCHECK_GT(decoded_size.width(), 0);
-  DCHECK_GT(decoded_size.height(), 0);
-
-  sk_sp<SkROBuffer> ro_buffer(rw_buffer_->makeROBufferSnapshot());
-  RefPtr<SegmentReader> segment_reader =
-      SegmentReader::CreateFromSkROBuffer(std::move(ro_buffer));
-
-  SkImageInfo info = SkImageInfo::MakeN32(
-      decoded_size.width(), decoded_size.height(),
-      known_to_be_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType,
-      color_space_for_sk_images_);
-
-  auto generator = WTF::MakeUnique<DecodingImageGenerator>(
-      frame_generator_, info, std::move(segment_reader), all_data_received_,
-      index, frame_data_[index].unique_id_);
-  generator->SetCanYUVDecode(can_yuv_decode_);
-  sk_sp<SkImage> image = SkImage::MakeFromGenerator(std::move(generator));
-  if (!image)
-    return nullptr;
-
-  // We can consider decoded bitmap constant and reuse uniqueID only after all
-  // data is received.  We reuse it also for multiframe images when image data
-  // is partially received but the frame data is fully received.
-  if (all_data_received_ || frame_data_[index].is_received_) {
-    DCHECK(frame_data_[index].unique_id_ ==
-               DecodingImageGenerator::kNeedNewImageUniqueID ||
-           frame_data_[index].unique_id_ == image->uniqueID());
-    frame_data_[index].unique_id_ = image->uniqueID();
-  }
-
-  return image;
 }
 
 bool DeferredImageDecoder::HotSpot(IntPoint& hot_spot) const {

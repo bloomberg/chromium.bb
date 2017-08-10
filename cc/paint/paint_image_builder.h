@@ -5,9 +5,13 @@
 #ifndef CC_PAINT_PAINT_IMAGE_BUILDER_H_
 #define CC_PAINT_PAINT_IMAGE_BUILDER_H_
 
+#include "base/memory/ptr_util.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_image.h"
+#include "cc/paint/paint_image_generator.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "cc/paint/skia_paint_image_generator.h"
+#include "third_party/skia/include/core/SkImage.h"
 
 namespace cc {
 
@@ -52,6 +56,24 @@ class CC_PAINT_EXPORT PaintImageBuilder {
   }
   PaintImageBuilder& set_is_multipart(bool is_multipart) {
     paint_image_.is_multipart_ = is_multipart;
+    return *this;
+  }
+
+  // |unique_id| is the id used when constructing an SkImage representation for
+  // a generator backed image. |allocated_unique_id| will be set to the id
+  // allocated to the resulting image.
+  // TODO(khushalsagar): Remove the use of this uniqueID. See crbug.com/753639.
+  PaintImageBuilder& set_paint_image_generator(
+      sk_sp<PaintImageGenerator> generator,
+      uint32_t unique_id = SkiaPaintImageGenerator::kNeedNewImageUniqueID,
+      uint32_t* allocated_unique_id = nullptr) {
+    paint_image_.paint_image_generator_ = std::move(generator);
+
+    paint_image_.cached_sk_image_ =
+        SkImage::MakeFromGenerator(base::MakeUnique<SkiaPaintImageGenerator>(
+            paint_image_.paint_image_generator_, unique_id));
+    if (allocated_unique_id)
+      *allocated_unique_id = paint_image_.cached_sk_image_->uniqueID();
     return *this;
   }
 

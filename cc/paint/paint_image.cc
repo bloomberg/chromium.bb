@@ -3,8 +3,12 @@
 // found in the LICENSE file.
 
 #include "cc/paint/paint_image.h"
+
 #include "base/atomic_sequence_num.h"
+#include "base/memory/ptr_util.h"
+#include "cc/paint/paint_image_generator.h"
 #include "cc/paint/paint_record.h"
+#include "cc/paint/skia_paint_image_generator.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -43,6 +47,9 @@ const sk_sp<SkImage>& PaintImage::GetSkImage() const {
         ToSkPicture(paint_record_, gfx::RectToSkRect(paint_record_rect_)),
         SkISize::Make(paint_record_rect_.width(), paint_record_rect_.height()),
         nullptr, nullptr, SkImage::BitDepth::kU8, SkColorSpace::MakeSRGB());
+  } else if (paint_image_generator_) {
+    cached_sk_image_ = SkImage::MakeFromGenerator(
+        base::MakeUnique<SkiaPaintImageGenerator>(paint_image_generator_));
   }
   return cached_sk_image_;
 }

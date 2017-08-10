@@ -111,11 +111,11 @@ size_t ImageSource::FrameCount() const {
   return decoder_ ? decoder_->FrameCount() : 0;
 }
 
-sk_sp<SkImage> ImageSource::CreateFrameAtIndex(size_t index) {
+sk_sp<PaintImageGenerator> ImageSource::CreateGeneratorAtIndex(size_t index) {
   if (!decoder_)
     return nullptr;
 
-  return decoder_->CreateFrameAtIndex(index);
+  return decoder_->CreateGeneratorAtIndex(index);
 }
 
 float ImageSource::FrameDurationAtIndex(size_t index) const {

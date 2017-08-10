@@ -28,6 +28,7 @@ cc_component("paint") {
     "paint_image.h",
     "paint_image_builder.cc",
     "paint_image_builder.h",
+    "paint_image_generator.h",
     "paint_op_buffer.cc",
     "paint_op_buffer.h",
     "paint_op_reader.cc",
@@ -44,6 +45,8 @@ cc_component("paint") {
     "record_paint_canvas.h",
     "skia_paint_canvas.cc",
     "skia_paint_canvas.h",
+    "skia_paint_image_generator.cc",
+    "skia_paint_image_generator.h",
     "solid_color_analyzer.cc",
     "solid_color_analyzer.h",
   ]

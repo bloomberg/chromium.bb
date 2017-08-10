@@ -101,6 +101,10 @@ class CC_EXPORT ImageDecodeCache {
   //
   // This is called by a raster task (on a worker thread) when an image is
   // required.
+  //
+  // TODO(khushalsagar/vmpstr): Since the cache knows if it's a video frame, it
+  // should discard any frames from the same source not in use in the
+  // compositor.
   virtual DecodedDrawImage GetDecodedImageForDraw(const DrawImage& image) = 0;
   // Unrefs an image. This should be called for every GetDecodedImageForDraw
   // when the draw with the image is finished.

@@ -47,23 +47,9 @@
 
 namespace blink {
 
-PassRefPtr<BitmapImage> BitmapImage::CreateWithOrientationForTesting(
-    const SkBitmap& bitmap,
-    ImageOrientation orientation) {
-  if (bitmap.isNull()) {
-    return BitmapImage::Create();
-  }
-
-  RefPtr<BitmapImage> result = AdoptRef(new BitmapImage(bitmap));
-  result->frames_[0].orientation_ = orientation;
-  if (orientation.UsesWidthAsHeight())
-    result->size_respecting_orientation_ = result->size_.TransposedSize();
-  return result;
-}
-
 BitmapImage::BitmapImage(ImageObserver* observer, bool is_multipart)
     : Image(observer, is_multipart),
-      current_frame_(0),
+      current_frame_index_(0),
       cached_frame_index_(0),
       animation_policy_(kImageAnimationPolicyAllowed),
       animation_finished_(false),
@@ -80,35 +66,6 @@ BitmapImage::BitmapImage(ImageObserver* observer, bool is_multipart)
                        ->CurrentThread()
                        ->Scheduler()
                        ->CompositorTaskRunner()) {}
-
-BitmapImage::BitmapImage(const SkBitmap& bitmap, ImageObserver* observer)
-    : Image(observer),
-      size_(bitmap.width(), bitmap.height()),
-      current_frame_(0),
-      cached_frame_(SkImage::MakeFromBitmap(bitmap)),
-      cached_frame_index_(0),
-      animation_policy_(kImageAnimationPolicyAllowed),
-      animation_finished_(true),
-      all_data_received_(true),
-      have_size_(true),
-      size_available_(true),
-      have_frame_count_(true),
-      repetition_count_status_(kUnknown),
-      repetition_count_(kAnimationNone),
-      repetitions_complete_(0),
-      frame_count_(1),
-      task_runner_(Platform::Current()
-                       ->CurrentThread()
-                       ->Scheduler()
-                       ->CompositorTaskRunner()) {
-  // Since we don't have a decoder, we can't figure out the image orientation.
-  // Set m_sizeRespectingOrientation to be the same as m_size so it's not 0x0.
-  size_respecting_orientation_ = size_;
-
-  frames_.Grow(1);
-  frames_[0].has_alpha_ = !bitmap.isOpaque();
-  frames_[0].have_metadata_ = true;
-}
 
 BitmapImage::~BitmapImage() {
   StopAnimation();
@@ -143,15 +100,15 @@ size_t BitmapImage::TotalFrameBytes() {
   return total_bytes;
 }
 
-sk_sp<SkImage> BitmapImage::DecodeAndCacheFrame(size_t index) {
+sk_sp<PaintImageGenerator> BitmapImage::CreateAndCacheFrameGenerator(
+    size_t index) {
   size_t num_frames = FrameCount();
   if (frames_.size() < num_frames)
     frames_.Grow(num_frames);
 
   // We are caching frame snapshots.  This is OK even for partially decoded
   // frames, as they are cleared by dataChanged() when new data arrives.
-  sk_sp<SkImage> image = source_.CreateFrameAtIndex(index);
-  cached_frame_ = image;
+  cached_frame_ = source_.CreateGeneratorAtIndex(index);
   cached_frame_index_ = index;
 
   frames_[index].orientation_ = source_.OrientationAtIndex(index);
@@ -163,7 +120,7 @@ sk_sp<SkImage> BitmapImage::DecodeAndCacheFrame(size_t index) {
   frames_[index].frame_bytes_ = source_.FrameBytesAtIndex(index);
 
   NotifyMemoryChanged();
-  return image;
+  return cached_frame_;
 }
 
 void BitmapImage::UpdateSize() const {
@@ -274,7 +231,7 @@ void BitmapImage::Draw(
 
   ImageOrientation orientation = kDefaultImageOrientation;
   if (should_respect_image_orientation == kRespectImageOrientation)
-    orientation = FrameOrientationAtIndex(current_frame_);
+    orientation = FrameOrientationAtIndex(current_frame_index_);
 
   PaintCanvasAutoRestore auto_restore(canvas, false);
   FloatRect adjusted_dst_rect = dst_rect;
@@ -341,14 +298,14 @@ bool BitmapImage::IsSizeAvailable() {
   return size_available_;
 }
 
-sk_sp<SkImage> BitmapImage::FrameAtIndex(size_t index) {
+sk_sp<PaintImageGenerator> BitmapImage::FrameAtIndex(size_t index) {
   if (index >= FrameCount())
     return nullptr;
 
   if (index == cached_frame_index_ && cached_frame_)
     return cached_frame_;
 
-  return DecodeAndCacheFrame(index);
+  return CreateAndCacheFrameGenerator(index);
 }
 
 bool BitmapImage::FrameIsReceivedAtIndex(size_t index) const {
@@ -367,14 +324,50 @@ float BitmapImage::FrameDurationAtIndex(size_t index) const {
 }
 
 void BitmapImage::PopulateImageForCurrentFrame(PaintImageBuilder& builder) {
-  // TODO(vmpstr): Pass the builder down so that we can populate the decoder
-  // instead.
-  builder.set_image(FrameAtIndex(CurrentFrame()));
+  size_t index = current_frame_index_;
+  sk_sp<PaintImageGenerator> generator = FrameAtIndex(index);
+  if (!generator)
+    return;
+
+  // The caching of the decoded image data by the external users of this image
+  // is keyed based on the uniqueID of the underlying SkImage for this
+  // PaintImage. For this reason once the decoded output of an image becomes
+  // constant, we want use the same uniqueID for repeated calls to create a
+  // PaintImage.
+  // The decoded bitmap for a PaintImage can be considered constant in the
+  // following cases:
+  // 1) Once all data for this image has been received, each frame of the image
+  //    is constant.
+  // 2) For multi-frame images, each frame represents a unique constant bitmap
+  //    once all data for that frame has been received.
+  //
+  // TODO(khushalsagar): This reliance on SkImage ids should be removed once cc
+  // is responsible for decoding all images and can rely on inputs provided in
+  // PaintImage/PaintImageGenerator. See crbug.com/753639.
+  const bool frame_complete = all_data_received_ || frames_[index].is_complete_;
+  if (frames_[index].sk_image_unique_id_ !=
+      SkiaPaintImageGenerator::kNeedNewImageUniqueID) {
+    // If the id was previously set, the frame must be complete. Continue using
+    // the same id.
+    DCHECK(frame_complete);
+    builder.set_paint_image_generator(std::move(generator),
+                                      frames_[index].sk_image_unique_id_);
+  } else if (frame_complete) {
+    // If this is the first time we have encountered a complete frame when
+    // creating a PaintImage, store the generated uniqueID to reuse later.
+    builder.set_paint_image_generator(
+        std::move(generator), SkiaPaintImageGenerator::kNeedNewImageUniqueID,
+        &frames_[index].sk_image_unique_id_);
+  } else {
+    // Continue generating new ids for partial decodes of this image.
+    builder.set_paint_image_generator(std::move(generator));
+  }
 }
 
 PassRefPtr<Image> BitmapImage::ImageForDefaultFrame() {
   if (FrameCount() > 1) {
-    sk_sp<SkImage> first_frame = FrameAtIndex(0);
+    sk_sp<SkImage> first_frame = SkImage::MakeFromGenerator(
+        base::MakeUnique<SkiaPaintImageGenerator>(FrameAtIndex(0)));
     if (first_frame)
       return StaticBitmapImage::Create(std::move(first_frame));
   }
@@ -404,22 +397,22 @@ bool BitmapImage::CurrentFrameKnownToBeOpaque(MetadataMode metadata_mode) {
     // frameHasAlphaAtIndex() conservatively returns false for uncached frames.
     // To increase the chance of an accurate answer, pre-cache the current frame
     // metadata.
-    FrameAtIndex(CurrentFrame());
+    FrameAtIndex(current_frame_index_);
   }
-  return !FrameHasAlphaAtIndex(CurrentFrame());
+  return !FrameHasAlphaAtIndex(current_frame_index_);
 }
 
 bool BitmapImage::CurrentFrameIsComplete() {
-  return FrameIsReceivedAtIndex(CurrentFrame());
+  return FrameIsReceivedAtIndex(current_frame_index_);
 }
 
 bool BitmapImage::CurrentFrameIsLazyDecoded() {
-  sk_sp<SkImage> image = FrameAtIndex(CurrentFrame());
-  return image && image->isLazyGenerated();
+  // BitmapImage supports only lazy generated images.
+  return true;
 }
 
 ImageOrientation BitmapImage::CurrentFrameOrientation() {
-  return FrameOrientationAtIndex(CurrentFrame());
+  return FrameOrientationAtIndex(current_frame_index_);
 }
 
 ImageOrientation BitmapImage::FrameOrientationAtIndex(size_t index) {
@@ -467,7 +460,7 @@ void BitmapImage::StartAnimation(CatchUpAnimation catch_up_if_necessary) {
     desired_frame_start_time_ = time;
 
   // Don't advance the animation to an incomplete frame.
-  size_t next_frame = (current_frame_ + 1) % FrameCount();
+  size_t next_frame = (current_frame_index_ + 1) % FrameCount();
   if (!all_data_received_ && !FrameIsReceivedAtIndex(next_frame))
     return;
 
@@ -478,13 +471,13 @@ void BitmapImage::StartAnimation(CatchUpAnimation catch_up_if_necessary) {
   if (!all_data_received_ &&
       (RepetitionCount(false) == kAnimationLoopOnce ||
        animation_policy_ == kImageAnimationPolicyAnimateOnce) &&
-      current_frame_ >= (FrameCount() - 1))
+      current_frame_index_ >= (FrameCount() - 1))
     return;
 
   // Determine time for next frame to start.  By ignoring paint and timer lag
   // in this calculation, we make the animation appear to run at its desired
   // rate regardless of how fast it's being repainted.
-  const double current_duration = FrameDurationAtIndex(current_frame_);
+  const double current_duration = FrameDurationAtIndex(current_frame_index_);
   desired_frame_start_time_ += current_duration;
 
   // When an animated image is more than five minutes out of date, the
@@ -556,7 +549,7 @@ void BitmapImage::StopAnimation() {
 
 void BitmapImage::ResetAnimation() {
   StopAnimation();
-  current_frame_ = 0;
+  current_frame_index_ = 0;
   repetitions_complete_ = 0;
   desired_frame_start_time_ = 0;
   animation_finished_ = false;
@@ -606,8 +599,8 @@ bool BitmapImage::InternalAdvanceAnimation(AnimationAdvancement advancement) {
       GetImageObserver()->ShouldPauseAnimation(this))
     return false;
 
-  if (current_frame_ + 1 < FrameCount()) {
-    current_frame_++;
+  if (current_frame_index_ + 1 < FrameCount()) {
+    current_frame_index_++;
   } else {
     repetitions_complete_++;
 
@@ -638,7 +631,7 @@ bool BitmapImage::InternalAdvanceAnimation(AnimationAdvancement advancement) {
     }
 
     // Loop the animation back to the first frame.
-    current_frame_ = 0;
+    current_frame_index_ = 0;
   }
 
   // We need to draw this frame if we advanced to it while not skipping.

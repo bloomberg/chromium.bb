@@ -14,6 +14,14 @@
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
+namespace {
+
+sk_sp<SkImage> CreateFrameAtIndex(DeferredImageDecoder* decoder, size_t index) {
+  return SkImage::MakeFromGenerator(base::MakeUnique<SkiaPaintImageGenerator>(
+      decoder->CreateGeneratorAtIndex(index)));
+}
+
+}  // namespace
 
 /**
  *  Used to test decoding SkImages out of order.
@@ -43,13 +51,13 @@ static void MixImages(const char* file_name,
       partial_file, false, ImageDecoder::kAlphaPremultiplied,
       ColorBehavior::Ignore());
   ASSERT_NE(decoder, nullptr);
-  sk_sp<SkImage> partial_image = decoder->CreateFrameAtIndex(0);
+  sk_sp<SkImage> partial_image = CreateFrameAtIndex(decoder.get(), 0);
 
   RefPtr<SharedBuffer> almost_complete_file =
       SharedBuffer::Create(file.data(), file.size() - 1);
   decoder->SetData(almost_complete_file, false);
   sk_sp<SkImage> image_with_more_data =
-      decoder->CreateFrameAtIndex(later_frame);
+      CreateFrameAtIndex(decoder.get(), later_frame);
 
   // we now want to ensure we don't crash if we access these in this order
   SkImageInfo info = SkImageInfo::MakeN32Premul(10, 10);

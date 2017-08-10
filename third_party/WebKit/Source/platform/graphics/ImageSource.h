@@ -35,8 +35,6 @@
 #include "platform/wtf/Noncopyable.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-class SkImage;
-
 namespace blink {
 
 class ImageOrientation;
@@ -91,7 +89,7 @@ class PLATFORM_EXPORT ImageSource final {
   size_t FrameCount() const;
 
   // Attempts to create the requested frame.
-  sk_sp<SkImage> CreateFrameAtIndex(size_t);
+  sk_sp<PaintImageGenerator> CreateGeneratorAtIndex(size_t);
 
   float FrameDurationAtIndex(size_t) const;
   bool FrameHasAlphaAtIndex(
