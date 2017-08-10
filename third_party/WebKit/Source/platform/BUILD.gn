@@ -1794,6 +1794,7 @@ test("blink_platform_unittests") {
     "graphics/CompositorElementIdTest.cpp",
     "graphics/CompositorMutatorClientTest.cpp",
     "graphics/ContiguousContainerTest.cpp",
+    "graphics/DecodingImageGeneratorTest.cpp",
     "graphics/DeferredImageDecoderTestWoPlatform.cpp",
     "graphics/GraphicsContextTest.cpp",
     "graphics/PaintInvalidationReasonTest.cpp",

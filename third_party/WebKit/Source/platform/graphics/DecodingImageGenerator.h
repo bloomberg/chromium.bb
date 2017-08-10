@@ -50,7 +50,7 @@ class PLATFORM_EXPORT DecodingImageGenerator final
   WTF_MAKE_NONCOPYABLE(DecodingImageGenerator);
 
  public:
-  static SkImageGenerator* Create(SkData*);
+  static std::unique_ptr<SkImageGenerator> Create(SkData*);
 
   DecodingImageGenerator(PassRefPtr<ImageFrameGenerator>,
                          const SkImageInfo&,
