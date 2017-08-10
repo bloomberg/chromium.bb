@@ -95,7 +95,8 @@
 
 - (void)webStateList:(WebStateList*)webStateList
     didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index {
+              atIndex:(int)index
+           activating:(BOOL)activating {
   DCHECK(self.consumer);
   [self.consumer insertItem:[self tabCollectionItemFromWebState:webState]
                     atIndex:index

@@ -10,7 +10,8 @@ WebStateListObserver::~WebStateListObserver() = default;
 
 void WebStateListObserver::WebStateInsertedAt(WebStateList* web_state_list,
                                               web::WebState* web_state,
-                                              int index) {}
+                                              int index,
+                                              bool activating) {}
 
 void WebStateListObserver::WebStateMoved(WebStateList* web_state_list,
                                          web::WebState* web_state,

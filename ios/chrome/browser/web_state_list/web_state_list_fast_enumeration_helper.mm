@@ -104,7 +104,8 @@
 
 - (void)webStateList:(WebStateList*)webStateList
     didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index {
+              atIndex:(int)index
+           activating:(BOOL)activating {
   ++_mutationCounter;
 }
 

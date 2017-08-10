@@ -20,8 +20,12 @@
 
 - (void)webStateList:(WebStateList*)webStateList
     didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index {
-  [super webStateList:webStateList didInsertWebState:webState atIndex:index];
+              atIndex:(int)index
+           activating:(BOOL)activating {
+  [super webStateList:webStateList
+      didInsertWebState:webState
+                atIndex:index
+             activating:activating];
   [self.consumer removeNoTabsOverlay];
 }
 

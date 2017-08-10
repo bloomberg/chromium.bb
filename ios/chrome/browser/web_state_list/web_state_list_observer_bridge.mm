@@ -17,14 +17,17 @@ WebStateListObserverBridge::~WebStateListObserverBridge() {}
 void WebStateListObserverBridge::WebStateInsertedAt(
     WebStateList* web_state_list,
     web::WebState* web_state,
-    int index) {
-  const SEL selector = @selector(webStateList:didInsertWebState:atIndex:);
+    int index,
+    bool activating) {
+  const SEL selector =
+      @selector(webStateList:didInsertWebState:atIndex:activating:);
   if (![observer_ respondsToSelector:selector])
     return;
 
   [observer_ webStateList:web_state_list
         didInsertWebState:web_state
-                  atIndex:index];
+                  atIndex:index
+               activating:activating];
 }
 
 void WebStateListObserverBridge::WebStateMoved(WebStateList* web_state_list,

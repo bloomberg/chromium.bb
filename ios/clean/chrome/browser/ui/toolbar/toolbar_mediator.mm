@@ -82,7 +82,8 @@
 
 - (void)webStateList:(WebStateList*)webStateList
     didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index {
+              atIndex:(int)index
+           activating:(BOOL)activating {
   [self.consumer setTabCount:_webStateList->count()];
 }
 

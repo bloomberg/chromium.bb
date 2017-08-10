@@ -18,10 +18,12 @@
 @optional
 
 // Invoked after a new WebState has been added to the WebStateList at the
-// specified index.
+// specified index. |activating| will be YES if the WebState will become
+// the new active WebState after the insertion.
 - (void)webStateList:(WebStateList*)webStateList
     didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index;
+              atIndex:(int)index
+           activating:(BOOL)activating;
 
 // Invoked after the WebState at the specified index is moved to another index.
 - (void)webStateList:(WebStateList*)webStateList
@@ -77,7 +79,8 @@ class WebStateListObserverBridge : public WebStateListObserver {
   // WebStateListObserver implementation.
   void WebStateInsertedAt(WebStateList* web_state_list,
                           web::WebState* web_state,
-                          int index) override;
+                          int index,
+                          bool activating) override;
   void WebStateMoved(WebStateList* web_state_list,
                      web::WebState* web_state,
                      int from_index,
