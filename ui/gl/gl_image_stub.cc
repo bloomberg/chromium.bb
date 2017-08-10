@@ -21,13 +21,13 @@ unsigned GLImageStub::GetInternalFormat() { return GL_RGBA; }
 bool GLImageStub::BindTexImage(unsigned target) { return true; }
 
 bool GLImageStub::CopyTexImage(unsigned target) {
-  return true;
+  return false;
 }
 
 bool GLImageStub::CopyTexSubImage(unsigned target,
                                   const gfx::Point& offset,
                                   const gfx::Rect& rect) {
-  return true;
+  return false;
 }
 
 bool GLImageStub::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
