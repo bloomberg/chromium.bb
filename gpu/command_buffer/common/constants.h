@@ -75,7 +75,7 @@ const int32_t kCommandBufferSharedMemoryId = 4;
 const size_t kDefaultMaxProgramCacheMemoryBytes = 6 * 1024 * 1024;
 #else
 const size_t kDefaultMaxProgramCacheMemoryBytes = 2 * 1024 * 1024;
-const size_t kLowEndMaxProgramCacheMemoryBytes = 512 * 1024;
+const size_t kLowEndMaxProgramCacheMemoryBytes = 128 * 1024;
 #endif
 
 // Namespace used to separate various command buffer types.
