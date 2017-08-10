@@ -20,6 +20,9 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
+#import "ios/chrome/browser/ui/bubble/bubble_util.h"
+#import "ios/chrome/browser/ui/bubble/bubble_view.h"
+#import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -695,6 +698,16 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
 - (NSUInteger)modelIndexForTabView:(TabView*)view {
   return [self modelIndexForIndex:[_tabArray indexOfObject:view]];
+}
+
+#pragma mark -
+#pragma mark BubbleViewAnchorPointProvider methods
+
+- (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
+  CGPoint anchorPoint =
+      bubble_util::AnchorPoint(_tabSwitcherButton.frame, direction);
+  return [_tabSwitcherButton.superview convertPoint:anchorPoint
+                                             toView:_tabSwitcherButton.window];
 }
 
 #pragma mark -

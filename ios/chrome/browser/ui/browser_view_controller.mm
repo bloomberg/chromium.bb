@@ -695,6 +695,15 @@ bubblePresenterForFeature:(const base::Feature&)feature
                 alignment:(BubbleAlignment)alignment
                      text:(NSString*)text;
 
+// Waits to present a bubble associated with the new tab tip in-product help
+// promotion until the feature engagement tracker database is fully initialized.
+// Does not present the bubble if |tabTipBubblePresenter.userEngaged| is |YES|
+// to prevent resetting |tabTipBubblePresenter| and affecting the value of
+// |userEngaged|.
+- (void)presentNewTabTipBubbleOnInitialized;
+// Presents a bubble associated with the new tab tip in-product help promotion.
+- (void)presentNewTabTipBubble;
+
 // Create and show the find bar.
 - (void)initFindBarForTab;
 // Search for find bar query string.
@@ -1260,36 +1269,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [super viewDidAppear:animated];
   self.viewVisible = YES;
   [self updateDialogPresenterActiveState];
-
-  // If the tab tip bubble has already been presented and the user is still
-  // considered engaged, it can't be overwritten or set to |nil| or else it will
-  // reset the |userEngaged| property. Once the user is not engaged, the bubble
-  // can be safely overwritten or set to |nil|.
-  if (!self.tabTipBubblePresenter.isUserEngaged) {
-    __weak BrowserViewController* weakSelf = self;
-    void (^onInitializedBlock)(bool) = ^(bool successfullyLoaded) {
-      NSString* text =
-          l10n_util::GetNSStringWithFixup(IDS_IOS_NEW_TAB_IPH_PROMOTION_TEXT);
-      CGPoint tabSwitcherAnchor = [weakSelf.toolbarController
-          anchorPointForTabSwitcherButton:BubbleArrowDirectionUp];
-      weakSelf.tabTipBubblePresenter = [weakSelf
-          bubblePresenterForFeature:feature_engagement::kIPHNewTabTipFeature
-                          direction:BubbleArrowDirectionUp
-                          alignment:BubbleAlignmentTrailing
-                               text:text];
-      [weakSelf.tabTipBubblePresenter
-          presentInViewController:self
-                             view:self.view
-                      anchorPoint:tabSwitcherAnchor];
-    };
-
-    // Because the new tab tip occurs on startup, the feature engagement
-    // tracker's database is not guaranteed to be loaded by this time. For the
-    // bubble to appear properly, a callback is used to guarantee the event data
-    // is loaded before the check to see if the promotion should be displayed.
-    feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
-        ->AddOnInitializedCallback(base::BindBlockArc(onInitializedBlock));
-  }
+  [self presentNewTabTipBubbleOnInitialized];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -2069,6 +2049,51 @@ bubblePresenterForFeature:(const base::Feature&)feature
                                         dismissalCallback:dismissalCallback];
 
   return bubbleViewControllerPresenter;
+}
+
+- (void)presentNewTabTipBubbleOnInitialized {
+  // If the tab tip bubble has already been presented and the user is still
+  // considered engaged, it can't be overwritten or set to |nil| or else it will
+  // reset the |userEngaged| property. Once the user is not engaged, the bubble
+  // can be safely overwritten or set to |nil|.
+  if (!self.tabTipBubblePresenter.isUserEngaged) {
+    __weak BrowserViewController* weakSelf = self;
+    void (^onInitializedBlock)(bool) = ^(bool successfullyLoaded) {
+      [weakSelf presentNewTabTipBubble];
+    };
+
+    // Because the new tab tip occurs on startup, the feature engagement
+    // tracker's database is not guaranteed to be loaded by this time. For the
+    // bubble to appear properly, a callback is used to guarantee the event data
+    // is loaded before the check to see if the promotion should be displayed.
+    feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
+        ->AddOnInitializedCallback(base::BindBlockArc(onInitializedBlock));
+  }
+}
+
+- (void)presentNewTabTipBubble {
+  NSString* text =
+      l10n_util::GetNSStringWithFixup(IDS_IOS_NEW_TAB_IPH_PROMOTION_TEXT);
+  CGPoint tabSwitcherAnchor;
+  if (IsIPadIdiom()) {
+    DCHECK([self.tabStripController
+        respondsToSelector:@selector(anchorPointForTabSwitcherButton:)]);
+    tabSwitcherAnchor = [self.tabStripController
+        anchorPointForTabSwitcherButton:BubbleArrowDirectionUp];
+  } else {
+    DCHECK([self.toolbarController
+        respondsToSelector:@selector(anchorPointForTabSwitcherButton:)]);
+    tabSwitcherAnchor = [self.toolbarController
+        anchorPointForTabSwitcherButton:BubbleArrowDirectionUp];
+  }
+  self.tabTipBubblePresenter =
+      [self bubblePresenterForFeature:feature_engagement::kIPHNewTabTipFeature
+                            direction:BubbleArrowDirectionUp
+                            alignment:BubbleAlignmentTrailing
+                                 text:text];
+  [self.tabTipBubblePresenter presentInViewController:self
+                                                 view:self.view
+                                          anchorPoint:tabSwitcherAnchor];
 }
 
 #pragma mark - Tap handling
