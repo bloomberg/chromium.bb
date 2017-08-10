@@ -250,6 +250,9 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
+  // Close apps before shutting down browser context and extensions system.
+  desktop_controller_->CloseAppWindows();
+
   // NOTE: Please destroy objects in the reverse order of their creation.
   browser_main_delegate_->Shutdown();
   content::ShellDevToolsManagerDelegate::StopHttpHandler();
