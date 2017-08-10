@@ -507,38 +507,13 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
     return;
   }
 
-  const FeatureProvider* api_feature_provider =
-      FeatureProvider::GetAPIFeatures();
+  FeatureCache::FeatureNameVector features =
+      feature_cache_.GetAvailableFeatures(context);
   base::StringPiece last_accessor;
-  for (const auto& map_entry : api_feature_provider->GetAllFeatures()) {
+  for (const std::string& feature : features) {
     // If we've already set up an accessor for the immediate property of the
     // chrome object, we don't need to do more.
-    if (IsPrefixedAPI(map_entry.first, last_accessor))
-      continue;
-
-    // Internal APIs are included via require(api_name) from internal code
-    // rather than chrome[api_name].
-    if (map_entry.second->IsInternal())
-      continue;
-
-    // If this API has a parent feature (and isn't marked 'noparent'),
-    // then this must be a function or event, so we should not register.
-    if (api_feature_provider->GetParent(map_entry.second.get()) != nullptr)
-      continue;
-
-    // Skip chrome.test if this isn't a test.
-    if (map_entry.first == "test" &&
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-            ::switches::kTestType)) {
-      continue;
-    }
-
-    // TODO(devlin): UpdateBindingsForContext can be called during context
-    // creation, but also when e.g. permissions change. We need to be checking
-    // for whether or not the API already exists on the object as well as
-    // if we need to remove any existing APIs.
-    if (!context->IsAnyFeatureAvailableToContext(*map_entry.second,
-                                                 CheckAliasStatus::NOT_ALLOWED))
+    if (IsPrefixedAPI(feature, last_accessor))
       continue;
 
     // We've found an API that's available to the extension. Normally, we will
@@ -546,8 +521,13 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
     // cases, this will be a prefixed API, such as 'app.runtime'. Find what the
     // property on the chrome object is named, and use that. So in the case of
     // 'app.runtime', we surface a getter for simply 'app'.
+    //
+    // TODO(devlin): UpdateBindingsForContext can be called during context
+    // creation, but also when e.g. permissions change. Do we need to be
+    // checking for whether or not the API already exists on the object as well
+    // as if we need to remove any existing APIs?
     base::StringPiece accessor_name =
-        GetFirstDifferentAPIName(map_entry.first, base::StringPiece());
+        GetFirstDifferentAPIName(feature, base::StringPiece());
     last_accessor = accessor_name;
     if (!set_accessor(accessor_name)) {
       LOG(ERROR) << "Failed to create API on Chrome object.";
@@ -595,6 +575,15 @@ RequestSender* NativeExtensionBindingsSystem::GetRequestSender() {
 
 IPCMessageSender* NativeExtensionBindingsSystem::GetIPCMessageSender() {
   return ipc_message_sender_.get();
+}
+
+void NativeExtensionBindingsSystem::OnExtensionPermissionsUpdated(
+    const ExtensionId& id) {
+  feature_cache_.InvalidateExtension(id);
+}
+
+void NativeExtensionBindingsSystem::OnExtensionRemoved(const ExtensionId& id) {
+  feature_cache_.InvalidateExtension(id);
 }
 
 v8::Local<v8::Object> NativeExtensionBindingsSystem::GetAPIObjectForTesting(
