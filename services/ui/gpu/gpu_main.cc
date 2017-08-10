@@ -150,10 +150,13 @@ void GpuMain::BindOnGpu(mojom::GpuMainRequest request) {
 void GpuMain::InitOnGpuThread(
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_runner) {
+  // TODO(kylechar): When process split happens this shouldn't be a constant.
+  constexpr bool kInProcessGpu = true;
+
   gpu_init_.reset(new gpu::GpuInit());
   gpu_init_->set_sandbox_helper(this);
   bool success = gpu_init_->InitializeAndStartSandbox(
-      *base::CommandLine::ForCurrentProcess());
+      *base::CommandLine::ForCurrentProcess(), kInProcessGpu);
   if (!success)
     return;
 

@@ -36,7 +36,8 @@ class GPU_EXPORT GpuInit {
     sandbox_helper_ = helper;
   }
 
-  bool InitializeAndStartSandbox(const base::CommandLine& command_line);
+  bool InitializeAndStartSandbox(const base::CommandLine& command_line,
+                                 bool in_process_gpu);
 
   const GPUInfo& gpu_info() const { return gpu_info_; }
   const GpuFeatureInfo& gpu_feature_info() const { return gpu_feature_info_; }

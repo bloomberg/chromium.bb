@@ -151,7 +151,8 @@ class OzonePlatformGbm : public OzonePlatform {
     // future CL.
     single_process_ = args.single_process;
     using_mojo_ = args.connector != nullptr;
-    DCHECK(!(using_mojo_ && single_process_));
+    DCHECK(!(using_mojo_ && !single_process_))
+        << "Multiprocess Mojo is not supported yet.";
 
     device_manager_ = CreateDeviceManager();
     window_manager_.reset(new DrmWindowHostManager());
