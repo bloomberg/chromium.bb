@@ -181,7 +181,14 @@ class SmoothnessMaps(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing.
+        self.DisableStory(
+            'http://localhost:8000/performance.html',
+            [story_module.expectations.ALL_WIN],
+            'crbug.com/692663')
+        self.DisableStory(
+            'http://localhost:8000/performance.html',
+            [story_module.expectations.ANDROID_WEBVIEW],
+            'crbug.com/653993')
     return StoryExpectations()
 
 
@@ -417,6 +424,7 @@ class SmoothnessSimpleMobilePages(_Smoothness):
     return StoryExpectations()
 
 
+@benchmark.Enabled('android')
 @benchmark.Owner(emails=['bokan@chromium.org'])
 class SmoothnessToughPinchZoomCases(_Smoothness):
   """Measures rendering statistics for pinch-zooming in the tough pinch zoom
