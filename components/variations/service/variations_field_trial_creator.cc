@@ -126,7 +126,9 @@ VariationsFieldTrialCreator::VariationsFieldTrialCreator(
     : client_(client),
       ui_string_overrider_(ui_string_overrider),
       seed_store_(local_state),
-      create_trials_from_seed_called_(false) {}
+      create_trials_from_seed_called_(false),
+      has_platform_override_(false),
+      platform_override_(Study::PLATFORM_WINDOWS) {}
 
 VariationsFieldTrialCreator::~VariationsFieldTrialCreator() {}
 
@@ -218,7 +220,9 @@ VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
   state->version = version;
   state->channel = GetChannelForVariations(client_->GetChannel());
   state->form_factor = GetCurrentFormFactor();
-  state->platform = ClientFilterableState::GetCurrentPlatform();
+  state->platform = (has_platform_override_)
+                        ? platform_override_
+                        : ClientFilterableState::GetCurrentPlatform();
   state->hardware_class = GetHardwareClass();
 #if defined(OS_ANDROID)
   // This is set on Android only currently, because the IsLowEndDevice() API
@@ -327,6 +331,12 @@ void VariationsFieldTrialCreator::RecordLastFetchTime() {
 
 bool VariationsFieldTrialCreator::LoadSeed(VariationsSeed* seed) {
   return seed_store_.LoadSeed(seed);
+}
+
+void VariationsFieldTrialCreator::OverrideVariationsPlatform(
+    Study::Platform platform_override) {
+  has_platform_override_ = true;
+  platform_override_ = platform_override;
 }
 
 bool VariationsFieldTrialCreator::SetupFieldTrials(
