@@ -2730,21 +2730,23 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
                         transition:ui::PAGE_TRANSITION_TYPED];
 }
 
+// Closing all while the main set is active closes everything, but closing
+// all while incognito is active only closes incognito tabs.
+- (void)closeAllTabs {
+  DCHECK(![self isCurrentSetIncognito]);
+  [self removeAllCardsFromSet:_mainCardSet];
+  [self removeAllCardsFromSet:_otrCardSet];
+}
+
+- (void)closeAllIncognitoTabs {
+  DCHECK([self isCurrentSetIncognito]);
+  [self removeAllCardsFromSet:_activeCardSet];
+}
+
 - (IBAction)chromeExecuteCommand:(id)sender {
   int command = [sender tag];
 
   switch (command) {
-    // Closing all while the main set is active closes everything, but closing
-    // all while incognito is active only closes incognito tabs.
-    case IDC_CLOSE_ALL_TABS:
-      DCHECK(![self isCurrentSetIncognito]);
-      [self removeAllCardsFromSet:_mainCardSet];
-      [self removeAllCardsFromSet:_otrCardSet];
-      break;
-    case IDC_CLOSE_ALL_INCOGNITO_TABS:
-      DCHECK([self isCurrentSetIncognito]);
-      [self removeAllCardsFromSet:_activeCardSet];
-      break;
     case IDC_TOGGLE_TAB_SWITCHER:
       [self dismissWithSelectedTabAnimation];
       break;

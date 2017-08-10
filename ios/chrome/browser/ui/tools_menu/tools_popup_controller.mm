@@ -170,10 +170,10 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
     case TOOLS_BOOKMARK_ITEM:
       base::RecordAction(UserMetricsAction("MobileMenuAddToBookmarks"));
       break;
-    case IDC_CLOSE_ALL_TABS:
+    case TOOLS_CLOSE_ALL_TABS:
       base::RecordAction(UserMetricsAction("MobileMenuCloseAllTabs"));
       break;
-    case IDC_CLOSE_ALL_INCOGNITO_TABS:
+    case TOOLS_CLOSE_ALL_INCOGNITO_TABS:
       base::RecordAction(UserMetricsAction("MobileMenuCloseAllIncognitoTabs"));
       break;
     case IDC_FIND:
