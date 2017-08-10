@@ -221,7 +221,10 @@ void SecurityInfoForRequest(
     bool used_policy_installed_certificate,
     const IsOriginSecureCallback& is_origin_secure_callback,
     SecurityInfo* security_info) {
-  MarkHttpStatus mark_http_as;
+  // |mark_http_as| will be updated to the value specified by the
+  // field trial or command-line in |GetSecurityLevelForNonSecureFieldTrial|
+  // if that function is reached.
+  MarkHttpStatus mark_http_as = HTTP_SHOW_WARNING_ON_SENSITIVE_FIELDS;
 
   if (!visible_security_state.connection_info_initialized) {
     *security_info = SecurityInfo();
