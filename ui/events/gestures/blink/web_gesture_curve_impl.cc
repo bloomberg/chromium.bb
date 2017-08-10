@@ -32,7 +32,6 @@ namespace {
 std::unique_ptr<GestureCurve> CreateDefaultPlatformCurve(
     blink::WebGestureDevice device_source,
     const gfx::Vector2dF& initial_velocity) {
-  DCHECK(!initial_velocity.IsZero());
   if (device_source == blink::kWebGestureDeviceSyntheticAutoscroll) {
     return base::MakeUnique<FixedVelocityCurve>(initial_velocity,
                                                 base::TimeTicks());

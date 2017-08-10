@@ -420,12 +420,6 @@ bool LegacyInputRouterImpl::OfferToRenderer(
     const WebInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
     InputEventDispatchType dispatch_type) {
-  DCHECK(input_event.GetType() != blink::WebInputEvent::kGestureFlingStart ||
-         static_cast<const blink::WebGestureEvent&>(input_event)
-                 .data.fling_start.velocity_x != 0.0 ||
-         static_cast<const blink::WebGestureEvent&>(input_event)
-                 .data.fling_start.velocity_y != 0.0);
-
   // This conversion is temporary. WebInputEvent should be generated
   // directly from ui::Event with the viewport coordinates. See
   // crbug.com/563730.
