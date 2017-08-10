@@ -238,7 +238,7 @@ repack("repack_ui_test_pak_200_percent") {
 }
 
 # Repack just the strings for the framework locales on Mac and iOS. This
-# emulates repack_locales.py, but just for en-US. Note ui_test.pak is not simply
+# emulates repack_locales(), but just for en-US. Note ui_test.pak is not simply
 # copied, because it causes leaks from allocations within system libraries when
 # trying to load non-string resources. http://crbug.com/413034.
 repack("repack_ui_test_mac_locale_pack") {

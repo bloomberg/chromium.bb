@@ -12,11 +12,7 @@ def CommonChecks(input_api, output_api):
   """
   checks = []
   checks.extend(input_api.canned_checks.GetPylint(
-      input_api, output_api, pylintrc='pylintrc',
-      # TODO: lint these and eliminate the blacklist.
-      black_list=[
-          r'webview_repack_locales.py',
-      ]))
+      input_api, output_api, pylintrc='pylintrc'))
   return input_api.RunTests(checks, False)
 
 
