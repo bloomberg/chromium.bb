@@ -551,6 +551,7 @@ android_library("chrome_test_java") {
     "//chrome/test/media_router/resources/",
     "//components/test/data/payments/",
     "//content/test/data/android/geolocation.html",
+    "//content/test/data/android/installedapp.html",
     "//content/test/data/android/media_permissions.html",
     "//content/test/data/android/permission_navigation.html",
     "//content/test/data/android/quota_permissions.html",
