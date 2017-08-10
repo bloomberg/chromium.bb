@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/message_center/fake_message_center.h"
+#include "base/strings/string_util.h"
 #include "ui/message_center/notification_list.h"
 
 namespace message_center {
@@ -141,6 +142,13 @@ bool FakeMessageCenter::IsMessageCenterVisible() const {
 void FakeMessageCenter::RestartPopupTimers() {}
 
 void FakeMessageCenter::PausePopupTimers() {}
+
+const base::string16& FakeMessageCenter::GetProductOSName() const {
+  return base::EmptyString16();
+}
+
+void FakeMessageCenter::SetProductOSName(
+    const base::string16& product_os_name) {}
 
 void FakeMessageCenter::DisableTimersForTest() {}
 
