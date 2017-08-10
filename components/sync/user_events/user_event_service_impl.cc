@@ -65,6 +65,7 @@ bool UserEventServiceImpl::ShouldRecordEvent(
   // a custom passphrase. The type HISTORY_DELETE_DIRECTIVES is enabled in and
   // only in this exact scenario.
   return sync_service_->IsEngineInitialized() &&
+         !sync_service_->IsUsingSecondaryPassphrase() &&
          sync_service_->GetPreferredDataTypes().Has(HISTORY_DELETE_DIRECTIVES);
 }
 
