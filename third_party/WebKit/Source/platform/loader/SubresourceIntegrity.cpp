@@ -65,26 +65,29 @@ void SubresourceIntegrity::ReportInfo::Clear() {
   console_error_messages_.clear();
 }
 
-IntegrityAlgorithm SubresourceIntegrity::GetPrioritizedHashFunction(
-    IntegrityAlgorithm algorithm1,
-    IntegrityAlgorithm algorithm2) {
-  const IntegrityAlgorithm kWeakerThanSha384[] = {IntegrityAlgorithm::kSha256};
-  const IntegrityAlgorithm kWeakerThanSha512[] = {IntegrityAlgorithm::kSha256,
-                                                  IntegrityAlgorithm::kSha384};
+HashAlgorithm SubresourceIntegrity::GetPrioritizedHashFunction(
+    HashAlgorithm algorithm1,
+    HashAlgorithm algorithm2) {
+  const HashAlgorithm kWeakerThanSha384[] = {kHashAlgorithmSha256};
+  const HashAlgorithm kWeakerThanSha512[] = {kHashAlgorithmSha256,
+                                             kHashAlgorithmSha384};
+
+  DCHECK_NE(algorithm1, kHashAlgorithmSha1);
+  DCHECK_NE(algorithm2, kHashAlgorithmSha1);
 
   if (algorithm1 == algorithm2)
     return algorithm1;
 
-  const IntegrityAlgorithm* weaker_algorithms = 0;
+  const HashAlgorithm* weaker_algorithms = 0;
   size_t length = 0;
   switch (algorithm1) {
-    case IntegrityAlgorithm::kSha256:
+    case kHashAlgorithmSha256:
       break;
-    case IntegrityAlgorithm::kSha384:
+    case kHashAlgorithmSha384:
       weaker_algorithms = kWeakerThanSha384;
       length = WTF_ARRAY_LENGTH(kWeakerThanSha384);
       break;
-    case IntegrityAlgorithm::kSha512:
+    case kHashAlgorithmSha512:
       weaker_algorithms = kWeakerThanSha512;
       length = WTF_ARRAY_LENGTH(kWeakerThanSha512);
       break;
@@ -168,7 +171,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
   if (!metadata_set.size())
     return true;
 
-  IntegrityAlgorithm strongest_algorithm = IntegrityAlgorithm::kSha256;
+  HashAlgorithm strongest_algorithm = kHashAlgorithmSha256;
   for (const IntegrityMetadata& metadata : metadata_set) {
     strongest_algorithm =
         GetPrioritizedHashFunction(metadata.Algorithm(), strongest_algorithm);
@@ -179,20 +182,9 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
     if (metadata.Algorithm() != strongest_algorithm)
       continue;
 
-    blink::HashAlgorithm hash_algo;
-    switch (metadata.Algorithm()) {
-      case IntegrityAlgorithm::kSha256:
-        hash_algo = kHashAlgorithmSha256;
-        break;
-      case IntegrityAlgorithm::kSha384:
-        hash_algo = kHashAlgorithmSha384;
-        break;
-      case IntegrityAlgorithm::kSha512:
-        hash_algo = kHashAlgorithmSha512;
-        break;
-    }
     digest.clear();
-    bool digest_success = ComputeDigest(hash_algo, content, size, digest);
+    bool digest_success =
+        ComputeDigest(metadata.Algorithm(), content, size, digest);
 
     if (digest_success) {
       Vector<char> hash_vector;
@@ -245,19 +237,17 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
 SubresourceIntegrity::AlgorithmParseResult SubresourceIntegrity::ParseAlgorithm(
     const UChar*& position,
     const UChar* end,
-    IntegrityAlgorithm& algorithm) {
+    HashAlgorithm& algorithm) {
   // Any additions or subtractions from this struct should also modify the
   // respective entries in the kAlgorithmMap array in checkDigest() as well
   // as the array in algorithmToString().
   static const struct {
     const char* prefix;
-    IntegrityAlgorithm algorithm;
-  } kSupportedPrefixes[] = {{"sha256", IntegrityAlgorithm::kSha256},
-                            {"sha-256", IntegrityAlgorithm::kSha256},
-                            {"sha384", IntegrityAlgorithm::kSha384},
-                            {"sha-384", IntegrityAlgorithm::kSha384},
-                            {"sha512", IntegrityAlgorithm::kSha512},
-                            {"sha-512", IntegrityAlgorithm::kSha512}};
+    HashAlgorithm algorithm;
+  } kSupportedPrefixes[] = {
+      {"sha256", kHashAlgorithmSha256}, {"sha-256", kHashAlgorithmSha256},
+      {"sha384", kHashAlgorithmSha384}, {"sha-384", kHashAlgorithmSha384},
+      {"sha512", kHashAlgorithmSha512}, {"sha-512", kHashAlgorithmSha512}};
 
   const UChar* begin = position;
 
@@ -337,7 +327,7 @@ SubresourceIntegrity::ParseIntegrityAttribute(
   // in order.
   while (position < end) {
     WTF::String digest;
-    IntegrityAlgorithm algorithm;
+    HashAlgorithm algorithm;
 
     SkipWhile<UChar, IsASCIISpace>(position, end);
     current_integrity_end = position;
