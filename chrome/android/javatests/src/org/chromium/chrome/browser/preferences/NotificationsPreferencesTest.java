@@ -23,7 +23,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.ScreenShooter;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
@@ -52,7 +51,6 @@ public class NotificationsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @ScreenShooter.Directory("Notifications Preferences")
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N)
     @CommandLineFlags.Add("enable-features=ContentSuggestionsNotifications")
     public void testContentSuggestionsToggle() {
@@ -90,6 +88,21 @@ public class NotificationsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N)
+    @CommandLineFlags.Add("disable-features=NTPArticleSuggestions")
+    public void testToggleDisabledWhenSuggestionsDisabled() {
+        PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
+        ChromeSwitchPreference toggle = (ChromeSwitchPreference) fragment.findPreference(
+                NotificationsPreferences.PREF_SUGGESTIONS);
+
+        Assert.assertFalse(toggle.isEnabled());
+        Assert.assertFalse(toggle.isChecked());
+    }
+
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N)
     public void testLinkToWebsiteNotifications() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -122,7 +135,6 @@ public class NotificationsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @ScreenShooter.Directory("Notifications Preferences")
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N)
     public void testWebsiteNotificationsSummary() {
         final PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
