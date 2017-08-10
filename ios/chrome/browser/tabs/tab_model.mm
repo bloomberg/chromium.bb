@@ -403,37 +403,6 @@ std::unique_ptr<web::WebState> CreateWebState(
   return static_cast<NSUInteger>(index);
 }
 
-- (Tab*)nextTabWithOpener:(Tab*)tab afterTab:(Tab*)afterTab {
-  int startIndex = WebStateList::kInvalidIndex;
-  if (afterTab)
-    startIndex = _webStateList->GetIndexOfWebState(afterTab.webState);
-
-  if (startIndex == WebStateList::kInvalidIndex)
-    startIndex = _webStateList->GetIndexOfWebState(tab.webState);
-
-  const int index = _webStateList->GetIndexOfNextWebStateOpenedBy(
-      tab.webState, startIndex, false);
-  if (index == WebStateList::kInvalidIndex)
-    return nil;
-
-  DCHECK_GE(index, 0);
-  return [self tabAtIndex:static_cast<NSUInteger>(index)];
-}
-
-- (Tab*)lastTabWithOpener:(Tab*)tab {
-  int startIndex = _webStateList->GetIndexOfWebState(tab.webState);
-  if (startIndex == WebStateList::kInvalidIndex)
-    return nil;
-
-  const int index = _webStateList->GetIndexOfLastWebStateOpenedBy(
-      tab.webState, startIndex, true);
-  if (index == WebStateList::kInvalidIndex)
-    return nil;
-
-  DCHECK_GE(index, 0);
-  return [self tabAtIndex:static_cast<NSUInteger>(index)];
-}
-
 - (Tab*)openerOfTab:(Tab*)tab {
   int index = _webStateList->GetIndexOfWebState(tab.webState);
   if (index == WebStateList::kInvalidIndex)

@@ -145,29 +145,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 - (Tab*)tabAtIndex:(NSUInteger)index;
 - (NSUInteger)indexOfTab:(Tab*)tab;
 
-// Returns the next Tab, starting after |tab|, spawned by the specified Tab, If
-// |after| is a valid tab, will only look at tabs following it (in tab ordering,
-// not order opened) in the list, even if it comes before |tab|. Returns nil if
-// no tab meets this constraint.
-- (Tab*)nextTabWithOpener:(Tab*)tab afterTab:(Tab*)afterTab;
-
-// TODO(crbug.com/661980): Make these |firstTabOpenedBy| and |lastTabOpenedBy|
-// better mimic what desktop chrome does. Or, better yet, use shared code.
-// Placing anew tab in its proper location along the tab strip is based on the
-// tab's 'opener' tab, the tab from which the new tab was opened. For the user,
-// that does not mean the tab in UI terms, but the page from which the new tab
-// is opened. Currently, to best provide this behavior, the session ID of the
-// tab is supplemented with its navigation index. If both those items match, it
-// is assumed that the tabs belong to the same owner's group. Note that using
-// navigation index is a limited solution, and may in some cases be incorrect,
-// as forward or back navigations (incrementing/decrementing the navigation
-// index) may result in incorrect tab pairings.
-
-// Returns the last tab in the model opened by the specified tab at its current
-// navigation index. The search starts at |tab|. Returns nil if no tab meets
-// these constraints.
-- (Tab*)lastTabWithOpener:(Tab*)tab;
-
 // Returns the tab which opened this tab, or nil if it's not a child.
 - (Tab*)openerOfTab:(Tab*)tab;
 
