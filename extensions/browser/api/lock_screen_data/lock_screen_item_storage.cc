@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -111,6 +113,7 @@ LockScreenItemStorage::LockScreenItemStorage(content::BrowserContext* context,
       crypto_key_(crypto_key),
       local_state_(local_state),
       storage_root_(storage_root.Append(user_id_)),
+      tick_clock_(base::MakeUnique<base::DefaultTickClock>()),
       extension_registry_observer_(this),
       value_store_cache_(base::MakeUnique<LocalValueStoreCache>(
           new ValueStoreFactoryImpl(storage_root))),
@@ -252,9 +255,10 @@ void LockScreenItemStorage::CreateItemImpl(const std::string& extension_id,
       CreateDataItem(base::GenerateGUID(), extension_id, context_,
                      value_store_cache_.get(), task_runner_.get(), crypto_key_);
   DataItem* item_ptr = item.get();
-  item_ptr->Register(base::Bind(
-      &LockScreenItemStorage::OnItemRegistered, weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(std::move(item)), extension_id, callback));
+  item_ptr->Register(base::Bind(&LockScreenItemStorage::OnItemRegistered,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                base::Passed(std::move(item)), extension_id,
+                                tick_clock_->NowTicks(), callback));
 }
 
 void LockScreenItemStorage::GetAllForExtensionImpl(
@@ -288,7 +292,9 @@ void LockScreenItemStorage::SetItemContentImpl(
     return;
   }
 
-  item->Write(data, callback);
+  item->Write(data, base::Bind(&LockScreenItemStorage::OnItemWritten,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               tick_clock_->NowTicks(), callback));
 }
 
 void LockScreenItemStorage::GetItemContentImpl(const std::string& extension_id,
@@ -300,7 +306,9 @@ void LockScreenItemStorage::GetItemContentImpl(const std::string& extension_id,
     return;
   }
 
-  item->Read(callback);
+  item->Read(base::Bind(&LockScreenItemStorage::OnItemRead,
+                        weak_ptr_factory_.GetWeakPtr(), tick_clock_->NowTicks(),
+                        callback));
 }
 
 void LockScreenItemStorage::DeleteItemImpl(const std::string& extension_id,
@@ -313,14 +321,25 @@ void LockScreenItemStorage::DeleteItemImpl(const std::string& extension_id,
   }
 
   item->Delete(base::Bind(&LockScreenItemStorage::OnItemDeleted,
-                          base::Unretained(this), extension_id, item_id,
-                          callback));
+                          weak_ptr_factory_.GetWeakPtr(), extension_id, item_id,
+                          tick_clock_->NowTicks(), callback));
 }
 
 void LockScreenItemStorage::OnItemRegistered(std::unique_ptr<DataItem> item,
                                              const std::string& extension_id,
+                                             const base::TimeTicks& start_time,
                                              const CreateCallback& callback,
                                              OperationResult result) {
+  if (result == OperationResult::kSuccess) {
+    UMA_HISTOGRAM_TIMES(
+        "Apps.LockScreen.DataItemStorage.OperationDuration.RegisterItem",
+        tick_clock_->NowTicks() - start_time);
+  } else {
+    UMA_HISTOGRAM_TIMES(
+        "Apps.LockScreen.DataItemStorage.FailedOperationDuration.RegisterItem",
+        tick_clock_->NowTicks() - start_time);
+  }
+
   if (result != OperationResult::kSuccess) {
     callback.Run(result, nullptr);
     return;
@@ -339,10 +358,55 @@ void LockScreenItemStorage::OnItemRegistered(std::unique_ptr<DataItem> item,
   callback.Run(OperationResult::kSuccess, item_ptr);
 }
 
-void LockScreenItemStorage::OnItemDeleted(const std::string& extension_id,
-                                          const std::string& item_id,
+void LockScreenItemStorage::OnItemWritten(const base::TimeTicks& start_time,
                                           const WriteCallback& callback,
                                           OperationResult result) {
+  if (result == OperationResult::kSuccess) {
+    UMA_HISTOGRAM_TIMES(
+        "Apps.LockScreen.DataItemStorage.OperationDuration.WriteItem",
+        tick_clock_->NowTicks() - start_time);
+  } else {
+    UMA_HISTOGRAM_TIMES(
+        "Apps.LockScreen.DataItemStorage.FailedOperationDuration.WriteItem",
+        tick_clock_->NowTicks() - start_time);
+  }
+
+  callback.Run(result);
+}
+
+void LockScreenItemStorage::OnItemRead(
+    const base::TimeTicks& start_time,
+    const ReadCallback& callback,
+    OperationResult result,
+    std::unique_ptr<std::vector<char>> data) {
+  if (result == OperationResult::kSuccess) {
+    UMA_HISTOGRAM_TIMES(
+        "Apps.LockScreen.DataItemStorage.OperationDuration.ReadItem",
+        tick_clock_->NowTicks() - start_time);
+  } else {
+    UMA_HISTOGRAM_TIMES(
+        "Apps.LockScreen.DataItemStorage.FailedOperationDuration.ReadItem",
+        tick_clock_->NowTicks() - start_time);
+  }
+
+  callback.Run(result, std::move(data));
+}
+
+void LockScreenItemStorage::OnItemDeleted(const std::string& extension_id,
+                                          const std::string& item_id,
+                                          const base::TimeTicks& start_time,
+                                          const WriteCallback& callback,
+                                          OperationResult result) {
+  if (result == OperationResult::kSuccess) {
+    UMA_HISTOGRAM_TIMES(
+        "Apps.LockScreen.DataItemStorage.OperationDuration.DeleteItem",
+        tick_clock_->NowTicks() - start_time);
+  } else {
+    UMA_HISTOGRAM_TIMES(
+        "Apps.LockScreen.DataItemStorage.FailedOperationDuration.DeleteItem",
+        tick_clock_->NowTicks() - start_time);
+  }
+
   data_item_cache_[extension_id].data_items.erase(item_id);
   {
     DictionaryPrefUpdate update(local_state_, kLockScreenDataPrefKey);
@@ -372,17 +436,34 @@ void LockScreenItemStorage::EnsureCacheForExtensionLoaded(
   GetRegisteredItems(extension_id, context_, value_store_cache_.get(),
                      task_runner_.get(),
                      base::Bind(&LockScreenItemStorage::OnGotExtensionItems,
-                                weak_ptr_factory_.GetWeakPtr(), extension_id));
+                                weak_ptr_factory_.GetWeakPtr(), extension_id,
+                                tick_clock_->NowTicks()));
 }
 
 void LockScreenItemStorage::OnGotExtensionItems(
     const std::string& extension_id,
+    const base::TimeTicks& start_time,
     OperationResult result,
     std::unique_ptr<base::DictionaryValue> items) {
   ExtensionDataMap::iterator data = data_item_cache_.find(extension_id);
   if (data == data_item_cache_.end() ||
       data->second.state != CachedExtensionData::State::kLoading) {
     return;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Apps.LockScreen.DataItemStorage.OperationResult.GetRegisteredItems",
+      result, OperationResult::kCount);
+
+  if (result == OperationResult::kSuccess) {
+    UMA_HISTOGRAM_TIMES(
+        "Apps.LockScreen.DataItemStorage.OperationDuration.GetRegisteredItems",
+        tick_clock_->NowTicks() - start_time);
+  } else {
+    UMA_HISTOGRAM_TIMES(
+        "Apps.LockScreen.DataItemStorage.FailedOperationDuration."
+        "GetRegisteredItems",
+        tick_clock_->NowTicks() - start_time);
   }
 
   if (result == OperationResult::kSuccess) {
@@ -393,6 +474,11 @@ void LockScreenItemStorage::OnGotExtensionItems(
           task_runner_.get(), crypto_key_);
       data->second.data_items.emplace(item_iter.key(), std::move(item));
     }
+
+    // Record number of registered items.
+    UMA_HISTOGRAM_COUNTS_100(
+        "Apps.LockScreen.DataItemStorage.RegisteredItemsCount",
+        data->second.data_items.size());
   }
 
   DictionaryPrefUpdate update(local_state_, kLockScreenDataPrefKey);

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/metrics/histogram_macros.h"
 #include "extensions/browser/api/lock_screen_data/data_item.h"
 #include "extensions/browser/api/lock_screen_data/lock_screen_item_storage.h"
 #include "extensions/browser/api/lock_screen_data/operation_result.h"
@@ -20,6 +21,7 @@ namespace {
 std::string GetErrorString(lock_screen_data::OperationResult result) {
   switch (result) {
     case lock_screen_data::OperationResult::kSuccess:
+    case lock_screen_data::OperationResult::kCount:
       NOTREACHED() << "Expected a failure code.";
       return "Unknown";
     case lock_screen_data::OperationResult::kFailed:
@@ -60,6 +62,10 @@ ExtensionFunction::ResponseAction LockScreenDataCreateFunction::Run() {
 void LockScreenDataCreateFunction::OnDone(
     lock_screen_data::OperationResult result,
     const lock_screen_data::DataItem* item) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Apps.LockScreen.DataItemStorage.OperationResult.RegisterItem", result,
+      lock_screen_data::OperationResult::kCount);
+
   if (result != lock_screen_data::OperationResult::kSuccess) {
     Respond(Error(GetErrorString(result)));
     return;
@@ -124,6 +130,10 @@ ExtensionFunction::ResponseAction LockScreenDataGetContentFunction::Run() {
 void LockScreenDataGetContentFunction::OnDone(
     lock_screen_data::OperationResult result,
     std::unique_ptr<std::vector<char>> data) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Apps.LockScreen.DataItemStorage.OperationResult.ReadItem", result,
+      lock_screen_data::OperationResult::kCount);
+
   if (result == lock_screen_data::OperationResult::kSuccess) {
     Respond(ArgumentList(
         api::lock_screen_data::GetContent::Results::Create(*data)));
@@ -154,6 +164,10 @@ ExtensionFunction::ResponseAction LockScreenDataSetContentFunction::Run() {
 
 void LockScreenDataSetContentFunction::OnDone(
     lock_screen_data::OperationResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Apps.LockScreen.DataItemStorage.OperationResult.WriteItem", result,
+      lock_screen_data::OperationResult::kCount);
+
   if (result == lock_screen_data::OperationResult::kSuccess) {
     Respond(NoArguments());
     return;
@@ -182,6 +196,10 @@ ExtensionFunction::ResponseAction LockScreenDataDeleteFunction::Run() {
 
 void LockScreenDataDeleteFunction::OnDone(
     lock_screen_data::OperationResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Apps.LockScreen.DataItemStorage.OperationResult.DeleteItem", result,
+      lock_screen_data::OperationResult::kCount);
+
   if (result == lock_screen_data::OperationResult::kSuccess) {
     Respond(NoArguments());
     return;

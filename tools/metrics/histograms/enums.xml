@@ -22634,6 +22634,16 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Success"/>
 </enum>
 
+<enum name="LockScreenDataItemOperationResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Operation failed"/>
+  <int value="2" label="Data item not found"/>
+  <int value="3" label="Unknown app"/>
+  <int value="4" label="Item already registered"/>
+  <int value="5" label="Invalid encryption key"/>
+  <int value="6" label="Wrong encryption key"/>
+</enum>
+
 <enum name="LockScreenProgress">
   <int value="0" label="Start screen lock"/>
   <int value="1" label="Enter password correctly"/>

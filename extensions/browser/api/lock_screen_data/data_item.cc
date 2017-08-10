@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/values.h"
@@ -179,6 +180,12 @@ void WriteImpl(OperationResult* result,
     return;
   }
   base::Base64Encode(encrypted, &encrypted);
+
+  UMA_HISTOGRAM_COUNTS_10M("Apps.LockScreen.DataItemStorage.ClearTextItemSize",
+                           data.size());
+
+  UMA_HISTOGRAM_COUNTS_10M("Apps.LockScreen.DataItemStorage.EncryptedItemSize",
+                           encrypted.size());
 
   ValueStore::WriteResult write = store->Set(ValueStore::DEFAULTS, item_id,
                                              base::Value(std::move(encrypted)));

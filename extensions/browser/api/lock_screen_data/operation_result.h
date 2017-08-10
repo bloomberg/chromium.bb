@@ -10,14 +10,18 @@ namespace lock_screen_data {
 
 // Enum containing possible results of data item operations exposed by
 // ItemStorage and DataItem.
+// IMPORTANT: Used to report metrics. Should be kept in sync with
+// LockScreenDataItemOperationResult histogram enum. The assigned values should
+// not be changed.
 enum class OperationResult {
-  kSuccess,
-  kFailed,
-  kNotFound,
-  kUnknownExtension,
-  kAlreadyRegistered,
-  kInvalidKey,
-  kWrongKey,
+  kSuccess = 0,
+  kFailed = 1,
+  kNotFound = 2,
+  kUnknownExtension = 3,
+  kAlreadyRegistered = 4,
+  kInvalidKey = 5,
+  kWrongKey = 6,
+  kCount,
 };
 
 }  // namespace lock_screen_data
