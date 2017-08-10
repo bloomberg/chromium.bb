@@ -142,6 +142,12 @@ base::string16 PaymentsProfileComparator::GetStringForMissingContactFields(
                                    GetRequiredProfileFieldsForContact());
 }
 
+base::string16 PaymentsProfileComparator::GetTitleForMissingContactFields(
+    const autofill::AutofillProfile& profile) const {
+  return GetTitleForMissingFields(GetMissingProfileFields(&profile) &
+                                  GetRequiredProfileFieldsForContact());
+}
+
 std::vector<autofill::AutofillProfile*>
 PaymentsProfileComparator::FilterProfilesForShipping(
     const std::vector<autofill::AutofillProfile*>& profiles) const {
@@ -263,6 +269,28 @@ base::string16 PaymentsProfileComparator::GetStringForMissingFields(
       // correspond to a named constant is set (shouldn't happen). Return a
       // generic "More information" message.
       return l10n_util::GetStringUTF16(IDS_PAYMENTS_MORE_INFORMATION_REQUIRED);
+  }
+}
+
+base::string16 PaymentsProfileComparator::GetTitleForMissingFields(
+    PaymentsProfileComparator::ProfileFields fields) const {
+  switch (fields) {
+    case 0:
+      NOTREACHED() << "Title should not be requested if no fields are missing";
+      return base::string16();
+    case kName:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_NAME);
+    case kPhone:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_PHONE_NUMBER);
+    case kEmail:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_EMAIL);
+    case kAddress:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_VALID_ADDRESS);
+    default:
+      // Either multiple bits are set (likely) or one bit that doesn't
+      // correspond to a named constant is set (shouldn't happen). Return a
+      // generic "More information" message.
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_MORE_INFORMATION);
   }
 }
 
