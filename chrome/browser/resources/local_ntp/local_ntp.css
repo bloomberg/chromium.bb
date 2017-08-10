@@ -3,16 +3,28 @@
  * found in the LICENSE file. */
 
 html {
-  /* document's column count is set dynamically from JS. */
-  --column-count: 4;
+  --column-count: 2;
   --content-width: calc(
       (var(--column-count) * (var(--tile-width) + var(--tile-margin)))
       /* We add an extra pixel because rounding errors on different zooms can
        * make the width shorter than it should be. */
       + 1px);
-  /* These values must match NTP_DESIGN constants in JS. */
   --tile-margin: 16px;
   --tile-width: 154px;
+}
+
+/* width >= (3 cols * (16px + 154px) - 16px + 200px) */
+@media (min-width: 694px) {
+  html {
+    --column-count: 3;
+  }
+}
+
+/* width >= (4 cols * (16px + 154px) - 16px + 200px) */
+@media (min-width: 864px) {
+  html {
+    --column-count: 4;
+  }
 }
 
 /* TODO: Need to discuss with NTP folks before we remove font-family from the

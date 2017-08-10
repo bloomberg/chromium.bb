@@ -178,8 +178,6 @@ var handleCommand = function(data) {
     showTiles(data);
   } else if (cmd == 'updateTheme') {
     updateTheme(data);
-  } else if (cmd == 'tilesVisible') {
-    hideOverflowTiles(data);
   } else {
     console.error('Unknown command: ' + JSON.stringify(data));
   }
@@ -193,7 +191,6 @@ var handleCommand = function(data) {
 var showTiles = function(info) {
   logEvent(LOG_TYPE.NTP_ALL_TILES_RECEIVED);
   countLoad();
-  hideOverflowTiles(info);
 };
 
 
@@ -237,19 +234,6 @@ var updateTheme = function(info) {
   }
 
   document.querySelector('#custom-theme').textContent = themeStyle.join('\n');
-};
-
-
-/**
- * Hides extra tiles that don't fit on screen. Called in response to the 'show'
- * and 'tilesVisible' messages from the host page.
- */
-var hideOverflowTiles = function(data) {
-  var tileAndEmptyTileList =
-      document.querySelectorAll('#mv-tiles .mv-tile,#mv-tiles .mv-empty-tile');
-  for (var i = 0; i < tileAndEmptyTileList.length; ++i) {
-    tileAndEmptyTileList[i].classList.toggle('hidden', i >= data.maxVisible);
-  }
 };
 
 
