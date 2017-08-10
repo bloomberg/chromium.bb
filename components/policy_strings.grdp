@@ -234,6 +234,9 @@
   <message name="IDS_POLICY_RELOAD_POLICIES" desc="Label for the button that reloads policies.">
     Reload policies
   </message>
+  <message name="IDS_EXPORT_POLICIES_JSON" desc="Label for the button that exports policies in JSON format.">
+    Export to JSON
+  </message>
   <message name="IDS_POLICY_CHROME_FOR_WORK" desc="Title of the link to the chrome for work website.">
     Using Chrome at work? Businesses can manage Chrome settings for their employees. Learn more
   </message>
