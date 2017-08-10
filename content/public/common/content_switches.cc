@@ -65,7 +65,7 @@ const char kBlinkSettings[]                 = "blink-settings";
 const char kBrowserCrashTest[]              = "crash-test";
 
 // Causes the browser process to display a dialog on launch.
-const char kBrowserStartupDialog[] = "browser-startup-dialog";
+const char kBrowserStartupDialog[]          = "browser-startup-dialog";
 
 // Path to the exe to run for the renderer and plugin subprocesses.
 const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
@@ -901,18 +901,14 @@ const char kUtilityCmdPrefix[]              = "utility-cmd-prefix";
 // Causes the process to run as a utility subprocess.
 const char kUtilityProcess[]                = "utility";
 
-// When utility process is sandboxed, there is still access to one directory.
-// This flag specifies the directory that can be accessed.
+// The utility process is sandboxed, with access to one directory. This flag
+// specifies the directory that can be accessed.
 const char kUtilityProcessAllowedDir[]      = "utility-allowed-dir";
 
 const char kUtilityProcessRunningElevated[] = "utility-run-elevated";
 
-// Type of sandbox to apply to the utility process. Options are "none",
-// "network", or "utility" (the default).
-const char kUtilityProcessSandboxType[] = "utility-sandbox-type";
-
 // Causes the utility process to display a dialog on launch.
-const char kUtilityStartupDialog[] = "utility-startup-dialog";
+const char kUtilityStartupDialog[]          = "utility-startup-dialog";
 
 // In debug builds, asserts that the stream of input events is valid.
 const char kValidateInputEventStream[] = "validate-input-event-stream";

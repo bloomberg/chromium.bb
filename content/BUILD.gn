@@ -95,8 +95,6 @@ if (is_component_build) {
       "public/common/content_switches.h",
       "public/common/mojo_channel_switches.cc",
       "public/common/mojo_channel_switches.h",
-      "public/common/sandbox_type.cc",
-      "public/common/sandbox_type.h",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
 
@@ -158,6 +156,7 @@ source_set("sandbox_helper_win") {
       "app/sandbox_helper_win.cc",
       "public/app/sandbox_helper_win.h",
     ]
+
     deps = [
       "//sandbox",
     ]
