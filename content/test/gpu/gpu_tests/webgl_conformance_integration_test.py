@@ -206,7 +206,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   def _CheckTestCompletion(self):
     self.tab.action_runner.WaitForJavaScriptCondition(
-        'webglTestHarness._finished', timeout=300)
+        'webglTestHarness._finished', timeout=self._GetTestTimeout())
     if not self._DidWebGLTestSucceed(self.tab):
       self.fail(self._WebGLTestMessages(self.tab))
 
@@ -221,7 +221,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _RunExtensionCoverageTest(self, test_path, *args):
     self._NavigateTo(test_path, self._GetExtensionHarnessScript())
     self.tab.action_runner.WaitForJavaScriptCondition(
-        'window._loaded', timeout=300)
+        'window._loaded', timeout=self._GetTestTimeout())
     extension_list = args[0]
     webgl_version = args[1]
     context_type = "webgl2" if webgl_version == 2 else "webgl"
@@ -237,7 +237,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _RunExtensionTest(self, test_path, *args):
     self._NavigateTo(test_path, self._GetExtensionHarnessScript())
     self.tab.action_runner.WaitForJavaScriptCondition(
-        'window._loaded', timeout=300)
+        'window._loaded', timeout=self._GetTestTimeout())
     extension = args[0]
     webgl_version = args[1]
     context_type = "webgl2" if webgl_version == 2 else "webgl"
@@ -245,6 +245,13 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       'checkExtension({{ extension }}, {{ context_type }})',
       extension=extension, context_type=context_type)
     self._CheckTestCompletion()
+
+  def _GetTestTimeout(self):
+    timeout = 300
+    if self._is_asan:
+      # Asan runs much slower and needs a longer timeout
+      timeout *= 2
+    return timeout
 
   @classmethod
   def SetupWebGLBrowserArgs(cls, browser_args):
