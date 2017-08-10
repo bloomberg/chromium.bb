@@ -1129,6 +1129,8 @@ void Dispatcher::OnUnloaded(const std::string& id) {
 
   ExtensionsRendererClient::Get()->OnExtensionUnloaded(id);
 
+  bindings_system_->OnExtensionRemoved(id);
+
   active_extension_ids_.erase(id);
 
   script_injection_manager_->OnExtensionUnloaded(id);
@@ -1193,6 +1195,8 @@ void Dispatcher::OnUpdatePermissions(
     extension->permissions_data()->SetPolicyHostRestrictions(
         params.policy_blocked_hosts, params.policy_allowed_hosts);
   }
+
+  bindings_system_->OnExtensionPermissionsUpdated(params.extension_id);
   UpdateBindings(extension->id());
 }
 

@@ -1024,6 +1024,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestUpdatingPermissions) {
   extension->permissions_data()->SetPermissions(
       base::MakeUnique<PermissionSet>(), base::MakeUnique<PermissionSet>());
 
+  bindings_system()->OnExtensionPermissionsUpdated(extension->id());
   bindings_system()->UpdateBindingsForContext(script_context);
   {
     // TODO(devlin): Neither the native nor JS bindings systems clear the
@@ -1064,6 +1065,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestUpdatingPermissions) {
         base::MakeUnique<PermissionSet>(apis, ManifestPermissionSet(),
                                         URLPatternSet(), URLPatternSet()),
         base::MakeUnique<PermissionSet>());
+    bindings_system()->OnExtensionPermissionsUpdated(extension->id());
     bindings_system()->UpdateBindingsForContext(script_context);
   }
 
