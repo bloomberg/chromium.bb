@@ -167,7 +167,7 @@ std::map<SectionType, PopularSites::SitesVector> ParseVersion6OrAbove(
     }
     sections[section_type] = ParseSiteList(*sites_list);
   }
-  if (!base::FeatureList::IsEnabled(kSitesExplorationFeature)) {
+  if (!base::FeatureList::IsEnabled(kSiteExplorationUiFeature)) {
     // New versions of popular sites that should act like old versions will
     // mimic having only the personalized list.
     return {std::make_pair(SectionType::PERSONALIZED,

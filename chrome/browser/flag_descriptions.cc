@@ -1735,6 +1735,10 @@ const char kNtpCondensedTileLayoutName[] = "Condensed NTP tile layout";
 const char kNtpCondensedTileLayoutDescription[] =
     "Show a condensed tile layout on the New Tab Page.";
 
+const char kSiteExplorationUiName[] = "Site Exploration UI";
+const char kSiteExplorationUiDescription[] =
+    "Show site suggestions in the Exploration UI";
+
 const char kNtpGoogleGInOmniboxName[] = "Google G in New Tab Page omnibox";
 const char kNtpGoogleGInOmniboxDescription[] =
     "Show a Google G in the omnibox on the New Tab Page.";

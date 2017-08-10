@@ -7,6 +7,7 @@ package org.chromium.chrome.test.util.browser.suggestions;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.suggestions.MostVisitedSites;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
+import org.chromium.chrome.browser.suggestions.TileSectionType;
 import org.chromium.chrome.browser.suggestions.TileSource;
 
 import java.util.ArrayList;
@@ -112,7 +113,8 @@ public class FakeMostVisitedSites implements MostVisitedSites {
     }
 
     public static SiteSuggestion createSiteSuggestion(String title, String url) {
-        return new SiteSuggestion(title, url, "", TileSource.TOP_SITES);
+        return new SiteSuggestion(
+                title, url, "", TileSource.TOP_SITES, TileSectionType.PERSONALIZED);
     }
 
     private void notifyTileSuggestionsAvailable() {

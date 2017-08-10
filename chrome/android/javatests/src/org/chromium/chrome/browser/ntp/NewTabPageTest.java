@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
+import org.chromium.chrome.browser.suggestions.TileSectionType;
 import org.chromium.chrome.browser.suggestions.TileSource;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -103,10 +104,10 @@ public class NewTabPageTest {
                 InstrumentationRegistry.getInstrumentation().getContext());
 
         mSiteSuggestions = new ArrayList<>();
-        mSiteSuggestions.add(new SiteSuggestion(
-                "TOP_SITES", mTestServer.getURL(TEST_PAGE) + "#1", "", TileSource.TOP_SITES));
+        mSiteSuggestions.add(new SiteSuggestion("TOP_SITES", mTestServer.getURL(TEST_PAGE) + "#1",
+                "", TileSource.TOP_SITES, TileSectionType.PERSONALIZED));
         mSiteSuggestions.add(new SiteSuggestion("WHITELIST", mTestServer.getURL(TEST_PAGE) + "#2",
-                "/test.png", TileSource.WHITELIST));
+                "/test.png", TileSource.WHITELIST, TileSectionType.PERSONALIZED));
 
         mMostVisitedSites = new FakeMostVisitedSites();
         mMostVisitedSites.setTileSuggestions(mSiteSuggestions.get(0), mSiteSuggestions.get(1));

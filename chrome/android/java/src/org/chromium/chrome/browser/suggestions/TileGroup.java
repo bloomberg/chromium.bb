@@ -25,8 +25,6 @@ import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -140,13 +138,6 @@ public class TileGroup implements MostVisitedSites.Observer {
          * Asynchronous task, that is started for each icon that needs to be loaded.
          */
         int FETCH_ICON = 3;
-    }
-
-    // TODO(dgn) should be generated from C++ enum. Remove when https://crrev.com/c/593651 lands.
-    @IntDef({TileSectionType.PERSONALIZED})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface TileSectionType {
-        int PERSONALIZED = 0;
     }
 
     private final SuggestionsUiDelegate mUiDelegate;

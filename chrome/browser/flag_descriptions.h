@@ -1056,6 +1056,9 @@ extern const char kNtpCondensedLayoutDescription[];
 extern const char kNtpCondensedTileLayoutName[];
 extern const char kNtpCondensedTileLayoutDescription[];
 
+extern const char kSiteExplorationUiName[];
+extern const char kSiteExplorationUiDescription[];
+
 extern const char kNtpGoogleGInOmniboxName[];
 extern const char kNtpGoogleGInOmniboxDescription[];
 
