@@ -233,8 +233,4 @@ enum {
   [self.dispatcher focusFakebox];
 }
 
-- (IBAction)stackButtonTouchDown:(id)sender {
-  [self.dispatcher prepareToEnterTabSwitcher:self];
-}
-
 @end

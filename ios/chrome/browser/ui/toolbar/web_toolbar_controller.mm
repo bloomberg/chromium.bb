@@ -916,10 +916,6 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   }
 }
 
-- (IBAction)stackButtonTouchDown:(id)sender {
-  [self.delegate prepareToEnterTabSwitcher:self];
-}
-
 - (BOOL)imageShouldFlipForRightToLeftLayoutDirection:(int)imageEnum {
   DCHECK(imageEnum < NumberOfWebToolbarButtonNames);
   if (imageEnum < NumberOfToolbarButtonNames)
