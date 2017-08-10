@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -31,6 +33,9 @@ class AwRenderFrameExt : public content::RenderFrameObserver {
   ~AwRenderFrameExt() override;
 
   // RenderFrameObserver:
+  void OnInterfaceRequestForFrame(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_document_navigation) override;
 
@@ -57,11 +62,11 @@ class AwRenderFrameExt : public content::RenderFrameObserver {
 
   url::Origin last_origin_;
 
+  std::unique_ptr<service_manager::BinderRegistry> registry_;
+
   DISALLOW_COPY_AND_ASSIGN(AwRenderFrameExt);
 };
 
 }  // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_RENDERER_AW_RENDER_FRAME_EXT_H_
-
-
