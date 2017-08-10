@@ -3107,6 +3107,7 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   MODE_INFO *const mic = xd->mi[0];
   MB_MODE_INFO *const mbmi = &mic->mbmi;
   assert(!is_inter_block(mbmi));
+  assert(bsize >= BLOCK_8X8);
   int this_rate, colors, n;
   const int src_stride = x->plane[0].src.stride;
   const uint8_t *const src = x->plane[0].src.buf;
@@ -4269,6 +4270,15 @@ static void highbd_angle_estimation(const uint8_t *src8, int src_stride,
 #endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_EXT_INTRA
 
+#if CONFIG_PALETTE
+// Returns true if palette can be used for this block.
+static int can_use_palette(const AV1_COMP *const cpi,
+                           const MB_MODE_INFO *const mbmi) {
+  return cpi->common.allow_screen_content_tools && mbmi->sb_type >= BLOCK_8X8 &&
+         mbmi->sb_type <= BLOCK_LARGEST;
+}
+#endif  // CONFIG_PALETTE
+
 // This function is used only for intra_only frames
 static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                       int *rate, int *rate_tokenonly,
@@ -4303,8 +4313,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
           ? x->palette_buffer->best_palette_color_map
           : NULL;
   int palette_y_mode_ctx = 0;
-  const int try_palette = cpi->common.allow_screen_content_tools &&
-                          bsize >= BLOCK_8X8 && bsize <= BLOCK_LARGEST;
+  const int try_palette = can_use_palette(cpi, mbmi);
 #endif  // CONFIG_PALETTE
   const MODE_INFO *above_mi = xd->above_mi;
   const MODE_INFO *left_mi = xd->left_mi;
@@ -5520,6 +5529,7 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
   assert(!is_inter_block(mbmi));
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const BLOCK_SIZE bsize = mbmi->sb_type;
+  assert(bsize >= BLOCK_8X8);
   int this_rate;
   int64_t this_rd;
   int colors_u, colors_v, colors;
@@ -6038,8 +6048,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_PVQ
 #if CONFIG_PALETTE
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
-  const int try_palette = cpi->common.allow_screen_content_tools &&
-                          bsize >= BLOCK_8X8 && bsize <= BLOCK_LARGEST;
+  const int try_palette = can_use_palette(cpi, mbmi);
 #endif  // CONFIG_PALETTE
 
   for (int mode_idx = 0; mode_idx < UV_INTRA_MODES; ++mode_idx) {
@@ -10065,6 +10074,7 @@ static void restore_uv_color_map(const AV1_COMP *const cpi, MACROBLOCK *x) {
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const BLOCK_SIZE bsize = mbmi->sb_type;
+  assert(bsize >= BLOCK_8X8);
   int src_stride = x->plane[1].src.stride;
   const uint8_t *const src_u = x->plane[1].src.buf;
   const uint8_t *const src_v = x->plane[2].src.buf;
@@ -10134,8 +10144,7 @@ static void pick_filter_intra_interframe(
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 #if CONFIG_PALETTE
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
-  const int try_palette = cpi->common.allow_screen_content_tools &&
-                          bsize >= BLOCK_8X8 && bsize <= BLOCK_LARGEST;
+  const int try_palette = can_use_palette(cpi, mbmi);
 #endif  // CONFIG_PALETTE
   int rate2 = 0, rate_y = INT_MAX, skippable = 0, rate_uv, rate_dummy, i;
   int dc_mode_index;
@@ -10305,8 +10314,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 #if CONFIG_PALETTE
-  const int try_palette =
-      cpi->common.allow_screen_content_tools && bsize >= BLOCK_8X8;
+  const int try_palette = can_use_palette(cpi, mbmi);
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
 #endif  // CONFIG_PALETTE
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
@@ -12278,7 +12286,8 @@ PALETTE_EXIT:
                        best_mode_skippable);
 
 #if CONFIG_PALETTE
-  if (cm->allow_screen_content_tools && pmi->palette_size[1] > 0) {
+  if (pmi->palette_size[1] > 0) {
+    assert(try_palette);
     restore_uv_color_map(cpi, x);
   }
 #endif  // CONFIG_PALETTE

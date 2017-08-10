@@ -231,6 +231,7 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
       plane ? xd->tile_ctx->palette_uv_color_index_cdf
             : xd->tile_ctx->palette_y_color_index_cdf;
   int plane_block_width, plane_block_height, rows, cols;
+  assert(mbmi->sb_type >= BLOCK_8X8);
   av1_get_block_dimensions(mbmi->sb_type, plane, xd, &plane_block_width,
                            &plane_block_height, &rows, &cols);
   assert(plane == 0 || plane == 1);
