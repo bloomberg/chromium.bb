@@ -63,7 +63,7 @@
 #endif
 
 namespace {
-const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=new_tab";
+const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
 }  // namespace
 
 @interface ContentSuggestionsCoordinator ()<
