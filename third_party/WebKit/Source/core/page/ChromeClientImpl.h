@@ -147,7 +147,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void SetHasScrollEventHandlers(LocalFrame*, bool has_event_handlers) override;
   void SetNeedsLowLatencyInput(LocalFrame*, bool needs_low_latency) override;
   void SetTouchAction(LocalFrame*, TouchAction) override;
-  const WebInputEvent* GetCurrentInputEvent() const override;
 
   void AttachRootGraphicsLayer(GraphicsLayer*, LocalFrame* local_root) override;
 

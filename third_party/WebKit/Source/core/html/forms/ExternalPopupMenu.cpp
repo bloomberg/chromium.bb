@@ -33,6 +33,7 @@
 #include "build/build_config.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameImpl.h"
@@ -118,10 +119,7 @@ void ExternalPopupMenu::Show() {
   if (!ShowInternal())
     return;
 #if defined(OS_MACOSX)
-  // TODO(sashab): Change this back to WebViewBase::CurrentInputEvent() once
-  // WebViewImpl is in core/.
-  const WebInputEvent* current_event =
-      local_frame_->GetPage()->GetChromeClient().GetCurrentInputEvent();
+  const WebInputEvent* current_event = WebViewImpl::CurrentInputEvent();
   if (current_event && current_event->GetType() == WebInputEvent::kMouseDown) {
     synthetic_event_ = WTF::WrapUnique(new WebMouseEvent);
     *synthetic_event_ = *static_cast<const WebMouseEvent*>(current_event);

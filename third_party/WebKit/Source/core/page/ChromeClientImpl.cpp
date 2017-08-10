@@ -958,10 +958,6 @@ void ChromeClientImpl::SetTouchAction(LocalFrame* frame,
     client->SetTouchAction(static_cast<TouchAction>(touch_action));
 }
 
-const WebInputEvent* ChromeClientImpl::GetCurrentInputEvent() const {
-  return WebViewImpl::CurrentInputEvent();
-}
-
 bool ChromeClientImpl::RequestPointerLock(LocalFrame* frame) {
   LocalFrame& local_root = frame->LocalFrameRoot();
   return WebLocalFrameImpl::FromFrame(&local_root)
