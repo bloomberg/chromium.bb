@@ -209,7 +209,7 @@ TEST_F(UkmServiceTest, SourceSerialization) {
 
   Report proto_report = GetPersistedReport();
   EXPECT_EQ(1, proto_report.sources_size());
-  EXPECT_FALSE(proto_report.has_session_id());
+  EXPECT_TRUE(proto_report.has_session_id());
   const Source& proto_source = proto_report.sources(0);
 
   EXPECT_EQ(id, proto_source.id());
@@ -428,30 +428,24 @@ TEST_F(UkmServiceTest, RecordInitialUrl) {
 }
 
 TEST_F(UkmServiceTest, RecordSessionId) {
-  for (bool should_record_session_id : {true, false}) {
-    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-    ScopedUkmFeatureParams params(
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-        {{"RecordSessionId", should_record_session_id ? "true" : "false"}});
+  ClearPrefs();
+  UkmService service(&prefs_, &client_);
+  TestRecordingHelper recorder(&service);
+  EXPECT_EQ(0, GetPersistedLogCount());
+  service.Initialize();
+  task_runner_->RunUntilIdle();
+  service.EnableRecording();
+  service.EnableReporting();
 
-    ClearPrefs();
-    UkmService service(&prefs_, &client_);
-    TestRecordingHelper recorder(&service);
-    EXPECT_EQ(0, GetPersistedLogCount());
-    service.Initialize();
-    task_runner_->RunUntilIdle();
-    service.EnableRecording();
-    service.EnableReporting();
+  auto id = UkmRecorder::GetNewSourceID();
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
-    auto id = UkmRecorder::GetNewSourceID();
-    recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  service.Flush();
+  EXPECT_EQ(1, GetPersistedLogCount());
 
-    service.Flush();
-    EXPECT_EQ(1, GetPersistedLogCount());
-
-    auto proto_report = GetPersistedReport();
-    EXPECT_EQ(should_record_session_id, proto_report.has_session_id());
-  }
+  auto proto_report = GetPersistedReport();
+  EXPECT_TRUE(proto_report.has_session_id());
+  EXPECT_EQ(1, proto_report.report_id());
 }
 
 TEST_F(UkmServiceTest, SourceSize) {

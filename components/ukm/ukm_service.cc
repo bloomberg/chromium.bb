@@ -34,12 +34,6 @@ namespace {
 // initialization work.
 constexpr int kInitializationDelaySeconds = 5;
 
-// True if we should record session ids in the UKM Report proto.
-bool ShouldRecordSessionId() {
-  return base::GetFieldTrialParamByFeatureAsBool(kUkmFeature, "RecordSessionId",
-                                                 false);
-}
-
 // Generates a new client id and stores it in prefs.
 uint64_t GenerateClientId(PrefService* pref_service) {
   uint64_t client_id = 0;
@@ -73,6 +67,7 @@ UkmService::UkmService(PrefService* pref_service,
     : pref_service_(pref_service),
       client_id_(0),
       session_id_(0),
+      report_count_(0),
       client_(client),
       reporting_service_(client, pref_service),
       initialize_started_(false),
@@ -192,6 +187,7 @@ void UkmService::Purge() {
 void UkmService::ResetClientId() {
   client_id_ = GenerateClientId(pref_service_);
   session_id_ = LoadSessionId(pref_service_);
+  report_count_ = 0;
 }
 
 void UkmService::RegisterMetricsProvider(
@@ -211,6 +207,7 @@ void UkmService::StartInitTask() {
   DVLOG(1) << "UkmService::StartInitTask";
   client_id_ = LoadOrGenerateClientId(pref_service_);
   session_id_ = LoadSessionId(pref_service_);
+  report_count_ = 0;
 
   metrics_providers_.AsyncInit(base::Bind(&UkmService::FinishedInitTask,
                                           self_ptr_factory_.GetWeakPtr()));
@@ -242,8 +239,8 @@ void UkmService::BuildAndStoreLog() {
 
   Report report;
   report.set_client_id(client_id_);
-  if (ShouldRecordSessionId())
-    report.set_session_id(session_id_);
+  report.set_session_id(session_id_);
+  report.set_report_id(++report_count_);
 
   StoreRecordingsInReport(&report);
 

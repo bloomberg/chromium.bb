@@ -25,6 +25,10 @@ message Report {
   // that is incremented each time the user relaunches Chrome.
   optional int32 session_id = 5;
 
+  // The report id for this record.  Report ids increase sequentially from
+  // one within a session.
+  optional int32 report_id = 6;
+
   // Information about the user's browser and system configuration.
   optional metrics.SystemProfileProto system_profile = 2;
 
