@@ -166,32 +166,29 @@ TEST_F(PreloadControllerTest, TestIsPrerenderingEnabled_preloadNever) {
 }
 
 TEST_F(PreloadControllerTest, TestIsPrefetchingEnabled_preloadAlways) {
-  // With the "Preload Webpages" setting set to "Always", prefetching is
-  // always enabled.
+  // Prefetching is never enabled.
   PreloadWebpagesAlways();
 
   SimulateWiFiConnection();
-  EXPECT_TRUE([controller_ isPrefetchingEnabled]);
+  EXPECT_FALSE([controller_ isPrefetchingEnabled]);
 
   SimulateCellularConnection();
-  EXPECT_TRUE([controller_ isPrefetchingEnabled]);
+  EXPECT_FALSE([controller_ isPrefetchingEnabled]);
 }
 
 TEST_F(PreloadControllerTest, TestIsPrefetchingEnabled_preloadWiFiOnly) {
-  // With the Chrome "Preload Webpages" setting set to "Only on Wi-Fi",
-  // prefetching is enabled only on WiFi.
+  // Prefetching is never enabled.
   PreloadWebpagesWiFiOnly();
 
   SimulateWiFiConnection();
-  EXPECT_TRUE([controller_ isPrefetchingEnabled]);
+  EXPECT_FALSE([controller_ isPrefetchingEnabled]);
 
   SimulateCellularConnection();
   EXPECT_FALSE([controller_ isPrefetchingEnabled]);
 }
 
 TEST_F(PreloadControllerTest, TestIsPrefetchingEnabled_preloadNever) {
-  // With the Chrome "Preload Webpages" setting set to "Never", prefetching
-  // is never enabled, regardless of WiFi state.
+  // Prefetching is never enabled.
   PreloadWebpagesNever();
 
   SimulateWiFiConnection();
@@ -201,42 +198,7 @@ TEST_F(PreloadControllerTest, TestIsPrefetchingEnabled_preloadNever) {
   EXPECT_FALSE([controller_ isPrefetchingEnabled]);
 }
 
-TEST_F(PreloadControllerTest, TestPrefetchURL_transformURL) {
-  PreloadWebpagesAlways();
-
-  GURL original("http://www.google.com/search?q=foo");
-  GURL expected("http://www.google.com/search?q=foo&pf=i");
-  [controller_ prefetchURL:original
-                transition:ui::PAGE_TRANSITION_FROM_ADDRESS_BAR];
-
-  net::TestURLFetcher* url_fetcher = nil;
-  url_fetcher =
-      test_url_fetcher_factory_->GetFetcherByID(kPreloadControllerURLFetcherID);
-
-  EXPECT_TRUE(url_fetcher);
-  GURL actual = url_fetcher->GetOriginalURL();
-  EXPECT_EQ(expected, actual);
-}
-
-TEST_F(PreloadControllerTest, TestUrlToPrefetchURL_noParams) {
-  GURL original("http://www.google.com/search");
-  GURL expected("http://www.google.com/search?pf=i");
-  GURL actual = [controller_ urlToPrefetchURL:original];
-  EXPECT_EQ(expected, actual);
-}
-
-TEST_F(PreloadControllerTest, TestUrlToPrefetchURL_params) {
-  std::string urlString =
-      std::string("http://www.google.com/search")
-          .append("?q=legoland&oq=legol&aqs=chrome.0.0j69i57j0j5")
-          .append("&sourceid=chrome-mobile&ie=UTF-8&hl=en-US");
-  GURL original(urlString);
-  GURL expected(urlString + "&pf=i");
-  GURL actual = [controller_ urlToPrefetchURL:original];
-  EXPECT_EQ(expected, actual);
-}
-
-TEST_F(PreloadControllerTest, TestHasPrefetchedURL) {
+TEST_F(PreloadControllerTest, NoPrefetching) {
   PreloadWebpagesAlways();
 
   GURL first("http://www.google.com/search?q=first");
@@ -247,18 +209,18 @@ TEST_F(PreloadControllerTest, TestHasPrefetchedURL) {
   EXPECT_FALSE([controller_ hasPrefetchedURL:second]);
   EXPECT_FALSE([controller_ hasPrefetchedURL:bogus]);
 
-  // Prefetch |first| and verify it's the only one that returns true.
+  // Try to prefetch |first| and verify that prefetching is disabled.
   [controller_ prefetchURL:first
                 transition:ui::PAGE_TRANSITION_FROM_ADDRESS_BAR];
-  EXPECT_TRUE([controller_ hasPrefetchedURL:first]);
+  EXPECT_FALSE([controller_ hasPrefetchedURL:first]);
   EXPECT_FALSE([controller_ hasPrefetchedURL:second]);
   EXPECT_FALSE([controller_ hasPrefetchedURL:bogus]);
 
-  // Prefetch |second| and verify it's the only one that returns true.
+  // Try to prefetch |second| and verify that prefetching is disabled.
   [controller_ prefetchURL:second
                 transition:ui::PAGE_TRANSITION_FROM_ADDRESS_BAR];
   EXPECT_FALSE([controller_ hasPrefetchedURL:first]);
-  EXPECT_TRUE([controller_ hasPrefetchedURL:second]);
+  EXPECT_FALSE([controller_ hasPrefetchedURL:second]);
   EXPECT_FALSE([controller_ hasPrefetchedURL:bogus]);
 }
 
