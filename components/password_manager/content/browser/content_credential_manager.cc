@@ -42,15 +42,6 @@ void ContentCredentialManager::DisconnectBinding() {
   binding_.Close();
 }
 
-bool ContentCredentialManager::IsZeroClickAllowed() const {
-  return impl_.IsZeroClickAllowed();
-}
-
-PasswordStore::FormDigest
-ContentCredentialManager::GetSynthesizedFormForOrigin() const {
-  return impl_.GetSynthesizedFormForOrigin();
-}
-
 void ContentCredentialManager::Store(const CredentialInfo& credential,
                                      StoreCallback callback) {
   impl_.Store(credential, std::move(callback));

@@ -312,6 +312,7 @@ source_set("unit_tests") {
     "android_affiliation/affiliation_utils_unittest.cc",
     "android_affiliation/facet_manager_unittest.cc",
     "browser_save_password_progress_logger_unittest.cc",
+    "credential_manager_impl_unittest.cc",
     "credential_manager_logger_unittest.cc",
     "credential_manager_password_form_manager_unittest.cc",
     "export/csv_writer_unittest.cc",

@@ -28,12 +28,6 @@ class ContentCredentialManager : public mojom::CredentialManager {
   bool HasBinding() const;
   void DisconnectBinding();
 
-  // TODO(tgarbus): Methods IsZeroClickAllowed and GetSynthesizedFormForOrigin
-  // are used only in unit tests. Remove them after the tests have been moved
-  // to core.
-  bool IsZeroClickAllowed() const;
-  PasswordStore::FormDigest GetSynthesizedFormForOrigin() const;
-
   // mojom::CredentialManager methods:
   void Store(const CredentialInfo& credential, StoreCallback callback) override;
   void PreventSilentAccess(PreventSilentAccessCallback callback) override;
