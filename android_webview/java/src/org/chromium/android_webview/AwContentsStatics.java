@@ -115,21 +115,30 @@ public class AwContentsStatics {
 
     @SuppressWarnings("unchecked")
     @TargetApi(19)
-    public static void initSafeBrowsing(Context context, ValueCallback<Boolean> callback) {
-        if (callback == null) {
-            callback = new ValueCallback<Boolean>() {
-                @Override
-                public void onReceiveValue(Boolean b) {}
-            };
-        }
+    public static void initSafeBrowsing(Context context, final ValueCallback<Boolean> callback) {
+        // Wrap the callback to make sure we always invoke it on the UI thread, as guaranteed by the
+        // API.
+        ValueCallback<Boolean> wrapperCallback = new ValueCallback<Boolean>() {
+            @Override
+            public void onReceiveValue(Boolean b) {
+                if (callback != null) {
+                    ThreadUtils.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.onReceiveValue(b);
+                        }
+                    });
+                }
+            }
+        };
 
         try {
             Class cls = Class.forName(sSafeBrowsingWarmUpHelper);
             Method m =
                     cls.getDeclaredMethod("warmUpSafeBrowsing", Context.class, ValueCallback.class);
-            m.invoke(null, context, callback);
+            m.invoke(null, context, wrapperCallback);
         } catch (ReflectiveOperationException e) {
-            callback.onReceiveValue(false);
+            wrapperCallback.onReceiveValue(false);
         }
     }
 
