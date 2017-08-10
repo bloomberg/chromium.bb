@@ -12,30 +12,10 @@
 #include <set>
 #include <vector>
 
-@class BookmarkHomeHandsetViewController;
-class GURL;
-
 @protocol UrlLoader;
-
-@protocol BookmarkHomeHandsetViewControllerDelegate
-// The view controller wants to be dismissed.
-// If |url| != GURL(), then the user has selected |url| for navigation.
-- (void)bookmarkHomeHandsetViewControllerWantsDismissal:
-            (BookmarkHomeHandsetViewController*)controller
-                                        navigationToUrl:(const GURL&)url;
-@end
 
 // Navigate/edit the bookmark hierarchy on a handset.
 @interface BookmarkHomeHandsetViewController : BookmarkHomeViewController
-
-#pragma mark - Properties Relevant To Presenters
-
-@property(nonatomic, weak) id<BookmarkHomeHandsetViewControllerDelegate>
-    delegate;
-
-// Dismisses any modal interaction elements. The base implementation does
-// nothing.
-- (void)dismissModals:(BOOL)animated;
 
 @end
 

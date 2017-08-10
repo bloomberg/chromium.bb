@@ -58,8 +58,6 @@ using bookmarks::BookmarkNode;
                             orientation:(UIInterfaceOrientation)orientation;
 // Whether the edit button on the navigation bar should be shown.
 - (BOOL)shouldShowEditButtonWithMenuVisibility:(BOOL)visible;
-// Called when the cancel button is pressed on the navigation bar.
-- (void)navigationBarCancel:(id)sender;
 // Called when the menu button is pressed on the navigation bar.
 - (void)navigationBarToggledMenu:(id)sender;
 
@@ -75,15 +73,11 @@ using bookmarks::BookmarkNode;
 - (void)showMenuAnimated:(BOOL)animated;
 - (void)hideMenuAnimated:(BOOL)animated updateNavigationBar:(BOOL)update;
 
-// Saves the current position and asks the delegate to open the url.
-- (void)delegateDismiss:(const GURL&)url;
-
 @end
 
 @implementation BookmarkHomeHandsetViewController
 
 @synthesize cachedContentPosition = _cachedContentPosition;
-@synthesize delegate = _delegate;
 
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState {
@@ -168,13 +162,6 @@ using bookmarks::BookmarkNode;
 
 - (BOOL)prefersStatusBarHidden {
   return NO;
-}
-
-#pragma mark - Accessibility
-
-- (BOOL)accessibilityPerformEscape {
-  [self delegateDismiss:GURL()];
-  return YES;
 }
 
 #pragma mark - Superclass overrides
@@ -281,10 +268,6 @@ using bookmarks::BookmarkNode;
       }];
 }
 
-- (void)navigateToBookmarkURL:(const GURL&)url {
-  [self delegateDismiss:url];
-}
-
 - (ActionSheetCoordinator*)createActionSheetCoordinatorOnView:(UIView*)view {
   return [[ActionSheetCoordinator alloc] initWithBaseViewController:self
                                                               title:nil
@@ -349,10 +332,6 @@ using bookmarks::BookmarkNode;
 
 #pragma mark Navigation Bar Callbacks
 
-- (void)navigationBarCancel:(id)sender {
-  [self delegateDismiss:GURL()];
-}
-
 - (void)navigationBarToggledMenu:(id)sender {
   if ([self.panelView userDrivenAnimationInProgress])
     return;
@@ -400,17 +379,6 @@ using bookmarks::BookmarkNode;
     UIInterfaceOrientation orient = GetInterfaceOrientation();
     [self updateNavigationBarAnimated:animated orientation:orient];
   }
-}
-
-- (void)dismissModals:(BOOL)animated {
-  [self.actionSheetCoordinator stop];
-  self.actionSheetCoordinator = nil;
-}
-
-- (void)delegateDismiss:(const GURL&)url {
-  [self cachePosition];
-  [self.delegate bookmarkHomeHandsetViewControllerWantsDismissal:self
-                                                 navigationToUrl:url];
 }
 
 #pragma mark - BookmarkPanelViewDelegate

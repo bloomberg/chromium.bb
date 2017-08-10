@@ -8,8 +8,6 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_panel_protocol.h"
 
-@protocol UrlLoader;
-
 // Navigate/edit the bookmark hierarchy on tablet, from the New Tab Page (NTP).
 @interface BookmarkHomeTabletNTPController
     : BookmarkHomeViewController<NewTabPagePanelProtocol>

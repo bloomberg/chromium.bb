@@ -117,10 +117,6 @@ class BookmarkNode;
 
 #pragma mark - Subclass overrides
 
-// Navigates to the bookmark URL that was tapped. MUST be overridden
-// by subclasses.
-- (void)navigateToBookmarkURL:(const GURL&)url;
-
 // Creates and returns actionSheetCoordinator. MUST
 // be overridden by subclass.
 - (ActionSheetCoordinator*)createActionSheetCoordinatorOnView:(UIView*)view;
@@ -137,6 +133,9 @@ class BookmarkNode;
 - (CGRect)editingBarFrame;
 
 #pragma mark - Navigation bar.
+
+// Callback for when navigation bar is cancelled.
+- (void)navigationBarCancel:(id)sender;
 
 // Updates the UI of the navigation bar with the primaryMenuItem.
 // This method should be called anytime:

@@ -11,6 +11,7 @@
 #include <vector>
 
 @protocol UrlLoader;
+class GURL;
 
 namespace ios {
 class ChromeBrowserState;
@@ -20,6 +21,16 @@ namespace bookmarks {
 class BookmarkModelBridge;
 class BookmarkNode;
 }  // namespace bookmarks
+
+@class BookmarkHomeViewController;
+
+@protocol BookmarkHomeViewControllerDelegate
+// The view controller wants to be dismissed.
+// If |url| != GURL(), then the user has selected |url| for navigation.
+- (void)bookmarkHomeViewControllerWantsDismissal:
+            (BookmarkHomeViewController*)controller
+                                 navigationToUrl:(const GURL&)url;
+@end
 
 // Class to navigate the bookmark hierarchy, needs subclassing for tablet /
 // handset case.
@@ -44,6 +55,16 @@ class BookmarkNode;
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
+
+// Delegate for presenters. Note that this delegate is currently being set only
+// in case of handset, and not tablet. In the future it will be used by both
+// cases.
+@property(nonatomic, weak) id<BookmarkHomeViewControllerDelegate> homeDelegate;
+
+// Dismisses any modal interaction elements. Note that this
+// method is currently used in case of handset only. In the future it
+// will be used by both cases.
+- (void)dismissModals;
 
 @end
 

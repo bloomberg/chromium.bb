@@ -34,8 +34,7 @@
         [[BookmarkControllerFactory alloc] init];
     self.viewController = [factory
         bookmarkPanelControllerForBrowserState:self.browser->browser_state()
-                                        loader:nil
-                                    colorCache:nil];
+                                        loader:nil];
   }
   [super start];
 }

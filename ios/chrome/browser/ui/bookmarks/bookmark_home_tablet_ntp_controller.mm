@@ -36,7 +36,6 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/referrer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -60,11 +59,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 // cached value of the y of the content offset of the folder view. This
 // property is set to nil after it is used.
 @property(nonatomic, strong) NSNumber* cachedContentPosition;
-
-#pragma mark Private methods
-
-// Opens the url.
-- (void)loadURL:(const GURL&)url;
 
 #pragma mark View loading, laying out, and switching.
 
@@ -283,16 +277,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
       }];
 }
 
-- (void)navigateToBookmarkURL:(const GURL&)url {
-  [self cachePosition];
-  // Before passing the URL to the block, make sure the block has a copy of the
-  // URL and not just a reference.
-  const GURL localUrl(url);
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [self loadURL:localUrl];
-  });
-}
-
 - (ActionSheetCoordinator*)createActionSheetCoordinatorOnView:(UIView*)view {
   return [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.view.window.rootViewController
@@ -303,20 +287,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 }
 
 #pragma mark - Private methods
-
-- (void)loadURL:(const GURL&)url {
-  if (url == GURL() || url.SchemeIs(url::kJavaScriptScheme))
-    return;
-
-  new_tab_page_uma::RecordAction(self.browserState,
-                                 new_tab_page_uma::ACTION_OPENED_BOOKMARK);
-  base::RecordAction(
-      base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
-  [self.loader loadURL:url
-               referrer:web::Referrer()
-             transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
-      rendererInitiated:NO];
-}
 
 - (BOOL)shouldPresentMenuInSlideInPanel {
   return IsCompactTablet();
@@ -418,8 +388,7 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 }
 
 - (void)dismissModals {
-  [self.actionSheetCoordinator stop];
-  self.actionSheetCoordinator = nil;
+  [super dismissModals];
   [self.editViewController dismiss];
 }
 
