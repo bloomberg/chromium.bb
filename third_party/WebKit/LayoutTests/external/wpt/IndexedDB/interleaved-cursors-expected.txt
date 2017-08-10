@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS 1 cursors 
-PASS 10 cursors 
-FAIL 100 cursors promise_test: Unhandled rejection with value: object "QuotaExceededError: "
-FAIL 500 cursors promise_test: Unhandled rejection with value: object "QuotaExceededError: "
-Harness: the test ran to completion.
-

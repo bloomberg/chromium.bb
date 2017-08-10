@@ -110,8 +110,10 @@ function testVersionMismatch(db)
 
 function runTest()
 {
-    if (window.testRunner)
+    if (window.testRunner) {
+        testRunner.setDatabaseQuota(5 * 1024 * 1024);
         testRunner.clearAllDatabases();
+    }
 
     var db = openDatabaseWithSuffix("SQLErrorCodesTest", "1.0", "Tests the error codes.", 1);
     testTransactionThrowsException(db);

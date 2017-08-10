@@ -50,6 +50,8 @@ class WebTask;
 class WebWidgetTestProxyBase;
 struct TestPreferences;
 
+constexpr int kDefaultDatabaseQuota = -1;
+
 class WebTestDelegate {
  public:
   // Set and clear the edit command to execute on the next call to
@@ -142,6 +144,7 @@ class WebTestDelegate {
 
   // Controls WebSQL databases.
   virtual void ClearAllDatabases() = 0;
+  // Setting quota to kDefaultDatabaseQuota will reset it to the default value.
   virtual void SetDatabaseQuota(int quota) = 0;
 
   // Controls Web Notifications.

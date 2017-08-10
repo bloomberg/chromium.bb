@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL IDBObjectStore.delete() - If the transaction this IDBObjectStore belongs to has its mode set to readonly, throw ReadOnlyError assert_unreached: unexpected db.abort Reached unreachable code
-Harness: the test ran to completion.
-

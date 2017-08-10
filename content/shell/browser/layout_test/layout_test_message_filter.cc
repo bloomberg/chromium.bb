@@ -20,6 +20,7 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_network_delegate.h"
 #include "content/shell/common/layout_test/layout_test_messages.h"
+#include "content/shell/test_runner/web_test_delegate.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -118,7 +119,16 @@ void LayoutTestMessageFilter::OnClearAllDatabases() {
 }
 
 void LayoutTestMessageFilter::OnSetDatabaseQuota(int quota) {
-  quota_manager_->SetQuotaSettings(storage::GetHardCodedSettings(quota));
+  DCHECK(quota >= 0 || quota == test_runner::kDefaultDatabaseQuota);
+  if (quota == test_runner::kDefaultDatabaseQuota) {
+    // Reset quota to settings with a zero refresh interval to force
+    // QuotaManager to refresh settings immediately.
+    storage::QuotaSettings default_settings;
+    default_settings.refresh_interval = base::TimeDelta();
+    quota_manager_->SetQuotaSettings(default_settings);
+  } else {
+    quota_manager_->SetQuotaSettings(storage::GetHardCodedSettings(quota));
+  }
 }
 
 void LayoutTestMessageFilter::OnSimulateWebNotificationClick(
