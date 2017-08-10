@@ -131,7 +131,7 @@ base::string16 FormatBookmarkURLForDisplay(const GURL& url) {
   // important not to drop any username/password, or unescape anything that
   // changes the URL's meaning.
   url_formatter::FormatUrlTypes format_types =
-      url_formatter::kFormatUrlOmitAll &
+      url_formatter::kFormatUrlOmitDefaults &
       ~url_formatter::kFormatUrlOmitUsernamePassword;
 
   // If username is present, we must not omit the scheme because FixupURL() will

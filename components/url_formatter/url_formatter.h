@@ -51,20 +51,20 @@ extern const FormatUrlType kFormatUrlOmitHTTP;
 // meaningful for non-file "standard" URLs.
 extern const FormatUrlType kFormatUrlOmitTrailingSlashOnBareHostname;
 
-// Convenience for omitting all unecessary types. Does not include experimental
-// flags below.
-extern const FormatUrlType kFormatUrlOmitAll;
+// If the scheme is 'https://', it's removed. Not in kFormatUrlOmitDefaults.
+extern const FormatUrlType kFormatUrlOmitHTTPS;
 
 // Replaces the path, query, and ref with an ellipsis. Experimental and not in
-// kFormatUrlOmitAll.
+// kFormatUrlOmitDefaults.
 extern const FormatUrlType kFormatUrlExperimentalElideAfterHost;
 
-// If the scheme is 'https://', it's removed. Experimental and not in
-// kFormatUrlOmitAll.
-extern const FormatUrlType kFormatUrlExperimentalOmitHTTPS;
-
-// Omits some trivially informative subdomains such as "www" or "m".
+// Omits some trivially informative subdomains such as "www" or "m". Not in
+// kFormatUrlOmitDefaults.
 extern const FormatUrlType kFormatUrlExperimentalOmitTrivialSubdomains;
+
+// Convenience for omitting all unecessary types. Does not include HTTPS scheme
+// removal, or experimental flags.
+extern const FormatUrlType kFormatUrlOmitDefaults;
 
 // Creates a string representation of |url|. The IDN host name is turned to
 // Unicode if the Unicode representation is deemed safe. |format_type| is a
@@ -125,11 +125,12 @@ base::string16 FormatUrlWithAdjustments(
     base::OffsetAdjuster::Adjustments* adjustments);
 
 // This is a convenience function for FormatUrl() with
-// format_types = kFormatUrlOmitAll and unescape = SPACES.  This is the typical
-// set of flags for "URLs to display to the user".  You should be cautious about
-// using this for URLs which will be parsed or sent to other applications.
+// format_types = kFormatUrlOmitDefaults and unescape = SPACES.  This is the
+// typical set of flags for "URLs to display to the user".  You should be
+// cautious about using this for URLs which will be parsed or sent to other
+// applications.
 inline base::string16 FormatUrl(const GURL& url) {
-  return FormatUrl(url, kFormatUrlOmitAll, net::UnescapeRule::SPACES,
+  return FormatUrl(url, kFormatUrlOmitDefaults, net::UnescapeRule::SPACES,
                    nullptr, nullptr, nullptr);
 }
 

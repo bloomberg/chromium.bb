@@ -405,12 +405,13 @@ const FormatUrlType kFormatUrlOmitNothing = 0;
 const FormatUrlType kFormatUrlOmitUsernamePassword = 1 << 0;
 const FormatUrlType kFormatUrlOmitHTTP = 1 << 1;
 const FormatUrlType kFormatUrlOmitTrailingSlashOnBareHostname = 1 << 2;
-const FormatUrlType kFormatUrlOmitAll =
+const FormatUrlType kFormatUrlOmitHTTPS = 1 << 3;
+const FormatUrlType kFormatUrlExperimentalElideAfterHost = 1 << 4;
+const FormatUrlType kFormatUrlExperimentalOmitTrivialSubdomains = 1 << 5;
+
+const FormatUrlType kFormatUrlOmitDefaults =
     kFormatUrlOmitUsernamePassword | kFormatUrlOmitHTTP |
     kFormatUrlOmitTrailingSlashOnBareHostname;
-const FormatUrlType kFormatUrlExperimentalElideAfterHost = 1 << 3;
-const FormatUrlType kFormatUrlExperimentalOmitHTTPS = 1 << 4;
-const FormatUrlType kFormatUrlExperimentalOmitTrivialSubdomains = 1 << 5;
 
 base::string16 FormatUrl(const GURL& url,
                          FormatUrlTypes format_types,
@@ -604,7 +605,7 @@ base::string16 FormatUrlWithAdjustments(
       !base::StartsWith(url.host(), kFTP, base::CompareCase::SENSITIVE) &&
       (((format_types & kFormatUrlOmitHTTP) &&
         url.SchemeIs(url::kHttpScheme)) ||
-       ((format_types & kFormatUrlExperimentalOmitHTTPS) &&
+       ((format_types & kFormatUrlOmitHTTPS) &&
         url.SchemeIs(url::kHttpsScheme)));
 
   // If we need to strip out schemes do it after the fact.

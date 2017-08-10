@@ -77,7 +77,7 @@ class TestUrlBarTexture : public UrlBarTexture {
   size_t GetNumberOfFontFallbacksForURL(const GURL& gurl) {
     url::Parsed parsed;
     const base::string16 text = url_formatter::FormatUrl(
-        gurl, url_formatter::kFormatUrlOmitAll, net::UnescapeRule::NORMAL,
+        gurl, url_formatter::kFormatUrlOmitDefaults, net::UnescapeRule::NORMAL,
         &parsed, nullptr, nullptr);
 
     gfx::Size texture_size = GetPreferredTextureSize(kUrlWidthPixels);
@@ -138,7 +138,7 @@ class UrlEmphasisTest : public testing::Test {
     GURL url(base::UTF8ToUTF16(url_string));
     url::Parsed parsed;
     const base::string16 formatted_url = url_formatter::FormatUrl(
-        url, url_formatter::kFormatUrlOmitAll, net::UnescapeRule::NORMAL,
+        url, url_formatter::kFormatUrlOmitDefaults, net::UnescapeRule::NORMAL,
         &parsed, nullptr, nullptr);
     EXPECT_EQ(formatted_url, base::UTF8ToUTF16(expected_string));
     TestUrlBarTexture::TestUrlStyling(

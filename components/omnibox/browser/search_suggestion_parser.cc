@@ -245,7 +245,7 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
       formatted_url_(AutocompleteInput::FormattedStringWithEquivalentMeaning(
           url,
           url_formatter::FormatUrl(url,
-                                   url_formatter::kFormatUrlOmitAll &
+                                   url_formatter::kFormatUrlOmitDefaults &
                                        ~url_formatter::kFormatUrlOmitHTTP,
                                    net::UnescapeRule::SPACES,
                                    nullptr,

@@ -61,9 +61,9 @@ ScopedJavaLocalRef<jstring> GetFormattedUrlFromOriginalDistillerUrl(
   // and pastes it into another program, that program may think the URL ends at
   // the space.
   return base::android::ConvertUTF16ToJavaString(
-      env, url_formatter::FormatUrl(
-               url, url_formatter::kFormatUrlOmitAll,
-               net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
+      env, url_formatter::FormatUrl(url, url_formatter::kFormatUrlOmitDefaults,
+                                    net::UnescapeRule::NORMAL, nullptr, nullptr,
+                                    nullptr));
 }
 
 // Returns true if the distiller experiment is set to use any heuristic other

@@ -573,7 +573,8 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     DCHECK(!(trim_http && AutocompleteInput::HasHTTPScheme(input.text())));
     base::string16 display_string(url_formatter::FormatUrl(
         destination_url,
-        url_formatter::kFormatUrlOmitAll & ~url_formatter::kFormatUrlOmitHTTP,
+        url_formatter::kFormatUrlOmitDefaults &
+            ~url_formatter::kFormatUrlOmitHTTP,
         net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
     const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
     match.fill_into_edit =
@@ -1169,7 +1170,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   size_t inline_autocomplete_offset =
       history_match.input_location + params.input.text().length();
 
-  auto fill_into_edit_format_types = url_formatter::kFormatUrlOmitAll;
+  auto fill_into_edit_format_types = url_formatter::kFormatUrlOmitDefaults;
   if (!params.trim_http || history_match.match_in_scheme)
     fill_into_edit_format_types &= ~url_formatter::kFormatUrlOmitHTTP;
   match.fill_into_edit =

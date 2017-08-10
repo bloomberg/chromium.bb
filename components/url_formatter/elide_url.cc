@@ -154,8 +154,8 @@ base::string16 ElideUrl(const GURL& url,
   // Get a formatted string and corresponding parsing of the url.
   url::Parsed parsed;
   const base::string16 url_string = url_formatter::FormatUrl(
-      url, url_formatter::kFormatUrlOmitAll,
-      net::UnescapeRule::SPACES, &parsed, nullptr, nullptr);
+      url, url_formatter::kFormatUrlOmitDefaults, net::UnescapeRule::SPACES,
+      &parsed, nullptr, nullptr);
   if (available_pixel_width <= 0)
     return url_string;
 
