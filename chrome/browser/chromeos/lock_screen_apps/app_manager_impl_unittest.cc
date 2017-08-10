@@ -32,6 +32,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/app_runtime.h"
@@ -358,11 +359,8 @@ class LockScreenAppManagerImplTest
   // file runner task finish,
   void RunExtensionServiceTaskRunner(Profile* profile) {
     base::RunLoop run_loop;
-    extensions::ExtensionSystem::Get(profile)
-        ->extension_service()
-        ->GetFileTaskRunner()
-        ->PostTaskAndReply(FROM_HERE, base::Bind(&base::DoNothing),
-                           run_loop.QuitClosure());
+    extensions::GetExtensionFileTaskRunner()->PostTaskAndReply(
+        FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure());
     run_loop.Run();
   }
 

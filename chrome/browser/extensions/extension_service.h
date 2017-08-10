@@ -46,7 +46,6 @@ class Profile;
 
 namespace base {
 class CommandLine;
-class SequencedTaskRunner;
 }
 
 namespace content {
@@ -363,9 +362,6 @@ class ExtensionService
   void RegisterInstallGate(extensions::ExtensionPrefs::DelayReason reason,
                            extensions::InstallGate* install_delayer);
   void UnregisterInstallGate(extensions::InstallGate* install_delayer);
-
-  // Returns task runner for crx installation file I/O operations.
-  base::SequencedTaskRunner* GetFileTaskRunner();
 
   //////////////////////////////////////////////////////////////////////////////
   // Simple Accessors

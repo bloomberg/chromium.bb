@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/extension_assets_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/pref_names.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
@@ -315,7 +316,7 @@ AppManagerImpl::State AppManagerImpl::AddAppToLockScreenProfile(
       extensions::ExtensionSystem::Get(lock_screen_profile_)
           ->extension_service();
 
-  lock_screen_service->GetFileTaskRunner()->PostTask(
+  extensions::GetExtensionFileTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(
           &InstallExtensionCopy, lock_profile_app, app->path(),
