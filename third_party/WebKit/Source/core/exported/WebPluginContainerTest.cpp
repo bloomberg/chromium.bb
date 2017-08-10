@@ -247,6 +247,18 @@ void CreateAndHandleKeyboardEvent(WebElement* plugin_container_one_element,
       ->HandleEvent(key_event);
 }
 
+void ExecuteContextMenuCommand(WebViewImpl* web_view,
+                               const WebString& command_name) {
+  auto event = FrameTestHelpers::CreateMouseEvent(WebMouseEvent::kMouseDown,
+                                                  WebMouseEvent::Button::kRight,
+                                                  WebPoint(30, 30), 0);
+  event.click_count = 1;
+
+  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  EXPECT_TRUE(
+      web_view->MainFrame()->ToWebLocalFrame()->ExecuteCommand(command_name));
+}
+
 }  // namespace
 
 TEST_F(WebPluginContainerTest, WindowToLocalPointTest) {
@@ -437,18 +449,16 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
+  // Make sure the right-click + command works in common scenario.
+  ExecuteContextMenuCommand(web_view, "Copy");
+  EXPECT_EQ(WebString("x"), Platform::Current()->Clipboard()->ReadPlainText(
+                                WebClipboard::Buffer()));
+  ClearClipboardBuffer();
+
   auto event = FrameTestHelpers::CreateMouseEvent(WebMouseEvent::kMouseDown,
                                                   WebMouseEvent::Button::kRight,
                                                   WebPoint(30, 30), 0);
   event.click_count = 1;
-
-  // Make sure the right-click + Copy works in common scenario.
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
-  EXPECT_TRUE(web_view->MainFrame()->ToWebLocalFrame()->ExecuteCommand("Copy"));
-  EXPECT_EQ(WebString("x"), Platform::Current()->Clipboard()->ReadPlainText(
-                                WebClipboard::Buffer()));
-
-  ClearClipboardBuffer();
 
   // Now, let's try a more complex scenario:
   // 1) open the context menu. This will focus the plugin.
