@@ -248,7 +248,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
                     andHeaderView:(UIView*)headerView {
   self.doodleTopMarginConstraint = [logoView.topAnchor
       constraintEqualToAnchor:headerView.topAnchor
-                     constant:content_suggestions::doodleTopMargin()];
+                     constant:content_suggestions::doodleTopMargin(NO)];
   self.doodleHeightConstraint = [logoView.heightAnchor
       constraintEqualToConstant:content_suggestions::doodleHeight(
                                     self.logoVendor.showingLogo)];

@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -30,8 +31,8 @@ const CGFloat kSearchHintVerticalOffset = 0.5;
 
 const CGFloat kMaxSearchFieldFrameMargin = 200;
 const CGFloat kDoodleTopMarginIPad = 82;
-const CGFloat kDoodleTopMarginIPhone = 56;
 const CGFloat kSearchFieldTopMarginIPhone = 16;
+const CGFloat kSearchFieldTopMarginIPad = 82;
 const CGFloat kNTPSearchFieldBottomPadding = 16;
 
 const CGFloat kTopSpacingMaterialPortrait = 56;
@@ -89,15 +90,15 @@ CGFloat doodleHeight(BOOL logoIsShowing) {
   return kGoogleSearchDoodleHeight;
 }
 
-CGFloat doodleTopMargin() {
+CGFloat doodleTopMargin(BOOL toolbarPresent) {
   if (IsIPadIdiom())
     return kDoodleTopMarginIPad;
-  return kDoodleTopMarginIPhone;
+  return toolbarPresent ? ntp_header::kToolbarHeight : 0;
 }
 
 CGFloat searchFieldTopMargin() {
   if (IsIPadIdiom())
-    return kDoodleTopMarginIPad;
+    return kSearchFieldTopMarginIPad;
   return kSearchFieldTopMarginIPhone;
 }
 
@@ -108,10 +109,12 @@ CGFloat searchFieldWidth(CGFloat superviewWidth) {
   return fmax(superviewWidth - 2 * margin, kMinSearchFieldWidth);
 }
 
-CGFloat heightForLogoHeader(BOOL logoIsShowing, BOOL promoCanShow) {
-  CGFloat headerHeight = doodleTopMargin() + doodleHeight(logoIsShowing) +
-                         searchFieldTopMargin() + kSearchFieldHeight +
-                         kNTPSearchFieldBottomPadding;
+CGFloat heightForLogoHeader(BOOL logoIsShowing,
+                            BOOL promoCanShow,
+                            BOOL toolbarPresent) {
+  CGFloat headerHeight = doodleTopMargin(toolbarPresent) +
+                         doodleHeight(logoIsShowing) + searchFieldTopMargin() +
+                         kSearchFieldHeight + kNTPSearchFieldBottomPadding;
   if (!IsIPadIdiom()) {
     return headerHeight;
   }

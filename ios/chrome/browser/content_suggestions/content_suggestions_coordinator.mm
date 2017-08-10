@@ -370,7 +370,7 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
 - (CGFloat)pinnedOffsetY {
   CGFloat headerHeight = content_suggestions::heightForLogoHeader(
       self.headerController.logoIsShowing,
-      [self.contentSuggestionsMediator notificationPromo]->CanShow());
+      [self.contentSuggestionsMediator notificationPromo]->CanShow(), YES);
   CGFloat offsetY =
       headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
   if (!IsIPadIdiom())
@@ -386,7 +386,7 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
 - (CGFloat)headerHeight {
   return content_suggestions::heightForLogoHeader(
       self.headerController.logoIsShowing,
-      [self.contentSuggestionsMediator notificationPromo]->CanShow());
+      [self.contentSuggestionsMediator notificationPromo]->CanShow(), YES);
 }
 
 #pragma mark - ContentSuggestionsViewControllerAudience

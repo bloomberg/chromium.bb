@@ -292,7 +292,7 @@ const CGFloat kHintLabelSidePadding = 12;
                     andHeaderView:(UIView*)headerView {
   self.doodleTopMarginConstraint = [logoView.topAnchor
       constraintEqualToAnchor:headerView.topAnchor
-                     constant:content_suggestions::doodleTopMargin()];
+                     constant:content_suggestions::doodleTopMargin(YES)];
   self.doodleHeightConstraint = [logoView.heightAnchor
       constraintEqualToConstant:content_suggestions::doodleHeight(
                                     self.logoIsShowing)];

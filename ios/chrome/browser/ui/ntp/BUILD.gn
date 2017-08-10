@@ -4,22 +4,24 @@
 
 source_set("ntp") {
   sources = [
+    "new_tab_page_header_constants.h",
+    "new_tab_page_header_constants.mm",
     "new_tab_page_panel_protocol.h",
   ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("ntp_header") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "google_landing_data_source.h",
-    "new_tab_page_header_constants.h",
-    "new_tab_page_header_constants.mm",
     "new_tab_page_header_view.h",
     "new_tab_page_header_view.mm",
     "new_tab_page_toolbar_controller.h",
     "new_tab_page_toolbar_controller.mm",
   ]
   deps = [
+    ":ntp",
     "//base",
     "//components/ntp_tiles",
     "//components/strings",
