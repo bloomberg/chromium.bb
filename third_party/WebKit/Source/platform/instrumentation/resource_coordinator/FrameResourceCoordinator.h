@@ -5,26 +5,32 @@
 #ifndef FrameResourceCoordinator_h
 #define FrameResourceCoordinator_h
 
-#include "platform/instrumentation/resource_coordinator/BlinkResourceCoordinatorBase.h"
-
-#include "platform/wtf/Noncopyable.h"
+#include "platform/heap/Handle.h"
+#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom-blink.h"
 
 namespace service_manager {
 class InterfaceProvider;
-}  // namespace service_manager
+}
 
 namespace blink {
 
 class PLATFORM_EXPORT FrameResourceCoordinator final
-    : public BlinkResourceCoordinatorBase {
+    : public GarbageCollectedFinalized<FrameResourceCoordinator> {
   WTF_MAKE_NONCOPYABLE(FrameResourceCoordinator);
 
  public:
+  static bool IsEnabled();
   static FrameResourceCoordinator* Create(service_manager::InterfaceProvider*);
-  ~FrameResourceCoordinator() override;
+  virtual ~FrameResourceCoordinator();
+  void SetProperty(const resource_coordinator::mojom::blink::PropertyType,
+                   int64_t);
+
+  DECLARE_TRACE();
 
  private:
   explicit FrameResourceCoordinator(service_manager::InterfaceProvider*);
+
+  resource_coordinator::mojom::blink::CoordinationUnitPtr service_;
 };
 
 }  // namespace blink
