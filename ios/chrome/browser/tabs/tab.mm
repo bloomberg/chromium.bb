@@ -391,7 +391,12 @@ TabInfoBarObserver::TabInfoBarObserver(Tab* owner)
 TabInfoBarObserver::~TabInfoBarObserver() {}
 
 void TabInfoBarObserver::SetShouldObserveInfoBarManager(bool should_observe) {
-  infobars::InfoBarManager* infobar_manager = [owner_ infoBarManager];
+  if (!owner_)
+    return;
+
+  DCHECK(owner_.webState);
+  infobars::InfoBarManager* infobar_manager =
+      InfoBarManagerImpl::FromWebState(owner_.webState);
   if (!infobar_manager)
     return;
 
@@ -1548,11 +1553,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)updateLastVisitedTimestamp {
   _lastVisitedTimestamp = [[NSDate date] timeIntervalSince1970];
-}
-
-- (infobars::InfoBarManager*)infoBarManager {
-  DCHECK(self.webState);
-  return InfoBarManagerImpl::FromWebState(self.webState);
 }
 
 - (NSArray*)snapshotOverlays {
