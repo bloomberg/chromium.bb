@@ -25,7 +25,7 @@ void ApiDefinitionsNatives::GetExtensionAPIDefinitionsForTest(
   std::vector<std::string> apis;
   const FeatureProvider* feature_provider = FeatureProvider::GetAPIFeatures();
   for (const auto& map_entry : feature_provider->GetAllFeatures()) {
-    if (!feature_provider->GetParent(map_entry.second.get()) &&
+    if (!feature_provider->GetParent(*map_entry.second) &&
         context()->GetAvailability(map_entry.first).is_available()) {
       apis.push_back(map_entry.first);
     }

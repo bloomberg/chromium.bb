@@ -340,7 +340,7 @@ v8::Local<v8::Object> CreateFullBinding(
 
     // If this API has a parent feature (and isn't marked 'noparent'),
     // then this must be a function or event, so we should not register.
-    if (api_feature_provider->GetParent(iter->second.get()) != nullptr)
+    if (api_feature_provider->GetParent(*iter->second) != nullptr)
       continue;
 
     base::StringPiece binding_name =

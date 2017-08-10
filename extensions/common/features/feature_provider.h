@@ -48,8 +48,8 @@ class FeatureProvider {
   // Returns the feature with the specified name.
   Feature* GetFeature(const std::string& name) const;
 
-  // Returns the parent feature of |feature|, or NULL if there isn't one.
-  Feature* GetParent(Feature* feature) const;
+  // Returns the parent feature of |feature|, or null if there isn't one.
+  const Feature* GetParent(const Feature& feature) const;
 
   // Returns the features inside the |parent| namespace, recursively.
   std::vector<Feature*> GetChildren(const Feature& parent) const;
