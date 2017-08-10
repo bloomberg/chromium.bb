@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_ANDROID)
-#include <jni.h>
+#include "base/android/scoped_java_ref.h"
 #elif defined(OS_MACOSX)
 #include <objc/objc.h>
 #endif
@@ -132,7 +132,7 @@ typedef NSEvent* NativeEvent;
 typedef void* NativeCursor;
 typedef ui::ViewAndroid* NativeView;
 typedef ui::WindowAndroid* NativeWindow;
-typedef jobject NativeEvent;
+typedef base::android::ScopedJavaGlobalRef<jobject> NativeEvent;
 #else
 #error Unknown build environment.
 #endif

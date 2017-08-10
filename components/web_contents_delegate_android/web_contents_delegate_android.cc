@@ -28,6 +28,7 @@
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using content::ColorChooser;
 using content::RenderWidgetHostView;
@@ -302,8 +303,8 @@ void WebContentsDelegateAndroid::UpdateTargetURL(WebContents* source,
 void WebContentsDelegateAndroid::HandleKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
-  jobject key_event = event.os_event;
-  if (key_event) {
+  const JavaRef<jobject>& key_event = event.os_event;
+  if (!key_event.is_null()) {
     JNIEnv* env = AttachCurrentThread();
     ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
     if (obj.is_null())

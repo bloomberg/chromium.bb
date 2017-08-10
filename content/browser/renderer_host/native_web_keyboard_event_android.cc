@@ -9,20 +9,6 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace {
-
-jobject NewGlobalRefForKeyEvent(jobject key_event) {
-  if (key_event == nullptr) return nullptr;
-  return base::android::AttachCurrentThread()->NewGlobalRef(key_event);
-}
-
-void DeleteGlobalRefForKeyEvent(jobject key_event) {
-  if (key_event != nullptr)
-    base::android::AttachCurrentThread()->DeleteGlobalRef(key_event);
-}
-
-}
-
 namespace content {
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
@@ -65,28 +51,25 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(
       os_event(nullptr),
       skip_in_browser(false) {
   if (!android_key_event.is_null())
-    os_event = NewGlobalRefForKeyEvent(android_key_event.obj());
+    os_event.Reset(android_key_event);
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(
     const NativeWebKeyboardEvent& other)
     : WebKeyboardEvent(other),
-      os_event(NewGlobalRefForKeyEvent(other.os_event)),
-      skip_in_browser(other.skip_in_browser) {
-}
+      os_event(other.os_event),
+      skip_in_browser(other.skip_in_browser) {}
 
 NativeWebKeyboardEvent& NativeWebKeyboardEvent::operator=(
     const NativeWebKeyboardEvent& other) {
   WebKeyboardEvent::operator=(other);
 
-  os_event = NewGlobalRefForKeyEvent(other.os_event);
+  os_event = other.os_event;
   skip_in_browser = other.skip_in_browser;
 
   return *this;
 }
 
-NativeWebKeyboardEvent::~NativeWebKeyboardEvent() {
-  DeleteGlobalRefForKeyEvent(os_event);
-}
+NativeWebKeyboardEvent::~NativeWebKeyboardEvent() {}
 
 }  // namespace content
