@@ -208,9 +208,6 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 // Subclasses must call |super| if they override this method.
 - (IBAction)recordUserMetrics:(id)sender;
 
-// Called when a touch down is registered on the stack view button.
-- (IBAction)stackButtonTouchDown:(id)sender;
-
 // Height of the toolbar's drop shadow.  This drop shadow is drawn by the
 // toolbar and included in the toolbar's height, so it must be subtracted away
 // when positioning the web content area.

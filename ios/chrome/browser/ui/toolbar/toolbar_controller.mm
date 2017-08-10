@@ -378,9 +378,6 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
       [stackButton_
           setAutoresizingMask:UIViewAutoresizingFlexibleLeadingMargin() |
                               UIViewAutoresizingFlexibleBottomMargin];
-      [stackButton_ addTarget:self
-                       action:@selector(stackButtonTouchDown:)
-             forControlEvents:UIControlEventTouchDown];
 
       [self setUpButton:stackButton_
              withImageEnum:ToolbarButtonNameStack
@@ -1024,10 +1021,6 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
     base::RecordAction(UserMetricsAction("MobileToolbarShareMenu"));
   else
     NOTREACHED();
-}
-
-- (IBAction)stackButtonTouchDown:(id)sender {
-  // Exists only for override by subclasses.
 }
 
 + (CGFloat)toolbarDropShadowHeight {
