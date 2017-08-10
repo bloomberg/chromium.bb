@@ -75,7 +75,8 @@ class PLATFORM_EXPORT TaskQueueImpl {
 
     bool operator<=(const DelayedWakeUp& other) const {
       if (time == other.time) {
-        DCHECK_NE(sequence_num, other.sequence_num);
+        // Debug gcc builds can compare an element against itself.
+        DCHECK(sequence_num != other.sequence_num || this == &other);
         return (sequence_num - other.sequence_num) < 0;
       }
       return time < other.time;
