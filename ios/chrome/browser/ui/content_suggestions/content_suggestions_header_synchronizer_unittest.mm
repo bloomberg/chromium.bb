@@ -67,12 +67,11 @@ TEST_F(ContentSuggestionsHeaderSynchronizerTest, updateFakeOmnibox) {
   // Setup.
   id headerController = HeaderController();
   OCMExpect([[[headerController stub] ignoringNonObjectArgs]
-      updateSearchFieldForOffset:10]);
+      updateFakeOmniboxForOffset:10]);
   SetAsIPhone();
-  id scrollView = OCMClassMock([UIScrollView class]);
 
   // Action.
-  [Synchronizer() updateFakeOmniboxForScrollView:scrollView];
+  [Synchronizer() updateFakeOmniboxOnCollectionScroll];
 
   // Tests.
   EXPECT_OCMOCK_VERIFY(headerController);

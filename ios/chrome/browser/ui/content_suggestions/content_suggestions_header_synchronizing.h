@@ -12,10 +12,11 @@
 @protocol ContentSuggestionsHeaderSynchronizing
 
 // Handles the scroll of the collection and unfocus the omnibox if needed.
-- (void)unfocusOmniboxOnCollectionScroll;
-
 // Updates the fake omnibox to adapt to the current scrolling.
-- (void)updateFakeOmniboxForScrollView:(nonnull UIScrollView*)scrollView;
+- (void)updateFakeOmniboxOnCollectionScroll;
+
+// Updates the fake omnibox to adapt to the current orientation.
+- (void)updateFakeOmniboxOnNewWidth:(CGFloat)width;
 
 // Unfocuses the omnibox.
 - (void)unfocusOmnibox;

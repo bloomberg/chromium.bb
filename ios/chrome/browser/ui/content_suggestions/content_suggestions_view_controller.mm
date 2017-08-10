@@ -217,8 +217,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
   void (^alongsideBlock)(id<UIViewControllerTransitionCoordinatorContext>) =
       ^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        [self.headerCommandHandler
-            updateFakeOmniboxForScrollView:self.collectionView];
+        [self.headerCommandHandler updateFakeOmniboxOnNewWidth:size.width];
         [self.collectionView.collectionViewLayout invalidateLayout];
       };
   [coordinator animateAlongsideTransition:alongsideBlock completion:nil];
@@ -428,8 +427,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   [super scrollViewDidScroll:scrollView];
   [self.audience contentOffsetDidChange];
   [self.overscrollActionsController scrollViewDidScroll:scrollView];
-  [self.headerCommandHandler unfocusOmniboxOnCollectionScroll];
-  [self.headerCommandHandler updateFakeOmniboxForScrollView:scrollView];
+  [self.headerCommandHandler updateFakeOmniboxOnCollectionScroll];
   self.scrolledToTop =
       scrollView.contentOffset.y >= [self.suggestionsDelegate pinnedOffsetY];
 }
