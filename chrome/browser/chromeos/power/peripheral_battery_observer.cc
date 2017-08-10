@@ -16,10 +16,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,9 +37,9 @@ namespace {
 // it to be in low battery condition.
 const int kLowBatteryLevel = 15;
 
-// Don't show 2 low battery notification within |kNotificationIntervalSec|
-// seconds.
-const int kNotificationIntervalSec = 60;
+// Don't show 2 low battery notification within |kNotificationInterval|.
+constexpr base::TimeDelta kNotificationInterval =
+    base::TimeDelta::FromSeconds(60);
 
 // TODO(sammiequon): Add a notification url to chrome://settings/stylus once
 // battery related information is shown there.
@@ -93,21 +89,39 @@ bool IsStylusDevice(const std::string& bluetooth_address,
   return false;
 }
 
-class PeripheralBatteryNotificationDelegate : public NotificationDelegate {
- public:
-  explicit PeripheralBatteryNotificationDelegate(const std::string& id)
-      : id_(id) {}
-
-  // Overridden from NotificationDelegate:
-  std::string id() const override { return id_; }
-
- private:
-  ~PeripheralBatteryNotificationDelegate() override {}
-
-  const std::string id_;
-
-  DISALLOW_COPY_AND_ASSIGN(PeripheralBatteryNotificationDelegate);
+// Struct containing parameters for the notification which vary between the
+// stylus notifications and the non stylus notifications.
+struct NotificationParams {
+  std::string id;
+  base::string16 title;
+  base::string16 message;
+  int image_id;
+  std::string notifier_name;
+  GURL url;
 };
+
+NotificationParams GetNonStylusNotificationParams(const std::string& address,
+                                                  const std::string& name,
+                                                  int battery_level) {
+  return NotificationParams{
+      address,
+      base::ASCIIToUTF16(name),
+      l10n_util::GetStringFUTF16Int(
+          IDS_ASH_LOW_PERIPHERAL_BATTERY_NOTIFICATION_TEXT, battery_level),
+      IDR_NOTIFICATION_PERIPHERAL_BATTERY_LOW,
+      kNotifierId,
+      GURL(kNotificationOriginUrl)};
+}
+
+NotificationParams GetStylusNotificationParams() {
+  return NotificationParams{
+      PeripheralBatteryObserver::kStylusNotificationId,
+      l10n_util::GetStringUTF16(IDS_ASH_LOW_STYLUS_BATTERY_NOTIFICATION_TITLE),
+      l10n_util::GetStringUTF16(IDS_ASH_LOW_STYLUS_BATTERY_NOTIFICATION_BODY),
+      IDR_NOTIFICATION_STYLUS_BATTERY_LOW,
+      ash::system_notifier::kNotifierStylusBattery,
+      GURL()};
+}
 
 }  // namespace
 
@@ -116,7 +130,6 @@ const char PeripheralBatteryObserver::kStylusNotificationId[] =
 
 PeripheralBatteryObserver::PeripheralBatteryObserver()
     : testing_clock_(NULL),
-      notification_profile_(NULL),
       weakptr_factory_(
           new base::WeakPtrFactory<PeripheralBatteryObserver>(this)) {
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
@@ -167,11 +180,13 @@ void PeripheralBatteryObserver::PeripheralBatteryStatusReceived(
   //    below kLowBatteryLevel.
   // 2. The battery level is in record and it drops below kLowBatteryLevel.
   if (batteries_.find(address) == batteries_.end()) {
-    BatteryInfo battery{name, level, base::TimeTicks()};
+    BatteryInfo battery{name, level, base::TimeTicks(),
+                        IsStylusDevice(address, name)};
     if (level <= kLowBatteryLevel) {
-      if (PostNotification(address, battery))
+      if (PostNotification(address, battery)) {
         battery.last_notification_timestamp = testing_clock_ ?
             testing_clock_->NowTicks() : base::TimeTicks::Now();
+      }
     }
     batteries_[address] = battery;
   } else {
@@ -180,9 +195,10 @@ void PeripheralBatteryObserver::PeripheralBatteryStatusReceived(
     int old_level = battery->level;
     battery->level = level;
     if (old_level > kLowBatteryLevel && level <= kLowBatteryLevel) {
-      if (PostNotification(address, *battery))
+      if (PostNotification(address, *battery)) {
         battery->last_notification_timestamp = testing_clock_ ?
             testing_clock_->NowTicks() : base::TimeTicks::Now();
+      }
     }
   }
 }
@@ -211,8 +227,8 @@ void PeripheralBatteryObserver::RemoveBattery(const std::string& address) {
   std::map<std::string, BatteryInfo>::iterator it =
       batteries_.find(address_lowercase);
   if (it != batteries_.end()) {
-    batteries_.erase(it);
     CancelNotification(address_lowercase);
+    batteries_.erase(it);
   }
 }
 
@@ -223,71 +239,37 @@ bool PeripheralBatteryObserver::PostNotification(const std::string& address,
   // oscillates around the threshold level.
   base::TimeTicks now = testing_clock_ ? testing_clock_->NowTicks() :
       base::TimeTicks::Now();
-  if (now - battery.last_notification_timestamp <
-      base::TimeDelta::FromSeconds(kNotificationIntervalSec))
+  if (now - battery.last_notification_timestamp < kNotificationInterval)
     return false;
 
-  // Stylus battery notifications have a different icon and message. They are
-  // also system notifications.
-  // TODO(sammiequon): Change non-stylus notifications to also be system
-  // notifications.
-  if (IsStylusDevice(address, battery.name)) {
-    auto notification = base::MakeUnique<message_center::Notification>(
-        message_center::NOTIFICATION_TYPE_SIMPLE, kStylusNotificationId,
-        l10n_util::GetStringUTF16(
-            IDS_ASH_LOW_STYLUS_BATTERY_NOTIFICATION_TITLE),
-        l10n_util::GetStringUTF16(IDS_ASH_LOW_STYLUS_BATTERY_NOTIFICATION_BODY),
-        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            IDR_NOTIFICATION_STYLUS_BATTERY_LOW),
-        base::string16(), GURL(),
-        message_center::NotifierId(
-            message_center::NotifierId::SYSTEM_COMPONENT,
-            ash::system_notifier::kNotifierStylusBattery),
-        message_center::RichNotificationData(), nullptr);
-    notification->SetSystemPriority();
+  // Stylus battery notifications differ slightly.
+  NotificationParams params = battery.is_stylus
+                                  ? GetStylusNotificationParams()
+                                  : GetNonStylusNotificationParams(
+                                        address, battery.name, battery.level);
 
-    message_center::MessageCenter::Get()->AddNotification(
-        std::move(notification));
-    return true;
-  }
-
-  NotificationUIManager* notification_manager =
-      g_browser_process->notification_ui_manager();
-
-  base::string16 string_text = l10n_util::GetStringFUTF16Int(
-      IDS_ASH_LOW_PERIPHERAL_BATTERY_NOTIFICATION_TEXT,
-      battery.level);
-
-  Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, base::UTF8ToUTF16(battery.name),
-      string_text, ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                       IDR_NOTIFICATION_PERIPHERAL_BATTERY_LOW),
+  auto notification = base::MakeUnique<message_center::Notification>(
+      message_center::NOTIFICATION_TYPE_SIMPLE, params.id, params.title,
+      params.message,
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(params.image_id),
+      base::string16(), params.url,
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                 kNotifierId),
-      base::string16(), GURL(kNotificationOriginUrl), address,
-      message_center::RichNotificationData(),
-      new PeripheralBatteryNotificationDelegate(address));
+                                 params.notifier_name),
+      message_center::RichNotificationData(), nullptr);
+  notification->SetSystemPriority();
 
-  notification.set_priority(message_center::SYSTEM_PRIORITY);
-
-  notification_profile_ = ProfileManager::GetPrimaryUserProfile();
-  notification_manager->Add(notification, notification_profile_);
-
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
   return true;
 }
 
 void PeripheralBatteryObserver::CancelNotification(const std::string& address) {
   const auto it = batteries_.find(address);
-  if (it != batteries_.end() && IsStylusDevice(address, it->second.name)) {
+  if (it != batteries_.end()) {
+    std::string notification_id =
+        it->second.is_stylus ? kStylusNotificationId : address;
     message_center::MessageCenter::Get()->RemoveNotification(
-        kStylusNotificationId, false /* by_user */);
-    return;
-  }
-
-  // If last_used_profile_ is NULL then no notification has been posted yet.
-  if (notification_profile_) {
-    g_browser_process->notification_ui_manager()->CancelById(
-        address, NotificationUIManager::GetProfileID(notification_profile_));
+        notification_id, false /* by_user */);
   }
 }
 
