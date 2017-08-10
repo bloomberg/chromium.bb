@@ -283,6 +283,15 @@ if (CONFIG_GPROF)
   require_compiler_flag("-pg" YES)
 endif ()
 
+if (CONFIG_WARPED_MOTION)
+  if (CONFIG_NCOBMC)
+    change_config_and_warn(CONFIG_NCOBMC 0 CONFIG_WARPED_MOTION)
+  endif ()
+  if (CONFIG_NCOBMC_ADAPT_WEIGHT)
+    change_config_and_warn(CONFIG_NCOBMC_ADAPT_WEIGHT 0 CONFIG_WARPED_MOTION)
+  endif ()
+endif ()
+
 if (NOT MSVC)
   aom_push_var(CMAKE_REQUIRED_LIBRARIES "m")
   aom_check_c_compiles("fenv_check"
