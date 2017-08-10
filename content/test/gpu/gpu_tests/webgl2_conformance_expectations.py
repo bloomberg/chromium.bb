@@ -482,10 +482,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
         ['mac', ('nvidia', 0xfe9)], bug=654187)
 
-    # When this fails on this configuration, it fails multiple times in a row.
-    self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
-        ['mac', 'nvidia'], bug=702336)
-
     # Mac AMD
     # TODO(kbr): uncomment the following two exepectations after test
     # has been made more robust.
@@ -493,8 +489,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     #     ['mac', 'amd'], bug=735483)
     # self.Fail('conformance2/rendering/texture-switch-performance.html',
     #     ['mac', 'amd'], bug=735483)
-    self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
-        ['mac', 'amd'], bug=702336)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'array_interleaved_lines.html',
         ['mac', 'amd'], bug=483282)
@@ -588,8 +582,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=642822)
 
     # Mac Intel
-    self.Flaky('deqp/functional/gles3/shaderoperator/common_functions.html',
-        ['mac', 'intel'], bug=702336)
     self.Fail('conformance2/rendering/framebuffer-texture-level1.html',
         ['mac', 'intel'], bug=680278)
     self.Fail('conformance2/textures/misc/angle-stuck-depth-textures.html',
