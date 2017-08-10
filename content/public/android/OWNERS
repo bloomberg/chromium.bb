@@ -8,3 +8,4 @@ per-file *.aidl=set noparent
 per-file *.aidl=palmer@chromium.org
 
 # COMPONENT: Content>Core
+# OS: Android
