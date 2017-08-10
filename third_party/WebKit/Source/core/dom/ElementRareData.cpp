@@ -102,6 +102,11 @@ DEFINE_TRACE_WRAPPERS_AFTER_DISPATCH(ElementRareData) {
   visitor->TraceWrappersWithManualWriteBarrier(class_list_);
   visitor->TraceWrappersWithManualWriteBarrier(accessible_node_);
   visitor->TraceWrappersWithManualWriteBarrier(intersection_observer_data_);
+  if (resize_observer_data_) {
+    for (auto& resize_observer : resize_observer_data_->Keys()) {
+      visitor->TraceWrappersWithManualWriteBarrier(resize_observer);
+    }
+  }
   NodeRareData::TraceWrappersAfterDispatch(visitor);
 }
 
