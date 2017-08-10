@@ -295,4 +295,13 @@ public abstract class AppHooks {
     public Callback<CCTRequestStatus> getOfflinePagesCCTRequestDoneCallback() {
         return null;
     }
+
+    /**
+     * @return A set of whitelisted apps that are allowed to receive notification when the
+     * set of offlined pages downloaded on their behalf has changed. Apps are listed by their
+     * package name.
+     */
+    public String[] getOfflinePagesCctWhitelist() {
+        return new String[0];
+    }
 }
