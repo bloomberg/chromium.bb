@@ -841,8 +841,9 @@ void NaClProcessHost::StartNaClFileResolved(
   if (checked_nexe_file.IsValid()) {
     // Release the file received from the renderer. This has to be done on a
     // thread where IO is permitted, though.
-    content::BrowserThread::GetBlockingPool()->PostTask(
-        FROM_HERE, base::Bind(&CloseFile, base::Passed(std::move(nexe_file_))));
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
+        base::Bind(&CloseFile, base::Passed(std::move(nexe_file_))));
     params.nexe_file_path_metadata = file_path;
     params.nexe_file =
         IPC::TakePlatformFileForTransit(std::move(checked_nexe_file));
