@@ -52,9 +52,14 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
+#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -73,6 +78,7 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
     ContentSuggestionsHeaderViewControllerDelegate,
     ContentSuggestionsViewControllerAudience,
     ContentSuggestionsViewControllerDelegate,
+    CRWWebStateObserver,
     OverscrollActionsControllerDelegate>
 
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
@@ -90,7 +96,9 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
 
 @end
 
-@implementation ContentSuggestionsCoordinator
+@implementation ContentSuggestionsCoordinator {
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
+}
 
 @synthesize alertCoordinator = _alertCoordinator;
 @synthesize browserState = _browserState;
@@ -114,6 +122,10 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
   }
 
   _visible = YES;
+
+  web::WebState* webState = self.webStateList->GetActiveWebState();
+  _webStateObserver =
+      base::MakeUnique<web::WebStateObserverBridge>(webState, self);
 
   ntp_snippets::ContentSuggestionsService* contentSuggestionsService =
       IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
@@ -177,10 +189,23 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
   [self.googleLandingMediator shutdown];
   self.googleLandingMediator = nil;
   _visible = NO;
+  _webStateObserver.reset();
 }
 
 - (UIViewController*)viewController {
   return self.suggestionsViewController;
+}
+
+- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+  if (!success)
+    return;
+
+  web::NavigationManager* navigationManager = webState->GetNavigationManager();
+  web::NavigationItem* item = navigationManager->GetVisibleItem();
+  if (item && item->GetPageDisplayState().scroll_state().offset_y() > 0) {
+    self.suggestionsViewController.collectionView.contentOffset =
+        CGPointMake(0, item->GetPageDisplayState().scroll_state().offset_y());
+  }
 }
 
 #pragma mark - ContentSuggestionsCommands

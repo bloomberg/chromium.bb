@@ -92,6 +92,9 @@ struct ContextMenuParams;
 // content.
 - (GURL)virtualURL;
 
+// The scroll offset of this native view.
+- (CGPoint)scrollOffset;
+
 @end
 
 // CRWNativeContent delegate protocol.

@@ -42,7 +42,8 @@ class WebStateList;
 @property(nonatomic, strong, readonly)
     ContentSuggestionsHeaderViewController* headerController;
 
-@property(nonatomic, strong, readonly) UIViewController* viewController;
+@property(nonatomic, strong, readonly)
+    UICollectionViewController* viewController;
 
 @end
 
