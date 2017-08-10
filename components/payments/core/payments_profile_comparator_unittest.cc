@@ -417,6 +417,35 @@ TEST(PaymentRequestProfileUtilTest, GetStringForMissingContactFields) {
             comp.GetStringForMissingContactFields(p5));
 }
 
+TEST(PaymentRequestProfileUtilTest, GetTitleForMissingContactFields) {
+  MockPaymentOptionsProvider provider(kRequestPayerName | kRequestPayerPhone |
+                                      kRequestPayerEmail | kRequestShipping);
+  PaymentsProfileComparator comp("en-US", provider);
+
+  // Error message for email address if email address is missing and required.
+  AutofillProfile p1 = CreateProfileWithContactInfo("Homer", "", "6515553226");
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_EMAIL),
+            comp.GetTitleForMissingContactFields(p1));
+
+  // Error message for phone number if phone is missing and required.
+  AutofillProfile p2 =
+      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "");
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_PHONE_NUMBER),
+            comp.GetTitleForMissingContactFields(p2));
+
+  // Error message for name if name is missing and required.
+  AutofillProfile p3 =
+      CreateProfileWithContactInfo("", "homer@simpson.net", "6515553226");
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_NAME),
+            comp.GetTitleForMissingContactFields(p3));
+
+  // Generic error message if multiple fields missing.
+  AutofillProfile p4 =
+      CreateProfileWithContactInfo("", "homer@simpson.net", "");
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_MORE_INFORMATION),
+            comp.GetTitleForMissingContactFields(p4));
+}
+
 TEST(PaymentRequestProfileUtilTest, GetStringForMissingShippingFields) {
   MockPaymentOptionsProvider provider(kRequestPayerName | kRequestPayerPhone |
                                       kRequestPayerEmail | kRequestShipping);

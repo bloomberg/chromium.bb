@@ -68,11 +68,17 @@
 #pragma mark - PaymentRequestEditViewControllerDataSource
 
 - (NSString*)title {
-  // TODO(crbug.com/602666): Title varies depending on what field is missing.
-  // e.g., Add Email vs. Add Phone Number.
-  return self.profile
-             ? l10n_util::GetNSString(IDS_PAYMENTS_EDIT_CONTACT_DETAILS_LABEL)
-             : l10n_util::GetNSString(IDS_PAYMENTS_ADD_CONTACT_DETAILS_LABEL);
+  if (!self.profile)
+    return l10n_util::GetNSString(IDS_PAYMENTS_ADD_CONTACT_DETAILS_LABEL);
+
+  if (self.paymentRequest->profile_comparator()->IsContactInfoComplete(
+          self.profile)) {
+    return l10n_util::GetNSString(IDS_PAYMENTS_EDIT_CONTACT_DETAILS_LABEL);
+  }
+
+  return base::SysUTF16ToNSString(
+      self.paymentRequest->profile_comparator()
+          ->GetTitleForMissingContactFields(*self.profile));
 }
 
 - (CollectionViewItem*)headerItem {
