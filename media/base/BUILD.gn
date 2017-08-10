@@ -34,7 +34,9 @@ target(link_target_type, "base") {
   # This should only be depended on by "media" target. Other targets should
   # depend on "media" target directly.
   visibility = [
+    "//media/base/mac:*",
     "//media/formats",
+    "//media/muxers",
     "//media/renderers",
 
     # TODO(xhwang): Clean up the dependency graph within "media" target.

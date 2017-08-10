@@ -4,7 +4,6 @@
 
 #include "remoting/codec/video_decoder_vpx.h"
 
-#include "media/base/video_frame.h"
 #include "remoting/codec/codec_test.h"
 #include "remoting/codec/video_encoder_vpx.h"
 #include "testing/gtest/include/gtest/gtest.h"

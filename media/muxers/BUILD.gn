@@ -17,5 +17,9 @@ source_set("muxers") {
     "//third_party/libwebm",
   ]
 
+  public_deps = [
+    "//media/base",
+  ]
+
   configs += [ "//media:media_implementation" ]
 }
