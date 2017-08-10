@@ -131,7 +131,7 @@ class TestPacketGenerator : public QuicPacketGenerator {
         producer_->SaveStreamData(id, iov, 0, offset, iov.total_length);
       }
     }
-    return QuicPacketGenerator::ConsumeDataFastPath(id, iov, offset, fin,
+    return QuicPacketGenerator::ConsumeDataFastPath(id, iov, offset, fin, 0,
                                                     std::move(ack_listener));
   }
 
@@ -149,8 +149,9 @@ class TestPacketGenerator : public QuicPacketGenerator {
         producer_->SaveStreamData(id, iov, 0, offset, iov.total_length);
       }
     }
-    return QuicPacketGenerator::ConsumeData(id, iov, offset, state,
-                                            std::move(ack_listener));
+    return QuicPacketGenerator::ConsumeData(
+        id, iov, offset, state, std::move(ack_listener),
+        FLAGS_quic_reloadable_flag_quic_consuming_data_faster);
   }
 
   SimpleDataProducer* producer_;
@@ -598,6 +599,113 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataFastPath) {
   PacketContents contents;
   contents.num_stream_frames = 1;
   CheckPacketContains(contents, 0);
+  EXPECT_FALSE(packets_.empty());
+  SerializedPacket packet = packets_.back();
+  EXPECT_TRUE(!packet.retransmittable_frames.empty());
+  EXPECT_EQ(STREAM_FRAME, packet.retransmittable_frames.front().type);
+  QuicStreamFrame* stream_frame =
+      packet.retransmittable_frames.front().stream_frame;
+  EXPECT_EQ(10000u, stream_frame->data_length + stream_frame->offset);
+}
+
+TEST_F(QuicPacketGeneratorTest, ConsumeDataLarge) {
+  delegate_.SetCanWriteAnything();
+
+  // Create a 10000 byte IOVector.
+  QuicIOVector iov(CreateData(10000));
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .WillRepeatedly(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
+  QuicConsumedData consumed =
+      generator_.ConsumeData(kHeadersStreamId, iov, 0, FIN, nullptr);
+  EXPECT_EQ(10000u, consumed.bytes_consumed);
+  EXPECT_TRUE(consumed.fin_consumed);
+  EXPECT_FALSE(generator_.HasQueuedFrames());
+  EXPECT_FALSE(generator_.HasRetransmittableFrames());
+
+  PacketContents contents;
+  contents.num_stream_frames = 1;
+  CheckPacketContains(contents, 0);
+  EXPECT_FALSE(packets_.empty());
+  SerializedPacket packet = packets_.back();
+  EXPECT_TRUE(!packet.retransmittable_frames.empty());
+  EXPECT_EQ(STREAM_FRAME, packet.retransmittable_frames.front().type);
+  QuicStreamFrame* stream_frame =
+      packet.retransmittable_frames.front().stream_frame;
+  EXPECT_EQ(10000u, stream_frame->data_length + stream_frame->offset);
+}
+
+TEST_F(QuicPacketGeneratorTest, ConsumeDataLargeSendAckFalse) {
+  delegate_.SetCanNotWrite();
+
+  generator_.SetShouldSendAck(false);
+  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()));
+  EXPECT_TRUE(generator_.HasQueuedFrames());
+  EXPECT_TRUE(generator_.HasRetransmittableFrames());
+
+  delegate_.SetCanWriteAnything();
+
+  generator_.StartBatchOperations();
+
+  EXPECT_CALL(delegate_, GetUpdatedAckFrame())
+      .WillOnce(Return(QuicFrame(&ack_frame_)));
+
+  // Create a 10000 byte IOVector.
+  QuicIOVector iov(CreateData(10000));
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .WillRepeatedly(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
+  QuicConsumedData consumed =
+      generator_.ConsumeData(kHeadersStreamId, iov, 0, FIN, nullptr);
+  generator_.FinishBatchOperations();
+
+  EXPECT_EQ(10000u, consumed.bytes_consumed);
+  EXPECT_TRUE(consumed.fin_consumed);
+  EXPECT_FALSE(generator_.HasQueuedFrames());
+  EXPECT_FALSE(generator_.HasRetransmittableFrames());
+
+  EXPECT_FALSE(packets_.empty());
+  SerializedPacket packet = packets_.back();
+  EXPECT_TRUE(!packet.retransmittable_frames.empty());
+  EXPECT_EQ(STREAM_FRAME, packet.retransmittable_frames.front().type);
+  QuicStreamFrame* stream_frame =
+      packet.retransmittable_frames.front().stream_frame;
+  EXPECT_EQ(10000u, stream_frame->data_length + stream_frame->offset);
+}
+
+TEST_F(QuicPacketGeneratorTest, ConsumeDataLargeSendAckTrue) {
+  delegate_.SetCanNotWrite();
+  generator_.SetShouldSendAck(true);
+  delegate_.SetCanWriteAnything();
+  generator_.StartBatchOperations();
+
+  // Set up frames to write into the creator when control frames are written.
+  EXPECT_CALL(delegate_, GetUpdatedAckFrame())
+      .WillOnce(Return(QuicFrame(&ack_frame_)));
+  EXPECT_CALL(delegate_, PopulateStopWaitingFrame(_));
+  // Generator should have queued control frames, and creator should be empty.
+  EXPECT_TRUE(generator_.HasQueuedFrames());
+  EXPECT_FALSE(generator_.HasRetransmittableFrames());
+  EXPECT_FALSE(creator_->HasPendingFrames());
+
+  // Create a 10000 byte IOVector.
+  QuicIOVector iov(CreateData(10000));
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .WillRepeatedly(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
+  QuicConsumedData consumed =
+      generator_.ConsumeData(kHeadersStreamId, iov, 0, FIN, nullptr);
+  generator_.FinishBatchOperations();
+
+  EXPECT_EQ(10000u, consumed.bytes_consumed);
+  EXPECT_TRUE(consumed.fin_consumed);
+  EXPECT_FALSE(generator_.HasQueuedFrames());
+  EXPECT_FALSE(generator_.HasRetransmittableFrames());
+
+  EXPECT_FALSE(packets_.empty());
+  SerializedPacket packet = packets_.back();
+  EXPECT_TRUE(!packet.retransmittable_frames.empty());
+  EXPECT_EQ(STREAM_FRAME, packet.retransmittable_frames.front().type);
+  QuicStreamFrame* stream_frame =
+      packet.retransmittable_frames.front().stream_frame;
+  EXPECT_EQ(10000u, stream_frame->data_length + stream_frame->offset);
 }
 
 TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {
