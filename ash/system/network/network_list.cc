@@ -550,6 +550,8 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
     if (controlled_icon)
       view->AddRightView(controlled_icon);
   }
+
+  needs_relayout_ = true;
 }
 
 views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
