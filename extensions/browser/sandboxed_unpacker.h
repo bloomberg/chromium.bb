@@ -94,6 +94,14 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // passing the |location| and |creation_flags| to Extension::Create. The
   // |extensions_dir| parameter should specify the directory under which we'll
   // create a subdirectory to write the unpacked extension contents.
+  // Note: Because this requires disk I/O, the task runner passed should use
+  // TaskShutdownBehavior::SKIP_ON_SHUTDOWN to ensure that either the task is
+  // fully run (if initiated before shutdown) or not run at all (if shutdown is
+  // initiated first). See crbug.com/235525.
+  // TODO(devlin): We should probably just have SandboxedUnpacker use the common
+  // ExtensionFileTaskRunner, and not pass in a separate one.
+  // TODO(devlin): SKIP_ON_SHUTDOWN is also not quite sufficient for this. We
+  // should probably instead be using base::ImportantFileWriter or similar.
   SandboxedUnpacker(
       Manifest::Location location,
       int creation_flags,
@@ -160,7 +168,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
     INVALID_PATH_FOR_BITMAP_IMAGE,
     ERROR_RE_ENCODING_THEME_IMAGE,
     ERROR_SAVING_THEME_IMAGE,
-    ABORTED_DUE_TO_SHUTDOWN,
+    DEPRECATED_ABORTED_DUE_TO_SHUTDOWN,  // No longer used; kept for UMA.
 
     // SandboxedUnpacker::RewriteCatalogFiles()
     COULD_NOT_READ_CATALOG_DATA_FROM_DISK,
