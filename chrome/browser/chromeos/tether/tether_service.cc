@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/net/tether_notification_presenter.h"
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
@@ -158,6 +159,11 @@ void TetherService::Shutdown() {
   if (shut_down_)
     return;
 
+  // Record to UMA Tether's last feature state before it is shutdown.
+  // Tether's feature state at the end of its life is the most likely to
+  // accurately represent how it has been used by the user.
+  RecordTetherFeatureState();
+
   shut_down_ = true;
 
   // Remove all observers. This ensures that once Shutdown() is called, no more
@@ -306,28 +312,34 @@ void TetherService::UpdateTetherTechnologyState() {
 
 chromeos::NetworkStateHandler::TechnologyState
 TetherService::GetTetherTechnologyState() {
-  if (shut_down_ || suspended_ || !GetIsBleAdvertisingSupportedPref() ||
-      session_manager_client_->IsScreenLocked() || !HasSyncedTetherHosts() ||
-      IsCellularAvailableButNotEnabled()) {
-    // If Cellular technology is available, then Tether technology is treated
-    // as a subset of Cellular, and it should only be enabled when Cellular
-    // technology is enabled.
-    return chromeos::NetworkStateHandler::TechnologyState::
-        TECHNOLOGY_UNAVAILABLE;
-  } else if (!IsAllowedByPolicy()) {
-    return chromeos::NetworkStateHandler::TechnologyState::
-        TECHNOLOGY_PROHIBITED;
-  } else if (!IsBluetoothAvailable()) {
-    // TODO (hansberry): When !IsBluetoothAvailable(), this results in a weird
-    // UI state for Settings where the toggle is clickable but immediately
-    // becomes disabled after enabling it. See crbug.com/753195.
-    return chromeos::NetworkStateHandler::TechnologyState::
-        TECHNOLOGY_UNINITIALIZED;
-  } else if (!IsEnabledbyPreference()) {
-    return chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE;
-  }
+  switch (GetTetherFeatureState()) {
+    case OTHER_OR_UNKNOWN:
+    case BLE_ADVERTISING_NOT_SUPPORTED:
+    case SCREEN_LOCKED:
+    case NO_AVAILABLE_HOSTS:
+    case CELLULAR_DISABLED:
+      return chromeos::NetworkStateHandler::TechnologyState::
+          TECHNOLOGY_UNAVAILABLE;
 
-  return chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED;
+    case PROHIBITED:
+      return chromeos::NetworkStateHandler::TechnologyState::
+          TECHNOLOGY_PROHIBITED;
+
+    case BLUETOOTH_DISABLED:
+      return chromeos::NetworkStateHandler::TechnologyState::
+          TECHNOLOGY_UNINITIALIZED;
+
+    case USER_PREFERENCE_DISABLED:
+      return chromeos::NetworkStateHandler::TechnologyState::
+          TECHNOLOGY_AVAILABLE;
+
+    case ENABLED:
+      return chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED;
+
+    default:
+      return chromeos::NetworkStateHandler::TechnologyState::
+          TECHNOLOGY_UNAVAILABLE;
+  }
 }
 
 void TetherService::OnBluetoothAdapterFetched(
@@ -429,6 +441,48 @@ bool TetherService::CanEnableBluetoothNotificationBeShown() {
   }
 
   return true;
+}
+
+TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
+  if (shut_down_ || suspended_)
+    return OTHER_OR_UNKNOWN;
+
+  if (!GetIsBleAdvertisingSupportedPref())
+    return BLE_ADVERTISING_NOT_SUPPORTED;
+
+  if (session_manager_client_->IsScreenLocked())
+    return SCREEN_LOCKED;
+
+  if (!HasSyncedTetherHosts())
+    return NO_AVAILABLE_HOSTS;
+
+  // If Cellular technology is available, then Tether technology is treated
+  // as a subset of Cellular, and it should only be enabled when Cellular
+  // technology is enabled.
+  if (IsCellularAvailableButNotEnabled())
+    return CELLULAR_DISABLED;
+
+  if (!IsAllowedByPolicy())
+    return PROHIBITED;
+
+  // TODO (hansberry): When !IsBluetoothAvailable(), this results in a weird
+  // UI state for Settings where the toggle is clickable but immediately
+  // becomes disabled after enabling it. See crbug.com/753195.
+  if (!IsBluetoothAvailable())
+    return BLUETOOTH_DISABLED;
+
+  if (!IsEnabledbyPreference())
+    return USER_PREFERENCE_DISABLED;
+
+  return ENABLED;
+}
+
+void TetherService::RecordTetherFeatureState() {
+  TetherFeatureState tether_feature_state = GetTetherFeatureState();
+  DCHECK(tether_feature_state != TetherFeatureState::TETHER_FEATURE_STATE_MAX);
+  UMA_HISTOGRAM_ENUMERATION("InstantTethering.FinalFeatureState",
+                            tether_feature_state,
+                            TetherFeatureState::TETHER_FEATURE_STATE_MAX);
 }
 
 void TetherService::SetInitializerDelegateForTest(

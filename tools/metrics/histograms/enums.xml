@@ -20870,6 +20870,18 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Failure"/>
 </enum>
 
+<enum name="InstantTethering_FeatureState">
+  <int value="0" label="Other or unknown"/>
+  <int value="1" label="BLE advertising not supported"/>
+  <int value="2" label="Screen locked"/>
+  <int value="3" label="No available hosts"/>
+  <int value="4" label="Cellular disabled"/>
+  <int value="5" label="Prohibited"/>
+  <int value="6" label="Bluetooth disabled"/>
+  <int value="7" label="User preference disabled"/>
+  <int value="8" label="Enabled"/>
+</enum>
+
 <enum name="InstantTethering_HostScanResult">
   <int value="0" label="No hosts found"/>
   <int value="1" label="Notification shown for single host"/>
