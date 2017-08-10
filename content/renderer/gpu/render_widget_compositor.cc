@@ -89,11 +89,13 @@ using blink::WebRect;
 using blink::WebSelection;
 using blink::WebSize;
 using blink::WebBrowserControlsState;
+using blink::WebLayerTreeView;
 
 namespace content {
 namespace {
 
-using ReportTimeCallback = base::Callback<void(bool, double)>;
+using ReportTimeCallback =
+    base::Callback<void(WebLayerTreeView::SwapResult, double)>;
 
 double MonotonicallyIncreasingTime() {
   return static_cast<double>(base::TimeTicks::Now().ToInternalValue()) /
@@ -131,12 +133,30 @@ ReportTimeSwapPromise::~ReportTimeSwapPromise() {}
 void ReportTimeSwapPromise::DidSwap() {
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(callback_, true, MonotonicallyIncreasingTime()));
+      base::BindOnce(callback_, WebLayerTreeView::SwapResult::kDidSwap,
+                     MonotonicallyIncreasingTime()));
 }
 
 cc::SwapPromise::DidNotSwapAction ReportTimeSwapPromise::DidNotSwap(
     cc::SwapPromise::DidNotSwapReason reason) {
-  task_runner_->PostTask(FROM_HERE, base::BindOnce(callback_, false, 0));
+  WebLayerTreeView::SwapResult result;
+  switch (reason) {
+    case cc::SwapPromise::DidNotSwapReason::SWAP_FAILS:
+      result = WebLayerTreeView::SwapResult::kDidNotSwapSwapFails;
+      break;
+    case cc::SwapPromise::DidNotSwapReason::COMMIT_FAILS:
+      result = WebLayerTreeView::SwapResult::kDidNotSwapCommitFails;
+      break;
+    case cc::SwapPromise::DidNotSwapReason::COMMIT_NO_UPDATE:
+      result = WebLayerTreeView::SwapResult::kDidNotSwapCommitNoUpdate;
+      break;
+    case cc::SwapPromise::DidNotSwapReason::ACTIVATION_FAILS:
+      result = WebLayerTreeView::SwapResult::kDidNotSwapActivationFails;
+      break;
+  }
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(callback_, result, MonotonicallyIncreasingTime()));
   return cc::SwapPromise::DidNotSwapAction::BREAK_PROMISE;
 }
 

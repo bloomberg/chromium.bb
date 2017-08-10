@@ -11,6 +11,7 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/wtf/Functional.h"
+#include "public/platform/WebLayerTreeView.h"
 
 namespace blink {
 
@@ -90,7 +91,7 @@ void FirstMeaningfulPaintDetector::NotifyPaint() {
     return;
 
   // Skip document background-only paints.
-  if (paint_timing_->FirstPaint() == 0.0)
+  if (paint_timing_->FirstPaintRendered() == 0.0)
     return;
 
   provisional_first_meaningful_paint_ = MonotonicallyIncreasingTime();
@@ -120,7 +121,7 @@ void FirstMeaningfulPaintDetector::NotifyPaint() {
 // This is called only on FirstMeaningfulPaintDetector for main frame.
 void FirstMeaningfulPaintDetector::NotifyInputEvent() {
   // Ignore user inputs before first paint.
-  if (paint_timing_->FirstPaint() == 0.0)
+  if (paint_timing_->FirstPaintRendered() == 0.0)
     return;
   had_user_input_ = kHadUserInput;
 }
@@ -159,7 +160,7 @@ void FirstMeaningfulPaintDetector::SetNetworkQuietTimers(
 
 void FirstMeaningfulPaintDetector::Network0QuietTimerFired(TimerBase*) {
   if (!GetDocument() || network0_quiet_reached_ || ActiveConnections() > 0 ||
-      !paint_timing_->FirstContentfulPaint())
+      !paint_timing_->FirstContentfulPaintRendered())
     return;
   network0_quiet_reached_ = true;
 
@@ -167,14 +168,14 @@ void FirstMeaningfulPaintDetector::Network0QuietTimerFired(TimerBase*) {
     // Enforce FirstContentfulPaint <= FirstMeaningfulPaint.
     first_meaningful_paint0_quiet_ =
         std::max(provisional_first_meaningful_paint_,
-                 paint_timing_->FirstContentfulPaint());
+                 paint_timing_->FirstContentfulPaintRendered());
   }
   ReportHistograms();
 }
 
 void FirstMeaningfulPaintDetector::Network2QuietTimerFired(TimerBase*) {
   if (!GetDocument() || network2_quiet_reached_ || ActiveConnections() > 2 ||
-      !paint_timing_->FirstContentfulPaint())
+      !paint_timing_->FirstContentfulPaintRendered())
     return;
   network2_quiet_reached_ = true;
 
@@ -186,10 +187,11 @@ void FirstMeaningfulPaintDetector::Network2QuietTimerFired(TimerBase*) {
         provisional_first_meaningful_paint_);
     // Enforce FirstContentfulPaint <= FirstMeaningfulPaint.
     if (provisional_first_meaningful_paint_ <
-        paint_timing_->FirstContentfulPaint()) {
-      first_meaningful_paint2_quiet_ = paint_timing_->FirstContentfulPaint();
+        paint_timing_->FirstContentfulPaintRendered()) {
+      first_meaningful_paint2_quiet_ =
+          paint_timing_->FirstContentfulPaintRendered();
       first_meaningful_paint2_quiet_swap_ =
-          paint_timing_->FirstContentfulPaintSwap();
+          paint_timing_->FirstContentfulPaint();
       // It's possible that this timer fires between when the first contentful
       // paint is set and its SwapPromise is fulfilled. If this happens, defer
       // until NotifyFirstContentfulPaint() is called.
@@ -267,18 +269,27 @@ void FirstMeaningfulPaintDetector::RegisterNotifySwapTime(PaintEvent event) {
                        WrapCrossThreadWeakPersistent(this), event));
 }
 
-void FirstMeaningfulPaintDetector::ReportSwapTime(PaintEvent event,
-                                                  bool did_swap,
-                                                  double timestamp) {
+void FirstMeaningfulPaintDetector::ReportSwapTime(
+    PaintEvent event,
+    WebLayerTreeView::SwapResult result,
+    double timestamp) {
   DCHECK(event == PaintEvent::kProvisionalFirstMeaningfulPaint);
   DCHECK_GT(outstanding_swap_promise_count_, 0U);
   --outstanding_swap_promise_count_;
 
-  // TODO(shaseley): Add UMAs here to see how often swaps fail. If this happens,
-  // the FMP will be 0.0 if this is the provisional timestamp we end up using.
-  if (!did_swap)
-    return;
-
+  // If the swap fails for any reason, we use the timestamp when the SwapPromise
+  // was broken. |result| == WebLayerTreeView::SwapResult::kDidNotSwapSwapFails
+  // usually means the compositor decided not swap because there was no actual
+  // damage, which can happen when what's being painted isn't visible. In this
+  // case, the timestamp will be consistent with the case where the swap
+  // succeeds, as they both capture the time up to swap. In other failure cases
+  // (aborts during commit), this timestamp is an improvement over the blink
+  // paint time, but does not capture some time we're interested in, e.g.  image
+  // decoding.
+  //
+  // TODO(crbug.com/738235): Consider not reporting any timestamp when failing
+  // for reasons other than kDidNotSwapSwapFails.
+  paint_timing_->ReportSwapResultHistogram(result);
   provisional_first_meaningful_paint_swap_ = timestamp;
 
   if (defer_first_meaningful_paint_ == kDeferOutstandingSwapPromises &&

@@ -10,6 +10,7 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
+#include "public/platform/WebLayerTreeView.h"
 
 namespace blink {
 
@@ -49,7 +50,7 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   void NotifyInputEvent();
   void NotifyPaint();
   void CheckNetworkStable();
-  void ReportSwapTime(PaintEvent, bool did_swap, double timestamp);
+  void ReportSwapTime(PaintEvent, WebLayerTreeView::SwapResult, double);
   void NotifyFirstContentfulPaint(double swap_stamp);
 
   DECLARE_TRACE();

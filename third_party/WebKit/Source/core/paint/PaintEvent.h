@@ -8,11 +8,13 @@
 namespace blink {
 
 // Paint events that either PaintTiming or FirstMeaningfulPaintDetector receive
-// GPU swap times for.
+// SwapPromise swap times for.
 enum class PaintEvent {
   kFirstPaint,
   kFirstContentfulPaint,
   kProvisionalFirstMeaningfulPaint,
+  kFirstTextPaint,
+  kFirstImagePaint,
 };
 
 }  // namespace blink
