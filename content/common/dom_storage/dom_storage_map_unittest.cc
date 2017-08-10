@@ -157,4 +157,34 @@ TEST_P(DOMStorageMapParamTest, EnforcesQuota) {
     EXPECT_EQ(base::string16(), map->keys_values_[kKey].string());
 }
 
+TEST_P(DOMStorageMapParamTest, MemoryUsage) {
+  const bool has_only_keys = GetParam();
+  const base::string16 kKey = ASCIIToUTF16("test_key");
+  const base::string16 kValue = ASCIIToUTF16("test_value");
+  const base::string16 kKey2 = ASCIIToUTF16("test_key_2");
+  const size_t kKeySize = kKey.length() * sizeof(base::char16);
+  const size_t kKey2Size = kKey2.length() * sizeof(base::char16);
+  const size_t kValueSize = sizeof(size_t);
+  base::NullableString16 old_nullable_value;
+  base::string16 old_value;
+
+  scoped_refptr<DOMStorageMap> map(
+      new DOMStorageMap(1024 /* quota */, has_only_keys));
+
+  EXPECT_TRUE(map->SetItem(kKey, kValue, &old_nullable_value));
+  EXPECT_TRUE(map->SetItem(kKey2, kValue, &old_nullable_value));
+  if (has_only_keys) {
+    EXPECT_EQ(kKeySize + kKey2Size + 2 * kValueSize, map->memory_usage());
+  } else {
+    EXPECT_EQ(map->bytes_used(), map->memory_usage());
+  }
+
+  EXPECT_TRUE(map->RemoveItem(kKey, &old_value));
+  if (has_only_keys) {
+    EXPECT_EQ(kKey2Size + kValueSize, map->memory_usage());
+  } else {
+    EXPECT_EQ(map->bytes_used(), map->memory_usage());
+  }
+}
+
 }  // namespace content

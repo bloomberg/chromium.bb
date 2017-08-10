@@ -10,6 +10,15 @@ namespace content {
 
 namespace {
 
+size_t size_in_memory(const base::string16& key, const size_t value) {
+  return key.length() * sizeof(base::char16) + sizeof(size_t);
+}
+
+size_t size_in_memory(const base::string16& key,
+                      const base::NullableString16& value) {
+  return (key.length() + value.string().length()) * sizeof(base::char16);
+}
+
 size_t size_of_item(const base::string16& key, const size_t value) {
   return key.length() * sizeof(base::char16) + value;
 }
@@ -17,9 +26,7 @@ size_t size_of_item(const base::string16& key, const size_t value) {
 size_t size_of_item(const base::string16& key,
                     const base::NullableString16& value) {
   // Null value indicates deletion. So, key size is not counted.
-  return value.is_null()
-             ? 0
-             : (key.length() + value.string().length()) * sizeof(base::char16);
+  return value.is_null() ? 0 : size_in_memory(key, value);
 }
 
 }  // namespace
@@ -27,7 +34,10 @@ size_t size_of_item(const base::string16& key,
 DOMStorageMap::DOMStorageMap(size_t quota) : DOMStorageMap(quota, false) {}
 
 DOMStorageMap::DOMStorageMap(size_t quota, bool has_only_keys)
-    : bytes_used_(0), quota_(quota), has_only_keys_(has_only_keys) {
+    : bytes_used_(0),
+      memory_usage_(0),
+      quota_(quota),
+      has_only_keys_(has_only_keys) {
   ResetKeyIterator();
 }
 
@@ -116,9 +126,12 @@ void DOMStorageMap::TakeKeysFrom(const DOMStorageValuesMap* values) {
   // Note: A pre-existing file may be over the quota budget.
   DCHECK(has_only_keys_);
   keys_only_.clear();
+  memory_usage_ = 0;
   for (const auto& item : *values) {
     keys_only_[item.first] =
         item.second.string().length() * sizeof(base::char16);
+    // Do not count size of values for memory usage.
+    memory_usage_ += size_in_memory(item.first, 0 /* unused */);
   }
   bytes_used_ = CountBytes(*values);
   ResetKeyIterator();
@@ -129,6 +142,7 @@ DOMStorageMap* DOMStorageMap::DeepCopy() const {
   copy->keys_values_ = keys_values_;
   copy->keys_only_ = keys_only_;
   copy->bytes_used_ = bytes_used_;
+  copy->memory_usage_ = memory_usage_;
   copy->ResetKeyIterator();
   return copy;
 }
@@ -157,9 +171,11 @@ bool DOMStorageMap::SetItemInternal(MapType* map_type,
                                     typename MapType::mapped_type* old_value) {
   const auto found = map_type->find(key);
   size_t old_item_size = 0;
+  size_t old_item_memory = 0;
   if (found != map_type->end()) {
     *old_value = found->second;
     old_item_size = size_of_item(key, *old_value);
+    old_item_memory = size_in_memory(key, *old_value);
   }
   size_t new_item_size = size_of_item(key, value);
   size_t new_bytes_used = bytes_used_ - old_item_size + new_item_size;
@@ -172,6 +188,7 @@ bool DOMStorageMap::SetItemInternal(MapType* map_type,
   (*map_type)[key] = value;
   ResetKeyIterator();
   bytes_used_ = new_bytes_used;
+  memory_usage_ = memory_usage_ + size_in_memory(key, value) - old_item_memory;
   return true;
 }
 
@@ -187,6 +204,7 @@ bool DOMStorageMap::RemoveItemInternal(
   map_type->erase(found);
   ResetKeyIterator();
   bytes_used_ -= size_of_item(key, *old_value);
+  memory_usage_ -= size_in_memory(key, *old_value);
   return true;
 }
 
