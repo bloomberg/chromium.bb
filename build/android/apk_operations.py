@@ -210,11 +210,16 @@ def Run(output_directory, apk_path, inc_apk_path, inc_install_script,
   args = parser.parse_args()
   run_tests_helper.SetLogLevel(args.verbose_count)
   command = args.command
+  # Enable caching unless executing a helper script (where we won't get a chance
+  # to update the cache afterwards).
+  use_cache = command not in {'gdb', 'logcat'}
 
   devil_chromium.Initialize()
 
-  devices = device_utils.DeviceUtils.HealthyDevices(device_arg=args.devices,
-                                                    default_retries=0)
+  devices = device_utils.DeviceUtils.HealthyDevices(
+      device_arg=args.devices,
+      enable_device_files_cache=use_cache,
+      default_retries=0)
   devices_obj = device_utils.DeviceUtils.parallel(devices)
 
   if command in {'gdb', 'logcat'} and len(devices) > 1:
@@ -273,11 +278,6 @@ def Run(output_directory, apk_path, inc_apk_path, inc_install_script,
   elif inc_apk_path is not None:
     apk_package = apk_helper.GetPackageName(inc_apk_path)
 
-  # Use the cache if possible.
-  use_cache = True
-  if command in {'gdb', 'logcat'}:
-    # Only the current data is needed for these cmds.
-    use_cache = False
   if use_cache:
     for d in devices:
       cache_path = _DeviceCachePath(d)
@@ -315,13 +315,15 @@ def Run(output_directory, apk_path, inc_apk_path, inc_install_script,
     gdb_script_path = os.path.dirname(__file__) + '/adb_gdb'
     program_name = '--program-name=%s' % os.path.splitext(apk_name)[0]
     package_name = '--package-name=%s' % apk_package
-    # The output directory is the one including lib* files.
-    output_dir = '--output-directory=%s' % os.path.abspath(
-        os.path.join(output_directory, os.pardir))
+    output_dir = '--output-directory=%s' % output_directory
     adb_path = '--adb=%s' % adb_wrapper.AdbWrapper.GetAdbPath()
     device = '--device=%s' % devices[0].adb.GetDeviceSerial()
-    flags = [gdb_script_path, program_name, package_name, output_dir, adb_path,
-             device]
+    # Use one lib dir per device so that changing between devices does require
+    # refetching the device libs.
+    libs_dir = '--pull-libs-dir=/tmp/adb-gdb-libs-%s' % (
+        devices[0].adb.GetDeviceSerial())
+    flags = [gdb_script_path, program_name, package_name, output_dir, device,
+             adb_path, libs_dir]
     if args.args:
       flags += shlex.split(args.args)
     # Enable verbose output of adb_gdb if it's set for this script.
