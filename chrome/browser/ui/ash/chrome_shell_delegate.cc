@@ -75,14 +75,11 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/url_constants.h"
+#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/url_constants.h"
-
-#if defined(USE_OZONE)
-#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
-#endif
 
 using chromeos::AccessibilityManager;
 
@@ -615,12 +612,10 @@ ChromeShellDelegate::CreateWallpaperDelegate() {
   return base::WrapUnique(chromeos::CreateWallpaperDelegate());
 }
 
-#if defined(USE_OZONE)
 ui::InputDeviceControllerClient*
 ChromeShellDelegate::GetInputDeviceControllerClient() {
   return g_browser_process->platform_part()->GetInputDeviceControllerClient();
 }
-#endif
 
 void ChromeShellDelegate::Observe(int type,
                                   const content::NotificationSource& source,

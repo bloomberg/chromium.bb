@@ -11,6 +11,7 @@ import("//third_party/protobuf/proto_library.gni")
 import("//ui/ozone/ozone.gni")
 
 assert(is_chromeos)
+assert(use_ozone)
 
 source_set("chromeos") {
   assert(enable_extensions, "ChromeOS Chrome has to be built with extensions")

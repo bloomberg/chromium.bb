@@ -2028,7 +2028,6 @@ test("browser_tests") {
         "../browser/chromeos/input_method/textinput_test_helper.cc",
         "../browser/chromeos/input_method/textinput_test_helper.h",
         "../browser/ui/ash/accelerator_commands_browsertest.cc",
-        "../browser/ui/ash/accelerator_controller_browsertest.cc",
         "../browser/ui/ash/app_list/app_list_controller_ash_browsertest.cc",
         "../browser/ui/ash/chrome_new_window_client_browsertest.cc",
         "../browser/ui/ash/keyboard_controller_browsertest.cc",

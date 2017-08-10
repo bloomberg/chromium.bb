@@ -625,6 +625,7 @@ class TestObserver : public WallpaperManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
+// TODO: test is flaky. http://crbug.com/691548.
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, DISABLED_DisplayChange) {
   TestObserver observer(WallpaperManager::Get());
 
