@@ -80540,6 +80540,39 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="TabManager.Experimental.SessionRestore.ForegroundTab.FirstContentfulPaint"
+    units="ms">
+  <owner>fmeawad@chromium.org</owner>
+  <owner>ducbui@google.com</owner>
+  <summary>
+    Elapsed time between the start of the loading and the first contentful paint
+    of foreground tabs when the browser loads tabs in session restore.
+  </summary>
+</histogram>
+
+<histogram
+    name="TabManager.Experimental.SessionRestore.ForegroundTab.FirstMeaningfulPaint"
+    units="ms">
+  <owner>fmeawad@chromium.org</owner>
+  <owner>ducbui@google.com</owner>
+  <summary>
+    Elapsed time between the start of the loading and the first meaningful paint
+    of foreground tabs when the browser loads tabs in session restore.
+  </summary>
+</histogram>
+
+<histogram
+    name="TabManager.Experimental.SessionRestore.ForegroundTab.FirstPaint"
+    units="ms">
+  <owner>fmeawad@chromium.org</owner>
+  <owner>ducbui@google.com</owner>
+  <summary>
+    Elapsed time between the start of the loading and the first paint of
+    foreground tabs when the browser loads tabs in session restore.
+  </summary>
+</histogram>
+
 <histogram name="TabManager.Heuristics.FromBackgroundedToFirstAudioStarts"
     units="ms">
   <owner>chrisha@chromium.org</owner>

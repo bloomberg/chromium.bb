@@ -3354,6 +3354,8 @@ split_static_library("browser") {
       "obsolete_system/obsolete_system_linux.cc",
       "obsolete_system/obsolete_system_mac.cc",
       "obsolete_system/obsolete_system_win.cc",
+      "page_load_metrics/observers/session_restore_page_load_metrics_observer.cc",
+      "page_load_metrics/observers/session_restore_page_load_metrics_observer.h",
       "pdf/pdf_extension_util.cc",
       "pdf/pdf_extension_util.h",
       "policy/local_sync_policy_handler.cc",
