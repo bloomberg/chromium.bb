@@ -336,9 +336,6 @@ const char kEnableFastUnload[] = "enable-fast-unload";
 // Enables the Material Design feedback form.
 const char kEnableMaterialDesignFeedback[] = "enable-md-feedback";
 
-// Enables the Material Design policy page at chrome://md-policy.
-const char kEnableMaterialDesignPolicyPage[]  = "enable-md-policy-page";
-
 // Runs the Native Client inside the renderer process and enables GPU plugin
 // (internally adds lEnableGpuPlugin to the command line).
 const char kEnableNaCl[]                    = "enable-nacl";
@@ -1074,11 +1071,6 @@ bool ExtensionsDisabled() {
 bool MdFeedbackEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableMaterialDesignFeedback);
-}
-
-bool MdPolicyPageEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kEnableMaterialDesignPolicyPage);
 }
 
 #if defined(OS_CHROMEOS)
