@@ -9,6 +9,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
+#include "components/url_pattern_index/url_pattern_index.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
@@ -221,9 +222,6 @@ ParseResult ComputeElementTypes(const dnr_api::RuleCondition& condition,
   return ParseResult::SUCCESS;
 }
 
-// TODO(http://crbug.com/753031): url_pattern_index requires the domains to be
-// sorted differently. Expose the comparator to sort domains as part of
-// url_pattern_index and use it here.
 // Lower-cases and sorts domains, as required by the url_pattern_index
 // component.
 std::vector<std::string> CanonicalizeDomains(
@@ -235,7 +233,10 @@ std::vector<std::string> CanonicalizeDomains(
   for (size_t i = 0; i < domains->size(); i++)
     (*domains)[i] = base::ToLowerASCII((*domains)[i]);
 
-  std::sort(domains->begin(), domains->end());
+  std::sort(domains->begin(), domains->end(),
+            [](const std::string& left, const std::string& right) {
+              return url_pattern_index::CompareDomains(left, right) < 0;
+            });
 
   // Move the vector, because it isn't eligible for return value optimization.
   return std::move(*domains);

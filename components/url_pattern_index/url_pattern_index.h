@@ -46,6 +46,14 @@ static_assert(kNGramSize <= sizeof(NGram), "NGram type is too narrow.");
 UrlRuleOffset SerializeUrlRule(const proto::UrlRule& rule,
                                flatbuffers::FlatBufferBuilder* builder);
 
+// Performs three-way comparison between two domains. In the total order defined
+// by this predicate, the lengths of domains will be monotonically decreasing.
+// Domains of same length are ordered in lexicographic order.
+// Returns a negative value if |lhs_domain| should be ordered before
+// |rhs_domain|, zero if |lhs_domain| is equal to |rhs_domain| and a positive
+// value if |lhs_domain| should be ordered after |rhs_domain|.
+int CompareDomains(base::StringPiece lhs_domain, base::StringPiece rhs_domain);
+
 // The class used to construct an index over the URL patterns of a set of URL
 // rules. The rules themselves need to be converted to FlatBuffers format by the
 // client of this class, as well as persisted into the |flat_builder| that is

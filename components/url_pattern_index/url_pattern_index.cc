@@ -95,14 +95,6 @@ base::StringPiece ToStringPiece(const flatbuffers::String* string) {
   return base::StringPiece(string->c_str(), string->size());
 }
 
-// Performs three-way comparison between two domains. In the total order defined
-// by this predicate, the lengths of domains will be monotonically decreasing.
-int CompareDomains(base::StringPiece lhs_domain, base::StringPiece rhs_domain) {
-  if (lhs_domain.size() != rhs_domain.size())
-    return lhs_domain.size() > rhs_domain.size() ? -1 : 1;
-  return lhs_domain.compare(rhs_domain);
-}
-
 bool HasNoUpperAscii(base::StringPiece string) {
   return std::none_of(string.begin(), string.end(),
                       [](char c) { return base::IsAsciiUpper(c); });
@@ -340,6 +332,12 @@ UrlRuleOffset SerializeUrlRule(const proto::UrlRule& rule,
     return UrlRuleOffset();
   DCHECK_NE(rule.url_pattern_type(), proto::URL_PATTERN_TYPE_REGEXP);
   return converter.SerializeConvertedRule(builder);
+}
+
+int CompareDomains(base::StringPiece lhs_domain, base::StringPiece rhs_domain) {
+  if (lhs_domain.size() != rhs_domain.size())
+    return lhs_domain.size() > rhs_domain.size() ? -1 : 1;
+  return lhs_domain.compare(rhs_domain);
 }
 
 // UrlPatternIndexBuilder ------------------------------------------------------
