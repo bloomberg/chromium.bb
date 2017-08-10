@@ -5,8 +5,11 @@
 #include "core/offscreencanvas/OffscreenCanvas.h"
 
 #include <memory>
+#include "core/css/CSSFontSelector.h"
+#include "core/css/OffscreenFontSelector.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/StyleEngine.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
@@ -14,6 +17,7 @@
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/imagebitmap/ImageBitmap.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
@@ -406,6 +410,13 @@ ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* script_state,
   async_creator->ScheduleAsyncBlobCreation(options.quality());
 
   return resolver->Promise();
+}
+
+FontSelector* OffscreenCanvas::GetFontSelector() {
+  if (GetExecutionContext()->IsDocument()) {
+    return ToDocument(execution_context_)->GetStyleEngine().GetFontSelector();
+  }
+  return ToWorkerGlobalScope(execution_context_)->GetFontSelector();
 }
 
 DEFINE_TRACE(OffscreenCanvas) {

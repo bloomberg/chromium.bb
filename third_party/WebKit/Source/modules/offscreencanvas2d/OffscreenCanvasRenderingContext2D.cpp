@@ -35,8 +35,6 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
     Settings* settings = ToDocument(execution_context)->GetSettings();
     if (settings->GetDisableReadingFromCanvas())
       canvas->SetDisableReadingFromCanvasTrue();
-    font_selector_ =
-        OffscreenFontSelector::Create(settings->GetGenericFontFamilySettings());
     return;
   }
   dirty_rect_for_commit_.setEmpty();
@@ -44,12 +42,9 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
       ToWorkerGlobalScope(execution_context)->GetWorkerSettings();
   if (worker_settings && worker_settings->DisableReadingFromCanvas())
     canvas->SetDisableReadingFromCanvasTrue();
-  font_selector_ = OffscreenFontSelector::Create(
-      worker_settings->GetGenericFontFamilySettings());
 }
 
 DEFINE_TRACE(OffscreenCanvasRenderingContext2D) {
-  visitor->Trace(font_selector_);
   CanvasRenderingContext::Trace(visitor);
   BaseRenderingContext2D::Trace(visitor);
 }
@@ -298,7 +293,7 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
   FontDescription desc = FontStyleResolver::ComputeFont(*style);
 
   Font font = Font(desc);
-  ModifiableState().SetFont(font, font_selector_);
+  ModifiableState().SetFont(font, host()->GetFontSelector());
   ModifiableState().SetUnparsedFont(new_font);
 }
 

@@ -14,7 +14,6 @@
 namespace blink {
 
 class Font;
-class OffscreenFontSelector;
 class TextMetrics;
 
 class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
@@ -140,8 +139,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   String ColorSpaceAsString() const override;
   CanvasPixelFormat PixelFormat() const override;
   SkIRect dirty_rect_for_commit_;
-
-  Member<OffscreenFontSelector> font_selector_;
 };
 
 DEFINE_TYPE_CASTS(OffscreenCanvasRenderingContext2D,

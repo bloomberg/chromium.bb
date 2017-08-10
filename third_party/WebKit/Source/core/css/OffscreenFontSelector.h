@@ -20,10 +20,7 @@ class FontDescription;
 
 class CORE_EXPORT OffscreenFontSelector : public FontSelector {
  public:
-  static OffscreenFontSelector* Create(
-      const GenericFontFamilySettings& settings) {
-    return new OffscreenFontSelector(settings);
-  }
+  static OffscreenFontSelector* Create() { return new OffscreenFontSelector(); }
   ~OffscreenFontSelector() override;
 
   unsigned Version() const override { return 1; }
@@ -48,15 +45,17 @@ class CORE_EXPORT OffscreenFontSelector : public FontSelector {
 
   void FontCacheInvalidated() override;
 
+  void UpdateGenericFontFamilySettings(const GenericFontFamilySettings&);
+
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  explicit OffscreenFontSelector(const GenericFontFamilySettings&);
+  explicit OffscreenFontSelector();
 
   void DispatchInvalidationCallbacks();
 
  private:
-  const GenericFontFamilySettings generic_font_family_settings_;
+  GenericFontFamilySettings generic_font_family_settings_;
 };
 
 }  // namespace blink

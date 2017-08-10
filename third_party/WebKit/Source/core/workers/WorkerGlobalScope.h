@@ -6,9 +6,9 @@
  * are met:
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
+ * 2. Redistributions in binary form must reproduce the above copyright
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -48,6 +48,7 @@ namespace blink {
 
 class ConsoleMessage;
 class ExceptionState;
+class OffscreenFontSelector;
 class V8AbstractEventListener;
 class WorkerLocation;
 class WorkerNavigator;
@@ -129,6 +130,8 @@ class CORE_EXPORT WorkerGlobalScope
   void AddConsoleMessage(ConsoleMessage*) final;
   WorkerEventQueue* GetEventQueue() const final;
   bool IsSecureContext(String& error_message) const override;
+
+  OffscreenFontSelector* GetFontSelector() { return font_selector_; }
 
   CoreProbeSink* GetProbeSink() final;
 
@@ -224,6 +227,8 @@ class CORE_EXPORT WorkerGlobalScope
 
   HeapHashMap<int, Member<ErrorEvent>> pending_error_events_;
   int last_pending_error_event_id_ = 0;
+
+  Member<OffscreenFontSelector> font_selector_;
 };
 
 DEFINE_TYPE_CASTS(WorkerGlobalScope,
