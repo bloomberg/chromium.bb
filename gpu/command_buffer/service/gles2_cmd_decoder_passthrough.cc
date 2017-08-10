@@ -126,7 +126,7 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
       context_(),
       offscreen_(false),
       group_(group),
-      feature_info_(new FeatureInfo),
+      feature_info_(new FeatureInfo(group->feature_info()->workarounds())),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
           TRACE_DISABLED_BY_DEFAULT("gpu_decoder"))),
       gpu_trace_level_(2),
