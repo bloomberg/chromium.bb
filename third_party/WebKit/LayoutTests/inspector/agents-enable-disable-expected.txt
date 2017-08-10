@@ -13,6 +13,7 @@ Log.disable finished successfully
 Network.disable finished successfully
 Overlay.disable finished successfully
 Page.disable finished successfully
+Performance.disable finished successfully
 Profiler.disable finished successfully
 Runtime.disable finished successfully
 
@@ -54,6 +55,9 @@ Overlay.disable finished successfully
 
 Page.enable finished successfully
 Page.disable finished successfully
+
+Performance.enable finished successfully
+Performance.disable finished successfully
 
 Profiler.enable finished successfully
 Profiler.disable finished successfully

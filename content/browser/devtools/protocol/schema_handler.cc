@@ -30,7 +30,8 @@ Response SchemaHandler::GetDomains(
       "ServiceWorker", "Input",      "LayerTree",     "DeviceOrientation",
       "Tracing",       "Animation",  "Accessibility", "Storage",
       "Log",           "Runtime",    "Debugger",      "Profiler",
-      "HeapProfiler",  "Schema",     "Target",        "Overlay"};
+      "HeapProfiler",  "Schema",     "Target",        "Overlay",
+      "Performance"};
   *domains = protocol::Array<Schema::Domain>::create();
   for (size_t i = 0; i < arraysize(kDomains); ++i) {
     (*domains)->addItem(Schema::Domain::Create()

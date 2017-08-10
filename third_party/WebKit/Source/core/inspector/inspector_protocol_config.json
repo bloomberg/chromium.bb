@@ -85,6 +85,9 @@
                 "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "navigationRequested"]
             },
             {
+                "domain": "Performance"
+            },
+            {
                 "domain": "Emulation",
                 "include": ["forceViewport", "resetViewport", "resetPageScaleFactor", "setPageScaleFactor", "setScriptExecutionDisabled", "setTouchEmulationEnabled",
                             "setEmulatedMedia", "setCPUThrottlingRate", "setVirtualTimePolicy", "setDefaultBackgroundColorOverride"],
