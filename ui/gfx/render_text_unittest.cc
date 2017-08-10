@@ -3564,6 +3564,19 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_Clusters) {
   }
 }
 
+// Ensures GetClusterAt does not crash on invalid conditions. crbug.com/724880
+TEST_P(RenderTextHarfBuzzTest, HarfBuzz_NoCrashOnTextRunGetClusterAt) {
+  internal::TextRunHarfBuzz run((Font()));
+  run.range = Range(0, 4);
+  run.glyph_count = 4;
+  // Construct a |glyph_to_char| map where no glyph maps to the first character.
+  run.glyph_to_char = {1u, 1u, 2u, 3u};
+
+  Range chars, glyphs;
+  // GetClusterAt should not crash asking for the cluster at position 0.
+  ASSERT_NO_FATAL_FAILURE(run.GetClusterAt(0, &chars, &glyphs));
+}
+
 // Ensure that graphemes with multiple code points do not get split.
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_SubglyphGraphemeCases) {
   const wchar_t* cases[] = {

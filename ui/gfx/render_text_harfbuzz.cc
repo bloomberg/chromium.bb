@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -207,8 +208,9 @@ bool IsNewlineSegment(const base::string16& text,
 
 // Helper template function for |TextRunHarfBuzz::GetClusterAt()|. |Iterator|
 // can be a forward or reverse iterator type depending on the text direction.
+// Returns true on success, or false if an error is encountered.
 template <class Iterator>
-void GetClusterAtImpl(size_t pos,
+bool GetClusterAtImpl(size_t pos,
                       Range range,
                       Iterator elements_begin,
                       Iterator elements_end,
@@ -216,10 +218,14 @@ void GetClusterAtImpl(size_t pos,
                       Range* chars,
                       Range* glyphs) {
   Iterator element = std::upper_bound(elements_begin, elements_end, pos);
+  if (element == elements_begin) {
+    *chars = range;
+    *glyphs = Range();
+    return false;
+  }
+
   chars->set_end(element == elements_end ? range.end() : *element);
   glyphs->set_end(reversed ? elements_end - element : element - elements_begin);
-
-  DCHECK(element != elements_begin);
   while (--element != elements_begin && *element == *(element - 1));
   chars->set_start(*element);
   glyphs->set_start(
@@ -231,6 +237,7 @@ void GetClusterAtImpl(size_t pos,
   DCHECK(!chars->is_empty());
   DCHECK(!glyphs->is_reversed());
   DCHECK(!glyphs->is_empty());
+  return true;
 }
 
 // Returns the line segment index for the |line|, |text_x| pair. |text_x| is
@@ -680,24 +687,37 @@ size_t TextRunHarfBuzz::CountMissingGlyphs() const {
 void TextRunHarfBuzz::GetClusterAt(size_t pos,
                                    Range* chars,
                                    Range* glyphs) const {
-  DCHECK(range.Contains(Range(pos, pos + 1)));
   DCHECK(chars);
   DCHECK(glyphs);
 
-  if (glyph_count == 0) {
+  bool success = true;
+  if (glyph_count == 0 || !range.Contains(Range(pos, pos + 1))) {
     *chars = range;
     *glyphs = Range();
-    return;
+    success = false;
   }
 
   if (is_rtl) {
-    GetClusterAtImpl(pos, range, glyph_to_char.rbegin(), glyph_to_char.rend(),
-                     true, chars, glyphs);
-    return;
+    success &= GetClusterAtImpl(pos, range, glyph_to_char.rbegin(),
+                                glyph_to_char.rend(), true, chars, glyphs);
+  } else {
+    success &= GetClusterAtImpl(pos, range, glyph_to_char.begin(),
+                                glyph_to_char.end(), false, chars, glyphs);
   }
 
-  GetClusterAtImpl(pos, range, glyph_to_char.begin(), glyph_to_char.end(),
-                   false, chars, glyphs);
+  if (!success) {
+    std::string glyph_to_char_string;
+    for (size_t i = 0; i < glyph_count && i < glyph_to_char.size(); ++i) {
+      glyph_to_char_string += base::SizeTToString(i) + "->" +
+                              base::UintToString(glyph_to_char[i]) + ", ";
+    }
+    LOG(ERROR) << " TextRunHarfBuzz error, please report at crbug.com/724880:"
+               << " range: " << range.ToString() << ", rtl: " << is_rtl << ","
+               << " level: '" << level << "', script: " << script << ","
+               << " font: '" << font.GetActualFontNameForTesting() << "',"
+               << " glyph_count: " << glyph_count << ", pos: " << pos << ","
+               << " glyph_to_char: " << glyph_to_char_string;
+  }
 }
 
 RangeF TextRunHarfBuzz::GetGraphemeBounds(RenderTextHarfBuzz* render_text,
