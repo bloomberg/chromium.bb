@@ -38,7 +38,7 @@ class BrowserCompositorMacClient {
 //   is visible.
 // - The RenderWidgetHostViewMac that is used to display these frames is
 //   attached to the NSView hierarchy of an NSWindow.
-class BrowserCompositorMac : public DelegatedFrameHostClient {
+class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
  public:
   BrowserCompositorMac(
       ui::AcceleratedWidgetMacNSView* accelerated_widget_mac_ns_view,
@@ -50,6 +50,10 @@ class BrowserCompositorMac : public DelegatedFrameHostClient {
 
   // These will not return nullptr until Destroy is called.
   DelegatedFrameHost* GetDelegatedFrameHost();
+
+  // Ensure that the currect compositor frame be cleared (even if it is
+  // potentially visible).
+  void ClearCompositorFrame();
 
   // This may return nullptr, if this has detached itself from its
   // ui::Compositor.
@@ -104,6 +108,9 @@ class BrowserCompositorMac : public DelegatedFrameHostClient {
       override;
   void OnBeginFrame() override;
   bool IsAutoResizeEnabled() const override;
+
+  // Returns nullptr if no compositor is attached.
+  ui::Compositor* CompositorForTesting() const;
 
  private:
   // The state of |delegated_frame_host_| and |recyclable_compositor_| to

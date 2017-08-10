@@ -216,6 +216,17 @@ DelegatedFrameHost* BrowserCompositorMac::GetDelegatedFrameHost() {
   return delegated_frame_host_.get();
 }
 
+void BrowserCompositorMac::ClearCompositorFrame() {
+  // Make sure that we no longer hold a compositor lock by un-suspending the
+  // compositor. This ensures that we are able to swap in a new blank frame to
+  // replace any old content.
+  // https://crbug.com/739621
+  if (recyclable_compositor_)
+    recyclable_compositor_->Unsuspend();
+  if (delegated_frame_host_)
+    delegated_frame_host_->ClearDelegatedFrame();
+}
+
 void BrowserCompositorMac::CopyCompleted(
     base::WeakPtr<BrowserCompositorMac> browser_compositor,
     const ReadbackRequestCallback& callback,
@@ -448,6 +459,12 @@ void BrowserCompositorMac::OnBeginFrame() {
 bool BrowserCompositorMac::IsAutoResizeEnabled() const {
   NOTREACHED();
   return false;
+}
+
+ui::Compositor* BrowserCompositorMac::CompositorForTesting() const {
+  if (recyclable_compositor_)
+    return recyclable_compositor_->compositor();
+  return nullptr;
 }
 
 }  // namespace content
