@@ -25,6 +25,11 @@ MojoResult WriteMessageRaw(MessagePipeHandle message_pipe,
       base::checked_cast<uint32_t>(num_handles), &buffer, &buffer_size);
   if (rv != MOJO_RESULT_OK)
     return MOJO_RESULT_ABORTED;
+  rv = MojoCommitSerializedMessageContents(
+      message_handle->value(), base::checked_cast<uint32_t>(num_bytes), &buffer,
+      &buffer_size);
+  if (rv != MOJO_RESULT_OK)
+    return MOJO_RESULT_ABORTED;
 
   DCHECK(buffer);
   DCHECK_GE(buffer_size, base::checked_cast<uint32_t>(num_bytes));

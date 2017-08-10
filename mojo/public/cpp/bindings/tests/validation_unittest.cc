@@ -49,6 +49,10 @@ Message CreateRawMessage(size_t size) {
                                          0, &buffer, &buffer_size);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
 
+  rv = MojoCommitSerializedMessageContents(
+      handle->value(), static_cast<uint32_t>(size), nullptr, nullptr);
+  DCHECK_EQ(MOJO_RESULT_OK, rv);
+
   return Message(std::move(handle));
 }
 

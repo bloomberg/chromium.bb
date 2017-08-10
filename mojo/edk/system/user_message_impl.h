@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -96,6 +97,8 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
     return !!channel_message_;
   }
 
+  bool IsTransmittable() const { return !IsSerialized() || is_committed_; }
+
   void* user_payload() {
     DCHECK(IsSerialized());
     return user_payload_;
@@ -124,7 +127,10 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
   MojoResult AttachSerializedMessageBuffer(uint32_t payload_size,
                                            const MojoHandle* handles,
                                            uint32_t num_handles);
-  MojoResult ExtendSerializedMessagePayload(uint32_t new_payload_size);
+  MojoResult ExtendSerializedMessagePayload(uint32_t new_payload_size,
+                                            const MojoHandle* handles,
+                                            uint32_t num_handles);
+  MojoResult CommitSerializedContents(uint32_t final_payload_size);
 
   // If this message is not already serialized, this serializes it.
   MojoResult SerializeIfNecessary();
@@ -179,6 +185,10 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
   // yet to be extracted.
   bool has_serialized_handles_ = false;
 
+  // Indicates whether the serialized message's contents (if any) have been
+  // committed yet.
+  bool is_committed_ = false;
+
   // Only valid if |channel_message_| is non-null. |header_| is the address
   // of the UserMessageImpl's internal MessageHeader structure within the
   // serialized message buffer. |user_payload_| is the address of the first byte
@@ -188,6 +198,10 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
   size_t header_size_ = 0;
   void* user_payload_ = nullptr;
   size_t user_payload_size_ = 0;
+
+  // Handles which have been attached to the serialized message but which have
+  // not yet been serialized.
+  std::vector<Dispatcher::DispatcherInTransit> pending_handle_attachments_;
 
   // The node name from which this message was received, iff it came from
   // out-of-process and the source is known.

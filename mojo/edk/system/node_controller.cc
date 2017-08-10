@@ -602,6 +602,8 @@ void NodeController::DropPeer(const ports::NodeName& name,
 void NodeController::SendPeerEvent(const ports::NodeName& name,
                                    ports::ScopedEvent event) {
   Channel::MessagePtr event_message = SerializeEventMessage(std::move(event));
+  if (!event_message)
+    return;
   scoped_refptr<NodeChannel> peer = GetPeerChannel(name);
 #if defined(OS_WIN)
   if (event_message->has_handles()) {
@@ -728,7 +730,7 @@ void NodeController::ForwardEvent(const ports::NodeName& node,
 
 void NodeController::BroadcastEvent(ports::ScopedEvent event) {
   Channel::MessagePtr channel_message = SerializeEventMessage(std::move(event));
-  DCHECK(!channel_message->has_handles());
+  DCHECK(channel_message && !channel_message->has_handles());
 
   scoped_refptr<NodeChannel> broker = GetBrokerChannel();
   if (broker)

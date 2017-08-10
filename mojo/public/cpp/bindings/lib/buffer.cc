@@ -54,7 +54,8 @@ size_t Buffer::Allocate(size_t num_bytes) {
     DCHECK(base::IsValueInRangeForNumericType<uint32_t>(new_cursor));
     uint32_t new_size;
     MojoResult rv = MojoExtendSerializedMessagePayload(
-        message_.value(), static_cast<uint32_t>(new_cursor), &data_, &new_size);
+        message_.value(), static_cast<uint32_t>(new_cursor), nullptr, 0, &data_,
+        &new_size);
     DCHECK_EQ(MOJO_RESULT_OK, rv);
     size_ = new_size;
   }
@@ -82,15 +83,12 @@ void Buffer::Seal() {
   DCHECK(base::IsValueInRangeForNumericType<uint32_t>(cursor_));
   void* data;
   uint32_t size;
-  MojoResult rv = MojoExtendSerializedMessagePayload(
+  MojoResult rv = MojoCommitSerializedMessageContents(
       message_.value(), static_cast<uint32_t>(cursor_), &data, &size);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
-
-  // The buffer size should remain the same, as the final cursor position was
-  // necessarily within the previous allocated payload range.
-  DCHECK_EQ(size, size_);
-  DCHECK_EQ(data, data_);
   message_ = MessageHandle();
+  data_ = data;
+  size_ = size;
 }
 
 void Buffer::Reset() {
