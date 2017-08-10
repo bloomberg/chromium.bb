@@ -21,7 +21,7 @@ bool InstanceCountersMemoryDumpProvider::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* memory_dump) {
   using base::trace_event::MemoryAllocatorDump;
 #define DUMP_COUNTER(CounterType)                                     \
-  memory_dump->CreateAllocatorDump("counter/" #CounterType)           \
+  memory_dump->CreateAllocatorDump("blink_objects/" #CounterType)     \
       ->AddScalar("object_count", MemoryAllocatorDump::kUnitsObjects, \
                   InstanceCounters::CounterValue(                     \
                       InstanceCounters::k##CounterType##Counter));
