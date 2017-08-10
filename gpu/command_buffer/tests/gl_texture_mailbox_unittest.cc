@@ -357,6 +357,13 @@ TEST_F(GLTextureMailboxTest, SharedTextures) {
 
 TEST_F(GLTextureMailboxTest, TakeFrontBuffer) {
   SetUpContexts();
+  if (gl1_.gpu_preferences().use_passthrough_cmd_decoder) {
+    // TODO(geofflang): crbug.com/665518
+    LOG(INFO) << "Passthrough command decoder unimplemented feature. Skipping "
+                 "test...";
+    return;
+  }
+
   gl1_.MakeCurrent();
   Mailbox mailbox;
   glGenMailboxCHROMIUM(mailbox.name);
@@ -419,6 +426,13 @@ TEST_F(GLTextureMailboxTest, TakeFrontBuffer) {
 // start returning them.
 TEST_F(GLTextureMailboxTest, FrontBufferCache) {
   SetUpContexts();
+  if (gl1_.gpu_preferences().use_passthrough_cmd_decoder) {
+    // TODO(geofflang): crbug.com/665518
+    LOG(INFO) << "Passthrough command decoder unimplemented feature. Skipping "
+                 "test...";
+    return;
+  }
+
   gl1_.MakeCurrent();
 
   std::vector<Mailbox> mailboxes;
@@ -459,6 +473,13 @@ TEST_F(GLTextureMailboxTest, FrontBufferCache) {
 // be discarded.
 TEST_F(GLTextureMailboxTest, FrontBufferChangeSize) {
   SetUpContexts();
+  if (gl1_.gpu_preferences().use_passthrough_cmd_decoder) {
+    // TODO(geofflang): crbug.com/665518
+    LOG(INFO) << "Passthrough command decoder unimplemented feature. Skipping "
+                 "test...";
+    return;
+  }
+
   gl1_.MakeCurrent();
 
   std::vector<Mailbox> mailboxes;
@@ -486,6 +507,13 @@ TEST_F(GLTextureMailboxTest, FrontBufferChangeColor) {
   GLManager::Options options1;
   options1.multisampled = true;
   gl1_.Initialize(options1);
+
+  if (gl1_.gpu_preferences().use_passthrough_cmd_decoder) {
+    // TODO(geofflang): crbug.com/665518
+    LOG(INFO) << "Passthrough command decoder unimplemented feature. Skipping "
+                 "test...";
+    return;
+  }
 
   GLManager::Options options2;
   options2.share_mailbox_manager = &gl1_;
@@ -559,6 +587,13 @@ TEST_F(GLTextureMailboxTest, ProduceTextureDirectInvalidTarget) {
 #if !defined(OS_ANDROID)
 TEST_F(GLTextureMailboxTest, TakeFrontBufferMultipleContexts) {
   SetUpContexts();
+  if (gl1_.gpu_preferences().use_passthrough_cmd_decoder) {
+    // TODO(geofflang): crbug.com/665518
+    LOG(INFO) << "Passthrough command decoder unimplemented feature. Skipping "
+                 "test...";
+    return;
+  }
+
   gl1_.MakeCurrent();
   Mailbox mailbox[2];
   glGenMailboxCHROMIUM(mailbox[0].name);

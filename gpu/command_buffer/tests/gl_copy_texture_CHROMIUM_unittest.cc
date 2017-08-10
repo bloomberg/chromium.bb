@@ -625,6 +625,12 @@ TEST_P(GLCopyTextureCHROMIUMTest, Basic) {
 TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {
   if (ShouldSkipTest())
     return;
+  if (gl_.gpu_preferences().use_passthrough_cmd_decoder) {
+    // TODO(geofflang): anglebug.com/1932
+    LOG(INFO)
+        << "Passthrough command decoder expected failure. Skipping test...";
+    return;
+  }
   CopyType copy_type = GetParam();
 
   FormatType src_format_types[] = {
@@ -931,6 +937,12 @@ TEST_P(GLCopyTextureCHROMIUMTest, CopyTextureLevel) {
 TEST_P(GLCopyTextureCHROMIUMES3Test, CopyTextureLevel) {
   if (ShouldSkipTest())
     return;
+  if (gl_.gpu_preferences().use_passthrough_cmd_decoder) {
+    // TODO(geofflang): anglebug.com/1932
+    LOG(INFO)
+        << "Passthrough command decoder expected failure. Skipping test...";
+    return;
+  }
   CopyType copy_type = GetParam();
 
   // Copy from RGBA source texture to dest texture.
