@@ -615,6 +615,9 @@ void EasyUnlockServiceRegular::OnSyncFinished(
     public_keys_after_sync.insert(device_info.public_key());
   }
 
+  if (public_keys_after_sync.empty())
+    ClearPermitAccess();
+
   if (public_keys_before_sync == public_keys_after_sync)
     return;
 
@@ -651,17 +654,19 @@ void EasyUnlockServiceRegular::OnScreenDidLock(
 
 void EasyUnlockServiceRegular::OnScreenDidUnlock(
     proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
-  bool is_lock_screen =
-      screen_type == proximity_auth::ScreenlockBridge::LockHandler::LOCK_SCREEN;
-
   if (!will_unlock_using_easy_unlock_ && pref_manager_ &&
-      (is_lock_screen || !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                             proximity_auth::switches::kEnableChromeOSLogin))) {
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kEnableForcePasswordReauth)) {
     // If a password was used, then record the current timestamp. This timestamp
     // is used to enforce password reauths after a certain time has elapsed.
+    // Note: This code path is also triggered by the login flow.
     pref_manager_->SetLastPasswordEntryTimestampMs(
         base::Time::Now().ToJavaTime());
   }
+
+  // Do not process events for the login screen.
+  if (screen_type != proximity_auth::ScreenlockBridge::LockHandler::LOCK_SCREEN)
+    return;
 
   // If we tried to load remote devices (e.g. after a sync) while the screen was
   // locked, we can now load the new remote devices.
@@ -683,10 +688,6 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
           unlock_keys[0].friendly_device_name());
     }
   }
-
-  // Do not process events for the login screen.
-  if (!is_lock_screen)
-    return;
 
   // Only record metrics for users who have enabled the feature.
   if (IsEnabled()) {
@@ -723,9 +724,15 @@ void EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete(
   EasyUnlockService::ResetLocalStateForUser(GetAccountId());
   SetRemoteDevices(base::ListValue());
   SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceList());
-  SetTurnOffFlowStatus(IDLE);
-  ReloadAppAndLockScreen();
   pref_manager_->SetIsEasyUnlockEnabled(false);
+  SetTurnOffFlowStatus(IDLE);
+  pref_manager_->SetIsEasyUnlockEnabled(false);
+  ResetScreenlockState();
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
+    ReloadAppAndLockScreen();
+  }
 }
 
 void EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed(

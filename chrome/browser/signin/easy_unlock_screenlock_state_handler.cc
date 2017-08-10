@@ -46,7 +46,6 @@ proximity_auth::ScreenlockBridge::UserPodCustomIcon GetIconForState(
     case ScreenlockState::INACTIVE:
       return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE;
     case ScreenlockState::PASSWORD_REAUTH:
-    case ScreenlockState::PASSWORD_REQUIRED_FOR_LOGIN:
       return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED;
   }
 
@@ -83,8 +82,6 @@ size_t GetTooltipResourceId(ScreenlockState state) {
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_INSTRUCTIONS;
     case ScreenlockState::PASSWORD_REAUTH:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PASSWORD_REAUTH;
-    case ScreenlockState::PASSWORD_REQUIRED_FOR_LOGIN:
-      return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PASSWORD_REQUIRED_FOR_LOGIN;
   }
 
   NOTREACHED();
@@ -97,8 +94,7 @@ bool TooltipContainsDeviceType(ScreenlockState state) {
           state == ScreenlockState::NO_BLUETOOTH ||
           state == ScreenlockState::PHONE_UNSUPPORTED ||
           state == ScreenlockState::RSSI_TOO_LOW ||
-          state == ScreenlockState::PHONE_LOCKED_AND_RSSI_TOO_LOW ||
-          state == ScreenlockState::PASSWORD_REQUIRED_FOR_LOGIN);
+          state == ScreenlockState::PHONE_LOCKED_AND_RSSI_TOO_LOW);
 }
 
 // Returns true iff the |state| corresponds to a locked remote device.
@@ -319,6 +315,10 @@ void EasyUnlockScreenlockStateHandler::ShowHardlockUI() {
   } else if (hardlock_state_ == LOGIN_FAILED) {
     tooltip = l10n_util::GetStringUTF16(
         IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_FAILURE);
+  } else if (hardlock_state_ == PASSWORD_REQUIRED_FOR_LOGIN) {
+    tooltip = l10n_util::GetStringFUTF16(
+        IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PASSWORD_REQUIRED_FOR_LOGIN,
+        device_name);
   } else {
     LOG(ERROR) << "Unknown hardlock state " << hardlock_state_;
   }

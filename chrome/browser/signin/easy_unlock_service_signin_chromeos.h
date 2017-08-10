@@ -109,6 +109,7 @@ class EasyUnlockServiceSignin
   bool IsEnabled() const override;
   void OnWillFinalizeUnlock(bool success) override;
   void OnSuspendDoneInternal() override;
+  void OnBluetoothAdapterPresentChanged() override;
 
   // proximity_auth::ScreenlockBridge::Observer implementation:
   void OnScreenDidLock(proximity_auth::ScreenlockBridge::LockHandler::ScreenType
@@ -133,6 +134,10 @@ class EasyUnlockServiceSignin
   // If the device data has been loaded for the current user, returns it.
   // Otherwise, returns NULL.
   const UserData* FindLoadedDataForCurrentUser() const;
+
+  // Shows the hardlock or connecting state as initial UI before cryptohome
+  // keys checking and state update from the app.
+  void ShowInitialUserPodState();
 
   // User id of the user currently associated with the service.
   AccountId account_id_;

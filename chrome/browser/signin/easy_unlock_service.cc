@@ -381,31 +381,6 @@ bool EasyUnlockService::GetPersistedHardlockState(
   return false;
 }
 
-void EasyUnlockService::ShowInitialUserState() {
-  if (!GetScreenlockStateHandler())
-    return;
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableChromeOSLogin)) {
-    UpdateScreenlockState(ScreenlockState::PASSWORD_REQUIRED_FOR_LOGIN);
-    return;
-  }
-
-  EasyUnlockScreenlockStateHandler::HardlockState state;
-  bool has_persisted_state = GetPersistedHardlockState(&state);
-  if (!has_persisted_state)
-    return;
-
-  if (state == EasyUnlockScreenlockStateHandler::NO_HARDLOCK) {
-    // Show connecting icon early when there is a persisted non hardlock state.
-    UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING);
-  } else {
-    screenlock_state_handler_->MaybeShowHardlockUI();
-  }
-}
-
 EasyUnlockScreenlockStateHandler*
     EasyUnlockService::GetScreenlockStateHandler() {
   if (!IsAllowed())
@@ -679,8 +654,10 @@ void EasyUnlockService::ResetScreenlockState() {
 
 void EasyUnlockService::SetScreenlockHardlockedState(
     EasyUnlockScreenlockStateHandler::HardlockState state) {
-  if (screenlock_state_handler_)
+  if (GetScreenlockStateHandler()) {
     screenlock_state_handler_->SetHardlockState(state);
+    screenlock_state_handler_->MaybeShowHardlockUI();
+  }
   if (state != EasyUnlockScreenlockStateHandler::NO_HARDLOCK)
     auth_attempt_.reset();
 }
@@ -703,17 +680,6 @@ void EasyUnlockService::InitializeOnAppManagerReady() {
 
 void EasyUnlockService::OnBluetoothAdapterPresentChanged() {
   UpdateAppState();
-
-  // On device boot, we can't show the initial user state until Bluetooth is
-  // detected to be present.
-  if (GetType() == TYPE_SIGNIN &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableChromeOSLogin)) {
-    ShowInitialUserState();
-    return;
-  }
 }
 
 void EasyUnlockService::SetHardlockStateForUser(
@@ -727,12 +693,9 @@ void EasyUnlockService::SetHardlockStateForUser(
 
   // Disallow setting the hardlock state if the password is currently being
   // forced.
-  if (!screenlock_state_handler_ ||
-      screenlock_state_handler_->state() ==
-          proximity_auth::ScreenlockState::PASSWORD_REAUTH ||
-      screenlock_state_handler_->state() ==
-          proximity_auth::ScreenlockState::PASSWORD_REQUIRED_FOR_LOGIN) {
-    PA_LOG(INFO) << "Hardlock state can't be set when password is forced.";
+  if (GetScreenlockStateHandler() &&
+      GetScreenlockStateHandler()->state() ==
+          proximity_auth::ScreenlockState::PASSWORD_REAUTH) {
     return;
   }
 
@@ -762,6 +725,8 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
         return PASSWORD_ENTRY_LOGIN_FAILED;
       case EasyUnlockScreenlockStateHandler::PAIRING_ADDED:
         return PASSWORD_ENTRY_PAIRING_ADDED;
+      case EasyUnlockScreenlockStateHandler::PASSWORD_REQUIRED_FOR_LOGIN:
+        return PASSWORD_ENTRY_REQUIRED_FOR_LOGIN;
     }
   } else if (!screenlock_state_handler()) {
     return PASSWORD_ENTRY_NO_SCREENLOCK_STATE_HANDLER;
@@ -791,8 +756,6 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
         return PASSWORD_ENTRY_WITH_AUTHENTICATED_PHONE;
       case ScreenlockState::PASSWORD_REAUTH:
         return PASSWORD_ENTRY_FORCED_REAUTH;
-      case ScreenlockState::PASSWORD_REQUIRED_FOR_LOGIN:
-        return PASSWORD_ENTRY_REQUIRED_FOR_LOGIN;
     }
   }
 
@@ -806,6 +769,11 @@ void EasyUnlockService::SetProximityAuthDevices(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery))
     return;
+
+  if (remote_devices.size() == 0) {
+    proximity_auth_system_.reset();
+    return;
+  }
 
   if (!proximity_auth_system_) {
     PA_LOG(INFO) << "Creating ProximityAuthSystem.";
