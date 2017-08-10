@@ -202,7 +202,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   size_t inline_autocomplete_offset = URLPrefix::GetInlineAutocompleteOffset(
       autocomplete_input_.text(), FixupUserInput(autocomplete_input_).second,
       false, base::UTF8ToUTF16(info.url().spec()));
-  auto fill_into_edit_format_types = url_formatter::kFormatUrlOmitAll;
+  auto fill_into_edit_format_types = url_formatter::kFormatUrlOmitDefaults;
   if (history_match.match_in_scheme)
     fill_into_edit_format_types &= ~url_formatter::kFormatUrlOmitHTTP;
   match.fill_into_edit =

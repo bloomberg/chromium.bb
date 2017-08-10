@@ -330,9 +330,10 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
                               const gfx::Rect& bounds) {
   url::Parsed parsed;
 
-  url_formatter::FormatUrlTypes format_types = url_formatter::kFormatUrlOmitAll;
+  url_formatter::FormatUrlTypes format_types =
+      url_formatter::kFormatUrlOmitDefaults;
   if (state_.offline_page)
-    format_types |= url_formatter::kFormatUrlExperimentalOmitHTTPS;
+    format_types |= url_formatter::kFormatUrlOmitHTTPS;
   const base::string16 text = url_formatter::FormatUrl(
       state_.gurl, format_types, net::UnescapeRule::NORMAL, &parsed, nullptr,
       nullptr);

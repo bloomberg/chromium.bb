@@ -492,12 +492,12 @@ url_formatter::FormatUrlTypes AutocompleteMatch::GetFormatTypes(
     bool preserve_scheme,
     bool preserve_subdomain,
     bool preserve_after_host) {
-  auto format_types = url_formatter::kFormatUrlOmitAll;
+  auto format_types = url_formatter::kFormatUrlOmitDefaults;
   if (preserve_scheme) {
     format_types &= ~url_formatter::kFormatUrlOmitHTTP;
   } else if (base::FeatureList::IsEnabled(
                  omnibox::kUIExperimentHideSuggestionUrlScheme)) {
-    format_types |= url_formatter::kFormatUrlExperimentalOmitHTTPS;
+    format_types |= url_formatter::kFormatUrlOmitHTTPS;
   }
 
   if (!preserve_subdomain &&

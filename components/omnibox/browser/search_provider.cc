@@ -1455,7 +1455,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   bool trim_http = !AutocompleteInput::HasHTTPScheme(input) &&
       (!prefix || (match_start != 0));
   const url_formatter::FormatUrlTypes format_types =
-      url_formatter::kFormatUrlOmitAll &
+      url_formatter::kFormatUrlOmitDefaults &
       ~(trim_http ? 0 : url_formatter::kFormatUrlOmitHTTP);
 
   size_t inline_autocomplete_offset = (prefix == NULL) ?
