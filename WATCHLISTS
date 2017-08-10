@@ -386,6 +386,10 @@
     'blink_layout_ng': {
       'filepath': 'third_party/WebKit/Source/core/layout/ng',
     },
+    'blink_layout_ng_test_expectations': {
+      'filepath': 'third_party/WebKit/LayoutTests/FlagExpectations/enable-blink-features=LayoutNG' \
+                  '|third_party/WebKit/LayoutTests/flag-specific/enable-blink-features=LayoutNG'
+    },
     'blink_loader': {
       'filepath': 'third_party/WebKit/Source/core/loader/' \
                   '|third_party/WebKit/Source/platform/loader/'
@@ -1796,6 +1800,7 @@
                         'dgrogan+ng@chromium.org',
                         'atotic+reviews@chromium.org',
                         'lchoi+reviews@chromium.org'],
+    'blink_layout_ng_test_expectations': ['xiaochengh@chromium.org'],
     'blink_loader': ['gavinp+loader@chromium.org',
                      'japhet@chromium.org',
                      'loading-reviews@chromium.org',
