@@ -15,7 +15,6 @@
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/web_restrictions/interfaces/web_restrictions.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 class SpellCheck;
@@ -80,8 +79,6 @@ class AwContentRendererClient : public content::ContentRendererClient {
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   std::unique_ptr<SpellCheck> spellcheck_;
 #endif
-
-  std::unique_ptr<service_manager::BinderRegistry> registry_;
 
   DISALLOW_COPY_AND_ASSIGN(AwContentRendererClient);
 };

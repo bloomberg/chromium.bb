@@ -24,8 +24,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/content/renderer/autofill_agent.h"
-#include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/printing/renderer/print_render_frame_helper.h"
 #include "components/safe_browsing/renderer/renderer_url_loader_throttle.h"
 #include "components/safe_browsing/renderer/websocket_sb_handshake_throttle.h"
@@ -177,15 +175,6 @@ void AwContentRendererClient::RenderFrameCreated(
     RenderThread::Get()->Send(new AwViewHostMsg_SubFrameCreated(
         parent_frame->GetRoutingID(), render_frame->GetRoutingID()));
   }
-
-  registry_ = base::MakeUnique<service_manager::BinderRegistry>();
-
-  // TODO(sgurun) do not create a password autofill agent (change
-  // autofill agent to store a weakptr).
-  autofill::PasswordAutofillAgent* password_autofill_agent =
-      new autofill::PasswordAutofillAgent(render_frame, registry_.get());
-  new autofill::AutofillAgent(render_frame, password_autofill_agent, nullptr,
-                              registry_.get());
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   new SpellCheckProvider(render_frame, spellcheck_.get());
