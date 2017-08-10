@@ -13,12 +13,13 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
-typedef InProcessBrowserTest ZoomBubbleBrowserTest;
-
 #if defined(USE_ASH)
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
+#include "ui/aura/test/env_test_helper.h"
 #endif
+
+using ZoomBubbleBrowserTest = InProcessBrowserTest;
 
 // TODO(linux_aura) http://crbug.com/163931
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
@@ -72,11 +73,11 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, MAYBE_NonImmersiveFullscreen) {
   }
 }
 
-// TODO(zturner): Change this to USE_ASH after fixing the test on Windows.
 #if defined(OS_CHROMEOS)
 // Test whether the zoom bubble is anchored and whether it is visible when in
 // immersive fullscreen.
 IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
+  aura::test::EnvTestHelper().SetAlwaysUseLastMouseLocation(true);
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
 
