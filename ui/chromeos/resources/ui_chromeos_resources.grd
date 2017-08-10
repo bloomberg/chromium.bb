@@ -68,6 +68,16 @@
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_45" file="default_user_images/origami/avatar_panda.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_46" file="default_user_images/origami/avatar_unicorn.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_47" file="default_user_images/origami/avatar_butterflies.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_48" file="default_user_images/illustration/avatar_bird.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_49" file="default_user_images/illustration/avatar_ramen.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_50" file="default_user_images/illustration/avatar_tamagochi.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_51" file="default_user_images/illustration/avatar_cheese.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_52" file="default_user_images/illustration/avatar_football.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_53" file="default_user_images/illustration/avatar_basketball.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_54" file="default_user_images/illustration/avatar_vinyl.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_55" file="default_user_images/illustration/avatar_sushi.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_56" file="default_user_images/illustration/avatar_bike.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_57" file="default_user_images/illustration/avatar_sunglasses.png" />
 
       <!-- Print Job Notification images. -->
       <structure type="chrome_scaled_image" name="IDR_PRINT_NOTIFICATION_CANCEL" file="print_notification/cancel.png" />
