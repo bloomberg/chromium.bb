@@ -35,7 +35,7 @@ A
 ├───C
 │   ├───D
 │   └───E
-└───E
+└───F
 ```
 
 `Node` is a base class of all kinds of nodes in DOM tree. Each `Node` has following 3 pointers (but not limited to):
@@ -53,9 +53,57 @@ That means:
 - Siblings are stored as a linked list. It takes O(N) to access a parent's n-th child.
 - Parent can't tell how many children it has in O(1).
 
-# Zero-Cost Nodes traversal functions
+Further info:
+- `Node`, `ContainerNode`
 
-TODO(hayato): Explain.
+# C++11 range-based for loops for traversing a tree
+
+You can traverse a tree manually:
+
+``` c++
+// Traverse a children.
+for (Node* child = parent.firstChild(); child; child = child->nextSibling()) {
+  ...
+}
+```
+
+``` c++
+// Traverse nodes in tree order, depth-first traversal.
+void foo(const Node& node) {
+  ...
+  for (Node* child = node.firstChild(); child; child = child->nextSibling()) {
+    foo(*child);  // Recursively
+  }
+}
+```
+
+However, traversing a tree in this way might be error-prone.
+Instead, you can use `NodeTraversal` and `ElementTraversal`. They provides a C++11's range-based for loops, such as:
+
+``` c++
+for (Node& child : NodeTraversal::childrenOf(parent) {
+  ...
+}
+```
+
+e.g. Given a parent *A*, this traverses *B*, *C*, and *F* in this order.
+
+
+``` c++
+for (Node& node : NodeTraversal::startsAt(root)) {
+  ...
+}
+```
+
+e.g. Given the root *A*, this traverses *A*, *B*, *C*, *D*, *E*, and *F* in this order.
+
+There are several other useful range-based for loops for each purpose.
+The cost of using range-based for loops is zero because everything can be inlined.
+
+Further info:
+
+- `NodeTraversal` and `ElementTraversal` (more type-safe version)
+- The [CL](https://codereview.chromium.org/642973003), which introduced these range-based for loops.
 
 # Shadow Tree
 
