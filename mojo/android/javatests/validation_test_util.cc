@@ -44,8 +44,8 @@ ScopedJavaLocalRef<jobject> ParseData(
     DCHECK(!data.size());
     data_ptr = &data;
   }
-  jobject byte_buffer =
-      env->NewDirectByteBuffer(data_ptr, data.size());
+  ScopedJavaLocalRef<jobject> byte_buffer(
+      env, env->NewDirectByteBuffer(data_ptr, data.size()));
   return Java_ValidationTestUtil_buildData(env, byte_buffer, num_handles,
                                            nullptr);
 }
