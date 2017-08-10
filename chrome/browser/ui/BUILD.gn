@@ -390,8 +390,6 @@ split_static_library("ui") {
     "webui/password_manager_internals/password_manager_internals_ui.h",
     "webui/physical_web/physical_web_ui.cc",
     "webui/physical_web/physical_web_ui.h",
-    "webui/policy_material_design_ui.cc",
-    "webui/policy_material_design_ui.h",
     "webui/policy_ui.cc",
     "webui/policy_ui.h",
     "webui/policy_ui_handler.cc",
