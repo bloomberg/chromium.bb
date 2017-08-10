@@ -1619,6 +1619,7 @@ crbug.com/589279 fast/writing-mode/border-radius-clipping-vertical-lr.html [ Fai
 # Subpixel adjustments due to differences in compositing
 crbug.com/589265 animations/svg/animated-filter-svg-element.html [ Failure Crash ]
 crbug.com/589265 compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Failure ]
+crbug.com/589265 compositing/overflow/relpos-under-abspos-border-radius.html [ Failure ]
 crbug.com/589265 fast/forms/number/number-appearance-spinbutton-layer.html [ Failure ]
 crbug.com/589265 fast/layers/add-layer-with-nested-stacking.html [ Failure ]
 crbug.com/589265 fast/layers/opacity-transforms.html [ Failure ]
