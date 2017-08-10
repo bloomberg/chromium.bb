@@ -111,7 +111,11 @@ aggregate_vector_icons("chrome_vector_icons") {
   }
 
   if (is_chromeos) {
-    icons += [ "arc_migrate_encryption_notification.icon" ]
+    icons += [
+      "arc_migrate_encryption_notification.icon",
+      "warning_badge_circle.1x.icon",
+      "warning_badge_circle.icon",
+    ]
   }
 }
 

@@ -1,0 +1,23 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+CANVAS_DIMENSIONS, 80,
+MOVE_TO, 65.87f, 52,
+CUBIC_TO, 58.21f, 52, 52, 58.22f, 52, 65.89f,
+R_CUBIC_TO, 0, 7.67f, 6.21f, 13.89f, 13.87f, 13.89f,
+R_CUBIC_TO, 7.65f, 0, 13.87f, -6.22f, 13.87f, -13.89f,
+R_CUBIC_TO, 0, -7.67f, -6.21f, -13.89f, -13.87f, -13.89f,
+CLOSE,
+NEW_PATH,
+PATH_COLOR_ARGB, 0xFF, 0xFF, 0xFF, 0xFF,
+MOVE_TO, 67, 72.09f,
+R_H_LINE_TO, -3,
+V_LINE_TO, 69,
+R_H_LINE_TO, 3,
+MOVE_TO, 67, 67,
+R_H_LINE_TO, -3,
+R_V_LINE_TO, -7,
+R_H_LINE_TO, 3,
+CLOSE,
+END
