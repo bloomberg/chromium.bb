@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -206,6 +206,13 @@ ShellDesktopControllerAura::~ShellDesktopControllerAura() {
   extensions::AppWindowClient::Set(NULL);
 }
 
+void ShellDesktopControllerAura::Run() {
+  base::RunLoop run_loop;
+  run_loop_ = &run_loop;
+  run_loop.Run();
+  run_loop_ = nullptr;
+}
+
 AppWindow* ShellDesktopControllerAura::CreateAppWindow(
     content::BrowserContext* context,
     const Extension* extension) {
@@ -269,8 +276,10 @@ void ShellDesktopControllerAura::OnHostCloseRequested(
     aura::WindowTreeHost* host) {
   DCHECK_EQ(host_.get(), host);
   CloseAppWindows();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+
+  // run_loop_ may be null in tests.
+  if (run_loop_)
+    run_loop_->QuitWhenIdle();
 }
 
 ui::EventDispatchDetails ShellDesktopControllerAura::DispatchKeyEventPostIME(
