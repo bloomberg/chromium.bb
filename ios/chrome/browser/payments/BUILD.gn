@@ -15,8 +15,6 @@ source_set("payments") {
     "ios_payment_instrument_finder.mm",
     "ios_payment_request_cache_factory.h",
     "ios_payment_request_cache_factory.mm",
-    "itunes_json_request.cc",
-    "itunes_json_request.h",
     "origin_security_checker.h",
     "origin_security_checker.mm",
     "payment_request.h",
