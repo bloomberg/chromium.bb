@@ -51,6 +51,9 @@ class WebstoreBindings : public ObjectBackedNativeHandler,
       std::string* webstore_item_id,
       std::string* error);
 
+  // ObjectBackedNativeHandler:
+  void Invalidate() override;
+
   mojom::InlineInstallerAssociatedPtr inline_installer_;
 
   mojo::BindingSet<mojom::InlineInstallProgressListener>
