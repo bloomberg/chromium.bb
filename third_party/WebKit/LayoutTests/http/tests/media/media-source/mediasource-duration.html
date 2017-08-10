@@ -176,7 +176,7 @@
 
               // Append all the segments
               test.expectEvent(sourceBuffer, 'updateend', 'sourceBuffer append completed');
-              test.expectEvent(mediaElement, 'playing', 'Playing triggered');
+              test.expectEvent(mediaElement, 'loadedmetadata', 'mediaElement loadedmetadata');
               sourceBuffer.appendBuffer(mediaData);
 
               test.waitForExpectedEvents(function()
@@ -190,30 +190,31 @@
 
                   // Increase duration. This should result in one 'durationchange' fired.
                   mediaSource.duration = newDuration;
-                  assert_false(sourceBuffer.updating, "sourceBuffer.updating after duration set to newDuration");
+                  assert_false(sourceBuffer.updating, 'sourceBuffer.updating after duration set to newDuration');
+                  assert_equals(mediaElement.duration, newDuration, 'mediaElement duration matches newDuration');
 
                   // Set duration again to make sure it does not trigger another 'durationchange' event.
                   mediaSource.duration = newDuration;
 
-                  assert_false(sourceBuffer.updating, "sourceBuffer.updating after duration set again to newDuration");
+                  assert_false(sourceBuffer.updating, 'sourceBuffer.updating after duration set again to newDuration');
+                  assert_equals(mediaElement.duration, newDuration, 'mediaElement duration matches newDuration after mediaSource duration set again to newDuration');
 
                   // Mark endOfStream so that playback can reach 'ended' at the new duration.
                   test.expectEvent(mediaSource, 'sourceended', 'endOfStream acknowledged');
                   mediaSource.endOfStream();
 
-                  // endOfStream can change duration downwards slightly.
-                  // Allow for one more 'durationchange' event only in this case.
-                  var currentDuration = mediaSource.duration;
-                  if (currentDuration != newDuration) {
-                      assert_true(currentDuration > 0 && currentDuration < newDuration, 'adjusted duration check');
-                      newDuration = currentDuration;
-                      ++expectedDurationChangeEventCount;
-                  }
+                  // endOfStream should reduce the duration back to fullDuration.
+                  assert_equals(mediaElement.duration, fullDuration, 'mediaElement duration returns to fullDuration after endOfStream()');
+                  assert_equals(mediaSource.duration, fullDuration, 'mediaSource duration returns to fullDuration after endOfStream()');
+
+                  // Adjust the duration and durationchanged event expectations due to endOfStream()'s duration change.
+                  newDuration = fullDuration;
+                  ++expectedDurationChangeEventCount;
               });
 
               test.waitForExpectedEvents(function()
               {
-                  // Allow any remaining queued durationchange to fire, while counting 'durationchange' them.
+                  // Allow any remaining queued durationchange to fire, while counting them.
                   test.step_timeout(test.step_func(function()
                   {
                       mediaElement.removeEventListener('durationchange', durationchangeEventHandler);
@@ -221,7 +222,7 @@
                       test.done();
                   }), 0);
               });
-          }, 'Test setting same duration multiple times does not fire duplicate durationchange', {timeout: 2500});
+          }, 'Test setting same duration multiple times does not fire duplicate durationchange');
 
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
