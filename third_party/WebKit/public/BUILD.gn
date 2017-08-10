@@ -603,7 +603,6 @@ source_set("blink_headers") {
     "web/WebTextCheckingResult.h",
     "web/WebTextDecorationType.h",
     "web/WebTextDirection.h",
-    "web/WebTextInputType.h",
     "web/WebTreeScopeType.h",
     "web/WebTriggeringEventInfo.h",
     "web/WebUserGestureIndicator.h",
