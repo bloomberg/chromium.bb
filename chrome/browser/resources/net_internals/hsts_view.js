@@ -177,9 +177,9 @@ var HSTSView = (function() {
     // These numbers must match those in
     // TransportSecurityState::STSState::UpgradeMode.
     if (m == 0) {
-      return 'STRICT';
+      return 'FORCE_HTTPS';
     } else if (m == 1) {
-      return 'OPPORTUNISTIC';
+      return 'DEFAULT';
     } else {
       return 'UNKNOWN';
     }
