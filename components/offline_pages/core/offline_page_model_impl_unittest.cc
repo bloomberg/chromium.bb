@@ -527,8 +527,7 @@ MultipleOfflinePageItemResult OfflinePageModelImplTest::GetPagesByFinalURL(
     const GURL& url) {
   MultipleOfflinePageItemResult result;
   model()->GetPagesByURL(
-      url,
-      OfflinePageModel::URLSearchMode::SEARCH_BY_FINAL_URL_ONLY,
+      url, URLSearchMode::SEARCH_BY_FINAL_URL_ONLY,
       base::Bind(&OfflinePageModelImplTest::OnGetMultipleOfflinePageItemsResult,
                  AsWeakPtr(), base::Unretained(&result)));
   PumpLoop();
@@ -539,8 +538,7 @@ MultipleOfflinePageItemResult OfflinePageModelImplTest::GetPagesByAllURLS(
     const GURL& url) {
   MultipleOfflinePageItemResult result;
   model()->GetPagesByURL(
-      url,
-      OfflinePageModel::URLSearchMode::SEARCH_BY_ALL_URLS,
+      url, URLSearchMode::SEARCH_BY_ALL_URLS,
       base::Bind(&OfflinePageModelImplTest::OnGetMultipleOfflinePageItemsResult,
                  AsWeakPtr(), base::Unretained(&result)));
   PumpLoop();

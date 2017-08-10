@@ -30,6 +30,7 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
+#include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/recent_tabs/recent_tabs_ui_adapter_delegate.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "content/public/browser/browser_context.h"
@@ -470,10 +471,8 @@ void OfflinePageBridge::SelectPageForOnlineUrl(
   j_callback_ref.Reset(env, j_callback_obj);
 
   OfflinePageUtils::SelectPageForURL(
-      browser_context_,
-      GURL(ConvertJavaStringToUTF8(env, j_online_url)),
-      OfflinePageModel::URLSearchMode::SEARCH_BY_ALL_URLS,
-      tab_id,
+      browser_context_, GURL(ConvertJavaStringToUTF8(env, j_online_url)),
+      URLSearchMode::SEARCH_BY_ALL_URLS, tab_id,
       base::Bind(&SingleOfflinePageItemCallback, j_callback_ref));
 }
 

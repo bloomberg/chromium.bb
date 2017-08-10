@@ -72,6 +72,15 @@ enum class DeletePageResult {
   RESULT_COUNT,
 };
 
+// Controls how to search on differnt URLs for pages.
+enum class URLSearchMode {
+  // Match against the last committed URL only.
+  SEARCH_BY_FINAL_URL_ONLY,
+  // Match against all stored URLs, including the last committed URL and
+  // the original request URL.
+  SEARCH_BY_ALL_URLS,
+};
+
 typedef std::set<GURL> CheckPagesExistOfflineResult;
 typedef std::vector<int64_t> MultipleOfflineIdResult;
 typedef std::vector<OfflinePageItem> MultipleOfflinePageItemResult;

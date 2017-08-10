@@ -62,7 +62,7 @@ class OfflinePageUtils {
   static void SelectPageForURL(
       content::BrowserContext* browser_context,
       const GURL& url,
-      OfflinePageModel::URLSearchMode url_search_mode,
+      URLSearchMode url_search_mode,
       int tab_id,
       const base::Callback<void(const OfflinePageItem*)>& callback);
 

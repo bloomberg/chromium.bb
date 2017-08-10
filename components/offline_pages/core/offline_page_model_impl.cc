@@ -561,7 +561,9 @@ void OfflinePageModelImpl::CheckPagesExistOffline(
   OfflinePageModelQueryBuilder builder;
   builder
       .SetUrls(OfflinePageModelQuery::Requirement::INCLUDE_MATCHING,
-               std::vector<GURL>(urls.begin(), urls.end()))
+               std::vector<GURL>(urls.begin(), urls.end()),
+               URLSearchMode::SEARCH_BY_FINAL_URL_ONLY,
+               false /* strip_fragment */)
       .RequireRestrictedToOriginalTab(
           OfflinePageModelQueryBuilder::Requirement::EXCLUDE_MATCHING);
   auto pages_to_urls = base::Bind(
@@ -648,43 +650,14 @@ void OfflinePageModelImpl::GetPagesByURL(
     const GURL& url,
     URLSearchMode url_search_mode,
     const MultipleOfflinePageItemCallback& callback) {
+  OfflinePageModelQueryBuilder builder;
+  builder.SetUrls(OfflinePageModelQuery::Requirement::INCLUDE_MATCHING,
+                  std::vector<GURL>({url}), url_search_mode,
+                  true /* strip_fragment */);
   RunWhenLoaded(
-      base::Bind(&OfflinePageModelImpl::GetPagesByURLWhenLoadDone,
-                 weak_ptr_factory_.GetWeakPtr(), url,
-                 url_search_mode, callback));
-}
-
-void OfflinePageModelImpl::GetPagesByURLWhenLoadDone(
-    const GURL& url,
-    URLSearchMode url_search_mode,
-    const MultipleOfflinePageItemCallback& callback) const {
-  DCHECK(is_loaded_);
-  std::vector<OfflinePageItem> result;
-
-  GURL::Replacements remove_params;
-  remove_params.ClearRef();
-
-  GURL url_without_fragment =
-      url.ReplaceComponents(remove_params);
-
-  for (const auto& id_page_pair : offline_pages_) {
-    // First, search by last committed URL with fragment stripped.
-    if (url_without_fragment ==
-            id_page_pair.second.url.ReplaceComponents(remove_params)) {
-      result.push_back(id_page_pair.second);
-      continue;
-    }
-    // Then, search by original request URL if |url_search_mode| wants it.
-    // Note that we want to do the exact match with fragment included. This is
-    // because original URL is used for redirect purpose and it is always safer
-    // to support the exact redirect.
-    if (url_search_mode == URLSearchMode::SEARCH_BY_ALL_URLS &&
-        url == id_page_pair.second.original_url) {
-      result.push_back(id_page_pair.second);
-    }
-  }
-
-  callback.Run(result);
+      base::Bind(&OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(builder.Build(GetPolicyController())), callback));
 }
 
 void OfflinePageModelImpl::CheckMetadataConsistency() {

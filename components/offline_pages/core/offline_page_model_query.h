@@ -32,13 +32,33 @@ class OfflinePageModelQuery {
     EXCLUDE_MATCHING,
   };
 
+  struct URLSearchParams {
+    URLSearchParams();
+    URLSearchParams(const URLSearchParams& params);
+    URLSearchParams(std::set<GURL> url_set,
+                    URLSearchMode search_mode,
+                    bool strip_frag);
+    ~URLSearchParams();
+
+    // The set of urls for matching.
+    std::set<GURL> urls;
+    // The mode for searching. By final url only or both final and original
+    // urls.
+    URLSearchMode mode;
+    // Whether fragments should be stripped. It will *not* work on
+    // *|original_url|*.
+    // TODO(crbug.com/753609): Try to make this also available when matching for
+    // |original_url|.
+    bool strip_fragment;
+  };
+
   OfflinePageModelQuery();
   virtual ~OfflinePageModelQuery();
 
   std::pair<bool, std::set<std::string>> GetRestrictedToNamespaces() const;
   std::pair<Requirement, std::set<int64_t>> GetRestrictedToOfflineIds() const;
   std::pair<Requirement, std::set<ClientId>> GetRestrictedToClientIds() const;
-  std::pair<Requirement, std::set<GURL>> GetRestrictedToUrls() const;
+  std::pair<Requirement, URLSearchParams> GetRestrictedToUrls() const;
 
   // This is the workhorse function that is used by the in-memory offline page
   // model, given a page it will find out whether that page matches the query.
@@ -51,7 +71,7 @@ class OfflinePageModelQuery {
 
   std::pair<Requirement, std::set<int64_t>> offline_ids_;
   std::pair<Requirement, std::set<ClientId>> client_ids_;
-  std::pair<Requirement, std::set<GURL>> urls_;
+  std::pair<Requirement, URLSearchParams> urls_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageModelQuery);
 };
@@ -82,8 +102,16 @@ class OfflinePageModelQueryBuilder {
 
   // Sets the URLs that are valid for this request.  If called multiple times,
   // overwrites previous URL restrictions.
+  // |search_mode| is used to control if the URL will be matched with final
+  // URL only or both final URL and original URL.
+  // If |strip_fragment| is true, *only final* urls will be matched without
+  // fragment.
+  // TODO(crbug.com/753609): Try to unify fragment handling for original and
+  // final urls.
   OfflinePageModelQueryBuilder& SetUrls(Requirement requirement,
-                                        const std::vector<GURL>& urls);
+                                        const std::vector<GURL>& urls,
+                                        URLSearchMode search_mode,
+                                        bool strip_fragment);
 
   // Only include pages whose namespaces satisfy
   // ClientPolicyController::IsRemovedOnCacheReset(|namespace|) ==
@@ -131,7 +159,7 @@ class OfflinePageModelQueryBuilder {
 
   std::pair<Requirement, std::vector<int64_t>> offline_ids_;
   std::pair<Requirement, std::vector<ClientId>> client_ids_;
-  std::pair<Requirement, std::vector<GURL>> urls_;
+  std::pair<Requirement, OfflinePageModelQuery::URLSearchParams> urls_;
 
   Requirement removed_on_cache_reset_ = Requirement::UNSET;
   Requirement supported_by_download_ = Requirement::UNSET;

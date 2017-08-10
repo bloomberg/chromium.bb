@@ -416,16 +416,10 @@ void SelectPageForURL(
   }
 
   OfflinePageUtils::SelectPageForURL(
-      web_contents->GetBrowserContext(),
-      url,
-      OfflinePageModel::URLSearchMode::SEARCH_BY_ALL_URLS,
+      web_contents->GetBrowserContext(), url, URLSearchMode::SEARCH_BY_ALL_URLS,
       tab_id,
-      base::Bind(&SucceededToFindOfflinePage,
-                 url,
-                 offline_header,
-                 network_state,
-                 job,
-                 web_contents_getter));
+      base::Bind(&SucceededToFindOfflinePage, url, offline_header,
+                 network_state, job, web_contents_getter));
 }
 
 void FindPageWithOfflineIDDone(

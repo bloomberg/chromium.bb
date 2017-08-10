@@ -167,10 +167,8 @@ void OfflinePageTabHelper::DidFinishNavigation(
   }
 
   OfflinePageUtils::SelectPageForURL(
-      web_contents()->GetBrowserContext(),
-      navigated_url,
-      OfflinePageModel::URLSearchMode::SEARCH_BY_ALL_URLS,
-      tab_id,
+      web_contents()->GetBrowserContext(), navigated_url,
+      URLSearchMode::SEARCH_BY_ALL_URLS, tab_id,
       base::Bind(&OfflinePageTabHelper::SelectPageForURLDone,
                  weak_ptr_factory_.GetWeakPtr()));
 }

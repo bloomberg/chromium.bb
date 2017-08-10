@@ -11,7 +11,44 @@
 
 namespace offline_pages {
 
+namespace {
+
+int CountMatchingUrls(const GURL& url_pattern,
+                      const std::set<GURL>& urls,
+                      bool strip_fragment) {
+  int count = 0;
+
+  // If |strip_fragment| is true, all urls will be compared after fragments
+  // stripped. Otherwise just do exact matching.
+  if (strip_fragment) {
+    for (const auto& url : urls) {
+      GURL::Replacements remove_params;
+      remove_params.ClearRef();
+      GURL url_without_fragment = url.ReplaceComponents(remove_params);
+      if (url_without_fragment == url_pattern.ReplaceComponents(remove_params))
+        count++;
+    }
+  } else {
+    count = urls.count(url_pattern);
+  }
+  return count;
+}
+
+}  // namespace
+
 using Requirement = OfflinePageModelQuery::Requirement;
+
+OfflinePageModelQuery::URLSearchParams::URLSearchParams() = default;
+
+OfflinePageModelQuery::URLSearchParams::URLSearchParams(
+    std::set<GURL> url_set,
+    URLSearchMode search_mode,
+    bool strip_frag)
+    : urls(url_set), mode(search_mode), strip_fragment(strip_frag) {}
+
+OfflinePageModelQuery::URLSearchParams::URLSearchParams(
+    const URLSearchParams& params) = default;
+OfflinePageModelQuery::URLSearchParams::~URLSearchParams() = default;
 
 OfflinePageModelQueryBuilder::OfflinePageModelQueryBuilder()
     : offline_ids_(std::make_pair(Requirement::UNSET, std::vector<int64_t>())) {
@@ -35,8 +72,13 @@ OfflinePageModelQueryBuilder& OfflinePageModelQueryBuilder::SetClientIds(
 
 OfflinePageModelQueryBuilder& OfflinePageModelQueryBuilder::SetUrls(
     Requirement requirement,
-    const std::vector<GURL>& urls) {
-  urls_ = std::make_pair(requirement, urls);
+    const std::vector<GURL>& urls,
+    URLSearchMode search_mode,
+    bool defrag) {
+  urls_ = std::make_pair(
+      requirement,
+      OfflinePageModelQuery::URLSearchParams(
+          std::set<GURL>(urls.begin(), urls.end()), search_mode, defrag));
   return *this;
 }
 
@@ -80,9 +122,11 @@ std::unique_ptr<OfflinePageModelQuery> OfflinePageModelQueryBuilder::Build(
 
   auto query = base::MakeUnique<OfflinePageModelQuery>();
 
-  query->urls_ = std::make_pair(
-      urls_.first, std::set<GURL>(urls_.second.begin(), urls_.second.end()));
-  urls_ = std::make_pair(Requirement::UNSET, std::vector<GURL>());
+  query->urls_ = urls_;
+  urls_ = std::make_pair(
+      Requirement::UNSET,
+      OfflinePageModelQuery::URLSearchParams(
+          std::set<GURL>(), URLSearchMode::SEARCH_BY_FINAL_URL_ONLY, false));
   query->offline_ids_ = std::make_pair(
       offline_ids_.first, std::set<int64_t>(offline_ids_.second.begin(),
                                             offline_ids_.second.end()));
@@ -176,11 +220,15 @@ OfflinePageModelQuery::GetRestrictedToClientIds() const {
   return client_ids_;
 }
 
-std::pair<Requirement, std::set<GURL>>
+std::pair<Requirement, OfflinePageModelQuery::URLSearchParams>
 OfflinePageModelQuery::GetRestrictedToUrls() const {
-  if (urls_.first == Requirement::UNSET)
-    return std::make_pair(Requirement::UNSET, std::set<GURL>());
-
+  if (std::get<0>(urls_) == Requirement::UNSET) {
+    URLSearchParams unset_params;
+    unset_params.urls = std::set<GURL>();
+    unset_params.mode = URLSearchMode::SEARCH_BY_FINAL_URL_ONLY;
+    unset_params.strip_fragment = false;
+    return std::make_pair(Requirement::UNSET, unset_params);
+  }
   return urls_;
 }
 
@@ -198,17 +246,17 @@ bool OfflinePageModelQuery::Matches(const OfflinePageItem& item) const {
       break;
   }
 
-  switch (urls_.first) {
-    case Requirement::UNSET:
-      break;
-    case Requirement::INCLUDE_MATCHING:
-      if (urls_.second.count(item.url) == 0)
-        return false;
-      break;
-    case Requirement::EXCLUDE_MATCHING:
-      if (urls_.second.count(item.url) > 0)
-        return false;
-      break;
+  Requirement url_requirement = urls_.first;
+  URLSearchParams params = urls_.second;
+  if (url_requirement != Requirement::UNSET) {
+    int count = CountMatchingUrls(item.url, params.urls, params.strip_fragment);
+    if (params.mode == URLSearchMode::SEARCH_BY_ALL_URLS)
+      count += CountMatchingUrls(item.original_url, params.urls,
+                                 false /* strip_fragment */);
+    if ((url_requirement == Requirement::INCLUDE_MATCHING && count == 0) ||
+        (url_requirement == Requirement::EXCLUDE_MATCHING && count > 0)) {
+      return false;
+    }
   }
 
   const ClientId& client_id = item.client_id;
