@@ -404,6 +404,11 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/min-width-a
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/replaced-intrinsic-001.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ Failure ]
 
+# We currently write back whitespace-collapsed strings to LayoutText, causing
+# the following failures. Once we can paint inlines directly from fragment tree,
+# we can stop the writeback.
+crbug.com/714962 virtual/layout_ng/fast/block/float/overhanging-float-crashes-when-sibling-becomes-formatting-context.html [ Failure ]
+
 ### virtual/layout_ng/external/wpt/css/CSS2/positioning
 # tests absolute-replaced-width-036->071 would pass if reference page rendered correctly. It is an inline bug, not oof bug
 crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-width-036.xht [ Failure ]
