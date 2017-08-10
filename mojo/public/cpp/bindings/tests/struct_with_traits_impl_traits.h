@@ -20,12 +20,7 @@ namespace mojo {
 template <>
 struct StructTraits<test::NestedStructWithTraitsDataView,
                     test::NestedStructWithTraitsImpl> {
-  static void* SetUpContext(const test::NestedStructWithTraitsImpl& input);
-  static void TearDownContext(const test::NestedStructWithTraitsImpl& input,
-                              void* context);
-
-  static int32_t value(const test::NestedStructWithTraitsImpl& input,
-                       void* context);
+  static int32_t value(const test::NestedStructWithTraitsImpl& input);
 
   static bool Read(test::NestedStructWithTraitsDataView data,
                    test::NestedStructWithTraitsImpl* output);

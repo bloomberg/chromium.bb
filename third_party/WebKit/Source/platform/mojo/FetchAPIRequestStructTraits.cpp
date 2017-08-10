@@ -14,19 +14,6 @@
 
 namespace mojo {
 
-namespace {
-
-// Struct traits context for the FetchAPIRequest type. Since getters are invoked
-// twice when serializing the type, this reduces the load for heavy members.
-struct FetchAPIRequestStructTraitsContext {
-  FetchAPIRequestStructTraitsContext() = default;
-  ~FetchAPIRequestStructTraitsContext() = default;
-
-  WTF::HashMap<WTF::String, WTF::String> headers;
-};
-
-}  // namespace
-
 using blink::mojom::FetchCredentialsMode;
 using blink::mojom::FetchRedirectMode;
 using blink::mojom::FetchRequestMode;
@@ -380,26 +367,6 @@ bool EnumTraits<RequestContextType, blink::WebURLRequest::RequestContext>::
 }
 
 // static
-void* StructTraits<blink::mojom::FetchAPIRequestDataView,
-                   blink::WebServiceWorkerRequest>::
-    SetUpContext(const blink::WebServiceWorkerRequest& request) {
-  FetchAPIRequestStructTraitsContext* context =
-      new FetchAPIRequestStructTraitsContext();
-  for (const auto& pair : request.Headers())
-    context->headers.insert(pair.key, pair.value);
-
-  return context;
-}
-
-// static
-void StructTraits<blink::mojom::FetchAPIRequestDataView,
-                  blink::WebServiceWorkerRequest>::
-    TearDownContext(const blink::WebServiceWorkerRequest& request,
-                    void* context) {
-  delete static_cast<FetchAPIRequestStructTraitsContext*>(context);
-}
-
-// static
 blink::KURL StructTraits<blink::mojom::FetchAPIRequestDataView,
                          blink::WebServiceWorkerRequest>::
     url(const blink::WebServiceWorkerRequest& request) {
@@ -414,12 +381,14 @@ WTF::String StructTraits<blink::mojom::FetchAPIRequestDataView,
 }
 
 // static
-const WTF::HashMap<WTF::String, WTF::String>&
+WTF::HashMap<WTF::String, WTF::String>
 StructTraits<blink::mojom::FetchAPIRequestDataView,
              blink::WebServiceWorkerRequest>::
-    headers(const blink::WebServiceWorkerRequest& request, void* context) {
-  DCHECK(context);
-  return static_cast<FetchAPIRequestStructTraitsContext*>(context)->headers;
+    headers(const blink::WebServiceWorkerRequest& request) {
+  WTF::HashMap<WTF::String, WTF::String> header_map;
+  for (const auto& pair : request.Headers())
+    header_map.insert(pair.key, pair.value);
+  return header_map;
 }
 
 // static
