@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_reference_factory.h"
@@ -200,6 +201,19 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
     base::flat_set<SurfaceId> children;
   };
 
+  struct TemporaryReferenceData {
+    TemporaryReferenceData();
+    ~TemporaryReferenceData();
+
+    // The FrameSinkId that is expected to embed this SurfaceId. This will
+    // initially be empty and set later by AssignTemporaryReference().
+    base::Optional<FrameSinkId> owner;
+
+    // Used to track old surface references, will be marked as true on first
+    // timer tick and will be true on second timer tick.
+    bool marked_as_old = false;
+  };
+
   // Garbage collects all destroyed surfaces that aren't live.
   void GarbageCollectSurfaces();
 
@@ -232,6 +246,9 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // all temporary references to surfaces with the same FrameSinkId as
   // |surface_id| that were added before |surface_id| will also be removed.
   void RemoveTemporaryReference(const SurfaceId& surface_id, bool remove_range);
+
+  // Marks old temporary references for logging and deletion.
+  void MarkOldTemporaryReference();
 
   // Removes the surface from the surface map and destroys it.
   void DestroySurfaceInternal(const SurfaceId& surface_id);
@@ -286,10 +303,8 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   std::unordered_map<SurfaceId, SurfaceReferenceInfo, SurfaceIdHash>
       references_;
 
-  // A map of surfaces that have temporary references to them. The key is the
-  // SurfaceId and the value is the owner. The owner will initially be empty and
-  // set later by AssignTemporaryReference().
-  std::unordered_map<SurfaceId, base::Optional<FrameSinkId>, SurfaceIdHash>
+  // A map of surfaces that have temporary references.
+  std::unordered_map<SurfaceId, TemporaryReferenceData, SurfaceIdHash>
       temporary_references_;
 
   // Range tracking information for temporary references. Each map entry is an
@@ -303,6 +318,9 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // the embedding client can use them.
   std::unordered_map<FrameSinkId, std::vector<LocalSurfaceId>, FrameSinkIdHash>
       temporary_reference_ranges_;
+
+  // Timer that ticks every 10 seconds and calls MarkTemporaryReference().
+  base::RepeatingTimer temporary_reference_timer_;
 
   base::WeakPtrFactory<SurfaceManager> weak_factory_;
 
