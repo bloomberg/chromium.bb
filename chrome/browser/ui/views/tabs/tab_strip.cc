@@ -1153,7 +1153,13 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   if (active_tab && is_dragging)
     active_tab->Paint(paint_info);
 
-  ui::PaintRecorder recorder(paint_info.context(), size());
+  // Keep the recording scales consistent for the tab strip and its children.
+  // See crbug/753911
+  ui::PaintRecorder recorder(paint_info.context(),
+                             paint_info.paint_recording_size(),
+                             paint_info.paint_recording_scale_x(),
+                             paint_info.paint_recording_scale_y(), nullptr);
+
   gfx::Canvas* canvas = recorder.canvas();
   if (active_tab) {
     canvas->sk_canvas()->clipRect(
