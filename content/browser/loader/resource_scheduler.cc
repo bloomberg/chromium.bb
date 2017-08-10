@@ -119,16 +119,6 @@ const char* RequestStartTriggerString(RequestStartTrigger trigger) {
   return "Unknown";
 }
 
-// Returns the net::EffectiveConnectionType that corresponds to
-// |connection_type_name|. If |connection_type_name| is invalid, the value
-// returned is net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN.
-net::EffectiveConnectionType GetEffectiveConnectionTypeForNameWrapper(
-    const std::string& connection_type_name) {
-  net::EffectiveConnectionType ect;
-  net::GetEffectiveConnectionTypeForName(connection_type_name, &ect);
-  return ect;
-}
-
 }  // namespace
 
 // The maximum number of delayable requests to allow to be in-flight at any
@@ -1221,10 +1211,12 @@ ResourceScheduler::ClientId ResourceScheduler::MakeClientId(
 ResourceScheduler::MaxDelayableRequestsNetworkOverrideExperiment::
     MaxDelayableRequestsNetworkOverrideExperiment()
     : max_requests_for_bdp_ranges_(GetConfig()),
-      max_effective_connection_type_(GetEffectiveConnectionTypeForNameWrapper(
-          base::GetFieldTrialParamValueByFeature(
-              kMaxDelayableRequestsNetworkOverride,
-              "MaxEffectiveConnectionType"))) {}
+      max_effective_connection_type_(
+          net::GetEffectiveConnectionTypeForName(
+              base::GetFieldTrialParamValueByFeature(
+                  kMaxDelayableRequestsNetworkOverride,
+                  "MaxEffectiveConnectionType"))
+              .value_or(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN)) {}
 
 ResourceScheduler::MaxDelayableRequestsNetworkOverrideExperiment::
     ~MaxDelayableRequestsNetworkOverrideExperiment() {}
@@ -1294,10 +1286,12 @@ ResourceScheduler::MaxDelayableRequestsNetworkOverrideExperiment::GetConfig() {
 
 ResourceScheduler::NonDelayableThrottlesDelayableExperiment::
     NonDelayableThrottlesDelayableExperiment()
-    : max_effective_connection_type_(GetEffectiveConnectionTypeForNameWrapper(
-          base::GetFieldTrialParamValueByFeature(
-              kNonDelayableThrottlesDelayable,
-              "MaxEffectiveConnectionType"))),
+    : max_effective_connection_type_(
+          net::GetEffectiveConnectionTypeForName(
+              base::GetFieldTrialParamValueByFeature(
+                  kNonDelayableThrottlesDelayable,
+                  "MaxEffectiveConnectionType"))
+              .value_or(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN)),
       non_delayable_weight_(base::GetFieldTrialParamByFeatureAsDouble(
           kNonDelayableThrottlesDelayable,
           "NonDelayableWeight",
