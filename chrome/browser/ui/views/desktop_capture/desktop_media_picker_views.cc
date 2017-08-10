@@ -445,7 +445,8 @@ void DesktopMediaPickerViews::NotifyDialogResult(DesktopMediaID source) {
   dialog_->DetachParent();
   dialog_ = nullptr;
 
-  DCHECK(!callback_.is_null());
+  if (callback_.is_null())
+    return;
 
   // Notify the |callback_| asynchronously because it may need to destroy
   // DesktopMediaPicker.
