@@ -8,9 +8,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/value_builder.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -35,7 +37,7 @@ class TestExternalRegistryLoader : public ExternalRegistryLoader {
  private:
   ~TestExternalRegistryLoader() override {}
 
-  std::unique_ptr<base::DictionaryValue> LoadPrefsOnFileThread() override {
+  std::unique_ptr<base::DictionaryValue> LoadPrefsOnBlockingThread() override {
     return DictionaryBuilder().Set(kDummyRegistryKey, id_++).Build();
   }
   void LoadFinished() override {
@@ -65,10 +67,15 @@ class TestExternalRegistryLoader : public ExternalRegistryLoader {
 class ExternalRegistryLoaderUnittest : public testing::Test {
  public:
   ExternalRegistryLoaderUnittest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
   ~ExternalRegistryLoaderUnittest() override {}
 
+ protected:
+  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalRegistryLoaderUnittest);
@@ -85,14 +92,14 @@ TEST_F(ExternalRegistryLoaderUnittest, TwoStartLoadingDoesNotCrash) {
 
   test_loader->WaitForTwoLoadsToFinished();
   // Let registry watcher code complete.
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 }
 
 // Tests that calling StartLoading() twice does not overwrite previous prefs
 // before LoadFinished consumes it.
 // Regression test for https://crbug.com/709304: if two StartLoading() schedules
-// two LoadPrefsOnFileThread, then the second LoadPrefsOnFileThread could
-// overwrite the first one's prefs.
+// two LoadPrefsOnBlockingThread, then the second LoadPrefsOnBlockingThread
+// could overwrite the first one's prefs.
 TEST_F(ExternalRegistryLoaderUnittest, TwoStartLoadingDoesNotOverwritePrefs) {
   scoped_refptr<TestExternalRegistryLoader> test_loader =
       make_scoped_refptr(new TestExternalRegistryLoader());
@@ -102,12 +109,10 @@ TEST_F(ExternalRegistryLoaderUnittest, TwoStartLoadingDoesNotOverwritePrefs) {
 
   test_loader->WaitForTwoLoadsToFinished();
   // Let registry watcher code complete.
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   std::vector<int> prefs_test_ids = test_loader->GetPrefsTestIds();
-  ASSERT_EQ(2u, prefs_test_ids.size());
-  EXPECT_EQ(0, prefs_test_ids[0]);
-  EXPECT_EQ(1, prefs_test_ids[1]);
+  EXPECT_THAT(prefs_test_ids, testing::ElementsAre(0, 1));
 }
 
 }  // namespace extensions

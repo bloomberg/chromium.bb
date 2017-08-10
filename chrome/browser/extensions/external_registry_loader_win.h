@@ -17,27 +17,32 @@ class ExternalRegistryLoader : public ExternalLoader {
   ExternalRegistryLoader();
 
  protected:
-  ~ExternalRegistryLoader() override {}  // protected for unit test.
+  ~ExternalRegistryLoader() override;  // protected for unit test.
 
   void StartLoading() override;
 
   // Overridden to mock registry reading in unit tests.
-  virtual std::unique_ptr<base::DictionaryValue> LoadPrefsOnFileThread();
+  virtual std::unique_ptr<base::DictionaryValue> LoadPrefsOnBlockingThread();
 
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;
 
-  void LoadOnFileThread();
+  void LoadOnBlockingThread();
   void CompleteLoadAndStartWatchingRegistry(
       std::unique_ptr<base::DictionaryValue> prefs);
-  void UpdatePrefsOnFileThread();
+  void UpatePrefsOnBlockingThread();
   void OnRegistryKeyChanged(base::win::RegKey* key);
+
+  scoped_refptr<base::SequencedTaskRunner> GetOrCreateTaskRunner();
 
   // Whether or not we attempted to observe registry.
   bool attempted_watching_registry_;
 
   base::win::RegKey hklm_key_;
   base::win::RegKey hkcu_key_;
+
+  // Task runner where registry keys are read.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalRegistryLoader);
 };

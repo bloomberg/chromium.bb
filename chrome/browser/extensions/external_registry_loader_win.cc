@@ -8,10 +8,13 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -41,6 +44,11 @@ const base::char16 kRegistryExtensionVersion[] = L"version";
 const base::char16 kRegistryExtensionUpdateUrl[] = L"update_url";
 
 bool CanOpenFileForReading(const base::FilePath& path) {
+  // Note: Because this ScopedFILE is used on the stack and not passed around
+  // threads/sequences, this method doesn't require callers to run on tasks with
+  // BLOCK_SHUTDOWN. SKIP_ON_SHUTDOWN is enough and safe because it guarantees
+  // that if a task starts, it will always finish, and will block shutdown at
+  // that point.
   base::ScopedFILE file_handle(base::OpenFile(path, "rb"));
   return file_handle.get() != NULL;
 }
@@ -57,17 +65,19 @@ namespace extensions {
 ExternalRegistryLoader::ExternalRegistryLoader()
     : attempted_watching_registry_(false) {}
 
+ExternalRegistryLoader::~ExternalRegistryLoader() {}
+
 void ExternalRegistryLoader::StartLoading() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ExternalRegistryLoader::LoadOnFileThread, this));
+  GetOrCreateTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ExternalRegistryLoader::LoadOnBlockingThread, this));
 }
 
 std::unique_ptr<base::DictionaryValue>
-ExternalRegistryLoader::LoadPrefsOnFileThread() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
+ExternalRegistryLoader::LoadPrefsOnBlockingThread() {
+  base::ThreadRestrictions::AssertIOAllowed();
+  auto prefs = base::MakeUnique<base::DictionaryValue>();
 
   // A map of IDs, to weed out duplicates between HKCU and HKLM.
   std::set<base::string16> keys;
@@ -188,9 +198,11 @@ ExternalRegistryLoader::LoadPrefsOnFileThread() {
   return prefs;
 }
 
-void ExternalRegistryLoader::LoadOnFileThread() {
+void ExternalRegistryLoader::LoadOnBlockingThread() {
+  DCHECK(task_runner_);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   base::TimeTicks start_time = base::TimeTicks::Now();
-  std::unique_ptr<base::DictionaryValue> prefs = LoadPrefsOnFileThread();
+  std::unique_ptr<base::DictionaryValue> prefs = LoadPrefsOnBlockingThread();
   LOCAL_HISTOGRAM_TIMES("Extensions.ExternalRegistryLoaderWin",
                         base::TimeTicks::Now() - start_time);
   BrowserThread::PostTask(
@@ -201,7 +213,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
 
 void ExternalRegistryLoader::CompleteLoadAndStartWatchingRegistry(
     std::unique_ptr<base::DictionaryValue> prefs) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(prefs);
   prefs_ = std::move(prefs);
   LoadFinished();
@@ -241,15 +253,31 @@ void ExternalRegistryLoader::OnRegistryKeyChanged(base::win::RegKey* key) {
   key->StartWatching(base::Bind(&ExternalRegistryLoader::OnRegistryKeyChanged,
                                 base::Unretained(this), base::Unretained(key)));
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ExternalRegistryLoader::UpdatePrefsOnFileThread, this));
+  GetOrCreateTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ExternalRegistryLoader::UpatePrefsOnBlockingThread,
+                     this));
 }
 
-void ExternalRegistryLoader::UpdatePrefsOnFileThread() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+scoped_refptr<base::SequencedTaskRunner>
+ExternalRegistryLoader::GetOrCreateTaskRunner() {
+  if (!task_runner_.get()) {
+    task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+        {// Requires I/O for registry.
+         base::MayBlock(),
+
+         // Inherit priority.
+
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  }
+  return task_runner_;
+}
+
+void ExternalRegistryLoader::UpatePrefsOnBlockingThread() {
+  DCHECK(task_runner_);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   base::TimeTicks start_time = base::TimeTicks::Now();
-  std::unique_ptr<base::DictionaryValue> prefs = LoadPrefsOnFileThread();
+  std::unique_ptr<base::DictionaryValue> prefs = LoadPrefsOnBlockingThread();
   LOCAL_HISTOGRAM_TIMES("Extensions.ExternalRegistryLoaderWinUpdate",
                         base::TimeTicks::Now() - start_time);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
