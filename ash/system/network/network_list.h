@@ -114,6 +114,7 @@ class NetworkListView : public NetworkStateListDetailedView,
   // be inserted, i.e., the index directly after the last inserted child.
   int UpdateSectionHeaderRow(chromeos::NetworkTypePattern pattern,
                              bool enabled,
+                             bool show_toggle,
                              int child_index,
                              SectionHeaderRowView** view,
                              views::Separator** separator_view);
