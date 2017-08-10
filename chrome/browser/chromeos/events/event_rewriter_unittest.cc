@@ -38,22 +38,9 @@
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/test_event_processor.h"
 
-#if defined(USE_X11)
-#include <X11/keysym.h>
-
-#include "ui/events/devices/x11/touch_factory_x11.h"
-#include "ui/events/event_utils.h"
-#include "ui/events/test/events_test_utils_x11.h"
-#include "ui/gfx/x/x11_types.h"
-#endif
-
 namespace {
 
-// The device id of the test touchpad device.
-#if defined(USE_X11)
-const int kTouchPadDeviceId = 1;
-#endif
-const int kKeyboardDeviceId = 2;
+constexpr int kKeyboardDeviceId = 123;
 
 std::string GetExpectedResultAsString(ui::EventType ui_type,
                                       ui::KeyboardCode ui_keycode,
@@ -1958,23 +1945,6 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
               rewriter_->RewriteEvent(keyevent, &new_event));
     EXPECT_FALSE(new_event);
   }
-#if defined(USE_X11)
-  // Send left control press, using XI2 native events.
-  {
-    ui::ScopedXI2Event xev;
-    xev.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, 0);
-    XEvent* xevent = xev;
-    xevent->xkey.keycode = XKeysymToKeycode(gfx::GetXDisplay(), XK_Control_L);
-    xevent->xkey.send_event = True;  // XSendEvent() always does this.
-    ui::KeyEvent keyevent(xev);
-    std::unique_ptr<ui::Event> new_event;
-    // Control should NOT be remapped to Alt if send_event
-    // flag in the event is True.
-    EXPECT_EQ(ui::EVENT_REWRITE_CONTINUE,
-              rewriter_->RewriteEvent(keyevent, &new_event));
-    EXPECT_FALSE(new_event);
-  }
-#endif
 }
 
 TEST_F(EventRewriterTest, TestRewriteNonNativeEvent) {
@@ -1992,9 +1962,6 @@ TEST_F(EventRewriterTest, TestRewriteNonNativeEvent) {
       ui::ET_TOUCH_PRESSED, location, base::TimeTicks(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, kTouchId));
   press.set_flags(ui::EF_CONTROL_DOWN);
-#if defined(USE_X11)
-  ui::UpdateX11EventForFlags(&press);
-#endif
 
   std::unique_ptr<ui::Event> new_event;
   rewriter_->RewriteEvent(press, &new_event);
@@ -2091,9 +2058,6 @@ class EventRewriterAshTest : public ash::AshTestBase {
     rewriter_ = base::MakeUnique<ui::EventRewriterChromeOS>(
         delegate_.get(), sticky_keys_controller_);
     chromeos::Preferences::RegisterProfilePrefs(prefs_.registry());
-#if defined(USE_X11)
-    ui::SetUpTouchPadForTest(kTouchPadDeviceId);
-#endif
     source_.AddEventRewriter(rewriter_.get());
     sticky_keys_controller_->Enable(true);
   }
@@ -2157,48 +2121,7 @@ TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
             GetKeyEventAsString(*static_cast<ui::KeyEvent*>(events[0].get())));
 }
 
-TEST_F(EventRewriterTest, TestRewrittenModifierClick) {
-#if defined(USE_X11)
-  std::vector<int> device_list;
-  device_list.push_back(10);
-  ui::TouchFactory::GetInstance()->SetPointerDeviceForTest(device_list);
-
-  // Remap Control to Alt.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
-  IntegerPrefMember control;
-  control.Init(prefs::kLanguageRemapControlKeyTo, prefs());
-  control.SetValue(chromeos::input_method::kAltKey);
-
-  rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
-
-  // Check that Control + Left Button is converted (via Alt + Left Button)
-  // to Right Button.
-  ui::ScopedXI2Event xev;
-  xev.InitGenericButtonEvent(10, ui::ET_MOUSE_PRESSED, gfx::Point(),
-                             ui::EF_LEFT_MOUSE_BUTTON | ui::EF_CONTROL_DOWN);
-  ui::MouseEvent press(xev);
-  // Sanity check.
-  EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
-  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON | ui::EF_CONTROL_DOWN, press.flags());
-  std::unique_ptr<ui::Event> new_event;
-  const ui::MouseEvent* result = RewriteMouseButtonEvent(press, &new_event);
-  EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-  EXPECT_FALSE(ui::EF_LEFT_MOUSE_BUTTON & result->flags());
-  EXPECT_FALSE(ui::EF_CONTROL_DOWN & result->flags());
-  EXPECT_FALSE(ui::EF_ALT_DOWN & result->flags());
-  EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-#endif
-}
-
 TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
-// TODO(kpschoedel): pending changes for crbug.com/360377
-// to |ui::EventRewriterChromeOS::RewriteLocatedEvent()
-#if defined(USE_X11)
-  std::vector<int> device_list;
-  device_list.push_back(10);
-  device_list.push_back(11);
-  ui::TouchFactory::GetInstance()->SetPointerDeviceForTest(device_list);
-#endif
   const int kLeftAndAltFlag = ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN;
 
   // Test Alt + Left click.
@@ -2229,34 +2152,6 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     EXPECT_FALSE(kLeftAndAltFlag & result->flags());
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
-#if defined(USE_X11)
-  // Test Alt + Left click, using XI2 native events.
-  {
-    ui::ScopedXI2Event xev;
-    xev.InitGenericButtonEvent(10, ui::ET_MOUSE_PRESSED, gfx::Point(),
-                               kLeftAndAltFlag);
-    ui::MouseEvent press(xev);
-    // Sanity check.
-    EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
-    EXPECT_EQ(kLeftAndAltFlag, press.flags());
-    std::unique_ptr<ui::Event> new_event;
-    const ui::MouseEvent* result = RewriteMouseButtonEvent(press, &new_event);
-    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
-    EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
-  }
-  {
-    ui::ScopedXI2Event xev;
-    xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, gfx::Point(),
-                               kLeftAndAltFlag);
-    ui::MouseEvent release(xev);
-    std::unique_ptr<ui::Event> new_event;
-    const ui::MouseEvent* result = RewriteMouseButtonEvent(release, &new_event);
-    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
-    EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
-  }
-#endif
 
   // No ALT in frst click.
   {
@@ -2281,29 +2176,6 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
     EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
   }
-#if defined(USE_X11)
-  // No ALT in frst click, using XI2 native events.
-  {
-    ui::ScopedXI2Event xev;
-    xev.InitGenericButtonEvent(10, ui::ET_MOUSE_PRESSED, gfx::Point(),
-                               ui::EF_LEFT_MOUSE_BUTTON);
-    ui::MouseEvent press(xev);
-    std::unique_ptr<ui::Event> new_event;
-    const ui::MouseEvent* result = RewriteMouseButtonEvent(press, &new_event);
-    EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & result->flags());
-    EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
-  }
-  {
-    ui::ScopedXI2Event xev;
-    xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, gfx::Point(),
-                               kLeftAndAltFlag);
-    ui::MouseEvent release(xev);
-    std::unique_ptr<ui::Event> new_event;
-    const ui::MouseEvent* result = RewriteMouseButtonEvent(release, &new_event);
-    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
-    EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
-  }
-#endif
 
   // ALT on different device.
   {
@@ -2341,41 +2213,6 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     EXPECT_FALSE(kLeftAndAltFlag & result->flags());
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
-#if defined(USE_X11)
-  // ALT on different device, using XI2 native events.
-  {
-    ui::ScopedXI2Event xev;
-    xev.InitGenericButtonEvent(11, ui::ET_MOUSE_PRESSED, gfx::Point(),
-                               kLeftAndAltFlag);
-    ui::MouseEvent press(xev);
-    std::unique_ptr<ui::Event> new_event;
-    const ui::MouseEvent* result = RewriteMouseButtonEvent(press, &new_event);
-    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
-    EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
-  }
-  {
-    ui::ScopedXI2Event xev;
-    xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, gfx::Point(),
-                               kLeftAndAltFlag);
-    ui::MouseEvent release(xev);
-    std::unique_ptr<ui::Event> new_event;
-    const ui::MouseEvent* result = RewriteMouseButtonEvent(release, &new_event);
-    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
-    EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
-  }
-  {
-    ui::ScopedXI2Event xev;
-    xev.InitGenericButtonEvent(11, ui::ET_MOUSE_RELEASED, gfx::Point(),
-                               kLeftAndAltFlag);
-    ui::MouseEvent release(xev);
-    std::unique_ptr<ui::Event> new_event;
-    const ui::MouseEvent* result = RewriteMouseButtonEvent(release, &new_event);
-    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
-    EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
-  }
-#endif
 }
 
 TEST_F(EventRewriterAshTest, StickyKeyEventDispatchImpl) {

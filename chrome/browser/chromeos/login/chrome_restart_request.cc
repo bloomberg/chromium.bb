@@ -126,12 +126,10 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kEnableUseZoomForDSF,
     ::switches::kEnableViewport,
     ::switches::kEnableZeroCopy,
-#if defined(USE_OZONE)
     ::switches::kEnableDrmAtomic,
     ::switches::kEnableHardwareOverlays,
     ::switches::kExtraTouchNoiseFiltering,
     ::switches::kEdgeTouchFiltering,
-#endif
     ::switches::kHostWindowBounds,
     ::switches::kMainFrameResizesAreOrientationChanges,
     ::switches::kForceDeviceScaleFactor,
@@ -151,9 +149,7 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kRemoteDebuggingPort,
     ::switches::kRendererStartupDialog,
     ::switches::kRootLayerScrolls,
-#if defined(USE_X11) || defined(USE_OZONE)
     ::switches::kTouchCalibration,
-#endif
     ::switches::kTouchDevices,
     ::switches::kTouchEventFeatureDetection,
     ::switches::kTopChromeMD,
@@ -176,9 +172,7 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kDisableWebRtcHWEncoding,
 #endif
     ::switches::kDisableVaapiAcceleratedVideoEncode,
-#if defined(USE_OZONE)
     ::switches::kOzonePlatform,
-#endif
     app_list::switches::kDisableSyncAppList,
     app_list::switches::kEnableSyncAppList,
     ash::switches::kAshEnableTouchView,

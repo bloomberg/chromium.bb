@@ -45,16 +45,13 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/fake_ime_keyboard.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
+#include "ui/base/ime/chromeos/ime_keyboard_mus.h"
 #include "ui/base/ime/chromeos/input_method_delegate.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
-
-#if defined(USE_OZONE)
-#include "ui/base/ime/chromeos/ime_keyboard_mus.h"
-#endif
 
 namespace chromeos {
 namespace input_method {
@@ -862,12 +859,8 @@ InputMethodManagerImpl::InputMethodManagerImpl(
       is_ime_menu_activated_(false),
       features_enabled_state_(InputMethodManager::FEATURE_ALL) {
   if (IsRunningAsSystemCompositor()) {
-#if defined(USE_OZONE)
     keyboard_ = base::MakeUnique<ImeKeyboardMus>(
         g_browser_process->platform_part()->GetInputDeviceControllerClient());
-#else
-    keyboard_.reset(ImeKeyboard::Create());
-#endif
   } else {
     keyboard_.reset(new FakeImeKeyboard());
   }

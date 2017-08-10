@@ -81608,6 +81608,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Touchpad.Metrics" enum="TouchpadProblemType">
+  <obsolete>
+    Deprecated 8/2017.
+  </obsolete>
   <owner>pthammaiah@google.com</owner>
   <summary>
     Tracks unusual CrOS touchpad operational states (e.g. running into the noisy

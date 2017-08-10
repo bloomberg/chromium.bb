@@ -113,10 +113,6 @@ class UI_BASE_IME_EXPORT ImeKeyboard {
   static UI_BASE_IME_EXPORT bool CheckLayoutNameForTesting(
       const std::string& layout_name);
 
-  // Note: At this moment, classes other than InputMethodManager should not
-  // instantiate the ImeKeyboard class.
-  static UI_BASE_IME_EXPORT ImeKeyboard* Create();
-
   bool caps_lock_is_enabled_;
   std::string last_layout_;
 
