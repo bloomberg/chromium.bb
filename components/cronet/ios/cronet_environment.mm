@@ -30,6 +30,7 @@
 #include "ios/web/public/global_state/ios_global_state.h"
 #include "ios/web/public/user_agent.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/url_util.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
@@ -327,8 +328,17 @@ void CronetEnvironment::InitializeOnNetworkThread() {
       new net::HttpServerPropertiesImpl());
 
   for (const auto& quic_hint : quic_hints_) {
+    url::CanonHostInfo host_info;
+    std::string canon_host(net::CanonicalizeHost(quic_hint.host(), &host_info));
+    if (!host_info.IsIPAddress() &&
+        !net::IsCanonicalizedHostCompliant(canon_host)) {
+      LOG(ERROR) << "Invalid QUIC hint host: " << quic_hint.host();
+      continue;
+    }
+
     net::AlternativeService alternative_service(net::kProtoQUIC, "",
                                                 quic_hint.port());
+
     url::SchemeHostPort quic_hint_server("https", quic_hint.host(),
                                          quic_hint.port());
     http_server_properties->SetQuicAlternativeService(
