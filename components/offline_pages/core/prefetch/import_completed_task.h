@@ -11,12 +11,14 @@
 #include "components/offline_pages/core/task.h"
 
 namespace offline_pages {
+class PrefetchDispatcher;
 class PrefetchStore;
 
 // Task that responses to the completed import.
 class ImportCompletedTask : public Task {
  public:
-  ImportCompletedTask(PrefetchStore* prefetch_store,
+  ImportCompletedTask(PrefetchDispatcher* prefetch_dispatcher,
+                      PrefetchStore* prefetch_store,
                       int64_t offline_id,
                       bool success);
   ~ImportCompletedTask() override;
@@ -26,6 +28,7 @@ class ImportCompletedTask : public Task {
  private:
   void OnStateUpdatedToFinished(bool success);
 
+  PrefetchDispatcher* prefetch_dispatcher_;  // Outlives this class.
   PrefetchStore* prefetch_store_;  // Outlives this class.
   int64_t offline_id_;
   bool success_;

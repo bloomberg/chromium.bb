@@ -53,12 +53,22 @@ void PrefetchImporterImpl::ImportArchive(const PrefetchArchiveInfo& archive) {
   base::FilePath dest_path =
       archives_dir.Append(base::GenerateGUID()).AddExtension(kMHTMLExtension);
 
+  // For PrefetchArchiveInfo, |url| is the original URL while
+  // |final_archived_url| is the last committed URL which is set to empty when
+  // there is no redirect.
+  //
+  // For OfflinePageItem, |url| is the last committed URL while |original_url|
+  // is the original URL which is set to empty when there is no redirect.
+  //
+  // So when |PrefetchArchiveInfo.final_archived_url| is empty,
+  // |PrefetchArchiveInfo.url| denotes the sole URL which should be passed to
+  // |OfflinePageItem.url|. Otherwise, we should switch the urls for
+  // OfflinePageItem.
   GURL url, original_url;
-  if (archive.url != archive.final_archived_url) {
-    url = archive.final_archived_url;
-    original_url = archive.url;
-  } else {
+  if (archive.final_archived_url.is_empty()) {
     url = archive.url;
+  } else {
+    url = archive.final_archived_url;
     original_url = archive.url;
   }
   OfflinePageItem offline_page(url, archive.offline_id, archive.client_id,

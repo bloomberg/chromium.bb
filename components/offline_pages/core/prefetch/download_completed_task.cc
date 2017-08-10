@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "sql/connection.h"
@@ -55,9 +56,11 @@ bool UpdatePrefetchItemOnDownloadErrorSync(const std::string& guid,
 }  // namespace
 
 DownloadCompletedTask::DownloadCompletedTask(
+    PrefetchDispatcher* prefetch_dispatcher,
     PrefetchStore* prefetch_store,
     const PrefetchDownloadResult& download_result)
-    : prefetch_store_(prefetch_store),
+    : prefetch_dispatcher_(prefetch_dispatcher),
+      prefetch_store_(prefetch_store),
       download_result_(download_result),
       weak_ptr_factory_(this) {
   DCHECK(!download_result_.download_id.empty());
@@ -71,36 +74,22 @@ void DownloadCompletedTask::Run() {
         base::BindOnce(&UpdatePrefetchItemOnDownloadSuccessSync,
                        download_result_.download_id, download_result_.file_path,
                        download_result_.file_size),
-        base::BindOnce(&DownloadCompletedTask::OnDownloadSuccessUpdated,
+        base::BindOnce(&DownloadCompletedTask::OnPrefetchItemUpdated,
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
     prefetch_store_->Execute(
         base::BindOnce(&UpdatePrefetchItemOnDownloadErrorSync,
                        download_result_.download_id),
-        base::BindOnce(&DownloadCompletedTask::OnDownloadErrorUpdated,
+        base::BindOnce(&DownloadCompletedTask::OnPrefetchItemUpdated,
                        weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-void DownloadCompletedTask::OnDownloadSuccessUpdated(bool success) {
+void DownloadCompletedTask::OnPrefetchItemUpdated(bool success) {
   // No further action can be done if the database fails to be updated. The
   // cleanup task should eventually kick in to clean this up.
-  if (success) {
-    // TODO(jianli): Calls SchedulePipelineProcessing to process the download.
-    NOTIMPLEMENTED();
-  }
-
-  TaskComplete();
-}
-
-void DownloadCompletedTask::OnDownloadErrorUpdated(bool success) {
-  // No further action can be done if the database fails to be updated. The
-  // cleanup task should eventually kick in to clean this up.
-  if (success) {
-    // TODO(jianli): Calls SchedulePipelineProcessing to process the item in
-    // finished error state.
-    NOTIMPLEMENTED();
-  }
+  if (success)
+    prefetch_dispatcher_->SchedulePipelineProcessing();
 
   TaskComplete();
 }

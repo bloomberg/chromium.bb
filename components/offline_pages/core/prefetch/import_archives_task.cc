@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "sql/connection.h"
@@ -18,7 +19,8 @@
 namespace offline_pages {
 namespace {
 
-std::vector<PrefetchArchiveInfo> GetArchivesSync(sql::Connection* db) {
+std::unique_ptr<std::vector<PrefetchArchiveInfo>> GetArchivesSync(
+    sql::Connection* db) {
   static const char kSql[] =
       "SELECT offline_id, client_namespace, client_id, requested_url,"
       "  final_archived_url, title, file_path, file_size"
@@ -27,7 +29,7 @@ std::vector<PrefetchArchiveInfo> GetArchivesSync(sql::Connection* db) {
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(PrefetchItemState::DOWNLOADED));
 
-  std::vector<PrefetchArchiveInfo> archives;
+  std::unique_ptr<std::vector<PrefetchArchiveInfo>> archives;
   while (statement.Step()) {
     PrefetchArchiveInfo archive;
     archive.offline_id = statement.ColumnInt64(0);
@@ -39,7 +41,9 @@ std::vector<PrefetchArchiveInfo> GetArchivesSync(sql::Connection* db) {
     archive.file_path =
         base::FilePath::FromUTF8Unsafe(statement.ColumnString(6));
     archive.file_size = statement.ColumnInt64(7);
-    archives.push_back(archive);
+    if (!archives)
+      archives = base::MakeUnique<std::vector<PrefetchArchiveInfo>>();
+    archives->push_back(archive);
   }
 
   return archives;
@@ -58,23 +62,24 @@ bool UpdateToImportingStateSync(int64_t offline_id, sql::Connection* db) {
   return statement.Run();
 }
 
-std::vector<PrefetchArchiveInfo> GetArchivesAndUpdateToImportingStateSync(
-    sql::Connection* db) {
+std::unique_ptr<std::vector<PrefetchArchiveInfo>>
+GetArchivesAndUpdateToImportingStateSync(sql::Connection* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
-    return std::vector<PrefetchArchiveInfo>();
+    return nullptr;
 
-  std::vector<PrefetchArchiveInfo> archives = GetArchivesSync(db);
-  if (archives.empty())
-    return std::vector<PrefetchArchiveInfo>();
+  std::unique_ptr<std::vector<PrefetchArchiveInfo>> archives =
+      GetArchivesSync(db);
+  if (!archives)
+    return nullptr;
 
-  for (const auto& archive : archives) {
+  for (const auto& archive : *archives) {
     if (!UpdateToImportingStateSync(archive.offline_id, db))
-      return std::vector<PrefetchArchiveInfo>();
+      return nullptr;
   }
 
   if (!transaction.Commit())
-    return std::vector<PrefetchArchiveInfo>();
+    return nullptr;
 
   return archives;
 }
@@ -97,9 +102,11 @@ void ImportArchivesTask::Run() {
 }
 
 void ImportArchivesTask::OnArchivesRetrieved(
-    std::vector<PrefetchArchiveInfo> archives) {
-  for (const auto& archive : archives)
-    prefetch_importer_->ImportArchive(archive);
+    std::unique_ptr<std::vector<PrefetchArchiveInfo>> archives) {
+  if (archives) {
+    for (const auto& archive : *archives)
+      prefetch_importer_->ImportArchive(archive);
+  }
 
   TaskComplete();
 }
