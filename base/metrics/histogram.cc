@@ -545,21 +545,24 @@ void Histogram::WriteAscii(std::string* output) const {
 bool Histogram::ValidateHistogramContents(bool crash_if_invalid,
                                           int corrupted_count) const {
   enum Fields : int {
-    kBucketRangesField,
+    kUnloggedBucketRangesField,
     kUnloggedSamplesField,
     kLoggedSamplesField,
     kIdField,
     kHistogramNameField,
     kFlagsField,
+    kLoggedBucketRangesField,
   };
 
   uint32_t bad_fields = 0;
   if (!unlogged_samples_)
     bad_fields |= 1 << kUnloggedSamplesField;
-  else if (!bucket_ranges())
-    bad_fields |= 1 << kBucketRangesField;
+  else if (!unlogged_samples_->bucket_ranges())
+    bad_fields |= 1 << kUnloggedBucketRangesField;
   if (!logged_samples_)
     bad_fields |= 1 << kLoggedSamplesField;
+  else if (!logged_samples_->bucket_ranges())
+    bad_fields |= 1 << kLoggedBucketRangesField;
   else if (logged_samples_->id() == 0)
     bad_fields |= 1 << kIdField;
   else if (HashMetricName(histogram_name()) != logged_samples_->id())
