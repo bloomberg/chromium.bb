@@ -7,7 +7,6 @@
 
 #include "public/platform/WebTextInputInfo.h"
 #include "WebCompositionUnderline.h"
-#include "WebTextInputType.h"
 #include "WebWidget.h"
 
 namespace blink {
