@@ -206,12 +206,13 @@ static ScopedJavaLocalRef<jobject> BeginReadData(
   uint32_t buffer_size = num_bytes;
   MojoResult result =
       MojoBeginReadData(mojo_handle, &buffer, &buffer_size, flags);
-  jobject byte_buffer = 0;
   if (result == MOJO_RESULT_OK) {
-    byte_buffer =
-        env->NewDirectByteBuffer(const_cast<void*>(buffer), buffer_size);
+    ScopedJavaLocalRef<jobject> byte_buffer(
+        env, env->NewDirectByteBuffer(const_cast<void*>(buffer), buffer_size));
+    return Java_CoreImpl_newResultAndBuffer(env, result, byte_buffer);
+  } else {
+    return Java_CoreImpl_newResultAndBuffer(env, result, nullptr);
   }
-  return Java_CoreImpl_newResultAndBuffer(env, result, byte_buffer);
 }
 
 static jint EndReadData(JNIEnv* env,
@@ -248,11 +249,13 @@ static ScopedJavaLocalRef<jobject> BeginWriteData(
   uint32_t buffer_size = num_bytes;
   MojoResult result =
       MojoBeginWriteData(mojo_handle, &buffer, &buffer_size, flags);
-  jobject byte_buffer = 0;
   if (result == MOJO_RESULT_OK) {
-    byte_buffer = env->NewDirectByteBuffer(buffer, buffer_size);
+    ScopedJavaLocalRef<jobject> byte_buffer(
+        env, env->NewDirectByteBuffer(buffer, buffer_size));
+    return Java_CoreImpl_newResultAndBuffer(env, result, byte_buffer);
+  } else {
+    return Java_CoreImpl_newResultAndBuffer(env, result, nullptr);
   }
-  return Java_CoreImpl_newResultAndBuffer(env, result, byte_buffer);
 }
 
 static jint EndWriteData(JNIEnv* env,
@@ -291,11 +294,13 @@ static ScopedJavaLocalRef<jobject> Map(JNIEnv* env,
   void* buffer = 0;
   MojoResult result =
       MojoMapBuffer(mojo_handle, offset, num_bytes, &buffer, flags);
-  jobject byte_buffer = 0;
   if (result == MOJO_RESULT_OK) {
-    byte_buffer = env->NewDirectByteBuffer(buffer, num_bytes);
+    ScopedJavaLocalRef<jobject> byte_buffer(
+        env, env->NewDirectByteBuffer(buffer, num_bytes));
+    return Java_CoreImpl_newResultAndBuffer(env, result, byte_buffer);
+  } else {
+    return Java_CoreImpl_newResultAndBuffer(env, result, nullptr);
   }
-  return Java_CoreImpl_newResultAndBuffer(env, result, byte_buffer);
 }
 
 static int Unmap(JNIEnv* env,
