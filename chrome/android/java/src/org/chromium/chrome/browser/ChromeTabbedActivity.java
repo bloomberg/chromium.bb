@@ -2244,10 +2244,11 @@ public class ChromeTabbedActivity
 
         Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
         tracker.notifyEvent(EventConstants.SCREENSHOT_TAKEN_CHROME_IN_FOREGROUND);
-        maybeShowFeatureEngagementTextBubbleForDownloadPage(tracker);
+        maybeShowFeatureEngagementTextBubbleForDownloadPageScreenshot(tracker);
     }
 
-    private void maybeShowFeatureEngagementTextBubbleForDownloadPage(final Tracker tracker) {
+    private void maybeShowFeatureEngagementTextBubbleForDownloadPageScreenshot(
+            final Tracker tracker) {
         if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE)) return;
 
         ViewAnchoredTextBubble textBubble =
