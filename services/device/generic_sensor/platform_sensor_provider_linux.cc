@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
+#include "services/device/generic_sensor/linear_acceleration_fusion_algorithm_using_accelerometer.h"
 #include "services/device/generic_sensor/linux/sensor_data_linux.h"
 #include "services/device/generic_sensor/orientation_quaternion_fusion_algorithm_using_euler_angles.h"
 #include "services/device/generic_sensor/platform_sensor_fusion.h"
@@ -55,7 +56,11 @@ void PlatformSensorProviderLinux::CreateSensorInternal(
     return;
   }
 
+  // Fusion sensor types.
   switch (type) {
+    case mojom::SensorType::LINEAR_ACCELERATION:
+      CreateLinearAccelerationSensor(std::move(mapping), callback);
+      return;
     case mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES:
       CreateRelativeOrientationEulerAnglesSensor(std::move(mapping), callback);
       return;
@@ -228,6 +233,23 @@ void PlatformSensorProviderLinux::OnDeviceRemoved(
   if (it != sensor_devices_by_type_.end() &&
       it->second->device_node == device_node)
     sensor_devices_by_type_.erase(it);
+}
+
+void PlatformSensorProviderLinux::CreateLinearAccelerationSensor(
+    mojo::ScopedSharedBufferMapping mapping,
+    const CreateSensorCallback& callback) {
+  std::vector<mojom::SensorType> source_sensor_types = {
+      mojom::SensorType::ACCELEROMETER};
+
+  auto sensor_fusion_algorithm =
+      base::MakeUnique<LinearAccelerationFusionAlgorithmUsingAccelerometer>();
+
+  // If this PlatformSensorFusion object is successfully initialized,
+  // |callback| will be run with a reference to this object.
+  base::MakeRefCounted<PlatformSensorFusion>(
+      std::move(mapping), this, callback, source_sensor_types,
+      mojom::SensorType::LINEAR_ACCELERATION,
+      std::move(sensor_fusion_algorithm));
 }
 
 // For RELATIVE_ORIENTATION_EULER_ANGLES we use a 2-way fallback approach
