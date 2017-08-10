@@ -59,7 +59,8 @@ bool TextMatchMarkerListImpl::RemoveMarkers(unsigned start_offset, int length) {
                                                  length);
 }
 
-bool TextMatchMarkerListImpl::ShiftMarkers(unsigned offset,
+bool TextMatchMarkerListImpl::ShiftMarkers(const String&,
+                                           unsigned offset,
                                            unsigned old_length,
                                            unsigned new_length) {
   return DocumentMarkerListEditor::ShiftMarkersContentDependent(

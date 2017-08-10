@@ -789,7 +789,7 @@ void DocumentMarkerController::DidUpdateCharacterData(CharacterData* node,
     if (!list)
       continue;
 
-    if (list->ShiftMarkers(offset, old_length, new_length))
+    if (list->ShiftMarkers(node->data(), offset, old_length, new_length))
       did_shift_marker = true;
   }
 

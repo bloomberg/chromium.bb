@@ -57,7 +57,8 @@ bool ActiveSuggestionMarkerListImpl::RemoveMarkers(unsigned start_offset,
                                                  length);
 }
 
-bool ActiveSuggestionMarkerListImpl::ShiftMarkers(unsigned offset,
+bool ActiveSuggestionMarkerListImpl::ShiftMarkers(const String&,
+                                                  unsigned offset,
                                                   unsigned old_length,
                                                   unsigned new_length) {
   return DocumentMarkerListEditor::ShiftMarkersContentIndependent(
