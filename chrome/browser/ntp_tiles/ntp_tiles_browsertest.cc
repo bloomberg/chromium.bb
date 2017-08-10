@@ -1,7 +1,9 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
+#include <map>
+#include <string>
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -50,8 +52,9 @@ class MostVisitedSitesWaiter : public MostVisitedSites::Observer {
     return tiles_;
   }
 
-  void OnMostVisitedURLsAvailable(const NTPTilesVector& tiles) override {
-    tiles_ = tiles;
+  void OnURLsAvailable(
+      const std::map<SectionType, NTPTilesVector>& sections) override {
+    tiles_ = sections.at(SectionType::PERSONALIZED);
     if (!quit_closure_.is_null()) {
       quit_closure_.Run();
     }
