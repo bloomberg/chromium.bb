@@ -1296,6 +1296,22 @@
             ]
         }
     ],
+    "MITMSoftwareInterstitial": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
+                }
+            ]
+        }
+    ],
     "MacAllowBackgroundingProcesses": [
         {
             "platforms": [

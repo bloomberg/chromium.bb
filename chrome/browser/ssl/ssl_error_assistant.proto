@@ -18,7 +18,20 @@ message CaptivePortalCert {
   optional string sha256_hash = 1;
 }
 
+message MITMSoftware {
+  // Regex that SSLErrorHandler matches against the |issuer.common_name|
+  // of a certificate to determine whether or not it's a MITM software
+  // certificate.
+  optional string regex = 1;
+  // Name of the MITM software to display on the interstitial.
+  optional string name = 2;
+  // Link to a help center URL with information about how to uninstall or
+  // reconfigure the offending MITM software.
+  optional string help_url = 3;
+}
+
 message SSLErrorAssistantConfig {
   optional uint32 version_id = 1;
   repeated CaptivePortalCert captive_portal_cert = 2;
+  repeated MITMSoftware mitm_software = 3;
 }

@@ -78,6 +78,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
     SHOW_BAD_CLOCK = 8,
     CAPTIVE_PORTAL_CERT_FOUND = 9,
     WWW_MISMATCH_FOUND_IN_SAN = 10,
+    SHOW_MITM_SOFTWARE_INTERSTITIAL = 11,
     SSL_ERROR_HANDLER_EVENT_COUNT
   };
 
@@ -95,6 +96,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
     virtual void NavigateToSuggestedURL(const GURL& suggested_url) = 0;
     virtual bool IsErrorOverridable() const = 0;
     virtual void ShowCaptivePortalInterstitial(const GURL& landing_url) = 0;
+    virtual void ShowMITMSoftwareInterstitial() = 0;
     virtual void ShowSSLInterstitial() = 0;
     virtual void ShowBadClockInterstitial(
         const base::Time& now,
@@ -152,6 +154,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
 
  private:
   void ShowCaptivePortalInterstitial(const GURL& landing_url);
+  void ShowMITMSoftwareInterstitial();
   void ShowSSLInterstitial();
   void ShowBadClockInterstitial(const base::Time& now,
                                 ssl_errors::ClockState clock_state);
@@ -181,6 +184,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
 
   void HandleCertDateInvalidError();
   void HandleCertDateInvalidErrorImpl(base::TimeTicks started_handling_error);
+
+  bool IsOnlyCertError(net::CertStatus only_cert_error_expected) const;
 
   std::unique_ptr<Delegate> delegate_;
   content::WebContents* const web_contents_;
