@@ -213,8 +213,10 @@ void FloodFillInkDropRipple::AnimateStateChange(
       }
       break;
     case InkDropState::ACTION_PENDING: {
-      DCHECK_EQ(InkDropState::HIDDEN, old_ink_drop_state)
-          << " old_ink_drop_state=" << ToString(old_ink_drop_state);
+      DLOG_IF(WARNING, InkDropState::HIDDEN != old_ink_drop_state)
+          << "Invalid InkDropState transition. old_ink_drop_state="
+          << ToString(old_ink_drop_state)
+          << " new_ink_drop_state=" << ToString(new_ink_drop_state);
 
       AnimateToOpacity(visible_opacity_,
                        GetAnimationDuration(ACTION_PENDING_FADE_IN),
@@ -232,9 +234,12 @@ void FloodFillInkDropRipple::AnimateStateChange(
       break;
     }
     case InkDropState::ACTION_TRIGGERED: {
-      DCHECK(old_ink_drop_state == InkDropState::HIDDEN ||
-             old_ink_drop_state == InkDropState::ACTION_PENDING)
-          << " old_ink_drop_state=" << ToString(old_ink_drop_state);
+      DLOG_IF(WARNING, old_ink_drop_state != InkDropState::HIDDEN &&
+                           old_ink_drop_state != InkDropState::ACTION_PENDING)
+          << "Invalid InkDropState transition. old_ink_drop_state="
+          << ToString(old_ink_drop_state)
+          << " new_ink_drop_state=" << ToString(new_ink_drop_state);
+
       if (old_ink_drop_state == InkDropState::HIDDEN) {
         AnimateStateChange(old_ink_drop_state, InkDropState::ACTION_PENDING,
                            animation_observer);
@@ -246,8 +251,11 @@ void FloodFillInkDropRipple::AnimateStateChange(
       break;
     }
     case InkDropState::ALTERNATE_ACTION_PENDING: {
-      DCHECK_EQ(InkDropState::ACTION_PENDING, old_ink_drop_state)
-          << " old_ink_drop_state=" << ToString(old_ink_drop_state);
+      DLOG_IF(WARNING, InkDropState::ACTION_PENDING != old_ink_drop_state)
+          << "Invalid InkDropState transition. old_ink_drop_state="
+          << ToString(old_ink_drop_state)
+          << " new_ink_drop_state=" << ToString(new_ink_drop_state);
+
       AnimateToOpacity(visible_opacity_,
                        GetAnimationDuration(ALTERNATE_ACTION_PENDING),
                        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
@@ -259,8 +267,12 @@ void FloodFillInkDropRipple::AnimateStateChange(
       break;
     }
     case InkDropState::ALTERNATE_ACTION_TRIGGERED:
-      DCHECK_EQ(InkDropState::ALTERNATE_ACTION_PENDING, old_ink_drop_state)
-          << " old_ink_drop_state=" << ToString(old_ink_drop_state);
+      DLOG_IF(WARNING,
+              InkDropState::ALTERNATE_ACTION_PENDING != old_ink_drop_state)
+          << "Invalid InkDropState transition. old_ink_drop_state="
+          << ToString(old_ink_drop_state)
+          << " new_ink_drop_state=" << ToString(new_ink_drop_state);
+
       AnimateToOpacity(kHiddenOpacity, GetAnimationDuration(
                                            ALTERNATE_ACTION_TRIGGERED_FADE_OUT),
                        ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,

@@ -38,7 +38,8 @@ void InkDropRipple::AnimateToState(InkDropState ink_drop_state) {
   // 1. The attached observers must be notified of all animations started and
   // ended.
   // 2. Not all state transitions is are valid, especially no-op transitions,
-  // and these should be detected by DCHECKs in AnimateStateChange().
+  // and these invalid transitions will be logged as warnings in
+  // AnimateStateChange().
 
   // |animation_observer| will be deleted when AnimationEndedCallback() returns
   // true.
