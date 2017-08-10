@@ -16,6 +16,8 @@
 #include "base/time/time.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -442,8 +444,30 @@ const Extension* ProcessManager::GetExtensionForWebContents(
     const content::WebContents* web_contents) {
   if (!web_contents->GetSiteInstance())
     return nullptr;
-  return extension_registry_->enabled_extensions().GetByID(
-      GetExtensionIdForSiteInstance(web_contents->GetSiteInstance()));
+  const Extension* extension =
+      extension_registry_->enabled_extensions().GetByID(
+          GetExtensionIdForSiteInstance(web_contents->GetSiteInstance()));
+  if (extension && extension->is_hosted_app()) {
+    // For hosted apps, be sure to exclude URLs outside of the app that might
+    // be loaded in the same SiteInstance (extensions guarantee that only
+    // extension urls are loaded in that SiteInstance).
+    const content::NavigationController& controller =
+        web_contents->GetController();
+    content::NavigationEntry* entry = controller.GetLastCommittedEntry();
+    // If there is no last committed entry, check the pending entry. This can
+    // happen in cases where we query this before any entry is fully committed,
+    // such as when attributing a WebContents for the TaskManager. If there is
+    // a committed navigation, use that instead.
+    if (!entry)
+      entry = controller.GetPendingEntry();
+    if (!entry ||
+        extension_registry_->enabled_extensions().GetExtensionOrAppByURL(
+            entry->GetURL()) != extension) {
+      return nullptr;
+    }
+  }
+
+  return extension;
 }
 
 int ProcessManager::GetLazyKeepaliveCount(const Extension* extension) {
