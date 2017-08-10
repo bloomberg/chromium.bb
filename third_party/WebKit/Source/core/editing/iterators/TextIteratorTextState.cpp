@@ -174,6 +174,9 @@ void TextIteratorTextState::AppendTextTo(ForwardsTextBuffer* output,
     return;
   }
   unsigned offset = text_start_offset_ + position;
+  // Any failure is a security bug (buffer overflow) and must be captured.
+  CHECK_LE(offset, text_.length());
+  CHECK_LE(offset + length_to_append, text_.length());
   if (text_.Is8Bit())
     output->PushRange(text_.Characters8() + offset, length_to_append);
   else

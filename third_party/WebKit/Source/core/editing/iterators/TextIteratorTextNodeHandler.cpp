@@ -205,7 +205,9 @@ size_t TextIteratorTextNodeHandler::RestoreCollapsedTrailingSpace(
       text_box_->Root().LastChild() != text_box_)
     return subrun_end;
 
-  const String& text = text_node_->GetLayoutObject()->GetText();
+  const LayoutText* layout_object =
+      first_letter_text_ ? first_letter_text_ : text_node_->GetLayoutObject();
+  const String& text = layout_object->GetText();
   if (text.EndsWith(' ') == 0 || subrun_end != text.length() - 1 ||
       text[subrun_end - 1] == ' ')
     return subrun_end;
