@@ -47,7 +47,8 @@ class CONTENT_EXPORT AppCacheBackendImpl {
   bool GetStatusWithCallback(int host_id,
                              GetStatusCallback callback,
                              void* callback_param);
-  bool StartUpdateWithCallback(int host_id, const StartUpdateCallback& callback,
+  bool StartUpdateWithCallback(int host_id,
+                               StartUpdateCallback callback,
                                void* callback_param);
   bool SwapCacheWithCallback(int host_id, const SwapCacheCallback& callback,
                              void* callback_param);

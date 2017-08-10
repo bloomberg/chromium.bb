@@ -31,8 +31,6 @@ void AppCacheDispatcherHost::OnChannelConnected(int32_t peer_pid) {
 
   backend_impl_.Initialize(appcache_service_.get(), &frontend_proxy_,
                            process_id_);
-  start_update_callback_ = base::Bind(
-      &AppCacheDispatcherHost::StartUpdateCallback, weak_factory_.GetWeakPtr());
   swap_cache_callback_ = base::Bind(&AppCacheDispatcherHost::SwapCacheCallback,
                                     weak_factory_.GetWeakPtr());
 }
@@ -191,8 +189,11 @@ void AppCacheDispatcherHost::OnStartUpdate(int host_id,
 
   pending_reply_msg_.reset(reply_msg);
   if (appcache_service_.get()) {
-    if (!backend_impl_.StartUpdateWithCallback(host_id, start_update_callback_,
-                                               reply_msg)) {
+    if (!backend_impl_.StartUpdateWithCallback(
+            host_id,
+            base::BindOnce(&AppCacheDispatcherHost::StartUpdateCallback,
+                           weak_factory_.GetWeakPtr()),
+            reply_msg)) {
       bad_message::ReceivedBadMessage(this, bad_message::ACDH_START_UPDATE);
     }
     return;

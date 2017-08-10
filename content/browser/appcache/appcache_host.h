@@ -53,7 +53,7 @@ class AppCacheTest;
 class AppCacheUpdateJobTest;
 
 typedef base::OnceCallback<void(AppCacheStatus, void*)> GetStatusCallback;
-typedef base::Callback<void(bool, void*)> StartUpdateCallback;
+typedef base::OnceCallback<void(bool, void*)> StartUpdateCallback;
 typedef base::Callback<void(bool, void*)> SwapCacheCallback;
 
 // Server-side representation of an application cache host.
@@ -93,7 +93,7 @@ class CONTENT_EXPORT AppCacheHost
   bool MarkAsForeignEntry(const GURL& document_url,
                           int64_t cache_document_was_loaded_from);
   void GetStatusWithCallback(GetStatusCallback callback, void* callback_param);
-  void StartUpdateWithCallback(const StartUpdateCallback& callback,
+  void StartUpdateWithCallback(StartUpdateCallback callback,
                                void* callback_param);
   void SwapCacheWithCallback(const SwapCacheCallback& callback,
                              void* callback_param);
