@@ -135,7 +135,8 @@ GpuInit::GpuInit() {}
 
 GpuInit::~GpuInit() {}
 
-bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line) {
+bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
+                                        bool in_process_gpu) {
   if (command_line.HasSwitch(switches::kSupportsDualGpus)) {
     std::set<int> workarounds;
     gpu::GpuDriverBugList::AppendWorkaroundsFromCommandLine(&workarounds,
@@ -192,7 +193,7 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line) {
       gpu_info_.driver_vendor == "NVIDIA" && !CanAccessNvidiaDeviceFile())
     return false;
 #endif
-  gpu_info_.in_process_gpu = false;
+  gpu_info_.in_process_gpu = in_process_gpu;
 
   gpu_info_.passthrough_cmd_decoder =
       gl::UsePassthroughCommandDecoder(&command_line);
@@ -218,7 +219,7 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line) {
   // Initialize Ozone GPU after the watchdog in case it hangs. The sandbox
   // may also have started at this point.
   ui::OzonePlatform::InitParams params;
-  params.single_process = false;
+  params.single_process = in_process_gpu;
   ui::OzonePlatform::InitializeForGPU(params);
 #endif
 

@@ -266,7 +266,9 @@ int GpuMain(const MainFunctionParams& parameters) {
   // exits early, the browser process will never detect it.  For this reason we
   // defer tearing down the GPU process until receiving the initialization
   // message from the browser (through mojom::GpuMain::CreateGpuService()).
-  const bool init_success = gpu_init.InitializeAndStartSandbox(command_line);
+  constexpr bool kInProcessGpu = false;
+  const bool init_success =
+      gpu_init.InitializeAndStartSandbox(command_line, kInProcessGpu);
   const bool dead_on_arrival = !init_success;
 
   logging::SetLogMessageHandler(NULL);

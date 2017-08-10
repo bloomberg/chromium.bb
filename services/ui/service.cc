@@ -239,7 +239,7 @@ void Service::OnStart() {
   // in MUS, |InitializeForUI| will load the GL libraries.
   ui::OzonePlatform::InitParams params;
   params.connector = context()->connector();
-  params.single_process = false;
+  params.single_process = true;
   ui::OzonePlatform::InitializeForUI(params);
 
   // Assume a client will change the layout to an appropriate configuration.

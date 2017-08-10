@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,16 +30,6 @@
 namespace ui {
 
 namespace {
-
-// Returns true if a flag is present that will cause Ozone UI and GPU to run in
-// the same process.
-// TODO(kylechar): Remove --mojo-platform-channel-handle when mus-ws process
-// split happens.
-bool HasSingleProcessFlag() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch("mojo-platform-channel-handle") ||
-         command_line->HasSwitch("single-process");
-}
 
 // Singleton OzonePlatform implementation for X11 platform.
 class OzonePlatformX11 : public OzonePlatform {
@@ -106,7 +95,7 @@ class OzonePlatformX11 : public OzonePlatform {
 
     // In single process mode either the UI thread will create an event source
     // or it's a test and an event source isn't desired.
-    if (!params.single_process && !HasSingleProcessFlag())
+    if (!params.single_process)
       CreatePlatformEventSource();
 
     surface_factory_ozone_ = base::MakeUnique<X11SurfaceFactory>();
@@ -127,7 +116,7 @@ class OzonePlatformX11 : public OzonePlatform {
       return;
 
     // In single process mode XInitThreads() must be the first Xlib call.
-    if (params.single_process || HasSingleProcessFlag())
+    if (params.single_process)
       XInitThreads();
 
     ui::SetDefaultX11ErrorHandlers();

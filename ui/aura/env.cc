@@ -174,7 +174,13 @@ void Env::Init() {
   // The ozone platform can provide its own event source. So initialize the
   // platform before creating the default event source. If running inside mus
   // let the mus process initialize ozone instead.
-  ui::OzonePlatform::InitializeForUI();
+  ui::OzonePlatform::InitParams params;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  // TODO(kylechar): Pass in single process information to Env::CreateInstance()
+  // instead of checking flags here.
+  params.single_process = command_line->HasSwitch("single-process") ||
+                          command_line->HasSwitch("in-process-gpu");
+  ui::OzonePlatform::InitializeForUI(params);
   gfx::ClientNativePixmapFactory::SetInstance(native_pixmap_factory_.get());
 #endif
   if (!ui::PlatformEventSource::GetInstance())
