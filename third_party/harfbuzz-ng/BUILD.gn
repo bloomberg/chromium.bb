@@ -68,7 +68,6 @@ if (use_system_harfbuzz) {
       "src/hb-face-private.hh",
       "src/hb-face.cc",
       "src/hb-face.h",
-      "src/hb-fallback-shape.cc",
       "src/hb-font-private.hh",
       "src/hb-font.cc",
       "src/hb-font.h",

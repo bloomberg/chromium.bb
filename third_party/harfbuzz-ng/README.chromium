@@ -1,8 +1,8 @@
 Name: harfbuzz-ng
 Short Name: harfbuzz-ng
 URL: http://harfbuzz.org
-Version: 1.4.6
-Date: 20170502
+Version: 1.4.8
+Date: 20170808
 Security Critical: yes
 License: MIT
 License File: COPYING
@@ -11,13 +11,10 @@ Description:
 This is harfbuzz-ng, a new implementation of harfbuzz with a different
 API from the old one.
 
-This copy of harfbuzz is usually updated by downloading the release tarball
-from http://www.freedesktop.org/software/harfbuzz/release/ , removing
-files in src, copying *.h *.hh *.cc (except for hb-uniscribe* and
-hb-directwrite.*) from the tarball's src folder over to src, then checking for
-removed or added files and update our build recipes in BUILD.gn and
-harfbuzz.gyp accordingly, update the NEWS file from HarfBuzz' release notes,
-and bump the version numbers in README.chromium.
-
-Locally cherry picked blacklisting for GDEF tables of Padauk 2.5 from
-https://github.com/behdad/harfbuzz/pull/419/files for https://crbug.com/681813.
+This copy of harfbuzz is usually updated by downloading the release tarball from
+http://www.freedesktop.org/software/harfbuzz/release/ , removing files in src,
+copying *.h *.hh *.cc (except for hb-uniscribe* and hb-directwrite.* and
+hb-fallback-shape.cc) from the tarball's src folder over to src, then checking
+for removed or added files and update our build recipes in BUILD.gn and
+harfbuzz.gyp accordingly, update the NEWS file from HarfBuzz' release notes, and
+bump the version numbers in README.chromium.
