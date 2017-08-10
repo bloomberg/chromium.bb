@@ -368,7 +368,9 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
 
 - (BOOL)isPrefetchingEnabled {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return enabled_ && (!wifiOnly_ || !usingWWAN_);
+  // TODO(crbug.com/754284): Prefetching does not help WKWebView loads.  Delete
+  // all of the prefetching code from this file and the rest of the app.
+  return NO;
 }
 
 - (BOOL)shouldPreloadURL:(const GURL&)url {
