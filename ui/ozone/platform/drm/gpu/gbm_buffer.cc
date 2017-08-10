@@ -174,9 +174,7 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferForBO(
     uint32_t flags,
     uint64_t modifier,
     uint32_t addfb_flags) {
-  if (!bo)
-    return nullptr;
-
+  DCHECK(bo);
   std::vector<base::ScopedFD> fds;
   std::vector<gfx::NativePixmapPlane> planes;
 
@@ -222,6 +220,8 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferWithModifiers(
   gbm_bo* bo =
       gbm_bo_create_with_modifiers(gbm->device(), size.width(), size.height(),
                                    format, modifiers.data(), modifiers.size());
+  if (!bo)
+    return nullptr;
 
   return CreateBufferForBO(gbm, bo, format, size, flags,
                            gbm_bo_get_format_modifier(bo),
@@ -239,6 +239,8 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
 
   gbm_bo* bo =
       gbm_bo_create(gbm->device(), size.width(), size.height(), format, flags);
+  if (!bo)
+    return nullptr;
 
   return CreateBufferForBO(gbm, bo, format, size, flags,
                            gbm_bo_get_format_modifier(bo), 0);
