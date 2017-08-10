@@ -11,6 +11,7 @@
 #include "base/files/file.h"
 #include "base/files/platform_file.h"
 #include "base/macros.h"
+#include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "chrome/profiling/backtrace_storage.h"
@@ -36,9 +37,9 @@ class MemlogConnectionManager {
   ~MemlogConnectionManager();
 
   // Dumps the memory log for the given process into |output_file|.
-  void DumpProcess(int32_t sender_id, base::File output_file);
+  void DumpProcess(base::ProcessId pid, base::File output_file);
 
-  void OnNewConnection(base::ScopedPlatformFile file, int sender_id);
+  void OnNewConnection(base::ScopedPlatformFile file, base::ProcessId pid);
 
  private:
   struct Connection;
@@ -47,17 +48,17 @@ class MemlogConnectionManager {
   // is signaled by the pipe server, this is signaled by the allocation tracker
   // to ensure that the pipeline for this process has been flushed of all
   // messages.
-  void OnConnectionComplete(int sender_id);
+  void OnConnectionComplete(base::ProcessId pid);
 
   void OnConnectionCompleteThunk(
       scoped_refptr<base::SingleThreadTaskRunner> main_loop,
-      int process_id);
+      base::ProcessId process_id);
 
   scoped_refptr<base::SequencedTaskRunner> io_runner_;
   BacktraceStorage* backtrace_storage_;  // Not owned.
 
   // Maps process ID to the connection information for it.
-  base::flat_map<int, std::unique_ptr<Connection>> connections_;
+  base::flat_map<base::ProcessId, std::unique_ptr<Connection>> connections_;
   base::Lock connections_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(MemlogConnectionManager);
