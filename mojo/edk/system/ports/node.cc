@@ -11,10 +11,13 @@
 
 #include "base/atomicops.h"
 #include "base/containers/stack_container.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_local.h"
+#include "build/build_config.h"
 #include "mojo/edk/system/ports/event.h"
 #include "mojo/edk/system/ports/node_delegate.h"
 #include "mojo/edk/system/ports/port_locker.h"
@@ -30,6 +33,44 @@ namespace edk {
 namespace ports {
 
 namespace {
+
+constexpr size_t kRandomNameCacheSize = 256;
+
+// Random port name generator which maintains a cache of random bytes to draw
+// from. This amortizes the cost of random name generation on platforms where
+// RandBytes may have significant per-call overhead.
+//
+// Note that the use of this cache means one has to be careful about fork()ing
+// a process once any port names have been generated, as that behavior can lead
+// to collisions between independently generated names in different processes.
+class RandomNameGenerator {
+ public:
+  RandomNameGenerator() = default;
+  ~RandomNameGenerator() = default;
+
+  PortName GenerateRandomPortName() {
+    base::AutoLock lock(lock_);
+    if (cache_index_ == kRandomNameCacheSize) {
+#if defined(OS_NACL)
+      base::RandBytes(cache_, sizeof(PortName) * kRandomNameCacheSize);
+#else
+      crypto::RandBytes(cache_, sizeof(PortName) * kRandomNameCacheSize);
+#endif
+      cache_index_ = 0;
+    }
+    return cache_[cache_index_++];
+  }
+
+ private:
+  base::Lock lock_;
+  PortName cache_[kRandomNameCacheSize];
+  size_t cache_index_ = kRandomNameCacheSize;
+
+  DISALLOW_COPY_AND_ASSIGN(RandomNameGenerator);
+};
+
+base::LazyInstance<RandomNameGenerator>::Leaky g_name_generator =
+    LAZY_INSTANCE_INITIALIZER;
 
 int DebugError(const char* message, int error_code) {
   NOTREACHED() << "Oops: " << message;
@@ -52,11 +93,7 @@ bool CanAcceptMoreMessages(const Port* port) {
 }
 
 void GenerateRandomPortName(PortName* name) {
-#if defined(OS_NACL)
-  base::RandBytes(name, sizeof(PortName));
-#else
-  crypto::RandBytes(name, sizeof(PortName));
-#endif
+  *name = g_name_generator.Get().GenerateRandomPortName();
 }
 
 }  // namespace
