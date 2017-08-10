@@ -60,13 +60,14 @@ class ScopedSetDeviceScaleFactor {
 
 // Our test class that takes care of managing the necessary threads for loading
 // extension icons, and waiting for those loads to happen.
-class ExtensionIconManagerTest : public testing::Test {
+class ExtensionIconManagerTest : public testing::Test,
+                                 public ExtensionIconManager::Observer {
  public:
   ExtensionIconManagerTest() : unwaited_image_loads_(0), waiting_(false) {}
 
   ~ExtensionIconManagerTest() override {}
 
-  void ImageLoadObserved() {
+  void OnImageLoaded(const std::string& extension_id) override {
     unwaited_image_loads_++;
     if (waiting_) {
       base::RunLoop::QuitCurrentWhenIdleDeprecated();
@@ -93,27 +94,6 @@ class ExtensionIconManagerTest : public testing::Test {
   bool waiting_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionIconManagerTest);
-};
-
-// This is a specialization of ExtensionIconManager, with a special override to
-// call back to the test when an icon has completed loading.
-class TestIconManager : public ExtensionIconManager {
- public:
-  explicit TestIconManager(ExtensionIconManagerTest* test) : test_(test) {}
-  ~TestIconManager() override {}
-
-  // Overrides the ImageLoader callback, and calls through to the base class'
-  // implementation. Then it lets the test know that an image load was observed.
-  void OnImageLoaded(const std::string& extension_id,
-                     const gfx::Image& image) override {
-    ExtensionIconManager::OnImageLoaded(extension_id, image);
-    test_->ImageLoadObserved();
-  }
-
- private:
-  ExtensionIconManagerTest* test_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestIconManager);
 };
 
 // Returns the default icon that ExtensionIconManager gives when an extension
@@ -144,7 +124,8 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
       Extension::Create(manifest_path.DirName(), Manifest::INVALID_LOCATION,
                         *manifest, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension.get());
-  TestIconManager icon_manager(this);
+  ExtensionIconManager icon_manager;
+  icon_manager.set_observer(this);
 
   // Load the icon.
   icon_manager.LoadIcon(profile.get(), extension.get());
@@ -187,7 +168,8 @@ TEST_F(ExtensionIconManagerTest, LoadComponentExtensionResource) {
       Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension.get());
 
-  TestIconManager icon_manager(this);
+  ExtensionIconManager icon_manager;
+  icon_manager.set_observer(this);
   // Load the icon.
   icon_manager.LoadIcon(profile.get(), extension.get());
   WaitForImageLoad();
@@ -254,7 +236,8 @@ TEST_F(ExtensionIconManagerTest, ScaleFactors) {
     ScopedSetDeviceScaleFactor scoped_dsf(
         ui::GetScaleForScaleFactor(supported_scales[i][0]));
     ui::test::ScopedSetSupportedScaleFactors scoped(supported_scales[i]);
-    TestIconManager icon_manager(this);
+    ExtensionIconManager icon_manager;
+    icon_manager.set_observer(this);
 
     icon_manager.LoadIcon(profile.get(), extension.get());
     WaitForImageLoad();
@@ -297,7 +280,8 @@ TEST_F(ExtensionIconManagerTest, ScaleFactors) {
   // when it's not a supported scale.
   EXPECT_FALSE(ui::IsSupportedScale(ui::SCALE_FACTOR_150P));
   ScopedSetDeviceScaleFactor scoped_dsf(1.5f);
-  TestIconManager icon_manager(this);
+  ExtensionIconManager icon_manager;
+  icon_manager.set_observer(this);
   icon_manager.LoadIcon(profile.get(), extension.get());
   WaitForImageLoad();
   gfx::ImageSkia icon = icon_manager.GetIcon(extension->id()).AsImageSkia();
