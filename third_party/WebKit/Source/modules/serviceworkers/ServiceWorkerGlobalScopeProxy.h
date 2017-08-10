@@ -53,8 +53,8 @@ class WebServiceWorkerRequest;
 class WebURLResponse;
 
 // This class is created and destructed on the main thread, but live most
-// of its time as a resident of the worker thread.
-// All methods other than its ctor/dtor are called on the worker thread.
+// of its time as a resident of the worker thread. All methods other than its
+// ctor/dtor and Detach() are called on the worker thread.
 //
 // This implements WebServiceWorkerContextProxy, which connects ServiceWorker's
 // WorkerGlobalScope and embedder/chrome, and implements ServiceWorker-specific
@@ -165,11 +165,11 @@ class ServiceWorkerGlobalScopeProxy final
 
   DECLARE_TRACE();
 
-  // Detach this proxy object entirely from the outside world,
-  // clearing out all references.
+  // Detaches this proxy object entirely from the outside world, clearing out
+  // all references.
   //
-  // It is called during WebEmbeddedWorkerImpl finalization _after_
-  // the worker thread using the proxy has been terminated.
+  // It is called on the main thread during WebEmbeddedWorkerImpl finalization
+  // _after_ the worker thread using the proxy has been terminated.
   void Detach();
 
  private:
