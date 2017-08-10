@@ -51,6 +51,8 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   void UnregisterClientProcess(mojom::ClientProcess*);
   void RequestGlobalMemoryDump(const base::trace_event::MemoryDumpRequestArgs&,
                                const RequestGlobalMemoryDumpCallback&) override;
+  void GetVmRegionsForHeapProfiler(
+      const GetVmRegionsForHeapProfilerCallback&) override;
 
  protected:
   // virtual for testing.

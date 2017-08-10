@@ -12,7 +12,8 @@ enum DumpType {
   PERIODIC_INTERVAL,
   EXPLICITLY_TRIGGERED,
   PEAK_MEMORY_USAGE,
-  SUMMARY_ONLY
+  SUMMARY_ONLY,
+  VM_REGIONS_ONLY
 };
 
 enum LevelOfDetail {
@@ -108,6 +109,11 @@ struct OSMemDump {
   // This is roughly private, anonymous, non-discardable, resident or swapped
   // memory in kilobytes. For more details, see https://goo.gl/3kPb9S.
   uint32 private_footprint_kb = 0;
+
+  // This field is present only when the dump is obtained through
+  // Coordinator.GetVmRegionsForHeapProfiler(), empty in the generic case of
+  // RequestGlobalMemoryDump().
+  array<VmRegion> memory_maps_for_heap_profiler;
 };
 
 // This struct is used for the public-facing API
@@ -171,4 +177,10 @@ interface Coordinator {
   // dump back (if args.dump_type == SUMMARY_ONLY).
   RequestGlobalMemoryDump(RequestArgs args) =>
       (bool success, uint64 dump_id, GlobalMemoryDump? global_memory_dump);
+
+  // Broadcasts a RequestOSMemoryDump-only request for all registered client
+  // processes, retrieves only their memory maps and returns them in the field
+  // |global_memory_dump.process_dumps.os_dump.memory_maps_for_heap_profiler|.
+  GetVmRegionsForHeapProfiler() =>
+      (bool success, GlobalMemoryDump? global_memory_dump);
 };

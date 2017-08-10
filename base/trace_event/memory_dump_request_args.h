@@ -32,7 +32,9 @@ enum class MemoryDumpType {
   EXPLICITLY_TRIGGERED,  // Non maskable dump request.
   PEAK_MEMORY_USAGE,     // Dumping memory at detected peak total memory usage.
   SUMMARY_ONLY,          // Calculate just the summary & don't add to the trace.
-  LAST = SUMMARY_ONLY
+  VM_REGIONS_ONLY,       // Retrieve only memory maps & don't add to the trace.
+                         // Used only for the heap profiler.
+  LAST = VM_REGIONS_ONLY
 };
 
 // Tells the MemoryDumpProvider(s) how much detailed their dumps should be.

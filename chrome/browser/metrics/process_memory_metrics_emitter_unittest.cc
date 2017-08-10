@@ -17,6 +17,7 @@ using OSMemDumpPtr = memory_instrumentation::mojom::OSMemDumpPtr;
 using ProcessType = memory_instrumentation::mojom::ProcessType;
 using ProcessInfoPtr = resource_coordinator::mojom::ProcessInfoPtr;
 using ProcessInfoVector = std::vector<ProcessInfoPtr>;
+
 namespace {
 
 // Provide fake to surface ReceivedMemoryDump and ReceivedProcessInfos to public
@@ -52,6 +53,27 @@ class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
   DISALLOW_COPY_AND_ASSIGN(ProcessMemoryMetricsEmitterFake);
 };
 
+OSMemDumpPtr GetFakeOSMemDump(uint32_t resident_set_kb,
+                              uint32_t private_footprint_kb) {
+  using memory_instrumentation::mojom::VmRegion;
+
+  std::vector<memory_instrumentation::mojom::VmRegionPtr> vm_regions;
+  vm_regions.emplace_back(
+      VmRegion::New(0xdeadbeef,                      // start address
+                    0x4000,                          // size_in_bytes
+                    0x1234,                          // module_timestamp
+                    VmRegion::kProtectionFlagsRead,  // protection_flags
+                    "dummy_file",                    // mapped_file
+                    100,    // byte_stats_private_dirty_resident
+                    200,    // byte_stats_private_clean_resident
+                    300,    // byte_stats_shared_dirty_resident
+                    400,    // byte_stats_shared_clean_resident
+                    500,    // byte_stats_swapped,
+                    200));  // byte_stats_proportional_resident
+  return memory_instrumentation::mojom::OSMemDump::New(
+      resident_set_kb, private_footprint_kb, std::move(vm_regions));
+}
+
 void PopulateBrowserMetrics(GlobalMemoryDumpPtr& global_dump,
                             base::flat_map<const char*, int64_t>& metrics_mb) {
   ProcessMemoryDumpPtr pmd(
@@ -59,9 +81,9 @@ void PopulateBrowserMetrics(GlobalMemoryDumpPtr& global_dump,
   pmd->process_type = ProcessType::BROWSER;
   pmd->chrome_dump = memory_instrumentation::mojom::ChromeMemDump::New();
   pmd->chrome_dump->malloc_total_kb = metrics_mb["Malloc"] * 1024;
-  OSMemDumpPtr os_dump(memory_instrumentation::mojom::OSMemDump::New(
-      metrics_mb["Resident"] * 1024,
-      metrics_mb["PrivateMemoryFootprint"] * 1024));
+  OSMemDumpPtr os_dump =
+      GetFakeOSMemDump(metrics_mb["Resident"] * 1024,
+                       metrics_mb["PrivateMemoryFootprint"] * 1024);
   pmd->os_dump = std::move(os_dump);
   global_dump->process_dumps.push_back(std::move(pmd));
 }
@@ -89,9 +111,9 @@ void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
       metrics_mb["PartitionAlloc"] * 1024;
   pmd->chrome_dump->blink_gc_total_kb = metrics_mb["BlinkGC"] * 1024;
   pmd->chrome_dump->v8_total_kb = metrics_mb["V8"] * 1024;
-  OSMemDumpPtr os_dump(memory_instrumentation::mojom::OSMemDump::New(
-      metrics_mb["Resident"] * 1024,
-      metrics_mb["PrivateMemoryFootprint"] * 1024));
+  OSMemDumpPtr os_dump =
+      GetFakeOSMemDump(metrics_mb["Resident"] * 1024,
+                       metrics_mb["PrivateMemoryFootprint"] * 1024);
   pmd->os_dump = std::move(os_dump);
   pmd->pid = pid;
   global_dump->process_dumps.push_back(std::move(pmd));
@@ -120,9 +142,9 @@ void PopulateGpuMetrics(GlobalMemoryDumpPtr& global_dump,
   pmd->chrome_dump->malloc_total_kb = metrics_mb["Malloc"] * 1024;
   pmd->chrome_dump->command_buffer_total_kb =
       metrics_mb["CommandBuffer"] * 1024;
-  OSMemDumpPtr os_dump(memory_instrumentation::mojom::OSMemDump::New(
-      metrics_mb["Resident"] * 1024,
-      metrics_mb["PrivateMemoryFootprint"] * 1024));
+  OSMemDumpPtr os_dump =
+      GetFakeOSMemDump(metrics_mb["Resident"] * 1024,
+                       metrics_mb["PrivateMemoryFootprint"] * 1024);
   pmd->os_dump = std::move(os_dump);
   global_dump->process_dumps.push_back(std::move(pmd));
 }

@@ -24,6 +24,8 @@ EnumTraits<memory_instrumentation::mojom::DumpType,
       return memory_instrumentation::mojom::DumpType::PEAK_MEMORY_USAGE;
     case base::trace_event::MemoryDumpType::SUMMARY_ONLY:
       return memory_instrumentation::mojom::DumpType::SUMMARY_ONLY;
+    case base::trace_event::MemoryDumpType::VM_REGIONS_ONLY:
+      return memory_instrumentation::mojom::DumpType::VM_REGIONS_ONLY;
     default:
       CHECK(false) << "Invalid type: " << static_cast<uint8_t>(type);
       // This should not be reached. Just return a random value.
@@ -48,6 +50,9 @@ bool EnumTraits<memory_instrumentation::mojom::DumpType,
       break;
     case memory_instrumentation::mojom::DumpType::SUMMARY_ONLY:
       *out = base::trace_event::MemoryDumpType::SUMMARY_ONLY;
+      break;
+    case memory_instrumentation::mojom::DumpType::VM_REGIONS_ONLY:
+      *out = base::trace_event::MemoryDumpType::VM_REGIONS_ONLY;
       break;
     default:
       NOTREACHED() << "Invalid type: " << static_cast<uint8_t>(input);

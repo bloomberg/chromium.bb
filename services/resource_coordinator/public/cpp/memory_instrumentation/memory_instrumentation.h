@@ -59,6 +59,15 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT MemoryInstrumentation {
       MemoryDumpLevelOfDetail,
       RequestGlobalDumpAndAppendToTraceCallback);
 
+  // Requests a global dump retrieving only the memory maps for all the client
+  // processes registered. Does not add anything to the trace. The returned
+  // GlobalMemoryDump will have only the |os_dump| field populated.
+  // Returns asynchronously, via the callback argument:
+  //  (true, global_dump) if succeeded;
+  //  (false, nullptr) if failed.
+  // The callback will be posted on the same thread of the caller.
+  void GetVmRegionsForHeapProfiler(RequestGlobalDumpCallback);
+
   // TODO(hjd): Add a RequestGlobalDump() helper, not bound to tracing.
   // here. The mojom interface is about to change soon and right now there is
   // only one client of this API (process_memory_metrics_emitter.cc). Delay this
