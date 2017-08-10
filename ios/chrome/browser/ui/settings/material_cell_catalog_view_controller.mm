@@ -442,7 +442,9 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 - (CollectionViewItem*)accountItemDetailWithError {
   CollectionViewAccountItem* accountItemDetail =
       [[CollectionViewAccountItem alloc] initWithType:ItemTypeAccountDetail];
-  accountItemDetail.image = [UIImage imageNamed:@"default_avatar"];
+  // TODO(crbug.com/754032): ios_default_avatar image is from a downstream iOS
+  // internal repository. It should be used through a provider API instead.
+  accountItemDetail.image = [UIImage imageNamed:@"ios_default_avatar"];
   accountItemDetail.text = @"Account User Name";
   accountItemDetail.detailText =
       @"Syncing to AccountUserNameAccount@example.com";
@@ -455,7 +457,9 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 - (CollectionViewItem*)accountItemCheckMark {
   CollectionViewAccountItem* accountItemCheckMark =
       [[CollectionViewAccountItem alloc] initWithType:ItemTypeAccountCheckMark];
-  accountItemCheckMark.image = [UIImage imageNamed:@"default_avatar"];
+  // TODO(crbug.com/754032): ios_default_avatar image is from a downstream iOS
+  // internal repository. It should be used through a provider API instead.
+  accountItemCheckMark.image = [UIImage imageNamed:@"ios_default_avatar"];
   accountItemCheckMark.text = @"Lorem ipsum dolor sit amet, consectetur "
                               @"adipiscing elit, sed do eiusmod tempor "
                               @"incididunt ut labore et dolore magna aliqua.";
