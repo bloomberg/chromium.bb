@@ -528,7 +528,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-in-float-hit-testing.h
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-in-float-painting.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-inserted-into-clean-line.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-list-changed-before-layout-crash.html [ Crash ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-first-letter.html [ Crash ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-first-letter.html [ Crash Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling-crash.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling5.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-on-empty-line.html [ Failure ]
