@@ -404,6 +404,13 @@ component("headless") {
     }
   }
 
+  if (is_fuchsia) {
+    sources -= [
+      "lib/headless_crash_reporter_client.cc",
+      "lib/headless_crash_reporter_client.h",
+    ]
+  }
+
   if (is_mac) {
     deps += [ ":mac_helpers" ]
   } else {
@@ -515,6 +522,10 @@ test("headless_unittests") {
   if (enable_basic_printing) {
     sources += [ "lib/browser/headless_printing_unittest.cc" ]
     deps += [ "//components/printing/browser" ]
+  }
+
+  if (is_fuchsia) {
+    deps -= [ "//components/crash/content/browser" ]
   }
 }
 
@@ -664,6 +675,10 @@ test("headless_browsertests") {
       "//pdf",
     ]
   }
+
+  if (is_fuchsia) {
+    deps -= [ "//components/crash/content/browser" ]
+  }
 }
 
 if (is_win) {
@@ -782,6 +797,10 @@ static_library("headless_shell_lib") {
       "//content:sandbox_helper_win",
       "//sandbox",
     ]
+  }
+
+  if (is_fuchsia) {
+    deps -= [ "//components/crash/content/browser" ]
   }
 }
 

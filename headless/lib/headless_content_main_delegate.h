@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -51,11 +52,11 @@ class HEADLESS_EXPORT HeadlessContentMainDelegate
  private:
   friend class HeadlessBrowserTest;
 
+  static void InitializeResourceBundle();
+  static HeadlessContentMainDelegate* GetInstance();
+
   void InitLogging(const base::CommandLine& command_line);
   void InitCrashReporter(const base::CommandLine& command_line);
-  static void InitializeResourceBundle();
-
-  static HeadlessContentMainDelegate* GetInstance();
 
   std::unique_ptr<content::ContentRendererClient> renderer_client_;
   std::unique_ptr<content::ContentBrowserClient> browser_client_;
