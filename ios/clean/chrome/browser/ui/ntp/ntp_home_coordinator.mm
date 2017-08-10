@@ -13,7 +13,6 @@
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_alert_factory.h"
-#import "ios/chrome/browser/content_suggestions/content_suggestions_header_view_controller_delegate.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
@@ -26,7 +25,9 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_controlling.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizer.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_delegate.h"
@@ -36,7 +37,7 @@
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/clean/chrome/browser/ui/ntp/ntp_home_header_view_controller.h"
+#import "ios/clean/chrome/browser/ui/ntp/ntp_home_header_coordinator.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
@@ -52,14 +53,13 @@
     ContentSuggestionsGestureCommands,
     ContentSuggestionsHeaderViewControllerCommandHandler,
     ContentSuggestionsHeaderViewControllerDelegate,
-    ContentSuggestionsViewControllerAudience,
-    ContentSuggestionsViewControllerDelegate>
+    ContentSuggestionsViewControllerAudience>
 
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
 
 @property(nonatomic, strong) GoogleLandingMediator* googleLandingMediator;
 @property(nonatomic, strong) ContentSuggestionsMediator* suggestionsMediator;
-@property(nonatomic, strong) NTPHomeHeaderViewController* headerViewController;
+@property(nonatomic, strong) NTPHomeHeaderCoordinator* headerCoordinator;
 @property(nonatomic, strong) ContentSuggestionsViewController* viewController;
 @property(nonatomic, strong)
     ContentSuggestionsHeaderSynchronizer* headerCollectionInteractionHandler;
@@ -69,7 +69,7 @@
 @implementation NTPHomeCoordinator
 
 @synthesize alertCoordinator = _alertCoordinator;
-@synthesize headerViewController = _headerViewController;
+@synthesize headerCoordinator = _headerCoordinator;
 @synthesize googleLandingMediator = _googleLandingMediator;
 @synthesize viewController = _viewController;
 @synthesize suggestionsMediator = _suggestionsMediator;
@@ -85,12 +85,14 @@
   contentSuggestionsService->remote_suggestions_scheduler()
       ->OnSuggestionsSurfaceOpened();
 
-  self.headerViewController = [[NTPHomeHeaderViewController alloc] init];
-  self.headerViewController.delegate = self;
-  self.headerViewController.commandHandler = self;
+  self.headerCoordinator = [[NTPHomeHeaderCoordinator alloc] init];
+  self.headerCoordinator.delegate = self;
+  self.headerCoordinator.commandHandler = self;
+  [self addChildCoordinator:self.headerCoordinator];
+  [self.headerCoordinator start];
 
   self.googleLandingMediator = [[GoogleLandingMediator alloc]
-      initWithConsumer:self.headerViewController
+      initWithConsumer:self.headerCoordinator.consumer
           browserState:self.browser->browser_state()
             dispatcher:static_cast<id>(self.browser->dispatcher())
           webStateList:&self.browser->web_state_list()];
@@ -109,26 +111,30 @@
               largeIconCache:cache
              mostVisitedSite:std::move(mostVisitedFactory)];
   self.suggestionsMediator.commandHandler = self;
-  self.suggestionsMediator.headerProvider = self.headerViewController;
+  self.suggestionsMediator.headerProvider =
+      self.headerCoordinator.headerProvider;
 
   self.viewController = [[ContentSuggestionsViewController alloc]
       initWithStyle:CollectionViewControllerStyleDefault
          dataSource:self.suggestionsMediator];
   self.viewController.suggestionCommandHandler = self;
-  self.viewController.suggestionsDelegate = self;
+  self.viewController.suggestionsDelegate =
+      self.headerCoordinator.collectionDelegate;
   self.viewController.audience = self;
 
-  // TODO: Add the header viewController as child of the collection
-  // viewController.
+  [self.viewController
+      addChildViewController:self.headerCoordinator.viewController];
+  [self.headerCoordinator.viewController
+      didMoveToParentViewController:self.viewController];
 
   self.headerCollectionInteractionHandler =
       [[ContentSuggestionsHeaderSynchronizer alloc]
           initWithCollectionController:self.viewController
-                      headerController:self.headerViewController];
+                      headerController:self.headerCoordinator.headerController];
 
   self.viewController.headerCommandHandler =
       self.headerCollectionInteractionHandler;
-  self.headerViewController.collectionSynchronizer =
+  self.headerCoordinator.collectionSynchronizer =
       self.headerCollectionInteractionHandler;
 
   [super start];
@@ -137,10 +143,11 @@
 - (void)stop {
   [super stop];
   [self.googleLandingMediator shutdown];
+  [self.headerCoordinator stop];
   self.viewController = nil;
   self.suggestionsMediator = nil;
   self.googleLandingMediator = nil;
-  self.headerViewController = nil;
+  self.headerCoordinator = nil;
 }
 
 #pragma mark - ContentSuggestionsCommands
@@ -259,30 +266,6 @@
   return self.viewController.scrolledToTop;
 }
 
-#pragma mark - ContentSuggestionsViewControllerDelegate
-
-- (CGFloat)pinnedOffsetY {
-  CGFloat headerHeight = content_suggestions::heightForLogoHeader(
-      self.headerViewController.logoIsShowing,
-      [self.suggestionsMediator notificationPromo]->CanShow());
-  CGFloat offsetY =
-      headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
-  if (!IsIPadIdiom())
-    offsetY -= ntp_header::kToolbarHeight;
-
-  return offsetY;
-}
-
-- (BOOL)isOmniboxFocused {
-  return [self.headerViewController isOmniboxFocused];
-}
-
-- (CGFloat)headerHeight {
-  return content_suggestions::heightForLogoHeader(
-      self.headerViewController.logoIsShowing,
-      [self.suggestionsMediator notificationPromo]->CanShow());
-}
-
 #pragma mark - ContentSuggestionsViewControllerAudience
 
 - (void)contentOffsetDidChange {
@@ -293,7 +276,8 @@
   NotificationPromoWhatsNew* notificationPromo =
       [self.suggestionsMediator notificationPromo];
   notificationPromo->HandleViewed();
-  [self.headerViewController setPromoCanShow:notificationPromo->CanShow()];
+  [self.headerCoordinator.consumer
+      setPromoCanShow:notificationPromo->CanShow()];
 }
 
 #pragma mark - Private

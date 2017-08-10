@@ -8,8 +8,10 @@ source_set("ntp") {
     "ntp_coordinator.mm",
     "ntp_home_coordinator.h",
     "ntp_home_coordinator.mm",
-    "ntp_home_header_view_controller.h",
-    "ntp_home_header_view_controller.mm",
+    "ntp_home_header_coordinator.h",
+    "ntp_home_header_coordinator.mm",
+    "ntp_home_header_mediator.h",
+    "ntp_home_header_mediator.mm",
     "ntp_mediator.h",
     "ntp_mediator.mm",
   ]
@@ -51,6 +53,8 @@ source_set("ntp") {
 source_set("ntp_ui") {
   sources = [
     "ntp_consumer.h",
+    "ntp_home_header_view_controller.h",
+    "ntp_home_header_view_controller.mm",
     "ntp_view_controller.h",
     "ntp_view_controller.mm",
   ]
@@ -61,11 +65,17 @@ source_set("ntp_ui") {
     "//base",
     "//components/strings:components_strings_grit",
     "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/app/theme",
     "//ios/chrome/browser/ui:ui",
+    "//ios/chrome/browser/ui/content_suggestions",
+    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_util",
     "//ios/chrome/browser/ui/ntp:ntp_controller",
     "//ios/chrome/browser/ui/ntp:ntp_internal",
+    "//ios/chrome/browser/ui/ntp/resources:ntp_google_search_box",
+    "//ios/chrome/common",
     "//ios/clean/chrome/browser/ui",
     "//ios/clean/chrome/browser/ui/commands:commands",
+    "//ios/public/provider/chrome/browser/ui",
     "//ui/base:base",
   ]
 }
@@ -75,6 +85,8 @@ source_set("unit_tests") {
   sources = [
     "ntp_coordinator_unittest.mm",
     "ntp_home_coordinator_unittest.mm",
+    "ntp_home_header_coordinator_unittest.mm",
+    "ntp_home_header_mediator_unittest.mm",
     "ntp_home_header_view_controller_unittest.mm",
     "ntp_mediator_unittest.mm",
     "ntp_view_controller_unittest.mm",

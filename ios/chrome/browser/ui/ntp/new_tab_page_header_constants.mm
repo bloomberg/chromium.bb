@@ -14,5 +14,8 @@ const CGFloat kMinHeaderHeight = 62;
 const CGFloat kAnimationDistance = 42;
 const CGFloat kToolbarHeight = 56;
 const CGFloat kScrolledToTopOmniboxBottomMargin = 4;
+const CGFloat kHintLabelSidePadding = 12;
+const CGFloat kMaxHorizontalMarginDiff = 5;
+const CGFloat kMaxTopMarginDiff = 4;
 
 }  // ntp_header

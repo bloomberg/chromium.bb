@@ -21,14 +21,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-const CGFloat kHintLabelSidePadding = 12;
-const CGFloat kMaxConstraintConstantDiff = 5;
-const CGFloat kMaxTopMarginDiff = 4;
-
-}  // namespace
-
 @interface NewTabPageHeaderView () {
   NewTabPageToolbarController* _toolbarController;
   UIImageView* _searchBoxBorder;
@@ -156,8 +148,8 @@ const CGFloat kMaxTopMarginDiff = 4;
       ntp_header::kToolbarHeight - content_suggestions::kSearchFieldHeight;
 
   widthConstraint.constant = searchFieldNormalWidth - 2 * maxXInset * percent;
-  topMarginConstraint.constant =
-      content_suggestions::searchFieldTopMargin() + kMaxTopMarginDiff * percent;
+  topMarginConstraint.constant = content_suggestions::searchFieldTopMargin() +
+                                 ntp_header::kMaxTopMarginDiff * percent;
   heightConstraint.constant =
       content_suggestions::kSearchFieldHeight + maxHeightDiff * percent;
 
@@ -166,10 +158,10 @@ const CGFloat kMaxTopMarginDiff = 4;
 
   // Adjust the position of the search field's subviews by adjusting their
   // constraint constant value.
-  CGFloat constantDiff = percent * kMaxConstraintConstantDiff;
+  CGFloat constantDiff = percent * ntp_header::kMaxHorizontalMarginDiff;
   for (NSLayoutConstraint* constraint in constraints) {
     if (constraint.constant > 0)
-      constraint.constant = constantDiff + kHintLabelSidePadding;
+      constraint.constant = constantDiff + ntp_header::kHintLabelSidePadding;
     else
       constraint.constant = -constantDiff;
   }

@@ -7,30 +7,30 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/content_suggestions/content_suggestions_header_provider.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_controlling.h"
-#import "ios/chrome/browser/ui/ntp/google_landing_consumer.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_provider.h"
 
-@protocol ContentSuggestionsCollectionSynchronizing;
-@protocol ContentSuggestionsHeaderViewControllerCommandHandler;
-@protocol ContentSuggestionsHeaderViewControllerDelegate;
+@protocol LogoVendor;
 
 // Coordinator handling the header of the NTP home panel.
 @interface NTPHomeHeaderViewController
-    : UIViewController<ContentSuggestionsHeaderControlling,
-                       ContentSuggestionsHeaderProvider,
-                       GoogleLandingConsumer>
+    : UIViewController<ContentSuggestionsHeaderProvider>
 
-// Whether the Google logo or doodle is being shown.
-@property(nonatomic, assign) BOOL logoIsShowing;
+// Exposes view and methods to drive the doodle.
+@property(nonatomic, weak) id<LogoVendor> logoVendor;
 
-@property(nonatomic, weak) id<ContentSuggestionsHeaderViewControllerDelegate>
-    delegate;
-@property(nonatomic, weak)
-    id<ContentSuggestionsHeaderViewControllerCommandHandler>
-        commandHandler;
-@property(nonatomic, weak) id<ContentSuggestionsCollectionSynchronizing>
-    collectionSynchronizer;
+- (void)setVoiceSearchIsEnabled:(BOOL)voiceSearchIsEnabled;
+// If Google is not the default search engine, hide the logo, doodle and
+// fakebox. Make them appear if Google is set as default.
+- (void)setLogoIsShowing:(BOOL)logoIsShowing;
+// Updates the iPhone omnibox's frame based on the current scroll view |offset|.
+- (void)updateFakeOmniboxForOffset:(CGFloat)offset;
+// Updates the iPhone omnibox's frame based on the |width|. Does not take the
+// scrolling into account.
+- (void)updateFakeOmniboxForWidth:(CGFloat)width;
+// Notifies that the collection will shift down.
+- (void)collectionWillShiftDown;
+// Notifies that the collection will shift up.
+- (void)collectionDidShiftUp;
 
 @end
 
