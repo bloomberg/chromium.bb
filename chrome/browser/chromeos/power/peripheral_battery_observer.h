@@ -15,8 +15,6 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
-class Profile;
-
 namespace chromeos {
 
 class BluetoothDevice;
@@ -24,7 +22,8 @@ class PeripheralBatteryObserverTest;
 
 // This observer listens for peripheral device battery status and shows
 // notifications for low battery conditions.
-// TODO(sammiequon): Investigate whether we can move this class to //ash.
+// TODO(sammiequon): Investigate whether we can move this class to
+// //ash/system/power.
 class PeripheralBatteryObserver : public PowerManagerClient::Observer,
                                   public device::BluetoothAdapter::Observer {
  public:
@@ -36,12 +35,12 @@ class PeripheralBatteryObserver : public PowerManagerClient::Observer,
 
   void set_testing_clock(base::TickClock* clock) { testing_clock_ = clock; }
 
-  // PowerManagerClient::Observer implementation.
+  // PowerManagerClient::Observer:
   void PeripheralBatteryStatusReceived(const std::string& path,
                                        const std::string& name,
                                        int level) override;
 
-  // device::BluetoothAdapter::Observer implementation.
+  // device::BluetoothAdapter::Observer:
   void DeviceChanged(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
   void DeviceRemoved(device::BluetoothAdapter* adapter,
@@ -59,6 +58,7 @@ class PeripheralBatteryObserver : public PowerManagerClient::Observer,
     // Battery level within range [0, 100], and -1 for unknown level.
     int level = -1;
     base::TimeTicks last_notification_timestamp;
+    bool is_stylus = false;
   };
 
   void InitializeOnBluetoothReady(
@@ -82,9 +82,6 @@ class PeripheralBatteryObserver : public PowerManagerClient::Observer,
 
   // Used only for helping test. Not owned and can be NULL.
   base::TickClock* testing_clock_;
-
-  // Record the profile used when adding message center notifications.
-  Profile* notification_profile_;
 
   std::unique_ptr<base::WeakPtrFactory<PeripheralBatteryObserver>>
       weakptr_factory_;

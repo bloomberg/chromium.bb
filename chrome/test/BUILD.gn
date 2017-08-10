@@ -2310,7 +2310,6 @@ test("browser_tests") {
         "../browser/chromeos/policy/user_policy_test_helper.cc",
         "../browser/chromeos/policy/user_policy_test_helper.h",
         "../browser/chromeos/policy/variations_service_policy_browsertest.cc",
-        "../browser/chromeos/power/peripheral_battery_observer_browsertest.cc",
         "../browser/chromeos/preferences_chromeos_browsertest.cc",
         "../browser/chromeos/profiles/profile_helper_browsertest.cc",
         "../browser/chromeos/shutdown_policy_browsertest.cc",

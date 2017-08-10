@@ -1871,6 +1871,7 @@ source_set("unit_tests") {
     "policy/user_cloud_policy_store_chromeos_unittest.cc",
     "power/cpu_data_collector_unittest.cc",
     "power/extension_event_observer_unittest.cc",
+    "power/peripheral_battery_observer_unittest.cc",
     "power/power_data_collector_unittest.cc",
     "power/power_prefs_unittest.cc",
     "power/renderer_freezer_unittest.cc",
