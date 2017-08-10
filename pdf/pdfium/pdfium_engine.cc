@@ -639,6 +639,10 @@ bool CheckIfEditableFormTextArea(int flags, int form_type) {
   return false;
 }
 
+bool IsLinkArea(PDFiumPage::Area area) {
+  return area == PDFiumPage::WEBLINK_AREA || area == PDFiumPage::DOCLINK_AREA;
+}
+
 }  // namespace
 
 bool InitializeSDK() {
@@ -1738,28 +1742,50 @@ PDFiumPage::Area PDFiumEngine::GetCharIndex(const pp::Point& point,
 }
 
 bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
-  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_RIGHT) {
-    if (selection_.empty())
-      return false;
-    std::vector<pp::Rect> selection_rect_vector;
-    GetAllScreenRectsUnion(&selection_, GetVisibleRect().point(),
-                           &selection_rect_vector);
-    pp::Point point = event.GetPosition();
-    for (const auto& rect : selection_rect_vector) {
-      if (rect.Contains(point.x(), point.y()))
-        return false;
-    }
-    SelectionChangeInvalidator selection_invalidator(this);
-    selection_.clear();
-    return true;
+  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT)
+    return OnLeftMouseDown(event);
+  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE)
+    return OnMiddleMouseDown(event);
+  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_RIGHT)
+    return OnRightMouseDown(event);
+  return false;
+}
+
+void PDFiumEngine::OnSingleClick(int page_index, int char_index) {
+  SetSelecting(true);
+  selection_.push_back(PDFiumRange(pages_[page_index].get(), char_index, 0));
+}
+
+void PDFiumEngine::OnMultipleClick(int click_count,
+                                   int page_index,
+                                   int char_index) {
+  // It would be more efficient if the SDK could support finding a space, but
+  // now it doesn't.
+  int start_index = char_index;
+  do {
+    base::char16 cur = pages_[page_index]->GetCharAtIndex(start_index);
+    // For double click, we want to select one word so we look for whitespace
+    // boundaries.  For triple click, we want the whole line.
+    if (cur == '\n' || (click_count == 2 && (cur == ' ' || cur == '\t')))
+      break;
+  } while (--start_index >= 0);
+  if (start_index)
+    start_index++;
+
+  int end_index = char_index;
+  int total = pages_[page_index]->GetCharCount();
+  while (end_index++ <= total) {
+    base::char16 cur = pages_[page_index]->GetCharAtIndex(end_index);
+    if (cur == '\n' || (click_count == 2 && (cur == ' ' || cur == '\t')))
+      break;
   }
 
-  if (event.GetButton() != PP_INPUTEVENT_MOUSEBUTTON_LEFT &&
-      event.GetButton() != PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
-    return false;
-  }
+  selection_.push_back(PDFiumRange(pages_[page_index].get(), start_index,
+                                   end_index - start_index));
+}
 
-  SetMouseLeftButtonDown(event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT);
+bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
+  SetMouseLeftButtonDown(true);
 
   auto selection_invalidator =
       base::MakeUnique<SelectionChangeInvalidator>(this);
@@ -1777,12 +1803,8 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
 
   // Decide whether to open link or not based on user action in mouse up and
   // mouse move events.
-  if (area == PDFiumPage::WEBLINK_AREA || area == PDFiumPage::DOCLINK_AREA)
+  if (IsLinkArea(area))
     return true;
-
-  // Prevent middle mouse button from selecting texts.
-  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE)
-    return false;
 
   if (page_index != -1) {
     last_page_mouse_down_ = page_index;
@@ -1838,37 +1860,47 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
   return true;
 }
 
-void PDFiumEngine::OnSingleClick(int page_index, int char_index) {
-  SetSelecting(true);
-  selection_.push_back(PDFiumRange(pages_[page_index].get(), char_index, 0));
+bool PDFiumEngine::OnMiddleMouseDown(const pp::MouseInputEvent& event) {
+  SetMouseLeftButtonDown(false);
+
+  SelectionChangeInvalidator selection_invalidator(this);
+  selection_.clear();
+
+  int unused_page_index = -1;
+  int unused_char_index = -1;
+  int unused_form_type = FPDF_FORMFIELD_UNKNOWN;
+  PDFiumPage::LinkTarget target;
+  PDFiumPage::Area area =
+      GetCharIndex(event.GetPosition(), &unused_page_index, &unused_char_index,
+                   &unused_form_type, &target);
+  mouse_down_state_.Set(area, target);
+
+  // Decide whether to open link or not based on user action in mouse up and
+  // mouse move events.
+  if (IsLinkArea(area))
+    return true;
+
+  // Prevent middle mouse button from selecting texts.
+  return false;
 }
 
-void PDFiumEngine::OnMultipleClick(int click_count,
-                                   int page_index,
-                                   int char_index) {
-  // It would be more efficient if the SDK could support finding a space, but
-  // now it doesn't.
-  int start_index = char_index;
-  do {
-    base::char16 cur = pages_[page_index]->GetCharAtIndex(start_index);
-    // For double click, we want to select one word so we look for whitespace
-    // boundaries.  For triple click, we want the whole line.
-    if (cur == '\n' || (click_count == 2 && (cur == ' ' || cur == '\t')))
-      break;
-  } while (--start_index >= 0);
-  if (start_index)
-    start_index++;
+bool PDFiumEngine::OnRightMouseDown(const pp::MouseInputEvent& event) {
+  DCHECK_EQ(PP_INPUTEVENT_MOUSEBUTTON_RIGHT, event.GetButton());
 
-  int end_index = char_index;
-  int total = pages_[page_index]->GetCharCount();
-  while (end_index++ <= total) {
-    base::char16 cur = pages_[page_index]->GetCharAtIndex(end_index);
-    if (cur == '\n' || (click_count == 2 && (cur == ' ' || cur == '\t')))
-      break;
+  if (selection_.empty())
+    return false;
+
+  std::vector<pp::Rect> selection_rect_vector;
+  GetAllScreenRectsUnion(&selection_, GetVisibleRect().point(),
+                         &selection_rect_vector);
+  pp::Point point = event.GetPosition();
+  for (const auto& rect : selection_rect_vector) {
+    if (rect.Contains(point.x(), point.y()))
+      return false;
   }
-
-  selection_.push_back(PDFiumRange(pages_[page_index].get(), start_index,
-                                   end_index - start_index));
+  SelectionChangeInvalidator selection_invalidator(this);
+  selection_.clear();
+  return true;
 }
 
 bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
@@ -2004,10 +2036,8 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
 
   // We're selecting but right now we're not over text, so don't change the
   // current selection.
-  if (area != PDFiumPage::TEXT_AREA && area != PDFiumPage::WEBLINK_AREA &&
-      area != PDFiumPage::DOCLINK_AREA) {
+  if (area != PDFiumPage::TEXT_AREA && !IsLinkArea(area))
     return false;
-  }
 
   SelectionChangeInvalidator selection_invalidator(this);
   return ExtendSelection(page_index, char_index);
