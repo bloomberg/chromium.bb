@@ -158,6 +158,12 @@ function FileManager() {
    */
   this.launchParams_ = null;
 
+  /**
+   * Whether to allow touch-specific interaction.
+   * @type {boolean}
+   */
+  this.enableTouchMode_ = false;
+
   // --------------------------------------------------------------------------
   // Controllers.
 
@@ -643,11 +649,12 @@ FileManager.prototype = /** @struct */ {
 
     this.ui_.decorateFilesMenuItems();
 
-    chrome.commandLinePrivate.hasSwitch(
-        'disable-file-manager-touch-mode', function(isDisabled) {
-          if (!isDisabled)
-            this.ui_.selectionMenuButton.hidden = false;
-        }.bind(this));
+    util.isTouchModeEnabled().then(function(isEnabled) {
+      if (isEnabled) {
+        this.ui_.selectionMenuButton.hidden = false;
+        this.enableTouchMode_ = true;
+      }
+    }.bind(this));
   };
 
   /**

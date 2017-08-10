@@ -902,6 +902,21 @@ FileGrid.prototype.getHitElements = function(x, y, opt_width, opt_height) {
  */
 function FileGridSelectionController(selectionModel, grid) {
   cr.ui.GridSelectionController.call(this, selectionModel, grid);
+
+  /**
+   * Whether to allow touch-specific interaction.
+   * @private {boolean}
+   */
+  this.enableTouchMode_ = false;
+  util.isTouchModeEnabled().then(function(enabled) {
+    this.enableTouchMode_ = enabled;
+  }.bind(this));
+
+  /**
+   * @type {!FileTapHandler}
+   * @const
+   */
+  this.tapHandler_ = new FileTapHandler();
 }
 
 FileGridSelectionController.prototype = /** @struct */ {
@@ -911,6 +926,13 @@ FileGridSelectionController.prototype = /** @struct */ {
 /** @override */
 FileGridSelectionController.prototype.handlePointerDownUp = function(e, index) {
   filelist.handlePointerDownUp.call(this, e, index);
+};
+
+/** @override */
+FileGridSelectionController.prototype.handleTouchEvents = function(e, index) {
+  if (!this.enableTouchMode_)
+    return;
+  this.tapHandler_.handleTouchEvents(e, index, filelist.handleTap.bind(this));
 };
 
 /** @override */

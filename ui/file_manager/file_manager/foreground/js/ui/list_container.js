@@ -114,6 +114,17 @@ function ListContainer(element, table, grid) {
   this.element.addEventListener('keydown', this.onKeyDown_.bind(this));
   this.element.addEventListener('keypress', this.onKeyPress_.bind(this));
   this.element.addEventListener('mousemove', this.onMouseMove_.bind(this));
+
+  util.isTouchModeEnabled().then(function(enabled) {
+    if (!enabled)
+      return;
+    // Prevent opening context menu in file list by tap.
+    this.element.addEventListener('contextmenu', function(e) {
+      if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) {
+        e.stopPropagation();
+      }
+    }, true);
+  }.bind(this));
 }
 
 /**

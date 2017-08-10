@@ -455,6 +455,9 @@ FileTable.decorate = function(
   self.list.addEventListener('mousedown', function(e) {
     this.lastSelection_ = this.selectionModel.selectedIndexes;
   }.bind(self), true);
+  self.list.addEventListener('touchstart', function(e) {
+    this.lastSelection_ = this.selectionModel.selectedIndexes;
+  }.bind(self), true);
   self.list.shouldStartDragSelection =
       self.shouldStartDragSelection_.bind(self);
 
