@@ -577,8 +577,6 @@ base::string16 SandboxedUnpacker::FailureReasonToString16(
       return ASCIIToUTF16("ERROR_RE_ENCODING_THEME_IMAGE");
     case ERROR_SAVING_THEME_IMAGE:
       return ASCIIToUTF16("ERROR_SAVING_THEME_IMAGE");
-    case ABORTED_DUE_TO_SHUTDOWN:
-      return ASCIIToUTF16("ABORTED_DUE_TO_SHUTDOWN");
 
     case COULD_NOT_READ_CATALOG_DATA_FROM_DISK:
       return ASCIIToUTF16("COULD_NOT_READ_CATALOG_DATA_FROM_DISK");
@@ -599,6 +597,7 @@ base::string16 SandboxedUnpacker::FailureReasonToString16(
     case DIRECTORY_MOVE_FAILED:
       return ASCIIToUTF16("DIRECTORY_MOVE_FAILED");
 
+    case DEPRECATED_ABORTED_DUE_TO_SHUTDOWN:
     case NUM_FAILURE_REASONS:
       NOTREACHED();
       return base::string16();
@@ -796,15 +795,6 @@ bool SandboxedUnpacker::RewriteImageFiles(SkBitmap* install_icon) {
 
   // Write our parsed images back to disk as well.
   for (size_t i = 0; i < images.size(); ++i) {
-    if (BrowserThread::GetBlockingPool()->IsShutdownInProgress()) {
-      // Abort package installation if shutdown was initiated, crbug.com/235525
-      ReportFailure(
-          ABORTED_DUE_TO_SHUTDOWN,
-          l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-                                     ASCIIToUTF16("ABORTED_DUE_TO_SHUTDOWN")));
-      return false;
-    }
-
     const SkBitmap& image = std::get<0>(images[i]);
     base::FilePath path_suffix = std::get<1>(images[i]);
     if (path_suffix.MaybeAsASCII() == install_icon_path)
