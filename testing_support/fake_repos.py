@@ -568,7 +568,15 @@ deps = {
   # in recursedeps.
   'src/repo7': '/repo_7',
 }
+deps_os = {
+  'android': {
+    # This entry should only appear in flattened |deps_os|,
+    # not |deps|, even when used with |recursedeps|.
+    'src/repo4': '/repo_4',
+  }
+}
 recursedeps = [
+  'src/repo4',
   'src/repo8',
 ]""",
       'origin': 'git/repo_9@1\n',

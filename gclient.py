@@ -1727,6 +1727,7 @@ class Flattener(object):
           in DEPS
     """
     for solution in self._client.dependencies:
+      self._add_dep(solution)
       self._flatten_dep(solution)
 
     if pin_all_deps:
@@ -1754,6 +1755,16 @@ class Flattener(object):
         _VarsToLines(self._vars) +
         [''])  # Ensure newline at end of file.
 
+  def _add_dep(self, dep):
+    """Helper to add a dependency to flattened DEPS.
+
+    Arguments:
+      dep (Dependency): dependency to add
+    """
+    assert dep.name not in self._deps or self._deps.get(dep.name) == dep, (
+        dep.name, self._deps.get(dep.name))
+    self._deps[dep.name] = dep
+
   def _flatten_dep(self, dep):
     """Visits a dependency in order to flatten it (see CMDflatten).
 
@@ -1761,10 +1772,6 @@ class Flattener(object):
       dep (Dependency): dependency to process
     """
     self._allowed_hosts.update(dep.allowed_hosts)
-
-    assert dep.name not in self._deps or self._deps[dep.name] == dep, (
-        dep.name, self._deps.get(dep.name))
-    self._deps[dep.name] = dep
 
     for key, value in dep.get_vars().iteritems():
       # Make sure there are no conflicting variables. It is fine however
@@ -1776,10 +1783,7 @@ class Flattener(object):
     self._pre_deps_hooks.extend([(dep, hook) for hook in dep.pre_deps_hooks])
 
     for sub_dep in dep.dependencies:
-      assert (sub_dep.name not in self._deps or
-              self._deps[sub_dep.name] == sub_dep), (
-                 dep, sub_dep, self._deps.get(sub_dep.name))
-      self._deps[sub_dep.name] = sub_dep
+      self._add_dep(sub_dep)
 
     for hook_os, os_hooks in dep.os_deps_hooks.iteritems():
       self._hooks_os.setdefault(hook_os, []).extend(
