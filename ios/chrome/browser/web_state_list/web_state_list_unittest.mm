@@ -53,7 +53,8 @@ class WebStateListTestObserver : public WebStateListObserver {
   // WebStateListObserver implementation.
   void WebStateInsertedAt(WebStateList* web_state_list,
                           web::WebState* web_state,
-                          int index) override {
+                          int index,
+                          bool activating) override {
     web_state_inserted_called_ = true;
   }
 

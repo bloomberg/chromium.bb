@@ -172,7 +172,7 @@ int WebStateList::InsertWebState(int index,
 
   const bool activating = IsInsertionFlagSet(insertion_flags, INSERT_ACTIVATE);
   for (auto& observer : observers_)
-    observer.WebStateInsertedAt(this, web_state_ptr, index);
+    observer.WebStateInsertedAt(this, web_state_ptr, index, activating);
 
   if (opener.opener)
     SetOpenerOfWebStateAt(index, opener);

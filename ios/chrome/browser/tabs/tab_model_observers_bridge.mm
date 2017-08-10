@@ -33,12 +33,13 @@
 
 - (void)webStateList:(WebStateList*)webStateList
     didInsertWebState:(web::WebState*)webState
-              atIndex:(int)atIndex {
+              atIndex:(int)atIndex
+           activating:(BOOL)activating {
   DCHECK_GE(atIndex, 0);
   [_tabModelObservers tabModel:_tabModel
                   didInsertTab:LegacyTabHelper::GetTabForWebState(webState)
                        atIndex:static_cast<NSUInteger>(atIndex)
-                  inForeground:NO];
+                  inForeground:activating];
   [_tabModelObservers tabModelDidChangeTabCount:_tabModel];
 }
 

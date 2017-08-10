@@ -36,7 +36,8 @@ void WebStateListMetricsObserver::RecordSessionMetrics() {
 void WebStateListMetricsObserver::WebStateInsertedAt(
     WebStateList* web_state_list,
     web::WebState* web_state,
-    int index) {
+    int index,
+    bool activating) {
   base::RecordAction(base::UserMetricsAction("MobileNewTabOpened"));
   ++inserted_web_state_counter_;
 }

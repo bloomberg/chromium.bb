@@ -20,10 +20,12 @@ class WebStateListObserver {
   virtual ~WebStateListObserver();
 
   // Invoked after a new WebState has been added to the WebStateList at the
-  // specified index.
+  // specified index. |activating| will be true if the WebState will become
+  // the new active WebState after the insertion.
   virtual void WebStateInsertedAt(WebStateList* web_state_list,
                                   web::WebState* web_state,
-                                  int index);
+                                  int index,
+                                  bool activating);
 
   // Invoked after the WebState at the specified index is moved to another
   // index.
