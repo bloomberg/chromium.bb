@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/browser/blob_storage/blob_internals_url_loader.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -118,16 +119,14 @@ void DataAvailable(scoped_refptr<ResourceResponse> headers,
                    mojom::URLLoaderClientPtrInfo client_info,
                    scoped_refptr<base::RefCountedMemory> bytes) {
   // Since the bytes are from the memory mapped resource file, copying the
-  // data can lead to disk access.
-  // TODO(jam): once http://crbug.com/678155 is fixed, use task scheduler:
-  // base::PostTaskWithTraits(
-  //     FROM_HERE,
-  //     {base::TaskPriority::USER_BLOCKING,
-  //       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-  BrowserThread::PostTask(
-      BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
-      base::BindOnce(ReadData, headers, replacements, gzipped, source,
-                     std::move(client_info), bytes));
+  // data can lead to disk access. Needs to be posted to a SequencedTaskRunner
+  // as Mojo requires a SequencedTaskRunnerHandle in scope.
+  base::CreateSequencedTaskRunnerWithTraits(
+      {base::TaskPriority::USER_BLOCKING, base::MayBlock(),
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(ReadData, headers, replacements, gzipped,
+                                source, std::move(client_info), bytes));
 }
 
 void StartURLLoader(const ResourceRequest& request,
