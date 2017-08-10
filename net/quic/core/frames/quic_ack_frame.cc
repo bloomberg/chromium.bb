@@ -90,27 +90,30 @@ void PacketNumberQueue::Add(QuicPacketNumber packet_number) {
           Interval<QuicPacketNumber>(packet_number, packet_number + 1));
       return;
     }
+    Interval<QuicPacketNumber> back = packet_number_deque_.back();
 
     // Check for the typical case,
     // when the next packet in order is acked
-    if ((packet_number_deque_.back()).max() == packet_number) {
-      (packet_number_deque_.back()).SetMax(packet_number + 1);
+    if (back.max() == packet_number) {
+      packet_number_deque_.back().SetMax(packet_number + 1);
       return;
     }
     // Check if the next packet in order is skipped
-    if ((packet_number_deque_.back()).max() < packet_number) {
+    if (back.max() < packet_number) {
       packet_number_deque_.push_back(
           Interval<QuicPacketNumber>(packet_number, packet_number + 1));
       return;
     }
+
+    Interval<QuicPacketNumber> front = packet_number_deque_.front();
     // Check if the packet can be  popped on the front
-    if ((packet_number_deque_.front()).min() > packet_number + 1) {
+    if (front.min() > packet_number + 1) {
       packet_number_deque_.push_front(
           Interval<QuicPacketNumber>(packet_number, packet_number + 1));
       return;
     }
-    if ((packet_number_deque_.front()).min() == packet_number + 1) {
-      (packet_number_deque_.front()).SetMin(packet_number);
+    if (front.min() == packet_number + 1) {
+      packet_number_deque_.front().SetMin(packet_number);
       return;
     }
 
@@ -118,36 +121,35 @@ void PacketNumberQueue::Add(QuicPacketNumber packet_number) {
     // Iterating through the queue backwards
     // to find a proper place for the packet
     while (i >= 0) {
+      Interval<QuicPacketNumber> packet_interval = packet_number_deque_[i];
       // Check if the packet is contained in an interval already
-      if (packet_number_deque_[i].max() > packet_number &&
-          packet_number_deque_[i].min() <= packet_number) {
+      if (packet_interval.max() > packet_number &&
+          packet_interval.min() <= packet_number) {
         return;
       }
 
       // Check if the packet can extend an interval
       // and merges two intervals if needed
-      if (packet_number_deque_[i].max() == packet_number) {
+      if (packet_interval.max() == packet_number) {
         packet_number_deque_[i].SetMax(packet_number + 1);
         if (static_cast<size_t>(i) < packet_number_deque_.size() - 1 &&
-            packet_number_deque_[i].max() ==
-                packet_number_deque_[i + 1].min()) {
+            packet_number + 1 == packet_number_deque_[i + 1].min()) {
           packet_number_deque_[i].SetMax(packet_number_deque_[i + 1].max());
           packet_number_deque_.erase(packet_number_deque_.begin() + i + 1);
         }
         return;
       }
-      if (packet_number_deque_[i].min() == packet_number + 1) {
+      if (packet_interval.min() == packet_number + 1) {
         packet_number_deque_[i].SetMin(packet_number);
-        if (i > 0 && packet_number_deque_[i].min() ==
-                         packet_number_deque_[i - 1].max()) {
-          packet_number_deque_[i - 1].SetMax(packet_number_deque_[i].max());
+        if (i > 0 && packet_number == packet_number_deque_[i - 1].max()) {
+          packet_number_deque_[i - 1].SetMax(packet_interval.max());
           packet_number_deque_.erase(packet_number_deque_.begin() + i);
         }
         return;
       }
 
       // Check if we need to make a new interval for the packet
-      if (packet_number_deque_[i].max() < packet_number + 1) {
+      if (packet_interval.max() < packet_number + 1) {
         packet_number_deque_.insert(
             packet_number_deque_.begin() + i + 1,
             Interval<QuicPacketNumber>(packet_number, packet_number + 1));
@@ -160,7 +162,8 @@ void PacketNumberQueue::Add(QuicPacketNumber packet_number) {
   }
 }
 
-void PacketNumberQueue::Add(QuicPacketNumber lower, QuicPacketNumber higher) {
+void PacketNumberQueue::AddRange(QuicPacketNumber lower,
+                                 QuicPacketNumber higher) {
   if (lower >= higher) {
     return;
   }
@@ -168,26 +171,47 @@ void PacketNumberQueue::Add(QuicPacketNumber lower, QuicPacketNumber higher) {
     if (packet_number_deque_.empty()) {
       packet_number_deque_.push_front(
           Interval<QuicPacketNumber>(lower, higher));
+      return;
+    }
+    Interval<QuicPacketNumber> back = packet_number_deque_.back();
 
-    } else if ((packet_number_deque_.back()).max() == lower) {
+    if (back.max() == lower) {
       // Check for the typical case,
       // when the next packet in order is acked
-      (packet_number_deque_.back()).SetMax(higher);
-
-    } else if ((packet_number_deque_.back()).max() < lower) {
+      packet_number_deque_.back().SetMax(higher);
+      return;
+    }
+    if (back.max() < lower) {
       // Check if the next packet in order is skipped
       packet_number_deque_.push_back(Interval<QuicPacketNumber>(lower, higher));
-
-      // Check if the packets are being added in reverse order
-    } else if ((packet_number_deque_.front()).min() == higher) {
-      (packet_number_deque_.front()).SetMax(lower);
-    } else if ((packet_number_deque_.front()).min() > higher) {
+      return;
+    }
+    Interval<QuicPacketNumber> front = packet_number_deque_.front();
+    // Check if the packets are being added in reverse order
+    if (front.min() == higher) {
+      packet_number_deque_.front().SetMax(lower);
+    } else if (front.min() > higher) {
       packet_number_deque_.push_front(
           Interval<QuicPacketNumber>(lower, higher));
 
     } else {
       // Iterating through the interval and adding packets one by one
-      for (size_t i = lower; i != higher; i++) {
+      QUIC_BUG << "In the slowpath of AddRange. Adding [" << lower << ", "
+               << higher << "), in a deque of size "
+               << packet_number_deque_.size() << ", whose largest element is "
+               << back.max() << " and smallest " << front.min() << ".\n";
+      // Check if the first and/or the last interval of the deque can be
+      // extended, which would reduce the compexity of the following for loop.
+      if (higher >= back.max()) {
+        packet_number_deque_.back().SetMax(higher);
+        higher = back.min();
+      }
+      if (lower < front.min()) {
+        packet_number_deque_.front().SetMin(lower);
+        lower = front.max() - 1;
+      }
+
+      for (size_t i = lower; i < higher; i++) {
         PacketNumberQueue::Add(i);
       }
     }
@@ -203,13 +227,12 @@ bool PacketNumberQueue::RemoveUpTo(QuicPacketNumber higher) {
   const QuicPacketNumber old_min = Min();
   if (use_deque_) {
     while (!packet_number_deque_.empty()) {
-      if (packet_number_deque_.front().max() < higher) {
+      Interval<QuicPacketNumber> front = packet_number_deque_.front();
+      if (front.max() < higher) {
         packet_number_deque_.pop_front();
-      } else if (packet_number_deque_.front().min() < higher &&
-                 packet_number_deque_.front().max() >= higher) {
+      } else if (front.min() < higher && front.max() >= higher) {
         packet_number_deque_.front().SetMin(higher);
-        if (packet_number_deque_.front().max() ==
-            packet_number_deque_.front().min()) {
+        if (front.max() == higher) {
           packet_number_deque_.pop_front();
         }
         break;
@@ -243,22 +266,14 @@ bool PacketNumberQueue::Contains(QuicPacketNumber packet_number) const {
     if (packet_number_deque_.empty()) {
       return false;
     }
-    int low = 0;
-    int high = packet_number_deque_.size() - 1;
-
-    while (low <= high) {
-      int mid = (low + high) / 2;
-      if (packet_number_deque_[mid].min() > packet_number) {
-        high = mid - 1;
-        continue;
+    if (packet_number_deque_.front().min() > packet_number ||
+        packet_number_deque_.back().max() <= packet_number) {
+      return false;
+    }
+    for (Interval<QuicPacketNumber> interval : packet_number_deque_) {
+      if (interval.Contains(packet_number)) {
+        return true;
       }
-      if (packet_number_deque_[mid].max() <= packet_number) {
-        low = mid + 1;
-        continue;
-      }
-      DCHECK(packet_number_deque_[mid].max() > packet_number);
-      DCHECK(packet_number_deque_[mid].min() <= packet_number);
-      return true;
     }
     return false;
   } else {
@@ -294,9 +309,9 @@ QuicPacketNumber PacketNumberQueue::Max() const {
 
 size_t PacketNumberQueue::NumPacketsSlow() const {
   if (use_deque_) {
-    size_t n_packets = 0;
-    for (size_t i = 0; i < packet_number_deque_.size(); i++) {
-      n_packets += packet_number_deque_[i].Length();
+    int n_packets = 0;
+    for (Interval<QuicPacketNumber> interval : packet_number_deque_) {
+      n_packets += interval.Length();
     }
     return n_packets;
   } else {
@@ -351,7 +366,7 @@ PacketNumberQueue::const_reverse_iterator PacketNumberQueue::rend() const {
 QuicPacketNumber PacketNumberQueue::LastIntervalLength() const {
   DCHECK(!Empty());
   if (use_deque_) {
-    return packet_number_deque_[packet_number_deque_.size() - 1].Length();
+    return packet_number_deque_.back().Length();
   } else {
     return packet_number_intervals_.rbegin()->Length();
   }

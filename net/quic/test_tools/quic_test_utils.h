@@ -694,7 +694,7 @@ class TestPushPromiseDelegate : public QuicClientPushPromiseIndex::Delegate {
   QuicSpdyStream* rendezvous_stream_;
 };
 
-class TestQuicSpdyClientSession : public QuicClientSessionBase {
+class TestQuicSpdyClientSession : public QuicSpdyClientSessionBase {
  public:
   TestQuicSpdyClientSession(QuicConnection* connection,
                             const QuicConfig& config,
@@ -704,7 +704,7 @@ class TestQuicSpdyClientSession : public QuicClientSessionBase {
 
   bool IsAuthorized(const std::string& authority) override;
 
-  // QuicClientSessionBase
+  // QuicSpdyClientSessionBase
   MOCK_METHOD1(OnProofValid,
                void(const QuicCryptoClientConfig::CachedState& cached));
   MOCK_METHOD1(OnProofVerifyDetailsAvailable,

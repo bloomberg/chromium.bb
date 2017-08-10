@@ -3741,7 +3741,7 @@ TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlock) {
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = kSmallLargestObserved;
   ack_frame.ack_delay_time = QuicTime::Delta::Zero();
-  ack_frame.packets.Add(1, kSmallLargestObserved + 1);
+  ack_frame.packets.AddRange(1, kSmallLargestObserved + 1);
 
   QuicFrames frames = {QuicFrame(&ack_frame)};
 
@@ -3834,10 +3834,11 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMultipleAckBlocks) {
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = kSmallLargestObserved;
   ack_frame.ack_delay_time = QuicTime::Delta::Zero();
-  ack_frame.packets.Add(1, 5);
-  ack_frame.packets.Add(10, 500);
-  ack_frame.packets.Add(900, kSmallMissingPacket);
-  ack_frame.packets.Add(kSmallMissingPacket + 1, kSmallLargestObserved + 1);
+  ack_frame.packets.AddRange(1, 5);
+  ack_frame.packets.AddRange(10, 500);
+  ack_frame.packets.AddRange(900, kSmallMissingPacket);
+  ack_frame.packets.AddRange(kSmallMissingPacket + 1,
+                             kSmallLargestObserved + 1);
 
   QuicFrames frames = {QuicFrame(&ack_frame)};
 
@@ -3989,7 +3990,7 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMaxAckBlocks) {
   for (size_t i = 2; i < 2 * 300; i += 2) {
     ack_frame.packets.Add(i);
   }
-  ack_frame.packets.Add(600, kSmallLargestObserved + 1);
+  ack_frame.packets.AddRange(600, kSmallLargestObserved + 1);
 
   QuicFrames frames = {QuicFrame(&ack_frame)};
 
@@ -5074,7 +5075,7 @@ TEST_P(QuicFramerTest, CleanTruncation) {
 
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 201;
-  ack_frame.packets.Add(1, ack_frame.largest_observed);
+  ack_frame.packets.AddRange(1, ack_frame.largest_observed);
 
   // Create a packet with just the ack.
   QuicFrames frames = {QuicFrame(&ack_frame)};

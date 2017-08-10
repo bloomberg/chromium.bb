@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/quic/quic_client_session.h"
+#include "net/tools/quic/quic_spdy_client_session.h"
 
 #include "net/log/net_log_with_source.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
@@ -18,30 +18,30 @@ using std::string;
 
 namespace net {
 
-QuicClientSession::QuicClientSession(
+QuicSpdyClientSession::QuicSpdyClientSession(
     const QuicConfig& config,
     QuicConnection* connection,
     const QuicServerId& server_id,
     QuicCryptoClientConfig* crypto_config,
     QuicClientPushPromiseIndex* push_promise_index)
-    : QuicClientSessionBase(connection, push_promise_index, config),
+    : QuicSpdyClientSessionBase(connection, push_promise_index, config),
       server_id_(server_id),
       crypto_config_(crypto_config) {}
 
-QuicClientSession::~QuicClientSession() {}
+QuicSpdyClientSession::~QuicSpdyClientSession() {}
 
-void QuicClientSession::Initialize() {
+void QuicSpdyClientSession::Initialize() {
   crypto_stream_ = CreateQuicCryptoStream();
-  QuicClientSessionBase::Initialize();
+  QuicSpdyClientSessionBase::Initialize();
 }
 
-void QuicClientSession::OnProofValid(
+void QuicSpdyClientSession::OnProofValid(
     const QuicCryptoClientConfig::CachedState& /*cached*/) {}
 
-void QuicClientSession::OnProofVerifyDetailsAvailable(
+void QuicSpdyClientSession::OnProofVerifyDetailsAvailable(
     const ProofVerifyDetails& /*verify_details*/) {}
 
-bool QuicClientSession::ShouldCreateOutgoingDynamicStream() {
+bool QuicSpdyClientSession::ShouldCreateOutgoingDynamicStream() {
   DCHECK(!FLAGS_quic_reloadable_flag_quic_refactor_stream_creation);
   if (!crypto_stream_->encryption_established()) {
     QUIC_DLOG(INFO) << "Encryption not active so no outgoing stream created.";
@@ -60,7 +60,7 @@ bool QuicClientSession::ShouldCreateOutgoingDynamicStream() {
   return true;
 }
 
-QuicSpdyClientStream* QuicClientSession::CreateOutgoingDynamicStream(
+QuicSpdyClientStream* QuicSpdyClientSession::CreateOutgoingDynamicStream(
     SpdyPriority priority) {
   if (!ShouldCreateOutgoingDynamicStream()) {
     return nullptr;
@@ -72,32 +72,34 @@ QuicSpdyClientStream* QuicClientSession::CreateOutgoingDynamicStream(
   return stream_ptr;
 }
 
-std::unique_ptr<QuicSpdyClientStream> QuicClientSession::CreateClientStream() {
+std::unique_ptr<QuicSpdyClientStream>
+QuicSpdyClientSession::CreateClientStream() {
   return QuicMakeUnique<QuicSpdyClientStream>(GetNextOutgoingStreamId(), this);
 }
 
-QuicCryptoClientStreamBase* QuicClientSession::GetMutableCryptoStream() {
+QuicCryptoClientStreamBase* QuicSpdyClientSession::GetMutableCryptoStream() {
   return crypto_stream_.get();
 }
 
-const QuicCryptoClientStreamBase* QuicClientSession::GetCryptoStream() const {
+const QuicCryptoClientStreamBase* QuicSpdyClientSession::GetCryptoStream()
+    const {
   return crypto_stream_.get();
 }
 
-void QuicClientSession::CryptoConnect() {
+void QuicSpdyClientSession::CryptoConnect() {
   DCHECK(flow_controller());
   crypto_stream_->CryptoConnect();
 }
 
-int QuicClientSession::GetNumSentClientHellos() const {
+int QuicSpdyClientSession::GetNumSentClientHellos() const {
   return crypto_stream_->num_sent_client_hellos();
 }
 
-int QuicClientSession::GetNumReceivedServerConfigUpdates() const {
+int QuicSpdyClientSession::GetNumReceivedServerConfigUpdates() const {
   return crypto_stream_->num_scup_messages_received();
 }
 
-bool QuicClientSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
+bool QuicSpdyClientSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
   DCHECK(!FLAGS_quic_reloadable_flag_quic_refactor_stream_creation);
   if (!connection()->connected()) {
     QUIC_BUG << "ShouldCreateIncomingDynamicStream called when disconnected";
@@ -118,7 +120,7 @@ bool QuicClientSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
   return true;
 }
 
-QuicSpdyStream* QuicClientSession::CreateIncomingDynamicStream(
+QuicSpdyStream* QuicSpdyClientSession::CreateIncomingDynamicStream(
     QuicStreamId id) {
   if (!ShouldCreateIncomingDynamicStream(id)) {
     return nullptr;
@@ -130,23 +132,23 @@ QuicSpdyStream* QuicClientSession::CreateIncomingDynamicStream(
 }
 
 std::unique_ptr<QuicCryptoClientStreamBase>
-QuicClientSession::CreateQuicCryptoStream() {
+QuicSpdyClientSession::CreateQuicCryptoStream() {
   return QuicMakeUnique<QuicCryptoClientStream>(
       server_id_, this, new ProofVerifyContextChromium(0, NetLogWithSource()),
       crypto_config_, this);
 }
 
-bool QuicClientSession::IsAuthorized(const string& authority) {
+bool QuicSpdyClientSession::IsAuthorized(const string& authority) {
   return true;
 }
 
-QuicSpdyClientStream* QuicClientSession::MaybeCreateOutgoingDynamicStream(
+QuicSpdyClientStream* QuicSpdyClientSession::MaybeCreateOutgoingDynamicStream(
     SpdyPriority priority) {
   return static_cast<QuicSpdyClientStream*>(
       QuicSpdySession::MaybeCreateOutgoingDynamicStream(priority));
 }
 
-QuicSpdyStream* QuicClientSession::MaybeCreateIncomingDynamicStream(
+QuicSpdyStream* QuicSpdyClientSession::MaybeCreateIncomingDynamicStream(
     QuicStreamId id) {
   QuicSpdyStream* stream =
       QuicSpdySession::MaybeCreateIncomingDynamicStream(id);
@@ -157,7 +159,8 @@ QuicSpdyStream* QuicClientSession::MaybeCreateIncomingDynamicStream(
   return stream;
 }
 
-std::unique_ptr<QuicStream> QuicClientSession::CreateStream(QuicStreamId id) {
+std::unique_ptr<QuicStream> QuicSpdyClientSession::CreateStream(
+    QuicStreamId id) {
   return QuicMakeUnique<QuicSpdyClientStream>(id, this);
 }
 

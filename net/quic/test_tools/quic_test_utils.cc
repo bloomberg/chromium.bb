@@ -484,7 +484,7 @@ TestQuicSpdyClientSession::TestQuicSpdyClientSession(
     const QuicConfig& config,
     const QuicServerId& server_id,
     QuicCryptoClientConfig* crypto_config)
-    : QuicClientSessionBase(connection, &push_promise_index_, config) {
+    : QuicSpdyClientSessionBase(connection, &push_promise_index_, config) {
   crypto_stream_.reset(new QuicCryptoClientStream(
       server_id, this, crypto_test_utils::ProofVerifyContextForTesting(),
       crypto_config, this));

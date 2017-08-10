@@ -117,12 +117,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_random_padding, true)
 // If enabled, use refactored stream creation methods.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_refactor_stream_creation, false)
 
-// If true, GFEs generate and validate source address token using the actual
-// client IP for proxied session.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_use_client_address_for_stk_in_proxy,
-          true)
-
 // If true, export a varz mapping QUIC non 0-rtt handshake with corresponding
 // frontend service.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_account_handshake, false)
@@ -136,9 +130,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc, false)
 
 // If true, enable QUIC v40.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_40, false)
-
-// If true, use the more CPU efficient bandwidth sampler datastructure.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_faster_bandwidth_sampler, true)
 
 // In QUIC, QuicSession gets notified when stream frames are acked, discarded or
 // retransmitted.
@@ -206,3 +197,7 @@ QUIC_FLAG(uint32_t, FLAGS_quic_send_buffer_max_data_slice_size, 4096u)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_bytes4,
           false)
+
+// Add 4 new ack decimation modes to QUIC that are entirely time based at 1/4
+// or 1/8 RTT.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_ack_decimation, false)

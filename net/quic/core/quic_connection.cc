@@ -216,6 +216,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       stop_waiting_count_(0),
       ack_mode_(TCP_ACKING),
       ack_decimation_delay_(kAckDecimationDelay),
+      unlimited_ack_decimation_(false),
       delay_setting_retransmission_alarm_(false),
       pending_retransmission_alarm_(false),
       defer_send_in_response_to_packets_(false),
@@ -270,7 +271,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       largest_received_packet_size_(0),
       goaway_sent_(false),
       goaway_received_(false),
-      write_error_occured_(false),
+      write_error_occurred_(false),
       no_stop_waiting_frames_(false),
       consecutive_num_packets_with_no_retransmittable_frames_(0) {
   QUIC_DLOG(INFO) << ENDPOINT
@@ -353,6 +354,12 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (config.HasClientSentConnectionOption(kAKD4, perspective_)) {
     ack_mode_ = ACK_DECIMATION_WITH_REORDERING;
     ack_decimation_delay_ = kShortAckDecimationDelay;
+  }
+  if (FLAGS_quic_reloadable_flag_quic_ack_decimation) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_ack_decimation);
+    if (config.HasClientSentConnectionOption(kAKDU, perspective_)) {
+      unlimited_ack_decimation_ = true;
+    }
   }
   if (config.HasClientSentConnectionOption(k5RTO, perspective_)) {
     close_connection_after_five_rtos_ = true;
@@ -974,9 +981,10 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
     ++num_retransmittable_packets_received_since_last_ack_sent_;
     if (ack_mode_ != TCP_ACKING &&
         last_header_.packet_number > kMinReceivedBeforeAckDecimation) {
-      // Ack up to 10 packets at once.
-      if (num_retransmittable_packets_received_since_last_ack_sent_ >=
-          kMaxRetransmittablePacketsBeforeAck) {
+      // Ack up to 10 packets at once unless ack decimation is unlimited.
+      if (!unlimited_ack_decimation_ &&
+          num_retransmittable_packets_received_since_last_ack_sent_ >=
+              kMaxRetransmittablePacketsBeforeAck) {
         ack_queued_ = true;
       } else if (!ack_alarm_->IsSet()) {
         // Wait the minimum of a quarter min_rtt and the delayed ack time.
@@ -1639,11 +1647,11 @@ bool QuicConnection::AllowSelfAddressChange() const {
 }
 
 void QuicConnection::OnWriteError(int error_code) {
-  if (write_error_occured_) {
+  if (write_error_occurred_) {
     // A write error already occurred. The connection is being closed.
     return;
   }
-  write_error_occured_ = true;
+  write_error_occurred_ = true;
 
   const string error_details = QuicStrCat(
       "Write failed with error: ", error_code, " (", strerror(error_code), ")");
