@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_gesture_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
@@ -289,11 +290,9 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=new_tab";
 }
 
 - (void)addItemToReadingList:(ContentSuggestionsItem*)item {
-  base::RecordAction(base::UserMetricsAction("MobileReadingListAdd"));
-  ReadingListModel* readingModel =
-      ReadingListModelFactory::GetForBrowserState(self.browserState);
-  readingModel->AddEntry(item.URL, base::SysNSStringToUTF8(item.title),
-                         reading_list::ADDED_VIA_CURRENT_APP);
+  ReadingListAddCommand* command =
+      [[ReadingListAddCommand alloc] initWithURL:item.URL title:item.title];
+  [self.dispatcher addToReadingList:command];
 }
 
 - (void)dismissSuggestion:(ContentSuggestionsItem*)item
