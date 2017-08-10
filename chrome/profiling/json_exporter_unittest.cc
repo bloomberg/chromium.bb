@@ -53,7 +53,7 @@ TEST(ProfilingJsonExporter, Simple) {
   events.insert(AllocationEvent(Address(0x3), 16, bt1));
 
   std::ostringstream stream;
-  ExportAllocationEventSetToJSON(1234, &backtrace_storage, events, stream);
+  ExportAllocationEventSetToJSON(1234, events, stream);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -69,13 +69,13 @@ TEST(ProfilingJsonExporter, Simple) {
   ASSERT_TRUE(periodic_interval) << "Array contains no periodic_interval";
 
   const base::Value* heaps_v2 =
-      periodic_interval->GetPath({"args", "dumps", "heaps_v2"});
+      periodic_interval->FindPath({"args", "dumps", "heaps_v2"});
   ASSERT_TRUE(heaps_v2);
 
   // Counts should be a list of two items, a 1 and a 2 (in either order). The
   // two matching 16-byte allocations should be coalesced to produce the 2.
   const base::Value* counts =
-      heaps_v2->GetPath({"allocators", "malloc", "counts"});
+      heaps_v2->FindPath({"allocators", "malloc", "counts"});
   ASSERT_TRUE(counts);
   EXPECT_EQ(2u, counts->GetList().size());
   EXPECT_TRUE((counts->GetList()[0].GetInt() == 1 &&

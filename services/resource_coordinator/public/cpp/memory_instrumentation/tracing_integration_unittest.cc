@@ -142,9 +142,11 @@ class MockCoordinator : public Coordinator, public mojom::Coordinator {
   void RegisterClientProcess(mojom::ClientProcessPtr,
                              mojom::ProcessType) override {}
 
-  void RequestGlobalMemoryDump(
-      const MemoryDumpRequestArgs& args,
-      const RequestGlobalMemoryDumpCallback& callback) override;
+  void RequestGlobalMemoryDump(const MemoryDumpRequestArgs& args,
+                               const RequestGlobalMemoryDumpCallback&) override;
+
+  void GetVmRegionsForHeapProfiler(
+      const GetVmRegionsForHeapProfilerCallback&) override {}
 
  private:
   mojo::BindingSet<mojom::Coordinator> bindings_;
