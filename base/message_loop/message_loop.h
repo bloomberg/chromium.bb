@@ -132,7 +132,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // Returns the MessageLoop object for the current thread, or null if none.
   static MessageLoop* current();
 
-  typedef std::unique_ptr<MessagePump>(MessagePumpFactory)();
+  using MessagePumpFactory = std::unique_ptr<MessagePump>();
   // Uses the given base::MessagePumpForUIFactory to override the default
   // MessagePump implementation for 'TYPE_UI'. Returns true if the factory
   // was successfully registered.
@@ -581,9 +581,8 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
     WATCH_READ_WRITE = MessagePumpIOSForIO::WATCH_READ_WRITE
   };
 #elif defined(OS_POSIX)
-  typedef MessagePumpLibevent::Watcher Watcher;
-  typedef MessagePumpLibevent::FileDescriptorWatcher
-      FileDescriptorWatcher;
+  using Watcher = MessagePumpLibevent::Watcher;
+  using FileDescriptorWatcher = MessagePumpLibevent::FileDescriptorWatcher;
 
   enum Mode {
     WATCH_READ = MessagePumpLibevent::WATCH_READ,
