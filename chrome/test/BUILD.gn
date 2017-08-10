@@ -5014,7 +5014,7 @@ if (safe_browsing_mode == 1 && is_mac) {
     inputs = [
       script,
       shell_script,
-      "data/safe_browsing/dmg/make_hfs.sh",
+      "data/safe_browsing/dmg/hfs_raw_images.tar.bz2",
       "data/safe_browsing/mach_o/executablefat",
       "data/safe_browsing/mach_o/lib64.dylib",
     ]

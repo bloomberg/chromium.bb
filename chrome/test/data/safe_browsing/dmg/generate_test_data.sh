@@ -30,9 +30,9 @@ generate_test_data() {
 
   # HFS Raw Images #############################################################
 
-  MAKE_HFS="${THIS_DIR}/make_hfs.sh"
-  "${MAKE_HFS}" HFS+ 1024 "${OUT_DIR}/hfs_plus.img"
-  "${MAKE_HFS}" hfsx $((8 * 1024)) "${OUT_DIR}/hfsx_case_sensitive.img"
+  # Extract the checked-in testdata to the OUT_DIR, ignoring the archived
+  # modification times.
+  tar x -m -C "${OUT_DIR}" -f "${THIS_DIR}/hfs_raw_images.tar.bz2"
 
   # DMG Files ##################################################################
 
@@ -93,7 +93,7 @@ generate_test_data() {
   # Overwrites 'koly' with '????'.
   printf '\xa1\xa1\xa1\xa1' | dd conv=notrunc \
       of="${OUT_DIR}/mach_o_in_dmg_no_koly_signature.dmg" \
-      bs=1 seek=$(($SIZE - 512))
+      bs=1 seek=$(($SIZE - 512)) &> /dev/null
 
   # Copy of Mach-O DMG with extension changed to .txt.
   cp "${OUT_DIR}/mach_o_in_dmg.dmg" "${OUT_DIR}/mach_o_in_dmg.txt"
