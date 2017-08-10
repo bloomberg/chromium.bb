@@ -297,10 +297,10 @@ NS_INLINE void AnimateInViews(NSArray* views,
       break;
   }
 
-  // Disable IDC_CLOSE_ALL_TABS menu item if on phone with no tabs.
+  // Disable TOOLS_CLOSE_ALL_TABS menu item if on phone with no tabs.
   if (!IsIPadIdiom()) {
     [self setItemEnabled:!configuration.hasNoOpenedTabs
-                 withTag:IDC_CLOSE_ALL_TABS];
+                 withTag:TOOLS_CLOSE_ALL_TABS];
   }
 }
 
