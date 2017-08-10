@@ -34,15 +34,11 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
-#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_context.h"
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/device/public/interfaces/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -115,74 +111,15 @@ void DownloadRequestData::Detach(net::URLRequest* request) {
 const int DownloadRequestCore::kDownloadByteStreamSize = 100 * 1024;
 
 // static
-std::unique_ptr<net::URLRequest> DownloadRequestCore::CreateRequestOnIOThread(
-    uint32_t download_id,
-    DownloadUrlParameters* params) {
+std::unique_ptr<net::URLRequest>
+DownloadRequestCore::CreateRequestOnIOThread(uint32_t download_id,
+                                             DownloadUrlParameters* params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(download_id == DownloadItem::kInvalidId ||
          !params->content_initiated())
       << "Content initiated downloads shouldn't specify a download ID";
-  DCHECK(params->offset() >= 0);
 
-  // ResourceDispatcherHost{Base} is-not-a URLRequest::Delegate, and
-  // DownloadUrlParameters can-not include resource_dispatcher_host_impl.h, so
-  // we must down cast. RDHI is the only subclass of RDH as of 2012 May 4.
-  std::unique_ptr<net::URLRequest> request(
-      params->url_request_context_getter()
-          ->GetURLRequestContext()
-          ->CreateRequest(params->url(), net::DEFAULT_PRIORITY, nullptr,
-                          params->GetNetworkTrafficAnnotation()));
-  request->set_method(params->method());
-
-  if (!params->post_body().empty()) {
-    const std::string& body = params->post_body();
-    std::unique_ptr<net::UploadElementReader> reader(
-        net::UploadOwnedBytesElementReader::CreateWithString(body));
-    request->set_upload(
-        net::ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
-  }
-
-  if (params->post_id() >= 0) {
-    // The POST in this case does not have an actual body, and only works
-    // when retrieving data from cache. This is done because we don't want
-    // to do a re-POST without user consent, and currently don't have a good
-    // plan on how to display the UI for that.
-    DCHECK(params->prefer_cache());
-    DCHECK_EQ("POST", params->method());
-    std::vector<std::unique_ptr<net::UploadElementReader>> element_readers;
-    request->set_upload(base::MakeUnique<net::ElementsUploadDataStream>(
-        std::move(element_readers), params->post_id()));
-  }
-
-  int load_flags = request->load_flags();
-  if (params->prefer_cache()) {
-    // If there is upload data attached, only retrieve from cache because there
-    // is no current mechanism to prompt the user for their consent for a
-    // re-post. For GETs, try to retrieve data from the cache and skip
-    // validating the entry if present.
-    if (request->get_upload())
-      load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
-    else
-      load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
-  } else {
-    load_flags |= net::LOAD_DISABLE_CACHE;
-  }
-  request->SetLoadFlags(load_flags);
-
-  // Add partial requests headers.
-  AddPartialRequestHeaders(request.get(), params);
-
-  // Downloads are treated as top level navigations. Hence the first-party
-  // origin for cookies is always based on the target URL and is updated on
-  // redirects.
-  request->set_site_for_cookies(params->url());
-  request->set_first_party_url_policy(
-      net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
-  request->set_initiator(params->initiator());
-
-  for (const auto& header : params->request_headers())
-    request->SetExtraRequestHeaderByName(header.first, header.second,
-                                         false /*overwrite*/);
+  std::unique_ptr<net::URLRequest> request = CreateURLRequestOnIOThread(params);
 
   DownloadRequestData::Attach(request.get(), params, download_id);
   return request;
@@ -624,65 +561,6 @@ DownloadInterruptReason DownloadRequestCore::HandleSuccessfulServerResponse(
     return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
 
   return DOWNLOAD_INTERRUPT_REASON_NONE;
-}
-
-// static
-void DownloadRequestCore::AddPartialRequestHeaders(
-    net::URLRequest* request,
-    DownloadUrlParameters* params) {
-  if (params->offset() == 0 &&
-      params->length() == DownloadSaveInfo::kLengthFullContent)
-    return;
-
-  bool has_last_modified = !params->last_modified().empty();
-  bool has_etag = !params->etag().empty();
-
-  // Strong validator(i.e. etag or last modified) is required in range requests
-  // for download resumption and parallel download.
-  DCHECK(has_etag || has_last_modified);
-  if (!has_etag && !has_last_modified) {
-    DVLOG(1) << "Creating partial request without strong validators.";
-    return;
-  }
-
-  // Add "Range" header.
-  std::string range_header =
-      (params->length() == DownloadSaveInfo::kLengthFullContent)
-          ? base::StringPrintf("bytes=%" PRId64 "-", params->offset())
-          : base::StringPrintf("bytes=%" PRId64 "-%" PRId64, params->offset(),
-                               params->offset() + params->length() - 1);
-  request->SetExtraRequestHeaderByName(net::HttpRequestHeaders::kRange,
-                                       range_header, true);
-
-  // Add "If-Range" headers.
-  if (params->use_if_range()) {
-    // In accordance with RFC 7233 Section 3.2, use If-Range to specify that
-    // the server return the entire entity if the validator doesn't match.
-    // Last-Modified can be used in the absence of ETag as a validator if the
-    // response headers satisfied the HttpUtil::HasStrongValidators()
-    // predicate.
-    //
-    // This function assumes that HasStrongValidators() was true and that the
-    // ETag and Last-Modified header values supplied are valid.
-    request->SetExtraRequestHeaderByName(
-        net::HttpRequestHeaders::kIfRange,
-        has_etag ? params->etag() : params->last_modified(), true);
-    return;
-  }
-
-  // Add "If-Match"/"If-Unmodified-Since" headers.
-  if (has_etag) {
-    request->SetExtraRequestHeaderByName(net::HttpRequestHeaders::kIfMatch,
-                                         params->etag(), true);
-  }
-  // According to RFC 7232 section 3.4, "If-Unmodified-Since" is mainly for
-  // old servers that didn't implement "If-Match" and must be ignored when
-  // "If-Match" presents.
-  if (has_last_modified) {
-    request->SetExtraRequestHeaderByName(
-        net::HttpRequestHeaders::kIfUnmodifiedSince, params->last_modified(),
-        true);
-  }
 }
 
 }  // namespace content
