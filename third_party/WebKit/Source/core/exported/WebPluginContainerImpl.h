@@ -74,6 +74,9 @@ class CORE_EXPORT WebPluginContainerImpl final
                                         WebPlugin* web_plugin) {
     return new WebPluginContainerImpl(element, web_plugin);
   }
+  // Check if plugins support a given command |name|.
+  static bool SupportsCommand(const WebString& name);
+
   ~WebPluginContainerImpl() override;
 
   // PluginView methods
