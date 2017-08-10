@@ -273,8 +273,7 @@ void FindRegistrationOnIO(
       base::Bind(&DidFindRegistrationOnIO, base::Passed(std::move(callback))));
 }
 
-void StartServiceWorkerForDispatch(ServiceWorkerMetrics::EventType event_type,
-                                   BrowserContext* browser_context,
+void StartServiceWorkerForDispatch(BrowserContext* browser_context,
                                    int64_t registration_id,
                                    ServiceWorkerStartCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -327,8 +326,7 @@ void PaymentAppProviderImpl::InvokePaymentApp(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   StartServiceWorkerForDispatch(
-      ServiceWorkerMetrics::EventType::PAYMENT_REQUEST, browser_context,
-      registration_id,
+      browser_context, registration_id,
       base::BindOnce(&DispatchPaymentRequestEvent, std::move(event_data),
                      std::move(callback)));
 }
@@ -341,8 +339,7 @@ void PaymentAppProviderImpl::CanMakePayment(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   StartServiceWorkerForDispatch(
-      ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT, browser_context,
-      registration_id,
+      browser_context, registration_id,
       base::BindOnce(&DispatchCanMakePaymentEvent, std::move(event_data),
                      std::move(callback)));
 }
@@ -353,8 +350,7 @@ void PaymentAppProviderImpl::AbortPayment(BrowserContext* browser_context,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   StartServiceWorkerForDispatch(
-      ServiceWorkerMetrics::EventType::ABORT_PAYMENT, browser_context,
-      registration_id,
+      browser_context, registration_id,
       base::BindOnce(&DispatchAbortPaymentEvent, std::move(callback)));
 }
 
