@@ -11,10 +11,6 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/image_fetcher/core/image_data_fetcher.h"
 
-namespace base {
-class TaskRunner;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
@@ -34,9 +30,8 @@ class IOSImageDataFetcherWrapper {
   using DataUseServiceName = data_use_measurement::DataUseUserData::ServiceName;
 
   // The TaskRunner is used to decode the image if it is WebP-encoded.
-  IOSImageDataFetcherWrapper(
-      net::URLRequestContextGetter* url_request_context_getter,
-      const scoped_refptr<base::TaskRunner>& task_runner);
+  explicit IOSImageDataFetcherWrapper(
+      net::URLRequestContextGetter* url_request_context_getter);
   virtual ~IOSImageDataFetcherWrapper();
 
   // Helper to start downloading and possibly decoding the image without a
@@ -63,8 +58,6 @@ class IOSImageDataFetcherWrapper {
   ImageDataFetcher::ImageDataFetcherCallback CallbackForImageDataFetcher(
       IOSImageDataFetcherCallback callback);
 
-  // The task runner used to decode images if necessary.
-  const scoped_refptr<base::TaskRunner> task_runner_;
   ImageDataFetcher image_data_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSImageDataFetcherWrapper);

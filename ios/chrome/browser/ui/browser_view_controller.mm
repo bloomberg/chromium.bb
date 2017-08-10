@@ -1723,7 +1723,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self registerForNotifications];
 
   _imageFetcher = base::MakeUnique<image_fetcher::IOSImageDataFetcherWrapper>(
-      _browserState->GetRequestContext(), web::WebThread::GetBlockingPool());
+      _browserState->GetRequestContext());
   _dominantColorCache = [[NSMutableDictionary alloc] init];
 
   // Register for bookmark changed notification (BookmarkModel may be null

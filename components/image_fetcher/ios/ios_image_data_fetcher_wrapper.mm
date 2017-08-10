@@ -6,8 +6,7 @@
 
 #import "base/mac/bind_objc_block.h"
 #include "base/memory/ptr_util.h"
-#include "base/task_runner.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #import "components/image_fetcher/ios/webp_decoder.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -24,12 +23,8 @@
 namespace image_fetcher {
 
 IOSImageDataFetcherWrapper::IOSImageDataFetcherWrapper(
-    net::URLRequestContextGetter* url_request_context_getter,
-    const scoped_refptr<base::TaskRunner>& task_runner)
-    : task_runner_(task_runner),
-      image_data_fetcher_(url_request_context_getter) {
-  DCHECK(task_runner_.get());
-}
+    net::URLRequestContextGetter* url_request_context_getter)
+    : image_data_fetcher_(url_request_context_getter) {}
 
 IOSImageDataFetcherWrapper::~IOSImageDataFetcherWrapper() {}
 
@@ -61,8 +56,6 @@ void IOSImageDataFetcherWrapper::SetDataUseServiceName(
 ImageDataFetcher::ImageDataFetcherCallback
 IOSImageDataFetcherWrapper::CallbackForImageDataFetcher(
     IOSImageDataFetcherCallback callback) {
-  scoped_refptr<base::TaskRunner> task_runner = task_runner_;
-
   return base::BindBlockArc(^(const std::string& image_data,
                               const RequestMetadata& metadata) {
     // Create a NSData from the returned data and notify the callback.
@@ -77,12 +70,17 @@ IOSImageDataFetcherWrapper::CallbackForImageDataFetcher(
     // The image is a webp image.
     RequestMetadata webp_metadata = metadata;
 
-    base::PostTaskAndReplyWithResult(
-        task_runner.get(), FROM_HERE, base::BindBlockArc(^NSData*() {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE,
+        {
+            base::TaskPriority::BACKGROUND,
+            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+        },
+        base::BindBlockArc(^NSData*() {
           return webp_transcode::WebpDecoder::DecodeWebpImage(data);
         }),
-        base::BindBlockArc(^(NSData* decodedData) {
-          callback(decodedData, webp_metadata);
+        base::BindBlockArc(^(NSData* decoded_data) {
+          callback(decoded_data, webp_metadata);
         }));
   });
 }

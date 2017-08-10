@@ -26,7 +26,6 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -60,8 +59,7 @@ OmniboxPopupViewIOS::OmniboxPopupViewIOS(
 
   std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> imageFetcher =
       base::MakeUnique<image_fetcher::IOSImageDataFetcherWrapper>(
-          browser_state->GetRequestContext(),
-          web::WebThread::GetBlockingPool());
+          browser_state->GetRequestContext());
 
   popup_controller_.reset([[OmniboxPopupMaterialViewController alloc]
       initWithPopupView:this
