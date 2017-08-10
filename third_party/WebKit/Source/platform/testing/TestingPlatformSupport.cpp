@@ -45,8 +45,6 @@
 #include "platform/HTTPNames.h"
 #include "platform/Language.h"
 #include "platform/heap/Heap.h"
-#include "platform/instrumentation/resource_coordinator/BlinkResourceCoordinatorBase.h"
-#include "platform/instrumentation/resource_coordinator/RendererResourceCoordinator.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/network/mime/MockMimeRegistry.h"
 #include "platform/scheduler/base/real_time_domain.h"
@@ -324,9 +322,6 @@ class ScopedUnittestsEnvironmentSetup::DummyPlatform final
   };
 };
 
-class ScopedUnittestsEnvironmentSetup::DummyRendererResourceCoordinator final
-    : public blink::RendererResourceCoordinator {};
-
 ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
                                                                  char** argv) {
   base::CommandLine::Init(argc, argv);
@@ -351,14 +346,6 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   testing_platform_support_ =
       WTF::WrapUnique(new TestingPlatformSupport(testing_platform_config_));
   Platform::SetCurrentPlatformForTesting(testing_platform_support_.get());
-
-  if (BlinkResourceCoordinatorBase::IsEnabled()) {
-    dummy_renderer_resource_coordinator_ =
-        WTF::WrapUnique(new DummyRendererResourceCoordinator);
-    RendererResourceCoordinator::
-        SetCurrentRendererResourceCoordinatorForTesting(
-            dummy_renderer_resource_coordinator_.get());
-  }
 
   ProcessHeap::Init();
   ThreadState::AttachMainThread();
