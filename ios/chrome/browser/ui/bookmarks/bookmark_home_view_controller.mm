@@ -4,11 +4,13 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
 
+#include "base/metrics/user_metrics.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_editing_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_navigation_bar.h"
@@ -31,6 +33,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/web/public/referrer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -72,6 +75,7 @@ const CGFloat kMenuWidth = 264;
 @synthesize scrollToTop = _scrollToTop;
 @synthesize sideSwipingPossible = _sideSwipingPossible;
 @synthesize waitForModelView = _waitForModelView;
+@synthesize homeDelegate = _homeDelegate;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -111,6 +115,13 @@ const CGFloat kMenuWidth = 264;
   [self.navigationBar setEditTarget:self
                              action:@selector(navigationBarWantsEditing:)];
   [self.navigationBar setBackTarget:self action:@selector(navigationBarBack:)];
+}
+
+#pragma mark - Public
+
+- (void)dismissModals {
+  [self.actionSheetCoordinator stop];
+  self.actionSheetCoordinator = nil;
 }
 
 #pragma mark - Protected
@@ -198,10 +209,6 @@ const CGFloat kMenuWidth = 264;
 }
 
 #pragma mark - Subclasses must override
-
-- (void)navigateToBookmarkURL:(const GURL&)url {
-  NOTREACHED() << "Must be overridden by subclass";
-}
 
 - (void)showEditingBarAnimated:(BOOL)animated {
   NOTREACHED() << "Must be overridden by subclass";
@@ -299,6 +306,10 @@ const CGFloat kMenuWidth = 264;
 }
 
 #pragma mark - Navigation Bar Callbacks
+
+- (void)navigationBarCancel:(id)sender {
+  [self dismissWithURL:GURL()];
+}
 
 // Called when the edit button is pressed on the navigation bar.
 - (void)navigationBarWantsEditing:(id)sender {
@@ -598,7 +609,7 @@ const CGFloat kMenuWidth = 264;
 
 - (void)bookmarkCollectionView:(BookmarkCollectionView*)view
       selectedUrlForNavigation:(const GURL&)url {
-  [self navigateToBookmarkURL:url];
+  [self dismissWithURL:url];
 }
 
 - (void)bookmarkCollectionView:(BookmarkCollectionView*)collectionView
@@ -717,7 +728,45 @@ const CGFloat kMenuWidth = 264;
   [self setEditing:NO animated:YES];
 }
 
+#pragma mark - Accessibility
+
+- (BOOL)accessibilityPerformEscape {
+  [self dismissWithURL:GURL()];
+  return YES;
+}
+
 #pragma mark - private
+
+// Saves the current position and asks the delegate to open the url, if delegate
+// is set, otherwise opens the URL using loader.
+- (void)dismissWithURL:(const GURL&)url {
+  [self cachePosition];
+  if (self.homeDelegate) {
+    [self.homeDelegate bookmarkHomeViewControllerWantsDismissal:self
+                                                navigationToUrl:url];
+  } else {
+    // Before passing the URL to the block, make sure the block has a copy of
+    // the URL and not just a reference.
+    const GURL localUrl(url);
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [self loadURL:localUrl];
+    });
+  }
+}
+
+- (void)loadURL:(const GURL&)url {
+  if (url == GURL() || url.SchemeIs(url::kJavaScriptScheme))
+    return;
+
+  new_tab_page_uma::RecordAction(self.browserState,
+                                 new_tab_page_uma::ACTION_OPENED_BOOKMARK);
+  base::RecordAction(
+      base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
+  [self.loader loadURL:url
+               referrer:web::Referrer()
+             transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
+      rendererInitiated:NO];
+}
 
 - (void)enableSideSwiping:(BOOL)enable {
   if (self.sideSwipingPossible) {

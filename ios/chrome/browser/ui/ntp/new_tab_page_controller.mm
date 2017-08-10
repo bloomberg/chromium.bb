@@ -560,8 +560,7 @@ enum {
           [[BookmarkControllerFactory alloc] init];
       _bookmarkController =
           [factory bookmarkPanelControllerForBrowserState:_browserState
-                                                   loader:_loader
-                                               colorCache:_dominantColorCache];
+                                                   loader:_loader];
     }
     panelController = _bookmarkController;
     view = [_bookmarkController view];
