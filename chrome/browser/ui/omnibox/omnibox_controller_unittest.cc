@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
-#include "chrome/test/base/testing_profile.h"
+#include "chrome/browser/ui/omnibox/test_omnibox_client.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/omnibox_client.h"
@@ -16,35 +16,6 @@
 #include "components/sessions/core/session_id.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
-
-class TestOmniboxClient : public OmniboxClient {
- public:
-  explicit TestOmniboxClient(Profile* profile)
-      : profile_(profile),
-        scheme_classifier_(profile) {}
-  ~TestOmniboxClient() override {}
-
-  // OmniboxClient:
-  std::unique_ptr<AutocompleteProviderClient> CreateAutocompleteProviderClient()
-      override {
-    return base::MakeUnique<ChromeAutocompleteProviderClient>(profile_);
-  }
-  const SessionID& GetSessionID() const override { return session_id_; }
-  const AutocompleteSchemeClassifier& GetSchemeClassifier() const override {
-    return scheme_classifier_;
-  }
-
- private:
-  Profile* profile_;
-  ChromeAutocompleteSchemeClassifier scheme_classifier_;
-  SessionID session_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestOmniboxClient);
-};
-
-}  // namespace
 
 class OmniboxControllerTest : public testing::Test {
  protected:
@@ -64,7 +35,6 @@ class OmniboxControllerTest : public testing::Test {
   void TearDown() override;
 
   content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
   std::unique_ptr<TestOmniboxClient> omnibox_client_;
   std::unique_ptr<OmniboxController> omnibox_controller_;
 
@@ -79,7 +49,8 @@ OmniboxControllerTest::~OmniboxControllerTest() {
 
 void OmniboxControllerTest::CreateController() {
   DCHECK(omnibox_client_);
-  omnibox_controller_.reset(new OmniboxController(NULL, omnibox_client_.get()));
+  omnibox_controller_ =
+      base::MakeUnique<OmniboxController>(nullptr, omnibox_client_.get());
 }
 
 // Checks that the list of autocomplete providers used by the OmniboxController
@@ -102,7 +73,7 @@ void OmniboxControllerTest::AssertProviders(int expected_providers) {
 }
 
 void OmniboxControllerTest::SetUp() {
-  omnibox_client_.reset(new TestOmniboxClient(&profile_));
+  omnibox_client_ = base::MakeUnique<TestOmniboxClient>();
 }
 
 void OmniboxControllerTest::TearDown() {

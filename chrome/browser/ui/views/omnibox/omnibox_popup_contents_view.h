@@ -17,7 +17,6 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/view.h"
-#include "ui/views/view_targeter_delegate.h"
 
 struct AutocompleteMatch;
 class LocationBarView;
@@ -28,7 +27,6 @@ class OmniboxView;
 // A view representing the contents of the autocomplete popup.
 class OmniboxPopupContentsView : public views::View,
                                  public OmniboxPopupView,
-                                 public views::ViewTargeterDelegate,
                                  public gfx::AnimationDelegate {
  public:
   // Factory method for creating the AutocompletePopupView.
@@ -62,13 +60,9 @@ class OmniboxPopupContentsView : public views::View,
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
-  void OnMouseMoved(const ui::MouseEvent& event) override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   bool IsSelectedIndex(size_t index) const;
-  bool IsHoveredIndex(size_t index) const;
   gfx::Image GetIconIfExtensionMatch(size_t index) const;
   bool IsStarredMatch(const AutocompleteMatch& match) const;
 
@@ -94,9 +88,6 @@ class OmniboxPopupContentsView : public views::View,
   void OnPaint(gfx::Canvas* canvas) override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
 
-  // views::ViewTargeterDelegate:
-  views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
-
   // Call immediately after construction.
   void Init();
 
@@ -111,10 +102,8 @@ class OmniboxPopupContentsView : public views::View,
   // the specified point.
   size_t GetIndexForPoint(const gfx::Point& point);
 
-  // Processes a located event (e.g. mouse/gesture) and sets the selection/hover
-  // state of a line in the list.
-  void UpdateLineEvent(const ui::LocatedEvent& event,
-                       bool should_set_selected_line);
+  // Sets the line corresponding to |event| as selected.
+  void SetSelectedLine(const ui::LocatedEvent& event);
 
   // Opens an entry from the list depending on the event and the selected
   // disposition.
