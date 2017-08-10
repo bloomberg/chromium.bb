@@ -31,7 +31,6 @@ OmniboxController::~OmniboxController() {
 void OmniboxController::StartAutocomplete(
     const AutocompleteInput& input) const {
   ClearPopupKeywordMode();
-  popup_->SetHoveredLine(OmniboxPopupModel::kNoMatch);
 
   // We don't explicitly clear OmniboxPopupModel::manually_selected_match, as
   // Start ends up invoking OmniboxPopupModel::OnResultChanged which clears it.

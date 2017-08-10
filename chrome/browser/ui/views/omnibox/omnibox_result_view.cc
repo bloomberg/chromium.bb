@@ -35,6 +35,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -215,6 +216,7 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
                                      const gfx::FontList& font_list)
     : model_(model),
       model_index_(model_index),
+      is_hovered_(false),
       font_list_(font_list),
       font_height_(std::max(
           font_list.GetHeight(),
@@ -251,6 +253,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   match_.PossiblySwapContentsAndDescriptionForDisplay();
   animation_->Reset();
   answer_image_ = gfx::ImageSkia();
+  is_hovered_ = false;
 
   AutocompleteMatch* associated_keyword_match = match_.associated_keyword.get();
   if (associated_keyword_match) {
@@ -331,7 +334,7 @@ void OmniboxResultView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 OmniboxResultView::ResultViewState OmniboxResultView::GetState() const {
   if (model_->IsSelectedIndex(model_index_))
     return SELECTED;
-  return model_->IsHoveredIndex(model_index_) ? HOVERED : NORMAL;
+  return is_hovered_ ? HOVERED : NORMAL;
 }
 
 int OmniboxResultView::GetTextHeight() const {
@@ -689,6 +692,22 @@ int OmniboxResultView::GetAnswerHeight() const {
          kVerticalPadding;
 }
 
+bool OmniboxResultView::OnMousePressed(const ui::MouseEvent& event) {
+  // Cancel the hover state in case the user starts a drag, in which case we
+  // won't be notified on mouse exit.
+  if (event.IsLeftMouseButton() || event.IsMiddleMouseButton())
+    SetHovered(false);
+  return false;
+}
+
+void OmniboxResultView::OnMouseMoved(const ui::MouseEvent& event) {
+  SetHovered(true);
+}
+
+void OmniboxResultView::OnMouseExited(const ui::MouseEvent& event) {
+  SetHovered(false);
+}
+
 int OmniboxResultView::GetVerticalMargin() const {
   // Regardless of the text size, we ensure a minimum size for the content line
   // here. This minimum is larger for hybrid mouse/touch devices to ensure an
@@ -781,4 +800,12 @@ void OmniboxResultView::AppendAnswerTextHelper(gfx::RenderText* destination,
   destination->ApplyColor(
       GetNativeTheme()->GetSystemColor(text_style.colors[GetState()]), range);
   destination->ApplyBaselineStyle(text_style.baseline, range);
+}
+
+void OmniboxResultView::SetHovered(bool hovered) {
+  if (is_hovered_ != hovered) {
+    is_hovered_ = hovered;
+    Invalidate();
+    SchedulePaint();
+  }
 }
