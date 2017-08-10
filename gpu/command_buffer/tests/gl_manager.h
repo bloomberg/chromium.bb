@@ -121,6 +121,9 @@ class GLManager : private GpuControl {
   gl::GLContext* context() { return context_.get(); }
 
   const GpuDriverBugWorkarounds& workarounds() const;
+  const gpu::GpuPreferences& gpu_preferences() const {
+    return gpu_preferences_;
+  }
 
   // GpuControl implementation.
   void SetGpuControlClient(GpuControlClient*) override;
