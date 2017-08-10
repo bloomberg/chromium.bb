@@ -301,10 +301,11 @@ TEST_F(IndexedRuleTest, DomainsParsing) {
        {},
        {}},
       {base::MakeUnique<DomainVec>(DomainVec({"a.com", "b.com", "a.com"})),
-       base::MakeUnique<DomainVec>(DomainVec({"g.com", "A.COM", "g.com"})),
+       base::MakeUnique<DomainVec>(
+           DomainVec({"g.com", "XY.COM", "zzz.com", "a.com", "google.com"})),
        ParseResult::SUCCESS,
        {"a.com", "a.com", "b.com"},
-       {"a.com", "g.com", "g.com"}}};
+       {"google.com", "zzz.com", "xy.com", "a.com", "g.com"}}};
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
