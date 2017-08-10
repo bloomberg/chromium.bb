@@ -57,7 +57,7 @@ def main(args):
   with open(args.script_output_path, 'w') as script:
     script_dict = {
         'APK_OPERATIONS_DIR': repr(apk_operations_dir),
-        'OUTPUT_DIR': repr('.'),
+        'OUTPUT_DIR': repr(relativize('.')),
         'APK_PATH': repr(relativize(args.apk_path)),
         'INC_APK_PATH': repr(relativize(args.incremental_apk_path)),
         'INC_INSTALL_SCRIPT': repr(relativize(args.incremental_install_script)),
