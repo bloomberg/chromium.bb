@@ -2136,44 +2136,97 @@ def _CheckForRelativeIncludes(input_api, output_api):
   return results
 
 
-def _CheckEntriesInWATCHLISTSAreSorted(contents, input_api, output_api):
-  watchlists_start_re = input_api.re.compile(r"^  'WATCHLISTS'")
-  entry_re = input_api.re.compile(r"^    '([\dA-Za-z_]+)'")
+def _CheckWatchlistDefinitionsEntrySyntax(key, value, ast):
+  if not isinstance(key, ast.Str):
+    return 'Key at line %d must be a string literal' % key.lineno
+  if not isinstance(value, ast.Dict):
+    return 'Value at line %d must be a dict' % value.lineno
+  if len(value.keys) != 1:
+    return 'Dict at line %d must have single entry' % value.lineno
+  if not isinstance(value.keys[0], ast.Str) or value.keys[0].s != 'filepath':
+    return (
+        'Entry at line %d must have a string literal \'filepath\' as key' %
+        value.lineno)
+  return None
 
-  watchlist_definitions = []
-  watchlists = []
 
-  in_watchlists = False
-  for line in contents.split('\n'):
-    if not in_watchlists and watchlists_start_re.match(line) is not None:
-      in_watchlists = True
-      continue
+def _CheckWatchlistsEntrySyntax(key, value, ast):
+  if not isinstance(key, ast.Str):
+    return 'Key at line %d must be a string literal' % key.lineno
+  if not isinstance(value, ast.List):
+    return 'Value at line %d must be a list' % value.lineno
+  return None
 
-    m = entry_re.match(line)
-    if m is not None:
-      name = m.group(1)
-      if not in_watchlists:
-        watchlist_definitions.append(name)
-      else:
-        watchlists.append(name)
 
-  results = []
+def _CheckWATCHLISTSEntries(wd_dict, w_dict, ast):
+  mismatch_template = (
+      'Mismatch between WATCHLIST_DEFINITIONS entry (%s) and WATCHLISTS '
+      'entry (%s)')
 
-  sorted_watchlist_definitions = sorted(watchlist_definitions)
-  if sorted_watchlist_definitions != watchlist_definitions:
-    results.append(output_api.PresubmitError(
-        'WATCHLIST_DEFINITIONS entries are not sorted'))
+  i = 0
+  last_key = ''
+  while True:
+    if i >= len(wd_dict.keys):
+      if i >= len(w_dict.keys):
+        return None
+      return mismatch_template % ('missing', 'line %d' % w_dict.keys[i].lineno)
+    elif i >= len(w_dict.keys):
+      return (
+          mismatch_template % ('line %d' % wd_dict.keys[i].lineno, 'missing'))
 
-  sorted_watchlists = sorted(watchlists)
-  if sorted_watchlists != watchlists:
-    results.append(output_api.PresubmitError(
-        'WATCHLISTS entries are not sorted'))
+    wd_key = wd_dict.keys[i]
+    w_key = w_dict.keys[i]
 
-  if watchlist_definitions != watchlists:
-    results.append(output_api.PresubmitError(
-        'WATCHLIST_DEFINITIONS doesn\'t match WATCHLISTS'))
+    result = _CheckWatchlistDefinitionsEntrySyntax(
+        wd_key, wd_dict.values[i], ast)
+    if result is not None:
+      return 'Bad entry in WATCHLIST_DEFINITIONS dict: %s' % result
 
-  return results
+    result = _CheckWatchlistsEntrySyntax(w_key, w_dict.values[i], ast)
+    if result is not None:
+      return 'Bad entry in WATCHLISTS dict: %s' % result
+
+    if wd_key.s != w_key.s:
+      return mismatch_template % (
+          '%s at line %d' % (wd_key.s, wd_key.lineno),
+          '%s at line %d' % (w_key.s, w_key.lineno))
+
+    if wd_key.s < last_key:
+      return (
+          'WATCHLISTS dict is not sorted lexicographically at line %d and %d' %
+          (wd_key.lineno, w_key.lineno))
+    last_key = wd_key.s
+
+    i = i + 1
+
+
+def _CheckWATCHLISTSSyntax(expression, ast):
+  if not isinstance(expression, ast.Expression):
+    return 'WATCHLISTS file must contain a valid expression'
+  dictionary = expression.body
+  if not isinstance(dictionary, ast.Dict) or len(dictionary.keys) != 2:
+    return 'WATCHLISTS file must have single dict with exactly two entries'
+
+  first_key = dictionary.keys[0]
+  first_value = dictionary.values[0]
+  second_key = dictionary.keys[1]
+  second_value = dictionary.values[1]
+
+  if (not isinstance(first_key, ast.Str) or
+      first_key.s != 'WATCHLIST_DEFINITIONS' or
+      not isinstance(first_value, ast.Dict)):
+    return (
+        'The first entry of the dict in WATCHLISTS file must be '
+        'WATCHLIST_DEFINITIONS dict')
+
+  if (not isinstance(second_key, ast.Str) or
+      second_key.s != 'WATCHLISTS' or
+      not isinstance(second_value, ast.Dict)):
+    return (
+        'The second entry of the dict in WATCHLISTS file must be '
+        'WATCHLISTS dict')
+
+  return _CheckWATCHLISTSEntries(first_value, second_value, ast)
 
 
 def _CheckWATCHLISTS(input_api, output_api):
@@ -2182,13 +2235,25 @@ def _CheckWATCHLISTS(input_api, output_api):
       contents = input_api.ReadFile(f, 'r')
 
       try:
+        # First, make sure that it can be evaluated.
         input_api.ast.literal_eval(contents)
-      except ValueError:
-        return [output_api.PresubmitError('Cannot parse WATCHLISTS' + e)]
-      except TypeError:
-        return [output_api.PresubmitError('Cannot parse WATCHLISTS' + e)]
+        # Get an AST tree for it and scan the tree for detailed style checking.
+        expression = input_api.ast.parse(
+            contents, filename='WATCHLISTS', mode='eval')
+      except ValueError as e:
+        return [output_api.PresubmitError(
+            'Cannot parse WATCHLISTS file', long_text=repr(e))]
+      except SyntaxError as e:
+        return [output_api.PresubmitError(
+            'Cannot parse WATCHLISTS file', long_text=repr(e))]
+      except TypeError as e:
+        return [output_api.PresubmitError(
+            'Cannot parse WATCHLISTS file', long_text=repr(e))]
 
-      return _CheckEntriesInWATCHLISTSAreSorted(contents, input_api, output_api)
+      result = _CheckWATCHLISTSSyntax(expression, input_api.ast)
+      if result is not None:
+        return [output_api.PresubmitError(result)]
+      break
 
   return []
 
