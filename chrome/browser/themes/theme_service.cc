@@ -36,6 +36,7 @@
 #include "components/grit/components_scaled_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -878,7 +879,7 @@ void ThemeService::OnThemeBuiltFromExtension(
     return;
 
   // Write the packed file to disk.
-  service->GetFileTaskRunner()->PostTask(
+  extensions::GetExtensionFileTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&WritePackToDiskCallback, base::RetainedRef(pack),
                             extension->path()));
 

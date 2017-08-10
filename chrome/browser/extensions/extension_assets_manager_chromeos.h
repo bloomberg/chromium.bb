@@ -18,7 +18,6 @@ class PrefRegistrySimple;
 
 namespace base {
 class DictionaryValue;
-class SequencedTaskRunner;
 }
 
 namespace extensions {
@@ -72,10 +71,6 @@ class ExtensionAssetsManagerChromeOS : public ExtensionAssetsManager {
 
   ExtensionAssetsManagerChromeOS();
   ~ExtensionAssetsManagerChromeOS() override;
-
-  // Should be called on UI thread to get associated file task runner for
-  // the profile.
-  static base::SequencedTaskRunner* GetFileTaskRunner(Profile* profile);
 
   // Return |true| if |extension| can be installed in a shared place for all
   // users on the device.

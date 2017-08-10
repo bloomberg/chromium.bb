@@ -28,6 +28,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -201,7 +202,7 @@ void ExtensionGarbageCollector::GarbageCollectExtensions() {
 
   ExtensionService* service =
       ExtensionSystem::Get(context_)->extension_service();
-  if (!service->GetFileTaskRunner()->PostTask(
+  if (!GetExtensionFileTaskRunner()->PostTask(
           FROM_HERE,
           base::BindOnce(&GarbageCollectExtensionsOnFileThread,
                          service->install_directory(), extension_paths))) {

@@ -563,7 +563,7 @@ bool ExtensionService::UpdateExtension(const extensions::CRXFileInfo& file,
     // Delete extension_path since we're not creating a CrxInstaller
     // that would do it for us.
     if (file_ownership_passed &&
-        !GetFileTaskRunner()->PostTask(
+        !extensions::GetExtensionFileTaskRunner()->PostTask(
             FROM_HERE, base::BindOnce(&extensions::file_util::DeleteFile,
                                       file.path, false)))
       NOTREACHED();
@@ -821,7 +821,7 @@ bool ExtensionService::UninstallExtension(
 
   // Tell the backend to start deleting installed extensions on the file thread.
   if (!Manifest::IsUnpackedLocation(extension->location())) {
-    if (!GetFileTaskRunner()->PostTask(
+    if (!extensions::GetExtensionFileTaskRunner()->PostTask(
             FROM_HERE,
             base::BindOnce(&ExtensionService::UninstallExtensionOnFileThread,
                            extension->id(), profile_, install_directory_,
@@ -1772,7 +1772,7 @@ void ExtensionService::OnExtensionInstalled(
 
       // Delete the extension directory since we're not going to
       // load it.
-      if (!GetFileTaskRunner()->PostTask(
+      if (!extensions::GetExtensionFileTaskRunner()->PostTask(
               FROM_HERE, base::BindOnce(&extensions::file_util::DeleteFile,
                                         extension->path(), true))) {
         NOTREACHED();
@@ -2506,12 +2506,6 @@ void ExtensionService::UnregisterInstallGate(
       return;
     }
   }
-}
-
-base::SequencedTaskRunner* ExtensionService::GetFileTaskRunner() {
-  // TODO(devlin): Update callers to use GetExtensionFileTaskRunner()
-  // directly.
-  return extensions::GetExtensionFileTaskRunner().get();
 }
 
 // Used only by test code.
