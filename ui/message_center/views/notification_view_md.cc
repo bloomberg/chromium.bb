@@ -24,6 +24,7 @@
 #include "ui/message_center/views/bounded_label.h"
 #include "ui/message_center/views/constants.h"
 #include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/padded_button.h"
 #include "ui/message_center/views/proportional_image_view.h"
@@ -392,10 +393,6 @@ views::View* NotificationViewMD::TargetForRect(views::View* root,
   // called. But buttons are exceptions, they'll have their own event handlings.
   std::vector<views::View*> buttons(action_buttons_.begin(),
                                     action_buttons_.end());
-  if (header_row_->settings_button())
-    buttons.push_back(header_row_->settings_button());
-  if (header_row_->close_button())
-    buttons.push_back(header_row_->close_button());
   if (header_row_->expand_button())
     buttons.push_back(header_row_->expand_button());
   buttons.push_back(header_row_);
@@ -421,8 +418,6 @@ void NotificationViewMD::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateIconView(notification);
   CreateOrUpdateSmallIconView(notification);
   CreateOrUpdateImageView(notification);
-  CreateOrUpdateCloseButtonView(notification);
-  CreateOrUpdateSettingsButtonView(notification);
   UpdateViewForExpandedState(expanded_);
   // Should be called at the last because SynthesizeMouseMoveEvent() requires
   // everything is in the right location when called.
@@ -436,8 +431,13 @@ NotificationViewMD::NotificationViewMD(MessageCenterController* controller,
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 0));
 
+  control_buttons_view_ =
+      base::MakeUnique<NotificationControlButtonsView>(this);
+  control_buttons_view_->set_owned_by_client();
+  control_buttons_view_->SetBackgroundColor(SK_ColorTRANSPARENT);
+
   // |header_row_| contains app_icon, app_name, control buttons, etc...
-  header_row_ = new NotificationHeaderView(this);
+  header_row_ = new NotificationHeaderView(control_buttons_view_.get(), this);
   AddChildView(header_row_);
 
   // |content_row_| contains title, message, image, progressbar, etc...
@@ -472,9 +472,11 @@ NotificationViewMD::NotificationViewMD(MessageCenterController* controller,
   AddChildView(actions_row_);
 
   CreateOrUpdateViews(notification);
+  UpdateControlButtonsVisibilityWithNotification(notification);
 
   SetEventTargeter(
       std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+  set_notify_enter_exit_on_child(true);
 }
 
 NotificationViewMD::~NotificationViewMD() {}
@@ -506,11 +508,6 @@ gfx::NativeCursor NotificationViewMD::GetCursor(const ui::MouseEvent& event) {
   return views::GetNativeHandCursor();
 }
 
-void NotificationViewMD::OnMouseMoved(const ui::MouseEvent& event) {
-  MessageView::OnMouseMoved(event);
-  UpdateControlButtonsVisibility();
-}
-
 void NotificationViewMD::OnMouseEntered(const ui::MouseEvent& event) {
   MessageView::OnMouseEntered(event);
   UpdateControlButtonsVisibility();
@@ -524,10 +521,21 @@ void NotificationViewMD::OnMouseExited(const ui::MouseEvent& event) {
 void NotificationViewMD::UpdateWithNotification(
     const Notification& notification) {
   MessageView::UpdateWithNotification(notification);
+  UpdateControlButtonsVisibilityWithNotification(notification);
 
   CreateOrUpdateViews(notification);
   Layout();
   SchedulePaint();
+}
+
+// TODO(yoshiki): Move this to the parent class (MessageView).
+void NotificationViewMD::UpdateControlButtonsVisibilityWithNotification(
+    const Notification& notification) {
+  control_buttons_view_->ShowSettingsButton(
+      notification.delegate() &&
+      notification.delegate()->ShouldDisplaySettingsButton());
+  control_buttons_view_->ShowCloseButton(!pinned());
+  UpdateControlButtonsVisibility();
 }
 
 void NotificationViewMD::ButtonPressed(views::Button* sender,
@@ -536,20 +544,6 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   // we send to other parts of the code.
   // TODO(dewittj): Remove this hack.
   std::string id(notification_id());
-
-  if (header_row_->IsCloseButtonEnabled() &&
-      sender == header_row_->close_button()) {
-    // Warning: This causes the NotificationViewMD itself to be deleted, so
-    // don't do anything afterwards.
-    OnCloseButtonPressed();
-    return;
-  }
-
-  if (header_row_->IsSettingsButtonEnabled() &&
-      sender == header_row_->settings_button()) {
-    controller()->ClickOnSettingsButton(id);
-    return;
-  }
 
   // Tapping anywhere on |header_row_| can expand the notification, though only
   // |expand_button| can be focused by TAB.
@@ -570,17 +564,11 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
 }
 
 bool NotificationViewMD::IsCloseButtonFocused() const {
-  if (!header_row_->IsCloseButtonEnabled())
-    return false;
-
-  const views::FocusManager* focus_manager = GetFocusManager();
-  return focus_manager &&
-         focus_manager->GetFocusedView() == header_row_->close_button();
+  return control_buttons_view_->IsCloseButtonFocused();
 }
 
 void NotificationViewMD::RequestFocusOnCloseButton() {
-  if (header_row_->IsCloseButtonEnabled())
-    header_row_->close_button()->RequestFocus();
+  control_buttons_view_->RequestFocusOnCloseButton();
 }
 
 void NotificationViewMD::CreateOrUpdateContextTitleView(
@@ -847,24 +835,6 @@ void NotificationViewMD::CreateOrUpdateActionButtonViews(
   }
 }
 
-void NotificationViewMD::CreateOrUpdateCloseButtonView(
-    const Notification& notification) {
-  if (!notification.pinned()) {
-    header_row_->SetCloseButtonEnabled(true);
-  } else {
-    header_row_->SetCloseButtonEnabled(false);
-  }
-}
-
-void NotificationViewMD::CreateOrUpdateSettingsButtonView(
-    const Notification& notification) {
-  if (notification.delegate() &&
-      notification.delegate()->ShouldDisplaySettingsButton())
-    header_row_->SetSettingsButtonEnabled(true);
-  else
-    header_row_->SetSettingsButtonEnabled(false);
-}
-
 bool NotificationViewMD::IsExpandable() {
   // Expandable if the message exceeds one line.
   if (message_view_ && message_view_->visible() &&
@@ -915,22 +885,19 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
       (expanded ? item_views_.size() : kMaxLinesForMessageView));
 }
 
+// TODO(yoshiki): Move this to the parent class (MessageView) and share the code
+// among NotificationView and ArcNotificationView.
 void NotificationViewMD::UpdateControlButtonsVisibility() {
-  const bool target_visibility = IsMouseHovered() || HasFocus() ||
-                                 (header_row_->IsExpandButtonEnabled() &&
-                                  header_row_->expand_button()->HasFocus()) ||
-                                 (header_row_->IsCloseButtonEnabled() &&
-                                  header_row_->close_button()->HasFocus()) ||
-                                 (header_row_->IsSettingsButtonEnabled() &&
-                                  header_row_->settings_button()->HasFocus());
+  const bool target_visibility =
+      IsMouseHovered() || control_buttons_view_->IsCloseButtonFocused() ||
+      control_buttons_view_->IsSettingsButtonFocused();
 
-  header_row_->SetControlButtonsVisible(target_visibility);
+  control_buttons_view_->SetVisible(target_visibility);
 }
 
 NotificationControlButtonsView* NotificationViewMD::GetControlButtonsView()
     const {
-  // TODO(yoshiki): have this view use NotificationControlButtonsView.
-  return nullptr;
+  return control_buttons_view_.get();
 }
 
 }  // namespace message_center

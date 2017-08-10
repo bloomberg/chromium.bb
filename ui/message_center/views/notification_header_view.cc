@@ -14,7 +14,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/vector_icons.h"
-#include "ui/message_center/views/padded_button.h"
+#include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -121,7 +121,9 @@ base::string16 FormatToRelativeTime(base::Time past) {
 
 }  // namespace
 
-NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
+NotificationHeaderView::NotificationHeaderView(
+    NotificationControlButtonsView* control_buttons_view,
+    views::ButtonListener* listener)
     : views::CustomButton(listener) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
@@ -201,23 +203,8 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
   AddChildView(spacer);
   layout->SetFlexForView(spacer, 1);
 
-  // Settings button view
-  settings_button_ = new PaddedButton(listener);
-  settings_button_->SetImage(views::Button::STATE_NORMAL, GetSettingsIcon());
-  settings_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
-  settings_button_->SetTooltipText(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
-  AddChildView(settings_button_);
-
-  // Close button view
-  close_button_ = new PaddedButton(listener);
-  close_button_->SetImage(views::Button::STATE_NORMAL, GetCloseIcon());
-  close_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
-  close_button_->SetTooltipText(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_TOOLTIP));
-  AddChildView(close_button_);
+  // Settings and close buttons view
+  AddChildView(control_buttons_view);
 }
 
 void NotificationHeaderView::SetAppIcon(const gfx::ImageSkia& img) {
@@ -287,27 +274,6 @@ void NotificationHeaderView::SetExpanded(bool expanded) {
       kExpandIconSize, accent_color_));
 }
 
-void NotificationHeaderView::SetSettingsButtonEnabled(bool enabled) {
-  if (settings_button_enabled_ != enabled) {
-    settings_button_enabled_ = enabled;
-    UpdateControlButtonsVisibility();
-  }
-}
-
-void NotificationHeaderView::SetCloseButtonEnabled(bool enabled) {
-  if (close_button_enabled_ != enabled) {
-    close_button_enabled_ = enabled;
-    UpdateControlButtonsVisibility();
-  }
-}
-
-void NotificationHeaderView::SetControlButtonsVisible(bool visible) {
-  if (is_control_buttons_visible_ != visible) {
-    is_control_buttons_visible_ = visible;
-    UpdateControlButtonsVisibility();
-  }
-}
-
 void NotificationHeaderView::SetAccentColor(SkColor color) {
   accent_color_ = color;
   app_name_view_->SetEnabledColor(accent_color_);
@@ -316,14 +282,6 @@ void NotificationHeaderView::SetAccentColor(SkColor color) {
 
 bool NotificationHeaderView::IsExpandButtonEnabled() {
   return expand_button_->visible();
-}
-
-bool NotificationHeaderView::IsSettingsButtonEnabled() {
-  return settings_button_enabled_;
-}
-
-bool NotificationHeaderView::IsCloseButtonEnabled() {
-  return close_button_enabled_;
 }
 
 std::unique_ptr<views::InkDrop> NotificationHeaderView::CreateInkDrop() {
@@ -348,14 +306,6 @@ NotificationHeaderView::CreateInkDropHighlight() const {
       gfx::RectF(GetLocalBounds()).CenterPoint(), GetInkDropBaseColor());
   highlight->set_visible_opacity(kInkDropHighlightVisibleOpacity);
   return highlight;
-}
-
-void NotificationHeaderView::UpdateControlButtonsVisibility() {
-  settings_button_->SetVisible(settings_button_enabled_ &&
-                               is_control_buttons_visible_);
-  close_button_->SetVisible(close_button_enabled_ &&
-                            is_control_buttons_visible_);
-  Layout();
 }
 
 void NotificationHeaderView::UpdateSummaryTextVisibility() {
