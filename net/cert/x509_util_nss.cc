@@ -16,6 +16,7 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
 
 namespace net {
@@ -128,6 +129,24 @@ std::string GetDefaultNickname(CERTCertificate* nss_cert, CertType type) {
 }
 
 }  // namespace
+
+ScopedCERTCertificate CreateCERTCertificateFromBytes(const uint8_t* data,
+                                                     size_t length) {
+  crypto::EnsureNSSInit();
+
+  if (!NSS_IsInitialized())
+    return NULL;
+
+  SECItem der_cert;
+  der_cert.data = const_cast<uint8_t*>(data);
+  der_cert.len = base::checked_cast<unsigned>(length);
+  der_cert.type = siDERCertBuffer;
+
+  // Parse into a certificate structure.
+  return ScopedCERTCertificate(CERT_NewTempCertificate(
+      CERT_GetDefaultCertDB(), &der_cert, nullptr /* nickname */,
+      PR_FALSE /* is_perm */, PR_TRUE /* copyDER */));
+}
 
 void GetRFC822SubjectAltNames(CERTCertificate* cert_handle,
                               std::vector<std::string>* names) {

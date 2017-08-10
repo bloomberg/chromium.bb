@@ -305,20 +305,9 @@ bool X509Certificate::IsSameOSCert(X509Certificate::OSCertHandle a,
 X509Certificate::OSCertHandle X509Certificate::CreateOSCertHandleFromBytes(
     const char* data,
     size_t length) {
-  crypto::EnsureNSSInit();
-
-  if (!NSS_IsInitialized())
-    return NULL;
-
-  SECItem der_cert;
-  der_cert.data = reinterpret_cast<unsigned char*>(const_cast<char*>(data));
-  der_cert.len = base::checked_cast<unsigned>(length);
-  der_cert.type = siDERCertBuffer;
-
-  // Parse into a certificate structure.
-  return CERT_NewTempCertificate(CERT_GetDefaultCertDB(), &der_cert,
-                                 nullptr /* nickname */, PR_FALSE /* is_perm */,
-                                 PR_TRUE /* copyDER */);
+  return x509_util::CreateCERTCertificateFromBytes(
+             reinterpret_cast<const uint8_t*>(data), length)
+      .release();
 }
 
 // static

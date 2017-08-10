@@ -12,6 +12,7 @@
 
 #include "net/base/net_export.h"
 #include "net/cert/cert_type.h"
+#include "net/cert/scoped_nss_types.h"
 
 typedef struct CERTCertificateStr CERTCertificate;
 typedef struct CERTNameStr CERTName;
@@ -21,6 +22,12 @@ typedef struct SECItemStr SECItem;
 namespace net {
 
 namespace x509_util {
+
+// Returns a CERTCertificate handle from the DER-encoded representation. The
+// returned value may reference an already existing CERTCertificate object.
+// Returns NULL on failure.
+NET_EXPORT ScopedCERTCertificate
+CreateCERTCertificateFromBytes(const uint8_t* data, size_t length);
 
 // Stores the values of all rfc822Name subjectAltNames from |cert_handle|
 // into |names|. If no names are present, clears |names|.

@@ -13,7 +13,7 @@
 #include "net/cert/internal/cert_issuer_source_sync_unittest.h"
 #include "net/cert/internal/test_helpers.h"
 #include "net/cert/scoped_nss_types.h"
-#include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -58,8 +58,8 @@ class TrustStoreNSSTest : public testing::Test {
   }
 
   void AddCertToNSS(const ParsedCertificate* cert) {
-    ScopedCERTCertificate nss_cert(X509Certificate::CreateOSCertHandleFromBytes(
-        cert->der_cert().AsStringPiece().data(), cert->der_cert().Length()));
+    ScopedCERTCertificate nss_cert(x509_util::CreateCERTCertificateFromBytes(
+        cert->der_cert().UnsafeData(), cert->der_cert().Length()));
     ASSERT_TRUE(nss_cert);
     SECStatus srv = PK11_ImportCert(
         test_nssdb_.slot(), nss_cert.get(), CK_INVALID_HANDLE,
@@ -243,8 +243,8 @@ class TrustStoreNSSTestDelegate {
 
   void AddCert(scoped_refptr<ParsedCertificate> cert) {
     ASSERT_TRUE(test_nssdb_.is_open());
-    ScopedCERTCertificate nss_cert(X509Certificate::CreateOSCertHandleFromBytes(
-        cert->der_cert().AsStringPiece().data(), cert->der_cert().Length()));
+    ScopedCERTCertificate nss_cert(x509_util::CreateCERTCertificateFromBytes(
+        cert->der_cert().UnsafeData(), cert->der_cert().Length()));
     ASSERT_TRUE(nss_cert);
     SECStatus srv = PK11_ImportCert(
         test_nssdb_.slot(), nss_cert.get(), CK_INVALID_HANDLE,
