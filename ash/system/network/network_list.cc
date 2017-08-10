@@ -474,7 +474,8 @@ NetworkListView::UpdateNetworkListEntries() {
   }
 
   if (handler->IsTechnologyAvailable(NetworkTypePattern::Cellular()) ||
-      handler->IsTechnologyAvailable(NetworkTypePattern::Tether())) {
+      (handler->IsTechnologyAvailable(NetworkTypePattern::Tether()) &&
+       !handler->IsTechnologyProhibited(NetworkTypePattern::Tether()))) {
     bool is_enabled =
         handler->IsTechnologyEnabled(NetworkTypePattern::Cellular()) ||
         handler->IsTechnologyEnabled(NetworkTypePattern::Tether());
