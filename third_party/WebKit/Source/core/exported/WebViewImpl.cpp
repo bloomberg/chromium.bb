@@ -1187,7 +1187,7 @@ WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
   if ((is_unmodified_menu_key &&
        event.GetType() == kContextMenuKeyTriggeringEventType) ||
       (is_shift_f10 && event.GetType() == kShiftF10TriggeringEventType)) {
-    SendContextMenuEvent(event);
+    SendContextMenuEvent();
     return WebInputEventResult::kHandledSystem;
   }
 #endif  // !defined(OS_MACOSX)
@@ -1616,8 +1616,7 @@ bool WebViewImpl::HasTouchEventHandlersAt(const WebPoint& point) {
 
 #if !defined(OS_MACOSX)
 // Mac has no way to open a context menu based on a keyboard event.
-WebInputEventResult WebViewImpl::SendContextMenuEvent(
-    const WebKeyboardEvent& event) {
+WebInputEventResult WebViewImpl::SendContextMenuEvent() {
   // The contextMenuController() holds onto the last context menu that was
   // popped up on the page until a new one is created. We need to clear
   // this menu before propagating the event through the DOM so that we can
@@ -1642,8 +1641,7 @@ WebInputEventResult WebViewImpl::SendContextMenuEvent(
   }
 }
 #else
-WebInputEventResult WebViewImpl::SendContextMenuEvent(
-    const WebKeyboardEvent& event) {
+WebInputEventResult WebViewImpl::SendContextMenuEvent() {
   return WebInputEventResult::kNotHandled;
 }
 #endif

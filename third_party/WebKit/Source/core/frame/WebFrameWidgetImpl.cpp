@@ -987,7 +987,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleKeyEvent(
   if ((is_unmodified_menu_key &&
        event.GetType() == kContextMenuKeyTriggeringEventType) ||
       (is_shift_f10 && event.GetType() == kShiftF10TriggeringEventType)) {
-    View()->SendContextMenuEvent(event);
+    View()->SendContextMenuEvent();
     return WebInputEventResult::kHandledSystem;
   }
 #endif  // !defined(OS_MACOSX)

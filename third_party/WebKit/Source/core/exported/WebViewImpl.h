@@ -325,7 +325,7 @@ class CORE_EXPORT WebViewImpl final
   // wParam, LPARAM lParam) in webkit\webkit\win\WebView.cpp. The only
   // significant change in this function is the code to convert from a
   // Keyboard event to the Right Mouse button down event.
-  WebInputEventResult SendContextMenuEvent(const WebKeyboardEvent&);
+  WebInputEventResult SendContextMenuEvent();
 
   void ShowContextMenuAtPoint(float x, float y, ContextMenuProvider*);
 
