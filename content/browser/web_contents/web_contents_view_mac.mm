@@ -541,16 +541,6 @@ void WebContentsViewMac::CloseTab() {
   return mouseDownCanMoveWindow_;
 }
 
-- (void)setOpaque:(BOOL)opaque {
-  WebContentsImpl* webContents = [self webContents];
-  if (!webContents)
-    return;
-  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
-      webContents->GetRenderWidgetHostView());
-  DCHECK(view);
-  [view->cocoa_view() setOpaque:opaque];
-}
-
 - (void)pasteboard:(NSPasteboard*)sender provideDataForType:(NSString*)type {
   [dragSource_ lazyWriteToPasteboard:sender
                              forType:type];

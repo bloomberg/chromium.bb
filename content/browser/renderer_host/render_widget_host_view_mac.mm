@@ -206,7 +206,6 @@ RenderWidgetHostView* GetRenderWidgetHostViewToUse(
                               styleMask:windowStyle
                                 backing:bufferingType
                                   defer:deferCreation]) {
-    [self setOpaque:NO];
     [self setBackgroundColor:[NSColor clearColor]];
     [self startObservingClicks];
   }
@@ -422,7 +421,7 @@ void RenderWidgetHostViewMac::AcceleratedWidgetSwapCompleted() {
   // swapped. See RenderWidgetHostViewAura for more details. Note that this is
   // done only after the swap has completed, so that the background is not set
   // before the frame is up.
-  UpdateBackgroundColorFromRenderer(last_frame_root_background_color_);
+  SetBackgroundLayerColor(last_frame_root_background_color_);
 
   if (display_link_)
     display_link_->NotifyCurrentTime(base::TimeTicks::Now());
@@ -1639,34 +1638,37 @@ void RenderWidgetHostViewMac::ShowDefinitionForSelection() {
 }
 
 void RenderWidgetHostViewMac::SetBackgroundColor(SkColor color) {
-  if (color == background_color_)
-    return;
-
-  // The renderer will feed its color back to us with the first CompositorFrame.
-  // We short-cut here to show a sensible color before that happens.
-  UpdateBackgroundColorFromRenderer(color);
+  // This is called by the embedding code prior to the first frame appearing,
+  // to set a reasonable color to show before the web content generates its
+  // first frame. This will be overridden by the web contents.
+  SetBackgroundLayerColor(color);
 
   DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
          SkColorGetA(color) == SK_AlphaTRANSPARENT);
   bool opaque = SkColorGetA(color) == SK_AlphaOPAQUE;
-  if (render_widget_host_)
-    render_widget_host_->SetBackgroundOpaque(opaque);
+  if (background_is_opaque_ != opaque) {
+    background_is_opaque_ = opaque;
+    browser_compositor_->SetHasTransparentBackground(!opaque);
+    if (render_widget_host_)
+      render_widget_host_->SetBackgroundOpaque(opaque);
+  }
 }
 
 SkColor RenderWidgetHostViewMac::background_color() const {
-  return background_color_;
+  // This is used to specify a color to temporarily show while waiting for web
+  // content. This should never return transparent, since that will cause bugs
+  // where views are initialized as having a transparent background
+  // inappropriately.
+  // https://crbug.com/735407
+  if (background_layer_color_ == SK_ColorTRANSPARENT)
+    return SK_ColorWHITE;
+  return background_layer_color_;
 }
 
-void RenderWidgetHostViewMac::UpdateBackgroundColorFromRenderer(SkColor color) {
-  if (color == background_color_)
+void RenderWidgetHostViewMac::SetBackgroundLayerColor(SkColor color) {
+  if (color == background_layer_color_)
     return;
-  background_color_ = color;
-
-  bool opaque = SkColorGetA(color) == SK_AlphaOPAQUE;
-
-  [cocoa_view_ setOpaque:opaque];
-
-  browser_compositor_->SetHasTransparentBackground(!opaque);
+  background_layer_color_ = color;
 
   ScopedCAActionDisabler disabler;
   base::ScopedCFTypeRef<CGColorRef> cg_color(
@@ -1770,7 +1772,6 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
     renderWidgetHostView_.reset(r);
     canBeKeyView_ = YES;
-    opaque_ = NO;
     pinchHasReachedZoomThreshold_ = false;
     isStylusEnteringProximity_ = false;
 
@@ -1871,10 +1872,6 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
 - (void)setCloseOnDeactivate:(BOOL)b {
   closeOnDeactivate_ = b;
-}
-
-- (void)setOpaque:(BOOL)opaque {
-  opaque_ = opaque;
 }
 
 - (BOOL)shouldIgnoreMouseEvent:(NSEvent*)theEvent {
@@ -3616,10 +3613,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   [self finishComposingText];
   [self insertText:string];
   return YES;
-}
-
-- (BOOL)isOpaque {
-  return opaque_;
 }
 
 // "-webkit-app-region: drag | no-drag" is implemented on Mac by excluding
