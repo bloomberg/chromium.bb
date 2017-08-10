@@ -378,8 +378,7 @@ inline bool PaintFastBottomLayer(const DisplayItemClient& image_client,
   if (geometry.CellUsingContainerBackground())
     return false;
   // Complex cases not handled on the fast path.
-  if (!info.is_bottom_layer || !info.is_border_fill ||
-      info.is_clipped_with_local_scrolling)
+  if (!info.is_bottom_layer || !info.is_border_fill)
     return false;
 
   // Transparent layer, nothing to paint.
