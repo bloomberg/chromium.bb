@@ -635,14 +635,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNotShownTest, OnlyNotShownMetricsLogged) {
   histogram_tester.ExpectTotalCount("PaymentRequest.NumberOfSelectionEdits", 0);
   histogram_tester.ExpectTotalCount("PaymentRequest.NumberOfSuggestionsShown",
                                     0);
-  histogram_tester.ExpectTotalCount(
-      "PaymentRequest.UserHadSuggestionsForEverything", 0);
-  histogram_tester.ExpectTotalCount(
-      "PaymentRequest.UserDidNotHaveSuggestionsForEverything", 0);
-  histogram_tester.ExpectTotalCount(
-      "PaymentRequest.UserHadInitialFormOfPayment", 0);
-  histogram_tester.ExpectTotalCount(
-      "PaymentRequest.UserHadSuggestionsForEverything", 0);
 }
 
 class PaymentRequestCompleteSuggestionsForEverythingTest
@@ -671,16 +663,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompleteSuggestionsForEverythingTest,
 
   // Navigate away to abort the Payment Request and trigger the logs.
   NavigateTo("/payment_request_email_test.html");
-
-  // The fact that the user had a form of payment on file should be recorded.
-  histogram_tester.ExpectUniqueSample(
-      "PaymentRequest.UserHadCompleteSuggestionsForEverything."
-      "EffectOnCompletion",
-      JourneyLogger::COMPLETION_STATUS_USER_ABORTED, 1);
-  histogram_tester.ExpectTotalCount(
-      "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-      "EffectOnCompletion",
-      0);
 
   // Make sure the correct events were logged.
   std::vector<base::Bucket> buckets =
@@ -718,16 +700,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompleteSuggestionsForEverythingTest,
 
   // Navigate away to abort the Payment Request and trigger the logs.
   NavigateTo("/payment_request_email_test.html");
-
-  // The fact that the user had no form of payment on file should be recorded.
-  histogram_tester.ExpectUniqueSample(
-      "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-      "EffectOnCompletion",
-      JourneyLogger::COMPLETION_STATUS_USER_ABORTED, 1);
-  histogram_tester.ExpectTotalCount(
-      "PaymentRequest.UserHadCompleteSuggestionsForEverything."
-      "EffectOnCompletion",
-      0);
 
   // Make sure the correct events were logged.
   std::vector<base::Bucket> buckets =
@@ -771,16 +743,6 @@ IN_PROC_BROWSER_TEST_F(
 
   // Navigate away to abort the Payment Request and trigger the logs.
   NavigateTo("/payment_request_email_test.html");
-
-  // The fact that the user had no form of payment on file should be recorded.
-  histogram_tester.ExpectUniqueSample(
-      "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-      "EffectOnCompletion",
-      JourneyLogger::COMPLETION_STATUS_USER_ABORTED, 1);
-  histogram_tester.ExpectTotalCount(
-      "PaymentRequest.UserHadCompleteSuggestionsForEverything."
-      "EffectOnCompletion",
-      0);
 
   // Make sure the correct events were logged.
   std::vector<base::Bucket> buckets =

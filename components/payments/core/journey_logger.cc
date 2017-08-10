@@ -101,6 +101,10 @@ void JourneyLogger::SetNumberOfSuggestionsShown(Section section,
 }
 
 void JourneyLogger::SetCanMakePaymentValue(bool value) {
+  // Do not log the outcome of canMakePayment in incognito mode.
+  if (is_incognito_)
+    return;
+
   SetEventOccurred(value ? EVENT_CAN_MAKE_PAYMENT_TRUE
                          : EVENT_CAN_MAKE_PAYMENT_FALSE);
 }
@@ -160,7 +164,6 @@ void JourneyLogger::RecordJourneyStatsHistograms(
   DCHECK(!has_recorded_);
   has_recorded_ = true;
 
-  RecordCanMakePaymentStats(completion_status);
   RecordUrlKeyedMetrics(completion_status);
   RecordEventsMetric(completion_status);
 
@@ -179,16 +182,8 @@ void JourneyLogger::RecordPaymentMethodMetric() {
 
 void JourneyLogger::RecordSectionSpecificStats(
     CompletionStatus completion_status) {
-  // Record whether the user had suggestions for each requested information.
-  bool user_had_all_requested_information = true;
-
-  // Record whether the user had at least one complete suggestion for each
-  // requested section.
-  bool user_had_complete_suggestions_ = true;
-
   for (int i = 0; i < NUMBER_OF_SECTIONS; ++i) {
     std::string name_suffix = GetHistogramNameSuffix(i, completion_status);
-
     // Only log the metrics for a section if it was requested by the merchant.
     if (sections_[i].is_requested_) {
       base::UmaHistogramCustomCounts(
@@ -207,93 +202,8 @@ void JourneyLogger::RecordSectionSpecificStats(
           "PaymentRequest.NumberOfSuggestionsShown." + name_suffix,
           std::min(sections_[i].number_suggestions_shown_, MAX_EXPECTED_SAMPLE),
           MIN_EXPECTED_SAMPLE, MAX_EXPECTED_SAMPLE, NUMBER_BUCKETS);
-
-      if (sections_[i].number_suggestions_shown_ == 0) {
-        user_had_all_requested_information = false;
-        user_had_complete_suggestions_ = false;
-      } else if (!sections_[i].has_complete_suggestion_) {
-        user_had_complete_suggestions_ = false;
-      }
     }
   }
-
-  // Record metrics about completion based on whether the user had suggestions
-  // for each requested information.
-  if (user_had_all_requested_information) {
-    base::UmaHistogramEnumeration(
-        "PaymentRequest.UserHadSuggestionsForEverything."
-        "EffectOnCompletion",
-        completion_status, COMPLETION_STATUS_MAX);
-  } else {
-    base::UmaHistogramEnumeration(
-        "PaymentRequest.UserDidNotHaveSuggestionsForEverything."
-        "EffectOnCompletion",
-        completion_status, COMPLETION_STATUS_MAX);
-  }
-
-  // Record metrics about completion based on whether the user had complete
-  // suggestions for each requested information.
-  if (user_had_complete_suggestions_) {
-    base::UmaHistogramEnumeration(
-        "PaymentRequest.UserHadCompleteSuggestionsForEverything."
-        "EffectOnCompletion",
-        completion_status, COMPLETION_STATUS_MAX);
-  } else {
-    base::UmaHistogramEnumeration(
-        "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-        "EffectOnCompletion",
-        completion_status, COMPLETION_STATUS_MAX);
-  }
-}
-
-void JourneyLogger::RecordCanMakePaymentStats(
-    CompletionStatus completion_status) {
-  // CanMakePayment always returns true in incognito mode. Don't log the
-  // metrics.
-  if (is_incognito_)
-    return;
-
-  // Record CanMakePayment usage.
-  UMA_HISTOGRAM_ENUMERATION("PaymentRequest.CanMakePayment.Usage",
-                            WasCanMakePaymentUsed() ? CAN_MAKE_PAYMENT_USED
-                                                    : CAN_MAKE_PAYMENT_NOT_USED,
-                            CAN_MAKE_PAYMENT_USE_MAX);
-
-  RecordCanMakePaymentEffectOnShow();
-  RecordCanMakePaymentEffectOnCompletion(completion_status);
-}
-
-void JourneyLogger::RecordCanMakePaymentEffectOnShow() {
-  if (!WasCanMakePaymentUsed())
-    return;
-
-  int effect_on_trigger = 0;
-  if (WasPaymentRequestTriggered())
-    effect_on_trigger |= CMP_EFFECT_ON_SHOW_DID_SHOW;
-  if (CouldMakePayment())
-    effect_on_trigger |= CMP_EFFECT_ON_SHOW_COULD_MAKE_PAYMENT;
-
-  UMA_HISTOGRAM_ENUMERATION("PaymentRequest.CanMakePayment.Used.EffectOnShow",
-                            static_cast<CmpEffectOnShow>(effect_on_trigger),
-                            CMP_EFFECT_ON_SHOW_MAX);
-}
-
-void JourneyLogger::RecordCanMakePaymentEffectOnCompletion(
-    CompletionStatus completion_status) {
-  if (!WasPaymentRequestTriggered())
-    return;
-
-  std::string histogram_name = "PaymentRequest.CanMakePayment.";
-  if (!WasCanMakePaymentUsed()) {
-    histogram_name += "NotUsed.WithShowEffectOnCompletion";
-  } else if (CouldMakePayment()) {
-    histogram_name += "Used.TrueWithShowEffectOnCompletion";
-  } else {
-    histogram_name += "Used.FalseWithShowEffectOnCompletion";
-  }
-
-  base::UmaHistogramEnumeration(histogram_name, completion_status,
-                                COMPLETION_STATUS_MAX);
 }
 
 void JourneyLogger::RecordEventsMetric(CompletionStatus completion_status) {
@@ -347,15 +257,6 @@ void JourneyLogger::RecordUrlKeyedMetrics(CompletionStatus completion_status) {
   builder->AddMetric(internal::kUKMCompletionStatusMetricName,
                      completion_status);
   builder->AddMetric(internal::kUKMEventsMetricName, events_);
-}
-
-bool JourneyLogger::WasCanMakePaymentUsed() {
-  return (events_ & EVENT_CAN_MAKE_PAYMENT_FALSE) > 0 ||
-         (events_ & EVENT_CAN_MAKE_PAYMENT_TRUE) > 0;
-}
-
-bool JourneyLogger::CouldMakePayment() {
-  return (events_ & EVENT_CAN_MAKE_PAYMENT_TRUE) > 0;
 }
 
 bool JourneyLogger::WasPaymentRequestTriggered() {

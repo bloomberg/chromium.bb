@@ -576,18 +576,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
-        // Make the metric was logged correctly.
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.UserHadCompleteSuggestionsForEverything.EffectOnCompletion",
-                        CompletionStatus.USER_ABORTED));
-
-        // Make sure the opposite metric has no logs.
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-                        + "EffectOnCompletion"));
-
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
                 | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.REQUEST_SHIPPING;
@@ -620,19 +608,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
-
-        // Make the metric was logged correctly.
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-                                + "EffectOnCompletion",
-                        CompletionStatus.USER_ABORTED));
-
-        // Make sure the opposite metric has no logs.
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "PaymentRequest.UserHadCompleteSuggestionsForEverything."
-                        + "EffectOnCompletion"));
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
@@ -667,19 +642,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
-        // Make the metric was logged correctly.
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-                                + "EffectOnCompletion",
-                        CompletionStatus.USER_ABORTED));
-
-        // Make sure the opposite metric has no logs.
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "PaymentRequest.UserHadCompleteSuggestionsForEverything."
-                        + "EffectOnCompletion"));
-
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
                 | Event.REQUEST_SHIPPING;
@@ -713,19 +675,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
-        // Make the metric was logged correctly.
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-                                + "EffectOnCompletion",
-                        CompletionStatus.USER_ABORTED));
-
-        // Make sure the opposite metric has no logs.
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "PaymentRequest.UserHadCompleteSuggestionsForEverything."
-                        + "EffectOnCompletion"));
-
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.REQUEST_SHIPPING;
         Assert.assertEquals(1,
@@ -755,19 +704,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
-
-        // Make the metric was logged correctly.
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-                                + "EffectOnCompletion",
-                        CompletionStatus.USER_ABORTED));
-
-        // Make sure the opposite metric has no logs.
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "PaymentRequest.UserHadCompleteSuggestionsForEverything."
-                        + "EffectOnCompletion"));
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.REQUEST_SHIPPING;
@@ -799,19 +735,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
-        // Make the metric was logged correctly.
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-                                + "EffectOnCompletion",
-                        CompletionStatus.USER_ABORTED));
-
-        // Make sure the opposite metric has no logs.
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "PaymentRequest.UserHadCompleteSuggestionsForEverything."
-                        + "EffectOnCompletion"));
-
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.REQUEST_SHIPPING;
         Assert.assertEquals(1,
@@ -841,18 +764,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
-
-        // Make the metric was logged correctly.
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.UserHadCompleteSuggestionsForEverything.EffectOnCompletion",
-                        CompletionStatus.USER_ABORTED));
-
-        // Make sure the opposite metric has no logs.
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-                        + "EffectOnCompletion"));
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
@@ -886,19 +797,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
-
-        // Make the metric was logged correctly.
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-                                + "EffectOnCompletion",
-                        CompletionStatus.USER_ABORTED));
-
-        // Make sure the opposite metric has no logs.
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "PaymentRequest.UserHadCompleteSuggestionsForEverything."
-                        + "EffectOnCompletion"));
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
@@ -934,18 +832,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
-        // Make the metric was logged correctly.
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.UserHadCompleteSuggestionsForEverything.EffectOnCompletion",
-                        CompletionStatus.USER_ABORTED));
-
-        // Make sure the opposite metric has no logs.
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-                        + "EffectOnCompletion"));
-
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
                 | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.REQUEST_SHIPPING;
@@ -977,18 +863,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
-
-        // Make the metric was logged correctly.
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.UserHadCompleteSuggestionsForEverything.EffectOnCompletion",
-                        CompletionStatus.USER_ABORTED));
-
-        // Make sure the opposite metric has no logs.
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-                        + "EffectOnCompletion"));
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
@@ -1025,18 +899,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
-        // Make the metric was logged correctly.
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.UserHadCompleteSuggestionsForEverything.EffectOnCompletion",
-                        CompletionStatus.USER_ABORTED));
-
-        // Make sure the opposite metric has no logs.
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-                        + "EffectOnCompletion"));
-
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
                 | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.REQUEST_SHIPPING;
@@ -1066,18 +928,6 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
-
-        // Make sure the metric was logged correctly.
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything."
-                                + "EffectOnCompletion",
-                        CompletionStatus.USER_ABORTED));
-
-        // Make sure the opposite metric has no logs.
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "PaymentRequest.UserHadCompleteSuggestions.EffectOnCompletion"));
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.REQUEST_SHIPPING;
