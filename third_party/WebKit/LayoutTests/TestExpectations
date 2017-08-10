@@ -115,15 +115,6 @@ crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.htm
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 
-# Awaiting rebaseline after skia roll.
-crbug.com/739559 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Failure Pass ]
-crbug.com/739559 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Failure Pass ]
-crbug.com/739559 virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ Failure Pass ]
-crbug.com/739559 virtual/gpu-rasterization/images/color-profile-svg.html [ Failure Pass ]
-crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-background-size.html [ Failure Pass ]
-crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-overflow-position.html [ Failure Pass ]
-crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-tiled.html [ Failure Pass ]
-
 crbug.com/749760 compositing/overflow/relpos-under-abspos-border-radius.html [ Failure ]
 crbug.com/749760 virtual/prefer_compositing_to_lcd_text/compositing/overflow/relpos-under-abspos-border-radius.html [ Failure ]
 
