@@ -48,10 +48,9 @@ struct Environment {
   mojo::internal::ScopedSuppressValidationErrorLoggingForTests log_suppression;
 };
 
-Environment* env = new Environment();
-
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  static Environment* env = new Environment();
   /* Pass the data along to run on a MessageLoop, and wait for it to finish. */
   base::RunLoop run;
   env->message_loop.task_runner()->PostTask(

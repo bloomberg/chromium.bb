@@ -59,6 +59,10 @@ struct FuzzStruct {
   array<map<FuzzEnum, map<int8, array<FuzzStruct?>?>>>? fuzz_complex;
 };
 
+interface FuzzDummyInterface {
+  Ping();
+};
+
 interface FuzzInterface {
   FuzzBasic();
   FuzzBasicResp() => ();
@@ -69,4 +73,6 @@ interface FuzzInterface {
   FuzzArgsResp(FuzzStruct a, FuzzStruct? b) => ();
   [Sync]
   FuzzArgsSyncResp(FuzzStruct a, FuzzStruct? b) => ();
+
+  FuzzAssociated(associated FuzzDummyInterface& request);
 };

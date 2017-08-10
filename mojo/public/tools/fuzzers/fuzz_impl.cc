@@ -36,3 +36,10 @@ void FuzzImpl::FuzzArgsSyncResp(fuzz::mojom::FuzzStructPtr a,
                                 FuzzArgsSyncRespCallback callback) {
   std::move(callback).Run();
 }
+
+void FuzzImpl::FuzzAssociated(
+    fuzz::mojom::FuzzDummyInterfaceAssociatedRequest req) {
+  associated_bindings_.AddBinding(this, std::move(req));
+}
+
+void FuzzImpl::Ping() {}

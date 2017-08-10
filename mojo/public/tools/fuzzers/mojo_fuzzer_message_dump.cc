@@ -223,10 +223,11 @@ void FuzzCallback() {}
  * supplied directory. */
 void DumpMessages(std::string output_directory) {
   fuzz::mojom::FuzzInterfacePtr fuzz;
+  fuzz::mojom::FuzzDummyInterfaceAssociatedPtr dummy;
 
   /* Create the impl and add a MessageDumper to the filter chain. */
   env->impl = base::MakeUnique<FuzzImpl>(MakeRequest(&fuzz));
-  env->impl->binding_.AddFilter(
+  env->impl->binding_.RouterForTesting()->AddIncomingMessageFilter(
       base::MakeUnique<MessageDumper>(output_directory));
 
   /* Call methods in various ways to generate interesting messages. */
@@ -244,6 +245,8 @@ void DumpMessages(std::string output_directory) {
                          GetPopulatedFuzzStruct(), base::Bind(FuzzCallback));
   fuzz->FuzzArgsSyncResp(fuzz::mojom::FuzzStruct::New(),
                          GetPopulatedFuzzStruct(), base::Bind(FuzzCallback));
+  fuzz->FuzzAssociated(MakeRequest(&dummy));
+  dummy->Ping();
 }
 
 int main(int argc, char** argv) {
