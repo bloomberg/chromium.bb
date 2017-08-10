@@ -25,8 +25,12 @@
  */
 
 #include "platform/wtf/typed_arrays/ArrayBufferContents.h"
+#include "build/build_config.h"
 
 #include <string.h>
+#if defined(OS_LINUX)
+#include "sandbox/linux/services/resource_limits.h"
+#endif
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/allocator/Partitions.h"
@@ -129,6 +133,14 @@ void* ArrayBufferContents::AllocateMemoryOrNull(size_t size,
 void* ArrayBufferContents::ReserveMemory(size_t size) {
   void* const hint = nullptr;
   const size_t align = 64 << 10;  // Wasm page size
+
+#if defined(OS_LINUX)
+  // Linux by default has a small address space limit, which we chew up pretty
+  // quickly with large memory reservations. To mitigate this, we bump up the
+  // limit for array buffer reservations. See https://crbug.com/750378
+  CHECK(sandbox::ResourceLimits::AdjustCurrent(RLIMIT_AS, size));
+#endif
+
   // TODO(crbug.com/735209): On Windows this commits all the memory, rather than
   // just reserving it. This is very bad and should be fixed, but we don't use
   // this feature on Windows at all yet.
@@ -140,6 +152,13 @@ void ArrayBufferContents::FreeMemory(void* data) {
 }
 
 void ArrayBufferContents::ReleaseReservedMemory(void* data, size_t size) {
+#if defined(OS_LINUX)
+  // Linux by default has a small address space limit, which we chew up pretty
+  // quickly with large memory reservations. To mitigate this, we bump up the
+  // limit for array buffer reservations. Here we need to lower it back down.
+  // See https://crbug.com/750378
+  CHECK(sandbox::ResourceLimits::AdjustCurrent(RLIMIT_AS, -size));
+#endif
   base::FreePages(data, size);
 }
 
