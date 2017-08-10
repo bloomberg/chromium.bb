@@ -51,6 +51,9 @@ class BufferViewBase {
       : first_(first), last_(first_ + size) {
     DCHECK_GE(last_, first_);
   }
+  template <class U>
+  explicit BufferViewBase(const BufferViewBase<U>& that)
+      : first_(that.begin()), last_(that.end()) {}
 
   BufferViewBase(const BufferViewBase&) = default;
   BufferViewBase& operator=(const BufferViewBase&) = default;
