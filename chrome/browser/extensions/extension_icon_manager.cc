@@ -27,13 +27,9 @@
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
 
-ExtensionIconManager::ExtensionIconManager()
-    : monochrome_(false),
-      weak_ptr_factory_(this)  {
-}
+ExtensionIconManager::ExtensionIconManager() {}
 
-ExtensionIconManager::~ExtensionIconManager() {
-}
+ExtensionIconManager::~ExtensionIconManager() {}
 
 void ExtensionIconManager::LoadIcon(content::BrowserContext* context,
                                     const extensions::Extension* extension) {
@@ -70,21 +66,24 @@ void ExtensionIconManager::RemoveIcon(const std::string& extension_id) {
 
 void ExtensionIconManager::OnImageLoaded(const std::string& extension_id,
                                          const gfx::Image& image) {
-  if (image.IsEmpty())
-    return;
+  if (!image.IsEmpty()) {
+    // We may have removed the icon while waiting for it to load. In that case,
+    // do nothing.
+    if (pending_icons_.erase(extension_id) == 0)
+      return;
 
-  // We may have removed the icon while waiting for it to load. In that case,
-  // do nothing.
-  if (pending_icons_.erase(extension_id) == 0)
-    return;
-
-  gfx::Image modified_image = image;
-  if (monochrome_) {
-    color_utils::HSL shift = {-1, 0, 0.6};
-    modified_image = gfx::Image(gfx::ImageSkiaOperations::CreateHSLShiftedImage(
-        image.AsImageSkia(), shift));
+    gfx::Image modified_image = image;
+    if (monochrome_) {
+      color_utils::HSL shift = {-1, 0, 0.6};
+      modified_image =
+          gfx::Image(gfx::ImageSkiaOperations::CreateHSLShiftedImage(
+              image.AsImageSkia(), shift));
+    }
+    icons_[extension_id] = modified_image;
   }
-  icons_[extension_id] = modified_image;
+
+  if (observer_)
+    observer_->OnImageLoaded(extension_id);
 }
 
 void ExtensionIconManager::EnsureDefaultIcon() {

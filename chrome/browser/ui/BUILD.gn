@@ -984,6 +984,8 @@ split_static_library("ui") {
       "webui/md_feedback/md_feedback_webui_message_handler.h",
       "webui/md_history_ui.cc",
       "webui/md_history_ui.h",
+      "webui/ntp/app_icon_webui_handler.cc",
+      "webui/ntp/app_icon_webui_handler.h",
       "webui/ntp/app_launcher_handler.cc",
       "webui/ntp/app_launcher_handler.h",
       "webui/ntp/app_resource_cache_factory.cc",

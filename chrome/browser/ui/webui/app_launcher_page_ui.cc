@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/app_launcher_login_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
+#include "chrome/browser/ui/webui/ntp/app_icon_webui_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
@@ -46,6 +47,7 @@ AppLauncherPageUI::AppLauncherPageUI(content::WebUI* web_ui)
     DCHECK(service);
     web_ui->AddMessageHandler(base::MakeUnique<AppLauncherHandler>(service));
     web_ui->AddMessageHandler(base::MakeUnique<CoreAppLauncherHandler>());
+    web_ui->AddMessageHandler(base::MakeUnique<AppIconWebUIHandler>());
     web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
   }
 

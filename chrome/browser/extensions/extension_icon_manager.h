@@ -23,6 +23,11 @@ class Extension;
 
 class ExtensionIconManager {
  public:
+  class Observer {
+   public:
+    virtual void OnImageLoaded(const std::string& extension_id) = 0;
+  };
+
   ExtensionIconManager();
   virtual ~ExtensionIconManager();
 
@@ -39,12 +44,11 @@ class ExtensionIconManager {
   void RemoveIcon(const std::string& extension_id);
 
   void set_monochrome(bool value) { monochrome_ = value; }
-
- protected:
-  virtual void OnImageLoaded(const std::string& extension_id,
-                             const gfx::Image& image);
+  void set_observer(Observer* observer) { observer_ = observer; }
 
  private:
+  void OnImageLoaded(const std::string& extension_id, const gfx::Image& image);
+
   // Makes sure we've done one-time initialization of the default extension icon
   // default_icon_.
   void EnsureDefaultIcon();
@@ -59,9 +63,11 @@ class ExtensionIconManager {
   gfx::Image default_icon_;
 
   // If true, we will desaturate the icons to make them monochromatic.
-  bool monochrome_;
+  bool monochrome_ = false;
 
-  base::WeakPtrFactory<ExtensionIconManager> weak_ptr_factory_;
+  Observer* observer_ = nullptr;
+
+  base::WeakPtrFactory<ExtensionIconManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionIconManager);
 };
