@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 
+@protocol ApplicationCommands;
+
 // This data source object is used to obtain initial data to populate the fields
 // on the User Feedback form.
 @protocol UserFeedbackDataSource<NSObject>
@@ -43,6 +45,10 @@ class UserFeedbackProvider {
   // Returns view controller to present to the user to collect their feedback.
   virtual UIViewController* CreateViewController(
       id<UserFeedbackDataSource> dataSource);
+  // Returns view controller to present to the user to collect their feedback.
+  virtual UIViewController* CreateViewController(
+      id<UserFeedbackDataSource> dataSource,
+      id<ApplicationCommands> dispatcher);
   // Uploads collected feedback reports.
   virtual void Synchronize();
 

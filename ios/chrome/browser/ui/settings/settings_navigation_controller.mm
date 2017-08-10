@@ -165,9 +165,10 @@ newUserFeedbackController:(ios::ChromeBrowserState*)browserState
   DCHECK(ios::GetChromeBrowserProvider()
              ->GetUserFeedbackProvider()
              ->IsUserFeedbackEnabled());
-  UIViewController* controller = ios::GetChromeBrowserProvider()
-                                     ->GetUserFeedbackProvider()
-                                     ->CreateViewController(dataSource);
+  UIViewController* controller =
+      ios::GetChromeBrowserProvider()
+          ->GetUserFeedbackProvider()
+          ->CreateViewController(dataSource, [delegate dispatcherForSettings]);
   DCHECK(controller);
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
