@@ -384,6 +384,11 @@ MultiplexRouter::~MultiplexRouter() {
   DCHECK(endpoints_.empty());
 }
 
+void MultiplexRouter::AddIncomingMessageFilter(
+    std::unique_ptr<MessageReceiver> filter) {
+  filters_.Append(std::move(filter));
+}
+
 void MultiplexRouter::SetMasterInterfaceName(const char* name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   header_validator_->SetDescription(std::string(name) +
