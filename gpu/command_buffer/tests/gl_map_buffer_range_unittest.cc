@@ -29,7 +29,7 @@ class ES3MapBufferRangeTest : public testing::Test {
     options.size = gfx::Size(kCanvasSize, kCanvasSize);
     options.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
 
-    base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
+    base::CommandLine cmd_line(*base::CommandLine::ForCurrentProcess());
     gl_.InitializeWithCommandLine(options, cmd_line);
   }
 

@@ -28,7 +28,7 @@ const GLenum kCubeMapTextureTargets[] = {
 class GLCubeMapTextureTest : public testing::TestWithParam<GLenum> {
  protected:
   void SetUp() override {
-    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
     // ANGLE and NVidia fails ReadPixelsFromIncompleteCubeTexture without this
     // workaround.
     command_line.AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
