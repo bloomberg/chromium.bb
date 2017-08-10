@@ -225,7 +225,14 @@ TEST_F(AudioRendererSinkCacheTest, GarbageCollection) {
 
 // Verify that the sink created with GetSinkInfo() is not deleted if used within
 // the timeout.
-TEST_F(AudioRendererSinkCacheTest, NoGarbageCollectionForUsedSink) {
+// Flaky on Linux TSan Tests. https://crbug.com/754196
+#if defined(OS_LINUX)
+#define MAYBE_NoGarbageCollectionForUsedSink \
+  DISABLED_NoGarbageCollectionForUsedSink
+#else
+#define MAYBE_NoGarbageCollectionForUsedSink NoGarbageCollectionForUsedSink
+#endif
+TEST_F(AudioRendererSinkCacheTest, MAYBE_NoGarbageCollectionForUsedSink) {
   EXPECT_EQ(0, sink_count());
   media::OutputDeviceInfo device_info =
       cache_->GetSinkInfo(kRenderFrameId, 0, kDefaultDeviceId, url::Origin());
