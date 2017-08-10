@@ -96,10 +96,10 @@ TEST_F(FileSelectHelperTest, GetSanitizedFileName) {
   EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("ascii.txt")),
             FileSelectHelper::GetSanitizedFileName(
                 base::FilePath(FILE_PATH_LITERAL("ascii.txt"))));
-  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("trailing-spaces-")),
+  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("trailing-spaces_")),
             FileSelectHelper::GetSanitizedFileName(
                 base::FilePath(FILE_PATH_LITERAL("trailing-spaces "))));
-  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("path-components-in-name")),
+  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("path_components_in_name")),
             FileSelectHelper::GetSanitizedFileName(
                 base::FilePath(FILE_PATH_LITERAL("path/components/in/name"))));
 
