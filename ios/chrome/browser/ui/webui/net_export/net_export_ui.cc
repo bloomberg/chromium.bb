@@ -46,8 +46,7 @@ web::WebUIIOSDataSource* CreateNetExportHTMLSource() {
 
 // This class receives javascript messages from the renderer.
 // Note that the WebUI infrastructure runs on the UI thread, therefore all of
-// this class's public methods are expected to run on the UI thread. All static
-// functions except SendEmail run on FILE_USER_BLOCKING thread.
+// this class's member methods are expected to run on the UI thread.
 class NetExportMessageHandler
     : public web::WebUIIOSMessageHandler,
       public base::SupportsWeakPtr<NetExportMessageHandler>,
