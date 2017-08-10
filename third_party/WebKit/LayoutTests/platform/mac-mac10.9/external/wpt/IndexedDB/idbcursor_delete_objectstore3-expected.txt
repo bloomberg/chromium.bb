@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL IDBCursor.delete() - index - attempt to remove a record in an inactive transaction assert_unreached: unexpected db.abort Reached unreachable code
-Harness: the test ran to completion.
-

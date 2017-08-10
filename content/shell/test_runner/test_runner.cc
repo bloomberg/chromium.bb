@@ -1665,8 +1665,8 @@ void TestRunner::Reset() {
 #endif
 
   if (delegate_) {
-    // Reset the default quota for each origin to 5MB
-    delegate_->SetDatabaseQuota(5 * 1024 * 1024);
+    // Reset the default quota for each origin.
+    delegate_->SetDatabaseQuota(kDefaultDatabaseQuota);
     delegate_->SetDeviceColorSpace("reset");
     delegate_->SetDeviceScaleFactor(GetDefaultDeviceScaleFactor());
     delegate_->SetBlockThirdPartyCookies(true);
