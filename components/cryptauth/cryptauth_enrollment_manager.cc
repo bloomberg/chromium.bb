@@ -42,6 +42,14 @@ const double kEnrollmentMaxJitterRatio = 0.2;
 // registration.
 const char kDeviceSoftwarePackage[] = "com.google.chrome.cryptauth";
 
+std::unique_ptr<SyncScheduler> CreateSyncScheduler(
+    SyncScheduler::Delegate* delegate) {
+  return base::MakeUnique<SyncSchedulerImpl>(
+      delegate, base::TimeDelta::FromDays(kEnrollmentRefreshPeriodDays),
+      base::TimeDelta::FromMinutes(kEnrollmentBaseRecoveryPeriodMinutes),
+      kEnrollmentMaxJitterRatio, "CryptAuth Enrollment");
+}
+
 }  // namespace
 
 CryptAuthEnrollmentManager::CryptAuthEnrollmentManager(
@@ -57,6 +65,7 @@ CryptAuthEnrollmentManager::CryptAuthEnrollmentManager(
       device_info_(device_info),
       gcm_manager_(gcm_manager),
       pref_service_(pref_service),
+      scheduler_(CreateSyncScheduler(this /* delegate */)),
       weak_ptr_factory_(this) {}
 
 CryptAuthEnrollmentManager::~CryptAuthEnrollmentManager() {
@@ -89,7 +98,6 @@ void CryptAuthEnrollmentManager::Start() {
   base::TimeDelta elapsed_time_since_last_sync =
       clock_->Now() - last_successful_enrollment;
 
-  scheduler_ = CreateSyncScheduler();
   scheduler_->Start(elapsed_time_since_last_sync,
                     is_recovering_from_failure
                         ? SyncScheduler::Strategy::AGGRESSIVE_RECOVERY
@@ -159,14 +167,6 @@ void CryptAuthEnrollmentManager::OnEnrollmentFinished(bool success) {
     observer.OnEnrollmentFinished(success);
 }
 
-std::unique_ptr<SyncScheduler>
-CryptAuthEnrollmentManager::CreateSyncScheduler() {
-  return base::MakeUnique<SyncSchedulerImpl>(
-      this, base::TimeDelta::FromDays(kEnrollmentRefreshPeriodDays),
-      base::TimeDelta::FromMinutes(kEnrollmentBaseRecoveryPeriodMinutes),
-      kEnrollmentMaxJitterRatio, "CryptAuth Enrollment");
-}
-
 std::string CryptAuthEnrollmentManager::GetUserPublicKey() const {
   std::string public_key;
   if (!base::Base64UrlDecode(
@@ -187,6 +187,11 @@ std::string CryptAuthEnrollmentManager::GetUserPrivateKey() const {
     return std::string();
   }
   return private_key;
+}
+
+void CryptAuthEnrollmentManager::SetSyncSchedulerForTest(
+    std::unique_ptr<SyncScheduler> sync_scheduler) {
+  scheduler_ = std::move(sync_scheduler);
 }
 
 void CryptAuthEnrollmentManager::OnGCMRegistrationResult(bool success) {

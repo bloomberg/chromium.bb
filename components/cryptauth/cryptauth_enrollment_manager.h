@@ -116,8 +116,7 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
   virtual std::string GetUserPrivateKey() const;
 
  protected:
-  // Creates a new SyncScheduler instance. Exposed for testing.
-  virtual std::unique_ptr<SyncScheduler> CreateSyncScheduler();
+  void SetSyncSchedulerForTest(std::unique_ptr<SyncScheduler> sync_scheduler);
 
  private:
   // CryptAuthGCMManager::Observer:
