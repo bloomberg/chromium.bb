@@ -211,6 +211,13 @@ void SearchGeolocationService::SetDSEGeolocationSetting(bool setting) {
   ResetContentSetting();
 }
 
+url::Origin SearchGeolocationService::GetDSEOriginIfEnabled() {
+  url::Origin dse_origin = delegate_->GetDSEOrigin();
+  if (UseDSEGeolocationSetting(dse_origin))
+    return dse_origin;
+  return url::Origin();
+}
+
 void SearchGeolocationService::Shutdown() {
   delegate_.reset();
 }
