@@ -141,6 +141,8 @@ void RecordExtendedReportingPrefChanged(
 }  // namespace
 
 namespace prefs {
+const char kSafeBrowsingChangePasswordInSettingsEnabled[] =
+    "safebrowsing.change_password_enabled";
 const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
 const char kSafeBrowsingExtendedReportingEnabled[] =
     "safebrowsing.extended_reporting_enabled";
@@ -358,6 +360,8 @@ void RecordExtendedReportingMetrics(const PrefService& prefs) {
 }
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kSafeBrowsingChangePasswordInSettingsEnabled, false);
   registry->RegisterBooleanPref(prefs::kSafeBrowsingExtendedReportingEnabled,
                                 false);
   registry->RegisterBooleanPref(prefs::kSafeBrowsingScoutReportingEnabled,

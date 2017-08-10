@@ -29,6 +29,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   ~ChromePasswordProtectionService() override;
 
+  static bool ShouldShowChangePasswordSettingUI(Profile* profile);
+
  protected:
   // PasswordProtectionService overrides.
   // Obtains referrer chain of |event_url| and |event_tab_id| and add this
