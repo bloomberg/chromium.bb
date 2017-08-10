@@ -84,24 +84,26 @@ const char kKeyboardsPath[] = "keyboards";
 const char kLocalesPath[] = "locales";
 const char kTimeZonesPath[] = "time_zones";
 
-// These are the machine serial number keys that we check in order until we
-// find a non-empty serial number. The VPD spec says the serial number should be
-// in the "serial_number" key for v2+ VPDs. However, legacy devices used a
-// different key to report their serial number, which we fall back to if
-// "serial_number" is not present.
+// These are the machine serial number keys that we check in order until we find
+// a non-empty serial number.
 //
-// Product_S/N is still special-cased due to inconsistencies with serial
-// numbers on Lumpy devices: On these devices, serial_number is identical to
-// Product_S/N with an appended checksum. Unfortunately, the sticker on the
-// packaging doesn't include that checksum either (the sticker on the device
-// does though!). The former sticker is the source of the serial number used by
-// device management service, so we prefer Product_S/N over serial number to
-// match the server.
+// On older Samsung devices the VPD contains two serial numbers: "Product_S/N"
+// and "serial_number" which are based on the same value except that the latter
+// has a letter appended that serves as a check digit. Unfortunately, the
+// sticker on the device packaging didn't include that check digit (the sticker
+// on the device did though!). The former sticker was the source of the serial
+// number used by device management service, so we preferred "Product_S/N" over
+// "serial_number" to match the server. As an unintended consequence, older
+// Samsung devices display and report a serial number that doesn't match the
+// sticker on the device (the check digit is missing).
+//
+// "Product_S/N" is known to be used on celes, lumpy, pi, pit, snow, winky and
+// some kevin devices and thus needs to be supported until AUE of these
+// devices. It's known *not* to be present on caroline.
+// TODO(tnagel): Remove "Product_S/N" after all devices that have it are AUE.
 const char* const kMachineInfoSerialNumberKeys[] = {
-    "Product_S/N",     // Lumpy/Alex devices
+    "Product_S/N",     // Samsung legacy
     kSerialNumberKey,  // VPD v2+ devices
-    "Product_SN",      // Mario
-    "sn",              // old ZGB devices (more recent ones use serial_number)
 };
 
 // Gets ListValue from given |dictionary| by given |key| and (unless |result| is
