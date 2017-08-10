@@ -21,6 +21,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "extensions/features/features.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry_observer.h"
@@ -39,7 +40,8 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
                         public extensions::ExtensionRegistryObserver,
 #endif
                         public policy::PolicyService::Observer,
-                        public policy::SchemaRegistry::Observer {
+                        public policy::SchemaRegistry::Observer,
+                        public ui::SelectFileDialog::Listener {
  public:
   PolicyUIHandler();
   ~PolicyUIHandler() override;
@@ -79,6 +81,12 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   // Send a dictionary containing the names of all known policies to the UI.
   virtual void SendPolicyNames() const;
 
+  // ui::SelectFileDialog::Listener implementation.
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override;
+  void FileSelectionCanceled(void* params) override;
+
  private:
   // Send information about the current policy values to the UI. For each policy
   // whose value has been set, a dictionary containing the value and additional
@@ -91,21 +99,34 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   void SendStatus() const;
 
   // Inserts a description of each policy in |policy_map| into |values|, using
-  // the optional errors in |errors| to determine the status of each policy.
+  // the optional errors in |errors| to determine the status of each policy. If
+  // |convert_values| is true, converts the values to show them in javascript.
   void GetPolicyValues(const policy::PolicyMap& policy_map,
                        policy::PolicyErrorMap* errors,
-                       base::DictionaryValue* values) const;
+                       base::DictionaryValue* values,
+                       bool convert_values) const;
 
-  void GetChromePolicyValues(base::DictionaryValue* values) const;
+  // Returns a dictionary with the values of all set policies, with some values
+  // converted to be shown in javascript, if it is specified.
+  std::unique_ptr<base::DictionaryValue> GetAllPolicyValues(
+      bool convert_values) const;
+
+  void GetChromePolicyValues(base::DictionaryValue* values,
+                             bool convert_values) const;
+
+  void WritePoliciesToJSONFile(const base::FilePath& path) const;
 
   void HandleInitialized(const base::ListValue* args);
   void HandleReloadPolicies(const base::ListValue* args);
+  void HandleExportPoliciesJSON(const base::ListValue* args);
 
   void OnRefreshPoliciesDone() const;
 
   policy::PolicyService* GetPolicyService() const;
 
   std::string device_domain_;
+
+  scoped_refptr<ui::SelectFileDialog> export_policies_select_file_dialog_;
 
   // Providers that supply status dictionaries for user and device policy,
   // respectively. These are created on initialization time as appropriate for
