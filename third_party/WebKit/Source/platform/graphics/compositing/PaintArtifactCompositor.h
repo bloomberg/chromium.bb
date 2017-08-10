@@ -10,7 +10,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsLayerClient.h"
-#include "platform/graphics/compositing/PropertyTreeManager.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PtrUtil.h"
@@ -29,7 +28,6 @@ namespace blink {
 class ContentLayerClientImpl;
 class JSONObject;
 class PaintArtifact;
-class SynthesizedClip;
 class WebLayer;
 struct PaintChunk;
 
@@ -40,8 +38,7 @@ struct PaintChunk;
 //
 // PaintArtifactCompositor is the successor to PaintLayerCompositor, reflecting
 // the new home of compositing decisions after paint in Slimming Paint v2.
-class PLATFORM_EXPORT PaintArtifactCompositor
-    : private PropertyTreeManagerClient {
+class PLATFORM_EXPORT PaintArtifactCompositor {
   USING_FAST_MALLOC(PaintArtifactCompositor);
   WTF_MAKE_NONCOPYABLE(PaintArtifactCompositor);
 
@@ -76,7 +73,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor
   // placeholder layers required.
   struct ExtraDataForTesting {
     Vector<scoped_refptr<cc::Layer>> content_layers;
-    Vector<scoped_refptr<cc::Layer>> synthesized_clip_layers;
   };
   void EnableExtraDataForTesting() { extra_data_for_testing_enabled_ = true; }
   ExtraDataForTesting* GetExtraDataForTesting() const {
@@ -167,22 +163,11 @@ class PLATFORM_EXPORT PaintArtifactCompositor
   std::unique_ptr<ContentLayerClientImpl> ClientForPaintChunk(
       const PaintChunk&);
 
-  cc::Layer* CreateOrReuseSynthesizedClipLayer(
-      const ClipPaintPropertyNode*,
-      CompositorElementId& mask_isolation_id,
-      CompositorElementId& mask_effect_id) final;
-
   bool tracks_raster_invalidations_;
 
   scoped_refptr<cc::Layer> root_layer_;
   std::unique_ptr<WebLayer> web_layer_;
   Vector<std::unique_ptr<ContentLayerClientImpl>> content_layer_clients_;
-  struct SynthesizedClipEntry {
-    const ClipPaintPropertyNode* key;
-    std::unique_ptr<SynthesizedClip> synthesized_clip;
-    bool in_use;
-  };
-  std::vector<SynthesizedClipEntry> synthesized_clip_cache_;
 
   bool extra_data_for_testing_enabled_ = false;
   std::unique_ptr<ExtraDataForTesting> extra_data_for_testing_;
