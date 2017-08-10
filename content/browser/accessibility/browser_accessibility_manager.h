@@ -411,29 +411,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   virtual void SendLocationChangeEvents(
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
 
- private:
-  // The following states keep track of whether or not the
-  // on-screen keyboard is allowed to be shown.
-  enum OnScreenKeyboardState {
-    // Never show the on-screen keyboard because this tab is hidden.
-    OSK_DISALLOWED_BECAUSE_TAB_HIDDEN,
-
-    // This tab was just shown, so don't pop-up the on-screen keyboard if a
-    // text field gets focus that wasn't the result of an explicit touch.
-    OSK_DISALLOWED_BECAUSE_TAB_JUST_APPEARED,
-
-    // A touch event has occurred within the window, but focus has not
-    // explicitly changed. Allow the on-screen keyboard to be shown if the
-    // touch event was within the bounds of the currently focused object.
-    // Otherwise we'll just wait to see if focus changes.
-    OSK_ALLOWED_WITHIN_FOCUSED_OBJECT,
-
-    // Focus has changed within a tab that's already visible. Allow the
-    // on-screen keyboard to show anytime that a touch event leads to an
-    // editable text control getting focus.
-    OSK_ALLOWED
-  };
-
  protected:
   // The object that can perform actions on our behalf.
   BrowserAccessibilityDelegate* delegate_;
@@ -454,9 +431,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
   // True if the user has initiated a navigation to another page.
   bool user_is_navigating_away_;
-
-  // The on-screen keyboard state.
-  OnScreenKeyboardState osk_state_;
 
   BrowserAccessibilityFindInPageInfo find_in_page_info_;
 

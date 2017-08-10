@@ -137,7 +137,6 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       factory_(factory),
       tree_(new ui::AXSerializableTree()),
       user_is_navigating_away_(false),
-      osk_state_(OSK_ALLOWED),
       last_focused_node_(nullptr),
       last_focused_manager_(nullptr),
       connected_to_parent_tree_node_(false),
@@ -156,7 +155,6 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       factory_(factory),
       tree_(new ui::AXSerializableTree()),
       user_is_navigating_away_(false),
-      osk_state_(OSK_ALLOWED),
       last_focused_node_(nullptr),
       last_focused_manager_(nullptr),
       ax_tree_id_(ui::AXTreeIDRegistry::kNoAXTreeID),
@@ -445,11 +443,6 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
 
     if (event_type == ui::AX_EVENT_FOCUS ||
         event_type == ui::AX_EVENT_BLUR) {
-      if (osk_state_ != OSK_DISALLOWED_BECAUSE_TAB_HIDDEN &&
-          osk_state_ != OSK_DISALLOWED_BECAUSE_TAB_JUST_APPEARED) {
-        osk_state_ = OSK_ALLOWED;
-      }
-
       // We already handled all focus events above.
       continue;
     }
