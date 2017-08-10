@@ -7788,7 +7788,7 @@ I don't think this site should be blocked!
           This extension violates the Chrome Web Store policy.
         </message>
         <message name="IDS_OPTIONS_BLACKLISTED_POTENTIALLY_UNWANTED" desc="The text explaining the reason for disabling extension or app. The extension in question might have been installed without user consent.">
-          This extension may have been added without your knowledge.
+          Disabled by Chrome. This extension may be unsafe.
         </message>
 
         <!-- Options search page strings. -->
