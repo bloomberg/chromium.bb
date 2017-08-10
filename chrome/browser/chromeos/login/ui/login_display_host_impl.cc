@@ -1168,18 +1168,25 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = wallpaper_bounds();
-  params.show_state = ui::SHOW_STATE_FULLSCREEN;
+  // Disable fullscreen state for voice interaction OOBE since the shelf should
+  // be visible.
+  if (!is_voice_interaction_oobe_)
+    params.show_state = ui::SHOW_STATE_FULLSCREEN;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+
+  // Put the voice interaction oobe inside AlwaysOnTop container instead of
+  // LockScreenContainer.
+  ash::ShellWindowId container = is_voice_interaction_oobe_
+                                     ? ash::kShellWindowId_AlwaysOnTopContainer
+                                     : ash::kShellWindowId_LockScreenContainer;
   // The ash::Shell containers are not available in Mash
   if (!ash_util::IsRunningInMash()) {
     params.parent =
-        ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
-                                 ash::kShellWindowId_LockScreenContainer);
+        ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(), container);
   } else {
     using ui::mojom::WindowManager;
     params.mus_properties[WindowManager::kContainerId_InitProperty] =
-        mojo::ConvertTo<std::vector<uint8_t>>(
-            static_cast<int32_t>(ash::kShellWindowId_LockScreenContainer));
+        mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(container));
   }
   login_window_ = new views::Widget;
   params.delegate = login_window_delegate_ =
@@ -1191,8 +1198,9 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   if (login_view_->webui_visible())
     OnLoginPromptVisible();
 
-  // Animations are not available in Mash
-  if (!ash_util::IsRunningInMash()) {
+  // Animations are not available in Mash.
+  // For voice interaction OOBE, we do not want the animation here.
+  if (!ash_util::IsRunningInMash() && !is_voice_interaction_oobe_) {
     login_window_->SetVisibilityAnimationDuration(
         base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));
     login_window_->SetVisibilityAnimationTransition(
@@ -1295,13 +1303,6 @@ void LoginDisplayHostImpl::DisableRestrictiveProxyCheckForTest() {
 
 void LoginDisplayHostImpl::StartVoiceInteractionOobe() {
   is_voice_interaction_oobe_ = true;
-
-  // Lock container can be transparent after lock screen animation.
-  aura::Window* lock_container = ash::Shell::GetContainer(
-      ash::Shell::GetPrimaryRootWindow(),
-      ash::kShellWindowId_LockScreenContainersContainer);
-  lock_container->layer()->SetOpacity(1.0);
-
   finalize_animation_type_ = ANIMATION_NONE;
   StartWizard(chromeos::OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP);
 }
