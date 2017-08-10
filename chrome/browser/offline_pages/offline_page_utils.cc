@@ -147,7 +147,7 @@ void DoCalculateSizeBetween(
 void OfflinePageUtils::SelectPageForURL(
     content::BrowserContext* browser_context,
     const GURL& url,
-    OfflinePageModel::URLSearchMode url_search_mode,
+    URLSearchMode url_search_mode,
     int tab_id,
     const base::Callback<void(const OfflinePageItem*)>& callback) {
   OfflinePageModel* offline_page_model =
@@ -275,7 +275,7 @@ void OfflinePageUtils::CheckDuplicateDownloads(
   };
 
   offline_page_model->GetPagesByURL(
-      url, OfflinePageModel::URLSearchMode::SEARCH_BY_ALL_URLS,
+      url, URLSearchMode::SEARCH_BY_ALL_URLS,
       base::Bind(continuation, browser_context, url, callback));
 }
 
