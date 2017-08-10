@@ -59,7 +59,7 @@ static const int kWindowSelectorMargin = kWindowMargin * 2;
 // Foreground label color.
 static const SkColor kLabelColor = SK_ColorWHITE;
 
-// TODO(tdanderson): Move this to a central location.
+// Close button color.
 static const SkColor kCloseButtonColor = SK_ColorWHITE;
 
 // Label background color once in overview mode.

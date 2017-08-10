@@ -65,8 +65,6 @@ constexpr int kShelfTranslucentColorDarkenAlpha = 128;
 constexpr int kShelfOpaqueColorDarkenAlpha = 178;
 
 // The width and height of the material design overflow button.
-// TODO(tdanderson): Refactor constants which are common between the shelf
-// and the tray. See crbug.com/623987.
 constexpr int kOverflowButtonSize = 32;
 
 // The radius of the rounded corners of the overflow button.

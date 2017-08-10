@@ -127,7 +127,6 @@ void BaseDateTimeView::ChildPreferredSizeChanged(views::View* child) {
 
 DateView::DateView(SystemTrayItem* owner)
     : BaseDateTimeView(owner), action_(DateAction::NONE) {
-  // TODO(tdanderson): Tweak spacing and layout for material design.
   views::BoxLayout* box_layout =
       new views::BoxLayout(views::BoxLayout::kHorizontal,
                            gfx::Insets(0, kTrayPopupLabelHorizontalPadding), 0);
