@@ -11,6 +11,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -181,7 +182,8 @@ public class AppMenuPropertiesDelegate {
             //                is not persisted when adding to the homescreen.
             // * If creating shortcuts it not supported by the current home screen.
             boolean canShowHomeScreenMenuItem = ShortcutHelper.isAddToHomeIntentSupported()
-                    && !isChromeScheme && !isFileScheme && !isContentScheme && !isIncognito;
+                    && !isChromeScheme && !isFileScheme && !isContentScheme && !isIncognito
+                    && !TextUtils.isEmpty(url);
             prepareAddToHomescreenMenuItem(menu, currentTab, canShowHomeScreenMenuItem);
 
             updateRequestDesktopSiteMenuItem(menu, currentTab, true /* can show */);

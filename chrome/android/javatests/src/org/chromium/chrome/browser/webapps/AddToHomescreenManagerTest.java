@@ -191,7 +191,7 @@ public class AddToHomescreenManagerTest {
     public void testAddWebappShortcuts() throws Exception {
         // Add a webapp shortcut and make sure the intent's parameters make sense.
         loadUrl(WEBAPP_HTML, WEBAPP_TITLE);
-        addShortcutToTab(mTab, "");
+        addShortcutToTab(mTab, "", true);
         Assert.assertEquals(WEBAPP_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
 
         Intent launchIntent = mShortcutHelperDelegate.mRequestedShortcutIntent;
@@ -202,7 +202,7 @@ public class AddToHomescreenManagerTest {
         // Add a second shortcut and make sure it matches the second webapp's parameters.
         mShortcutHelperDelegate.clearRequestedShortcutData();
         loadUrl(SECOND_WEBAPP_HTML, SECOND_WEBAPP_TITLE);
-        addShortcutToTab(mTab, "");
+        addShortcutToTab(mTab, "", true);
         Assert.assertEquals(SECOND_WEBAPP_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
 
         Intent newLaunchIntent = mShortcutHelperDelegate.mRequestedShortcutIntent;
@@ -217,7 +217,7 @@ public class AddToHomescreenManagerTest {
     @Feature("{Webapp}")
     public void testAddBookmarkShortcut() throws Exception {
         loadUrl(NORMAL_HTML, NORMAL_TITLE);
-        addShortcutToTab(mTab, "");
+        addShortcutToTab(mTab, "", true);
 
         // Make sure the intent's parameters make sense.
         Assert.assertEquals(NORMAL_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
@@ -234,7 +234,7 @@ public class AddToHomescreenManagerTest {
     public void testAddWebappShortcutsWithoutTitleEdit() throws Exception {
         // Add a webapp shortcut using the page's title.
         loadUrl(WEBAPP_HTML, WEBAPP_TITLE);
-        addShortcutToTab(mTab, "");
+        addShortcutToTab(mTab, "", true);
         Assert.assertEquals(WEBAPP_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
     }
 
@@ -244,7 +244,7 @@ public class AddToHomescreenManagerTest {
     public void testAddWebappShortcutsWithTitleEdit() throws Exception {
         // Add a webapp shortcut with a custom title.
         loadUrl(WEBAPP_HTML, WEBAPP_TITLE);
-        addShortcutToTab(mTab, EDITED_WEBAPP_TITLE);
+        addShortcutToTab(mTab, EDITED_WEBAPP_TITLE, true);
         Assert.assertEquals(EDITED_WEBAPP_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
     }
 
@@ -253,7 +253,7 @@ public class AddToHomescreenManagerTest {
     @Feature("{Webapp}")
     public void testAddWebappShortcutsWithApplicationName() throws Exception {
         loadUrl(META_APP_NAME_HTML, META_APP_NAME_PAGE_TITLE);
-        addShortcutToTab(mTab, "");
+        addShortcutToTab(mTab, "", true);
         Assert.assertEquals(META_APP_NAME_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
     }
 
@@ -264,7 +264,7 @@ public class AddToHomescreenManagerTest {
     @CommandLineFlags.Add(ContentSwitches.DISABLE_POPUP_BLOCKING)
     public void testAddWebappShortcutWithEmptyPage() throws Exception {
         Tab spawnedPopup = spawnPopupInBackground("");
-        addShortcutToTab(spawnedPopup, "");
+        addShortcutToTab(spawnedPopup, "", false);
     }
 
     @Test
@@ -280,7 +280,7 @@ public class AddToHomescreenManagerTest {
             WebappDataStorage.setFactoryForTests(dataStorageFactory);
 
             loadUrl(mTestServer.getURL(MANIFEST_PATH), MANIFEST_TITLE);
-            addShortcutToTab(mTab, "");
+            addShortcutToTab(mTab, "", true);
 
             // Make sure that the splash screen image was downloaded.
             CriteriaHelper.pollUiThread(new Criteria() {
@@ -310,7 +310,7 @@ public class AddToHomescreenManagerTest {
     public void testAddWebappShortcutAppInstalledEvent() throws Exception {
         try {
             loadUrl(mTestServer.getURL(EVENT_WEBAPP_PATH), EVENT_WEBAPP_TITLE);
-            addShortcutToTab(mTab, "");
+            addShortcutToTab(mTab, "", true);
 
             // Wait for the tab title to change. This will happen (due to the JavaScript that runs
             // in the page) once the appinstalled event has been fired twice: once to test
@@ -325,19 +325,20 @@ public class AddToHomescreenManagerTest {
         new TabLoadObserver(mTab, expectedPageTitle, null).fullyLoadUrl(url);
     }
 
-    private void addShortcutToTab(Tab tab, String title) throws Exception {
+    private void addShortcutToTab(Tab tab, String title, boolean expectAdded) throws Exception {
         // Add the shortcut.
         TestAddToHomescreenManager manager = new TestAddToHomescreenManager(mActivity, tab, title);
         startManagerOnUiThread(manager);
 
         // Make sure that the shortcut was added.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mShortcutHelperDelegate.mRequestedShortcutIntent != null;
-            }
-        });
-
+        if (expectAdded) {
+            CriteriaHelper.pollUiThread(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return mShortcutHelperDelegate.mRequestedShortcutIntent != null;
+                }
+            });
+        }
         destroyManagerOnUiThread(manager);
     }
 
