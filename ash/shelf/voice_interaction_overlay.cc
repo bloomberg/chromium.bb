@@ -84,7 +84,7 @@ constexpr float kBackgroundShadowElevationDip = 24.f;
 // Need to figure out a way to dynamically change sizes.
 constexpr float kBackgroundLargeWidthDip = 352.5f;
 constexpr float kBackgroundLargeHeightDip = 540.0f;
-constexpr float kBackgroundCornerRadiusDip = 2.f;
+constexpr float kBackgroundCornerRadiusDip = 12.f;
 constexpr float kBackgroundPaddingDip = 6.f;
 constexpr int kBackgroundMorphDurationMs = 150;
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
