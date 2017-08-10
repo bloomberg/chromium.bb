@@ -112,10 +112,6 @@ void FakeDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-std::string FakeDataTypeController::name() const {
-  return ModelTypeToString(type());
-}
-
 ChangeProcessor* FakeDataTypeController::GetChangeProcessor() const {
   return nullptr;
 }

@@ -58,11 +58,6 @@ void ProxyDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-std::string ProxyDataTypeController::name() const {
-  // For logging only.
-  return ModelTypeToString(type());
-}
-
 DataTypeController::State ProxyDataTypeController::state() const {
   return state_;
 }

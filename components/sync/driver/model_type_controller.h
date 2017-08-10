@@ -46,7 +46,6 @@ class ModelTypeController : public DataTypeController {
   void ActivateDataType(ModelTypeConfigurer* configurer) override;
   void DeactivateDataType(ModelTypeConfigurer* configurer) override;
   void Stop() override;
-  std::string name() const override;
   State state() const override;
   void GetAllNodes(const AllNodesCallback& callback) override;
   void GetStatusCounters(const StatusCountersCallback& callback) override;

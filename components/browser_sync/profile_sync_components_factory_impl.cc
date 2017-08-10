@@ -45,6 +45,7 @@
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
+#include "components/sync_bookmarks/bookmark_model_type_controller.h"
 #include "components/sync_sessions/session_data_type_controller.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
@@ -204,9 +205,14 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // Bookmark sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::BOOKMARKS)) {
-    sync_service->RegisterDataTypeController(
-        base::MakeUnique<BookmarkDataTypeController>(error_callback,
-                                                     sync_client_));
+    if (FeatureList::IsEnabled(switches::kSyncUSSBookmarks)) {
+      sync_service->RegisterDataTypeController(
+          base::MakeUnique<sync_bookmarks::BookmarkModelTypeController>());
+    } else {
+      sync_service->RegisterDataTypeController(
+          base::MakeUnique<BookmarkDataTypeController>(error_callback,
+                                                       sync_client_));
+    }
   }
 
   // These features are enabled only if history is not disabled.

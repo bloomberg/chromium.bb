@@ -137,7 +137,7 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   virtual void Stop() = 0;
 
   // Name of this data type.  For logging purposes only.
-  virtual std::string name() const = 0;
+  std::string name() const { return ModelTypeToString(type()); }
 
   // Current state of the data type controller.
   virtual State state() const = 0;
