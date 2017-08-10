@@ -71,7 +71,6 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "public/web/WebDevToolsAgent.h"
 #include "public/web/WebSettings.h"
-#include "public/web/shared_worker_content_settings_proxy.mojom-blink.h"
 
 namespace blink {
 
@@ -226,9 +225,8 @@ void WebSharedWorkerImpl::StartWorkerContext(
   name_ = name;
   creation_address_space_ = creation_address_space;
   // Chrome doesn't use interface versioning.
-  content_settings_info_ =
-      mojom::blink::SharedWorkerContentSettingsProxyPtrInfo(
-          std::move(content_settings_handle), 0u);
+  content_settings_info_ = mojom::blink::WorkerContentSettingsProxyPtrInfo(
+      std::move(content_settings_handle), 0u);
 
   shadow_page_ = WTF::MakeUnique<WorkerShadowPage>(this);
   shadow_page_->GetSettings()->SetDataSaverEnabled(data_saver_enabled);

@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "public/platform/WebCommon.h"
 
 namespace blink {
@@ -55,7 +56,7 @@ class BLINK_EXPORT WebEmbeddedWorker {
   static std::unique_ptr<WebEmbeddedWorker> Create(
       std::unique_ptr<WebServiceWorkerContextClient>,
       std::unique_ptr<WebServiceWorkerInstalledScriptsManager>,
-      std::unique_ptr<WebContentSettingsClient>);
+      mojo::ScopedMessagePipeHandle content_settings_handle);
 
   virtual ~WebEmbeddedWorker() {}
 

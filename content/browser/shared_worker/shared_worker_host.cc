@@ -18,7 +18,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
-#include "third_party/WebKit/public/web/shared_worker_content_settings_proxy.mojom.h"
+#include "third_party/WebKit/public/web/worker_content_settings_proxy.mojom.h"
 
 namespace content {
 namespace {
@@ -78,7 +78,7 @@ SharedWorkerHost::~SharedWorkerHost() {
 }
 
 void SharedWorkerHost::Start(bool pause_on_start) {
-  blink::mojom::SharedWorkerContentSettingsProxyPtrInfo content_settings;
+  blink::mojom::WorkerContentSettingsProxyPtrInfo content_settings;
   SharedWorkerContentSettingsProxyImpl::Create(
       weak_factory_.GetWeakPtr(), mojo::MakeRequest(&content_settings));
 

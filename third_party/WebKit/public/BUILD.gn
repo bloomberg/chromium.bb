@@ -789,8 +789,8 @@ mojom("mojo_bindings") {
     "platform/reporting.mojom",
     "platform/site_engagement.mojom",
     "web/console_message.mojom",
-    "web/shared_worker_content_settings_proxy.mojom",
     "web/window_features.mojom",
+    "web/worker_content_settings_proxy.mojom",
   ]
   public_deps = [
     ":android_mojo_bindings",

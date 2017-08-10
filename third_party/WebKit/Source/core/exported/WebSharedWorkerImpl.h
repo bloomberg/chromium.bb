@@ -45,7 +45,7 @@
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebSharedWorkerClient.h"
-#include "public/web/shared_worker_content_settings_proxy.mojom-blink.h"
+#include "public/web/worker_content_settings_proxy.mojom-blink.h"
 
 namespace blink {
 
@@ -131,7 +131,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
 
   Persistent<SharedWorkerReportingProxy> reporting_proxy_;
   std::unique_ptr<WorkerThread> worker_thread_;
-  mojom::blink::SharedWorkerContentSettingsProxyPtrInfo content_settings_info_;
+  mojom::blink::WorkerContentSettingsProxyPtrInfo content_settings_info_;
 
   WebSharedWorkerClient* client_;
 

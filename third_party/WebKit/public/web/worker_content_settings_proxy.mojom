@@ -8,12 +8,15 @@ import "mojo/common/string16.mojom";
 import "url/mojo/origin.mojom";
 
 // The renderer uses this interface to ask the browser process about content
-// settings for whether features are allowed to be used by the shared worker.
+// settings for whether features are allowed to be used by the worker.
 // Each method is called when every relevant web exposed API is called,
 // and the result is returned synchronously because the web exposed
 // APIs are synchronous.
-interface SharedWorkerContentSettingsProxy {
+interface WorkerContentSettingsProxy {
+
   // Returns whether the worker is allowed access to IndexedDB.
+  // TODO(yukiy): remove |origin| from AllowIndexedDB() and
+  // RequestFileSystemAccessSync(), and instead, keep it on the browser process.
   [Sync]
   AllowIndexedDB(url.mojom.Origin origin, mojo.common.mojom.String16 name)
     => (bool result);

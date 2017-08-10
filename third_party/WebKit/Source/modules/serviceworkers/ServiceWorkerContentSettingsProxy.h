@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SharedWorkerContentSettingsProxy_h
-#define SharedWorkerContentSettingsProxy_h
+#ifndef ServiceWorkerContentSettingsProxy_h
+#define ServiceWorkerContentSettingsProxy_h
 
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebContentSettingsClient.h"
@@ -12,33 +12,39 @@
 
 namespace blink {
 
-// SharedWorkerContentSettingsProxy provides content settings information.
-// This is created on the main thread and then called on the worker thread.
-// Each information is requested via a Mojo connection to the browser process.
-class SharedWorkerContentSettingsProxy : public WebContentSettingsClient {
+// Provides the content settings information from browser process.
+// This proxy is created and destroyed on the main thread and used on the
+// worker thread.
+class ServiceWorkerContentSettingsProxy final
+    : public blink::WebContentSettingsClient {
  public:
-  SharedWorkerContentSettingsProxy(
-      SecurityOrigin*,
+  explicit ServiceWorkerContentSettingsProxy(
       mojom::blink::WorkerContentSettingsProxyPtrInfo host_info);
-  ~SharedWorkerContentSettingsProxy() override;
+  ~ServiceWorkerContentSettingsProxy() override;
+
+  void SetSecurityOrigin(RefPtr<blink::SecurityOrigin>);
 
   // WebContentSettingsClient overrides.
-  bool AllowIndexedDB(const WebString& name, const WebSecurityOrigin&) override;
+  // Asks the browser process about the settings.
+  // Blocks until the response arrives.
   bool RequestFileSystemAccessSync() override;
+  bool AllowIndexedDB(const WebString& name, const WebSecurityOrigin&) override;
 
  private:
   // To ensure the returned pointer is destructed on the same thread
   // that it was constructed on, this uses ThreadSpecific.
   mojom::blink::WorkerContentSettingsProxyPtr& GetService();
 
-  const RefPtr<blink::SecurityOrigin> security_origin_;
-
   // This is set on the main thread at the ctor,
-  // and moved to a thread localstorage on the worker thread
+  // and moved to a thread local storage on the worker thread
   // when GetService() is called for the first time.
   mojom::blink::WorkerContentSettingsProxyPtrInfo host_info_;
+
+  RefPtr<blink::SecurityOrigin> security_origin_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContentSettingsProxy);
 };
 
 }  // namespace blink
 
-#endif  // SharedWorkerContentSettingsProxy_h
+#endif  // ServiceWorkerContentSettingsProxy_h
