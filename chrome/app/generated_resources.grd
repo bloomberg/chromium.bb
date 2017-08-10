@@ -5413,15 +5413,6 @@ the Bookmarks menu.">
       </message>
 
       <!-- Feature Engagement Tracker strings -->
-      <message name="IDS_NEWTAB_PROMO_0" desc="Variations option 1. Text shown on promotional UI appearing next to the New Tab button, which encourages users to use it.">
-        Open a new tab with one click
-      </message>
-      <message name="IDS_NEWTAB_PROMO_1" desc="Variations option 2. Text shown on promotional UI appearing next to the New Tab button, which encourages users to use it.">
-        You can click here to open a new tab
-      </message>
-      <message name="IDS_NEWTAB_PROMO_2" desc="Variations option 3. Text shown on promotional UI appearing next to the New Tab button, which encourages users to use it.">
-        Open a new tab to browse two sites at once
-      </message>
       <message name="IDS_BOOKMARK_PROMO_0" desc="Text shown on promotional UI appearing next to the Bookmarks button, which encourages users to use it.">
         Bookmark this page to easily find it later
       </message>
@@ -5430,6 +5421,27 @@ the Bookmarks menu.">
       </message>
       <message name="IDS_BOOKMARK_PROMO_2" desc="Text shown on promotional UI appearing next to the Bookmarks button, which encourages users to use it.">
         Get back here fast by bookmarking this page
+      </message>
+      <message name="IDS_INCOGNITOWINDOW_PROMO_0" desc="Variations option 1. Text shown on promotional UI appearing next to the App Menu button, which encourages users to use it.">
+        You can browse privately using an incognito window
+      </message>
+      <message name="IDS_INCOGNITOWINDOW_PROMO_1" desc="Variations option 2. Text shown on promotional UI appearing next to the App Menu button, which encourages users to use it.">
+        Use the web without saving your browsing history with an incognito window
+      </message>
+      <message name="IDS_INCOGNITOWINDOW_PROMO_2" desc="Variations option 3. Text shown on promotional UI appearing next to the App Menu button, which encourages users to use it.">
+        Using a shared computer? Try opening an incognito window.
+      </message>
+      <message name="IDS_INCOGNITOWINDOW_PROMO_3" desc="Variations option 4. Text shown on promotional UI appearing next to the App Menu button, which encourages users to use it.">
+        To browse privately, click the dots icon menu to open an incognito window
+      </message>
+      <message name="IDS_NEWTAB_PROMO_0" desc="Variations option 1. Text shown on promotional UI appearing next to the New Tab button, which encourages users to use it.">
+        Open a new tab with one click
+      </message>
+      <message name="IDS_NEWTAB_PROMO_1" desc="Variations option 2. Text shown on promotional UI appearing next to the New Tab button, which encourages users to use it.">
+        You can click here to open a new tab
+      </message>
+      <message name="IDS_NEWTAB_PROMO_2" desc="Variations option 3. Text shown on promotional UI appearing next to the New Tab button, which encourages users to use it.">
+        Open a new tab to browse two sites at once
       </message>
 
       <!-- Browser Hung Plugin Detector -->

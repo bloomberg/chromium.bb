@@ -1816,6 +1816,8 @@ split_static_library("ui") {
         "views/feature_promos/bookmark_promo_bubble_view.h",
         "views/feature_promos/feature_promo_bubble_view.cc",
         "views/feature_promos/feature_promo_bubble_view.h",
+        "views/feature_promos/incognito_window_promo_bubble_view.cc",
+        "views/feature_promos/incognito_window_promo_bubble_view.h",
         "views/feature_promos/new_tab_promo_bubble_view.cc",
         "views/feature_promos/new_tab_promo_bubble_view.h",
         "views/find_bar_host.cc",
