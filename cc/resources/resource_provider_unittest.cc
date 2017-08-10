@@ -42,6 +42,7 @@ using testing::NiceMock;
 using testing::Return;
 using testing::StrictMock;
 using testing::_;
+using testing::AnyNumber;
 
 namespace cc {
 namespace {
@@ -442,6 +443,7 @@ class ResourceProviderTest
         std::unique_ptr<ResourceProviderContext> context3d(
             ResourceProviderContext::Create(shared_data_.get()));
         context3d_ = context3d.get();
+        context3d_->set_support_texture_buffer_chromium(true);
         context_provider_ = TestContextProvider::Create(std::move(context3d));
         context_provider_->BindToCurrentThread();
 
@@ -3085,11 +3087,7 @@ class AllocationTrackingContext3D : public TestWebGraphicsContext3D {
   MOCK_METHOD1(destroyImageCHROMIUM, void(GLuint));
   MOCK_METHOD2(bindTexImage2DCHROMIUM, void(GLenum, GLint));
   MOCK_METHOD2(releaseTexImage2DCHROMIUM, void(GLenum, GLint));
-
-  // We're mocking bindTexture, so we override
-  // TestWebGraphicsContext3D::texParameteri to avoid assertions related to the
-  // currently bound texture.
-  virtual void texParameteri(GLenum target, GLenum pname, GLint param) {}
+  MOCK_METHOD3(texParameteri, void(GLenum target, GLenum pname, GLint param));
 };
 
 TEST_P(ResourceProviderTest, TextureAllocation) {
@@ -3116,6 +3114,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   uint8_t pixels[16] = { 0 };
   int texture_id = 123;
 
+  EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
   // Lazy allocation. Don't allocate when creating the resource.
   id = resource_provider->CreateResource(
       size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
@@ -3129,6 +3128,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   resource_provider->DeleteResource(id);
 
   Mock::VerifyAndClearExpectations(context);
+  EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
 
   // Do allocate when we set the pixels.
   id = resource_provider->CreateResource(
@@ -3192,6 +3192,7 @@ TEST_P(ResourceProviderTest, TextureAllocationHint) {
           .Times(support_immutable_texture ? 1 : 0);
       EXPECT_CALL(*context, texImage2D(_, _, _, 2, 2, _, _, _, _))
           .Times(support_immutable_texture ? 0 : 1);
+      EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
       resource_provider->AllocateForTesting(id);
 
       EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
@@ -3245,6 +3246,62 @@ TEST_P(ResourceProviderTest, TextureAllocationHint_BGRA) {
           .Times(is_immutable_hint ? 1 : 0);
       EXPECT_CALL(*context, texImage2D(_, _, _, 2, 2, _, _, _, _))
           .Times(is_immutable_hint ? 0 : 1);
+      EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
+      resource_provider->AllocateForTesting(id);
+
+      EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
+      resource_provider->DeleteResource(id);
+
+      Mock::VerifyAndClearExpectations(context);
+    }
+  }
+}
+
+TEST_P(ResourceProviderTest, ImageTextureAllocationHint_BGRA) {
+  // Only for GL textures.
+  if (GetParam() != ResourceProvider::RESOURCE_TYPE_GPU_MEMORY_BUFFER)
+    return;
+  std::unique_ptr<AllocationTrackingContext3D> context_owned(
+      new StrictMock<AllocationTrackingContext3D>);
+  AllocationTrackingContext3D* context = context_owned.get();
+  context->set_support_texture_format_bgra8888(true);
+  context->set_support_texture_storage(true);
+  context->set_support_texture_usage(true);
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
+
+  std::unique_ptr<ResourceProvider> resource_provider(
+      base::MakeUnique<ResourceProvider>(
+          context_provider.get(), shared_bitmap_manager_.get(),
+          gpu_memory_buffer_manager_.get(), nullptr,
+          kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
+          CreateResourceSettings()));
+
+  gfx::Size size(2, 2);
+  const viz::ResourceFormat formats[2] = {viz::RGBA_8888, viz::BGRA_8888};
+
+  const ResourceProvider::TextureHint hints[4] = {
+      ResourceProvider::TEXTURE_HINT_DEFAULT,
+      ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      ResourceProvider::TEXTURE_HINT_FRAMEBUFFER,
+      ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER,
+  };
+  for (size_t i = 0; i < arraysize(formats); ++i) {
+    for (GLuint texture_id = 1; texture_id <= arraysize(hints); ++texture_id) {
+      // Lazy allocation. Don't allocate when creating the resource.
+      viz::ResourceId id = resource_provider->CreateResource(
+          size, hints[texture_id - 1], formats[i], gfx::ColorSpace());
+
+      EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
+      EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
+      bool is_immutable_hint =
+          hints[texture_id - 1] & ResourceProvider::TEXTURE_HINT_IMMUTABLE;
+      EXPECT_CALL(*context, texParameteri(_, GL_TEXTURE_BUFFER_USAGE_CHROMIUM,
+                                          GL_TEXTURE_BUFFER_SCANOUT_CHROMIUM));
+      EXPECT_CALL(*context, texStorage2DEXT(_, _, _, 2, 2))
+          .Times(is_immutable_hint ? 1 : 0);
+      EXPECT_CALL(*context, texImage2D(_, _, _, 2, 2, _, _, _, _))
+          .Times(is_immutable_hint ? 0 : 1);
       resource_provider->AllocateForTesting(id);
 
       EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
@@ -3280,6 +3337,7 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
           CreateResourceSettings()));
 
+  EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
   id = resource_provider->CreateResource(
       size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
       gfx::ColorSpace());
@@ -3365,6 +3423,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
   EXPECT_NE(0u, id);
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
+  EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
   resource_provider->AllocateForTesting(id);
 
   EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);

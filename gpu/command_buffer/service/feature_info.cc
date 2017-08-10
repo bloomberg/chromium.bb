@@ -1404,6 +1404,12 @@ void FeatureInfo::InitializeFeatures() {
   feature_flags_.ext_robustness = extensions.Contains("GL_EXT_robustness");
   feature_flags_.chromium_texture_filtering_hint =
       extensions.Contains("GL_CHROMIUM_texture_filtering_hint");
+
+  if (!IsWebGLContext()) {
+    AddExtensionString("GL_CHROMIUM_texture_buffer");
+    feature_flags_.chromium_texture_buffer = true;
+    validators_.texture_parameter.AddValue(GL_TEXTURE_BUFFER_USAGE_CHROMIUM);
+  }
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(

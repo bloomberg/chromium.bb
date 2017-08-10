@@ -1,0 +1,128 @@
+Name
+
+    CHROMIUM_texture_buffer
+
+Name Strings
+
+    GL_CHROMIUM_texture_buffer
+
+Contributors
+
+    John Bauman, Google
+
+Contact
+
+    John Bauman, Google (jbauman 'at' google.com)
+
+Status
+
+    In Progress
+
+Version
+
+    Last Modified Date:  June 19, 2017
+    Version:             1
+
+Number
+
+    OpenGL ES Extension #???
+ 
+Dependencies
+
+    This extension is written against the OpenGL ES 2.0 Specification.
+    This extension depends on EXT_texture_storage.
+    CHROMIUM_schedule_ca_layer affects the definition of this extension.
+    EXT_texture_format_BGRA8888 affects the definition of this extension.
+
+Overview
+
+    This allows clients to specify that alternative texture backings
+    can be used which may be drawn into overlays.
+
+IP Status
+
+    No known IP claims.
+
+New Procedures and Functions
+
+    None
+
+New Tokens
+
+    Accepted as a value for <pname> for the TexParameter{if} and 
+    TexParameter{if}v commands and for the <value> parameter of
+    GetTexParameter{if}v: 
+
+        TEXTURE_BUFFER_USAGE_CHROMIUM           0x78FD
+
+    Accepted as a value to <param> for the TexParameter{if} and to <params>
+    for the TexParameter{if}v commands with a <pname> of
+    TEXTURE_BUFFER_USAGE_CHROMIUM; returned as possible values for <data> when
+    GetTexParameter{if}v is queried with a <value> of
+    TEXTURE_BUFFER_USAGE_CHROMIUM:
+
+        NONE                                    0x0000
+        TEXTURE_BUFFER_SCANOUT_CHROMIUM         0x78FE
+
+Additions to Chapter 2 of the OpenGL ES 2.0 Specification (OpenGL ES Operation)
+
+    None
+
+Additions to Chapter 3 of the OpenGL ES 2.0 Specification (Rasterization)
+
+    Add a new row to Table 3.10 (Texture parameters and their values):
+    Possible values for <params> when <pname> is TEXTURE_BUFFER_USAGE_CHROMIUM
+    are:
+
+    NONE - the default. The texture may not be used as an overlay.
+
+    TEXTURE_BUFFER_SCANOUT_CHROMIUM - this texture may be used as an overlay."
+
+    Modify section 3.7.12 (Texture State) and place the last 3 sentences
+    with the following:
+
+    "Next, there are the three sets of texture properties; each consists of
+    the selected minification and magnification filters, the wrap modes for
+    <s> and <t>, and the usage flags. In the initial state, the value assigned
+    to TEXTURE_MIN_FILTER is NEAREST_MIPMAP_LINEAR, and the value for 
+    TEXTURE_MAG_FILTER is LINEAR. <s> and <t> wrap modes are both set to
+    REPEAT. The initial value for TEXTURE_BUFFER_USAGE_CHROMIUM is NONE."
+
+    Add to the end of the subsection called "Immutable-format texture images":
+
+    "If <levels> is not 1 and TEXTURE_BUFFER_USAGE_CHROMIUM is
+    TEXTURE_BUFFER_SCANOUT_CHROMIUM, generate an INVALID_OPERATION error.
+    
+    If <depth> is greater than 1 and TEXTURE_BUFFER_USAGE_CHROMIUM is
+    TEXTURE_BUFFER_SCANOUT_CHROMIUM, generate an INVALID_OPERATION error.
+
+    If <internal_format> is not RGBA8_OES, BGRA8_EXT, or RGBA16F, generate an
+    INVALID_ENUM error."
+
+Dependencies on CHROMIUM_schedule_ca_layer
+
+    Of textures created with TexStorage2DEXT or TexImage2D, only textures
+    specified with TEXTURE_BUFFER_SCANOUT_CHROMIUM may be used with
+    glScheduleCALayerCHROMIUM.
+
+Dependencies on EXT_texture_format_BGRA8888
+
+    If EXT_texture_format_BGRA8888 is not supported, deleted all references to
+    BGRA8_EXT.
+
+Errors
+
+    If TexParameter{if} or TexParamter{if}v is called with a <pname> of
+    TEXTURE_BUFFER_USAGE_CHROMIUM and the value of <param> or <params> is not
+    NONE or TEXTURE_BUFFER_SCANOUT_CHROMIUM the error INVALID_VALUE is
+    generated.
+
+Issues
+
+Revision History
+
+    Rev.    Date      Author     Changes
+    ----  ----------- ---------  ----------------------------------------
+      1   19 Jun 2017 jbauman    Initial revision
+   
+

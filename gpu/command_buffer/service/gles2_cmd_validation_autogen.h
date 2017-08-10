@@ -317,6 +317,12 @@ class Texture3DTargetValidator {
 Texture3DTargetValidator texture_3_d_target;
 
 ValueValidator<GLenum> texture_bind_target;
+class TextureBufferUsageValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+TextureBufferUsageValidator texture_buffer_usage;
+
 class TextureCompareFuncValidator {
  public:
   bool IsValid(const GLenum value) const;
