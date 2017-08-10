@@ -989,7 +989,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
       const float vx = gesture_event.data.fling_start.velocity_x;
       const float vy = gesture_event.data.fling_start.velocity_y;
       current_fling_velocity_ = gfx::Vector2dF(vx, vy);
-      DCHECK(!current_fling_velocity_.IsZero());
       fling_curve_ = client_->CreateFlingAnimationCurve(
           gesture_event.source_device, WebFloatPoint(vx, vy), blink::WebSize());
       disallow_horizontal_fling_scroll_ = !vx;
