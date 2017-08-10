@@ -56,6 +56,14 @@ test(function () {
     assert_less_than_equal(navigator.mimeTypes[i-1].type.localeCompare(navigator.mimeTypes[i].type), 0);
   }
 }, "Tests that navigator.plugins returns plugins sorted in alphabetical order by plugin name.");
+
+test(function() {
+  assert_greater_than_equal(navigator.plugins.length, 1, "At least one plugin must be available.");
+  assert_greater_than_equal(navigator.mimeTypes.length, 1, "At least one mime type must be available.");
+  assert_equals(null, navigator.plugins.item(navigator.plugins.length));
+  assert_equals(null, navigator.mimeTypes.item(navigator.mimeTypes.length));
+  assert_equals(null, navigator.plugins[0].item(navigator.plugins[0].length));
+}, "Tests out-of-bounds access in navigator.plugins");
 </script>
 </body>
 </html>
