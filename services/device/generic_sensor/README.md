@@ -19,7 +19,7 @@ platform.
 | AMBIENT_LIGHT                     | TYPE_LIGHT                | in_illuminance                        | AppleLMUController                    | SENSOR_TYPE_AMBIENT_LIGHT                 |
 | PROXIMITY                         |                           |                                       |                                       |                                           |
 | ACCELEROMETER                     | TYPE_ACCELEROMETER        | in_accel                              | SMCMotionSensor                       | SENSOR_TYPE_ACCELEROMETER_3D              |
-| LINEAR_ACCELEROMETER              | TYPE_LINEAR_ACCELEROMETER |                                       |                                       | ACCELEROMETER (*)                         |
+| LINEAR_ACCELEROMETER              | TYPE_LINEAR_ACCELEROMETER | ACCELEROMETER (*)                     |                                       | ACCELEROMETER (*)                         |
 | GYROSCOPE                         | TYPE_GYROSCOPE            | in_anglvel                            |                                       | SENSOR_TYPE_GYROMETER_3D                  |
 | MAGNETOMETER                      | TYPE_MAGNETIC_FIELD       | in_magn                               |                                       | SENSOR_TYPE_COMPASS_3D                    |
 | PRESSURE                          |                           |                                       |                                       |                                           |
@@ -65,6 +65,9 @@ RELATIVE_ORIENTATION_EULER_ANGLES sensor type is provided by interpreting the
 value that can be read from the ACCELEROMETER. The
 RELATIVE_ORIENTATION_QUATERNION sensor type is provided by interpreting the
 value that can be read from the RELATIVE_ORIENTATION_EULER_ANGLES.
+LINEAR_ACCELEROMETER sensor type is provided by implementing a low-pass-filter
+over the values returned by the ACCELEROMETER in order to remove the
+contribution of the gravitational force.
 
 ### macOS
 
