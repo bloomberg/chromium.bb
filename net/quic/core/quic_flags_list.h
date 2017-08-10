@@ -201,3 +201,6 @@ QUIC_FLAG(bool,
 // Add 4 new ack decimation modes to QUIC that are entirely time based at 1/4
 // or 1/8 RTT.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_ack_decimation, false)
+
+// Enables using the ConsumeDataFastPath more often for large transfers.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_consuming_data_faster, false)
