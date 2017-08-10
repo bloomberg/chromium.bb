@@ -6,6 +6,7 @@
 
 #include <launchpad/launchpad.h>
 #include <magenta/process.h>
+#include <magenta/processargs.h>
 #include <unistd.h>
 
 #include "base/command_line.h"
@@ -130,6 +131,10 @@ Process LaunchProcess(const std::vector<std::string>& argv,
        ++stdio_fd) {
     if (!stdio_already_mapped[stdio_fd])
       launchpad_clone_fd(lp, stdio_fd, stdio_fd);
+  }
+
+  for (const auto& id_and_handle : options.handles_to_transfer) {
+    launchpad_add_handle(lp, id_and_handle.handle, id_and_handle.id);
   }
 
   mx_handle_t proc;
