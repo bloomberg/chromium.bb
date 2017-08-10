@@ -166,6 +166,10 @@ int GenericURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
 
 void GenericURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
   info->headers = response_headers_;
+
+  // Important we need to set this so we can detect if a navigation request got
+  // canceled by DevTools.
+  info->network_accessed = true;
 }
 
 bool GenericURLRequestJob::GetMimeType(std::string* mime_type) const {
