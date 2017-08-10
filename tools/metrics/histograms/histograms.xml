@@ -5292,6 +5292,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Records whenever a Blimp tab toggles visibility.</summary>
 </histogram>
 
+<histogram name="Blink.Binding.CreateV8ContextForMainFrame"
+    units="microseconds">
+  <owner>peria@chromium.org</owner>
+  <summary>
+    Time spent to create a v8::Context instance during a page loading in the
+    main-frame window.
+  </summary>
+</histogram>
+
+<histogram name="Blink.Binding.CreateV8ContextForNonMainFrame"
+    units="microseconds">
+  <owner>peria@chromium.org</owner>
+  <summary>
+    Time spent to create a v8::Context instance during a page loading in a
+    non-main-frame window, e.g. iframe.
+  </summary>
+</histogram>
+
 <histogram name="Blink.Binding.InitializeMainLocalWindowProxy"
     units="microseconds">
   <owner>peria@chromium.org</owner>
