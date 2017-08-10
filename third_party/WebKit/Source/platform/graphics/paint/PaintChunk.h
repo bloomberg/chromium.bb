@@ -6,12 +6,13 @@
 #define PaintChunk_h
 
 #include <iosfwd>
+#include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Optional.h"
+#include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -22,7 +23,7 @@ namespace blink {
 // related drawings.
 //
 // This is a Slimming Paint v2 class.
-struct PaintChunk {
+struct PLATFORM_EXPORT PaintChunk {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
   using Id = DisplayItem::Id;
@@ -113,6 +114,8 @@ struct PaintChunk {
   mutable Vector<FloatRect> raster_invalidation_rects;
 
   mutable Vector<RasterInvalidationInfo> raster_invalidation_tracking;
+
+  String ToString() const;
 };
 
 inline bool operator==(const PaintChunk& a, const PaintChunk& b) {

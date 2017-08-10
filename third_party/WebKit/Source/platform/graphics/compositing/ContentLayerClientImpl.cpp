@@ -10,6 +10,7 @@
 #include "platform/graphics/paint/PaintChunk.h"
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/json/JSONValues.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
