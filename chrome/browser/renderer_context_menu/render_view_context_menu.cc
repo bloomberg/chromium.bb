@@ -785,7 +785,11 @@ void RenderViewContextMenu::InitMenu() {
     AppendPrintItem();
   }
 
-  if (editable && params_.misspelled_word.empty()) {
+  // Spell check and writing direction options are not currently supported by
+  // pepper plugins.
+  if (editable && params_.misspelled_word.empty() &&
+      !content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_MEDIA_PLUGIN)) {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     AppendLanguageSettings();
     AppendPlatformEditableItems();
@@ -1173,9 +1177,12 @@ void RenderViewContextMenu::AppendPluginItems() {
        (!embedder_web_contents_ || !embedder_web_contents_->IsSavable()))) {
     // Both full page and embedded plugins are hosted as guest now,
     // the difference is a full page plugin is not considered as savable.
-    // For full page plugin, we show page menu items.
-    if (params_.link_url.is_empty() && params_.selection_text.empty())
+    // For full page plugin, we show page menu items so long as focus is not
+    // within an editable text area.
+    if (params_.link_url.is_empty() && params_.selection_text.empty() &&
+        !params_.is_editable) {
       AppendPageItems();
+    }
   } else {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
                                     IDS_CONTENT_CONTEXT_SAVEPAGEAS);

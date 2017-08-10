@@ -1033,7 +1033,10 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name) {
     command = command.Substring(0, command.length() - 1);
 
   Node* plugin_lookup_context_node =
-      context_menu_node_ && name == "Copy" ? context_menu_node_ : nullptr;
+      context_menu_node_ && WebPluginContainerImpl::SupportsCommand(name)
+          ? context_menu_node_
+          : nullptr;
+
   WebPluginContainerImpl* plugin_container =
       GetFrame()->GetWebPluginContainer(plugin_lookup_context_node);
   if (plugin_container && plugin_container->ExecuteEditCommand(name))

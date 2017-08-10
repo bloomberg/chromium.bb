@@ -302,6 +302,16 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
           data.selected_text = text;
           data.edit_flags |= WebContextMenuData::kCanCopy;
         }
+        bool plugin_can_edit_text = plugin->Plugin()->CanEditText();
+        if (plugin_can_edit_text) {
+          data.is_editable = true;
+          if (!!(data.edit_flags & WebContextMenuData::kCanCopy))
+            data.edit_flags |= WebContextMenuData::kCanCut;
+          data.edit_flags |= WebContextMenuData::kCanPaste;
+          // TODO(bug 753216): Implement "SelectAll" command and enable when
+          // focus is within an editable text area.
+          data.edit_flags &= ~WebContextMenuData::kCanSelectAll;
+        }
         data.edit_flags &= ~WebContextMenuData::kCanTranslate;
         data.link_url = plugin->Plugin()->LinkAtPosition(data.mouse_position);
         if (plugin->Plugin()->SupportsPaginatedPrint())
@@ -313,7 +323,9 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
         data.media_flags |= WebContextMenuData::kMediaCanSave;
 
         // Add context menu commands that are supported by the plugin.
-        if (plugin->Plugin()->CanRotateView())
+        // Only show rotate view options if focus is not in an editable text
+        // area.
+        if (!plugin_can_edit_text && plugin->Plugin()->CanRotateView())
           data.media_flags |= WebContextMenuData::kMediaCanRotate;
       }
     }
