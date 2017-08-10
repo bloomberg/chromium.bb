@@ -9,7 +9,7 @@
 
 #include "ios/web/public/navigation_item_list.h"
 
-@protocol BrowserCommands;
+@protocol TabHistoryPopupCommands;
 
 // The view controller for the tab history menu that appears when the user long
 // presses the back or forward button.
@@ -17,11 +17,11 @@
 
 // Initializes the popup to display |items| with the given |origin| that is
 // relevant to the |parent|'s coordinate system.
-// |entries| is an array of CRWSessionEntries.
 - (id)initWithOrigin:(CGPoint)origin
           parentView:(UIView*)parent
                items:(const web::NavigationItemList&)items
-          dispatcher:(id<BrowserCommands>)dispatcher NS_DESIGNATED_INITIALIZER;
+          dispatcher:(id<TabHistoryPopupCommands>)dispatcher
+    NS_DESIGNATED_INITIALIZER;
 
 @end
 

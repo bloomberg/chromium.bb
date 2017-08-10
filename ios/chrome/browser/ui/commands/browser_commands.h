@@ -7,15 +7,14 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/ui/commands/history_popup_commands.h"
+
 @class OpenNewTabCommand;
 @class ReadingListAddCommand;
-namespace web {
-class NavigationItem;
-}
 
 // Protocol for commands that will generally be handled by the "current tab",
 // which in practice is the BrowserViewController instance displaying the tab.
-@protocol BrowserCommands<NSObject>
+@protocol BrowserCommands<NSObject, TabHistoryPopupCommands>
 
 // Closes the current tab.
 - (void)closeCurrentTab;
@@ -52,15 +51,6 @@ class NavigationItem;
 
 // Shows the QR scanner UI.
 - (void)showQRScanner;
-
-// Shows the tab history popup containing the tab's backward history.
-- (void)showTabHistoryPopupForBackwardHistory;
-
-// Shows the tab history popup containing the tab's forward history.
-- (void)showTabHistoryPopupForForwardHistory;
-
-// Navigate back/forward to the selected entry in the tab's history.
-- (void)navigateToHistoryItem:(const web::NavigationItem*)item;
 
 // Shows the Reading List UI.
 - (void)showReadingList;

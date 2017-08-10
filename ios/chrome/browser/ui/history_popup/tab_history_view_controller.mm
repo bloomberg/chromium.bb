@@ -7,9 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#include "ios/chrome/browser/ui/commands/browser_commands.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#include "ios/chrome/browser/ui/commands/history_popup_commands.h"
 #import "ios/chrome/browser/ui/history_popup/tab_history_cell.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/third_party/material_components_ios/src/components/Ink/src/MaterialInk.h"
@@ -266,7 +264,7 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
 - (void)clearNavigationItems;
 
 // The dispatcher used by this ViewController.
-@property(nonatomic, readonly, weak) id<BrowserCommands> dispatcher;
+@property(nonatomic, readonly, weak) id<TabHistoryPopupCommands> dispatcher;
 
 @end
 
@@ -275,7 +273,7 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
 @synthesize dispatcher = _dispatcher;
 
 - (instancetype)initWithItems:(const web::NavigationItemList&)items
-                   dispatcher:(id<BrowserCommands>)dispatcher {
+                   dispatcher:(id<TabHistoryPopupCommands>)dispatcher {
   TabHistoryViewControllerLayout* layout =
       [[TabHistoryViewControllerLayout alloc] init];
   if ((self = [super initWithCollectionViewLayout:layout])) {

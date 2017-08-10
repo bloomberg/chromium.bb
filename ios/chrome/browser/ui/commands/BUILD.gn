@@ -13,6 +13,7 @@ source_set("commands") {
     "clear_browsing_data_command.mm",
     "generic_chrome_command.h",
     "generic_chrome_command.mm",
+    "history_popup_commands.h",
     "ios_command_ids.h",
     "open_new_tab_command.h",
     "open_new_tab_command.mm",

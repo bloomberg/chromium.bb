@@ -65,7 +65,7 @@ source_set("toolbar") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/fancy_ui",
     "//ios/chrome/browser/ui/history",
-    "//ios/chrome/browser/ui/history_popup",
+    "//ios/chrome/browser/ui/history_popup/requirements",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/popup_menu",
     "//ios/chrome/browser/ui/qr_scanner",
