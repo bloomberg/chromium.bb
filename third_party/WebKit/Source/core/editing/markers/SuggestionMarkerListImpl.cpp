@@ -107,7 +107,8 @@ bool SuggestionMarkerListImpl::RemoveMarkers(unsigned start_offset,
   return did_remove_marker;
 }
 
-bool SuggestionMarkerListImpl::ShiftMarkers(unsigned offset,
+bool SuggestionMarkerListImpl::ShiftMarkers(const String&,
+                                            unsigned offset,
                                             unsigned old_length,
                                             unsigned new_length) {
   // Since suggestion markers are stored unsorted, the quickest way to perform

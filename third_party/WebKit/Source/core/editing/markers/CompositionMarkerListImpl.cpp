@@ -55,7 +55,8 @@ bool CompositionMarkerListImpl::RemoveMarkers(unsigned start_offset,
                                                  length);
 }
 
-bool CompositionMarkerListImpl::ShiftMarkers(unsigned offset,
+bool CompositionMarkerListImpl::ShiftMarkers(const String&,
+                                             unsigned offset,
                                              unsigned old_length,
                                              unsigned new_length) {
   return DocumentMarkerListEditor::ShiftMarkersContentIndependent(

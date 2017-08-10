@@ -261,7 +261,7 @@ TEST_F(SuggestionMarkerListImplTest, ShiftMarkers) {
   marker_list_->Add(CreateMarker(0, 10));
   marker_list_->Add(CreateMarker(20, 30));
 
-  EXPECT_TRUE(marker_list_->ShiftMarkers(15, 20, 0));
+  EXPECT_TRUE(marker_list_->ShiftMarkers("", 15, 20, 0));
 
   DocumentMarkerVector markers = marker_list_->GetMarkers();
   std::sort(markers.begin(), markers.end(), compare_markers);
