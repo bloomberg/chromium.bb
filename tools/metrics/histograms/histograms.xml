@@ -27426,15 +27426,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="InstantTethering_HostScanResult">
   <owner>hansberry@chromium.com</owner>
   <summary>
-    Provides a breakdown of the results of each host scan. The result can be 1)
-    no notification shown (no hosts found), 2) a notification was shown for a
-    single available host, or 3) a notification was shown for multiple available
-    hosts. This metric is recorded after each host scan.
+    Provides a breakdown of the results of each host scan. This metric is
+    recorded after each host scan.
 
-    Comparing 1) against the sum of 2) and 3) can help determine the success
-    rate of host scans.
+    Comparing the number of times no hosts were found against the other buckets
+    can help determine how often a host scan is useful.
 
-    The sum of 2) and 3) can be used as a baseline of comparison against
+    The sum of the buckets capturing that a notification was shown can be used
+    as a baseline of comparison against
     InstantTethering.ConnectionToHostResult.ProvisioningFailureRate to roughly
     measure engagement with the notification.
   </summary>
