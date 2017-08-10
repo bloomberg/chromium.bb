@@ -55,13 +55,9 @@ public abstract class AutofillProvider {
     /**
      * @return whether query autofill suggestion.
      */
-    // TODO(michaelbai): Change it to abstract after DEP roll.
-    public boolean shouldQueryAutofillSuggestion() {
-        return false;
-    }
+    public abstract boolean shouldQueryAutofillSuggestion();
 
-    // TODO(michaelbai): Change it to abstract after DEP roll.
-    public void queryAutofillSuggestion() {}
+    public abstract void queryAutofillSuggestion();
 
     /**
      * Invoked when filling form is need. AutofillProvider shall ask autofill
