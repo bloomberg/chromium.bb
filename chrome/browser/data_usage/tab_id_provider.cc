@@ -121,7 +121,7 @@ base::WeakPtr<TabIdProvider> TabIdProvider::GetWeakPtr() {
 
 // static
 const void* const TabIdProvider::kTabIdProviderUserDataKey =
-    &TabIdProvider::kTabIdProviderUserDataKey;
+    "TabIdProviderUserDataKey";
 
 void TabIdProvider::OnTabIdReady(URLRequestTabInfo tab_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
