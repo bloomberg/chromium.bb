@@ -26,6 +26,23 @@ source_set("history_popup") {
   ]
 }
 
+source_set("coordinator") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "tab_history_coordinator.h",
+    "tab_history_coordinator.mm",
+  ]
+  deps = [
+    ":history_popup",
+    "//base",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/history_popup/requirements",
+    "//ios/shared/chrome/browser/ui/commands",
+  ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true

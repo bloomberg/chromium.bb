@@ -121,6 +121,8 @@
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/history_popup/requirements/tab_history_presentation.h"
+#import "ios/chrome/browser/ui/history_popup/tab_history_coordinator.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_panel_view_controller.h"
@@ -361,6 +363,7 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
                                     StoreKitLauncher,
                                     TabDialogDelegate,
                                     TabHeadersDelegate,
+                                    TabHistoryPresentation,
                                     TabModelObserver,
                                     TabSnapshottingDelegate,
                                     UIGestureRecognizerDelegate,
@@ -524,6 +527,9 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 
   // Coordinator for displaying alerts.
   AlertCoordinator* _alertCoordinator;
+
+  // Coordinator for Tab History Popup.
+  TabHistoryCoordinator* _tabHistoryCoordinator;
 }
 
 // The browser's side swipe controller.  Lazily instantiated on the first call.
@@ -1742,6 +1748,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_model browserStateDestroyed];
   [_preloadController browserStateDestroyed];
   _preloadController = nil;
+
+  // Disconnect child coordinators.
+  [_tabHistoryCoordinator disconnect];
+
   // The file remover needs the browser state, so needs to be destroyed now.
   _externalFileRemover = nil;
   _browserState = nullptr;
@@ -1829,6 +1839,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   infobars::InfoBarManager* infoBarManager =
       [[_model currentTab] infoBarManager];
   _infoBarContainer->ChangeInfoBarManager(infoBarManager);
+
+  // Create child coordinators.
+  _tabHistoryCoordinator =
+      [[TabHistoryCoordinator alloc] initWithBaseViewController:self];
+  _tabHistoryCoordinator.dispatcher = _dispatcher;
+  _tabHistoryCoordinator.positionProvider = _toolbarController;
+  _tabHistoryCoordinator.tabModel = _model;
+  _tabHistoryCoordinator.presentationProvider = self;
+  _tabHistoryCoordinator.tabHistoryUIUpdater = _toolbarController;
 
   if (base::FeatureList::IsEnabled(payments::features::kWebPayments)) {
     _paymentRequestManager = [[PaymentRequestManager alloc]
@@ -1994,7 +2013,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)dismissPopups {
   [_toolbarController dismissToolsMenuPopup];
   [self hidePageInfoPopupForView:nil];
-  [_toolbarController dismissTabHistoryPopup];
   [self.bubbleViewControllerPresenter dismissAnimated:YES];
 }
 
@@ -4140,42 +4158,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                    completion:nil];
 }
 
-- (void)showTabHistoryPopupForBackwardHistory {
-  DCHECK(self.visible || self.dismissingModal);
-
-  // Dismiss the omnibox (if open).
-  [_toolbarController cancelOmniboxEdit];
-  // Dismiss the soft keyboard (if open).
-  Tab* tab = [_model currentTab];
-  [tab.webController dismissKeyboard];
-  web::NavigationItemList backwardItems =
-      [tab navigationManager]->GetBackwardItems();
-  [_toolbarController showTabHistoryPopupInView:[self view]
-                                      withItems:backwardItems
-                                 forBackHistory:YES];
-}
-
-- (void)showTabHistoryPopupForForwardHistory {
-  DCHECK(self.visible || self.dismissingModal);
-
-  // Dismiss the omnibox (if open).
-  [_toolbarController cancelOmniboxEdit];
-  // Dismiss the soft keyboard (if open).
-  Tab* tab = [_model currentTab];
-  [tab.webController dismissKeyboard];
-
-  web::NavigationItemList forwardItems =
-      [tab navigationManager]->GetForwardItems();
-  [_toolbarController showTabHistoryPopupInView:[self view]
-                                      withItems:forwardItems
-                                 forBackHistory:NO];
-}
-
-- (void)navigateToHistoryItem:(const web::NavigationItem*)item {
-  [[_model currentTab] goToItem:item];
-  [_toolbarController dismissTabHistoryPopup];
-}
-
 - (void)showReadingList {
   _readingListCoordinator = [[ReadingListCoordinator alloc]
       initWithBaseViewController:self
@@ -5121,6 +5103,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (id<LogoAnimationControllerOwner>)logoAnimationControllerOwner {
   return [self currentLogoAnimationControllerOwner];
+}
+
+#pragma mark - TabHistoryPresenter
+
+- (void)prepareForTabHistoryPresentation {
+  DCHECK(self.visible || self.dismissingModal);
+  [[self.tabModel currentTab].webController dismissKeyboard];
+  [_toolbarController cancelOmniboxEdit];
 }
 
 @end
