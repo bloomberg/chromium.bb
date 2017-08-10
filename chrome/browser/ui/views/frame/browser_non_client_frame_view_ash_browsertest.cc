@@ -34,6 +34,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/test/env_test_helper.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/widget/widget.h"
@@ -113,6 +114,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
+  aura::test::EnvTestHelper().SetAlwaysUseLastMouseLocation(true);
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
   Widget* widget = browser_view->GetWidget();
@@ -342,6 +344,7 @@ class ImmersiveModeBrowserViewTest : public InProcessBrowserTest,
 
   void PreRunTestOnMainThread() override {
     InProcessBrowserTest::PreRunTestOnMainThread();
+    aura::test::EnvTestHelper().SetAlwaysUseLastMouseLocation(true);
     auto* immersive_mode_controller =
         browser_view()->immersive_mode_controller();
     scoped_observer_.Add(immersive_mode_controller);

@@ -45,6 +45,9 @@ class EnvTestHelper {
     env_->in_mus_shutdown_ = window_tree_client ? false : true;
   }
 
+  // Use to force Env::last_mouse_location() to return the value last set.
+  // This matters for MUS, which may not return the last explicitly set
+  // location.
   void SetAlwaysUseLastMouseLocation(bool value) {
     env_->always_use_last_mouse_location_ = value;
   }
