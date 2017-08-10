@@ -199,7 +199,7 @@ void JsExtensionBindingsSystem::UpdateBindingsForContext(
 
         // If this API has a parent feature (and isn't marked 'noparent'),
         // then this must be a function or event, so we should not register.
-        if (api_feature_provider->GetParent(map_entry.second.get()) != nullptr)
+        if (api_feature_provider->GetParent(*map_entry.second) != nullptr)
           continue;
 
         // Skip chrome.test if this isn't a test.

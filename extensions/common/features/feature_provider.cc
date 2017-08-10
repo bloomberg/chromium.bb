@@ -135,13 +135,12 @@ Feature* FeatureProvider::GetFeature(const std::string& name) const {
     return nullptr;
 }
 
-Feature* FeatureProvider::GetParent(Feature* feature) const {
-  CHECK(feature);
-  if (feature->no_parent())
+const Feature* FeatureProvider::GetParent(const Feature& feature) const {
+  if (feature.no_parent())
     return nullptr;
 
   std::vector<base::StringPiece> split = base::SplitStringPiece(
-      feature->name(), ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      feature.name(), ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (split.size() < 2)
     return nullptr;
   split.pop_back();

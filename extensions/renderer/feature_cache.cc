@@ -70,7 +70,7 @@ const FeatureCache::FeatureVector& FeatureCache::GetFeaturesFromCache(
     // TODO(devlin): Optimize this - instead of skipping child features and then
     // checking IsAnyFeatureAvailableToContext() (which checks child features),
     // we should just check all features directly.
-    if (api_feature_provider->GetParent(feature) != nullptr)
+    if (api_feature_provider->GetParent(*feature) != nullptr)
       continue;
 
     // Skip chrome.test if this isn't a test.
