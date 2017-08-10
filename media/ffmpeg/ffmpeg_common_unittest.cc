@@ -171,6 +171,28 @@ TEST_F(FFmpegCommonTest, AVStreamToAudioDecoderConfig_OpusAmbisonics_11ch) {
   EXPECT_EQ(11, audio_config.channels());
 }
 
+TEST_F(FFmpegCommonTest, AVStreamToAudioDecoderConfig_9ch_wav) {
+  base::MemoryMappedFile file;
+  file.Initialize(GetTestDataFilePath("9ch.wav"));
+  InMemoryUrlProtocol protocol(file.data(), file.length(), false);
+  FFmpegGlue glue(&protocol);
+  ASSERT_TRUE(glue.OpenContext());
+
+  AVFormatContext* format_context = glue.format_context();
+  EXPECT_EQ(static_cast<unsigned int>(1), format_context->nb_streams);
+  AVStream* stream = format_context->streams[0];
+
+  AVCodecParameters* codec_parameters = stream->codecpar;
+  EXPECT_EQ(AVMEDIA_TYPE_AUDIO, codec_parameters->codec_type);
+
+  AudioDecoderConfig audio_config;
+  ASSERT_TRUE(AVStreamToAudioDecoderConfig(stream, &audio_config));
+
+  EXPECT_EQ(kCodecPCM, audio_config.codec());
+  EXPECT_EQ(CHANNEL_LAYOUT_DISCRETE, audio_config.channel_layout());
+  EXPECT_EQ(9, audio_config.channels());
+}
+
 TEST_F(FFmpegCommonTest, TimeBaseConversions) {
   const int64_t test_data[][5] = {
       {1, 2, 1, 500000, 1}, {1, 3, 1, 333333, 1}, {1, 3, 2, 666667, 2},

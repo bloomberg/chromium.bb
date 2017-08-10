@@ -324,19 +324,8 @@ bool AVCodecContextToAudioDecoderConfig(
   SampleFormat sample_format = AVSampleFormatToSampleFormat(
       codec_context->sample_fmt, codec_context->codec_id);
 
-  // Opus packets coded with channel mapping 2 are Ambisonics signals. If there
-  // is no WebAudio renderer attached, default up/downmixing is applied for
-  // <= 8 channels to enable previewing of content. Currently, mixing is not
-  // supported for > 8 channels.
-  // TODO (flim): Use mixing matrices that are more optimal for previewing
-  // Ambisonics content, and support > 8 channels.
-  bool is_opus_discrete = false;
-  if (codec == kCodecOpus && codec_context->extradata_size >= 19) {
-    int mapping_family = codec_context->extradata[18];
-    is_opus_discrete = mapping_family == 2;
-  }
   ChannelLayout channel_layout =
-      is_opus_discrete && codec_context->channels > 8
+      codec_context->channels > 8
           ? CHANNEL_LAYOUT_DISCRETE
           : ChannelLayoutToChromeChannelLayout(codec_context->channel_layout,
                                                codec_context->channels);

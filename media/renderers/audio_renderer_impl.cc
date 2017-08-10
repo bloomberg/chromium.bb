@@ -516,6 +516,10 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
     DVLOG(1) << __func__ << ": Invalid audio parameters: "
              << audio_parameters_.AsHumanReadableString();
     ChangeState_Locked(kUninitialized);
+    // TODO(flim): If the channel layout is discrete but channel count is 0, a
+    // possible cause is that the input stream has > 8 channels but there is no
+    // Web Audio renderer attached and no channel mixing matrices defined for
+    // hardware renderers. Adding one for previewing content could be useful.
     base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }

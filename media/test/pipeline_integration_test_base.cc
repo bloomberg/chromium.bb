@@ -108,6 +108,7 @@ class RendererFactoryImpl final : public PipelineTestRendererFactory {
 PipelineIntegrationTestBase::PipelineIntegrationTestBase()
     : hashing_enabled_(false),
       clockless_playback_(false),
+      webaudio_attached_(false),
       pipeline_(
           new PipelineImpl(scoped_task_environment_.GetMainThreadTaskRunner(),
                            &media_log_)),
@@ -203,6 +204,7 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
     CreateAudioDecodersCB prepend_audio_decoders_cb) {
   hashing_enabled_ = test_type & kHashed;
   clockless_playback_ = test_type & kClockless;
+  webaudio_attached_ = test_type & kWebAudio;
 
   EXPECT_CALL(*this, OnMetadata(_))
       .Times(AtMost(1))
@@ -437,6 +439,10 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
             ? AudioParameters()
             : AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                               CHANNEL_LAYOUT_STEREO, 44100, 16, 512)));
+    if (webaudio_attached_) {
+      clockless_audio_sink_->SetIsOptimizedForHardwareParametersForTesting(
+          false);
+    }
   }
 
   std::unique_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(

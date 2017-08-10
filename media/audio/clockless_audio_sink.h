@@ -44,6 +44,8 @@ class MEDIA_EXPORT ClocklessAudioSink
   // Returns the hash of all audio frames seen since construction.
   std::string GetAudioHashForTesting();
 
+  void SetIsOptimizedForHardwareParametersForTesting(bool value);
+
  protected:
   ~ClocklessAudioSink() override;
 
@@ -53,6 +55,7 @@ class MEDIA_EXPORT ClocklessAudioSink
   bool initialized_;
   bool playing_;
   bool hashing_;
+  bool is_optimized_for_hw_params_;
 
   // Time taken in last set of Render() calls.
   base::TimeDelta playback_time_;
