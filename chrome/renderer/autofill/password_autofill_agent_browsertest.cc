@@ -3038,6 +3038,82 @@ TEST_F(PasswordAutofillAgentTest, NoForm_MultipleAJAXEventsWithoutSubmission) {
   ASSERT_FALSE(static_cast<bool>(fake_driver_.password_form_submitted()));
 }
 
+TEST_F(PasswordAutofillAgentTest, ManualFallbackForSaving) {
+  // The users enters a username. No password - no fallback.
+  SimulateUsernameChange(kUsernameName);
+  EXPECT_EQ(0, fake_driver_.called_show_manual_fallback_for_saving_count());
+
+  // The user enters a password.
+  SimulatePasswordChange(kPasswordName);
+  // SimulateUsernameChange/SimulatePasswordChange calls
+  // PasswordAutofillAgent::UpdateStateForTextChange only once.
+  EXPECT_EQ(1, fake_driver_.called_show_manual_fallback_for_saving_count());
+
+  // Remove one character from the password value.
+  SimulateUserTypingASCIICharacter(ui::VKEY_BACK, true);
+  EXPECT_EQ(2, fake_driver_.called_show_manual_fallback_for_saving_count());
+
+  // Add one character to the username value.
+  SetFocused(username_element_);
+  SimulateUserTypingASCIICharacter('a', true);
+  EXPECT_EQ(3, fake_driver_.called_show_manual_fallback_for_saving_count());
+
+  // Remove username value.
+  SimulateUsernameChange("");
+  EXPECT_EQ(4, fake_driver_.called_show_manual_fallback_for_saving_count());
+
+  // Change the password. Despite of empty username the fallback is still
+  // there.
+  SetFocused(password_element_);
+  SimulateUserTypingASCIICharacter('a', true);
+  EXPECT_EQ(5, fake_driver_.called_show_manual_fallback_for_saving_count());
+
+  // Remove password value. The fallback should be disabled.
+  SimulatePasswordChange("");
+  EXPECT_EQ(0, fake_driver_.called_show_manual_fallback_for_saving_count());
+
+  // The user enters new password. Show the fallback again.
+  SimulateUserTypingASCIICharacter('a', true);
+  EXPECT_EQ(1, fake_driver_.called_show_manual_fallback_for_saving_count());
+}
+
+TEST_F(PasswordAutofillAgentTest, ManualFallbackForSaving_PasswordChangeForm) {
+  LoadHTML(kPasswordChangeFormHTML);
+  UpdateOriginForHTML(kPasswordChangeFormHTML);
+  UpdateUsernameAndPasswordElements();
+
+  // No password to save yet - no fallback.
+  SimulateUsernameChange(kUsernameName);
+  EXPECT_EQ(0, fake_driver_.called_show_manual_fallback_for_saving_count());
+
+  // The user enters in the current password field. The fallback should be
+  // available to save the entered value.
+  SimulatePasswordChange(kPasswordName);
+  // SimulateUsernameChange/SimulatePasswordChange calls
+  // PasswordAutofillAgent::UpdateStateForTextChange only once.
+  EXPECT_EQ(1, fake_driver_.called_show_manual_fallback_for_saving_count());
+
+  // The user types into the new password field. The fallback should be updated.
+  WebInputElement new_password = GetInputElementByID("newpassword");
+  ASSERT_FALSE(new_password.IsNull());
+  SetFocused(new_password);
+  SimulateUserTypingASCIICharacter('a', true);
+  EXPECT_EQ(2, fake_driver_.called_show_manual_fallback_for_saving_count());
+
+  // Edits of the confirmation password field trigger fallback updates.
+  WebInputElement confirmation_password =
+      GetInputElementByID("confirmpassword");
+  ASSERT_FALSE(confirmation_password.IsNull());
+  SetFocused(confirmation_password);
+  SimulateUserTypingASCIICharacter('a', true);
+  EXPECT_EQ(3, fake_driver_.called_show_manual_fallback_for_saving_count());
+
+  // Clear all password fields. The fallback should be disabled.
+  SimulatePasswordChange("");
+  SimulateUserInputChangeForElement(&new_password, "");
+  SimulateUserInputChangeForElement(&confirmation_password, "");
+  EXPECT_EQ(0, fake_driver_.called_show_manual_fallback_for_saving_count());
+}
 // Tests that information about Gaia reauthentication form is not sent to the
 // browser, nor on load nor on user click.
 TEST_F(PasswordAutofillAgentTest, GaiaReauthenticationFormIgnored) {

@@ -38,6 +38,18 @@ class PasswordsClientUIDelegate {
   virtual void OnUpdatePasswordSubmitted(
       std::unique_ptr<password_manager::PasswordFormManager> form_manager) = 0;
 
+  // Called when the user starts typing in a password field. This switches the
+  // icon to a pending state, a user can click on the icon and open a
+  // save/update bubble.
+  virtual void OnShowManualFallbackForSaving(
+      std::unique_ptr<password_manager::PasswordFormManager> form_manager,
+      bool has_generated_password,
+      bool is_update) = 0;
+
+  // Called when the user cleared the password field. This switches the icon
+  // back to manage or inactive state.
+  virtual void OnHideManualFallbackForSaving() = 0;
+
   // Called when the site asks user to choose from credentials. This triggers
   // the UI to prompt the user. |local_credentials| shouldn't be empty. |origin|
   // is a URL of the site that requested a credential.

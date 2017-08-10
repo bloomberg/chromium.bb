@@ -94,7 +94,18 @@ class PasswordManagerClient {
   // that was overidden.
   virtual bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<PasswordFormManager> form_to_save,
-      bool update_password) = 0;
+      bool is_update) = 0;
+
+  // Informs the embedder that the user started typing a password and a password
+  // prompt should be available on click on the omnibox icon.
+  virtual void ShowManualFallbackForSaving(
+      std::unique_ptr<PasswordFormManager> form_to_save,
+      bool has_generated_password,
+      bool is_update) = 0;
+
+  // Informs the embedder that the user cleared the password field and the
+  // fallback for password saving should be not available.
+  virtual void HideManualFallbackForSaving() = 0;
 
   // Informs the embedder of a password forms that the user should choose from.
   // Returns true if the prompt is indeed displayed. If the prompt is not

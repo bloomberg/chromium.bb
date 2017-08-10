@@ -805,3 +805,86 @@ TEST_F(ManagePasswordsUIControllerTest, OpenBubbleTwice) {
   // up with the controller's state.
   EXPECT_FALSE(proxy_delegate);
 }
+
+TEST_F(ManagePasswordsUIControllerTest, ManualFallbackForSaving_UseFallback) {
+  for (bool is_update : {false, true}) {
+    SCOPED_TRACE(testing::Message("is_update = ") << is_update);
+    std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
+        CreateFormManager());
+    test_form_manager->ProvisionallySave(
+        test_local_form(),
+        password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+    controller()->OnShowManualFallbackForSaving(
+        std::move(test_form_manager), false /* has_generated_password */,
+        is_update);
+    ExpectIconAndControllerStateIs(
+        is_update ? password_manager::ui::PENDING_PASSWORD_UPDATE_STATE
+                  : password_manager::ui::PENDING_PASSWORD_STATE);
+    EXPECT_FALSE(controller()->opened_bubble());
+
+    // A user clicks on omnibox icon, opens the bubble and press Save/Update.
+    if (is_update) {
+      EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+      controller()->UpdatePassword(autofill::PasswordForm());
+    } else {
+      controller()->SavePassword(test_local_form().username_value);
+    }
+    ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);
+    testing::Mock::VerifyAndClearExpectations(controller());
+  }
+}
+
+TEST_F(ManagePasswordsUIControllerTest, ManualFallbackForSaving_HideFallback) {
+  for (bool is_update : {false, true}) {
+    SCOPED_TRACE(testing::Message("is_update = ") << is_update);
+    std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
+        CreateFormManager());
+    test_form_manager->ProvisionallySave(
+        test_local_form(),
+        password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+    controller()->OnShowManualFallbackForSaving(
+        std::move(test_form_manager), false /* has_generated_password */,
+        is_update);
+    ExpectIconAndControllerStateIs(
+        is_update ? password_manager::ui::PENDING_PASSWORD_UPDATE_STATE
+                  : password_manager::ui::PENDING_PASSWORD_STATE);
+    EXPECT_FALSE(controller()->opened_bubble());
+
+    // A user clears the password field. It hides the fallback.
+    EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+    controller()->OnHideManualFallbackForSaving();
+    ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);
+    testing::Mock::VerifyAndClearExpectations(controller());
+  }
+}
+
+TEST_F(ManagePasswordsUIControllerTest,
+       ManualFallbackForSaving_GeneratedPassword) {
+  for (bool user_closed_bubble : {false, true}) {
+    SCOPED_TRACE(testing::Message("user_closed_bubble = ")
+                 << user_closed_bubble);
+    std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
+        CreateFormManager());
+    test_form_manager->ProvisionallySave(
+        test_local_form(),
+        password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+    controller()->OnShowManualFallbackForSaving(
+        std::move(test_form_manager), true /* has_generated_password */, false);
+    ExpectIconAndControllerStateIs(password_manager::ui::CONFIRMATION_STATE);
+    EXPECT_FALSE(controller()->opened_bubble());
+
+    EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+    if (user_closed_bubble) {
+      // A user opens the confirmation bubble and presses OK.
+      controller()->OnBubbleHidden();
+    } else {
+      // The user removes the generated password. It hides the fallback.
+      controller()->OnHideManualFallbackForSaving();
+    }
+    ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);
+    testing::Mock::VerifyAndClearExpectations(controller());
+  }
+}

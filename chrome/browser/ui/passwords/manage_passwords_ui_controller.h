@@ -50,6 +50,11 @@ class ManagePasswordsUIController
   void OnUpdatePasswordSubmitted(
       std::unique_ptr<password_manager::PasswordFormManager> form_manager)
       override;
+  void OnShowManualFallbackForSaving(
+      std::unique_ptr<password_manager::PasswordFormManager> form_manager,
+      bool has_generated_password,
+      bool is_update) override;
+  void OnHideManualFallbackForSaving() override;
   bool OnChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
       const GURL& origin,

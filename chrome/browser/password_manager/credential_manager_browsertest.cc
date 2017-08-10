@@ -157,8 +157,8 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
     ASSERT_TRUE(client->was_store_ever_called());
 
     BubbleObserver prompt_observer(WebContents());
-    prompt_observer.WaitForSavePrompt();
-    ASSERT_TRUE(prompt_observer.IsShowingSavePrompt());
+    prompt_observer.WaitForAutomaticSavePrompt();
+    ASSERT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
     prompt_observer.AcceptSavePrompt();
 
     WaitForPasswordStore();
@@ -330,8 +330,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   // after the store replies.
   WaitForPasswordStore();
   BubbleObserver prompt_observer(WebContents());
-  EXPECT_FALSE(prompt_observer.IsShowingSavePrompt());
-  EXPECT_FALSE(prompt_observer.IsShowingUpdatePrompt());
+  EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
+  EXPECT_FALSE(prompt_observer.IsUpdatePromptShownAutomatically());
 
   // There should be an entry for both psl.example.com and www.example.com.
   password_manager::TestPasswordStore::PasswordMap passwords =
@@ -422,7 +422,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   BubbleObserver prompt_observer(WebContents());
   // The autofill password manager shouldn't react to the successful login
   // because it was suppressed when the site got the credential back.
-  EXPECT_FALSE(prompt_observer.IsShowingSavePrompt());
+  EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
 }
 
 // Regression test for https://crbug.com/736357.
@@ -480,8 +480,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
       "navigator.credentials.store(c);"));
 
   BubbleObserver prompt_observer(WebContents());
-  prompt_observer.WaitForSavePrompt();
-  ASSERT_TRUE(prompt_observer.IsShowingSavePrompt());
+  prompt_observer.WaitForAutomaticSavePrompt();
+  ASSERT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
   prompt_observer.AcceptSavePrompt();
   WaitForPasswordStore();
 
@@ -547,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
 
   WaitForPasswordStore();
   BubbleObserver prompt_observer(WebContents());
-  ASSERT_TRUE(prompt_observer.IsShowingSavePrompt());
+  ASSERT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
   prompt_observer.AcceptSavePrompt();
 
   WaitForPasswordStore();
@@ -605,8 +605,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
   // after the store replies.
   WaitForPasswordStore();
   BubbleObserver prompt_observer(WebContents());
-  EXPECT_FALSE(prompt_observer.IsShowingSavePrompt());
-  EXPECT_FALSE(prompt_observer.IsShowingUpdatePrompt());
+  EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
+  EXPECT_FALSE(prompt_observer.IsUpdatePromptShownAutomatically());
   signin_form.skip_zero_click = false;
   signin_form.times_used = 1;
   signin_form.password_value = base::ASCIIToUTF16("API");
@@ -624,7 +624,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, CredentialsAutofilled) {
       "var c = new PasswordCredential({ id: 'user', password: '12345' });"
       "navigator.credentials.store(c);"));
   BubbleObserver bubble_observer(WebContents());
-  bubble_observer.WaitForSavePrompt();
+  bubble_observer.WaitForAutomaticSavePrompt();
   bubble_observer.AcceptSavePrompt();
 
   // Reload the page and make sure it's autofilled.

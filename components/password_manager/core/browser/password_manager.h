@@ -154,6 +154,15 @@ class PasswordManager : public LoginModel {
       password_manager::PasswordManagerDriver* driver,
       const autofill::PasswordForm& password_form);
 
+  // Handles a request to show manual fallback for password saving, i.e. the
+  // omnibox icon with the anchored hidden prompt.
+  void ShowManualFallbackForSaving(
+      password_manager::PasswordManagerDriver* driver,
+      const autofill::PasswordForm& password_form);
+
+  // Handles a request to hide manual fallback for password saving.
+  void HideManualFallbackForSaving();
+
   // Called if |password_form| was filled upon in-page navigation. This often
   // means history.pushState being called from JavaScript. If this causes false
   // positive in password saving, update http://crbug.com/357696.

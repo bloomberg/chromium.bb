@@ -62,9 +62,12 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_CONST_METHOD0(IsSavingAndFillingEnabledForCurrentPage, bool());
   MOCK_CONST_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
   MOCK_CONST_METHOD0(GetPasswordStore, PasswordStore*());
-  // The code inside EXPECT_CALL for PromptUserToSaveOrUpdatePasswordPtr owns
-  // the PasswordFormManager* argument.
+  // The code inside EXPECT_CALL for PromptUserToSaveOrUpdatePasswordPtr and
+  // ShowManualFallbackForSavingPtr owns the PasswordFormManager* argument.
   MOCK_METHOD1(PromptUserToSaveOrUpdatePasswordPtr, void(PasswordFormManager*));
+  MOCK_METHOD3(ShowManualFallbackForSavingPtr,
+               void(PasswordFormManager*, bool, bool));
+  MOCK_METHOD0(HideManualFallbackForSaving, void());
   MOCK_METHOD1(NotifySuccessfulLoginWithExistingPassword,
                void(const autofill::PasswordForm&));
   MOCK_METHOD0(AutomaticPasswordSaveIndicator, void());
@@ -79,6 +82,12 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
       bool update_password) override {
     PromptUserToSaveOrUpdatePasswordPtr(manager.release());
     return false;
+  }
+  void ShowManualFallbackForSaving(std::unique_ptr<PasswordFormManager> manager,
+                                   bool has_generated_password,
+                                   bool is_update) override {
+    ShowManualFallbackForSavingPtr(manager.release(), has_generated_password,
+                                   is_update);
   }
   void AutomaticPasswordSave(
       std::unique_ptr<PasswordFormManager> manager) override {
@@ -1808,5 +1817,110 @@ TEST_F(PasswordManagerTest, NotSavingSyncPasswordHash_NotSyncCredentials) {
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
 #endif
+
+TEST_F(PasswordManagerTest, ManualFallbackForSaving) {
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  PasswordForm stored_form = form;
+  stored_form.password_value = ASCIIToUTF16("old_password");
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillOnce(WithArg<1>(InvokeConsumer(stored_form)));
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // The username of the stored form is the same, there should be update bubble.
+  std::unique_ptr<PasswordFormManager> form_manager_to_save;
+  EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, true))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+  manager()->ShowManualFallbackForSaving(&driver_, form);
+  ASSERT_TRUE(form_manager_to_save);
+  EXPECT_THAT(form_manager_to_save->pending_credentials(), FormMatches(form));
+
+  // The username of the stored form is different, there should be save bubble.
+  PasswordForm new_form = form;
+  new_form.username_value = ASCIIToUTF16("another_username");
+  EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, false))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+  manager()->ShowManualFallbackForSaving(&driver_, new_form);
+  ASSERT_TRUE(form_manager_to_save);
+  EXPECT_THAT(form_manager_to_save->pending_credentials(),
+              FormMatches(new_form));
+
+  // Hide the manual fallback.
+  EXPECT_CALL(client_, HideManualFallbackForSaving());
+  manager()->HideManualFallbackForSaving();
+}
+
+// Tests that the manual fallback for saving isn't shown if there is no response
+// from the password storage. When crbug.com/741537 is fixed, change this test.
+TEST_F(PasswordManagerTest, ManualFallbackForSaving_SlowBackend) {
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  PasswordStoreConsumer* store_consumer = nullptr;
+  EXPECT_CALL(*store_, GetLogins(_, _)).WillOnce(SaveArg<1>(&store_consumer));
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // There is no response from the store. Don't show the fallback.
+  EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, _, _)).Times(0);
+  manager()->ShowManualFallbackForSaving(&driver_, form);
+
+  // The storage responded. The fallback can be shown.
+  ASSERT_TRUE(store_consumer);
+  store_consumer->OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>>());
+  std::unique_ptr<PasswordFormManager> form_manager_to_save;
+  EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, false))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+  manager()->ShowManualFallbackForSaving(&driver_, form);
+}
+
+TEST_F(PasswordManagerTest, ManualFallbackForSaving_GeneratedPassword) {
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // A user accepts a password generated by Chrome. It triggers password
+  // presaving and showing manual fallback.
+  std::unique_ptr<PasswordFormManager> form_manager_to_save;
+  EXPECT_CALL(*store_, AddLogin(_));
+  EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, true, false))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+  manager()->OnPresaveGeneratedPassword(form);
+  manager()->ShowManualFallbackForSaving(&driver_, form);
+  ASSERT_TRUE(form_manager_to_save);
+  EXPECT_THAT(form_manager_to_save->pending_credentials(), FormMatches(form));
+
+  // A user edits the generated password. And again it causes password presaving
+  // and showing manual fallback.
+  EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, _));
+  EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, true, false))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+  manager()->OnPresaveGeneratedPassword(form);
+  manager()->ShowManualFallbackForSaving(&driver_, form);
+
+  // A user removes the generated password. The presaved password is removed,
+  // the fallback is disabled.
+  EXPECT_CALL(*store_, RemoveLogin(_));
+  EXPECT_CALL(client_, HideManualFallbackForSaving());
+  manager()->OnPasswordNoLongerGenerated(form);
+  manager()->HideManualFallbackForSaving();
+}
 
 }  // namespace password_manager

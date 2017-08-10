@@ -77,6 +77,14 @@ interface PasswordManagerDriver {
 
   // Notification that this password form was submitted by the user.
   PasswordFormSubmitted(PasswordForm password_form);
+  
+  // Notification that a user starts typing in password fields and the omnibox
+  // icon with anchored save/update prompt should be available.
+  ShowManualFallbackForSaving(PasswordForm password_form);
+  
+  // Notification that there is no user input in password fields and the 
+  // save/update prompt anchored to the omnibox icon should be removed. 
+  HideManualFallbackForSaving();
 
   // Notification that in-page navigation happened and at this moment we have
   // filled password form. We use this as a signal for successful login.
