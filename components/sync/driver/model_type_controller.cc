@@ -217,11 +217,6 @@ void ModelTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-std::string ModelTypeController::name() const {
-  // For logging only.
-  return ModelTypeToString(type());
-}
-
 DataTypeController::State ModelTypeController::state() const {
   return state_;
 }

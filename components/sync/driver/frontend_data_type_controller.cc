@@ -106,11 +106,6 @@ void FrontendDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-std::string FrontendDataTypeController::name() const {
-  // For logging only.
-  return ModelTypeToString(type());
-}
-
 DataTypeController::State FrontendDataTypeController::state() const {
   return state_;
 }

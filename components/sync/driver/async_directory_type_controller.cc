@@ -144,11 +144,6 @@ void AsyncDirectoryTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-std::string AsyncDirectoryTypeController::name() const {
-  // For logging only.
-  return ModelTypeToString(type());
-}
-
 DataTypeController::State AsyncDirectoryTypeController::state() const {
   return state_;
 }

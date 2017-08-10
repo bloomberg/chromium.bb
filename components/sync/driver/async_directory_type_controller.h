@@ -39,7 +39,6 @@ class AsyncDirectoryTypeController : public DirectoryDataTypeController {
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
   ChangeProcessor* GetChangeProcessor() const override;
-  std::string name() const override;
   State state() const override;
 
   // Used by tests to override the factory used to create
