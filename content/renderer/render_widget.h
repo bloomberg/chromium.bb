@@ -46,6 +46,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ppapi/features/features.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -403,13 +404,6 @@ class CONTENT_EXPORT RenderWidget
 
   MouseLockDispatcher* mouse_lock_dispatcher() const {
     return mouse_lock_dispatcher_.get();
-  }
-
-  // TODO(ekaramad): The reference to the focused pepper plugin will be removed
-  // from RenderWidget. The purpose of having the reference here was to make IME
-  // work for OOPIF (https://crbug.com/643727).
-  void set_focused_pepper_plugin(PepperPluginInstanceImpl* plugin) {
-    focused_pepper_plugin_ = plugin;
   }
 
   // When emulated, this returns original device scale factor.
@@ -866,6 +860,13 @@ class CONTENT_EXPORT RenderWidget
                          const ui::LatencyInfo& latency_info,
                          std::unique_ptr<ui::DidOverscrollParams>);
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // Returns the focused pepper plugin, if any, inside the WebWidget. That is
+  // the pepper plugin which is focused inside a frame which belongs to the
+  // local root associated with this RenderWidget.
+  PepperPluginInstanceImpl* GetFocusedPepperPluginInsideWidget();
+#endif
+
   // Indicates whether this widget has focus.
   bool has_focus_;
 
@@ -878,10 +879,6 @@ class CONTENT_EXPORT RenderWidget
   // position or range as well as finding character index at a given position.
   std::unique_ptr<TextInputClientObserver> text_input_client_observer_;
 #endif
-
-  // This reference is set by the RenderFrame and is used to query the IME-
-  // related state from the plugin to later send to the browser.
-  PepperPluginInstanceImpl* focused_pepper_plugin_;
 
   // Stores edit commands associated to the next key event.
   // Will be cleared as soon as the next key event is processed.

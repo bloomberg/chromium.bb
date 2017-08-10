@@ -382,7 +382,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
 #if defined(OS_MACOSX)
       text_input_client_observer_(new TextInputClientObserver(this)),
 #endif
-      focused_pepper_plugin_(nullptr),
       time_to_first_active_paint_recorded_(true),
       was_shown_time_(base::TimeTicks::Now()),
       current_content_source_id_(0),
@@ -1668,9 +1667,9 @@ void RenderWidget::OnImeSetComposition(
     return;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
-    focused_pepper_plugin_->render_frame()->OnImeSetComposition(
-        text, underlines, selection_start, selection_end);
+  if (auto* plugin = GetFocusedPepperPluginInsideWidget()) {
+    plugin->render_frame()->OnImeSetComposition(text, underlines,
+                                                selection_start, selection_end);
     return;
   }
 #endif
@@ -1701,9 +1700,9 @@ void RenderWidget::OnImeCommitText(
     return;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
-    focused_pepper_plugin_->render_frame()->OnImeCommitText(
-        text, replacement_range, relative_cursor_pos);
+  if (auto* plugin = GetFocusedPepperPluginInsideWidget()) {
+    plugin->render_frame()->OnImeCommitText(text, replacement_range,
+                                            relative_cursor_pos);
     return;
   }
 #endif
@@ -1727,9 +1726,8 @@ void RenderWidget::OnImeFinishComposingText(bool keep_selection) {
     return;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
-    focused_pepper_plugin_->render_frame()->OnImeFinishComposingText(
-        keep_selection);
+  if (auto* plugin = GetFocusedPepperPluginInsideWidget()) {
+    plugin->render_frame()->OnImeFinishComposingText(keep_selection);
     return;
   }
 #endif
@@ -1915,8 +1913,8 @@ void RenderWidget::ShowVirtualKeyboardOnElementFocus() {
 
 ui::TextInputType RenderWidget::GetTextInputType() {
 #if BUILDFLAG(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_)
-    return focused_pepper_plugin_->text_input_type();
+  if (auto* plugin = GetFocusedPepperPluginInsideWidget())
+    return plugin->text_input_type();
 #endif
   if (auto* controller = GetInputMethodController())
     return ConvertWebTextInputType(controller->TextInputType());
@@ -2072,12 +2070,12 @@ void RenderWidget::OnImeEventGuardFinish(ImeEventGuard* guard) {
 
 void RenderWidget::GetSelectionBounds(gfx::Rect* focus, gfx::Rect* anchor) {
 #if BUILDFLAG(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
+  if (auto* plugin = GetFocusedPepperPluginInsideWidget()) {
     // TODO(kinaba) http://crbug.com/101101
     // Current Pepper IME API does not handle selection bounds. So we simply
     // use the caret position as an empty range for now. It will be updated
     // after Pepper API equips features related to surrounding text retrieval.
-    blink::WebRect caret(focused_pepper_plugin_->GetCaretBounds());
+    blink::WebRect caret(plugin->GetCaretBounds());
     ConvertViewportToWindow(&caret);
     *focus = caret;
     *anchor = caret;
@@ -2157,7 +2155,7 @@ void RenderWidget::GetCompositionCharacterBounds(
   bounds->clear();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_)
+  if (GetFocusedPepperPluginInsideWidget())
     return;
 #endif
 
@@ -2175,7 +2173,7 @@ void RenderWidget::GetCompositionCharacterBounds(
 
 void RenderWidget::GetCompositionRange(gfx::Range* range) {
 #if BUILDFLAG(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_)
+  if (GetFocusedPepperPluginInsideWidget())
     return;
 #endif
   WebRange web_range = GetWebWidget()->CompositionRange();
@@ -2205,8 +2203,8 @@ bool RenderWidget::ShouldUpdateCompositionInfo(
 
 bool RenderWidget::CanComposeInline() {
 #if BUILDFLAG(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_)
-    return focused_pepper_plugin_->IsPluginAcceptingCompositionEvents();
+  if (auto* plugin = GetFocusedPepperPluginInsideWidget())
+    return plugin->IsPluginAcceptingCompositionEvents();
 #endif
   return true;
 }
@@ -2437,5 +2435,33 @@ void RenderWidget::SetWidgetBinding(mojom::WidgetRequest request) {
   widget_binding_.Close();
   widget_binding_.Bind(std::move(request));
 }
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+PepperPluginInstanceImpl* RenderWidget::GetFocusedPepperPluginInsideWidget() {
+  if (!GetWebWidget() || !GetWebWidget()->IsWebFrameWidget())
+    return nullptr;
+
+  // Focused pepper instance might not always be in the focused frame. For
+  // instance if a pepper instance and its embedder frame are focused an then
+  // another frame takes focus using javascript, the embedder frame will no
+  // longer be focused while the pepper instance is (the embedder frame's
+  // |focused_pepper_plugin_| is not nullptr). Especially, if the pepper plugin
+  // is fullscreen, clicking into the pepper will not refocus the embedder
+  // frame. This is why we have to traverse the whole frame tree to find the
+  // focused plugin.
+  blink::WebFrame* current_frame =
+      static_cast<blink::WebFrameWidget*>(GetWebWidget())->LocalRoot();
+  while (current_frame) {
+    RenderFrameImpl* render_frame =
+        current_frame->IsWebLocalFrame()
+            ? RenderFrameImpl::FromWebFrame(current_frame)
+            : nullptr;
+    if (render_frame && render_frame->focused_pepper_plugin())
+      return render_frame->focused_pepper_plugin();
+    current_frame = current_frame->TraverseNext();
+  }
+  return nullptr;
+}
+#endif
 
 }  // namespace content
