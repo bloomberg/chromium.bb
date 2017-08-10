@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(ChromeCleanerPromptUserTest,
 
 // Disabled due to flaky failures: https://crbug.com/753632
 IN_PROC_BROWSER_TEST_F(ChromeCleanerPromptUserTest,
-                       OnInfectedBrowserNotAvailable) {
+                       DISABLED_OnInfectedBrowserNotAvailable) {
   browser()->window()->Minimize();
   base::RunLoop().RunUntilIdle();
   dialog_controller_->OnInfected(std::set<base::FilePath>());
