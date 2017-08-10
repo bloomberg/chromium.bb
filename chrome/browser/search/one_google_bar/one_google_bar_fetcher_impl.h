@@ -33,7 +33,8 @@ struct OneGoogleBarData;
 class OneGoogleBarFetcherImpl : public OneGoogleBarFetcher {
  public:
   OneGoogleBarFetcherImpl(net::URLRequestContextGetter* request_context,
-                          GoogleURLTracker* google_url_tracker);
+                          GoogleURLTracker* google_url_tracker,
+                          const std::string& application_locale);
   ~OneGoogleBarFetcherImpl() override;
 
   void Fetch(OneGoogleCallback callback) override;
@@ -50,6 +51,7 @@ class OneGoogleBarFetcherImpl : public OneGoogleBarFetcher {
 
   net::URLRequestContextGetter* request_context_;
   GoogleURLTracker* google_url_tracker_;
+  const std::string application_locale_;
 
   std::vector<OneGoogleCallback> callbacks_;
   std::unique_ptr<AuthenticatedURLFetcher> pending_request_;
