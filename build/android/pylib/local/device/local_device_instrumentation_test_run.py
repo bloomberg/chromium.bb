@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import contextlib
+import hashlib
 import json
 import logging
 import os
@@ -30,6 +31,7 @@ from pylib.utils import instrumentation_tracing
 from pylib.utils import logdog_helper
 from pylib.utils import shared_preference_utils
 from py_trace_event import trace_event
+from py_trace_event import trace_time
 from py_utils import contextlib_ext
 from py_utils import tempfile_ext
 import tombstones
@@ -64,6 +66,8 @@ EXTRA_SCREENSHOT_FILE = (
 
 EXTRA_UI_CAPTURE_DIR = (
     'org.chromium.base.test.util.Screenshooter.ScreenshotDir')
+
+EXTRA_TRACE_FILE = ('org.chromium.base.test.BaseJUnit4ClassRunner.TraceFile')
 
 _EXTRA_TEST_LIST = (
     'org.chromium.base.test.BaseChromiumAndroidJUnitRunner.TestList')
@@ -353,6 +357,11 @@ class LocalDeviceInstrumentationTestRun(
 
     extras[EXTRA_UI_CAPTURE_DIR] = self._ui_capture_dir[device]
 
+    if self._env.trace_output:
+      trace_device_file = device_temp_file.DeviceTempFile(
+          device.adb, suffix='.json', dir=device.GetExternalStoragePath())
+      extras[EXTRA_TRACE_FILE] = trace_device_file.name
+
     if isinstance(test, list):
       if not self._test_instance.driver_apk:
         raise Exception('driver_apk does not exist. '
@@ -435,6 +444,9 @@ class LocalDeviceInstrumentationTestRun(
 
     logcat_url = logmon.GetLogcatURL()
     duration_ms = time_ms() - start_ms
+
+    if self._env.trace_output:
+      self._SaveTraceData(trace_device_file, device, test['class'])
 
     # TODO(jbudorick): Make instrumentation tests output a JSON so this
     # doesn't have to parse the output.
@@ -606,6 +618,65 @@ class LocalDeviceInstrumentationTestRun(
     instrumentation_test_instance.SaveTestsToPickle(
         pickle_path, test_apk_path, raw_tests)
     return raw_tests
+
+  def _SaveTraceData(self, trace_device_file, device, test_class):
+    trace_host_file = self._env.trace_output
+
+    if device.FileExists(trace_device_file.name):
+      try:
+        java_trace_json = device.ReadFile(trace_device_file.name)
+      except IOError:
+        raise Exception('error pulling trace file from device')
+      finally:
+        trace_device_file.close()
+
+      process_name = '%s (device %s)' % (test_class, device.serial)
+      process_hash = int(hashlib.md5(process_name).hexdigest()[:6], 16)
+
+      java_trace = json.loads(java_trace_json)
+      java_trace.sort(key=lambda event: event['ts'])
+
+      get_date_command = 'echo $EPOCHREALTIME'
+      device_time = device.RunShellCommand(get_date_command, single_line=True)
+      device_time = float(device_time) * 1e6
+      system_time = trace_time.Now()
+      time_difference = system_time - device_time
+
+      threads_to_add = set()
+      for event in java_trace:
+        # Ensure thread ID and thread name will be linked in the metadata.
+        threads_to_add.add((event['tid'], event['name']))
+
+        event['pid'] = process_hash
+
+        # Adjust time stamp to align with Python trace times (from
+        # trace_time.Now()).
+        event['ts'] += time_difference
+
+      for tid, thread_name in threads_to_add:
+        thread_name_metadata = {'pid': process_hash, 'tid': tid,
+                                'ts': 0, 'ph': 'M', 'cat': '__metadata',
+                                'name': 'thread_name',
+                                'args': {'name': thread_name}}
+        java_trace.append(thread_name_metadata)
+
+      process_name_metadata = {'pid': process_hash, 'tid': 0, 'ts': 0,
+                               'ph': 'M', 'cat': '__metadata',
+                               'name': 'process_name',
+                               'args': {'name': process_name}}
+      java_trace.append(process_name_metadata)
+
+      java_trace_json = json.dumps(java_trace)
+      java_trace_json = java_trace_json.rstrip(' ]')
+
+      with open(trace_host_file, 'r') as host_handle:
+        host_contents = host_handle.readline()
+
+      if host_contents:
+        java_trace_json = ',%s' % java_trace_json.lstrip(' [')
+
+      with open(trace_host_file, 'a') as host_handle:
+        host_handle.write(java_trace_json)
 
   def _SaveScreenshot(self, device, screenshot_host_dir, screenshot_device_file,
                       test_name, results):
