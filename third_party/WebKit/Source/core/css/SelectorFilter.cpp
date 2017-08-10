@@ -177,7 +177,6 @@ void SelectorFilter::CollectIdentifierHashes(
         *identifier_hashes = 0;
         return;
       case CSSSelector::kDescendant:
-      case CSSSelector::kShadowDeepAsDescendant:
       case CSSSelector::kChild:
       // Fall through.
       case CSSSelector::kShadowPseudo:

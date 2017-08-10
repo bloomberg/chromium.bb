@@ -84,8 +84,7 @@ class CSSParserImpl {
                               const CSSParserContext*,
                               StyleSheetContents*,
                               bool defer_property_parsing = false);
-  static CSSSelectorList ParsePageSelector(const CSSParserContext&,
-                                           CSSParserTokenRange,
+  static CSSSelectorList ParsePageSelector(CSSParserTokenRange,
                                            StyleSheetContents*);
 
   static ImmutableStylePropertySet* ParseCustomPropertySet(CSSParserTokenRange);
