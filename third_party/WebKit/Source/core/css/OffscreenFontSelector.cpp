@@ -20,11 +20,14 @@
 
 namespace blink {
 
-OffscreenFontSelector::OffscreenFontSelector(
-    const GenericFontFamilySettings& settings)
-    : generic_font_family_settings_(settings) {}
+OffscreenFontSelector::OffscreenFontSelector() {}
 
 OffscreenFontSelector::~OffscreenFontSelector() {}
+
+void OffscreenFontSelector::UpdateGenericFontFamilySettings(
+    const GenericFontFamilySettings& settings) {
+  generic_font_family_settings_ = settings;
+}
 
 void OffscreenFontSelector::RegisterForInvalidationCallbacks(
     FontSelectorClient* client) {}

@@ -152,6 +152,8 @@ class CORE_EXPORT OffscreenCanvas final
 
   bool IsWebGLAllowed() const override { return true; }
 
+  FontSelector* GetFontSelector() override;
+
   DECLARE_VIRTUAL_TRACE();
 
  private:

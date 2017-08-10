@@ -37,10 +37,12 @@
 #include "build/build_config.h"
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
+#include "core/css/CSSFontSelector.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/StyleEngine.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/fileapi/File.h"
 #include "core/frame/LocalFrame.h"
@@ -1463,6 +1465,10 @@ void HTMLCanvasElement::CreateLayer() {
 
 void HTMLCanvasElement::OnWebLayerReplaced() {
   SetNeedsCompositingUpdate();
+}
+
+FontSelector* HTMLCanvasElement::GetFontSelector() {
+  return GetDocument().GetStyleEngine().GetFontSelector();
 }
 
 }  // namespace blink

@@ -32,6 +32,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
+#include "core/css/OffscreenFontSelector.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/SuspendableObject.h"
@@ -370,7 +371,8 @@ WorkerGlobalScope::WorkerGlobalScope(
       thread_(thread),
       event_queue_(WorkerEventQueue::Create(this)),
       timers_(TaskRunnerHelper::Get(TaskType::kTimer, this)),
-      time_origin_(time_origin) {
+      time_origin_(time_origin),
+      font_selector_(OffscreenFontSelector::Create()) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
   SetSecurityOrigin(SecurityOrigin::Create(url));
@@ -406,6 +408,8 @@ void WorkerGlobalScope::SetWorkerSettings(
     std::unique_ptr<WorkerSettings> worker_settings) {
   worker_settings_ = std::move(worker_settings);
   worker_settings_->MakeGenericFontFamilySettingsAtomic();
+  font_selector_->UpdateGenericFontFamilySettings(
+      worker_settings_->GetGenericFontFamilySettings());
 }
 
 void WorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
@@ -433,6 +437,7 @@ DEFINE_TRACE(WorkerGlobalScope) {
   visitor->Trace(timers_);
   visitor->Trace(event_listeners_);
   visitor->Trace(pending_error_events_);
+  visitor->Trace(font_selector_);
   EventTargetWithInlineData::Trace(visitor);
   SecurityContext::Trace(visitor);
   WorkerOrWorkletGlobalScope::Trace(visitor);

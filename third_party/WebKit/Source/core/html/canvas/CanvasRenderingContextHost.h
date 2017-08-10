@@ -18,6 +18,7 @@
 
 namespace blink {
 
+class FontSelector;
 class StaticBitmapImage;
 class KURL;
 
@@ -51,6 +52,8 @@ class CORE_EXPORT CanvasRenderingContextHost : public GarbageCollectedMixin {
   virtual ImageBuffer* GetOrCreateImageBuffer() = 0;
 
   virtual bool IsWebGLAllowed() const = 0;
+
+  virtual FontSelector* GetFontSelector() = 0;
 
   // TODO(fserb): remove this.
   virtual bool IsOffscreenCanvas() const { return false; }

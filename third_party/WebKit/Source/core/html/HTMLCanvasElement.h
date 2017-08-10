@@ -165,6 +165,8 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
   ImageBuffer* GetImageBuffer() const override { return image_buffer_.get(); }
   ImageBuffer* GetOrCreateImageBuffer() override;
 
+  FontSelector* GetFontSelector() override;
+
   bool ShouldBeDirectComposited() const;
 
   void PrepareSurfaceForPaintingIfNeeded();
