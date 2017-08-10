@@ -193,6 +193,9 @@ cr.define('print_preview', function() {
      */
     onCustomInputBlur_: function(event) {
       if (this.customInput_.value == '' &&
+          event.relatedTarget !=
+              this.getElement().querySelector(
+                  '.page-settings-print-pages-div') &&
           event.relatedTarget != this.customRadio_) {
         this.allRadio_.checked = true;
       }
