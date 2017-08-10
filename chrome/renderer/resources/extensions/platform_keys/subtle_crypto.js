@@ -11,6 +11,17 @@ var KeyUsage = keyModule.KeyUsage;
 var normalizeAlgorithm =
     requireNative('platform_keys_natives').NormalizeAlgorithm;
 
+var hasLastError;
+var clearLastError;
+if (bindingUtil) {
+  hasLastError = $Function.bind(bindingUtil.hasLastError, bindingUtil);
+  clearLastError = $Function.bind(bindingUtil.clearLastError, bindingUtil);
+} else {
+  var lastError = require('lastError');
+  hasLastError = function() { return lastError.hasError(chrome); };
+  clearLastError = function() { return lastError.clear(chrome); };
+}
+
 // This error is thrown by the internal and public API's token functions and
 // must be rethrown by this custom binding. Keep this in sync with the C++ part
 // of this API.
@@ -41,9 +52,11 @@ function CreateOperationError() {
 // Catches an |internalErrorInvalidToken|. If so, forwards it to |reject| and
 // returns true.
 function catchInvalidTokenError(reject) {
-  if (chrome.runtime.lastError &&
+  if (hasLastError() &&
       chrome.runtime.lastError.message == errorInvalidToken) {
-    reject(chrome.runtime.lastError);
+    var error = chrome.runtime.lastError;
+    clearLastError();
+    reject(error);
     return true;
   }
   return false;
@@ -85,7 +98,8 @@ SubtleCryptoImpl.prototype.sign = function(algorithm, key, dataView) {
                      function(signature) {
       if (catchInvalidTokenError(reject))
         return;
-      if (chrome.runtime.lastError) {
+      if (hasLastError()) {
+        clearLastError();
         reject(CreateOperationError());
         return;
       }
