@@ -45,6 +45,8 @@ class GPU_EXPORT DirectCompositionChildSurfaceWin : public gl::GLSurfaceEGL {
     return swap_chain_;
   }
 
+  uint64_t dcomp_surface_serial() const { return dcomp_surface_serial_; }
+
  protected:
   ~DirectCompositionChildSurfaceWin() override;
 
@@ -70,6 +72,11 @@ class GPU_EXPORT DirectCompositionChildSurfaceWin : public gl::GLSurfaceEGL {
   const bool enable_dc_layers_;
   gfx::Rect swap_rect_;
   gfx::Vector2d draw_offset_;
+
+  // This is a number that increments once for every EndDraw on a surface, and
+  // is used to determine when the contents have changed so Commit() needs to
+  // be called on the device.
+  uint64_t dcomp_surface_serial_ = 0;
 
   base::win::ScopedComPtr<ID3D11Device> d3d11_device_;
   base::win::ScopedComPtr<IDCompositionDevice2> dcomp_device_;

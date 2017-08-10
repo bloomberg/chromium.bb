@@ -201,6 +201,7 @@ class DCLayerTree {
     std::unique_ptr<SwapChainPresenter> swap_chain_presenter;
     base::win::ScopedComPtr<IDXGISwapChain1> swap_chain;
     base::win::ScopedComPtr<IDCompositionSurface> surface;
+    uint64_t dcomp_surface_serial = 0;
 
     gfx::Rect bounds;
     float swap_chain_scale_x = 0.0f;
@@ -210,12 +211,13 @@ class DCLayerTree {
     gfx::Transform transform;
   };
 
-  void InitVisual(size_t i);
-  void UpdateVisualForVideo(VisualInfo* visual_info,
+  // These functions return true if the visual tree was changed.
+  bool InitVisual(size_t i);
+  bool UpdateVisualForVideo(VisualInfo* visual_info,
                             const ui::DCRendererLayerParams& params);
-  void UpdateVisualForBackbuffer(VisualInfo* visual_info,
+  bool UpdateVisualForBackbuffer(VisualInfo* visual_info,
                                  const ui::DCRendererLayerParams& params);
-  void UpdateVisualClip(VisualInfo* visual_info,
+  bool UpdateVisualClip(VisualInfo* visual_info,
                         const ui::DCRendererLayerParams& params);
 
   DirectCompositionSurfaceWin* surface_;
@@ -844,11 +846,11 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
   out_view_.Reset();
 }
 
-void DCLayerTree::InitVisual(size_t i) {
+bool DCLayerTree::InitVisual(size_t i) {
   DCHECK_GT(visual_info_.size(), i);
   VisualInfo* visual_info = &visual_info_[i];
   if (visual_info->content_visual)
-    return;
+    return false;
   DCHECK(!visual_info->clip_visual);
   base::win::ScopedComPtr<IDCompositionVisual2> visual;
   dcomp_device_->CreateVisual(visual_info->clip_visual.GetAddressOf());
@@ -859,14 +861,16 @@ void DCLayerTree::InitVisual(size_t i) {
   IDCompositionVisual2* last_visual =
       (i > 0) ? visual_info_[i - 1].clip_visual.Get() : nullptr;
   root_visual_->AddVisual(visual_info->clip_visual.Get(), TRUE, last_visual);
+  return true;
 }
 
-void DCLayerTree::UpdateVisualForVideo(
+bool DCLayerTree::UpdateVisualForVideo(
     VisualInfo* visual_info,
     const ui::DCRendererLayerParams& params) {
   base::win::ScopedComPtr<IDCompositionVisual2> dc_visual =
       visual_info->content_visual;
 
+  bool changed = false;
   gfx::Rect bounds_rect = params.rect;
   visual_info->surface.Reset();
   if (!visual_info->swap_chain_presenter) {
@@ -878,6 +882,7 @@ void DCLayerTree::UpdateVisualForVideo(
       visual_info->swap_chain_presenter->swap_chain()) {
     visual_info->swap_chain = visual_info->swap_chain_presenter->swap_chain();
     dc_visual->SetContent(visual_info->swap_chain.Get());
+    changed = true;
   }
 
   if (visual_info->swap_chain_presenter->swap_chain_scale_x() !=
@@ -913,16 +918,19 @@ void DCLayerTree::UpdateVisualForVideo(
                                      final_transform.matrix().get(3, 1)}}};
     dcomp_transform->SetMatrix(d2d_matrix);
     dc_visual->SetTransform(dcomp_transform.Get());
+    changed = true;
   }
+  return changed;
 }
 
-void DCLayerTree::UpdateVisualForBackbuffer(
+bool DCLayerTree::UpdateVisualForBackbuffer(
     VisualInfo* visual_info,
     const ui::DCRendererLayerParams& params) {
   base::win::ScopedComPtr<IDCompositionVisual2> dc_visual =
       visual_info->content_visual;
 
   visual_info->swap_chain_presenter = nullptr;
+  bool changed = false;
   if ((visual_info->surface != surface_->dcomp_surface()) ||
       (visual_info->swap_chain != surface_->swap_chain())) {
     visual_info->surface = surface_->dcomp_surface();
@@ -934,6 +942,7 @@ void DCLayerTree::UpdateVisualForBackbuffer(
     } else {
       dc_visual->SetContent(nullptr);
     }
+    changed = true;
   }
 
   gfx::Rect bounds_rect = params.rect;
@@ -944,10 +953,17 @@ void DCLayerTree::UpdateVisualForBackbuffer(
     visual_info->bounds = bounds_rect;
     dc_visual->SetTransform(nullptr);
     visual_info->transform = gfx::Transform();
+    changed = true;
   }
+  if (surface_->dcomp_surface() &&
+      surface_->GetDCompSurfaceSerial() != visual_info->dcomp_surface_serial) {
+    changed = true;
+    visual_info->dcomp_surface_serial = surface_->GetDCompSurfaceSerial();
+  }
+  return changed;
 }
 
-void DCLayerTree::UpdateVisualClip(VisualInfo* visual_info,
+bool DCLayerTree::UpdateVisualClip(VisualInfo* visual_info,
                                    const ui::DCRendererLayerParams& params) {
   if (params.is_clipped != visual_info->is_clipped ||
       params.clip_rect != visual_info->clip_rect) {
@@ -968,7 +984,9 @@ void DCLayerTree::UpdateVisualClip(VisualInfo* visual_info,
     } else {
       visual_info->clip_visual->SetClip(nullptr);
     }
+    return true;
   }
+  return false;
 }
 
 bool DCLayerTree::CommitAndClearPendingOverlays() {
@@ -991,10 +1009,12 @@ bool DCLayerTree::CommitAndClearPendingOverlays() {
               return a->z_order < b->z_order;
             });
 
+  bool changed = false;
   while (visual_info_.size() > pending_overlays_.size()) {
     visual_info_.back().clip_visual->RemoveAllVisuals();
     root_visual_->RemoveVisual(visual_info_.back().clip_visual.Get());
     visual_info_.pop_back();
+    changed = true;
   }
 
   visual_info_.resize(pending_overlays_.size());
@@ -1008,19 +1028,21 @@ bool DCLayerTree::CommitAndClearPendingOverlays() {
     ui::DCRendererLayerParams& params = *pending_overlays_[i];
     VisualInfo* visual_info = &visual_info_[i];
 
-    InitVisual(i);
+    changed |= InitVisual(i);
     if (params.image.size() >= 1 && params.image[0]) {
-      UpdateVisualForVideo(visual_info, params);
+      changed |= UpdateVisualForVideo(visual_info, params);
     } else if (params.image.empty()) {
-      UpdateVisualForBackbuffer(visual_info, params);
+      changed |= UpdateVisualForBackbuffer(visual_info, params);
     } else {
       CHECK(false);
     }
-    UpdateVisualClip(visual_info, params);
+    changed |= UpdateVisualClip(visual_info, params);
   }
 
-  HRESULT hr = dcomp_device_->Commit();
-  CHECK(SUCCEEDED(hr));
+  if (changed) {
+    HRESULT hr = dcomp_device_->Commit();
+    CHECK(SUCCEEDED(hr));
+  }
 
   pending_overlays_.clear();
   return true;
@@ -1286,6 +1308,10 @@ DirectCompositionSurfaceWin::dcomp_surface() const {
 const base::win::ScopedComPtr<IDXGISwapChain1>
 DirectCompositionSurfaceWin::swap_chain() const {
   return root_surface_ ? root_surface_->swap_chain() : nullptr;
+}
+
+uint64_t DirectCompositionSurfaceWin::GetDCompSurfaceSerial() const {
+  return root_surface_ ? root_surface_->dcomp_surface_serial() : 0;
 }
 
 scoped_refptr<base::TaskRunner>
