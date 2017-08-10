@@ -24,6 +24,8 @@ namespace edk {
 // independent way of representing handles that are passed to child processes.
 #if defined(OS_WIN)
 using HandlePassingInformation = base::HandlesToInheritVector;
+#elif defined(OS_FUCHSIA)
+using HandlePassingInformation = base::HandlesToTransferVector;
 #elif defined(OS_POSIX)
 using HandlePassingInformation = base::FileHandleMappingVector;
 #else

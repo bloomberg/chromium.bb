@@ -24,6 +24,7 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/named_platform_handle.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
@@ -493,6 +494,9 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessMixMachAndFdsClient,
 
 #endif  // !defined(OS_IOS)
 
+#if !defined(OS_FUCHSIA)
+// TODO(fuchsia): Implement NamedPlatformHandles (crbug.com/754038).
+
 NamedPlatformHandle GenerateChannelName() {
 #if defined(OS_POSIX)
   base::FilePath temp_dir;
@@ -534,6 +538,8 @@ TEST_F(EmbedderTest, ClosePendingPeerConnection) {
   run_loop.Run();
   EXPECT_FALSE(client_handle.is_valid());
 }
+
+#endif  // !defined(OS_FUCHSIA)
 
 #if !defined(OS_IOS)
 

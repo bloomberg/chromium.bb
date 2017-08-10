@@ -32,6 +32,9 @@ ScopedPlatformHandle SharedMemoryToPlatformHandle(
     base::SharedMemoryHandle memory_handle) {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   return ScopedPlatformHandle(PlatformHandle(memory_handle.GetMemoryObject()));
+#elif defined(OS_FUCHSIA)
+  return ScopedPlatformHandle(
+      PlatformHandle::ForHandle(memory_handle.GetHandle()));
 #else
   return ScopedPlatformHandle(PlatformHandle(memory_handle.GetHandle()));
 #endif
@@ -242,15 +245,15 @@ bool PlatformSharedBuffer::InitFromPlatformHandle(
     ScopedPlatformHandle platform_handle) {
   DCHECK(!shared_memory_);
 
-#if defined(OS_WIN) || defined(OS_FUCHSIA)
+#if defined(OS_WIN)
   base::SharedMemoryHandle handle(platform_handle.release().handle, num_bytes_,
                                   guid);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   base::SharedMemoryHandle handle = base::SharedMemoryHandle(
       platform_handle.release().port, num_bytes_, guid);
 #elif defined(OS_FUCHSIA)
-  base::SharedMemoryHandle handle =
-      base::SharedMemoryHandle(platform_handle.release(), num_bytes_, guid);
+  base::SharedMemoryHandle handle = base::SharedMemoryHandle(
+      platform_handle.release().as_handle(), num_bytes_, guid);
 #else
   base::SharedMemoryHandle handle(
       base::FileDescriptor(platform_handle.release().handle, false), num_bytes_,
@@ -270,10 +273,15 @@ bool PlatformSharedBuffer::InitFromPlatformHandlePair(
   return false;
 #else  // defined(OS_MACOSX)
 
-#if defined(OS_WIN) || defined(OS_FUCHSIA)
+#if defined(OS_WIN)
   base::SharedMemoryHandle handle(rw_platform_handle.release().handle,
                                   num_bytes_, guid);
   base::SharedMemoryHandle ro_handle(ro_platform_handle.release().handle,
+                                     num_bytes_, guid);
+#elif defined(OS_FUCHSIA)
+  base::SharedMemoryHandle handle(rw_platform_handle.release().as_handle(),
+                                  num_bytes_, guid);
+  base::SharedMemoryHandle ro_handle(ro_platform_handle.release().as_handle(),
                                      num_bytes_, guid);
 #else  // defined(OS_WIN) || defined(OS_FUCHSIA)
   base::SharedMemoryHandle handle(

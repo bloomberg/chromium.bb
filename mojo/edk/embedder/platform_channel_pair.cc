@@ -27,7 +27,12 @@ ScopedPlatformHandle PlatformChannelPair::PassClientHandle() {
 
 void PlatformChannelPair::ChildProcessLaunched() {
   DCHECK(client_handle_.is_valid());
+#if defined(OS_FUCHSIA)
+  // The |client_handle_| is transferred, not cloned, to the child.
+  ignore_result(client_handle_.release());
+#else
   client_handle_.reset();
+#endif
 }
 
 }  // namespace edk

@@ -5,7 +5,10 @@
 #include "mojo/edk/embedder/platform_handle.h"
 
 #include "build/build_config.h"
-#if defined(OS_POSIX)
+#if defined(OS_FUCHSIA)
+#include <magenta/status.h>
+#include <magenta/syscalls.h>
+#elif defined(OS_POSIX)
 #include <unistd.h>
 #elif defined(OS_WIN)
 #include <windows.h>
@@ -22,7 +25,12 @@ void PlatformHandle::CloseIfNecessary() {
   if (!is_valid())
     return;
 
-#if defined(OS_POSIX)
+#if defined(OS_FUCHSIA)
+  mx_status_t result = mx_handle_close(handle);
+  DCHECK_EQ(MX_OK, result) << "CloseIfNecessary(mx_handle_close): "
+                           << mx_status_get_string(result);
+  handle = MX_HANDLE_INVALID;
+#elif defined(OS_POSIX)
   if (type == Type::POSIX) {
     bool success = (close(handle) == 0);
     DPCHECK(success);

@@ -18,6 +18,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/system/core.h"
@@ -154,6 +155,10 @@ void ServiceProcessLauncher::DoLaunch(
       options.stdout_handle != options.stderr_handle) {
     options.handles_to_inherit.push_back(options.stderr_handle);
   }
+#elif defined(OS_FUCHSIA)
+  // LaunchProcess will share stdin/out/err with the child process by default.
+  if (start_sandboxed_)
+    NOTIMPLEMENTED();
 #elif defined(OS_POSIX)
   handle_passing_info_.push_back(std::make_pair(STDIN_FILENO, STDIN_FILENO));
   handle_passing_info_.push_back(std::make_pair(STDOUT_FILENO, STDOUT_FILENO));

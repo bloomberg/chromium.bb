@@ -91,22 +91,37 @@ source_set("platform") {
     "named_platform_handle_utils_win.cc",
     "platform_channel_pair.cc",
     "platform_channel_pair.h",
-    "platform_channel_pair_posix.cc",
     "platform_channel_pair_win.cc",
-    "platform_channel_utils_posix.cc",
-    "platform_channel_utils_posix.h",
     "platform_handle.cc",
     "platform_handle.h",
     "platform_handle_utils.h",
-    "platform_handle_utils_posix.cc",
     "platform_handle_utils_win.cc",
     "platform_handle_vector.h",
     "platform_shared_buffer.cc",
     "platform_shared_buffer.h",
     "scoped_platform_handle.h",
   ]
-  if (!is_nacl) {
-    sources += [ "named_platform_handle_utils_posix.cc" ]
+
+  if (is_fuchsia) {
+    sources += [
+      "named_platform_handle_utils_fuchsia.cc",
+      "platform_channel_pair_fuchsia.cc",
+      "platform_handle_utils_fuchsia.cc",
+    ]
+  } else if (is_posix) {
+    sources += [
+      "platform_channel_pair_posix.cc",
+      "platform_channel_utils_posix.cc",
+      "platform_channel_utils_posix.h",
+      "platform_handle_utils_posix.cc",
+    ]
+    if (!is_nacl) {
+      sources += [ "named_platform_handle_utils_posix.cc" ]
+    }
+  }
+
+  if (is_nacl && !is_nacl_nonsfi) {
+    sources -= [ "platform_channel_utils_posix.cc" ]
   }
 
   defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
@@ -122,10 +137,6 @@ source_set("platform") {
   if (is_android) {
     deps += [ "//third_party/ashmem" ]
   }
-
-  if (is_nacl && !is_nacl_nonsfi) {
-    sources -= [ "platform_channel_utils_posix.cc" ]
-  }
 }
 
 source_set("embedder_unittests") {
@@ -136,9 +147,12 @@ source_set("embedder_unittests") {
 
   sources = [
     "embedder_unittest.cc",
-    "platform_channel_pair_posix_unittest.cc",
     "platform_shared_buffer_unittest.cc",
   ]
+
+  if (is_posix && !is_fuchsia) {
+    sources += [ "platform_channel_pair_posix_unittest.cc" ]
+  }
 
   deps = [
     "//base",

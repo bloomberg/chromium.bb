@@ -1,0 +1,82 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "mojo/edk/embedder/platform_channel_pair.h"
+
+#include <magenta/process.h>
+#include <magenta/processargs.h>
+#include <magenta/syscalls.h>
+
+#include "base/command_line.h"
+#include "base/logging.h"
+#include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
+#include "mojo/edk/embedder/platform_handle.h"
+
+namespace mojo {
+namespace edk {
+
+PlatformChannelPair::PlatformChannelPair(bool client_is_blocking) {
+  mx_handle_t handles[2] = {};
+  mx_status_t result = mx_channel_create(0, &handles[0], &handles[1]);
+  CHECK_EQ(MX_OK, result);
+
+  server_handle_.reset(PlatformHandle::ForHandle(handles[0]));
+  DCHECK(server_handle_.is_valid());
+  client_handle_.reset(PlatformHandle::ForHandle(handles[1]));
+  DCHECK(client_handle_.is_valid());
+}
+
+// static
+ScopedPlatformHandle PlatformChannelPair::PassClientHandleFromParentProcess(
+    const base::CommandLine& command_line) {
+  std::string handle_string =
+      command_line.GetSwitchValueASCII(kMojoPlatformChannelHandleSwitch);
+  return PassClientHandleFromParentProcessFromString(handle_string);
+}
+
+ScopedPlatformHandle
+PlatformChannelPair::PassClientHandleFromParentProcessFromString(
+    const std::string& value) {
+  unsigned int id = 0;
+  if (value.empty() || !base::StringToUint(value, &id)) {
+    LOG(ERROR) << "Missing or invalid --" << kMojoPlatformChannelHandleSwitch;
+    return ScopedPlatformHandle();
+  }
+  return ScopedPlatformHandle(PlatformHandle::ForHandle(
+      mx_get_startup_handle(base::checked_cast<uint32_t>(id))));
+}
+
+void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(
+    base::CommandLine* command_line,
+    HandlePassingInformation* handle_passing_info) const {
+  DCHECK(command_line);
+
+  // Log a warning if the command line already has the switch, but "clobber" it
+  // anyway, since it's reasonably likely that all the switches were just copied
+  // from the parent.
+  LOG_IF(WARNING, command_line->HasSwitch(kMojoPlatformChannelHandleSwitch))
+      << "Child command line already has switch --"
+      << kMojoPlatformChannelHandleSwitch << "="
+      << command_line->GetSwitchValueASCII(kMojoPlatformChannelHandleSwitch);
+  // (Any existing switch won't actually be removed from the command line, but
+  // the last one appended takes precedence.)
+  command_line->AppendSwitchASCII(
+      kMojoPlatformChannelHandleSwitch,
+      PrepareToPassClientHandleToChildProcessAsString(handle_passing_info));
+}
+
+std::string
+PlatformChannelPair::PrepareToPassClientHandleToChildProcessAsString(
+    HandlePassingInformation* handle_passing_info) const {
+  DCHECK(client_handle_.is_valid());
+
+  const uint32_t id = PA_HND(PA_USER0, 0);
+  handle_passing_info->push_back({id, client_handle_.get().as_handle()});
+
+  return base::UintToString(id);
+}
+
+}  // namespace edk
+}  // namespace mojo

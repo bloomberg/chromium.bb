@@ -14,12 +14,34 @@
 #include "base/process/process_handle.h"
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include <mach/mach.h>
+#elif defined(OS_FUCHSIA)
+#include <magenta/syscalls.h>
 #endif
 
 namespace mojo {
 namespace edk {
 
-#if defined(OS_POSIX)
+#if defined(OS_FUCHSIA)
+// |mx_handle_t| is a typedef of |int|, so we only allow PlatformHandle to be
+// created via explicit For<type>() creator functions.
+struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
+  PlatformHandle() : handle(MX_HANDLE_INVALID) {}
+  // TODO: Implement file-descriptor PlatformHandles (crbug.com/754029).
+  static PlatformHandle ForHandle(mx_handle_t handle) {
+    PlatformHandle platform_handle;
+    platform_handle.handle = handle;
+    return platform_handle;
+  }
+
+  void CloseIfNecessary();
+  bool is_valid() const { return handle != MX_HANDLE_INVALID; }
+
+  mx_handle_t as_handle() const { return handle; }
+
+ private:
+  mx_handle_t handle;
+};
+#elif defined(OS_POSIX)
 struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
   PlatformHandle() {}
   explicit PlatformHandle(int handle) : handle(handle) {}
