@@ -13,6 +13,26 @@ webview,
   width: 100%;
 }
 
+.header {
+  color: rgba(0, 0, 0, 0.87);
+  font-family: Roboto, sans-serif;
+  padding: 64px 64px 0 64px;
+}
+
+h1.title {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 28px;
+  font-weight: normal;
+  margin: 36px 0 0 0; /* = 64 - font height*/
+}
+
+.subtitle {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 13px;
+  margin: 23px 0 0 0; /* = 40 - 4 (adjustment) - line-height */
+  padding-left: 64px;
+}
+
 ::-webkit-scrollbar {
   background: transparent;
   height: 4px;
@@ -31,11 +51,12 @@ webview,
 #arc-support {
   flex: auto;
   overflow: hidden;
-  width: 960px;
+  width: 100%;
 }
 
 #terms-view {
-  width: 640px;
+  display: block;
+  margin: auto;
 }
 
 .bubble-button > div {
@@ -55,27 +76,30 @@ webview,
   margin: 26px 18px 0 26px;
 }
 
-.checkbox-option {
-  height: 12px;
-  margin: 0;
-  padding: 0;
-  width: 12px;
+#button-retry,
+#button-agree {
+  -webkit-margin-end: 18px;
 }
 
 .checkbox-text {
   color: rgba(0, 0, 0, 0.54);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 400;
   line-height: 16px;
   margin: 0;
-  padding: 0;
 }
 
 .content {
-  /* Default window inner height (687px) minus image caption height (300px) */
-  height: 387px;
+  /* height plus padding equals 360px, which is app height (640px) minus icon
+   * header (96px), greeting header (64px), subtitle (40px) and bottom (80px).
+   */
+  height: 338px;
   margin: 0;
-  padding: 0;
+  padding: 0 64px 12px 64px;
+}
+
+.subcontentcontainer {
+  padding: 0 20px;
 }
 
 .controlled-setting-indicator {
@@ -91,7 +115,13 @@ webview,
   display: block;
   height: 300px;
   padding: 0;
-  width: 960px;
+  width: 100%;
+}
+
+.error-image {
+  display: block;
+  margin: auto;
+  padding: 60px 0 0 0;
 }
 
 .icon-header {
@@ -139,7 +169,7 @@ webview,
 .section {
   display: flex;
   flex-direction: column;
-  text-align: center;
+  text-align: start;
 }
 
 .section-active-directory-auth {
@@ -152,15 +182,17 @@ webview,
   border: 1px solid #e6e6e6;
   color: rgba(0, 0, 0, 0.54);
   flex: auto;
-  height: 380px;
+  height: 333px;
   margin: 40px 64px 0 auto;
   overflow: hidden;
 }
 
 .section-buttons {
-  margin: auto;
-  padding: 16px 0 24px 0;
-  width: 640px;
+  box-shadow: 0 -1px 1px rgba(0, 0, 0, 0.14);
+  height: 80px;
+  padding: 0;
+  z-index: 1;
+  width: 100%
 }
 
 .section-active-directory-auth-buttons {
@@ -174,34 +206,16 @@ webview,
 
 .section-checkbox-container {
   margin: auto;
-  padding: 8px 0 0 0;
-  text-align: left;
-  width: 640px;
-}
-
-.section-checkbox-container > input[type='checkbox'] {
-  flex-shrink: 0;
-  margin: 0 8px 0 0;
+  padding-top: 16px;
+  width: 100%;
 }
 
 .section-terms {
-  border: 1px solid #e6e6e6;
-  color: rgba(0, 0, 0, 0.54);
+  border: 1px solid #d9d9d9;
+  box-sizing: border-box;
   flex: auto;
-  margin: 0 auto 8px auto;
-  overflow: hidden;
+  margin: 40px 0 0 0;
   padding: 0;
-  width: 640px;
-}
-
-.text-desc {
-  color: rgba(0, 0, 0, 0.54);
-  font-size: 18px;
-  font-weight: 300;
-  line-height: 24px;
-  margin: auto;
-  padding: 16px 0 0 0;
-  width: 640px;
 }
 
 .text-active-directory-auth-title {
@@ -225,32 +239,12 @@ webview,
   padding: 11px 0 40px 0;
 }
 
-.text-terms-title {
-  color: rgba(0, 0, 0, 0.54);
-  font-size: 10px;
-  font-weight: 500;
-  margin: auto;
-  padding: 10px 0 8px 0;
-  text-align: left;
-  width: 640px;
-}
-
-.text-title {
-  color: rgba(0, 0, 0, 0.87);
-  font-size: 30px;
-  font-weight: 300;
-  line-height: 32px;
-  margin: auto;
-  padding: 4px 0 0 0;
-  width: 800px;
-}
-
 a:link {
-  color: rgb(51, 103, 214);
+  color: rgb(66, 133, 244);
   text-decoration: none;
 }
 
 a:visited {
-  color: rgb(51, 103, 214);
+  color: rgb(66, 133, 244);
   text-decoration: none;
 }
