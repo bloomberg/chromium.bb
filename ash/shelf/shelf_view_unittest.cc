@@ -2713,8 +2713,7 @@ TEST_P(AppListButtonInkDropTest, AppListButtonInTabletMode) {
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_TRIGGERED));
 
-  // Verify when we leave tablet mode, the bounds should return to be the same
-  // as they were before we entered tablet mode.
+  // Verify that the bounds after leaving tablet mode match the original bounds.
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   test_api_->RunMessageLoopUntilAnimationsDone();
   new_bounds = app_list_button_->GetBoundsInScreen();

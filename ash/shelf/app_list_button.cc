@@ -97,12 +97,16 @@ AppListButton::~AppListButton() {
 }
 
 void AppListButton::OnAppListShown() {
+  // Set |last_event_is_back_event_| false to drop ink on the app list circle.
+  last_event_is_back_event_ = false;
   AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
   is_showing_app_list_ = true;
   shelf_->UpdateAutoHideState();
 }
 
 void AppListButton::OnAppListDismissed() {
+  // Set |last_event_is_back_event_| false to drop ink on the app list circle.
+  last_event_is_back_event_ = false;
   AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
   is_showing_app_list_ = false;
   shelf_->UpdateAutoHideState();
