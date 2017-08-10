@@ -608,7 +608,7 @@ bool DocumentThreadableLoader::RedirectReceived(
     client_->DidReceiveRedirectTo(new_url);
     if (client_->IsDocumentThreadableLoaderClient()) {
       return static_cast<DocumentThreadableLoaderClient*>(client_)
-          ->WillFollowRedirect(new_request, redirect_response);
+          ->WillFollowRedirect(new_url, redirect_response);
     }
     return true;
   }

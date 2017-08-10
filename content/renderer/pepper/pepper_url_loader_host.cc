@@ -123,7 +123,7 @@ int32_t PepperURLLoaderHost::OnResourceMessageReceived(
 }
 
 bool PepperURLLoaderHost::WillFollowRedirect(
-    const WebURLRequest& new_request,
+    const WebURL& new_url,
     const WebURLResponse& redirect_response) {
   DCHECK(out_of_order_replies_.empty());
   if (!request_data_.follow_redirects) {
