@@ -13,11 +13,13 @@
 #include <secder.h>
 #include <secmod.h>
 #include <secport.h>
+#include <string.h>
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
+#include "third_party/boringssl/src/include/openssl/pool.h"
 
 namespace net {
 
@@ -130,6 +132,14 @@ std::string GetDefaultNickname(CERTCertificate* nss_cert, CertType type) {
 
 }  // namespace
 
+bool IsSameCertificate(CERTCertificate* a, CERTCertificate* b) {
+  DCHECK(a && b);
+  if (a == b)
+    return true;
+  return a->derCert.len == b->derCert.len &&
+         memcmp(a->derCert.data, b->derCert.data, a->derCert.len) == 0;
+}
+
 ScopedCERTCertificate CreateCERTCertificateFromBytes(const uint8_t* data,
                                                      size_t length) {
   crypto::EnsureNSSInit();
@@ -146,6 +156,21 @@ ScopedCERTCertificate CreateCERTCertificateFromBytes(const uint8_t* data,
   return ScopedCERTCertificate(CERT_NewTempCertificate(
       CERT_GetDefaultCertDB(), &der_cert, nullptr /* nickname */,
       PR_FALSE /* is_perm */, PR_TRUE /* copyDER */));
+}
+
+ScopedCERTCertificate CreateCERTCertificateFromX509Certificate(
+    const X509Certificate* cert) {
+#if BUILDFLAG(USE_BYTE_CERTS)
+  return CreateCERTCertificateFromBytes(
+      CRYPTO_BUFFER_data(cert->os_cert_handle()),
+      CRYPTO_BUFFER_len(cert->os_cert_handle()));
+#else
+  return DupCERTCertificate(cert->os_cert_handle());
+#endif
+}
+
+ScopedCERTCertificate DupCERTCertificate(CERTCertificate* cert) {
+  return ScopedCERTCertificate(CERT_DupCertificate(cert));
 }
 
 void GetRFC822SubjectAltNames(CERTCertificate* cert_handle,

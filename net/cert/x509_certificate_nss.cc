@@ -294,11 +294,7 @@ bool X509Certificate::GetDEREncoded(X509Certificate::OSCertHandle cert_handle,
 // static
 bool X509Certificate::IsSameOSCert(X509Certificate::OSCertHandle a,
                                    X509Certificate::OSCertHandle b) {
-  DCHECK(a && b);
-  if (a == b)
-    return true;
-  return a->derCert.len == b->derCert.len &&
-      memcmp(a->derCert.data, b->derCert.data, a->derCert.len) == 0;
+  return x509_util::IsSameCertificate(a, b);
 }
 
 // static
