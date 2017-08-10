@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module cc.mojom;
+module viz.mojom;
 
 import "cc/ipc/begin_frame_args.mojom";
 import "cc/ipc/selection.mojom";
@@ -28,12 +28,12 @@ struct CompositorFrameMetadata {
   float bottom_controls_height;
   float bottom_controls_shown_ratio;
   uint32 root_background_color;
-  Selection selection;
+  cc.mojom.Selection selection;
   array<ui.mojom.LatencyInfo> latency_info;
-  array<SurfaceId> referenced_surfaces;
-  array<SurfaceId> activation_dependencies;
+  array<cc.mojom.SurfaceId> referenced_surfaces;
+  array<cc.mojom.SurfaceId> activation_dependencies;
   bool can_activate_before_dependencies;
   uint32 content_source_id;
-  BeginFrameAck begin_frame_ack;
+  cc.mojom.BeginFrameAck begin_frame_ack;
   uint32 frame_token;
 };

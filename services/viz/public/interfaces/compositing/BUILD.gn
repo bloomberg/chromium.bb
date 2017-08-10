@@ -7,6 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("compositing") {
   sources = [
     "compositor_frame.mojom",
+    "compositor_frame_metadata.mojom",
     "compositor_frame_sink.mojom",
     "resource_settings.mojom",
     "returned_resource.mojom",
@@ -20,5 +21,6 @@ mojom("compositing") {
     "//services/viz/public/interfaces/hit_test",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
+    "//ui/latency/mojo:interfaces",
   ]
 }

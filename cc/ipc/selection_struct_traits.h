@@ -7,6 +7,7 @@
 
 #include "cc/input/selection.h"
 #include "cc/ipc/selection.mojom-shared.h"
+#include "ui/gfx/selection_bound.h"
 
 namespace mojo {
 
