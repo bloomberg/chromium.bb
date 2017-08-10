@@ -1405,15 +1405,39 @@
       "models": [
         {
           "board_name": "reef-uni",
-          "name": "reef"
+          "name": "reef",
+          "test_suites": [
+            "sanity",
+            "bvt-inline",
+            "bvt-arc",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild"
+          ]
         },
         {
           "board_name": "reef-uni",
-          "name": "sand"
+          "name": "sand",
+          "test_suites": [
+            "sanity",
+            "bvt-inline",
+            "bvt-arc",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild"
+          ]
         },
         {
           "board_name": "reef-uni",
-          "name": "snappy"
+          "name": "snappy",
+          "test_suites": [
+            "sanity",
+            "bvt-inline",
+            "bvt-arc",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild"
+          ]
         }
       ]
     }
