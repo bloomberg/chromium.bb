@@ -31,24 +31,18 @@ function $(id) {
  * Specifications for an NTP design (not comprehensive).
  *
  * numTitleLines: Number of lines to display in titles.
- * tileWidth: The width of each suggestion tile, in px.
- * tileMargin: Spacing between successive tiles, in px.
  * titleColor: The 4-component color of title text.
  * titleColorAgainstDark: The 4-component color of title text against a dark
  *   theme.
  *
  * @type {{
  *   numTitleLines: number,
- *   tileWidth: number,
- *   tileMargin: number,
  *   titleColor: string,
  *   titleColorAgainstDark: string,
  * }}
  */
 var NTP_DESIGN = {
   numTitleLines: 1,
-  tileWidth: 154,
-  tileMargin: 16,
   titleColor: [50, 50, 50, 255],
   titleColorAgainstDark: [210, 210, 210, 255],
 };
@@ -120,14 +114,6 @@ var lastBlacklistedTile = null;
 
 
 /**
- * Current number of tiles columns shown based on the window width, including
- * those that just contain filler.
- * @type {number}
- */
-var numColumnsShown = 0;
-
-
-/**
  * The browser embeddedSearch.newTabPage object.
  * @type {Object}
  */
@@ -136,27 +122,6 @@ var ntpApiHandle;
 
 /** @type {number} @const */
 var MAX_NUM_TILES_TO_SHOW = 8;
-
-
-/** @type {number} @const */
-var MIN_NUM_COLUMNS = 2;
-
-
-/** @type {number} @const */
-var MAX_NUM_COLUMNS = 4;
-
-
-/** @type {number} @const */
-var NUM_ROWS = 2;
-
-
-/**
- * Minimum total padding to give to the left and right of the most visited
- * section. Used to determine how many tiles to show.
- * @type {number}
- * @const
- */
-var MIN_TOTAL_HORIZONTAL_PADDING = 200;
 
 
 /**
@@ -362,7 +327,7 @@ function reloadTiles() {
   for (var i = 0; i < Math.min(MAX_NUM_TILES_TO_SHOW, pages.length); ++i) {
     cmds.push({cmd: 'tile', rid: pages[i].rid});
   }
-  cmds.push({cmd: 'show', maxVisible: numColumnsShown * NUM_ROWS});
+  cmds.push({cmd: 'show'});
 
   $(IDS.TILES_IFRAME).contentWindow.postMessage(cmds, '*');
 }
@@ -409,47 +374,6 @@ function onUndo() {
 function onRestoreAll() {
   hideNotification();
   ntpApiHandle.undoAllMostVisitedDeletions();
-}
-
-
-/**
- * Recomputes the number of tile columns, and width of various contents based
- * on the width of the window.
- * @return {boolean} Whether the number of tile columns has changed.
- */
-function updateContentWidth() {
-  var tileRequiredWidth = NTP_DESIGN.tileWidth + NTP_DESIGN.tileMargin;
-  // If innerWidth is zero, then use the maximum snap size.
-  var maxSnapSize = MAX_NUM_COLUMNS * tileRequiredWidth -
-      NTP_DESIGN.tileMargin + MIN_TOTAL_HORIZONTAL_PADDING;
-  var innerWidth = window.innerWidth || maxSnapSize;
-  // Each tile has left and right margins that sum to NTP_DESIGN.tileMargin.
-  var availableWidth = innerWidth + NTP_DESIGN.tileMargin -
-      MIN_TOTAL_HORIZONTAL_PADDING;
-  var newNumColumns = Math.floor(availableWidth / tileRequiredWidth);
-  newNumColumns =
-      Math.max(MIN_NUM_COLUMNS, Math.min(newNumColumns, MAX_NUM_COLUMNS));
-
-  if (numColumnsShown === newNumColumns)
-    return false;
-
-  numColumnsShown = newNumColumns;
-  document.documentElement.style.setProperty('--column-count', numColumnsShown);
-  return true;
-}
-
-
-/**
- * Resizes elements because the number of tile columns may need to change in
- * response to resizing. Also shows or hides extra tiles tiles according to the
- * new width of the page.
- */
-function onResize() {
-  if (updateContentWidth()) {
-    // If the number of tile columns changes, inform the iframe.
-    $(IDS.TILES_IFRAME).contentWindow.postMessage(
-        {cmd: 'tilesVisible', maxVisible: numColumnsShown * NUM_ROWS}, '*');
-  }
 }
 
 
@@ -574,9 +498,6 @@ function init() {
       configData.translatedStrings.attributionIntro;
 
   $(IDS.NOTIFICATION_CLOSE_BUTTON).addEventListener('click', hideNotification);
-
-  window.addEventListener('resize', onResize);
-  updateContentWidth();
 
   var embeddedSearchApiHandle = window.chrome.embeddedSearch;
 

@@ -2,6 +2,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+html {
+  --tile-height: 128px;
+  --tile-margin: 16px;
+  --tile-width: 154px;
+  --title-height: 32px;
+}
+
 body {
   background: none transparent;
   color: #323232;
@@ -35,9 +42,9 @@ a:visited {
   /* Two rows of tiles of 128px each, and 16px of spacing between the rows.
    * If you change this, also change the corresponding values in
    * local_ntp.css. */
-  height: calc(2*128px + 16px);
-  line-height: calc(128px + 16px);
-  margin: 4px 0 8px 0;
+  height: calc(2*var(--tile-height) + var(--tile-margin));
+  line-height: calc(var(--tile-height) + var(--tile-margin));
+  margin: 4px 0 calc(var(--tile-margin) / 2) 0;
   opacity: 0;
   position: absolute;
   /* This align correctly for both LTR and RTL */
@@ -50,18 +57,42 @@ a:visited {
 .mv-empty-tile {
   border-radius: 2px;
   box-sizing: border-box;
-  display: inline-block;
+  display: none;
   font-family: arial, sans-serif;
   font-size: 12px;
-  height: 128px;
+  height: var(--tile-height);
   line-height: 100%;
-  margin: 0 8px;
+  margin: 0 calc(var(--tile-margin) / 2);
   opacity: 1;
   overflow: hidden;
   position: relative;
   vertical-align: top;
   white-space: nowrap;
-  width: 154px;
+  width: var(--tile-width);
+}
+
+/* Minimal layout: 2 columns; only first 4 tiles are visible. */
+.mv-tile:nth-child(-n+4),
+.mv-empty-tile:nth-child(-n+4) {
+  display: inline-block;
+}
+
+/* width >= (3 cols * (16px + 154px))
+ * 3 columns; first 6 tiles are visible. */
+@media (min-width: 510px) {
+  .mv-tile:nth-child(-n+6),
+  .mv-empty-tile:nth-child(-n+6) {
+    display: inline-block;
+  }
+}
+
+/* width >= (4 cols * (16px + 154px))
+ * 4 columns; first 8 tiles are visible. */
+@media (min-width: 680px) {
+  .mv-tile:nth-child(-n+8),
+  .mv-empty-tile:nth-child(-n+8) {
+    display: inline-block;
+  }
 }
 
 .mv-tile {
@@ -70,11 +101,6 @@ a:visited {
 
 .mv-empty-tile {
   background: rgb(245,245,245);
-}
-
-.mv-tile.hidden,
-.mv-empty-tile.hidden {
-  display: none;
 }
 
 .mv-tile {
@@ -144,11 +170,11 @@ html[dir=rtl] .mv-title[style*='direction: rtl'] {
 .mv-thumb {
   cursor: pointer;
   display: block;
-  height: 96px;
+  height: calc(var(--tile-height) - var(--title-height));
   overflow: hidden;
   position: absolute;
-  top: 32px;
-  width: 154px;
+  top: var(--title-height);
+  width: var(--tile-width);
 }
 
 .mv-thumb img {
@@ -197,10 +223,10 @@ html[dir=rtl] .mv-title[style*='direction: rtl'] {
   background-color: rgba(90,90,90,0.7);
   content: '';
   display: block;
-  height: 32px;
+  height: var(--title-height);
   position: absolute;
   right: 0;
-  width: 32px;
+  width: var(--title-height);
 }
 
 html[dir=rtl] .mv-x {
