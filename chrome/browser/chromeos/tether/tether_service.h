@@ -78,7 +78,8 @@ class TetherService : public KeyedService,
         chromeos::ManagedNetworkConfigurationHandler*
             managed_network_configuration_handler,
         chromeos::NetworkConnect* network_connect,
-        chromeos::NetworkConnectionHandler* network_connection_handler);
+        chromeos::NetworkConnectionHandler* network_connection_handler,
+        scoped_refptr<device::BluetoothAdapter> adapter);
     virtual void ShutdownTether();
   };
 
@@ -131,6 +132,18 @@ class TetherService : public KeyedService,
 
   void OnBluetoothAdapterFetched(
       scoped_refptr<device::BluetoothAdapter> adapter);
+  void OnBluetoothAdapterAdvertisingIntervalSet();
+  void OnBluetoothAdapterAdvertisingIntervalError(
+      device::BluetoothAdvertisement::ErrorCode status);
+
+  void SetBleAdvertisingInterval();
+
+  // Whether BLE advertising is supported on this device. This should only
+  // return true if a call to BluetoothAdapter::SetAdvertisingInterval() during
+  // TetherService construction succeeds. That method will fail in cases like
+  // those captured in crbug.com/738222.
+  bool GetIsBleAdvertisingSupportedPref();
+  void SetIsBleAdvertisingSupportedPref(bool is_ble_advertising_supported);
 
   bool IsBluetoothAvailable() const;
 
@@ -160,6 +173,8 @@ class TetherService : public KeyedService,
   // Whether the device and service have been suspended (e.g. the laptop lid
   // was closed).
   bool suspended_ = false;
+
+  bool has_attempted_to_set_ble_advertising_interval_ = false;
 
   Profile* profile_;
   chromeos::PowerManagerClient* power_manager_client_;

@@ -39,21 +39,10 @@
 #include "components/cryptauth/remote_beacon_seed_fetcher.h"
 #include "components/prefs/pref_service.h"
 #include "components/proximity_auth/logging/logging.h"
-#include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/bluetooth_adapter_factory.h"
 
 namespace chromeos {
 
 namespace tether {
-
-namespace {
-
-// TODO (hansberry): Experiment with intervals to determine ideal advertising
-//                   interval parameters.
-constexpr int64_t kMinAdvertisingIntervalMilliseconds = 100;
-constexpr int64_t kMaxAdvertisingIntervalMilliseconds = 100;
-
-}  // namespace
 
 // static
 Initializer* Initializer::instance_ = nullptr;
@@ -67,13 +56,8 @@ void Initializer::Init(
     NetworkStateHandler* network_state_handler,
     ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
     NetworkConnect* network_connect,
-    NetworkConnectionHandler* network_connection_handler) {
-  if (!device::BluetoothAdapterFactory::IsBluetoothSupported()) {
-    PA_LOG(WARNING) << "Bluetooth is not supported on this device; cannot "
-                    << "initialize Tether feature.";
-    return;
-  }
-
+    NetworkConnectionHandler* network_connection_handler,
+    scoped_refptr<device::BluetoothAdapter> adapter) {
   if (instance_) {
     // The Tether feature has already been initialized. No need to do anything.
     return;
@@ -84,7 +68,7 @@ void Initializer::Init(
       new Initializer(cryptauth_service, std::move(notification_presenter),
                       pref_service, token_service, network_state_handler,
                       managed_network_configuration_handler, network_connect,
-                      network_connection_handler);
+                      network_connection_handler, adapter);
 }
 
 // static
@@ -112,7 +96,8 @@ Initializer::Initializer(
     NetworkStateHandler* network_state_handler,
     ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
     NetworkConnect* network_connect,
-    NetworkConnectionHandler* network_connection_handler)
+    NetworkConnectionHandler* network_connection_handler,
+    scoped_refptr<device::BluetoothAdapter> adapter)
     : cryptauth_service_(cryptauth_service),
       notification_presenter_(notification_presenter),
       pref_service_(pref_service),
@@ -122,6 +107,7 @@ Initializer::Initializer(
           managed_network_configuration_handler),
       network_connect_(network_connect),
       network_connection_handler_(network_connection_handler),
+      adapter_(adapter),
       weak_ptr_factory_(this) {
   if (!token_service_->RefreshTokenIsAvailable(
           cryptauth_service_->GetAccountId())) {
@@ -132,17 +118,12 @@ Initializer::Initializer(
   }
 
   PA_LOG(INFO) << "Refresh token is available; initializing tether feature.";
-  FetchBluetoothAdapter();
+  CreateComponent();
 }
 
 Initializer::~Initializer() {
   token_service_->RemoveObserver(this);
   network_state_handler_->set_tether_sort_delegate(nullptr);
-}
-
-void Initializer::FetchBluetoothAdapter() {
-  device::BluetoothAdapterFactory::GetAdapter(base::Bind(
-      &Initializer::OnBluetoothAdapterFetched, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void Initializer::OnRefreshTokensLoaded() {
@@ -156,25 +137,10 @@ void Initializer::OnRefreshTokensLoaded() {
   PA_LOG(INFO) << "Refresh token has loaded; initializing tether feature.";
 
   token_service_->RemoveObserver(this);
-  FetchBluetoothAdapter();
+  CreateComponent();
 }
 
-void Initializer::OnBluetoothAdapterFetched(
-    scoped_refptr<device::BluetoothAdapter> adapter) {
-  PA_LOG(INFO) << "Successfully fetched Bluetooth adapter. Setting advertising "
-               << "interval.";
-
-  adapter->SetAdvertisingInterval(
-      base::TimeDelta::FromMilliseconds(kMinAdvertisingIntervalMilliseconds),
-      base::TimeDelta::FromMilliseconds(kMaxAdvertisingIntervalMilliseconds),
-      base::Bind(&Initializer::OnBluetoothAdapterAdvertisingIntervalSet,
-                 weak_ptr_factory_.GetWeakPtr(), adapter),
-      base::Bind(&Initializer::OnBluetoothAdapterAdvertisingIntervalError,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
-    scoped_refptr<device::BluetoothAdapter> adapter) {
+void Initializer::CreateComponent() {
   PA_LOG(INFO) << "Successfully set Bluetooth advertisement interval. "
                << "Initializing tether feature.";
 
@@ -186,7 +152,7 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
       base::MakeUnique<cryptauth::RemoteBeaconSeedFetcher>(
           cryptauth_service_->GetCryptAuthDeviceManager());
   ble_connection_manager_ = base::MakeUnique<BleConnectionManager>(
-      cryptauth_service_, adapter, local_device_data_provider_.get(),
+      cryptauth_service_, adapter_, local_device_data_provider_.get(),
       remote_beacon_seed_fetcher_.get(),
       cryptauth::BluetoothThrottlerImpl::GetInstance());
   tether_host_response_recorder_ =
@@ -267,12 +233,6 @@ void Initializer::OnPreCrashStateRestored() {
 
   // Start a scan now that the Tether module has started up.
   host_scan_scheduler_->ScheduleScan();
-}
-
-void Initializer::OnBluetoothAdapterAdvertisingIntervalError(
-    device::BluetoothAdvertisement::ErrorCode status) {
-  PA_LOG(ERROR) << "Failed to set Bluetooth advertisement interval; "
-                << "cannot use tether feature. Error code: " << status;
 }
 
 }  // namespace tether
