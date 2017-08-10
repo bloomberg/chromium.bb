@@ -384,8 +384,8 @@ bool ThreadState::JudgeGCThreshold(size_t allocated_object_size_threshold,
 // If the growing rate of Oilpan's heap or PartitionAlloc is high enough,
 // trigger a GC.
 #if PRINT_HEAP_STATS
-  dataLogF("heapGrowingRate=%.1lf, partitionAllocGrowingRate=%.1lf\n",
-           heapGrowingRate(), partitionAllocGrowingRate());
+  DataLogF("heapGrowingRate=%.1lf, partitionAllocGrowingRate=%.1lf\n",
+           HeapGrowingRate(), PartitionAllocGrowingRate());
 #endif
   return HeapGrowingRate() >= heap_growing_rate_threshold ||
          PartitionAllocGrowingRate() >= heap_growing_rate_threshold;
@@ -432,8 +432,8 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
   ThreadHeap::ReportMemoryUsageForTracing();
 
 #if PRINT_HEAP_STATS
-  dataLogF("ThreadState::scheduleV8FollowupGCIfNeeded (gcType=%s)\n",
-           gcType == BlinkGC::V8MajorGC ? "MajorGC" : "MinorGC");
+  DataLogF("ThreadState::scheduleV8FollowupGCIfNeeded (gcType=%s)\n",
+           gc_type == BlinkGC::kV8MajorGC ? "MajorGC" : "MinorGC");
 #endif
 
   if (IsGCForbidden())
@@ -448,14 +448,14 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
   if ((gc_type == BlinkGC::kV8MajorGC && ShouldForceMemoryPressureGC()) ||
       ShouldScheduleV8FollowupGC()) {
 #if PRINT_HEAP_STATS
-    dataLogF("Scheduled PreciseGC\n");
+    DataLogF("Scheduled PreciseGC\n");
 #endif
     SchedulePreciseGC();
     return;
   }
   if (gc_type == BlinkGC::kV8MajorGC && ShouldScheduleIdleGC()) {
 #if PRINT_HEAP_STATS
-    dataLogF("Scheduled IdleGC\n");
+    DataLogF("Scheduled IdleGC\n");
 #endif
     ScheduleIdleGC();
     return;
@@ -480,10 +480,10 @@ void ThreadState::SchedulePageNavigationGCIfNeeded(
   ThreadHeap::ReportMemoryUsageForTracing();
 
 #if PRINT_HEAP_STATS
-  dataLogF(
+  DataLogF(
       "ThreadState::schedulePageNavigationGCIfNeeded "
       "(estimatedRemovalRatio=%.2lf)\n",
-      estimatedRemovalRatio);
+      estimated_removal_ratio);
 #endif
 
   if (IsGCForbidden())
@@ -498,7 +498,7 @@ void ThreadState::SchedulePageNavigationGCIfNeeded(
 
   if (ShouldForceMemoryPressureGC()) {
 #if PRINT_HEAP_STATS
-    dataLogF("Scheduled MemoryPressureGC\n");
+    DataLogF("Scheduled MemoryPressureGC\n");
 #endif
     CollectGarbage(BlinkGC::kHeapPointersOnStack, BlinkGC::kGCWithoutSweep,
                    BlinkGC::kMemoryPressureGC);
@@ -506,7 +506,7 @@ void ThreadState::SchedulePageNavigationGCIfNeeded(
   }
   if (ShouldSchedulePageNavigationGC(estimated_removal_ratio)) {
 #if PRINT_HEAP_STATS
-    dataLogF("Scheduled PageNavigationGC\n");
+    DataLogF("Scheduled PageNavigationGC\n");
 #endif
     SchedulePageNavigationGC();
   }
@@ -523,7 +523,7 @@ void ThreadState::ScheduleGCIfNeeded() {
   ThreadHeap::ReportMemoryUsageForTracing();
 
 #if PRINT_HEAP_STATS
-  dataLogF("ThreadState::scheduleGCIfNeeded\n");
+  DataLogF("ThreadState::scheduleGCIfNeeded\n");
 #endif
 
   // Allocation is allowed during sweeping, but those allocations should not
@@ -541,7 +541,7 @@ void ThreadState::ScheduleGCIfNeeded() {
     CompleteSweep();
     if (ShouldForceMemoryPressureGC()) {
 #if PRINT_HEAP_STATS
-      dataLogF("Scheduled MemoryPressureGC\n");
+      DataLogF("Scheduled MemoryPressureGC\n");
 #endif
       CollectGarbage(BlinkGC::kHeapPointersOnStack, BlinkGC::kGCWithoutSweep,
                      BlinkGC::kMemoryPressureGC);
@@ -553,7 +553,7 @@ void ThreadState::ScheduleGCIfNeeded() {
     CompleteSweep();
     if (ShouldForceConservativeGC()) {
 #if PRINT_HEAP_STATS
-      dataLogF("Scheduled ConservativeGC\n");
+      DataLogF("Scheduled ConservativeGC\n");
 #endif
       CollectGarbage(BlinkGC::kHeapPointersOnStack, BlinkGC::kGCWithoutSweep,
                      BlinkGC::kConservativeGC);
@@ -562,7 +562,7 @@ void ThreadState::ScheduleGCIfNeeded() {
   }
   if (ShouldScheduleIdleGC()) {
 #if PRINT_HEAP_STATS
-    dataLogF("Scheduled IdleGC\n");
+    DataLogF("Scheduled IdleGC\n");
 #endif
     ScheduleIdleGC();
     return;
@@ -1019,8 +1019,8 @@ void ThreadState::PostSweep() {
                    static_cast<int>(100 * collection_rate));
 
 #if PRINT_HEAP_STATS
-    dataLogF("ThreadState::postSweep (collectionRate=%d%%)\n",
-             static_cast<int>(100 * collectionRate));
+    DataLogF("ThreadState::postSweep (collectionRate=%d%%)\n",
+             static_cast<int>(100 * collection_rate));
 #endif
 
     // ThreadHeap::markedObjectSize() may be underestimated here if any other
@@ -1527,11 +1527,11 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
               : 0);
 
 #if PRINT_HEAP_STATS
-      dataLogF(
+      DataLogF(
           "ThreadHeap::collectGarbage (gcReason=%s, lazySweeping=%d, "
           "time=%.1lfms)\n",
-          gcReasonString(reason), gcType == BlinkGC::GCWithoutSweep,
-          markingTimeInMilliseconds);
+          GcReasonString(reason), gc_type == BlinkGC::kGCWithoutSweep,
+          marking_time_in_milliseconds);
 #endif
 
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
