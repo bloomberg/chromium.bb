@@ -9,6 +9,7 @@
 /android_protobuf/src
 /android_support_test_runner/lib/*.aar
 /android_support_test_runner/lib/*.jar
+/android_system_sdk/*.jar
 /android_tools/
 /android_tools_internal/
 /android_webview_glue/src

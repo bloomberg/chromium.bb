@@ -953,6 +953,16 @@ hooks_os = {
       ],
     },
     {
+      'name': 'android_system_sdk',
+      'pattern': '.',
+      'action': ['python',
+                 'src/build/android/update_deps/update_third_party_deps.py',
+                 'download',
+                 '-b', 'android_system_stubs',
+                 '-l', 'third_party/android_system_sdk'
+      ],
+    },
+    {
       'name': 'intellij',
       'pattern': '.',
       'action': ['python',
