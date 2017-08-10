@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_PRELOAD_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_PRELOAD_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_PRERENDER_PRELOAD_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_PRERENDER_PRELOAD_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 
@@ -12,8 +12,8 @@
 #include "components/prefs/pref_change_registrar.h"
 #import "ios/chrome/browser/net/connection_type_observer_bridge.h"
 #import "ios/chrome/browser/prefs/pref_observer_bridge.h"
+#import "ios/chrome/browser/prerender/preload_provider.h"
 #import "ios/chrome/browser/tabs/tab_delegate.h"
-#import "ios/chrome/browser/ui/omnibox/preload_provider.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "net/url_request/url_fetcher.h"
@@ -69,4 +69,4 @@ extern const int kPreloadControllerURLFetcherID;
 - (BOOL)hasPrefetchedURL:(const GURL&)url;
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_PRELOAD_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_PRERENDER_PRELOAD_CONTROLLER_H_

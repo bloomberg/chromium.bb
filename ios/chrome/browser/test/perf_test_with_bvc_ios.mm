@@ -20,7 +20,6 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
-#import "ios/chrome/browser/ui/preload_controller.h"
 #import "ios/chrome/browser/web/chrome_web_client.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
@@ -37,37 +36,6 @@
 namespace {
 static GURL emptyGurl_ = GURL("foo", 3, url::Parsed(), false);
 }
-
-@interface TestPreloadController : PreloadController
-- (Tab*)releasePrerenderContents;
-@end
-
-@implementation TestPreloadController
-
-- (Tab*)releasePrerenderContents {
-  return nil;
-}
-
-- (id<PreloadControllerDelegate>)delegate {
-  return nil;
-}
-
-- (GURL)prerenderedURL {
-  return emptyGurl_;
-}
-@end
-
-// Subclass the factory that creates the PreloadController for BVC to return
-// the TestPrerenderController.
-@interface TestBVCDependencyFactory : BrowserViewControllerDependencyFactory
-- (PreloadController*)newPreloadController;
-@end
-
-@implementation TestBVCDependencyFactory
-- (PreloadController*)newPreloadController {
-  return [[TestPreloadController alloc] init];
-}
-@end
 
 PerfTestWithBVC::PerfTestWithBVC(std::string testGroup)
     : PerfTest(testGroup),
@@ -140,7 +108,7 @@ void PerfTestWithBVC::SetUp() {
                                 ->GetOffTheRecordChromeBrowserState()]);
 
   // Create the browser view controller with its testing factory.
-  bvc_factory_.reset([[TestBVCDependencyFactory alloc]
+  bvc_factory_.reset([[BrowserViewControllerDependencyFactory alloc]
       initWithBrowserState:chrome_browser_state_.get()]);
   bvc_.reset([[BrowserViewController alloc]
                 initWithTabModel:tab_model_

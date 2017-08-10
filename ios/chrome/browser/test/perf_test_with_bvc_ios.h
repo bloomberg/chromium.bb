@@ -20,11 +20,10 @@
 @class BrowserViewControllerDependencyFactory;
 @class TabModel;
 
-// Base class for performance tests that require a browser view controller.
-// The BVC requires a non-trivial amount of setup and teardown, so it's best
-// to derive from this class for tests that require a real BVC.
-// The class disables prerendering, for better performance numbers.
-// It uses mock profiles, and testing factories for AutocompleteClassifier.
+// Base class for performance tests that require a browser view controller.  The
+// BVC requires a non-trivial amount of setup and teardown, so it's best to
+// derive from this class for tests that require a real BVC.  The class uses
+// mock browser states and testing factories for AutocompleteClassifier.
 class PerfTestWithBVC : public PerfTest {
  public:
   explicit PerfTestWithBVC(std::string testGroup);

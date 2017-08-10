@@ -16,7 +16,6 @@
 @class MessageBubbleView;
 @class PKPass;
 @class PKAddPassesViewController;
-@class PreloadController;
 @protocol PreloadProvider;
 @protocol ShareProtocol;
 @class TabModel;
@@ -55,9 +54,6 @@ extern NSString* const kBrowserViewControllerSnackbarCategory;
 // Displays a PassKit error infobar on the current tab.
 - (void)showPassKitErrorInfoBarForManager:
     (infobars::InfoBarManager*)infoBarManager;
-
-// Caller is responsible for releasing all of the created objects.
-- (PreloadController*)newPreloadController;
 
 - (TabStripController*)
 newTabStripControllerWithTabModel:(TabModel*)model

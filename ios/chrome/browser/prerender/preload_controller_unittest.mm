@@ -10,7 +10,7 @@
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
-#import "ios/chrome/browser/ui/preload_controller.h"
+#import "ios/chrome/browser/prerender/preload_controller.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
