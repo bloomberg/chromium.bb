@@ -17,7 +17,7 @@ namespace blink {
 V8IntersectionObserverDelegate::V8IntersectionObserverDelegate(
     IntersectionObserverCallback* callback,
     ScriptState* script_state)
-    : callback_(this, callback), script_state_(script_state) {}
+    : callback_(callback), script_state_(script_state) {}
 
 V8IntersectionObserverDelegate::~V8IntersectionObserverDelegate() {}
 

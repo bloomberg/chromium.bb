@@ -50,7 +50,7 @@ PerformanceObserver::PerformanceObserver(ExecutionContext* execution_context,
                                          PerformanceObserverCallback* callback)
     : ContextClient(execution_context),
       execution_context_(execution_context),
-      callback_(this, callback),
+      callback_(callback),
       performance_(performance),
       filter_options_(PerformanceEntry::kInvalid),
       is_registered_(false) {

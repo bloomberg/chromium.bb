@@ -49,7 +49,7 @@ MutationObserverRegistration::MutationObserverRegistration(
     Node* registration_node,
     MutationObserverOptions options,
     const HashSet<AtomicString>& attribute_filter)
-    : observer_(this, &observer),
+    : observer_(&observer),
       registration_node_(registration_node),
       options_(options),
       attribute_filter_(attribute_filter) {

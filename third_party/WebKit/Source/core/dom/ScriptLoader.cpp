@@ -78,9 +78,7 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
       created_during_document_write_(created_during_document_write),
       async_exec_type_(ScriptRunner::kNone),
       document_write_intervention_(
-          DocumentWriteIntervention::kDocumentWriteInterventionNone),
-      pending_script_(this, nullptr),
-      module_tree_client_(this, nullptr) {
+          DocumentWriteIntervention::kDocumentWriteInterventionNone) {
   // https://html.spec.whatwg.org/#already-started
   // "The cloning steps for script elements must set the "already started"
   //  flag on the copy if it is set on the element being cloned."

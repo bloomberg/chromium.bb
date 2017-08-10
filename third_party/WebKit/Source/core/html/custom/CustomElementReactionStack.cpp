@@ -77,7 +77,7 @@ void CustomElementReactionStack::Enqueue(Member<ElementQueue>& queue,
   CustomElementReactionQueue* reactions = map_.at(element);
   if (!reactions) {
     reactions = new CustomElementReactionQueue();
-    map_.insert(TraceWrapperMember<Element>(this, element), reactions);
+    map_.insert(element, reactions);
   }
 
   reactions->Add(reaction);

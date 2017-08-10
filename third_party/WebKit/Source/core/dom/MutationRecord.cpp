@@ -47,9 +47,9 @@ class ChildListRecord : public MutationRecord {
                   StaticNodeList* removed,
                   Node* previous_sibling,
                   Node* next_sibling)
-      : target_(this, target),
-        added_nodes_(this, added),
-        removed_nodes_(this, removed),
+      : target_(target),
+        added_nodes_(added),
+        removed_nodes_(removed),
         previous_sibling_(previous_sibling),
         next_sibling_(next_sibling) {}
 
@@ -87,10 +87,7 @@ class ChildListRecord : public MutationRecord {
 class RecordWithEmptyNodeLists : public MutationRecord {
  public:
   RecordWithEmptyNodeLists(Node* target, const String& old_value)
-      : target_(this, target),
-        old_value_(old_value),
-        added_nodes_(this, nullptr),
-        removed_nodes_(this, nullptr) {}
+      : target_(target), old_value_(old_value) {}
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(target_);
@@ -160,8 +157,7 @@ class CharacterDataRecord : public RecordWithEmptyNodeLists {
 
 class MutationRecordWithNullOldValue : public MutationRecord {
  public:
-  MutationRecordWithNullOldValue(MutationRecord* record)
-      : record_(this, record) {}
+  MutationRecordWithNullOldValue(MutationRecord* record) : record_(record) {}
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(record_);

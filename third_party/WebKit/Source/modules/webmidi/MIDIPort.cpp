@@ -55,7 +55,7 @@ MIDIPort::MIDIPort(MIDIAccess* access,
       name_(name),
       type_(type),
       version_(version),
-      access_(this, access),
+      access_(access),
       connection_(kConnectionStateClosed) {
   DCHECK(access);
   DCHECK(type == kTypeInput || type == kTypeOutput);

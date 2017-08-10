@@ -68,7 +68,6 @@ StyleEngine::StyleEngine(Document& document)
       is_master_(!document.ImportsController() ||
                  document.ImportsController()->Master() == &document),
       document_style_sheet_collection_(
-          this,
           DocumentStyleSheetCollection::Create(document)) {
   if (document.GetFrame()) {
     // We don't need to create CSSFontSelector for imported document or
@@ -141,10 +140,9 @@ StyleEngine::StyleSheetsForStyleSheetList(TreeScope& tree_scope) {
 
 WebStyleSheetId StyleEngine::InjectAuthorSheet(
     StyleSheetContents* author_sheet) {
-  injected_author_style_sheets_.push_back(std::make_pair(
-      ++injected_author_sheets_id_count_,
-      TraceWrapperMember<CSSStyleSheet>(
-          this, CSSStyleSheet::Create(author_sheet, *document_))));
+  injected_author_style_sheets_.push_back(
+      std::make_pair(++injected_author_sheets_id_count_,
+                     CSSStyleSheet::Create(author_sheet, *document_)));
 
   MarkDocumentDirty();
   return injected_author_sheets_id_count_;

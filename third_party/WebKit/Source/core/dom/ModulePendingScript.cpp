@@ -9,8 +9,7 @@
 
 namespace blink {
 
-ModulePendingScriptTreeClient::ModulePendingScriptTreeClient()
-    : module_script_(this, nullptr), pending_script_(this, nullptr) {}
+ModulePendingScriptTreeClient::ModulePendingScriptTreeClient() {}
 
 void ModulePendingScriptTreeClient::SetPendingScript(
     ModulePendingScript* pending_script) {
@@ -53,7 +52,7 @@ ModulePendingScript::ModulePendingScript(ScriptElementBase* element,
                                          ModulePendingScriptTreeClient* client,
                                          bool is_external)
     : PendingScript(element, TextPosition()),
-      module_tree_client_(this, client),
+      module_tree_client_(client),
       is_external_(is_external) {
   CHECK(this->GetElement());
   DCHECK(module_tree_client_);

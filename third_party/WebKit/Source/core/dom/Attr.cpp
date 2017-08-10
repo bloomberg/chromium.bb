@@ -38,14 +38,13 @@ using namespace HTMLNames;
 
 Attr::Attr(Element& element, const QualifiedName& name)
     : Node(&element.GetDocument(), kCreateOther),
-      element_(this, &element),
+      element_(&element),
       name_(name) {}
 
 Attr::Attr(Document& document,
            const QualifiedName& name,
            const AtomicString& standalone_value)
     : Node(&document, kCreateOther),
-      element_(this, nullptr),
       name_(name),
       standalone_value_or_attached_local_name_(standalone_value) {}
 

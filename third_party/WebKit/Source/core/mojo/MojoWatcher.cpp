@@ -73,7 +73,7 @@ void MojoWatcher::ContextDestroyed(ExecutionContext*) {
 MojoWatcher::MojoWatcher(ExecutionContext* context, MojoWatchCallback* callback)
     : ContextLifecycleObserver(context),
       task_runner_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer, context)),
-      callback_(this, callback) {}
+      callback_(callback) {}
 
 MojoResult MojoWatcher::Watch(mojo::Handle handle,
                               const MojoHandleSignals& signals_dict) {

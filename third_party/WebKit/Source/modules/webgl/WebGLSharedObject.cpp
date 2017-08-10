@@ -31,7 +31,7 @@
 namespace blink {
 
 WebGLSharedObject::WebGLSharedObject(WebGLRenderingContextBase* context)
-    : WebGLObject(context), context_group_(this, context->ContextGroup()) {}
+    : WebGLObject(context), context_group_(context->ContextGroup()) {}
 
 bool WebGLSharedObject::Validate(const WebGLContextGroup* context_group,
                                  const WebGLRenderingContextBase*) const {

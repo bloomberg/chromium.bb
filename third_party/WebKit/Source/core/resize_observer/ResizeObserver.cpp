@@ -24,7 +24,7 @@ ResizeObserver* ResizeObserver::Create(Document& document, Delegate* delegate) {
 
 ResizeObserver::ResizeObserver(ResizeObserverCallback* callback,
                                Document& document)
-    : callback_(this, callback),
+    : callback_(callback),
       skipped_observations_(false),
       element_size_changed_(false) {
   DCHECK(callback_);
@@ -33,8 +33,7 @@ ResizeObserver::ResizeObserver(ResizeObserverCallback* callback,
 }
 
 ResizeObserver::ResizeObserver(Delegate* delegate, Document& document)
-    : callback_(this, nullptr),
-      delegate_(delegate),
+    : delegate_(delegate),
       skipped_observations_(false),
       element_size_changed_(false) {
   DCHECK(delegate_);

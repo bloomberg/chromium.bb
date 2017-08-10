@@ -35,8 +35,7 @@ namespace blink {
 TreeWalker::TreeWalker(Node* root_node,
                        unsigned what_to_show,
                        V8NodeFilterCondition* filter)
-    : NodeIteratorBase(this, root_node, what_to_show, filter),
-      current_(root()) {}
+    : NodeIteratorBase(root_node, what_to_show, filter), current_(root()) {}
 
 void TreeWalker::setCurrentNode(Node* node) {
   DCHECK(node);

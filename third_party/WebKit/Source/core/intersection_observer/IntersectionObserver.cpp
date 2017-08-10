@@ -177,7 +177,7 @@ IntersectionObserver::IntersectionObserver(
     Element* root,
     const Vector<Length>& root_margin,
     const Vector<float>& thresholds)
-    : delegate_(this, &delegate),
+    : delegate_(&delegate),
       root_(root),
       thresholds_(thresholds),
       top_margin_(kFixed),

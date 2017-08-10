@@ -53,7 +53,7 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document,
     : HTMLElement(linkTag, document),
       link_loader_(LinkLoader::Create(this)),
       sizes_(DOMTokenList::Create(*this, HTMLNames::sizesAttr)),
-      rel_list_(this, RelList::Create(this)),
+      rel_list_(RelList::Create(this)),
       created_by_parser_(created_by_parser) {}
 
 HTMLLinkElement* HTMLLinkElement::Create(Document& document,

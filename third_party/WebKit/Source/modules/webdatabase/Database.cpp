@@ -236,7 +236,7 @@ Database::Database(DatabaseContext* database_context,
       guid_(0),
       opened_(0),
       new_(false),
-      creation_callback_(this, creation_callback),
+      creation_callback_(creation_callback),
       transaction_in_progress_(false),
       is_transaction_queue_enabled_(true) {
   DCHECK(IsMainThread());

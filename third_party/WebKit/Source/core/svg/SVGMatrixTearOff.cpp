@@ -38,10 +38,10 @@
 namespace blink {
 
 SVGMatrixTearOff::SVGMatrixTearOff(const AffineTransform& static_value)
-    : static_value_(static_value), context_transform_(this, nullptr) {}
+    : static_value_(static_value) {}
 
 SVGMatrixTearOff::SVGMatrixTearOff(SVGTransformTearOff* transform)
-    : context_transform_(this, transform) {
+    : context_transform_(transform) {
   DCHECK(transform);
 }
 

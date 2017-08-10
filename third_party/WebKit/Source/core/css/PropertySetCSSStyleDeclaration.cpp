@@ -354,7 +354,7 @@ StyleRuleCSSStyleDeclaration::StyleRuleCSSStyleDeclaration(
     MutableStylePropertySet& property_set_arg,
     CSSRule* parent_rule)
     : PropertySetCSSStyleDeclaration(property_set_arg),
-      parent_rule_(this, parent_rule) {}
+      parent_rule_(parent_rule) {}
 
 StyleRuleCSSStyleDeclaration::~StyleRuleCSSStyleDeclaration() {}
 

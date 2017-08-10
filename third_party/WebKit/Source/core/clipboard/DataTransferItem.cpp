@@ -76,7 +76,7 @@ void DataTransferItem::getAsString(ScriptState* script_state,
   if (!callback || item_->Kind() != DataObjectItem::kStringKind)
     return;
 
-  callbacks_.emplace_back(this, callback);
+  callbacks_.emplace_back(callback);
   ExecutionContext* context = ExecutionContext::From(script_state);
   probe::AsyncTaskScheduled(context, "DataTransferItem.getAsString", callback);
   TaskRunnerHelper::Get(TaskType::kUserInteraction, script_state)

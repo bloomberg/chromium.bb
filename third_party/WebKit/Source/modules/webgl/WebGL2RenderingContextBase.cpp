@@ -147,17 +147,7 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(
     : WebGLRenderingContextBase(host,
                                 std::move(context_provider),
                                 requested_attributes,
-                                2),
-      read_framebuffer_binding_(this, nullptr),
-      transform_feedback_binding_(this, nullptr),
-      bound_copy_read_buffer_(this, nullptr),
-      bound_copy_write_buffer_(this, nullptr),
-      bound_pixel_pack_buffer_(this, nullptr),
-      bound_pixel_unpack_buffer_(this, nullptr),
-      bound_uniform_buffer_(this, nullptr),
-      current_boolean_occlusion_query_(this, nullptr),
-      current_transform_feedback_primitives_written_query_(this, nullptr),
-      current_elapsed_query_(this, nullptr) {
+                                2) {
   supported_internal_formats_storage_.insert(
       kSupportedInternalFormatsStorage,
       kSupportedInternalFormatsStorage +
@@ -3908,7 +3898,7 @@ void WebGL2RenderingContextBase::bindSampler(GLuint unit,
     return;
   }
 
-  sampler_units_[unit] = TraceWrapperMember<WebGLSampler>(this, sampler);
+  sampler_units_[unit] = sampler;
 
   ContextGL()->BindSampler(unit, ObjectOrZero(sampler));
 }
@@ -5125,8 +5115,7 @@ bool WebGL2RenderingContextBase::ValidateAndUpdateBufferBindBaseTarget(
                           "index out of range");
         return false;
       }
-      bound_indexed_uniform_buffers_[index] =
-          TraceWrapperMember<WebGLBuffer>(this, buffer);
+      bound_indexed_uniform_buffers_[index] = buffer;
       bound_uniform_buffer_ = buffer;
 
       // Keep track of what the maximum bound uniform buffer index is

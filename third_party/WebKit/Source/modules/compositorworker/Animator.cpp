@@ -15,7 +15,7 @@ namespace blink {
 Animator::Animator(v8::Isolate* isolate,
                    AnimatorDefinition* definition,
                    v8::Local<v8::Object> instance)
-    : definition_(this, definition), instance_(isolate, this, instance) {}
+    : definition_(definition), instance_(isolate, this, instance) {}
 
 Animator::~Animator() {}
 

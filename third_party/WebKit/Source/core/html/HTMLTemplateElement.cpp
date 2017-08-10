@@ -39,7 +39,7 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLTemplateElement::HTMLTemplateElement(Document& document)
-    : HTMLElement(templateTag, document), content_(this, nullptr) {}
+    : HTMLElement(templateTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLTemplateElement)
 
