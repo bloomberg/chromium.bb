@@ -3632,6 +3632,8 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   // request for FrameSinkProvider so make sure frame_sink_provider_ is ready
   // for that.
   frame_sink_provider_.Unbind();
+  if (renderer_host_binding_.is_bound())
+    renderer_host_binding_.Unbind();
 
   shared_bitmap_allocation_notifier_impl_.ChildDied();
 
