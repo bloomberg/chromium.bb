@@ -14,13 +14,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
    */
   var MAX_LOGIN_ATTEMPTS_IN_POD = 3;
 
-  /**
-   * Distance between error bubble and user POD.
-   * @type {number}
-   * @const
-   */
-   var BUBBLE_POD_OFFSET = 4;
-
   return {
     EXTERNAL_API: [
       'loadUsers',
@@ -180,7 +173,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     /**
      * Shows sign-in error bubble.
      * @param {number} loginAttempts Number of login attemps tried.
-     * @param {HTMLElement} content Content to show in bubble.
+     * @param {HTMLElement} error Error to show in bubble.
      */
     showErrorBubble: function(loginAttempts, error) {
       var activatedPod = $('pod-row').activatedPod;
@@ -203,77 +196,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
         }
         // Update the pod row display if incorrect password.
         $('pod-row').setFocusedPodErrorDisplay(true);
-
-        /** @const */ var BUBBLE_OFFSET = 25;
-        // -8 = 4(BUBBLE_POD_OFFSET) - 2(bubble margin)
-        //      - 10(internal bubble adjustment)
-        var bubblePositioningPadding = -8;
-
-        var bubbleAnchor;
-        var attachment;
-        // Anchor the bubble to the input field.
-        bubbleAnchor =
-            activatedPod.getElementsByClassName('auth-container')[0];
-        if (!bubbleAnchor) {
-          console.error('auth-container not found!');
-          bubbleAnchor = activatedPod.mainInput;
-        }
-        if (activatedPod.pinContainer &&
-            activatedPod.pinContainer.style.visibility == 'visible')
-          attachment = cr.ui.Bubble.Attachment.RIGHT;
-        else
-          attachment = cr.ui.Bubble.Attachment.BOTTOM;
-
-        var bubble = $('bubble');
-
-        // Cannot use cr.ui.LoginUITools.get* on bubble until it is attached to
-        // the element. getMaxHeight/Width rely on the correct up/left element
-        // side positioning that doesn't happen until bubble is attached.
-        var maxHeight =
-            cr.ui.LoginUITools.getMaxHeightBeforeShelfOverlapping(bubbleAnchor)
-          - bubbleAnchor.offsetHeight - BUBBLE_POD_OFFSET;
-        var maxWidth = cr.ui.LoginUITools.getMaxWidthToFit(bubbleAnchor)
-          - bubbleAnchor.offsetWidth - BUBBLE_POD_OFFSET;
-
-        // Change bubble visibility temporary to calculate height.
-        var bubbleVisibility = bubble.style.visibility;
-        bubble.style.visibility = 'hidden';
-        bubble.hidden = false;
-        // Now we need the bubble to have the new content before calculating
-        // size. Undefined |error| == reuse old content.
-        if (error !== undefined)
-          bubble.replaceContent(error);
-
-        // Get bubble size.
-        var bubbleOffsetHeight = parseInt(bubble.offsetHeight);
-        var bubbleOffsetWidth = parseInt(bubble.offsetWidth);
-        // Restore attributes.
-        bubble.style.visibility = bubbleVisibility;
-        bubble.hidden = true;
-
-        if (attachment == cr.ui.Bubble.Attachment.BOTTOM) {
-          // Move error bubble if it overlaps the shelf.
-          if (maxHeight < bubbleOffsetHeight)
-            attachment = cr.ui.Bubble.Attachment.TOP;
-        } else {
-          // Move error bubble if it doesn't fit screen.
-          if (maxWidth < bubbleOffsetWidth) {
-            bubblePositioningPadding = 2;
-            attachment = cr.ui.Bubble.Attachment.LEFT;
-          }
-        }
-        var showBubbleCallback = function() {
-          activatedPod.removeEventListener("transitionend",
-              showBubbleCallback);
-          $('bubble').showContentForElement(bubbleAnchor,
-                                            attachment,
-                                            error,
-                                            BUBBLE_OFFSET,
-                                            bubblePositioningPadding, true);
-        };
-        activatedPod.addEventListener("transitionend",
-                                      showBubbleCallback);
-        ensureTransitionEndEvent(activatedPod);
+        activatedPod.showBubble(error);
       }
     },
 

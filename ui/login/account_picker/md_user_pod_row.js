@@ -46,6 +46,13 @@ cr.define('login', function() {
   var USER_POD_KEYBOARD_MIN_PADDING = 20;
 
   /**
+   * Distance between the bubble and user pod.
+   * @type {number}
+   * @const
+   */
+  var BUBBLE_POD_OFFSET = 4;
+
+  /**
    * Maximum time for which the pod row remains hidden until all user images
    * have been loaded.
    * @type {number}
@@ -705,8 +712,9 @@ cr.define('login', function() {
      * @private
      */
     updateTooltip_: function() {
-      if (this.hidden || !this.getParentPod_() ||
-          this.getParentPod_().getPodStyle() != UserPod.Style.LARGE ||
+      var parentPod = this.getParentPod_();
+      if (this.hidden || !parentPod ||
+          parentPod.getPodStyle() != UserPod.Style.LARGE ||
           !this.isParentPodFocused_()) {
         return;
       }
@@ -720,15 +728,7 @@ cr.define('login', function() {
       var bubbleContent = document.createElement('div');
       bubbleContent.textContent = this.tooltipState_.text;
 
-      /** @const */ var BUBBLE_OFFSET = CUSTOM_ICON_CONTAINER_SIZE / 2;
-      // TODO(tengs): Introduce a special reauth state for the account picker,
-      // instead of showing the tooltip bubble here (crbug.com/409427).
-      /** @const */ var BUBBLE_PADDING = 8 + (this.iconId_ ? 0 : 23);
-      $('bubble').showContentForElement(this,
-                                        cr.ui.Bubble.Attachment.LEFT,
-                                        bubbleContent,
-                                        BUBBLE_OFFSET,
-                                        BUBBLE_PADDING);
+      parentPod.showBubble(bubbleContent);
     },
 
     /**
@@ -1673,6 +1673,77 @@ cr.define('login', function() {
 
         this.parentNode.showSigninUI(this.user.emailAddress);
       }
+    },
+
+    /**
+     * Shows a bubble under the auth-container of the user pod.
+     * @param {HTMLElement} content Content to show in bubble.
+     */
+    showBubble: function(content) {
+      /** @const */ var BUBBLE_OFFSET = 25;
+      // -8 = 4(BUBBLE_POD_OFFSET) - 2(bubble margin)
+      //      - 10(internal bubble adjustment)
+      var bubblePositioningPadding = -8;
+
+      var bubbleAnchor;
+      var attachment;
+      // Anchor the bubble to the input field.
+      bubbleAnchor = this.getElementsByClassName('auth-container')[0];
+      if (!bubbleAnchor) {
+        console.error('auth-container not found!');
+        bubbleAnchor = this.mainInput;
+      }
+      if (this.pinContainer && this.pinContainer.style.visibility == 'visible')
+        attachment = cr.ui.Bubble.Attachment.RIGHT;
+      else
+        attachment = cr.ui.Bubble.Attachment.BOTTOM;
+
+      var bubble = $('bubble');
+
+      // Cannot use cr.ui.LoginUITools.get* on bubble until it is attached to
+      // the element. getMaxHeight/Width rely on the correct up/left element
+      // side positioning that doesn't happen until bubble is attached.
+      var maxHeight =
+          cr.ui.LoginUITools.getMaxHeightBeforeShelfOverlapping(bubbleAnchor) -
+          bubbleAnchor.offsetHeight - BUBBLE_POD_OFFSET;
+      var maxWidth = cr.ui.LoginUITools.getMaxWidthToFit(bubbleAnchor) -
+          bubbleAnchor.offsetWidth - BUBBLE_POD_OFFSET;
+
+      // Change bubble visibility temporary to calculate height.
+      var bubbleVisibility = bubble.style.visibility;
+      bubble.style.visibility = 'hidden';
+      bubble.hidden = false;
+      // Now we need the bubble to have the new content before calculating
+      // size. Undefined |content| == reuse old content.
+      if (content !== undefined)
+        bubble.replaceContent(content);
+
+      // Get bubble size.
+      var bubbleOffsetHeight = parseInt(bubble.offsetHeight);
+      var bubbleOffsetWidth = parseInt(bubble.offsetWidth);
+      // Restore attributes.
+      bubble.style.visibility = bubbleVisibility;
+      bubble.hidden = true;
+
+      if (attachment == cr.ui.Bubble.Attachment.BOTTOM) {
+        // Move the bubble if it overlaps the shelf.
+        if (maxHeight < bubbleOffsetHeight)
+          attachment = cr.ui.Bubble.Attachment.TOP;
+      } else {
+        // Move the bubble if it doesn't fit screen.
+        if (maxWidth < bubbleOffsetWidth) {
+          bubblePositioningPadding = 2;
+          attachment = cr.ui.Bubble.Attachment.LEFT;
+        }
+      }
+      var showBubbleCallback = function() {
+        this.removeEventListener('transitionend', showBubbleCallback);
+        $('bubble').showContentForElement(
+            bubbleAnchor, attachment, content, BUBBLE_OFFSET,
+            bubblePositioningPadding, true);
+      };
+      this.addEventListener('transitionend', showBubbleCallback);
+      ensureTransitionEndEvent(this);
     },
 
     /**
