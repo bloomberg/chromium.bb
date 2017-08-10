@@ -165,6 +165,8 @@ class GPU_EXPORT Texture final : public TextureBase {
     return usage_;
   }
 
+  GLint buffer_usage() const { return buffer_usage_; }
+
   GLenum compare_func() const {
     return sampler_state_.compare_func;
   }
@@ -612,6 +614,7 @@ class GPU_EXPORT Texture final : public TextureBase {
   GLenum swizzle_g_;
   GLenum swizzle_b_;
   GLenum swizzle_a_;
+  GLint buffer_usage_ = GL_NONE;
 
   // The maximum level that has been set.
   GLint max_level_set_;

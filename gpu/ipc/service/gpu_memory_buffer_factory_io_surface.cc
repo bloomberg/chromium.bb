@@ -92,14 +92,15 @@ GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
 scoped_refptr<gl::GLImage>
 GpuMemoryBufferFactoryIOSurface::CreateAnonymousImage(const gfx::Size& size,
                                                       gfx::BufferFormat format,
+                                                      gfx::BufferUsage usage,
                                                       unsigned internalformat) {
   // Note that the GpuMemoryBufferId and child id don't matter since the texture
   // will never be directly exposed to other processes, only via a mailbox.
   int gmb_id = 0;
   int client_id = 0;
-  gfx::GpuMemoryBufferHandle handle = CreateGpuMemoryBuffer(
-      gfx::GpuMemoryBufferId(gmb_id), size, format, gfx::BufferUsage::SCANOUT,
-      client_id, gpu::kNullSurfaceHandle);
+  gfx::GpuMemoryBufferHandle handle =
+      CreateGpuMemoryBuffer(gfx::GpuMemoryBufferId(gmb_id), size, format, usage,
+                            client_id, gpu::kNullSurfaceHandle);
 
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
   io_surface.reset(IOSurfaceLookupFromMachPort(handle.mach_port.get()));

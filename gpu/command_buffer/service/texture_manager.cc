@@ -1399,6 +1399,12 @@ GLenum Texture::SetParameteri(
       }
       usage_ = param;
       break;
+    case GL_TEXTURE_BUFFER_USAGE_CHROMIUM:
+      if (!feature_info->validators()->texture_buffer_usage.IsValid(param)) {
+        return GL_INVALID_ENUM;
+      }
+      buffer_usage_ = param;
+      break;
     case GL_TEXTURE_SWIZZLE_R:
       if (!feature_info->validators()->texture_swizzle.IsValid(param)) {
         return GL_INVALID_ENUM;
@@ -1457,7 +1463,8 @@ GLenum Texture::SetParameterf(
     case GL_TEXTURE_SWIZZLE_R:
     case GL_TEXTURE_SWIZZLE_G:
     case GL_TEXTURE_SWIZZLE_B:
-    case GL_TEXTURE_SWIZZLE_A: {
+    case GL_TEXTURE_SWIZZLE_A:
+    case GL_TEXTURE_BUFFER_USAGE_CHROMIUM: {
       GLint iparam = static_cast<GLint>(std::round(param));
       return SetParameteri(feature_info, pname, iparam);
     }
@@ -2232,6 +2239,8 @@ void TextureManager::SetParameteri(
       case GL_TEXTURE_SWIZZLE_A:
         glTexParameteri(texture->target(), pname,
                         texture->GetCompatibilitySwizzleForChannel(param));
+        break;
+      case GL_TEXTURE_BUFFER_USAGE_CHROMIUM:
         break;
       default:
         glTexParameteri(texture->target(), pname, param);

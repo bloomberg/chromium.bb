@@ -62,6 +62,7 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
   bool EmulatingRGB() const override;
+  void SetColorSpaceForScanout(const gfx::ColorSpace& color_space) override;
 
   gfx::GenericSharedMemoryId io_surface_id() const { return io_surface_id_; }
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface();
