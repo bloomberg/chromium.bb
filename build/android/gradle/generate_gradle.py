@@ -246,12 +246,13 @@ class _ProjectEntry(object):
 class _ProjectContextGenerator(object):
   """Helper class to generate gradle build files"""
   def __init__(self, project_dir, build_vars, use_gradle_process_resources,
-      jinja_processor, split_projects):
+      jinja_processor, split_projects, canary):
     self.project_dir = project_dir
     self.build_vars = build_vars
     self.use_gradle_process_resources = use_gradle_process_resources
     self.jinja_processor = jinja_processor
     self.split_projects = split_projects
+    self.canary = canary
     self.processed_java_dirs = set()
     self.processed_prebuilts = set()
     self.processed_res_dirs = set()
@@ -504,6 +505,7 @@ def _GenerateBaseVars(generator, build_vars, source_properties):
       'android-%s' % build_vars['android_sdk_version'])
   variables['use_gradle_process_resources'] = (
       generator.use_gradle_process_resources)
+  variables['canary'] = generator.canary
   return variables
 
 
@@ -593,9 +595,9 @@ def _GenerateModuleAll(gradle_output_dir, generator, build_vars,
       os.path.join(gradle_output_dir, _MODULE_ALL, _GRADLE_BUILD_FILE), data)
 
 
-def _GenerateRootGradle(jinja_processor):
+def _GenerateRootGradle(jinja_processor, canary):
   """Returns the data for the root project's build.gradle."""
-  return jinja_processor.Render(_TemplatePath('root'))
+  return jinja_processor.Render(_TemplatePath('root'), {'canary': canary})
 
 
 def _GenerateSettingsGradle(project_entries, add_all_module):
@@ -713,6 +715,10 @@ def main():
                       action='store_true',
                       help='Split projects by their gn deps rather than '
                            'combining all the dependencies of each target')
+  parser.add_argument('--canary',
+                      action='store_true',
+                      help='Generate a project that is compatible with '
+                           'Android Studio 3.0 Canary.')
   args = parser.parse_args()
   if args.output_directory:
     constants.SetOutputDirectory(args.output_directory)
@@ -733,7 +739,8 @@ def main():
       _RebasePath(os.path.join(build_vars['android_sdk_build_tools'],
                                'source.properties')))
   generator = _ProjectContextGenerator(_gradle_output_dir, build_vars,
-      args.use_gradle_process_resources, jinja_processor, args.split_projects)
+      args.use_gradle_process_resources, jinja_processor, args.split_projects,
+      args.canary)
   logging.warning('Creating project at: %s', generator.project_dir)
 
   if args.all:
@@ -801,7 +808,7 @@ def main():
         source_properties, jinja_processor)
 
   _WriteFile(os.path.join(generator.project_dir, _GRADLE_BUILD_FILE),
-             _GenerateRootGradle(jinja_processor))
+             _GenerateRootGradle(jinja_processor, args.canary))
 
   _WriteFile(os.path.join(generator.project_dir, 'settings.gradle'),
              _GenerateSettingsGradle(project_entries, add_all_module))
@@ -819,7 +826,9 @@ def main():
     _ExtractZips(generator.project_dir, zip_tuples)
 
   logging.warning('Project created!')
-  logging.warning('Generated projects work with Android Studio 2.3')
+  logging.warning('Generated projects work with %s',
+                  'Android Studio 3.0 Canary 9' if args.canary
+                      else 'Android Studio 2.3')
   logging.warning('For more tips: https://chromium.googlesource.com/chromium'
                   '/src.git/+/master/docs/android_studio.md')
 
