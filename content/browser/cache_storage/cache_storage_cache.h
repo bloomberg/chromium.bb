@@ -362,6 +362,7 @@ class CONTENT_EXPORT CacheStorageCache {
   void InitGotCacheSize(base::OnceClosure callback,
                         CacheStorageError cache_create_error,
                         int cache_size);
+  void DeleteBackendCompletedIO();
 
   std::unique_ptr<storage::BlobDataHandle> PopulateResponseBody(
       disk_cache::ScopedEntryPtr entry,
@@ -395,6 +396,10 @@ class CONTENT_EXPORT CacheStorageCache {
 
   // Whether or not to store data in disk or memory.
   bool memory_only_;
+
+  // Active while waiting for the backend to finish its closing up, and contains
+  // the callback passed to CloseImpl.
+  base::OnceClosure post_backend_closed_callback_;
 
   base::WeakPtrFactory<CacheStorageCache> weak_ptr_factory_;
 

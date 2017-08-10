@@ -29,7 +29,9 @@
 #include "content/public/common/referrer.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "net/base/test_completion_callback.h"
+#include "net/disk_cache/disk_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -384,7 +386,8 @@ class CacheStorageCacheTest : public testing::Test {
 
   void TearDown() override {
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-    base::RunLoop().RunUntilIdle();
+    disk_cache::FlushCacheThreadForTesting();
+    content::RunAllBlockingPoolTasksUntilIdle();
   }
 
   void CreateRequests(ChromeBlobStorageContext* blob_storage_context) {
