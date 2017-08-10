@@ -1114,7 +1114,7 @@ public class ContextualSearchManagerTest {
             @Override
             public void run() {
                 // TODO(donnd): provide better time and x,y data to make this more broadly useful.
-                mPanel.handleBarClick(0, 0, 0);
+                mPanel.handleBarClick(0, 0);
             }
         });
     }

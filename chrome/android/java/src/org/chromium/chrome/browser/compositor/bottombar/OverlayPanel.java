@@ -568,27 +568,25 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     /**
      * Handles the click gesture.
      *
-     * @param time The timestamp of the gesture.
      * @param x The x coordinate of the gesture.
      * @param y The y coordinate of the gesture.
      */
-    public void handleClick(long time, float x, float y) {
+    public void handleClick(float x, float y) {
         mHasDetectedTouchGesture = true;
         if (isCoordinateInsideBasePage(x, y)) {
             closePanel(StateChangeReason.BASE_PAGE_TAP, true);
         } else if (isCoordinateInsideBar(x, y) && !onInterceptBarClick()) {
-            handleBarClick(time, x, y);
+            handleBarClick(x, y);
         }
     }
 
     /**
      * Handles the click gesture specifically on the bar.
      *
-     * @param time The timestamp of the gesture.
      * @param x The x coordinate of the gesture.
      * @param y The y coordinate of the gesture.
      */
-    protected void handleBarClick(long time, float x, float y) {
+    protected void handleBarClick(float x, float y) {
         if (isPeeking()) {
             expandPanel(StateChangeReason.SEARCH_BAR_TAP);
         }
@@ -700,8 +698,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
 
     @Override
     public void click(float x, float y, boolean fromMouse, int buttons) {
-        // TODO(mdjones): The time param for handleClick is not used anywhere, remove it.
-        handleClick(0, x, y);
+        handleClick(x, y);
     }
 
     @Override
