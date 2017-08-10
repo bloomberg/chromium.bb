@@ -42,7 +42,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   protocol::Response setScriptExecutionDisabled(bool value) override;
   protocol::Response setTouchEmulationEnabled(
       bool enabled,
-      protocol::Maybe<String> configuration) override;
+      protocol::Maybe<int> max_touch_points) override;
   protocol::Response setEmulatedMedia(const String&) override;
   protocol::Response setCPUThrottlingRate(double) override;
   protocol::Response setVirtualTimePolicy(

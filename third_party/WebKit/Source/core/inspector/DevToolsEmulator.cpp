@@ -472,40 +472,25 @@ WTF::Optional<IntRect> DevToolsEmulator::VisibleContentRectForPainting() const {
                 viewport_size.Width(), viewport_size.Height()));
 }
 
-void DevToolsEmulator::SetTouchEventEmulationEnabled(bool enabled) {
-  if (touch_event_emulation_enabled_ == enabled)
-    return;
+void DevToolsEmulator::SetTouchEventEmulationEnabled(bool enabled,
+                                                     int max_touch_points) {
   if (!touch_event_emulation_enabled_) {
     original_device_supports_touch_ =
         web_view_->GetPage()->GetSettings().GetDeviceSupportsTouch();
     original_max_touch_points_ =
         web_view_->GetPage()->GetSettings().GetMaxTouchPoints();
   }
+  touch_event_emulation_enabled_ = enabled;
   web_view_->GetPage()
       ->GetSettings()
       .SetForceTouchEventFeatureDetectionForInspector(enabled);
-  if (!original_device_supports_touch_) {
-    if (enabled && web_view_->MainFrameImpl()) {
-      web_view_->MainFrameImpl()
-          ->GetFrame()
-          ->GetEventHandler()
-          .ClearMouseEventManager();
-    }
-    web_view_->GetPage()->GetSettings().SetDeviceSupportsTouch(
-        enabled ? true : original_device_supports_touch_);
-    // Currently emulation does not provide multiple touch points.
-    web_view_->GetPage()->GetSettings().SetMaxTouchPoints(
-        enabled ? 1 : original_max_touch_points_);
-  }
-  touch_event_emulation_enabled_ = enabled;
-  // TODO(dgozman): mainFrameImpl() check in this class should be unnecessary.
-  // It is only needed when we reattach and restore InspectorEmulationAgent,
-  // which happens before everything has been setup correctly, and therefore
-  // fails during remote -> local main frame transition.
-  // We should instead route emulation from browser through the WebViewImpl
-  // to the local main frame, and remove InspectorEmulationAgent entirely.
-  if (web_view_->MainFrameImpl())
-    web_view_->MainFrameImpl()->GetFrameView()->UpdateLayout();
+  web_view_->GetPage()->GetSettings().SetDeviceSupportsTouch(
+      enabled ? true : original_device_supports_touch_);
+  web_view_->GetPage()->GetSettings().SetMaxTouchPoints(
+      enabled ? max_touch_points : original_max_touch_points_);
+  WebLocalFrameImpl* frame = web_view_->MainFrameImpl();
+  if (!original_device_supports_touch_ && enabled && frame)
+    frame->GetFrame()->GetEventHandler().ClearMouseEventManager();
 }
 
 void DevToolsEmulator::SetScriptExecutionDisabled(

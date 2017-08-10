@@ -42,11 +42,11 @@ ui::GestureProviderConfigType TouchEmulationConfigurationToType(
   ui::GestureProviderConfigType result =
       ui::GestureProviderConfigType::CURRENT_PLATFORM;
   if (protocol_value ==
-      Emulation::SetTouchEmulationEnabled::ConfigurationEnum::Mobile) {
+      Emulation::SetEmitTouchEventsForMouse::ConfigurationEnum::Mobile) {
     result = ui::GestureProviderConfigType::GENERIC_MOBILE;
   }
   if (protocol_value ==
-      Emulation::SetTouchEmulationEnabled::ConfigurationEnum::Desktop) {
+      Emulation::SetEmitTouchEventsForMouse::ConfigurationEnum::Desktop) {
     result = ui::GestureProviderConfigType::GENERIC_DESKTOP;
   }
   return result;
@@ -117,12 +117,13 @@ Response EmulationHandler::ClearGeolocationOverride() {
   return Response::OK();
 }
 
-Response EmulationHandler::SetTouchEmulationEnabled(
-    bool enabled, Maybe<std::string> configuration) {
+Response EmulationHandler::SetEmitTouchEventsForMouse(
+    bool enabled,
+    Maybe<std::string> configuration) {
   touch_emulation_enabled_ = enabled;
   touch_emulation_configuration_ = configuration.fromMaybe("");
   UpdateTouchEventEmulationState();
-  return Response::FallThrough();
+  return Response::OK();
 }
 
 Response EmulationHandler::CanEmulate(bool* result) {
