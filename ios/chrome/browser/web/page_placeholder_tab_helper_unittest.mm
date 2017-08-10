@@ -76,30 +76,39 @@ class PagePlaceholderTabHelperTest : public web::WebTest {
 // requested.
 TEST_F(PagePlaceholderTabHelperTest, NotShown) {
   ASSERT_FALSE(delegate_.displayingPlaceholder);
+  ASSERT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
   web_state_->OnNavigationStarted(nullptr);
   EXPECT_FALSE(delegate_.displayingPlaceholder);
+  EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
 }
 
 // Tests that placeholder is shown between DidStartNavigation/PageLoaded
 // WebStateObserver callbacks.
 TEST_F(PagePlaceholderTabHelperTest, Shown) {
+  ASSERT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
   tab_helper()->AddPlaceholderForNextNavigation();
   ASSERT_FALSE(delegate_.displayingPlaceholder);
 
+  EXPECT_TRUE(tab_helper()->will_add_placeholder_for_next_navigation());
   web_state_->OnNavigationStarted(nullptr);
   EXPECT_TRUE(delegate_.displayingPlaceholder);
+  EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
 
   web_state_->OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
   EXPECT_FALSE(delegate_.displayingPlaceholder);
+  EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
 }
 
 // Tests that destructing WebState removes the placeholder.
 TEST_F(PagePlaceholderTabHelperTest, DestructWebStateWhenShowingPlaceholder) {
+  ASSERT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
   tab_helper()->AddPlaceholderForNextNavigation();
   ASSERT_FALSE(delegate_.displayingPlaceholder);
 
+  EXPECT_TRUE(tab_helper()->will_add_placeholder_for_next_navigation());
   web_state_->OnNavigationStarted(nullptr);
   EXPECT_TRUE(delegate_.displayingPlaceholder);
+  EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
 
   web_state_.reset();
   EXPECT_FALSE(delegate_.displayingPlaceholder);

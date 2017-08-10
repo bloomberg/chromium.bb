@@ -83,10 +83,6 @@ class WebStateImpl;
 // is not supported.
 @property(nonatomic, readonly) UIView* viewForPrinting;
 
-// Content view was reset due to low memory.  Use placeholder overlay view on
-// next creation.
-@property(nonatomic, readwrite, assign) BOOL usePlaceholderOverlay;
-
 // Returns the current page loading phase.
 @property(nonatomic, readonly) web::LoadPhase loadPhase;
 

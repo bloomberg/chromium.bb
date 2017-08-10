@@ -320,9 +320,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   base::scoped_nsobject<NSMutableArray> _webViewToolbars;
   // Flag to say if browsing is enabled.
   BOOL _webUsageEnabled;
-  // Content view was reset due to low memory. Use the placeholder overlay on
-  // next creation.
-  BOOL _usePlaceholderOverlay;
   // The next time the view is requested, reload the page (using the placeholder
   // overlay until it's loaded).
   BOOL _requireReloadOnDisplay;
@@ -939,7 +936,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 @implementation CRWWebController
 
 @synthesize webUsageEnabled = _webUsageEnabled;
-@synthesize usePlaceholderOverlay = _usePlaceholderOverlay;
 @synthesize loadPhase = _loadPhase;
 @synthesize shouldSuppressDialogs = _shouldSuppressDialogs;
 @synthesize webProcessCrashed = _webProcessCrashed;
@@ -1979,12 +1975,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
     // Display overlay view until current url has finished loading or delay and
     // then transition away.
-    if ((_overlayPreviewMode || _usePlaceholderOverlay) && !isChromeScheme)
+    if (_overlayPreviewMode && !isChromeScheme)
       [self addPlaceholderOverlay];
-
-    // Don't reset the overlay flag if in preview mode.
-    if (!_overlayPreviewMode)
-      _usePlaceholderOverlay = NO;
   } else if (_requireReloadOnDisplay && _webView) {
     _requireReloadOnDisplay = NO;
     [self addPlaceholderOverlay];

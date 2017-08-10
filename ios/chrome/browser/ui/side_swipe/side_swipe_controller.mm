@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"
 #import "ios/chrome/browser/ui/side_swipe_gesture_recognizer.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 
@@ -253,7 +254,8 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
       break;
 
     Tab* tab = [model_ tabAtIndex:index];
-    if (tab && tab.webController.usePlaceholderOverlay) {
+    if (tab && PagePlaceholderTabHelper::FromWebState(tab.webState)
+                   ->will_add_placeholder_for_next_navigation()) {
       [sessionIDs addObject:tab.tabId];
     }
     index = index + dx;
