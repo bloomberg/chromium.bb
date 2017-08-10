@@ -166,6 +166,18 @@ public abstract class ViewAndroidDelegate {
         return mTemporaryContainerLocation[1];
     }
 
+    @CalledByNative
+    private boolean hasFocus() {
+        ViewGroup containerView = getContainerView();
+        return containerView == null ? false : ViewUtils.hasFocus(containerView);
+    }
+
+    @CalledByNative
+    private void requestFocus() {
+        ViewGroup containerView = getContainerView();
+        if (containerView != null) ViewUtils.requestFocus(containerView);
+    }
+
     /**
      * Create and return a basic implementation of {@link ViewAndroidDelegate} where
      * the container view is not allowed to be changed after initialization.

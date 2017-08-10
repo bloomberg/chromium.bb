@@ -617,10 +617,10 @@ void RenderWidgetHostViewAndroid::LostFocus() {
 }
 
 void RenderWidgetHostViewAndroid::Focus() {
-  // TODO(boliu): Make sure rwhva/rwh focus state stays in sync with CVC, and
-  // ideally properly implements "request focus". See crbug.com/746099.
-  host_->Focus();
-  OnFocusInternal();
+  if (view_.HasFocus())
+    GotFocus();
+  else
+    view_.RequestFocus();
 }
 
 void RenderWidgetHostViewAndroid::OnFocusInternal() {
@@ -634,10 +634,7 @@ void RenderWidgetHostViewAndroid::LostFocusInternal() {
 }
 
 bool RenderWidgetHostViewAndroid::HasFocus() const {
-  if (!content_view_core_)
-    return false;  // ContentViewCore not created yet.
-
-  return content_view_core_->HasFocus();
+  return view_.HasFocus();
 }
 
 bool RenderWidgetHostViewAndroid::IsSurfaceAvailableForCopy() const {

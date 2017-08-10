@@ -60,6 +60,7 @@ import org.chromium.device.gamepad.GamepadList;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.ViewAndroidDelegate;
+import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
@@ -887,15 +888,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         return false;
     }
 
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void requestFocus() {
-        if (mContainerView.isFocusable() && mContainerView.isFocusableInTouchMode()
-                && !mContainerView.isFocused()) {
-            mContainerView.requestFocus();
-        }
-    }
-
     @VisibleForTesting
     public void sendDoubleTapForTest(long timeMs, int x, int y) {
         if (mNativeContentViewCore == 0) return;
@@ -1192,7 +1184,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
      * the View focus state.
      */
     public void onResume() {
-        onFocusChanged(getContainerView().hasFocus(), true);
+        onFocusChanged(ViewUtils.hasFocus(getContainerView()), true);
     }
 
     /**
@@ -1669,14 +1661,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private void onRenderProcessChange() {
         // Immediately sync closed caption settings to the new render process.
         mSystemCaptioningBridge.syncToListener(this);
-    }
-
-    /**
-     * @see View#hasFocus()
-     */
-    @CalledByNative
-    private boolean hasFocus() {
-        return ViewUtils.hasFocus(mContainerView);
     }
 
     /**
