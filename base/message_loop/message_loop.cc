@@ -48,13 +48,13 @@ base::ThreadLocalPointer<MessageLoop>* GetTLSMessageLoop() {
 MessageLoop::MessagePumpFactory* message_pump_for_ui_factory_ = NULL;
 
 #if defined(OS_IOS)
-typedef MessagePumpIOSForIO MessagePumpForIO;
+using MessagePumpForIO = MessagePumpIOSForIO;
 #elif defined(OS_NACL_SFI)
-typedef MessagePumpDefault MessagePumpForIO;
+using MessagePumpForIO = MessagePumpDefault;
 #elif defined(OS_FUCHSIA)
-typedef MessagePumpFuchsia MessagePumpForIO;
+using MessagePumpForIO = MessagePumpFuchsia;
 #elif defined(OS_POSIX)
-typedef MessagePumpLibevent MessagePumpForIO;
+using MessagePumpForIO = MessagePumpLibevent;
 #endif
 
 #if !defined(OS_NACL_SFI)
@@ -167,11 +167,11 @@ bool MessageLoop::InitMessagePumpForUIFactory(MessagePumpFactory* factory) {
 std::unique_ptr<MessagePump> MessageLoop::CreateMessagePumpForType(Type type) {
 // TODO(rvargas): Get rid of the OS guards.
 #if defined(USE_GLIB) && !defined(OS_NACL)
-  typedef MessagePumpGlib MessagePumpForUI;
+  using MessagePumpForUI = MessagePumpGlib;
 #elif (defined(OS_LINUX) && !defined(OS_NACL)) || defined(OS_BSD)
-  typedef MessagePumpLibevent MessagePumpForUI;
+  using MessagePumpForUI = MessagePumpLibevent;
 #elif defined(OS_FUCHSIA)
-  typedef MessagePumpFuchsia MessagePumpForUI;
+  using MessagePumpForUI = MessagePumpFuchsia;
 #endif
 
 #if defined(OS_IOS) || defined(OS_MACOSX)
