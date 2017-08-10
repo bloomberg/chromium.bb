@@ -27,6 +27,10 @@ template <typename T>
 struct DefaultSingletonTraits;
 }  // namespace base
 
+namespace dbus {
+class Signal;
+}
+
 namespace chromeos {
 
 // A service responsible for tracking user credential status. Created for each
@@ -57,6 +61,14 @@ class AuthPolicyCredentialsManager
       authpolicy::ErrorType error,
       const authpolicy::ActiveDirectoryUserStatus& user_status);
 
+  // Calls AuthPolicyClient::GetUserKerberosFiles.
+  void GetUserKerberosFiles();
+
+  // See AuthPolicyClient::GetUserKerberosFilesCallback.
+  void OnGetUserKerberosFilesCallback(
+      authpolicy::ErrorType error,
+      const authpolicy::KerberosFiles& kerberos_files);
+
   // Post delayed task to call GetUserStatus in the future.
   void ScheduleGetUserStatus();
 
@@ -76,10 +88,19 @@ class AuthPolicyCredentialsManager
   // failed.
   void GetUserStatusIfConnected(const chromeos::NetworkState* network_state);
 
+  // Callback for 'UserKerberosFilesChanged' D-Bus signal sent by authpolicyd.
+  void OnUserKerberosFilesChangedCallback(dbus::Signal* signal);
+
+  // Called after connected to 'UserKerberosFilesChanged' signal.
+  void OnSignalConnectedCallback(const std::string& interface_name,
+                                 const std::string& signal_name,
+                                 bool success);
+
   Profile* const profile_;
   AccountId account_id_;
   std::string display_name_;
   std::string given_name_;
+  bool is_get_status_in_progress_ = false;
   bool rerun_get_status_on_error_ = false;
   bool is_observing_network_ = false;
 

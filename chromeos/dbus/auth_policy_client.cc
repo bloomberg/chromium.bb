@@ -65,7 +65,7 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
                     int password_fd,
                     JoinCallback callback) override {
     dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
-                                 authpolicy::kAuthPolicyJoinADDomain);
+                                 authpolicy::kJoinADDomainMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(machine_name);
     writer.AppendString(user_principal_name);
@@ -81,32 +81,47 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
                         int password_fd,
                         AuthCallback callback) override {
     dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
-                                 authpolicy::kAuthPolicyAuthenticateUser);
+                                 authpolicy::kAuthenticateUserMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(user_principal_name);
     writer.AppendString(object_guid);
     writer.AppendFileDescriptor(password_fd);
     proxy_->CallMethod(
         &method_call, kSlowDbusTimeoutMilliseconds,
-        base::Bind(&AuthPolicyClientImpl::HandleAuthCallback,
+        base::Bind(&AuthPolicyClientImpl::HandleCallback<
+                       authpolicy::ActiveDirectoryAccountInfo>,
                    weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
   }
 
   void GetUserStatus(const std::string& object_guid,
                      GetUserStatusCallback callback) override {
     dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
-                                 authpolicy::kAuthPolicyGetUserStatus);
+                                 authpolicy::kGetUserStatusMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(object_guid);
     proxy_->CallMethod(
         &method_call, kSlowDbusTimeoutMilliseconds,
-        base::Bind(&AuthPolicyClientImpl::HandleGetUserStatusCallback,
+        base::Bind(&AuthPolicyClientImpl::HandleCallback<
+                       authpolicy::ActiveDirectoryUserStatus>,
                    weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+  }
+
+  void GetUserKerberosFiles(const std::string& object_guid,
+                            GetUserKerberosFilesCallback callback) override {
+    dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
+                                 authpolicy::kGetUserKerberosFilesMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(object_guid);
+    proxy_->CallMethod(
+        &method_call, kSlowDbusTimeoutMilliseconds,
+        base::Bind(
+            &AuthPolicyClientImpl::HandleCallback<authpolicy::KerberosFiles>,
+            weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
   }
 
   void RefreshDevicePolicy(RefreshPolicyCallback callback) override {
     dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
-                                 authpolicy::kAuthPolicyRefreshDevicePolicy);
+                                 authpolicy::kRefreshDevicePolicyMethod);
     proxy_->CallMethod(
         &method_call, kSlowDbusTimeoutMilliseconds,
         base::Bind(&AuthPolicyClientImpl::HandleRefreshPolicyCallback,
@@ -117,13 +132,22 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
                          RefreshPolicyCallback callback) override {
     DCHECK(account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY);
     dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
-                                 authpolicy::kAuthPolicyRefreshUserPolicy);
+                                 authpolicy::kRefreshUserPolicyMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(account_id.GetAccountIdKey());
     proxy_->CallMethod(
         &method_call, kSlowDbusTimeoutMilliseconds,
         base::Bind(&AuthPolicyClientImpl::HandleRefreshPolicyCallback,
                    weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+  }
+
+  void ConnectToSignal(
+      const std::string& signal_name,
+      dbus::ObjectProxy::SignalCallback signal_callback,
+      dbus::ObjectProxy::OnConnectedCallback on_connected_callback) override {
+    proxy_->ConnectToSignal(authpolicy::kAuthPolicyInterface,
+                            std::move(signal_name), std::move(signal_callback),
+                            on_connected_callback);
   }
 
  protected:
@@ -158,17 +182,13 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
     std::move(callback).Run(GetErrorFromReader(&reader));
   }
 
-  void HandleAuthCallback(AuthCallback callback, dbus::Response* response) {
-    authpolicy::ActiveDirectoryAccountInfo account_info;
-    authpolicy::ErrorType error(GetErrorAndProto(response, &account_info));
-    std::move(callback).Run(error, account_info);
-  }
-
-  void HandleGetUserStatusCallback(GetUserStatusCallback callback,
-                                   dbus::Response* response) {
-    authpolicy::ActiveDirectoryUserStatus user_status;
-    authpolicy::ErrorType error(GetErrorAndProto(response, &user_status));
-    std::move(callback).Run(error, user_status);
+  template <class T>
+  void HandleCallback(base::OnceCallback<void(authpolicy::ErrorType error,
+                                              const T& response)> callback,
+                      dbus::Response* response) {
+    T proto;
+    authpolicy::ErrorType error(GetErrorAndProto(response, &proto));
+    std::move(callback).Run(error, proto);
   }
 
   dbus::Bus* bus_ = nullptr;

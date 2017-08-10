@@ -24,6 +24,8 @@
 
 namespace {
 
+// TODO(rsorokin): Replace with MockAuthPolicyClient (see
+// https://crbug.com/753355).
 class TestAuthPolicyClient : public chromeos::AuthPolicyClient {
  public:
   void Init(dbus::Bus* bus) override { NOTIMPLEMENTED(); }
@@ -47,6 +49,11 @@ class TestAuthPolicyClient : public chromeos::AuthPolicyClient {
     NOTIMPLEMENTED();
   }
 
+  void GetUserKerberosFiles(const std::string& object_guid,
+                            GetUserKerberosFilesCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
   void RefreshDevicePolicy(RefreshPolicyCallback callback) override {
     NOTIMPLEMENTED();
   }
@@ -56,6 +63,13 @@ class TestAuthPolicyClient : public chromeos::AuthPolicyClient {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   refresh_user_policy_callback_success_));
+  }
+
+  void ConnectToSignal(
+      const std::string& signal_name,
+      dbus::ObjectProxy::SignalCallback signal_callback,
+      dbus::ObjectProxy::OnConnectedCallback on_connected_callback) override {
+    NOTIMPLEMENTED();
   }
 
   void SetRefreshUserPolicyCallbackSuccess(bool success) {
