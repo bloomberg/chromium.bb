@@ -515,7 +515,8 @@ void NavigationHandleImpl::SetOnDeferCallbackForTesting(
 }
 
 const GlobalRequestID& NavigationHandleImpl::GetGlobalRequestID() {
-  DCHECK(state_ >= WILL_PROCESS_RESPONSE);
+  DCHECK(state_ == WILL_PROCESS_RESPONSE || state_ == DEFERRING_RESPONSE ||
+         state_ == READY_TO_COMMIT);
   return request_id_;
 }
 

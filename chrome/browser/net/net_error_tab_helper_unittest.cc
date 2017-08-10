@@ -9,7 +9,6 @@
 #include "components/error_page/common/net_error_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -156,12 +155,18 @@ class NetErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
   void FinishProbe(DnsProbeStatus status) { tab_helper_->FinishProbe(status); }
 
   void LoadURL(const GURL& url, bool succeeded) {
+    controller().LoadURL(
+        url, content::Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+    content::RenderFrameHostTester::For(main_rfh())->
+        SimulateNavigationStart(url);
     if (succeeded) {
-      content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
-                                                                 url);
+      content::RenderFrameHostTester::For(main_rfh())->
+          SimulateNavigationCommit(url);
     } else {
-      content::NavigationSimulator::NavigateAndFailFromBrowser(
-          web_contents(), url, net::ERR_TIMED_OUT);
+      content::RenderFrameHostTester::For(main_rfh())->
+          SimulateNavigationError(url, net::ERR_TIMED_OUT);
+      content::RenderFrameHostTester::For(main_rfh())->
+          SimulateNavigationErrorPageCommit();
     }
   }
 
