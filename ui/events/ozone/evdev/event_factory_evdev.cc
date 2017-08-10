@@ -350,7 +350,8 @@ void EventFactoryEvdev::DispatchTouchEvent(const TouchEventParams& params) {
       params.device_id * kNumTouchEvdevSlots + params.slot);
   details.id = touch_id;
   TouchEvent touch_event(params.type, gfx::Point(), params.timestamp, details,
-                         modifiers_.GetModifierFlags(), /* angle */ 0.f);
+                         modifiers_.GetModifierFlags() | params.flags,
+                         /* angle */ 0.f);
   touch_event.set_location_f(location);
   touch_event.set_root_location_f(location);
   touch_event.set_source_device_id(params.device_id);
