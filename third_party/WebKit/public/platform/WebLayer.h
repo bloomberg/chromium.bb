@@ -62,8 +62,6 @@ class WebLayer {
  public:
   virtual ~WebLayer() {}
 
-  static constexpr int kInvalidLayerId = cc::Layer::INVALID_ID;
-
   // Returns a positive ID that will be unique across all WebLayers allocated in
   // this process.
   virtual int Id() const = 0;

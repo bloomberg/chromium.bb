@@ -284,14 +284,6 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   layer->SetClipTreeIndex(data_for_children->clip_tree_parent);
 }
 
-static Layer* LayerById(Layer* layer, int id) {
-  return layer->layer_tree_host()->LayerById(id);
-}
-
-static LayerImpl* LayerById(LayerImpl* layer, int id) {
-  return layer->layer_tree_impl()->LayerById(id);
-}
-
 template <typename LayerType>
 static inline bool IsAtBoundaryOf3dRenderingContext(LayerType* layer) {
   return Parent(layer)
@@ -530,26 +522,24 @@ bool AddTransformNodeIfNeeded(
             .AddNodeAffectedByOuterViewportBoundsDelta(node->id);
       }
     }
-    // Copy the ancestor nodes for later use. These layers are guaranteed to
+    // Copy the ancestor nodes for later use. These elements are guaranteed to
     // have transform nodes at this point because they are our ancestors (so
     // have already been processed) and are sticky (so have transform nodes).
-    int shifting_sticky_box_layer_id =
-        sticky_data->constraints.nearest_layer_shifting_sticky_box;
-    if (shifting_sticky_box_layer_id != Layer::INVALID_ID) {
+    ElementId shifting_sticky_box_element_id =
+        sticky_data->constraints.nearest_element_shifting_sticky_box;
+    if (shifting_sticky_box_element_id) {
       sticky_data->nearest_node_shifting_sticky_box =
-          LayerById(layer, shifting_sticky_box_layer_id)
-              ->transform_tree_index();
-      DCHECK(sticky_data->nearest_node_shifting_sticky_box !=
-             TransformTree::kInvalidNodeId);
+          data_for_children->property_trees->transform_tree
+              .FindNodeFromElementId(shifting_sticky_box_element_id)
+              ->id;
     }
-    int shifting_containing_block_layer_id =
-        sticky_data->constraints.nearest_layer_shifting_containing_block;
-    if (shifting_containing_block_layer_id != Layer::INVALID_ID) {
+    ElementId shifting_containing_block_element_id =
+        sticky_data->constraints.nearest_element_shifting_containing_block;
+    if (shifting_containing_block_element_id) {
       sticky_data->nearest_node_shifting_containing_block =
-          LayerById(layer, shifting_containing_block_layer_id)
-              ->transform_tree_index();
-      DCHECK(sticky_data->nearest_node_shifting_containing_block !=
-             TransformTree::kInvalidNodeId);
+          data_for_children->property_trees->transform_tree
+              .FindNodeFromElementId(shifting_containing_block_element_id)
+              ->id;
     }
   }
 

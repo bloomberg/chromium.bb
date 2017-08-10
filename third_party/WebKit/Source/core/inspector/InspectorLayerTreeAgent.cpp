@@ -48,6 +48,7 @@
 #include "core/paint/compositing/PaintLayerCompositor.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/CompositingReasons.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/PictureSnapshot.h"
 #include "platform/transforms/TransformationMatrix.h"
@@ -120,8 +121,22 @@ BuildScrollRectsForLayer(GraphicsLayer* graphics_layer,
   return scroll_rects->length() ? std::move(scroll_rects) : nullptr;
 }
 
+// TODO(flackr): We should be getting the sticky position constraints from the
+// property tree once blink is able to access them. https://crbug.com/754339
+static GraphicsLayer* FindLayerByElementId(GraphicsLayer* root,
+                                           CompositorElementId element_id) {
+  if (root->PlatformLayer()->GetElementId() == element_id)
+    return root;
+  for (size_t i = 0, size = root->Children().size(); i < size; ++i) {
+    if (GraphicsLayer* layer =
+            FindLayerByElementId(root->Children()[i], element_id))
+      return layer;
+  }
+  return nullptr;
+}
+
 static std::unique_ptr<protocol::LayerTree::StickyPositionConstraint>
-BuildStickyInfoForLayer(WebLayer* layer) {
+BuildStickyInfoForLayer(GraphicsLayer* root, WebLayer* layer) {
   WebLayerStickyPositionConstraint constraints =
       layer->StickyPositionConstraint();
   if (!constraints.is_sticky)
@@ -140,19 +155,26 @@ BuildStickyInfoForLayer(WebLayer* layer) {
               .setStickyBoxRect(std::move(sticky_box_rect))
               .setContainingBlockRect(std::move(containing_block_rect))
               .build();
-  if (constraints.nearest_layer_shifting_sticky_box >= 0) {
-    constraints_obj->setNearestLayerShiftingStickyBox(
-        String::Number(constraints.nearest_layer_shifting_sticky_box));
+  if (constraints.nearest_element_shifting_sticky_box) {
+    constraints_obj->setNearestLayerShiftingStickyBox(String::Number(
+        FindLayerByElementId(root,
+                             constraints.nearest_element_shifting_sticky_box)
+            ->PlatformLayer()
+            ->Id()));
   }
-  if (constraints.nearest_layer_shifting_containing_block >= 0) {
-    constraints_obj->setNearestLayerShiftingContainingBlock(
-        String::Number(constraints.nearest_layer_shifting_containing_block));
+  if (constraints.nearest_element_shifting_containing_block) {
+    constraints_obj->setNearestLayerShiftingContainingBlock(String::Number(
+        FindLayerByElementId(
+            root, constraints.nearest_element_shifting_containing_block)
+            ->PlatformLayer()
+            ->Id()));
   }
 
   return constraints_obj;
 }
 
 static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
+    GraphicsLayer* root,
     GraphicsLayer* graphics_layer,
     int node_id,
     bool report_wheel_event_listeners) {
@@ -203,7 +225,7 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
   if (scroll_rects)
     layer_object->setScrollRects(std::move(scroll_rects));
   std::unique_ptr<protocol::LayerTree::StickyPositionConstraint> sticky_info =
-      BuildStickyInfoForLayer(web_layer);
+      BuildStickyInfoForLayer(root, web_layer);
   if (sticky_info)
     layer_object->setStickyPositionConstraint(std::move(sticky_info));
   return layer_object;
@@ -320,19 +342,19 @@ void InspectorLayerTreeAgent::BuildLayerIdToNodeIdMap(
 }
 
 void InspectorLayerTreeAgent::GatherGraphicsLayers(
-    GraphicsLayer* root,
+    GraphicsLayer* layer,
     HashMap<int, int>& layer_id_to_node_id_map,
     std::unique_ptr<Array<protocol::LayerTree::Layer>>& layers,
     bool has_wheel_event_handlers,
     int scrolling_layer_id) {
-  if (client_->IsInspectorLayer(root))
+  if (client_->IsInspectorLayer(layer))
     return;
-  int layer_id = root->PlatformLayer()->Id();
+  int layer_id = layer->PlatformLayer()->Id();
   layers->addItem(BuildObjectForLayer(
-      root, layer_id_to_node_id_map.at(layer_id),
+      RootGraphicsLayer(), layer, layer_id_to_node_id_map.at(layer_id),
       has_wheel_event_handlers && layer_id == scrolling_layer_id));
-  for (size_t i = 0, size = root->Children().size(); i < size; ++i)
-    GatherGraphicsLayers(root->Children()[i], layer_id_to_node_id_map, layers,
+  for (size_t i = 0, size = layer->Children().size(); i < size; ++i)
+    GatherGraphicsLayers(layer->Children()[i], layer_id_to_node_id_map, layers,
                          has_wheel_event_handlers, scrolling_layer_id);
 }
 
