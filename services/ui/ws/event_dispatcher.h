@@ -317,6 +317,12 @@ class EventDispatcher : public ServerWindowObserver,
   ServerWindow* mouse_cursor_source_window_;
   bool mouse_cursor_in_non_client_area_;
 
+  // We calculate out the button flags for any synthetic mouse events we need
+  // to create during SetMousePointerDisplayLocation(). We don't try to set
+  // this on a per-PointerTarget because modified PointerTargets aren't always
+  // committed back into |pointer_targets_|.
+  int next_mouse_button_flags_;
+
   // The location of the mouse pointer in display coordinates. This can be
   // outside the bounds of |mouse_cursor_source_window_|, which can capture the
   // cursor.
