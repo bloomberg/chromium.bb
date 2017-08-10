@@ -68,6 +68,10 @@ component("sensors") {
       "//ui/gfx",
     ]
   }
+  if (is_fuchsia) {
+    sources += [ "data_fetcher_shared_memory_fuchsia.cc" ]
+    sources -= [ "data_fetcher_shared_memory_default.cc" ]
+  }
 }
 
 if (is_android) {
