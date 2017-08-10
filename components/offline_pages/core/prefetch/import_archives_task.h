@@ -26,7 +26,8 @@ class ImportArchivesTask : public Task {
   void Run() override;
 
  private:
-  void OnArchivesRetrieved(std::vector<PrefetchArchiveInfo> archive);
+  void OnArchivesRetrieved(
+      std::unique_ptr<std::vector<PrefetchArchiveInfo>> archive);
 
   PrefetchStore* prefetch_store_;        // Outlives this class.
   PrefetchImporter* prefetch_importer_;  // Outlives this class.

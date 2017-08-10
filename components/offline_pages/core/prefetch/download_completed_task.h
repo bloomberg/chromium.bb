@@ -11,21 +11,23 @@
 #include "components/offline_pages/core/task.h"
 
 namespace offline_pages {
+class PrefetchDispatcher;
 class PrefetchStore;
 
 // Task that responses to the completed download.
 class DownloadCompletedTask : public Task {
  public:
-  DownloadCompletedTask(PrefetchStore* prefetch_store,
+  DownloadCompletedTask(PrefetchDispatcher* prefetch_dispatcher,
+                        PrefetchStore* prefetch_store,
                         const PrefetchDownloadResult& download_result);
   ~DownloadCompletedTask() override;
 
   void Run() override;
 
  private:
-  void OnDownloadSuccessUpdated(bool success);
-  void OnDownloadErrorUpdated(bool success);
+  void OnPrefetchItemUpdated(bool success);
 
+  PrefetchDispatcher* prefetch_dispatcher_;  // Outlives this class.
   PrefetchStore* prefetch_store_;  // Outlives this class.
   PrefetchDownloadResult download_result_;
 

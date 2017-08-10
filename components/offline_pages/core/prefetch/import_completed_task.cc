@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "sql/connection.h"
@@ -37,10 +38,13 @@ bool UpdateToFinishedStateSync(int64_t offline_id,
 
 }  // namespace
 
-ImportCompletedTask::ImportCompletedTask(PrefetchStore* prefetch_store,
-                                         int64_t offline_id,
-                                         bool success)
-    : prefetch_store_(prefetch_store),
+ImportCompletedTask::ImportCompletedTask(
+    PrefetchDispatcher* prefetch_dispatcher,
+    PrefetchStore* prefetch_store,
+    int64_t offline_id,
+    bool success)
+    : prefetch_dispatcher_(prefetch_dispatcher),
+      prefetch_store_(prefetch_store),
       offline_id_(offline_id),
       success_(success),
       weak_ptr_factory_(this) {}
@@ -57,11 +61,8 @@ void ImportCompletedTask::Run() {
 void ImportCompletedTask::OnStateUpdatedToFinished(bool success) {
   // No further action can be done if the database fails to be updated. The
   // cleanup task should eventually kick in to clean this up.
-  if (success) {
-    // TODO(jianli): Calls SchedulePipelineProcessing to process the finished
-    // item.
-    NOTIMPLEMENTED();
-  }
+  if (success)
+    prefetch_dispatcher_->SchedulePipelineProcessing();
 
   TaskComplete();
 }

@@ -188,9 +188,9 @@ void PrefetchDispatcherImpl::DownloadCompleted(
         "Download size: " + std::to_string(download_result.file_size));
   }
 
-  PrefetchStore* prefetch_store = service_->GetPrefetchStore();
-  task_queue_.AddTask(
-      base::MakeUnique<DownloadCompletedTask>(prefetch_store, download_result));
+  task_queue_.AddTask(base::MakeUnique<DownloadCompletedTask>(
+      service_->GetPrefetchDispatcher(), service_->GetPrefetchStore(),
+      download_result));
 }
 
 void PrefetchDispatcherImpl::ImportCompleted(int64_t offline_id, bool success) {
@@ -201,9 +201,9 @@ void PrefetchDispatcherImpl::ImportCompleted(int64_t offline_id, bool success) {
                                         std::to_string(offline_id) +
                                         (success ? "succeeded" : "failed"));
 
-  PrefetchStore* prefetch_store = service_->GetPrefetchStore();
   task_queue_.AddTask(base::MakeUnique<ImportCompletedTask>(
-      prefetch_store, offline_id, success));
+      service_->GetPrefetchDispatcher(), service_->GetPrefetchStore(),
+      offline_id, success));
 }
 
 void PrefetchDispatcherImpl::LogRequestResult(

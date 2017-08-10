@@ -15,6 +15,7 @@
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
+#include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,11 +42,13 @@ class DownloadCompletedTaskTest : public testing::Test {
   void PumpLoop();
 
   PrefetchStore* store() { return store_test_util_.store(); }
+  TestPrefetchDispatcher* dispatcher() { return &dispatcher_; }
   PrefetchStoreTestUtil* store_util() { return &store_test_util_; }
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
+  TestPrefetchDispatcher dispatcher_;
   PrefetchStoreTestUtil store_test_util_;
 };
 
@@ -86,7 +89,7 @@ void DownloadCompletedTaskTest::PumpLoop() {
 TEST_F(DownloadCompletedTaskTest, UpdateItemOnDownloadSuccess) {
   PrefetchDownloadResult download_result(kTestGUID, kTestFilePath,
                                          kTestFileSize);
-  DownloadCompletedTask task(store(), download_result);
+  DownloadCompletedTask task(dispatcher(), store(), download_result);
   task.Run();
   PumpLoop();
 
@@ -102,7 +105,7 @@ TEST_F(DownloadCompletedTaskTest, UpdateItemOnDownloadError) {
   PrefetchDownloadResult download_result;
   download_result.download_id = kTestGUID;
   download_result.success = false;
-  DownloadCompletedTask task(store(), download_result);
+  DownloadCompletedTask task(dispatcher(), store(), download_result);
   task.Run();
   PumpLoop();
 
@@ -118,7 +121,7 @@ TEST_F(DownloadCompletedTaskTest, UpdateItemOnDownloadError) {
 TEST_F(DownloadCompletedTaskTest, NoUpdateOnMismatchedDownloadSuccess) {
   PrefetchDownloadResult download_result(kTestGUID2, kTestFilePath,
                                          kTestFileSize);
-  DownloadCompletedTask task(store(), download_result);
+  DownloadCompletedTask task(dispatcher(), store(), download_result);
   task.Run();
   PumpLoop();
 
@@ -136,7 +139,7 @@ TEST_F(DownloadCompletedTaskTest, NoUpdateOnMismatchedDownloadError) {
   PrefetchDownloadResult download_result;
   download_result.download_id = kTestGUID2;
   download_result.success = false;
-  DownloadCompletedTask task(store(), download_result);
+  DownloadCompletedTask task(dispatcher(), store(), download_result);
   task.Run();
   PumpLoop();
 
