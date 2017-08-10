@@ -22,7 +22,6 @@ class BluetoothObserver;
 class ClockObserver;
 class EnterpriseDomainObserver;
 class IMEObserver;
-class LastWindowClosedObserver;
 class NetworkObserver;
 class NetworkPortalDetectorObserver;
 class ScreenCaptureObserver;
@@ -72,11 +71,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyRefreshIME();
   void NotifyRefreshIMEMenu(bool is_active);
 
-  // Last window closed.
-  void AddLastWindowClosedObserver(LastWindowClosedObserver* observer);
-  void RemoveLastWindowClosedObserver(LastWindowClosedObserver* observer);
-  void NotifyLastWindowClosed();
-
   // Network.
   void AddNetworkObserver(NetworkObserver* observer);
   void RemoveNetworkObserver(NetworkObserver* observer);
@@ -124,7 +118,6 @@ class ASH_EXPORT SystemTrayNotifier {
   base::ObserverList<ClockObserver> clock_observers_;
   base::ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
   base::ObserverList<IMEObserver> ime_observers_;
-  base::ObserverList<LastWindowClosedObserver> last_window_closed_observers_;
   base::ObserverList<NetworkObserver> network_observers_;
   base::ObserverList<NetworkPortalDetectorObserver>
       network_portal_detector_observers_;

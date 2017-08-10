@@ -481,7 +481,6 @@ component("ash") {
     "system/screen_security/screen_share_tray_item.h",
     "system/screen_security/screen_tray_item.cc",
     "system/screen_security/screen_tray_item.h",
-    "system/session/last_window_closed_observer.h",
     "system/session/logout_button_tray.cc",
     "system/session/logout_button_tray.h",
     "system/session/logout_confirmation_controller.cc",

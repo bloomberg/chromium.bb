@@ -4,13 +4,20 @@
 
 #include "ash/system/session/logout_confirmation_controller.h"
 
+#include "ash/session/test_session_controller_client.h"
+#include "ash/shell.h"
+#include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
+#include "components/session_manager/session_manager_types.h"
+#include "components/user_manager/user_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/window.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -35,10 +42,10 @@ class LogoutConfirmationControllerTest : public testing::Test {
 LogoutConfirmationControllerTest::LogoutConfirmationControllerTest()
     : log_out_called_(false),
       runner_(new base::TestMockTimeTaskRunner),
-      runner_handle_(runner_),
-      controller_(base::Bind(&LogoutConfirmationControllerTest::LogOut,
-                             base::Unretained(this))) {
+      runner_handle_(runner_) {
   controller_.SetClockForTesting(runner_->GetMockTickClock());
+  controller_.SetLogoutClosureForTesting(base::Bind(
+      &LogoutConfirmationControllerTest::LogOut, base::Unretained(this)));
 }
 
 LogoutConfirmationControllerTest::~LogoutConfirmationControllerTest() {}
@@ -149,6 +156,118 @@ TEST_F(LogoutConfirmationControllerTest, DurationExpiredAfterDeniedRequest) {
   EXPECT_FALSE(log_out_called_);
   runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
   EXPECT_TRUE(log_out_called_);
+}
+
+class LastWindowClosedTest : public NoSessionAshTestBase {
+ public:
+  LastWindowClosedTest() = default;
+  ~LastWindowClosedTest() override = default;
+
+  // Simulate a public account signing in.
+  void StartPublicAccountSession() {
+    TestSessionControllerClient* session = GetSessionControllerClient();
+    session->Reset();
+    session->AddUserSession("user1@test.com",
+                            user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+    session->SetSessionState(session_manager::SessionState::ACTIVE);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LastWindowClosedTest);
+};
+
+TEST_F(LastWindowClosedTest, RegularSession) {
+  // Dialog is not visible at startup.
+  LogoutConfirmationController* controller =
+      Shell::Get()->logout_confirmation_controller();
+  EXPECT_FALSE(controller->dialog_for_testing());
+
+  // Dialog is not visible after login.
+  SetSessionStarted(true);
+  EXPECT_FALSE(controller->dialog_for_testing());
+
+  // Creating and closing a window does not show the dialog because this is not
+  // a public account session.
+  std::unique_ptr<aura::Window> window = CreateToplevelTestWindow();
+  EXPECT_FALSE(controller->dialog_for_testing());
+  window.reset();
+  EXPECT_FALSE(controller->dialog_for_testing());
+}
+
+TEST_F(LastWindowClosedTest, PublicSession) {
+  LogoutConfirmationController* controller =
+      Shell::Get()->logout_confirmation_controller();
+
+  // Dialog is not visible after public account login.
+  StartPublicAccountSession();
+  EXPECT_FALSE(controller->dialog_for_testing());
+
+  // Opening windows does not show the dialog.
+  std::unique_ptr<views::Widget> widget1 = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget2 = CreateTestWidget();
+  EXPECT_FALSE(controller->dialog_for_testing());
+
+  // Closing the last window shows the dialog.
+  widget1.reset();
+  EXPECT_FALSE(controller->dialog_for_testing());
+  widget2.reset();
+  EXPECT_TRUE(controller->dialog_for_testing());
+}
+
+TEST_F(LastWindowClosedTest, AlwaysOnTop) {
+  LogoutConfirmationController* controller =
+      Shell::Get()->logout_confirmation_controller();
+  StartPublicAccountSession();
+
+  // The new widget starts in the default window container.
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+
+  // Moving the widget to the always-on-top container does not trigger the
+  // dialog because the window didn't close.
+  widget->SetAlwaysOnTop(true);
+  EXPECT_FALSE(controller->dialog_for_testing());
+
+  // Closing the window triggers the dialog.
+  widget.reset();
+  EXPECT_TRUE(controller->dialog_for_testing());
+}
+
+TEST_F(LastWindowClosedTest, MultipleContainers) {
+  LogoutConfirmationController* controller =
+      Shell::Get()->logout_confirmation_controller();
+  StartPublicAccountSession();
+
+  // Create two windows in different containers.
+  std::unique_ptr<views::Widget> normal_widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> always_on_top_widget = CreateTestWidget();
+  always_on_top_widget->SetAlwaysOnTop(true);
+
+  // Closing the last window shows the dialog.
+  always_on_top_widget.reset();
+  EXPECT_FALSE(controller->dialog_for_testing());
+  normal_widget.reset();
+  EXPECT_TRUE(controller->dialog_for_testing());
+}
+
+TEST_F(LastWindowClosedTest, MultipleDisplays) {
+  LogoutConfirmationController* controller =
+      Shell::Get()->logout_confirmation_controller();
+  StartPublicAccountSession();
+
+  // Create two displays, each with a window.
+  UpdateDisplay("1024x768,800x600");
+  std::unique_ptr<aura::Window> window1 =
+      CreateChildWindow(Shell::GetAllRootWindows()[0]->GetChildById(
+          kShellWindowId_DefaultContainer));
+  std::unique_ptr<aura::Window> window2 =
+      CreateChildWindow(Shell::GetAllRootWindows()[1]->GetChildById(
+          kShellWindowId_DefaultContainer));
+
+  // Closing the last window shows the dialog.
+  window1.reset();
+  EXPECT_FALSE(controller->dialog_for_testing());
+  window2.reset();
+  EXPECT_TRUE(controller->dialog_for_testing());
 }
 
 }  // namespace ash

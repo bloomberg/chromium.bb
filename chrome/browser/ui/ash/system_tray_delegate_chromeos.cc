@@ -22,8 +22,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -37,11 +35,9 @@
 namespace chromeos {
 
 SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
-    : networking_config_delegate_(
+    : registrar_(base::MakeUnique<content::NotificationRegistrar>()),
+      networking_config_delegate_(
           base::MakeUnique<NetworkingConfigDelegateChromeos>()) {
-  // Register notifications on construction so that events such as
-  // PROFILE_CREATED do not get missed if they happen before Initialize().
-  registrar_.reset(new content::NotificationRegistrar);
   if (SystemTrayClient::GetUserLoginStatus() ==
       ash::LoginStatus::NOT_LOGGED_IN) {
     registrar_->Add(this,
@@ -62,10 +58,6 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
                  base::Unretained(this)));
 }
 
-void SystemTrayDelegateChromeOS::Initialize() {
-  BrowserList::AddObserver(this);
-}
-
 SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
   user_pref_registrar_.reset();
 
@@ -74,9 +66,6 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
 
   // Unregister a11y status subscription.
   accessibility_subscription_.reset();
-
-  BrowserList::RemoveObserver(this);
-  StopObservingAppWindowRegistry();
 }
 
 ash::NetworkingConfigDelegate*
@@ -93,13 +82,7 @@ ash::SystemTrayNotifier* SystemTrayDelegateChromeOS::GetSystemTrayNotifier() {
 }
 
 void SystemTrayDelegateChromeOS::SetProfile(Profile* profile) {
-  // Stop observing the AppWindowRegistry of the current |user_profile_|.
-  StopObservingAppWindowRegistry();
-
   user_profile_ = profile;
-
-  // Start observing the AppWindowRegistry of the newly set |user_profile_|.
-  extensions::AppWindowRegistry::Get(user_profile_)->AddObserver(this);
 
   // TODO(jamescook): Move all these prefs into ash. See LogoutButtonTray for
   // an example of how to do this.
@@ -126,40 +109,6 @@ bool SystemTrayDelegateChromeOS::UnsetProfile(Profile* profile) {
   user_pref_registrar_.reset();
   user_profile_ = NULL;
   return true;
-}
-
-void SystemTrayDelegateChromeOS::StopObservingAppWindowRegistry() {
-  if (!user_profile_)
-    return;
-
-  extensions::AppWindowRegistry* registry =
-      extensions::AppWindowRegistry::Factory::GetForBrowserContext(
-          user_profile_, false);
-  if (registry)
-    registry->RemoveObserver(this);
-}
-
-void SystemTrayDelegateChromeOS::NotifyIfLastWindowClosed() {
-  if (!user_profile_)
-    return;
-
-  BrowserList* browser_list = BrowserList::GetInstance();
-  for (BrowserList::const_iterator it = browser_list->begin();
-       it != browser_list->end();
-       ++it) {
-    if ((*it)->profile()->IsSameProfile(user_profile_)) {
-      // The current user has at least one open browser window.
-      return;
-    }
-  }
-
-  if (!extensions::AppWindowRegistry::Get(
-          user_profile_)->app_windows().empty()) {
-    // The current user has at least one open app window.
-    return;
-  }
-
-  GetSystemTrayNotifier()->NotifyLastWindowClosed();
 }
 
 // content::NotificationObserver implementation.
@@ -195,17 +144,6 @@ void SystemTrayDelegateChromeOS::Observe(
 void SystemTrayDelegateChromeOS::OnAccessibilityModeChanged(
     ash::AccessibilityNotificationVisibility notify) {
   GetSystemTrayNotifier()->NotifyAccessibilityModeChanged(notify);
-}
-
-// Overridden from chrome::BrowserListObserver.
-void SystemTrayDelegateChromeOS::OnBrowserRemoved(Browser* browser) {
-  NotifyIfLastWindowClosed();
-}
-
-// Overridden from extensions::AppWindowRegistry::Observer.
-void SystemTrayDelegateChromeOS::OnAppWindowRemoved(
-    extensions::AppWindow* app_window) {
-  NotifyIfLastWindowClosed();
 }
 
 void SystemTrayDelegateChromeOS::OnAccessibilityStatusChanged(
