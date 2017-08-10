@@ -110,10 +110,15 @@ static bool IsJSNewline(UChar c) {
   return (c == '\n' || c == '\r' || c == 0x2028 || c == 0x2029);
 }
 
-static bool StartsHTMLCommentAt(const String& string, size_t start) {
+static bool StartsHTMLOpenCommentAt(const String& string, size_t start) {
   return (start + 3 < string.length() && string[start] == '<' &&
           string[start + 1] == '!' && string[start + 2] == '-' &&
           string[start + 3] == '-');
+}
+
+static bool StartsHTMLCloseCommentAt(const String& string, size_t start) {
+  return (start + 2 < string.length() && string[start] == '-' &&
+          string[start + 1] == '-' && string[start + 2] == '>');
 }
 
 static bool StartsSingleLineCommentAt(const String& string, size_t start) {
@@ -863,7 +868,7 @@ String XSSAuditor::CanonicalizedSnippetForJavaScript(
 
     // Under HTML rules, both the HTML and JS comment synatx matters, and the
     // HTML comment ends at the end of the line, not with -->.
-    if (StartsHTMLCommentAt(string, start_position) ||
+    if (StartsHTMLOpenCommentAt(string, start_position) ||
         StartsSingleLineCommentAt(string, start_position)) {
       while (start_position < end_position &&
              !IsJSNewline(string[start_position]))
@@ -881,18 +886,22 @@ String XSSAuditor::CanonicalizedSnippetForJavaScript(
   String result;
   while (start_position < end_position && !result.length()) {
     // Stop at next comment (using the same rules as above for SVG/XML vs HTML),
-    // when we encounter a comma, when we encoutner a backtick, when we hit an
-    // opening <script> tag, or when we exceed the maximum length target. The
-    // comma rule covers a common parameter concatenation case performed by some
-    // web servers. The backtick rule covers the ECMA6 multi-line template
-    // string feature.
+    // when we encounter a comma, when we encounter a backtick, when we hit an
+    // opening <script> tag, when we encounter a HTML closing comment, or when
+    // we exceed the maximum length target.
+    // - The comma rule covers a common parameter concatenation case performed
+    //   by some web servers.
+    // - The backtick rule covers the ECMA6 multi-line template string feature.
+    // - The HTML closing comment rule covers the generous interpretation in
+    //   https://tc39.github.io/ecma262/#prod-annexB-HTMLCloseComment.
     last_non_space_position = kNotFound;
     for (found_position = start_position; found_position < end_position;
          found_position++) {
       if (!request.should_allow_cdata) {
         if (StartsSingleLineCommentAt(string, found_position) ||
             StartsMultiLineCommentAt(string, found_position) ||
-            StartsHTMLCommentAt(string, found_position)) {
+            StartsHTMLOpenCommentAt(string, found_position) ||
+            StartsHTMLCloseCommentAt(string, found_position)) {
           break;
         }
       }
