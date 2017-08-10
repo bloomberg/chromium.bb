@@ -166,6 +166,16 @@ public class TextBubble implements OnTouchListener {
         updateBubbleLayout();
         mPopupWindow.showAtLocation(mRootView, Gravity.TOP | Gravity.START, mX, mY);
 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (!mPopupWindow.isShowing() || mPopupWindow.getContentView() == null) return;
+
+                mPopupWindow.getContentView().announceForAccessibility(
+                        mContext.getString(mAccessibilityStringId));
+            }
+        });
+
         sBubbles.add(this);
     }
 
