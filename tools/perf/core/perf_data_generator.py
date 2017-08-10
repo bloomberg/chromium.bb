@@ -24,6 +24,7 @@ path_util.AddTelemetryToPath()
 
 from telemetry import benchmark as benchmark_module
 from telemetry import decorators
+from telemetry.story import expectations
 
 from py_utils import discover
 
@@ -1012,7 +1013,11 @@ def get_all_benchmarks_metadata(metadata):
   benchmark_list = current_benchmarks()
 
   for benchmark in benchmark_list:
-    disabled = 'all' in decorators.GetDisabledAttributes(benchmark)
+    exp = benchmark().GetExpectations()
+    disabled = 'all' in decorators.GetDisabledAttributes(benchmark) or any(
+        any(isinstance(condition, expectations.ALL.__class__)
+            for condition in conditions)
+        for (conditions, _) in exp.disabled_platforms)
 
     emails = decorators.GetEmails(benchmark)
     if emails:
