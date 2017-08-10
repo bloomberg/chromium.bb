@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-CURDIR=$(cd $(dirname "$0") && pwd)
-
 if ! make --version 2>/dev/null | grep 'GNU Make' >/dev/null; then
     echo "ERROR: GNU make is required to run this program" >&2
     exit 1
@@ -21,7 +19,7 @@ if ! python3 -c "from louis import liblouis" 2>/dev/null; then
 fi
 
 function print_help {
-    echo "Usage: $0 [OPTIONS] [CMD]" >&2
+    echo "Usage: $0 [OPTIONS] [COMMAND]" >&2
     echo "" >&2
     echo "Commands:" >&2
     echo "  clean               clean up generated files" >&2
@@ -111,7 +109,7 @@ if $HELP; then
 fi
 
 if $VERSION; then
-    echo "lou_maketable (Liblouis) 3.2.0" >&2
+    echo "lou_maketable (Liblouis) @VERSION@" >&2
     echo "Copyright (C) 2017 Bert Frees." >&2
     echo "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>." >&2
     echo "This is free software: you are free to change and redistribute it." >&2
@@ -136,5 +134,12 @@ fi
 if ! [[ -n ${CMD+x} ]]; then
     CMD=suggestions
 fi
+
+
+# This file is installed in the parent directory of the lou_maketable.d directory. When run from
+# within the source code it is sourced from a file within the parent directory. In both cases the
+# relative path to the lou_maketable.mk file should be "lou_maketable.d/lou_maketable.mk".
+
+CURDIR=$(cd $(dirname "$0") && pwd)
 
 make -f $CURDIR/lou_maketable.d/lou_maketable.mk VERBOSE=$VERBOSE CONFIG_FILE=$CONFIG_FILE $CMD

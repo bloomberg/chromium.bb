@@ -281,8 +281,10 @@ TAGS
 /tools/gnulib/unistr/*.la
 /tools/gnulib/unistr/*.lo
 
-# /table-dev/
-/table-dev/make-patterns.mk
+# /tools/lou_maketable.d
+/tools/lou_maketable.d/lou_maketable
+/tools/lou_maketable.d/Makefile
+/tools/lou_maketable.d/Makefile.in
 
 # stuff used with /tools/lou_compare
 input.txt
