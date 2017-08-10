@@ -139,7 +139,8 @@ id<GREYMatcher> OmniboxText(std::string text) {
 }
 
 id<GREYMatcher> ToolsMenuButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_TOOLBAR_SETTINGS);
+  return grey_allOf(grey_accessibilityID(kToolbarToolsMenuButtonIdentifier),
+                    grey_sufficientlyVisible(), nil);
 }
 
 id<GREYMatcher> ShareButton() {
