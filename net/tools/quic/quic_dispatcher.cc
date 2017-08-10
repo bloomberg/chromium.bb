@@ -1003,7 +1003,10 @@ void QuicDispatcher::ProcessStatelessRejectorState(
       break;
 
     case StatelessRejector::REJECTED: {
-      DCHECK_EQ(framer_.version(), first_version);
+      QUIC_BUG_IF(first_version != framer_.version())
+          << "SREJ: Client's version: " << QuicVersionToString(first_version)
+          << " is different from current dispatcher framer's version: "
+          << QuicVersionToString(framer_.version());
       StatelessConnectionTerminator terminator(rejector->connection_id(),
                                                &framer_, helper(),
                                                time_wait_list_manager_.get());

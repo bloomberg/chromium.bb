@@ -33,10 +33,10 @@
 #include "net/quic/chromium/quic_chromium_packet_writer.h"
 #include "net/quic/chromium/quic_connection_logger.h"
 #include "net/quic/core/quic_client_push_promise_index.h"
-#include "net/quic/core/quic_client_session_base.h"
 #include "net/quic/core/quic_crypto_client_stream.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_server_id.h"
+#include "net/quic/core/quic_spdy_client_session_base.h"
 #include "net/quic/core/quic_time.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/spdy/chromium/multiplexed_session.h"
@@ -62,7 +62,7 @@ class QuicChromiumClientSessionPeer;
 }  // namespace test
 
 class NET_EXPORT_PRIVATE QuicChromiumClientSession
-    : public QuicClientSessionBase,
+    : public QuicSpdyClientSessionBase,
       public MultiplexedSession,
       public QuicChromiumPacketReader::Visitor,
       public QuicChromiumPacketWriter::Delegate {

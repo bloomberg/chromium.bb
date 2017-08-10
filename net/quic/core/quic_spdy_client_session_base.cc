@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/core/quic_client_session_base.h"
+#include "net/quic/core/quic_spdy_client_session_base.h"
 
 #include "net/quic/core/quic_client_promised_info.h"
 #include "net/quic/core/spdy_utils.h"
@@ -13,7 +13,7 @@ using std::string;
 
 namespace net {
 
-QuicClientSessionBase::QuicClientSessionBase(
+QuicSpdyClientSessionBase::QuicSpdyClientSessionBase(
     QuicConnection* connection,
     QuicClientPushPromiseIndex* push_promise_index,
     const QuicConfig& config)
@@ -21,7 +21,7 @@ QuicClientSessionBase::QuicClientSessionBase(
       push_promise_index_(push_promise_index),
       largest_promised_stream_id_(kInvalidStreamId) {}
 
-QuicClientSessionBase::~QuicClientSessionBase() {
+QuicSpdyClientSessionBase::~QuicSpdyClientSessionBase() {
   //  all promised streams for this session
   for (auto& it : promised_by_id_) {
     QUIC_DVLOG(1) << "erase stream " << it.first << " url " << it.second->url();
@@ -30,15 +30,16 @@ QuicClientSessionBase::~QuicClientSessionBase() {
   delete connection();
 }
 
-void QuicClientSessionBase::OnConfigNegotiated() {
+void QuicSpdyClientSessionBase::OnConfigNegotiated() {
   QuicSpdySession::OnConfigNegotiated();
 }
 
-void QuicClientSessionBase::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
+void QuicSpdyClientSessionBase::OnCryptoHandshakeEvent(
+    CryptoHandshakeEvent event) {
   QuicSpdySession::OnCryptoHandshakeEvent(event);
 }
 
-void QuicClientSessionBase::OnInitialHeadersComplete(
+void QuicSpdyClientSessionBase::OnInitialHeadersComplete(
     QuicStreamId stream_id,
     const SpdyHeaderBlock& response_headers) {
   // Note that the strong ordering of the headers stream means that
@@ -53,7 +54,7 @@ void QuicClientSessionBase::OnInitialHeadersComplete(
   promised->OnResponseHeaders(response_headers);
 }
 
-void QuicClientSessionBase::OnPromiseHeaderList(
+void QuicSpdyClientSessionBase::OnPromiseHeaderList(
     QuicStreamId stream_id,
     QuicStreamId promised_stream_id,
     size_t frame_len,
@@ -77,9 +78,9 @@ void QuicClientSessionBase::OnPromiseHeaderList(
   stream->OnPromiseHeaderList(promised_stream_id, frame_len, header_list);
 }
 
-bool QuicClientSessionBase::HandlePromised(QuicStreamId /* associated_id */,
-                                           QuicStreamId promised_id,
-                                           const SpdyHeaderBlock& headers) {
+bool QuicSpdyClientSessionBase::HandlePromised(QuicStreamId /* associated_id */,
+                                               QuicStreamId promised_id,
+                                               const SpdyHeaderBlock& headers) {
   // Due to pathalogical packet re-ordering, it is possible that
   // frames for the promised stream have already arrived, and the
   // promised stream could be active or closed.
@@ -126,7 +127,7 @@ bool QuicClientSessionBase::HandlePromised(QuicStreamId /* associated_id */,
   return true;
 }
 
-QuicClientPromisedInfo* QuicClientSessionBase::GetPromisedByUrl(
+QuicClientPromisedInfo* QuicSpdyClientSessionBase::GetPromisedByUrl(
     const string& url) {
   QuicPromisedByUrlMap::iterator it =
       push_promise_index_->promised_by_url()->find(url);
@@ -136,7 +137,7 @@ QuicClientPromisedInfo* QuicClientSessionBase::GetPromisedByUrl(
   return nullptr;
 }
 
-QuicClientPromisedInfo* QuicClientSessionBase::GetPromisedById(
+QuicClientPromisedInfo* QuicSpdyClientSessionBase::GetPromisedById(
     const QuicStreamId id) {
   QuicPromisedByIdMap::iterator it = promised_by_id_.find(id);
   if (it != promised_by_id_.end()) {
@@ -145,7 +146,7 @@ QuicClientPromisedInfo* QuicClientSessionBase::GetPromisedById(
   return nullptr;
 }
 
-QuicSpdyStream* QuicClientSessionBase::GetPromisedStream(
+QuicSpdyStream* QuicSpdyClientSessionBase::GetPromisedStream(
     const QuicStreamId id) {
   DynamicStreamMap::iterator it = dynamic_streams().find(id);
   if (it != dynamic_streams().end()) {
@@ -154,7 +155,8 @@ QuicSpdyStream* QuicClientSessionBase::GetPromisedStream(
   return nullptr;
 }
 
-void QuicClientSessionBase::DeletePromised(QuicClientPromisedInfo* promised) {
+void QuicSpdyClientSessionBase::DeletePromised(
+    QuicClientPromisedInfo* promised) {
   push_promise_index_->promised_by_url()->erase(promised->url());
   // Since promised_by_id_ contains the unique_ptr, this will destroy
   // promised.
@@ -162,23 +164,24 @@ void QuicClientSessionBase::DeletePromised(QuicClientPromisedInfo* promised) {
   headers_stream()->MaybeReleaseSequencerBuffer();
 }
 
-void QuicClientSessionBase::OnPushStreamTimedOut(QuicStreamId stream_id) {}
+void QuicSpdyClientSessionBase::OnPushStreamTimedOut(QuicStreamId stream_id) {}
 
-void QuicClientSessionBase::ResetPromised(QuicStreamId id,
-                                          QuicRstStreamErrorCode error_code) {
+void QuicSpdyClientSessionBase::ResetPromised(
+    QuicStreamId id,
+    QuicRstStreamErrorCode error_code) {
   SendRstStream(id, error_code, 0);
   if (!IsOpenStream(id)) {
     MaybeIncreaseLargestPeerStreamId(id);
   }
 }
 
-void QuicClientSessionBase::CloseStreamInner(QuicStreamId stream_id,
-                                             bool locally_reset) {
+void QuicSpdyClientSessionBase::CloseStreamInner(QuicStreamId stream_id,
+                                                 bool locally_reset) {
   QuicSpdySession::CloseStreamInner(stream_id, locally_reset);
   headers_stream()->MaybeReleaseSequencerBuffer();
 }
 
-bool QuicClientSessionBase::ShouldReleaseHeadersStreamSequencerBuffer() {
+bool QuicSpdyClientSessionBase::ShouldReleaseHeadersStreamSequencerBuffer() {
   return num_active_requests() == 0 && promised_by_id_.empty();
 }
 
