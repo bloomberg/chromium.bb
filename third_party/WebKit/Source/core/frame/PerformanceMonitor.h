@@ -6,6 +6,7 @@
 #define PerformanceMonitor_h
 
 #include "core/CoreExport.h"
+#include "core/frame/LocalFrame.h"
 #include "platform/heap/Handle.h"
 #include "platform/scheduler/base/task_time_observer.h"
 #include "platform/wtf/text/AtomicString.h"
@@ -26,10 +27,13 @@ class V8Compile;
 class DOMWindow;
 class Document;
 class ExecutionContext;
-class Frame;
-class LocalFrame;
 class Performance;
 class SourceLocation;
+
+#define PERF_METRICS_LIST(V) \
+  V(DocumentCount)           \
+  V(JSEventListenerCount)    \
+  V(NodeCount)
 
 // Performance monitor for Web Performance APIs and logging.
 // The monitor is maintained per local root.
@@ -41,6 +45,13 @@ class CORE_EXPORT PerformanceMonitor final
   WTF_MAKE_NONCOPYABLE(PerformanceMonitor);
 
  public:
+  enum MetricsType {
+#define DECLARE_PERF_METRIC_NAME(name) k##name,
+    PERF_METRICS_LIST(DECLARE_PERF_METRIC_NAME)
+#undef DECLARE_PERF_METRIC_NAME
+        kMaxMetricType
+  };
+
   enum Violation : size_t {
     kLongTask,
     kLongLayout,
@@ -93,6 +104,18 @@ class CORE_EXPORT PerformanceMonitor final
   void Did(const probe::V8Compile&);
 
   void DocumentWriteFetchScript(Document*);
+
+  static inline void IncrementCounter(LocalFrame* frame, MetricsType type) {
+    if (frame)
+      ++frame->GetPerformanceMonitor()->metric_values_[type];
+  }
+
+  static inline void DecrementCounter(LocalFrame* frame, MetricsType type) {
+    if (frame)
+      --frame->GetPerformanceMonitor()->metric_values_[type];
+  }
+
+  int PerfMetricValue(int id) const { return metric_values_[id]; }
 
   // Direct API for core.
   void Subscribe(Violation, double threshold, Client*);
@@ -148,6 +171,7 @@ class CORE_EXPORT PerformanceMonitor final
               typename DefaultHash<size_t>::Hash,
               WTF::UnsignedWithZeroKeyHashTraits<size_t>>
       subscriptions_;
+  int metric_values_[kMaxMetricType]{};
 };
 
 }  // namespace blink

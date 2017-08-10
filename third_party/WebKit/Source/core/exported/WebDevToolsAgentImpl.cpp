@@ -61,6 +61,7 @@
 #include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorOverlayAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorPerformanceAgent.h"
 #include "core/inspector/InspectorResourceContainer.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InspectorTaskRunner.h"
@@ -333,6 +334,8 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
                                               css_agent, session->V8Session()));
 
   session->Append(InspectorMemoryAgent::Create());
+
+  session->Append(InspectorPerformanceAgent::Create(inspected_frames_.Get()));
 
   session->Append(
       InspectorApplicationCacheAgent::Create(inspected_frames_.Get()));

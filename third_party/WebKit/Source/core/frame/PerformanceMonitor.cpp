@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/frame/PerformanceMonitor.h"
+
 #include "bindings/core/v8/ScheduledAction.h"
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "bindings/core/v8/SourceLocation.h"
