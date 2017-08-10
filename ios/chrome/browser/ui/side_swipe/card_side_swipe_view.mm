@@ -22,6 +22,7 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
+#import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #include "url/gurl.h"
@@ -241,7 +242,8 @@ const CGFloat kResizeFactor = 4;
   dispatch_queue_t priorityQueue =
       dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0ul);
   [tab retrieveSnapshot:^(UIImage* image) {
-    if (tab.webController.usePlaceholderOverlay &&
+    if (PagePlaceholderTabHelper::FromWebState(tab.webState)
+            ->will_add_placeholder_for_next_navigation() &&
         !ios::device_util::IsSingleCoreDevice()) {
       [card setImage:[CRWWebController defaultSnapshotImage]];
       dispatch_async(priorityQueue, ^{

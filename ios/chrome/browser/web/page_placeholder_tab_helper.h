@@ -29,6 +29,12 @@ class PagePlaceholderTabHelper
   // will be removed before navigation is finished.
   void AddPlaceholderForNextNavigation();
 
+  // true if placeholder will be displayed between DidStartNavigation and
+  // PageLoaded WebStateObserver callbacks.
+  bool will_add_placeholder_for_next_navigation() {
+    return add_placeholder_for_next_navigation_;
+  }
+
  private:
   PagePlaceholderTabHelper(web::WebState* web_state,
                            id<PagePlaceholderTabHelperDelegate> delegate);
@@ -49,8 +55,6 @@ class PagePlaceholderTabHelper
   // true if placeholder is currently being displayed.
   bool displaying_placeholder_ = false;
 
-  // true if placeholder should be displayed between DidStartNavigation and
-  // PageLoaded WebStateObserver callbacks.
   bool add_placeholder_for_next_navigation_ = false;
 
   base::WeakPtrFactory<PagePlaceholderTabHelper> weak_factory_;
