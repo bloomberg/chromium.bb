@@ -55,7 +55,6 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -441,16 +440,6 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     content::SimulateKeyPress(GetWebContents(), key, code, key_code, false,
                               false, false, false);
     test_delegate_.Wait();
-  }
-
-  void PasteStringAndWait(const std::string& pastedata) {
-    {
-      ui::ScopedClipboardWriter writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
-      writer.WriteText(base::ASCIIToUTF16(pastedata));
-    }
-    test_delegate_.Reset();
-    GetWebContents()->Paste();
-    test_delegate_.WaitForTextChange();
   }
 
   bool HandleKeyPressEvent(const content::NativeWebKeyboardEvent& event) {
@@ -1757,33 +1746,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   // Press the down arrow to select the suggestion and attempt to preview the
   // autofilled form.
   SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-}
-
-// Flaky on Windows
-#if defined(OS_WIN)
-#define MAYBE_PastedPasswordIsSaved DISABLED_PastedPasswordIsSaved
-#else
-#define MAYBE_PastedPasswordIsSaved PastedPasswordIsSaved
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_PastedPasswordIsSaved) {
-  // Serve test page from a HTTPS server so that Form Not Secure warnings do not
-  // interfere with the test.
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  net::SSLServerConfig ssl_config;
-  ssl_config.client_cert_type =
-      net::SSLServerConfig::ClientCertType::NO_CLIENT_CERT;
-  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
-  ASSERT_TRUE(https_server.Start());
-
-  GURL url = https_server.GetURL("/autofill/autofill_password_form.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
-
-  ASSERT_TRUE(content::ExecuteScript(
-      GetRenderViewHost(),
-      "document.getElementById('user').value = 'user';"));
-  FocusFieldByName("password");
-  PasteStringAndWait("foobar");
 }
 
 // An extension of the test fixture for tests with site isolation.
