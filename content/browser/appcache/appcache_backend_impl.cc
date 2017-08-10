@@ -110,13 +110,14 @@ bool AppCacheBackendImpl::GetStatusWithCallback(int host_id,
   return true;
 }
 
-bool AppCacheBackendImpl::StartUpdateWithCallback(
-    int host_id, const StartUpdateCallback& callback, void* callback_param) {
+bool AppCacheBackendImpl::StartUpdateWithCallback(int host_id,
+                                                  StartUpdateCallback callback,
+                                                  void* callback_param) {
   AppCacheHost* host = GetHost(host_id);
   if (!host)
     return false;
 
-  host->StartUpdateWithCallback(callback, callback_param);
+  host->StartUpdateWithCallback(std::move(callback), callback_param);
   return true;
 }
 
