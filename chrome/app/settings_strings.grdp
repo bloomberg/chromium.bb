@@ -1896,14 +1896,12 @@
   </message>
 
   <!-- Search Page -->
+  <message name="IDS_SETTINGS_SEARCH" desc="Name of the settings page which displays search engine preferences.">
+    Search engine
+  </message>
   <if expr="chromeos">
-    <message name="IDS_SETTINGS_SEARCH" desc="Name of the settings page which displays search engine and assistant preferences on Chrome OS.">
+    <message name="IDS_SETTINGS_SEARCH_AND_ASSISTANT" desc="Name of the settings page which displays search engine and assistant preferences on Chrome OS.">
       Search engine and Google Assistant
-    </message>
-  </if>
-  <if expr="not chromeos">
-    <message name="IDS_SETTINGS_SEARCH" desc="Name of the settings page which displays search engine preferences.">
-      Search engine
     </message>
   </if>
   <message name="IDS_SETTINGS_SEARCH_EXPLANATION" desc="Explanation for the search engine dropdown setting.">
