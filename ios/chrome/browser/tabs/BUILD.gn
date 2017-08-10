@@ -46,6 +46,8 @@ source_set("tabs_internal") {
     "tab_model_closing_web_state_observer.h",
     "tab_model_closing_web_state_observer.mm",
     "tab_model_list.mm",
+    "tab_model_notification_observer.h",
+    "tab_model_notification_observer.mm",
     "tab_model_observers.h",
     "tab_model_observers.mm",
     "tab_model_observers_bridge.h",

@@ -36,6 +36,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model_closing_web_state_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
+#import "ios/chrome/browser/tabs/tab_model_notification_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_observers.h"
 #import "ios/chrome/browser/tabs/tab_model_observers_bridge.h"
 #import "ios/chrome/browser/tabs/tab_model_selected_tab_observer.h"
@@ -118,19 +119,6 @@ void CleanCertificatePolicyCache(
                  policy_cache),
       base::Bind(&RestoreCertificatePolicyCacheFromModel, policy_cache,
                  base::Unretained(web_state_list)));
-}
-
-// Factory of WebState for DeserializeWebStateList that wraps the method
-// web::WebState::CreateWithStorageSession and sets the WebState usage
-// enabled flag from |web_usage_enabled|.
-std::unique_ptr<web::WebState> CreateWebState(
-    BOOL web_usage_enabled,
-    web::WebState::CreateParams create_params,
-    CRWSessionStorage* session_storage) {
-  std::unique_ptr<web::WebState> web_state =
-      web::WebState::CreateWithStorageSession(create_params, session_storage);
-  web_state->SetWebUsageEnabled(web_usage_enabled);
-  return web_state;
 }
 
 }  // anonymous namespace
@@ -326,6 +314,9 @@ std::unique_ptr<web::WebState> CreateWebState(
     _webStateListMetricsObserver = webStateListMetricsObserver.get();
     _webStateListObservers.push_back(std::move(webStateListMetricsObserver));
 
+    _webStateListObservers.push_back(
+        base::MakeUnique<TabModelNotificationObserver>(self));
+
     for (const auto& webStateListObserver : _webStateListObservers)
       _webStateList->AddObserver(webStateListObserver.get());
     _retainedWebStateListObservers = [retainedWebStateListObservers copy];
@@ -438,9 +429,6 @@ std::unique_ptr<web::WebState> CreateWebState(
                    inBackground:(BOOL)inBackground {
   DCHECK(_browserState);
 
-  web::WebState::CreateParams createParams(self.browserState);
-  createParams.created_with_opener = openedByDOM;
-
   int insertionIndex = WebStateList::kInvalidIndex;
   int insertionFlags = WebStateList::INSERT_NO_FLAGS;
   if (index != TabModelConstants::kTabPositionAutomatically) {
@@ -453,42 +441,22 @@ std::unique_ptr<web::WebState> CreateWebState(
     insertionFlags |= WebStateList::INSERT_FORCE_INDEX;
   }
 
-  insertionIndex = _webStateList->InsertWebState(
-      insertionIndex, web::WebState::Create(createParams), insertionFlags,
-      WebStateOpener(parentTab.webState));
+  if (!inBackground) {
+    insertionFlags |= WebStateList::INSERT_ACTIVATE;
+  }
 
-  web::WebState* webState = _webStateList->GetWebStateAt(insertionIndex);
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  DCHECK(tab);
+  web::WebState::CreateParams createParams(self.browserState);
+  createParams.created_with_opener = openedByDOM;
 
-  webState->SetWebUsageEnabled(_webUsageEnabled ? true : false);
-
-  if (!inBackground && _tabUsageRecorder)
-    _tabUsageRecorder->TabCreatedForSelection(tab);
-
+  std::unique_ptr<web::WebState> webState = web::WebState::Create(createParams);
   webState->GetNavigationManager()->LoadURLWithParams(loadParams);
 
-  // Force the page to start loading even if it's in the background.
-  // TODO(crbug.com/705819): Remove this call.
-  if (_webUsageEnabled)
-    webState->GetView();
+  insertionIndex = _webStateList->InsertWebState(
+      insertionIndex, std::move(webState), insertionFlags,
+      WebStateOpener(parentTab.webState));
 
-  NSDictionary* userInfo = @{
-    kTabModelTabKey : tab,
-    kTabModelOpenInBackgroundKey : @(inBackground),
-  };
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kTabModelNewTabWillOpenNotification
-                    object:self
-                  userInfo:userInfo];
-
-  // TODO(crbug.com/620083): INSERT_ACTIVATE should be set in insertionFlags
-  // if inBackground is YES instead of calling -setCurrentTab: here. As this
-  // requires further refactoring, it will be done in a followup CL.
-  if (!inBackground)
-    [self setCurrentTab:tab];
-
-  return tab;
+  return LegacyTabHelper::GetTabForWebState(
+      _webStateList->GetWebStateAt(insertionIndex));
 }
 
 - (void)moveTab:(Tab*)tab toIndex:(NSUInteger)toIndex {
@@ -700,7 +668,8 @@ std::unique_ptr<web::WebState> CreateWebState(
   web::WebState::CreateParams createParams(_browserState);
   DeserializeWebStateList(
       _webStateList.get(), window,
-      base::BindRepeating(&CreateWebState, _webUsageEnabled, createParams));
+      base::BindRepeating(&web::WebState::CreateWithStorageSession,
+                          createParams));
 
   DCHECK_GT(_webStateList->count(), oldCount);
   int restoredCount = _webStateList->count() - oldCount;
@@ -715,8 +684,6 @@ std::unique_ptr<web::WebState> CreateWebState(
   for (int index = oldCount; index < _webStateList->count(); ++index) {
     web::WebState* webState = _webStateList->GetWebStateAt(index);
     Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-
-    webState->SetWebUsageEnabled(_webUsageEnabled ? true : false);
     tab.webController.usePlaceholderOverlay = YES;
 
     // Restore the CertificatePolicyCache (note that webState is invalid after
