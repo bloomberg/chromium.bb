@@ -396,11 +396,7 @@ void InputHandler::DispatchMouseEvent(
   input_queued_ = false;
   pending_mouse_callbacks_.push_back(std::move(callback));
   host_->GetRenderWidgetHost()->ForwardMouseEvent(event);
-  // MouseUp/Down events don't create a round-trip to the renderer, so there's
-  // no point in blocking the response until an ack is received. Only wait for
-  // an ack if we're synthesizing a MouseMove event, which does make a
-  // round-trip to the renderer.
-  if (event_type != blink::WebInputEvent::kMouseMove || !input_queued_) {
+  if (!input_queued_) {
     pending_mouse_callbacks_.back()->sendSuccess();
     pending_mouse_callbacks_.pop_back();
   }
