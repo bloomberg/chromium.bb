@@ -3596,9 +3596,11 @@ interface MediaSource : EventTarget
     getter readyState
     getter sourceBuffers
     method addSourceBuffer
+    method clearLiveSeekableRange
     method constructor
     method endOfStream
     method removeSourceBuffer
+    method setLiveSeekableRange
     setter duration
     setter onsourceclose
     setter onsourceended

@@ -56,8 +56,8 @@ enum EndOfStreamError {
     readonly attribute DOMString readyState;
     [RaisesException] void endOfStream(optional EndOfStreamError error);
 
-    [RaisesException, RuntimeEnabled=MediaSourceExperimental] void setLiveSeekableRange(double start, double end);
-    [RaisesException, RuntimeEnabled=MediaSourceExperimental] void clearLiveSeekableRange();
+    [RaisesException] void setLiveSeekableRange(double start, double end);
+    [RaisesException] void clearLiveSeekableRange();
 
     static boolean isTypeSupported (DOMString type);
 };
