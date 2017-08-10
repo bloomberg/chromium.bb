@@ -2083,6 +2083,17 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
   } else {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   styles_changed, 1);
+    if (this == GetDocument().documentElement()) {
+      if (GetDocument().GetStyleEngine().UpdateRemUnits(old_style.Get(),
+                                                        new_style.Get())) {
+        // Trigger a full document recalc on rem unit changes. We could keep
+        // track of which elements depend on rem units like we do for viewport
+        // styles, but we assume root font size changes are rare and just
+        // recalculate everything.
+        if (local_change < kForce)
+          local_change = kForce;
+      }
+    }
   }
 
   if (local_change == kReattach) {

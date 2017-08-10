@@ -52,7 +52,7 @@
 
     document.body.style.padding = "10px";
     debug("Trigger style update");
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
     debug("Verifying layout hasn't been triggered");
     shouldBe("internals.needsLayoutCount()", "3");
 

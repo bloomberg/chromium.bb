@@ -17,7 +17,7 @@
     document.body.style.padding = "10px";
     shouldBe("document.scrollingElement", "document.documentElement");
     debug("Verifying style update hadn't been triggered");
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
     debug("Verifying layout hasn't been triggered");
     shouldBe("internals.needsLayoutCount()", "3");
 </script>
