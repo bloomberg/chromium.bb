@@ -43,15 +43,6 @@ class JourneyLogger {
     SECTION_MAX,
   };
 
-  // For the CanMakePayment histograms.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
-  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: CanMakePaymentUsage
-  enum CanMakePaymentUsage {
-    CAN_MAKE_PAYMENT_USED = 0,
-    CAN_MAKE_PAYMENT_NOT_USED = 1,
-    CAN_MAKE_PAYMENT_USE_MAX,
-  };
-
   // The payment method that was used by the user to complete the transaction.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SelectedPaymentMethod
@@ -60,17 +51,6 @@ class JourneyLogger {
     SELECTED_PAYMENT_METHOD_ANDROID_PAY = 1,
     SELECTED_PAYMENT_METHOD_OTHER_PAYMENT_APP = 2,
     SELECTED_PAYMENT_METHOD_MAX = 3,
-  };
-
-  // Used to mesure the impact of the CanMakePayment return value on whether the
-  // Payment Request is shown to the user.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
-  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: CanMakePaymentEffectOnShow
-  enum CmpEffectOnShow {
-    CMP_EFFECT_ON_SHOW_COULD_NOT_MAKE_PAYMENT_AND_DID_NOT_SHOW = 0,
-    CMP_EFFECT_ON_SHOW_DID_SHOW = 1 << 0,
-    CMP_EFFECT_ON_SHOW_COULD_MAKE_PAYMENT = 1 << 1,
-    CMP_EFFECT_ON_SHOW_MAX = 4,
   };
 
   // Used to log different parameters' effect on whether the transaction was
@@ -226,31 +206,12 @@ class JourneyLogger {
   // merchant.
   void RecordSectionSpecificStats(CompletionStatus completion_status);
 
-  // Records the metrics related the the CanMakePayment method unless in
-  // incognito mode.
-  void RecordCanMakePaymentStats(CompletionStatus completion_status);
-
-  // Records CanMakePayment's return value effect on whether the Payment Request
-  // was shown or not.
-  void RecordCanMakePaymentEffectOnShow();
-
-  // Records the completion status depending on the the usage and return value
-  // of the CanMakePaymentMethod.
-  void RecordCanMakePaymentEffectOnCompletion(
-      CompletionStatus completion_status);
-
   // Records the metric about the different events that happened during the
   // Payment Request.
   void RecordEventsMetric(CompletionStatus completion_status);
 
   // Records the Payment Request Url Keyed Metrics.
   void RecordUrlKeyedMetrics(CompletionStatus completion_status);
-
-  // Returns whether canMakePayment was used.
-  bool WasCanMakePaymentUsed();
-
-  // Returns whether the answer to canMakePayment was true or false;
-  bool CouldMakePayment();
 
   // Returns whether this Payment Request was triggered (shown or skipped show).
   bool WasPaymentRequestTriggered();

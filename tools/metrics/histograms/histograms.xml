@@ -54345,6 +54345,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion"
     enum="PaymentRequestFlowCompletionStatus">
+  <obsolete>
+    M62+ Part of PaymentRequest.Events
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>
     Whether the flow was completed when CanMakePayment was not called by the
@@ -54354,6 +54357,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PaymentRequest.CanMakePayment.Usage"
     enum="CanMakePaymentUsage">
+  <obsolete>
+    M62+ Part of PaymentRequest.Events
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>
     Whether the merchant used the CanMakePayment method during a Payment
@@ -54363,6 +54369,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PaymentRequest.CanMakePayment.Used.EffectOnShow"
     enum="PaymentRequestCanMakePaymentEffectOnShow">
+  <obsolete>
+    M62+ Part of PaymentRequest.Events
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>
     The effect of the CanMakePayment return value on whether Show was called.
@@ -54372,6 +54381,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="PaymentRequest.CanMakePayment.Used.FalseWithShowEffectOnCompletion"
     enum="PaymentRequestFlowCompletionStatus">
+  <obsolete>
+    M62+ Part of PaymentRequest.Events
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>
     Whether the flow was completed when CanMakePayment was called by the
@@ -54382,6 +54394,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion"
     enum="PaymentRequestFlowCompletionStatus">
+  <obsolete>
+    M62+ Part of PaymentRequest.Events
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>
     Whether the flow was completed when CanMakePayment was called by the
@@ -54522,6 +54537,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="PaymentRequest.UserDidNotHaveCompleteSuggestionsForEverything.EffectOnCompletion"
     enum="PaymentRequestFlowCompletionStatus">
+  <obsolete>
+    M62+ Part of PaymentRequest.Events
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>
     Whether the flow was completed when the user did not have a complete
@@ -54546,6 +54564,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="PaymentRequest.UserDidNotHaveSuggestionsForEverything.EffectOnCompletion"
     enum="PaymentRequestFlowCompletionStatus">
+  <obsolete>
+    M62+ Part of PaymentRequest.Events
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>
     Whether the flow was completed when the user did not have suggestions
@@ -54556,6 +54577,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="PaymentRequest.UserHadCompleteSuggestionsForEverything.EffectOnCompletion"
     enum="PaymentRequestFlowCompletionStatus">
+  <obsolete>
+    M62+ Part of PaymentRequest.Events
+  </obsolete>
   <owner>sebsg@chromium.org</owner>
   <summary>
     Whether the flow was completed when the user had at least one complete
@@ -97548,23 +97572,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="OtherAborted"
       label="The Payment Request was aborted but not but the user"/>
   <affected-histogram name="PaymentRequest.NumberOfSelectionAdds.ContactInfo"/>
-  <affected-histogram name="PaymentRequest.NumberOfSelectionAdds.CreditCards"/>
+  <affected-histogram
+      name="PaymentRequest.NumberOfSelectionAdds.PaymentMethod"/>
   <affected-histogram
       name="PaymentRequest.NumberOfSelectionAdds.ShippingAddress"/>
   <affected-histogram
       name="PaymentRequest.NumberOfSelectionChanges.ContactInfo"/>
   <affected-histogram
-      name="PaymentRequest.NumberOfSelectionChanges.CreditCards"/>
+      name="PaymentRequest.NumberOfSelectionChanges.PaymentMethod"/>
   <affected-histogram
       name="PaymentRequest.NumberOfSelectionChanges.ShippingAddress"/>
   <affected-histogram name="PaymentRequest.NumberOfSelectionEdits.ContactInfo"/>
-  <affected-histogram name="PaymentRequest.NumberOfSelectionEdits.CreditCards"/>
+  <affected-histogram
+      name="PaymentRequest.NumberOfSelectionEdits.PaymentMethod"/>
   <affected-histogram
       name="PaymentRequest.NumberOfSelectionEdits.ShippingAddress"/>
   <affected-histogram
       name="PaymentRequest.NumberOfSuggestionsShown.ContactInfo"/>
   <affected-histogram
-      name="PaymentRequest.NumberOfSuggestionsShown.CreditCards"/>
+      name="PaymentRequest.NumberOfSuggestionsShown.PaymentMethod"/>
   <affected-histogram
       name="PaymentRequest.NumberOfSuggestionsShown.ShippingAddress"/>
 </histogram_suffixes>
@@ -97572,8 +97598,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram_suffixes name="PaymentRequestSection" separator=".">
   <suffix name="ContactInfo"
       label="For the contact info section of a Payment Request"/>
+  <suffix name="PaymentMethod"
+      label="For the payment method section of a Payment Request"/>
   <suffix name="CreditCards"
-      label="For the credit card section of a Payment Request"/>
+      label="For the payment method section of a Payment Request">
+    <obsolete>
+      Renamed to PaymentMethod.
+    </obsolete>
+  </suffix>
   <suffix name="ShippingAddress"
       label="For the shipping address section of a Payment Request"/>
   <affected-histogram name="PaymentRequest.NumberOfSelectionAdds"/>
