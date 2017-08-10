@@ -41469,6 +41469,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.WritePacketNotReusableReason"
+    enum="QuicNotReusableReason">
+  <owner>ckrasic@chromium.org</owner>
+  <summary>
+    The reason QUIC packet writer needed to allocate a new buffer, rather than
+    the expected case of reusing its existing one.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicStreamFactory.BadPacketLossEvents5"
     enum="QuicBadPacketLossEvents">
   <owner>rch@chromium.org</owner>

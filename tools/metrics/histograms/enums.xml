@@ -31923,6 +31923,12 @@ from previous Chrome versions.
   <int value="12" label="csv"/>
 </enum>
 
+<enum name="QuicNotReusableReason">
+  <int value="0" label="NULLPTR"/>
+  <int value="1" label="TOO_SMALL"/>
+  <int value="2" label="REF_COUNT"/>
+</enum>
+
 <enum name="QuicRejectReasons">
   <int value="1" label="CLIENT_NONCE_UNKNOWN_FAILURE"/>
   <int value="2" label="CLIENT_NONCE_INVALID_FAILURE"/>

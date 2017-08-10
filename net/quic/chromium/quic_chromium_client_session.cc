@@ -1367,7 +1367,7 @@ void QuicChromiumClientSession::OnSuccessfulVersionNegotiation(
 
 int QuicChromiumClientSession::HandleWriteError(
     int error_code,
-    scoped_refptr<StringIOBuffer> packet) {
+    scoped_refptr<QuicChromiumPacketWriter::ReusableIOBuffer> packet) {
   if (stream_factory_ == nullptr ||
       !stream_factory_->migrate_sessions_on_network_change()) {
     return error_code;
@@ -1386,7 +1386,7 @@ int QuicChromiumClientSession::HandleWriteError(
 
   // Store packet in the session since the actual migration and packet rewrite
   // can happen via this posted task or via an async network notification.
-  packet_ = packet;
+  packet_ = std::move(packet);
   migration_pending_ = true;
 
   // Cause the packet writer to return ERR_IO_PENDING and block so
@@ -1446,18 +1446,13 @@ void QuicChromiumClientSession::WriteToNewSocket() {
     return;
   }
 
-  // Set packet_ to null first before calling WritePacketToSocket since
-  // that method may set packet_ if there is a write error.
-  scoped_refptr<StringIOBuffer> packet = packet_;
-  packet_ = nullptr;
-
   // The connection is waiting for the original write to complete
   // asynchronously. The new writer will notify the connection if the
   // write below completes asynchronously, but a synchronous competion
   // must be propagated back to the connection here.
   WriteResult result =
       static_cast<QuicChromiumPacketWriter*>(connection()->writer())
-          ->WritePacketToSocket(packet);
+          ->WritePacketToSocket(std::move(packet_));
   if (result.error_code == ERR_IO_PENDING)
     return;
 
