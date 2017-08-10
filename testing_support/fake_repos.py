@@ -460,6 +460,7 @@ vars = {
   'DummyVariable': 'repo',
   'git_base': '%(git_base)s',
   'hook1_contents': 'git_hooked1',
+  'repo5_var': '/repo_5',
 }
 gclient_gn_args_file = 'src/gclient.args'
 gclient_gn_args = ['DummyVariable']
@@ -480,15 +481,15 @@ deps = {
 deps_os ={
   'mac': {
     # This entry should not appear in flattened DEPS' |deps|.
-    'src/mac_repo': '/repo_5',
+    'src/mac_repo': '{repo5_var}',
   },
   'unix': {
     # This entry should not appear in flattened DEPS' |deps|.
-    'src/unix_repo': '/repo_5',
+    'src/unix_repo': '{repo5_var}',
   },
   'win': {
     # This entry should not appear in flattened DEPS' |deps|.
-    'src/win_repo': '/repo_5',
+    'src/win_repo': '{repo5_var}',
   },
 }
 hooks = [

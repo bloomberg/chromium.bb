@@ -1890,7 +1890,7 @@ def _DepsOsToLines(deps_os):
       s.extend([
           '    # %s' % dep.hierarchy(include_url=False),
           '    "%s": {' % (name,),
-          '      "url": "%s",' % (dep.url,),
+          '      "url": "%s",' % (dep.raw_url,),
       ] + condition_part + [
           '    },',
           '',
