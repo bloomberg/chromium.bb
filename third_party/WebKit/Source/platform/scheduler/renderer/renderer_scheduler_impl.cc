@@ -27,6 +27,7 @@
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
 #include "platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "public/platform/Platform.h"
+#include "public/platform/scheduler/renderer_process_type.h"
 
 namespace blink {
 namespace scheduler {
@@ -165,7 +166,9 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
 
 #define TASK_DURATION_METRIC_NAME "RendererScheduler.TaskDurationPerQueueType2"
 #define TASK_COUNT_METRIC_NAME "RendererScheduler.TaskCountPerQueueType"
-#define MAIN_THREAD_LOAD_METRIC_NAME "RendererScheduler.RendererMainThreadLoad4"
+#define MAIN_THREAD_LOAD_METRIC_NAME "RendererScheduler.RendererMainThreadLoad5"
+#define EXTENSIONS_MAIN_THREAD_LOAD_METRIC_NAME \
+  MAIN_THREAD_LOAD_METRIC_NAME ".Extension"
 
 RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
     RendererSchedulerImpl* renderer_scheduler_impl,
@@ -252,7 +255,8 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       hidden_task_duration_reporter(TASK_DURATION_METRIC_NAME ".Hidden"),
       visible_task_duration_reporter(TASK_DURATION_METRIC_NAME ".Visible"),
       hidden_music_task_duration_reporter(TASK_DURATION_METRIC_NAME
-                                          ".HiddenMusic") {
+                                          ".HiddenMusic"),
+      process_type(RendererProcessType::kRenderer) {
   main_thread_load_tracker.Resume(now);
   foreground_main_thread_load_tracker.Resume(now);
 }
@@ -1863,6 +1867,10 @@ bool RendererSchedulerImpl::MainThreadSeemsUnresponsive(
   return main_thread_seems_unresponsive;
 }
 
+void RendererSchedulerImpl::SetRendererProcessType(RendererProcessType type) {
+  main_thread_only().process_type = type;
+}
+
 void RendererSchedulerImpl::RegisterTimeDomain(TimeDomain* time_domain) {
   helper_.RegisterTimeDomain(time_domain);
 }
@@ -2157,6 +2165,13 @@ void RendererSchedulerImpl::RecordMainThreadTaskLoad(base::TimeTicks time,
   DCHECK_LE(load_percentage, 100);
 
   UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME, load_percentage);
+
+  if (main_thread_only().process_type ==
+      RendererProcessType::kExtensionRenderer) {
+    UMA_HISTOGRAM_PERCENTAGE(EXTENSIONS_MAIN_THREAD_LOAD_METRIC_NAME,
+                             load_percentage);
+  }
+
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "RendererScheduler.RendererMainThreadLoad", load_percentage);
 }
@@ -2167,14 +2182,23 @@ void RendererSchedulerImpl::RecordForegroundMainThreadTaskLoad(
   int load_percentage = static_cast<int>(load * 100);
   DCHECK_LE(load_percentage, 100);
 
-  UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME ".Foreground",
-                           load_percentage);
+  switch (main_thread_only().process_type) {
+    case RendererProcessType::kExtensionRenderer:
+      UMA_HISTOGRAM_PERCENTAGE(EXTENSIONS_MAIN_THREAD_LOAD_METRIC_NAME
+                               ".Foreground",
+                               load_percentage);
+      break;
+    case RendererProcessType::kRenderer:
+      UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME ".Foreground",
+                               load_percentage);
 
-  if (time - main_thread_only().background_status_changed_at >
-      base::TimeDelta::FromMinutes(1)) {
-    UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
-                             ".Foreground.AfterFirstMinute",
-                             load_percentage);
+      if (time - main_thread_only().background_status_changed_at >
+          base::TimeDelta::FromMinutes(1)) {
+        UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
+                                 ".Foreground.AfterFirstMinute",
+                                 load_percentage);
+      }
+      break;
   }
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
@@ -2188,14 +2212,23 @@ void RendererSchedulerImpl::RecordBackgroundMainThreadTaskLoad(
   int load_percentage = static_cast<int>(load * 100);
   DCHECK_LE(load_percentage, 100);
 
-  UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME ".Background",
-                           load_percentage);
+  switch (main_thread_only().process_type) {
+    case RendererProcessType::kExtensionRenderer:
+      UMA_HISTOGRAM_PERCENTAGE(EXTENSIONS_MAIN_THREAD_LOAD_METRIC_NAME
+                               ".Background",
+                               load_percentage);
+      break;
+    case RendererProcessType::kRenderer:
+      UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME ".Background",
+                               load_percentage);
 
-  if (time - main_thread_only().background_status_changed_at >
-      base::TimeDelta::FromMinutes(1)) {
-    UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
-                             ".Background.AfterFirstMinute",
-                             load_percentage);
+      if (time - main_thread_only().background_status_changed_at >
+          base::TimeDelta::FromMinutes(1)) {
+        UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
+                                 ".Background.AfterFirstMinute",
+                                 load_percentage);
+      }
+      break;
   }
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
