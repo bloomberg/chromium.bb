@@ -701,28 +701,34 @@ void PrerenderInProcessBrowserTest::SetUpInProcessBrowserTestFixture() {
 }
 
 void PrerenderInProcessBrowserTest::SetUpOnMainThread() {
-  // Increase the memory allowed in a prerendered page above normal settings.
-  // Debug build bots occasionally run against the default limit, and tests
-  // were failing because the prerender was canceled due to memory exhaustion.
-  // http://crbug.com/93076
-  GetPrerenderManager()->mutable_config().max_bytes = 2000 * 1024 * 1024;
-
   current_browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kPromptForDownload, false);
   if (autostart_test_server_)
-    ASSERT_TRUE(embedded_test_server()->Start());
+    CHECK(embedded_test_server()->Start());
   ChromeResourceDispatcherHostDelegate::
       SetExternalProtocolHandlerDelegateForTesting(
           external_protocol_handler_delegate_.get());
 
+  // Check that PrerenderManager exists, which is necessary to make sure
+  // NoStatePrefetch can be enabled and perceived FCP metrics can be recorded.
   PrerenderManager* prerender_manager = GetPrerenderManager();
-  ASSERT_TRUE(prerender_manager);
+  // Use CHECK to fail fast. The ASSERT_* macros in this context are not useful
+  // because they only silently exit and make the tests crash later with more
+  // complicated symptoms.
+  CHECK(prerender_manager);
+
+  // Increase the memory allowed in a prerendered page above normal settings.
+  // Debug build bots occasionally run against the default limit, and tests
+  // were failing because the prerender was canceled due to memory exhaustion.
+  // http://crbug.com/93076
+  prerender_manager->mutable_config().max_bytes = 2000 * 1024 * 1024;
+
   prerender_manager->mutable_config().rate_limit_enabled = false;
-  ASSERT_FALSE(prerender_contents_factory_);
+  CHECK(!prerender_contents_factory_);
   prerender_contents_factory_ = new TestPrerenderContentsFactory;
   prerender_manager->SetPrerenderContentsFactoryForTest(
       prerender_contents_factory_);
-  ASSERT_TRUE(safe_browsing_factory_->test_safe_browsing_service());
+  CHECK(safe_browsing_factory_->test_safe_browsing_service());
 }
 
 void PrerenderInProcessBrowserTest::UseHttpsSrcServer() {

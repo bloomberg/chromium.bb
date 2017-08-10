@@ -83,10 +83,19 @@ class PrerenderManager : public content::NotificationObserver,
                          public MediaCaptureDevicesDispatcher::Observer {
  public:
   enum PrerenderManagerMode {
+    // WARNING: Legacy code, not for use. Disables prerendering and avoids
+    // creating an instance of PrerenderManager. This mode overrides forced
+    // prerenders which breaks the assumptions of the CustomTabActivityTest.
     PRERENDER_MODE_DISABLED,
+
+    // Enables all types of prerendering for any origin.
     PRERENDER_MODE_ENABLED,
+
+    // For each request to prerender performs a NoStatePrefetch for the same URL
+    // instead.
     PRERENDER_MODE_NOSTATE_PREFETCH,
-    // Like PRERENDER_MODE_DISABLED, but keeps track of pages that would have
+
+    // Ignores requests to prerender, but keeps track of pages that would have
     // been prerendered and records metrics for comparison with other modes.
     PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT
   };

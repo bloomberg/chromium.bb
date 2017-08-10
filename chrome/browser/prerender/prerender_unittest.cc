@@ -332,6 +332,12 @@ class PrerenderTest : public testing::Test {
             new PrerenderLinkManager(prerender_manager_.get())),
         last_prerender_id_(0),
         field_trial_list_(nullptr) {
+    prerender::PrerenderManager::SetMode(
+        prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
+    prerender::PrerenderManager::SetInstantMode(
+        prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
+    prerender::PrerenderManager::SetOmniboxMode(
+        prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
     prerender_manager()->SetIsLowEndDevice(false);
 
     // Enable omnibox prerendering.
@@ -458,26 +464,23 @@ class PrerenderTest : public testing::Test {
   // An instance of base::FieldTrialList is necessary in order to initialize
   // global state.
   base::FieldTrialList field_trial_list_;
+
+  // Restore prerender mode after this test finishes running.
+  test_utils::RestorePrerenderMode restore_prerender_mode_;
 };
 
 TEST_F(PrerenderTest, PrerenderRespectsDisableFlag) {
   test_utils::RestorePrerenderMode restore_prerender_mode;
-  ASSERT_TRUE(PrerenderManager::IsAnyPrerenderingPossible());
-  ASSERT_EQ(PrerenderManager::PRERENDER_MODE_ENABLED,
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kNoStatePrefetchFeature);
+  prerender::ConfigurePrerender();
+  EXPECT_FALSE(PrerenderManager::IsAnyPrerenderingPossible());
+  EXPECT_EQ(PrerenderManager::PRERENDER_MODE_DISABLED,
             PrerenderManager::GetMode(ORIGIN_NONE));
-
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndDisableFeature(kNoStatePrefetchFeature);
-    prerender::ConfigurePrerender();
-    EXPECT_FALSE(PrerenderManager::IsAnyPrerenderingPossible());
-    EXPECT_EQ(PrerenderManager::PRERENDER_MODE_DISABLED,
-              PrerenderManager::GetMode(ORIGIN_NONE));
-    EXPECT_EQ(PrerenderManager::PRERENDER_MODE_DISABLED,
-              PrerenderManager::GetMode(ORIGIN_OMNIBOX));
-    EXPECT_EQ(PrerenderManager::PRERENDER_MODE_DISABLED,
-              PrerenderManager::GetMode(ORIGIN_INSTANT));
-  }
+  EXPECT_EQ(PrerenderManager::PRERENDER_MODE_DISABLED,
+            PrerenderManager::GetMode(ORIGIN_OMNIBOX));
+  EXPECT_EQ(PrerenderManager::PRERENDER_MODE_DISABLED,
+            PrerenderManager::GetMode(ORIGIN_INSTANT));
 }
 
 TEST_F(PrerenderTest, PrerenderRespectsFieldTrialParameters) {
@@ -602,7 +605,6 @@ TEST_F(PrerenderTest, PrerenderRespectsFieldTrialParametersDefaultNone) {
 
 TEST_F(PrerenderTest, PrerenderRespectsThirdPartyCookiesPref) {
   GURL url("http://www.google.com/");
-  test_utils::RestorePrerenderMode restore_prerender_mode;
   ASSERT_TRUE(PrerenderManager::IsAnyPrerenderingPossible());
 
   profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
@@ -613,7 +615,6 @@ TEST_F(PrerenderTest, PrerenderRespectsThirdPartyCookiesPref) {
 
 TEST_F(PrerenderTest, OfflinePrerenderIgnoresThirdPartyCookiesPref) {
   GURL url("http://www.google.com/");
-  test_utils::RestorePrerenderMode restore_prerender_mode;
   ASSERT_TRUE(PrerenderManager::IsAnyPrerenderingPossible());
 
   profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
@@ -2107,7 +2108,7 @@ TEST_F(PrerenderTest, PrerenderContentsForInstantSearch) {
                                                        FINAL_STATUS_USED);
   std::unique_ptr<PrerenderHandle> prerender_handle(
       prerender_manager()->AddPrerenderForInstant(url, nullptr, kSize));
-  CHECK(prerender_handle);
+  ASSERT_TRUE(prerender_handle);
   EXPECT_TRUE(prerender_handle->IsPrerendering());
   EXPECT_TRUE(prerender_contents->prerendering_has_started());
   EXPECT_EQ(prerender_contents, prerender_handle->contents());
