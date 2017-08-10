@@ -48,7 +48,8 @@ EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
       event_targeter_(base::MakeUnique<EventTargeter>(this)),
       mouse_button_down_(false),
       mouse_cursor_source_window_(nullptr),
-      mouse_cursor_in_non_client_area_(false) {}
+      mouse_cursor_in_non_client_area_(false),
+      next_mouse_button_flags_(0) {}
 
 EventDispatcher::~EventDispatcher() {
   SetMouseCursorSourceWindow(nullptr);
@@ -79,12 +80,17 @@ void EventDispatcher::Reset() {
 void EventDispatcher::SetMousePointerDisplayLocation(
     const gfx::Point& display_location,
     int64_t display_id) {
-  SetMousePointerLocation(display_location, display_id);
-  UpdateCursorProviderByLastKnownLocation();
-  // Write our initial location back to our shared screen coordinate. This
-  // shouldn't cause problems because we already read the cursor before we
-  // process any events in views during window construction.
-  delegate_->OnMouseCursorLocationChanged(display_location, display_id);
+  // Create a synthetic mouse event and dispatch it directly to ourselves so we
+  // update internal caches and possibly send exit events in case the window
+  // the cursor is over changes.
+  ui::PointerEvent move_event(
+      ui::ET_POINTER_MOVED, display_location, display_location,
+      next_mouse_button_flags_, 0 /* changed_button_flags */,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE,
+                         ui::MouseEvent::kMousePointerId),
+      base::TimeTicks::Now());
+  ProcessEvent(move_event, display_id,
+               EventDispatcher::AcceleratorMatchPhase::ANY);
 }
 
 ui::CursorData EventDispatcher::GetCurrentMouseCursor() const {
@@ -466,6 +472,12 @@ void EventDispatcher::ProcessPointerEventOnFoundTarget(
       mouse_button_down_ = true;
     else if (is_pointer_going_up)
       mouse_button_down_ = false;
+
+    if (event.type() == ui::ET_POINTER_UP) {
+      next_mouse_button_flags_ = event.flags() & ~event.changed_button_flags();
+    } else {
+      next_mouse_button_flags_ = event.flags();
+    }
   }
 
   if (drag_controller_) {

@@ -994,6 +994,90 @@ TEST_P(EventDispatcherTest, TwoPointersActive) {
   EXPECT_EQ(child2.get(), details->window);
 }
 
+TEST_P(EventDispatcherTest, SetMousePointerDisplayLocationWithFlags) {
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+
+  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  child->SetBounds(gfx::Rect(10, 10, 20, 20));
+
+  TestEventDispatcherDelegate* event_dispatcher_delegate =
+      test_event_dispatcher_delegate();
+  EventDispatcher* dispatcher = event_dispatcher();
+
+  // Move to the child window with a mouse event which holds down the left
+  // mouse button.
+  const ui::PointerEvent move1(
+      ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(11, 11), gfx::Point(11, 11),
+                     base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  DispatchEvent(event_dispatcher(), move1, 0,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
+  std::unique_ptr<DispatchedEventDetails> details =
+      event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(child.get(), details->window);
+
+  // Manually set the mouse pointer.
+  SetMousePointerDisplayLocation(dispatcher, gfx::Point(1, 1), 0);
+
+  // The first dispatched event is a leave to the child. It should also
+  // maintain the button state from the first event above.
+  details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(child.get(), details->window);
+  EXPECT_EQ(ui::ET_POINTER_EXITED, details->event->type());
+  EXPECT_TRUE((details->event->flags() & EF_LEFT_MOUSE_BUTTON) != 0);
+
+  // The second dispatched event is an enter to the root window.
+  details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(root_window(), details->window);
+  EXPECT_EQ(ui::ET_POINTER_MOVED, details->event->type());
+  EXPECT_TRUE((details->event->flags() & EF_LEFT_MOUSE_BUTTON) != 0);
+}
+
+TEST_P(EventDispatcherTest, SetMousePointerDisplayLocationWithoutFlags) {
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+
+  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  child->SetBounds(gfx::Rect(10, 10, 20, 20));
+
+  TestEventDispatcherDelegate* event_dispatcher_delegate =
+      test_event_dispatcher_delegate();
+  EventDispatcher* dispatcher = event_dispatcher();
+
+  // Move to the child window with a mouse event which holds down the left
+  // mouse button.
+  const ui::PointerEvent move1(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, gfx::Point(11, 11), gfx::Point(11, 11),
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  DispatchEvent(event_dispatcher(), move1, 0,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
+  std::unique_ptr<DispatchedEventDetails> details =
+      event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(child.get(), details->window);
+
+  // Release the mouse button.
+  const ui::PointerEvent release1(ui::MouseEvent(
+      ui::ET_MOUSE_RELEASED, gfx::Point(11, 11), gfx::Point(11, 11),
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  DispatchEvent(event_dispatcher(), release1, 0,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
+  details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(child.get(), details->window);
+
+  // Manually set the mouse pointer.
+  SetMousePointerDisplayLocation(dispatcher, gfx::Point(1, 1), 0);
+
+  // The first dispatched event is a leave to the child.
+  details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(child.get(), details->window);
+  EXPECT_EQ(ui::ET_POINTER_EXITED, details->event->type());
+  EXPECT_EQ(details->event->flags(), 0);
+
+  // The second dispatched event is an enter to the root window.
+  details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(root_window(), details->window);
+  EXPECT_EQ(ui::ET_POINTER_MOVED, details->event->type());
+  EXPECT_EQ(details->event->flags(), 0);
+}
+
 TEST_P(EventDispatcherTest, DestroyWindowWhileGettingEvents) {
   std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
 
