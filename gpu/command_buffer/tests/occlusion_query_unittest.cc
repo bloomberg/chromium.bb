@@ -12,23 +12,36 @@
 
 namespace gpu {
 
+static const int kBackbufferSize = 512;
+
 class OcclusionQueryTest : public testing::Test {
  protected:
   void SetUp() override {
     GLManager::Options options;
-    options.size = gfx::Size(512, 512);
+    options.size = gfx::Size(kBackbufferSize, kBackbufferSize);
     gl_.Initialize(options);
+    SetupFramebuffer();
   }
 
-  void TearDown() override { gl_.Destroy(); }
+  void TearDown() override {
+    DestroyFramebuffer();
+    gl_.Destroy();
+  }
 
   void DrawRect(float x, float z, float scale, float* color);
+
+  void SetupFramebuffer();
+  void DestroyFramebuffer();
 
   GLManager gl_;
 
   GLint position_loc_;
   GLint matrix_loc_;
   GLint color_loc_;
+
+  GLuint framebuffer_handle_;
+  GLuint color_buffer_handle_;
+  GLuint depth_stencil_handle_;
 };
 
 static void SetMatrix(float x, float z, float scale, float* matrix) {
@@ -63,6 +76,36 @@ void OcclusionQueryTest::DrawRect(float x, float z, float scale, float* color) {
   glUniform4fv(color_loc_, 1, color);
 
   glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+void OcclusionQueryTest::SetupFramebuffer() {
+  glGenFramebuffers(1, &framebuffer_handle_);
+  DCHECK_NE(0u, framebuffer_handle_);
+  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_handle_);
+
+  glGenRenderbuffers(1, &color_buffer_handle_);
+  DCHECK_NE(0u, color_buffer_handle_);
+  glBindRenderbuffer(GL_RENDERBUFFER, color_buffer_handle_);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8_OES, kBackbufferSize,
+                        kBackbufferSize);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                            GL_RENDERBUFFER, color_buffer_handle_);
+
+  glGenRenderbuffers(1, &depth_stencil_handle_);
+  DCHECK_NE(0u, depth_stencil_handle_);
+  glBindRenderbuffer(GL_RENDERBUFFER, depth_stencil_handle_);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES,
+                        kBackbufferSize, kBackbufferSize);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                            GL_RENDERBUFFER, depth_stencil_handle_);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                            GL_RENDERBUFFER, depth_stencil_handle_);
+}
+
+void OcclusionQueryTest::DestroyFramebuffer() {
+  glDeleteRenderbuffers(1, &color_buffer_handle_);
+  glDeleteRenderbuffers(1, &depth_stencil_handle_);
+  glDeleteFramebuffers(1, &framebuffer_handle_);
 }
 
 TEST_F(OcclusionQueryTest, Occlusion) {
