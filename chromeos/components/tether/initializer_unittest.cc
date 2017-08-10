@@ -151,8 +151,7 @@ class InitializerTest : public NetworkStateTest {
     Initializer* initializer = new Initializer(
         cryptauth_service, notification_presenter, pref_service, token_service,
         network_state_handler, managed_network_configuration_handler,
-        network_connect, network_connection_handler);
-    initializer->OnBluetoothAdapterAdvertisingIntervalSet(adapter);
+        network_connect, network_connection_handler, adapter);
     delete initializer;
   }
 

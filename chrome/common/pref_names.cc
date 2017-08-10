@@ -996,6 +996,10 @@ const char kInstantTetheringAllowed[] = "tether.allowed";
 // Boolean pref indicating whether a user has enabled Tether.
 const char kInstantTetheringEnabled[] = "tether.enabled";
 
+// Boolean pref indicating whether this device supports BLE advertising.
+const char kInstantTetheringBleAdvertisingSupported[] =
+    "tether.ble_advertising_supported";
+
 // Boolean pref indicating whether someone can cast to the device.
 const char kCastReceiverEnabled[] = "cast_receiver.enabled";
 

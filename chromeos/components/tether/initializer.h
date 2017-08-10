@@ -71,7 +71,8 @@ class Initializer : public OAuth2TokenService::Observer {
       NetworkStateHandler* network_state_handler,
       ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
       NetworkConnect* network_connect,
-      NetworkConnectionHandler* network_connection_handler);
+      NetworkConnectionHandler* network_connection_handler,
+      scoped_refptr<device::BluetoothAdapter> adapter);
 
   // Shuts down the tether feature, destroying all internal classes. This should
   // be called before the dependencies passed to Init() are destroyed.
@@ -92,19 +93,14 @@ class Initializer : public OAuth2TokenService::Observer {
       NetworkStateHandler* network_state_handler,
       ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
       NetworkConnect* network_connect,
-      NetworkConnectionHandler* network_connection_handler);
+      NetworkConnectionHandler* network_connection_handler,
+      scoped_refptr<device::BluetoothAdapter> adapter);
   ~Initializer() override;
 
   // OAuth2TokenService::Observer:
   void OnRefreshTokensLoaded() override;
 
-  void FetchBluetoothAdapter();
-  void OnBluetoothAdapterFetched(
-      scoped_refptr<device::BluetoothAdapter> adapter);
-  void OnBluetoothAdapterAdvertisingIntervalSet(
-      scoped_refptr<device::BluetoothAdapter> adapter);
-  void OnBluetoothAdapterAdvertisingIntervalError(
-      device::BluetoothAdvertisement::ErrorCode status);
+  void CreateComponent();
   void OnPreCrashStateRestored();
 
   cryptauth::CryptAuthService* cryptauth_service_;
@@ -115,6 +111,7 @@ class Initializer : public OAuth2TokenService::Observer {
   ManagedNetworkConfigurationHandler* managed_network_configuration_handler_;
   NetworkConnect* network_connect_;
   NetworkConnectionHandler* network_connection_handler_;
+  scoped_refptr<device::BluetoothAdapter> adapter_;
 
   // Declare new objects in the order that they will be created during
   // initialization to ensure that they are destroyed in the correct order. This
