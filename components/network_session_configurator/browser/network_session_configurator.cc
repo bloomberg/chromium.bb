@@ -150,6 +150,17 @@ net::QuicTagVector GetQuicConnectionOptions(
   return net::ParseQuicConnectionOptions(it->second);
 }
 
+net::QuicTagVector GetQuicClientConnectionOptions(
+    const VariationParameters& quic_trial_params) {
+  VariationParameters::const_iterator it =
+      quic_trial_params.find("client_connection_options");
+  if (it == quic_trial_params.end()) {
+    return net::QuicTagVector();
+  }
+
+  return net::ParseQuicConnectionOptions(it->second);
+}
+
 bool ShouldForceHolBlocking(const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "force_hol_blocking"), "true");
@@ -260,6 +271,8 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
     params->quic_force_hol_blocking = ShouldForceHolBlocking(quic_trial_params);
     params->quic_connection_options =
         GetQuicConnectionOptions(quic_trial_params);
+    params->quic_client_connection_options =
+        GetQuicClientConnectionOptions(quic_trial_params);
     params->quic_close_sessions_on_ip_change =
         ShouldQuicCloseSessionsOnIpChange(quic_trial_params);
     int idle_connection_timeout_seconds =

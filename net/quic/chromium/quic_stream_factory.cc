@@ -190,6 +190,7 @@ void SetInitialRttEstimate(base::TimeDelta estimate,
 }
 
 QuicConfig InitializeQuicConfig(const QuicTagVector& connection_options,
+                                const QuicTagVector& client_connection_options,
                                 int idle_connection_timeout_seconds) {
   DCHECK_GT(idle_connection_timeout_seconds, 0);
   QuicConfig config;
@@ -197,6 +198,7 @@ QuicConfig InitializeQuicConfig(const QuicTagVector& connection_options,
       QuicTime::Delta::FromSeconds(idle_connection_timeout_seconds),
       QuicTime::Delta::FromSeconds(idle_connection_timeout_seconds));
   config.SetConnectionOptionsToSend(connection_options);
+  config.SetClientConnectionOptions(client_connection_options);
   return config;
 }
 
@@ -671,6 +673,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool race_cert_verification,
     bool estimate_initial_rtt,
     const QuicTagVector& connection_options,
+    const QuicTagVector& client_connection_options,
     bool enable_token_binding)
     : require_confirmation_(true),
       net_log_(net_log),
@@ -687,6 +690,7 @@ QuicStreamFactory::QuicStreamFactory(
       clock_skew_detector_(base::TimeTicks::Now(), base::Time::Now()),
       socket_performance_watcher_factory_(socket_performance_watcher_factory),
       config_(InitializeQuicConfig(connection_options,
+                                   client_connection_options,
                                    idle_connection_timeout_seconds)),
       crypto_config_(base::WrapUnique(
           new ProofVerifierChromium(cert_verifier,
