@@ -6,5 +6,6 @@ typemaps = [
   "//services/viz/public/cpp/compositing/compositor_frame.typemap",
   "//services/viz/public/cpp/compositing/resource_settings.typemap",
   "//services/viz/public/cpp/compositing/returned_resource.typemap",
+  "//services/viz/public/cpp/compositing/surface_sequence.typemap",
   "//services/viz/public/cpp/compositing/surface_info.typemap",
 ]

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module cc.mojom;
+module viz.mojom;
 
 import "cc/ipc/frame_sink_id.mojom";
 
@@ -10,7 +10,6 @@ import "cc/ipc/frame_sink_id.mojom";
 // dependencies between frames. A sequence number may be satisfied once, and
 // may be depended on once.
 struct SurfaceSequence {
-  FrameSinkId frame_sink_id;
+  cc.mojom.FrameSinkId frame_sink_id;
   uint32 sequence;
 };
- 

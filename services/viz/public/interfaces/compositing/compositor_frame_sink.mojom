@@ -9,7 +9,6 @@ import "cc/ipc/copy_output_request.mojom";
 import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_surface_id.mojom";
 import "cc/ipc/surface_id.mojom";
-import "cc/ipc/surface_sequence.mojom";
 import "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame.mojom";
 import "services/viz/public/interfaces/compositing/returned_resource.mojom";
