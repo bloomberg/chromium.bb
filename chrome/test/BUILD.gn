@@ -2662,6 +2662,7 @@ test("browser_tests") {
     }
 
     if (use_aura) {
+      sources += [ "../browser/ui/views/desktop_capture/desktop_media_picker_views_browsertest.cc" ]
       if (enable_wifi_display) {
         sources += [
           "../../extensions/browser/api/display_source/display_source_apitestbase.cc",
