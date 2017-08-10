@@ -405,10 +405,10 @@ ToWebLayerStickyPositionConstraint(
       constraint.scroll_container_relative_sticky_box_rect;
   web_constraint.scroll_container_relative_containing_block_rect =
       constraint.scroll_container_relative_containing_block_rect;
-  web_constraint.nearest_layer_shifting_sticky_box =
-      constraint.nearest_layer_shifting_sticky_box;
-  web_constraint.nearest_layer_shifting_containing_block =
-      constraint.nearest_layer_shifting_containing_block;
+  web_constraint.nearest_element_shifting_sticky_box =
+      constraint.nearest_element_shifting_sticky_box;
+  web_constraint.nearest_element_shifting_containing_block =
+      constraint.nearest_element_shifting_containing_block;
   return web_constraint;
 }
 static cc::LayerStickyPositionConstraint ToStickyPositionConstraint(
@@ -427,10 +427,10 @@ static cc::LayerStickyPositionConstraint ToStickyPositionConstraint(
       web_constraint.scroll_container_relative_sticky_box_rect;
   constraint.scroll_container_relative_containing_block_rect =
       web_constraint.scroll_container_relative_containing_block_rect;
-  constraint.nearest_layer_shifting_sticky_box =
-      web_constraint.nearest_layer_shifting_sticky_box;
-  constraint.nearest_layer_shifting_containing_block =
-      web_constraint.nearest_layer_shifting_containing_block;
+  constraint.nearest_element_shifting_sticky_box =
+      web_constraint.nearest_element_shifting_sticky_box;
+  constraint.nearest_element_shifting_containing_block =
+      web_constraint.nearest_element_shifting_containing_block;
   return constraint;
 }
 void WebLayerImpl::SetStickyPositionConstraint(

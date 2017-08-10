@@ -7,6 +7,7 @@
 
 #include "cc/cc_export.h"
 
+#include "cc/trees/element_id.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -40,15 +41,14 @@ struct CC_EXPORT LayerStickyPositionConstraint {
   // block boundary.
   gfx::Rect scroll_container_relative_containing_block_rect;
 
-  // The nearest ancestor sticky layer ids that affect the sticky box constraint
-  // rect and the containing block constraint rect respectively. If no such
-  // layer exists, these are set to Layer::INVALID_ID.
-  int nearest_layer_shifting_sticky_box;
-  int nearest_layer_shifting_containing_block;
+  // The nearest ancestor sticky element ids that affect the sticky box
+  // constraint rect and the containing block constraint rect respectively.
+  ElementId nearest_element_shifting_sticky_box;
+  ElementId nearest_element_shifting_containing_block;
 
-  // Returns the nearest sticky ancestor layer, or Layer::INVALID_ID if no such
-  // layer exists.
-  int NearestStickyAncestor();
+  // Returns the nearest sticky ancestor element id or the default element id if
+  // none exists.
+  ElementId NearestStickyAncestor();
 
   bool operator==(const LayerStickyPositionConstraint&) const;
   bool operator!=(const LayerStickyPositionConstraint&) const;

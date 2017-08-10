@@ -338,21 +338,19 @@ void CompositedLayerMapping::UpdateStickyConstraints(
       constraints.NearestStickyLayerShiftingStickyBox();
   if (sticky_box_shifting_ancestor &&
       sticky_box_shifting_ancestor->GetCompositedLayerMapping()) {
-    web_constraint.nearest_layer_shifting_sticky_box =
+    web_constraint.nearest_element_shifting_sticky_box =
         sticky_box_shifting_ancestor->GetCompositedLayerMapping()
             ->MainGraphicsLayer()
-            ->PlatformLayer()
-            ->Id();
+            ->GetElementId();
   }
   PaintLayer* containing_block_shifting_ancestor =
       constraints.NearestStickyLayerShiftingContainingBlock();
   if (containing_block_shifting_ancestor &&
       containing_block_shifting_ancestor->GetCompositedLayerMapping()) {
-    web_constraint.nearest_layer_shifting_containing_block =
+    web_constraint.nearest_element_shifting_containing_block =
         containing_block_shifting_ancestor->GetCompositedLayerMapping()
             ->MainGraphicsLayer()
-            ->PlatformLayer()
-            ->Id();
+            ->GetElementId();
   }
 
   graphics_layer_->SetStickyPositionConstraint(web_constraint);

@@ -7110,6 +7110,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionNested) {
   outer_sticky->AddChild(inner_sticky);
   host()->SetRootLayer(root);
   scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
+  outer_sticky->SetElementId(LayerIdToElementIdForTesting(outer_sticky->id()));
 
   root->SetBounds(gfx::Size(100, 100));
   container->SetBounds(gfx::Size(100, 100));
@@ -7138,7 +7139,8 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionNested) {
       gfx::Rect(0, 50, 10, 10);
   inner_sticky_pos.scroll_container_relative_containing_block_rect =
       gfx::Rect(0, 50, 10, 50);
-  inner_sticky_pos.nearest_layer_shifting_containing_block = outer_sticky->id();
+  inner_sticky_pos.nearest_element_shifting_containing_block =
+      outer_sticky->element_id();
   inner_sticky->SetStickyPositionConstraint(inner_sticky_pos);
 
   ExecuteCalculateDrawProperties(root.get());
