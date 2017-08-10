@@ -22,6 +22,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
+#include "base/feature_list.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -33,6 +34,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_linux.h"
 #include "sandbox/linux/services/credentials.h"
@@ -389,6 +391,7 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
   // This is in the hope of making some kernel exploits more complex and less
   // reliable. It also limits sprays a little on 64-bit.
   rlim_t address_space_limit = std::numeric_limits<uint32_t>::max();
+  rlim_t address_space_limit_max = std::numeric_limits<uint32_t>::max();
 #if defined(__LP64__)
   // On 64 bits, V8 and possibly others will reserve massive memory ranges and
   // rely on on-demand paging for allocation.  Unfortunately, even
@@ -396,11 +399,23 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
   // See crbug.com/169327 for a discussion.
   // On the GPU process, irrespective of V8, we can exhaust a 4GB address space
   // under normal usage, see crbug.com/271119
-  // For now, increase limit to 16GB for renderer and worker and gpu processes
+  // For now, increase limit to 16GB for renderer and worker and GPU processes
   // to accomodate.
   if (process_type == switches::kRendererProcess ||
       process_type == switches::kGpuProcess) {
     address_space_limit = 1L << 34;
+    // WebAssembly memory objects use a large amount of address space when
+    // trap-based bounds checks are enabled. To accomodate this, we allow the
+    // address space limit to adjust dynamically up to a certain limit. The
+    // limit is currently 4TiB, which should allow enough address space for any
+    // reasonable page. See https://crbug.com/750378
+    if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
+      address_space_limit_max = 1L << 42;
+    } else {
+      // If we are not using trap-based bounds checks, there's no reason to
+      // allow the address space limit to grow.
+      address_space_limit_max = address_space_limit;
+    }
   }
 #endif  // defined(__LP64__)
 
@@ -408,8 +423,8 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
   // allocations that can't be index by an int.
   const rlim_t kNewDataSegmentMaxSize = std::numeric_limits<int>::max();
 
-  bool limited_as =
-      sandbox::ResourceLimits::Lower(RLIMIT_AS, address_space_limit);
+  bool limited_as = sandbox::ResourceLimits::LowerSoftAndHardLimits(
+      RLIMIT_AS, address_space_limit, address_space_limit_max);
   bool limited_data =
       sandbox::ResourceLimits::Lower(RLIMIT_DATA, kNewDataSegmentMaxSize);
 

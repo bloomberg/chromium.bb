@@ -23,5 +23,6 @@ include_rules = [
     # platform files. Think carefully if you want to relax this restriction.
     "-platform",
     "+platform/wtf",
+    "+sandbox/linux/services/resource_limits.h",
     "-v8",
 ]

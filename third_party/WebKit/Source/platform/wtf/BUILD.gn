@@ -275,6 +275,7 @@ component("wtf") {
 
   public_deps = [
     "//base",
+    "//sandbox",
     "//third_party/icu",
   ]
 
