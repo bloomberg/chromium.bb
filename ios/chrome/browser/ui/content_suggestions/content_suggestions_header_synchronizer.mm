@@ -84,7 +84,7 @@ initWithCollectionController:
   self.shouldAnimateHeader = YES;
 
   if (self.collectionShiftingOffset == 0 || self.collectionView.dragging) {
-    [self updateFakeOmniboxForScrollView:self.collectionView];
+    [self updateFakeOmniboxOnCollectionScroll];
     return;
   }
 
@@ -151,21 +151,28 @@ initWithCollectionController:
 
 #pragma mark - ContentSuggestionsHeaderSynchronizing
 
-- (void)unfocusOmniboxOnCollectionScroll {
+- (void)updateFakeOmniboxOnCollectionScroll {
   // Unfocus the omnibox when the scroll view is scrolled.
   if ([self.headerController isOmniboxFocused] && !self.shouldAnimateHeader) {
     [self.headerController unfocusOmnibox];
   }
-}
 
-- (void)updateFakeOmniboxForScrollView:(UIScrollView*)scrollView {
   if (IsIPadIdiom()) {
     return;
   }
 
   if (self.shouldAnimateHeader) {
     [self.headerController
-        updateSearchFieldForOffset:self.collectionView.contentOffset.y];
+        updateFakeOmniboxForOffset:self.collectionView.contentOffset.y];
+  }
+}
+
+- (void)updateFakeOmniboxOnNewWidth:(CGFloat)width {
+  if (self.shouldAnimateHeader && !IsIPadIdiom()) {
+    [self.headerController
+        updateFakeOmniboxForOffset:self.collectionView.contentOffset.y];
+  } else {
+    [self.headerController updateFakeOmniboxForWidth:width];
   }
 }
 

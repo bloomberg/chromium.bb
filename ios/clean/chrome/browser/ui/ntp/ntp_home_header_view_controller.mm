@@ -41,7 +41,11 @@
 
 #pragma mark - ContentSuggestionsHeaderControlling
 
-- (void)updateSearchFieldForOffset:(CGFloat)offset {
+- (void)updateFakeOmniboxForOffset:(CGFloat)offset {
+  // TODO: implement this.
+}
+
+- (void)updateFakeOmniboxForWidth:(CGFloat)width {
   // TODO: implement this.
 }
 
