@@ -104,6 +104,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // Called when the typing shield is tapped.
 - (void)shieldWasTapped:(id)sender;
 
+// Called when the user explicitly opens the tab switcher.
+- (void)userEnteredTabSwitcher;
+
 // Called when the browser state provided to this instance is being destroyed.
 // At this point the browser will no longer ever be active, and will likely be
 // deallocated soon.
