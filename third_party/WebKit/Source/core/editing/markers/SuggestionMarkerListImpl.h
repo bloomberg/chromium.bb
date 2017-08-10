@@ -43,10 +43,24 @@ class CORE_EXPORT SuggestionMarkerListImpl final : public DocumentMarkerList {
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  bool ShiftMarkersForSuggestionReplacement(unsigned offset,
+                                            unsigned old_length,
+                                            unsigned new_length);
+  bool ShiftMarkersForNonSuggestionEditingOperation(const String& node_text,
+                                                    unsigned offset,
+                                                    unsigned old_length,
+                                                    unsigned new_length);
+
   HeapVector<Member<DocumentMarker>> markers_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionMarkerListImpl);
 };
+
+DEFINE_TYPE_CASTS(SuggestionMarkerListImpl,
+                  DocumentMarkerList,
+                  list,
+                  list->MarkerType() == DocumentMarker::kSuggestion,
+                  list.MarkerType() == DocumentMarker::kSuggestion);
 
 }  // namespace blink
 
