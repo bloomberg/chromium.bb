@@ -357,7 +357,9 @@ public class NewTabPage
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page_view, null);
         mNewTabPageView.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
-                mSearchProviderHasLogo, getScrollPositionFromNavigationEntry());
+                mSearchProviderHasLogo,
+                TemplateUrlService.getInstance().isDefaultSearchEngineGoogle(),
+                getScrollPositionFromNavigationEntry());
 
         eventReporter.onSurfaceOpened();
 
@@ -396,7 +398,8 @@ public class NewTabPage
 
     private void onSearchEngineUpdated() {
         updateSearchProviderHasLogo();
-        mNewTabPageView.setSearchProviderHasLogo(mSearchProviderHasLogo);
+        mNewTabPageView.setSearchProviderInfo(mSearchProviderHasLogo,
+                TemplateUrlService.getInstance().isDefaultSearchEngineGoogle());
         mNewTabPageView.loadSearchProviderLogo();
     }
 
