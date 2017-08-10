@@ -108,10 +108,13 @@ class ProcessManager : public KeyedService,
   // already been sent the unload event and is shutting down.
   bool IsBackgroundHostClosing(const std::string& extension_id);
 
-  // Returns the extension associated with the specified RenderFrameHost/
-  // WebContents, or null.
+  // Returns the extension associated with the specified RenderFrameHost,
+  // or null.
   const Extension* GetExtensionForRenderFrameHost(
       content::RenderFrameHost* render_frame_host);
+
+  // Returns the extension associated with the main frame of the given
+  // |web_contents|, or null if there isn't one.
   const Extension* GetExtensionForWebContents(
       const content::WebContents* web_contents);
 

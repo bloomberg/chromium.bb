@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
@@ -24,6 +25,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/app_modal/javascript_dialog_manager.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_entry.h"
@@ -1264,6 +1266,42 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, HostedAppFilesAccess) {
     EXPECT_EQ(tab->GetController().GetLastCommittedEntry()->GetPageType(),
               content::PAGE_TYPE_NORMAL);
   }
+}
+
+// Tests that we correctly account for vanilla web URLs that may be in the
+// same SiteInstance as a hosted app, and display alerts correctly.
+// https://crbug.com/746517.
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, HostedAppAlerts) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  scoped_refptr<const Extension> extension =
+      LoadExtension(test_data_dir_.AppendASCII("hosted_app"));
+  ASSERT_TRUE(extension);
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL hosted_app_url("http://localhost/extensions/hosted_app/main.html");
+  NavigateToURL(hosted_app_url);
+  EXPECT_EQ(hosted_app_url, tab->GetLastCommittedURL());
+  ProcessManager* pm = ProcessManager::Get(profile());
+  EXPECT_EQ(extension, pm->GetExtensionForWebContents(tab));
+  app_modal::JavaScriptDialogManager* js_dialog_manager =
+      app_modal::JavaScriptDialogManager::GetInstance();
+  base::string16 hosted_app_title = base::ASCIIToUTF16("hosted_app");
+  EXPECT_EQ(hosted_app_title, js_dialog_manager->GetTitle(
+                                  tab, tab->GetLastCommittedURL().GetOrigin()));
+
+  GURL web_url = embedded_test_server()->GetURL("/title1.html");
+  ASSERT_TRUE(content::ExecuteScript(
+      tab, base::StringPrintf("window.open('%s');", web_url.spec().c_str())));
+  content::WebContents* new_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(new_tab, tab);
+  EXPECT_TRUE(content::WaitForLoadStop(new_tab));
+  EXPECT_EQ(web_url, new_tab->GetLastCommittedURL());
+  EXPECT_EQ(nullptr, pm->GetExtensionForWebContents(new_tab));
+  EXPECT_NE(hosted_app_title,
+            js_dialog_manager->GetTitle(
+                new_tab, new_tab->GetLastCommittedURL().GetOrigin()));
 }
 
 }  // namespace extensions
