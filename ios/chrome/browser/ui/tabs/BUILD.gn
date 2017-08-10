@@ -39,6 +39,7 @@ source_set("tabs") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/bubble",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/util",

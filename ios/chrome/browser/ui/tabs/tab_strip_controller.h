@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
+
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol FullScreenControllerDelegate;
@@ -32,7 +34,7 @@ extern NSString* const kTabStripDragEnded;
 // display in sync with the TabModel.  This controller is only instantiated on
 // tablet.  The tab strip view itself is a subclass of UIScrollView, which
 // manages scroll offsets and scroll animations.
-@interface TabStripController : NSObject
+@interface TabStripController : NSObject<BubbleViewAnchorPointProvider>
 
 @property(nonatomic, assign) BOOL highlightsSelectedTab;
 @property(nonatomic, readonly, retain) UIView* view;
