@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include <map>
+
 #include "base/ios/weak_nsobject.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 
@@ -33,7 +35,8 @@ class MostVisitedSitesObserverBridge : public MostVisitedSites::Observer {
   MostVisitedSitesObserverBridge(id<MostVisitedSitesObserving> observer);
   ~MostVisitedSitesObserverBridge() override;
 
-  void OnMostVisitedURLsAvailable(const NTPTilesVector& most_visited) override;
+  void OnURLsAvailable(
+      const std::map<SectionType, NTPTilesVector>& sections) override;
   void OnIconMadeAvailable(const GURL& site_url) override;
 
  private:

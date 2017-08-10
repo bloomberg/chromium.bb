@@ -289,10 +289,14 @@ void InstantService::OnTopSitesReceived(
   NotifyAboutMostVisitedItems();
 }
 
-void InstantService::OnMostVisitedURLsAvailable(
-    const ntp_tiles::NTPTilesVector& tiles) {
+void InstantService::OnURLsAvailable(
+    const std::map<ntp_tiles::SectionType, ntp_tiles::NTPTilesVector>&
+        sections) {
   DCHECK(most_visited_sites_);
   most_visited_items_.clear();
+  // Use only personalized tiles for instant service.
+  const ntp_tiles::NTPTilesVector& tiles =
+      sections.at(ntp_tiles::SectionType::PERSONALIZED);
   for (const ntp_tiles::NTPTile& tile : tiles) {
     InstantMostVisitedItem item;
     item.url = tile.url;

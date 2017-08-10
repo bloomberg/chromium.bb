@@ -34,9 +34,11 @@ const base::Feature kDisplaySuggestionsServiceTiles{
     "DisplaySuggestionsServiceTiles", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Determine whether we need any tiles from PopularSites to fill up a grid of
-// |num_tiles| tiles.
+// |num_tiles| tiles. If exploration sections are used, we need popular sites
+// regardless of how many tiles we already have.
 bool NeedPopularSites(const PrefService* prefs, int num_tiles) {
-  return prefs->GetInteger(prefs::kNumPersonalTiles) < num_tiles;
+  return base::FeatureList::IsEnabled(kSitesExplorationFeature) ||
+         prefs->GetInteger(prefs::kNumPersonalTiles) < num_tiles;
 }
 
 bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {
@@ -346,35 +348,60 @@ NTPTilesVector MostVisitedSites::CreateWhitelistEntryPointTiles(
   return whitelist_tiles;
 }
 
-NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
+std::map<SectionType, NTPTilesVector>
+MostVisitedSites::CreatePopularSitesSections(
     const std::set<std::string>& used_hosts,
     size_t num_actual_tiles) {
+  std::map<SectionType, NTPTilesVector> sections = {
+      std::make_pair(SectionType::PERSONALIZED, NTPTilesVector())};
   // For child accounts popular sites tiles will not be added.
   if (supervisor_ && supervisor_->IsChildProfile()) {
-    return NTPTilesVector();
+    return sections;
   }
 
   if (!popular_sites_ || !ShouldShowPopularSites()) {
-    return NTPTilesVector();
+    return sections;
   }
 
+  const std::set<std::string> no_hosts;
+  for (const auto& section_type_and_sites : popular_sites()->sections()) {
+    SectionType type = section_type_and_sites.first;
+    const PopularSites::SitesVector& sites = section_type_and_sites.second;
+    if (type == SectionType::PERSONALIZED) {
+      size_t num_required_tiles = num_sites_ - num_actual_tiles;
+      sections[type] =
+          CreatePopularSitesTiles(/*popular_sites=*/sites,
+                                  /*hosts_to_skip=*/used_hosts,
+                                  /*num_max_tiles=*/num_required_tiles);
+    } else {
+      sections[type] = CreatePopularSitesTiles(/*popular_sites=*/sites,
+                                               /*hosts_to_skip=*/no_hosts,
+                                               /*num_max_tiles=*/num_sites_);
+    }
+  }
+  return sections;
+}
+
+NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
+    const PopularSites::SitesVector& sites_vector,
+    const std::set<std::string>& hosts_to_skip,
+    size_t num_max_tiles) {
   // Collect non-blacklisted popular suggestions, skipping those already present
   // in the personal suggestions.
   NTPTilesVector popular_sites_tiles;
-  const PopularSites::SitesVector& popular_sites =
-      popular_sites_->sections().at(SectionType::PERSONALIZED);
-  for (const PopularSites::Site& popular_site : popular_sites) {
-    if (popular_sites_tiles.size() + num_actual_tiles >= num_sites_)
+  for (const PopularSites::Site& popular_site : sites_vector) {
+    if (popular_sites_tiles.size() >= num_max_tiles) {
       break;
+    }
 
     // Skip blacklisted sites.
     if (top_sites_ && top_sites_->IsBlacklisted(popular_site.url))
       continue;
 
     const std::string& host = popular_site.url.host();
-    // Skip tiles already present in personal or whitelists.
-    if (used_hosts.find(host) != used_hosts.end())
+    if (hosts_to_skip.count(host)) {
       continue;
+    }
 
     NTPTile tile;
     tile.title = popular_site.title;
@@ -462,13 +489,14 @@ void MostVisitedSites::SaveTilesAndNotify(NTPTilesVector personal_tiles) {
       CreateWhitelistEntryPointTiles(used_hosts, num_actual_tiles);
   AddToHostsAndTotalCount(whitelist_tiles, &used_hosts, &num_actual_tiles);
 
-  NTPTilesVector popular_sites_tiles =
-      CreatePopularSitesTiles(used_hosts, num_actual_tiles);
-  AddToHostsAndTotalCount(popular_sites_tiles, &used_hosts, &num_actual_tiles);
+  std::map<SectionType, NTPTilesVector> sections =
+      CreatePopularSitesSections(used_hosts, num_actual_tiles);
+  AddToHostsAndTotalCount(sections[SectionType::PERSONALIZED], &used_hosts,
+                          &num_actual_tiles);
 
   NTPTilesVector new_tiles =
       MergeTiles(std::move(personal_tiles), std::move(whitelist_tiles),
-                 std::move(popular_sites_tiles));
+                 std::move(sections[SectionType::PERSONALIZED]));
   if (current_tiles_.has_value() && (*current_tiles_ == new_tiles)) {
     return;
   }
@@ -482,10 +510,10 @@ void MostVisitedSites::SaveTilesAndNotify(NTPTilesVector personal_tiles) {
       num_personal_tiles++;
   }
   prefs_->SetInteger(prefs::kNumPersonalTiles, num_personal_tiles);
-
   if (!observer_)
     return;
-  observer_->OnMostVisitedURLsAvailable(*current_tiles_);
+  sections[SectionType::PERSONALIZED] = *current_tiles_;
+  observer_->OnURLsAvailable(sections);
 }
 
 // static
@@ -508,12 +536,12 @@ void MostVisitedSites::OnPopularSitesDownloaded(bool success) {
     return;
   }
 
-  const PopularSites::SitesVector& popular_sites =
-      popular_sites_->sections().at(SectionType::PERSONALIZED);
-  for (const PopularSites::Site& popular_site : popular_sites) {
-    // Ignore callback; these icons will be seen on the *next* NTP.
-    icon_cacher_->StartFetchPopularSites(popular_site, base::Closure(),
-                                         base::Closure());
+  for (const auto& section : popular_sites_->sections()) {
+    for (const PopularSites::Site& site : section.second) {
+      // Ignore callback; these icons will be seen on the *next* NTP.
+      icon_cacher_->StartFetchPopularSites(site, base::Closure(),
+                                           base::Closure());
+    }
   }
 }
 

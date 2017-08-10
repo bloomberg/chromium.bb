@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SEARCH_INSTANT_SERVICE_H_
 #define CHROME_BROWSER_SEARCH_INSTANT_SERVICE_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <vector>
@@ -133,8 +134,9 @@ class InstantService : public KeyedService,
   void OnTopSitesReceived(const history::MostVisitedURLList& data);
 
   // ntp_tiles::MostVisitedSites::Observer implementation.
-  void OnMostVisitedURLsAvailable(
-      const ntp_tiles::NTPTilesVector& tiles) override;
+  void OnURLsAvailable(
+      const std::map<ntp_tiles::SectionType, ntp_tiles::NTPTilesVector>&
+          sections) override;
   void OnIconMadeAvailable(const GURL& site_url) override;
 
   // Notifies the observer about the last known most visited items.

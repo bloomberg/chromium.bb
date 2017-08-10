@@ -122,8 +122,8 @@ public class MostVisitedSitesBridge
      * Utility function to convert JNI friendly site suggestion data to a Java friendly list of
      * {@link SiteSuggestion}s.
      */
-    public static List<SiteSuggestion> buildSiteSuggestions(
-            String[] titles, String[] urls, String[] whitelistIconPaths, int[] sources) {
+    public static List<SiteSuggestion> buildSiteSuggestions(String[] titles, String[] urls,
+            int[] sections, String[] whitelistIconPaths, int[] sources) {
         List<SiteSuggestion> siteSuggestions = new ArrayList<>(titles.length);
         for (int i = 0; i < titles.length; ++i) {
             siteSuggestions.add(
@@ -145,12 +145,12 @@ public class MostVisitedSitesBridge
      * @param sources For each tile, the {@code TileSource} that generated the tile.
      */
     @CalledByNative
-    private void onMostVisitedURLsAvailable(
-            String[] titles, String[] urls, String[] whitelistIconPaths, int[] sources) {
+    private void onURLsAvailable(String[] titles, String[] urls, int[] sections,
+            String[] whitelistIconPaths, int[] sources) {
         // Don't notify observer if we've already been destroyed.
         if (mNativeMostVisitedSitesBridge != 0) {
             mWrappedObserver.onSiteSuggestionsAvailable(
-                    buildSiteSuggestions(titles, urls, whitelistIconPaths, sources));
+                    buildSiteSuggestions(titles, urls, sections, whitelistIconPaths, sources));
         }
     }
 
