@@ -1216,11 +1216,11 @@ bool QuicFramer::ProcessStreamFrame(QuicDataReader* reader,
       offset_length = 0;
     }
 
-    has_data_length = ExtractBits(stream_flags, kQuicStreamDataLengthNumBits,
-                                  kQuicStreamDataLengthOffsetShift);
+    has_data_length = !!ExtractBits(stream_flags, kQuicStreamDataLengthNumBits,
+                                    kQuicStreamDataLengthOffsetShift);
 
-    frame->fin = ExtractBits(stream_flags, kQuicStreamFinNumBits,
-                             kQuicStreamFinOffsetShift);
+    frame->fin = !!ExtractBits(stream_flags, kQuicStreamFinNumBits,
+                               kQuicStreamFinOffsetShift);
   }
 
   uint16_t data_len = 0;
@@ -1280,10 +1280,10 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
   const QuicPacketNumberLength largest_acked_length =
       ReadSequenceNumberLength(ExtractBits(
           frame_type, kQuicSequenceNumberLengthNumBits, kLargestAckedOffset));
-  bool has_ack_blocks = ExtractBits(frame_type, kBooleanNumBits,
-                                    quic_version_ < QUIC_VERSION_40
-                                        ? kQuicHasMultipleAckBlocksOffset_Pre40
-                                        : kQuicHasMultipleAckBlocksOffset);
+  bool has_ack_blocks = !!ExtractBits(
+      frame_type, kBooleanNumBits,
+      quic_version_ < QUIC_VERSION_40 ? kQuicHasMultipleAckBlocksOffset_Pre40
+                                      : kQuicHasMultipleAckBlocksOffset);
 
   if (!reader->ReadBytesToUInt64(largest_acked_length,
                                  &ack_frame->largest_observed)) {
