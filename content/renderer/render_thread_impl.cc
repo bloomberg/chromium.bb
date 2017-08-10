@@ -1938,6 +1938,10 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
 #if defined(USE_AURA)
   if (!use_software && IsRunningInMash()) {
+    if (!RendererWindowTreeClient::Get(routing_id)) {
+      callback.Run(nullptr);
+      return;
+    }
     scoped_refptr<gpu::GpuChannelHost> channel = EstablishGpuChannelSync();
     // If the channel could not be established correctly, then return null. This
     // would cause the compositor to wait and try again at a later time.
