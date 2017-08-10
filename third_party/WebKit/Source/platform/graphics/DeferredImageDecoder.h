@@ -29,14 +29,13 @@
 #include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/paint/PaintImage.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkRWBuffer.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-
-class SkImage;
 
 namespace blink {
 
@@ -61,7 +60,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
 
   String FilenameExtension() const;
 
-  sk_sp<SkImage> CreateFrameAtIndex(size_t);
+  sk_sp<PaintImageGenerator> CreateGeneratorAtIndex(size_t index);
 
   PassRefPtr<SharedBuffer> Data();
   void SetData(PassRefPtr<SharedBuffer> data, bool all_data_received);
@@ -88,8 +87,6 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
 
   void ActivateLazyDecoding();
   void PrepareLazyDecodedFrames();
-
-  sk_sp<SkImage> CreateFrameImageAtIndex(size_t index, bool known_to_be_opaque);
 
   void SetDataInternal(RefPtr<SharedBuffer> data,
                        bool all_data_received,

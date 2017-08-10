@@ -92,10 +92,6 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
 
   ImageOrientation CurrentFrameOrientation();
 
-  // Construct a BitmapImage with the given orientation.
-  static PassRefPtr<BitmapImage> CreateWithOrientationForTesting(
-      const SkBitmap&,
-      ImageOrientation);
   // Advance the image animation by one frame.
   void AdvanceAnimationForTesting() override { InternalAdvanceAnimation(); }
 
@@ -121,16 +117,14 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
             RespectImageOrientationEnum,
             ImageClampingMode) override;
 
-  size_t CurrentFrame() const { return current_frame_; }
-
-  sk_sp<SkImage> FrameAtIndex(size_t);
+  sk_sp<PaintImageGenerator> FrameAtIndex(size_t);
 
   bool FrameIsReceivedAtIndex(size_t) const;
   float FrameDurationAtIndex(size_t) const;
   bool FrameHasAlphaAtIndex(size_t);
   ImageOrientation FrameOrientationAtIndex(size_t);
 
-  sk_sp<SkImage> DecodeAndCacheFrame(size_t index);
+  sk_sp<PaintImageGenerator> CreateAndCacheFrameGenerator(size_t index);
   void UpdateSize() const;
 
   // Returns the total number of bytes allocated for all framebuffers, i.e.
@@ -186,12 +180,12 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
                           // be the size of the first image).
   mutable IntSize size_respecting_orientation_;
 
-  size_t current_frame_;         // The index of the current frame of animation.
+  size_t current_frame_index_;   // The index of the current frame of animation.
   Vector<FrameData, 1> frames_;  // An array of the cached frames of the
                                  // animation. We have to ref frames to pin
                                  // them in the cache.
 
-  sk_sp<SkImage>
+  sk_sp<PaintImageGenerator>
       cached_frame_;  // A cached copy of the most recently-accessed frame.
   size_t cached_frame_index_;  // Index of the frame that is cached.
 

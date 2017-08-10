@@ -11,6 +11,8 @@
 namespace blink {
 using cc::PaintImage;
 using cc::PaintImageBuilder;
+using cc::PaintImageGenerator;
+using cc::SkiaPaintImageGenerator;
 }
 
 #endif  // PaintImage_h
