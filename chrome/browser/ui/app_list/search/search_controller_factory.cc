@@ -44,7 +44,13 @@ constexpr size_t kMaxWebstoreResults = 2;
 constexpr size_t kMaxSuggestionsResults = 6;
 constexpr size_t kMaxLauncherSearchResults = 2;
 #if defined(OS_CHROMEOS)
-constexpr size_t kMaxPlayStoreResults = 6;
+// We show up to 6 Play Store results. However, part of Play Store results may
+// be filtered out because they may correspond to already installed Web apps. So
+// we request twice as many Play Store apps as we can show. Note that this still
+// doesn't guarantee that all 6 positions will be filled, as we might in theory
+// filter out more than half of results.
+// TODO(753947): Consider progressive algorithm of getting Play Store results.
+constexpr size_t kMaxPlayStoreResults = 12;
 #endif
 
 // Constants related to the SuggestionsService in AppList field trial.

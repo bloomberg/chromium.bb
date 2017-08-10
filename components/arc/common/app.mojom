@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 22
+// Next MinVersion: 23
 
 module arc.mojom;
 
@@ -86,6 +86,7 @@ struct AppDiscoveryResult {
   string? formatted_price;
   float review_score;
   array<uint8> icon_png_data;
+  [MinVersion=22] string? package_name;
 };
 
 // Describes the status of an app discovery request.
