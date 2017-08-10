@@ -3270,4 +3270,27 @@ TEST_F(TextfieldTest, SwitchFocusInKeyDown) {
   EXPECT_EQ(base::ASCIIToUTF16(" "), textfield_->text());
 }
 
+TEST_F(TextfieldTest, FocusChangesScrollToStart) {
+  const std::string& kText = "abcdef";
+  InitTextfield();
+  textfield_->SetText(ASCIIToUTF16(kText));
+  EXPECT_EQ(base::ASCIIToUTF16(std::string()), textfield_->GetSelectedText());
+  textfield_->AboutToRequestFocusFromTabTraversal(false);
+  EXPECT_EQ(base::ASCIIToUTF16(kText), textfield_->GetSelectedText());
+  if (PlatformStyle::kTextfieldScrollsToStartOnFocusChange)
+    EXPECT_EQ(0U, textfield_->GetCursorPosition());
+  else
+    EXPECT_EQ(kText.size(), textfield_->GetCursorPosition());
+
+  // The OnBlur() behavior below is only meaningful on platforms where textfield
+  // focus moves on focus change.
+  if (!PlatformStyle::kTextfieldScrollsToStartOnFocusChange)
+    return;
+
+  SendKeyEvent(ui::VKEY_RIGHT, true, false);
+  EXPECT_EQ(1U, textfield_->GetCursorPosition());
+  textfield_->OnBlur();
+  EXPECT_EQ(0U, textfield_->GetCursorPosition());
+}
+
 }  // namespace views
