@@ -232,8 +232,10 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
 
   void Run() {
     for (const auto& icon : web_app_info_.icons) {
-      if (icon.url.is_valid())
+      if (icon.url.is_valid()) {
+        VLOG(1) << "Queuing download of " << icon.url.spec();
         urls_to_download_.push_back(icon.url);
+      }
     }
 
     if (urls_to_download_.size()) {
@@ -289,14 +291,17 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
 
   void OnIconsDownloaded(bool success,
                          const std::map<GURL, std::vector<SkBitmap>>& bitmaps) {
+    VLOG(1) << "Bookmark app icons downloaded.";
     // Ignore the unsuccessful case, as the necessary icons will be generated.
     if (success) {
       for (const auto& url_bitmaps : bitmaps) {
+        VLOG(1) << "Downloaded bitmap " << url_bitmaps.first.spec();
         for (const auto& bitmap : url_bitmaps.second) {
           // Only accept square icons.
           if (bitmap.empty() || bitmap.width() != bitmap.height())
             continue;
 
+          VLOG(1) << "Adding bitmap of size " << bitmap.width();
           downloaded_bitmaps_.push_back(
               BookmarkAppHelper::BitmapAndSource(url_bitmaps.first, bitmap));
         }
@@ -307,6 +312,7 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
   }
 
   void FinishInstallation() {
+    VLOG(1) << "Finishing bookmark app installation";
     // Ensure that all icons that are in web_app_info are present, by generating
     // icons for any sizes which have failed to download. This ensures that the
     // created manifest for the bookmark app does not contain links to icons
@@ -608,14 +614,17 @@ void BookmarkAppHelper::OnDidGetManifest(const GURL& manifest_url,
     UpdateShareTargetInPrefs(manifest_url, manifest, profile_->GetPrefs());
   }
 
+  VLOG(1) << "Preparing to download bookmark app icons";
   // Add urls from the WebApplicationInfo.
   std::vector<GURL> web_app_info_icon_urls;
   for (std::vector<WebApplicationInfo::IconInfo>::const_iterator it =
            web_app_info_.icons.begin();
        it != web_app_info_.icons.end();
        ++it) {
-    if (it->url.is_valid())
+    if (it->url.is_valid()) {
+      VLOG(1) << "Adding icon to download: " << it->url.spec();
       web_app_info_icon_urls.push_back(it->url);
+    }
   }
 
   favicon_downloader_.reset(
