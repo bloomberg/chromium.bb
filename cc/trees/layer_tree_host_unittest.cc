@@ -3010,20 +3010,22 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
   }
 
   void WillBeginMainFrame() override {
-    EXPECT_TRUE(allow_commits_);
+    EXPECT_TRUE(IsCommitAllowed());
     num_send_begin_main_frame_++;
     EndTest();
-  }
-
-  void AllowCommits() {
-    allow_commits_ = true;
-    layer_tree_host()->SetDeferCommits(false);
   }
 
   void AfterTest() override {
     EXPECT_GE(num_will_begin_impl_frame_, 5);
     EXPECT_EQ(1, num_send_begin_main_frame_);
   }
+
+  virtual void AllowCommits() {
+    allow_commits_ = true;
+    layer_tree_host()->SetDeferCommits(false);
+  }
+
+  virtual bool IsCommitAllowed() const { return allow_commits_; }
 
  private:
   bool allow_commits_ = false;
@@ -3032,6 +3034,37 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeferCommits);
+
+// This verifies that changing the size of a LayerTreeHost without providing a
+// LocalSurfaceId defers commits.
+class LayerTreeHostInvalidLocalSurfaceIdDefersCommit
+    : public LayerTreeHostTestDeferCommits {
+ public:
+  LayerTreeHostInvalidLocalSurfaceIdDefersCommit() = default;
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    // With surface synchronization turned on, commits are deferred until a
+    // LocalSurfaceId has been assigned. The set up code sets the size of the
+    // LayerTreeHost (using SetViewportSize()), without providing a
+    // LocalSurfaceId. So, commits should be deferred until we set an id later
+    // during the test (in AllowCommits() override below).
+    settings->enable_surface_synchronization = true;
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void AllowCommits() override {
+    local_surface_id_ = allocator_.GenerateId();
+    PostSetLocalSurfaceIdToMainThread(local_surface_id_);
+  }
+
+  bool IsCommitAllowed() const override { return local_surface_id_.is_valid(); }
+
+ private:
+  viz::LocalSurfaceIdAllocator allocator_;
+  viz::LocalSurfaceId local_surface_id_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostInvalidLocalSurfaceIdDefersCommit);
 
 // This verifies that we can abort a commit inside the main frame, and
 // we don't leave any weird states around if we never allow the commit

@@ -285,7 +285,9 @@ class CC_EXPORT LayerTreeHost
     return event_listener_properties_[static_cast<size_t>(event_class)];
   }
 
-  void SetViewportSize(const gfx::Size& device_viewport_size);
+  void SetViewportSize(
+      const gfx::Size& device_viewport_size,
+      const viz::LocalSurfaceId& local_surface_id = viz::LocalSurfaceId());
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
 
   void SetBrowserControlsHeight(float top_height,

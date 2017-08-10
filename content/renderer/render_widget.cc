@@ -1256,18 +1256,18 @@ void RenderWidget::Resize(const ResizeParams& params) {
     local_surface_id_ = *params.local_surface_id;
 
   if (compositor_) {
-    compositor_->SetViewportSize(params.physical_backing_size);
-    compositor_->SetBrowserControlsHeight(
-        params.top_controls_height, params.bottom_controls_height,
-        params.browser_controls_shrink_blink_size);
-    compositor_->SetRasterColorSpace(
-        screen_info_.color_space.GetRasterColorSpace());
     // If surface synchronization is enable, then this will use the provided
     // |local_surface_id_| to submit the next generated CompositorFrame.
     // If the ID is not valid, then the compositor will defer commits until
     // it receives a valid surface ID. This is a no-op if surface
     // synchronization is disabled.
-    compositor_->SetLocalSurfaceId(local_surface_id_);
+    compositor_->SetViewportSize(params.physical_backing_size,
+                                 local_surface_id_);
+    compositor_->SetBrowserControlsHeight(
+        params.top_controls_height, params.bottom_controls_height,
+        params.browser_controls_shrink_blink_size);
+    compositor_->SetRasterColorSpace(
+        screen_info_.color_space.GetRasterColorSpace());
   }
 
   visible_viewport_size_ = params.visible_viewport_size;
@@ -1338,8 +1338,11 @@ void RenderWidget::SetScreenRects(const gfx::Rect& view_screen_rect,
 
 void RenderWidget::AutoResizeCompositor()  {
   physical_backing_size_ = gfx::ScaleToCeiledSize(size_, device_scale_factor_);
+  // A new LocalSurfaceId will need to be allocated by the browser for the new
+  // size.
+  local_surface_id_ = viz::LocalSurfaceId();
   if (compositor_)
-    compositor_->SetViewportSize(physical_backing_size_);
+    compositor_->SetViewportSize(physical_backing_size_, local_surface_id_);
 }
 
 blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
@@ -1356,12 +1359,11 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   compositor_->Initialize(std::move(layer_tree_host),
                           std::move(animation_host));
 
-  compositor_->SetViewportSize(physical_backing_size_);
+  compositor_->SetViewportSize(physical_backing_size_, local_surface_id_);
   OnDeviceScaleFactorChanged();
   compositor_->SetRasterColorSpace(
       screen_info_.color_space.GetRasterColorSpace());
   compositor_->SetContentSourceId(current_content_source_id_);
-  compositor_->SetLocalSurfaceId(local_surface_id_);
   // For background pages and certain tests, we don't want to trigger
   // LayerTreeFrameSink creation.
   bool should_generate_frame_sink =

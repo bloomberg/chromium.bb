@@ -745,8 +745,9 @@ bool RenderWidgetCompositor::SendMessageToMicroBenchmark(
 }
 
 void RenderWidgetCompositor::SetViewportSize(
-    const gfx::Size& device_viewport_size) {
-  layer_tree_host_->SetViewportSize(device_viewport_size);
+    const gfx::Size& device_viewport_size,
+    const viz::LocalSurfaceId& local_surface_id) {
+  layer_tree_host_->SetViewportSize(device_viewport_size, local_surface_id);
 }
 
 viz::FrameSinkId RenderWidgetCompositor::GetFrameSinkId() {
@@ -1284,11 +1285,6 @@ void RenderWidgetCompositor::SetIsForOopif(bool is_for_oopif) {
 
 void RenderWidgetCompositor::SetContentSourceId(uint32_t id) {
   layer_tree_host_->SetContentSourceId(id);
-}
-
-void RenderWidgetCompositor::SetLocalSurfaceId(
-    const viz::LocalSurfaceId& local_surface_id) {
-  layer_tree_host_->SetLocalSurfaceId(local_surface_id);
 }
 
 void RenderWidgetCompositor::NotifySwapTime(ReportTimeCallback callback) {
