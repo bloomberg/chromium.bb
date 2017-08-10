@@ -7,7 +7,7 @@
 
 #include <deque>
 #include <string>
-#include <tr1/memory>
+#include <memory>
 #include <set>
 
 #include <json/value.h>
@@ -65,7 +65,7 @@ class ActivityReplay : public GestureConsumer {
   HardwareProperties hwprops_;
   PropRegistry* prop_reg_;
   std::deque<Gesture> consumed_gestures_;
-  std::vector<std::tr1::shared_ptr<const std::string> > names_;
+  std::vector<std::shared_ptr<const std::string> > names_;
 };
 
 }  // namespace gestures

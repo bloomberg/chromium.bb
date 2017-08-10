@@ -635,7 +635,7 @@ bool ActivityReplay::ParsePropChange(const Json::Value& entry) {
   const string* stored_name =
       new string(entry[ActivityLog::kKeyPropChangeName].asString());  // alloc
   // transfer ownership:
-  names_.push_back(std::tr1::shared_ptr<const string>(stored_name));
+  names_.push_back(std::shared_ptr<const string>(stored_name));
   prop_change.name = stored_name->c_str();
   log_.LogPropChange(prop_change);
   return true;
