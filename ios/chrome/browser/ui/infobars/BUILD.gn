@@ -57,6 +57,7 @@ source_set("eg_tests") {
     "//base",
     "//components/infobars/core",
     "//ios/chrome/app:app_internal",
+    "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",

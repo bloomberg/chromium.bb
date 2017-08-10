@@ -19,12 +19,14 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -194,9 +196,11 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   // The last session didn't exit cleanly. Show an infobar to the user so
   // that they can restore if they want. The delegate deletes itself when
   // it is closed.
-  DCHECK([tabModel currentTab]);
+  DCHECK(tabModel);
+  web::WebState* webState = tabModel.webStateList->GetActiveWebState();
+  DCHECK(webState);
   infobars::InfoBarManager* infoBarManager =
-      [[tabModel currentTab] infoBarManager];
+      InfoBarManagerImpl::FromWebState(webState);
   _tabModel = tabModel;
   SessionCrashedInfoBarDelegate::Create(infoBarManager, self);
   _infoBarBridge.reset(new InfoBarManagerObserverBridge(infoBarManager, self));

@@ -8,6 +8,7 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -162,9 +163,11 @@ bool displaySyncErrors(ios::ChromeBrowserState* browser_state, Tab* tab) {
   UMA_HISTOGRAM_ENUMERATION("Sync.SyncErrorInfobarDisplayed", loggedErrorState,
                             SYNC_ERROR_COUNT);
 
-  DCHECK(tab);
-  DCHECK([tab infoBarManager]);
-  return SyncErrorInfoBarDelegate::Create([tab infoBarManager], browser_state);
+  DCHECK(tab.webState);
+  infobars::InfoBarManager* infoBarManager =
+      InfoBarManagerImpl::FromWebState(tab.webState);
+  DCHECK(infoBarManager);
+  return SyncErrorInfoBarDelegate::Create(infoBarManager, browser_state);
 }
 
 bool IsTransientSyncError(SyncSetupService::SyncServiceState errorState) {

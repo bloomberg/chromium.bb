@@ -16,6 +16,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar.h"
+#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/tabs/tab.h"
@@ -31,7 +32,9 @@
 // static
 bool ReSignInInfoBarDelegate::Create(ios::ChromeBrowserState* browser_state,
                                      Tab* tab) {
-  infobars::InfoBarManager* infobar_manager = [tab infoBarManager];
+  DCHECK(tab.webState);
+  infobars::InfoBarManager* infobar_manager =
+      InfoBarManagerImpl::FromWebState(tab.webState);
   DCHECK(infobar_manager);
 
   std::unique_ptr<infobars::InfoBar> infobar =

@@ -68,6 +68,7 @@
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/infobars/infobar_container_ios.h"
 #include "ios/chrome/browser/infobars/infobar_container_view.h"
+#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #import "ios/chrome/browser/open_url_util.h"
@@ -1589,7 +1590,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // is called after a new tab has added and finished initial navigation.
   // If this is added earlier, the initial navigation may end up clearing
   // the infobar(s) that are just added. See http://crbug/340250 for details.
-  [[UpgradeCenter sharedInstance] addInfoBarToManager:[tab infoBarManager]
+  web::WebState* webState = tab.webState;
+  DCHECK(webState);
+
+  infobars::InfoBarManager* infoBarManager =
+      InfoBarManagerImpl::FromWebState(webState);
+  [[UpgradeCenter sharedInstance] addInfoBarToManager:infoBarManager
                                              forTabId:[tab tabId]];
   if (!ReSignInInfoBarDelegate::Create(_browserState, tab)) {
     ios_internal::sync::displaySyncErrors(_browserState, tab);
@@ -1836,8 +1842,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   [self.sideSwipeController addHorizontalGesturesToView:self.view];
 
-  infobars::InfoBarManager* infoBarManager =
-      [[_model currentTab] infoBarManager];
+  infobars::InfoBarManager* infoBarManager = nullptr;
+  if (_model.currentTab) {
+    DCHECK(_model.currentTab.webState);
+    infoBarManager =
+        InfoBarManagerImpl::FromWebState(_model.currentTab.webState);
+  }
   _infoBarContainer->ChangeInfoBarManager(infoBarManager);
 
   // Create child coordinators.
@@ -2373,8 +2383,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return nil;
   }
   Tab* currentTab = [_model currentTab];
-  if (tab && tab == currentTab) {
-    infobars::InfoBarManager* infoBarManager = [currentTab infoBarManager];
+  if (currentTab && tab == currentTab) {
+    DCHECK(currentTab.webState);
+    infobars::InfoBarManager* infoBarManager =
+        InfoBarManagerImpl::FromWebState(currentTab.webState);
     if (infoBarManager->infobar_count() > 0) {
       DCHECK(_infoBarContainer);
       return _infoBarContainer->view();
@@ -2497,8 +2509,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     pass = [[PKPass alloc] initWithData:data error:&error];
   if (error || !data) {
     if ([_model currentTab]) {
+      DCHECK(_model.currentTab.webState);
       infobars::InfoBarManager* infoBarManager =
-          [[_model currentTab] infoBarManager];
+          InfoBarManagerImpl::FromWebState(_model.currentTab.webState);
       // TODO(crbug.com/227994): Infobar cleanup (infoBarManager should never be
       //            NULL, replace if with DCHECK).
       if (infoBarManager)
@@ -4663,7 +4676,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // but that may change in the future.  Remove this DCHECK when it does.
   DCHECK(newTab);
   if (_infoBarContainer) {
-    infobars::InfoBarManager* infoBarManager = [newTab infoBarManager];
+    DCHECK(newTab.webState);
+    infobars::InfoBarManager* infoBarManager =
+        InfoBarManagerImpl::FromWebState(newTab.webState);
     _infoBarContainer->ChangeInfoBarManager(infoBarManager);
   }
   [self updateVoiceSearchBarVisibilityAnimated:NO];
@@ -4692,7 +4707,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self installDelegatesForTab:newTab];
 
   if (_infoBarContainer) {
-    infobars::InfoBarManager* infoBarManager = [newTab infoBarManager];
+    infobars::InfoBarManager* infoBarManager = nullptr;
+    if (newTab) {
+      DCHECK(newTab.webState);
+      infoBarManager = InfoBarManagerImpl::FromWebState(newTab.webState);
+    }
     _infoBarContainer->ChangeInfoBarManager(infoBarManager);
   }
 
@@ -4748,8 +4767,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Add an infobar on all the open tabs.
   for (Tab* tab in _model) {
     NSString* tabId = tab.tabId;
-    DCHECK([tab infoBarManager]);
-    [center addInfoBarToManager:[tab infoBarManager] forTabId:tabId];
+    DCHECK(tab.webState);
+    infobars::InfoBarManager* infoBarManager =
+        InfoBarManagerImpl::FromWebState(tab.webState);
+    DCHECK(infoBarManager);
+    [center addInfoBarToManager:infoBarManager forTabId:tabId];
   }
 }
 

@@ -11,6 +11,7 @@
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #import "ios/chrome/app/main_controller.h"
+#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -63,8 +64,13 @@ bool TestInfoBarDelegate::Create(infobars::InfoBarManager* infobar_manager) {
 // (non-incognito) mode.
 infobars::InfoBarManager* GetCurrentInfoBarManager() {
   MainController* main_controller = chrome_test_util::GetMainController();
-  return [[[[main_controller browserViewInformation] mainTabModel] currentTab]
-      infoBarManager];
+  web::WebState* webState =
+      [[[[main_controller browserViewInformation] mainTabModel] currentTab]
+          webState];
+  if (webState) {
+    return InfoBarManagerImpl::FromWebState(webState);
+  }
+  return nullptr;
 }
 
 // Adds a TestInfoBar to the current tab.

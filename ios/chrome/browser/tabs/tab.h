@@ -44,10 +44,6 @@ class GURL;
 @protocol TabSnapshottingDelegate;
 @protocol FindInPageControllerDelegate;
 
-namespace infobars {
-class InfoBarManager;
-}
-
 namespace ios {
 class ChromeBrowserState;
 }
@@ -233,9 +229,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // Updates the timestamp of the last time the tab is visited.
 - (void)updateLastVisitedTimestamp;
-
-// Returns the infobars::InfoBarManager object for this tab.
-- (infobars::InfoBarManager*)infoBarManager;
 
 // Whether the content of the current tab is compatible with reader mode.
 - (BOOL)canSwitchToReaderMode;
