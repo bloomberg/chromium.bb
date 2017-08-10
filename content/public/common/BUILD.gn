@@ -98,24 +98,7 @@ source_set("static_features") {
   public_deps = [
     "//base",
   ]
-  public_configs = [ ":static_switches_defines" ]
-}
 
-# This target allows you to use the sandbox_type functions and statically
-# link to it, without depending on the rest of content. This is only for use
-# without content, or you will get multiply defined symbols.
-source_set("static_sandbox_type") {
-  public = [
-    "sandbox_type.h",
-  ]
-  sources = [
-    "//content/common/content_export.h",
-    "sandbox_type.cc",
-  ]
-  check_includes = false
-  public_deps = [
-    "//base",
-  ]
   public_configs = [ ":static_switches_defines" ]
 }
 
@@ -235,7 +218,6 @@ source_set("common_sources") {
     "result_codes.h",
     "sandbox_init.h",
     "sandbox_linux.h",
-    "sandbox_type.cc",
     "sandbox_type.h",
     "sandboxed_process_launcher_delegate.cc",
     "sandboxed_process_launcher_delegate.h",
