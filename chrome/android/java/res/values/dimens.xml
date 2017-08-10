@@ -316,6 +316,7 @@
     <dimen name="ntp_search_box_height">62dp</dimen>
     <dimen name="ntp_search_box_shadow_width">4dp</dimen>
     <dimen name="ntp_search_box_transition_length">16dp</dimen>
+    <dimen name="ntp_search_box_logo_padding">8dp</dimen>
     <dimen name="ntp_wide_card_lateral_margins">48dp</dimen>
     <dimen name="ntp_list_item_min_height">48dp</dimen>
     <dimen name="ntp_list_item_text_size">16sp</dimen>
