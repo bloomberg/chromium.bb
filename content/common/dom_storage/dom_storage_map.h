@@ -59,6 +59,7 @@ class CONTENT_EXPORT DOMStorageMap
   DOMStorageMap* DeepCopy() const;
 
   size_t bytes_used() const { return bytes_used_; }
+  size_t memory_usage() const { return memory_usage_; }
   size_t quota() const { return quota_; }
   void set_quota(size_t quota) { quota_ = quota; }
   bool has_only_keys() const { return has_only_keys_; }
@@ -94,6 +95,7 @@ class CONTENT_EXPORT DOMStorageMap
   KeysMap::const_iterator keys_only_iterator_;
   unsigned last_key_index_;
   size_t bytes_used_;
+  size_t memory_usage_;
   size_t quota_;
   const bool has_only_keys_;
 };

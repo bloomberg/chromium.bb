@@ -381,13 +381,13 @@ void DOMStorageArea::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
     backing_->ReportMemoryUsage(pmd, name + "/local_storage");
 
   // Do not add storage map usage if less than 1KB.
-  if (map_->bytes_used() < 1024)
+  if (map_->memory_usage() < 1024)
     return;
 
   auto* map_mad = pmd->CreateAllocatorDump(name + "/storage_map");
   map_mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                     map_->bytes_used());
+                     map_->memory_usage());
   if (system_allocator_name)
     pmd->AddSuballocation(map_mad->guid(), system_allocator_name);
 }
