@@ -36,6 +36,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/ColorBehavior.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -79,10 +80,17 @@ bool ImageData::ValidateConstructorArguments(
     }
     data_size *= width;
     data_size *= height;
-    if (!data_size.IsValid())
+    if (!data_size.IsValid()) {
       return RaiseDOMExceptionAndReturnFalse(
           exception_state, kIndexSizeError,
           "The requested image size exceeds the supported range.");
+    }
+
+    if (data_size.ValueOrDie() > v8::TypedArray::kMaxLength) {
+      return RaiseDOMExceptionAndReturnFalse(
+          exception_state, kV8RangeError,
+          "Out of memory at ImageData creation.");
+    }
   }
 
   unsigned data_length = 0;
@@ -128,7 +136,8 @@ bool ImageData::ValidateConstructorArguments(
     CheckedNumeric<unsigned> data_size = 4;
     data_size *= size->Width();
     data_size *= size->Height();
-    if (!data_size.IsValid())
+    if (!data_size.IsValid() ||
+        data_size.ValueOrDie() > v8::TypedArray::kMaxLength)
       return false;
     if (param_flags & kParamData) {
       if (data_size.ValueOrDie() > data_length)
@@ -380,7 +389,8 @@ ImageData* ImageData::CreateForTest(const IntSize& size) {
   CheckedNumeric<unsigned> data_size = 4;
   data_size *= size.Width();
   data_size *= size.Height();
-  if (!data_size.IsValid())
+  if (!data_size.IsValid() ||
+      data_size.ValueOrDie() > v8::TypedArray::kMaxLength)
     return nullptr;
 
   DOMUint8ClampedArray* byte_array =

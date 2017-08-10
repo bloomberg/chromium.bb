@@ -1797,6 +1797,7 @@ test("blink_platform_unittests") {
     "graphics/DecodingImageGeneratorTest.cpp",
     "graphics/DeferredImageDecoderTestWoPlatform.cpp",
     "graphics/GraphicsContextTest.cpp",
+    "graphics/ImageBufferTest.cpp",
     "graphics/PaintInvalidationReasonTest.cpp",
     "graphics/RecordingImageBufferSurfaceTest.cpp",
     "graphics/compositing/ContentLayerClientImplTest.cpp",

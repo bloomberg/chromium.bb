@@ -622,8 +622,8 @@ crbug.com/567837 fast/hidpi/static [ Skip ]
 crbug.com/676432 fullscreen/full-screen-iframe-zIndex.html [ Skip ]
 crbug.com/676432 virtual/android/fullscreen/full-screen-iframe-zIndex.html [ Skip ]
 
-crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
-crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Failure Crash ]
+crbug.com/538697 [ Win ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
+crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash ]
 
 # ====== Fullscreen tests failing with feature policy ======
 # TODO(loonybear): Turn tests on once feature policy implements allowfullscreen.
