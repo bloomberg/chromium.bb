@@ -61,9 +61,9 @@ bool UserEventServiceImpl::MightRecordEvents(bool off_the_record,
 
 bool UserEventServiceImpl::ShouldRecordEvent(
     const UserEventSpecifics& specifics) {
-  // We only record events if the user is syncing history and has not enabled
-  // a custom passphrase. The type HISTORY_DELETE_DIRECTIVES is enabled in and
-  // only in this exact scenario.
+  // We only record events if the user is syncing history (as indicated by
+  // GetPreferredDataTypes()) and has not enabled a custom passphrase (as
+  // indicated by IsUsingSecondaryPassphrase()).
   return sync_service_->IsEngineInitialized() &&
          !sync_service_->IsUsingSecondaryPassphrase() &&
          sync_service_->GetPreferredDataTypes().Has(HISTORY_DELETE_DIRECTIVES);

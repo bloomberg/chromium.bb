@@ -4,8 +4,11 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/sessions_helper.cc"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
+#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
@@ -122,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, Sanity) {
       GetFakeServer()->GetSyncEntitiesByModelType(syncer::USER_EVENTS).size());
   syncer::UserEventService* event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
-  UserEventSpecifics specifics = CreateEvent(0);
+  const UserEventSpecifics specifics = CreateEvent(0);
   event_service->RecordUserEvent(specifics);
   UserEventEqualityChecker(GetSyncService(0), GetFakeServer(), {specifics})
       .Wait();
@@ -130,8 +133,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, Sanity) {
 
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetrySequential) {
   ASSERT_TRUE(SetupSync());
-  UserEventSpecifics specifics1 = CreateEvent(1);
-  UserEventSpecifics specifics2 = CreateEvent(2);
+  const UserEventSpecifics specifics1 = CreateEvent(1);
+  const UserEventSpecifics specifics2 = CreateEvent(2);
   syncer::UserEventService* event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
 
@@ -162,8 +165,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetrySequential) {
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetryParallel) {
   ASSERT_TRUE(SetupSync());
   bool first = true;
-  UserEventSpecifics specifics1 = CreateEvent(1);
-  UserEventSpecifics specifics2 = CreateEvent(2);
+  const UserEventSpecifics specifics1 = CreateEvent(1);
+  const UserEventSpecifics specifics2 = CreateEvent(2);
   UserEventSpecifics retry_specifics;
 
   syncer::UserEventService* event_service =
@@ -182,6 +185,65 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetryParallel) {
       .Wait();
   UserEventEqualityChecker(GetSyncService(0), GetFakeServer(),
                            {specifics1, specifics2, retry_specifics})
+      .Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoHistory) {
+  const UserEventSpecifics specifics1 = CreateEvent(1);
+  const UserEventSpecifics specifics2 = CreateEvent(2);
+  const UserEventSpecifics specifics3 = CreateEvent(3);
+  ASSERT_TRUE(SetupSync());
+  syncer::UserEventService* event_service =
+      browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
+
+  event_service->RecordUserEvent(specifics1);
+  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::TYPED_URLS));
+  event_service->RecordUserEvent(specifics2);
+  ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(syncer::TYPED_URLS));
+  event_service->RecordUserEvent(specifics3);
+
+  // No |specifics2| because it was recorded while history was disabled.
+  UserEventEqualityChecker(GetSyncService(0), GetFakeServer(),
+                           {specifics1, specifics3})
+      .Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoSessions) {
+  const UserEventSpecifics specifics = CreateEvent(1);
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::PROXY_TABS));
+  syncer::UserEventService* event_service =
+      browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
+
+  event_service->RecordUserEvent(specifics);
+
+  // PROXY_TABS shouldn't affect us in any way.
+  UserEventEqualityChecker(GetSyncService(0), GetFakeServer(), {specifics})
+      .Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, Encryption) {
+  const UserEventSpecifics specifics1 = CreateEvent(1);
+  const UserEventSpecifics specifics2 = CreateEvent(2);
+  const GURL url("http://www.one.com/");
+
+  ASSERT_TRUE(SetupSync());
+  syncer::UserEventService* event_service =
+      browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
+  event_service->RecordUserEvent(specifics1);
+  ASSERT_TRUE(EnableEncryption(0));
+  UserEventEqualityChecker(GetSyncService(0), GetFakeServer(), {specifics1})
+      .Wait();
+  event_service->RecordUserEvent(specifics2);
+
+  // Just checking that we don't see specifics2 isn't very convincing yet,
+  // because it may simply not have reached the server yet. So lets send
+  // something else through the system that we can wait on before checking.
+  // Tab/SESSIONS data was picked fairly arbitrarily, note that we expect 2
+  // entries, one for the window/header and one for the tab.
+  sessions_helper::OpenTab(0, url);
+  ServerCountMatchStatusChecker(syncer::SESSIONS, 2);
+  UserEventEqualityChecker(GetSyncService(0), GetFakeServer(), {specifics1})
       .Wait();
 }
 
