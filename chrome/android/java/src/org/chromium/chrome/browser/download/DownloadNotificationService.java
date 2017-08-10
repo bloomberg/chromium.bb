@@ -895,6 +895,8 @@ public class DownloadNotificationService extends Service {
                                                 .setIsOpenable(isOpenable)
                                                 .setIcon(icon)
                                                 .setNotificationId(notificationId)
+                                                .setOriginalUrl(originalUrl)
+                                                .setReferrer(referrer)
                                                 .build();
         Notification notification = DownloadNotificationFactory.buildNotification(
                 mContext, DownloadNotificationFactory.DownloadStatus.SUCCESSFUL, downloadUpdate);

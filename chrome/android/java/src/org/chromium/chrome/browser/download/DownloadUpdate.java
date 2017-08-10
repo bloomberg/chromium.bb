@@ -25,7 +25,9 @@ public final class DownloadUpdate {
     private final boolean mIsSupportedMimeType;
     private final boolean mIsTransient;
     private final int mNotificationId;
+    private final String mOriginalUrl;
     private final Progress mProgress;
+    private final String mReferrer;
     private final long mStartTime;
     private final long mSystemDownloadId;
     private final long mTimeRemainingInMillis;
@@ -42,7 +44,9 @@ public final class DownloadUpdate {
         this.mIsSupportedMimeType = builder.mIsSupportedMimeType;
         this.mIsTransient = builder.mIsTransient;
         this.mNotificationId = builder.mNotificationId;
+        this.mOriginalUrl = builder.mOriginalUrl;
         this.mProgress = builder.mProgress;
+        this.mReferrer = builder.mReferrer;
         this.mStartTime = builder.mStartTime;
         this.mSystemDownloadId = builder.mSystemDownloadId;
         this.mTimeRemainingInMillis = builder.mTimeRemainingInMillis;
@@ -92,8 +96,16 @@ public final class DownloadUpdate {
         return mNotificationId;
     }
 
+    public String getOriginalUrl() {
+        return mOriginalUrl;
+    }
+
     public Progress getProgress() {
         return mProgress;
+    }
+
+    public String getReferrer() {
+        return mReferrer;
     }
 
     public long getStartTime() {
@@ -123,7 +135,9 @@ public final class DownloadUpdate {
         private boolean mIsSupportedMimeType;
         private boolean mIsTransient;
         private int mNotificationId = -1;
+        private String mOriginalUrl;
         private Progress mProgress;
+        private String mReferrer;
         private long mStartTime;
         private long mSystemDownloadId = -1;
         private long mTimeRemainingInMillis;
@@ -183,8 +197,18 @@ public final class DownloadUpdate {
             return this;
         }
 
+        public Builder setOriginalUrl(String originalUrl) {
+            this.mOriginalUrl = originalUrl;
+            return this;
+        }
+
         public Builder setProgress(Progress progress) {
             this.mProgress = progress;
+            return this;
+        }
+
+        public Builder setReferrer(String referrer) {
+            this.mReferrer = referrer;
             return this;
         }
 
