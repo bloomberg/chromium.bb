@@ -7,20 +7,21 @@
 
 #include "base/macros.h"
 #include "ui/message_center/message_center_style.h"
-#include "ui/message_center/views/padded_button.h"
 #include "ui/views/controls/button/custom_button.h"
 
 namespace views {
-class ImageButton;
 class ImageView;
 class Label;
 }
 
 namespace message_center {
 
+class NotificationControlButtonsView;
+
 class NotificationHeaderView : public views::CustomButton {
  public:
-  NotificationHeaderView(views::ButtonListener* listener);
+  NotificationHeaderView(NotificationControlButtonsView* control_buttons_view,
+                         views::ButtonListener* listener);
   void SetAppIcon(const gfx::ImageSkia& img);
   void SetAppName(const base::string16& name);
   void SetProgress(int progress);
@@ -39,9 +40,6 @@ class NotificationHeaderView : public views::CustomButton {
   void ClearOverflowIndicator();
   void ClearTimestamp();
   bool IsExpandButtonEnabled();
-  bool IsSettingsButtonEnabled();
-  bool IsCloseButtonEnabled();
-  bool IsCloseButtonFocused();
 
   // CustomButton override:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
@@ -50,11 +48,8 @@ class NotificationHeaderView : public views::CustomButton {
       const override;
 
   views::ImageView* expand_button() { return expand_button_; }
-  views::ImageButton* settings_button() { return settings_button_; }
-  views::ImageButton* close_button() { return close_button_; }
 
  private:
-  void UpdateControlButtonsVisibility();
   // Update visibility for both |summary_text_view_| and |timestamp_view_|.
   void UpdateSummaryTextVisibility();
 
@@ -67,12 +62,8 @@ class NotificationHeaderView : public views::CustomButton {
   views::Label* timestamp_view_ = nullptr;
   views::ImageView* app_icon_view_ = nullptr;
   views::ImageView* expand_button_ = nullptr;
-  PaddedButton* settings_button_ = nullptr;
-  PaddedButton* close_button_ = nullptr;
 
   bool settings_button_enabled_ = false;
-  bool close_button_enabled_ = false;
-  bool is_control_buttons_visible_ = false;
   bool has_progress_ = false;
   bool has_overflow_indicator_ = false;
   bool has_timestamp_ = false;

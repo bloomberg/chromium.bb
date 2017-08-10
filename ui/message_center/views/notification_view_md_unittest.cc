@@ -16,7 +16,9 @@
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/bounded_label.h"
 #include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
+#include "ui/message_center/views/padded_button.h"
 #include "ui/message_center/views/proportional_image_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -78,7 +80,7 @@ class NotificationViewMDTest : public views::ViewsTestBase,
   void BeginScroll();
   void EndScroll();
   void ScrollBy(int dx);
-  views::ImageButton* GetCloseButton();
+  PaddedButton* GetCloseButton();
 
  private:
   std::set<std::string> removed_ids_;
@@ -263,8 +265,8 @@ void NotificationViewMDTest::ScrollBy(int dx) {
   DispatchGesture(ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, dx, 0));
 }
 
-views::ImageButton* NotificationViewMDTest::GetCloseButton() {
-  return notification_view()->header_row_->close_button();
+PaddedButton* NotificationViewMDTest::GetCloseButton() {
+  return notification_view()->GetControlButtonsView()->close_button();
 }
 
 /* Unit tests *****************************************************************/
@@ -491,10 +493,25 @@ TEST_F(NotificationViewMDTest, SlideOutPinned) {
 }
 
 TEST_F(NotificationViewMDTest, Pinned) {
-  notification()->set_pinned(true);
+  // Visible at the initial state.
+  EXPECT_TRUE(GetCloseButton());
+  EXPECT_TRUE(GetCloseButton()->visible());
 
+  // Pin.
+  notification()->set_pinned(true);
   UpdateNotificationViews();
-  EXPECT_FALSE(GetCloseButton()->visible());
+  EXPECT_FALSE(GetCloseButton());
+
+  // Unpin.
+  notification()->set_pinned(false);
+  UpdateNotificationViews();
+  EXPECT_TRUE(GetCloseButton());
+  EXPECT_TRUE(GetCloseButton()->visible());
+
+  // Pin again.
+  notification()->set_pinned(true);
+  UpdateNotificationViews();
+  EXPECT_FALSE(GetCloseButton());
 }
 
 #endif  // defined(OS_CHROMEOS)

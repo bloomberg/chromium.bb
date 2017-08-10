@@ -50,7 +50,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void OnFocus() override;
   void ScrollRectToVisible(const gfx::Rect& rect) override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
-  void OnMouseMoved(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
 
@@ -74,6 +73,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
   friend class NotificationViewMDTest;
 
+  void UpdateControlButtonsVisibilityWithNotification(
+      const Notification& notification);
+
   void CreateOrUpdateViews(const Notification& notification);
 
   void CreateOrUpdateContextTitleView(const Notification& notification);
@@ -87,12 +89,13 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void CreateOrUpdateSmallIconView(const Notification& notification);
   void CreateOrUpdateImageView(const Notification& notification);
   void CreateOrUpdateActionButtonViews(const Notification& notification);
-  void CreateOrUpdateCloseButtonView(const Notification& notification);
-  void CreateOrUpdateSettingsButtonView(const Notification& notification);
 
   bool IsExpandable();
   void ToggleExpanded();
   void UpdateViewForExpandedState(bool expanded);
+
+  // View containing close and settings buttons
+  std::unique_ptr<NotificationControlButtonsView> control_buttons_view_;
 
   // Whether this notification is expanded or not.
   bool expanded_ = false;
