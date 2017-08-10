@@ -442,14 +442,6 @@ ScopedInterfaceEndpointHandle MultiplexRouter::CreateLocalEndpointHandle(
   if (!IsValidInterfaceId(id))
     return ScopedInterfaceEndpointHandle();
 
-  // Unless it is the master ID, |id| is from the remote side and therefore its
-  // namespace bit is supposed to be different than the value that this router
-  // would use.
-  if (!IsMasterInterfaceId(id) &&
-      set_interface_id_namespace_bit_ == HasInterfaceIdNamespaceBitSet(id)) {
-    return ScopedInterfaceEndpointHandle();
-  }
-
   MayAutoLock locker(&lock_);
   bool inserted = false;
   InterfaceEndpoint* endpoint = FindOrInsertEndpoint(id, &inserted);
@@ -459,13 +451,13 @@ ScopedInterfaceEndpointHandle MultiplexRouter::CreateLocalEndpointHandle(
     if (encountered_error_)
       UpdateEndpointStateMayRemove(endpoint, PEER_ENDPOINT_CLOSED);
   } else {
-    if (endpoint->handle_created())
-      return ScopedInterfaceEndpointHandle();
-
     // If the endpoint already exist, it is because we have received a
     // notification that the peer endpoint has closed.
-    DCHECK(!endpoint->closed());
-    DCHECK(endpoint->peer_closed());
+    CHECK(!endpoint->closed());
+    CHECK(endpoint->peer_closed());
+
+    if (endpoint->handle_created())
+      return ScopedInterfaceEndpointHandle();
   }
 
   endpoint->set_handle_created();
