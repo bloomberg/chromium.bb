@@ -724,6 +724,28 @@ void MediaSource::EndOfStreamAlgorithm(
 
   // 3. Do various steps based on |eos_status|.
   web_media_source_->MarkEndOfStream(eos_status);
+
+  if (eos_status == WebMediaSource::kEndOfStreamStatusNoError) {
+    // The implementation may not have immediately informed the
+    // |attached_element_| of the potentially reduced duration. Prevent
+    // app-visible duration race by synchronously running the duration change
+    // algorithm. The MSE spec supports this:
+    // https://www.w3.org/TR/media-source/#end-of-stream-algorithm
+    // 2.4.7.3 (If error is not set)
+    // Run the duration change algorithm with new duration set to the largest
+    // track buffer ranges end time across all the track buffers across all
+    // SourceBuffer objects in sourceBuffers.
+    //
+    // Since MarkEndOfStream caused the demuxer to update its duration (similar
+    // to the MediaSource portion of the duration change algorithm), all that
+    // is left is to notify the element.
+    // TODO(wolenetz): Consider refactoring the MarkEndOfStream implementation
+    // to just mark end of stream, and move the duration reduction logic to here
+    // so we can just run DurationChangeAlgorithm(...) here.
+    double new_duration = duration();
+    bool request_seek = attached_element_->currentTime() > new_duration;
+    attached_element_->DurationChanged(new_duration, request_seek);
+  }
 }
 
 bool MediaSource::IsClosed() const {
