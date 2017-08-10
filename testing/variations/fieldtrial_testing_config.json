@@ -2978,24 +2978,6 @@
                     "enable_features": [
                         "TranslateCompactUI"
                     ]
-                },
-                {
-                    "name": "CompactUIAndRanker",
-                    "enable_features": [
-                        "TranslateCompactUI",
-                        "TranslateRankerEnforcement",
-                        "TranslateRankerQuery"
-                    ]
-                },
-                {
-                    "name": "RankerOnly",
-                    "enable_features": [
-                        "TranslateRankerEnforcement",
-                        "TranslateRankerQuery"
-                    ],
-                    "disable_features": [
-                        "TranslateCompactUI"
-                    ]
                 }
             ]
         }
@@ -3031,6 +3013,16 @@
                 "android"
             ],
             "experiments": [
+                {
+                    "name": "Enforcement20170329",
+                    "params": {
+                        "translate-ranker-model-url": "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/translate/2017/03/translate_ranker_model_20170329.pb.bin"
+                    },
+                    "enable_features": [
+                        "TranslateRankerEnforcement",
+                        "TranslateRankerQuery"
+                    ]
+                },
                 {
                     "name": "Query20170329",
                     "params": {
