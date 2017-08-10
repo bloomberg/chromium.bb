@@ -220,7 +220,7 @@ class QuicStreamFactoryTestBase {
         idle_connection_timeout_seconds_, reduced_ping_timeout_seconds_,
         migrate_sessions_on_network_change_, migrate_sessions_early_,
         allow_server_migration_, force_hol_blocking_, race_cert_verification_,
-        estimate_initial_rtt_, QuicTagVector(),
+        estimate_initial_rtt_, connection_options_, client_connection_options_,
         /*enable_token_binding*/ false));
     factory_->set_require_confirmation(false);
   }
@@ -732,6 +732,8 @@ class QuicStreamFactoryTestBase {
   bool force_hol_blocking_;
   bool race_cert_verification_;
   bool estimate_initial_rtt_;
+  QuicTagVector connection_options_;
+  QuicTagVector client_connection_options_;
 };
 
 class QuicStreamFactoryTest : public QuicStreamFactoryTestBase,
@@ -5074,6 +5076,26 @@ TEST_P(QuicStreamFactoryTest, ClearCachedStatesInCryptoConfig) {
   EXPECT_TRUE(test_cases[0].state->certs().empty());
   EXPECT_TRUE(test_cases[1].state->certs().empty());
   EXPECT_TRUE(test_cases[2].state->certs().empty());
+}
+
+// Passes connection options and client connection options to QuicStreamFactory,
+// then checks that its internal QuicConfig is correct.
+TEST_P(QuicStreamFactoryTest, ConfigConnectionOptions) {
+  connection_options_.push_back(net::kTIME);
+  connection_options_.push_back(net::kTBBR);
+  connection_options_.push_back(net::kREJ);
+
+  client_connection_options_.push_back(net::kTBBR);
+  client_connection_options_.push_back(net::k1RTT);
+
+  Initialize();
+
+  const QuicConfig* config = QuicStreamFactoryPeer::GetConfig(factory_.get());
+  EXPECT_EQ(connection_options_, config->SendConnectionOptions());
+  EXPECT_TRUE(config->HasClientRequestedIndependentOption(
+      net::kTBBR, Perspective::IS_CLIENT));
+  EXPECT_TRUE(config->HasClientRequestedIndependentOption(
+      net::k1RTT, Perspective::IS_CLIENT));
 }
 
 }  // namespace test

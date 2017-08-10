@@ -89,6 +89,7 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.retry_without_alt_svc_on_quic_errors);
   EXPECT_EQ(1350u, params_.quic_max_packet_length);
   EXPECT_EQ(net::QuicTagVector(), params_.quic_connection_options);
+  EXPECT_EQ(net::QuicTagVector(), params_.quic_client_connection_options);
   EXPECT_FALSE(params_.enable_server_push_cancellation);
   EXPECT_FALSE(params_.quic_close_sessions_on_ip_change);
   EXPECT_EQ(net::kIdleConnectionTimeoutSeconds,
@@ -348,6 +349,21 @@ TEST_F(NetworkSessionConfiguratorTest,
   options.push_back(net::kTBBR);
   options.push_back(net::kREJ);
   EXPECT_EQ(options, params_.quic_connection_options);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicClientConnectionOptionsFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["client_connection_options"] = "TBBR,1RTT";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  net::QuicTagVector options;
+  options.push_back(net::kTBBR);
+  options.push_back(net::k1RTT);
+  EXPECT_EQ(options, params_.quic_client_connection_options);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, Http2SettingsFromFieldTrialParams) {
