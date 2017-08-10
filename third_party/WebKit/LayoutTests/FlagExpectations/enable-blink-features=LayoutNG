@@ -4404,6 +4404,7 @@ crbug.com/591099 fast/block/float/float-forced-below-other-floats.html [ Crash F
 crbug.com/591099 fast/block/float/float-in-float-hit-testing.html [ Failure ]
 crbug.com/591099 fast/block/float/float-in-float-painting.html [ Failure ]
 crbug.com/591099 fast/block/float/float-inserted-into-clean-line.html [ Failure ]
+crbug.com/635619 fast/block/float/float-not-removed-from-first-letter.html [ Crash Failure ]
 crbug.com/591099 fast/block/float/float-not-removed-from-next-sibling-crash.html [ Failure ]
 crbug.com/591099 fast/block/float/float-not-removed-from-next-sibling5.html [ Crash Failure ]
 crbug.com/591099 fast/block/float/float-on-empty-line.html [ Failure ]
@@ -16888,6 +16889,7 @@ crbug.com/591099 virtual/layout_ng/fast/block/float/017.html [ Failure ]
 crbug.com/591099 virtual/layout_ng/fast/block/float/assert-when-moving-float-2.html [ Failure Pass ]
 crbug.com/591099 virtual/layout_ng/fast/block/float/assert-when-moving-float.html [ Failure ]
 crbug.com/591099 virtual/layout_ng/fast/block/float/floats-offset-image-quirk-line-height.html [ Crash Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-first-letter.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng/fast/block/float/formatting-context-changes.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng/fast/block/float/overhanging-float-add-in-static-position-block.html [ Failure Pass ]
 crbug.com/591099 virtual/layout_ng/fast/block/float/overhanging-float-add-in-static-position-block2.html [ Failure Pass ]
@@ -17674,3 +17676,27 @@ crbug.com/591099 webmidi/requestmidiaccess.html [ Failure ]
 crbug.com/591099 webmidi/send-messages.html [ Failure ]
 crbug.com/591099 webmidi/send-system-messages.html [ Failure ]
 crbug.com/591099 xmlviewer/extensions-api.html [ Failure ]
+
+# Need support for getBoundingClientRect() with LayoutNG.
+# TODO(xiaochengh): Investigate and file a new bug to replace 699017
+crbug.com/699017 accessibility/selection-affinity.html [ Failure ]
+crbug.com/699017 fast/multicol/float-truncation.html [ Failure ]
+crbug.com/699017 fast/multicol/vertical-lr/float-truncation.html [ Failure ]
+
+# We currently write back whitespace-collapsed strings to LayoutText, causing
+# the following failures. Once we can paint inlines directly from fragment tree,
+# we can stop the writeback.
+crbug.com/714962 editing/pasteboard/19644-1.html [ Failure ]
+crbug.com/714962 editing/pasteboard/19644-2.html [ Failure ]
+crbug.com/714962 editing/text-iterator/findString-restarts-at-last-position.html [ Failure ]
+
+# Flags enable-blink-features and additional-driver-flag=--enable-blink-features
+# don't work together.
+crbug.com/753141 virtual/mojo-loading/fast/table/convert-inline-anonoymous-wrapper-to-block.html [ Failure ]
+crbug.com/753141 virtual/mojo-loading/http/tests/cache/cached-main-resource.html [ Failure ]
+crbug.com/753141 virtual/mojo-loading/http/tests/cache/iframe-304-crash.html [ Failure ]
+crbug.com/753141 virtual/mojo-loading/http/tests/loading/nested_bad_objects.php [ Failure ]
+crbug.com/753141 virtual/mojo-loading/http/tests/loading/preload-picture-nested.html [ Failure ]
+crbug.com/753141 virtual/mojo-loading/http/tests/loading/preload-picture-sizes-2x.html [ Failure ]
+crbug.com/753141 virtual/mojo-loading/http/tests/loading/preload-picture-sizes.html [ Failure ]
+crbug.com/753141 virtual/mojo-loading/http/tests/misc/recreate-location-after-detach.html [ Failure ]
