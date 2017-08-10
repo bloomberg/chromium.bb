@@ -69,7 +69,7 @@
         <paper-listbox class="no-padding" selected="{{supervisedUserIndex_}}">
           <template is="dom-repeat" items="[[supervisedUsers_]]">
             <paper-item disabled="[[item.onCurrentDevice]]">
-              <img class="profile-img" src="[[item.iconURL]]"></img>
+              <img class="profile-img" src="[[item.iconURL]]">
               <div class="profile-name">[[item.name]]</div>
               <div class="on-device" hidden="[[!item.onCurrentDevice]]">
                 $i18n{supervisedUserAlreadyOnThisDevice}
