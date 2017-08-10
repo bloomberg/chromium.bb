@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/ui/display/output_protection.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/display/manager/chromeos/default_touch_transform_setter.h"
 #include "ui/display/manager/chromeos/display_change_observer.h"
 #include "ui/display/manager/chromeos/touch_transform_controller.h"
@@ -29,12 +28,6 @@
 #include "ui/ozone/public/ozone_platform.h"
 
 namespace display {
-namespace {
-
-// Needed for DisplayConfigurator::ForceInitialConfigure.
-const SkColor kChromeOsBootColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
-
-}  // namespace
 
 // static
 std::unique_ptr<ScreenManager> ScreenManager::Create() {
@@ -163,7 +156,7 @@ void ScreenManagerOzoneInternal::Init(ScreenManagerDelegate* delegate) {
 
   // Perform initial configuration.
   display_configurator_.Init(std::move(native_display_delegate_), false);
-  display_configurator_.ForceInitialConfigure(kChromeOsBootColor);
+  display_configurator_.ForceInitialConfigure();
 
   touch_transform_controller_ = base::MakeUnique<TouchTransformController>(
       &display_configurator_, display_manager_.get(),

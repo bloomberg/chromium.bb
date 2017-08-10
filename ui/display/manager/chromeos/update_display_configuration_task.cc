@@ -18,7 +18,6 @@ UpdateDisplayConfigurationTask::UpdateDisplayConfigurationTask(
     MultipleDisplayState new_display_state,
     chromeos::DisplayPowerState new_power_state,
     int power_flags,
-    uint32_t background_color_argb,
     bool force_configure,
     const ResponseCallback& callback)
     : delegate_(delegate),
@@ -26,19 +25,16 @@ UpdateDisplayConfigurationTask::UpdateDisplayConfigurationTask(
       new_display_state_(new_display_state),
       new_power_state_(new_power_state),
       power_flags_(power_flags),
-      background_color_argb_(background_color_argb),
       force_configure_(force_configure),
       callback_(callback),
       force_dpms_(false),
       requesting_displays_(false),
       weak_ptr_factory_(this) {
-  delegate_->GrabServer();
   delegate_->AddObserver(this);
 }
 
 UpdateDisplayConfigurationTask::~UpdateDisplayConfigurationTask() {
   delegate_->RemoveObserver(this);
-  delegate_->UngrabServer();
 }
 
 void UpdateDisplayConfigurationTask::Run() {
@@ -64,9 +60,6 @@ void UpdateDisplayConfigurationTask::OnDisplaysUpdated(
     const std::vector<DisplaySnapshot*>& displays) {
   cached_displays_ = displays;
   requesting_displays_ = false;
-
-  if (cached_displays_.size() > 1 && background_color_argb_)
-    delegate_->SetBackgroundColor(background_color_argb_);
 
   // If the user hasn't requested a display state, update it using the requested
   // power state.
@@ -160,9 +153,6 @@ void UpdateDisplayConfigurationTask::OnEnableSoftwareMirroring(
 }
 
 void UpdateDisplayConfigurationTask::FinishConfiguration(bool success) {
-  if (success && force_dpms_)
-    delegate_->ForceDPMSOn();
-
   callback_.Run(success, cached_displays_, framebuffer_size_,
                 new_display_state_, new_power_state_);
 }

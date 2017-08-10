@@ -45,19 +45,13 @@
 #include "ui/wm/core/native_cursor_manager_delegate.h"
 
 #if defined(OS_CHROMEOS)
+
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
-
-#if defined(USE_X11)
-#include "ui/display/manager/chromeos/x11/native_display_delegate_x11.h"
-#endif
-
-#if defined(USE_OZONE)
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/ozone/public/ozone_platform.h"
-#endif
 
 #endif  // defined(OS_CHROMEOS)
 
@@ -194,14 +188,9 @@ ShellDesktopControllerAura::ShellDesktopControllerAura()
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
   display_configurator_.reset(new display::DisplayConfigurator);
-#if defined(USE_OZONE)
   display_configurator_->Init(
       ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(), false);
-#elif defined(USE_X11)
-  display_configurator_->Init(
-      base::MakeUnique<display::NativeDisplayDelegateX11>(), false);
-#endif
-  display_configurator_->ForceInitialConfigure(0);
+  display_configurator_->ForceInitialConfigure();
   display_configurator_->AddObserver(this);
 #endif
   CreateRootWindow();
