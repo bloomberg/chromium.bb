@@ -342,7 +342,7 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
     int render_process_id,
     int render_frame_id,
     const GURL& gurl,
-    bool is_same_page_navigation,
+    bool is_same_document_navigation,
     uint32_t page_transition,
     base::TimeTicks time) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -414,7 +414,7 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
       main_frame_it->second.data_use_recorder;
   old_frame_entry->set_page_transition(page_transition);
 
-  if (is_same_page_navigation) {
+  if (is_same_document_navigation) {
     std::vector<net::URLRequest*> pending_url_requests;
     entry->GetPendingURLRequests(&pending_url_requests);
     for (net::URLRequest* request : pending_url_requests) {

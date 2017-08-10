@@ -96,7 +96,7 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   void DidFinishMainFrameNavigation(int render_process_id,
                                     int render_frame_id,
                                     const GURL& gurl,
-                                    bool is_same_page_navigation,
+                                    bool is_same_document_navigation,
                                     uint32_t page_transition,
                                     base::TimeTicks time);
 
