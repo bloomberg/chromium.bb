@@ -145,6 +145,9 @@ struct SecurityInfo {
   // True if the |security_level| was downgraded to HTTP_SHOW_WARNING because
   // the page was loaded while Incognito.
   bool incognito_downgraded_security_level;
+  // True if the |security_level| was downgraded to HTTP_SHOW_WARNING because
+  // of a field edit recorded in |insecure_input_events|.
+  bool field_edit_downgraded_security_level;
   // Contains information about input events that may impact the security
   // level of the page.
   InsecureInputEventData insecure_input_events;
@@ -220,10 +223,6 @@ void GetSecurityInfo(
 // and credit cards is enabled. This warning UI can be enabled with the
 // |kHttpFormWarningFeature| feature.
 bool IsHttpWarningInFormEnabled();
-
-// Returns true if the MarkHttpAs setting indicates that a warning
-// should be shown for HTTP pages loaded while in Incognito mode.
-bool IsHttpWarningForIncognitoEnabled();
 
 }  // namespace security_state
 

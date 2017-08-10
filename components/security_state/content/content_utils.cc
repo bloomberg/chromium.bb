@@ -57,21 +57,27 @@ blink::WebSecurityStyle SecurityLevelToSecurityStyle(
 void ExplainHTTPSecurity(
     const security_state::SecurityInfo& security_info,
     content::SecurityStyleExplanations* security_style_explanations) {
-  if (security_info.security_level == security_state::HTTP_SHOW_WARNING) {
-    if (security_info.displayed_password_field_on_http ||
-        security_info.displayed_credit_card_field_on_http) {
-      security_style_explanations->neutral_explanations.push_back(
-          content::SecurityStyleExplanation(
-              l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT),
-              l10n_util::GetStringUTF8(
-                  IDS_PRIVATE_USER_DATA_INPUT_DESCRIPTION)));
-    }
-    if (security_info.incognito_downgraded_security_level) {
-      security_style_explanations->neutral_explanations.push_back(
-          content::SecurityStyleExplanation(
-              l10n_util::GetStringUTF8(IDS_INCOGNITO_NONSECURE),
-              l10n_util::GetStringUTF8(IDS_INCOGNITO_NONSECURE_DESCRIPTION)));
-    }
+  if (security_info.security_level != security_state::HTTP_SHOW_WARNING)
+    return;
+
+  if (security_info.field_edit_downgraded_security_level) {
+    security_style_explanations->neutral_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_EDITED_NONSECURE),
+            l10n_util::GetStringUTF8(IDS_EDITED_NONSECURE_DESCRIPTION)));
+  }
+  if (security_info.displayed_password_field_on_http ||
+      security_info.displayed_credit_card_field_on_http) {
+    security_style_explanations->neutral_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT),
+            l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT_DESCRIPTION)));
+  }
+  if (security_info.incognito_downgraded_security_level) {
+    security_style_explanations->neutral_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_INCOGNITO_NONSECURE),
+            l10n_util::GetStringUTF8(IDS_INCOGNITO_NONSECURE_DESCRIPTION)));
   }
 }
 
