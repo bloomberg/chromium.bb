@@ -101,6 +101,7 @@ group("gn_all") {
       "//chrome",
       "//chrome/installer/zucchini:zucchini",
       "//chrome/installer/zucchini:zucchini_unittests",
+      "//chrome/profiling:unit_tests",
       "//chrome/test:browser_tests",
       "//chrome/test:interactive_ui_tests",
       "//chrome/test:sync_integration_tests",
