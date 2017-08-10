@@ -243,4 +243,14 @@ bool WebstoreBindings::GetWebstoreItemIdFromFrame(
   return false;
 }
 
+void WebstoreBindings::Invalidate() {
+  // We should close all mojo pipes when we invalidate the WebstoreBindings
+  // object and before its associated v8::context is destroyed. This is to
+  // ensure there are no mojo calls that try to access the v8::context after its
+  // destruction.
+  inline_installer_.reset();
+  install_progress_listener_bindings_.CloseAllBindings();
+  ObjectBackedNativeHandler::Invalidate();
+}
+
 }  // namespace extensions
