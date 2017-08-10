@@ -22,6 +22,7 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
+#include "chrome/browser/prerender/prerender_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_unittest_base.h"
@@ -187,10 +188,23 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
   InstantSearchPrerendererTest() {}
 
  protected:
+  using RestorePrerenderMode = prerender::test_utils::RestorePrerenderMode;
+
   void SetUp() override {
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                        "Group1 strk:20"));
+
+    // Prerender mode is stored in a few static variables. Remember the default
+    // mode to restore it later in TearDown() to avoid affecting other tests.
+    restore_prerender_mode_ = base::MakeUnique<RestorePrerenderMode>();
+    PrerenderManager::SetInstantMode(PrerenderManager::PRERENDER_MODE_ENABLED);
+
     InstantUnitTestBase::SetUp();
+  }
+
+  void TearDown() override {
+    InstantUnitTestBase::TearDown();
+    restore_prerender_mode_.reset();
   }
 
   void Init(bool prerender_search_results_base_page,
@@ -250,6 +264,7 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
 
  private:
   MockEmbeddedSearchClient mock_embedded_search_client_;
+  std::unique_ptr<RestorePrerenderMode> restore_prerender_mode_;
 };
 
 TEST_F(InstantSearchPrerendererTest, GetSearchTermsFromPrerenderedPage) {

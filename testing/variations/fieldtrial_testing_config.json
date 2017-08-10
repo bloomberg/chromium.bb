@@ -1706,30 +1706,6 @@
             ]
         }
     ],
-    "NoStatePrefetchValidation": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "PrerenderDisabled_R2",
-                    "params": {
-                        "instant_mode": "simple_load",
-                        "mode": "simple_load",
-                        "omnibox_mode": "simple_load"
-                    },
-                    "enable_features": [
-                        "NoStatePrefetch"
-                    ]
-                }
-            ]
-        }
-    ],
     "NonDelayableThrottlesDelayable": [
         {
             "platforms": [

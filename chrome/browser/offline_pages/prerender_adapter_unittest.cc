@@ -6,6 +6,7 @@
 
 #include "base/sys_info.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prerender/prerender_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -116,6 +117,7 @@ class PrerenderAdapterTest : public testing::Test,
   void OnPrerenderNetworkBytesChanged(int64_t bytes) override;
 
   void SetUp() override;
+  void TearDown() override;
 
   // Returns the PrerenderLoader to test.
   PrerenderAdapter* adapter() const { return adapter_.get(); }
@@ -136,6 +138,8 @@ class PrerenderAdapterTest : public testing::Test,
   }
 
  private:
+  using RestorePrerenderMode = prerender::test_utils::RestorePrerenderMode;
+
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   std::unique_ptr<PrerenderAdapter> adapter_;
@@ -145,6 +149,7 @@ class PrerenderAdapterTest : public testing::Test,
   bool observer_dom_content_loaded_called_;
   bool observer_stop_called_;
   int64_t observer_network_bytes_changed_;
+  std::unique_ptr<RestorePrerenderMode> restore_prerender_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderAdapterTest);
 };
@@ -181,18 +186,27 @@ void PrerenderAdapterTest::OnPrerenderNetworkBytesChanged(int64_t bytes) {
 void PrerenderAdapterTest::SetUp() {
   if (base::SysInfo::IsLowEndDevice())
     return;
+
+  // Prerender mode is stored in a few static variables. Remember the default
+  // mode to restore it later in TearDown() to avoid affecting other tests.
+  restore_prerender_mode_ = base::MakeUnique<RestorePrerenderMode>();
+  PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
+
   adapter_.reset(new PrerenderAdapter(this));
   prerender_contents_factory_ = new StubPrerenderContentsFactory();
   prerender_manager_ = PrerenderManagerFactory::GetForBrowserContext(profile());
   if (prerender_manager_) {
     prerender_manager_->SetPrerenderContentsFactoryForTest(
         prerender_contents_factory_);
-    prerender_manager_->SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
   }
   observer_stop_loading_called_ = false;
   observer_dom_content_loaded_called_ = false;
   observer_stop_called_ = false;
   ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+}
+
+void PrerenderAdapterTest::TearDown() {
+  restore_prerender_mode_.reset();
 }
 
 TEST_F(PrerenderAdapterTest, StartPrerenderFailsForUnsupportedScheme) {
