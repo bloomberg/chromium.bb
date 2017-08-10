@@ -64,7 +64,7 @@
 				<string>${CHROMIUM_URL_SCHEME_1}</string>
 				<string>${CHROMIUM_URL_SCHEME_2}</string>
 				<string>${CHROMIUM_URL_SCHEME_3}</string>
-				<string>${CHROMIUM_URL_SCHEME_4}</string>
+				<string>${CHROMIUM_URL_CHANNEL_SCHEME}</string>
 				<string>${SSOAUTH_URL_SCHEME}</string>
 			</array>
 		</dict>
@@ -169,6 +169,8 @@
 	<string>LaunchScreen</string>
 	<key>SSOAuthURLScheme</key>
 	<string>${SSOAUTH_URL_SCHEME}</string>
+	<key>KSChannelChromeScheme</key>
+	<string>${CHROMIUM_URL_CHANNEL_SCHEME}</string>
 	<key>NSCameraUsageDescription</key>
 	<string>IDS_IOS_CAMERA_USAGE_DESCRIPTION</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

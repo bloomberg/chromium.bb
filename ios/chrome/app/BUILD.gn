@@ -301,7 +301,7 @@ ios_app_bundle("chrome") {
     "CHROMIUM_URL_SCHEME_1=$url_unsecure_scheme",
     "CHROMIUM_URL_SCHEME_2=$url_secure_scheme",
     "CHROMIUM_URL_SCHEME_3=$url_x_callback_scheme",
-    "CHROMIUM_URL_SCHEME_4=$url_channel_scheme",
+    "CHROMIUM_URL_CHANNEL_SCHEME=$url_channel_scheme",
     "SSOAUTH_URL_SCHEME=$url_ssoauth_scheme",
   ]
 
