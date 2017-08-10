@@ -152,7 +152,7 @@ const NSTimeInterval kTextBadgeAnimationDuration = ios::material::kDuration3;
       arrayWithArray:
           [NSLayoutConstraint
               constraintsWithVisualFormat:
-                  @"H:|-(margin)-[title]-[badge]-(endMargin)-|"
+                  @"H:|-(margin)-[title]->=8-[badge]-(endMargin)-|"
                                   options:
                                       NSLayoutFormatDirectionLeadingToTrailing
                                   metrics:@{

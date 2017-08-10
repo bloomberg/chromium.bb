@@ -27,5 +27,7 @@ TEST(TextBadgeViewTest, SetText) {
 // Test that the accessibility label matches the display text.
 TEST(TextBadgeViewTest, Accessibility) {
   TextBadgeView* badge = [[TextBadgeView alloc] initWithText:@"display"];
+  UIView* superview = [[UIView alloc] initWithFrame:CGRectZero];
+  [superview addSubview:badge];
   EXPECT_NSEQ(@"display", badge.accessibilityLabel);
 }

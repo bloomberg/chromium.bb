@@ -14,57 +14,62 @@
 
 namespace {
 const CGFloat kFontSize = 10.0f;
-const CGFloat kLabelMargin = 2.5f;
+// The margin between the top and bottom of the label and the badge.
+const CGFloat kLabelVerticalMargin = 2.5f;
+// The default value for the margin between the sides of the label and the
+// badge.
+const CGFloat kDefaultLabelHorizontalMargin = 8.5f;
 }
 
 @interface TextBadgeView ()
-@property(nonatomic, readonly, weak) UILabel* label;
+// Label containing the text displayed on the badge.
+@property(nonatomic, strong) UILabel* label;
+// The margin between the sides of the label and the badge.
+@property(nonatomic, assign, readonly) CGFloat labelHorizontalMargin;
+// Indicate whether |label| has been added as a subview of the TextBadgeView.
+@property(nonatomic, assign) BOOL didAddSubviews;
 @end
 
 @implementation TextBadgeView
 
 @synthesize label = _label;
+@synthesize labelHorizontalMargin = _labelHorizontalMargin;
+@synthesize didAddSubviews = _didAddSubviews;
 
-- (instancetype)initWithText:(NSString*)text {
+- (instancetype)initWithText:(NSString*)text
+       labelHorizontalMargin:(CGFloat)margin {
   self = [super initWithFrame:CGRectZero];
   if (self) {
-    [self setAccessibilityLabel:text];
-    UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
-    _label = label;
-    [label setFont:[[MDCTypography fontLoader] boldFontOfSize:kFontSize]];
-    [label setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [label setTextColor:[UIColor whiteColor]];
-    [label setText:text];
-    [self addSubview:label];
-
-    [NSLayoutConstraint activateConstraints:@[
-      // Center label on badge.
-      [label.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
-      [label.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
-
-      // Make the badge height fit the label.
-      [self.heightAnchor constraintEqualToAnchor:label.heightAnchor
-                                        constant:kLabelMargin * 2],
-      // Ensure that the badge will never be taller than it is wide. For
-      // a tall label, the badge will look like a circle instead of an ellipse.
-      [self.widthAnchor constraintGreaterThanOrEqualToAnchor:self.heightAnchor],
-      // Make the badge width fit the label. Adding a constant offset equal to
-      // the label's height positions the label within the rectangular portion
-      // of the badge.
-      [self.widthAnchor
-          constraintGreaterThanOrEqualToAnchor:label.widthAnchor
-                                      constant:label.intrinsicContentSize
-                                                   .height],
-    ]];
-
-    [self setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]];
+    _label = [TextBadgeView labelWithText:text];
+    _labelHorizontalMargin = margin;
+    _didAddSubviews = NO;
   }
   return self;
 }
 
+- (instancetype)initWithText:(NSString*)text {
+  return [self initWithText:text
+      labelHorizontalMargin:kDefaultLabelHorizontalMargin];
+}
+
+#pragma mark - UIView overrides
+
+// Override |willMoveToSuperview| to add view properties to the view hierarchy
+// and set the badge's appearance.
+- (void)willMoveToSuperview:(UIView*)newSuperview {
+  if (!self.didAddSubviews) {
+    [self addSubview:self.label];
+    self.didAddSubviews = YES;
+    [self activateConstraints];
+    [self setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]];
+    [self setAccessibilityLabel:self.label.text];
+  }
+  [super willMoveToSuperview:newSuperview];
+}
+
 - (void)layoutSubviews {
   [super layoutSubviews];
-  // Set the badge's corner radius to be one half of its height. This allows the
+  // Set the badge's corner radius to be one half of its height. This causes the
   // ends of the badge to be circular.
   self.layer.cornerRadius = self.bounds.size.height / 2.0f;
 }
@@ -78,6 +83,45 @@ const CGFloat kLabelMargin = 2.5f;
 - (void)setText:(NSString*)text {
   DCHECK(text.length);
   self.label.text = text;
+}
+
+#pragma mark - Private class methods
+
+// Return a label that displays text in white with center alignment.
++ (UILabel*)labelWithText:(NSString*)text {
+  UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
+  [label setFont:[[MDCTypography fontLoader] boldFontOfSize:kFontSize]];
+  [label setTranslatesAutoresizingMaskIntoConstraints:NO];
+  [label setTextColor:[UIColor whiteColor]];
+  [label setText:text];
+  [label setTextAlignment:NSTextAlignmentCenter];
+  return label;
+}
+
+#pragma mark - Private instance methods
+
+// Activate constraints to properly position the badge and its subviews.
+- (void)activateConstraints {
+  // Make the badge width fit the label, adding a margin on both sides.
+  NSLayoutConstraint* badgeWidthConstraint =
+      [self.widthAnchor constraintEqualToAnchor:self.label.widthAnchor
+                                       constant:self.labelHorizontalMargin * 2];
+  // This constraint should not be satisfied if the label is taller than it is
+  // wide, so make it optional.
+  badgeWidthConstraint.priority = UILayoutPriorityDefaultHigh;
+
+  [NSLayoutConstraint activateConstraints:@[
+    // Center label on badge.
+    [self.label.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
+    [self.label.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+    // Make the badge height fit the label.
+    [self.heightAnchor constraintEqualToAnchor:self.label.heightAnchor
+                                      constant:kLabelVerticalMargin * 2],
+    // Ensure that the badge will never be taller than it is wide. For
+    // a tall label, the badge will look like a circle instead of an ellipse.
+    [self.widthAnchor constraintGreaterThanOrEqualToAnchor:self.heightAnchor],
+    badgeWidthConstraint
+  ]];
 }
 
 @end
