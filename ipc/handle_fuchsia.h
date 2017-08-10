@@ -21,29 +21,15 @@ namespace IPC {
 
 class IPC_EXPORT HandleFuchsia {
  public:
-  enum Permissions {
-    // A placeholder value to be used by the receiving IPC channel, since the
-    // permissions information is only used by the broker process.
-    INVALID,
-    // The new mx_handle_t will have the same permissions as the old
-    // mx_handle_t.
-    DUPLICATE,
-    // The new mx_handle_t will have file read and write permissions.
-    FILE_READ_WRITE,
-    MAX_PERMISSIONS = FILE_READ_WRITE
-  };
-
   // Default constructor makes an invalid mx_handle_t.
   HandleFuchsia();
-  HandleFuchsia(const mx_handle_t& handle, Permissions permissions);
+  explicit HandleFuchsia(const mx_handle_t& handle);
 
   mx_handle_t get_handle() const { return handle_; }
   void set_handle(mx_handle_t handle) { handle_ = handle; }
-  Permissions get_permissions() const { return permissions_; }
 
  private:
   mx_handle_t handle_;
-  Permissions permissions_;
 };
 
 template <>
