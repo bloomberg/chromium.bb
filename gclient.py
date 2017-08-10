@@ -1764,7 +1764,8 @@ class Flattener(object):
     """
     assert dep.name not in self._deps or self._deps.get(dep.name) == dep, (
         dep.name, self._deps.get(dep.name))
-    self._deps[dep.name] = dep
+    if dep.url:
+      self._deps[dep.name] = dep
 
   def _flatten_dep(self, dep):
     """Visits a dependency in order to flatten it (see CMDflatten).
