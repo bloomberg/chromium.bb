@@ -571,7 +571,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOgg) {
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOgg_4ch_ChannelMapping2) {
   ASSERT_EQ(PIPELINE_OK,
-            Start("bear-opus-4ch-channelmapping2.ogg", kClockless));
+            Start("bear-opus-4ch-channelmapping2.ogg", kClockless | kWebAudio));
 
   Play();
 
@@ -579,8 +579,8 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOgg_4ch_ChannelMapping2) {
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOgg_11ch_ChannelMapping2) {
-  ASSERT_EQ(PIPELINE_OK,
-            Start("bear-opus-11ch-channelmapping2.ogg", kClockless));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-opus-11ch-channelmapping2.ogg",
+                               kClockless | kWebAudio));
 
   Play();
 
@@ -601,6 +601,10 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed) {
 
 base::TimeDelta TimestampMs(int milliseconds) {
   return base::TimeDelta::FromMilliseconds(milliseconds);
+}
+
+TEST_F(PipelineIntegrationTest, PlaybackTooManyChannels) {
+  EXPECT_EQ(PIPELINE_ERROR_INITIALIZATION_FAILED, Start("9ch.wav", kClockless));
 }
 
 TEST_F(PipelineIntegrationTest, PlaybackWithAudioTrackDisabledThenEnabled) {
@@ -2261,18 +2265,18 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_AudioOnly_Opus_WebM) {
 
 TEST_F(PipelineIntegrationTest,
        BasicPlayback_AudioOnly_Opus_4ch_ChannelMapping2_WebM) {
-  ASSERT_EQ(
-      PIPELINE_OK,
-      Start("bear-opus-end-trimming-4ch-channelmapping2.webm", kClockless));
+  ASSERT_EQ(PIPELINE_OK,
+            Start("bear-opus-end-trimming-4ch-channelmapping2.webm",
+                  kClockless | kWebAudio));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
 TEST_F(PipelineIntegrationTest,
        BasicPlayback_AudioOnly_Opus_11ch_ChannelMapping2_WebM) {
-  ASSERT_EQ(
-      PIPELINE_OK,
-      Start("bear-opus-end-trimming-11ch-channelmapping2.webm", kClockless));
+  ASSERT_EQ(PIPELINE_OK,
+            Start("bear-opus-end-trimming-11ch-channelmapping2.webm",
+                  kClockless | kWebAudio));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }

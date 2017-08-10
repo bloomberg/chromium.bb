@@ -79,6 +79,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
     kClockless = 2,
     kExpectDemuxerFailure = 4,
     kUnreliableDuration = 8,
+    kWebAudio = 16,
   };
 
   // Starts the pipeline with a file specified by |filename|, optionally with a
@@ -147,6 +148,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   base::MD5Context md5_context_;
   bool hashing_enabled_;
   bool clockless_playback_;
+  bool webaudio_attached_;
   std::unique_ptr<Demuxer> demuxer_;
   std::unique_ptr<DataSource> data_source_;
   std::unique_ptr<PipelineImpl> pipeline_;
