@@ -1375,7 +1375,7 @@ class DomTreeExtractionBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(DomTreeExtractionBrowserTest);
 
-class FailedUrlRequestTest : public HeadlessAsyncDevTooledBrowserTest,
+class UrlRequestFailedTest : public HeadlessAsyncDevTooledBrowserTest,
                              public HeadlessBrowserContext::Observer,
                              public network::ExperimentalObserver,
                              public page::Observer {
@@ -1402,51 +1402,77 @@ class FailedUrlRequestTest : public HeadlessAsyncDevTooledBrowserTest,
     run_loop.Run();
 
     devtools_client_->GetPage()->Navigate(
-        embedded_test_server()->GetURL("/dom_tree_test.html").spec());
+        embedded_test_server()->GetURL("/resource_cancel_test.html").spec());
+  }
+
+  bool ShouldCancel(const std::string& url) {
+    if (EndsWith(url, "/iframe.html", base::CompareCase::INSENSITIVE_ASCII))
+      return true;
+
+    if (EndsWith(url, "/test.jpg", base::CompareCase::INSENSITIVE_ASCII))
+      return true;
+
+    return false;
   }
 
   void OnRequestIntercepted(
       const network::RequestInterceptedParams& params) override {
-    if (EndsWith(params.GetRequest()->GetUrl(), "/iframe.html",
-                 base::CompareCase::INSENSITIVE_ASCII)) {
-      // Block the iframe resource load.
-      devtools_client_->GetNetwork()
-          ->GetExperimental()
-          ->ContinueInterceptedRequest(
-              network::ContinueInterceptedRequestParams::Builder()
-                  .SetInterceptionId(params.GetInterceptionId())
-                  .SetErrorReason(network::ErrorReason::FAILED)
-                  .Build());
-    } else {
-      // Allow everything else to continue.
-      devtools_client_->GetNetwork()
-          ->GetExperimental()
-          ->ContinueInterceptedRequest(
-              network::ContinueInterceptedRequestParams::Builder()
-                  .SetInterceptionId(params.GetInterceptionId())
-                  .Build());
-    }
+    urls_seen_.push_back(GURL(params.GetRequest()->GetUrl()).ExtractFileName());
+    auto continue_intercept_params =
+        network::ContinueInterceptedRequestParams::Builder()
+            .SetInterceptionId(params.GetInterceptionId())
+            .Build();
+    if (ShouldCancel(params.GetRequest()->GetUrl()))
+      continue_intercept_params->SetErrorReason(GetErrorReason());
+
+    devtools_client_->GetNetwork()
+        ->GetExperimental()
+        ->ContinueInterceptedRequest(std::move(continue_intercept_params));
   }
 
   void OnLoadEventFired(const page::LoadEventFiredParams&) override {
     browser_context_->RemoveObserver(this);
 
     base::AutoLock lock(lock_);
-    EXPECT_EQ("iframe.html", url_that_failed_to_load_);
+    EXPECT_THAT(urls_that_failed_to_load_,
+                ElementsAre("test.jpg", "iframe.html"));
+    EXPECT_THAT(
+        urls_seen_,
+        ElementsAre("resource_cancel_test.html", "dom_tree_test.css",
+                    "test.jpg", "iframe.html", "iframe2.html", "Ahem.ttf"));
     FinishAsynchronousTest();
   }
 
   void UrlRequestFailed(net::URLRequest* request, int net_error) override {
     base::AutoLock lock(lock_);
-    url_that_failed_to_load_ = request->url().ExtractFileName();
+    urls_that_failed_to_load_.push_back(request->url().ExtractFileName());
   }
+
+  virtual network::ErrorReason GetErrorReason() = 0;
 
  private:
   base::Lock lock_;
-  std::string url_that_failed_to_load_;
+  std::vector<std::string> urls_seen_;
+  std::vector<std::string> urls_that_failed_to_load_;
 };
 
-HEADLESS_ASYNC_DEVTOOLED_TEST_F(FailedUrlRequestTest);
+class UrlRequestFailedTest_Failed : public UrlRequestFailedTest {
+ public:
+  network::ErrorReason GetErrorReason() override {
+    return network::ErrorReason::FAILED;
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(UrlRequestFailedTest_Failed);
+
+class UrlRequestFailedTest_Abort : public UrlRequestFailedTest {
+ public:
+  network::ErrorReason GetErrorReason() override {
+    return network::ErrorReason::ABORTED;
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(UrlRequestFailedTest_Abort);
 
 class DevToolsSetCookieTest : public HeadlessAsyncDevTooledBrowserTest,
                               public network::Observer {
