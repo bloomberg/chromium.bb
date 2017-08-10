@@ -56,7 +56,7 @@ class SyncCycle {
     // solely based on absolute time values. So, this cannot be used to infer
     // that any given cycle _instance_ is silenced.  An example of reasonable
     // use is for UI reporting.
-    virtual bool IsCurrentlyThrottled() = 0;
+    virtual bool IsAnyThrottleOrBackoff() = 0;
 
     // The client has been instructed to change its short poll interval.
     virtual void OnReceivedShortPollIntervalUpdate(

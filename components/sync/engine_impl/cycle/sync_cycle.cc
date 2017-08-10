@@ -42,7 +42,7 @@ SyncCycleSnapshot SyncCycle::TakeSnapshotWithSource(
 
   SyncCycleSnapshot snapshot(
       status_controller_->model_neutral_state(), download_progress_markers,
-      delegate_->IsCurrentlyThrottled(),
+      delegate_->IsAnyThrottleOrBackoff(),
       status_controller_->num_encryption_conflicts(),
       status_controller_->num_hierarchy_conflicts(),
       status_controller_->num_server_conflicts(),

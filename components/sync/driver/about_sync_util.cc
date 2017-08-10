@@ -336,14 +336,15 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
                                         "Sync Backend Initialization");
   BoolSyncStat is_syncing(section_local, "Syncing");
   BoolSyncStat is_local_sync_enabled(section_local,
-                                     "Local sync backend enabled");
-  StringSyncStat local_backend_path(section_local, "Local backend path");
+                                     "Local Sync Backend Enabled");
+  StringSyncStat local_backend_path(section_local, "Local Backend Path");
 
   base::ListValue* section_network = AddSection(stats_list.get(), "Network");
   // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
   section_network->Reserve(3);
-  BoolSyncStat is_throttled(section_network, "Throttled");
-  StringSyncStat retry_time(section_network, "Retry time (maybe stale)");
+  BoolSyncStat is_any_throttled_or_backoff(section_network,
+                                           "Throttled or Backoff");
+  StringSyncStat retry_time(section_network, "Retry Time");
   BoolSyncStat are_notifications_enabled(section_network,
                                          "Notifications Enabled");
 
@@ -473,7 +474,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   }
 
   if (snapshot.is_initialized())
-    is_throttled.SetValue(snapshot.is_silenced());
+    is_any_throttled_or_backoff.SetValue(snapshot.is_silenced());
   if (is_status_valid) {
     are_notifications_enabled.SetValue(full_status.notifications_enabled);
   }

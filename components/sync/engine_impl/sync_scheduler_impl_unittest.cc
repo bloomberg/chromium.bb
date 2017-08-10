@@ -205,7 +205,7 @@ class SyncSchedulerImplTest : public testing::Test {
     scheduler()->ScheduleLocalNudge(nudge_types, FROM_HERE);
     RunLoop();
 
-    return scheduler()->IsBackingOff();
+    return scheduler()->IsGlobalBackoff();
   }
 
   void UseMockDelayProvider() {
@@ -854,9 +854,9 @@ TEST_F(SyncSchedulerImplTest, ThrottlingExpiresFromNudge) {
 
   PumpLoop();  // To get PerformDelayedNudge called.
   PumpLoop();  // To get TrySyncCycleJob called
-  EXPECT_TRUE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_TRUE(scheduler()->IsGlobalThrottle());
   RunLoop();
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
 
   StopSyncScheduler();
 }
@@ -889,10 +889,10 @@ TEST_F(SyncSchedulerImplTest, ThrottlingExpiresFromConfigure) {
   PumpLoop();
   EXPECT_EQ(0, ready_counter.times_called());
   EXPECT_EQ(1, retry_counter.times_called());
-  EXPECT_TRUE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_TRUE(scheduler()->IsGlobalThrottle());
 
   RunLoop();
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
 
   StopSyncScheduler();
 }
@@ -916,8 +916,8 @@ TEST_F(SyncSchedulerImplTest, TypeThrottlingBlocksNudge) {
   PumpLoop();  // To get PerformDelayedNudge called.
   PumpLoop();  // To get TrySyncCycleJob called
   EXPECT_TRUE(GetThrottledTypes().HasAll(types));
-  EXPECT_FALSE(scheduler()->IsBackingOff());
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
 
   // This won't cause a sync cycle because the types are throttled.
   scheduler()->ScheduleLocalNudge(types, FROM_HERE);
@@ -946,8 +946,8 @@ TEST_F(SyncSchedulerImplTest, TypeBackingOffBlocksNudge) {
   PumpLoop();  // To get PerformDelayedNudge called.
   PumpLoop();  // To get TrySyncCycleJob called
   EXPECT_TRUE(GetBackedOffTypes().HasAll(types));
-  EXPECT_FALSE(scheduler()->IsBackingOff());
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
 
   // This won't cause a sync cycle because the types are backed off.
   scheduler()->ScheduleLocalNudge(types, FROM_HERE);
@@ -976,8 +976,8 @@ TEST_F(SyncSchedulerImplTest, TypeBackingOffWillExpire) {
   PumpLoop();  // To get PerformDelayedNudge called.
   PumpLoop();  // To get TrySyncCycleJob called
   EXPECT_TRUE(GetBackedOffTypes().HasAll(types));
-  EXPECT_FALSE(scheduler()->IsBackingOff());
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
 
   SyncShareTimes times;
   EXPECT_CALL(*syncer(), NormalSyncShare(_, _, _))
@@ -986,8 +986,8 @@ TEST_F(SyncSchedulerImplTest, TypeBackingOffWillExpire) {
   PumpLoop();  // To get PerformDelayedNudge called.
   PumpLoop();  // To get TrySyncCycleJob called
   EXPECT_FALSE(IsAnyTypeBlocked());
-  EXPECT_FALSE(scheduler()->IsBackingOff());
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
 
   StopSyncScheduler();
 }
@@ -1013,8 +1013,8 @@ TEST_F(SyncSchedulerImplTest, TypeBackingOffAndThrottling) {
   PumpLoop();  // To get TrySyncCycleJob called
   EXPECT_TRUE(GetBackedOffTypes().HasAll(types));
   EXPECT_TRUE(BlockTimerIsRunning());
-  EXPECT_FALSE(scheduler()->IsBackingOff());
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
 
   TimeDelta throttle1(TimeDelta::FromMilliseconds(150));
 
@@ -1031,8 +1031,8 @@ TEST_F(SyncSchedulerImplTest, TypeBackingOffAndThrottling) {
 
   EXPECT_TRUE(GetBackedOffTypes().HasAll(types));
   EXPECT_TRUE(BlockTimerIsRunning());
-  EXPECT_FALSE(scheduler()->IsBackingOff());
-  EXPECT_TRUE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
+  EXPECT_TRUE(scheduler()->IsGlobalThrottle());
 
   // Unthrottled client, but the backingoff datatype is still in backoff and
   // scheduled.
@@ -1040,7 +1040,7 @@ TEST_F(SyncSchedulerImplTest, TypeBackingOffAndThrottling) {
       .WillOnce(DoAll(Invoke(test_util::SimulateNormalSuccess),
                       QuitLoopNowAction(true)));
   RunLoop();
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
   EXPECT_TRUE(GetBackedOffTypes().HasAll(types));
   EXPECT_TRUE(BlockTimerIsRunning());
 
@@ -1085,8 +1085,8 @@ TEST_F(SyncSchedulerImplTest, TypeThrottlingBackingOffBlocksNudge) {
   EXPECT_TRUE(GetThrottledTypes().HasAll(throttled_types));
   EXPECT_TRUE(GetBackedOffTypes().HasAll(backed_off_types));
   EXPECT_TRUE(BlockTimerIsRunning());
-  EXPECT_FALSE(scheduler()->IsBackingOff());
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
 
   // This won't cause a sync cycle because the types are throttled or backed
   // off.
@@ -1121,8 +1121,8 @@ TEST_F(SyncSchedulerImplTest, TypeThrottlingDoesBlockOtherSources) {
   PumpLoop();  // To get PerformDelayedNudge called.
   PumpLoop();  // To get TrySyncCycleJob called
   EXPECT_TRUE(GetThrottledTypes().HasAll(throttled_types));
-  EXPECT_FALSE(scheduler()->IsBackingOff());
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
 
   // Ignore invalidations for throttled types.
   scheduler()->ScheduleInvalidationNudge(THEMES, BuildInvalidation(10, "test"),
@@ -1169,8 +1169,8 @@ TEST_F(SyncSchedulerImplTest, TypeBackingOffDoesBlockOtherSources) {
   PumpLoop();  // To get PerformDelayedNudge called.
   PumpLoop();  // To get TrySyncCycleJob called
   EXPECT_TRUE(GetBackedOffTypes().HasAll(backed_off_types));
-  EXPECT_FALSE(scheduler()->IsBackingOff());
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
 
   // Ignore invalidations for backed off types.
   scheduler()->ScheduleInvalidationNudge(THEMES, BuildInvalidation(10, "test"),
@@ -1313,7 +1313,7 @@ TEST_F(BackoffTriggersSyncSchedulerImplTest, FailGetEncryptionKey) {
   scheduler()->ScheduleConfiguration(params);
   RunLoop();
 
-  EXPECT_TRUE(scheduler()->IsBackingOff());
+  EXPECT_TRUE(scheduler()->IsGlobalBackoff());
 }
 
 // Test that no polls or extraneous nudges occur when in backoff.
@@ -1486,11 +1486,11 @@ TEST_F(SyncSchedulerImplTest, TransientPollFailure) {
 
   // Run the unsuccessful poll. The failed poll should not trigger backoff.
   RunLoop();
-  EXPECT_TRUE(scheduler()->IsBackingOff());
+  EXPECT_TRUE(scheduler()->IsGlobalBackoff());
 
   // Run the successful poll.
   RunLoop();
-  EXPECT_FALSE(scheduler()->IsBackingOff());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
 }
 
 // Test that starting the syncer thread without a valid connection doesn't
@@ -1531,7 +1531,7 @@ TEST_F(SyncSchedulerImplTest, ServerConnectionChangeDuringBackoff) {
   scheduler()->ScheduleLocalNudge(ModelTypeSet(THEMES), FROM_HERE);
   PumpLoop();  // To get PerformDelayedNudge called.
   PumpLoop();  // Run the nudge, that will fail and schedule a quick retry.
-  ASSERT_TRUE(scheduler()->IsBackingOff());
+  ASSERT_TRUE(scheduler()->IsGlobalBackoff());
 
   // Before we run the scheduled canary, trigger a server connection change.
   scheduler()->OnConnectionStatusChange();
@@ -1563,7 +1563,7 @@ TEST_F(SyncSchedulerImplTest, ConnectionChangeCanaryPreemptedByNudge) {
 
   PumpLoop();  // To get PerformDelayedNudge called.
   PumpLoop();  // Run the nudge, that will fail and schedule a quick retry.
-  ASSERT_TRUE(scheduler()->IsBackingOff());
+  ASSERT_TRUE(scheduler()->IsGlobalBackoff());
 
   // Before we run the scheduled canary, trigger a server connection change.
   scheduler()->OnConnectionStatusChange();
@@ -1665,7 +1665,7 @@ TEST_F(SyncSchedulerImplTest, FailedRetry) {
   // Run to wait for retrying.
   RunLoop();
 
-  EXPECT_TRUE(scheduler()->IsBackingOff());
+  EXPECT_TRUE(scheduler()->IsGlobalBackoff());
   EXPECT_CALL(*syncer(), NormalSyncShare(_, _, _))
       .WillOnce(DoAll(Invoke(test_util::SimulateNormalSuccess),
                       RecordSyncShare(&times, true)));
@@ -1738,13 +1738,13 @@ TEST_F(SyncSchedulerImplTest, ScheduleClearServerData_FailsRetriesSucceeds) {
   scheduler()->ScheduleClearServerData(params);
   PumpLoop();
   ASSERT_EQ(0, success_counter.times_called());
-  ASSERT_TRUE(scheduler()->IsBackingOff());
+  ASSERT_TRUE(scheduler()->IsGlobalBackoff());
 
   // Now succeed.
   connection()->SetServerReachable();
   PumpLoopFor(2 * delta);
   ASSERT_EQ(1, success_counter.times_called());
-  ASSERT_FALSE(scheduler()->IsBackingOff());
+  ASSERT_FALSE(scheduler()->IsGlobalBackoff());
 }
 
 TEST_F(SyncSchedulerImplTest, PartialFailureWillExponentialBackoff) {
@@ -1764,8 +1764,8 @@ TEST_F(SyncSchedulerImplTest, PartialFailureWillExponentialBackoff) {
   PumpLoop();  // To get PerformDelayedNudge called.
   PumpLoop();  // To get TrySyncCycleJob called
   EXPECT_TRUE(GetBackedOffTypes().HasAll(types));
-  EXPECT_FALSE(scheduler()->IsBackingOff());
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
   TimeDelta first_blocking_time = GetTypeBlockingTime(THEMES);
 
   SetTypeBlockingMode(THEMES, WaitInterval::EXPONENTIAL_BACKOFF_RETRYING);
@@ -1811,8 +1811,8 @@ TEST_F(SyncSchedulerImplTest, TypeBackoffAndSuccessfulSync) {
   PumpLoop();  // To get TrySyncCycleJob called
   EXPECT_TRUE(GetBackedOffTypes().HasAll(types));
   EXPECT_TRUE(BlockTimerIsRunning());
-  EXPECT_FALSE(scheduler()->IsBackingOff());
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
 
   SyncShareTimes times;
   EXPECT_CALL(*syncer(), NormalSyncShare(_, _, _))
@@ -1829,8 +1829,8 @@ TEST_F(SyncSchedulerImplTest, TypeBackoffAndSuccessfulSync) {
   // Timer is still running for backoff datatype after Sync success.
   EXPECT_TRUE(GetBackedOffTypes().HasAll(types));
   EXPECT_TRUE(BlockTimerIsRunning());
-  EXPECT_FALSE(scheduler()->IsBackingOff());
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
 
   StopSyncScheduler();
 }
@@ -1861,8 +1861,8 @@ TEST_F(SyncSchedulerImplTest, TypeBackingOffAndFailureSync) {
   PumpLoop();  // To get TrySyncCycleJob called
   EXPECT_TRUE(GetBackedOffTypes().HasAll(themes_types));
   EXPECT_TRUE(BlockTimerIsRunning());
-  EXPECT_FALSE(scheduler()->IsBackingOff());
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
 
   // Set anther backoff datatype.
   const ModelTypeSet typed_urls_types(TYPED_URLS);
@@ -1882,8 +1882,8 @@ TEST_F(SyncSchedulerImplTest, TypeBackingOffAndFailureSync) {
   EXPECT_TRUE(GetBackedOffTypes().HasAll(themes_types));
   EXPECT_TRUE(GetBackedOffTypes().HasAll(typed_urls_types));
   EXPECT_TRUE(BlockTimerIsRunning());
-  EXPECT_FALSE(scheduler()->IsBackingOff());
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
 
   // Unblock one datatype.
   SyncShareTimes times;
@@ -1899,8 +1899,8 @@ TEST_F(SyncSchedulerImplTest, TypeBackingOffAndFailureSync) {
   EXPECT_TRUE(GetBackedOffTypes().HasAll(themes_types));
   EXPECT_FALSE(GetBackedOffTypes().HasAll(typed_urls_types));
   EXPECT_TRUE(BlockTimerIsRunning());
-  EXPECT_FALSE(scheduler()->IsBackingOff());
-  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
+  EXPECT_FALSE(scheduler()->IsGlobalThrottle());
 
   StopSyncScheduler();
 }
@@ -1917,14 +1917,14 @@ TEST_F(SyncSchedulerImplTest, InterleavedNudgesStillRestart) {
   scheduler()->ScheduleLocalNudge({THEMES}, FROM_HERE);
   PumpLoop();  // To get PerformDelayedNudge called.
   EXPECT_FALSE(BlockTimerIsRunning());
-  EXPECT_FALSE(scheduler()->IsBackingOff());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
 
   // This is the tricky piece. We have a gap while the sync job is bouncing to
   // get onto the |pending_wakeup_timer_|, should be scheduled with no delay.
   scheduler()->ScheduleLocalNudge({TYPED_URLS}, FROM_HERE);
   EXPECT_TRUE(BlockTimerIsRunning());
   EXPECT_EQ(TimeDelta(), GetPendingWakeupTimerDelay());
-  EXPECT_FALSE(scheduler()->IsBackingOff());
+  EXPECT_FALSE(scheduler()->IsGlobalBackoff());
 
   // Setup mock as we're about to attempt to sync.
   SyncShareTimes times;
@@ -1937,7 +1937,7 @@ TEST_F(SyncSchedulerImplTest, InterleavedNudgesStillRestart) {
   PumpLoop();
   EXPECT_TRUE(BlockTimerIsRunning());
   EXPECT_EQ(TimeDelta(), GetPendingWakeupTimerDelay());
-  EXPECT_TRUE(scheduler()->IsBackingOff());
+  EXPECT_TRUE(scheduler()->IsGlobalBackoff());
 
   // Triggers TYPED_URLS PerformDelayedNudge(), which should no-op, because
   // we're no long healthy, and normal priorities shouldn't go through, but it
@@ -1946,7 +1946,7 @@ TEST_F(SyncSchedulerImplTest, InterleavedNudgesStillRestart) {
   PumpLoop();
   EXPECT_TRUE(BlockTimerIsRunning());
   EXPECT_LT(TimeDelta::FromSeconds(50), GetPendingWakeupTimerDelay());
-  EXPECT_TRUE(scheduler()->IsBackingOff());
+  EXPECT_TRUE(scheduler()->IsGlobalBackoff());
 }
 
 }  // namespace syncer

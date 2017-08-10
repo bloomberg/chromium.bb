@@ -193,7 +193,7 @@ class SyncerTest : public testing::Test,
   void OnTypesBackedOff(ModelTypeSet types) override {
     scheduler_->OnTypesBackedOff(types);
   }
-  bool IsCurrentlyThrottled() override { return false; }
+  bool IsAnyThrottleOrBackoff() override { return false; }
   void OnReceivedLongPollIntervalUpdate(
       const base::TimeDelta& new_interval) override {
     last_long_poll_interval_received_ = new_interval;
