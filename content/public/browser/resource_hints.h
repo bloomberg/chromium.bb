@@ -30,7 +30,7 @@ namespace content {
 CONTENT_EXPORT void PreconnectUrl(
     net::URLRequestContextGetter* getter,
     const GURL& url,
-    const GURL& first_party_for_cookies,
+    const GURL& site_for_cookies,
     int count,
     bool allow_credentials,
     net::HttpRequestInfo::RequestMotivation motivation);

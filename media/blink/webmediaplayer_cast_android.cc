@@ -169,7 +169,7 @@ void WebMediaPlayerCast::Initialize(const GURL& url,
                                     blink::WebLocalFrame* frame,
                                     int delegate_id) {
   player_manager_->Initialize(MEDIA_PLAYER_TYPE_REMOTE_ONLY, player_id_, url,
-                              frame->GetDocument().FirstPartyForCookies(),
+                              frame->GetDocument().SiteForCookies(),
                               frame->GetDocument().Url(), true, delegate_id);
   is_player_initialized_ = true;
 }

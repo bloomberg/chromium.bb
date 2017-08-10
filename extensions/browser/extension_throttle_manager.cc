@@ -60,8 +60,7 @@ ExtensionThrottleManager::~ExtensionThrottleManager() {
 
 std::unique_ptr<content::ResourceThrottle>
 ExtensionThrottleManager::MaybeCreateThrottle(const net::URLRequest* request) {
-  if (request->first_party_for_cookies().scheme() !=
-      extensions::kExtensionScheme) {
+  if (request->site_for_cookies().scheme() != extensions::kExtensionScheme) {
     return nullptr;
   }
   return base::MakeUnique<extensions::ExtensionRequestLimitingThrottle>(request,

@@ -23,8 +23,8 @@ const std::string& AppCacheURLRequest::GetMethod() const {
   return url_request_->method();
 }
 
-const GURL& AppCacheURLRequest::GetFirstPartyForCookies() const {
-  return url_request_->first_party_for_cookies();
+const GURL& AppCacheURLRequest::GetSiteForCookies() const {
+  return url_request_->site_for_cookies();
 }
 
 const GURL AppCacheURLRequest::GetReferrer() const {

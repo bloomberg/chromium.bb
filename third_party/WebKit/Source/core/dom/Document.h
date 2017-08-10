@@ -885,7 +885,7 @@ class CORE_EXPORT Document : public ContainerNode,
   const KURL& CookieURL() const { return cookie_url_; }
   void SetCookieURL(const KURL& url) { cookie_url_ = url; }
 
-  const KURL FirstPartyForCookies() const;
+  const KURL SiteForCookies() const;
 
   // The following implements the rule from HTML 4 for what valid names are.
   // To get this right for all the XML cases, we probably have to improve this

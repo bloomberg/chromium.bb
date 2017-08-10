@@ -108,7 +108,7 @@ void LoadingPredictorObserver::OnRequestStarted(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&LoadingPredictorObserver::OnRequestStartedOnUIThread,
                      base::Unretained(this), base::Passed(std::move(summary)),
-                     web_contents_getter, request->first_party_for_cookies(),
+                     web_contents_getter, request->site_for_cookies(),
                      request->creation_time()));
 
   if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
@@ -142,7 +142,7 @@ void LoadingPredictorObserver::OnRequestRedirected(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&LoadingPredictorObserver::OnRequestRedirectedOnUIThread,
                      base::Unretained(this), base::Passed(std::move(summary)),
-                     web_contents_getter, request->first_party_for_cookies(),
+                     web_contents_getter, request->site_for_cookies(),
                      request->creation_time()));
 
   if (request_info &&
@@ -177,7 +177,7 @@ void LoadingPredictorObserver::OnResponseStarted(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&LoadingPredictorObserver::OnResponseStartedOnUIThread,
                      base::Unretained(this), base::Passed(std::move(summary)),
-                     web_contents_getter, request->first_party_for_cookies(),
+                     web_contents_getter, request->site_for_cookies(),
                      request->creation_time()));
 
   ReportRequestStats(REQUEST_STATS_TOTAL_PROCESSED_RESPONSES);

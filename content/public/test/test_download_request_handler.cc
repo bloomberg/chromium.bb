@@ -325,8 +325,7 @@ void TestDownloadRequestHandler::PartialResponseJob::ReportCompletedRequest() {
     completed_request->initiator = request()->initiator().has_value()
                                        ? request()->initiator().value()
                                        : url::Origin();
-    completed_request->first_party_for_cookies =
-        request()->first_party_for_cookies();
+    completed_request->site_for_cookies = request()->site_for_cookies();
     completed_request->first_party_url_policy =
         request()->first_party_url_policy();
     interceptor_->AddCompletedRequest(std::move(completed_request));

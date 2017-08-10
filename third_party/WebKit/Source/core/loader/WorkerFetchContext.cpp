@@ -96,8 +96,8 @@ WorkerFetchContext::WorkerFetchContext(
   }
 }
 
-KURL WorkerFetchContext::GetFirstPartyForCookies() const {
-  return web_context_->FirstPartyForCookies();
+KURL WorkerFetchContext::GetSiteForCookies() const {
+  return web_context_->SiteForCookies();
 }
 
 bool WorkerFetchContext::AllowScriptFromSource(const KURL&) const {
@@ -331,8 +331,8 @@ void WorkerFetchContext::PopulateResourceRequest(
 
 void WorkerFetchContext::SetFirstPartyCookieAndRequestorOrigin(
     ResourceRequest& out_request) {
-  if (out_request.FirstPartyForCookies().IsNull())
-    out_request.SetFirstPartyForCookies(GetFirstPartyForCookies());
+  if (out_request.SiteForCookies().IsNull())
+    out_request.SetSiteForCookies(GetSiteForCookies());
   if (!out_request.RequestorOrigin())
     out_request.SetRequestorOrigin(GetSecurityOrigin());
 }

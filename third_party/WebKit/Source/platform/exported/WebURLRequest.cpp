@@ -114,13 +114,12 @@ void WebURLRequest::SetURL(const WebURL& url) {
   resource_request_->SetURL(url);
 }
 
-WebURL WebURLRequest::FirstPartyForCookies() const {
-  return resource_request_->FirstPartyForCookies();
+WebURL WebURLRequest::SiteForCookies() const {
+  return resource_request_->SiteForCookies();
 }
 
-void WebURLRequest::SetFirstPartyForCookies(
-    const WebURL& first_party_for_cookies) {
-  resource_request_->SetFirstPartyForCookies(first_party_for_cookies);
+void WebURLRequest::SetSiteForCookies(const WebURL& site_for_cookies) {
+  resource_request_->SetSiteForCookies(site_for_cookies);
 }
 
 WebSecurityOrigin WebURLRequest::RequestorOrigin() const {

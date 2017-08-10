@@ -39,7 +39,7 @@ enum UMAExitStatus {
 MediaPlayerBridge::MediaPlayerBridge(
     int player_id,
     const GURL& url,
-    const GURL& first_party_for_cookies,
+    const GURL& site_for_cookies,
     const std::string& user_agent,
     bool hide_url_log,
     MediaPlayerManager* manager,
@@ -54,7 +54,7 @@ MediaPlayerBridge::MediaPlayerBridge(
       pending_play_(false),
       should_seek_on_prepare_(false),
       url_(url),
-      first_party_for_cookies_(first_party_for_cookies),
+      site_for_cookies_(site_for_cookies),
       user_agent_(user_agent),
       hide_url_log_(hide_url_log),
       width_(0),
@@ -111,8 +111,7 @@ void MediaPlayerBridge::Initialize() {
     return;
   }
 
-  resource_getter->GetCookies(url_,
-                              first_party_for_cookies_,
+  resource_getter->GetCookies(url_, site_for_cookies_,
                               base::Bind(&MediaPlayerBridge::OnCookiesRetrieved,
                                          weak_factory_.GetWeakPtr()));
 }
@@ -604,8 +603,8 @@ GURL MediaPlayerBridge::GetUrl() {
   return url_;
 }
 
-GURL MediaPlayerBridge::GetFirstPartyForCookies() {
-  return first_party_for_cookies_;
+GURL MediaPlayerBridge::GetSiteForCookies() {
+  return site_for_cookies_;
 }
 
 }  // namespace media

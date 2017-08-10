@@ -397,7 +397,7 @@ class TestPredictorObserver : public PredictorObserver {
  public:
   // PredictorObserver implementation:
   void OnPreconnectUrl(const GURL& url,
-                       const GURL& first_party_for_cookies,
+                       const GURL& site_for_cookies,
                        UrlInfo::ResolutionMotivation motivation,
                        int count) override {
     preconnected_urls_.push_back(url);

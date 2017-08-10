@@ -36,11 +36,10 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
       std::unique_ptr<blink::WebMessagePortChannel>* channel1,
       std::unique_ptr<blink::WebMessagePortChannel>* channel2) override;
   virtual void setCookies(const blink::WebURL& url,
-                          const blink::WebURL& first_party_for_cookies,
+                          const blink::WebURL& site_for_cookies,
                           const blink::WebString& value);
-  virtual blink::WebString cookies(
-      const blink::WebURL& url,
-      const blink::WebURL& first_party_for_cookies);
+  virtual blink::WebString cookies(const blink::WebURL& url,
+                                   const blink::WebURL& site_for_cookies);
   blink::WebString DefaultLocale() override;
   blink::WebThemeEngine* ThemeEngine() override;
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(

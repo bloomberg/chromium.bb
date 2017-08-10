@@ -396,7 +396,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
 
   new_request->method = request_info->common_params.method;
   new_request->url = request_info->common_params.url;
-  new_request->first_party_for_cookies = request_info->first_party_for_cookies;
+  new_request->site_for_cookies = request_info->site_for_cookies;
   new_request->priority = net::HIGHEST;
 
   // The code below to set fields like request_initiator, referrer, etc has

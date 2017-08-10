@@ -33,7 +33,7 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
   bool IsControlledByServiceWorker() const override;
   void SetDataSaverEnabled(bool enabled) override;
   bool IsDataSaverEnabled() const override;
-  blink::WebURL FirstPartyForCookies() const override;
+  blink::WebURL SiteForCookies() const override;
 
  private:
   const GURL worker_script_url_;

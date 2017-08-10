@@ -40,7 +40,7 @@ AppCacheUpdateJob::URLFetcher::URLFetcher(const GURL& url,
 AppCacheUpdateJob::URLFetcher::~URLFetcher() {}
 
 void AppCacheUpdateJob::URLFetcher::Start() {
-  request_->SetFirstPartyForCookies(job_->manifest_url_);
+  request_->SetSiteForCookies(job_->manifest_url_);
   request_->SetInitiator(url::Origin(job_->manifest_url_));
   if (fetch_type_ == MANIFEST_FETCH && job_->doing_full_update_check_)
     request_->SetLoadFlags(request_->GetLoadFlags() | net::LOAD_BYPASS_CACHE);

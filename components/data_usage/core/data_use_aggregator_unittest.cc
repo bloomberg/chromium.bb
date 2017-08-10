@@ -267,7 +267,7 @@ class DataUseAggregatorTest : public testing::Test {
 
   std::unique_ptr<net::URLRequest> ExecuteRequest(
       const GURL& url,
-      const GURL& first_party_for_cookies,
+      const GURL& site_for_cookies,
       int32_t tab_id,
       net::NetworkChangeNotifier::ConnectionType connection_type,
       const std::string& mcc_mnc) {
@@ -281,7 +281,7 @@ class DataUseAggregatorTest : public testing::Test {
     net::TestDelegate delegate;
     std::unique_ptr<net::URLRequest> request = context_->CreateRequest(
         url, net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
-    request->set_first_party_for_cookies(first_party_for_cookies);
+    request->set_site_for_cookies(site_for_cookies);
 
     ReportingNetworkDelegate::DataUseContextMap data_use_context_map;
     data_use_context_map[request.get()] =
@@ -368,7 +368,7 @@ TEST_F(DataUseAggregatorTest, ReportDataUse) {
            data_use_it->url == "http://foo.com/") {
       EXPECT_EQ(GetRequestStart(*foo_request), data_use_it->request_start);
       EXPECT_EQ(GURL("http://foofirstparty.com"),
-                data_use_it->first_party_for_cookies);
+                data_use_it->site_for_cookies);
 
       if (test_case.expect_tab_ids)
         EXPECT_EQ(kFooTabId, data_use_it->tab_id);
@@ -395,7 +395,7 @@ TEST_F(DataUseAggregatorTest, ReportDataUse) {
       EXPECT_EQ(GURL("http://bar.com"), data_use_it->url);
       EXPECT_EQ(GetRequestStart(*bar_request), data_use_it->request_start);
       EXPECT_EQ(GURL("http://barfirstparty.com"),
-                data_use_it->first_party_for_cookies);
+                data_use_it->site_for_cookies);
 
       if (test_case.expect_tab_ids)
         EXPECT_EQ(kBarTabId, data_use_it->tab_id);

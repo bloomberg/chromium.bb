@@ -329,7 +329,7 @@ blink::WebAssociatedURLLoader* CreateAssociatedURLLoader(
 blink::WebURLRequest CreateWebURLRequest(const blink::WebDocument& document,
                                          const GURL& gurl) {
   blink::WebURLRequest request(gurl);
-  request.SetFirstPartyForCookies(document.FirstPartyForCookies());
+  request.SetSiteForCookies(document.SiteForCookies());
 
   // Follow the original behavior in the trusted plugin and
   // PepperURLLoaderHost.

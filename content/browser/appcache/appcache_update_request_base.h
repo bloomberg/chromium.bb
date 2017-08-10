@@ -57,7 +57,7 @@ class AppCacheUpdateJob::UpdateRequestBase {
   virtual std::string GetMimeType() const = 0;
 
   // Cookie policy.
-  virtual void SetFirstPartyForCookies(const GURL& first_party_for_cookies) = 0;
+  virtual void SetSiteForCookies(const GURL& site_for_cookies) = 0;
 
   // Sets the origin of the context which initiated the request.
   virtual void SetInitiator(const base::Optional<url::Origin>& initiator) = 0;

@@ -72,7 +72,7 @@ class PredictorObserver {
   virtual ~PredictorObserver() {}
 
   virtual void OnPreconnectUrl(const GURL& original_url,
-                               const GURL& first_party_for_cookies,
+                               const GURL& site_for_cookies,
                                UrlInfo::ResolutionMotivation motivation,
                                int count) {}
   virtual void OnLearnFromNavigation(const GURL& referring_url,
@@ -150,7 +150,7 @@ class Predictor {
 
   // Preconnect a URL and all of its subresource domains.
   void PreconnectUrlAndSubresources(const GURL& url,
-                                    const GURL& first_party_for_cookies);
+                                    const GURL& site_for_cookies);
 
   static std::vector<GURL> GetPredictedUrlListAtStartup(
       PrefService* user_prefs);
@@ -247,13 +247,13 @@ class Predictor {
   // May be called from either the IO or UI thread and will PostTask
   // to the IO thread if necessary.
   void PreconnectUrl(const GURL& url,
-                     const GURL& first_party_for_cookies,
+                     const GURL& site_for_cookies,
                      UrlInfo::ResolutionMotivation motivation,
                      bool allow_credentials,
                      int count);
 
   void PreconnectUrlOnIOThread(const GURL& url,
-                               const GURL& first_party_for_cookies,
+                               const GURL& site_for_cookies,
                                UrlInfo::ResolutionMotivation motivation,
                                bool allow_credentials,
                                int count);
@@ -267,8 +267,7 @@ class Predictor {
   // more-embedded resources on a page).  This method will actually post a task
   // to do the actual work, so as not to jump ahead of the frame navigation that
   // instigated this activity.
-  void PredictFrameSubresources(const GURL& url,
-                                const GURL& first_party_for_cookies);
+  void PredictFrameSubresources(const GURL& url, const GURL& site_for_cookies);
 
   // Put URL in canonical form, including a scheme, host, and port.
   // Returns GURL::EmptyGURL() if the scheme is not http/https or if the url
@@ -372,8 +371,7 @@ class Predictor {
   // Perform actual resolution or preconnection to subresources now.  This is
   // an internal worker method that is reached via a post task from
   // PredictFrameSubresources().
-  void PrepareFrameSubresources(const GURL& url,
-                                const GURL& first_party_for_cookies);
+  void PrepareFrameSubresources(const GURL& url, const GURL& site_for_cookies);
 
   // Access method for use by async lookup request to pass resolution result.
   void OnLookupFinished(const GURL& url, int result);

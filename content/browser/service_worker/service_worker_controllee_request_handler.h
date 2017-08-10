@@ -82,8 +82,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   typedef ServiceWorkerControlleeRequestHandler self;
 
   // For main resource case.
-  void PrepareForMainResource(const GURL& url,
-                              const GURL& first_party_for_cookies);
+  void PrepareForMainResource(const GURL& url, const GURL& site_for_cookies);
   void DidLookupRegistrationForMainResource(
       ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);

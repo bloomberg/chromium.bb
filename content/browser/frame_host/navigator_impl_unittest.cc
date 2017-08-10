@@ -331,7 +331,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, BeginNavigation) {
   EXPECT_EQ(kUrl2, subframe_request->common_params().url);
   EXPECT_EQ(kUrl2, subframe_loader->request_info()->common_params.url);
   // First party for cookies url should be that of the main frame.
-  EXPECT_EQ(kUrl1, subframe_loader->request_info()->first_party_for_cookies);
+  EXPECT_EQ(kUrl1, subframe_loader->request_info()->site_for_cookies);
   EXPECT_FALSE(subframe_loader->request_info()->is_main_frame);
   EXPECT_TRUE(subframe_loader->request_info()->parent_is_main_frame);
   EXPECT_TRUE(subframe_request->browser_initiated());
@@ -363,7 +363,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, BeginNavigation) {
       GetLoaderForNavigationRequest(main_request);
   EXPECT_EQ(kUrl3, main_request->common_params().url);
   EXPECT_EQ(kUrl3, main_loader->request_info()->common_params.url);
-  EXPECT_EQ(kUrl3, main_loader->request_info()->first_party_for_cookies);
+  EXPECT_EQ(kUrl3, main_loader->request_info()->site_for_cookies);
   EXPECT_TRUE(main_loader->request_info()->is_main_frame);
   EXPECT_FALSE(main_loader->request_info()->parent_is_main_frame);
   EXPECT_TRUE(main_request->browser_initiated());

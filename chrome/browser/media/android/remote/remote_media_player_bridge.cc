@@ -43,16 +43,15 @@ RemoteMediaPlayerBridge::RemoteMediaPlayerBridge(
     int player_id,
     const std::string& user_agent,
     RemoteMediaPlayerManager* manager)
-    : MediaPlayerAndroid(
-          player_id,
-          manager,
-          base::Bind(&DoNothing),
-          manager->GetLocalPlayer(player_id)->frame_url()),
+    : MediaPlayerAndroid(player_id,
+                         manager,
+                         base::Bind(&DoNothing),
+                         manager->GetLocalPlayer(player_id)->frame_url()),
       width_(0),
       height_(0),
       url_(manager->GetLocalPlayer(player_id)->GetUrl()),
-      first_party_for_cookies_(
-          manager->GetLocalPlayer(player_id)->GetFirstPartyForCookies()),
+      site_for_cookies_(
+          manager->GetLocalPlayer(player_id)->GetSiteForCookies()),
       user_agent_(user_agent),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -428,8 +427,8 @@ GURL RemoteMediaPlayerBridge::GetUrl() {
   return url_;
 }
 
-GURL RemoteMediaPlayerBridge::GetFirstPartyForCookies() {
-  return first_party_for_cookies_;
+GURL RemoteMediaPlayerBridge::GetSiteForCookies() {
+  return site_for_cookies_;
 }
 
 void RemoteMediaPlayerBridge::Initialize() {
@@ -437,7 +436,7 @@ void RemoteMediaPlayerBridge::Initialize() {
   media::MediaResourceGetter* resource_getter =
       manager()->GetMediaResourceGetter();
   resource_getter->GetCookies(
-      url_, first_party_for_cookies_,
+      url_, site_for_cookies_,
       base::Bind(&RemoteMediaPlayerBridge::OnCookiesRetrieved,
                  weak_factory_.GetWeakPtr()));
 }

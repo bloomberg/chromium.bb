@@ -34,7 +34,7 @@ class CONTENT_EXPORT AppCacheRequest {
   virtual const std::string& GetMethod() const = 0;
 
   // Used for cookie policy.
-  virtual const GURL& GetFirstPartyForCookies() const = 0;
+  virtual const GURL& GetSiteForCookies() const = 0;
 
   // The referrer for this request.
   virtual const GURL GetReferrer() const = 0;

@@ -124,7 +124,7 @@ void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
   std::vector<mojom::DemuxerStreamPtr> streams;
   remote_renderer_->Initialize(
       std::move(client_ptr_info), std::move(streams), url_params.media_url,
-      url_params.first_party_for_cookies,
+      url_params.site_for_cookies,
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
 }
 

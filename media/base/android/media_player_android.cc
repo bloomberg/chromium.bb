@@ -70,7 +70,7 @@ GURL MediaPlayerAndroid::GetUrl() {
   return GURL();
 }
 
-GURL MediaPlayerAndroid::GetFirstPartyForCookies() {
+GURL MediaPlayerAndroid::GetSiteForCookies() {
   return GURL();
 }
 

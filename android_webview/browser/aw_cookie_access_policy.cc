@@ -81,7 +81,7 @@ bool AwCookieAccessPolicy::OnCanGetCookies(const net::URLRequest& request,
   bool global = GetShouldAcceptCookies();
   bool thirdParty = GetShouldAcceptThirdPartyCookies(request);
   return AwStaticCookiePolicy(global, thirdParty)
-      .AllowGet(request.url(), request.first_party_for_cookies());
+      .AllowGet(request.url(), request.site_for_cookies());
 }
 
 bool AwCookieAccessPolicy::OnCanSetCookie(const net::URLRequest& request,
@@ -90,7 +90,7 @@ bool AwCookieAccessPolicy::OnCanSetCookie(const net::URLRequest& request,
   bool global = GetShouldAcceptCookies();
   bool thirdParty = GetShouldAcceptThirdPartyCookies(request);
   return AwStaticCookiePolicy(global, thirdParty)
-      .AllowSet(request.url(), request.first_party_for_cookies());
+      .AllowSet(request.url(), request.site_for_cookies());
 }
 
 bool AwCookieAccessPolicy::AllowGetCookie(const GURL& url,

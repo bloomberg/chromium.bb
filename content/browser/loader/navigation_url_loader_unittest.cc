@@ -197,7 +197,7 @@ TEST_F(NavigationURLLoaderTest, RequestRedirected) {
             delegate.redirect_info().new_url);
   EXPECT_EQ("GET", delegate.redirect_info().new_method);
   EXPECT_EQ(net::URLRequestTestJob::test_url_2(),
-            delegate.redirect_info().new_first_party_for_cookies);
+            delegate.redirect_info().new_site_for_cookies);
   EXPECT_EQ(302, delegate.redirect_response()->head.headers->response_code());
   EXPECT_EQ(1, delegate.on_request_handled_counter());
 

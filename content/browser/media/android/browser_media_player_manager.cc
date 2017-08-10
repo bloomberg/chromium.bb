@@ -93,8 +93,7 @@ BrowserMediaPlayerManager::CreateMediaPlayer(
       const std::string user_agent = GetContentClient()->GetUserAgent();
       auto media_player_bridge = base::MakeUnique<MediaPlayerBridge>(
           media_player_params.player_id, media_player_params.url,
-          media_player_params.first_party_for_cookies, user_agent, hide_url_log,
-          this,
+          media_player_params.site_for_cookies, user_agent, hide_url_log, this,
           base::Bind(&BrowserMediaPlayerManager::OnDecoderResourcesReleased,
                      weak_ptr_factory_.GetWeakPtr()),
           media_player_params.frame_url, media_player_params.allow_credentials);

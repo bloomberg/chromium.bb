@@ -580,7 +580,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   resource_request->method = method;
   resource_request->url = url_;
-  resource_request->first_party_for_cookies = request.FirstPartyForCookies();
+  resource_request->site_for_cookies = request.SiteForCookies();
   resource_request->request_initiator =
       request.RequestorOrigin().IsNull()
           ? base::Optional<url::Origin>()
@@ -699,7 +699,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
 
   url_ = WebURL(redirect_info.new_url);
   return client_->WillFollowRedirect(
-      url_, redirect_info.new_first_party_for_cookies,
+      url_, redirect_info.new_site_for_cookies,
       WebString::FromUTF8(redirect_info.new_referrer),
       NetReferrerPolicyToBlinkReferrerPolicy(redirect_info.new_referrer_policy),
       WebString::FromUTF8(redirect_info.new_method), response,

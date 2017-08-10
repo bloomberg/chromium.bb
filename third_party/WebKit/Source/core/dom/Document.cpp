@@ -5041,13 +5041,13 @@ String Document::lastModified() const {
                         date.Minute(), date.Second());
 }
 
-const KURL Document::FirstPartyForCookies() const {
+const KURL Document::SiteForCookies() const {
   // TODO(mkwst): This doesn't properly handle HTML Import documents.
 
   // If this is an imported document, grab its master document's first-party:
   if (ImportsController() && ImportsController()->Master() &&
       ImportsController()->Master() != this)
-    return ImportsController()->Master()->FirstPartyForCookies();
+    return ImportsController()->Master()->SiteForCookies();
 
   if (!GetFrame())
     return SecurityOrigin::UrlWithUniqueSecurityOrigin();

@@ -65,7 +65,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService
   void Initialize(mojom::RendererClientAssociatedPtrInfo client,
                   base::Optional<std::vector<mojom::DemuxerStreamPtr>> streams,
                   const base::Optional<GURL>& media_url,
-                  const base::Optional<GURL>& first_party_for_cookies,
+                  const base::Optional<GURL>& site_for_cookies,
                   InitializeCallback callback) final;
   void Flush(FlushCallback callback) final;
   void StartPlayingFrom(base::TimeDelta time_delta) final;

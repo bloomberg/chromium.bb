@@ -458,10 +458,9 @@ bool URLRequest::IsHandledURL(const GURL& url) {
   return IsHandledProtocol(url.scheme());
 }
 
-void URLRequest::set_first_party_for_cookies(
-    const GURL& first_party_for_cookies) {
+void URLRequest::set_site_for_cookies(const GURL& site_for_cookies) {
   DCHECK(!is_pending_);
-  first_party_for_cookies_ = first_party_for_cookies;
+  site_for_cookies_ = site_for_cookies;
 }
 
 void URLRequest::set_first_party_url_policy(
@@ -975,7 +974,7 @@ void URLRequest::Redirect(const RedirectInfo& redirect_info) {
 
   referrer_ = redirect_info.new_referrer;
   referrer_policy_ = redirect_info.new_referrer_policy;
-  first_party_for_cookies_ = redirect_info.new_first_party_for_cookies;
+  site_for_cookies_ = redirect_info.new_site_for_cookies;
   token_binding_referrer_ = redirect_info.referred_token_binding_host;
 
   url_chain_.push_back(redirect_info.new_url);
@@ -1106,8 +1105,7 @@ bool URLRequest::CanSetCookie(const std::string& cookie_line,
 
 bool URLRequest::CanEnablePrivacyMode() const {
   if (network_delegate_) {
-    return network_delegate_->CanEnablePrivacyMode(url(),
-                                                   first_party_for_cookies_);
+    return network_delegate_->CanEnablePrivacyMode(url(), site_for_cookies_);
   }
   return !g_default_can_use_cookies;
 }

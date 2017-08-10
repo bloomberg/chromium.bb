@@ -3019,8 +3019,8 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       base::MakeUnique<WorkerFetchContextImpl>(
           worker_url_loader_factory_provider.PassInterface());
   worker_fetch_context->set_parent_frame_id(routing_id_);
-  worker_fetch_context->set_first_party_for_cookies(
-      frame_->GetDocument().FirstPartyForCookies());
+  worker_fetch_context->set_site_for_cookies(
+      frame_->GetDocument().SiteForCookies());
   worker_fetch_context->set_is_secure_context(
       frame_->GetDocument().IsSecureContext());
   blink::WebServiceWorkerNetworkProvider* web_provider =
@@ -6405,12 +6405,12 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
 
   blink::WebURLRequest& request = info.url_request;
 
-  // Set RequestorOrigin and FirstPartyForCookies
+  // Set RequestorOrigin and SiteForCookies
   WebDocument frame_document = frame_->GetDocument();
   if (request.GetFrameType() == blink::WebURLRequest::kFrameTypeTopLevel)
-    request.SetFirstPartyForCookies(request.Url());
+    request.SetSiteForCookies(request.Url());
   else
-    request.SetFirstPartyForCookies(frame_document.FirstPartyForCookies());
+    request.SetSiteForCookies(frame_document.SiteForCookies());
   request.SetRequestorOrigin(frame_document.GetSecurityOrigin());
 
   // Note: At this stage, the goal is to apply all the modifications the

@@ -57,7 +57,7 @@ void DataUseAggregator::ReportDataUse(net::URLRequest* request,
 
   std::unique_ptr<DataUse> data_use(
       new DataUse(request->url(), load_timing_info.request_start,
-                  request->first_party_for_cookies(), -1 /* tab_id */,
+                  request->site_for_cookies(), -1 /* tab_id */,
                   connection_type_, mcc_mnc_, tx_bytes, rx_bytes));
 
   if (!annotator_) {

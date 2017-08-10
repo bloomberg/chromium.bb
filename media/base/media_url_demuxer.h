@@ -35,7 +35,7 @@ class MEDIA_EXPORT MediaUrlDemuxer : public Demuxer {
   MediaUrlDemuxer(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const GURL& media_url,
-      const GURL& first_party_for_cookies);
+      const GURL& site_for_cookies);
   ~MediaUrlDemuxer() override;
 
   // MediaResource interface.

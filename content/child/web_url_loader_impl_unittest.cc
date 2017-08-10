@@ -145,7 +145,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 
   // blink::WebURLLoaderClient implementation:
   bool WillFollowRedirect(const blink::WebURL& new_url,
-                          const blink::WebURL& new_first_party_for_cookies,
+                          const blink::WebURL& new_site_for_cookies,
                           const blink::WebString& new_referrer,
                           blink::WebReferrerPolicy new_referrer_policy,
                           const blink::WebString& new_method,
@@ -288,7 +288,7 @@ class WebURLLoaderImplTest : public testing::Test {
     redirect_info.status_code = 302;
     redirect_info.new_method = "GET";
     redirect_info.new_url = GURL(kTestURL);
-    redirect_info.new_first_party_for_cookies = GURL(kTestURL);
+    redirect_info.new_site_for_cookies = GURL(kTestURL);
     peer()->OnReceivedRedirect(redirect_info,
                                content::ResourceResponseInfo());
     EXPECT_TRUE(client()->did_receive_redirect());
@@ -300,7 +300,7 @@ class WebURLLoaderImplTest : public testing::Test {
     redirect_info.status_code = 302;
     redirect_info.new_method = "GET";
     redirect_info.new_url = GURL(kTestHTTPSURL);
-    redirect_info.new_first_party_for_cookies = GURL(kTestHTTPSURL);
+    redirect_info.new_site_for_cookies = GURL(kTestHTTPSURL);
     peer()->OnReceivedRedirect(redirect_info,
                                content::ResourceResponseInfo());
     EXPECT_TRUE(client()->did_receive_redirect());

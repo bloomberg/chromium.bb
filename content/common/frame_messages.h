@@ -1259,7 +1259,7 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DomOperationResponse,
 IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_CookiesEnabled,
                             int /* render_frame_id */,
                             GURL /* url */,
-                            GURL /* first_party_for_cookies */,
+                            GURL /* site_for_cookies */,
                             bool /* cookies_enabled */)
 
 // Sent by the renderer process to check whether client 3D APIs

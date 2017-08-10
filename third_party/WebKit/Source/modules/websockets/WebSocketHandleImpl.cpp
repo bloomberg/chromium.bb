@@ -48,7 +48,7 @@ void WebSocketHandleImpl::Initialize(mojom::blink::WebSocketPtr websocket) {
 void WebSocketHandleImpl::Connect(const KURL& url,
                                   const Vector<String>& protocols,
                                   SecurityOrigin* origin,
-                                  const KURL& first_party_for_cookies,
+                                  const KURL& site_for_cookies,
                                   const String& user_agent_override,
                                   WebSocketHandleClient* client) {
   DCHECK(websocket_);
@@ -68,7 +68,7 @@ void WebSocketHandleImpl::Connect(const KURL& url,
                                            ->LoadingTaskRunner()
                                            ->ToSingleThreadTaskRunner()));
   websocket_->AddChannelRequest(
-      url, protocols, origin, first_party_for_cookies,
+      url, protocols, origin, site_for_cookies,
       user_agent_override.IsNull() ? g_empty_string : user_agent_override,
       std::move(client_proxy));
 }

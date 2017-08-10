@@ -839,7 +839,7 @@ void NavigationRequest::OnStartChecksComplete(
   // 'Document::firstPartyForCookies()' in Blink, which walks the ancestor tree
   // and verifies that all origins are PSL-matches (and special-cases extension
   // URLs).
-  const GURL& first_party_for_cookies =
+  const GURL& site_for_cookies =
       frame_tree_node_->IsMainFrame()
           ? common_params_.url
           : frame_tree_node_->frame_tree()->root()->current_url();
@@ -861,7 +861,7 @@ void NavigationRequest::OnStartChecksComplete(
   loader_ = NavigationURLLoader::Create(
       browser_context->GetResourceContext(), partition,
       base::MakeUnique<NavigationRequestInfo>(
-          common_params_, begin_params_, first_party_for_cookies,
+          common_params_, begin_params_, site_for_cookies,
           frame_tree_node_->IsMainFrame(), parent_is_main_frame,
           IsSecureFrame(frame_tree_node_->parent()),
           frame_tree_node_->frame_tree_node_id(), is_for_guests_only,

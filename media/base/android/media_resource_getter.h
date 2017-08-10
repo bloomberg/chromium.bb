@@ -43,7 +43,7 @@ class MEDIA_EXPORT MediaResourceGetter {
 
   // Method for getting the cookies for a given URL.
   virtual void GetCookies(const GURL& url,
-                          const GURL& first_party_for_cookies,
+                          const GURL& site_for_cookies,
                           GetCookieCB callback) = 0;
 
   // Method for getting the platform path from a file system URL.

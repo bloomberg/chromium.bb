@@ -269,8 +269,8 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   // TODO(horo): To get the correct first_party_to_cookies for the shared
   // worker, we need to check the all documents bounded by the shared worker.
   // (crbug.com/723553)
-  // https://tools.ietf.org/html/draft-west-first-party-cookies-07#section-2.1.2
-  worker_fetch_context->set_first_party_for_cookies(url_);
+  // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-07#section-2.1.2
+  worker_fetch_context->set_site_for_cookies(url_);
   // TODO(horo): Currently we treat the worker context as secure if the origin
   // of the shared worker script url is secure. But according to the spec, if
   // the creation context is not secure, we should treat the worker as

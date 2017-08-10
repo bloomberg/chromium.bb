@@ -88,10 +88,11 @@ void MediaPlayerRenderer::CreateMediaPlayer(
 
   media_player_.reset(new media::MediaPlayerBridge(
       kUnusedAndIrrelevantPlayerId, url_params.media_url,
-      url_params.first_party_for_cookies, user_agent,
+      url_params.site_for_cookies, user_agent,
       false,  // hide_url_log
-      this, base::Bind(&MediaPlayerRenderer::OnDecoderResourcesReleased,
-                       weak_factory_.GetWeakPtr()),
+      this,
+      base::Bind(&MediaPlayerRenderer::OnDecoderResourcesReleased,
+                 weak_factory_.GetWeakPtr()),
       GURL(),  // frame_url
       true));  // allow_crendentials
 

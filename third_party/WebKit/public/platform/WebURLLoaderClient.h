@@ -54,7 +54,7 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
   // redirect, or false otherwise.
   virtual bool WillFollowRedirect(
       const WebURL& new_url,
-      const WebURL& new_first_party_for_cookies,
+      const WebURL& new_site_for_cookies,
       const WebString& new_referrer,
       WebReferrerPolicy new_referrer_policy,
       const WebString& new_method,

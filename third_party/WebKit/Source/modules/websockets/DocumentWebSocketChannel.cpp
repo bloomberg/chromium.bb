@@ -246,10 +246,10 @@ bool DocumentWebSocketChannel::Connect(const KURL& url,
   }
 
   handle_->Initialize(std::move(socket_ptr));
-  handle_->Connect(
-      url, protocols, loading_context_->GetFetchContext()->GetSecurityOrigin(),
-      loading_context_->GetFetchContext()->GetFirstPartyForCookies(),
-      loading_context_->GetExecutionContext()->UserAgent(), this);
+  handle_->Connect(url, protocols,
+                   loading_context_->GetFetchContext()->GetSecurityOrigin(),
+                   loading_context_->GetFetchContext()->GetSiteForCookies(),
+                   loading_context_->GetExecutionContext()->UserAgent(), this);
 
   // TODO(ricea): Maybe lookup GetDocument()->GetFrame() less often?
   if (handshake_throttle_ && GetDocument() && GetDocument()->GetFrame() &&

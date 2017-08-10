@@ -106,8 +106,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   double TimeoutInterval() const;  // May return 0 when using platform default.
   void SetTimeoutInterval(double);
 
-  const KURL& FirstPartyForCookies() const;
-  void SetFirstPartyForCookies(const KURL&);
+  const KURL& SiteForCookies() const;
+  void SetSiteForCookies(const KURL&);
 
   RefPtr<SecurityOrigin> RequestorOrigin() const;
   void SetRequestorOrigin(RefPtr<SecurityOrigin>);
@@ -344,7 +344,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   KURL url_;
   double timeout_interval_;  // 0 is a magic value for platform default on
                              // platforms that have one.
-  KURL first_party_for_cookies_;
+  KURL site_for_cookies_;
   RefPtr<SecurityOrigin> requestor_origin_;
   AtomicString http_method_;
   HTTPHeaderMap http_header_fields_;
@@ -408,7 +408,7 @@ struct CrossThreadResourceRequestData {
 
   WebCachePolicy cache_policy_;
   double timeout_interval_;
-  KURL first_party_for_cookies_;
+  KURL site_for_cookies_;
   RefPtr<SecurityOrigin> requestor_origin_;
 
   String http_method_;

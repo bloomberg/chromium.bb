@@ -622,7 +622,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   ResourceRequest request;
   request.method = original_request->method();
   request.url = original_request->url();
-  // TODO(horo): Set first_party_for_cookies to support Same-site Cookies.
+  // TODO(horo): Set site_for_cookies to support Same-site Cookies.
   request.request_initiator = original_request->initiator().has_value()
                                   ? original_request->initiator()
                                   : url::Origin(original_request->url());

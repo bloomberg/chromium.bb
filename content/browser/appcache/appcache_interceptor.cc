@@ -104,8 +104,7 @@ void AppCacheInterceptor::CompleteCrossSiteTransfer(
   if (!handler->SanityCheckIsSameService(requester_info->appcache_service())) {
     // This can happen when V2 apps and web pages end up in the same storage
     // partition.
-    const GURL& first_party_url_for_cookies =
-        request->first_party_for_cookies();
+    const GURL& first_party_url_for_cookies = request->site_for_cookies();
     if (first_party_url_for_cookies.is_valid()) {
       // TODO(lazyboy): Remove this once we know which extensions run into this
       // issue. See https://crbug.com/612711#c25 for details.

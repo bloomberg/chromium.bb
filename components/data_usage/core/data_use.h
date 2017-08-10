@@ -24,7 +24,7 @@ struct DataUse {
 
   DataUse(const GURL& url,
           const base::TimeTicks& request_start,
-          const GURL& first_party_for_cookies,
+          const GURL& site_for_cookies,
           int32_t tab_id,
           net::NetworkChangeNotifier::ConnectionType connection_type,
           const std::string& mcc_mnc,
@@ -44,7 +44,7 @@ struct DataUse {
   // The TimeTicks when the request that is associated with these bytes was
   // started.
   base::TimeTicks request_start;
-  GURL first_party_for_cookies;
+  GURL site_for_cookies;
 
   // Tab id where the data use happens. When PlzNavigate is enabled tab id could
   // be invalid(-1) for the mainframe request since tab cannot be retrieved yet.

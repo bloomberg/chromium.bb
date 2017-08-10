@@ -87,7 +87,7 @@ class PreconnectManager {
 
   // Public for mocking in unit tests. Don't use, internal only.
   virtual void PreconnectUrl(const GURL& url,
-                             const GURL& first_party_for_cookies) const;
+                             const GURL& site_for_cookies) const;
   virtual int PreresolveUrl(const GURL& url,
                             const net::CompletionCallback& callback) const;
 

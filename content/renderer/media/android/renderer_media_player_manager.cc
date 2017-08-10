@@ -67,7 +67,7 @@ void RendererMediaPlayerManager::Initialize(
     MediaPlayerHostMsg_Initialize_Type type,
     int player_id,
     const GURL& url,
-    const GURL& first_party_for_cookies,
+    const GURL& site_for_cookies,
     const GURL& frame_url,
     bool allow_credentials,
     int delegate_id) {
@@ -75,7 +75,7 @@ void RendererMediaPlayerManager::Initialize(
   media_player_params.type = type;
   media_player_params.player_id = player_id;
   media_player_params.url = url;
-  media_player_params.first_party_for_cookies = first_party_for_cookies;
+  media_player_params.site_for_cookies = site_for_cookies;
   media_player_params.frame_url = frame_url;
   media_player_params.allow_credentials = allow_credentials;
   media_player_params.delegate_id = delegate_id;

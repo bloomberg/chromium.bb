@@ -182,7 +182,7 @@ void ResourceFetcherImpl::Start(
     DCHECK_NE("GET", request_.HttpMethod().Utf8()) << "GETs can't have bodies.";
 
   request_.SetRequestContext(request_context);
-  request_.SetFirstPartyForCookies(frame->GetDocument().FirstPartyForCookies());
+  request_.SetSiteForCookies(frame->GetDocument().SiteForCookies());
   request_.SetRequestorOrigin(frame->GetDocument().GetSecurityOrigin());
   request_.AddHTTPOriginIfNeeded(blink::WebSecurityOrigin::CreateUnique());
 

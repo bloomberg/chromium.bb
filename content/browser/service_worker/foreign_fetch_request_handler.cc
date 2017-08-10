@@ -270,7 +270,7 @@ void ForeignFetchRequestHandler::DidFindRegistration(
     web_contents_getter = request_info->GetWebContentsGetterForRequest();
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
-          registration->pattern(), job->request()->first_party_for_cookies(),
+          registration->pattern(), job->request()->site_for_cookies(),
           resource_context_, web_contents_getter)) {
     job->FallbackToNetwork();
     return;

@@ -328,32 +328,30 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
                  *new_routing_id));
 }
 
-void RenderFrameMessageFilter::OnCookiesEnabled(
-    int render_frame_id,
-    const GURL& url,
-    const GURL& first_party_for_cookies,
-    bool* cookies_enabled) {
+void RenderFrameMessageFilter::OnCookiesEnabled(int render_frame_id,
+                                                const GURL& url,
+                                                const GURL& site_for_cookies,
+                                                bool* cookies_enabled) {
   // TODO(ananta): If this render frame is associated with an automation
   // channel, aka ChromeFrame then we need to retrieve cookie settings from the
   // external host.
   *cookies_enabled = GetContentClient()->browser()->AllowGetCookie(
-      url, first_party_for_cookies, net::CookieList(), resource_context_,
+      url, site_for_cookies, net::CookieList(), resource_context_,
       render_process_id_, render_frame_id);
 }
 
 void RenderFrameMessageFilter::CheckPolicyForCookies(
     int render_frame_id,
     const GURL& url,
-    const GURL& first_party_for_cookies,
+    const GURL& site_for_cookies,
     GetCookiesCallback callback,
     const net::CookieList& cookie_list) {
   net::URLRequestContext* context = GetRequestContextForURL(url);
   // Check the policy for get cookies, and pass cookie_list to the
   // TabSpecificContentSetting for logging purpose.
-  if (context &&
-      GetContentClient()->browser()->AllowGetCookie(
-          url, first_party_for_cookies, cookie_list, resource_context_,
-          render_process_id_, render_frame_id)) {
+  if (context && GetContentClient()->browser()->AllowGetCookie(
+                     url, site_for_cookies, cookie_list, resource_context_,
+                     render_process_id_, render_frame_id)) {
     std::move(callback).Run(net::CookieStore::BuildCookieLine(cookie_list));
   } else {
     std::move(callback).Run(std::string());
@@ -402,7 +400,7 @@ void RenderFrameMessageFilter::OnRenderProcessGone() {
 
 void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
                                          const GURL& url,
-                                         const GURL& first_party_for_cookies,
+                                         const GURL& site_for_cookies,
                                          const std::string& cookie) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
@@ -414,8 +412,8 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
 
   net::CookieOptions options;
   if (GetContentClient()->browser()->AllowSetCookie(
-          url, first_party_for_cookies, cookie, resource_context_,
-          render_process_id_, render_frame_id, options)) {
+          url, site_for_cookies, cookie, resource_context_, render_process_id_,
+          render_frame_id, options)) {
     net::URLRequestContext* context = GetRequestContextForURL(url);
     // Pass a null callback since we don't care about when the 'set' completes.
     context->cookie_store()->SetCookieWithOptionsAsync(
@@ -425,7 +423,7 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
 
 void RenderFrameMessageFilter::GetCookies(int render_frame_id,
                                           const GURL& url,
-                                          const GURL& first_party_for_cookies,
+                                          const GURL& site_for_cookies,
                                           GetCookiesCallback callback) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
@@ -438,7 +436,7 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
 
   net::CookieOptions options;
   if (net::registry_controlled_domains::SameDomainOrHost(
-          url, first_party_for_cookies,
+          url, site_for_cookies,
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
     // TODO(mkwst): This check ought to further distinguish between frames
     // initiated in a strict or lax same-site context.
@@ -459,7 +457,7 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
   context->cookie_store()->GetCookieListWithOptionsAsync(
       url, options,
       base::Bind(&RenderFrameMessageFilter::CheckPolicyForCookies, this,
-                 render_frame_id, url, first_party_for_cookies,
+                 render_frame_id, url, site_for_cookies,
                  base::Passed(&callback)));
 }
 

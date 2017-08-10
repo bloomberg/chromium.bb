@@ -52,7 +52,7 @@ String Cookies(const Document* document, const KURL& url) {
     return String();
 
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.CookieJar.SyncCookiesTime");
-  return cookie_jar->Cookies(url, document->FirstPartyForCookies());
+  return cookie_jar->Cookies(url, document->SiteForCookies());
 }
 
 void SetCookies(Document* document,
@@ -61,7 +61,7 @@ void SetCookies(Document* document,
   WebCookieJar* cookie_jar = ToCookieJar(document);
   if (!cookie_jar)
     return;
-  cookie_jar->SetCookie(url, document->FirstPartyForCookies(), cookie_string);
+  cookie_jar->SetCookie(url, document->SiteForCookies(), cookie_string);
 }
 
 bool CookiesEnabled(const Document* document) {
@@ -69,7 +69,7 @@ bool CookiesEnabled(const Document* document) {
   if (!cookie_jar)
     return false;
   return cookie_jar->CookiesEnabled(document->CookieURL(),
-                                    document->FirstPartyForCookies());
+                                    document->SiteForCookies());
 }
 
 }  // namespace blink

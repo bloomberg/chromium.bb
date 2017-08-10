@@ -671,8 +671,7 @@ void HttpProtocolHandlerCore::Start(id<CRNNetworkClientProtocol> base_client) {
       context->CreateRequest(url, DEFAULT_PRIORITY, this).release();
   net_request_->set_method(base::SysNSStringToUTF8([request_ HTTPMethod]));
 
-  net_request_->set_first_party_for_cookies(
-      GURLWithNSURL([request_ mainDocumentURL]));
+  net_request_->set_site_for_cookies(GURLWithNSURL([request_ mainDocumentURL]));
 
 #if !defined(NDEBUG)
   DVLOG(2) << "From client:";
