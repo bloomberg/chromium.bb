@@ -10,11 +10,14 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_result.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
 #include "ui/app_list/search_result.h"
 
 namespace app_list {
@@ -43,6 +46,20 @@ class ArcPlayStoreSearchProviderTest : public AppListTestBase {
         max_results, profile_.get(), controller_.get());
   }
 
+  scoped_refptr<extensions::Extension> CreateExtension(const std::string& id) {
+    return extensions::ExtensionBuilder()
+        .SetManifest(extensions::DictionaryBuilder()
+                         .Set("name", "test")
+                         .Set("version", "0.1")
+                         .Build())
+        .SetID(id)
+        .Build();
+  }
+
+  void AddExtension(const extensions::Extension* extension) {
+    service()->AddExtension(extension);
+  }
+
  private:
   std::unique_ptr<test::TestAppListControllerDelegate> controller_;
   ArcAppTest arc_test_;
@@ -51,7 +68,7 @@ class ArcPlayStoreSearchProviderTest : public AppListTestBase {
 };
 
 TEST_F(ArcPlayStoreSearchProviderTest, Basic) {
-  constexpr size_t kMaxResults = 6;
+  constexpr size_t kMaxResults = 12;
   constexpr char kQuery[] = "Play App";
 
   std::unique_ptr<ArcPlayStoreSearchProvider> provider =
@@ -59,11 +76,15 @@ TEST_F(ArcPlayStoreSearchProviderTest, Basic) {
   EXPECT_TRUE(provider->results().empty());
   ArcPlayStoreSearchResult::DisableSafeDecodingForTesting();
 
+  AddExtension(CreateExtension(extension_misc::kGmailAppId).get());
+
   // Check that the result size of a query doesn't exceed the |kMaxResults|.
   provider->Start(false, base::UTF8ToUTF16(kQuery));
   const app_list::SearchProvider::Results& results = provider->results();
   ASSERT_GT(results.size(), 0u);
-  ASSERT_GE(kMaxResults, results.size());
+  // Play Store returns |kMaxResults| results, but the first one (GMail) already
+  // has Chrome extension installed, so it will be skipped.
+  ASSERT_EQ(kMaxResults - 1, results.size());
 
   // Check that information is correctly set in each result.
   for (size_t i = 0; i < results.size(); ++i) {
