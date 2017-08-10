@@ -7,7 +7,11 @@ package org.chromium.chrome.browser.partnercustomizations;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.net.Uri;
-import android.test.AndroidTestCase;
+import android.support.test.InstrumentationRegistry;
+
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider;
@@ -18,22 +22,22 @@ import java.util.concurrent.Semaphore;
 /**
  * Basic shared functionality for partner customization unit tests.
  */
-public class BasePartnerBrowserCustomizationUnitTest extends AndroidTestCase {
-    protected static final String PARTNER_BROWSER_CUSTOMIZATIONS_PROVIDER =
+public class BasePartnerBrowserCustomizationUnitTestRule implements TestRule {
+    public static final String PARTNER_BROWSER_CUSTOMIZATIONS_PROVIDER =
             TestPartnerBrowserCustomizationsProvider.class.getName();
-    protected static final String PARTNER_BROWSER_CUSTOMIZATIONS_NO_PROVIDER =
+    public static final String PARTNER_BROWSER_CUSTOMIZATIONS_NO_PROVIDER =
             TestPartnerBrowserCustomizationsProvider.class.getName() + "INVALID";
-    protected static final String PARTNER_BROWSER_CUSTOMIZATIONS_DELAYED_PROVIDER =
+    public static final String PARTNER_BROWSER_CUSTOMIZATIONS_DELAYED_PROVIDER =
             TestPartnerBrowserCustomizationsDelayedProvider.class.getName();
-    protected static final long DEFAULT_TIMEOUT_MS = 500;
+    public static final long DEFAULT_TIMEOUT_MS = 500;
 
-    protected final Runnable mCallback = new Runnable() {
+    private final Runnable mCallback = new Runnable() {
         @Override
         public void run() {
             mCallbackLock.release();
         }
     };
-    protected final Semaphore mCallbackLock = new Semaphore(0);
+    private final Semaphore mCallbackLock = new Semaphore(0);
 
     /**
      * Specifies the URI path that should be delayed when querying the delayed provider.
@@ -47,23 +51,35 @@ public class BasePartnerBrowserCustomizationUnitTest extends AndroidTestCase {
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_DELAYED_PROVIDER);
         Uri uri = PartnerBrowserCustomizations.buildQueryUri(uriPath);
-        getContext().getContentResolver().call(uri, "setUriPathToDelay", uriPath, null);
+        getContextWrapper().getContentResolver().call(uri, "setUriPathToDelay", uriPath, null);
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        CommandLine.init(null);
+    public Statement apply(final Statement base, Description desc) {
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                CommandLine.init(null);
+                base.evaluate();
+            }
+        };
     }
 
-    @Override
-    public Context getContext() {
-        ContextWrapper context = new ContextWrapper(super.getContext()) {
+    public Context getContextWrapper() {
+        ContextWrapper context = new ContextWrapper(InstrumentationRegistry.getContext()) {
             @Override
             public Context getApplicationContext() {
                 return getBaseContext();
             }
         };
         return context;
+    }
+
+    public Runnable getCallback() {
+        return mCallback;
+    }
+
+    public Semaphore getCallbackLock() {
+        return mCallbackLock;
     }
 }
