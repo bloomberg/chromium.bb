@@ -344,7 +344,7 @@ cr.define('print_preview', function() {
           'print-preset-options',
           this.onPrintPresetOptionsFromDocument_.bind(this));
       this.listenerTracker.add(
-          'preview-page-count', this.onPageCountReady_.bind(this));
+          'page-count-ready', this.onPageCountReady_.bind(this));
       this.listenerTracker.add(
           'enable-manipulate-settings-for-test',
           this.onEnableManipulateSettingsForTest_.bind(this));
