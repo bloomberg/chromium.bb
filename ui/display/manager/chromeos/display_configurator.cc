@@ -72,7 +72,7 @@ base::TimeDelta DisplayConfigurator::TestApi::GetConfigureDelay() const {
 class DisplayConfigurator::DisplayLayoutManagerImpl
     : public DisplayLayoutManager {
  public:
-  DisplayLayoutManagerImpl(DisplayConfigurator* configurator);
+  explicit DisplayLayoutManagerImpl(DisplayConfigurator* configurator);
   ~DisplayLayoutManagerImpl() override;
 
   // DisplayConfigurator::DisplayLayoutManager:
@@ -622,8 +622,7 @@ void DisplayConfigurator::OnDisplayControlRelinquished(
   std::move(callback).Run(success);
 }
 
-void DisplayConfigurator::ForceInitialConfigure(
-    uint32_t background_color_argb) {
+void DisplayConfigurator::ForceInitialConfigure() {
   if (!configure_display_ || display_externally_controlled_)
     return;
 
@@ -637,7 +636,7 @@ void DisplayConfigurator::ForceInitialConfigure(
   configuration_task_.reset(new UpdateDisplayConfigurationTask(
       native_display_delegate_.get(), layout_manager_.get(),
       requested_display_state_, requested_power_state_,
-      kSetDisplayPowerForceProbe, background_color_argb, true,
+      kSetDisplayPowerForceProbe, true,
       base::Bind(&DisplayConfigurator::OnConfigured,
                  weak_ptr_factory_.GetWeakPtr())));
   configuration_task_->Run();
@@ -980,10 +979,6 @@ void DisplayConfigurator::SuspendDisplays(
   // SetDisplayPowerInternal so requested_power_state_ is maintained.
   SetDisplayPowerInternal(chromeos::DISPLAY_POWER_ALL_OFF,
                           kSetDisplayPowerNoFlags, callback);
-
-  // We need to make sure that the monitor configuration we just did actually
-  // completes before we return.
-  native_display_delegate_->SyncWithServer();
 }
 
 void DisplayConfigurator::ResumeDisplays() {
@@ -1035,9 +1030,10 @@ void DisplayConfigurator::RunPendingConfiguration() {
 
   configuration_task_.reset(new UpdateDisplayConfigurationTask(
       native_display_delegate_.get(), layout_manager_.get(),
-      requested_display_state_, pending_power_state_, pending_power_flags_, 0,
-      force_configure_, base::Bind(&DisplayConfigurator::OnConfigured,
-                                   weak_ptr_factory_.GetWeakPtr())));
+      requested_display_state_, pending_power_state_, pending_power_flags_,
+      force_configure_,
+      base::Bind(&DisplayConfigurator::OnConfigured,
+                 weak_ptr_factory_.GetWeakPtr())));
 
   // Reset the flags before running the task; otherwise it may end up scheduling
   // another configuration.

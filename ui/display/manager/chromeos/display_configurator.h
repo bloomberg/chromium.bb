@@ -116,7 +116,8 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // Helper class used by tests.
   class TestApi {
    public:
-    TestApi(DisplayConfigurator* configurator) : configurator_(configurator) {}
+    explicit TestApi(DisplayConfigurator* configurator)
+        : configurator_(configurator) {}
     ~TestApi() {}
 
     // If |configure_timer_| is started, stops the timer, runs
@@ -212,10 +213,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
             bool is_panel_fitting_enabled);
 
   // Does initial configuration of displays during startup.
-  // If |background_color_argb| is non zero and there are multiple displays,
-  // DisplayConfigurator sets the background color of X's RootWindow to this
-  // color.
-  void ForceInitialConfigure(uint32_t background_color_argb);
+  void ForceInitialConfigure();
 
   // Stop handling display configuration events/requests.
   void PrepareForExit();

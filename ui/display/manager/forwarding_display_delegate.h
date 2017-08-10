@@ -33,14 +33,9 @@ class DISPLAY_MANAGER_EXPORT ForwardingDisplayDelegate
 
   // display::NativeDisplayDelegate:
   void Initialize() override;
-  void GrabServer() override;
-  void UngrabServer() override;
   void TakeDisplayControl(const DisplayControlCallback& callback) override;
   void RelinquishDisplayControl(
       const DisplayControlCallback& callback) override;
-  void SyncWithServer() override;
-  void SetBackgroundColor(uint32_t color_argb) override;
-  void ForceDPMSOn() override;
   void GetDisplays(const GetDisplaysCallback& callback) override;
   void AddMode(const DisplaySnapshot& output, const DisplayMode* mode) override;
   void Configure(const DisplaySnapshot& output,

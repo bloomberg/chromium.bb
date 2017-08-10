@@ -80,7 +80,7 @@ class RendererFactory {
 
 class WindowManager : public display::NativeDisplayObserver {
  public:
-  WindowManager(const base::Closure& quit_closure);
+  explicit WindowManager(const base::Closure& quit_closure);
   ~WindowManager() override;
 
   void Quit();
@@ -285,7 +285,6 @@ void WindowManager::OnConfigurationChanged() {
   }
 
   is_configuring_ = true;
-  delegate_->GrabServer();
   delegate_->GetDisplays(
       base::Bind(&WindowManager::OnDisplaysAquired, base::Unretained(this)));
 }
@@ -310,7 +309,6 @@ void WindowManager::OnDisplaysAquired(
                    gfx::Rect(origin, display->native_mode()->size())));
     origin.Offset(display->native_mode()->size().width(), 0);
   }
-  delegate_->UngrabServer();
   is_configuring_ = false;
 
   if (should_configure_) {

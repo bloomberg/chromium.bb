@@ -34,12 +34,6 @@ void DrmNativeDisplayDelegate::Initialize() {
   display_manager_->AddDelegate(this);
 }
 
-void DrmNativeDisplayDelegate::GrabServer() {
-}
-
-void DrmNativeDisplayDelegate::UngrabServer() {
-}
-
 void DrmNativeDisplayDelegate::TakeDisplayControl(
     const display::DisplayControlCallback& callback) {
   display_manager_->TakeDisplayControl(callback);
@@ -48,15 +42,6 @@ void DrmNativeDisplayDelegate::TakeDisplayControl(
 void DrmNativeDisplayDelegate::RelinquishDisplayControl(
     const display::DisplayControlCallback& callback) {
   display_manager_->RelinquishDisplayControl(callback);
-}
-
-void DrmNativeDisplayDelegate::SyncWithServer() {
-}
-
-void DrmNativeDisplayDelegate::SetBackgroundColor(uint32_t color_argb) {
-}
-
-void DrmNativeDisplayDelegate::ForceDPMSOn() {
 }
 
 void DrmNativeDisplayDelegate::GetDisplays(

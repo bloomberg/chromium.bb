@@ -961,11 +961,7 @@ void Shell::Init(const ShellInitParams& init_params) {
     display_configurator_->AddObserver(display_error_observer_.get());
     display_configurator_->set_state_controller(display_change_observer_.get());
     display_configurator_->set_mirroring_controller(display_manager_.get());
-    display_configurator_->ForceInitialConfigure(
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kFirstExecAfterBoot)
-            ? kChromeOsBootColor
-            : 0);
+    display_configurator_->ForceInitialConfigure();
     display_initialized = true;
   }
   display_color_manager_ =

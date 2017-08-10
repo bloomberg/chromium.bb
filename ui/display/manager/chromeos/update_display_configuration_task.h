@@ -37,7 +37,6 @@ class DISPLAY_MANAGER_EXPORT UpdateDisplayConfigurationTask
                                  MultipleDisplayState new_display_state,
                                  chromeos::DisplayPowerState new_power_state,
                                  int power_flags,
-                                 uint32_t background_color_argb,
                                  bool force_configure,
                                  const ResponseCallback& callback);
   ~UpdateDisplayConfigurationTask() override;
@@ -90,8 +89,6 @@ class DISPLAY_MANAGER_EXPORT UpdateDisplayConfigurationTask
   // Bitwise-or-ed values for the kSetDisplayPower* values defined in
   // DisplayConfigurator.
   int power_flags_;
-
-  uint32_t background_color_argb_;
 
   bool force_configure_;
 

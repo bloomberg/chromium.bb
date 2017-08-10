@@ -27,11 +27,7 @@ namespace test {
 
 // Strings returned by TestNativeDisplayDelegate::GetActionsAndClear() to
 // describe various actions that were performed.
-const char kInitXRandR[] = "init";
-const char kGrab[] = "grab";
-const char kUngrab[] = "ungrab";
-const char kSync[] = "sync";
-const char kForceDPMS[] = "dpms";
+const char kInit[] = "init";
 const char kTakeDisplayControl[] = "take";
 const char kRelinquishDisplayControl[] = "relinquish";
 
@@ -40,10 +36,6 @@ const char kRelinquishDisplayControl[] = "relinquish";
 const char kNoActions[] = "";
 
 std::string DisplaySnapshotToString(const DisplaySnapshot& output);
-
-// Returns a string describing a TestNativeDisplayDelegate::SetBackgroundColor()
-// call.
-std::string GetBackgroundAction(uint32_t color_argb);
 
 // Returns a string describing a TestNativeDisplayDelegate::AddOutputMode()
 // call.

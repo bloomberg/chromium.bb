@@ -35,7 +35,6 @@ source_set("display") {
       deps += [
         "//chromeos",
         "//services/ui/public/interfaces/display",
-        "//skia",
         "//ui/display/manager",
         "//ui/display/mojo:interfaces",
         "//ui/ozone",

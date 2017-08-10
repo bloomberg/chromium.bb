@@ -17,7 +17,7 @@ class DrmDisplayHostManager;
 
 class DrmNativeDisplayDelegate : public display::NativeDisplayDelegate {
  public:
-  DrmNativeDisplayDelegate(DrmDisplayHostManager* display_manager);
+  explicit DrmNativeDisplayDelegate(DrmDisplayHostManager* display_manager);
   ~DrmNativeDisplayDelegate() override;
 
   void OnConfigurationChanged();
@@ -25,15 +25,10 @@ class DrmNativeDisplayDelegate : public display::NativeDisplayDelegate {
 
   // display::NativeDisplayDelegate overrides:
   void Initialize() override;
-  void GrabServer() override;
-  void UngrabServer() override;
   void TakeDisplayControl(
       const display::DisplayControlCallback& callback) override;
   void RelinquishDisplayControl(
       const display::DisplayControlCallback& callback) override;
-  void SyncWithServer() override;
-  void SetBackgroundColor(uint32_t color_argb) override;
-  void ForceDPMSOn() override;
   void GetDisplays(const display::GetDisplaysCallback& callback) override;
   void AddMode(const display::DisplaySnapshot& output,
                const display::DisplayMode* mode) override;

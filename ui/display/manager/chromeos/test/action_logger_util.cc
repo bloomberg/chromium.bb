@@ -23,10 +23,6 @@ std::string DisplaySnapshotToString(const DisplaySnapshot& output) {
   return base::StringPrintf("id=%" PRId64, output.display_id());
 }
 
-std::string GetBackgroundAction(uint32_t color_argb) {
-  return base::StringPrintf("background(0x%x)", color_argb);
-}
-
 std::string GetAddOutputModeAction(const DisplaySnapshot& output,
                                    const DisplayMode* mode) {
   return base::StringPrintf("add_mode(output=%" PRId64 ",mode=%s)",

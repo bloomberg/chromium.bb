@@ -45,28 +45,12 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
 
   virtual void Initialize() = 0;
 
-  // Grabs and refreshes any display server related resources. Must be balanced
-  // by a call to UngrabServer().
-  virtual void GrabServer() = 0;
-
-  // Released the display server and any resources allocated by GrabServer().
-  virtual void UngrabServer() = 0;
-
   // Take control of the display from any other controlling process.
   virtual void TakeDisplayControl(const DisplayControlCallback& callback) = 0;
 
   // Let others control the display.
   virtual void RelinquishDisplayControl(
       const DisplayControlCallback& callback) = 0;
-
-  // Flushes all pending requests and waits for replies.
-  virtual void SyncWithServer() = 0;
-
-  // Sets the window's background color to |color_argb|.
-  virtual void SetBackgroundColor(uint32_t color_argb) = 0;
-
-  // Enables DPMS and forces it to the "on" state.
-  virtual void ForceDPMSOn() = 0;
 
   // Queries for a list of fresh displays and returns them via |callback|.
   // Note the query operation may be expensive and take over 60 milliseconds.

@@ -22,7 +22,7 @@ namespace test {
 
 namespace {
 
-int64_t kDisplayIds[3] = {123, 456, 789};
+constexpr int64_t kDisplayIds[3] = {123, 456, 789};
 
 std::unique_ptr<DisplayMode> MakeDisplayMode(int width,
                                              int height,
@@ -146,7 +146,7 @@ class TestMirroringController
 // the time it took to complete.
 class ConfigurationWaiter {
  public:
-  ConfigurationWaiter(DisplayConfigurator::TestApi* test_api)
+  explicit ConfigurationWaiter(DisplayConfigurator::TestApi* test_api)
       : on_configured_callback_(base::Bind(&ConfigurationWaiter::OnConfigured,
                                            base::Unretained(this))),
         test_api_(test_api),
@@ -303,14 +303,14 @@ class DisplayConfiguratorTest : public testing::Test {
     configurator_.Init(nullptr, false);
 
     EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
-    configurator_.ForceInitialConfigure(0);
+    configurator_.ForceInitialConfigure();
     EXPECT_EQ(
         JoinActions(
-            kInitXRandR, kGrab,
+            kInit,
             GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
                 .c_str(),
             GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
-            kForceDPMS, kUngrab, nullptr),
+            nullptr),
         log_->GetActionsAndClear());
   }
 
@@ -425,7 +425,6 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
                           big_mode_.size().height();
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
                                outputs_[0].get(), outputs_[1].get())
               .c_str(),
@@ -434,7 +433,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
                         gfx::Point(0, small_mode_.size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -443,12 +442,12 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
   configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
   EXPECT_EQ(
       JoinActions(
-          kGrab, GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
-                                      outputs_[1].get())
-                     .c_str(),
+          GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
+                               outputs_[1].get())
+              .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -458,11 +457,10 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
   UpdateOutputs(1, true);
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
               .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -480,7 +478,6 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
   UpdateOutputs(2, true);
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
                                outputs_[0].get(), outputs_[1].get())
               .c_str(),
@@ -489,7 +486,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
                         gfx::Point(0, small_mode_.size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   const gfx::Size framebuffer_size = configurator_.framebuffer_size();
@@ -497,7 +494,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
 
   observer_.Reset();
   configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
-  EXPECT_EQ(JoinActions(kGrab, kUngrab, nullptr), log_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
             configurator_.display_state());
   EXPECT_TRUE(mirroring_controller_.SoftwareMirroringEnabled());
@@ -509,14 +506,14 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
   // Setting MULTIPLE_DISPLAY_STATE_DUAL_MIRROR should try to reconfigure.
   observer_.Reset();
   configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
-  EXPECT_EQ(JoinActions(nullptr), log_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // Set back to software mirror mode.
   observer_.Reset();
   configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
-  EXPECT_EQ(JoinActions(kGrab, kUngrab, nullptr), log_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
             configurator_.display_state());
   EXPECT_TRUE(mirroring_controller_.SoftwareMirroringEnabled());
@@ -527,11 +524,11 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
   UpdateOutputs(1, true);
   EXPECT_EQ(
       JoinActions(
-          kGrab,
+
           GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
               .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -545,12 +542,12 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
   UpdateOutputs(2, true);
   EXPECT_EQ(
       JoinActions(
-          kGrab, GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
-                                      outputs_[1].get())
-                     .c_str(),
+          GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
+                               outputs_[1].get())
+              .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -567,12 +564,12 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
   EXPECT_EQ(
       JoinActions(
-          kGrab, GetFramebufferAction(big_mode_.size(), outputs_[0].get(),
-                                      outputs_[1].get())
-                     .c_str(),
+          GetFramebufferAction(big_mode_.size(), outputs_[0].get(),
+                               outputs_[1].get())
+              .c_str(),
           GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[1], &big_mode_, gfx::Point(0, 0)).c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_SINGLE, configurator_.display_state());
   EXPECT_EQ(1, observer_.num_changes());
@@ -586,15 +583,14 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
                                 config_waiter_.on_configuration_callback());
   EXPECT_EQ(kNoDelay, config_waiter_.Wait());
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
-  EXPECT_EQ(
-      JoinActions(
-          kGrab, GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
-                                      outputs_[1].get())
-                     .c_str(),
-          GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
-          GetCrtcAction(*outputs_[1], nullptr, gfx::Point(0, 0)).c_str(),
-          kUngrab, nullptr),
-      log_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(
+                GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
+                                     outputs_[1].get())
+                    .c_str(),
+                GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
+                GetCrtcAction(*outputs_[1], nullptr, gfx::Point(0, 0)).c_str(),
+                nullptr),
+            log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR, configurator_.display_state());
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -609,12 +605,12 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
   EXPECT_EQ(
       JoinActions(
-          kGrab, GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
-                                      outputs_[1].get())
-                     .c_str(),
+          GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
+                               outputs_[1].get())
+              .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR, configurator_.display_state());
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
@@ -637,7 +633,6 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
                           big_mode_.size().height();
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
                                outputs_[0].get(), outputs_[1].get())
               .c_str(),
@@ -646,7 +641,7 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
                         gfx::Point(0, small_mode_.size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
             configurator_.display_state());
@@ -665,12 +660,12 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
   EXPECT_EQ(
       JoinActions(
-          kGrab, GetFramebufferAction(big_mode_.size(), outputs_[0].get(),
-                                      outputs_[1].get())
-                     .c_str(),
+          GetFramebufferAction(big_mode_.size(), outputs_[0].get(),
+                               outputs_[1].get())
+              .c_str(),
           GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[1], &big_mode_, gfx::Point(0, 0)).c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_SINGLE, configurator_.display_state());
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
@@ -687,7 +682,6 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
                                outputs_[0].get(), outputs_[1].get())
               .c_str(),
@@ -696,7 +690,7 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
                         gfx::Point(0, small_mode_.size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
             configurator_.display_state());
@@ -713,7 +707,6 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
                                outputs_[0].get(), outputs_[1].get())
               .c_str(),
@@ -722,7 +715,7 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
                         gfx::Point(0, small_mode_.size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
             configurator_.display_state());
@@ -744,13 +737,13 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
   EXPECT_EQ(framebuffer_size.ToString(),
             configurator_.framebuffer_size().ToString());
-  EXPECT_EQ(JoinActions(
-                kGrab, GetFramebufferAction(small_mode_.size(),
-                                            outputs_[0].get(), nullptr)
-                           .c_str(),
-                GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
-                kUngrab, kSync, nullptr),
-            log_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
+              .c_str(),
+          GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
+          nullptr),
+      log_->GetActionsAndClear());
 
   // No resume delay in single display mode.
   config_waiter_.Reset();
@@ -759,11 +752,10 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
   EXPECT_EQ(base::TimeDelta::Max(), config_waiter_.Wait());
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
               .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   // Now turn the display off before suspending and check that the
@@ -774,19 +766,19 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
                                 config_waiter_.on_configuration_callback());
   EXPECT_EQ(kNoDelay, config_waiter_.Wait());
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
-  EXPECT_EQ(JoinActions(
-                kGrab, GetFramebufferAction(small_mode_.size(),
-                                            outputs_[0].get(), nullptr)
-                           .c_str(),
-                GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
-                kUngrab, nullptr),
-            log_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
+              .c_str(),
+          GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
+          nullptr),
+      log_->GetActionsAndClear());
 
   config_waiter_.Reset();
   configurator_.SuspendDisplays(config_waiter_.on_configuration_callback());
   EXPECT_EQ(kNoDelay, config_waiter_.Wait());
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
-  EXPECT_EQ(kSync, log_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   config_waiter_.Reset();
   configurator_.ResumeDisplays();
@@ -802,23 +794,22 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
               .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
   UpdateOutputs(2, true);
   EXPECT_EQ(
       JoinActions(
-          kGrab, GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
-                                      outputs_[1].get())
-                     .c_str(),
+          GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
+                               outputs_[1].get())
+              .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   config_waiter_.Reset();
@@ -828,15 +819,14 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
   EXPECT_EQ(kNoDelay, config_waiter_.Wait());
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR, configurator_.display_state());
-  EXPECT_EQ(
-      JoinActions(
-          kGrab, GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
-                                      outputs_[1].get())
-                     .c_str(),
-          GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
-          GetCrtcAction(*outputs_[1], nullptr, gfx::Point(0, 0)).c_str(),
-          kUngrab, nullptr),
-      log_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(
+                GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
+                                     outputs_[1].get())
+                    .c_str(),
+                GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
+                GetCrtcAction(*outputs_[1], nullptr, gfx::Point(0, 0)).c_str(),
+                nullptr),
+            log_->GetActionsAndClear());
 
   // No delay in suspend.
   config_waiter_.Reset();
@@ -846,7 +836,7 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_OFF,
             configurator_.current_power_state());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR, configurator_.display_state());
-  EXPECT_EQ(kSync, log_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   // If a display is disconnected while suspended, the configurator should
   // pick up the change and only turn on the internal display. The should be
@@ -867,11 +857,10 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
               .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 }
 
@@ -880,9 +869,8 @@ TEST_F(DisplayConfiguratorTest, Headless) {
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   Init(false);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
-  configurator_.ForceInitialConfigure(0);
-  EXPECT_EQ(JoinActions(kInitXRandR, kGrab, kForceDPMS, kUngrab, nullptr),
-            log_->GetActionsAndClear());
+  configurator_.ForceInitialConfigure();
+  EXPECT_EQ(JoinActions(kInit, nullptr), log_->GetActionsAndClear());
 
   // Not much should happen when the display power state is changed while
   // no displays are connected.
@@ -892,15 +880,14 @@ TEST_F(DisplayConfiguratorTest, Headless) {
                                 config_waiter_.on_configuration_callback());
   EXPECT_EQ(kNoDelay, config_waiter_.Wait());
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
-  EXPECT_EQ(JoinActions(kGrab, kUngrab, nullptr), log_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   config_waiter_.Reset();
   configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_ON,
                                 DisplayConfigurator::kSetDisplayPowerNoFlags,
                                 config_waiter_.on_configuration_callback());
   EXPECT_EQ(kNoDelay, config_waiter_.Wait());
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
-  EXPECT_EQ(JoinActions(kGrab, kForceDPMS, kUngrab, nullptr),
-            log_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   // Connect an external display and check that it's configured correctly.
   outputs_[0] = FakeDisplaySnapshot::Builder()
@@ -915,17 +902,16 @@ TEST_F(DisplayConfiguratorTest, Headless) {
   UpdateOutputs(1, true);
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(big_mode_.size(), outputs_[0].get(), nullptr)
               .c_str(),
           GetCrtcAction(*outputs_[0], &big_mode_, gfx::Point(0, 0)).c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
   const gfx::Size framebuffer_size = configurator_.framebuffer_size();
   DCHECK(!framebuffer_size.IsEmpty());
 
   UpdateOutputs(0, true);
-  EXPECT_EQ(JoinActions(kGrab, kUngrab, nullptr), log_->GetActionsAndClear());
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   EXPECT_EQ(framebuffer_size.ToString(),
             configurator_.framebuffer_size().ToString());
 }
@@ -937,16 +923,16 @@ TEST_F(DisplayConfiguratorTest, StartWithTwoOutputs) {
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
-  configurator_.ForceInitialConfigure(0);
+  configurator_.ForceInitialConfigure();
   EXPECT_EQ(
       JoinActions(
-          kInitXRandR, kGrab,
+          kInit,
           GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
                                outputs_[1].get())
               .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 }
 
@@ -954,7 +940,7 @@ TEST_F(DisplayConfiguratorTest, InvalidMultipleDisplayStates) {
   UpdateOutputs(0, false);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   Init(false);
-  configurator_.ForceInitialConfigure(0);
+  configurator_.ForceInitialConfigure();
   observer_.Reset();
   configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_HEADLESS);
   EXPECT_EQ(1, observer_.num_changes());
@@ -995,7 +981,7 @@ TEST_F(DisplayConfiguratorTest, GetMultipleDisplayStateForMirroredDisplays) {
   UpdateOutputs(2, false);
   Init(false);
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
-  configurator_.ForceInitialConfigure(0);
+  configurator_.ForceInitialConfigure();
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR, configurator_.display_state());
 }
 
@@ -1039,18 +1025,17 @@ TEST_F(DisplayConfiguratorTest, PanelFitting) {
   UpdateOutputs(2, false);
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
   Init(true /* is_panel_fitting_enabled */);
-  configurator_.ForceInitialConfigure(0);
+  configurator_.ForceInitialConfigure();
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR, configurator_.display_state());
   EXPECT_EQ(
       JoinActions(
-          kInitXRandR, kGrab,
-          GetAddOutputModeAction(*outputs_[0], &small_mode_).c_str(),
+          kInit, GetAddOutputModeAction(*outputs_[0], &small_mode_).c_str(),
           GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
                                outputs_[1].get())
               .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   // Both outputs should be using the small mode.
@@ -1069,7 +1054,7 @@ TEST_F(DisplayConfiguratorTest, PanelFitting) {
 
 TEST_F(DisplayConfiguratorTest, ContentProtection) {
   Init(false);
-  configurator_.ForceInitialConfigure(0);
+  configurator_.ForceInitialConfigure();
   EXPECT_NE(kNoActions, log_->GetActionsAndClear());
 
   uint64_t id = configurator_.RegisterContentProtectionClient();
@@ -1145,13 +1130,13 @@ TEST_F(DisplayConfiguratorTest, DoNotConfigureWithSuspendedDisplays) {
   configurator_.SuspendDisplays(config_waiter_.on_configuration_callback());
   EXPECT_EQ(kNoDelay, config_waiter_.Wait());
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
-  EXPECT_EQ(JoinActions(
-                kGrab, GetFramebufferAction(small_mode_.size(),
-                                            outputs_[0].get(), nullptr)
-                           .c_str(),
-                GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
-                kUngrab, kSync, nullptr),
-            log_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
+              .c_str(),
+          GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
+          nullptr),
+      log_->GetActionsAndClear());
 
   // The configuration timer should not be started when the displays
   // are suspended.
@@ -1176,23 +1161,22 @@ TEST_F(DisplayConfiguratorTest, DoNotConfigureWithSuspendedDisplays) {
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
               .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   UpdateOutputs(2, false);
   configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
   EXPECT_EQ(
       JoinActions(
-          kGrab, GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
-                                      outputs_[1].get())
-                     .c_str(),
+          GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
+                               outputs_[1].get())
+              .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   // The DisplayConfigurator should do nothing at resume time if there is no
@@ -1210,13 +1194,13 @@ TEST_F(DisplayConfiguratorTest, DoNotConfigureWithSuspendedDisplays) {
   configurator_.SuspendDisplays(config_waiter_.on_configuration_callback());
   EXPECT_EQ(kNoDelay, config_waiter_.Wait());
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
-  EXPECT_EQ(JoinActions(
-                kGrab, GetFramebufferAction(small_mode_.size(),
-                                            outputs_[0].get(), nullptr)
-                           .c_str(),
-                GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
-                kUngrab, kSync, nullptr),
-            log_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
+              .c_str(),
+          GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
+          nullptr),
+      log_->GetActionsAndClear());
   EXPECT_FALSE(test_api_.TriggerConfigureTimeout());
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
@@ -1226,11 +1210,10 @@ TEST_F(DisplayConfiguratorTest, DoNotConfigureWithSuspendedDisplays) {
   EXPECT_EQ(base::TimeDelta::Max(), config_waiter_.Wait());
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
               .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 }
 
@@ -1240,7 +1223,7 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionTwoClients) {
   EXPECT_NE(client1, client2);
 
   Init(false);
-  configurator_.ForceInitialConfigure(0);
+  configurator_.ForceInitialConfigure();
   UpdateOutputs(2, true);
   EXPECT_NE(kNoActions, log_->GetActionsAndClear());
 
@@ -1302,7 +1285,7 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionTwoClientsEnable) {
   EXPECT_NE(client1, client2);
 
   Init(false);
-  configurator_.ForceInitialConfigure(0);
+  configurator_.ForceInitialConfigure();
   UpdateOutputs(2, true);
   log_->GetActionsAndClear();
 
@@ -1375,13 +1358,12 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
 
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(big_mode_.size(), outputs_[0].get(), nullptr)
               .c_str(),
           GetCrtcAction(*outputs_[0], modes[0].get(), gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[0], modes[3].get(), gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[0], modes[2].get(), gfx::Point(0, 0)).c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   outputs_[1] = FakeDisplaySnapshot::Builder()
@@ -1405,9 +1387,9 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
 
   EXPECT_EQ(
       JoinActions(
-          kGrab, GetFramebufferAction(modes[0]->size(), outputs_[0].get(),
-                                      outputs_[1].get())
-                     .c_str(),
+          GetFramebufferAction(modes[0]->size(), outputs_[0].get(),
+                               outputs_[1].get())
+              .c_str(),
           GetCrtcAction(*outputs_[0], modes[0].get(), gfx::Point(0, 0)).c_str(),
           // Then attempt to configure crtc1 with the first mode.
           GetCrtcAction(*outputs_[1], modes[0].get(), gfx::Point(0, 0)).c_str(),
@@ -1435,7 +1417,7 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
                         gfx::Point(0, modes[0]->size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 }
 
@@ -1445,7 +1427,7 @@ TEST_F(DisplayConfiguratorTest, SaveDisplayPowerStateOnConfigFailure) {
   // Start out with two displays in extended mode.
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
   Init(false);
-  configurator_.ForceInitialConfigure(0);
+  configurator_.ForceInitialConfigure();
   log_->GetActionsAndClear();
   observer_.Reset();
 
@@ -1481,11 +1463,10 @@ TEST_F(DisplayConfiguratorTest, SaveDisplayPowerStateOnConfigFailure) {
   UpdateOutputs(1, true);
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
               .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 }
 
@@ -1496,7 +1477,7 @@ TEST_F(DisplayConfiguratorTest, DontRestoreStalePowerStateAfterResume) {
   // Start out with two displays in mirrored mode.
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
   Init(false);
-  configurator_.ForceInitialConfigure(0);
+  configurator_.ForceInitialConfigure();
   log_->GetActionsAndClear();
   observer_.Reset();
 
@@ -1511,12 +1492,12 @@ TEST_F(DisplayConfiguratorTest, DontRestoreStalePowerStateAfterResume) {
   EXPECT_EQ(0, observer_.num_failures());
   EXPECT_EQ(
       JoinActions(
-          kGrab, GetFramebufferAction(big_mode_.size(), outputs_[0].get(),
-                                      outputs_[1].get())
-                     .c_str(),
+          GetFramebufferAction(big_mode_.size(), outputs_[0].get(),
+                               outputs_[1].get())
+              .c_str(),
           GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[1], &big_mode_, gfx::Point(0, 0)).c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   // Suspend and resume the system. Resuming should restore the previous power
@@ -1527,15 +1508,14 @@ TEST_F(DisplayConfiguratorTest, DontRestoreStalePowerStateAfterResume) {
   EXPECT_EQ(kNoDelay, config_waiter_.Wait());
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
   EXPECT_EQ(2, observer_.num_changes());
-  EXPECT_EQ(
-      JoinActions(
-          kGrab, GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
-                                      outputs_[1].get())
-                     .c_str(),
-          GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
-          GetCrtcAction(*outputs_[1], nullptr, gfx::Point(0, 0)).c_str(),
-          kUngrab, kSync, nullptr),
-      log_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(
+                GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
+                                     outputs_[1].get())
+                    .c_str(),
+                GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
+                GetCrtcAction(*outputs_[1], nullptr, gfx::Point(0, 0)).c_str(),
+                nullptr),
+            log_->GetActionsAndClear());
 
   // Before the task runs, exit docked mode.
   config_waiter_.Reset();
@@ -1548,12 +1528,12 @@ TEST_F(DisplayConfiguratorTest, DontRestoreStalePowerStateAfterResume) {
   EXPECT_EQ(0, observer_.num_failures());
   EXPECT_EQ(
       JoinActions(
-          kGrab, GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
-                                      outputs_[1].get())
-                     .c_str(),
+          GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
+                               outputs_[1].get())
+              .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   // Check that the display states are not changed after resuming.
@@ -1569,12 +1549,12 @@ TEST_F(DisplayConfiguratorTest, DontRestoreStalePowerStateAfterResume) {
   EXPECT_EQ(kLongDelay, config_waiter_.Wait());
   EXPECT_EQ(
       JoinActions(
-          kGrab, GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
-                                      outputs_[1].get())
-                     .c_str(),
+          GetFramebufferAction(small_mode_.size(), outputs_[0].get(),
+                               outputs_[1].get())
+              .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 }
 
@@ -1585,24 +1565,24 @@ TEST_F(DisplayConfiguratorTest, ExternalControl) {
       base::Bind(&DisplayConfiguratorTest::OnDisplayControlUpdated,
                  base::Unretained(this)));
   EXPECT_EQ(CALLBACK_SUCCESS, PopDisplayControlResult());
-  EXPECT_EQ(JoinActions(
-                kGrab, GetFramebufferAction(small_mode_.size(),
-                                            outputs_[0].get(), nullptr)
-                           .c_str(),
-                GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
-                kUngrab, kRelinquishDisplayControl, nullptr),
-            log_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
+              .c_str(),
+          GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
+          kRelinquishDisplayControl, nullptr),
+      log_->GetActionsAndClear());
   configurator_.TakeControl(
       base::Bind(&DisplayConfiguratorTest::OnDisplayControlUpdated,
                  base::Unretained(this)));
   EXPECT_EQ(CALLBACK_SUCCESS, PopDisplayControlResult());
   EXPECT_EQ(
       JoinActions(
-          kTakeDisplayControl, kGrab,
+          kTakeDisplayControl,
           GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
               .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 }
 
@@ -1611,7 +1591,7 @@ TEST_F(DisplayConfiguratorTest,
   // Start out with two displays in extended mode.
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
   Init(false);
-  configurator_.ForceInitialConfigure(0);
+  configurator_.ForceInitialConfigure();
   log_->GetActionsAndClear();
   observer_.Reset();
 
@@ -1638,7 +1618,6 @@ TEST_F(DisplayConfiguratorTest,
                           big_mode_.size().height();
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
                                outputs_[0].get(), outputs_[1].get())
               .c_str(),
@@ -1647,7 +1626,7 @@ TEST_F(DisplayConfiguratorTest,
                         gfx::Point(0, small_mode_.size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   config_waiter_.Reset();
@@ -1662,7 +1641,6 @@ TEST_F(DisplayConfiguratorTest,
 
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
                                outputs_[0].get(), outputs_[1].get())
               .c_str(),
@@ -1671,7 +1649,7 @@ TEST_F(DisplayConfiguratorTest,
                         gfx::Point(0, small_mode_.size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 }
 
@@ -1680,7 +1658,7 @@ TEST_F(DisplayConfiguratorTest,
   // Start out with two displays in extended mode.
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
   Init(false);
-  configurator_.ForceInitialConfigure(0);
+  configurator_.ForceInitialConfigure();
   log_->GetActionsAndClear();
   observer_.Reset();
 
@@ -1702,7 +1680,6 @@ TEST_F(DisplayConfiguratorTest,
 
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
                                outputs_[0].get(), outputs_[1].get())
               .c_str(),
@@ -1711,7 +1688,7 @@ TEST_F(DisplayConfiguratorTest,
                         gfx::Point(0, small_mode_.size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   // This configuration should trigger a display configuration since the
@@ -1726,7 +1703,6 @@ TEST_F(DisplayConfiguratorTest,
   EXPECT_EQ(2, observer_.num_failures());
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
                                outputs_[0].get(), outputs_[1].get())
               .c_str(),
@@ -1739,7 +1715,7 @@ TEST_F(DisplayConfiguratorTest,
                         gfx::Point(0, small_mode_.size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   // Allow configuration to succeed.
@@ -1755,7 +1731,6 @@ TEST_F(DisplayConfiguratorTest,
 
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
                                outputs_[0].get(), outputs_[1].get())
               .c_str(),
@@ -1764,7 +1739,7 @@ TEST_F(DisplayConfiguratorTest,
                         gfx::Point(0, small_mode_.size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 }
 
@@ -1772,7 +1747,7 @@ TEST_F(DisplayConfiguratorTest, TestWithThreeDisplays) {
   // Start out with two displays in extended mode.
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
   Init(false);
-  configurator_.ForceInitialConfigure(0);
+  configurator_.ForceInitialConfigure();
   log_->GetActionsAndClear();
   observer_.Reset();
 
@@ -1787,10 +1762,10 @@ TEST_F(DisplayConfiguratorTest, TestWithThreeDisplays) {
                             big_mode_.size().height();
   EXPECT_EQ(
       JoinActions(
-          kGrab, GetFramebufferAction(
-                     gfx::Size(big_mode_.size().width(), kTripleHeight),
-                     outputs_[0].get(), outputs_[1].get())
-                     .c_str(),
+          GetFramebufferAction(
+              gfx::Size(big_mode_.size().width(), kTripleHeight),
+              outputs_[0].get(), outputs_[1].get())
+              .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[1], &big_mode_,
                         gfx::Point(0, small_mode_.size().height() +
@@ -1802,7 +1777,7 @@ TEST_F(DisplayConfiguratorTest, TestWithThreeDisplays) {
                                 big_mode_.size().height() +
                                 2 * DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   // Verify that turning the power off works.
@@ -1814,10 +1789,10 @@ TEST_F(DisplayConfiguratorTest, TestWithThreeDisplays) {
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
   EXPECT_EQ(
       JoinActions(
-          kGrab, GetFramebufferAction(
-                     gfx::Size(big_mode_.size().width(), kTripleHeight),
-                     outputs_[0].get(), outputs_[1].get())
-                     .c_str(),
+          GetFramebufferAction(
+              gfx::Size(big_mode_.size().width(), kTripleHeight),
+              outputs_[0].get(), outputs_[1].get())
+              .c_str(),
           GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[1], nullptr,
                         gfx::Point(0, small_mode_.size().height() +
@@ -1829,7 +1804,7 @@ TEST_F(DisplayConfiguratorTest, TestWithThreeDisplays) {
                                 big_mode_.size().height() +
                                 2 * DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   config_waiter_.Reset();
@@ -1840,10 +1815,10 @@ TEST_F(DisplayConfiguratorTest, TestWithThreeDisplays) {
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
   EXPECT_EQ(
       JoinActions(
-          kGrab, GetFramebufferAction(
-                     gfx::Size(big_mode_.size().width(), kTripleHeight),
-                     outputs_[0].get(), outputs_[1].get())
-                     .c_str(),
+          GetFramebufferAction(
+              gfx::Size(big_mode_.size().width(), kTripleHeight),
+              outputs_[0].get(), outputs_[1].get())
+              .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           GetCrtcAction(*outputs_[1], &big_mode_,
                         gfx::Point(0, small_mode_.size().height() +
@@ -1855,7 +1830,7 @@ TEST_F(DisplayConfiguratorTest, TestWithThreeDisplays) {
                                 big_mode_.size().height() +
                                 2 * DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   // Disconnect the third output.
@@ -1864,7 +1839,6 @@ TEST_F(DisplayConfiguratorTest, TestWithThreeDisplays) {
   UpdateOutputs(2, true);
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
                                outputs_[0].get(), outputs_[1].get())
               .c_str(),
@@ -1873,7 +1847,7 @@ TEST_F(DisplayConfiguratorTest, TestWithThreeDisplays) {
                         gfx::Point(0, small_mode_.size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 }
 
@@ -1894,7 +1868,6 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
                           big_mode_.size().height();
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
                                outputs_[0].get(), outputs_[1].get())
               .c_str(),
@@ -1903,7 +1876,7 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
                         gfx::Point(0, small_mode_.size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   // Suspending displays should result in an immediate configuration without
@@ -1918,7 +1891,6 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
             configurator_.display_state());
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
                                outputs_[0].get(), outputs_[1].get())
               .c_str(),
@@ -1927,7 +1899,7 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
                         gfx::Point(0, small_mode_.size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kUngrab, kSync, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   // Resuming from suspend with dual displays. Configuration should be done
@@ -1942,7 +1914,6 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
             configurator_.display_state());
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
                                outputs_[0].get(), outputs_[1].get())
               .c_str(),
@@ -1951,7 +1922,7 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
                         gfx::Point(0, small_mode_.size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   // Suspend displays and disconnect one of them while in suspend.
@@ -1965,7 +1936,6 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
             configurator_.current_power_state());
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
                                outputs_[0].get(), outputs_[1].get())
               .c_str(),
@@ -1974,7 +1944,7 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
                         gfx::Point(0, small_mode_.size().height() +
                                           DisplayConfigurator::kVerticalGap))
               .c_str(),
-          kUngrab, kSync, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
   UpdateOutputs(1, false);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
@@ -1990,11 +1960,10 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_SINGLE, configurator_.display_state());
   EXPECT_EQ(
       JoinActions(
-          kGrab,
           GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
               .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kForceDPMS, kUngrab, nullptr),
+          nullptr),
       log_->GetActionsAndClear());
 
   // Verify that the above is the exact same behavior for 3+ displays.

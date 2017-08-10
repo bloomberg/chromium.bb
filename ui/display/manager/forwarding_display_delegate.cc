@@ -31,10 +31,6 @@ void ForwardingDisplayDelegate::Initialize() {
   delegate_->Initialize(std::move(observer), &snapshots_);
 }
 
-void ForwardingDisplayDelegate::GrabServer() {}
-
-void ForwardingDisplayDelegate::UngrabServer() {}
-
 void ForwardingDisplayDelegate::TakeDisplayControl(
     const DisplayControlCallback& callback) {
   delegate_->TakeDisplayControl(callback);
@@ -44,12 +40,6 @@ void ForwardingDisplayDelegate::RelinquishDisplayControl(
     const DisplayControlCallback& callback) {
   delegate_->TakeDisplayControl(callback);
 }
-
-void ForwardingDisplayDelegate::SyncWithServer() {}
-
-void ForwardingDisplayDelegate::SetBackgroundColor(uint32_t color_argb) {}
-
-void ForwardingDisplayDelegate::ForceDPMSOn() {}
 
 void ForwardingDisplayDelegate::GetDisplays(
     const GetDisplaysCallback& callback) {
