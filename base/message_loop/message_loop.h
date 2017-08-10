@@ -561,12 +561,15 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
   typedef MessagePumpForIO::IOHandler IOHandler;
   typedef MessagePumpForIO::IOContext IOContext;
 #elif defined(OS_FUCHSIA)
-  typedef MessagePumpFuchsia::Watcher Watcher;
-  typedef MessagePumpFuchsia::FileDescriptorWatcher FileDescriptorWatcher;
+  typedef MessagePumpFuchsia::FdWatcher Watcher;
+  typedef MessagePumpFuchsia::FdWatchController FileDescriptorWatcher;
 
   enum Mode{WATCH_READ = MessagePumpFuchsia::WATCH_READ,
             WATCH_WRITE = MessagePumpFuchsia::WATCH_WRITE,
             WATCH_READ_WRITE = MessagePumpFuchsia::WATCH_READ_WRITE};
+
+  typedef MessagePumpFuchsia::MxHandleWatchController MxHandleWatchController;
+  typedef MessagePumpFuchsia::MxHandleWatcher MxHandleWatcher;
 #elif defined(OS_IOS)
   typedef MessagePumpIOSForIO::Watcher Watcher;
   typedef MessagePumpIOSForIO::FileDescriptorWatcher
@@ -603,6 +606,15 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
                            Watcher* delegate);
 #endif  // defined(OS_IOS) || defined(OS_POSIX)
 #endif  // !defined(OS_NACL_SFI)
+
+#if defined(OS_FUCHSIA)
+  // Additional watch API for native platform resources.
+  bool WatchMxHandle(mx_handle_t handle,
+                     bool persistent,
+                     mx_signals_t signals,
+                     MxHandleWatchController* controller,
+                     MxHandleWatcher* delegate);
+#endif
 };
 
 // Do not add any member variables to MessageLoopForIO!  This is important b/c

@@ -11,35 +11,74 @@
 
 namespace base {
 
-MessagePumpFuchsia::FileDescriptorWatcher::FileDescriptorWatcher(
+MessagePumpFuchsia::MxHandleWatchController::MxHandleWatchController(
     const tracked_objects::Location& from_here)
-    : created_from_location_(from_here) {
-}
+    : created_from_location_(from_here) {}
 
-MessagePumpFuchsia::FileDescriptorWatcher::~FileDescriptorWatcher() {
-  if (!StopWatchingFileDescriptor())
+MessagePumpFuchsia::MxHandleWatchController::~MxHandleWatchController() {
+  if (!StopWatchingMxHandle())
     NOTREACHED();
-  if (io_)
-    __mxio_release(io_);
   if (was_destroyed_) {
     DCHECK(!*was_destroyed_);
     *was_destroyed_ = true;
   }
 }
 
-bool MessagePumpFuchsia::FileDescriptorWatcher::StopWatchingFileDescriptor() {
-  // If our pump is gone, or we do not have a wait operation active, then there
-  // is nothing to do here.
-  if (!weak_pump_ || handle_ == MX_HANDLE_INVALID)
+bool MessagePumpFuchsia::MxHandleWatchController::StopWatchingMxHandle() {
+  // Clear |persistent_| flag, so that if we are stopped mid-callback, we
+  // won't re-instate the wait operation.
+  persistent_ = false;
+
+  // If the pump is gone, or we haven't begun waiting, then there is nothing
+  // to cancel.
+  if (!weak_pump_ || !has_begun_)
     return true;
 
   int result = mx_port_cancel(weak_pump_->port_.get(), handle_, wait_key());
   DLOG_IF(ERROR, result != MX_OK)
       << "mx_port_cancel(handle=" << handle_
       << ") failed: " << mx_status_get_string(result);
-  handle_ = MX_HANDLE_INVALID;
+
+  has_begun_ = false;
 
   return result == MX_OK;
+}
+
+void MessagePumpFuchsia::FdWatchController::OnMxHandleSignalled(
+    mx_handle_t handle,
+    mx_signals_t signals) {
+  uint32_t events;
+  __mxio_wait_end(io_, signals, &events);
+
+  // Each |watcher_| callback we invoke may delete |this| from under us. The
+  // pump has set |was_destroyed_| to point to a safe location on the calling
+  // stack, so we can use that to detect deletion mid-callback avoid doing
+  // further work that would touch |this|.
+  bool* was_destroyed = was_destroyed_;
+  if (events & MXIO_EVT_WRITABLE)
+    watcher_->OnFileCanWriteWithoutBlocking(fd_);
+  if (!*was_destroyed && (events & MXIO_EVT_READABLE))
+    watcher_->OnFileCanReadWithoutBlocking(fd_);
+
+  // Don't add additional work here without checking |*was_destroyed_| again.
+}
+
+MessagePumpFuchsia::FdWatchController::FdWatchController(
+    const tracked_objects::Location& from_here)
+    : MxHandleWatchController(from_here) {}
+
+MessagePumpFuchsia::FdWatchController::~FdWatchController() {
+  if (!StopWatchingFileDescriptor())
+    NOTREACHED();
+}
+
+bool MessagePumpFuchsia::FdWatchController::StopWatchingFileDescriptor() {
+  bool success = StopWatchingMxHandle();
+  if (io_) {
+    __mxio_release(io_);
+    io_ = nullptr;
+  }
+  return success;
 }
 
 MessagePumpFuchsia::MessagePumpFuchsia()
@@ -50,78 +89,116 @@ MessagePumpFuchsia::MessagePumpFuchsia()
 bool MessagePumpFuchsia::WatchFileDescriptor(int fd,
                                              bool persistent,
                                              int mode,
-                                             FileDescriptorWatcher* controller,
-                                             Watcher* delegate) {
+                                             FdWatchController* controller,
+                                             FdWatcher* delegate) {
   DCHECK_GE(fd, 0);
   DCHECK(controller);
   DCHECK(delegate);
 
+  if (!controller->StopWatchingFileDescriptor())
+    NOTREACHED();
+
   controller->fd_ = fd;
-  controller->persistent_ = persistent;
   controller->watcher_ = delegate;
 
-  uint32_t events = 0;
-  switch (mode) {
-    case WATCH_READ:
-      events = MXIO_EVT_READABLE;
-      break;
-    case WATCH_WRITE:
-      events = MXIO_EVT_WRITABLE;
-      break;
-    case WATCH_READ_WRITE:
-      events = MXIO_EVT_READABLE | MXIO_EVT_WRITABLE;
-      break;
-    default:
-      NOTREACHED() << "unexpected mode: " << mode;
-      return false;
-  }
-  controller->desired_events_ = events;
-
+  DCHECK(!controller->io_);
   controller->io_ = __mxio_fd_to_io(fd);
   if (!controller->io_) {
     DLOG(ERROR) << "Failed to get IO for FD";
     return false;
   }
 
-  controller->weak_pump_ = weak_factory_.GetWeakPtr();
+  switch (mode) {
+    case WATCH_READ:
+      controller->desired_events_ = MXIO_EVT_READABLE;
+      break;
+    case WATCH_WRITE:
+      controller->desired_events_ = MXIO_EVT_WRITABLE;
+      break;
+    case WATCH_READ_WRITE:
+      controller->desired_events_ = MXIO_EVT_READABLE | MXIO_EVT_WRITABLE;
+      break;
+    default:
+      NOTREACHED() << "unexpected mode: " << mode;
+      return false;
+  }
 
-  return controller->WaitBegin();
+  // Pass dummy |handle| and |signals| values to WatchMxHandle(). The real
+  // values will be populated by FdWatchController::WaitBegin(), before actually
+  // starting the wait operation.
+  return WatchMxHandle(MX_HANDLE_INVALID, persistent, 1, controller,
+                       controller);
 }
 
-bool MessagePumpFuchsia::FileDescriptorWatcher::WaitBegin() {
-  uint32_t signals = 0u;
-  __mxio_wait_begin(io_, desired_events_, &handle_, &signals);
+bool MessagePumpFuchsia::FdWatchController::WaitBegin() {
+  // Refresh the |handle_| and |desired_signals_| from the mxio for the fd.
+  // Some types of mxio map read/write events to different signals depending on
+  // their current state, so we must do this every time we begin to wait.
+  __mxio_wait_begin(io_, desired_events_, &handle_, &desired_signals_);
   if (handle_ == MX_HANDLE_INVALID) {
     DLOG(ERROR) << "mxio_wait_begin failed";
     return false;
   }
 
+  return MessagePumpFuchsia::MxHandleWatchController::WaitBegin();
+}
+
+bool MessagePumpFuchsia::WatchMxHandle(mx_handle_t handle,
+                                       bool persistent,
+                                       mx_signals_t signals,
+                                       MxHandleWatchController* controller,
+                                       MxHandleWatcher* delegate) {
+  DCHECK_NE(0u, signals);
+  DCHECK(controller);
+  DCHECK(delegate);
+  DCHECK(handle == MX_HANDLE_INVALID ||
+         controller->handle_ == MX_HANDLE_INVALID ||
+         handle == controller->handle_);
+
+  if (!controller->StopWatchingMxHandle())
+    NOTREACHED();
+
+  controller->handle_ = handle;
+  controller->persistent_ = persistent;
+  controller->desired_signals_ = signals;
+  controller->watcher_ = delegate;
+
+  controller->weak_pump_ = weak_factory_.GetWeakPtr();
+
+  return controller->WaitBegin();
+}
+
+bool MessagePumpFuchsia::MxHandleWatchController::WaitBegin() {
+  DCHECK(!has_begun_);
+
   mx_status_t status =
       mx_object_wait_async(handle_, weak_pump_->port_.get(), wait_key(),
-                           signals, MX_WAIT_ASYNC_ONCE);
+                           desired_signals_, MX_WAIT_ASYNC_ONCE);
   if (status != MX_OK) {
     DLOG(ERROR) << "mx_object_wait_async failed: "
                 << mx_status_get_string(status)
                 << " (port=" << weak_pump_->port_.get() << ")";
     return false;
   }
+
+  has_begun_ = true;
+
   return true;
 }
 
-uint32_t MessagePumpFuchsia::FileDescriptorWatcher::WaitEnd(uint32_t observed) {
-  // Clear |handle_| so that StopWatchingFileDescriptor() is correctly treated
-  // as a no-op. WaitBegin() will refresh |handle_| if the wait is persistent.
-  handle_ = MX_HANDLE_INVALID;
+uint32_t MessagePumpFuchsia::MxHandleWatchController::WaitEnd(
+    mx_signals_t signals) {
+  DCHECK(has_begun_);
 
-  uint32_t events;
-  __mxio_wait_end(io_, observed, &events);
-  // |observed| can include other spurious things, in particular, that the fd
+  has_begun_ = false;
+
+  // |signals| can include other spurious things, in particular, that an fd
   // is writable, when we only asked to know when it was readable. In that
   // case, we don't want to call both the CanWrite and CanRead callback,
   // when the caller asked for only, for example, readable callbacks. So,
   // mask with the events that we actually wanted to know about.
-  events &= desired_events_;
-  return events;
+  signals &= desired_signals_;
+  return signals;
 }
 
 void MessagePumpFuchsia::Run(Delegate* delegate) {
@@ -162,26 +239,24 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
     if (packet.type == MX_PKT_TYPE_SIGNAL_ONE) {
       // A watched fd caused the wakeup via mx_object_wait_async().
       DCHECK_EQ(MX_OK, packet.status);
-      FileDescriptorWatcher* controller =
-          reinterpret_cast<FileDescriptorWatcher*>(
+      MxHandleWatchController* controller =
+          reinterpret_cast<MxHandleWatchController*>(
               static_cast<uintptr_t>(packet.key));
 
       DCHECK_NE(0u, packet.signal.trigger & packet.signal.observed);
 
-      uint32_t events = controller->WaitEnd(packet.signal.observed);
+      mx_signals_t signals = controller->WaitEnd(packet.signal.observed);
 
-      // Multiple callbacks may be called, must check controller destruction
-      // after the first callback is run, which is done by letting the
-      // destructor set a bool here (which is located on the stack). If it's set
-      // during the first callback, then the controller was destroyed during the
-      // first callback so we do not call the second one, as the controller
-      // pointer is now invalid.
+      // In the case of a persistent Watch, the Watch may be deleted by the
+      // caller within the callback, in which case |controller| is no longer
+      // valid, and we mustn't continue the watch. We check for this with a bool
+      // on the stack, which the Watch receives a pointer to, to set it so we
+      // can detect destruction.
       bool controller_was_destroyed = false;
       controller->was_destroyed_ = &controller_was_destroyed;
-      if (events & MXIO_EVT_WRITABLE)
-        controller->watcher_->OnFileCanWriteWithoutBlocking(controller->fd_);
-      if (!controller_was_destroyed && (events & MXIO_EVT_READABLE))
-        controller->watcher_->OnFileCanReadWithoutBlocking(controller->fd_);
+
+      controller->watcher_->OnMxHandleSignalled(controller->handle_, signals);
+
       if (!controller_was_destroyed) {
         controller->was_destroyed_ = nullptr;
         if (controller->persistent_)
