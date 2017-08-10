@@ -1772,7 +1772,7 @@ class PreCQLauncherStage(SyncStage):
         sanity check.
 
     Returns:
-      A set of build_configs (strings) to sanity check.
+      A list of build_configs (strings) to sanity check.
     """
     start_date = datetime.datetime.now().date() - datetime.timedelta(
         days=self.PRE_CQ_SANITY_CHECK_LOOK_BACK_HISTORY_DAYS)
@@ -1799,7 +1799,7 @@ class PreCQLauncherStage(SyncStage):
               build_config, build_history)):
         sanity_check_build_configs.add(build_config)
 
-    return sanity_check_build_configs
+    return list(sanity_check_build_configs)
 
   def _LaunchSanityCheckPreCQsIfNeeded(self, build_id, db, pool,
                                        action_history):

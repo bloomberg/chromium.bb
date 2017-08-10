@@ -739,7 +739,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
     sanity_check_build_configs = self.sync_stage._GetBuildConfigsToSanityCheck(
         self.fake_db, build_configs)
-    self.assertSetEqual(sanity_check_build_configs, {'cyan-pre-cq'})
+    self.assertEqual(sanity_check_build_configs, ['cyan-pre-cq'])
 
   def testLaunchSanityCheckPreCQsIfNeeded(self):
     """Test _LaunchSanityCheckPreCQsIfNeeded."""
