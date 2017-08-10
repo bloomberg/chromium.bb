@@ -42,6 +42,30 @@ SkColor GetControlButtonBackgroundColor(
 
 }  // namespace
 
+class ArcNotificationContentView::MouseEnterExitHandler
+    : public ui::EventHandler {
+ public:
+  explicit MouseEnterExitHandler(ArcNotificationContentView* owner)
+      : owner_(owner) {
+    DCHECK(owner);
+  }
+  ~MouseEnterExitHandler() override = default;
+
+  // ui::EventHandler
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    ui::EventHandler::OnMouseEvent(event);
+    if (event->type() == ui::ET_MOUSE_ENTERED ||
+        event->type() == ui::ET_MOUSE_EXITED) {
+      owner_->UpdateControlButtonsVisibility();
+    }
+  }
+
+ private:
+  ArcNotificationContentView* const owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(MouseEnterExitHandler);
+};
+
 class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
  public:
   explicit EventForwarder(ArcNotificationContentView* owner) : owner_(owner) {}
@@ -225,7 +249,8 @@ ArcNotificationContentView::ArcNotificationContentView(
     ArcNotificationItem* item)
     : item_(item),
       notification_key_(item->GetNotificationKey()),
-      event_forwarder_(new EventForwarder(this)) {
+      event_forwarder_(new EventForwarder(this)),
+      mouse_enter_exit_handler_(new MouseEnterExitHandler(this)) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   set_notify_enter_exit_on_child(true);
 
@@ -301,6 +326,8 @@ void ArcNotificationContentView::MaybeCreateFloatingControlButtons() {
   floating_control_buttons_widget_.reset(new views::Widget);
   floating_control_buttons_widget_->Init(params);
   floating_control_buttons_widget_->SetContentsView(control_buttons_view_);
+  floating_control_buttons_widget_->GetNativeWindow()->AddPreTargetHandler(
+      mouse_enter_exit_handler_.get());
 
   // Put the close button into the focus chain.
   floating_control_buttons_widget_->SetFocusTraversableParent(

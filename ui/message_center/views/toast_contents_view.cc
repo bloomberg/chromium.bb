@@ -12,6 +12,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -402,6 +404,15 @@ void ToastContentsView::CreateWidget(
 #endif
 
   widget->Init(params);
+
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, this widget is shown in the shelf container. It means this
+  // widget would inherit the parent's window targeter (ShelfWindowTarget) by
+  // default. But it is not good for popup. So we override it with the normal
+  // WindowTargeter.
+  gfx::NativeWindow native_window = widget->GetNativeWindow();
+  native_window->SetEventTargeter(base::MakeUnique<aura::WindowTargeter>());
+#endif
 }
 
 gfx::Rect ToastContentsView::GetClosedToastBounds(gfx::Rect bounds) {
