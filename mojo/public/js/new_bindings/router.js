@@ -165,6 +165,15 @@
       return new internal.InterfaceEndpointHandle();
     }
 
+    // Unless it is the master ID, |interfaceId| is from the remote side and
+    // therefore its namespace bit is supposed to be different than the value
+    // that this router would use.
+    if (!internal.isMasterInterfaceId(interfaceId) &&
+        this.setInterfaceIdNamespaceBit_ ===
+            internal.hasInterfaceIdNamespaceBitSet(interfaceId)) {
+      return new internal.InterfaceEndpointHandle();
+    }
+
     var endpoint = this.endpoints_.get(interfaceId);
 
     if (!endpoint) {
