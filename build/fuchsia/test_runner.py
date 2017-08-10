@@ -183,6 +183,8 @@ def SymbolizeEntry(entry):
   # that to align it properly after the frame index.
   addr2line_filtered = addr2line_output.strip().replace(
       '(inlined', ' ' * len(prefix) + '(inlined')
+  if '??' in addr2line_filtered:
+    addr2line_filtered = "%s+%s" % (os.path.basename(entry[1]), entry[2])
   return '%s%s' % (prefix, addr2line_filtered)
 
 
@@ -345,9 +347,10 @@ def main():
     line = qemu_popen.stdout.readline().strip()
     if not line:
       break
-    print line
     if 'SUCCESS: all tests passed.' in line:
       success = True
+
+    # Check for an end-of-backtrace marker.
     if bt_end_re.match(line):
       if bt_entries:
         print '----- start symbolized stack'
@@ -355,18 +358,24 @@ def main():
           print processed
         print '----- end symbolized stack'
       bt_entries = []
-    else:
-      # Try to parse this as a Fuchsia system backtrace.
-      m = bt_with_offset_re.match(line)
-      if m:
-        bt_entries.append((m.group(1), args.test_name, m.group(4)))
-        continue
+      continue
 
-      # Try to parse the line as an in-process backtrace entry.
-      m = in_process_re.match(line)
-      if m:
-        bt_entries.append((m.group(1), args.test_name, m.group(2)))
-        continue
+    # Try to parse this as a Fuchsia system backtrace.
+    m = bt_with_offset_re.match(line)
+    if m:
+      bt_entries.append((m.group(1), args.test_name, m.group(4)))
+      continue
+
+    # Try to parse the line as an in-process backtrace entry.
+    m = in_process_re.match(line)
+    if m:
+      bt_entries.append((m.group(1), args.test_name, m.group(2)))
+      continue
+
+    # Some other line, so print it. Back-traces should not be interleaved with
+    # other output, so while this may re-order lines we see, it should actually
+    # make things more readable.
+    print line
 
   qemu_popen.wait()
 
