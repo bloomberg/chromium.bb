@@ -181,7 +181,7 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int mi_offset = mi_size_wide[BLOCK_8X8];
 #endif
 
-  for (i = col_offset; i < xd->n8_w && *refmv_count < MAX_REF_MV_STACK_SIZE;) {
+  for (i = 0; i < xd->n8_w && *refmv_count < MAX_REF_MV_STACK_SIZE;) {
     POSITION mi_pos;
 #if CONFIG_CB4X4
     const int use_step_16 = (xd->n8_w >= 16);
@@ -190,7 +190,7 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif
 
     mi_pos.row = row_offset;
-    mi_pos.col = i;
+    mi_pos.col = col_offset + i;
     if (is_inside(tile, mi_col, mi_row, cm->mi_rows, cm, &mi_pos)) {
       const MODE_INFO *const candidate_mi =
           xd->mi[mi_pos.row * xd->mi_stride + mi_pos.col];
@@ -241,7 +241,7 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int mi_offset = mi_size_wide[BLOCK_8X8];
 #endif
 
-  for (i = row_offset; i < xd->n8_h && *refmv_count < MAX_REF_MV_STACK_SIZE;) {
+  for (i = 0; i < xd->n8_h && *refmv_count < MAX_REF_MV_STACK_SIZE;) {
     POSITION mi_pos;
 #if CONFIG_CB4X4
     const int use_step_16 = (xd->n8_h >= 16);
@@ -249,7 +249,7 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     const int use_step_16 = (xd->n8_h >= 8);
 #endif
 
-    mi_pos.row = i;
+    mi_pos.row = row_offset + i;
     mi_pos.col = col_offset;
     if (is_inside(tile, mi_col, mi_row, cm->mi_rows, cm, &mi_pos)) {
       const MODE_INFO *const candidate_mi =
