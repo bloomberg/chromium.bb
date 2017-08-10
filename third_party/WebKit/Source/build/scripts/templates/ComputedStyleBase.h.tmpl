@@ -79,7 +79,7 @@ class ComputedStyle;
 // example, a field with the 'keyword' template has only one setter, whereas an
 // 'external' field has an extra setter that takes an rvalue reference. A list
 // of the available templates can be found in CSSProperties.json5.
-class CORE_EXPORT ComputedStyleBase {
+class ComputedStyleBase {
  public:
   inline bool IndependentInheritedEqual(const ComputedStyleBase& o) const {
     return (

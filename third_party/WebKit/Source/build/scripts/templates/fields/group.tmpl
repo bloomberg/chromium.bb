@@ -36,7 +36,7 @@ class {{group.type_name}} : public RefCounted<{{group.type_name}}> {
 
  private:
   {{group.type_name}}();
-  {{group.type_name}}(const {{group.type_name}}&);
+  CORE_EXPORT {{group.type_name}}(const {{group.type_name}}&);
 };
 {%- endmacro %}
 
