@@ -103,7 +103,10 @@ class SecurityStyleTestObserver : public content::WebContentsObserver {
     latest_security_style_ = web_contents()->GetDelegate()->GetSecurityStyle(
         web_contents(), &explanations);
     latest_explanations_ = explanations;
+    run_loop_.Quit();
   }
+
+  void WaitForDidChangeVisibleSecurityState() { run_loop_.Run(); }
 
   blink::WebSecurityStyle latest_security_style() const {
     return latest_security_style_;
@@ -121,7 +124,7 @@ class SecurityStyleTestObserver : public content::WebContentsObserver {
  private:
   blink::WebSecurityStyle latest_security_style_;
   content::SecurityStyleExplanations latest_explanations_;
-
+  base::RunLoop run_loop_;
   DISALLOW_COPY_AND_ASSIGN(SecurityStyleTestObserver);
 };
 
@@ -311,23 +314,6 @@ GURL GetURLWithNonLocalHostname(net::EmbeddedTestServer* server,
   replace_host.SetHostStr("example.test");
   return server->GetURL(path).ReplaceComponents(replace_host);
 }
-
-// A WebContentsObserver that allows the user to wait for a
-// DidChangeVisibleSecurityState event.
-class SecurityStateWebContentsObserver : public content::WebContentsObserver {
- public:
-  explicit SecurityStateWebContentsObserver(content::WebContents* web_contents)
-      : content::WebContentsObserver(web_contents) {}
-  ~SecurityStateWebContentsObserver() override {}
-
-  void WaitForDidChangeVisibleSecurityState() { run_loop_.Run(); }
-
-  // WebContentsObserver:
-  void DidChangeVisibleSecurityState() override { run_loop_.Quit(); }
-
- private:
-  base::RunLoop run_loop_;
-};
 
 class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
  public:
@@ -1261,14 +1247,13 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
       browser(),
       GetURLWithNonLocalHostname(embedded_test_server(),
                                  "/textinput/focus_input_on_load.html"));
-
   security_state::SecurityInfo security_info;
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::NONE, security_info.security_level);
 
   // Type one character into the focused input control and wait for a security
   // state change.
-  SecurityStateWebContentsObserver observer(contents);
+  SecurityStyleTestObserver observer(contents);
   content::SimulateKeyPress(contents, ui::DomKey::FromCharacter('A'),
                             ui::DomCode::US_A, ui::VKEY_A, false, false, false,
                             false);
@@ -1277,6 +1262,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   // Verify that the security state degrades as expected.
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_TRUE(security_info.field_edit_downgraded_security_level);
+  EXPECT_EQ(1u, observer.latest_explanations().neutral_explanations.size());
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
@@ -1296,6 +1283,20 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
 
     helper->GetSecurityInfo(&security_info);
     EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+    EXPECT_TRUE(security_info.field_edit_downgraded_security_level);
+  }
+
+  {
+    // Ensure the warning is not present when in the
+    // kMarkHttpAsNonSecureWhileIncognito configuration.
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+        security_state::switches::kMarkHttpAs,
+        security_state::switches::kMarkHttpAsNonSecureWhileIncognito);
+
+    helper->GetSecurityInfo(&security_info);
+    EXPECT_EQ(security_state::NONE, security_info.security_level);
+    EXPECT_FALSE(security_info.field_edit_downgraded_security_level);
   }
 
   // Verify security state stays degraded after same-page navigation.
@@ -1306,12 +1307,16 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   content::WaitForLoadStop(contents);
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_TRUE(security_info.field_edit_downgraded_security_level);
+  EXPECT_EQ(1u, observer.latest_explanations().neutral_explanations.size());
 
   // Verify that after a refresh, the HTTP_SHOW_WARNING state is cleared.
   contents->GetController().Reload(content::ReloadType::NORMAL, false);
   content::WaitForLoadStop(contents);
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::NONE, security_info.security_level);
+  EXPECT_FALSE(security_info.field_edit_downgraded_security_level);
+  EXPECT_EQ(0u, observer.latest_explanations().neutral_explanations.size());
 }
 
 // A Browser subclass that keeps track of messages that have been
