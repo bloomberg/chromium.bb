@@ -551,10 +551,10 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       settings.preferred_tile_format = viz::RGBA_4444;
     }
 
-    // When running on a low end device, we limit cached bytes to 2MB.
-    // This allows a typical page to fit its images in cache, but prevents
-    // most long-term caching.
-    settings.decoded_image_cache_budget_bytes = 2 * 1024 * 1024;
+    // When running on a low end device, we limit cached bytes to 512KB.
+    // This allows pages which are light on images to stay in cache, but
+    // prevents most long-term caching.
+    settings.decoded_image_cache_budget_bytes = 512 * 1024;
   }
 
   if (cmd.HasSwitch(switches::kEnableLowResTiling))
