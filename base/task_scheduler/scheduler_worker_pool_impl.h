@@ -113,6 +113,9 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Returns the number of workers in this worker pool.
   size_t NumberOfWorkersForTesting();
 
+  // Returns |worker_capacity_|.
+  size_t GetWorkerCapacityForTesting();
+
  private:
   class SchedulerWorkerDelegateImpl;
 
