@@ -27,7 +27,6 @@ enum class CompositorElementIdNamespace {
   kEffectFilter,
   kEffectMask,
   kEffectRoot,
-  kSyntheticEffect,
   // A sentinel to indicate the maximum representable namespace id
   // (the maximum is one less than this value).
   kMaxRepresentableNamespaceId = 1 << kCompositorNamespaceBitCount
@@ -37,7 +36,6 @@ using CompositorElementId = cc::ElementId;
 using LayoutObjectId = uint64_t;
 using ScrollbarId = uint64_t;
 using DOMNodeId = uint64_t;
-using SyntheticEffectId = uint64_t;
 
 CompositorElementId PLATFORM_EXPORT
     CompositorElementIdFromLayoutObjectId(LayoutObjectId,
@@ -58,9 +56,6 @@ CompositorElementId PLATFORM_EXPORT
 
 CompositorElementId PLATFORM_EXPORT
 CompositorElementIdFromRootEffectId(uint64_t id);
-
-CompositorElementId PLATFORM_EXPORT
-    CompositorElementIdFromSyntheticEffectId(SyntheticEffectId);
 
 // Note cc::ElementId has a hash function already implemented via
 // ElementIdHash::operator(). However for consistency's sake we choose to use

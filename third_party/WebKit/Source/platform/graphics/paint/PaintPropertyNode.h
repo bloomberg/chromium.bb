@@ -38,14 +38,6 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   const NodeType* Parent() const { return parent_.Get(); }
   bool IsRoot() const { return !parent_; }
 
-  bool IsAncestorOf(const NodeType& other) const {
-    for (const NodeType* node = &other; node != this; node = node->Parent()) {
-      if (!node)
-        return false;
-    }
-    return true;
-  }
-
   // TODO(wangxianzhu): Changed() and ClearChangedToRoot() are inefficient
   // due to the tree walks. Optimize this if this affects overall performance.
 
