@@ -49,7 +49,6 @@ CONTENT_EXPORT
 }
 
 - (void)setMouseDownCanMoveWindow:(BOOL)canMove;
-- (void)setOpaque:(BOOL)opaque;
 
 // Returns the available drag operations. This is a required method for
 // NSDraggingSource. It is supposedly deprecated, but the non-deprecated API

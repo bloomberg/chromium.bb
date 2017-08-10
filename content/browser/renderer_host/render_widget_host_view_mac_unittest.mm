@@ -1327,6 +1327,9 @@ TEST_F(RenderWidgetHostViewMacTest, GuestViewDoesNotLeak) {
 // RenderWidgetHostTest.Background. This test has some additional checks for
 // Mac.
 TEST_F(RenderWidgetHostViewMacTest, Background) {
+  const IPC::Message* set_background = nullptr;
+  std::tuple<bool> sent_background;
+
   TestBrowserContext browser_context;
   MockRenderProcessHost* process_host =
       new MockRenderProcessHost(&browser_context);
@@ -1337,34 +1340,46 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
       MockRenderWidgetHostImpl::Create(&delegate, process_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
 
-  EXPECT_EQ(static_cast<unsigned>(SK_ColorTRANSPARENT),
-            view->background_color());
-  EXPECT_FALSE([view->cocoa_view() isOpaque]);
+  // If no color has been specified then default color of white should be
+  // returned.
+  EXPECT_EQ(static_cast<unsigned>(SK_ColorWHITE), view->background_color());
 
-  view->SetBackgroundColor(SK_ColorWHITE);
-  EXPECT_NE(static_cast<unsigned>(SK_ColorTRANSPARENT),
-            view->background_color());
-  EXPECT_TRUE([view->cocoa_view() isOpaque]);
-
-  const IPC::Message* set_background;
+  // Set the color to red. The background is initially assumed to be opaque, so
+  // no opacity message change should be sent.
+  view->SetBackgroundColor(SK_ColorRED);
+  EXPECT_EQ(static_cast<unsigned>(SK_ColorRED), view->background_color());
   set_background = process_host->sink().GetUniqueMessageMatching(
       ViewMsg_SetBackgroundOpaque::ID);
-  ASSERT_TRUE(set_background);
-  std::tuple<bool> sent_background;
-  ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
-  EXPECT_TRUE(std::get<0>(sent_background));
+  ASSERT_FALSE(set_background);
 
-  // Try setting it back.
+  // Set the color to blue. This should not send an opacity message.
+  view->SetBackgroundColor(SK_ColorBLUE);
+  EXPECT_EQ(static_cast<unsigned>(SK_ColorBLUE), view->background_color());
+  set_background = process_host->sink().GetUniqueMessageMatching(
+      ViewMsg_SetBackgroundOpaque::ID);
+  ASSERT_FALSE(set_background);
+
+  // Set the color back to transparent. The background color should now be
+  // reported as the default (white), and a transparency change message should
+  // be sent.
   process_host->sink().ClearMessages();
   view->SetBackgroundColor(SK_ColorTRANSPARENT);
-  EXPECT_EQ(static_cast<unsigned>(SK_ColorTRANSPARENT),
-            view->background_color());
-  EXPECT_FALSE([view->cocoa_view() isOpaque]);
+  EXPECT_EQ(static_cast<unsigned>(SK_ColorWHITE), view->background_color());
   set_background = process_host->sink().GetUniqueMessageMatching(
       ViewMsg_SetBackgroundOpaque::ID);
   ASSERT_TRUE(set_background);
   ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
   EXPECT_FALSE(std::get<0>(sent_background));
+
+  // Set the color to red. This should send an opacity message.
+  process_host->sink().ClearMessages();
+  view->SetBackgroundColor(SK_ColorBLUE);
+  EXPECT_EQ(static_cast<unsigned>(SK_ColorBLUE), view->background_color());
+  set_background = process_host->sink().GetUniqueMessageMatching(
+      ViewMsg_SetBackgroundOpaque::ID);
+  ASSERT_TRUE(set_background);
+  ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
+  EXPECT_TRUE(std::get<0>(sent_background));
 
   host->ShutdownAndDestroyWidget(true);
 }
