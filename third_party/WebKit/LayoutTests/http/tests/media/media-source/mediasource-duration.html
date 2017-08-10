@@ -32,10 +32,16 @@
                       assert_equals(mediaSource.duration, fullDuration, 'mediaSource duration matches fullDuration');
 
                       test.expectEvent(mediaElement, 'seeking', 'seeking to seekTo');
-                      test.expectEvent(mediaElement, 'timeupdate', 'timeupdate while seeking to seekTo');
-                      test.expectEvent(mediaElement, 'seeked', 'seeked to seekTo');
                       mediaElement.currentTime = seekTo;
                       assert_true(mediaElement.seeking, 'mediaElement.seeking (to seekTo)');
+                  });
+
+                  test.waitForExpectedEvents(function()
+                  {
+                      // These expectations are split from the previous block to allow this 'timeupdate' expectation
+                      // to not trigger flaky failure if another 'timeupdate' preceded the 'seeking' event, above.
+                      test.expectEvent(mediaElement, 'timeupdate', 'timeupdate while seeking to seekTo');
+                      test.expectEvent(mediaElement, 'seeked', 'seeked to seekTo');
                   });
 
                   test.waitForExpectedEvents(function()
@@ -225,6 +231,10 @@
 
               // Append all the segments
               test.expectEvent(sourceBuffer, 'updateend', 'sourceBuffer');
+
+              // TODO(wolenetz): Remove this flakiness workaround. See https://crbug.com/641121#c2.
+              test.expectEvent(mediaElement, 'loadedmetadata', 'mediaElement');
+
               sourceBuffer.appendBuffer(mediaData);
 
               test.waitForExpectedEvents(function()
