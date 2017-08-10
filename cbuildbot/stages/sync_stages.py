@@ -1880,8 +1880,6 @@ class PreCQLauncherStage(SyncStage):
 
     action_history = db.GetActionsForChanges(changes)
 
-    self._LaunchSanityCheckPreCQsIfNeeded(build_id, db, pool, action_history)
-
     if self.buildbucket_client is not None:
       for change in changes:
         self._ProcessOldPatchPreCQRuns(db, change, action_history)
