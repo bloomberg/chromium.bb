@@ -52380,6 +52380,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Internal.Renderer.PaintTiming.SwapResult"
+    enum="SwapResult">
+  <owner>panicker@chromium.org</owner>
+  <summary>
+    For first paint, first contentful paint, first meaningful paint, first text
+    paint, and first image paint, we use the swap timestamp of the corresponding
+    paint, which is the timestamp the CC SwapPromise was positively fulfilled
+    (i.e. DidSwap() was invoked). If the swap did not occur (DidNotSwap() was
+    invoked), we use the timestamp when the swap promise fails. However, in the
+    future we may stop reporting timestamps for certain failure reasons. This
+    metric records whether or not the swap occurred, and the reason for failure
+    if it failed. The distribution of this metric will help determine the effect
+    of not reporting timestamps in certain cases.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Internal.Renderer.PaintTiming.SwapTimeDelta"
+    units="ms">
+  <owner>panicker@chromium.org</owner>
+  <summary>
+    Records the delta between the renderer timestamp and swap timestamp for
+    first paint, first contentful paint, first meaningful paint, first text
+    paint, and first image paint. The renderer timestamp is recorded on the
+    Paint path, while the swap timestamp is the result of a CC SwapPromise
+    (queued on the Paint path) either being successfully fulfilled, or broken in
+    cases where the swap did not occur. As we switch to using the swap
+    timestamps in place of their renderer counterparts, this metric allows us to
+    see the discrepancies between the two timestamps.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Navigation.RedirectChainLength" units="urls">
   <owner>csharrison@chromium.org</owner>
   <summary>

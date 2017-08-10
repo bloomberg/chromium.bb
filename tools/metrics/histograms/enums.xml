@@ -3429,6 +3429,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Needs to be clearred"/>
 </enum>
 
+<enum name="BooleanNetworkQuietBeforeSwap">
+  <int value="0" label="FMP OK, network not yet quiet"/>
+  <int value="1" label="FMP not OK, network was already quiet"/>
+</enum>
+
 <enum name="BooleanNullStream">
   <int value="0" label="Stream is not a nullptr"/>
   <int value="1" label="Stream is a nullptr"/>
@@ -36437,6 +36442,14 @@ would be helpful to identify which type is being sent.
 <enum name="SwapchainFormat">
   <int value="0" label="B8G8R8A8"/>
   <int value="1" label="YUY2"/>
+</enum>
+
+<enum name="SwapResult">
+  <int value="0" label="Swap was successful"/>
+  <int value="1" label="Swap was unsuccessful (swap fails)"/>
+  <int value="2" label="Swap was unsuccessful (commit fails)"/>
+  <int value="3" label="Swap was unsuccessful (commit no update)"/>
+  <int value="4" label="Swap was unsuccessful (activation fails)"/>
 </enum>
 
 <enum name="SwReporterRunningTimeRegistryError">

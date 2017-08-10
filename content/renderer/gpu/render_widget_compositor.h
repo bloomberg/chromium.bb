@@ -54,7 +54,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
     : NON_EXPORTED_BASE(public blink::WebLayerTreeView),
       NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
       NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient) {
-  using ReportTimeCallback = base::Callback<void(bool, double)>;
+  using ReportTimeCallback =
+      base::Callback<void(blink::WebLayerTreeView::SwapResult, double)>;
 
  public:
   // Attempt to construct and initialize a compositor instance for the widget
