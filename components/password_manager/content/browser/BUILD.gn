@@ -35,7 +35,6 @@ static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "content_credential_manager_unittest.cc",
     "content_password_manager_driver_unittest.cc",
   ]
   deps = [
