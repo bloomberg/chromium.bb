@@ -45,8 +45,7 @@ class CodecWrapperTest : public testing::Test {
 
   std::unique_ptr<CodecOutputBuffer> DequeueCodecOutputBuffer() {
     std::unique_ptr<CodecOutputBuffer> codec_buffer;
-    bool eos = false;
-    wrapper_->DequeueOutputBuffer(nullptr, &eos, &codec_buffer);
+    wrapper_->DequeueOutputBuffer(nullptr, nullptr, &codec_buffer);
     return codec_buffer;
   }
 

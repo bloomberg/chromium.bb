@@ -143,7 +143,6 @@ bool CodecWrapperImpl::IsDrained() const {
 }
 
 bool CodecWrapperImpl::HasValidCodecOutputBuffers() const {
-  DVLOG(2) << __func__;
   base::AutoLock l(lock_);
   return !buffer_ids_.empty();
 }
@@ -261,16 +260,24 @@ MediaCodecStatus CodecWrapperImpl::DequeueOutputBuffer(
   // OUTPUT_FORMAT_CHANGED and OUTPUT_BUFFERS_CHANGED statuses to our caller.
   for (int attempt = 0; attempt < 3; ++attempt) {
     int index = -1;
-    size_t unused_offset = 0;
-    size_t unused_size = 0;
-    bool* unused_key_frame = nullptr;
-    auto status = codec_->DequeueOutputBuffer(
-        base::TimeDelta(), &index, &unused_offset, &unused_size,
-        presentation_time, end_of_stream, unused_key_frame);
+    size_t unused;
+    bool eos = false;
+    auto status =
+        codec_->DequeueOutputBuffer(base::TimeDelta(), &index, &unused, &unused,
+                                    presentation_time, &eos, nullptr);
     switch (status) {
       case MEDIA_CODEC_OK: {
-        if (end_of_stream && *end_of_stream)
+        if (eos) {
           state_ = State::kDrained;
+          // We assume that the EOS flag is only ever attached to empty output
+          // buffers because we submit the EOS flag on empty input buffers. The
+          // MediaCodec docs leave open the possibility that the last non-empty
+          // output buffer has the EOS flag but we haven't seen that happen.
+          codec_->ReleaseOutputBuffer(index, false);
+          if (end_of_stream)
+            *end_of_stream = true;
+          return status;
+        }
 
         int64_t buffer_id = next_buffer_id_++;
         buffer_ids_[buffer_id] = index;

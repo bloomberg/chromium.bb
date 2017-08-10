@@ -115,10 +115,12 @@ class MEDIA_GPU_EXPORT CodecWrapper {
   MediaCodecStatus DequeueInputBuffer(int* index);
 
   // Like MediaCodecBridge::DequeueOutputBuffer() but it outputs a
-  // CodecOutputBuffer instead of an index. And it's guaranteed to not return
-  // either of MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED or
-  // MEDIA_CODEC_OUTPUT_FORMAT_CHANGED. It will try to dequeue another
-  // buffer instead. |*codec_buffer| must be null.
+  // CodecOutputBuffer instead of an index. |*codec_buffer| must be null.
+  // If this returns MEDIA_CODEC_OK then either |*end_of_stream| will be set to
+  // true or |*codec_buffer| will be non-null. The EOS buffer is returned to the
+  // codec immediately. Unlike MediaCodecBridge, this does not return
+  // MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED or MEDIA_CODEC_OUTPUT_FORMAT_CHANGED. It
+  // tries to dequeue another buffer instead.
   MediaCodecStatus DequeueOutputBuffer(
       base::TimeDelta* presentation_time,
       bool* end_of_stream,
