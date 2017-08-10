@@ -905,10 +905,6 @@ LayoutUnit LayoutBlock::LogicalRightSelectionOffset(
   return LogicalRightOffsetForContent();
 }
 
-void LayoutBlock::SetSelectionState(SelectionState state) {
-  LayoutBox::SetSelectionState(state);
-}
-
 TrackedLayoutBoxListHashSet* LayoutBlock::PositionedObjectsInternal() const {
   return g_positioned_descendants_map ? g_positioned_descendants_map->at(this)
                                       : nullptr;

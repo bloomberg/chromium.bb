@@ -125,8 +125,6 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
 
   virtual LayoutUnit MinimumReplacedHeight() const { return LayoutUnit(); }
 
-  void SetSelectionState(SelectionState) final;
-
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
   void SetIntrinsicSize(const LayoutSize& intrinsic_size) {

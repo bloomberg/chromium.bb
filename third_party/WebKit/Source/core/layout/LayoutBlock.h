@@ -216,8 +216,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   LayoutUnit BlockDirectionOffset(const LayoutSize& offset_from_block) const;
   LayoutUnit InlineDirectionOffset(const LayoutSize& offset_from_block) const;
 
-  void SetSelectionState(SelectionState) override;
-
   static LayoutBlock* CreateAnonymousWithParentAndDisplay(
       const LayoutObject*,
       EDisplay = EDisplay::kBlock);
