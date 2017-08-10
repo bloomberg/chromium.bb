@@ -7,14 +7,14 @@
 namespace blink {
 
 IntegrityMetadata::IntegrityMetadata(WTF::String digest,
-                                     HashAlgorithm algorithm)
+                                     IntegrityAlgorithm algorithm)
     : digest_(digest), algorithm_(algorithm) {}
 
-IntegrityMetadata::IntegrityMetadata(std::pair<WTF::String, HashAlgorithm> pair)
+IntegrityMetadata::IntegrityMetadata(IntegrityMetadataPair pair)
     : digest_(pair.first), algorithm_(pair.second) {}
 
-std::pair<WTF::String, HashAlgorithm> IntegrityMetadata::ToPair() const {
-  return std::pair<WTF::String, HashAlgorithm>(digest_, algorithm_);
+IntegrityMetadataPair IntegrityMetadata::ToPair() const {
+  return IntegrityMetadataPair(digest_, algorithm_);
 }
 
 bool IntegrityMetadata::SetsEqual(const IntegrityMetadataSet& set1,

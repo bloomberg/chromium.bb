@@ -6,7 +6,6 @@
 #define SubresourceIntegrity_h
 
 #include "base/gtest_prod_util.h"
-#include "platform/Crypto.h"
 #include "platform/PlatformExport.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/wtf/Allocator.h"
@@ -98,10 +97,11 @@ class PLATFORM_EXPORT SubresourceIntegrity final {
     kAlgorithmUnknown
   };
 
-  static HashAlgorithm GetPrioritizedHashFunction(HashAlgorithm, HashAlgorithm);
+  static IntegrityAlgorithm GetPrioritizedHashFunction(IntegrityAlgorithm,
+                                                       IntegrityAlgorithm);
   static AlgorithmParseResult ParseAlgorithm(const UChar*& begin,
                                              const UChar* end,
-                                             HashAlgorithm&);
+                                             IntegrityAlgorithm&);
   static bool ParseDigest(const UChar*& begin,
                           const UChar* end,
                           String& digest);
