@@ -7,10 +7,28 @@
 #include "net/cert/scoped_nss_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
+
+TEST(X509UtilNSSTest, CreateCERTCertificateFromBytes) {
+  ScopedCERTCertificate google_cert(x509_util::CreateCERTCertificateFromBytes(
+      google_der, arraysize(google_der)));
+  ASSERT_TRUE(google_cert);
+  EXPECT_STREQ(
+      "CN=www.google.com,O=Google Inc,L=Mountain View,ST=California,C=US",
+      google_cert->subjectName);
+}
+
+TEST(X509UtilNSSTest, CreateCERTCertificateFromBytesGarbage) {
+  static const uint8_t garbage_data[] = "garbage";
+  EXPECT_EQ(nullptr,
+            x509_util::CreateCERTCertificateFromBytes(garbage_data, 0));
+  EXPECT_EQ(nullptr, x509_util::CreateCERTCertificateFromBytes(
+                         garbage_data, arraysize(garbage_data)));
+}
 
 TEST(X509UtilNSSTest, GetDefaultNickname) {
   base::FilePath certs_dir = GetTestCertsDirectory();
