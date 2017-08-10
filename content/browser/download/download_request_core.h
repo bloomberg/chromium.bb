@@ -119,9 +119,6 @@ class CONTENT_EXPORT DownloadRequestCore
       const net::HttpResponseHeaders& http_headers,
       DownloadSaveInfo* save_info);
 
-  static void AddPartialRequestHeaders(net::URLRequest* request,
-                                       DownloadUrlParameters* params);
-
   std::unique_ptr<DownloadCreateInfo> CreateDownloadCreateInfo(
       DownloadInterruptReason result);
 
