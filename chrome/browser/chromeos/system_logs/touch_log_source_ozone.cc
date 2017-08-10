@@ -89,7 +89,7 @@ std::string GetEventLogListOfOnePrefix(
 void PackEventLog(system_logs::SystemLogsResponse* response,
                   const std::vector<base::FilePath>& log_paths) {
   // Combine logs with a command line call that tars them up and uuencode the
-  // result in one string. This is to be compatible with the X11 behavior.
+  // result in one string.
   std::vector<std::pair<std::string, base::CommandLine>> commands;
   base::CommandLine command = base::CommandLine(base::FilePath(kShellCommand));
   command.AppendArg("-c");

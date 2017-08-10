@@ -59,14 +59,8 @@ void ExecuteCommandLines(system_logs::SystemLogsResponse* response) {
   command = base::CommandLine((base::FilePath("/usr/bin/printenv")));
   commands.emplace_back("env", command);
 
-#if defined(USE_X11)
-  command = base::CommandLine(base::FilePath("/usr/bin/xrandr"));
-  command.AppendArg("--verbose");
-  commands.emplace_back("xrandr", command);
-#elif defined(USE_OZONE)
   command = base::CommandLine(base::FilePath("/usr/bin/modetest"));
   commands.emplace_back("modetest", command);
-#endif
 
   // Get a list of file sizes for the whole system (excluding the names of the
   // files in the Downloads directory for privay reasons).

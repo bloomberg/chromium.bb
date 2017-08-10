@@ -181,13 +181,6 @@
 #include "components/rlz/rlz_tracker.h"
 #endif
 
-// Exclude X11 dependents for ozone
-#if defined(USE_X11)
-#include "chrome/browser/chromeos/device_uma.h"
-#include "chrome/browser/chromeos/events/system_key_event_listener.h"
-#include "chrome/browser/chromeos/events/xinput_hierarchy_changed_event_listener.h"
-#endif
-
 namespace chromeos {
 
 namespace {
@@ -951,27 +944,6 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   external_metrics_ = new chromeos::ExternalMetrics;
   external_metrics_->Start();
 
-#if defined(USE_X11)
-  // Listen for system key events so that the user will be able to adjust the
-  // volume on the login screen, if Chrome is running on Chrome OS
-  // (i.e. not Linux desktop), and in non-test mode.
-  // Note: SystemKeyEventListener depends on the DBus thread.
-  if (base::SysInfo::IsRunningOnChromeOS() &&
-      !parameters().ui_task) {  // ui_task is non-NULL when running tests.
-    SystemKeyEventListener::Initialize();
-  }
-
-  if (!ash_util::IsRunningInMash()) {
-    // Listen for XI_HierarchyChanged events. Note: if this is moved to
-    // PreMainMessageLoopRun() then desktopui_PageCyclerTests fail for unknown
-    // reasons, see http://crosbug.com/24833.
-    XInputHierarchyChangedEventListener::GetInstance();
-
-    // Start the CrOS input device UMA watcher
-    DeviceUMA::GetInstance();
-  }
-#endif
-
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- immediately after ChildProcess::WaitForDebugger().
 
@@ -1075,19 +1047,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   ScreenLocker::ShutDownClass();
   keyboard_event_rewriters_.reset();
   low_disk_notification_.reset();
-#if defined(USE_X11)
-  if (!ash_util::IsRunningInMash()) {
-    // The XInput2 event listener needs to be shut down earlier than when
-    // Singletons are finally destroyed in AtExitManager.
-    XInputHierarchyChangedEventListener::GetInstance()->Stop();
-
-    DeviceUMA::GetInstance()->Stop();
-  }
-
-  // SystemKeyEventListener::Shutdown() is always safe to call,
-  // even if Initialize() wasn't called.
-  SystemKeyEventListener::Shutdown();
-#endif
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();

@@ -21,7 +21,7 @@ InputDeviceSettings* g_instance = nullptr;
 // Callback from SetInternalTouchpadEnabled().
 void OnSetInternalTouchpadEnabled(bool result) {}
 
-// InputDeviceSettings for Linux without X11 (a.k.a. Ozone).
+// InputDeviceSettings for Ozone.
 class InputDeviceSettingsImplOzone : public InputDeviceSettings {
  public:
   InputDeviceSettingsImplOzone();

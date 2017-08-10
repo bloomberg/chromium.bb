@@ -188,6 +188,7 @@ source_set("chromeos") {
     "//ui/keyboard",
     "//ui/keyboard:mojom",
     "//ui/message_center",
+    "//ui/ozone",
     "//ui/shell_dialogs",
     "//ui/snapshot",
     "//ui/surface",
@@ -470,8 +471,6 @@ source_set("chromeos") {
     "dbus/screen_lock_service_provider.h",
     "device/input_service_proxy.cc",
     "device/input_service_proxy.h",
-    "device_uma.cc",
-    "device_uma.h",
     "display/display_configuration_observer.cc",
     "display/display_configuration_observer.h",
     "display/display_preferences.cc",
@@ -524,10 +523,6 @@ source_set("chromeos") {
     "events/event_rewriter_delegate_impl.h",
     "events/keyboard_driven_event_rewriter.cc",
     "events/keyboard_driven_event_rewriter.h",
-    "events/system_key_event_listener.cc",
-    "events/system_key_event_listener.h",
-    "events/xinput_hierarchy_changed_event_listener.cc",
-    "events/xinput_hierarchy_changed_event_listener.h",
     "extensions/active_tab_permission_granter_delegate_chromeos.cc",
     "extensions/active_tab_permission_granter_delegate_chromeos.h",
     "extensions/default_app_order.cc",
@@ -1437,7 +1432,6 @@ source_set("chromeos") {
     "system/input_device_settings.cc",
     "system/input_device_settings.h",
     "system/input_device_settings_impl_ozone.cc",
-    "system/input_device_settings_impl_x11.cc",
     "system/pointer_device_observer.cc",
     "system/pointer_device_observer.h",
     "system/system_clock.cc",
@@ -1466,7 +1460,6 @@ source_set("chromeos") {
     "system_logs/single_log_file_log_source.h",
     "system_logs/touch_log_source.h",
     "system_logs/touch_log_source_ozone.cc",
-    "system_logs/touch_log_source_x11.cc",
     "tether/fake_tether_service.cc",
     "tether/fake_tether_service.h",
     "tether/tether_service.cc",
@@ -1568,34 +1561,6 @@ source_set("chromeos") {
     "extensions/wallpaper_private_api.cc",
     "extensions/wallpaper_private_api.h",
   ]
-  if (use_x11 || ozone_platform_x11) {
-    deps += [ "//ui/base/x" ]
-  }
-  if (use_x11) {
-    configs += [ "//build/config/linux:x11" ]
-    deps += [
-      "//ui/events/devices",
-      "//ui/events/devices/x11",
-      "//ui/gfx/x",
-    ]
-    sources -= [
-      "system/input_device_settings_impl_ozone.cc",
-      "system_logs/touch_log_source_ozone.cc",
-    ]
-  } else {
-    assert(use_ozone, "Either use_x11 or use_ozone has to be specified.")
-    deps += [ "//ui/ozone" ]
-    sources -= [
-      "device_uma.cc",
-      "device_uma.h",
-      "events/system_key_event_listener.cc",
-      "events/system_key_event_listener.h",
-      "events/xinput_hierarchy_changed_event_listener.cc",
-      "events/xinput_hierarchy_changed_event_listener.h",
-      "system/input_device_settings_impl_x11.cc",
-      "system_logs/touch_log_source_x11.cc",
-    ]
-  }
 
   if (use_cups) {
     sources += [
