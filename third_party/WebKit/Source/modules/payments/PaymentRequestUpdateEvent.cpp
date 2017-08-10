@@ -104,15 +104,15 @@ void PaymentRequestUpdateEvent::SetPaymentDetailsUpdater(
 void PaymentRequestUpdateEvent::updateWith(ScriptState* script_state,
                                            ScriptPromise promise,
                                            ExceptionState& exception_state) {
-  if (!updater_)
-    return;
-
-  if (!IsBeingDispatched()) {
+  if (!isTrusted()) {
     exception_state.ThrowDOMException(
         kInvalidStateError,
-        "Cannot update details when the event is not being dispatched");
+        "Cannot update details when the event is not trusted");
     return;
   }
+
+  if (!updater_)
+    return;
 
   if (wait_for_update_) {
     exception_state.ThrowDOMException(kInvalidStateError,
