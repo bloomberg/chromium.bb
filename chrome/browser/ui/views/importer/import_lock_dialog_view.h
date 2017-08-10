@@ -8,13 +8,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "ui/views/view.h"
 #include "ui/views/window/dialog_delegate.h"
-
-namespace views {
-class Label;
-}
 
 // ImportLockDialogView asks the user to shut down Firefox before starting the
 // profile import.
@@ -29,7 +23,6 @@ class ImportLockDialogView : public views::DialogDelegateView {
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
-  void Layout() override;
 
   // views::DialogDelegate:
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
@@ -38,8 +31,6 @@ class ImportLockDialogView : public views::DialogDelegateView {
   bool Cancel() override;
 
  private:
-  views::Label* description_label_;
-
   // Called with the result of the dialog.
   base::Callback<void(bool)> callback_;
 

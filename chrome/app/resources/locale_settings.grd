@@ -201,9 +201,6 @@
       <message name="IDS_IMPORTLOCK_DIALOG_WIDTH_CHARS" use_name_for_id="true">
         50
       </message>
-      <message name="IDS_IMPORTLOCK_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        8
-      </message>
 
       <!-- The URL for the the Welcome to Chrome page shown on first run. -->
       <message name="IDS_WELCOME_PAGE_URL" translateable="false">
