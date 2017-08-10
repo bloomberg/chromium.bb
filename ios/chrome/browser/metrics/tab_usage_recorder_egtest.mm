@@ -12,6 +12,9 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder_test_util.h"
+#import "ios/chrome/browser/ui/settings/privacy_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -109,7 +112,9 @@ void OpenTwoTabs() {
 // synchronization.
 void OpenNewMainTabUsingUIUnsynced() {
   int nb_main_tab = chrome_test_util::GetMainTabCount();
-  WaitAndTap(chrome_test_util::ToolsMenuButton(), @"Tool menu");
+  id<GREYMatcher> tool_menu_matcher =
+      grey_accessibilityID(kToolbarToolsMenuButtonIdentifier);
+  WaitAndTap(tool_menu_matcher, @"Tool menu");
   id<GREYMatcher> new_main_tab_button_matcher =
       grey_accessibilityID(kToolsMenuNewTabId);
   WaitAndTap(new_main_tab_button_matcher, @"New tab button");
@@ -522,7 +527,9 @@ void SelectTabUsingUI(NSString* title) {
   [[GREYConfiguration sharedInstance]
           setValue:@(NO)
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  Wait(chrome_test_util::ToolsMenuButton(), @"Tool Menu");
+  id<GREYMatcher> toolMenuMatcher =
+      grey_accessibilityID(kToolbarToolsMenuButtonIdentifier);
+  Wait(toolMenuMatcher, @"Tool Menu");
 
   GREYAssertTrue(chrome_test_util::SimulateTabsBackgrounding(),
                  @"Failed to simulate tab backgrounding.");
