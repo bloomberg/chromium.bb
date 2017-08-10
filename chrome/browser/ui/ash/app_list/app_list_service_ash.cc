@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/session_util.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/presenter/app_list_presenter_delegate_factory.h"
 #include "ui/app_list/presenter/app_list_presenter_impl.h"
@@ -161,6 +162,8 @@ void AppListServiceAsh::ShowForProfile(Profile* /*default_profile*/) {
 void AppListServiceAsh::ShowForAppInstall(Profile* profile,
                                           const std::string& extension_id,
                                           bool start_discovery_tracking) {
+  if (app_list::features::IsFullscreenAppListEnabled())
+    return;
   ShowAndSwitchToState(app_list::AppListModel::STATE_APPS);
   AppListServiceImpl::ShowForAppInstall(profile, extension_id,
                                         start_discovery_tracking);
