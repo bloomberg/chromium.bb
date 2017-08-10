@@ -23,9 +23,6 @@ class ASH_EXPORT SystemTrayDelegate {
   SystemTrayDelegate();
   virtual ~SystemTrayDelegate();
 
-  // Called after SystemTray has been instantiated.
-  virtual void Initialize();
-
   // Returns NetworkingConfigDelegate. May return nullptr.
   virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() const;
 

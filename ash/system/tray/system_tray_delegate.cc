@@ -10,8 +10,6 @@ SystemTrayDelegate::SystemTrayDelegate() = default;
 
 SystemTrayDelegate::~SystemTrayDelegate() = default;
 
-void SystemTrayDelegate::Initialize() {}
-
 NetworkingConfigDelegate* SystemTrayDelegate::GetNetworkingConfigDelegate()
     const {
   return nullptr;

@@ -13,11 +13,9 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_list_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/browser/app_window/app_window_registry.h"
 
 namespace ash {
 class SystemTrayNotifier;
@@ -29,17 +27,13 @@ namespace chromeos {
 // the transition to mustash. New code should be added to SystemTrayClient.
 // Use system_tray.mojom methods if you need to send information to ash.
 // Please contact jamescook@chromium.org if you have questions or need help.
-class SystemTrayDelegateChromeOS
-    : public ash::SystemTrayDelegate,
-      public content::NotificationObserver,
-      public chrome::BrowserListObserver,
-      public extensions::AppWindowRegistry::Observer {
+class SystemTrayDelegateChromeOS : public ash::SystemTrayDelegate,
+                                   public content::NotificationObserver {
  public:
   SystemTrayDelegateChromeOS();
   ~SystemTrayDelegateChromeOS() override;
 
   // Overridden from ash::SystemTrayDelegate:
-  void Initialize() override;
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
   void ActiveUserWasChanged() override;
 
@@ -50,16 +44,6 @@ class SystemTrayDelegateChromeOS
 
   bool UnsetProfile(Profile* profile);
 
-  void UpdateSessionStartTime();
-
-  void UpdateSessionLengthLimit();
-
-  void StopObservingAppWindowRegistry();
-
-  // Notify observers if the current user has no more open browser or app
-  // windows.
-  void NotifyIfLastWindowClosed();
-
   // content::NotificationObserver implementation.
   void Observe(int type,
                const content::NotificationSource& source,
@@ -67,12 +51,6 @@ class SystemTrayDelegateChromeOS
 
   void OnAccessibilityModeChanged(
       ash::AccessibilityNotificationVisibility notify);
-
-  // Overridden from chrome::BrowserListObserver:
-  void OnBrowserRemoved(Browser* browser) override;
-
-  // Overridden from extensions::AppWindowRegistry::Observer:
-  void OnAppWindowRemoved(extensions::AppWindow* app_window) override;
 
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);

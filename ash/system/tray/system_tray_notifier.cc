@@ -13,7 +13,6 @@
 #include "ash/system/network/network_portal_detector_observer.h"
 #include "ash/system/screen_security/screen_capture_observer.h"
 #include "ash/system/screen_security/screen_share_observer.h"
-#include "ash/system/session/last_window_closed_observer.h"
 #include "ash/system/status_area_focus_observer.h"
 #include "ash/system/tray_tracing.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
@@ -117,21 +116,6 @@ void SystemTrayNotifier::NotifyRefreshIME() {
 void SystemTrayNotifier::NotifyRefreshIMEMenu(bool is_active) {
   for (auto& observer : ime_observers_)
     observer.OnIMEMenuActivationChanged(is_active);
-}
-
-void SystemTrayNotifier::AddLastWindowClosedObserver(
-    LastWindowClosedObserver* observer) {
-  last_window_closed_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveLastWindowClosedObserver(
-    LastWindowClosedObserver* observer) {
-  last_window_closed_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayNotifier::NotifyLastWindowClosed() {
-  for (auto& observer : last_window_closed_observers_)
-    observer.OnLastWindowClosed();
 }
 
 void SystemTrayNotifier::AddNetworkObserver(NetworkObserver* observer) {

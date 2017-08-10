@@ -88,9 +88,9 @@ class AshTestBase : public testing::Test,
   // Creates and shows a widget. See ash/public/cpp/shell_window_ids.h for
   // values for |container_id|.
   static std::unique_ptr<views::Widget> CreateTestWidget(
-      views::WidgetDelegate* delegate,
-      int container_id,
-      const gfx::Rect& bounds);
+      views::WidgetDelegate* delegate = nullptr,
+      int container_id = kShellWindowId_DefaultContainer,
+      const gfx::Rect& bounds = gfx::Rect());
 
   // Creates a visible window in the appropriate container. If
   // |bounds_in_screen| is empty the window is added to the primary root
