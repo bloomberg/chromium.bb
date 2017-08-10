@@ -36,8 +36,7 @@ namespace blink {
 
 std::unique_ptr<SkImageGenerator> WebImageGenerator::Create(
     sk_sp<SkData> data) {
-  return std::unique_ptr<SkImageGenerator>(
-      DecodingImageGenerator::Create(data.get()));
+  return DecodingImageGenerator::Create(data.get());
 }
 
 }  // namespace blink
