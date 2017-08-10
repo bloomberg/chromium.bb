@@ -4,7 +4,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/ui/preload_controller.h"
+#include "ios/chrome/browser/prerender/preload_controller.h"
 
 #include "base/ios/device_util.h"
 #include "base/logging.h"
@@ -14,11 +14,11 @@
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/prerender/preload_controller_delegate.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
-#include "ios/chrome/browser/ui/preload_controller_delegate.h"
 #include "ios/chrome/browser/ui/prerender_final_status.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #include "ios/web/public/web_thread.h"
@@ -212,8 +212,8 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
             referrer:(const web::Referrer&)referrer
           transition:(ui::PageTransition)transition
          immediately:(BOOL)immediately {
-  // TODO(rohitrao): If shouldPrerenderURL returns false, should we cancel any
-  // scheduled prerender requests?
+  // TODO(crbug.com/754050): If shouldPrerenderURL returns false, should we
+  // cancel any scheduled prerender requests?
   if (![self isPrerenderingEnabled] || ![self shouldPreloadURL:url])
     return;
 
@@ -463,9 +463,9 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
 }
 
 - (void)schedulePrerenderCancel {
-  // TODO(rohitrao): Instead of cancelling the prerender, should we mark it as
-  // failed instead?  That way, subsequent prerender requests for the same URL
-  // will not kick off new prerenders.  b/5944421
+  // TODO(crbug.com/228550): Instead of cancelling the prerender, should we mark
+  // it as failed instead?  That way, subsequent prerender requests for the same
+  // URL will not kick off new prerenders.
   [self removeScheduledPrerenderRequests];
   [self performSelector:@selector(cancelPrerender) withObject:nil afterDelay:0];
 }

@@ -148,6 +148,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/omaha:unit_tests",
     "//ios/chrome/browser/passwords:unit_tests",
     "//ios/chrome/browser/payments:unit_tests",
+    "//ios/chrome/browser/prerender:unit_tests",
     "//ios/chrome/browser/reading_list:unit_tests",
     "//ios/chrome/browser/sessions:unit_tests",
     "//ios/chrome/browser/signin:unit_tests",

@@ -76,7 +76,6 @@ source_set("unit_tests") {
     "open_in_controller_unittest.mm",
     "open_in_toolbar_unittest.mm",
     "page_not_available_controller_unittest.mm",
-    "preload_controller_unittest.mm",
     "ui_util_unittest.mm",
     "uikit_ui_util_unittest.mm",
   ]
@@ -206,9 +205,6 @@ source_set("ui_internal_arc") {
     "open_in_toolbar.mm",
     "page_not_available_controller.h",
     "page_not_available_controller.mm",
-    "preload_controller.h",
-    "preload_controller.mm",
-    "preload_controller_delegate.h",
     "prerender_delegate.h",
   ]
   deps = [
@@ -371,6 +367,7 @@ source_set("ui_internal") {
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/prefs",
+    "//ios/chrome/browser/prerender",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/sessions",

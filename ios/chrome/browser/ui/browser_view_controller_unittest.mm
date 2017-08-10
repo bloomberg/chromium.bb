@@ -231,7 +231,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [[[factory stub] andReturn:nil]
         newTabStripControllerWithTabModel:[OCMArg any]
                                dispatcher:[OCMArg any]];
-    [[[factory stub] andReturn:nil] newPreloadController];
     [[[factory stub] andReturnValue:OCMOCK_VALUE(toolbarModelIOS_)]
         newToolbarModelIOSWithDelegate:static_cast<ToolbarModelDelegateIOS*>(
                                            [OCMArg anyPointer])];
