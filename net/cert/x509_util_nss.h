@@ -13,6 +13,7 @@
 #include "net/base/net_export.h"
 #include "net/cert/cert_type.h"
 #include "net/cert/scoped_nss_types.h"
+#include "net/cert/x509_certificate.h"
 
 typedef struct CERTCertificateStr CERTCertificate;
 typedef struct CERTNameStr CERTName;
@@ -23,11 +24,23 @@ namespace net {
 
 namespace x509_util {
 
+// Returns true if two certificate handles refer to identical certificates.
+NET_EXPORT bool IsSameCertificate(CERTCertificate* a, CERTCertificate* b);
+
 // Returns a CERTCertificate handle from the DER-encoded representation. The
 // returned value may reference an already existing CERTCertificate object.
 // Returns NULL on failure.
 NET_EXPORT ScopedCERTCertificate
 CreateCERTCertificateFromBytes(const uint8_t* data, size_t length);
+
+// Returns a CERTCertificate handle from |cert|. The returned value may
+// reference an already existing CERTCertificate object.  Returns NULL on
+// failure.
+NET_EXPORT ScopedCERTCertificate
+CreateCERTCertificateFromX509Certificate(const X509Certificate* cert);
+
+// Increments the refcount of |cert| and returns a handle for that reference.
+NET_EXPORT ScopedCERTCertificate DupCERTCertificate(CERTCertificate* cert);
 
 // Stores the values of all rfc822Name subjectAltNames from |cert_handle|
 // into |names|. If no names are present, clears |names|.

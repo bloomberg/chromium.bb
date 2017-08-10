@@ -13,6 +13,34 @@
 
 namespace net {
 
+TEST(X509UtilNSSTest, IsSameCertificate) {
+  ScopedCERTCertificate google_nss_cert(
+      x509_util::CreateCERTCertificateFromBytes(google_der,
+                                                arraysize(google_der)));
+  ASSERT_TRUE(google_nss_cert);
+
+  ScopedCERTCertificate google_nss_cert2(
+      x509_util::CreateCERTCertificateFromBytes(google_der,
+                                                arraysize(google_der)));
+  ASSERT_TRUE(google_nss_cert2);
+
+  ScopedCERTCertificate webkit_nss_cert(
+      x509_util::CreateCERTCertificateFromBytes(webkit_der,
+                                                arraysize(webkit_der)));
+  ASSERT_TRUE(webkit_nss_cert);
+
+  EXPECT_TRUE(x509_util::IsSameCertificate(google_nss_cert.get(),
+                                           google_nss_cert.get()));
+  EXPECT_TRUE(x509_util::IsSameCertificate(google_nss_cert.get(),
+                                           google_nss_cert2.get()));
+
+  EXPECT_TRUE(x509_util::IsSameCertificate(webkit_nss_cert.get(),
+                                           webkit_nss_cert.get()));
+
+  EXPECT_FALSE(x509_util::IsSameCertificate(google_nss_cert.get(),
+                                            webkit_nss_cert.get()));
+}
+
 TEST(X509UtilNSSTest, CreateCERTCertificateFromBytes) {
   ScopedCERTCertificate google_cert(x509_util::CreateCERTCertificateFromBytes(
       google_der, arraysize(google_der)));
@@ -28,6 +56,34 @@ TEST(X509UtilNSSTest, CreateCERTCertificateFromBytesGarbage) {
             x509_util::CreateCERTCertificateFromBytes(garbage_data, 0));
   EXPECT_EQ(nullptr, x509_util::CreateCERTCertificateFromBytes(
                          garbage_data, arraysize(garbage_data)));
+}
+
+TEST(X509UtilNSSTest, CreateCERTCertificateFromX509Certificate) {
+  scoped_refptr<X509Certificate> x509_cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
+  ASSERT_TRUE(x509_cert);
+  ScopedCERTCertificate nss_cert =
+      x509_util::CreateCERTCertificateFromX509Certificate(x509_cert.get());
+  ASSERT_TRUE(nss_cert);
+  EXPECT_STREQ("CN=127.0.0.1,O=Test CA,L=Mountain View,ST=California,C=US",
+               nss_cert->subjectName);
+}
+
+TEST(X509UtilNSSTest, DupCERTCertificate) {
+  ScopedCERTCertificate cert(x509_util::CreateCERTCertificateFromBytes(
+      google_der, arraysize(google_der)));
+  ASSERT_TRUE(cert);
+
+  ScopedCERTCertificate cert2 = x509_util::DupCERTCertificate(cert.get());
+  // Both handles should hold a reference to the same CERTCertificate object.
+  ASSERT_EQ(cert.get(), cert2.get());
+
+  // Release the initial handle.
+  cert.reset();
+  // The duped handle should still be safe to access.
+  EXPECT_STREQ(
+      "CN=www.google.com,O=Google Inc,L=Mountain View,ST=California,C=US",
+      cert2->subjectName);
 }
 
 TEST(X509UtilNSSTest, GetDefaultNickname) {
