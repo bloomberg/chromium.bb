@@ -47,7 +47,7 @@ const ProcessId kNullProcessId = 0;
 // To print ProcessIds portably use CrPRIdPid (based on PRIuS and friends from
 // C99 and format_macros.h) like this:
 // base::StringPrintf("PID is %" CrPRIdPid ".\n", pid);
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
 #define CrPRIdPid "ld"
 #else
 #define CrPRIdPid "d"
