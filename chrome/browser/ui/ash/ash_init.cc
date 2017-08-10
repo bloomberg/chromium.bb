@@ -18,7 +18,6 @@
 #include "ash/shell_port_classic.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
@@ -41,10 +40,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window_tree_host.h"
-
-#if defined(USE_X11)
-#include "ui/base/x/x11_util.h"  // nogncheck
-#endif
 
 namespace {
 
@@ -91,17 +86,6 @@ std::unique_ptr<ash::mus::WindowManager> CreateMusShell() {
 }  // namespace
 
 AshInit::AshInit() {
-#if defined(USE_X11)
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    // Mus only runs on ozone.
-    DCHECK_NE(ash::Config::MUS, chromeos::GetAshConfig());
-    // Hides the cursor outside of the Aura root window. The cursor will be
-    // drawn within the Aura root window, and it'll remain hidden after the
-    // Aura window is closed.
-    ui::HideHostCursor();
-  }
-#endif
-
   // Hide the mouse cursor completely at boot.
   if (!chromeos::LoginState::Get()->IsUserLoggedIn())
     ash::Shell::set_initially_hide_cursor(true);
