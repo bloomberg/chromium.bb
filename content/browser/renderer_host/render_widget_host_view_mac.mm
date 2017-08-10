@@ -1447,7 +1447,7 @@ void RenderWidgetHostViewMac::OnDidNotProduceFrame(
 }
 
 void RenderWidgetHostViewMac::ClearCompositorFrame() {
-  browser_compositor_->GetDelegatedFrameHost()->ClearDelegatedFrame();
+  browser_compositor_->ClearCompositorFrame();
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {

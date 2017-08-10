@@ -2127,4 +2127,14 @@ TEST_F(RenderWidgetHostViewMacTest, ForwardKeyEquivalentsOnlyIfKey) {
   rwhv_mac_->release_pepper_fullscreen_window_for_testing();
 }
 
+TEST_F(RenderWidgetHostViewMacTest, ClearCompositorFrame) {
+  BrowserCompositorMac* browser_compositor =
+      rwhv_mac_->BrowserCompositorForTesting();
+  EXPECT_NE(browser_compositor->CompositorForTesting(), nullptr);
+  EXPECT_TRUE(browser_compositor->CompositorForTesting()->IsLocked());
+  rwhv_mac_->ClearCompositorFrame();
+  EXPECT_NE(browser_compositor->CompositorForTesting(), nullptr);
+  EXPECT_FALSE(browser_compositor->CompositorForTesting()->IsLocked());
+}
+
 }  // namespace content

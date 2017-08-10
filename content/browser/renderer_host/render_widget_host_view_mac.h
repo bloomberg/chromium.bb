@@ -447,6 +447,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Delegated frame management and compositor interface.
   std::unique_ptr<BrowserCompositorMac> browser_compositor_;
+  BrowserCompositorMac* BrowserCompositorForTesting() const {
+    return browser_compositor_.get();
+  }
 
   // Set when the currently-displayed frame is the minimum scale. Used to
   // determine if pinch gestures need to be thresholded.
