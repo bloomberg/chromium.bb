@@ -5,13 +5,13 @@
 #ifndef CC_IPC_COMPOSITOR_FRAME_METADATA_STRUCT_TRAITS_H_
 #define CC_IPC_COMPOSITOR_FRAME_METADATA_STRUCT_TRAITS_H_
 
-#include "cc/ipc/compositor_frame_metadata.mojom-shared.h"
 #include "cc/output/compositor_frame_metadata.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_metadata.mojom-shared.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::CompositorFrameMetadataDataView,
+struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
                     cc::CompositorFrameMetadata> {
   static float device_scale_factor(
       const cc::CompositorFrameMetadata& metadata) {
@@ -130,7 +130,7 @@ struct StructTraits<cc::mojom::CompositorFrameMetadataDataView,
     return metadata.frame_token;
   }
 
-  static bool Read(cc::mojom::CompositorFrameMetadataDataView data,
+  static bool Read(viz::mojom::CompositorFrameMetadataDataView data,
                    cc::CompositorFrameMetadata* out);
 };
 

@@ -51,12 +51,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     std::move(callback).Run(b);
   }
 
-  void EchoCompositorFrameMetadata(
-      CompositorFrameMetadata c,
-      EchoCompositorFrameMetadataCallback callback) override {
-    std::move(callback).Run(std::move(c));
-  }
-
   void EchoCopyOutputRequest(std::unique_ptr<viz::CopyOutputRequest> c,
                              EchoCopyOutputRequestCallback callback) override {
     std::move(callback).Run(std::move(c));
@@ -188,114 +182,6 @@ TEST_F(StructTraitsTest, BeginFrameAck) {
   EXPECT_EQ(sequence_number, output.sequence_number);
   // |has_damage| is not transmitted.
   EXPECT_FALSE(output.has_damage);
-}
-
-TEST_F(StructTraitsTest, CompositorFrameMetadata) {
-  const float device_scale_factor = 2.6f;
-  const gfx::Vector2dF root_scroll_offset(1234.5f, 6789.1f);
-  const float page_scale_factor = 1337.5f;
-  const gfx::SizeF scrollable_viewport_size(1337.7f, 1234.5f);
-  const gfx::SizeF root_layer_size(1234.5f, 5432.1f);
-  const float min_page_scale_factor = 3.5f;
-  const float max_page_scale_factor = 4.6f;
-  const bool root_overflow_x_hidden = true;
-  const bool root_overflow_y_hidden = true;
-  const bool may_contain_video = true;
-  const bool is_resourceless_software_draw_with_scroll_or_animation = true;
-  const float top_bar_height(1234.5f);
-  const float top_bar_shown_ratio(1.0f);
-  const float bottom_bar_height(1234.5f);
-  const float bottom_bar_shown_ratio(1.0f);
-  const uint32_t root_background_color = 1337;
-  Selection<gfx::SelectionBound> selection;
-  selection.start.SetEdge(gfx::PointF(1234.5f, 67891.f),
-                          gfx::PointF(5432.1f, 1987.6f));
-  selection.start.set_visible(true);
-  selection.start.set_type(gfx::SelectionBound::CENTER);
-  selection.end.SetEdge(gfx::PointF(1337.5f, 52124.f),
-                        gfx::PointF(1234.3f, 8765.6f));
-  selection.end.set_visible(false);
-  selection.end.set_type(gfx::SelectionBound::RIGHT);
-  ui::LatencyInfo latency_info;
-  latency_info.set_trace_id(5);
-  latency_info.AddLatencyNumber(
-      ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT, 1337, 7331);
-  std::vector<ui::LatencyInfo> latency_infos = {latency_info};
-  std::vector<viz::SurfaceId> referenced_surfaces;
-  viz::SurfaceId id(
-      viz::FrameSinkId(1234, 4321),
-      viz::LocalSurfaceId(5678, base::UnguessableToken::Create()));
-  referenced_surfaces.push_back(id);
-  std::vector<viz::SurfaceId> activation_dependencies;
-  viz::SurfaceId id2(
-      viz::FrameSinkId(4321, 1234),
-      viz::LocalSurfaceId(8765, base::UnguessableToken::Create()));
-  activation_dependencies.push_back(id2);
-  uint32_t frame_token = 0xdeadbeef;
-  uint64_t begin_frame_ack_sequence_number = 0xdeadbeef;
-
-  CompositorFrameMetadata input;
-  input.device_scale_factor = device_scale_factor;
-  input.root_scroll_offset = root_scroll_offset;
-  input.page_scale_factor = page_scale_factor;
-  input.scrollable_viewport_size = scrollable_viewport_size;
-  input.root_layer_size = root_layer_size;
-  input.min_page_scale_factor = min_page_scale_factor;
-  input.max_page_scale_factor = max_page_scale_factor;
-  input.root_overflow_x_hidden = root_overflow_x_hidden;
-  input.root_overflow_y_hidden = root_overflow_y_hidden;
-  input.may_contain_video = may_contain_video;
-  input.is_resourceless_software_draw_with_scroll_or_animation =
-      is_resourceless_software_draw_with_scroll_or_animation;
-  input.top_controls_height = top_bar_height;
-  input.top_controls_shown_ratio = top_bar_shown_ratio;
-  input.bottom_controls_height = bottom_bar_height;
-  input.bottom_controls_shown_ratio = bottom_bar_shown_ratio;
-  input.root_background_color = root_background_color;
-  input.selection = selection;
-  input.latency_info = latency_infos;
-  input.referenced_surfaces = referenced_surfaces;
-  input.activation_dependencies = activation_dependencies;
-  input.frame_token = frame_token;
-  input.begin_frame_ack.sequence_number = begin_frame_ack_sequence_number;
-
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  CompositorFrameMetadata output;
-  proxy->EchoCompositorFrameMetadata(std::move(input), &output);
-  EXPECT_EQ(device_scale_factor, output.device_scale_factor);
-  EXPECT_EQ(root_scroll_offset, output.root_scroll_offset);
-  EXPECT_EQ(page_scale_factor, output.page_scale_factor);
-  EXPECT_EQ(scrollable_viewport_size, output.scrollable_viewport_size);
-  EXPECT_EQ(root_layer_size, output.root_layer_size);
-  EXPECT_EQ(min_page_scale_factor, output.min_page_scale_factor);
-  EXPECT_EQ(max_page_scale_factor, output.max_page_scale_factor);
-  EXPECT_EQ(root_overflow_x_hidden, output.root_overflow_x_hidden);
-  EXPECT_EQ(root_overflow_y_hidden, output.root_overflow_y_hidden);
-  EXPECT_EQ(may_contain_video, output.may_contain_video);
-  EXPECT_EQ(is_resourceless_software_draw_with_scroll_or_animation,
-            output.is_resourceless_software_draw_with_scroll_or_animation);
-  EXPECT_EQ(top_bar_height, output.top_controls_height);
-  EXPECT_EQ(top_bar_shown_ratio, output.top_controls_shown_ratio);
-  EXPECT_EQ(bottom_bar_height, output.bottom_controls_height);
-  EXPECT_EQ(bottom_bar_shown_ratio, output.bottom_controls_shown_ratio);
-  EXPECT_EQ(root_background_color, output.root_background_color);
-  EXPECT_EQ(selection, output.selection);
-  EXPECT_EQ(latency_infos.size(), output.latency_info.size());
-  ui::LatencyInfo::LatencyComponent component;
-  EXPECT_TRUE(output.latency_info[0].FindLatency(
-      ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT, 1337,
-      &component));
-  EXPECT_EQ(7331, component.sequence_number);
-  EXPECT_EQ(referenced_surfaces.size(), output.referenced_surfaces.size());
-  for (uint32_t i = 0; i < referenced_surfaces.size(); ++i)
-    EXPECT_EQ(referenced_surfaces[i], output.referenced_surfaces[i]);
-  EXPECT_EQ(activation_dependencies.size(),
-            output.activation_dependencies.size());
-  for (uint32_t i = 0; i < activation_dependencies.size(); ++i)
-    EXPECT_EQ(activation_dependencies[i], output.activation_dependencies[i]);
-  EXPECT_EQ(frame_token, output.frame_token);
-  EXPECT_EQ(begin_frame_ack_sequence_number,
-            output.begin_frame_ack.sequence_number);
 }
 
 TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {
