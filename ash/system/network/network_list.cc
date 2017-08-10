@@ -118,6 +118,11 @@ class NetworkListView::SectionHeaderRowView : public views::View,
     toggle_->SetIsOn(enabled, true);
   }
 
+  void SetToggleVisible(bool visible) {
+    toggle_->SetVisible(visible);
+    toggle_->set_accepts_events(visible);
+  }
+
  protected:
   // This is called before the toggle button is added to give subclasses an
   // opportunity to add more buttons before the toggle button. Subclasses can
@@ -460,17 +465,6 @@ NetworkListView::UpdateNetworkListEntries() {
       UpdateNetworkChildren(NetworkInfo::Type::UNKNOWN, index);
   index += new_guids->size();
 
-  if (handler->IsTechnologyAvailable(NetworkTypePattern::Cellular()) ||
-      handler->IsTechnologyAvailable(NetworkTypePattern::Tether())) {
-    bool is_enabled =
-        handler->IsTechnologyEnabled(NetworkTypePattern::Cellular()) ||
-        handler->IsTechnologyEnabled(NetworkTypePattern::Tether());
-
-    index = UpdateSectionHeaderRow(NetworkTypePattern::Cellular(), is_enabled,
-                                   index, &mobile_header_view_,
-                                   &mobile_separator_view_);
-  }
-
   // Cellular initializing.
   int cellular_message_id = network_icon::GetMobileUninitializedMsg();
   if (!cellular_message_id &&
@@ -478,6 +472,23 @@ NetworkListView::UpdateNetworkListEntries() {
       !handler->FirstNetworkByType(NetworkTypePattern::Mobile())) {
     cellular_message_id = IDS_ASH_STATUS_TRAY_NO_MOBILE_NETWORKS;
   }
+
+  if (handler->IsTechnologyAvailable(NetworkTypePattern::Cellular()) ||
+      handler->IsTechnologyAvailable(NetworkTypePattern::Tether())) {
+    bool is_enabled =
+        handler->IsTechnologyEnabled(NetworkTypePattern::Cellular()) ||
+        handler->IsTechnologyEnabled(NetworkTypePattern::Tether());
+
+    // The toggle is not visible in the case when Bluetooth must be
+    // enabled in order to enable Tether.
+    bool toggle_is_visible =
+        cellular_message_id != IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH;
+
+    index = UpdateSectionHeaderRow(
+        NetworkTypePattern::Cellular(), is_enabled, toggle_is_visible, index,
+        &mobile_header_view_, &mobile_separator_view_);
+  }
+
   UpdateInfoLabel(cellular_message_id, index, &no_mobile_networks_view_);
   if (cellular_message_id)
     ++index;
@@ -490,8 +501,8 @@ NetworkListView::UpdateNetworkListEntries() {
 
   index = UpdateSectionHeaderRow(
       NetworkTypePattern::WiFi(),
-      handler->IsTechnologyEnabled(NetworkTypePattern::WiFi()), index,
-      &wifi_header_view_, &wifi_separator_view_);
+      handler->IsTechnologyEnabled(NetworkTypePattern::WiFi()),
+      true /* show_toggle */, index, &wifi_header_view_, &wifi_separator_view_);
 
   // "Wifi Enabled / Disabled".
   int wifi_message_id = 0;
@@ -662,6 +673,7 @@ bool NetworkListView::IsLabelClickable(int message_id) const {
 
 int NetworkListView::UpdateSectionHeaderRow(NetworkTypePattern pattern,
                                             bool enabled,
+                                            bool show_toggle,
                                             int child_index,
                                             SectionHeaderRowView** view,
                                             views::Separator** separator_view) {
@@ -687,6 +699,7 @@ int NetworkListView::UpdateSectionHeaderRow(NetworkTypePattern pattern,
   }
 
   (*view)->SetIsOn(enabled);
+  (*view)->SetToggleVisible(show_toggle);
   PlaceViewAtIndex(*view, child_index++);
   return child_index;
 }
