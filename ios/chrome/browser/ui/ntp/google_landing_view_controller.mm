@@ -657,7 +657,7 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
                     andHeaderView:(UIView*)headerView {
   _doodleTopMarginConstraint = [logoView.topAnchor
       constraintEqualToAnchor:headerView.topAnchor
-                     constant:content_suggestions::doodleTopMargin()];
+                     constant:content_suggestions::doodleTopMargin(YES)];
   _doodleHeightConstraint = [logoView.heightAnchor
       constraintEqualToConstant:content_suggestions::doodleHeight(
                                     self.logoIsShowing)];
@@ -687,7 +687,7 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
       setSideMargin:content_suggestions::centeredTilesMarginForWidth(width)
            forWidth:width];
   [_doodleTopMarginConstraint
-      setConstant:content_suggestions::doodleTopMargin()];
+      setConstant:content_suggestions::doodleTopMargin(YES)];
   [_searchFieldWidthConstraint
       setConstant:content_suggestions::searchFieldWidth(width)];
   [_searchFieldTopMarginConstraint
@@ -718,8 +718,8 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
     referenceSizeForHeaderInSection:(NSInteger)section {
   CGFloat headerHeight = 0;
   if (section == SectionWithOmnibox) {
-    headerHeight = content_suggestions::heightForLogoHeader(self.logoIsShowing,
-                                                            self.promoCanShow);
+    headerHeight = content_suggestions::heightForLogoHeader(
+        self.logoIsShowing, self.promoCanShow, YES);
     ((UICollectionViewFlowLayout*)collectionViewLayout).headerReferenceSize =
         CGSizeMake(0, headerHeight);
   } else if (section == SectionWithMostVisited) {
@@ -1028,7 +1028,7 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 // the omnibox to the top of the screen.
 - (CGFloat)pinnedOffsetY {
   CGFloat headerHeight = content_suggestions::heightForLogoHeader(
-      self.logoIsShowing, self.promoCanShow);
+      self.logoIsShowing, self.promoCanShow, YES);
   CGFloat offsetY =
       headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
   if (!IsIPadIdiom())

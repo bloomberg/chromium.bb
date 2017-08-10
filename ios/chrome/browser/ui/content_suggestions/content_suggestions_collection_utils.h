@@ -24,16 +24,20 @@ CGFloat centeredTilesMarginForWidth(CGFloat width);
 // Google logo or the doodle.
 CGFloat doodleHeight(BOOL logoIsShowing);
 // Returns the proper margin to the top of the header for the doodle.
-CGFloat doodleTopMargin();
-// Returns the proper margin to the top of the header for the search field.
-// |logoIsShowing| refers to the Google logo or the doodle.
+// If |toolbarPresent| is true, the top margin include a space to display the
+// toolbar.
+CGFloat doodleTopMargin(BOOL toolbarPresent);
+// Returns the proper margin to the bottom of the doodle for the search field.
 CGFloat searchFieldTopMargin();
 // Returns the proper width for the search field inside a view with a |width|.
 CGFloat searchFieldWidth(CGFloat superviewWidth);
-// Returns the expected height of the NewTabPageHeaderView inside a view with a
-// |width|. |logoIsShowing| refers to the Google logo or the doodle.
-// |promoCanShow| represents whether a what's new promo can be displayed.
-CGFloat heightForLogoHeader(BOOL logoIsShowing, BOOL promoCanShow);
+// Returns the expected height of the header. |logoIsShowing| refers to the
+// Google logo or the doodle. |promoCanShow| represents whether a what's new
+// promo can be displayed.  |toolbarPresent| represent whether the height should
+// take into account a space to show the toolbar.
+CGFloat heightForLogoHeader(BOOL logoIsShowing,
+                            BOOL promoCanShow,
+                            BOOL toolbarPresent);
 // Configure the |searchHintLabel| for the fake omnibox, adding it to the
 // |searchTapTarget| and constrain it.
 void configureSearchHintLabel(UILabel* searchHintLabel,
