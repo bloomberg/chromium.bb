@@ -23,6 +23,10 @@
 class PrefRegistrySimple;
 class PrefService;
 
+namespace base {
+class TickClock;
+}
+
 namespace content {
 class BrowserContext;
 }
@@ -199,6 +203,7 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
 
   // Callback for loading initial set of known data items for an extension.
   void OnGotExtensionItems(const std::string& extension_id,
+                           const base::TimeTicks& start_time,
                            OperationResult result,
                            std::unique_ptr<base::DictionaryValue> items);
 
@@ -206,13 +211,28 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
   // the item to the cached data item state, and invoked the callback.
   void OnItemRegistered(std::unique_ptr<DataItem> item,
                         const std::string& extension_id,
+                        const base::TimeTicks& start_time,
                         const CreateCallback& callback,
                         OperationResult result);
+
+  // Callback for data item write operation - it invokes the callback with the
+  // operation result.
+  void OnItemWritten(const base::TimeTicks& start_time,
+                     const WriteCallback& callback,
+                     OperationResult result);
+
+  // Callback for data item read operation - it invokes the callback with the
+  // operation result.
+  void OnItemRead(const base::TimeTicks& start_time,
+                  const ReadCallback& callback,
+                  OperationResult result,
+                  std::unique_ptr<std::vector<char>> data);
 
   // Callback for item deletion operation. It removes the item from the cached
   // state and invokes the callback with the operation result.
   void OnItemDeleted(const std::string& extension_id,
                      const std::string& item_id,
+                     const base::TimeTicks& start_time,
                      const WriteCallback& callback,
                      OperationResult result);
 
@@ -244,6 +264,8 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
   const std::string crypto_key_;
   PrefService* local_state_;
   const base::FilePath storage_root_;
+
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   SessionLockedState session_locked_state_ = SessionLockedState::kUnknown;
 
