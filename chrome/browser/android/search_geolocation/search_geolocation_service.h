@@ -83,6 +83,9 @@ class SearchGeolocationService : public KeyedService {
   // Changes the DSE geolocation setting.
   void SetDSEGeolocationSetting(bool setting);
 
+  // Returns the DSE's Origin if geolocation enabled, else an unique Origin.
+  url::Origin GetDSEOriginIfEnabled();
+
   // KeyedService:
   void Shutdown() override;
 
