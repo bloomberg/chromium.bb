@@ -32,8 +32,6 @@ struct DataViewHolder {
 
 std::unique_ptr<DataViewHolder> SerializeTestStruct(TestStructPtr input) {
   auto result = base::MakeUnique<DataViewHolder>();
-  mojo::internal::PrepareToSerialize<TestStructDataView>(input,
-                                                         &result->context);
   result->message = Message(0, 0, 0, 0, nullptr);
   internal::TestStruct_Data::BufferWriter writer;
   mojo::internal::Serialize<TestStructDataView>(

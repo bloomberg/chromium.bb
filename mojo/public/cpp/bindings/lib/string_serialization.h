@@ -22,9 +22,6 @@ struct Serializer<StringDataView, MaybeConstUserType> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Traits = StringTraits<UserType>;
 
-  static void PrepareToSerialize(MaybeConstUserType& input,
-                                 SerializationContext* context) {}
-
   static void Serialize(MaybeConstUserType& input,
                         Buffer* buffer,
                         String_Data::BufferWriter* writer,

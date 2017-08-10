@@ -95,17 +95,6 @@ struct Serializer<MapDataView<Key, Value>, MaybeConstUserType> {
                       std::vector<UserValue>,
                       MapValueReader<MaybeConstUserType>>;
 
-  static void PrepareToSerialize(MaybeConstUserType& input,
-                                 SerializationContext* context) {
-    if (CallIsNullIfExists<Traits>(input))
-      return;
-
-    MapKeyReader<MaybeConstUserType> key_reader(input);
-    KeyArraySerializer::PrepareToSerialize(&key_reader, context);
-    MapValueReader<MaybeConstUserType> value_reader(input);
-    ValueArraySerializer::PrepareToSerialize(&value_reader, context);
-  }
-
   static void Serialize(MaybeConstUserType& input,
                         Buffer* buf,
                         typename Data::BufferWriter* writer,

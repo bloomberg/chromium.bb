@@ -8,69 +8,17 @@ struct Serializer<{{data_view}}, MaybeConstUserType> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Traits = UnionTraits<{{data_view}}, UserType>;
 
-  static void PrepareToSerialize(MaybeConstUserType& input,
-                                 bool inlined,
-                                 SerializationContext* context) {
-{# NOTE: Only types which may (recursively) contain handles or interface types
-   need to do any preparation for serialization. We don't bother in other cases,
-   and nullability testing and context setup can instead be done directly in
-   Serialize below. #}
-{%- if union|contains_handles_or_interfaces %}
-    const bool is_null = CallIsNullIfExists<Traits>(input);
-    context->PushNextNullState(is_null);
-    if (is_null)
-      return;
-
-    void* custom_context = CustomContextHelper<Traits>::SetUpAndPush(input,
-                                                                     context);
-    ALLOW_UNUSED_LOCAL(custom_context);
-
-    switch (CallWithContext(Traits::GetTag, input, custom_context)) {
-{%-   for field in union.fields %}
-{%-     set name = field.name %}
-      case {{data_view}}::Tag::{{name|upper}}: {
-{%-     if field.kind|contains_handles_or_interfaces %}
-{%-       set kind = field.kind %}
-{%-       set serializer_type = kind|unmapped_type_for_serializer %}
-        decltype(CallWithContext(Traits::{{name}}, input, custom_context))
-            in_{{name}} = CallWithContext(Traits::{{name}}, input,
-                                          custom_context);
-{%-       if kind|is_union_kind %}
-        mojo::internal::PrepareToSerialize<{{serializer_type}}>(
-            in_{{name}}, false, context);
-{%-       else %}
-        mojo::internal::PrepareToSerialize<{{serializer_type}}>(
-            in_{{name}}, context);
-{%-       endif %}
-{%-     endif %}
-        break;
-      }
-{%-   endfor %}
-    }
-{%- endif %}
-  }
-
   static void Serialize(MaybeConstUserType& input,
                         Buffer* buffer,
                         {{data_type}}::BufferWriter* writer,
                         bool inlined,
                         SerializationContext* context) {
-{%- if union|contains_handles_or_interfaces %}
-    if (context->IsNextFieldNull()) {
-      if (inlined)
-        writer->data()->set_null();
-      return;
-    }
-
-    void* custom_context = CustomContextHelper<Traits>::GetNext(context);
-{%- else %}
     if (CallIsNullIfExists<Traits>(input)) {
        if (inlined)
          writer->data()->set_null();
       return;
     }
     void* custom_context = CustomContextHelper<Traits>::SetUp(input, context);
-{%- endif %}
 
     if (!inlined)
       writer->Allocate(buffer);

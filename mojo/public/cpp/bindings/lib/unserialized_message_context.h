@@ -37,21 +37,9 @@ class MOJO_CPP_BINDINGS_EXPORT UnserializedMessageContext {
   const Tag* tag() const { return tag_; }
   uint32_t message_name() const { return header_.name; }
   uint32_t message_flags() const { return header_.flags; }
-  size_t payload_interface_id_count() const {
-    DCHECK(serialization_context_.has_value());
-    return serialization_context_->associated_endpoint_handles()->size();
-  }
 
   MessageHeaderV1* header() { return &header_; }
 
-  size_t total_serialized_size() const { return total_serialized_size_; }
-
-  void GetSerializedSize(size_t* num_bytes, size_t* num_handles);
-  void SerializeHandles(MojoHandle* handles);
-  void SerializePayload(Buffer* buffer);
-
-  virtual void PrepareToSerialize(
-      SerializationContext* serialization_context) = 0;
   virtual void Serialize(SerializationContext* serialization_context,
                          Buffer* buffer) = 0;
 
@@ -65,10 +53,6 @@ class MOJO_CPP_BINDINGS_EXPORT UnserializedMessageContext {
   // Message implementation which needs to query such metadata for both
   // serialized and unserialized message objects.
   MessageHeaderV1 header_;
-
-  // Intermediate state used during serialization.
-  base::Optional<SerializationContext> serialization_context_;
-  size_t total_serialized_size_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(UnserializedMessageContext);
 };

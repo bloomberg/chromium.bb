@@ -75,6 +75,22 @@ size_t Buffer::Allocate(size_t num_bytes) {
   return block_start;
 }
 
+void Buffer::AttachHandles(std::vector<ScopedHandle>* handles) {
+  DCHECK(message_.is_valid());
+
+  uint32_t new_size = 0;
+  MojoResult rv = MojoExtendSerializedMessagePayload(
+      message_.value(), static_cast<uint32_t>(cursor_),
+      reinterpret_cast<MojoHandle*>(handles->data()),
+      static_cast<uint32_t>(handles->size()), &data_, &new_size);
+  if (rv != MOJO_RESULT_OK)
+    return;
+
+  size_ = new_size;
+  for (auto& handle : *handles)
+    ignore_result(handle.release());
+}
+
 void Buffer::Seal() {
   if (!message_.is_valid())
     return;

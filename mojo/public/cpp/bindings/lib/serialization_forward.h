@@ -33,21 +33,6 @@ struct IsOptionalWrapper {
           typename std::remove_reference<T>::type>::type>::value;
 };
 
-// PrepareToSerialize() must be matched by a Serialize() for the same input
-// later. Moreover, within the same SerializationContext if PrepareToSerialize()
-// is called for |input_1|, ..., |input_n|, Serialize() must be called for
-// those objects in the exact same order.
-template <typename MojomType,
-          typename InputUserType,
-          typename... Args,
-          typename std::enable_if<
-              !IsOptionalWrapper<InputUserType>::value>::type* = nullptr>
-void PrepareToSerialize(InputUserType&& input, Args&&... args) {
-  Serializer<MojomType, typename std::remove_reference<InputUserType>::type>::
-      PrepareToSerialize(std::forward<InputUserType>(input),
-                         std::forward<Args>(args)...);
-}
-
 template <typename MojomType,
           typename InputUserType,
           typename... Args,
@@ -68,17 +53,6 @@ template <typename MojomType,
 bool Deserialize(DataType&& input, InputUserType* output, Args&&... args) {
   return Serializer<MojomType, InputUserType>::Deserialize(
       std::forward<DataType>(input), output, std::forward<Args>(args)...);
-}
-
-// Specialization that unwraps base::Optional<>.
-template <typename MojomType,
-          typename InputUserType,
-          typename... Args,
-          typename std::enable_if<
-              IsOptionalWrapper<InputUserType>::value>::type* = nullptr>
-void PrepareToSerialize(InputUserType&& input, Args&&... args) {
-  if (input)
-    PrepareToSerialize<MojomType>(*input, std::forward<Args>(args)...);
 }
 
 template <typename MojomType,

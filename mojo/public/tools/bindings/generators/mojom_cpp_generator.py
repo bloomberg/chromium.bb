@@ -652,6 +652,8 @@ class Generator(generator.Generator):
     return self._GetCppWrapperType(kind, add_same_module_namespaces=True)
 
   def _MethodSupportsLazySerialization(self, method):
+    # TODO(crbug.com/753431,crbug.com/753433): Support lazy serialization for
+    # methods which pass associated handles and InterfacePtrs.
     return self.support_lazy_serialization and (
         not mojom.MethodPassesAssociatedKinds(method) and
         not mojom.MethodPassesInterfaces(method))

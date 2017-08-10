@@ -10,11 +10,6 @@ namespace mojo {
 namespace internal {
 
 // static
-void UnmappedNativeStructSerializerImpl::PrepareToSerialize(
-    const NativeStructPtr& input,
-    SerializationContext* context) {}
-
-// static
 void UnmappedNativeStructSerializerImpl::Serialize(
     const NativeStructPtr& input,
     Buffer* buffer,

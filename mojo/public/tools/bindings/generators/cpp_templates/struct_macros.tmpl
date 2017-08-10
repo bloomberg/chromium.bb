@@ -1,45 +1,5 @@
 {#  TODO(yzshen): Make these templates more readable. #}
 
-{#  Prepares to serialize the specified struct, collecting handles and
-    associated handle info.
-    |struct| is the struct definition.
-    |input_field_pattern| should be a pattern that contains one string
-    placeholder, for example, "input->%s", "p_%s". The placeholder will be
-    substituted with struct field names to refer to the input fields.
-    |context| is the name of the serialization context.
-    |input_may_be_temp| indicates whether any input may be temporary obejcts.
-    We need to assign temporary objects to local variables before passing it to
-    Serializer, because it is illegal to pass temporary objects as non-const
-    references.
-    This macro is expanded to collect handles from both:
-    - user-defined structs: the input is an instance of the corresponding struct
-      wrapper class.
-    - method parameters/response parameters: the input is a list of
-      arguments. #}
-{%- macro prepare_to_serialize(struct, input_field_pattern, context,
-                               input_may_be_temp=False) -%}
-{%-   for pf in struct.packed.packed_fields_in_ordinal_order
-          if pf.field.kind|contains_handles_or_interfaces %}
-{%-     set name = pf.field.name -%}
-{%-     set kind = pf.field.kind -%}
-{%-     set original_input_field = input_field_pattern|format(name) %}
-{%-     set input_field = "in_%s"|format(name) if input_may_be_temp
-                                               else original_input_field %}
-{%-     if input_may_be_temp %}
-  decltype({{original_input_field}}) in_{{name}} = {{original_input_field}};
-{%-     endif %}
-
-{%-     set serializer_type = kind|unmapped_type_for_serializer %}
-{%-     if kind|is_union_kind %}
-  mojo::internal::PrepareToSerialize<{{serializer_type}}>(
-      {{input_field}}, true, {{context}});
-{%-     else %}
-  mojo::internal::PrepareToSerialize<{{serializer_type}}>(
-      {{input_field}}, {{context}});
-{%-     endif %}
-{%-   endfor %}
-{%- endmacro -%}
-
 {#  Serializes the specified struct.
     |struct| is the struct definition.
     |struct_display_name| is the display name for the struct that can be showed
@@ -70,14 +30,7 @@
 {%-     set input_field = "in_%s"|format(name) if input_may_be_temp
                                                else original_input_field %}
 {%-     if input_may_be_temp %}
-{%-       if kind|is_object_kind %}
   decltype({{original_input_field}}) in_{{name}} = {{original_input_field}};
-{%-       else %}
-  // Dummy input value. The serialized value is already stored in the
-  // SerializationContext.
-  typename std::remove_reference<decltype({{original_input_field}})>::type
-      in_{{name}};
-{%-       endif %}
 {%-     endif %}
 {%-   endif %}
 

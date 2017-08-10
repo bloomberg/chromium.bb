@@ -30,9 +30,6 @@ struct NativeStructSerializerImpl {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Traits = IPC::ParamTraits<UserType>;
 
-  static void PrepareToSerialize(MaybeConstUserType& value,
-                                 SerializationContext* context) {}
-
   static void Serialize(MaybeConstUserType& value,
                         Buffer* buffer,
                         NativeStruct_Data::BufferWriter* writer,
@@ -93,8 +90,6 @@ struct NativeStructSerializerImpl {
 };
 
 struct MOJO_CPP_BINDINGS_EXPORT UnmappedNativeStructSerializerImpl {
-  static void PrepareToSerialize(const NativeStructPtr& input,
-                                 SerializationContext* context);
   static void Serialize(const NativeStructPtr& input,
                         Buffer* buffer,
                         NativeStruct_Data::BufferWriter* writer,
