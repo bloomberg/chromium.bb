@@ -19,11 +19,9 @@ component("system") {
     "broker.h",
     "broker_host.cc",
     "broker_host.h",
-    "broker_posix.cc",
     "broker_win.cc",
     "channel.cc",
     "channel.h",
-    "channel_posix.cc",
     "channel_win.cc",
     "configuration.cc",
     "configuration.h",
@@ -65,6 +63,30 @@ component("system") {
     "watcher_set.h",
   ]
 
+  if (is_mac && !is_ios) {
+    sources += [
+      "mach_port_relay.cc",
+      "mach_port_relay.h",
+    ]
+  }
+
+  if (is_fuchsia) {
+    sources += [ "channel_fuchsia.cc" ]
+  } else if (is_posix) {
+    sources += [
+      "broker_posix.cc",
+      "channel_posix.cc",
+    ]
+  }
+
+  if (is_nacl && !is_nacl_nonsfi) {
+    sources -= [
+      "broker_host.cc",
+      "broker_posix.cc",
+      "channel_posix.cc",
+    ]
+  }
+
   defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
 
   public_deps = [
@@ -86,21 +108,6 @@ component("system") {
   if (is_win) {
     cflags = [ "/wd4324" ]  # Structure was padded due to __declspec(align()),
                             # which is uninteresting.
-  }
-
-  if (is_mac && !is_ios) {
-    sources += [
-      "mach_port_relay.cc",
-      "mach_port_relay.h",
-    ]
-  }
-
-  if (is_nacl && !is_nacl_nonsfi) {
-    sources -= [
-      "broker_host.cc",
-      "broker_posix.cc",
-      "channel_posix.cc",
-    ]
   }
 
   # Use target_os == "chromeos" instead of is_chromeos because we need to

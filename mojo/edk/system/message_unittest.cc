@@ -11,6 +11,7 @@
 #include "base/numerics/safe_math.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -767,12 +768,10 @@ TEST_F(MessageTest, ExtendPayloadWithHandlesAttached) {
   MojoHandle handles[5];
   CreateMessagePipe(&handles[0], &handles[1]);
   PlatformChannelPair channel;
-  handles[2] = WrapPlatformFile(channel.PassServerHandle().release().handle)
-                   .release()
-                   .value();
-  handles[3] = WrapPlatformFile(channel.PassClientHandle().release().handle)
-                   .release()
-                   .value();
+  ASSERT_EQ(MOJO_RESULT_OK, CreatePlatformHandleWrapper(
+                                channel.PassServerHandle(), &handles[2]));
+  ASSERT_EQ(MOJO_RESULT_OK, CreatePlatformHandleWrapper(
+                                channel.PassClientHandle(), &handles[3]));
   handles[4] = SharedBufferHandle::Create(64).release().value();
 
   MojoMessageHandle message;
@@ -819,12 +818,10 @@ TEST_F(MessageTest, ExtendPayloadWithHandlesAttachedViaExtension) {
   MojoHandle handles[5];
   CreateMessagePipe(&handles[0], &handles[4]);
   PlatformChannelPair channel;
-  handles[1] = WrapPlatformFile(channel.PassServerHandle().release().handle)
-                   .release()
-                   .value();
-  handles[2] = WrapPlatformFile(channel.PassClientHandle().release().handle)
-                   .release()
-                   .value();
+  ASSERT_EQ(MOJO_RESULT_OK, CreatePlatformHandleWrapper(
+                                channel.PassServerHandle(), &handles[1]));
+  ASSERT_EQ(MOJO_RESULT_OK, CreatePlatformHandleWrapper(
+                                channel.PassClientHandle(), &handles[2]));
   handles[3] = SharedBufferHandle::Create(64).release().value();
 
   MojoMessageHandle message;

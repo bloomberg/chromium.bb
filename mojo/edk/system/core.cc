@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
@@ -62,7 +63,11 @@ MojoResult MojoPlatformHandleToScopedPlatformHandle(
 
   PlatformHandle handle;
   switch (platform_handle->type) {
-#if defined(OS_POSIX)
+#if defined(OS_FUCHSIA)
+    case MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE:
+      handle = PlatformHandle::ForHandle(platform_handle->value);
+      break;
+#elif defined(OS_POSIX)
     case MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR:
       handle.handle = static_cast<int>(platform_handle->value);
       break;
@@ -100,7 +105,10 @@ MojoResult ScopedPlatformHandleToMojoPlatformHandle(
     return MOJO_RESULT_OK;
   }
 
-#if defined(OS_POSIX)
+#if defined(OS_FUCHSIA)
+  platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE;
+  platform_handle->value = static_cast<uint64_t>(handle.release().as_handle());
+#elif defined(OS_POSIX)
   switch (handle.get().type) {
     case PlatformHandle::Type::POSIX:
       platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR;

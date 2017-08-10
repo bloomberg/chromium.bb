@@ -10510,6 +10510,9 @@
         "test": "media_unittests"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_common_unittests.filter"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": false
         },
