@@ -46,6 +46,7 @@
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "v8/include/v8.h"
 
 using ::testing::Test;
 using ::testing::_;
@@ -722,6 +723,17 @@ TEST_F(DrawingBufferTest, verifySetIsHiddenProperlyAffectsMailboxes) {
 
   EXPECT_EQ(wait_sync_token, gl_->MostRecentlyWaitedSyncToken());
 
+  drawing_buffer_->BeginDestruction();
+}
+
+TEST_F(DrawingBufferTest,
+       verifyTooBigDrawingBufferExceedingV8MaxSizeFailsToCreate) {
+  IntSize too_big_size(1, (v8::TypedArray::kMaxLength / 4) + 1);
+  RefPtr<DrawingBuffer> too_big_drawing_buffer = DrawingBuffer::Create(
+      nullptr, nullptr, too_big_size, false, false, false, false, false,
+      DrawingBuffer::kDiscard, DrawingBuffer::kWebGL1,
+      DrawingBuffer::kAllowChromiumImage, CanvasColorParams());
+  EXPECT_EQ(too_big_drawing_buffer, nullptr);
   drawing_buffer_->BeginDestruction();
 }
 

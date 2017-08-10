@@ -533,5 +533,11 @@ TEST_F(ImageDataTest, TestCropRect) {
   delete[] f32_pixels;
 }
 
+TEST_F(ImageDataTest, ImageDataTooBigToAllocateDoesNotCrash) {
+  ImageData* image_data = ImageData::CreateForTest(
+      IntSize(1, (v8::TypedArray::kMaxLength / 4) + 1));
+  EXPECT_EQ(image_data, nullptr);
+}
+
 }  // namspace
 }  // namespace blink
