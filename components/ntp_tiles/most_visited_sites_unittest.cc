@@ -871,7 +871,7 @@ TEST_P(MostVisitedSitesTest, ShouldInformSuggestionSourcesWhenBlacklisting) {
 TEST_P(MostVisitedSitesTest, ShouldContainSiteExplorationsWhenFeatureEnabled) {
   base::test::ScopedFeatureList feature_list;
   std::map<SectionType, NTPTilesVector> sections;
-  feature_list.InitAndEnableFeature(kSitesExplorationFeature);
+  feature_list.InitAndEnableFeature(kSiteExplorationUiFeature);
   pref_service_.SetString(prefs::kPopularSitesOverrideVersion, "6");
   RecreateMostVisitedSites();  // Refills cache with version 6 popular sites.
   DisableRemoteSuggestions();

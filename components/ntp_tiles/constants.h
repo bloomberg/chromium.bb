@@ -28,7 +28,7 @@ extern const base::Feature kNtpMostLikelyFaviconsFromServerFeature;
 extern const base::Feature kLowerResolutionFaviconsFeature;
 
 // Feature to provide site exploration tiles in addition to personal tiles.
-extern const base::Feature kSitesExplorationFeature;
+extern const base::Feature kSiteExplorationUiFeature;
 
 // Use this to find out whether the kNtpMostLikelyFaviconsFromServerFeature is
 // enabled. This helper function abstracts iOS special way to override the

@@ -37,7 +37,7 @@ const base::Feature kDisplaySuggestionsServiceTiles{
 // |num_tiles| tiles. If exploration sections are used, we need popular sites
 // regardless of how many tiles we already have.
 bool NeedPopularSites(const PrefService* prefs, int num_tiles) {
-  return base::FeatureList::IsEnabled(kSitesExplorationFeature) ||
+  return base::FeatureList::IsEnabled(kSiteExplorationUiFeature) ||
          prefs->GetInteger(prefs::kNumPersonalTiles) < num_tiles;
 }
 

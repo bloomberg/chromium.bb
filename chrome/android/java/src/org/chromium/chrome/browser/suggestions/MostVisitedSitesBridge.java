@@ -126,8 +126,8 @@ public class MostVisitedSitesBridge
             int[] sections, String[] whitelistIconPaths, int[] sources) {
         List<SiteSuggestion> siteSuggestions = new ArrayList<>(titles.length);
         for (int i = 0; i < titles.length; ++i) {
-            siteSuggestions.add(
-                    new SiteSuggestion(titles[i], urls[i], whitelistIconPaths[i], sources[i]));
+            siteSuggestions.add(new SiteSuggestion(
+                    titles[i], urls[i], whitelistIconPaths[i], sources[i], sections[i]));
         }
         return siteSuggestions;
     }

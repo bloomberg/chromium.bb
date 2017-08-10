@@ -11,7 +11,6 @@ import android.support.annotation.Nullable;
  * Holds the details to populate a site suggestion tile.
  */
 public class Tile implements OfflinableSuggestion {
-    // TODO(dgn): maybe extend SiteSuggestion instead?
     private final SiteSuggestion mSiteData;
 
     private final int mIndex;
@@ -120,7 +119,7 @@ public class Tile implements OfflinableSuggestion {
         mIcon = icon;
     }
 
-    @TileGroup.TileSectionType
+    @TileSectionType
     public int getSectionType() {
         return mSiteData.sectionType;
     }

@@ -23095,6 +23095,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-795600188" label="disable-async-dns"/>
   <int value="-790036192" label="overscroll-start-threshold"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
+  <int value="-776686417" label="SiteExplorationUi:disabled"/>
   <int value="-775321548" label="UseNewDoodleApi:disabled"/>
   <int value="-772679248" label="MojoVideoEncodeAccelerator:enabled"/>
   <int value="-770319039" label="enable-touch-editing"/>
@@ -23114,6 +23115,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-715733307" label="force-effective-connection-type"/>
   <int value="-714710496" label="VideoFullscreenOrientationLock:disabled"/>
   <int value="-714043324" label="OutOfBlinkCORS:enabled"/>
+  <int value="-711991950" label="SiteExplorationUi:enabled"/>
   <int value="-711890895" label="enable-website-settings-manager"/>
   <int value="-709058455" label="ui-slow-animations"/>
   <int value="-702477233" label="ContentFullscreen:enabled"/>

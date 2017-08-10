@@ -38,6 +38,13 @@ public final class SuggestionsConfig {
     }
 
     /**
+     * @return Whether to use the Sites exploration UI to display the site suggestions.
+     */
+    public static boolean useSitesExplorationUi() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.SITE_EXPLORATION_UI);
+    }
+
+    /**
      * @param resources The resources to fetch the color from.
      * @return The background color for the suggestions sheet content.
      */
