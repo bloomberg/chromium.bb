@@ -46,7 +46,7 @@ std::unique_ptr<WebServiceWorkerResponse> CreateTestWebServiceWorkerResponse() {
   web_response->SetURLList(url_list);
   web_response->SetStatus(kStatus);
   web_response->SetStatusText(status_text);
-  web_response->SetResponseType(mojom::FetchResponseType::kDefault);
+  web_response->SetResponseType(network::mojom::FetchResponseType::kDefault);
   for (int i = 0; headers[i].key; ++i)
     web_response->SetHeader(WebString::FromUTF8(headers[i].key),
                             WebString::FromUTF8(headers[i].value));
@@ -97,7 +97,7 @@ TEST(ServiceWorkerResponseTest, FromWebServiceWorkerResponseDefault) {
   V8TestingScope scope;
   std::unique_ptr<WebServiceWorkerResponse> web_response =
       CreateTestWebServiceWorkerResponse();
-  web_response->SetResponseType(mojom::FetchResponseType::kDefault);
+  web_response->SetResponseType(network::mojom::FetchResponseType::kDefault);
   Response* response = Response::Create(scope.GetScriptState(), *web_response);
 
   Headers* response_headers = response->headers();
@@ -117,7 +117,7 @@ TEST(ServiceWorkerResponseTest, FromWebServiceWorkerResponseBasic) {
   V8TestingScope scope;
   std::unique_ptr<WebServiceWorkerResponse> web_response =
       CreateTestWebServiceWorkerResponse();
-  web_response->SetResponseType(mojom::FetchResponseType::kBasic);
+  web_response->SetResponseType(network::mojom::FetchResponseType::kBasic);
   Response* response = Response::Create(scope.GetScriptState(), *web_response);
 
   Headers* response_headers = response->headers();
@@ -136,7 +136,7 @@ TEST(ServiceWorkerResponseTest, FromWebServiceWorkerResponseCORS) {
   V8TestingScope scope;
   std::unique_ptr<WebServiceWorkerResponse> web_response =
       CreateTestWebServiceWorkerResponse();
-  web_response->SetResponseType(mojom::FetchResponseType::kCORS);
+  web_response->SetResponseType(network::mojom::FetchResponseType::kCORS);
   Response* response = Response::Create(scope.GetScriptState(), *web_response);
 
   Headers* response_headers = response->headers();
@@ -154,7 +154,7 @@ TEST(ServiceWorkerResponseTest, FromWebServiceWorkerResponseOpaque) {
   V8TestingScope scope;
   std::unique_ptr<WebServiceWorkerResponse> web_response =
       CreateTestWebServiceWorkerResponse();
-  web_response->SetResponseType(mojom::FetchResponseType::kOpaque);
+  web_response->SetResponseType(network::mojom::FetchResponseType::kOpaque);
   Response* response = Response::Create(scope.GetScriptState(), *web_response);
 
   Headers* response_headers = response->headers();

@@ -6,4 +6,5 @@ include_rules = [
     "+modules/credentialmanager",
     "+mojo/public/cpp/system/data_pipe.h",
     "+mojo/public/cpp/system/simple_watcher.h",
+    "+services/network/public/interfaces",
 ]

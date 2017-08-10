@@ -18,21 +18,6 @@ enum FetchRequestMode {
   NAVIGATE,
 };
 
-// Corresponds to response types from the Fetch spec:
-// https://fetch.spec.whatwg.org/#concept-response-type
-//
-// This enum is used in histograms. Append-only.
-enum FetchResponseType {
-  kBasic,
-  kCORS,
-  kDefault,
-  kError,
-  kOpaque,
-  kOpaqueRedirect,
-  // Add a new type here, then update kLast and enums.xml.
-  kLast = kOpaqueRedirect
-};
-
 // Type of the context associated with a request.
 enum RequestContextType {
   UNSPECIFIED,

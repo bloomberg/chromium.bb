@@ -71,25 +71,25 @@ FetchResponseData* CreateFetchResponseDataFromWebResponse(
 
   // Filter the response according to |webResponse|'s ResponseType.
   switch (web_response.ResponseType()) {
-    case mojom::FetchResponseType::kBasic:
+    case network::mojom::FetchResponseType::kBasic:
       response = response->CreateBasicFilteredResponse();
       break;
-    case mojom::FetchResponseType::kCORS: {
+    case network::mojom::FetchResponseType::kCORS: {
       WebCORS::HTTPHeaderSet header_names;
       for (const auto& header : web_response.CorsExposedHeaderNames())
         header_names.insert(String(header));
       response = response->CreateCORSFilteredResponse(header_names);
       break;
     }
-    case mojom::FetchResponseType::kOpaque:
+    case network::mojom::FetchResponseType::kOpaque:
       response = response->CreateOpaqueFilteredResponse();
       break;
-    case mojom::FetchResponseType::kOpaqueRedirect:
+    case network::mojom::FetchResponseType::kOpaqueRedirect:
       response = response->CreateOpaqueRedirectFilteredResponse();
       break;
-    case mojom::FetchResponseType::kDefault:
+    case network::mojom::FetchResponseType::kDefault:
       break;
-    case mojom::FetchResponseType::kError:
+    case network::mojom::FetchResponseType::kError:
       DCHECK_EQ(response->GetType(), FetchResponseData::kErrorType);
       break;
   }

@@ -35,6 +35,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "storage/common/blob_storage/blob_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -518,7 +519,7 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
   response_callback->OnResponse(
       ServiceWorkerResponse(
           base::MakeUnique<std::vector<GURL>>(), 200, "OK",
-          blink::mojom::FetchResponseType::kDefault,
+          network::mojom::FetchResponseType::kDefault,
           base::MakeUnique<ServiceWorkerHeaderMap>(), std::string(), 0,
           nullptr /* blob */, blink::kWebServiceWorkerResponseErrorUnknown,
           base::Time(), false /* is_in_cache_storage */,

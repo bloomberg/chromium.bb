@@ -19,6 +19,7 @@
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/service_worker_modes.h"
+#include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientType.h"
@@ -136,7 +137,7 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
       std::unique_ptr<std::vector<GURL>> url_list,
       int status_code,
       const std::string& status_text,
-      blink::mojom::FetchResponseType response_type,
+      network::mojom::FetchResponseType response_type,
       std::unique_ptr<ServiceWorkerHeaderMap> headers,
       const std::string& blob_uuid,
       uint64_t blob_size,
@@ -155,7 +156,7 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   std::vector<GURL> url_list;
   int status_code;
   std::string status_text;
-  blink::mojom::FetchResponseType response_type;
+  network::mojom::FetchResponseType response_type;
   ServiceWorkerHeaderMap headers;
   // |blob_uuid| and |blob_size| are set when the body is a blob. For other
   // types of responses, the body is provided separately in Mojo IPC via

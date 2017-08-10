@@ -68,6 +68,7 @@
 #include "public/platform/WebCORS.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -889,7 +890,7 @@ void DocumentThreadableLoader::HandleResponse(
     // https://github.com/w3c/preload/issues/100 is addressed.
     if (request_mode != WebURLRequest::kFetchRequestModeNoCORS &&
         response.ResponseTypeViaServiceWorker() ==
-            mojom::FetchResponseType::kOpaque) {
+            network::mojom::FetchResponseType::kOpaque) {
       StringBuilder builder;
       builder.Append(WebCORS::AccessControlErrorString(
           WebCORS::AccessStatus::kInvalidResponse,

@@ -34,6 +34,7 @@
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_impl.h"
@@ -79,40 +80,40 @@ using MetadataCallback =
 // is controlled per-origin by the QuotaManager.
 const int kMaxCacheBytes = std::numeric_limits<int>::max();
 
-blink::mojom::FetchResponseType ProtoResponseTypeToFetchResponseType(
+network::mojom::FetchResponseType ProtoResponseTypeToFetchResponseType(
     proto::CacheResponse::ResponseType response_type) {
   switch (response_type) {
     case proto::CacheResponse::BASIC_TYPE:
-      return blink::mojom::FetchResponseType::kBasic;
+      return network::mojom::FetchResponseType::kBasic;
     case proto::CacheResponse::CORS_TYPE:
-      return blink::mojom::FetchResponseType::kCORS;
+      return network::mojom::FetchResponseType::kCORS;
     case proto::CacheResponse::DEFAULT_TYPE:
-      return blink::mojom::FetchResponseType::kDefault;
+      return network::mojom::FetchResponseType::kDefault;
     case proto::CacheResponse::ERROR_TYPE:
-      return blink::mojom::FetchResponseType::kError;
+      return network::mojom::FetchResponseType::kError;
     case proto::CacheResponse::OPAQUE_TYPE:
-      return blink::mojom::FetchResponseType::kOpaque;
+      return network::mojom::FetchResponseType::kOpaque;
     case proto::CacheResponse::OPAQUE_REDIRECT_TYPE:
-      return blink::mojom::FetchResponseType::kOpaqueRedirect;
+      return network::mojom::FetchResponseType::kOpaqueRedirect;
   }
   NOTREACHED();
-  return blink::mojom::FetchResponseType::kOpaque;
+  return network::mojom::FetchResponseType::kOpaque;
 }
 
 proto::CacheResponse::ResponseType FetchResponseTypeToProtoResponseType(
-    blink::mojom::FetchResponseType response_type) {
+    network::mojom::FetchResponseType response_type) {
   switch (response_type) {
-    case blink::mojom::FetchResponseType::kBasic:
+    case network::mojom::FetchResponseType::kBasic:
       return proto::CacheResponse::BASIC_TYPE;
-    case blink::mojom::FetchResponseType::kCORS:
+    case network::mojom::FetchResponseType::kCORS:
       return proto::CacheResponse::CORS_TYPE;
-    case blink::mojom::FetchResponseType::kDefault:
+    case network::mojom::FetchResponseType::kDefault:
       return proto::CacheResponse::DEFAULT_TYPE;
-    case blink::mojom::FetchResponseType::kError:
+    case network::mojom::FetchResponseType::kError:
       return proto::CacheResponse::ERROR_TYPE;
-    case blink::mojom::FetchResponseType::kOpaque:
+    case network::mojom::FetchResponseType::kOpaque:
       return proto::CacheResponse::OPAQUE_TYPE;
-    case blink::mojom::FetchResponseType::kOpaqueRedirect:
+    case network::mojom::FetchResponseType::kOpaqueRedirect:
       return proto::CacheResponse::OPAQUE_REDIRECT_TYPE;
   }
   NOTREACHED();
@@ -1080,7 +1081,7 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
   UMA_HISTOGRAM_ENUMERATION(
       "ServiceWorkerCache.Cache.AllWritesResponseType",
       operation.response.response_type,
-      static_cast<int>(blink::mojom::FetchResponseType::kLast) + 1);
+      static_cast<int>(network::mojom::FetchResponseType::kLast) + 1);
 
   std::unique_ptr<PutContext> put_context(new PutContext(
       std::move(request), std::move(response), std::move(blob_data_handle),

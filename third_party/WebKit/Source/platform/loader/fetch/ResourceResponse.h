@@ -41,6 +41,7 @@
 #include "platform/wtf/text/CString.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -292,10 +293,11 @@ class PLATFORM_EXPORT ResourceResponse final {
     was_fallback_required_by_service_worker_ = value;
   }
 
-  mojom::FetchResponseType ResponseTypeViaServiceWorker() const {
+  network::mojom::FetchResponseType ResponseTypeViaServiceWorker() const {
     return response_type_via_service_worker_;
   }
-  void SetResponseTypeViaServiceWorker(mojom::FetchResponseType value) {
+  void SetResponseTypeViaServiceWorker(
+      network::mojom::FetchResponseType value) {
     response_type_via_service_worker_ = value;
   }
 
@@ -449,7 +451,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   bool did_service_worker_navigation_preload_ : 1;
 
   // The type of the response which was returned by the ServiceWorker.
-  mojom::FetchResponseType response_type_via_service_worker_;
+  network::mojom::FetchResponseType response_type_via_service_worker_;
 
   // HTTP version used in the response, if known.
   HTTPVersion http_version_;
@@ -576,7 +578,7 @@ struct CrossThreadResourceResponseData {
   bool was_fetched_via_service_worker_;
   bool was_fetched_via_foreign_fetch_;
   bool was_fallback_required_by_service_worker_;
-  mojom::FetchResponseType response_type_via_service_worker_;
+  network::mojom::FetchResponseType response_type_via_service_worker_;
   Vector<KURL> url_list_via_service_worker_;
   String cache_storage_cache_name_;
   bool did_service_worker_navigation_preload_;

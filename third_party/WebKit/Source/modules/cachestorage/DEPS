@@ -6,4 +6,5 @@ include_rules = [
     "+modules/cachestorage",
     "+modules/fetch",
     "+modules/serviceworkers",
+    "+services/network/public/interfaces",
 ]

@@ -19,6 +19,7 @@
 #include "content/public/common/push_event_payload.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
+#include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "url/gurl.h"
@@ -44,8 +45,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerResponseError,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerClientType,
                           blink::kWebServiceWorkerClientTypeLast)
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FetchResponseType,
-                          blink::mojom::FetchResponseType::kLast)
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchResponseType,
+                          network::mojom::FetchResponseType::kLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerProviderType,
                           content::SERVICE_WORKER_PROVIDER_TYPE_LAST)
