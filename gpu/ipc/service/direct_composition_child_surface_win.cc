@@ -137,6 +137,7 @@ void DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
     if (dcomp_surface_) {
       HRESULT hr = dcomp_surface_->EndDraw();
       CHECK(SUCCEEDED(hr));
+      dcomp_surface_serial_++;
     } else if (!will_discard) {
       DXGI_PRESENT_PARAMETERS params = {};
       RECT dirty_rect = swap_rect_.ToRECT();

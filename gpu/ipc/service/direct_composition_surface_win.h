@@ -73,6 +73,8 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
   const base::win::ScopedComPtr<IDCompositionSurface> dcomp_surface() const;
   const base::win::ScopedComPtr<IDXGISwapChain1> swap_chain() const;
 
+  uint64_t GetDCompSurfaceSerial() const;
+
   scoped_refptr<base::TaskRunner> GetWindowTaskRunnerForTesting();
 
   base::win::ScopedComPtr<IDXGISwapChain1> GetLayerSwapChainForTesting(
