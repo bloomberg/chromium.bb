@@ -131,9 +131,8 @@ rather than security vulnerabilities.
      it](https://crbug.com/new).
 
 DoS issues are not considered under the security vulnerability rewards program;
-the [severity
-guidelines](https://www.chromium.org/developers/severity-guidelines) outline the
-types of bugs that are considered security vulnerabilities in more detail.
+the [severity guidelines](severity-guidelines.md) outline the types of bugs that
+are considered security vulnerabilities in more detail.
 
 <a name="TOC-Are-XSS-filter-bypasses-considered-security-bugs-"></a>
 ## Are XSS filter bypasses considered security bugs?
@@ -581,6 +580,4 @@ FAQ](https://chromium.googlesource.com/chromium/src/+/master/docs/security/servi
 
 ## TODO
 
-*    Move https://www.chromium.org/developers/severity-guidelines into MD as
-     well, and change links here to point to it.
 *    https://dev.chromium.org/Home/chromium-security/client-identification-mechanisms
