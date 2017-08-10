@@ -118,7 +118,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   // Marks a set of handles as busy and acquires references to each of their
   // dispatchers. The caller MUST eventually call ReleaseDispatchersForTransit()
-  // on the resulting |*dispatchers|.
+  // on the resulting |*dispatchers|. Note that |*dispatchers| contents are
+  // extended, not replaced, by this call.
   MojoResult AcquireDispatchersForTransit(
       const MojoHandle* handles,
       size_t num_handles,
@@ -202,8 +203,14 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                                            uint32_t* buffer_size);
   MojoResult ExtendSerializedMessagePayload(MojoMessageHandle message_handle,
                                             uint32_t new_payload_size,
+                                            const MojoHandle* handles,
+                                            uint32_t num_handles,
                                             void** new_buffer,
                                             uint32_t* new_buffer_size);
+  MojoResult CommitSerializedMessageContents(MojoMessageHandle message_handle,
+                                             uint32_t final_payload_size,
+                                             void** buffer,
+                                             uint32_t* buffer_size);
   MojoResult GetSerializedMessageContents(
       MojoMessageHandle message_handle,
       void** buffer,

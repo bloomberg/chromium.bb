@@ -97,8 +97,14 @@ struct MojoSystemThunks {
                                               uint32_t* buffer_size);
   MojoResult (*ExtendSerializedMessagePayload)(MojoMessageHandle message,
                                                uint32_t new_payload_size,
+                                               const MojoHandle* handles,
+                                               uint32_t num_handles,
                                                void** buffer,
                                                uint32_t* buffer_size);
+  MojoResult (*CommitSerializedMessageContents)(MojoMessageHandle message,
+                                                uint32_t final_payload_size,
+                                                void** buffer,
+                                                uint32_t* buffer_size);
   MojoResult (*GetSerializedMessageContents)(
       MojoMessageHandle message,
       void** buffer,

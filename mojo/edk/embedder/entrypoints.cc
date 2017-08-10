@@ -83,10 +83,21 @@ MojoResult MojoAttachSerializedMessageBufferImpl(MojoMessageHandle message,
 
 MojoResult MojoExtendSerializedMessagePayloadImpl(MojoMessageHandle message,
                                                   uint32_t new_payload_size,
+                                                  const MojoHandle* handles,
+                                                  uint32_t num_handles,
                                                   void** new_buffer,
                                                   uint32_t* new_buffer_size) {
   return g_core->ExtendSerializedMessagePayload(message, new_payload_size,
+                                                handles, num_handles,
                                                 new_buffer, new_buffer_size);
+}
+
+MojoResult MojoCommitSerializedMessageContentsImpl(MojoMessageHandle message,
+                                                   uint32_t final_payload_size,
+                                                   void** buffer,
+                                                   uint32_t* buffer_size) {
+  return g_core->CommitSerializedMessageContents(message, final_payload_size,
+                                                 buffer, buffer_size);
 }
 
 MojoResult MojoGetSerializedMessageContentsImpl(
@@ -288,6 +299,7 @@ MojoSystemThunks MakeSystemThunks() {
                                     MojoSerializeMessageImpl,
                                     MojoAttachSerializedMessageBufferImpl,
                                     MojoExtendSerializedMessagePayloadImpl,
+                                    MojoCommitSerializedMessageContentsImpl,
                                     MojoGetSerializedMessageContentsImpl,
                                     MojoAttachMessageContextImpl,
                                     MojoGetMessageContextImpl,

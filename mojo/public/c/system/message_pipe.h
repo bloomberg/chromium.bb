@@ -222,6 +222,10 @@ MOJO_SYSTEM_EXPORT MojoResult
 // attached (see |MojoAttachContext()| and |MojoAttachSerializedMessageBuffer()|
 // below.)
 //
+// NOTE: Unlike |MojoHandle|, a |MojoMessageHandle| is NOT thread-safe and thus
+// callers of message-related APIs must be careful to restrict usage of any
+// given |MojoMessageHandle| to a single thread at a time.
+//
 // Returns:
 //   |MOJO_RESULT_OK| if a new message was created. |*message| contains a handle
 //       to the new message object upon return.
@@ -269,9 +273,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoSerializeMessage(MojoMessageHandle message);
 // |payload_size|: The initial expected payload size of the message. If this
 //     call succeeds, the attached buffer will be at least this large.
 // |handles|: The handles to attach to the serialized message. The set of
-//     attached handles may not be augmented once the buffer is attached, and so
-//     all handle attachments must be known up front. May be null if
-//     |num_handles| is 0.
+//     attached handles may be augmented by one or more calls to
+//     |MojoExtendSerializedMessagePayload|. May be null iff |num_handles| is 0.
 // |num_handles|: The number of handles provided by |handles|.
 //
 // Note that while a serialized message buffer's size may exceed the size of the
@@ -281,14 +284,23 @@ MOJO_SYSTEM_EXPORT MojoResult MojoSerializeMessage(MojoMessageHandle message);
 // extend the portion of the buffer which is designated as valid payload and
 // (if necessary) expand the available capacity.
 //
-// Ownership of all handles in |handles| is tranferred to the message object if
+// It is legal to write past |payload_size| (up to |*buffer_size|) within
+// |*buffer| upon return, but a future call to
+// |MojoExtendSerializedMessagePayload()| or
+// |MojoCommitSerializedMessageContents()| must be issued to account for the new
+// desired payload boundary and ensure that those bytes are transmitted in the
+// message.
+//
+// Ownership of all handles in |handles| is transferred to the message object if
 // and ONLY if this operation succeeds and returns |MOJO_RESULT_OK|. Otherwise
 // the caller retains ownership.
 //
 // Returns:
 //   |MOJO_RESULT_OK| upon success. A new serialized message buffer has been
 //       attached to |message|. The address of the buffer's storage is output in
-//       |*buffer| and its size is in |*buffer_size|.
+//       |*buffer| and its size is in |*buffer_size|. The message is considered
+//       to be in a partially serialized state and is not transmittable until
+//       |MojoCommitSerializedMessageContents()| is called.
 //   |MOJO_RESULT_INVALID_ARGUMENT| if |message| is not a valid message object;
 //       if |num_handles| is non-zero but |handles| is null; if either
 //       |buffer| or |buffer_size| is null; or if any handle in |handles| is
@@ -308,13 +320,33 @@ MojoAttachSerializedMessageBuffer(MojoMessageHandle message,
                                   void** buffer,
                                   uint32_t* buffer_size);
 
-// Extends the designated payload size within a serialized message buffer. If
-// the buffer is not large enough to accomodate the additional payload size,
-// this will attempt to expand the buffer before returning.
+// Extends the contents of a partially serialized message with additional
+// payload bytes and/or handle attachments. If the underlying message buffer is
+// not large enough to accomodate the additional payload size, this will attempt
+// to expand the buffer before returning.
+//
+// May only be called on partially serialized messages, i.e. between a call
+// to |MojoAttachSerializedMessageBuffer()| and
+// |MojoCommitSerializedMessageContents()|.
 //
 // |message|: The message getting additional payload.
 // |new_payload_size|: The new total of the payload. Must be at least as large
 //     as the message's current payload size.
+// |handles|: Handles to be added to the serialized message. These are amended
+//     to the message's current set of serialized handles, if any. May be null
+//     iff |num_handles| is 0.
+// |num_handles|: The number of handles in |handles|.
+//
+// As with |MojoAttachSerializedMessageBuffer|, it is legal to write past
+// |payload_size| (up to |*buffer_size|) within |*buffer| upon return, but a
+// future call to |MojoExtendSerializedMessagePayload()| or
+// |MojoCommitSerializedMessageContents()| must be issued to account for the new
+// desired payload boundary and ensure that those bytes are transmitted in the
+// message.
+//
+// Ownership of all handles in |handles| is transferred to the message object if
+// and ONLY if this operation succeeds and returns |MOJO_RESULT_OK|. Otherwise
+// the caller retains ownership.
 //
 // Returns:
 //   |MOJO_RESULT_OK| if the new payload size has been committed to the message.
@@ -327,12 +359,53 @@ MojoAttachSerializedMessageBuffer(MojoMessageHandle message,
 //   |MOJO_RESULT_OUT_OF_RANGE| if |payload_size| is not at least as large as
 //       the message's current payload size.
 //   |MOJO_RESULT_FAILED_PRECONDITION| if |message| does not have a serialized
-//       message buffer attached.
+//       message buffer attached or is already fully serialized (i.e.
+//       |MojoCommitSerializedMessageContents()| has been called).
+//   |MOJO_RESULT_BUSY| if one or more handles in |handles| is currently busy
+//       and unable to be serialized.
 MOJO_SYSTEM_EXPORT MojoResult
 MojoExtendSerializedMessagePayload(MojoMessageHandle message,
                                    uint32_t new_payload_size,
+                                   const MojoHandle* handles,
+                                   uint32_t num_handles,
                                    void** new_buffer,
                                    uint32_t* new_buffer_size);
+
+// Prepares a partially serialized message for transmission. MUST be called on
+// a partially serialized message before it is legal to either write the message
+// to a message pipe or call |MojoGetSerializedMessageContents()|.
+//
+// |message|: The message whose contents are to be committed.
+// |final_payload_size|: The total number of bytes of meaningful payload to
+//     treat as the full message body.
+//
+// Note that upon return, because no further calls to
+// |MojoExtendSerializedMessagePayload()| are allowed on |message|, the payload
+// may not be extended further and no more handles may be attached.
+//
+// The message's payload buffer (returned and potentially relocated by this
+// call) however is still valid and mutable until the message is either
+// destroyed or written to a pipe.
+//
+// Returns:
+//   |MOJO_RESULT_OK| if the message contents are committed. The message is
+//       fully serialized and it is now legal to write it to a pipe or extract
+//       its contents via |MojoGetSerializedMessageContents()|. |*buffer| and
+//       |*buffer_size| on output will contain the address and size of the
+//       payload buffer, which may be relocated one final time by this call.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |message| is not a valid message object.
+//   |MOJO_RESULT_OUT_OF_RANGE| if |final_payload_size| is larger than the
+//       message's available buffer size as indicated by the most recent call
+//       to |MojoAttachSerializedMessageBuffer()| or
+//       |MojoExtendSerializedMessagePayload()|, or smaller than the most
+//       recently requested payload size given to either call.
+//   |MOJO_RESULT_FAILED_PRECONDITION| if |message| is not a (partially or
+//       fully) serialized message object.
+MOJO_SYSTEM_EXPORT MojoResult
+MojoCommitSerializedMessageContents(MojoMessageHandle message,
+                                    uint32_t final_payload_size,
+                                    void** buffer,
+                                    uint32_t* buffer_size);
 
 // Retrieves the contents of a serialized message.
 //
@@ -361,10 +434,11 @@ MojoExtendSerializedMessagePayload(MojoMessageHandle message,
 //   |MOJO_RESULT_INVALID_ARGUMENT| if |num_handles| is non-null and
 //       |*num_handles| is non-zero, but |handles| is null; or if |message| is
 //       not a valid message handle.
-//   |MOJO_RESULT_FAILED_PRECONDITION| if |message| is not a serialized message.
-//       The caller may either use |MojoSerializeMessage()| and try again, or
-//       use |MojoGetMessageContext()| to extract the message's unserialized
-//       context.
+//   |MOJO_RESULT_FAILED_PRECONDITION| if |message| is not a fully serialized
+//       message. The caller may either use |MojoSerializeMessage()| and try
+//       again, |MojoCommitSerializedMessageContents()| to complete a partially
+//       serialized |message|, or |MojoGetMessageContext()| to extract
+//       |message|'s unserialized context, depending on the message's state.
 //   |MOJO_RESULT_NOT_FOUND| if the message's serialized contents have already
 //       been extracted (or have failed to be extracted) by a previous call to
 //       |MojoGetSerializedMessageContents()|.

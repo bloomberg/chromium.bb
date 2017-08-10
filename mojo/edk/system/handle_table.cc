@@ -112,8 +112,7 @@ MojoResult HandleTable::BeginTransit(
     const MojoHandle* handles,
     size_t num_handles,
     std::vector<Dispatcher::DispatcherInTransit>* dispatchers) {
-  dispatchers->clear();
-  dispatchers->reserve(num_handles);
+  dispatchers->reserve(dispatchers->size() + num_handles);
   for (size_t i = 0; i < num_handles; ++i) {
     auto it = handles_.find(handles[i]);
     if (it == handles_.end())

@@ -512,19 +512,46 @@ MojoResult Core::AttachSerializedMessageBuffer(MojoMessageHandle message_handle,
 MojoResult Core::ExtendSerializedMessagePayload(
     MojoMessageHandle message_handle,
     uint32_t new_payload_size,
+    const MojoHandle* handles,
+    uint32_t num_handles,
     void** new_buffer,
     uint32_t* new_buffer_size) {
   if (!message_handle || !new_buffer || !new_buffer_size)
     return MOJO_RESULT_INVALID_ARGUMENT;
+  if (!handles && num_handles)
+    return MOJO_RESULT_INVALID_ARGUMENT;
   auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
                       ->GetMessage<UserMessageImpl>();
-  MojoResult rv = message->ExtendSerializedMessagePayload(new_payload_size);
+  MojoResult rv = message->ExtendSerializedMessagePayload(new_payload_size,
+                                                          handles, num_handles);
   if (rv != MOJO_RESULT_OK)
     return rv;
 
   *new_buffer = message->user_payload();
   *new_buffer_size =
       base::checked_cast<uint32_t>(message->user_payload_capacity());
+  return MOJO_RESULT_OK;
+}
+
+MojoResult Core::CommitSerializedMessageContents(
+    MojoMessageHandle message_handle,
+    uint32_t final_payload_size,
+    void** buffer,
+    uint32_t* buffer_size) {
+  if (!message_handle)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
+                      ->GetMessage<UserMessageImpl>();
+  MojoResult rv = message->CommitSerializedContents(final_payload_size);
+  if (rv != MOJO_RESULT_OK)
+    return rv;
+
+  if (buffer)
+    *buffer = message->user_payload();
+  if (buffer_size) {
+    *buffer_size =
+        base::checked_cast<uint32_t>(message->user_payload_capacity());
+  }
   return MOJO_RESULT_OK;
 }
 
@@ -540,7 +567,7 @@ MojoResult Core::GetSerializedMessageContents(
 
   auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
                       ->GetMessage<UserMessageImpl>();
-  if (!message->IsSerialized())
+  if (!message->IsSerialized() || !message->IsTransmittable())
     return MOJO_RESULT_FAILED_PRECONDITION;
 
   if (num_bytes) {
@@ -651,12 +678,15 @@ MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
   RequestContext request_context;
   if (!message_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  auto message = base::WrapUnique(
+  auto message_event = base::WrapUnique(
       reinterpret_cast<ports::UserMessageEvent*>(message_handle));
+  auto* message = message_event->GetMessage<UserMessageImpl>();
+  if (!message || !message->IsTransmittable())
+    return MOJO_RESULT_INVALID_ARGUMENT;
   auto dispatcher = GetDispatcher(message_pipe_handle);
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  return dispatcher->WriteMessage(std::move(message), flags);
+  return dispatcher->WriteMessage(std::move(message_event), flags);
 }
 
 MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
