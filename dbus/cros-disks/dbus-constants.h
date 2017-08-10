@@ -53,6 +53,7 @@ const char kVendorName[] = "VendorName";
 const char kProductId[] = "ProductId";
 const char kProductName[] = "ProductName";
 const char kNativePath[] = "NativePath";
+const char kFileSystemType[] = "FileSystemType";
 
 // Enum values.
 // DeviceMediaType enum values are reported through UMA.
