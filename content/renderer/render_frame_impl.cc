@@ -47,6 +47,7 @@
 #include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
+#include "content/child/url_loader_factory_container.h"
 #include "content/child/v8_value_converter_impl.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/child/web_url_request_util.h"
@@ -67,6 +68,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/common/page_messages.h"
+#include "content/common/renderer_host.mojom.h"
 #include "content/common/savable_subframe.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -5249,7 +5251,7 @@ void RenderFrameImpl::OnCommitNavigation(
   mojom::URLLoaderFactoryPtr url_loader_factory;
   url_loader_factory.Bind(mojom::URLLoaderFactoryPtrInfo(
       mojo::ScopedMessagePipeHandle(commit_data.url_loader_factory), 0u));
-  url_loader_factory_ = std::move(url_loader_factory);
+  custom_url_loader_factory_ = std::move(url_loader_factory);
 
   // If the request was initiated in the context of a user gesture then make
   // sure that the navigation also executes in the context of a user gesture.
@@ -6832,18 +6834,16 @@ std::unique_ptr<blink::WebURLLoader> RenderFrameImpl::CreateURLLoader(
         request, task_runner);
   }
 
-  mojom::URLLoaderFactory* factory = url_loader_factory_.get();
+  mojom::URLLoaderFactory* factory = custom_url_loader_factory_.get();
+
   if (base::FeatureList::IsEnabled(features::kNetworkService) &&
       request.Url().ProtocolIs(url::kBlobScheme)) {
-    factory = RenderThreadImpl::current()->GetBlobURLLoaderFactory();
+    factory = GetDefaultURLLoaderFactoryContainer().blob_loader_factory();
     DCHECK(factory);
   }
 
-  if (!factory && !url_loader_factory_) {
-    url_loader_factory_ = RenderThreadImpl::current()
-                              ->blink_platform_impl()
-                              ->CreateURLLoaderFactory();
-    factory = url_loader_factory_.get();
+  if (!factory) {
+    factory = GetDefaultURLLoaderFactoryContainer().network_loader_factory();
     DCHECK(factory);
   }
 
@@ -6854,6 +6854,23 @@ std::unique_ptr<blink::WebURLLoader> RenderFrameImpl::CreateURLLoader(
 void RenderFrameImpl::DraggableRegionsChanged() {
   for (auto& observer : observers_)
     observer.DraggableRegionsChanged();
+}
+
+const URLLoaderFactoryContainer&
+RenderFrameImpl::GetDefaultURLLoaderFactoryContainer() {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  DCHECK(render_thread);
+  if (!url_loader_factory_container_) {
+    mojom::URLLoaderFactoryPtr blob_loader_factory;
+    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+      render_thread->GetRendererHost()->GetBlobURLLoaderFactory(
+          mojo::MakeRequest(&blob_loader_factory));
+    }
+    url_loader_factory_container_ = base::MakeUnique<URLLoaderFactoryContainer>(
+        render_thread->blink_platform_impl()->CreateNetworkURLLoaderFactory(),
+        std::move(blob_loader_factory));
+  }
+  return *url_loader_factory_container_;
 }
 
 blink::WebPageVisibilityState RenderFrameImpl::GetVisibilityState() const {

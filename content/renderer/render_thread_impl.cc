@@ -1101,14 +1101,6 @@ mojom::RendererHost* RenderThreadImpl::GetRendererHost() {
   return renderer_host_.get();
 }
 
-mojom::URLLoaderFactory* RenderThreadImpl::GetBlobURLLoaderFactory() {
-  if (!blob_url_loader_factory_) {
-    GetRendererHost()->GetBlobURLLoaderFactory(
-        mojo::MakeRequest(&blob_url_loader_factory_));
-  }
-  return blob_url_loader_factory_.get();
-}
-
 int RenderThreadImpl::GenerateRoutingID() {
   int32_t routing_id = MSG_ROUTING_NONE;
   render_message_filter()->GenerateRoutingID(&routing_id);

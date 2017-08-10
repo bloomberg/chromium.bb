@@ -495,7 +495,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   mojom::StoragePartitionService* GetStoragePartitionService();
   mojom::RendererHost* GetRendererHost();
-  mojom::URLLoaderFactory* GetBlobURLLoaderFactory();
 
   // ChildMemoryCoordinatorDelegate implementation.
   void OnTrimMemoryImmediately() override;
@@ -785,7 +784,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   mojom::StoragePartitionServicePtr storage_partition_service_;
   mojom::RendererHostPtr renderer_host_;
-  mojom::URLLoaderFactoryPtr blob_url_loader_factory_;
 
   AssociatedInterfaceRegistryImpl associated_interfaces_;
 
