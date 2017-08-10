@@ -157,7 +157,7 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
     });
     static_cast<FakeAuthPolicyClient*>(
         DBusThreadManager::Get()->GetAuthPolicyClient())
-        ->set_operation_delay(base::TimeDelta::FromSeconds(0));
+        ->DisableOperationDelayForTesting();
   }
 
   void SetupActiveDirectoryJSNotifications() {

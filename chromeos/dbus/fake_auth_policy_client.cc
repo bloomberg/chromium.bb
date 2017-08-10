@@ -21,6 +21,7 @@
 #include "components/policy/proto/cloud_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace em = enterprise_management;
@@ -29,9 +30,6 @@ namespace {
 
 const size_t kMaxMachineNameLength = 15;
 const char kInvalidMachineNameCharacters[] = "\\/:*?\"<>|";
-
-// Delay operations to be more realistic.
-constexpr int kOperationDelaySeconds = 3;
 
 // Drop stub policy file of |policy_type| at |policy_path| containing
 // |serialized_payload|.
@@ -63,18 +61,26 @@ bool WritePolicyFile(const base::FilePath& policy_path,
   return bytes_written == static_cast<int>(serialized_response.size());
 }
 
+// Posts |closure| on the ThreadTaskRunner with |delay|.
 void PostDelayedClosure(base::OnceClosure closure,
                         const base::TimeDelta& delay) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, std::move(closure), delay);
 }
 
+// Runs |signal_callback| with Signal*. Needed to own Signal object.
+void RunSignalCallback(const std::string& interface_name,
+                       const std::string& method_name,
+                       dbus::ObjectProxy::SignalCallback signal_callback) {
+  signal_callback.Run(
+      base::MakeUnique<dbus::Signal>(interface_name, method_name).get());
+}
+
 }  // namespace
 
 namespace chromeos {
 
-FakeAuthPolicyClient::FakeAuthPolicyClient()
-    : operation_delay_(base::TimeDelta::FromSeconds(kOperationDelaySeconds)) {}
+FakeAuthPolicyClient::FakeAuthPolicyClient() {}
 
 FakeAuthPolicyClient::~FakeAuthPolicyClient() {}
 
@@ -102,7 +108,7 @@ void FakeAuthPolicyClient::JoinAdDomain(const std::string& machine_name,
     }
   }
   PostDelayedClosure(base::BindOnce(std::move(callback), error),
-                     operation_delay_);
+                     dbus_operation_delay_);
 }
 
 void FakeAuthPolicyClient::AuthenticateUser(
@@ -125,7 +131,7 @@ void FakeAuthPolicyClient::AuthenticateUser(
     error = auth_error_;
   }
   PostDelayedClosure(base::BindOnce(std::move(callback), error, account_info),
-                     operation_delay_);
+                     dbus_operation_delay_);
 }
 
 void FakeAuthPolicyClient::GetUserStatus(const std::string& object_guid,
@@ -144,9 +150,21 @@ void FakeAuthPolicyClient::GetUserStatus(const std::string& object_guid,
 
   PostDelayedClosure(
       base::BindOnce(std::move(callback), authpolicy::ERROR_NONE, user_status),
-      operation_delay_);
+      dbus_operation_delay_);
   if (!on_get_status_closure_.is_null())
-    PostDelayedClosure(std::move(on_get_status_closure_), operation_delay_);
+    PostDelayedClosure(std::move(on_get_status_closure_),
+                       dbus_operation_delay_);
+}
+
+void FakeAuthPolicyClient::GetUserKerberosFiles(
+    const std::string& object_guid,
+    GetUserKerberosFilesCallback callback) {
+  authpolicy::KerberosFiles files;
+  files.set_krb5cc("credentials");
+  files.set_krb5conf("configuration");
+  PostDelayedClosure(
+      base::BindOnce(std::move(callback), authpolicy::ERROR_NONE, files),
+      dbus_operation_delay_);
 }
 
 void FakeAuthPolicyClient::RefreshDevicePolicy(RefreshPolicyCallback callback) {
@@ -172,7 +190,7 @@ void FakeAuthPolicyClient::RefreshDevicePolicy(RefreshPolicyCallback callback) {
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&WritePolicyFile, policy_path, payload,
-                     "google/chromeos/device", operation_delay_),
+                     "google/chromeos/device", disk_operation_delay_),
       std::move(callback));
 }
 
@@ -205,8 +223,20 @@ void FakeAuthPolicyClient::RefreshUserPolicy(const AccountId& account_id,
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&WritePolicyFile, policy_path, payload,
-                     "google/chromeos/user", operation_delay_),
+                     "google/chromeos/user", disk_operation_delay_),
       std::move(callback));
+}
+
+void FakeAuthPolicyClient::ConnectToSignal(
+    const std::string& signal_name,
+    dbus::ObjectProxy::SignalCallback signal_callback,
+    dbus::ObjectProxy::OnConnectedCallback on_connected_callback) {
+  on_connected_callback.Run(authpolicy::kAuthPolicyInterface, signal_name,
+                            true /* success */);
+  PostDelayedClosure(
+      base::BindOnce(RunSignalCallback, authpolicy::kAuthPolicyInterface,
+                     signal_name, signal_callback),
+      dbus_operation_delay_);
 }
 
 }  // namespace chromeos
