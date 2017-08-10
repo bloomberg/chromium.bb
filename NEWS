@@ -16,6 +16,8 @@ issues]].
 ** Braille table improvements
 - Fix the character definition for the exclamation mark in the Spanish
   tables thanks to Simon Aittamaa.
+- Unified French 6 dots and 8 dots improvements for back-translation
+  thanks to Michel Such.
 ** License changes
 ** Backwards incompatible changes
 ** New, renamed or removed tables

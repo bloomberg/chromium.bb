@@ -54,9 +54,9 @@ EXTRA_DIST =					\
 	fa-ir-g1-harness.yaml			\
 	fi_harness.yaml				\
 	foo.yaml				\
+	fr-bfu-comp6.yaml			\
 	fr-bfu-g2_harness.yaml			\
-	fr-fr-g1_backward.yaml			\
-	fr-fr-g1_harness.yaml			\
+	fr-fr-g1.yaml				\
 	ga-g1_harness.yaml			\
 	ga-g2_harness.yaml			\
 	hr-8dots_harness.yaml			\

@@ -1,7 +1,7 @@
 # liblouis: Unified French 6 dots Braille table
 
 # Copyright (C) 1995-2004 by The BRLTTY Team
-# Copyright (C) 2012 Michel Such <michel.such@free.fr>
+# Copyright (C) 2012,1017 Michel Such <michel.such@free.fr>
 # Copyright (C) 2017 André-Abush CLAUSE <dev@andreabc.net>
 # Copyright (C) 2017 Ludovic Oger <oger.ludovic@gmail.com>
 
@@ -39,6 +39,8 @@
 # Uncontracted Unified French Table
 # ----------------------------------
 
+undefined 0
+
 space \s 0      	# blank 32
 space \t 9 tab    # 9
 space \x001B 1b   # escape
@@ -47,12 +49,8 @@ space \x000c 0    #
 space \x000D 0    # cr
 space \x00A0 a    # no-break space
 
-include digits6DotsPlusDot6.uti
 include latinLetterDef6Dots.uti
 
-# override zero
-digit 0 3456
-litdigit 0 3456
 
 uplow Çç 12346		# c cédille
 uplow Éé 123456		# e accent aigu
@@ -87,6 +85,32 @@ uplow \X0152\X0153 246          # oe liés
 # uplow \X00D1\x00F1 1345,12456   # n tilde
 # uplow \x00D5\x00F5 13,46        # o tilde
 
+# Define digits and litdigits
+# Don't include digits6DotsPlusDot6.uti and litdigits6DotsPlusDot6.uti
+# because of problems with french 0 (3456) and NVDA
+
+digit        0      3456
+digit        1      16
+digit        2      126
+digit        3      146
+digit        4      1456
+digit        5      156
+digit        6      1246
+digit        7      12456
+digit        8      1256
+digit        9      246
+
+litdigit        0      3456
+litdigit        1      16
+litdigit        2      126
+litdigit        3      146
+litdigit        4      1456
+litdigit        5      156
+litdigit        6      1246
+litdigit        7      12456
+litdigit        8      1256
+litdigit        9      246
+
 punctuation , 2			    # virgule
 punctuation ; 23		    # point-virgule
 punctuation : 25		    # deux-points
@@ -118,8 +142,8 @@ punctuation \X275E 2356     # heavy double comma quotation mark ornament
 punctuation \X275F 2356     # heavy low single comma quotation mark ornament
 punctuation \X2760 2356     # heavy low double comma quotation mark ornament
 
-sign \X200e 0           # (left to right mark)
-sign \X200f 0           # (right to left mark)
+noback sign \X200e 0           # (left to right mark)
+noback sign \X200f 0           # (right to left mark)
 
 # tirets et traits d'union
 punctuation - 36        # hyphen-minus
@@ -174,14 +198,14 @@ sign \X00A6 45      # broken bar
 sign \X00A8 46      # diaeresis
 sign \X00AA 16      # feminine ordinal indicator
 sign \X00AC 256     # not sign
-sign \X00AD 0       # soft hyphen
+noback sign \X00AD 0       # soft hyphen
 sign \X00AE 5-1235  # registered sign
 sign \X00B1 235-36  # plus-minus sign
 sign \X00B2 45      # superscript two
 sign \X00B3 456     # superscript three
 sign \X00B5 45-134  # micro sign
 sign \X00B6 456     # pilcrow sign
-sign \X00B7 0       # middle dot
+noback sign \X00B7 0       # middle dot
 sign \X00B9 4       # superscript one
 sign \X00BA 26      # masculine ordinal indicator
 
@@ -233,19 +257,10 @@ sign ½ 16-34-126			# un demi
 sign ¾ 146-34-1456		# trois quarts
 sign \X007E   5-26    # 126 ~    tilde
 
-midnum \s 3						# espace entre les chiffres
-midnum , 2
-midnum . 256
-midnum - 36
-hyphen - 36
-midnum + 235					# plus
-midnum = 2356			    # égal
-midnum / 34
-midnum * 35   				# astérisque
-midnum : 25
-midnum < 23		        # inférieur à
-midnum > 56				    # supérieur à
-endnum # 3456
+# unicode braille
+include braille-patterns.cti
+# other signs: 8 and 6 dots
+include fr-bfu-comp68.cti
 
 # Braille indicators
 numsign 6             # number sign, just a dots operand
@@ -261,16 +276,20 @@ emphletter italic 456
 begemphphrase bold 456-456
 endemphphrase bold before 456
 
-litdigit 0 3456		# zéro
-litdigit 1 16			# un
-litdigit 2 126		# deux
-litdigit 3 146		# trois
-litdigit 4 1456		# quatre
-litdigit 5 156		# cinq
-litdigit 6 1246		# six
-litdigit 7 12456	# sept
-litdigit 8 1256		# huit
-litdigit 9 246		# neuf
+midword \X2019 3     # right single quotation mark
+midnum \s 0						# espace entre les chiffres
+midnum , 2
+decpoint . 256
+midnum - 36
+hyphen - 36
+midnum + 235					# plus
+midnum = 2356			    # égal
+midnum / 34
+midnum * 35   				# astérisque
+midnum : 25
+midnum < 23		        # inférieur à
+midnum > 56				    # supérieur à
+endnum # 3456
 
 repeated ... 256-256-256		#	points de suspension
 repeated --- 36-36-36
@@ -278,7 +297,3 @@ repeated ___ 456-456-456
 
 always \s--\s 36-36	tiret
 
-# unicode braille
-include braille-patterns.cti
-# other signs: 8 and 6 dots
-include fr-bfu-comp68.cti

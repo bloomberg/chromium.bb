@@ -173,9 +173,9 @@ dist_yaml_TESTS =				\
 	yaml/fa-ir-g1-harness.yaml		\
 	yaml/fi_harness.yaml			\
 	yaml/foo.yaml				\
+	yaml/fr-bfu-comp6.yaml			\
 	yaml/fr-bfu-g2_harness.yaml		\
-	yaml/fr-fr-g1_backward.yaml		\
-	yaml/fr-fr-g1_harness.yaml		\
+	yaml/fr-fr-g1.yaml			\
 	yaml/ga-g1_harness.yaml			\
 	yaml/ga-g2_harness.yaml			\
 	yaml/hr-8dots_harness.yaml		\
