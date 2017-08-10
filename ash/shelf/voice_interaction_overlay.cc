@@ -86,7 +86,7 @@ constexpr float kBackgroundLargeWidthDip = 352.5f;
 constexpr float kBackgroundLargeHeightDip = 540.0f;
 constexpr float kBackgroundCornerRadiusDip = 2.f;
 constexpr float kBackgroundPaddingDip = 6.f;
-constexpr int kBackgroundMorphDurationMs = 300;
+constexpr int kBackgroundMorphDurationMs = 150;
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
 constexpr SkColor kBackgroundFinalColor = static_cast<SkColor>(0xFFF5F5F5);
 
