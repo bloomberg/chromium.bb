@@ -85,8 +85,7 @@ void FolderImageSource::Draw(gfx::Canvas* canvas) {
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
   flags.setColor(kFolderBubbleColor);
-  canvas->sk_canvas()->drawCircle(bubble_center.x(), bubble_center.y(),
-                                  kFolderBubbleRadius, flags);
+  canvas->DrawCircle(bubble_center, kFolderBubbleRadius, flags);
 
   if (icons_.size() == 0)
     return;

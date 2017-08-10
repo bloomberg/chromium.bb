@@ -183,7 +183,6 @@ void RasterWithAlpha(const PaintOp* op,
   M(ClipRRectOp)      \
   M(ConcatOp)         \
   M(DrawArcOp)        \
-  M(DrawCircleOp)     \
   M(DrawColorOp)      \
   M(DrawDRRectOp)     \
   M(DrawImageOp)      \
@@ -354,8 +353,6 @@ std::string PaintOpTypeToString(PaintOpType type) {
       return "Concat";
     case PaintOpType::DrawArc:
       return "DrawArc";
-    case PaintOpType::DrawCircle:
-      return "DrawCircle";
     case PaintOpType::DrawColor:
       return "DrawColor";
     case PaintOpType::DrawDRRect:
@@ -477,19 +474,6 @@ size_t DrawArcOp::Serialize(const PaintOp* base_op,
   helper.Write(op->start_angle);
   helper.Write(op->sweep_angle);
   helper.Write(op->use_center);
-  return helper.size();
-}
-
-size_t DrawCircleOp::Serialize(const PaintOp* base_op,
-                               void* memory,
-                               size_t size,
-                               const SerializeOptions& options) {
-  auto* op = static_cast<const DrawCircleOp*>(base_op);
-  PaintOpWriter helper(memory, size);
-  helper.Write(op->flags);
-  helper.Write(op->cx);
-  helper.Write(op->cy);
-  helper.Write(op->radius);
   return helper.size();
 }
 
@@ -810,26 +794,6 @@ PaintOp* DrawArcOp::Deserialize(const void* input,
   helper.Read(&op->use_center);
   if (!helper.valid() || !op->IsValid()) {
     op->~DrawArcOp();
-    return nullptr;
-  }
-  UpdateTypeAndSkip(op);
-  return op;
-}
-
-PaintOp* DrawCircleOp::Deserialize(const void* input,
-                                   size_t input_size,
-                                   void* output,
-                                   size_t output_size) {
-  DCHECK_GE(output_size, sizeof(DrawCircleOp));
-  DrawCircleOp* op = new (output) DrawCircleOp;
-
-  PaintOpReader helper(input, input_size);
-  helper.Read(&op->flags);
-  helper.Read(&op->cx);
-  helper.Read(&op->cy);
-  helper.Read(&op->radius);
-  if (!helper.valid() || !op->IsValid()) {
-    op->~DrawCircleOp();
     return nullptr;
   }
   UpdateTypeAndSkip(op);
@@ -1189,14 +1153,6 @@ void DrawArcOp::RasterWithFlags(const DrawArcOp* op,
                   paint);
 }
 
-void DrawCircleOp::RasterWithFlags(const DrawCircleOp* op,
-                                   const PaintFlags* flags,
-                                   SkCanvas* canvas,
-                                   const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawCircle(op->cx, op->cy, op->radius, paint);
-}
-
 void DrawColorOp::Raster(const DrawColorOp* op,
                          SkCanvas* canvas,
                          const PlaybackParams& params) {
@@ -1483,14 +1439,6 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
     case PaintOpType::DrawArc: {
       auto* arc_op = static_cast<const DrawArcOp*>(op);
       *rect = arc_op->oval;
-      rect->sort();
-      return true;
-    }
-    case PaintOpType::DrawCircle: {
-      auto* circle_op = static_cast<const DrawCircleOp*>(op);
-      *rect = SkRect::MakeXYWH(circle_op->cx - circle_op->radius,
-                               circle_op->cy - circle_op->radius,
-                               2 * circle_op->radius, 2 * circle_op->radius);
       rect->sort();
       return true;
     }

@@ -779,8 +779,8 @@ sk_sp<PaintRecord> RecordMarker(DocumentMarker::MarkerType marker_type) {
       pts, colors, nullptr, ARRAY_SIZE(colors), SkShader::kClamp_TileMode));
   PaintRecorder recorder;
   recorder.beginRecording(kMarkerWidth, kMarkerHeight);
-  recorder.getRecordingCanvas()->drawCircle(kR, kR, kR, flags);
-
+  recorder.getRecordingCanvas()->drawOval(SkRect::MakeWH(2 * kR, 2 * kR),
+                                          flags);
   return recorder.finishRecordingAsPicture();
 }
 

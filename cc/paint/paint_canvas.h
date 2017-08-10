@@ -115,10 +115,6 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual void drawDRRect(const SkRRect& outer,
                           const SkRRect& inner,
                           const PaintFlags& flags) = 0;
-  virtual void drawCircle(SkScalar cx,
-                          SkScalar cy,
-                          SkScalar radius,
-                          const PaintFlags& flags) = 0;
   virtual void drawArc(const SkRect& oval,
                        SkScalar start_angle,
                        SkScalar sweep_angle,

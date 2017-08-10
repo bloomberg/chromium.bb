@@ -210,11 +210,15 @@ void circle(cc::PaintCanvas* canvas,
 
   flags.setColor(color);
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->drawCircle(cx, cy, radius, flags);
+  canvas->drawOval(
+      SkRect::MakeLTRB(cx - radius, cy - radius, cx + radius, cy + radius),
+      flags);
 
   flags.setColor(edgeColor);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
-  canvas->drawCircle(cx, cy, radius, flags);
+  canvas->drawOval(
+      SkRect::MakeLTRB(cx - radius, cy - radius, cx + radius, cy + radius),
+      flags);
 }
 
 void nestedBoxes(cc::PaintCanvas* canvas,

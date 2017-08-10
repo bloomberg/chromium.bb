@@ -203,14 +203,6 @@ void SkiaPaintCanvas::drawDRRect(const SkRRect& outer,
   canvas_->drawDRRect(outer, inner, paint);
 }
 
-void SkiaPaintCanvas::drawCircle(SkScalar cx,
-                                 SkScalar cy,
-                                 SkScalar radius,
-                                 const PaintFlags& flags) {
-  SkPaint paint = flags.ToSkPaint();
-  canvas_->drawCircle(cx, cy, radius, paint);
-}
-
 void SkiaPaintCanvas::drawArc(const SkRect& oval,
                               SkScalar start_angle,
                               SkScalar sweep_angle,
