@@ -41,13 +41,16 @@ String GetSha256String(const String& content) {
 }
 
 ContentSecurityPolicyHashAlgorithm ConvertHashAlgorithmToCSPHashAlgorithm(
-    IntegrityAlgorithm algorithm) {
+    HashAlgorithm algorithm) {
   switch (algorithm) {
-    case IntegrityAlgorithm::kSha256:
+    case kHashAlgorithmSha1:
+      // Sha1 is not supported.
+      return kContentSecurityPolicyHashAlgorithmNone;
+    case kHashAlgorithmSha256:
       return kContentSecurityPolicyHashAlgorithmSha256;
-    case IntegrityAlgorithm::kSha384:
+    case kHashAlgorithmSha384:
       return kContentSecurityPolicyHashAlgorithmSha384;
-    case IntegrityAlgorithm::kSha512:
+    case kHashAlgorithmSha512:
       return kContentSecurityPolicyHashAlgorithmSha512;
   }
   NOTREACHED();
@@ -211,7 +214,7 @@ bool CSPDirectiveList::AreAllMatchingHashesPresent(
     const IntegrityMetadataSet& hashes) const {
   if (!directive || hashes.IsEmpty())
     return false;
-  for (const std::pair<String, IntegrityAlgorithm>& hash : hashes) {
+  for (const std::pair<WTF::String, HashAlgorithm>& hash : hashes) {
     // Convert the hash from integrity metadata format to CSP format.
     CSPHashValue csp_hash;
     csp_hash.first = ConvertHashAlgorithmToCSPHashAlgorithm(hash.second);
