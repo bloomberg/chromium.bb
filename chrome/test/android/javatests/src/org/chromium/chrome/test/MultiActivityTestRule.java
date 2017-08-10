@@ -16,6 +16,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.MultiActivityTestCommon.MultiActivityTestCommonCallback;
 import org.chromium.chrome.test.util.browser.tabmodel.document.MockStorageDelegate;
 
+import java.util.concurrent.TimeoutException;
+
 /** Custom TestRule for MultiActivity Tests. */
 public class MultiActivityTestRule implements TestRule, MultiActivityTestCommonCallback {
     private final MultiActivityTestCommon mTestCommon;
@@ -32,7 +34,8 @@ public class MultiActivityTestRule implements TestRule, MultiActivityTestCommonC
         return mTestCommon.mContext;
     }
 
-    public void waitForFullLoad(final ChromeActivity activity, final String expectedTitle) {
+    public void waitForFullLoad(final ChromeActivity activity, final String expectedTitle)
+            throws InterruptedException, TimeoutException {
         mTestCommon.waitForFullLoad(activity, expectedTitle);
     }
 
