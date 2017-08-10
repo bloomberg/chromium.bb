@@ -677,7 +677,7 @@
         <include name="IDR_WELCOME_WIN10_PIN_LARGE_WEBP" file="resources\welcome\win10\pin-large.webp" type="BINDATA" />
         <include name="IDR_WELCOME_WIN10_PIN_SMALL_WEBP" file="resources\welcome\win10\pin-small.webp" type="BINDATA" />
       </if>
-      <if expr="not is_android and not is_ios">
+      <if expr="not is_ios">
         <include name="IDR_SSL_ERROR_ASSISTANT_PB" file="${root_gen_dir}/chrome/browser/resources/ssl/ssl_error_assistant/ssl_error_assistant.pb" use_base_dir="false" type="BINDATA" />
       </if>
       <if expr="is_android or is_linux">

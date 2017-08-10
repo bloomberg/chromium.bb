@@ -35798,6 +35798,7 @@ from previous Chrome versions.
   <int value="8" label="SHOW_BAD_CLOCK"/>
   <int value="9" label="CAPTIVE_PORTAL_CERT_FOUND"/>
   <int value="10" label="WWW_MISMATCH_FOUND_IN_SAN"/>
+  <int value="11" label="SHOW_MITM_SOFTWARE_INTERSTITIAL"/>
 </enum>
 
 <enum name="SSLErrorTypes">
