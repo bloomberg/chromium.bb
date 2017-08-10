@@ -551,7 +551,6 @@ DEFINE_TRACE(LayoutSelection) {
   visitor->Trace(frame_selection_);
 }
 
-#ifndef NDEBUG
 void PrintLayoutObjectForSelection(std::ostream& ostream,
                                    LayoutObject* layout_object) {
   if (!layout_object) {
@@ -563,6 +562,7 @@ void PrintLayoutObjectForSelection(std::ostream& ostream,
           << (layout_object->ShouldInvalidateSelection() ? ", ShouldInvalidate"
                                                          : ", NotInvalidate");
 }
+#ifndef NDEBUG
 void ShowLayoutObjectForSelection(LayoutObject* layout_object) {
   std::stringstream stream;
   PrintLayoutObjectForSelection(stream, layout_object);
