@@ -14,6 +14,7 @@
 namespace autofill {
 class AutofillProfile;
 class CreditCard;
+class PersonalDataManager;
 }  // namespace autofill
 
 namespace web {
@@ -38,6 +39,9 @@ class WebState;
 // Waits for the current web view to contain |texts|. If the condition is not
 // met within a timeout, a GREYAssert is induced.
 - (void)waitForWebViewContainingTexts:(const std::vector<std::string>&)texts;
+
+// Returns the instance of PersonalDataManager for current ChromeBrowserState.
+- (autofill::PersonalDataManager*)personalDataManager;
 
 @end
 

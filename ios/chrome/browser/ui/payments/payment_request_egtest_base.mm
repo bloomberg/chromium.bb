@@ -106,8 +106,6 @@ std::vector<autofill::CreditCard> _cards;
     [ChromeEarlGrey waitForWebViewContainingText:text];
 }
 
-#pragma mark - Helper methods
-
 - (autofill::PersonalDataManager*)personalDataManager {
   return autofill::PersonalDataManagerFactory::GetForBrowserState(
       chrome_test_util::GetOriginalBrowserState());
