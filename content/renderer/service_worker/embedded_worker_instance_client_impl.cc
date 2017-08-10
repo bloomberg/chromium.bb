@@ -16,6 +16,8 @@
 #include "content/renderer/service_worker/service_worker_context_client.h"
 #include "content/renderer/service_worker/web_service_worker_installed_scripts_manager_impl.h"
 #include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
+#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerInstalledScriptsManager.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorker.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorkerStartData.h"
@@ -58,12 +60,12 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
     mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-    mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info) {
+    mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+    blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy) {
   DCHECK(ChildThreadImpl::current());
   DCHECK(!wrapper_);
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
-
   auto client = base::MakeUnique<ServiceWorkerContextClient>(
       params.embedded_worker_id, params.service_worker_version_id, params.scope,
       params.script_url,
@@ -72,8 +74,9 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       std::move(provider_info), std::move(temporal_self_));
   client->set_blink_initialized_time(blink_initialized_time_);
   client->set_start_worker_received_time(base::TimeTicks::Now());
-  wrapper_ = StartWorkerContext(params, std::move(installed_scripts_info),
-                                std::move(client));
+  wrapper_ =
+      StartWorkerContext(params, std::move(installed_scripts_info),
+                         std::move(client), std::move(content_settings_proxy));
 }
 
 void EmbeddedWorkerInstanceClientImpl::StopWorker() {
@@ -121,7 +124,8 @@ std::unique_ptr<EmbeddedWorkerInstanceClientImpl::WorkerWrapper>
 EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
     const EmbeddedWorkerStartParams& params,
     mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
-    std::unique_ptr<ServiceWorkerContextClient> context_client) {
+    std::unique_ptr<ServiceWorkerContextClient> context_client,
+    blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy) {
   std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager> manager;
   // |installed_scripts_info| is null if scripts should be served by net layer,
   // when the worker is not installed, or the worker is launched for checking
@@ -133,8 +137,9 @@ EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
   }
 
   auto wrapper = base::MakeUnique<WorkerWrapper>(
-      blink::WebEmbeddedWorker::Create(std::move(context_client),
-                                       std::move(manager), nullptr),
+      blink::WebEmbeddedWorker::Create(
+          std::move(context_client), std::move(manager),
+          content_settings_proxy.PassInterface().PassHandle()),
       params.worker_devtools_agent_route_id);
 
   blink::WebEmbeddedWorkerStartData start_data;

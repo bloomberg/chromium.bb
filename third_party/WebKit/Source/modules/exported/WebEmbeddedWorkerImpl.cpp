@@ -63,7 +63,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
-#include "public/platform/WebContentSettingsClient.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebWorkerFetchContext.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
@@ -79,17 +78,20 @@ std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
     std::unique_ptr<WebServiceWorkerContextClient> client,
     std::unique_ptr<WebServiceWorkerInstalledScriptsManager>
         installed_scripts_manager,
-    std::unique_ptr<WebContentSettingsClient> content_settings_client) {
+    mojo::ScopedMessagePipeHandle content_settings_handle) {
   return WTF::MakeUnique<WebEmbeddedWorkerImpl>(
       std::move(client), std::move(installed_scripts_manager),
-      std::move(content_settings_client));
+      WTF::MakeUnique<ServiceWorkerContentSettingsProxy>(
+          // Chrome doesn't use interface versioning.
+          mojom::blink::WorkerContentSettingsProxyPtrInfo(
+              std::move(content_settings_handle), 0u)));
 }
 
 WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     std::unique_ptr<WebServiceWorkerContextClient> client,
     std::unique_ptr<WebServiceWorkerInstalledScriptsManager>
         installed_scripts_manager,
-    std::unique_ptr<WebContentSettingsClient> content_settings_client)
+    std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client)
     : worker_context_client_(std::move(client)),
       content_settings_client_(std::move(content_settings_client)),
       worker_inspector_proxy_(WorkerInspectorProxy::Create()),
@@ -137,6 +139,9 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   shadow_page_ = WTF::MakeUnique<WorkerShadowPage>(this);
   WebSettings* settings = shadow_page_->GetSettings();
   settings->SetDataSaverEnabled(worker_start_data_.data_saver_enabled);
+
+  content_settings_client_->SetSecurityOrigin(
+      SecurityOrigin::Create(script_url));
 
   // Currently we block all mixed-content requests from a ServiceWorker.
   settings->SetStrictMixedContentChecking(true);

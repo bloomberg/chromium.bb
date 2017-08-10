@@ -36,6 +36,7 @@
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerClients.h"
 #include "modules/ModulesExport.h"
+#include "modules/serviceworkers/ServiceWorkerContentSettingsProxy.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "public/web/WebDevToolsAgentClient.h"
@@ -60,7 +61,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   WebEmbeddedWorkerImpl(
       std::unique_ptr<WebServiceWorkerContextClient>,
       std::unique_ptr<WebServiceWorkerInstalledScriptsManager>,
-      std::unique_ptr<WebContentSettingsClient>);
+      std::unique_ptr<ServiceWorkerContentSettingsProxy>);
   ~WebEmbeddedWorkerImpl() override;
 
   // WebEmbeddedWorker overrides.
@@ -113,7 +114,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   // thread is created, these are passed to the worker thread.
   std::unique_ptr<ServiceWorkerInstalledScriptsManager>
       installed_scripts_manager_;
-  std::unique_ptr<WebContentSettingsClient> content_settings_client_;
+  std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client_;
 
   // Kept around only while main script loading is ongoing.
   RefPtr<WorkerScriptLoader> main_script_loader_;

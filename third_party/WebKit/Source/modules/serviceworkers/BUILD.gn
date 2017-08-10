@@ -38,6 +38,8 @@ blink_modules_sources("serviceworkers") {
     "ServiceWorkerContainer.h",
     "ServiceWorkerContainerClient.cpp",
     "ServiceWorkerContainerClient.h",
+    "ServiceWorkerContentSettingsProxy.cpp",
+    "ServiceWorkerContentSettingsProxy.h",
     "ServiceWorkerError.cpp",
     "ServiceWorkerError.h",
     "ServiceWorkerGlobalScope.cpp",

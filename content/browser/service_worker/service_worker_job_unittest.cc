@@ -1834,14 +1834,16 @@ class CheckPauseAfterDownloadEmbeddedWorkerInstanceClient
       mojom::ServiceWorkerEventDispatcherRequest request,
       mojom::ServiceWorkerInstalledScriptsInfoPtr scripts_info,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info)
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy)
       override {
     ASSERT_TRUE(next_pause_after_download_.has_value());
     EXPECT_EQ(next_pause_after_download_.value(), params.pause_after_download);
     num_of_startworker_++;
     EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
         params, std::move(request), std::move(scripts_info),
-        std::move(instance_host), std::move(provider_info));
+        std::move(instance_host), std::move(provider_info),
+        std::move(content_settings_proxy));
   }
 
  private:

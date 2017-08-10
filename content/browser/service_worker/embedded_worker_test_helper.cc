@@ -76,7 +76,8 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
     mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-    mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info) {
+    mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+    blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy) {
   if (!helper_)
     return;
 

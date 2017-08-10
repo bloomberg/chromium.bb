@@ -14,7 +14,7 @@ namespace content {
 
 void SharedWorkerContentSettingsProxyImpl::Create(
     base::WeakPtr<SharedWorkerHost> host,
-    blink::mojom::SharedWorkerContentSettingsProxyRequest request) {
+    blink::mojom::WorkerContentSettingsProxyRequest request) {
   mojo::MakeStrongBinding(
       base::WrapUnique(new SharedWorkerContentSettingsProxyImpl(host)),
       std::move(request));

@@ -10,7 +10,7 @@
 #include "content/browser/shared_worker/shared_worker_host.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_context.h"
-#include "third_party/WebKit/public/web/shared_worker_content_settings_proxy.mojom.h"
+#include "third_party/WebKit/public/web/worker_content_settings_proxy.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -21,17 +21,16 @@ namespace content {
 // at the moment.
 // Kept alive while the connection is held in the renderer.
 class CONTENT_EXPORT SharedWorkerContentSettingsProxyImpl
-    : NON_EXPORTED_BASE(public blink::mojom::SharedWorkerContentSettingsProxy) {
+    : NON_EXPORTED_BASE(public blink::mojom::WorkerContentSettingsProxy) {
  public:
   ~SharedWorkerContentSettingsProxyImpl() override;
 
   // Creates a new SharedWorkerContentSettingsProxyImpl and
   // binds it to |request|.
-  static void Create(
-      base::WeakPtr<SharedWorkerHost> host,
-      blink::mojom::SharedWorkerContentSettingsProxyRequest request);
+  static void Create(base::WeakPtr<SharedWorkerHost> host,
+                     blink::mojom::WorkerContentSettingsProxyRequest request);
 
-  // blink::mojom::SharedWorkerContentSettingsProxy implementation.
+  // blink::mojom::WorkerContentSettingsProxy implementation.
   void AllowIndexedDB(const url::Origin& origin,
                       const base::string16& name,
                       AllowIndexedDBCallback callback) override;

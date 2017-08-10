@@ -803,7 +803,9 @@ class FailEmbeddedWorkerInstanceClientImpl
                    mojom::ServiceWorkerEventDispatcherRequest,
                    mojom::ServiceWorkerInstalledScriptsInfoPtr /* unused */,
                    mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo,
-                   mojom::ServiceWorkerProviderInfoForStartWorkerPtr) override {
+                   mojom::ServiceWorkerProviderInfoForStartWorkerPtr,
+                   blink::mojom::WorkerContentSettingsProxyPtr
+                       content_settings_proxy) override {
     helper_->mock_instance_clients()->clear();
   }
 };
