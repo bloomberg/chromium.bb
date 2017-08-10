@@ -28,9 +28,9 @@ ModulatorImpl::ModulatorImpl(RefPtr<ScriptState> script_state,
       task_runner_(
           TaskRunnerHelper::Get(TaskType::kNetworking, script_state_.Get())),
       fetcher_(fetcher),
-      map_(this, ModuleMap::Create(this)),
+      map_(ModuleMap::Create(this)),
       loader_registry_(ModuleScriptLoaderRegistry::Create()),
-      tree_linker_registry_(this, ModuleTreeLinkerRegistry::Create()),
+      tree_linker_registry_(ModuleTreeLinkerRegistry::Create()),
       script_module_resolver_(ScriptModuleResolverImpl::Create(
           this,
           ExecutionContext::From(script_state_.Get()))) {

@@ -270,10 +270,7 @@ int RemotePlayback::WatchAvailabilityInternal(
   int id;
   do {
     id = GetExecutionContext()->CircularSequentialID();
-  } while (!availability_callbacks_
-                .insert(id, TraceWrapperMember<AvailabilityCallbackWrapper>(
-                                this, callback))
-                .is_new_entry);
+  } while (!availability_callbacks_.insert(id, callback).is_new_entry);
 
   // Report the current availability via the callback.
   // TODO(yuryu): Wrapping notifyInitialAvailability with WTF::Closure as

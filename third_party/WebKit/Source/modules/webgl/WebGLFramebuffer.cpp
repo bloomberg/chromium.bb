@@ -73,7 +73,7 @@ DEFINE_TRACE(WebGLRenderbufferAttachment) {
 
 WebGLRenderbufferAttachment::WebGLRenderbufferAttachment(
     WebGLRenderbuffer* renderbuffer)
-    : renderbuffer_(this, renderbuffer) {}
+    : renderbuffer_(renderbuffer) {}
 
 WebGLSharedObject* WebGLRenderbufferAttachment::Object() const {
   return renderbuffer_->Object() ? renderbuffer_.Get() : 0;
@@ -155,7 +155,7 @@ WebGLTextureAttachment::WebGLTextureAttachment(WebGLTexture* texture,
                                                GLenum target,
                                                GLint level,
                                                GLint layer)
-    : texture_(this, texture), target_(target), level_(level), layer_(layer) {}
+    : texture_(texture), target_(target), level_(level), layer_(layer) {}
 
 WebGLSharedObject* WebGLTextureAttachment::Object() const {
   return texture_->Object() ? texture_.Get() : 0;
@@ -433,10 +433,8 @@ void WebGLFramebuffer::SetAttachmentInternal(GLenum target,
   DCHECK(object_);
   RemoveAttachmentInternal(target, attachment);
   if (texture && texture->Object()) {
-    attachments_.insert(attachment,
-                        TraceWrapperMember<WebGLAttachment>(
-                            this, WebGLTextureAttachment::Create(
-                                      texture, tex_target, level, layer)));
+    attachments_.insert(attachment, WebGLTextureAttachment::Create(
+                                        texture, tex_target, level, layer));
     DrawBuffersIfNecessary(false);
     texture->OnAttached();
   }
@@ -449,10 +447,8 @@ void WebGLFramebuffer::SetAttachmentInternal(GLenum target,
   DCHECK(object_);
   RemoveAttachmentInternal(target, attachment);
   if (renderbuffer && renderbuffer->Object()) {
-    attachments_.insert(
-        attachment,
-        TraceWrapperMember<WebGLAttachment>(
-            this, WebGLRenderbufferAttachment::Create(renderbuffer)));
+    attachments_.insert(attachment,
+                        WebGLRenderbufferAttachment::Create(renderbuffer));
     DrawBuffersIfNecessary(false);
     renderbuffer->OnAttached();
   }

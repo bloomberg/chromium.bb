@@ -68,17 +68,16 @@ class DeathAwareScriptWrappable
   }
 
   void AddWrappedVectorDependency(DeathAwareScriptWrappable* dependency) {
-    wrapped_vector_dependency_.push_back(Wrapper(this, dependency));
+    wrapped_vector_dependency_.push_back(dependency);
   }
 
   void AddWrappedHashMapDependency(DeathAwareScriptWrappable* key,
                                    DeathAwareScriptWrappable* value) {
-    wrapped_hash_map_dependency_.insert(Wrapper(this, key),
-                                        Wrapper(this, value));
+    wrapped_hash_map_dependency_.insert(key, value);
   }
 
  private:
-  DeathAwareScriptWrappable() : wrapped_dependency_(this, nullptr) {}
+  DeathAwareScriptWrappable() {}
 
   Member<DeathAwareScriptWrappable> raw_dependency_;
   Wrapper wrapped_dependency_;

@@ -50,8 +50,7 @@ class NodeMutationObserverData final
   }
 
   void AddTransientRegistration(MutationObserverRegistration* registration) {
-    transient_registry_.insert(
-        TraceWrapperMember<MutationObserverRegistration>(this, registration));
+    transient_registry_.insert(registration);
   }
 
   void RemoveTransientRegistration(MutationObserverRegistration* registration) {
@@ -60,8 +59,7 @@ class NodeMutationObserverData final
   }
 
   void AddRegistration(MutationObserverRegistration* registration) {
-    registry_.push_back(
-        TraceWrapperMember<MutationObserverRegistration>(this, registration));
+    registry_.push_back(registration);
   }
 
   void RemoveRegistration(MutationObserverRegistration* registration) {

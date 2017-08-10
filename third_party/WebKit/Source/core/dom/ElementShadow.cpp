@@ -42,10 +42,7 @@ ElementShadow* ElementShadow::Create() {
   return new ElementShadow();
 }
 
-ElementShadow::ElementShadow()
-    : element_shadow_v0_(this, nullptr),
-      shadow_root_(this, nullptr),
-      needs_distribution_recalc_(false) {}
+ElementShadow::ElementShadow() : needs_distribution_recalc_(false) {}
 
 ShadowRoot& ElementShadow::YoungestShadowRoot() const {
   ShadowRoot* current = shadow_root_;

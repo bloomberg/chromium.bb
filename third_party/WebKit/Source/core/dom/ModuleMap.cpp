@@ -49,8 +49,7 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   HeapHashSet<Member<SingleModuleClient>> clients_;
 };
 
-ModuleMap::Entry::Entry(ModuleMap* map)
-    : module_script_(this, nullptr), map_(map) {
+ModuleMap::Entry::Entry(ModuleMap* map) : map_(map) {
   DCHECK(map_);
 }
 
@@ -124,11 +123,10 @@ void ModuleMap::FetchSingleModuleScript(const ModuleScriptFetchRequest& request,
   // Step 2. If moduleMap[url] is "fetching", wait in parallel until that
   // entry's value changes, then queue a task on the networking task source to
   // proceed with running the following steps.
-  MapImpl::AddResult result =
-      map_.insert(request.Url(), TraceWrapperMember<Entry>(this, nullptr));
+  MapImpl::AddResult result = map_.insert(request.Url(), nullptr);
   TraceWrapperMember<Entry>& entry = result.stored_value->value;
   if (result.is_new_entry) {
-    entry = TraceWrapperMember<Entry>(this, Entry::Create(this));
+    entry = Entry::Create(this);
 
     // Steps 4-9 loads a new single module script.
     // Delegates to ModuleScriptLoader via Modulator.

@@ -17,7 +17,7 @@ HTMLImportTreeRoot* HTMLImportTreeRoot::Create(Document* document) {
 
 HTMLImportTreeRoot::HTMLImportTreeRoot(Document* document)
     : HTMLImport(HTMLImport::kSync),
-      document_(this, document),
+      document_(document),
       recalc_timer_(
           TaskRunnerHelper::Get(TaskType::kUnspecedTimer, document->GetFrame()),
           this,

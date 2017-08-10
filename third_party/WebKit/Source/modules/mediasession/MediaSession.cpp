@@ -153,8 +153,7 @@ void MediaSession::OnMetadataChanged() {
 void MediaSession::setActionHandler(const String& action,
                                     MediaSessionActionHandler* handler) {
   if (handler) {
-    auto add_result = action_handlers_.Set(
-        action, TraceWrapperMember<MediaSessionActionHandler>(this, handler));
+    auto add_result = action_handlers_.Set(action, handler);
 
     if (!add_result.is_new_entry)
       return;

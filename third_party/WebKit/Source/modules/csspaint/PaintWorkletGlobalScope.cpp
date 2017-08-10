@@ -200,8 +200,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
       ScriptController()->GetScriptState(), constructor, paint,
       native_invalidation_properties, custom_invalidation_properties,
       input_argument_types, has_alpha);
-  paint_definitions_.Set(
-      name, TraceWrapperMember<CSSPaintDefinition>(this, definition));
+  paint_definitions_.Set(name, definition);
 
   // TODO(xidachen): the following steps should be done with a postTask when
   // we move PaintWorklet off main thread.
@@ -233,9 +232,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
   } else {
     DocumentPaintDefinition* document_definition =
         new DocumentPaintDefinition(definition);
-    document_definition_map.Set(
-        name,
-        TraceWrapperMember<DocumentPaintDefinition>(this, document_definition));
+    document_definition_map.Set(name, document_definition);
   }
 }
 

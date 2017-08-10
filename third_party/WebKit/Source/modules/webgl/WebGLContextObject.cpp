@@ -30,7 +30,7 @@
 namespace blink {
 
 WebGLContextObject::WebGLContextObject(WebGLRenderingContextBase* context)
-    : WebGLObject(context), context_(this, context) {}
+    : WebGLObject(context), context_(context) {}
 
 bool WebGLContextObject::Validate(
     const WebGLContextGroup*,

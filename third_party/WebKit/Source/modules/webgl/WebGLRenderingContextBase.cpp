@@ -993,7 +993,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
     const CanvasContextCreationAttributes& requested_attributes,
     unsigned version)
     : CanvasRenderingContext(host, requested_attributes),
-      context_group_(this, new WebGLContextGroup()),
+      context_group_(new WebGLContextGroup()),
       is_hidden_(false),
       context_lost_mode_(kNotLostContext),
       auto_recovery_method_(kManual),
@@ -1005,11 +1005,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       restore_timer_(task_runner,
                      this,
                      &WebGLRenderingContextBase::MaybeRestoreContext),
-      bound_array_buffer_(this, nullptr),
-      bound_vertex_array_object_(this, nullptr),
-      current_program_(this, nullptr),
-      framebuffer_binding_(this, nullptr),
-      renderbuffer_binding_(this, nullptr),
       generated_image_cache_(4),
       synthesized_errors_to_console_(true),
       num_gl_errors_to_console_allowed_(kMaxGLErrorsAllowedToConsole),
@@ -1735,17 +1730,13 @@ void WebGLRenderingContextBase::bindTexture(GLenum target,
   }
 
   if (target == GL_TEXTURE_2D) {
-    texture_units_[active_texture_unit_].texture2d_binding_ =
-        TraceWrapperMember<WebGLTexture>(this, texture);
+    texture_units_[active_texture_unit_].texture2d_binding_ = texture;
   } else if (target == GL_TEXTURE_CUBE_MAP) {
-    texture_units_[active_texture_unit_].texture_cube_map_binding_ =
-        TraceWrapperMember<WebGLTexture>(this, texture);
+    texture_units_[active_texture_unit_].texture_cube_map_binding_ = texture;
   } else if (IsWebGL2OrHigher() && target == GL_TEXTURE_2D_ARRAY) {
-    texture_units_[active_texture_unit_].texture2d_array_binding_ =
-        TraceWrapperMember<WebGLTexture>(this, texture);
+    texture_units_[active_texture_unit_].texture2d_array_binding_ = texture;
   } else if (IsWebGL2OrHigher() && target == GL_TEXTURE_3D) {
-    texture_units_[active_texture_unit_].texture3d_binding_ =
-        TraceWrapperMember<WebGLTexture>(this, texture);
+    texture_units_[active_texture_unit_].texture3d_binding_ = texture;
   } else {
     SynthesizeGLError(GL_INVALID_ENUM, "bindTexture", "invalid target");
     return;

@@ -196,8 +196,7 @@ CustomElementDefinition* CustomElementRegistry::define(
   CustomElementDefinition* definition = builder.Build(descriptor, id);
   CHECK(!exception_state.HadException());
   CHECK(definition->Descriptor() == descriptor);
-  definitions_.emplace_back(
-      TraceWrapperMember<CustomElementDefinition>(this, definition));
+  definitions_.emplace_back(definition);
   NameIdMap::AddResult result = name_id_map_.insert(descriptor.GetName(), id);
   CHECK(result.is_new_entry);
 

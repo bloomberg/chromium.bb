@@ -22,19 +22,12 @@ class TraceWrapperMember : public Member<T> {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  // TODO(mlippautz): Remove constructor taking |parent|.
-  TraceWrapperMember(void* parent, T* raw) : Member<T>(raw) {}
+  TraceWrapperMember() : Member<T>(nullptr) {}
 
   TraceWrapperMember(T* raw) : Member<T>(raw) {
-    // We don't require a write barrier here as TraceWrapperMember is used for
-    // the following scenarios:
-    // - Initial initialization: The write barrier will not fire as the parent
-    //   is initially white.
-    // - Wrapping when inserting into a container: The write barrier will fire
-    //   upon establishing the move into the container.
-    // - Assignment to a field: The regular assignment operator will fire the
-    //   write barrier.
-    // Note that support for black allocation would require a barrier here.
+    // We have to use a write barrier here because of in-place construction
+    // in containers, such as HeapVector::push_back.
+    ScriptWrappableVisitor::WriteBarrier(raw);
   }
 
   TraceWrapperMember(WTF::HashTableDeletedValueType x) : Member<T>(x) {}

@@ -21,7 +21,6 @@ WebGLTransformFeedback::WebGLTransformFeedback(WebGL2RenderingContextBase* ctx,
       object_(0),
       type_(type),
       target_(0),
-      bound_transform_feedback_buffer_(this, nullptr),
       program_(nullptr) {
   GLint max_attribs = ctx->GetMaxTransformFeedbackSeparateAttribs();
   DCHECK_GE(max_attribs, 0);
@@ -107,8 +106,7 @@ bool WebGLTransformFeedback::SetBoundIndexedTransformFeedbackBuffer(
     bound_indexed_transform_feedback_buffers_[index]->OnDetached(
         Context()->ContextGL());
   }
-  bound_indexed_transform_feedback_buffers_[index] =
-      TraceWrapperMember<WebGLBuffer>(this, buffer);
+  bound_indexed_transform_feedback_buffers_[index] = buffer;
   // This also sets the generic binding point in the OpenGL state.
   SetBoundTransformFeedbackBuffer(buffer);
   return true;

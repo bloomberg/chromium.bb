@@ -41,7 +41,7 @@
 namespace blink {
 
 HTMLImportsController::HTMLImportsController(Document& master)
-    : root_(this, HTMLImportTreeRoot::Create(&master)) {
+    : root_(HTMLImportTreeRoot::Create(&master)) {
   UseCounter::Count(master, WebFeature::kHTMLImports);
 }
 

@@ -150,13 +150,12 @@ void AnimationWorkletGlobalScope::registerAnimator(
   AnimatorDefinition* definition =
       new AnimatorDefinition(isolate, constructor, animate);
 
-  animator_definitions_.Set(
-      name, TraceWrapperMember<AnimatorDefinition>(this, definition));
+  animator_definitions_.Set(name, definition);
 
   // Immediately instantiate an animator for the registered definition.
   // TODO(majidvp): Remove this once you add alternative way to instantiate
   if (Animator* animator = CreateInstance(name))
-    animators_.push_back(TraceWrapperMember<Animator>(this, animator));
+    animators_.push_back(animator);
 }
 
 Animator* AnimationWorkletGlobalScope::CreateInstance(const String& name) {

@@ -35,8 +35,7 @@ gpu::gles2::GLES2Interface* WebGLContextGroup::GetAGLInterface() {
 }
 
 void WebGLContextGroup::AddContext(WebGLRenderingContextBase* context) {
-  contexts_.insert(
-      TraceWrapperMember<WebGLRenderingContextBase>(this, context));
+  contexts_.insert(context);
 }
 
 void WebGLContextGroup::LoseContextGroup(

@@ -690,9 +690,7 @@ struct HashTraits<blink::TraceWrapperMember<T>>
     return value;
   }
 
-  static blink::TraceWrapperMember<T> EmptyValue() {
-    return blink::TraceWrapperMember<T>(nullptr, nullptr);
-  }
+  static blink::TraceWrapperMember<T> EmptyValue() { return nullptr; }
 };
 
 template <typename T>

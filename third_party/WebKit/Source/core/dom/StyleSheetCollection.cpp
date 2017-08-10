@@ -59,8 +59,7 @@ void StyleSheetCollection::AppendActiveStyleSheet(
 }
 
 void StyleSheetCollection::AppendSheetForList(StyleSheet* sheet) {
-  style_sheets_for_style_sheet_list_.push_back(
-      TraceWrapperMember<StyleSheet>(this, sheet));
+  style_sheets_for_style_sheet_list_.push_back(sheet);
 }
 
 DEFINE_TRACE(StyleSheetCollection) {

@@ -286,11 +286,8 @@ XMLHttpRequest::XMLHttpRequest(
     RefPtr<SecurityOrigin> isolated_world_security_origin)
     : SuspendableObject(context),
       timeout_milliseconds_(0),
-      response_blob_(this, nullptr),
       state_(kUnsent),
-      response_document_(this, nullptr),
       length_downloaded_to_file_(0),
-      response_array_buffer_(this, nullptr),
       received_length_(0),
       exception_code_(0),
       progress_event_throttle_(

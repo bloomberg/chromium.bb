@@ -44,13 +44,7 @@ class NodeIteratorBase : public GarbageCollectedMixin {
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:
-  // In order to properly trace wrappers it is necessary for TraceWrapperMember
-  // to find the object header from within the mixin. |childThis| is safe to
-  // find the header so we pass it instead of |this|.
-  NodeIteratorBase(void* child_this,
-                   Node*,
-                   unsigned what_to_show,
-                   V8NodeFilterCondition*);
+  NodeIteratorBase(Node*, unsigned what_to_show, V8NodeFilterCondition*);
   unsigned AcceptNode(Node*, ExceptionState&) const;
 
  private:

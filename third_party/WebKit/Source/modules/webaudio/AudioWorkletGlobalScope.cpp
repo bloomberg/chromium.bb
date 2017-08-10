@@ -139,9 +139,7 @@ void AudioWorkletGlobalScope::registerProcessor(
     definition->SetAudioParamDescriptors(audio_param_descriptors);
   }
 
-  processor_definition_map_.Set(
-      name,
-      TraceWrapperMember<AudioWorkletProcessorDefinition>(this, definition));
+  processor_definition_map_.Set(name, definition);
 }
 
 AudioWorkletProcessor* AudioWorkletGlobalScope::CreateInstance(
@@ -166,8 +164,7 @@ AudioWorkletProcessor* AudioWorkletGlobalScope::CreateInstance(
   DCHECK(processor);
 
   processor->SetInstance(isolate, instance_local);
-  processor_instances_.push_back(
-      TraceWrapperMember<AudioWorkletProcessor>(this, processor));
+  processor_instances_.push_back(processor);
 
   return processor;
 }

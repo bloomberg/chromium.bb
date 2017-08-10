@@ -45,8 +45,7 @@ inline HTMLScriptElement::HTMLScriptElement(Document& document,
                                             bool already_started,
                                             bool created_during_document_write)
     : HTMLElement(scriptTag, document),
-      loader_(this,
-              InitializeScriptLoader(was_inserted_by_parser,
+      loader_(InitializeScriptLoader(was_inserted_by_parser,
                                      already_started,
                                      created_during_document_write)) {}
 
