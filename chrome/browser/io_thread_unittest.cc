@@ -262,11 +262,13 @@ TEST_F(IOThreadTestWithIOThreadObject, UpdateAuthAndroidNegotiateAccountType) {
 #endif
 
 TEST_F(IOThreadTestWithIOThreadObject, ForceECTFromCommandLine) {
-  CreateThreads();
   base::CommandLine::Init(0, nullptr);
   ASSERT_TRUE(base::CommandLine::InitializedForCurrentProcess());
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       "--force-effective-connection-type", "Slow-2G");
+
+  // Create threads after initializing the command line.
+  CreateThreads();
 
   RunOnIOThreadBlocking(base::Bind(
       &IOThreadTestWithIOThreadObject::CheckEffectiveConnectionType,
