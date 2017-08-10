@@ -19,6 +19,8 @@ import pickle
 import shutil
 import time
 
+from chromite.lib import cros_logging as logging
+
 
 class WorkQueueTimeout(Exception):
   """Exception to raise when `WorkQueueService.Wait()` times out."""
@@ -269,6 +271,13 @@ class WorkQueueServer(_BaseWorkQueue):
     * Indicating whether capacity is available to start new tasks.
   """
 
+  # _HEARTBEAT_INTERVAL -
+  # `ProcessRequests()` periodically logs a message at the start of
+  # tick, just so you can see it's alive.  This value determines the
+  # approximate time in seconds in between messages.
+
+  _HEARTBEAT_INTERVAL = 10 * 60
+
   def _CreateSpool(self):
     """Create and populate the spool directory in the file system."""
     spool_dir = os.path.dirname(self._spool_state_dirs[self._REQUESTED])
@@ -282,6 +291,8 @@ class WorkQueueServer(_BaseWorkQueue):
 
   def _TransitionRequest(self, request_id, oldstate, newstate):
     """Move a request from one state to another."""
+    logging.info('Transition %s from %s to %s',
+                 request_id, oldstate, newstate)
     oldpath = self._GetRequestPathname(request_id, oldstate)
     newpath = self._GetRequestPathname(request_id, newstate)
     os.rename(oldpath, newpath)
@@ -292,6 +303,7 @@ class WorkQueueServer(_BaseWorkQueue):
 
   def _CompleteRequest(self, request_id, result):
     """Move a task that has finished running into "completed" state."""
+    logging.info('Reaped %s, result = %r', request_id, result)
     completion_path = self._GetRequestPathname(request_id, self._COMPLETE)
     with open(completion_path, 'w') as f:
       pickle.dump(result, f)
@@ -316,6 +328,7 @@ class WorkQueueServer(_BaseWorkQueue):
     """Move all tasks in `requested` state to `pending` state."""
     new_requests = self._GetRequestsByState(self._ABORTING)
     for request_id in new_requests:
+      logging.info('Abort requested for %s', request_id)
       self._ClearRequest(request_id, self._ABORTING)
     return new_requests
 
@@ -343,10 +356,15 @@ class WorkQueueServer(_BaseWorkQueue):
     #
     # By design, we don't fail if the aborted request is already gone.
     if state is not None:
+      logging.info('Abort is removing %s from state %s',
+                   request_id, state)
       try:
         self._ClearRequest(request_id, state)
       except OSError:
-        pass
+        logging.exception('Request %s was not removed from %s.',
+                          request_id, state)
+    else:
+      logging.info('Abort for non-existent request %s', request_id)
 
   def ProcessRequests(self, manager):
     """Main processing loop for the server-side daemon.
@@ -360,13 +378,35 @@ class WorkQueueServer(_BaseWorkQueue):
     """
     self._CreateSpool()
     pending_requests = []
+    tick_count = 0
+    next_heartbeat = time.time()
+    num_running = 0
     while True:
+      tick_count += 1
+      if next_heartbeat <= time.time():
+        next_heartbeat = time.time() + self._HEARTBEAT_INTERVAL
+        logging.debug('Starting tick number %d', tick_count)
       manager.StartTick()
+      num_completed = 0
       for request_id, result in manager.Reap():
+        num_completed += 1
         self._CompleteRequest(request_id, result)
+      num_running -= num_completed
+      num_pending = len(pending_requests)
       pending_requests.extend(self._GetNewRequests())
+      num_added = len(pending_requests) - num_pending
+      num_aborted = 0
       for abort_id in self._GetAbortRequests():
+        num_aborted += 1
         self._ProcessAbort(abort_id, pending_requests, manager)
+      num_started = 0
       while pending_requests and manager.HasCapacity():
+        num_started += 1
         self._StartRequest(pending_requests.pop(0), manager)
+      num_running += num_started
+      if num_completed or num_added or num_aborted or num_started:
+        logging.info('new: %d, started: %d, aborted: %d, completed: %d',
+                     num_added, num_started, num_aborted, num_completed)
+        logging.info('pending: %d, running %d',
+                     len(pending_requests), num_running)
       time.sleep(manager.sample_interval)
