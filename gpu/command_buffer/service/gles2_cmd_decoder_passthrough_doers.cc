@@ -319,8 +319,16 @@ error::Error GLES2DecoderPassthroughImpl::DoBindBuffer(GLenum target,
 error::Error GLES2DecoderPassthroughImpl::DoBindBufferBase(GLenum target,
                                                            GLuint index,
                                                            GLuint buffer) {
-  glBindBufferBase(target, index, GetBufferServiceID(buffer, resources_,
-                                                     bind_generates_resource_));
+  FlushErrors();
+  glBindBufferBase(
+      target, index,
+      GetBufferServiceID(buffer, resources_, bind_generates_resource_));
+  if (FlushErrors()) {
+    return error::kNoError;
+  }
+
+  bound_buffers_[target] = buffer;
+
   return error::kNoError;
 }
 
@@ -329,9 +337,17 @@ error::Error GLES2DecoderPassthroughImpl::DoBindBufferRange(GLenum target,
                                                             GLuint buffer,
                                                             GLintptr offset,
                                                             GLsizeiptr size) {
-  glBindBufferRange(target, index, GetBufferServiceID(buffer, resources_,
-                                                      bind_generates_resource_),
-                    offset, size);
+  FlushErrors();
+  glBindBufferRange(
+      target, index,
+      GetBufferServiceID(buffer, resources_, bind_generates_resource_), offset,
+      size);
+  if (FlushErrors()) {
+    return error::kNoError;
+  }
+
+  bound_buffers_[target] = buffer;
+
   return error::kNoError;
 }
 
