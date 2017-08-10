@@ -428,6 +428,7 @@ css_properties("make_core_generated_computed_style_base") {
     "css/ComputedStyleExtraFields.json5",
     "css/ComputedStyleDiffFunctions.json5",
     "css/CSSValueKeywords.json5",
+    "css/CSSPropertiesRanking.json5",
   ]
   other_inputs = [
     "../build/scripts/templates/fields/field.tmpl",
