@@ -2821,6 +2821,8 @@ TEST(PaintOpBufferTest, BoundingRect_DrawTextBlobOp) {
 class MockImageProvider : public ImageProvider {
  public:
   MockImageProvider() = default;
+  explicit MockImageProvider(bool fail_all_decodes)
+      : fail_all_decodes_(fail_all_decodes) {}
   MockImageProvider(std::vector<SkSize> src_rect_offset,
                     std::vector<SkSize> scale,
                     std::vector<SkFilterQuality> quality)
@@ -2832,6 +2834,9 @@ class MockImageProvider : public ImageProvider {
                                              const SkRect& src_rect,
                                              SkFilterQuality filter_quality,
                                              const SkMatrix& matrix) override {
+    if (fail_all_decodes_)
+      return ScopedDecodedDrawImage();
+
     SkBitmap bitmap;
     bitmap.allocN32Pixels(10, 10);
     sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
@@ -2845,6 +2850,7 @@ class MockImageProvider : public ImageProvider {
   std::vector<SkSize> scale_;
   std::vector<SkFilterQuality> quality_;
   size_t index_ = 0;
+  bool fail_all_decodes_ = false;
 };
 
 TEST(PaintOpBufferTest, SkipsOpsOutsideClip) {
@@ -2881,6 +2887,26 @@ TEST(PaintOpBufferTest, SkipsOpsOutsideClip) {
   EXPECT_CALL(canvas, willSave()).InSequence(s);
   EXPECT_CALL(canvas, OnDrawRectWithColor(_)).InSequence(s);
   EXPECT_CALL(canvas, willRestore()).InSequence(s);
+  buffer.Playback(&canvas, &image_provider);
+}
+
+TEST(PaintOpBufferTest, SkipsOpsWithFailedDecodes) {
+  MockImageProvider image_provider(true);
+  PaintOpBuffer buffer;
+
+  PaintFlags flags;
+  PaintImage paint_image = CreateDiscardablePaintImage(gfx::Size(10, 10));
+  buffer.push<DrawImageOp>(paint_image, 105.0f, 105.0f, &flags);
+  PaintFlags image_flags;
+  image_flags.setShader(
+      PaintShader::MakeImage(paint_image, SkShader::TileMode::kRepeat_TileMode,
+                             SkShader::TileMode::kRepeat_TileMode, nullptr));
+  buffer.push<DrawRectOp>(SkRect::MakeXYWH(110, 110, 100, 100), image_flags);
+  buffer.push<DrawColorOp>(SK_ColorRED, SkBlendMode::kSrcOver);
+
+  testing::StrictMock<MockCanvas> canvas;
+  testing::Sequence s;
+  EXPECT_CALL(canvas, OnDrawPaintWithColor(_)).InSequence(s);
   buffer.Playback(&canvas, &image_provider);
 }
 

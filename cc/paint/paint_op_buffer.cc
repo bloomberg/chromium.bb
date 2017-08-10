@@ -60,13 +60,8 @@ class ScopedImageFlags {
  public:
   ScopedImageFlags(ImageProvider* image_provider,
                    const PaintFlags& flags,
-                   const SkMatrix& ctm)
-      : decoded_flags_(flags) {
+                   const SkMatrix& ctm) {
     DCHECK(IsImageShader(flags));
-
-    // Remove the original shader from the flags. In case we fail to decode the
-    // image, the shader should be removed.
-    decoded_flags_.setShader(nullptr);
 
     const PaintImage& paint_image = flags.getShader()->paint_image();
     SkMatrix matrix = flags.getShader()->GetLocalMatrix();
@@ -94,18 +89,21 @@ class ScopedImageFlags {
     PaintImage decoded_paint_image = PaintImageBuilder(std::move(paint_image))
                                          .set_image(std::move(sk_image))
                                          .TakePaintImage();
-    decoded_flags_.setFilterQuality(decoded_image.filter_quality());
-    decoded_flags_.setShader(
+    decoded_flags_.emplace(flags);
+    decoded_flags_.value().setFilterQuality(decoded_image.filter_quality());
+    decoded_flags_.value().setShader(
         PaintShader::MakeImage(decoded_paint_image, flags.getShader()->tx(),
                                flags.getShader()->ty(), &matrix));
   }
 
-  PaintFlags* decoded_flags() { return &decoded_flags_; }
+  PaintFlags* decoded_flags() {
+    return decoded_flags_ ? &decoded_flags_.value() : nullptr;
+  }
 
   ~ScopedImageFlags() = default;
 
  private:
-  PaintFlags decoded_flags_;
+  base::Optional<PaintFlags> decoded_flags_;
   ImageProvider::ScopedDecodedDrawImage scoped_decoded_draw_image_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedImageFlags);
@@ -131,6 +129,10 @@ void RasterWithAlpha(const PaintOp* op,
       scoped_flags.emplace(params.image_provider, flags_op->flags,
                            canvas->getTotalMatrix());
       decoded_flags = scoped_flags.value().decoded_flags();
+
+      // If we failed to decode the flags, skip the op.
+      if (!decoded_flags)
+        return;
     }
 
     if (!decoded_flags->SupportsFoldingAlpha()) {
@@ -1837,7 +1839,12 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
       if (flags_op && IsImageShader(flags_op->flags)) {
         ScopedImageFlags scoped_flags(image_provider, flags_op->flags,
                                       canvas->getTotalMatrix());
-        flags_op->RasterWithFlags(canvas, scoped_flags.decoded_flags(), params);
+
+        // Only rasterize the op if we successfully decoded the image.
+        if (scoped_flags.decoded_flags()) {
+          flags_op->RasterWithFlags(canvas, scoped_flags.decoded_flags(),
+                                    params);
+        }
         continue;
       }
     }
