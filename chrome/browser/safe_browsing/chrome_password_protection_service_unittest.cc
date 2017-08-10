@@ -37,6 +37,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using sync_pb::UserEventSpecifics;
+using SyncPasswordReuseEvent = UserEventSpecifics::SyncPasswordReuseEvent;
+using PasswordReuseLookup = SyncPasswordReuseEvent::PasswordReuseLookup;
+
 namespace safe_browsing {
 
 namespace {
@@ -359,15 +363,21 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // Feature not enabled.
   service_->MaybeLogPasswordReuseDetectedEvent(web_contents());
   EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
+  service_->MaybeLogPasswordReuseLookupEvent(
+      web_contents(), PasswordProtectionService::MATCHED_WHITELIST, nullptr);
+  EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
 
   EnableSyncPasswordReuseEvent();
   // Feature enabled but no committed navigation entry.
   service_->MaybeLogPasswordReuseDetectedEvent(web_contents());
   EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
+  service_->MaybeLogPasswordReuseLookupEvent(
+      web_contents(), PasswordProtectionService::MATCHED_WHITELIST, nullptr);
+  EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
-       VerifyPasswordReuseUserEventRecorded) {
+       VerifyPasswordReuseDetectedUserEventRecorded) {
   EnableSyncPasswordReuseEvent();
   NavigateAndCommit(GURL("https://www.example.com/"));
 
@@ -375,10 +385,9 @@ TEST_F(ChromePasswordProtectionServiceTest,
   profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, true);
   service_->MaybeLogPasswordReuseDetectedEvent(web_contents());
   ASSERT_EQ(1ul, GetUserEventService()->GetRecordedUserEvents().size());
-  sync_pb::UserEventSpecifics::SyncPasswordReuseEvent event =
-      GetUserEventService()
-          ->GetRecordedUserEvents()[0]
-          .sync_password_reuse_event();
+  SyncPasswordReuseEvent event = GetUserEventService()
+                                     ->GetRecordedUserEvents()[0]
+                                     .sync_password_reuse_event();
   EXPECT_TRUE(event.reuse_detected().status().enabled());
 
   // Case 2: safe_browsing_enabled = false
@@ -393,4 +402,91 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // Not checking for the extended_reporting_level since that requires setting
   // multiple prefs and doesn't add much verification value.
 }
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyPasswordReuseLookupUserEventRecorded) {
+  EnableSyncPasswordReuseEvent();
+  NavigateAndCommit(GURL("https://www.example.com/"));
+
+  std::vector<std::pair<PasswordProtectionService::RequestOutcome,
+                        PasswordReuseLookup::LookupResult>>
+      test_cases_result_only = {
+          {PasswordProtectionService::MATCHED_WHITELIST,
+           PasswordReuseLookup::WHITELIST_HIT},
+          {PasswordProtectionService::URL_NOT_VALID_FOR_REPUTATION_COMPUTING,
+           PasswordReuseLookup::URL_UNSUPPORTED},
+          {PasswordProtectionService::CANCELED,
+           PasswordReuseLookup::REQUEST_FAILURE},
+          {PasswordProtectionService::TIMEDOUT,
+           PasswordReuseLookup::REQUEST_FAILURE},
+          {PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO,
+           PasswordReuseLookup::REQUEST_FAILURE},
+          {PasswordProtectionService::REQUEST_MALFORMED,
+           PasswordReuseLookup::REQUEST_FAILURE},
+          {PasswordProtectionService::FETCH_FAILED,
+           PasswordReuseLookup::REQUEST_FAILURE},
+          {PasswordProtectionService::RESPONSE_MALFORMED,
+           PasswordReuseLookup::REQUEST_FAILURE},
+          {PasswordProtectionService::SERVICE_DESTROYED,
+           PasswordReuseLookup::REQUEST_FAILURE},
+          {PasswordProtectionService::DISABLED_DUE_TO_FEATURE_DISABLED,
+           PasswordReuseLookup::REQUEST_FAILURE},
+          {PasswordProtectionService::DISABLED_DUE_TO_USER_POPULATION,
+           PasswordReuseLookup::REQUEST_FAILURE},
+          {PasswordProtectionService::MAX_OUTCOME,
+           PasswordReuseLookup::REQUEST_FAILURE}};
+
+  unsigned long t = 0;
+  for (const auto& it : test_cases_result_only) {
+    VLOG(1) << __FUNCTION__ << ": case: " << t;
+    service_->MaybeLogPasswordReuseLookupEvent(web_contents(), it.first,
+                                               nullptr);
+    ASSERT_EQ(t + 1, GetUserEventService()->GetRecordedUserEvents().size());
+    PasswordReuseLookup reuse_lookup = GetUserEventService()
+                                           ->GetRecordedUserEvents()[t]
+                                           .sync_password_reuse_event()
+                                           .reuse_lookup();
+    EXPECT_EQ(it.second, reuse_lookup.lookup_result());
+    t++;
+  }
+
+  {
+    VLOG(1) << __FUNCTION__ << ": case: " << t;
+    auto response = base::MakeUnique<LoginReputationClientResponse>();
+    response->set_verdict_token("token1");
+    response->set_verdict_type(LoginReputationClientResponse::LOW_REPUTATION);
+    service_->MaybeLogPasswordReuseLookupEvent(
+        web_contents(), PasswordProtectionService::RESPONSE_ALREADY_CACHED,
+        response.get());
+    ASSERT_EQ(t + 1, GetUserEventService()->GetRecordedUserEvents().size());
+    PasswordReuseLookup reuse_lookup = GetUserEventService()
+                                           ->GetRecordedUserEvents()[t]
+                                           .sync_password_reuse_event()
+                                           .reuse_lookup();
+    EXPECT_EQ(PasswordReuseLookup::CACHE_HIT, reuse_lookup.lookup_result());
+    EXPECT_EQ(PasswordReuseLookup::LOW_REPUTATION, reuse_lookup.verdict());
+    EXPECT_EQ("token1", reuse_lookup.verdict_token());
+    t++;
+  }
+
+  {
+    VLOG(1) << __FUNCTION__ << ": case: " << t;
+    auto response = base::MakeUnique<LoginReputationClientResponse>();
+    response->set_verdict_token("token2");
+    response->set_verdict_type(LoginReputationClientResponse::SAFE);
+    service_->MaybeLogPasswordReuseLookupEvent(
+        web_contents(), PasswordProtectionService::SUCCEEDED, response.get());
+    ASSERT_EQ(t + 1, GetUserEventService()->GetRecordedUserEvents().size());
+    PasswordReuseLookup reuse_lookup = GetUserEventService()
+                                           ->GetRecordedUserEvents()[t]
+                                           .sync_password_reuse_event()
+                                           .reuse_lookup();
+    EXPECT_EQ(PasswordReuseLookup::REQUEST_SUCCESS,
+              reuse_lookup.lookup_result());
+    EXPECT_EQ(PasswordReuseLookup::SAFE, reuse_lookup.verdict());
+    EXPECT_EQ("token2", reuse_lookup.verdict_token());
+    t++;
+  }
+}
+
 }  // namespace safe_browsing

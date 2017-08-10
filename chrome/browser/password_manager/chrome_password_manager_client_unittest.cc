@@ -85,6 +85,10 @@ class MockPasswordProtectionService
   MOCK_METHOD0(IsIncognito, bool());
   MOCK_METHOD2(IsPingingEnabled, bool(const base::Feature&, RequestOutcome*));
   MOCK_METHOD0(IsHistorySyncEnabled, bool());
+  MOCK_METHOD3(MaybeLogPasswordReuseLookupEvent,
+               void(WebContents*,
+                    PasswordProtectionService::RequestOutcome,
+                    const safe_browsing::LoginReputationClientResponse*));
   MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(WebContents*));
   MOCK_METHOD4(MaybeStartPasswordFieldOnFocusRequest,
                void(WebContents*, const GURL&, const GURL&, const GURL&));

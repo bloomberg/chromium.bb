@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SAFE_BROWSING_CHROME_PASSWORD_PROTECTION_SERVICE_H_
 
 #include "components/safe_browsing/password_protection/password_protection_service.h"
+#include "components/sync/protocol/user_event_specifics.pb.h"
 
 class PrefService;
 class Profile;
@@ -62,6 +63,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   PasswordProtectionService::SyncAccountType GetSyncAccountType() override;
 
+  void MaybeLogPasswordReuseLookupEvent(
+      content::WebContents* web_contents,
+      PasswordProtectionService::RequestOutcome outcome,
+      const LoginReputationClientResponse* response) override;
+
   // Update security state for the current |web_contents| based on
   // |threat_type|, such that page info bubble will show appropriate status
   // when user clicks on the security chip.
@@ -75,7 +81,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyPasswordReuseUserEventNotRecorded);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
-                           VerifyPasswordReuseUserEventRecorded);
+                           VerifyPasswordReuseDetectedUserEventRecorded);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyPasswordReuseLookupUserEventRecorded);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyGetSyncAccountType);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
@@ -87,6 +95,22 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // Returns whether the profile is valid and has safe browsing service enabled.
   bool IsSafeBrowsingEnabled();
+
+  std::unique_ptr<sync_pb::UserEventSpecifics> GetUserEventSpecifics(
+      content::WebContents* web_contents);
+
+  void LogPasswordReuseLookupResult(
+      content::WebContents* web_contents,
+      sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup::
+          LookupResult result);
+
+  void LogPasswordReuseLookupResultWithVerdict(
+      content::WebContents* web_contents,
+      sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup::
+          LookupResult result,
+      sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup::
+          ReputationVerdict verdict,
+      const std::string& verdict_token);
 
   friend class MockChromePasswordProtectionService;
   // Constructor used for tests only.

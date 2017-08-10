@@ -37,8 +37,10 @@
 
 using content::BrowserThread;
 using sync_pb::UserEventSpecifics;
-using SafeBrowsingStatus = UserEventSpecifics::SyncPasswordReuseEvent::
-    PasswordReuseDetected::SafeBrowsingStatus;
+using SyncPasswordReuseEvent = UserEventSpecifics::SyncPasswordReuseEvent;
+using PasswordReuseLookup = SyncPasswordReuseEvent::PasswordReuseLookup;
+using SafeBrowsingStatus =
+    SyncPasswordReuseEvent::PasswordReuseDetected::SafeBrowsingStatus;
 
 namespace safe_browsing {
 
@@ -53,6 +55,23 @@ const int kOverrideVerdictCacheDurationSec = 2 * 24 * 60 * 60;
 
 int64_t GetMicrosecondsSinceWindowsEpoch(base::Time time) {
   return (time - base::Time()).InMicroseconds();
+}
+
+PasswordReuseLookup::ReputationVerdict GetVerdictToLogFromResponse(
+    LoginReputationClientResponse::VerdictType response_verdict) {
+  switch (response_verdict) {
+    case LoginReputationClientResponse::SAFE:
+      return PasswordReuseLookup::SAFE;
+    case LoginReputationClientResponse::LOW_REPUTATION:
+      return PasswordReuseLookup::LOW_REPUTATION;
+    case LoginReputationClientResponse::PHISHING:
+      return PasswordReuseLookup::PHISHING;
+    case LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED:
+      NOTREACHED() << "Unexpected response_verdict: " << response_verdict;
+      return PasswordReuseLookup::VERDICT_UNSPECIFIED;
+  }
+  NOTREACHED() << "Unexpected response_verdict: " << response_verdict;
+  return PasswordReuseLookup::VERDICT_UNSPECIFIED;
 }
 
 }  // namespace
@@ -175,20 +194,17 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseDetectedEvent(
 
   syncer::UserEventService* user_event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(profile_);
-  content::NavigationEntry* navigation =
-      web_contents->GetController().GetLastCommittedEntry();
-  if (!user_event_service || !navigation)
+  if (!user_event_service)
     return;
 
-  auto specifics = base::MakeUnique<UserEventSpecifics>();
-  specifics->set_event_time_usec(
-      GetMicrosecondsSinceWindowsEpoch(base::Time::Now()));
-  specifics->set_navigation_id(
-      GetMicrosecondsSinceWindowsEpoch(navigation->GetTimestamp()));
+  std::unique_ptr<UserEventSpecifics> specifics =
+      GetUserEventSpecifics(web_contents);
+  if (!specifics)
+    return;
+
   auto* const status = specifics->mutable_sync_password_reuse_event()
                            ->mutable_reuse_detected()
                            ->mutable_status();
-
   status->set_enabled(IsSafeBrowsingEnabled());
 
   safe_browsing::ExtendedReportingLevel erl =
@@ -229,6 +245,116 @@ ChromePasswordProtectionService::GetSyncAccountType() {
                  std::string(AccountTrackerService::kNoHostedDomainFound)
              ? LoginReputationClientRequest::PasswordReuseEvent::GMAIL
              : LoginReputationClientRequest::PasswordReuseEvent::GSUITE;
+}
+
+std::unique_ptr<UserEventSpecifics>
+ChromePasswordProtectionService::GetUserEventSpecifics(
+    content::WebContents* web_contents) {
+  content::NavigationEntry* navigation =
+      web_contents->GetController().GetLastCommittedEntry();
+  if (!navigation)
+    return nullptr;
+
+  auto specifics = base::MakeUnique<UserEventSpecifics>();
+  specifics->set_event_time_usec(
+      GetMicrosecondsSinceWindowsEpoch(base::Time::Now()));
+  specifics->set_navigation_id(
+      GetMicrosecondsSinceWindowsEpoch(navigation->GetTimestamp()));
+  return specifics;
+}
+
+void ChromePasswordProtectionService::LogPasswordReuseLookupResult(
+    content::WebContents* web_contents,
+    PasswordReuseLookup::LookupResult result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  syncer::UserEventService* user_event_service =
+      browser_sync::UserEventServiceFactory::GetForProfile(profile_);
+  if (!user_event_service)
+    return;
+
+  std::unique_ptr<UserEventSpecifics> specifics =
+      GetUserEventSpecifics(web_contents);
+  if (!specifics)
+    return;
+
+  auto* const reuse_lookup =
+      specifics->mutable_sync_password_reuse_event()->mutable_reuse_lookup();
+  reuse_lookup->set_lookup_result(result);
+  user_event_service->RecordUserEvent(std::move(specifics));
+}
+
+void ChromePasswordProtectionService::LogPasswordReuseLookupResultWithVerdict(
+    content::WebContents* web_contents,
+    PasswordReuseLookup::LookupResult result,
+    PasswordReuseLookup::ReputationVerdict verdict,
+    const std::string& verdict_token) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  syncer::UserEventService* user_event_service =
+      browser_sync::UserEventServiceFactory::GetForProfile(profile_);
+  if (!user_event_service)
+    return;
+
+  std::unique_ptr<UserEventSpecifics> specifics =
+      GetUserEventSpecifics(web_contents);
+  if (!specifics)
+    return;
+
+  PasswordReuseLookup* const reuse_lookup =
+      specifics->mutable_sync_password_reuse_event()->mutable_reuse_lookup();
+  reuse_lookup->set_lookup_result(result);
+  reuse_lookup->set_verdict(verdict);
+  reuse_lookup->set_verdict_token(verdict_token);
+  user_event_service->RecordUserEvent(std::move(specifics));
+}
+
+void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
+    content::WebContents* web_contents,
+    PasswordProtectionService::RequestOutcome outcome,
+    const LoginReputationClientResponse* response) {
+  if (!base::FeatureList::IsEnabled(safe_browsing::kSyncPasswordReuseEvent))
+    return;
+
+  switch (outcome) {
+    case PasswordProtectionService::MATCHED_WHITELIST:
+      LogPasswordReuseLookupResult(web_contents,
+                                   PasswordReuseLookup::WHITELIST_HIT);
+      break;
+    case PasswordProtectionService::RESPONSE_ALREADY_CACHED:
+      LogPasswordReuseLookupResultWithVerdict(
+          web_contents, PasswordReuseLookup::CACHE_HIT,
+          GetVerdictToLogFromResponse(response->verdict_type()),
+          response->verdict_token());
+      break;
+    case PasswordProtectionService::SUCCEEDED:
+      LogPasswordReuseLookupResultWithVerdict(
+          web_contents, PasswordReuseLookup::REQUEST_SUCCESS,
+          GetVerdictToLogFromResponse(response->verdict_type()),
+          response->verdict_token());
+      break;
+    case PasswordProtectionService::URL_NOT_VALID_FOR_REPUTATION_COMPUTING:
+      LogPasswordReuseLookupResult(web_contents,
+                                   PasswordReuseLookup::URL_UNSUPPORTED);
+      break;
+    case PasswordProtectionService::CANCELED:
+    case PasswordProtectionService::TIMEDOUT:
+    case PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO:
+    case PasswordProtectionService::REQUEST_MALFORMED:
+    case PasswordProtectionService::FETCH_FAILED:
+    case PasswordProtectionService::RESPONSE_MALFORMED:
+    case PasswordProtectionService::SERVICE_DESTROYED:
+    case PasswordProtectionService::DISABLED_DUE_TO_FEATURE_DISABLED:
+    case PasswordProtectionService::DISABLED_DUE_TO_USER_POPULATION:
+    case PasswordProtectionService::MAX_OUTCOME:
+      LogPasswordReuseLookupResult(web_contents,
+                                   PasswordReuseLookup::REQUEST_FAILURE);
+      break;
+    case PasswordProtectionService::UNKNOWN:
+    case PasswordProtectionService::DEPRECATED_NO_EXTENDED_REPORTING:
+      NOTREACHED() << __FUNCTION__ << ": outcome: " << outcome;
+      break;
+  }
 }
 
 void ChromePasswordProtectionService::ShowPhishingInterstitial(
