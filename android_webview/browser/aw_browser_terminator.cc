@@ -6,7 +6,6 @@
 
 #include <unistd.h>
 
-#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_render_process_gone_delegate.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/crash_reporter/aw_microdump_crash_reporter.h"
@@ -24,6 +23,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
+#include "jni/AwBrowserProcess_jni.h"
 
 using content::BrowserThread;
 
@@ -91,7 +91,8 @@ void OnRenderProcessGoneDetail(int child_process_id,
 
   // By this point we have moved the minidump to the crash directory, so it can
   // now be copied and uploaded.
-  TriggerMinidumpUploading();
+  Java_AwBrowserProcess_triggerMinidumpUploading(
+      base::android::AttachCurrentThread());
 }
 
 }  // namespace
