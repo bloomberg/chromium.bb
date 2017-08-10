@@ -103,6 +103,7 @@ _BLACK_LIST_TEST_MODULES = {
 # The list of benchmark names to be excluded from our smoke tests.
 _BLACK_LIST_TEST_NAMES = [
    'memory.long_running_idle_gmail_background_tbmv2',
+   'tab_switching.typical_25',
 ]
 
 
