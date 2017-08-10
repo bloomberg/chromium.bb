@@ -2090,15 +2090,9 @@ class BookmarkBarViewTest22 : public BookmarkBarViewEventTestBase {
   }
 };
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
 // This test times out on Windows. TODO(pkotwicz): Find out why.
-// It also flakes on CrOS: http://crbug/754188.
-#define MAYBE_CloseSourceBrowserDuringDrag DISABLED_CloseSourceBrowserDuringDrag
-#else
-#define MAYBE_CloseSourceBrowserDuringDrag CloseSourceBrowserDuringDrag
-#endif
-
-VIEW_TEST(BookmarkBarViewTest22, MAYBE_CloseSourceBrowserDuringDrag)
+// It also flakes on CrOS and Linux : http://crbug/754188.
+VIEW_TEST(BookmarkBarViewTest22, DISABLED_CloseSourceBrowserDuringDrag)
 
 // Tests opening a context menu for a bookmark node from the keyboard.
 class BookmarkBarViewTest23 : public BookmarkBarViewEventTestBase {
