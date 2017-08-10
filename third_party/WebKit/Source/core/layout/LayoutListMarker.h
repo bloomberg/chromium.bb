@@ -96,7 +96,6 @@ class LayoutListMarker final : public LayoutBox {
 
   bool IsText() const { return !IsImage(); }
 
-  void SetSelectionState(SelectionState) override;
   bool CanBeSelectionLeaf() const override { return true; }
 
   LayoutUnit GetWidthOfTextWithSuffix() const;

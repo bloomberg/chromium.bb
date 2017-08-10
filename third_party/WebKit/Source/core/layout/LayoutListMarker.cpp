@@ -479,12 +479,6 @@ IntRect LayoutListMarker::GetRelativeMarkerRect() const {
   return relative_rect;
 }
 
-void LayoutListMarker::SetSelectionState(SelectionState state) {
-  // The selection state for our containing block hierarchy is updated by the
-  // base class call.
-  LayoutBox::SetSelectionState(state);
-}
-
 void LayoutListMarker::ListItemStyleDidChange() {
   RefPtr<ComputedStyle> new_style = ComputedStyle::Create();
   // The marker always inherits from the list item, regardless of where it might

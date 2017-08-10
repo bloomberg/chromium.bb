@@ -936,12 +936,6 @@ LayoutRect LayoutReplaced::LocalSelectionRect() const {
                     Size().Height());
 }
 
-void LayoutReplaced::SetSelectionState(SelectionState state) {
-  // The selection state for our containing block hierarchy is updated by the
-  // base class call.
-  LayoutBox::SetSelectionState(state);
-}
-
 void LayoutReplaced::IntrinsicSizingInfo::Transpose() {
   size = size.TransposedSize();
   aspect_ratio = aspect_ratio.TransposedSize();
