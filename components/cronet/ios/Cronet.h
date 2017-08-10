@@ -61,8 +61,9 @@ GRPC_SUPPORT_EXPORT
 + (void)setHttpCacheType:(CRNHttpCacheType)httpCacheType;
 
 // Adds hint that host supports QUIC on altPort. This method only has any effect
-// before |start| is called.
-+ (void)addQuicHint:(NSString*)host port:(int)port altPort:(int)altPort;
+// before |start| is called.  Returns NO if it fails to add hint (because the
+// host is invalid).
++ (BOOL)addQuicHint:(NSString*)host port:(int)port altPort:(int)altPort;
 
 // Set experimental Cronet options.  Argument is a JSON string; see
 // |URLRequestContextConfig| for more details.  This method only has

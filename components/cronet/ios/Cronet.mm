@@ -19,6 +19,7 @@
 #include "components/cronet/url_request_context_config.h"
 #include "ios/net/crn_http_protocol_handler.h"
 #include "ios/net/empty_nsurlcache.h"
+#include "net/base/url_util.h"
 #include "net/cert/cert_verifier.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -185,11 +186,24 @@ class CronetHttpProtocolHandlerDelegate
   gBrotliEnabled = brotliEnabled;
 }
 
-+ (void)addQuicHint:(NSString*)host port:(int)port altPort:(int)altPort {
++ (BOOL)addQuicHint:(NSString*)host port:(int)port altPort:(int)altPort {
   [self checkNotStarted];
+
+  std::string quic_host = base::SysNSStringToUTF8(host);
+
+  url::CanonHostInfo host_info;
+  std::string canon_host(net::CanonicalizeHost(quic_host, &host_info));
+  if (!host_info.IsIPAddress() &&
+      !net::IsCanonicalizedHostCompliant(canon_host)) {
+    LOG(ERROR) << "Invalid QUIC hint host: " << quic_host;
+    return NO;
+  }
+
   gQuicHints.push_back(
       base::MakeUnique<cronet::URLRequestContextConfig::QuicHint>(
-          base::SysNSStringToUTF8(host), port, altPort));
+          quic_host, port, altPort));
+
+  return YES;
 }
 
 + (void)setExperimentalOptions:(NSString*)experimentalOptions {
