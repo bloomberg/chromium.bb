@@ -967,7 +967,11 @@ void LayerTreeHost::SetEventListenerProperties(
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetViewportSize(const gfx::Size& device_viewport_size) {
+void LayerTreeHost::SetViewportSize(
+    const gfx::Size& device_viewport_size,
+    const viz::LocalSurfaceId& local_surface_id) {
+  if (settings_.enable_surface_synchronization)
+    SetLocalSurfaceId(local_surface_id);
   if (device_viewport_size_ == device_viewport_size)
     return;
 
