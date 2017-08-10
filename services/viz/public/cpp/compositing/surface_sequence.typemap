@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//cc/ipc/surface_sequence.mojom"
+mojom = "//services/viz/public/interfaces/compositing/surface_sequence.mojom"
 public_headers = [ "//components/viz/common/surfaces/surface_sequence.h" ]
-traits_headers = [ "//cc/ipc/surface_sequence_struct_traits.h" ]
+traits_headers =
+    [ "//services/viz/public/cpp/compositing/surface_sequence_struct_traits.h" ]
 deps = [
   "//components/viz/common",
 ]
-type_mappings = [ "cc.mojom.SurfaceSequence=viz::SurfaceSequence" ]
+type_mappings = [ "viz.mojom.SurfaceSequence=viz::SurfaceSequence" ]

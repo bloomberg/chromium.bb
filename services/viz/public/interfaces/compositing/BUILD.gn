@@ -11,6 +11,7 @@ mojom("compositing") {
     "resource_settings.mojom",
     "returned_resource.mojom",
     "surface_info.mojom",
+    "surface_sequence.mojom",
   ]
 
   public_deps = [

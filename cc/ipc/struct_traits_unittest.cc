@@ -97,11 +97,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     std::move(callback).Run(s);
   }
 
-  void EchoSurfaceSequence(const viz::SurfaceSequence& s,
-                           EchoSurfaceSequenceCallback callback) override {
-    std::move(callback).Run(s);
-  }
-
   void EchoTextureMailbox(const viz::TextureMailbox& t,
                           EchoTextureMailboxCallback callback) override {
     std::move(callback).Run(t);
@@ -872,17 +867,6 @@ TEST_F(StructTraitsTest, SurfaceId) {
   proxy->EchoSurfaceId(input, &output);
   EXPECT_EQ(frame_sink_id, output.frame_sink_id());
   EXPECT_EQ(local_surface_id, output.local_surface_id());
-}
-
-TEST_F(StructTraitsTest, SurfaceSequence) {
-  const viz::FrameSinkId frame_sink_id(2016, 1234);
-  const uint32_t sequence = 0xfbadbeef;
-  viz::SurfaceSequence input(frame_sink_id, sequence);
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  viz::SurfaceSequence output;
-  proxy->EchoSurfaceSequence(input, &output);
-  EXPECT_EQ(frame_sink_id, output.frame_sink_id);
-  EXPECT_EQ(sequence, output.sequence);
 }
 
 TEST_F(StructTraitsTest, SharedQuadState) {

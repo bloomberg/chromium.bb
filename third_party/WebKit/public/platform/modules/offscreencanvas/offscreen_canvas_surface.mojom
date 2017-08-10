@@ -6,13 +6,13 @@ module blink.mojom;
 
 import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/surface_id.mojom";
-import "cc/ipc/surface_sequence.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
+import "services/viz/public/interfaces/compositing/surface_sequence.mojom";
 
 interface OffscreenCanvasSurface {
-  Require(cc.mojom.SurfaceId surface_id, cc.mojom.SurfaceSequence sequence);
-  Satisfy(cc.mojom.SurfaceSequence sequence);
+  Require(cc.mojom.SurfaceId surface_id, viz.mojom.SurfaceSequence sequence);
+  Satisfy(viz.mojom.SurfaceSequence sequence);
 };
 
 interface OffscreenCanvasSurfaceClient {
