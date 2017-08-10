@@ -116,6 +116,9 @@ class UkmService : public UkmRecorderImpl {
   // The UKM session id stored in prefs.
   int32_t session_id_;
 
+  // The number of reports generated this session.
+  int32_t report_count_;
+
   // Used to interact with the embedder. Weak pointer; must outlive |this|
   // instance.
   metrics::MetricsServiceClient* const client_;
