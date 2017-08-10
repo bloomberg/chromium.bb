@@ -10,30 +10,18 @@
 namespace IPC {
 namespace internal {
 
-HandleAttachmentFuchsia::HandleAttachmentFuchsia(
-    const mx_handle_t& handle,
-    HandleFuchsia::Permissions permissions)
-    : handle_(MX_HANDLE_INVALID),
-      permissions_(HandleFuchsia::INVALID),
-      owns_handle_(true) {
-  mx_handle_t duplicated_handle;
-  if (mx_handle_duplicate(handle, MX_RIGHT_SAME_RIGHTS, &duplicated_handle) ==
-      MX_OK) {
-    handle_ = duplicated_handle;
-    permissions_ = permissions;
-  }
+HandleAttachmentFuchsia::HandleAttachmentFuchsia(const mx_handle_t& handle) {
+  mx_status_t result =
+      mx_handle_duplicate(handle, MX_RIGHT_SAME_RIGHTS, handle_.receive());
+  DLOG_IF(ERROR, result == MX_OK)
+      << "mx_handle_duplicate: " << mx_status_get_string(result);
 }
 
 HandleAttachmentFuchsia::HandleAttachmentFuchsia(const mx_handle_t& handle,
                                                  FromWire from_wire)
-    : handle_(handle),
-      permissions_(HandleFuchsia::INVALID),
-      owns_handle_(true) {}
+    : handle_(handle) {}
 
-HandleAttachmentFuchsia::~HandleAttachmentFuchsia() {
-  if (handle_ != MX_HANDLE_INVALID && owns_handle_)
-    mx_handle_close(handle_);
-}
+HandleAttachmentFuchsia::~HandleAttachmentFuchsia() {}
 
 MessageAttachment::Type HandleAttachmentFuchsia::GetType() const {
   return Type::FUCHSIA_HANDLE;

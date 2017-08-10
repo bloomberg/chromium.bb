@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/process/process_handle.h"
+#include "base/fuchsia/scoped_mx_handle.h"
 #include "ipc/handle_fuchsia.h"
 #include "ipc/ipc_export.h"
 #include "ipc/ipc_message_attachment.h"
@@ -20,8 +20,7 @@ class IPC_EXPORT HandleAttachmentFuchsia : public MessageAttachment {
  public:
   // This constructor makes a copy of |handle| and takes ownership of the
   // result. Should only be called by the sender of a Chrome IPC message.
-  HandleAttachmentFuchsia(const mx_handle_t& handle,
-                          HandleFuchsia::Permissions permissions);
+  explicit HandleAttachmentFuchsia(const mx_handle_t& handle);
 
   enum FromWire {
     FROM_WIRE,
@@ -32,25 +31,12 @@ class IPC_EXPORT HandleAttachmentFuchsia : public MessageAttachment {
 
   Type GetType() const override;
 
-  mx_handle_t get_handle() const { return handle_; }
-
-  // The caller of this method has taken ownership of |handle_|.
-  void reset_handle_ownership() {
-    owns_handle_ = false;
-    handle_ = MX_HANDLE_INVALID;
-  }
+  mx_handle_t Take() { return handle_.release(); }
 
  private:
   ~HandleAttachmentFuchsia() override;
-  mx_handle_t handle_;
-  HandleFuchsia::Permissions permissions_;
 
-  // In the sender process, the attachment owns the mx_handle_t of a newly
-  // created message. The attachment broker will eventually take ownership, and
-  // set this member to |false|. In the destination process, the attachment owns
-  // the handle until a call to ParamTraits<HandleFuchsia>::Read() takes
-  // ownership.
-  bool owns_handle_;
+  base::ScopedMxHandle handle_;
 };
 
 }  // namespace internal

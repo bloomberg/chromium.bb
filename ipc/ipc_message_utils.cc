@@ -714,6 +714,9 @@ void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
 #elif defined(OS_WIN)
   HandleWin handle_win(p.GetHandle());
   WriteParam(m, handle_win);
+#elif defined(OS_FUCHSIA)
+  HandleFuchsia handle_fuchsia(p.GetHandle());
+  WriteParam(m, handle_fuchsia);
 #else
   if (p.OwnershipPassesToIPC()) {
     if (!m->WriteAttachment(new internal::PlatformFileAttachment(
