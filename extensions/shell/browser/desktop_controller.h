@@ -30,6 +30,9 @@ class DesktopController {
   // we need a singleton somewhere).
   static DesktopController* instance();
 
+  // Runs the desktop and quits when finished.
+  virtual void Run() = 0;
+
   // Creates a new app window and adds it to the desktop. The desktop maintains
   // ownership of the window. The window must be closed before |extension| is
   // destroyed.

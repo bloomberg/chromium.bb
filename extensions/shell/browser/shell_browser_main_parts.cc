@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
@@ -242,9 +241,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
   if (!run_message_loop_)
     return true;
-  // TODO(yoz): just return false here?
-  base::RunLoop run_loop;
-  run_loop.Run();
+  desktop_controller_->Run();
   *result_code = content::RESULT_CODE_NORMAL_EXIT;
   return true;
 }
