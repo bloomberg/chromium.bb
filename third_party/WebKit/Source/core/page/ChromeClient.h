@@ -267,7 +267,6 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual void UpdateEventRectsForSubframeIfNecessary(LocalFrame*) = 0;
   virtual void SetHasScrollEventHandlers(LocalFrame*, bool) = 0;
   virtual void SetNeedsLowLatencyInput(LocalFrame*, bool) = 0;
-  virtual const WebInputEvent* GetCurrentInputEvent() const { return nullptr; }
 
   virtual void SetTouchAction(LocalFrame*, TouchAction) = 0;
 
