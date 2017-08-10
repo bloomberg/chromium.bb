@@ -222,6 +222,8 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
         base::WrapUnique(new TestInstallableManager(web_contents())));
     installable_manager_ = static_cast<TestInstallableManager*>(
         web_contents()->GetUserData(TestInstallableManager::UserDataKey()));
+
+    NavigateAndCommit(GURL(kDefaultStartUrl));
   }
 
   std::unique_ptr<AddToHomescreenDataFetcher> BuildFetcher(
@@ -327,7 +329,8 @@ TEST_P(AddToHomescreenDataFetcherTestCommon, NoIconManifest) {
 TEST_P(AddToHomescreenDataFetcherTestCommon, ManifestFetchTimesOut) {
   // Check that the AddToHomescreenDataFetcher::Observer methods are called
   // if the first call to InstallableManager::GetData() times out. This should
-  // fall back to the metadata title and have an empty icon.
+  // fall back to the metadata title and have a non-empty icon (taken from the
+  // favicon).
   SetShouldManifestTimeOut(true);
   SetManifest(BuildDefaultManifest());
 
@@ -338,7 +341,7 @@ TEST_P(AddToHomescreenDataFetcherTestCommon, ManifestFetchTimesOut) {
   RunFetcher(fetcher.get(), waiter, kWebApplicationInfoTitle,
              blink::kWebDisplayModeBrowser, false);
 
-  EXPECT_TRUE(fetcher->primary_icon().drawsNothing());
+  EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
   EXPECT_TRUE(fetcher->shortcut_info().best_primary_icon_url.is_empty());
 }
 

@@ -83,6 +83,9 @@ void AddToHomescreenManager::AddShortcut(
 }
 
 void AddToHomescreenManager::Start(content::WebContents* web_contents) {
+  // Icon generation depends on having a valid visible URL.
+  DCHECK(web_contents->GetVisibleURL().is_valid());
+
   bool check_webapk_compatible = false;
   if (ChromeWebApkHost::CanInstallWebApk() &&
       InstallableManager::IsContentSecure(web_contents)) {
