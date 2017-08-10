@@ -15,107 +15,47 @@ namespace internal {
 
 SerializationContext::SerializationContext() = default;
 
-SerializationContext::~SerializationContext() {
-  DCHECK(custom_contexts_.empty() ||
-         custom_context_index_ == custom_contexts_.size());
-}
+SerializationContext::~SerializationContext() = default;
 
-void SerializationContext::PushNextNullState(bool is_null) {
-  null_states_.container().push_back(is_null);
-}
-
-bool SerializationContext::IsNextFieldNull() {
-  DCHECK_LT(null_state_index_, null_states_.container().size());
-  return null_states_.container()[null_state_index_++];
-}
-
-void SerializationContext::PushCustomContext(void* custom_context) {
-  custom_contexts_.emplace_back(custom_context);
-}
-
-void* SerializationContext::ConsumeNextCustomContext() {
-  DCHECK_LT(custom_context_index_, custom_contexts_.size());
-  return custom_contexts_[custom_context_index_++];
-}
-
-void SerializationContext::AddHandle(mojo::ScopedHandle handle) {
-  Handle_Data data;
+void SerializationContext::AddHandle(mojo::ScopedHandle handle,
+                                     Handle_Data* out_data) {
   if (!handle.is_valid()) {
-    data.value = kEncodedInvalidHandleValue;
+    out_data->value = kEncodedInvalidHandleValue;
   } else {
     DCHECK_LT(handles_.size(), std::numeric_limits<uint32_t>::max());
-    data.value = static_cast<uint32_t>(handles_.size());
+    out_data->value = static_cast<uint32_t>(handles_.size());
     handles_.emplace_back(std::move(handle));
   }
-  serialized_handles_.emplace_back(data);
-}
-
-void SerializationContext::ConsumeNextSerializedHandle(Handle_Data* out_data) {
-  DCHECK_LT(next_serialized_handle_index_, serialized_handles_.size());
-  *out_data = serialized_handles_[next_serialized_handle_index_++];
 }
 
 void SerializationContext::AddInterfaceInfo(
     mojo::ScopedMessagePipeHandle handle,
-    uint32_t version) {
-  AddHandle(ScopedHandle::From(std::move(handle)));
-  serialized_interface_versions_.emplace_back(version);
-}
-
-void SerializationContext::ConsumeNextSerializedInterfaceInfo(
+    uint32_t version,
     Interface_Data* out_data) {
-  ConsumeNextSerializedHandle(&out_data->handle);
-  DCHECK_LT(next_serialized_version_index_,
-            serialized_interface_versions_.size());
-  out_data->version =
-      serialized_interface_versions_[next_serialized_version_index_++];
+  AddHandle(ScopedHandle::From(std::move(handle)), &out_data->handle);
+  out_data->version = version;
 }
 
 void SerializationContext::AddAssociatedEndpoint(
-    ScopedInterfaceEndpointHandle handle) {
-  AssociatedEndpointHandle_Data data;
+    ScopedInterfaceEndpointHandle handle,
+    AssociatedEndpointHandle_Data* out_data) {
   if (!handle.is_valid()) {
-    data.value = kEncodedInvalidHandleValue;
+    out_data->value = kEncodedInvalidHandleValue;
   } else {
     DCHECK_LT(associated_endpoint_handles_.size(),
               std::numeric_limits<uint32_t>::max());
-    data.value = static_cast<uint32_t>(associated_endpoint_handles_.size());
+    out_data->value =
+        static_cast<uint32_t>(associated_endpoint_handles_.size());
     associated_endpoint_handles_.emplace_back(std::move(handle));
   }
-  serialized_associated_endpoint_handles_.emplace_back(data);
-}
-
-void SerializationContext::ConsumeNextSerializedAssociatedEndpoint(
-    AssociatedEndpointHandle_Data* out_data) {
-  DCHECK_LT(next_serialized_associated_endpoint_handle_index_,
-            serialized_associated_endpoint_handles_.size());
-  *out_data = serialized_associated_endpoint_handles_
-      [next_serialized_associated_endpoint_handle_index_++];
 }
 
 void SerializationContext::AddAssociatedInterfaceInfo(
     ScopedInterfaceEndpointHandle handle,
-    uint32_t version) {
-  AddAssociatedEndpoint(std::move(handle));
-  serialized_interface_versions_.emplace_back(version);
-}
-
-void SerializationContext::ConsumeNextSerializedAssociatedInterfaceInfo(
+    uint32_t version,
     AssociatedInterface_Data* out_data) {
-  ConsumeNextSerializedAssociatedEndpoint(&out_data->handle);
-  DCHECK_LT(next_serialized_version_index_,
-            serialized_interface_versions_.size());
-  out_data->version =
-      serialized_interface_versions_[next_serialized_version_index_++];
-}
-
-void SerializationContext::PrepareMessage(uint32_t message_name,
-                                          uint32_t flags,
-                                          Message* message) {
-  *message = Message(message_name, flags, 0,
-                     associated_endpoint_handles_.size(), &handles_);
-  associated_endpoint_handles_.swap(
-      *message->mutable_associated_endpoint_handles());
+  AddAssociatedEndpoint(std::move(handle), &out_data->handle);
+  out_data->version = version;
 }
 
 void SerializationContext::TakeHandlesFromMessage(Message* message) {

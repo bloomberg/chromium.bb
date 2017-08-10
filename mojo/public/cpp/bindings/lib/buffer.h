@@ -8,8 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
+#include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/message.h"
 
 namespace mojo {
@@ -81,6 +84,10 @@ class MOJO_CPP_BINDINGS_EXPORT Buffer {
   void* AllocateAndGet(size_t num_bytes) {
     return Get<void>(Allocate(num_bytes));
   }
+
+  // Serializes |handles| into the buffer object. Only valid to call when this
+  // Buffer is backed by a message object.
+  void AttachHandles(std::vector<ScopedHandle>* handles);
 
   // Seals this Buffer so it can no longer be used for allocation, and ensures
   // the backing message object has a complete accounting of the size of the

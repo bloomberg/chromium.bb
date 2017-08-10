@@ -57,18 +57,18 @@ const {{method.name}}Callback& callback
 
 {%- macro build_serialized_message(message_name, param_name_prefix,
                                    params_struct, params_description,
-                                   flags_text, message_object) %}
-  mojo::internal::SerializationContext serialization_context;
-  {{struct_macros.prepare_to_serialize(params_struct, param_name_prefix,
-                                       "&serialization_context")}}
-  serialization_context.PrepareMessage(
-      {{message_name}}, {{flags_text}}, {{message_object}});
-  auto* buffer = ({{message_object}})->payload_buffer();
+                                   flags_text, message_object_name) %}
+  mojo::Message {{message_object_name}}(
+      {{message_name}}, {{flags_text}}, 0, 0, nullptr);
+  auto* buffer = {{message_object_name}}.payload_buffer();
   {{params_struct|get_qualified_name_for_kind(internal=True)}}::BufferWriter
       params;
+  mojo::internal::SerializationContext serialization_context;
   {{struct_macros.serialize(params_struct, params_description,
                             param_name_prefix, "params", "buffer",
                             "&serialization_context")}}
+  {{message_object_name}}.AttachHandlesFromSerializationContext(
+      &serialization_context);
 {%- endmacro %}
 
 {%- macro define_message_type(interface, message_typename, message_name,
@@ -118,9 +118,8 @@ class {{message_typename}}
     }
 
     DCHECK(serialize);
-    mojo::Message message;
     {{build_serialized_message(message_name, "param_%s", params_struct,
-                               params_description, "kFlags", "&message")}}
+                               params_description, "kFlags", "message")}}
     return message;
   }
 
@@ -166,12 +165,6 @@ class {{message_typename}}
 
  private:
   // mojo::internal::UnserializedMessageContext:
-  void PrepareToSerialize(
-      mojo::internal::SerializationContext* serialization_context) override {
-    {{struct_macros.prepare_to_serialize(params_struct, "param_%s_",
-                                         "serialization_context")}}
-  }
-
   void Serialize(mojo::internal::SerializationContext* serialization_context,
                  mojo::internal::Buffer* buffer) override {
     {{params_struct|get_qualified_name_for_kind(internal=True)}}::BufferWriter

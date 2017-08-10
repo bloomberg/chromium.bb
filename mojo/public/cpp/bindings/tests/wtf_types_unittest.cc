@@ -117,7 +117,6 @@ TEST_F(WTFTypesTest, Serialization_WTFVectorToWTFVector) {
   mojo::internal::SerializationContext context;
   typename mojo::internal::MojomTypeTraits<MojomType>::Data::BufferWriter
       writer;
-  mojo::internal::PrepareToSerialize<MojomType>(cloned_strs, &context);
   mojo::internal::ContainerValidateParams validate_params(
       0, true, new mojo::internal::ContainerValidateParams(0, false, nullptr));
   mojo::internal::Serialize<MojomType>(cloned_strs, message.payload_buffer(),
@@ -137,7 +136,6 @@ TEST_F(WTFTypesTest, Serialization_WTFVectorToStlVector) {
 
   mojo::Message message(0, 0, 0, 0, nullptr);
   mojo::internal::SerializationContext context;
-  mojo::internal::PrepareToSerialize<MojomType>(cloned_strs, &context);
   typename mojo::internal::MojomTypeTraits<MojomType>::Data::BufferWriter
       writer;
   mojo::internal::ContainerValidateParams validate_params(

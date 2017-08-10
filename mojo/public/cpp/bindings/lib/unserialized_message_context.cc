@@ -19,30 +19,5 @@ UnserializedMessageContext::UnserializedMessageContext(const Tag* tag,
 
 UnserializedMessageContext::~UnserializedMessageContext() = default;
 
-void UnserializedMessageContext::GetSerializedSize(size_t* num_bytes,
-                                                   size_t* num_handles) {
-  DCHECK(!serialization_context_.has_value());
-  serialization_context_.emplace();
-
-  PrepareToSerialize(&serialization_context_.value());
-  total_serialized_size_ = ComputeSerializedMessageSize(
-      header_.flags, 0, 0 /* payload_interface_id_count */);
-  *num_bytes = total_serialized_size_;
-  *num_handles = serialization_context_->handles()->size();
-}
-
-void UnserializedMessageContext::SerializeHandles(MojoHandle* handles) {
-  DCHECK(serialization_context_.has_value());
-  for (auto& handle : *serialization_context_->mutable_handles()) {
-    *handles = handle.release().value();
-    ++handles;
-  }
-}
-
-void UnserializedMessageContext::SerializePayload(Buffer* buffer) {
-  DCHECK(serialization_context_.has_value());
-  Serialize(&serialization_context_.value(), buffer);
-}
-
 }  // namespace internal
 }  // namespace mojo

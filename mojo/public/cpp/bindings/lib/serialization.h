@@ -30,11 +30,10 @@ namespace internal {
 template <typename MojomType, typename UserType>
 mojo::Message StructSerializeAsMessageImpl(UserType* input) {
   SerializationContext context;
-  PrepareToSerialize<MojomType>(*input, &context);
-  mojo::Message message;
-  context.PrepareMessage(0, 0, &message);
+  mojo::Message message(0, 0, 0, 0, nullptr);
   typename MojomTypeTraits<MojomType>::Data::BufferWriter writer;
   Serialize<MojomType>(*input, message.payload_buffer(), &writer, &context);
+  message.AttachHandlesFromSerializationContext(&context);
   return message;
 }
 
