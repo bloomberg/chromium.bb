@@ -65,18 +65,30 @@ class BubbleObserver {
  public:
   explicit BubbleObserver(content::WebContents* web_contents);
 
-  // Checks if the save prompt is being currently shown.
-  bool IsShowingSavePrompt() const;
+  // Checks if the save prompt is being currently available due to both manual
+  // fallback or successful login.
+  bool IsSavePromptAvailable() const;
 
-  // Checks if the update prompt is being currently shown.
-  bool IsShowingUpdatePrompt() const;
+  // Checks if the update prompt is being currently available due to both manual
+  // fallback or successful login.
+  bool IsUpdatePromptAvailable() const;
+
+  // Checks if the save prompt was shown automatically.
+  // |web_contents| must be the custom one returned by
+  // PasswordManagerBrowserTestBase.
+  bool IsSavePromptShownAutomatically() const;
+
+  // Checks if the update prompt was shown automatically.
+  // |web_contents| must be the custom one returned by
+  // PasswordManagerBrowserTestBase.
+  bool IsUpdatePromptShownAutomatically() const;
 
   // Dismisses the prompt currently open and moves the controller to the
   // inactive state.
   void Dismiss() const;
 
-  // Expecting that the prompt is shown, saves the password. Checks that the
-  // prompt is no longer visible afterwards.
+  // Expecting that the prompt is available, saves the password. At the end,
+  // checks that the prompt is no longer available afterwards.
   void AcceptSavePrompt() const;
 
   // Expecting that the prompt is shown, update |form| with the password from
@@ -97,7 +109,12 @@ class BubbleObserver {
   // Returns once the save prompt pops up or it's already shown.
   // |web_contents| must be the custom one returned by
   // PasswordManagerBrowserTestBase.
-  void WaitForSavePrompt() const;
+  void WaitForAutomaticSavePrompt() const;
+
+  // Returns once the fallback for saving becomes available.
+  // |web_contents| must be the custom one returned by
+  // PasswordManagerBrowserTestBase.
+  void WaitForFallbackForSaving() const;
 
  private:
   ManagePasswordsUIController* const passwords_ui_controller_;
@@ -161,6 +178,11 @@ class PasswordManagerBrowserTestBase : public InProcessBrowserTest {
 
   // Synchronoulsy adds the given host to the list of valid HSTS hosts.
   void AddHSTSHost(const std::string& host);
+
+  // Checks that |password_store| stores only one credential with |username| and
+  // |password|.
+  void CheckThatCredentialsStored(const base::string16& username,
+                                  const base::string16& password);
 
   // Accessors
   // Return the first created tab with a custom ManagePasswordsUIController.

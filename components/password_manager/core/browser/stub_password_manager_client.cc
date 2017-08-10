@@ -24,6 +24,13 @@ bool StubPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   return false;
 }
 
+void StubPasswordManagerClient::ShowManualFallbackForSaving(
+    std::unique_ptr<PasswordFormManager> form_to_save,
+    bool has_generated_password,
+    bool update_password) {}
+
+void StubPasswordManagerClient::HideManualFallbackForSaving() {}
+
 bool StubPasswordManagerClient::PromptUserToChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
     const GURL& origin,

@@ -137,6 +137,19 @@ void ContentPasswordManagerDriver::ForceSavePassword() {
                  weak_factory_.GetWeakPtr()));
 }
 
+void ContentPasswordManagerDriver::ShowManualFallbackForSaving(
+    const autofill::PasswordForm& password_form) {
+  if (!CheckChildProcessSecurityPolicy(
+          password_form.origin,
+          BadMessageReason::CPMD_BAD_ORIGIN_SHOW_FALLBACK_FOR_SAVING))
+    return;
+  GetPasswordManager()->ShowManualFallbackForSaving(this, password_form);
+}
+
+void ContentPasswordManagerDriver::HideManualFallbackForSaving() {
+  GetPasswordManager()->HideManualFallbackForSaving();
+}
+
 void ContentPasswordManagerDriver::GeneratePassword() {
   GetPasswordGenerationAgent()->UserTriggeredGeneratePassword();
 }

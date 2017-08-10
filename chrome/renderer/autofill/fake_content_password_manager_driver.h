@@ -126,8 +126,12 @@ class FakeContentPasswordManagerDriver
     called_presave_generated_password_ = false;
   }
 
-  int called_check_safe_browsing_reputation_cnt() {
+  int called_check_safe_browsing_reputation_cnt() const {
     return called_check_safe_browsing_reputation_cnt_;
+  }
+
+  int called_show_manual_fallback_for_saving_count() const {
+    return called_show_manual_fallback_for_saving_count_;
   }
 
   bool called_manual_fallback_suggestion() {
@@ -177,6 +181,10 @@ class FakeContentPasswordManagerDriver
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override;
 
+  void ShowManualFallbackForSaving(
+      const autofill::PasswordForm& password_form) override;
+  void HideManualFallbackForSaving() override;
+
   // Records whether ShowPasswordSuggestions() gets called.
   bool called_show_pw_suggestions_ = false;
   // Records data received via ShowPasswordSuggestions() call.
@@ -218,6 +226,10 @@ class FakeContentPasswordManagerDriver
 
   // Records number of times CheckSafeBrowsingReputation() gets called.
   int called_check_safe_browsing_reputation_cnt_ = 0;
+
+  // Records the number of request to show manual fallback for password saving.
+  // If it is zero, the fallback is not available.
+  int called_show_manual_fallback_for_saving_count_ = 0;
 
   mojo::BindingSet<autofill::mojom::PasswordManagerDriver> bindings_;
 };

@@ -296,6 +296,32 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   return true;
 }
 
+void ChromePasswordManagerClient::ShowManualFallbackForSaving(
+    std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
+    bool has_generated_password,
+    bool is_update) {
+  if (!CanShowBubbleOnURL(web_contents()->GetLastCommittedURL()))
+    return;
+
+#if !defined(OS_ANDROID)
+  PasswordsClientUIDelegate* manage_passwords_ui_controller =
+      PasswordsClientUIDelegateFromWebContents(web_contents());
+  manage_passwords_ui_controller->OnShowManualFallbackForSaving(
+      std::move(form_to_save), has_generated_password, is_update);
+#endif  // !defined(OS_ANDROID)
+}
+
+void ChromePasswordManagerClient::HideManualFallbackForSaving() {
+  if (!CanShowBubbleOnURL(web_contents()->GetLastCommittedURL()))
+    return;
+
+#if !defined(OS_ANDROID)
+  PasswordsClientUIDelegate* manage_passwords_ui_controller =
+      PasswordsClientUIDelegateFromWebContents(web_contents());
+  manage_passwords_ui_controller->OnHideManualFallbackForSaving();
+#endif  // !defined(OS_ANDROID)
+}
+
 bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
     const GURL& origin,

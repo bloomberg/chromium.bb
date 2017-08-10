@@ -94,6 +94,32 @@ void ManagePasswordsUIController::OnUpdatePasswordSubmitted(
   UpdateBubbleAndIconVisibility();
 }
 
+void ManagePasswordsUIController::OnShowManualFallbackForSaving(
+    std::unique_ptr<PasswordFormManager> form_manager,
+    bool has_generated_password,
+    bool is_update) {
+  DestroyAccountChooser();
+  if (has_generated_password)
+    passwords_data_.OnAutomaticPasswordSave(std::move(form_manager));
+  else if (is_update)
+    passwords_data_.OnUpdatePassword(std::move(form_manager));
+  else
+    passwords_data_.OnPendingPassword(std::move(form_manager));
+  UpdateBubbleAndIconVisibility();
+}
+
+void ManagePasswordsUIController::OnHideManualFallbackForSaving() {
+  if (passwords_data_.state() != password_manager::ui::PENDING_PASSWORD_STATE &&
+      passwords_data_.state() !=
+          password_manager::ui::PENDING_PASSWORD_UPDATE_STATE &&
+      passwords_data_.state() != password_manager::ui::CONFIRMATION_STATE) {
+    return;
+  }
+
+  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
+  UpdateBubbleAndIconVisibility();
+}
+
 bool ManagePasswordsUIController::OnChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
     const GURL& origin,

@@ -71,6 +71,8 @@ class ContentPasswordManagerDriver
       const autofill::PasswordFormFillData& form_data) override;
   void ClearPreviewedForm() override;
   void ForceSavePassword() override;
+  void ShowManualFallbackForSaving(const autofill::PasswordForm& form) override;
+  void HideManualFallbackForSaving() override;
   void GeneratePassword() override;
   void SendLoggingAvailability() override;
   void AllowToRunFormClassifier() override;

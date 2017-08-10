@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, UsernameChanged) {
       "document.getElementById('input_submit_button').click();";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
   navigation_observer.Wait();
-  EXPECT_TRUE(prompt_observer.IsShowingSavePrompt());
+  EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
   prompt_observer.AcceptSavePrompt();
 
   // Spin the message loop to make sure the password store had a chance to save
@@ -99,6 +99,26 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, UsernameChanged) {
             (stored_passwords.begin()->second)[0].username_value);
   EXPECT_EQ(base::UTF8ToUTF16("tempORARY"),
             (stored_passwords.begin()->second)[1].username_value);
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       ManualFallbackForSaving) {
+  NavigateToFile("/password/password_form.html");
+
+  std::string focus("document.getElementById('password_field').focus();");
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), focus));
+  SimulateUserTypingInField(RenderViewHost(), WebContents(), "password_field");
+  BubbleObserver prompt_observer(WebContents());
+  prompt_observer.WaitForFallbackForSaving();
+
+  // The save prompt should be available but shouldn't pop up automatically.
+  EXPECT_TRUE(prompt_observer.IsSavePromptAvailable());
+  EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
+
+  prompt_observer.AcceptSavePrompt();
+
+  WaitForPasswordStore();
+  CheckThatCredentialsStored(base::string16(), base::ASCIIToUTF16("ORARY"));
 }
 
 }  // namespace password_manager

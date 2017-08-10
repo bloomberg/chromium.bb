@@ -98,3 +98,12 @@ void FakeContentPasswordManagerDriver::CheckSafeBrowsingReputation(
     const GURL& frame_url) {
   called_check_safe_browsing_reputation_cnt_++;
 }
+
+void FakeContentPasswordManagerDriver::ShowManualFallbackForSaving(
+    const autofill::PasswordForm& password_form) {
+  called_show_manual_fallback_for_saving_count_++;
+}
+
+void FakeContentPasswordManagerDriver::HideManualFallbackForSaving() {
+  called_show_manual_fallback_for_saving_count_ = 0;
+}
