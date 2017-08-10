@@ -332,9 +332,9 @@ public class TextBubble implements OnTouchListener {
             } finally {
                 mIgnoreDismissal = false;
             }
-        } else {
-            mPopupWindow.update(mX, mY, mWidth, mHeight);
         }
+
+        mPopupWindow.update(mX, mY, mWidth, mHeight);
     }
 
     private void createContentView() {
