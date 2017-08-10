@@ -24,11 +24,17 @@ namespace {
 
 class TestSyncService : public FakeSyncService {
  public:
-  TestSyncService(bool is_engine_initialized, ModelTypeSet preferred_data_types)
+  TestSyncService(bool is_engine_initialized,
+                  bool is_using_secondary_passphrase,
+                  ModelTypeSet preferred_data_types)
       : is_engine_initialized_(is_engine_initialized),
+        is_using_secondary_passphrase_(is_using_secondary_passphrase),
         preferred_data_types_(preferred_data_types) {}
 
   bool IsEngineInitialized() const override { return is_engine_initialized_; }
+  bool IsUsingSecondaryPassphrase() const override {
+    return is_using_secondary_passphrase_;
+  }
 
   ModelTypeSet GetPreferredDataTypes() const override {
     return preferred_data_types_;
@@ -36,6 +42,7 @@ class TestSyncService : public FakeSyncService {
 
  private:
   bool is_engine_initialized_;
+  bool is_using_secondary_passphrase_;
   ModelTypeSet preferred_data_types_;
 };
 
@@ -47,7 +54,7 @@ class TestGlobalIdMapper : public GlobalIdMapper {
 class UserEventServiceImplTest : public testing::Test {
  protected:
   UserEventServiceImplTest()
-      : sync_service_(true, ModelTypeSet(HISTORY_DELETE_DIRECTIVES)) {}
+      : sync_service_(true, false, {HISTORY_DELETE_DIRECTIVES}) {}
 
   std::unique_ptr<UserEventSyncBridge> MakeBridge() {
     return base::MakeUnique<UserEventSyncBridge>(
@@ -83,15 +90,23 @@ TEST_F(UserEventServiceImplTest, MightRecordEventsFeatureDisabled) {
 }
 
 TEST_F(UserEventServiceImplTest, ShouldNotRecordNoHistory) {
-  TestSyncService no_history_sync_service(true, ModelTypeSet());
+  TestSyncService no_history_sync_service(true, false, ModelTypeSet());
   UserEventServiceImpl service(&no_history_sync_service, MakeBridge());
+  service.RecordUserEvent(base::MakeUnique<UserEventSpecifics>());
+  EXPECT_EQ(0u, processor().put_multimap().size());
+}
+
+TEST_F(UserEventServiceImplTest, ShouldNotRecordPassphrase) {
+  TestSyncService passphrase_sync_service(true, true,
+                                          {HISTORY_DELETE_DIRECTIVES});
+  UserEventServiceImpl service(&passphrase_sync_service, MakeBridge());
   service.RecordUserEvent(base::MakeUnique<UserEventSpecifics>());
   EXPECT_EQ(0u, processor().put_multimap().size());
 }
 
 TEST_F(UserEventServiceImplTest, ShouldNotRecordEngineOff) {
   TestSyncService engine_not_initialized_sync_service(
-      false, ModelTypeSet(HISTORY_DELETE_DIRECTIVES));
+      false, false, {HISTORY_DELETE_DIRECTIVES});
   UserEventServiceImpl service(&engine_not_initialized_sync_service,
                                MakeBridge());
   service.RecordUserEvent(base::MakeUnique<UserEventSpecifics>());
