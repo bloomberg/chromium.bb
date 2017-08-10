@@ -1859,66 +1859,38 @@ void Document::SetupFontBuilder(ComputedStyle& document_style) {
   font_builder.CreateFontForDocument(selector, document_style);
 }
 
-void Document::InheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
+void Document::PropagateStyleToViewport() {
   DCHECK(InStyleRecalc());
   DCHECK(documentElement());
 
-  bool did_recalc_document_element = false;
-  RefPtr<ComputedStyle> document_element_style =
-      documentElement()->MutableComputedStyle();
-  if (change == kForce)
-    documentElement()->ClearAnimationStyleChange();
-  if (!document_element_style || documentElement()->NeedsStyleRecalc() ||
-      change == kForce) {
-    document_element_style =
-        EnsureStyleResolver().StyleForElement(documentElement());
-    did_recalc_document_element = true;
-  }
+  HTMLElement* body = this->body();
+
+  const ComputedStyle* body_style =
+      body ? body->EnsureComputedStyle() : nullptr;
+  const ComputedStyle* document_element_style =
+      documentElement()->EnsureComputedStyle();
 
   WritingMode root_writing_mode = document_element_style->GetWritingMode();
   TextDirection root_direction = document_element_style->Direction();
-
-  HTMLElement* body = this->body();
-  RefPtr<ComputedStyle> body_style;
-
-  if (body) {
-    body_style = body->MutableComputedStyle();
-    if (did_recalc_document_element)
-      body->ClearAnimationStyleChange();
-    if (!body_style || body->NeedsStyleRecalc() ||
-        did_recalc_document_element) {
-      body_style = EnsureStyleResolver().StyleForElement(
-          body, document_element_style.Get(), document_element_style.Get());
-    }
+  if (body_style) {
     root_writing_mode = body_style->GetWritingMode();
     root_direction = body_style->Direction();
   }
 
-  const ComputedStyle* background_style = document_element_style.Get();
+  const ComputedStyle* background_style = document_element_style;
   // http://www.w3.org/TR/css3-background/#body-background
   // <html> root element with no background steals background from its first
   // <body> child.
   // Also see LayoutBoxModelObject::backgroundStolenForBeingBody()
   if (isHTMLHtmlElement(documentElement()) && isHTMLBodyElement(body) &&
       !background_style->HasBackground())
-    background_style = body_style.Get();
+    background_style = body_style;
 
   // If the page set a rootScroller, we should use its background for painting
   // the document background.
   Node& root_scroller = GetRootScrollerController().EffectiveRootScroller();
-  RefPtr<ComputedStyle> root_scroller_style;
-  if (this != &root_scroller) {
-    DCHECK(root_scroller.IsElementNode());
-    Element* root_scroller_element = ToElement(&root_scroller);
-    root_scroller_style = root_scroller_element->MutableComputedStyle();
-
-    if (!root_scroller_style || root_scroller_element->NeedsStyleRecalc()) {
-      root_scroller_style =
-          EnsureStyleResolver().StyleForElement(root_scroller_element);
-    }
-
-    background_style = root_scroller_style.Get();
-  }
+  if (this != &root_scroller)
+    background_style = ToElement(root_scroller).EnsureComputedStyle();
 
   Color background_color =
       background_style->VisitedDependentColor(CSSPropertyBackgroundColor);
@@ -1939,13 +1911,12 @@ void Document::InheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
   EImageRendering image_rendering = background_style->ImageRendering();
 
   const ComputedStyle* overflow_style = nullptr;
-  if (Element* element =
-          ViewportDefiningElement(document_element_style.Get())) {
+  if (Element* element = ViewportDefiningElement(document_element_style)) {
     if (element == body) {
-      overflow_style = body_style.Get();
+      overflow_style = body_style;
     } else {
       DCHECK_EQ(element, documentElement());
-      overflow_style = document_element_style.Get();
+      overflow_style = document_element_style;
 
       // The body element has its own scrolling box, independent from the
       // viewport.  This is a bit of a weird edge case in the CSS spec that we
@@ -1954,25 +1925,6 @@ void Document::InheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
       if (body_style && !body_style->IsOverflowVisible())
         UseCounter::Count(*this, WebFeature::kBodyScrollsInAdditionToViewport);
     }
-  }
-
-  // Resolved rem units are stored in the matched properties cache so we need to
-  // make sure to invalidate the cache if the documentElement needed to reattach
-  // or the font size changed and then trigger a full document recalc. We also
-  // need to clear it here since the call to styleForElement on the body above
-  // can cache bad values for rem units if the documentElement's style was
-  // dirty. We could keep track of which elements depend on rem units like we do
-  // for viewport styles, but we assume root font size changes are rare and just
-  // invalidate the cache for now.
-  if (GetStyleEngine().UsesRemUnits() &&
-      (documentElement()->NeedsAttach() ||
-       !documentElement()->GetComputedStyle() ||
-       documentElement()->GetComputedStyle()->FontSize() !=
-           document_element_style->FontSize())) {
-    EnsureStyleResolver().InvalidateMatchedPropertiesCache();
-    documentElement()->SetNeedsStyleRecalc(
-        kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                                 StyleChangeReason::kFontSizeChange));
   }
 
   EOverflowAnchor overflow_anchor = EOverflowAnchor::kAuto;
@@ -2167,11 +2119,12 @@ void Document::UpdateStyle() {
 
   NthIndexCache nth_index_cache(*this);
 
-  // FIXME: Cannot access the ensureStyleResolver() before calling
-  // styleForDocument below because apparently the StyleResolver's constructor
-  // has side effects. We should fix it.  See printing/setPrinting.html,
-  // printing/width-overflow.html though they only fail on mac when accessing
-  // the resolver by what appears to be a viewport size difference.
+  // TODO(rune@opera.com): Cannot access the EnsureStyleResolver() before
+  // calling StyleForViewport() below because apparently the StyleResolver's
+  // constructor has side effects. We should fix it. See
+  // printing/setPrinting.html, printing/width-overflow.html though they only
+  // fail on mac when accessing the resolver by what appears to be a viewport
+  // size difference.
 
   if (change == kForce) {
     has_nodes_with_placeholder_style_ = false;
@@ -2193,7 +2146,6 @@ void Document::UpdateStyle() {
   GetStyleEngine().SetStatsEnabled(should_record_stats);
 
   if (Element* document_element = this->documentElement()) {
-    InheritHtmlAndBodyElementStyles(change);
     if (document_element->ShouldCallRecalcStyle(change)) {
       TRACE_EVENT0("blink,blink_style", "Document::recalcStyle");
       Element* viewport_defining = ViewportDefiningElement();
@@ -2201,6 +2153,7 @@ void Document::UpdateStyle() {
       if (viewport_defining != ViewportDefiningElement())
         ViewportDefiningElementDidChange();
     }
+    PropagateStyleToViewport();
     if (document_element->NeedsReattachLayoutTree() ||
         document_element->ChildNeedsReattachLayoutTree()) {
       TRACE_EVENT0("blink,blink_style", "Document::rebuildLayoutTree");

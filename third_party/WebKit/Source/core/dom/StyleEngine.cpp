@@ -1192,6 +1192,22 @@ bool StyleEngine::MediaQueryAffectedByDeviceChange() {
   return false;
 }
 
+bool StyleEngine::UpdateRemUnits(const ComputedStyle* old_root_style,
+                                 const ComputedStyle* new_root_style) {
+  if (!UsesRemUnits())
+    return false;
+  if (!old_root_style ||
+      old_root_style->FontSize() != new_root_style->FontSize()) {
+    DCHECK(Resolver());
+    // Resolved rem units are stored in the matched properties cache so we need
+    // to make sure to invalidate the cache if the documentElement font size
+    // changes.
+    Resolver()->InvalidateMatchedPropertiesCache();
+    return true;
+  }
+  return false;
+}
+
 DEFINE_TRACE(StyleEngine) {
   visitor->Trace(document_);
   visitor->Trace(injected_author_style_sheets_);

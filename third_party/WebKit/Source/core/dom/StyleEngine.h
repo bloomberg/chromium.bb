@@ -178,6 +178,8 @@ class CORE_EXPORT StyleEngine final
 
   bool UsesRemUnits() const { return uses_rem_units_; }
   void SetUsesRemUnit(bool uses_rem_units) { uses_rem_units_ = uses_rem_units; }
+  bool UpdateRemUnits(const ComputedStyle* old_root_style,
+                      const ComputedStyle* new_root_style);
 
   void ResetCSSFeatureFlags(const RuleFeatureSet&);
 

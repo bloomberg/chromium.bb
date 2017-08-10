@@ -1389,7 +1389,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool NeedsFullLayoutTreeUpdate() const;
 
-  void InheritHtmlAndBodyElementStyles(StyleRecalcChange);
+  void PropagateStyleToViewport();
 
   void UpdateUseShadowTreesIfNeeded();
   void EvaluateMediaQueryListIfNeeded();
