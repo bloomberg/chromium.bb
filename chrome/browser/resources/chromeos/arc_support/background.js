@@ -43,13 +43,13 @@ var lastFocusedElement = null;
  * Host window inner default width.
  * @const {number}
  */
-var INNER_WIDTH = 960;
+var INNER_WIDTH = 768;
 
 /**
  * Host window inner default height.
  * @const {number}
  */
-var INNER_HEIGHT = 687;
+var INNER_HEIGHT = 640;
 
 
 /**
@@ -85,6 +85,8 @@ class PreferenceCheckbox {
 
     this.checkbox_ = container.querySelector('.checkbox-option');
     this.label_ = container.querySelector('.checkbox-text');
+    this.label_.addEventListener(
+        'click', () => this.onLabelClicked(this.label_));
 
     var learnMoreLink = this.label_.querySelector(learnMoreLinkId);
     if (learnMoreLink) {
@@ -133,8 +135,19 @@ class PreferenceCheckbox {
   /**
    * Called when the "Learn More" link is clicked.
    */
-  onLearnMoreLinkClicked() {
+  onLearnMoreLinkClicked(event) {
     showTextOverlay(this.learnMoreContent_);
+    event.stopPropagation();
+  }
+
+  /**
+   * Called when preference label is clicked. Toggle the sibling checkbox.
+   */
+  onLabelClicked(label) {
+    var checkbox = label.previousElementSibling;
+    if (checkbox && !checkbox.hidden) {
+      checkbox.checked = !checkbox.checked;
+    }
   }
 }
 
@@ -191,7 +204,7 @@ class MetricsPreferenceCheckbox extends PreferenceCheckbox {
   /** Called when "settings" link is clicked. */
   onSettingsLinkClicked(event) {
     chrome.browser.openTab({'url': 'chrome://settings'}, function() {});
-    event.preventDefault();
+    event.stopPropagation();
   }
 }
 
@@ -247,6 +260,7 @@ class TermsOfServicePage {
 
     var scriptSetCountryCode =
         'document.countryCode = \'' + countryCode.toLowerCase() + '\';';
+    scriptSetCountryCode += 'document.viewMode = \'large-view\';';
     this.termsView_.addContentScripts([
       {
         name: 'preProcess',
@@ -274,7 +288,6 @@ class TermsOfServicePage {
     // On managed case, do not show TermsOfService section. Note that the
     // checkbox for the prefereces are still visible.
     var visibility = isManaged ? 'hidden' : 'visible';
-    container.querySelector('#terms-title').style.visibility = visibility;
     container.querySelector('#terms-container').style.visibility = visibility;
 
     // Set event handler for buttons.

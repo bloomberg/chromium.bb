@@ -8,11 +8,18 @@
   <link rel="stylesheet" href="chrome://resources/css/overlay.css">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
   <style is="custom-style" include="iron-flex iron-flex-alignment">
     paper-button {
-      font-size: 13px;
+      border-radius: 2px;
+      border-style: solid;
+      border-width: 2px;
+      font: Roboto, sans-serif;
+      font-size: 12px;
       font-weight: 500;
-      padding: 9px 16px 8px 16px;
+      height: 32px; /* = 28px + 2 * 2px border */
+      padding: 0 16px 0 16px;
+      text-transform: none;
     }
     paper-button.blue {
       background: rgb(66, 133, 244);
@@ -20,7 +27,17 @@
     }
     paper-button.white {
       background: white;
-      color: rgb(66, 133, 244);
+      border-color: rgba(0, 0, 0, 0.1);
+      color: rgba(0, 0, 0, 0.54);
+    }
+    paper-button[focused] {
+      border-color: rgba(66, 133, 244, 0.4); /* #4284f4 */
+    }
+    paper-checkbox {
+      --paper-checkbox-size: 12px;
+      --paper-checkbox-checked-color: rgb(66, 133, 244); /* #4285f4 */
+      --paper-checkbox-label-spacing: 20px;
+      --paper-checkbox-vertical-align: top;
     }
   </style>
   <link rel="stylesheet" href="main.css">
@@ -39,11 +56,14 @@
 </head>
 <body>
   <div id="terms" class="section">
-    <img class="image-header" src="images/header.png">
+    <div class="header">
+      <img class="icon-header" src="icon/playstore.svg">
+      <h1 class="title" i18n-content="greetingHeader"></h1>
+    </div>
     <div class="scrollable" id="terms-of-service-loading">
+      <p class="subtitle" i18n-content="progressLsoLoading">
+      </p>
       <div class="content">
-        <p class="text-title" i18n-content="greetingHeader"></p>
-        <p class="text-desc" i18n-content="greetingDescription"></p>
         <div class="progress-container">
           <div class="progress-primary"></div>
           <div class="progress-secondary"></div>
@@ -51,46 +71,50 @@
       </div>
     </div>
     <div class="scrollable" id="terms-of-service-content" hidden>
+      <p class="subtitle" i18n-content="greetingDescription">
+      </p>
       <div class="content section-flex">
-        <p class="text-title" i18n-content="greetingHeader"></p>
-        <p class="text-desc" i18n-content="greetingDescription"></p>
-        <p class="text-terms-title" id="terms-title"
-            i18n-content="termsOfService"></p>
         <div class="section-terms" id="terms-container">
           <webview id="terms-view" partition="persist:arc_support"></webview>
+        </div>`
+        <div class="subcontentcontainer">
+          <div>
+            <a class="checkbox-text" id="privacy-policy-link"
+                href="#" i18n-content="privacyPolicyLink"></a>
+          </div>
+          <div id="metrics-preference">
+            <label class="layout horizontal section-checkbox-container">
+              <paper-checkbox class="checkbox-option">
+              </paper-checkbox>
+              <p class="checkbox-text"></p>
+            </label>
+          </div>
+          <div id="backup-restore-preference">
+            <label class="layout horizontal section-checkbox-container">
+              <paper-checkbox class="checkbox-option">
+              </paper-checkbox>
+              <p class="checkbox-text"
+                  i18n-values=".innerHTML:textBackupRestore"></p>
+            </label>
+          </div>
+          <div id="location-service-preference">
+            <label class="layout horizontal section-checkbox-container">
+              <paper-checkbox class="checkbox-option">
+              </paper-checkbox>
+              <p class="checkbox-text"
+                  i18n-values=".innerHTML:textLocationService"></p>
+            </label>
+          </div>
         </div>
-        <div id="metrics-preference">
-          <label class="layout horizontal section-checkbox-container">
-            <input type="checkbox" class="checkbox-option">
-            <p class="checkbox-text"></p>
-          </label>
-        </div>
-        <div id="backup-restore-preference">
-          <label class="layout horizontal section-checkbox-container">
-            <input type="checkbox" class="checkbox-option">
-            <p class="checkbox-text"
-                i18n-values=".innerHTML:textBackupRestore"></p>
-          </label>
-        </div>
-        <div id="location-service-preference">
-          <label class="layout horizontal section-checkbox-container">
-            <input type="checkbox" class="checkbox-option">
-            <p class="checkbox-text"
-                i18n-values=".innerHTML:textLocationService"></p>
-          </label>
-        </div>
-        <div class="layout horizontal center end-justified section-buttons">
-          <a class="checkbox-text" id="privacy-policy-link"
-             href="#" i18n-content="privacyPolicyLink"></a>
-          <div class="flex"></div>
-          <paper-button class="white" id="button-cancel"
-              i18n-content="buttonCancel">
-          </paper-button>
-          <div class="button-separator"></div>
-          <paper-button class="blue" id="button-agree"
-               i18n-content="buttonAgree">
-          </paper-button>
-        </div>
+      </div>
+      <div class="layout horizontal center end-justified section-buttons">
+        <div class="flex"></div>
+        <paper-button class="white" id="button-cancel"
+            i18n-content="buttonCancel">
+        </paper-button>
+        <div class="button-separator"></div>
+        <paper-button class="blue" id="button-agree" i18n-content="buttonAgree">
+        </paper-button>
       </div>
     </div>
   </div>
@@ -135,29 +159,38 @@
     <webview id="arc-support" partition="persist:arc_support"></webview>
   </div>
   <div id="arc-loading" class="section" hidden>
-    <img class="image-header" src="images/header.png">
+    <div class="header">
+      <img class="icon-header" src="icon/playstore.svg">
+      <h1 class="title" i18n-content="greetingHeader"></h1>
+    </div>
     <div class="scrollable">
+      <p class="subtitle" i18n-content="progressAndroidLoading"
+          aria-live="polite">
+      </p>
       <div class="content">
         <div class="progress-container">
           <div class="progress-primary"></div>
           <div class="progress-secondary"></div>
         </div>
-        <p class="text-status" i18n-content="progressAndroidLoading"
-            aria-live="polite"></p>
       </div>
     </div>
   </div>
   <div id="error" class="section" hidden>
-    <img class="image-header" src="images/header.png">
+    <div class="header">
+      <img class="icon-header" src="icon/playstore.svg">
+      <h1 class="title" i18n-content="greetingHeader"></h1>
+    </div>
     <div class="scrollable">
+      <p class="subtitle" id="error-message" aria-live="polite"></p>
       <div class="content">
-        <div class="progress-container">
-          <div class="progress-primary red"></div>
-        </div>
-        <p class="text-status" id="error-message" aria-live="polite"></p>
-        <paper-button class="blue" id="button-send-feedback"
+        <img class="error-image" src="images/error_image.png">
+      </div>
+      <div class="layout horizontal center end-justified section-buttons">
+        <div class="flex"></div>
+        <paper-button class="white" id="button-send-feedback"
             i18n-content="buttonSendFeedback">
         </paper-button>
+        <div class="button-separator"></div>
         <paper-button class="blue" id="button-retry" i18n-content="buttonRetry">
         </paper-button>
       </div>
@@ -173,8 +206,9 @@
       <div class="action-area">
         <div class="action-area-right">
           <div class="button-strip">
-            <button id="overlay-close" i18n-content="overlayClose">
-            </button>
+            <paper-button class ="blue" id="overlay-close"
+                i18n-content="overlayClose">
+            </paper-button>
           </div>
         </div>
       </div>

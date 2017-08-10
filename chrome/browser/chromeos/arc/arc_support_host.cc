@@ -462,13 +462,14 @@ bool ArcSupportHost::Initialize() {
   DCHECK(message_host_);
 
   auto loadtime_data = base::MakeUnique<base::DictionaryValue>();
-  base::string16 device_name = ash::GetChromeOSDeviceName();
   loadtime_data->SetString(
-      "greetingHeader",
-      l10n_util::GetStringFUTF16(IDS_ARC_OPT_IN_DIALOG_HEADER, device_name));
-  loadtime_data->SetString("greetingDescription",
-                           l10n_util::GetStringFUTF16(
-                               IDS_ARC_OPT_IN_DIALOG_DESCRIPTION, device_name));
+      "greetingHeader", l10n_util::GetStringUTF16(IDS_ARC_OOBE_TERMS_HEADING));
+  loadtime_data->SetString(
+      "loadingDescription",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_PROGRESS_LSO));
+  loadtime_data->SetString(
+      "greetingDescription",
+      l10n_util::GetStringUTF16(IDS_ARC_OOBE_TERMS_DESCRIPTION));
   loadtime_data->SetString(
       "buttonAgree",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE));

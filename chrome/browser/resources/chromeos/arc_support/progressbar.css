@@ -5,18 +5,18 @@
 .progress-container {
   display: block;
   height: 4px;
-  margin: auto;
+  margin: 40px 0 0 0;
   overflow: hidden;
-  padding: 112px 0 0 0;
+  padding: 0;
   position: relative;
-  width: 360px;
+  width: 100%;
 }
 
 .progress-primary,
 .progress-secondary {
   height: 4px;
   position: absolute;
-  width: 360px;
+  width: 100%;
 }
 
 .progress-primary {
