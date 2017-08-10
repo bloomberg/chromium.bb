@@ -14,6 +14,12 @@ namespace payments {
 
 class OriginSecurityChecker {
  public:
+  // Returns true for a valid |url| from a secure context. This check is a
+  // superset of the OriginSecurityChecker::IsOriginSecure() by making sure
+  // the URL does not have a data URI scheme. This may eventually get more
+  // complicated and require looking at whether the origin is opaque, etc.
+  static bool IsContextSecure(const GURL& url);
+
   // Returns true for a valid |url| from a secure origin.
   static bool IsOriginSecure(const GURL& url);
 

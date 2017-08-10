@@ -104,7 +104,8 @@ const char kNoShippingPage[] =
       assertWithMatcher:grey_nil()];
 }
 
-// Tests that tapping the cancel button closes the Payment Request UI.
+// Tests that tapping the cancel button closes the Payment Request UI and
+// rejects the Promise returned by request.show() with the appropriate error.
 - (void)testOpenAndCancel {
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)];
 
@@ -125,11 +126,11 @@ const char kNoShippingPage[] =
                                           kPaymentRequestCollectionViewID)]
       assertWithMatcher:grey_nil()];
 
-  // TODO(crbug.com/602666): Check whether the Promise returned by
-  // request.show() gets rejected with the appropriate error message.
+  [self waitForWebViewContainingTexts:{"AbortError", "Request cancelled"}];
 }
 
-// Tests that tapping the link to Chrome Settings closes the Payment Request UI
+// Tests that tapping the link to Chrome Settings closes the Payment Request UI,
+// rejects the Promise returned by request.show() with the appropriate error,
 // and displays the Autofill Settings UI.
 - (void)testOpenAndNavigateToSettings {
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)];
@@ -155,8 +156,7 @@ const char kNoShippingPage[] =
                                           @"kAutofillCollectionViewId")]
       assertWithMatcher:grey_notNil()];
 
-  // TODO(crbug.com/602666): Check whether the Promise returned by
-  // request.show() gets rejected with the appropriate error message.
+  [self waitForWebViewContainingTexts:{"AbortError", "Request cancelled"}];
 }
 
 // Tests that tapping the pay button closes the Payment Request UI, accepts the
