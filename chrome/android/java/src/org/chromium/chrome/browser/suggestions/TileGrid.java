@@ -46,7 +46,7 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
         mTileGroup = new TileGroup(ContextUtils.getApplicationContext(), uiDelegate,
                 contextMenuManager, tileGroupDelegate, /* observer = */ this, offlinePageBridge,
                 getTileTitleLines(), SuggestionsConfig.getTileStyle(uiConfig));
-        mTileGroup.startObserving(getMaxTileRows(), MAX_TILE_COLUMNS);
+        mTileGroup.startObserving(getMaxTileRows() * MAX_TILE_COLUMNS);
     }
 
     @Override
