@@ -16,7 +16,9 @@ function buy() {  // eslint-disable-line no-unused-vars
     request = new PaymentRequest(
         [{supportedMethods: ['visa']}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
-    request.show();
+    request.show().catch(function(error) {
+      print(error);
+    });
   } catch (error) {
     print(error.message);
   }

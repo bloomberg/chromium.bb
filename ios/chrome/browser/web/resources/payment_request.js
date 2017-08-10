@@ -186,6 +186,13 @@ var SerializedPaymentResponse;
   __gCrWeb['paymentRequestManager'] = __gCrWeb.paymentRequestManager;
 
   /**
+   * Wether the origin is secure. The default is true unless it is set to false.
+   * If false, PaymentRequest constructor throws a SecurityError DOMException.
+   * @type {boolean}
+   */
+  __gCrWeb['paymentRequestManager'].isContextSecure = true;
+
+  /**
    * The PaymentRequest object, if any. This object is provided by the page and
    * only updated by the app side.
    * @type {window.PaymentRequest}
@@ -504,13 +511,22 @@ var SerializedPaymentResponse;
  * @constructor
  * @implements {EventTarget}
  * @extends {__gCrWeb.EventTarget}
+ * @throws {DOMException}
+ * @suppress {checkTypes} Required for DOMException's constructor.
  */
 window.PaymentRequest = function(methodData, details, opt_options) {
   __gCrWeb.EventTarget.call(this);
 
   if (window.top != window.self) {
-    throw new Error(
-        'PaymentRequest can only be used in the top-level context.');
+    throw new DOMException(
+        'Failed to construct \'PaymentRequest\': Must be in top-level context',
+        'SecurityError');
+  }
+
+  if (!__gCrWeb['paymentRequestManager'].isContextSecure) {
+    throw new DOMException(
+        'Failed to construct \'PaymentRequest\': Must be in a secure context',
+        'SecurityError');
   }
 
   if (methodData.length == 0)

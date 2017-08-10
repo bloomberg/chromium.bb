@@ -7,6 +7,15 @@
 
 #import <UIKit/UIKit.h>
 
+// Names identifying the errors used in Payment Request API:
+// https://www.w3.org/TR/payment-request/
+// A complete list of DOMException error names and descriptions can be found at:
+// https://developer.mozilla.org/en-US/docs/Web/API/DOMException#Error_names
+extern NSString* const kAbortErrorName;
+extern NSString* const kInvalidStateError;
+extern NSString* const kNotAllowedErrorName;
+extern NSString* const kNotSupportedErrorName;
+
 class ToolbarModelIOS;
 
 namespace ios {
@@ -18,7 +27,6 @@ class WebState;
 }  // namespace web
 
 // Manager for handling invocations of the Payment Request API.
-//
 // Implements the app-side of the Payment Request JavaScript API. Injects and
 // listens to the injected JavaScript and invokes the creation of the user
 // interface.

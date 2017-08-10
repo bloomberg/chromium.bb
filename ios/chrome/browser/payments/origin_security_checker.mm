@@ -4,11 +4,23 @@
 
 #include "ios/chrome/browser/payments/origin_security_checker.h"
 
+#include <string>
+#include <vector>
+
+#include "base/stl_util.h"
 #import "ios/web/public/origin_util.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace payments {
+
+// static
+bool OriginSecurityChecker::IsContextSecure(const GURL& url) {
+  return IsOriginSecure(url) &&
+         !base::ContainsValue(std::vector<std::string>{url::kDataScheme},
+                              url.scheme());
+}
 
 // static
 bool OriginSecurityChecker::IsOriginSecure(const GURL& url) {
