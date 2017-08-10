@@ -176,11 +176,13 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   };
 
   // |open_cb| Run when Initialize() is called to signal that the demuxer
-  //   is ready to receive media data via AppenData().
+  //   is ready to receive media data via AppendData().
+  // |progress_cb| Run each time data is appended.
   // |encrypted_media_init_data_cb| Run when the demuxer determines that an
   //   encryption key is needed to decrypt the content.
   // |media_log| Used to report content and engine debug messages.
   ChunkDemuxer(const base::Closure& open_cb,
+               const base::Closure& progress_cb,
                const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
                MediaLog* media_log);
   ~ChunkDemuxer() override;
@@ -409,6 +411,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
 
   DemuxerHost* host_;
   base::Closure open_cb_;
+  base::Closure progress_cb_;
   EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
   bool enable_text_;
 

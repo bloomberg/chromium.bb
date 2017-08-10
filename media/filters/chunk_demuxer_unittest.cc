@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -178,7 +179,9 @@ class ChunkDemuxerTest : public ::testing::Test {
     return GenerateCluster(46, 66, 5);
   }
 
-  ChunkDemuxerTest() : append_window_end_for_next_append_(kInfiniteDuration) {
+  ChunkDemuxerTest()
+      : did_progress_(false),
+        append_window_end_for_next_append_(kInfiniteDuration) {
     init_segment_received_cb_ = base::Bind(
         &ChunkDemuxerTest::InitSegmentReceived, base::Unretained(this));
     CreateNewDemuxer();
@@ -187,10 +190,12 @@ class ChunkDemuxerTest : public ::testing::Test {
   void CreateNewDemuxer() {
     base::Closure open_cb =
         base::Bind(&ChunkDemuxerTest::DemuxerOpened, base::Unretained(this));
+    base::Closure progress_cb =
+        base::Bind(&ChunkDemuxerTest::OnProgress, base::Unretained(this));
     Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb = base::Bind(
         &ChunkDemuxerTest::OnEncryptedMediaInitData, base::Unretained(this));
-    demuxer_.reset(
-        new ChunkDemuxer(open_cb, encrypted_media_init_data_cb, &media_log_));
+    demuxer_.reset(new ChunkDemuxer(open_cb, progress_cb,
+                                    encrypted_media_init_data_cb, &media_log_));
   }
 
   virtual ~ChunkDemuxerTest() {
@@ -1279,6 +1284,14 @@ class ChunkDemuxerTest : public ::testing::Test {
   MOCK_METHOD1(InitSegmentReceivedMock, void(std::unique_ptr<MediaTracks>&));
   MOCK_METHOD1(OnParseWarningMock, void(const SourceBufferParseWarning));
 
+  void OnProgress() { did_progress_ = true; }
+
+  bool DidProgress() {
+    bool result = did_progress_;
+    did_progress_ = false;
+    return result;
+  }
+
   void Seek(base::TimeDelta seek_time) {
     demuxer_->StartWaitingForSeek(seek_time);
     demuxer_->Seek(seek_time, NewExpectedStatusCB(PIPELINE_OK));
@@ -1306,6 +1319,8 @@ class ChunkDemuxerTest : public ::testing::Test {
 
   std::unique_ptr<ChunkDemuxer> demuxer_;
   Demuxer::MediaTracksUpdatedCB init_segment_received_cb_;
+
+  bool did_progress_;
 
   base::TimeDelta append_window_start_for_next_append_;
   base::TimeDelta append_window_end_for_next_append_;
@@ -2153,7 +2168,9 @@ TEST_F(ChunkDemuxerTest, AppendingInPieces) {
 
   ExpectInitMediaLogs(HAS_AUDIO | HAS_VIDEO);
   EXPECT_CALL(*this, InitSegmentReceivedMock(_));
+  EXPECT_FALSE(DidProgress());
   ASSERT_TRUE(AppendDataInPieces(buffer.get(), buffer_size));
+  EXPECT_TRUE(DidProgress());
 
   GenerateExpectedReads(0, 9);
 }
