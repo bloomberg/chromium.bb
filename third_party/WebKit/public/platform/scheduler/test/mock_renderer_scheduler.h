@@ -64,6 +64,7 @@ class MockRendererScheduler : public RendererScheduler {
   MOCK_METHOD1(SetTopLevelBlameContext, void(base::trace_event::BlameContext*));
   MOCK_METHOD1(SetRAILModeObserver, void(RAILModeObserver*));
   MOCK_METHOD1(MainThreadSeemsUnresponsive, bool(base::TimeDelta));
+  MOCK_METHOD1(SetRendererProcessType, void(RendererProcessType));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockRendererScheduler);

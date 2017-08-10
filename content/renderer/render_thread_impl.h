@@ -227,6 +227,8 @@ class CONTENT_EXPORT RenderThreadImpl
   int32_t GetClientId() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override;
+  void SetRendererProcessType(
+      blink::scheduler::RendererProcessType type) override;
 
   // IPC::Listener implementation via ChildThreadImpl:
   void OnAssociatedInterfaceRequest(

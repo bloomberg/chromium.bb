@@ -125,5 +125,7 @@ bool FakeRendererScheduler::MainThreadSeemsUnresponsive(
   return false;
 }
 
+void FakeRendererScheduler::SetRendererProcessType(RendererProcessType type) {}
+
 }  // namespace scheduler
 }  // namespace blink

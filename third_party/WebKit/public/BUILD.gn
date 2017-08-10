@@ -458,6 +458,7 @@ source_set("blink_headers") {
     "platform/scheduler/child/webthread_base.h",
     "platform/scheduler/renderer/render_widget_scheduling_state.h",
     "platform/scheduler/renderer/renderer_scheduler.h",
+    "platform/scheduler/renderer_process_type.h",
     "web/WebAXEnums.h",
     "web/WebAXObject.h",
     "web/WebActiveWheelFlingParameters.h",

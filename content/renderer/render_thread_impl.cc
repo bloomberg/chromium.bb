@@ -1550,6 +1550,11 @@ RenderThreadImpl::GetLoadingTaskRunner() {
   return renderer_scheduler_->LoadingTaskRunner();
 }
 
+void RenderThreadImpl::SetRendererProcessType(
+    blink::scheduler::RendererProcessType type) {
+  renderer_scheduler_->SetRendererProcessType(type);
+}
+
 void RenderThreadImpl::OnAssociatedInterfaceRequest(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {

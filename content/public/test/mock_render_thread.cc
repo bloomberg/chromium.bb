@@ -235,6 +235,9 @@ MockRenderThread::GetLoadingTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }
 
+void MockRenderThread::SetRendererProcessType(
+    blink::scheduler::RendererProcessType type) {}
+
 #if defined(OS_WIN)
 void MockRenderThread::PreCacheFont(const LOGFONT& log_font) {
 }
