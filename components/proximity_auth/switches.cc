@@ -11,10 +11,6 @@ namespace switches {
 const char kDisableBluetoothLowEnergyDiscovery[] =
     "disable-proximity-auth-bluetooth-low-energy-discovery";
 
-// Enables the use of EasyUnlock to log into the Chromebook.
-extern const char kEnableChromeOSLogin[] =
-    "enable-proximity-auth-chromeos-login";
-
 // Enables forcing the user to reauth with their password after X hours (e.g.
 // 20) without password entry.
 const char kEnableForcePasswordReauth[] = "force-password-reauth";

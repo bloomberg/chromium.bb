@@ -24,12 +24,15 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_metrics.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_local_state_pref_manager.h"
 #include "components/proximity_auth/switches.h"
+
+using proximity_auth::ScreenlockState;
 
 namespace {
 
@@ -380,6 +383,10 @@ void EasyUnlockServiceSignin::OnSuspendDoneInternal() {
   // Ignored.
 }
 
+void EasyUnlockServiceSignin::OnBluetoothAdapterPresentChanged() {
+  OnFocusedUserChanged(account_id_);
+}
+
 void EasyUnlockServiceSignin::OnScreenDidLock(
     proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
   // In production code, the screen type should always be the signin screen; but
@@ -389,7 +396,7 @@ void EasyUnlockServiceSignin::OnScreenDidLock(
     return;
 
   // Update initial UI is when the account picker on login screen is ready.
-  ShowInitialUserState();
+  ShowInitialUserPodState();
   user_pod_last_focused_timestamp_ = base::TimeTicks::Now();
 }
 
@@ -412,12 +419,17 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
     return;
 
   // Setting or clearing the account_id may changed |IsAllowed| value, so in
-  // these
-  // cases update the app state. Otherwise, it's enough to notify the app the
-  // user data has been updated.
+  // these cases update the app state. Otherwise, it's enough to notify the app
+  // the user data has been updated.
   const bool should_update_app_state = (account_id_ != account_id);
   account_id_ = account_id;
+  pref_manager_->SetActiveUser(account_id);
   user_pod_last_focused_timestamp_ = base::TimeTicks::Now();
+  SetProximityAuthDevices(account_id_, cryptauth::RemoteDeviceList());
+  ResetScreenlockState();
+
+  if (!IsAllowed() || !IsEnabled())
+    return;
 
   ResetScreenlockState();
 
@@ -425,15 +437,13 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   if (!IsAllowed() || !IsEnabled())
     return;
 
-  ShowInitialUserState();
+  ShowInitialUserPodState();
 
-  // ShowInitialUserState() will display a tooltip explaining that the user must
-  // enter their password. We will skip the entire login code path unless the
-  // --enable-chromeos-login flag is enabled.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableChromeOSLogin)) {
+  // If there is a hardlock, then there is no point in loading the devices.
+  EasyUnlockScreenlockStateHandler::HardlockState hardlock_state;
+  if (GetPersistedHardlockState(&hardlock_state) &&
+      hardlock_state != EasyUnlockScreenlockStateHandler::NO_HARDLOCK) {
+    PA_LOG(INFO) << "Hardlock present, skipping remaining login flow.";
     return;
   }
 
@@ -448,11 +458,7 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   // Start loading TPM system token.
   // The system token will be needed to sign a nonce using TPM private key
   // during the sign-in protocol.
-  EasyUnlockScreenlockStateHandler::HardlockState hardlock_state;
-  if (GetPersistedHardlockState(&hardlock_state) &&
-      hardlock_state != EasyUnlockScreenlockStateHandler::NO_PAIRING) {
-    chromeos::TPMTokenLoader::Get()->EnsureStarted();
-  }
+  chromeos::TPMTokenLoader::Get()->EnsureStarted();
 }
 
 void EasyUnlockServiceSignin::LoggedInStateChanged() {
@@ -518,6 +524,12 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
   if (account_id == account_id_)
     NotifyUserUpdated();
 
+  // The code below delegates EasyUnlock processing to the native
+  // implementation. Skip if the app is used instead.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery))
+    return;
+
   if (devices.empty())
     return;
 
@@ -570,4 +582,23 @@ const EasyUnlockServiceSignin::UserData*
   if (it->second->state != USER_DATA_STATE_LOADED)
     return nullptr;
   return it->second.get();
+}
+
+void EasyUnlockServiceSignin::ShowInitialUserPodState() {
+  if (!IsAllowed() || !IsEnabled())
+    return;
+
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) &&
+      !pref_manager_->IsChromeOSLoginEnabled()) {
+    // Show a hardlock state if the user has not enabled the login flow.
+    SetHardlockStateForUser(
+        account_id_,
+        EasyUnlockScreenlockStateHandler::PASSWORD_REQUIRED_FOR_LOGIN);
+  } else {
+    // This UI is simply a placeholder until the RemoteDevices are loaded from
+    // cryptohome and the ProximityAuthSystem is started. Hardlock states are
+    // automatically taken into account.
+    UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING);
+  }
 }

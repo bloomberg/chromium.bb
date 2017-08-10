@@ -44,8 +44,6 @@ enum class ScreenlockState {
   // The user must reauthenticate using their password because a sufficient time
   // has elapsed since their last password entry.
   PASSWORD_REAUTH,
-  // A password is required on the login screen.
-  PASSWORD_REQUIRED_FOR_LOGIN,
 };
 
 }  // namespace proximity_auth

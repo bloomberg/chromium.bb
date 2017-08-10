@@ -28,6 +28,7 @@ class EasyUnlockScreenlockStateHandler
                                // failure. Reset when screen is unlocked.
     PAIRING_ADDED = 1 << 4,    // Similar to PAIRING_CHANGED when it happens
                                // on a new Chromebook.
+    PASSWORD_REQUIRED_FOR_LOGIN = 1 << 5,  // Login must be done with a password
   };
 
   // |account_id|: The account id of the user associated with the profile to
