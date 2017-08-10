@@ -25,8 +25,8 @@ const std::string& AppCacheURLLoaderRequest::GetMethod() const {
   return request_.method;
 }
 
-const GURL& AppCacheURLLoaderRequest::GetFirstPartyForCookies() const {
-  return request_.first_party_for_cookies;
+const GURL& AppCacheURLLoaderRequest::GetSiteForCookies() const {
+  return request_.site_for_cookies;
 }
 
 const GURL AppCacheURLLoaderRequest::GetReferrer() const {

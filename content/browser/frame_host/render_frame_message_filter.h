@@ -89,13 +89,13 @@ class CONTENT_EXPORT RenderFrameMessageFilter
                           int* new_render_frame_id);
   void OnCookiesEnabled(int render_frame_id,
                         const GURL& url,
-                        const GURL& first_party_for_cookies,
+                        const GURL& site_for_cookies,
                         bool* cookies_enabled);
 
   // Check the policy for getting cookies. Gets the cookies if allowed.
   void CheckPolicyForCookies(int render_frame_id,
                              const GURL& url,
-                             const GURL& first_party_for_cookies,
+                             const GURL& site_for_cookies,
                              GetCookiesCallback callback,
                              const net::CookieList& cookie_list);
 
@@ -115,11 +115,11 @@ class CONTENT_EXPORT RenderFrameMessageFilter
   // mojom::RenderFrameMessageFilter:
   void SetCookie(int32_t render_frame_id,
                  const GURL& url,
-                 const GURL& first_party_for_cookies,
+                 const GURL& site_for_cookies,
                  const std::string& cookie) override;
   void GetCookies(int render_frame_id,
                   const GURL& url,
-                  const GURL& first_party_for_cookies,
+                  const GURL& site_for_cookies,
                   GetCookiesCallback callback) override;
 
 #if BUILDFLAG(ENABLE_PLUGINS)

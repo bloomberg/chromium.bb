@@ -3304,7 +3304,7 @@ int32_t PepperPluginInstanceImpl::Navigate(
           pp_instance_, &completed_request, frame, &web_request)) {
     return PP_ERROR_FAILED;
   }
-  web_request.SetFirstPartyForCookies(document.FirstPartyForCookies());
+  web_request.SetSiteForCookies(document.SiteForCookies());
   if (IsProcessingUserGesture())
     web_request.SetHasUserGesture(true);
 

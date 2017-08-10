@@ -46,7 +46,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
 
   DECLARE_VIRTUAL_TRACE();
 
-  virtual KURL GetFirstPartyForCookies() const = 0;
+  virtual KURL GetSiteForCookies() const = 0;
   virtual void CountUsage(WebFeature) const = 0;
   virtual void CountDeprecation(WebFeature) const = 0;
 

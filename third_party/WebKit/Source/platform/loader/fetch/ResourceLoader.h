@@ -98,7 +98,7 @@ class PLATFORM_EXPORT ResourceLoader final
   // before DidFinishLoading(), including synchronous inside one of the other
   // callbacks via ResourceLoader::cancel()
   bool WillFollowRedirect(const WebURL& new_url,
-                          const WebURL& new_first_party_for_cookies,
+                          const WebURL& new_site_for_cookies,
                           const WebString& new_referrer,
                           WebReferrerPolicy new_referrer_policy,
                           const WebString& new_method,

@@ -58,11 +58,11 @@ bool ServiceWorkerFetchContextImpl::IsDataSaverEnabled() const {
   return is_data_saver_enabled_;
 }
 
-blink::WebURL ServiceWorkerFetchContextImpl::FirstPartyForCookies() const {
+blink::WebURL ServiceWorkerFetchContextImpl::SiteForCookies() const {
   // According to the spec, we can use the |worker_script_url_| for
-  // FirstPartyForCookies, because "site for cookies" for the service worker is
+  // SiteForCookies, because "site for cookies" for the service worker is
   // the service worker's origin's host's registrable domain.
-  // https://tools.ietf.org/html/draft-west-first-party-cookies-07#section-2.1.2
+  // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-07#section-2.1.2
   return worker_script_url_;
 }
 

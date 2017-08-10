@@ -10,7 +10,7 @@ namespace content {
 NavigationRequestInfo::NavigationRequestInfo(
     const CommonNavigationParams& common_params,
     const BeginNavigationParams& begin_params,
-    const GURL& first_party_for_cookies,
+    const GURL& site_for_cookies,
     bool is_main_frame,
     bool parent_is_main_frame,
     bool are_ancestors_secure,
@@ -20,7 +20,7 @@ NavigationRequestInfo::NavigationRequestInfo(
     blink::WebPageVisibilityState page_visibility_state)
     : common_params(common_params),
       begin_params(begin_params),
-      first_party_for_cookies(first_party_for_cookies),
+      site_for_cookies(site_for_cookies),
       is_main_frame(is_main_frame),
       parent_is_main_frame(parent_is_main_frame),
       are_ancestors_secure(are_ancestors_secure),

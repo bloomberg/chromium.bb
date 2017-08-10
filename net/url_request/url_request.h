@@ -259,7 +259,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // The URL that should be consulted for the third-party cookie blocking
   // policy, as defined in Section 2.1.1 and 2.1.2 of
-  // https://tools.ietf.org/html/draft-west-first-party-cookies.
+  // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site.
   //
   // WARNING: This URL must only be used for the third-party cookie blocking
   //          policy. It MUST NEVER be used for any kind of SECURITY check.
@@ -275,11 +275,9 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // this value as a proxy for the "top-level frame URL", which is simply
   // incorrect and fragile. We don't need the full URL for any //net checks,
   // so we should drop the pieces we don't need. https://crbug.com/577565
-  const GURL& first_party_for_cookies() const {
-    return first_party_for_cookies_;
-  }
+  const GURL& site_for_cookies() const { return site_for_cookies_; }
   // This method may only be called before Start().
-  void set_first_party_for_cookies(const GURL& first_party_for_cookies);
+  void set_site_for_cookies(const GURL& site_for_cookies);
 
   // The first-party URL policy to apply when updating the first party URL
   // during redirects. The first-party URL policy may only be changed before
@@ -304,7 +302,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   //    initiator remains `https://example.com/`.
   //
   // This value is used to perform the cross-origin check specified in Section
-  // 4.3 of https://tools.ietf.org/html/draft-west-first-party-cookies.
+  // 4.3 of https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site.
   //
   // Note: the initiator can be null for browser-initiated top level
   // navigations. This is different from a unique Origin (e.g. in sandboxed
@@ -772,7 +770,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   std::unique_ptr<UploadDataStream> upload_data_stream_;
 
   std::vector<GURL> url_chain_;
-  GURL first_party_for_cookies_;
+  GURL site_for_cookies_;
   base::Optional<url::Origin> initiator_;
   GURL delegate_redirect_url_;
   std::string method_;  // "GET", "POST", etc. Should be all uppercase.

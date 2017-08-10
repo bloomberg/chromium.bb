@@ -20,7 +20,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   original.SetURL(KURL(kParsedURLString, "http://www.example.com/test.htm"));
   original.SetCachePolicy(WebCachePolicy::kUseProtocolCachePolicy);
   original.SetTimeoutInterval(10);
-  original.SetFirstPartyForCookies(
+  original.SetSiteForCookies(
       KURL(kParsedURLString, "http://www.example.com/first_party.htm"));
   original.SetRequestorOrigin(SecurityOrigin::Create(
       KURL(kParsedURLString, "http://www.example.com/first_party.htm")));
@@ -52,7 +52,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy, original.GetCachePolicy());
   EXPECT_EQ(10, original.TimeoutInterval());
   EXPECT_STREQ("http://www.example.com/first_party.htm",
-               original.FirstPartyForCookies().GetString().Utf8().data());
+               original.SiteForCookies().GetString().Utf8().data());
   EXPECT_STREQ("www.example.com",
                original.RequestorOrigin()->Host().Utf8().data());
   EXPECT_STREQ("GET", original.HttpMethod().Utf8().data());
@@ -88,7 +88,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy, copy1.GetCachePolicy());
   EXPECT_EQ(10, copy1.TimeoutInterval());
   EXPECT_STREQ("http://www.example.com/first_party.htm",
-               copy1.FirstPartyForCookies().GetString().Utf8().data());
+               copy1.SiteForCookies().GetString().Utf8().data());
   EXPECT_STREQ("www.example.com",
                copy1.RequestorOrigin()->Host().Utf8().data());
   EXPECT_STREQ("GET", copy1.HttpMethod().Utf8().data());

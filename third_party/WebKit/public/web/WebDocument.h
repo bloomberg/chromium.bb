@@ -93,7 +93,7 @@ class WebDocument : public WebNode {
   // The firstPartyForCookies is used to compute whether this document
   // appears in a "third-party" context for the purpose of third-party
   // cookie blocking.
-  BLINK_EXPORT WebURL FirstPartyForCookies() const;
+  BLINK_EXPORT WebURL SiteForCookies() const;
 
   BLINK_EXPORT WebElement DocumentElement() const;
   BLINK_EXPORT WebElement Body() const;

@@ -175,7 +175,7 @@ std::unique_ptr<net::URLRequest> DownloadRequestCore::CreateRequestOnIOThread(
   // Downloads are treated as top level navigations. Hence the first-party
   // origin for cookies is always based on the target URL and is updated on
   // redirects.
-  request->set_first_party_for_cookies(params->url());
+  request->set_site_for_cookies(params->url());
   request->set_first_party_url_policy(
       net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
   request->set_initiator(params->initiator());

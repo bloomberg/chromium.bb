@@ -272,103 +272,98 @@ Document* WebDocumentFirstPartyTest::NestedNestedDocument() const {
 TEST_F(WebDocumentFirstPartyTest, Empty) {
   Load(g_empty_file);
 
-  ASSERT_EQ(ToOriginA(g_empty_file), TopDocument()->FirstPartyForCookies());
+  ASSERT_EQ(ToOriginA(g_empty_file), TopDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedOriginA) {
   Load(g_nested_origin_a);
 
-  ASSERT_EQ(ToOriginA(g_nested_origin_a),
-            TopDocument()->FirstPartyForCookies());
-  ASSERT_EQ(ToOriginA(g_nested_origin_a),
-            NestedDocument()->FirstPartyForCookies());
+  ASSERT_EQ(ToOriginA(g_nested_origin_a), TopDocument()->SiteForCookies());
+  ASSERT_EQ(ToOriginA(g_nested_origin_a), NestedDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedOriginSubA) {
   Load(g_nested_origin_sub_a);
 
+  ASSERT_EQ(ToOriginA(g_nested_origin_sub_a), TopDocument()->SiteForCookies());
   ASSERT_EQ(ToOriginA(g_nested_origin_sub_a),
-            TopDocument()->FirstPartyForCookies());
-  ASSERT_EQ(ToOriginA(g_nested_origin_sub_a),
-            NestedDocument()->FirstPartyForCookies());
+            NestedDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedOriginSecureA) {
   Load(g_nested_origin_secure_a);
 
   ASSERT_EQ(ToOriginA(g_nested_origin_secure_a),
-            TopDocument()->FirstPartyForCookies());
+            TopDocument()->SiteForCookies());
   ASSERT_EQ(ToOriginA(g_nested_origin_secure_a),
-            NestedDocument()->FirstPartyForCookies());
+            NestedDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedOriginAInOriginA) {
   Load(g_nested_origin_a_in_origin_a);
 
   ASSERT_EQ(ToOriginA(g_nested_origin_a_in_origin_a),
-            TopDocument()->FirstPartyForCookies());
+            TopDocument()->SiteForCookies());
   ASSERT_EQ(ToOriginA(g_nested_origin_a_in_origin_a),
-            NestedDocument()->FirstPartyForCookies());
+            NestedDocument()->SiteForCookies());
   ASSERT_EQ(ToOriginA(g_nested_origin_a_in_origin_a),
-            NestedNestedDocument()->FirstPartyForCookies());
+            NestedNestedDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedOriginAInOriginB) {
   Load(g_nested_origin_a_in_origin_b);
 
   ASSERT_EQ(ToOriginA(g_nested_origin_a_in_origin_b),
-            TopDocument()->FirstPartyForCookies());
+            TopDocument()->SiteForCookies());
   ASSERT_EQ(SecurityOrigin::UrlWithUniqueSecurityOrigin(),
-            NestedDocument()->FirstPartyForCookies());
+            NestedDocument()->SiteForCookies());
   ASSERT_EQ(SecurityOrigin::UrlWithUniqueSecurityOrigin(),
-            NestedNestedDocument()->FirstPartyForCookies());
+            NestedNestedDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedOriginB) {
   Load(g_nested_origin_b);
 
-  ASSERT_EQ(ToOriginA(g_nested_origin_b),
-            TopDocument()->FirstPartyForCookies());
+  ASSERT_EQ(ToOriginA(g_nested_origin_b), TopDocument()->SiteForCookies());
   ASSERT_EQ(SecurityOrigin::UrlWithUniqueSecurityOrigin(),
-            NestedDocument()->FirstPartyForCookies());
+            NestedDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedOriginBInOriginA) {
   Load(g_nested_origin_b_in_origin_a);
 
   ASSERT_EQ(ToOriginA(g_nested_origin_b_in_origin_a),
-            TopDocument()->FirstPartyForCookies());
+            TopDocument()->SiteForCookies());
   ASSERT_EQ(ToOriginA(g_nested_origin_b_in_origin_a),
-            NestedDocument()->FirstPartyForCookies());
+            NestedDocument()->SiteForCookies());
   ASSERT_EQ(SecurityOrigin::UrlWithUniqueSecurityOrigin(),
-            NestedNestedDocument()->FirstPartyForCookies());
+            NestedNestedDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedOriginBInOriginB) {
   Load(g_nested_origin_b_in_origin_b);
 
   ASSERT_EQ(ToOriginA(g_nested_origin_b_in_origin_b),
-            TopDocument()->FirstPartyForCookies());
+            TopDocument()->SiteForCookies());
   ASSERT_EQ(SecurityOrigin::UrlWithUniqueSecurityOrigin(),
-            NestedDocument()->FirstPartyForCookies());
+            NestedDocument()->SiteForCookies());
   ASSERT_EQ(SecurityOrigin::UrlWithUniqueSecurityOrigin(),
-            NestedNestedDocument()->FirstPartyForCookies());
+            NestedNestedDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedSrcdoc) {
   Load(g_nested_src_doc);
 
-  ASSERT_EQ(ToOriginA(g_nested_src_doc), TopDocument()->FirstPartyForCookies());
-  ASSERT_EQ(ToOriginA(g_nested_src_doc),
-            NestedDocument()->FirstPartyForCookies());
+  ASSERT_EQ(ToOriginA(g_nested_src_doc), TopDocument()->SiteForCookies());
+  ASSERT_EQ(ToOriginA(g_nested_src_doc), NestedDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedData) {
   Load(g_nested_data);
 
-  ASSERT_EQ(ToOriginA(g_nested_data), TopDocument()->FirstPartyForCookies());
+  ASSERT_EQ(ToOriginA(g_nested_data), TopDocument()->SiteForCookies());
   ASSERT_EQ(SecurityOrigin::UrlWithUniqueSecurityOrigin(),
-            NestedDocument()->FirstPartyForCookies());
+            NestedDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest,
@@ -378,11 +373,11 @@ TEST_F(WebDocumentFirstPartyTest,
   SchemeRegistry::RegisterURLSchemeAsFirstPartyWhenTopLevel("http");
 
   ASSERT_EQ(ToOriginA(g_nested_origin_a_in_origin_b),
-            TopDocument()->FirstPartyForCookies());
+            TopDocument()->SiteForCookies());
   ASSERT_EQ(ToOriginA(g_nested_origin_a_in_origin_b),
-            NestedDocument()->FirstPartyForCookies());
+            NestedDocument()->SiteForCookies());
   ASSERT_EQ(ToOriginA(g_nested_origin_a_in_origin_b),
-            NestedNestedDocument()->FirstPartyForCookies());
+            NestedNestedDocument()->SiteForCookies());
 }
 
 }  // namespace blink

@@ -239,7 +239,7 @@ bool LoadingDataCollector::IsHandledSubresource(
     content::ResourceType resource_type) {
   const GURL& url = response->url();
   bool bad_port = !g_allow_port_in_urls && url.has_port();
-  if (!response->first_party_for_cookies().SchemeIsHTTPOrHTTPS() ||
+  if (!response->site_for_cookies().SchemeIsHTTPOrHTTPS() ||
       !url.SchemeIsHTTPOrHTTPS() || bad_port) {
     return false;
   }

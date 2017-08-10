@@ -79,7 +79,7 @@ void GenericURLRequestJob::SetExtraRequestHeaders(
 
 void GenericURLRequestJob::Start() {
   PrepareCookies(request_->url(), request_->method(),
-                 url::Origin(request_->first_party_for_cookies()));
+                 url::Origin(request_->site_for_cookies()));
 }
 
 void GenericURLRequestJob::PrepareCookies(const GURL& rewritten_url,

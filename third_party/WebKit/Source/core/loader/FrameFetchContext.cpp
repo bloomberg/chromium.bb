@@ -180,7 +180,7 @@ struct FrameFetchContext::FrozenState final
               RefPtr<const SecurityOrigin> parent_security_origin,
               const Optional<WebAddressSpace>& address_space,
               const ContentSecurityPolicy* content_security_policy,
-              KURL first_party_for_cookies,
+              KURL site_for_cookies,
               RefPtr<SecurityOrigin> requestor_origin,
               RefPtr<SecurityOrigin> requestor_origin_for_frame_loading,
               const ClientHintsPreferences& client_hints_preferences,
@@ -195,7 +195,7 @@ struct FrameFetchContext::FrozenState final
         parent_security_origin(std::move(parent_security_origin)),
         address_space(address_space),
         content_security_policy(content_security_policy),
-        first_party_for_cookies(first_party_for_cookies),
+        site_for_cookies(site_for_cookies),
         requestor_origin(requestor_origin),
         requestor_origin_for_frame_loading(requestor_origin_for_frame_loading),
         client_hints_preferences(client_hints_preferences),
@@ -211,7 +211,7 @@ struct FrameFetchContext::FrozenState final
   const RefPtr<const SecurityOrigin> parent_security_origin;
   const Optional<WebAddressSpace> address_space;
   const Member<const ContentSecurityPolicy> content_security_policy;
-  const KURL first_party_for_cookies;
+  const KURL site_for_cookies;
   const RefPtr<SecurityOrigin> requestor_origin;
   const RefPtr<SecurityOrigin> requestor_origin_for_frame_loading;
   const ClientHintsPreferences client_hints_preferences;
@@ -276,14 +276,14 @@ WebFrameScheduler* FrameFetchContext::GetFrameScheduler() {
   return GetFrame()->FrameScheduler();
 }
 
-KURL FrameFetchContext::GetFirstPartyForCookies() const {
+KURL FrameFetchContext::GetSiteForCookies() const {
   if (IsDetached())
-    return frozen_state_->first_party_for_cookies;
+    return frozen_state_->site_for_cookies;
 
   // Use document_ for subresource or nested frame cases,
   // GetFrame()->GetDocument() otherwise.
   Document* document = document_ ? document_.Get() : GetFrame()->GetDocument();
-  return document->FirstPartyForCookies();
+  return document->SiteForCookies();
 }
 
 LocalFrame* FrameFetchContext::GetFrame() const {
@@ -837,11 +837,11 @@ void FrameFetchContext::SetFirstPartyCookieAndRequestorOrigin(
   // Set the first party for cookies url if it has not been set yet (new
   // requests). This value will be updated during redirects, consistent with
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00#section-2.1.1?
-  if (request.FirstPartyForCookies().IsNull()) {
+  if (request.SiteForCookies().IsNull()) {
     if (request.GetFrameType() == WebURLRequest::kFrameTypeTopLevel) {
-      request.SetFirstPartyForCookies(request.Url());
+      request.SetSiteForCookies(request.Url());
     } else {
-      request.SetFirstPartyForCookies(GetFirstPartyForCookies());
+      request.SetSiteForCookies(GetSiteForCookies());
     }
   }
 
@@ -1150,16 +1150,16 @@ FetchContext* FrameFetchContext::Detach() {
     frozen_state_ = new FrozenState(
         GetReferrerPolicy(), GetOutgoingReferrer(), Url(), GetSecurityOrigin(),
         GetParentSecurityOrigin(), GetAddressSpace(),
-        GetContentSecurityPolicy(), GetFirstPartyForCookies(),
-        GetRequestorOrigin(), GetRequestorOriginForFrameLoading(),
-        GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
-        IsMainFrame(), IsSVGImageChromeClient());
+        GetContentSecurityPolicy(), GetSiteForCookies(), GetRequestorOrigin(),
+        GetRequestorOriginForFrameLoading(), GetClientHintsPreferences(),
+        GetDevicePixelRatio(), GetUserAgent(), IsMainFrame(),
+        IsSVGImageChromeClient());
   } else {
     // Some getters are unavailable in this case.
     frozen_state_ = new FrozenState(
         kReferrerPolicyDefault, String(), NullURL(), GetSecurityOrigin(),
         GetParentSecurityOrigin(), GetAddressSpace(),
-        GetContentSecurityPolicy(), GetFirstPartyForCookies(),
+        GetContentSecurityPolicy(), GetSiteForCookies(),
         SecurityOrigin::CreateUnique(), SecurityOrigin::CreateUnique(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
         IsMainFrame(), IsSVGImageChromeClient());

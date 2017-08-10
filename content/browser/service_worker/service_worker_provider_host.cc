@@ -74,7 +74,7 @@ class ServiceWorkerURLTrackingRequestHandler
       return nullptr;
     const GURL stripped_url = net::SimplifyUrlForRequest(request->url());
     provider_host_->SetDocumentUrl(stripped_url);
-    provider_host_->SetTopmostFrameUrl(request->first_party_for_cookies());
+    provider_host_->SetTopmostFrameUrl(request->site_for_cookies());
     return nullptr;
   }
 

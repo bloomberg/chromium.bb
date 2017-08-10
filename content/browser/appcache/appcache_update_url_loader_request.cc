@@ -43,9 +43,9 @@ std::string AppCacheUpdateJob::UpdateURLLoaderRequest::GetMimeType() const {
   return response_->mime_type;
 }
 
-void AppCacheUpdateJob::UpdateURLLoaderRequest::SetFirstPartyForCookies(
-    const GURL& first_party_for_cookies) {
-  request_.first_party_for_cookies = first_party_for_cookies;
+void AppCacheUpdateJob::UpdateURLLoaderRequest::SetSiteForCookies(
+    const GURL& site_for_cookies) {
+  request_.site_for_cookies = site_for_cookies;
 }
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::SetInitiator(

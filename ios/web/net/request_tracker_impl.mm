@@ -125,8 +125,8 @@ struct TrackerCounts {
  public:
   TrackerCounts(const GURL& tracked_url, const net::URLRequest* tracked_request)
       : url(tracked_url),
-        first_party_for_cookies_origin(
-            tracked_request->first_party_for_cookies().GetOrigin()),
+        site_for_cookies_origin(
+            tracked_request->site_for_cookies().GetOrigin()),
         request(tracked_request),
         ssl_info(net::SSLInfo()),
         ssl_judgment(web::CertPolicy::ALLOWED),
@@ -135,8 +135,9 @@ struct TrackerCounts {
         processed(0),
         done(false) {
     DCHECK_CURRENTLY_ON(web::WebThread::IO);
-    is_subrequest = tracked_request->first_party_for_cookies().is_valid() &&
-        tracked_request->url() != tracked_request->first_party_for_cookies();
+    is_subrequest =
+        tracked_request->site_for_cookies().is_valid() &&
+        tracked_request->url() != tracked_request->site_for_cookies();
   };
 
   // The resource url.
@@ -144,7 +145,7 @@ struct TrackerCounts {
   // The origin of the url of the top level document of the resource. This is
   // used to ignore request coming from an old document when detecting mixed
   // content.
-  const GURL first_party_for_cookies_origin;
+  const GURL site_for_cookies_origin;
   // The request associated with this struct. As a void* to prevent access from
   // the wrong thread.
   const void* request;
@@ -1022,7 +1023,7 @@ void RequestTrackerImpl::RecomputeMixedContent(
     auto it = counts_.begin();
     while (it != counts_.end() && it->get() != split_position) {
       if (!(*it)->url.SchemeIsCryptographic() &&
-          origin == (*it)->first_party_for_cookies_origin) {
+          origin == (*it)->site_for_cookies_origin) {
         old_url_has_mixed_content = true;
         break;
       }
@@ -1084,7 +1085,7 @@ void RequestTrackerImpl::TrimToURL(const GURL& full_url, id user_info) {
   auto rit = counts_.rbegin();
   while (rit != counts_.rend() && (*rit)->url != url) {
     if (url_scheme_is_secure && !(*rit)->url.SchemeIsCryptographic() &&
-        (*rit)->first_party_for_cookies_origin == url.GetOrigin()) {
+        (*rit)->site_for_cookies_origin == url.GetOrigin()) {
       new_url_has_mixed_content = true;
     }
     ++rit;

@@ -204,8 +204,8 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT void SetURL(const WebURL&);
 
   // Used to implement third-party cookie blocking.
-  BLINK_PLATFORM_EXPORT WebURL FirstPartyForCookies() const;
-  BLINK_PLATFORM_EXPORT void SetFirstPartyForCookies(const WebURL&);
+  BLINK_PLATFORM_EXPORT WebURL SiteForCookies() const;
+  BLINK_PLATFORM_EXPORT void SetSiteForCookies(const WebURL&);
 
   // The origin of the execution context which originated the request. Used to
   // implement First-Party-Only cookie restrictions.

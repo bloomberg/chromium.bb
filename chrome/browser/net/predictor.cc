@@ -281,7 +281,7 @@ void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
 }
 
 void Predictor::PreconnectUrlAndSubresources(const GURL& url,
-    const GURL& first_party_for_cookies) {
+                                             const GURL& site_for_cookies) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!PredictorEnabled())
@@ -293,10 +293,10 @@ void Predictor::PreconnectUrlAndSubresources(const GURL& url,
     return;
   UrlInfo::ResolutionMotivation motivation(UrlInfo::EARLY_LOAD_MOTIVATED);
   const int kConnectionsNeeded = 1;
-  PreconnectUrl(canonicalized_url, first_party_for_cookies, motivation,
+  PreconnectUrl(canonicalized_url, site_for_cookies, motivation,
                 kAllowCredentialsOnPreconnectByDefault, kConnectionsNeeded);
   PredictFrameSubresources(canonicalized_url.GetWithEmptyPath(),
-                           first_party_for_cookies);
+                           site_for_cookies);
 }
 
 std::vector<GURL> Predictor::GetPredictedUrlListAtStartup(
@@ -769,7 +769,7 @@ void Predictor::WriteDnsPrefetchState(base::ListValue* startup_list,
 }
 
 void Predictor::PreconnectUrl(const GURL& url,
-                              const GURL& first_party_for_cookies,
+                              const GURL& site_for_cookies,
                               UrlInfo::ResolutionMotivation motivation,
                               bool allow_credentials,
                               int count) {
@@ -778,20 +778,20 @@ void Predictor::PreconnectUrl(const GURL& url,
   DCHECK(url.is_valid());
 
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    PreconnectUrlOnIOThread(url, first_party_for_cookies, motivation,
+    PreconnectUrlOnIOThread(url, site_for_cookies, motivation,
                             allow_credentials, count);
   } else {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&Predictor::PreconnectUrlOnIOThread,
-                       base::Unretained(this), url, first_party_for_cookies,
+                       base::Unretained(this), url, site_for_cookies,
                        motivation, allow_credentials, count));
   }
 }
 
 void Predictor::PreconnectUrlOnIOThread(
     const GURL& original_url,
-    const GURL& first_party_for_cookies,
+    const GURL& site_for_cookies,
     UrlInfo::ResolutionMotivation motivation,
     bool allow_credentials,
     int count) {
@@ -802,8 +802,7 @@ void Predictor::PreconnectUrlOnIOThread(
   // for the URLRequestContextGetter. The predictor tests should be fixed to
   // allow for this, as they currently expect a callback with no getter.
   if (observer_) {
-    observer_->OnPreconnectUrl(
-        url, first_party_for_cookies, motivation, count);
+    observer_->OnPreconnectUrl(url, site_for_cookies, motivation, count);
   }
 
   net::URLRequestContextGetter* getter = url_request_context_getter_.get();
@@ -833,12 +832,12 @@ void Predictor::PreconnectUrlOnIOThread(
   }
   UMA_HISTOGRAM_ENUMERATION("Net.PreconnectMotivation", motivation,
                             UrlInfo::MAX_MOTIVATED);
-  content::PreconnectUrl(getter, url, first_party_for_cookies, count,
+  content::PreconnectUrl(getter, url, site_for_cookies, count,
                          allow_credentials, request_motivation);
 }
 
 void Predictor::PredictFrameSubresources(const GURL& url,
-                                         const GURL& first_party_for_cookies) {
+                                         const GURL& site_for_cookies) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!PredictorEnabled())
@@ -849,12 +848,12 @@ void Predictor::PredictFrameSubresources(const GURL& url,
   // Add one pass through the message loop to allow current navigation to
   // proceed.
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    PrepareFrameSubresources(url, first_party_for_cookies);
+    PrepareFrameSubresources(url, site_for_cookies);
   } else {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&Predictor::PrepareFrameSubresources,
-                       base::Unretained(this), url, first_party_for_cookies));
+                       base::Unretained(this), url, site_for_cookies));
   }
 }
 
@@ -886,7 +885,7 @@ enum SubresourceValue {
 };
 
 void Predictor::PrepareFrameSubresources(const GURL& original_url,
-                                         const GURL& first_party_for_cookies) {
+                                         const GURL& site_for_cookies) {
   // Apply HSTS redirect early so it is taken into account when looking up
   // subresources.
   GURL url = GetHSTSRedirectOnIOThread(original_url);
@@ -903,7 +902,7 @@ void Predictor::PrepareFrameSubresources(const GURL& original_url,
     // size of the list with all the "Leaf" nodes in the tree (nodes that don't
     // load any subresources).  If we learn about this resource, we will instead
     // provide a more carefully estimated preconnection count.
-    PreconnectUrlOnIOThread(url, first_party_for_cookies,
+    PreconnectUrlOnIOThread(url, site_for_cookies,
                             UrlInfo::SELF_REFERAL_MOTIVATED,
                             kAllowCredentialsOnPreconnectByDefault, 2);
     return;
@@ -927,8 +926,7 @@ void Predictor::PrepareFrameSubresources(const GURL& original_url,
       int count = static_cast<int>(std::ceil(connection_expectation));
       if (url.host_piece() == future_url->first.host_piece())
         ++count;
-      PreconnectUrlOnIOThread(future_url->first, first_party_for_cookies,
-                              motivation,
+      PreconnectUrlOnIOThread(future_url->first, site_for_cookies, motivation,
                               kAllowCredentialsOnPreconnectByDefault, count);
     } else if (connection_expectation > kDNSPreresolutionWorthyExpectedValue) {
       evalution = PRERESOLUTION;

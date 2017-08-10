@@ -319,7 +319,7 @@ class CrossSitePredictorObserver
 
   void OnPreconnectUrl(
       const GURL& original_url,
-      const GURL& first_party_for_cookies,
+      const GURL& site_for_cookies,
       chrome_browser_net::UrlInfo::ResolutionMotivation motivation,
       int count) override {
     base::AutoLock lock(lock_);

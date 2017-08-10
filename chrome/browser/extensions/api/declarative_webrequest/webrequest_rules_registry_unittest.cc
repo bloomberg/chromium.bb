@@ -659,7 +659,7 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesDifferentUrls) {
     std::unique_ptr<net::URLRequest> http_request(context.CreateRequest(
         urls[i], net::DEFAULT_PRIORITY, NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
     WebRequestData request_data(http_request.get(), ON_BEFORE_REQUEST);
-    http_request->set_first_party_for_cookies(firstPartyUrls[i]);
+    http_request->set_site_for_cookies(firstPartyUrls[i]);
     // Now run both rules on the input.
     matches = registry->GetMatches(request_data);
     SCOPED_TRACE(testing::Message("i = ") << i << ", rule id = "

@@ -184,16 +184,15 @@ void PpapiBlinkPlatformImpl::CreateMessageChannel(
   *channel2 = nullptr;
 }
 
-void PpapiBlinkPlatformImpl::setCookies(
-    const blink::WebURL& url,
-    const blink::WebURL& first_party_for_cookies,
-    const blink::WebString& value) {
+void PpapiBlinkPlatformImpl::setCookies(const blink::WebURL& url,
+                                        const blink::WebURL& site_for_cookies,
+                                        const blink::WebString& value) {
   NOTREACHED();
 }
 
 blink::WebString PpapiBlinkPlatformImpl::cookies(
     const blink::WebURL& url,
-    const blink::WebURL& first_party_for_cookies) {
+    const blink::WebURL& site_for_cookies) {
   NOTREACHED();
   return blink::WebString();
 }

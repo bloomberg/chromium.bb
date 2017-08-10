@@ -79,7 +79,7 @@ void PredictorResourceThrottle::WillStartRequest(bool* defer) {
     predictor_->timed_cache()->SetRecentlySeen(request_scheme_host);
     if (resource_type == content::RESOURCE_TYPE_SUB_FRAME) {
       predictor_->PredictFrameSubresources(request_scheme_host,
-                                           request_->first_party_for_cookies());
+                                           request_->site_for_cookies());
     }
   }
 }
@@ -115,8 +115,8 @@ void PredictorResourceThrottle::WillRedirectRequest(
   }
 
   predictor_->timed_cache()->SetRecentlySeen(new_scheme_host);
-  predictor_->PredictFrameSubresources(
-      new_scheme_host, redirect_info.new_first_party_for_cookies);
+  predictor_->PredictFrameSubresources(new_scheme_host,
+                                       redirect_info.new_site_for_cookies);
 }
 
 const char* PredictorResourceThrottle::GetNameForLogging() const {

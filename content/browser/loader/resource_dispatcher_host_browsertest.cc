@@ -839,8 +839,7 @@ class RequestDataResourceDispatcherHostDelegate
       ResourceType resource_type,
       std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
     requests_.push_back(base::MakeUnique<RequestDataForDelegate>(
-        request->url(), request->first_party_for_cookies(),
-        request->initiator()));
+        request->url(), request->site_for_cookies(), request->initiator()));
   }
 
   void SetDelegate() { ResourceDispatcherHost::Get()->SetDelegate(this); }

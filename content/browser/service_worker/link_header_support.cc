@@ -111,8 +111,7 @@ void HandleServiceWorkerLink(
     return;
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
-          scope_url, request->first_party_for_cookies(),
-          request_info->GetContext(),
+          scope_url, request->site_for_cookies(), request_info->GetContext(),
           request_info->GetWebContentsGetterForRequest()))
     return;
 

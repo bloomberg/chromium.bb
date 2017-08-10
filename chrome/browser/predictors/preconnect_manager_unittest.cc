@@ -38,8 +38,7 @@ class MockPreconnectManager : public PreconnectManager {
       scoped_refptr<net::URLRequestContextGetter> context_getter);
 
   MOCK_CONST_METHOD2(PreconnectUrl,
-                     void(const GURL& url,
-                          const GURL& first_party_for_cookies));
+                     void(const GURL& url, const GURL& site_for_cookies));
   MOCK_CONST_METHOD2(PreresolveUrl,
                      int(const GURL& url,
                          const net::CompletionCallback& callback));

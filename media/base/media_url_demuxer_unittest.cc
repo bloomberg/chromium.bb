@@ -52,7 +52,7 @@ TEST_F(MediaUrlDemuxerTest, BaseCase) {
 
   MediaUrlParams params = demuxer_->GetMediaUrlParams();
   EXPECT_EQ(default_media_url_, params.media_url);
-  EXPECT_EQ(default_first_party_url_, params.first_party_for_cookies);
+  EXPECT_EQ(default_first_party_url_, params.site_for_cookies);
 }
 
 TEST_F(MediaUrlDemuxerTest, AcceptsEmptyStrings) {
@@ -60,7 +60,7 @@ TEST_F(MediaUrlDemuxerTest, AcceptsEmptyStrings) {
 
   MediaUrlParams params = demuxer_->GetMediaUrlParams();
   EXPECT_EQ(GURL::EmptyGURL(), params.media_url);
-  EXPECT_EQ(GURL::EmptyGURL(), params.first_party_for_cookies);
+  EXPECT_EQ(GURL::EmptyGURL(), params.site_for_cookies);
 }
 
 TEST_F(MediaUrlDemuxerTest, InitializeReturnsPipelineOk) {

@@ -171,7 +171,7 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
   resource_context_ = resource_context;
 
   if (is_main_resource_load_)
-    PrepareForMainResource(request->url(), request->first_party_for_cookies());
+    PrepareForMainResource(request->url(), request->site_for_cookies());
   else
     PrepareForSubResource();
 
@@ -228,7 +228,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   resource_context_ = resource_context;
 
   PrepareForMainResource(resource_request.url,
-                         resource_request.first_party_for_cookies);
+                         resource_request.site_for_cookies);
 
   if (url_job_->ShouldFallbackToNetwork()) {
     // We're falling back to the next URLLoaderRequestHandler, forward
@@ -243,7 +243,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
 
 void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
     const GURL& url,
-    const GURL& first_party_for_cookies) {
+    const GURL& site_for_cookies) {
   DCHECK(!JobWasCanceled());
   DCHECK(context_);
   DCHECK(provider_host_);
@@ -261,7 +261,7 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
 
   stripped_url_ = net::SimplifyUrlForRequest(url);
   provider_host_->SetDocumentUrl(stripped_url_);
-  provider_host_->SetTopmostFrameUrl(first_party_for_cookies);
+  provider_host_->SetTopmostFrameUrl(site_for_cookies);
   context_->storage()->FindRegistrationForDocument(
       stripped_url_, base::Bind(&self::DidLookupRegistrationForMainResource,
                                 weak_factory_.GetWeakPtr()));

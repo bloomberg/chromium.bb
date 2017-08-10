@@ -49,7 +49,7 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
   bool CanSeekBackward() override;
   bool IsPlayerReady() override;
   GURL GetUrl() override;
-  GURL GetFirstPartyForCookies() override;
+  GURL GetSiteForCookies() override;
 
   // JNI functions
   void OnPlaying(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -131,7 +131,7 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
   GURL url_;
 
   // First party url for cookies.
-  GURL first_party_for_cookies_;
+  GURL site_for_cookies_;
 
   // Cookies for |url_|.
   std::string cookies_;

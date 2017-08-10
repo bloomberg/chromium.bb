@@ -31,7 +31,7 @@ class AppCacheUpdateJob::UpdateURLRequest
   void SetLoadFlags(int flags) override;
   int GetLoadFlags() const override;
   std::string GetMimeType() const override;
-  void SetFirstPartyForCookies(const GURL& first_party_for_cookies) override;
+  void SetSiteForCookies(const GURL& site_for_cookies) override;
   void SetInitiator(const base::Optional<url::Origin>& initiator) override;
   net::HttpResponseHeaders* GetResponseHeaders() const override;
   int GetResponseCode() const override;

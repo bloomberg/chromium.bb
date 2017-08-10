@@ -59,7 +59,7 @@ class CONTENT_EXPORT WebSocketImpl
   void AddChannelRequest(const GURL& url,
                          const std::vector<std::string>& requested_protocols,
                          const url::Origin& origin,
-                         const GURL& first_party_for_cookies,
+                         const GURL& site_for_cookies,
                          const std::string& user_agent_override,
                          blink::mojom::WebSocketClientPtr client) override;
   void SendFrame(bool fin,
@@ -78,7 +78,7 @@ class CONTENT_EXPORT WebSocketImpl
   void AddChannel(const GURL& socket_url,
                   const std::vector<std::string>& requested_protocols,
                   const url::Origin& origin,
-                  const GURL& first_party_for_cookies,
+                  const GURL& site_for_cookies,
                   const std::string& user_agent_override);
 
   Delegate* delegate_;

@@ -1310,8 +1310,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
 
     new_request->set_method(request_data.method);
 
-    new_request->set_first_party_for_cookies(
-        request_data.first_party_for_cookies);
+    new_request->set_site_for_cookies(request_data.site_for_cookies);
 
     // The initiator should normally be present, unless this is a navigation in
     // a top-level frame. It may be null for some top-level navigations (eg:
@@ -1383,7 +1382,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     if (request_data.resource_type == RESOURCE_TYPE_IMAGE &&
         HTTP_AUTH_RELATION_BLOCKED_CROSS ==
             HttpAuthRelationTypeOf(request_data.url,
-                                   request_data.first_party_for_cookies)) {
+                                   request_data.site_for_cookies)) {
       // Prevent third-party image content from prompting for login, as this
       // is often a scam to extract credentials for another domain from the
       // user. Only block image loads, as the attack applies largely to the
@@ -2123,8 +2122,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       info.common_params.url, net::HIGHEST, nullptr, kTrafficAnnotation);
 
   new_request->set_method(info.common_params.method);
-  new_request->set_first_party_for_cookies(
-      info.first_party_for_cookies);
+  new_request->set_site_for_cookies(info.site_for_cookies);
   new_request->set_initiator(info.begin_params.initiator_origin);
   if (info.is_main_frame) {
     new_request->set_first_party_url_policy(

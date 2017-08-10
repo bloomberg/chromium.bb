@@ -194,7 +194,7 @@ void ResourcePrefetcher::SendRequest(const GURL& url) {
   host_inflight_counts_[url.host()] += 1;
 
   url_request->set_method("GET");
-  url_request->set_first_party_for_cookies(main_frame_url_);
+  url_request->set_site_for_cookies(main_frame_url_);
   url_request->set_initiator(url::Origin(main_frame_url_));
 
   content::Referrer referrer(main_frame_url_, blink::kWebReferrerPolicyDefault);

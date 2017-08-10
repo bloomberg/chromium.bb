@@ -226,8 +226,7 @@ void ServiceWorkerWriteToCacheJob::InitNetRequest(
           })");
   net_request_ = request()->context()->CreateRequest(
       request()->url(), request()->priority(), this, traffic_annotation);
-  net_request_->set_first_party_for_cookies(
-      request()->first_party_for_cookies());
+  net_request_->set_site_for_cookies(request()->site_for_cookies());
   net_request_->set_initiator(request()->initiator());
   net_request_->SetReferrer(request()->referrer());
   net_request_->SetUserData(URLRequestServiceWorkerData::kUserDataKey,

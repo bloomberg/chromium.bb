@@ -89,7 +89,7 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   virtual bool CanSeekBackward() = 0;
   virtual bool IsPlayerReady() = 0;
   virtual GURL GetUrl();
-  virtual GURL GetFirstPartyForCookies();
+  virtual GURL GetSiteForCookies();
 
   // Associates the |cdm| with this player.
   virtual void SetCdm(const scoped_refptr<ContentDecryptionModule>& cdm);

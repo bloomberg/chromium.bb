@@ -78,10 +78,9 @@ void PreconnectManager::Stop(const GURL& url) {
   it->second->was_canceled = true;
 }
 
-void PreconnectManager::PreconnectUrl(
-    const GURL& url,
-    const GURL& first_party_for_cookies) const {
-  content::PreconnectUrl(context_getter_.get(), url, first_party_for_cookies, 1,
+void PreconnectManager::PreconnectUrl(const GURL& url,
+                                      const GURL& site_for_cookies) const {
+  content::PreconnectUrl(context_getter_.get(), url, site_for_cookies, 1,
                          kAllowCredentialsOnPreconnectByDefault,
                          net::HttpRequestInfo::PRECONNECT_MOTIVATED);
 }

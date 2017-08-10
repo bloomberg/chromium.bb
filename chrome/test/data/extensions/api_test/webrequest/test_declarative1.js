@@ -257,7 +257,7 @@ runTests([
     );
   },
 
-  function testFirstPartyForCookiesUrl() {
+  function testSiteForCookiesUrl() {
     // This is an end-to-end test for firstPartyForCookies. The choice of URL to
     // navigate to is purely arbitrary.
     ignoreUnexpected = false;

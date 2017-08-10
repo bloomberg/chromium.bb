@@ -758,8 +758,7 @@ bool WebRequestConditionAttributeThirdParty::IsFulfilled(
   const net::StaticCookiePolicy block_third_party_policy(
       net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES);
   const int can_get_cookies = block_third_party_policy.CanAccessCookies(
-      request_data.request->url(),
-      request_data.request->first_party_for_cookies());
+      request_data.request->url(), request_data.request->site_for_cookies());
   const bool is_first_party = (can_get_cookies == net::OK);
 
   return match_third_party_ ? !is_first_party : is_first_party;

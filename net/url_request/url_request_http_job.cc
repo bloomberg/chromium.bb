@@ -181,7 +181,7 @@ void LogCookieAgeForNonSecureRequest(const net::CookieList& cookie_list,
   base::TimeDelta delta = base::Time::Now() - oldest;
 
   if (net::registry_controlled_domains::SameDomainOrHost(
-          request.url(), request.first_party_for_cookies(),
+          request.url(), request.site_for_cookies(),
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
     UMA_HISTOGRAM_COUNTS_1000("Cookie.AgeForNonSecureSameSiteRequest",
                               delta.InDays());
@@ -704,16 +704,16 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
     options.set_include_httponly();
 
     // Set SameSiteCookieMode according to the rules laid out in
-    // https://tools.ietf.org/html/draft-west-first-party-cookies:
+    // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site:
     //
     // * Include both "strict" and "lax" same-site cookies if the request's
-    //   |url|, |initiator|, and |first_party_for_cookies| all have the same
+    //   |url|, |initiator|, and |site_for_cookies| all have the same
     //   registrable domain. Note: this also covers the case of a request
     //   without an initiator (only happens for browser-initiated main frame
     //   navigations).
     //
     // * Include only "lax" same-site cookies if the request's |URL| and
-    //   |first_party_for_cookies| have the same registrable domain, _and_ the
+    //   |site_for_cookies| have the same registrable domain, _and_ the
     //   request's |method| is "safe" ("GET" or "HEAD").
     //
     //   Note that this will generally be the case only for cross-site requests
@@ -721,7 +721,7 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
     //
     // * Otherwise, do not include same-site cookies.
     if (registry_controlled_domains::SameDomainOrHost(
-            request_->url(), request_->first_party_for_cookies(),
+            request_->url(), request_->site_for_cookies(),
             registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
       if (!request_->initiator() ||
           registry_controlled_domains::SameDomainOrHost(

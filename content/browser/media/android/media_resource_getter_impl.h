@@ -45,7 +45,7 @@ class MediaResourceGetterImpl : public media::MediaResourceGetter {
   void GetAuthCredentials(const GURL& url,
                           GetAuthCredentialsCB callback) override;
   void GetCookies(const GURL& url,
-                  const GURL& first_party_for_cookies,
+                  const GURL& site_for_cookies,
                   GetCookieCB callback) override;
   void GetPlatformPathFromURL(const GURL& url,
                               GetPlatformPathCB callback) override;

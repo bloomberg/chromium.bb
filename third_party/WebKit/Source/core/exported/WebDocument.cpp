@@ -122,8 +122,8 @@ WebURL WebDocument::BaseURL() const {
   return ConstUnwrap<Document>()->BaseURL();
 }
 
-WebURL WebDocument::FirstPartyForCookies() const {
-  return ConstUnwrap<Document>()->FirstPartyForCookies();
+WebURL WebDocument::SiteForCookies() const {
+  return ConstUnwrap<Document>()->SiteForCookies();
 }
 
 WebElement WebDocument::DocumentElement() const {

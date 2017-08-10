@@ -227,7 +227,7 @@ TEST_F(DocumentWebSocketChannelTest, connectSuccess) {
   document.SetURL(page_url);
   // Make sure that firstPartyForCookies() is set to the given value.
   EXPECT_STREQ("http://example.com/",
-               document.FirstPartyForCookies().GetString().Utf8().data());
+               document.SiteForCookies().GetString().Utf8().data());
 
   EXPECT_TRUE(Channel()->Connect(KURL(NullURL(), "ws://localhost/"), "x"));
 

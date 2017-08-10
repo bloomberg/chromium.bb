@@ -243,19 +243,19 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
     if (!(kActiveStages & i))
       continue;
     const RequestStage stage = static_cast<RequestStage>(i);
-    url_request->set_first_party_for_cookies(url_empty);
+    url_request->set_site_for_cookies(url_empty);
     EXPECT_FALSE(third_party_attribute->IsFulfilled(
         WebRequestData(url_request.get(), stage)));
     EXPECT_TRUE(first_party_attribute->IsFulfilled(
         WebRequestData(url_request.get(), stage)));
 
-    url_request->set_first_party_for_cookies(url_b);
+    url_request->set_site_for_cookies(url_b);
     EXPECT_TRUE(third_party_attribute->IsFulfilled(
         WebRequestData(url_request.get(), stage)));
     EXPECT_FALSE(first_party_attribute->IsFulfilled(
         WebRequestData(url_request.get(), stage)));
 
-    url_request->set_first_party_for_cookies(url_a);
+    url_request->set_site_for_cookies(url_a);
     EXPECT_FALSE(third_party_attribute->IsFulfilled(
         WebRequestData(url_request.get(), stage)));
     EXPECT_TRUE(first_party_attribute->IsFulfilled(

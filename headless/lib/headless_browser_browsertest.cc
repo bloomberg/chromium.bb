@@ -458,7 +458,7 @@ void URLRequestJobWithCookies::Start() {
 
   // See net::URLRequestHttpJob::AddCookieHeaderAndStart().
   url::Origin requested_origin(request_->url());
-  url::Origin site_for_cookies(request_->first_party_for_cookies());
+  url::Origin site_for_cookies(request_->site_for_cookies());
 
   if (net::registry_controlled_domains::SameDomainOrHost(
           requested_origin, site_for_cookies,

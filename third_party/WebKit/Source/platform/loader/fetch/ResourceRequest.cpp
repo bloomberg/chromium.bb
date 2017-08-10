@@ -87,7 +87,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
 ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
     : ResourceRequest(data->url_) {
   SetTimeoutInterval(data->timeout_interval_);
-  SetFirstPartyForCookies(data->first_party_for_cookies_);
+  SetSiteForCookies(data->site_for_cookies_);
   SetRequestorOrigin(data->requestor_origin_);
   SetHTTPMethod(AtomicString(data->http_method_));
   SetPriority(data->priority_, data->intra_priority_value_);
@@ -135,7 +135,7 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
       WTF::MakeUnique<CrossThreadResourceRequestData>();
   data->url_ = Url().Copy();
   data->timeout_interval_ = TimeoutInterval();
-  data->first_party_for_cookies_ = FirstPartyForCookies().Copy();
+  data->site_for_cookies_ = SiteForCookies().Copy();
   data->requestor_origin_ =
       RequestorOrigin() ? RequestorOrigin()->IsolatedCopy() : nullptr;
   data->http_method_ = HttpMethod().GetString().IsolatedCopy();
@@ -213,13 +213,12 @@ void ResourceRequest::SetTimeoutInterval(double timout_interval_seconds) {
   timeout_interval_ = timout_interval_seconds;
 }
 
-const KURL& ResourceRequest::FirstPartyForCookies() const {
-  return first_party_for_cookies_;
+const KURL& ResourceRequest::SiteForCookies() const {
+  return site_for_cookies_;
 }
 
-void ResourceRequest::SetFirstPartyForCookies(
-    const KURL& first_party_for_cookies) {
-  first_party_for_cookies_ = first_party_for_cookies;
+void ResourceRequest::SetSiteForCookies(const KURL& site_for_cookies) {
+  site_for_cookies_ = site_for_cookies;
 }
 
 RefPtr<SecurityOrigin> ResourceRequest::RequestorOrigin() const {

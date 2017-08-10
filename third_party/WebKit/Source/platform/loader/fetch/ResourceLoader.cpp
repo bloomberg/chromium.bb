@@ -187,7 +187,7 @@ static bool IsManualRedirectFetchRequest(const ResourceRequest& request) {
 
 bool ResourceLoader::WillFollowRedirect(
     const WebURL& new_url,
-    const WebURL& new_first_party_for_cookies,
+    const WebURL& new_site_for_cookies,
     const WebString& new_referrer,
     WebReferrerPolicy new_referrer_policy,
     const WebString& new_method,
@@ -204,7 +204,7 @@ bool ResourceLoader::WillFollowRedirect(
 
   const ResourceRequest& last_request = resource_->LastResourceRequest();
   ResourceRequest new_request(new_url);
-  new_request.SetFirstPartyForCookies(new_first_party_for_cookies);
+  new_request.SetSiteForCookies(new_site_for_cookies);
   new_request.SetDownloadToFile(last_request.DownloadToFile());
   new_request.SetUseStreamOnResponse(last_request.UseStreamOnResponse());
   new_request.SetRequestContext(last_request.GetRequestContext());
@@ -346,8 +346,7 @@ bool ResourceLoader::WillFollowRedirect(
   // First-party cookie logic moved from DocumentLoader in Blink to
   // net::URLRequest in the browser. Assert that Blink didn't try to change it
   // to something else.
-  DCHECK(KURL(new_first_party_for_cookies) ==
-         new_request.FirstPartyForCookies());
+  DCHECK(KURL(new_site_for_cookies) == new_request.SiteForCookies());
 
   // The following parameters never change during the lifetime of a request.
   DCHECK_EQ(new_request.GetRequestContext(), request_context);

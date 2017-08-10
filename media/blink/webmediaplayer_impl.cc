@@ -1991,9 +1991,8 @@ void WebMediaPlayerImpl::StartPipeline() {
     // TODO(tguilbert/avayvod): Update this flag when removing |cast_impl_|.
     using_media_player_renderer_ = true;
 
-    demuxer_.reset(
-        new MediaUrlDemuxer(media_task_runner_, loaded_url_,
-                            frame_->GetDocument().FirstPartyForCookies()));
+    demuxer_.reset(new MediaUrlDemuxer(media_task_runner_, loaded_url_,
+                                       frame_->GetDocument().SiteForCookies()));
     pipeline_controller_.Start(demuxer_.get(), this, false, false);
     return;
   }

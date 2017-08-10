@@ -73,7 +73,7 @@ class RendererMediaPlayerManagerInterface {
   virtual void Initialize(MediaPlayerHostMsg_Initialize_Type type,
                           int player_id,
                           const GURL& url,
-                          const GURL& first_party_for_cookies,
+                          const GURL& site_for_cookies,
                           const GURL& frame_url,
                           bool allow_credentials,
                           int delegate_id) = 0;

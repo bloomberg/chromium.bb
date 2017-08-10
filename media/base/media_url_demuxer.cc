@@ -12,8 +12,8 @@ namespace media {
 MediaUrlDemuxer::MediaUrlDemuxer(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const GURL& media_url,
-    const GURL& first_party_for_cookies)
-    : params_{media_url, first_party_for_cookies}, task_runner_(task_runner) {}
+    const GURL& site_for_cookies)
+    : params_{media_url, site_for_cookies}, task_runner_(task_runner) {}
 
 MediaUrlDemuxer::~MediaUrlDemuxer() {}
 

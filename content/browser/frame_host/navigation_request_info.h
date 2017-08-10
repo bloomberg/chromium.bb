@@ -23,7 +23,7 @@ namespace content {
 struct CONTENT_EXPORT NavigationRequestInfo {
   NavigationRequestInfo(const CommonNavigationParams& common_params,
                         const BeginNavigationParams& begin_params,
-                        const GURL& first_party_for_cookies,
+                        const GURL& site_for_cookies,
                         bool is_main_frame,
                         bool parent_is_main_frame,
                         bool are_ancestors_secure,
@@ -38,7 +38,7 @@ struct CONTENT_EXPORT NavigationRequestInfo {
 
   // Usually the URL of the document in the top-level window, which may be
   // checked by the third-party cookie blocking policy.
-  const GURL first_party_for_cookies;
+  const GURL site_for_cookies;
 
   const bool is_main_frame;
   const bool parent_is_main_frame;

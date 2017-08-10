@@ -285,7 +285,7 @@ std::unique_ptr<net::URLRequest> CreateURLRequest(
     bool is_main_frame) {
   std::unique_ptr<net::URLRequest> request = url_request_context.CreateRequest(
       url, priority, &g_empty_url_request_delegate);
-  request->set_first_party_for_cookies(url);
+  request->set_site_for_cookies(url);
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(), resource_type, nullptr, -1, -1, -1, is_main_frame, false,
       false, true, content::PREVIEWS_OFF);

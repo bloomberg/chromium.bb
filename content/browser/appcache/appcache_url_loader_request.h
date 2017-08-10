@@ -28,7 +28,7 @@ class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
   // a chain of redirects.
   const GURL& GetURL() const override;
   const std::string& GetMethod() const override;
-  const GURL& GetFirstPartyForCookies() const override;
+  const GURL& GetSiteForCookies() const override;
   const GURL GetReferrer() const override;
   // TODO(ananta)
   // ResourceRequest only identifies the request unlike URLRequest which

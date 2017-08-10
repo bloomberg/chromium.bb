@@ -166,7 +166,7 @@ void AssociatedResourceFetcherImpl::Start(
 
   request_.SetRequestContext(request_context);
   request_.SetFrameType(frame_type);
-  request_.SetFirstPartyForCookies(frame->GetDocument().FirstPartyForCookies());
+  request_.SetSiteForCookies(frame->GetDocument().SiteForCookies());
   request_.SetFetchRequestMode(fetch_request_mode);
   request_.SetFetchCredentialsMode(fetch_credentials_mode);
 

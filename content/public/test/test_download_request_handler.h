@@ -215,7 +215,7 @@ class TestDownloadRequestHandler {
     net::URLRequest::ReferrerPolicy referrer_policy =
         net::URLRequest::NEVER_CLEAR_REFERRER;
 
-    GURL first_party_for_cookies;
+    GURL site_for_cookies;
     net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
         net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
 

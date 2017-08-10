@@ -47,7 +47,7 @@ void OnResolveComplete(std::unique_ptr<RequestHolder> request_holder,
 
 void PreconnectUrl(net::URLRequestContextGetter* getter,
                    const GURL& url,
-                   const GURL& first_party_for_cookies,
+                   const GURL& site_for_cookies,
                    int count,
                    bool allow_credentials,
                    net::HttpRequestInfo::RequestMotivation motivation) {
@@ -75,7 +75,7 @@ void PreconnectUrl(net::URLRequestContextGetter* getter,
   request_info.motivation = motivation;
 
   net::NetworkDelegate* delegate = request_context->network_delegate();
-  if (delegate->CanEnablePrivacyMode(url, first_party_for_cookies))
+  if (delegate->CanEnablePrivacyMode(url, site_for_cookies))
     request_info.privacy_mode = net::PRIVACY_MODE_ENABLED;
 
   // TODO(yoav): Fix this layering violation, since when credentials are not

@@ -22,7 +22,7 @@ struct MEDIA_EXPORT MediaUrlParams {
   // In the MediaPlayerRenderer case, it will ultimately be used in
   // MediaResourceGetterTask::CheckPolicyForCookies, to limit the scope of the
   // cookies that the MediaPlayerRenderer has access to.
-  GURL first_party_for_cookies;
+  GURL site_for_cookies;
 };
 
 }  // namespace media

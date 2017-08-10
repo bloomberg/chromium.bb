@@ -176,7 +176,7 @@ bool CreateWebURLRequest(PP_Instance instance,
   if (!data->method.empty())
     dest->SetHTTPMethod(WebString::FromUTF8(data->method));
 
-  dest->SetFirstPartyForCookies(frame->GetDocument().FirstPartyForCookies());
+  dest->SetSiteForCookies(frame->GetDocument().SiteForCookies());
 
   const std::string& headers = data->headers;
   if (!headers.empty()) {

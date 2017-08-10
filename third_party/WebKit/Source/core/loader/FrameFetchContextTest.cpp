@@ -814,7 +814,7 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {
                 request.RequestorOrigin()->ToString());
     }
 
-    EXPECT_EQ(document->FirstPartyForCookies(), request.FirstPartyForCookies());
+    EXPECT_EQ(document->SiteForCookies(), request.SiteForCookies());
   }
 }
 
@@ -1285,7 +1285,7 @@ TEST_F(FrameFetchContextTest,
 
   fetch_context->SetFirstPartyCookieAndRequestorOrigin(request);
 
-  EXPECT_EQ(document_url, request.FirstPartyForCookies());
+  EXPECT_EQ(document_url, request.SiteForCookies());
   EXPECT_EQ(origin, request.RequestorOrigin());
 }
 

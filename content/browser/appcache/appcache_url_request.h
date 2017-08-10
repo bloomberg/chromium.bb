@@ -26,7 +26,7 @@ class CONTENT_EXPORT AppCacheURLRequest : public AppCacheRequest {
   // AppCacheRequest overrides.
   const GURL& GetURL() const override;
   const std::string& GetMethod() const override;
-  const GURL& GetFirstPartyForCookies() const override;
+  const GURL& GetSiteForCookies() const override;
   const GURL GetReferrer() const override;
   bool IsSuccess() const override;
   bool IsCancelled() const override;

@@ -42,9 +42,9 @@ struct CONTENT_EXPORT ResourceRequest {
   // checked by the third-party cookie blocking policy. This is usually the URL
   // of the document in the top-level window. Leaving it empty may lead to
   // undesired cookie blocking. Third-party cookie blocking can be bypassed by
-  // setting first_party_for_cookies = url, but this should ideally only be
+  // setting site_for_cookies = url, but this should ideally only be
   // done if there really is no way to determine the correct value.
-  GURL first_party_for_cookies;
+  GURL site_for_cookies;
 
   // The origin of the context which initiated the request, which will be used
   // for cookie checks like 'First-Party-Only'.

@@ -40,7 +40,7 @@ static ResourceRequest CreateResourceRequest(const char* method,
   ResourceRequest request;
   request.method = std::string(method);
   request.url = url;
-  request.first_party_for_cookies = url;  // bypass third-party cookie blocking
+  request.site_for_cookies = url;  // bypass third-party cookie blocking
   request.request_initiator = url::Origin(url);  // ensure initiator is set
   request.referrer_policy = blink::kWebReferrerPolicyDefault;
   request.load_flags = 0;

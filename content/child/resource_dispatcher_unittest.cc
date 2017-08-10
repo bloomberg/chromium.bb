@@ -146,7 +146,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     redirect_info.status_code = 302;
     redirect_info.new_method = "GET";
     redirect_info.new_url = GURL(kTestPageUrl);
-    redirect_info.new_first_party_for_cookies = GURL(kTestPageUrl);
+    redirect_info.new_site_for_cookies = GURL(kTestPageUrl);
     EXPECT_EQ(true, dispatcher_->OnMessageReceived(ResourceMsg_ReceivedRedirect(
                         request_id, redirect_info, head)));
   }
@@ -206,7 +206,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
 
     request->method = "GET";
     request->url = GURL(kTestPageUrl);
-    request->first_party_for_cookies = GURL(kTestPageUrl);
+    request->site_for_cookies = GURL(kTestPageUrl);
     request->referrer_policy = blink::kWebReferrerPolicyDefault;
     request->resource_type = RESOURCE_TYPE_SUB_RESOURCE;
     request->priority = net::LOW;

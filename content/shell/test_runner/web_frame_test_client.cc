@@ -555,7 +555,7 @@ void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
   GURL url = request.Url();
   std::string request_url = url.possibly_invalid_spec();
 
-  GURL main_document_url = request.FirstPartyForCookies();
+  GURL main_document_url = request.SiteForCookies();
 
   if (test_runner()->shouldDumpResourceLoadCallbacks()) {
     delegate_->PrintMessage(DescriptionSuitableForTestResult(request_url));
