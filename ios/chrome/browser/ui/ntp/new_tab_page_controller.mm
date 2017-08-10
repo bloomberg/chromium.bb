@@ -414,6 +414,14 @@ enum {
   }
 }
 
+- (CGPoint)scrollOffset {
+  if (_currentController == self.homePanel) {
+    return self.contentSuggestionsCoordinator.viewController.collectionView
+        .contentOffset;
+  }
+  return CGPointZero;
+}
+
 #pragma mark -
 
 - (void)setSwipeRecognizerProvider:(id<CRWSwipeRecognizerProvider>)provider {
