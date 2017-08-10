@@ -76,6 +76,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                             const scoped_refptr<base::TaskRunner>& task_runner,
                             base::OnceClosure task) override;
   bool IsBrowserStartupComplete() override;
+  void SetBrowserStartupIsCompleteForTesting() override;
   std::string GetStoragePartitionIdForSite(
       content::BrowserContext* browser_context,
       const GURL& site) override;

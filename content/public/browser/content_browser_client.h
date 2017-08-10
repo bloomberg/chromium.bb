@@ -182,6 +182,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // PostAfterStartupTask() API instead.
   virtual bool IsBrowserStartupComplete();
 
+  // Allows the embedder to handle a request from unit tests running in the
+  // content layer to consider startup complete (for the sake of
+  // PostAfterStartupTask()).
+  virtual void SetBrowserStartupIsCompleteForTesting();
+
   // If content creates the WebContentsView implementation, it will ask the
   // embedder to return an (optional) delegate to customize it. The view will
   // own the delegate.

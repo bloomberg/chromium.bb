@@ -270,6 +270,8 @@ source_set("browser") {
     "accessibility/one_shot_accessibility_tree_search.cc",
     "accessibility/one_shot_accessibility_tree_search.h",
     "accessibility/web_contents_accessibility.h",
+    "after_startup_task_utils.cc",
+    "after_startup_task_utils.h",
     "android/android_overlay_provider_impl.cc",
     "android/android_overlay_provider_impl.h",
     "android/app_web_message_port.cc",
