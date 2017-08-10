@@ -207,6 +207,9 @@ typedef struct AV1EncoderConfig {
   int qm_minlevel;
   int qm_maxlevel;
 #endif
+#if CONFIG_DIST_8X8
+  int using_dist_8x8;
+#endif
   unsigned int num_tile_groups;
   unsigned int mtu;
 
