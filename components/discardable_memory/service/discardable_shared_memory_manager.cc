@@ -302,7 +302,8 @@ bool DiscardableSharedMemoryManager::OnMemoryDump(
       if (!segment->memory()->mapped_size())
         continue;
 
-      // The "size" will be inherited form the shared global dump.
+      // TODO(ssid): The "size" should be inherited from the shared memory dump,
+      // crbug.com/661257.
       std::string dump_name = base::StringPrintf(
           "discardable/process_%x/segment_%d", client_id, segment_id);
       base::trace_event::MemoryAllocatorDump* dump =
@@ -327,24 +328,12 @@ bool DiscardableSharedMemoryManager::OnMemoryDump(
       base::trace_event::MemoryAllocatorDumpGuid shared_segment_guid =
           DiscardableSharedMemoryHeap::GetSegmentGUIDForTracing(
               client_tracing_id, segment_id);
-      pmd->CreateSharedGlobalAllocatorDump(shared_segment_guid);
-      pmd->AddOwnershipEdge(dump->guid(), shared_segment_guid);
 
-#if defined(COUNT_RESIDENT_BYTES_SUPPORTED)
-      if (args.level_of_detail ==
-          base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {
-        size_t resident_size =
-            base::trace_event::ProcessMemoryDump::CountResidentBytes(
-                segment->memory()->memory(), segment->memory()->mapped_size());
-
-        // This is added to the global dump since it has to be attributed to
-        // both the allocator dumps involved.
-        pmd->GetSharedGlobalAllocatorDump(shared_segment_guid)
-            ->AddScalar("resident_size",
-                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                        static_cast<uint64_t>(resident_size));
-      }
-#endif  // defined(COUNT_RESIDENT_BYTES_SUPPORTED)
+      auto shared_memory_guid = segment->memory()->mapped_id();
+      dump->AddString("id", "hash", shared_memory_guid.ToString());
+      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_segment_guid,
+                                           shared_memory_guid,
+                                           0 /* importance */);
     }
   }
   return true;

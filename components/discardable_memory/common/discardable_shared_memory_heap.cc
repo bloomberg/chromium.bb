@@ -427,22 +427,16 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
           ->GetTracingProcessId();
   base::trace_event::MemoryAllocatorDumpGuid shared_segment_guid =
       GetSegmentGUIDForTracing(tracing_process_id, segment_id);
-  // TODO(ssid): Make this weak once the GUID created is consistent
-  // crbug.com/661257.
-  pmd->CreateSharedGlobalAllocatorDump(shared_segment_guid);
-
-  // The size is added to the global dump so that it gets propagated to both the
-  // dumps associated.
-  pmd->GetSharedGlobalAllocatorDump(shared_segment_guid)
-      ->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  allocated_objects_size_in_bytes);
 
   // By creating an edge with a higher |importance| (w.r.t. browser-side dumps)
   // the tracing UI will account the effective size of the segment to the
   // client.
   const int kImportance = 2;
-  pmd->AddOwnershipEdge(segment_dump->guid(), shared_segment_guid, kImportance);
+  auto shared_memory_guid = shared_memory->mapped_id();
+  segment_dump->AddString("id", "hash", shared_memory_guid.ToString());
+  pmd->CreateWeakSharedMemoryOwnershipEdge(segment_dump->guid(),
+                                           shared_segment_guid,
+                                           shared_memory_guid, kImportance);
 }
 
 // static
