@@ -228,8 +228,8 @@ class GceAuthenticator(Authenticator):
   """
 
   _INFO_URL = 'http://metadata.google.internal'
-  _ACQUIRE_URL = ('http://metadata/computeMetadata/v1/instance/'
-                  'service-accounts/default/token')
+  _ACQUIRE_URL = ('%s/computeMetadata/v1/instance/'
+                  'service-accounts/default/token' % _INFO_URL)
   _ACQUIRE_HEADERS = {"Metadata-Flavor": "Google"}
 
   _cache_is_gce = None
