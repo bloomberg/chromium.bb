@@ -1115,4 +1115,114 @@ TEST_F(TouchEventConverterEvdevTest, ActiveStylusMotion) {
   EXPECT_EQ(0.f / 1024, event.pointer_details.force);
 }
 
+TEST_F(TouchEventConverterEvdevTest, ActiveStylusBarrelButtonWhileHovering) {
+  ui::MockTouchEventConverterEvdev* dev = device();
+  EventDeviceInfo devinfo;
+  EXPECT_TRUE(CapabilitiesToDeviceInfo(kEveStylus, &devinfo));
+  dev->Initialize(devinfo);
+
+  struct input_event mock_kernel_queue[]{
+      // Hover
+      {{0, 0}, EV_KEY, BTN_TOOL_PEN, 1},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+      // Button pressed
+      {{0, 0}, EV_KEY, BTN_STYLUS, 1},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+      // Touching down
+      {{0, 0}, EV_KEY, BTN_TOUCH, 1},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+      // Releasing touch
+      {{0, 0}, EV_KEY, BTN_TOUCH, 0},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+      // Releasing button
+      {{0, 0}, EV_KEY, BTN_STYLUS, 0},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+      // Leaving hover
+      {{0, 0}, EV_KEY, BTN_TOOL_PEN, 0},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+
+  dev->ConfigureReadMock(mock_kernel_queue, arraysize(mock_kernel_queue), 0);
+  dev->ReadNow();
+  EXPECT_EQ(2u, size());
+
+  auto down_event = dispatched_touch_event(0);
+  EXPECT_EQ(ET_TOUCH_PRESSED, down_event.type);
+  EXPECT_TRUE(down_event.flags & ui::EventFlags::EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
+            down_event.pointer_details.pointer_type);
+
+  auto up_event = dispatched_touch_event(1);
+  EXPECT_EQ(ET_TOUCH_RELEASED, up_event.type);
+  EXPECT_TRUE(down_event.flags & ui::EventFlags::EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
+            up_event.pointer_details.pointer_type);
+}
+
+TEST_F(TouchEventConverterEvdevTest, ActiveStylusBarrelButton) {
+  ui::MockTouchEventConverterEvdev* dev = device();
+  EventDeviceInfo devinfo;
+  EXPECT_TRUE(CapabilitiesToDeviceInfo(kEveStylus, &devinfo));
+  dev->Initialize(devinfo);
+
+  struct input_event mock_kernel_queue[]{
+      // Hover
+      {{0, 0}, EV_KEY, BTN_TOOL_PEN, 1},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+      // Touching down
+      {{0, 0}, EV_KEY, BTN_TOUCH, 1},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+      // Button pressed
+      {{0, 0}, EV_KEY, BTN_STYLUS, 1},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+      // Releasing button
+      {{0, 0}, EV_KEY, BTN_STYLUS, 0},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+      // Releasing touch
+      {{0, 0}, EV_KEY, BTN_TOUCH, 0},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+      // Leaving hover
+      {{0, 0}, EV_KEY, BTN_TOOL_PEN, 0},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+
+  dev->ConfigureReadMock(mock_kernel_queue, arraysize(mock_kernel_queue), 0);
+  dev->ReadNow();
+  EXPECT_EQ(4u, size());
+
+  auto down_event = dispatched_touch_event(0);
+  EXPECT_EQ(ET_TOUCH_PRESSED, down_event.type);
+  EXPECT_FALSE(down_event.flags & ui::EventFlags::EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
+            down_event.pointer_details.pointer_type);
+
+  auto button_down_event = dispatched_touch_event(1);
+  EXPECT_EQ(ET_TOUCH_MOVED, button_down_event.type);
+  EXPECT_TRUE(button_down_event.flags & ui::EventFlags::EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
+            button_down_event.pointer_details.pointer_type);
+
+  auto button_up_event = dispatched_touch_event(2);
+  EXPECT_EQ(ET_TOUCH_MOVED, button_up_event.type);
+  EXPECT_FALSE(button_up_event.flags & ui::EventFlags::EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
+            button_up_event.pointer_details.pointer_type);
+
+  auto up_event = dispatched_touch_event(3);
+  EXPECT_EQ(ET_TOUCH_RELEASED, up_event.type);
+  EXPECT_FALSE(down_event.flags & ui::EventFlags::EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
+            up_event.pointer_details.pointer_type);
+}
+
 }  // namespace ui

@@ -138,7 +138,8 @@ struct EVENTS_OZONE_EVDEV_EXPORT TouchEventParams {
                    EventType type,
                    const gfx::PointF& location,
                    const PointerDetails& pointer_details,
-                   const base::TimeTicks& timestamp);
+                   const base::TimeTicks& timestamp,
+                   int flags);
   TouchEventParams(const TouchEventParams& other);
   TouchEventParams() {}
   ~TouchEventParams();
@@ -149,6 +150,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT TouchEventParams {
   gfx::PointF location;
   PointerDetails pointer_details;
   base::TimeTicks timestamp;
+  int flags;
 };
 
 // Interface used by device objects for event dispatch.

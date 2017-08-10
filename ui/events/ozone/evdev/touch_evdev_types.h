@@ -57,9 +57,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT InProgressTouchEvdev {
     bool down = false;
     bool changed = false;
   };
-  ButtonState btn_left;
-  ButtonState btn_right;
-  ButtonState btn_middle;
+  ButtonState btn_stylus;
 };
 
 }  // namespace ui

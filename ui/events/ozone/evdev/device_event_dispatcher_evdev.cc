@@ -121,13 +121,15 @@ TouchEventParams::TouchEventParams(int device_id,
                                    EventType type,
                                    const gfx::PointF& location,
                                    const PointerDetails& details,
-                                   const base::TimeTicks& timestamp)
+                                   const base::TimeTicks& timestamp,
+                                   int flags)
     : device_id(device_id),
       slot(slot),
       type(type),
       location(location),
       pointer_details(details),
-      timestamp(timestamp) {}
+      timestamp(timestamp),
+      flags(flags) {}
 
 TouchEventParams::TouchEventParams(const TouchEventParams& other) = default;
 
