@@ -101,6 +101,10 @@ class VariationsFieldTrialCreator {
   // so that it can be overridden by tests.
   virtual bool LoadSeed(VariationsSeed* seed);
 
+  // Allow the platform that is used to filter the set of active trials
+  // to be overridden.
+  void OverrideVariationsPlatform(Study::Platform platform_override);
+
  private:
   PrefService* local_state() { return seed_store_.local_state(); }
 
@@ -132,6 +136,14 @@ class VariationsFieldTrialCreator {
   // Tracks whether |CreateTrialsFromSeed| has been called, to ensure that
   // it gets called prior to |StartRepeatedVariationsSeedFetch|.
   bool create_trials_from_seed_called_;
+
+  // Indiciate if OverrideVariationsPlatform has been used to set
+  // |platform_override_|.
+  bool has_platform_override_;
+
+  // Platform to be used for variations filtering, overridding the current
+  // platform.
+  Study::Platform platform_override_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
