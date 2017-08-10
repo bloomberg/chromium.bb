@@ -52,7 +52,7 @@ void FakeSyncScheduler::OnTypesThrottled(
 
 void FakeSyncScheduler::OnTypesBackedOff(ModelTypeSet types) {}
 
-bool FakeSyncScheduler::IsCurrentlyThrottled() {
+bool FakeSyncScheduler::IsAnyThrottleOrBackoff() {
   return false;
 }
 

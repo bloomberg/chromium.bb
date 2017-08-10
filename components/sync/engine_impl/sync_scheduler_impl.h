@@ -70,7 +70,7 @@ class SyncSchedulerImpl : public SyncScheduler {
   void OnTypesThrottled(ModelTypeSet types,
                         const base::TimeDelta& throttle_duration) override;
   void OnTypesBackedOff(ModelTypeSet types) override;
-  bool IsCurrentlyThrottled() override;
+  bool IsAnyThrottleOrBackoff() override;
   void OnReceivedShortPollIntervalUpdate(
       const base::TimeDelta& new_interval) override;
   void OnReceivedLongPollIntervalUpdate(
@@ -83,8 +83,8 @@ class SyncSchedulerImpl : public SyncScheduler {
   void OnReceivedGuRetryDelay(const base::TimeDelta& delay) override;
   void OnReceivedMigrationRequest(ModelTypeSet types) override;
 
-  // Returns true if the client is currently in exponential backoff.
-  bool IsBackingOff() const;
+  bool IsGlobalThrottle() const;
+  bool IsGlobalBackoff() const;
 
   // Changes the default delay between nudge cycles. Model-type specific
   // overrides will still apply. This is made public so that nudge cycles can be
@@ -174,7 +174,7 @@ class SyncSchedulerImpl : public SyncScheduler {
   void NotifyRetryTime(base::Time retry_time);
 
   // Helper to signal listeners about changed throttled or backed off types.
-  void NotifyBlockedTypesChanged(ModelTypeSet types);
+  void NotifyBlockedTypesChanged();
 
   // Looks for pending work and, if it finds any, run this work at "canary"
   // priority.
