@@ -75,7 +75,7 @@ class GLApplyScreenSpaceAntialiasingCHROMIUMTest : public testing::Test {
   }
 
   void SetUp() override {
-    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
     GLManager::Options options;
     gl_.InitializeWithCommandLine(options, command_line);
     CheckStatus();
@@ -102,7 +102,7 @@ class GLApplyScreenSpaceAntialiasingCHROMIUMES3Test
     : public GLApplyScreenSpaceAntialiasingCHROMIUMTest {
  protected:
   void SetUp() override {
-    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
     GLManager::Options options;
     options.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
     gl_.InitializeWithCommandLine(options, command_line);
