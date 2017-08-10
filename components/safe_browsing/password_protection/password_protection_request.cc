@@ -282,6 +282,8 @@ void PasswordProtectionRequest::Finish(
   } else if (is_sync_password) {
     UMA_HISTOGRAM_ENUMERATION(kSyncPasswordEntryRequestOutcomeHistogramName,
                               outcome, PasswordProtectionService::MAX_OUTCOME);
+    password_protection_service_->MaybeLogPasswordReuseLookupEvent(
+        web_contents_, outcome, response.get());
   } else {
     UMA_HISTOGRAM_ENUMERATION(kPasswordEntryRequestOutcomeHistogramName,
                               outcome, PasswordProtectionService::MAX_OUTCOME);
@@ -313,7 +315,6 @@ void PasswordProtectionRequest::Finish(
     }
   }
 
-  DCHECK(password_protection_service_);
   password_protection_service_->RequestFinished(
       this, outcome == PasswordProtectionService::RESPONSE_ALREADY_CACHED,
       std::move(response));

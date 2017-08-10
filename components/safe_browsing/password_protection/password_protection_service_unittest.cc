@@ -115,6 +115,11 @@ class TestPasswordProtectionService : public PasswordProtectionService {
     return true;
   }
 
+  void MaybeLogPasswordReuseLookupEvent(
+      content::WebContents* web_contents,
+      PasswordProtectionService::RequestOutcome,
+      const LoginReputationClientResponse*) override {}
+
   void ShowPhishingInterstitial(const GURL& phishing_url,
                                 const std::string& token,
                                 content::WebContents* web_contents) override {}
