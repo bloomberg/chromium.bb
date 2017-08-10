@@ -1499,7 +1499,8 @@ void CompositeEditCommand::MoveParagraphs(
   VisiblePosition after_paragraph =
       CreateVisiblePosition(after_paragraph_position.GetPosition());
   if (before_paragraph.IsNotNull() &&
-      (!IsEndOfParagraph(before_paragraph) ||
+      ((!IsStartOfParagraph(before_paragraph) &&
+        !IsEndOfParagraph(before_paragraph)) ||
        before_paragraph.DeepEquivalent() == after_paragraph.DeepEquivalent())) {
     // FIXME: Trim text between beforeParagraph and afterParagraph if they
     // aren't equal.
