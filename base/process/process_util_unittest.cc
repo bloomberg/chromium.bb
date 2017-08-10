@@ -64,6 +64,8 @@
 #include "third_party/lss/linux_syscall_support.h"
 #endif
 #if defined(OS_FUCHSIA)
+#include <magenta/process.h>
+#include <magenta/processargs.h>
 #include <magenta/syscalls.h>
 #endif
 
@@ -729,7 +731,7 @@ TEST_F(ProcessUtilTest, FDRemappingIncludesStdio) {
 
   // Read from the pipe to verify that it is connected to the child
   // process' stdio.
-  char buf[16] = {0};
+  char buf[16] = {};
   EXPECT_EQ(1, HANDLE_EINTR(read(pipe_fds[0], buf, sizeof(buf))));
   EXPECT_EQ(kPipeValue, buf[0]);
 
@@ -741,6 +743,62 @@ TEST_F(ProcessUtilTest, FDRemappingIncludesStdio) {
       base::TimeDelta::FromSeconds(5), &exit_code));
   EXPECT_EQ(0, exit_code);
 }
+
+#if defined(OS_FUCHSIA)
+const uint16_t kStartupHandleId = 43;
+MULTIPROCESS_TEST_MAIN(ProcessUtilsVerifyHandle) {
+  mx_handle_t handle =
+      mx_get_startup_handle(PA_HND(PA_USER0, kStartupHandleId));
+  CHECK_NE(MX_HANDLE_INVALID, handle);
+
+  // Write to the pipe so the parent process can observe output.
+  size_t bytes_written = 0;
+  mx_status_t result = mx_socket_write(handle, 0, &kPipeValue,
+                                       sizeof(kPipeValue), &bytes_written);
+  CHECK_EQ(MX_OK, result);
+  CHECK_EQ(1u, bytes_written);
+
+  CHECK_EQ(MX_OK, mx_handle_close(handle));
+  return 0;
+}
+
+TEST_F(ProcessUtilTest, LaunchWithHandleTransfer) {
+  // Create a pipe to pass to the child process.
+  mx_handle_t handles[2];
+  mx_status_t result =
+      mx_socket_create(MX_SOCKET_STREAM, &handles[0], &handles[1]);
+  ASSERT_EQ(MX_OK, result);
+
+  // Launch the test process, and pass it one end of the pipe.
+  base::LaunchOptions options;
+  options.handles_to_transfer.push_back(
+      {PA_HND(PA_USER0, kStartupHandleId), handles[0]});
+  base::SpawnChildResult spawn_child =
+      SpawnChildWithOptions("ProcessUtilsVerifyHandle", options);
+  ASSERT_TRUE(spawn_child.process.IsValid());
+
+  // Read from the pipe to verify that the child received it.
+  mx_signals_t signals = 0;
+  result = mx_object_wait_one(handles[1], MX_SOCKET_READABLE,
+                              mx_deadline_after(MX_SEC(5)), &signals);
+  EXPECT_EQ(MX_OK, result);
+  EXPECT_TRUE(signals & MX_SOCKET_READABLE);
+
+  size_t bytes_read = 0;
+  char buf[16] = {0};
+  result = mx_socket_read(handles[1], 0, buf, sizeof(buf), &bytes_read);
+  EXPECT_EQ(MX_OK, result);
+  EXPECT_EQ(1u, bytes_read);
+  EXPECT_EQ(kPipeValue, buf[0]);
+
+  CHECK_EQ(MX_OK, mx_handle_close(handles[1]));
+
+  int exit_code;
+  ASSERT_TRUE(spawn_child.process.WaitForExitWithTimeout(
+      base::TimeDelta::FromSeconds(5), &exit_code));
+  EXPECT_EQ(0, exit_code);
+}
+#endif  // defined(OS_FUCHSIA)
 
 namespace {
 
