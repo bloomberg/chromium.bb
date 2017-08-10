@@ -750,7 +750,7 @@
             ],
             "experiments": [
                 {
-                    "name": "DirectCompositionOverlays",
+                    "name": "Enabled",
                     "enable_features": [
                         "DirectCompositionOverlays"
                     ]
