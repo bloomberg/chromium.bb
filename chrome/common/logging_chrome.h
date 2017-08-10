@@ -61,10 +61,12 @@ base::FilePath GetLogFileName();
 // otherwise.
 bool DialogsAreSuppressed();
 
-// Inserts timestamp before file extension in the format
+#if defined(OS_CHROMEOS)
+// Inserts timestamp before file extension (if any) in the form
 // "_yymmdd-hhmmss".
 base::FilePath GenerateTimestampedName(const base::FilePath& base_path,
                                        base::Time timestamp);
+#endif
 }  // namespace logging
 
 #endif  // CHROME_COMMON_LOGGING_CHROME_H_
