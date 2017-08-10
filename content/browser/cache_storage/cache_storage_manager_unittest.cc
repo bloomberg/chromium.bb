@@ -34,6 +34,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
+#include "net/disk_cache/disk_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -108,7 +110,11 @@ class CacheStorageManagerTest : public testing::Test {
     CreateStorageManager();
   }
 
-  void TearDown() override { DestroyStorageManager(); }
+  void TearDown() override {
+    DestroyStorageManager();
+    disk_cache::FlushCacheThreadForTesting();
+    content::RunAllBlockingPoolTasksUntilIdle();
+  }
 
   virtual bool MemoryOnly() { return false; }
 
