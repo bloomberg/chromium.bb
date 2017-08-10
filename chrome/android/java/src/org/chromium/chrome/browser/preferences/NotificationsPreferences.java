@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
+import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * Settings fragment that allows the user to configure notifications. It contains general
@@ -28,12 +29,15 @@ public class NotificationsPreferences extends PreferenceFragment {
 
     private ChromeSwitchPreference mSuggestionsPref;
     private Preference mFromWebsitesPref;
+    private SnippetsBridge mSnippetsBridge;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         assert !BuildInfo.isAtLeastO() : "NotificationsPreferences should only be used pre-O.";
 
         super.onCreate(savedInstanceState);
+
+        mSnippetsBridge = new SnippetsBridge(Profile.getLastUsedProfile());
 
         addPreferencesFromResource(R.xml.notifications_preferences);
         getActivity().setTitle(R.string.prefs_notifications);
@@ -58,11 +62,20 @@ public class NotificationsPreferences extends PreferenceFragment {
         update();
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mSnippetsBridge.destroy();
+    }
+
     /**
      * Updates the state of displayed preferences.
      */
     private void update() {
-        mSuggestionsPref.setChecked(SnippetsBridge.areContentSuggestionsNotificationsEnabled());
+        boolean suggestionsEnabled = mSnippetsBridge.areRemoteSuggestionsEnabled();
+        mSuggestionsPref.setChecked(
+                suggestionsEnabled && SnippetsBridge.areContentSuggestionsNotificationsEnabled());
+        mSuggestionsPref.setEnabled(suggestionsEnabled);
 
         mFromWebsitesPref.setSummary(ContentSettingsResources.getCategorySummary(
                 ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS,

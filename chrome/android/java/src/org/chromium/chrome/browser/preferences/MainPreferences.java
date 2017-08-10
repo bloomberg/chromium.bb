@@ -13,6 +13,7 @@ import android.preference.PreferenceFragment;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -130,9 +131,9 @@ public class MainPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(findPreference(PREF_SIGN_IN));
         }
 
-        // If we are on Android O+ the Notifications preference should lead to the Android Settings
-        // notifications page, not to Chrome's notifications settings page.
         if (BuildInfo.isAtLeastO()) {
+            // If we are on Android O+ the Notifications preference should lead to the Android
+            // Settings notifications page, not to Chrome's notifications settings page.
             Preference notifications = findPreference(PREF_NOTIFICATIONS);
             notifications.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
@@ -148,6 +149,17 @@ public class MainPreferences extends PreferenceFragment
                     return true;
                 }
             });
+        } else if (!ChromeFeatureList.isEnabled(
+                           ChromeFeatureList.CONTENT_SUGGESTIONS_NOTIFICATIONS)) {
+            // The Notifications Preferences page currently only contains the Content Suggestions
+            // Notifications setting and a link to per-website notification settings. The latter can
+            // be access through Site Settings, so if the Content Suggestions Notifications feature
+            // isn't enabled we don't show the Notifications Preferences page.
+
+            // This checks whether the Content Suggestions Notifications *feature* is enabled on the
+            // user's device, not whether the user has Content Suggestions Notifications themselves
+            // enabled (which is what the user can toggle on the Notifications Preferences page).
+            getPreferenceScreen().removePreference(findPreference(PREF_NOTIFICATIONS));
         }
     }
 
