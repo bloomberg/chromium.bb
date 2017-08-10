@@ -12,6 +12,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.util.browser.tabmodel.document.MockStorageDelegate;
 
+import java.util.concurrent.TimeoutException;
+
 /**
  * Base for testing and interacting with multiple Activities (e.g. Document or Webapp Activities).
  */
@@ -47,7 +49,8 @@ public abstract class MultiActivityTestBase extends InstrumentationTestCase
     /**
      * See {@link #waitForFullLoad(ChromeActivity,String,boolean)}.
      */
-    protected void waitForFullLoad(final ChromeActivity activity, final String expectedTitle) {
+    protected void waitForFullLoad(final ChromeActivity activity, final String expectedTitle)
+            throws InterruptedException, TimeoutException {
         mTestCommon.waitForFullLoad(activity, expectedTitle);
     }
 }

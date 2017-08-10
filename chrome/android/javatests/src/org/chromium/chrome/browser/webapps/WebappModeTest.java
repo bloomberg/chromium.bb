@@ -247,7 +247,7 @@ public class WebappModeTest {
     @Test
     @MediumTest
     @Feature({"Webapps"})
-    public void testWebappRequiresValidMac() {
+    public void testWebappRequiresValidMac() throws Exception {
         // Try to start a WebappActivity.  Fail because the Intent is insecure.
         fireWebappIntent(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, false);
         CriteriaHelper.pollUiThread(new Criteria() {

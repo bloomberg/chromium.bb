@@ -210,6 +210,6 @@ public class ApplicationTestUtils {
                         "Expecting scale factor of: " + expectedScale + ", got: " + scale);
                 return Math.abs(scale - expectedScale) < FLOAT_EPSILON;
             }
-        }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        });
     }
 }
