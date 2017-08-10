@@ -380,17 +380,11 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       std::string nqe_option;
       if (nqe_args->GetString(net::kForceEffectiveConnectionType,
                               &nqe_option)) {
-        net::EffectiveConnectionType forced_effective_connection_type =
-            net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-        bool effective_connection_type_available =
-            net::GetEffectiveConnectionTypeForName(
-                nqe_option, &forced_effective_connection_type);
-        if (!effective_connection_type_available) {
+        nqe_forced_effective_connection_type =
+            net::GetEffectiveConnectionTypeForName(nqe_option);
+        if (!nqe_option.empty() && !nqe_forced_effective_connection_type) {
           LOG(ERROR) << "\"" << nqe_option
                      << "\" is not a valid effective connection type value";
-        } else {
-          nqe_forced_effective_connection_type =
-              forced_effective_connection_type;
         }
       }
 

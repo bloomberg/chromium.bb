@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -68,12 +69,9 @@ net::EffectiveConnectionType GetParamValueAsECT(
     const std::string& trial_name,
     const std::string& param_name,
     net::EffectiveConnectionType default_value) {
-  net::EffectiveConnectionType value;
-  if (!net::GetEffectiveConnectionTypeForName(
-          base::GetFieldTrialParamValue(trial_name, param_name), &value)) {
-    return default_value;
-  }
-  return value;
+  return net::GetEffectiveConnectionTypeForName(
+             base::GetFieldTrialParamValue(trial_name, param_name))
+      .value_or(default_value);
 }
 
 bool IsIncludedInClientSidePreviewsExperimentsFieldTrial() {

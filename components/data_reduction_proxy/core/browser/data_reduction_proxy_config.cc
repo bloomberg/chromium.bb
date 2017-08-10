@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -683,13 +684,9 @@ void DataReductionProxyConfig::PopulateAutoLoFiParams() {
   std::string variation_value = variations::GetVariationParamValue(
       field_trial, "effective_connection_type");
   if (!variation_value.empty()) {
-    bool effective_connection_type_available =
-        net::GetEffectiveConnectionTypeForName(
-            variation_value, &lofi_effective_connection_type_threshold_);
-    DCHECK(effective_connection_type_available);
-
-    // Silence unused variable warning in release builds.
-    (void)effective_connection_type_available;
+    lofi_effective_connection_type_threshold_ =
+        net::GetEffectiveConnectionTypeForName(variation_value)
+            .value_or(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
   } else {
     // Use the default parameters.
     lofi_effective_connection_type_threshold_ =
