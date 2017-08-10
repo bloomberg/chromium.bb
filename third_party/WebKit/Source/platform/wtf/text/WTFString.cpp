@@ -483,24 +483,6 @@ unsigned String::ToUInt(bool* ok) const {
   return impl_->ToUInt(NumberParsingOptions::kLoose, ok);
 }
 
-int64_t String::ToInt64(bool* ok) const {
-  if (!impl_) {
-    if (ok)
-      *ok = false;
-    return 0;
-  }
-  return impl_->ToInt64(NumberParsingOptions::kLoose, ok);
-}
-
-uint64_t String::ToUInt64(bool* ok) const {
-  if (!impl_) {
-    if (ok)
-      *ok = false;
-    return 0;
-  }
-  return impl_->ToUInt64(NumberParsingOptions::kLoose, ok);
-}
-
 double String::ToDouble(bool* ok) const {
   if (!impl_) {
     if (ok)

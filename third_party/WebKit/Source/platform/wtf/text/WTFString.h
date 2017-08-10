@@ -407,8 +407,6 @@ class WTF_EXPORT String {
   // feature.
   int ToInt(bool* ok = 0) const;
   unsigned ToUInt(bool* ok = 0) const;
-  int64_t ToInt64(bool* ok = 0) const;
-  uint64_t ToUInt64(bool* ok = 0) const;
 
   // These functions accepts:
   //  - leading '+'
