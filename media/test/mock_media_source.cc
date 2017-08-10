@@ -4,6 +4,8 @@
 
 #include "media/test/mock_media_source.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/test_data_util.h"
 #include "media/base/timestamp_constants.h"
@@ -20,6 +22,7 @@ MockMediaSource::MockMediaSource(const std::string& filename,
       mimetype_(mimetype),
       chunk_demuxer_(new ChunkDemuxer(
           base::Bind(&MockMediaSource::DemuxerOpened, base::Unretained(this)),
+          base::Bind(&base::DoNothing),
           base::Bind(&MockMediaSource::OnEncryptedMediaInitData,
                      base::Unretained(this)),
           &media_log_)),

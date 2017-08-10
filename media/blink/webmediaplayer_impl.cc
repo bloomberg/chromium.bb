@@ -2021,6 +2021,8 @@ void WebMediaPlayerImpl::StartPipeline() {
     chunk_demuxer_ = new ChunkDemuxer(
         BindToCurrentLoop(
             base::Bind(&WebMediaPlayerImpl::OnDemuxerOpened, AsWeakPtr())),
+        BindToCurrentLoop(
+            base::Bind(&WebMediaPlayerImpl::OnProgress, AsWeakPtr())),
         encrypted_media_init_data_cb, media_log_.get());
     demuxer_.reset(chunk_demuxer_);
 

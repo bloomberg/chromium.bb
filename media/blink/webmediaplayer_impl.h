@@ -484,7 +484,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // handling a src= or MSE based playback.
   void RecordUnderflowDuration(base::TimeDelta duration);
 
-  // Called by the data source when loading progresses.
+  // Called by the data source (for src=) or demuxer (for mse) when loading
+  // progresses.
   // Can be called quite often.
   void OnProgress();
 
