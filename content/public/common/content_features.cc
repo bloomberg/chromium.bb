@@ -285,7 +285,7 @@ const base::Feature kSkipCompositingSmallScrollers{
 // An experiment to reduce the soft tile memory limit on low-end android
 // devices.
 const base::Feature kReducedSoftTileMemoryLimitOnLowEndAndroid{
-    "kReducedSoftTileMemoryLimitOnLowEndAndroid",
+    "ReducedSoftTileMemoryLimitOnLowEndAndroid",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Paint invalidation based on slimming paint. See https://goo.gl/eQczQW
