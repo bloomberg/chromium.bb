@@ -133,4 +133,8 @@ blink_core_sources("loader") {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
+
+  public_deps = [
+    "//services/network/public/interfaces:interfaces_blink",
+  ]
 }

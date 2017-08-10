@@ -19,4 +19,6 @@ Unlike other directories in WebKit, code in this directory should:
 
 * Follow [Chromium's common coding style guide](https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/c++.md)
 
-* Use full-path from src/ for includes (e.g. `third_party/WebKit/common/foo.h` rather than `common/foo.h`)
+* Use full-path from src/ for includes (e.g. `third_party/WebKit/common/foo.h`
+  rather than `common/foo.h`). Likewise, code outside this directory that
+  includes files in this directory should use the full-path.

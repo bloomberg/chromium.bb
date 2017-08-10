@@ -49,6 +49,7 @@
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -389,13 +390,13 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
   // Service workers handle CORS separately.
   if (response.WasFetchedViaServiceWorker()) {
     switch (response.ResponseTypeViaServiceWorker()) {
-      case mojom::FetchResponseType::kBasic:
-      case mojom::FetchResponseType::kCORS:
-      case mojom::FetchResponseType::kDefault:
-      case mojom::FetchResponseType::kError:
+      case network::mojom::FetchResponseType::kBasic:
+      case network::mojom::FetchResponseType::kCORS:
+      case network::mojom::FetchResponseType::kDefault:
+      case network::mojom::FetchResponseType::kError:
         return CORSStatus::kServiceWorkerSuccessful;
-      case mojom::FetchResponseType::kOpaque:
-      case mojom::FetchResponseType::kOpaqueRedirect:
+      case network::mojom::FetchResponseType::kOpaque:
+      case network::mojom::FetchResponseType::kOpaqueRedirect:
         return CORSStatus::kServiceWorkerOpaque;
     }
     NOTREACHED();

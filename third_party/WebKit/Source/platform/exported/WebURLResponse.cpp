@@ -291,7 +291,7 @@ void WebURLResponse::SetWasFallbackRequiredByServiceWorker(bool value) {
 }
 
 void WebURLResponse::SetResponseTypeViaServiceWorker(
-    mojom::FetchResponseType value) {
+    network::mojom::FetchResponseType value) {
   resource_response_->SetResponseTypeViaServiceWorker(value);
 }
 

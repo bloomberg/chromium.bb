@@ -17,6 +17,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,7 +67,7 @@ class Helper : public EmbeddedWorkerTestHelper {
         response_callback->OnResponse(
             ServiceWorkerResponse(
                 base::MakeUnique<std::vector<GURL>>(), 200, "OK",
-                blink::mojom::FetchResponseType::kDefault,
+                network::mojom::FetchResponseType::kDefault,
                 base::MakeUnique<ServiceWorkerHeaderMap>(), blob_uuid_,
                 blob_size_, nullptr /* blob */,
                 blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
@@ -177,7 +178,7 @@ class ServiceWorkerURLLoaderJobTest
     EXPECT_TRUE(info.was_fetched_via_service_worker);
     EXPECT_FALSE(info.was_fallback_required_by_service_worker);
     EXPECT_TRUE(info.url_list_via_service_worker.empty());
-    EXPECT_EQ(blink::mojom::FetchResponseType::kDefault,
+    EXPECT_EQ(network::mojom::FetchResponseType::kDefault,
               info.response_type_via_service_worker);
     // TODO(falken): start and ready time should be set.
     EXPECT_TRUE(info.service_worker_start_time.is_null());

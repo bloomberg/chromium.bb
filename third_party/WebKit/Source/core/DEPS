@@ -11,6 +11,7 @@ include_rules = [
     "+platform",
     "+public/platform",
     "+public/web",
+    "+services/network/public/interfaces",
     "+third_party/skia/include",
     "+ui/gfx/geometry",
     "-web",

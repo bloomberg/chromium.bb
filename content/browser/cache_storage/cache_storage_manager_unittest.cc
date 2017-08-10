@@ -37,6 +37,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -378,7 +379,7 @@ class CacheStorageManagerTest : public testing::Test {
     url_list->push_back(request.url);
     ServiceWorkerResponse response(
         std::move(url_list), status_code, "OK",
-        blink::mojom::FetchResponseType::kDefault,
+        network::mojom::FetchResponseType::kDefault,
         base::MakeUnique<ServiceWorkerHeaderMap>(response_headers),
         blob_handle->uuid(), request.url.spec().size(), nullptr /* blob */,
         blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),

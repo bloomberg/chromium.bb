@@ -58,6 +58,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebSecurityOrigin.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -845,7 +846,7 @@ bool Resource::CanReuse(const FetchParameters& params) const {
   // TODO(yhirano): Remove this.
   if (GetResponse().WasFetchedViaServiceWorker() &&
       GetResponse().ResponseTypeViaServiceWorker() ==
-          mojom::FetchResponseType::kOpaque &&
+          network::mojom::FetchResponseType::kOpaque &&
       new_request.GetFetchRequestMode() !=
           WebURLRequest::kFetchRequestModeNoCORS) {
     return false;

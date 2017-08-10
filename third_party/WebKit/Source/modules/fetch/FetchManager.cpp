@@ -48,6 +48,7 @@
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebCORS.h"
 #include "public/platform/WebURLRequest.h"
+#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
@@ -404,21 +405,21 @@ void FetchManager::Loader::DidReceiveResponse(
   }
   if (response.WasFetchedViaServiceWorker()) {
     switch (response.ResponseTypeViaServiceWorker()) {
-      case mojom::FetchResponseType::kBasic:
-      case mojom::FetchResponseType::kDefault:
+      case network::mojom::FetchResponseType::kBasic:
+      case network::mojom::FetchResponseType::kDefault:
         tainting = FetchRequestData::kBasicTainting;
         break;
-      case mojom::FetchResponseType::kCORS:
+      case network::mojom::FetchResponseType::kCORS:
         tainting = FetchRequestData::kCORSTainting;
         break;
-      case mojom::FetchResponseType::kOpaque:
+      case network::mojom::FetchResponseType::kOpaque:
         tainting = FetchRequestData::kOpaqueTainting;
         break;
-      case mojom::FetchResponseType::kOpaqueRedirect:
+      case network::mojom::FetchResponseType::kOpaqueRedirect:
         DCHECK(
             NetworkUtils::IsRedirectResponseCode(response_http_status_code_));
         break;  // The code below creates an opaque-redirect filtered response.
-      case mojom::FetchResponseType::kError:
+      case network::mojom::FetchResponseType::kError:
         LOG(FATAL) << "When ServiceWorker respond to the request from fetch() "
                       "with an error response, FetchManager::Loader::didFail() "
                       "must be called instead.";

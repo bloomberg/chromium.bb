@@ -1,6 +1,7 @@
 include_rules = [
   "-content",
 
+  "+services/network/public/interfaces",
   "+services/service_manager/public",
 
   # This file does not belong in content/public as it should not be

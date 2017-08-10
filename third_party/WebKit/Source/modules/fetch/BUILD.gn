@@ -51,4 +51,8 @@ blink_modules_sources("fetch") {
     # linker/compiler. https://crbug.com/739340
     jumbo_excluded_sources = [ "Body.cpp" ]
   }
+
+  public_deps = [
+    "//services/network/public/interfaces:interfaces_blink",
+  ]
 }

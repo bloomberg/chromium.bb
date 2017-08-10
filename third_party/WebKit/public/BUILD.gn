@@ -658,6 +658,7 @@ source_set("blink_headers") {
     "//media/midi:mojo_shared_cpp_sources",
     "//mojo/public/cpp/bindings:bindings",
     "//mojo/public/cpp/system:system",
+    "//services/network/public/interfaces:interfaces",
     "//v8:v8_headers",
   ]
 }
@@ -756,7 +757,6 @@ mojom("mojo_bindings") {
   visibility_blink = [
     "//content/common:mojo_bindings_blink",
     "//third_party/WebKit/Source/platform",
-    "//third_party/WebKit/Source/platform/loader",
   ]
   sources = [
     "platform/display_mode.mojom",
@@ -798,6 +798,7 @@ mojom("mojo_bindings") {
     "//device/bluetooth/public/interfaces",
     "//device/screen_orientation/public/interfaces",
     "//mojo/common:common_custom_types",
+    "//services/network/public/interfaces:interfaces",
     "//storage/public/interfaces",
     "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",

@@ -18,6 +18,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "services/network/public/interfaces/fetch_api.mojom.h"
 
 namespace content {
 namespace {
@@ -392,7 +393,7 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
 
     EXPECT_EQ(fetches[i].response.url_list[0], fetches[i].request.url);
     EXPECT_EQ(fetches[i].response.response_type,
-              blink::mojom::FetchResponseType::kDefault);
+              network::mojom::FetchResponseType::kDefault);
 
     switch (i) {
       case 0:
@@ -489,7 +490,7 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
 
     EXPECT_EQ(fetches[i].response.url_list[0], fetches[i].request.url);
     EXPECT_EQ(fetches[i].response.response_type,
-              blink::mojom::FetchResponseType::kDefault);
+              network::mojom::FetchResponseType::kDefault);
 
     switch (i) {
       case 0:

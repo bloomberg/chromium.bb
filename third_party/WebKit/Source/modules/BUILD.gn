@@ -328,6 +328,7 @@ source_set("unit_tests") {
   deps = [
     ":modules",
     ":modules_testing",
+    "//services/network/public/interfaces:interfaces_blink",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

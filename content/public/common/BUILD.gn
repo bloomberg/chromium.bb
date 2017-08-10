@@ -285,6 +285,7 @@ source_set("common_sources") {
     "//mojo/common",
     "//ppapi/c",
     "//ppapi/features",
+    "//services/network/public/interfaces:interfaces",
     "//services/service_manager/public/cpp",
     "//skia",
     "//storage/common",

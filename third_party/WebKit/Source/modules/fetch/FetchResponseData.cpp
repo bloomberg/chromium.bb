@@ -17,27 +17,28 @@ namespace blink {
 
 namespace {
 
-mojom::FetchResponseType FetchTypeToWebType(
+network::mojom::FetchResponseType FetchTypeToWebType(
     FetchResponseData::Type fetch_type) {
-  mojom::FetchResponseType web_type = mojom::FetchResponseType::kDefault;
+  network::mojom::FetchResponseType web_type =
+      network::mojom::FetchResponseType::kDefault;
   switch (fetch_type) {
     case FetchResponseData::kBasicType:
-      web_type = mojom::FetchResponseType::kBasic;
+      web_type = network::mojom::FetchResponseType::kBasic;
       break;
     case FetchResponseData::kCORSType:
-      web_type = mojom::FetchResponseType::kCORS;
+      web_type = network::mojom::FetchResponseType::kCORS;
       break;
     case FetchResponseData::kDefaultType:
-      web_type = mojom::FetchResponseType::kDefault;
+      web_type = network::mojom::FetchResponseType::kDefault;
       break;
     case FetchResponseData::kErrorType:
-      web_type = mojom::FetchResponseType::kError;
+      web_type = network::mojom::FetchResponseType::kError;
       break;
     case FetchResponseData::kOpaqueType:
-      web_type = mojom::FetchResponseType::kOpaque;
+      web_type = network::mojom::FetchResponseType::kOpaque;
       break;
     case FetchResponseData::kOpaqueRedirectType:
-      web_type = mojom::FetchResponseType::kOpaqueRedirect;
+      web_type = network::mojom::FetchResponseType::kOpaqueRedirect;
       break;
   }
   return web_type;
