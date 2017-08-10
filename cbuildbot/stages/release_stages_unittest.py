@@ -11,6 +11,7 @@ import mock
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import release_stages
+from chromite.lib import config_lib
 from chromite.lib import failures_lib
 from chromite.lib import results_lib
 from chromite.lib import timeout_util
@@ -458,7 +459,8 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
         skip_duts_check=False)
 
   def testRunPaygenInProcessWithUnifiedBuild(self):
-    self._run.config.models = ["model1", "model2"]
+    self._run.config.models = [config_lib.ModelTestConfig('model1'),
+                               config_lib.ModelTestConfig('model2')]
 
     # Have to patch and verify that the PaygenTestStage is created.
     stage = self.ConstructStage()

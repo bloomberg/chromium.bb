@@ -89,6 +89,7 @@ CONFIG_TEMPLATE_RELEASE_BRANCH = 'release_branch'
 CONFIG_TEMPLATE_REFERENCE_BOARD_NAME = 'reference_board_name'
 CONFIG_TEMPLATE_MODELS = 'models'
 CONFIG_TEMPLATE_MODEL_NAME = 'name'
+CONFIG_TEMPLATE_MODEL_TEST_SUITES = 'test_suites'
 
 CONFIG_X86_INTERNAL = 'X86_INTERNAL'
 CONFIG_X86_EXTERNAL = 'X86_EXTERNAL'
@@ -399,6 +400,20 @@ class GCETestConfig(object):
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
 
+class ModelTestConfig(object):
+  """Model specific config that controls which test suites are executed.
+
+  Members:
+    name: The name of the model that will be tested (matches autotest platform)
+    test_suites: List of hardware test suites that will be executed.
+  """
+  def __init__(self, name, test_suites=None):
+    """Constructor -- see members above."""
+    self.name = name
+    self.test_suites = test_suites
+
+  def __eq__(self, other):
+    return self.__dict__ == other.__dict__
 
 class HWTestConfig(object):
   """Config object for hardware tests suites.
@@ -523,9 +538,8 @@ def DefaultSettings():
       # A list of boards to build.
       boards=None,
 
-      # A list of all models that are supported by a given unified build.
-      # For unified builds, we still need hardware test coverage to fan out
-      # and test every model, which is what this setting controls.
+      # A list of ModelTestConfig objects that represent all of the models
+      # supported by a given unified build and their corresponding test config.
       models=[],
 
       # The profile of the variant to set up and build.
@@ -1689,6 +1703,12 @@ def _CreateVmTestConfig(jsonString):
   vm_test_config = json.loads(jsonString)
   return VMTestConfig(**vm_test_config)
 
+def _CreateModelTestConfig(jsonString):
+  """Create a ModelTestConfig object from a JSON string."""
+  if isinstance(jsonString, ModelTestConfig):
+    return jsonString
+  model_test_config = json.loads(jsonString)
+  return ModelTestConfig(**model_test_config)
 
 def _CreateHwTestConfig(jsonString):
   """Create a HWTestConfig object from a JSON string."""
@@ -1724,6 +1744,10 @@ def _UpdateConfig(build_dict):
     ]
   else:
     build_dict['vm_tests_override'] = None
+
+  models = build_dict.pop('models', None)
+  if models is not None:
+    build_dict['models'] = [_CreateModelTestConfig(model) for model in models]
 
   hwtests = build_dict.pop('hw_tests', None)
   if hwtests is not None:

@@ -2430,18 +2430,24 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     if board in _unified_board_names:
       for unibuild in _unified_builds:
         if board == unibuild[config_lib.CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]:
-          models = [m[config_lib.CONFIG_TEMPLATE_MODEL_NAME]
-                    for m in unibuild[config_lib.CONFIG_TEMPLATE_MODELS]]
+          # Test suite config for paladin builders is specified in the matrix
+          # below, so we're wiping out any filters here since they are only
+          # used for the release builders.
+          models = []
+          for model in unibuild[config_lib.CONFIG_TEMPLATE_MODELS]:
+            name = model[config_lib.CONFIG_TEMPLATE_MODEL_NAME]
+            models.append(config_lib.ModelTestConfig(name))
+
           if models:
             test_model = models[0]
           else:
-            test_model = board
+            test_model = config_lib.ModelTestConfig(board)
 
           # This is dealing with the reef case, which hopefully won't be
           # replicated going forward.  This will match reef as the primary
           # model for board reef-uni
           for model in models:
-            if board.startswith(model):
+            if board.startswith(model.name):
               test_model = model
 
           # We're only going to test on one model.
@@ -3185,8 +3191,15 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
   for unibuild in config_lib.GetUnifiedBuildConfigAllBuilds(ge_build_config):
     active_waterfall = _GetConfigWaterfall(
         unibuild[config_lib.CONFIG_TEMPLATE_BUILDER])
-    models = [m[config_lib.CONFIG_TEMPLATE_MODEL_NAME]
-              for m in unibuild[config_lib.CONFIG_TEMPLATE_MODELS]]
+    models = []
+    for model in unibuild[config_lib.CONFIG_TEMPLATE_MODELS]:
+      name = model[config_lib.CONFIG_TEMPLATE_MODEL_NAME]
+      if config_lib.CONFIG_TEMPLATE_MODEL_TEST_SUITES in model:
+        models.append(config_lib.ModelTestConfig(
+            name, model[config_lib.CONFIG_TEMPLATE_MODEL_TEST_SUITES]))
+      else:
+        models.append(config_lib.ModelTestConfig(name))
+
     reference_board_name = unibuild[
         config_lib.CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]
     config_name = '%s-release' % reference_board_name

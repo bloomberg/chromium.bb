@@ -99,7 +99,7 @@ class SimpleBuilder(generic_builders.Builder):
                       "option in the builder config is set to True.")
       return
 
-    models = [board]
+    models = [config_lib.ModelTestConfig(board)]
 
     if builder_run.config.models:
       models = builder_run.config.models
@@ -108,20 +108,10 @@ class SimpleBuilder(generic_builders.Builder):
       # Even for blocking stages, all models can still be run in parallel since
       # it will still block the next stage from executing.
       for model in models:
-        stage_class = None
-        if suite_config.async:
-          stage_class = test_stages.ASyncHWTestStage
-        elif suite_config.suite == constants.HWTEST_AU_SUITE:
-          stage_class = test_stages.AUTestStage
-        else:
-          stage_class = test_stages.HWTestStage
-
-        new_stage = self._GetStageInstance(stage_class,
-                                           board,
-                                           model,
-                                           suite_config,
-                                           builder_run=builder_run)
-        parallel_stages.append(new_stage)
+        new_stage = self._GetHWTestStage(
+            builder_run, board, model, suite_config)
+        if new_stage:
+          parallel_stages.append(new_stage)
 
       # Please see docstring for blocking in the HWTestConfig for more
       # information on this behavior.
@@ -131,6 +121,39 @@ class SimpleBuilder(generic_builders.Builder):
 
     if parallel_stages:
       self._RunParallelStages(parallel_stages)
+
+  def _GetHWTestStage(self, builder_run, board, model, suite_config):
+    """Gets the correct hw test stage for a given test suite and model.
+
+    Args:
+      builder_run: BuilderRun object for these background stages.
+      board: Board name.
+      model: ModelTestConfig object to test against.
+      suite_config: HWTestConfig object that defines the test suite.
+
+    Returns:
+      The test stage or None if the test suite was filtered for the model.
+    """
+    result = None
+
+    # If test_suites doesn't exist, then there is no filter.
+    # Whereas, an empty array will act as a comprehensive filter.
+    if (model.test_suites is None
+        or suite_config.suite in model.test_suites):
+      stage_class = None
+      if suite_config.async:
+        stage_class = test_stages.ASyncHWTestStage
+      elif suite_config.suite == constants.HWTEST_AU_SUITE:
+        stage_class = test_stages.AUTestStage
+      else:
+        stage_class = test_stages.HWTestStage
+
+      result = self._GetStageInstance(stage_class,
+                                      board,
+                                      model.name,
+                                      suite_config,
+                                      builder_run=builder_run)
+    return result
 
   def _RunDebugSymbolStages(self, builder_run, board):
     """Run debug-related stages for the specified board.

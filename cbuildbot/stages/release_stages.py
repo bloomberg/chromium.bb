@@ -465,11 +465,11 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
         if not self.skip_testing:
           suite_name, archive_board, archive_build, finished_uri = testdata
 
-          models = [archive_board]
+          model = archive_board
           # For unified builds, we need to use an explicit model since only
           # those will actually exist in the hardware test farm.
           if self._run.config.models:
-            models = self._run.config.models
+            model = self._run.config.models[0].name
 
           # Paygen tests only need to be run on one model for a given
           # reference board.
@@ -477,7 +477,7 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
           # models from boards, we can let Autotest choose for us in the
           # future from all models for a given reference board.
           PaygenTestStage(
-              self._run, suite_name, models[0], self.channel,
+              self._run, suite_name, model, self.channel,
               archive_build, finished_uri, self.skip_duts_check,
               self.debug).Run()
 

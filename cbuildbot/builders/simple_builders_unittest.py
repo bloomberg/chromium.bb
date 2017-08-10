@@ -153,6 +153,42 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     unified_build = self._initConfig(
         'lumpy-release',
         extra_argv=extra_argv,
-        models=['model1', 'model2'])
+        models=[config_lib.ModelTestConfig('model1'),
+                config_lib.ModelTestConfig('model2', ['sanity', 'bvt-inline'])])
     unified_build.attrs.chrome_version = 'TheChromeVersion'
     simple_builders.SimpleBuilder(unified_build).RunStages()
+
+  def testGetHWTestStageWithPerModelFilters(self):
+    """Verify hwtests are filtered correctly on a per-model basis"""
+    extra_argv = ['--hwtest']
+    unified_build = self._initConfig(
+        'lumpy-release',
+        extra_argv=extra_argv)
+    unified_build.attrs.chrome_version = 'TheChromeVersion'
+
+    test_phase1 = unified_build.config.hw_tests[0]
+    test_phase2 = unified_build.config.hw_tests[1]
+
+    model1 = config_lib.ModelTestConfig('model1')
+    model2 = config_lib.ModelTestConfig('model2', [test_phase2.suite])
+
+    hw_stage = simple_builders.SimpleBuilder(unified_build)._GetHWTestStage(
+        unified_build,
+        'lumpy',
+        model1,
+        test_phase1)
+    self.assertIsNotNone(hw_stage)
+
+    hw_stage = simple_builders.SimpleBuilder(unified_build)._GetHWTestStage(
+        unified_build,
+        'lumpy',
+        model2,
+        test_phase1)
+    self.assertIsNone(hw_stage)
+
+    hw_stage = simple_builders.SimpleBuilder(unified_build)._GetHWTestStage(
+        unified_build,
+        'lumpy',
+        model2,
+        test_phase2)
+    self.assertIsNotNone(hw_stage)
