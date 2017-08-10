@@ -311,9 +311,9 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
                         bounds:(NSRect)bounds
                       selected:(BOOL)isSelected
                    textYOffset:(CGFloat)textYOffset {
-  BOOL isHTTPWarning =
-      (controller_->GetSuggestionAt(index).frontend_id ==
-       autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
+  const int frontenId = controller_->GetSuggestionAt(index).frontend_id;
+  const bool iconInFrontOfText =
+      frontenId == autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
 
   // If this row is selected, highlight it with this mac system color.
   // Otherwise the controller may have a specific background color for this
@@ -337,7 +337,7 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
 
   // Draw left side if isRTL == NO, right side if isRTL == YES.
   CGFloat x = isRTL ? rightX : leftX;
-  if (isHTTPWarning) {
+  if (iconInFrontOfText) {
     x = [self drawIconAtIndex:index atX:x rightAlign:isRTL bounds:bounds];
   }
   [self drawName:name
@@ -349,7 +349,7 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
 
   // Draw right side if isRTL == NO, left side if isRTL == YES.
   x = isRTL ? leftX : rightX;
-  if (!isHTTPWarning) {
+  if (!iconInFrontOfText) {
     x = [self drawIconAtIndex:index atX:x rightAlign:!isRTL bounds:bounds];
   }
   [self drawSubtext:subtext
@@ -433,27 +433,15 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
 }
 
 - (NSImage*)iconAtIndex:(NSInteger)index {
-  const int kHttpWarningIconWidth = 16;
   const base::string16& icon = controller_->GetSuggestionAt(index).icon;
   if (icon.empty())
     return nil;
-
-  // For the Form-Not-Secure warning about password/credit card fields on HTTP
-  // pages, reuse the omnibox vector icons.
-  if (icon == base::ASCIIToUTF16("httpWarning")) {
+  if (icon == base::ASCIIToUTF16("httpWarning") ||
+      icon == base::ASCIIToUTF16("httpsInvalid")) {
     return NSImageFromImageSkiaWithColorSpace(
-        gfx::CreateVectorIcon(toolbar::kHttpIcon, kHttpWarningIconWidth,
-                              gfx::kChromeIconGrey),
+        controller_->layout_model().GetIconImage(index),
         base::mac::GetSRGBColorSpace());
   }
-
-  if (icon == base::ASCIIToUTF16("httpsInvalid")) {
-    return NSImageFromImageSkiaWithColorSpace(
-        gfx::CreateVectorIcon(toolbar::kHttpsInvalidIcon, kHttpWarningIconWidth,
-                              gfx::kGoogleRed700),
-        base::mac::GetSRGBColorSpace());
-  }
-
   int iconId = delegate_->GetIconResourceID(icon);
   DCHECK_NE(-1, iconId);
 
