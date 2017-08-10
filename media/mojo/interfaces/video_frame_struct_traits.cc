@@ -56,26 +56,10 @@ media::mojom::VideoFrameDataPtr MakeVideoFrameData(
 }  // namespace
 
 // static
-void* StructTraits<media::mojom::VideoFrameDataView,
-                   scoped_refptr<media::VideoFrame>>::
-    SetUpContext(const scoped_refptr<media::VideoFrame>& input) {
-  return new media::mojom::VideoFrameDataPtr(MakeVideoFrameData(input));
-}
-
-// static
-void StructTraits<media::mojom::VideoFrameDataView,
-                  scoped_refptr<media::VideoFrame>>::
-    TearDownContext(const scoped_refptr<media::VideoFrame>& input,
-                    void* context) {
-  delete static_cast<media::mojom::VideoFrameDataPtr*>(context);
-}
-
-// static
-media::mojom::VideoFrameDataPtr&
-StructTraits<media::mojom::VideoFrameDataView,
-             scoped_refptr<media::VideoFrame>>::
-    data(const scoped_refptr<media::VideoFrame>& input, void* context) {
-  return *static_cast<media::mojom::VideoFrameDataPtr*>(context);
+media::mojom::VideoFrameDataPtr StructTraits<media::mojom::VideoFrameDataView,
+                                             scoped_refptr<media::VideoFrame>>::
+    data(const scoped_refptr<media::VideoFrame>& input) {
+  return media::mojom::VideoFrameDataPtr(MakeVideoFrameData(input));
 }
 
 // static

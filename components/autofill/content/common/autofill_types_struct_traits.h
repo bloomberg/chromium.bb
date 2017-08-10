@@ -519,26 +519,11 @@ struct StructTraits<autofill::mojom::PasswordFormDataView,
 template <>
 struct StructTraits<autofill::mojom::PasswordFormFieldPredictionMapDataView,
                     autofill::PasswordFormFieldPredictionMap> {
-  using KeysValuesPair =
-      std::pair<std::vector<autofill::FormFieldData>,
-                std::vector<autofill::PasswordFormFieldPredictionType>>;
+  static std::vector<autofill::FormFieldData> keys(
+      const autofill::PasswordFormFieldPredictionMap& r);
 
-  static void* SetUpContext(const autofill::PasswordFormFieldPredictionMap& r);
-
-  static void TearDownContext(const autofill::PasswordFormFieldPredictionMap& r,
-                              void* context);
-
-  static const std::vector<autofill::FormFieldData>& keys(
-      const autofill::PasswordFormFieldPredictionMap& r,
-      void* context) {
-    return static_cast<KeysValuesPair*>(context)->first;
-  }
-
-  static const std::vector<autofill::PasswordFormFieldPredictionType>& values(
-      const autofill::PasswordFormFieldPredictionMap& r,
-      void* context) {
-    return static_cast<KeysValuesPair*>(context)->second;
-  }
+  static std::vector<autofill::PasswordFormFieldPredictionType> values(
+      const autofill::PasswordFormFieldPredictionMap& r);
 
   static bool Read(autofill::mojom::PasswordFormFieldPredictionMapDataView data,
                    autofill::PasswordFormFieldPredictionMap* out);
@@ -547,26 +532,11 @@ struct StructTraits<autofill::mojom::PasswordFormFieldPredictionMapDataView,
 template <>
 struct StructTraits<autofill::mojom::FormsPredictionsMapDataView,
                     autofill::FormsPredictionsMap> {
-  using KeysValuesPair =
-      std::pair<std::vector<autofill::FormData>,
-                std::vector<autofill::PasswordFormFieldPredictionMap>>;
+  static std::vector<autofill::FormData> keys(
+      const autofill::FormsPredictionsMap& r);
 
-  static void* SetUpContext(const autofill::FormsPredictionsMap& r);
-
-  static void TearDownContext(const autofill::FormsPredictionsMap& r,
-                              void* context);
-
-  static const std::vector<autofill::FormData>& keys(
-      const autofill::FormsPredictionsMap& r,
-      void* context) {
-    return static_cast<KeysValuesPair*>(context)->first;
-  }
-
-  static const std::vector<autofill::PasswordFormFieldPredictionMap>& values(
-      const autofill::FormsPredictionsMap& r,
-      void* context) {
-    return static_cast<KeysValuesPair*>(context)->second;
-  }
+  static std::vector<autofill::PasswordFormFieldPredictionMap> values(
+      const autofill::FormsPredictionsMap& r);
 
   static bool Read(autofill::mojom::FormsPredictionsMapDataView data,
                    autofill::FormsPredictionsMap* out);
