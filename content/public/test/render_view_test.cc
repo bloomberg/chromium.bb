@@ -38,6 +38,7 @@
 #include "content/test/mock_render_process.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_frame.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
@@ -118,8 +119,9 @@ class RendererBlinkPlatformImplTestOverrideImpl
     : public RendererBlinkPlatformImpl {
  public:
   RendererBlinkPlatformImplTestOverrideImpl(
-      blink::scheduler::RendererScheduler* scheduler)
-      : RendererBlinkPlatformImpl(scheduler, nullptr) {}
+      blink::scheduler::RendererScheduler* scheduler,
+      base::WeakPtr<service_manager::Connector> connector)
+      : RendererBlinkPlatformImpl(scheduler, std::move(connector)) {}
 
   // Get rid of the dependency to the sandbox, which is not available in
   // RenderViewTest.
@@ -129,9 +131,6 @@ class RendererBlinkPlatformImplTestOverrideImpl
 RenderViewTest::RendererBlinkPlatformImplTestOverride::
     RendererBlinkPlatformImplTestOverride() {
   InitializeMojo();
-  renderer_scheduler_ = blink::scheduler::RendererScheduler::Create();
-  blink_platform_impl_.reset(
-      new RendererBlinkPlatformImplTestOverrideImpl(renderer_scheduler_.get()));
 }
 
 RenderViewTest::RendererBlinkPlatformImplTestOverride::
@@ -141,6 +140,13 @@ RenderViewTest::RendererBlinkPlatformImplTestOverride::
 RendererBlinkPlatformImpl*
 RenderViewTest::RendererBlinkPlatformImplTestOverride::Get() const {
   return blink_platform_impl_.get();
+}
+
+void RenderViewTest::RendererBlinkPlatformImplTestOverride::Initialize(
+    base::WeakPtr<service_manager::Connector> connector) {
+  renderer_scheduler_ = blink::scheduler::RendererScheduler::Create();
+  blink_platform_impl_.reset(new RendererBlinkPlatformImplTestOverrideImpl(
+      renderer_scheduler_.get(), std::move(connector)));
 }
 
 void RenderViewTest::RendererBlinkPlatformImplTestOverride::Shutdown() {
@@ -241,6 +247,7 @@ void RenderViewTest::SetUp() {
 
   // Blink needs to be initialized before calling CreateContentRendererClient()
   // because it uses blink internally.
+  blink_platform_impl_.Initialize(render_thread_->GetConnector()->GetWeakPtr());
   blink::Initialize(blink_platform_impl_.Get());
 
   content_client_.reset(CreateContentClient());

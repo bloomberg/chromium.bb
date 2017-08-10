@@ -64,6 +64,7 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
     RendererBlinkPlatformImplTestOverride();
     ~RendererBlinkPlatformImplTestOverride();
     RendererBlinkPlatformImpl* Get() const;
+    void Initialize(base::WeakPtr<service_manager::Connector> connector);
     void Shutdown();
 
    private:
