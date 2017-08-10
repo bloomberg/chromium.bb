@@ -14,7 +14,6 @@
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
-#include "ios/web/public/web_thread.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -137,8 +136,7 @@ WebFaviconDriver::WebFaviconDriver(web::WebState* web_state,
                                    bookmarks::BookmarkModel* bookmark_model)
     : web::WebStateObserver(web_state),
       FaviconDriverImpl(favicon_service, history_service, bookmark_model),
-      image_fetcher_(web_state->GetBrowserState()->GetRequestContext(),
-                     web::WebThread::GetBlockingPool()) {}
+      image_fetcher_(web_state->GetBrowserState()->GetRequestContext()) {}
 
 WebFaviconDriver::~WebFaviconDriver() {
 }
