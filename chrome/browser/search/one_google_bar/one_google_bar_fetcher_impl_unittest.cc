@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
@@ -30,6 +31,8 @@ using testing::SaveArg;
 using testing::StartsWith;
 
 namespace {
+
+const char kApplicationLocale[] = "de";
 
 const char kMinimalValidResponse[] = R"json({"update": { "ogb": {
   "html": { "private_do_not_access_or_else_safe_html_wrapped_value": "" },
@@ -61,7 +64,8 @@ class OneGoogleBarFetcherImplTest : public testing::Test {
         google_url_tracker_(base::MakeUnique<GoogleURLTrackerClientStub>(),
                             GoogleURLTracker::UNIT_TEST_MODE),
         one_google_bar_fetcher_(request_context_getter_.get(),
-                                &google_url_tracker_) {}
+                                &google_url_tracker_,
+                                kApplicationLocale) {}
 
   net::TestURLFetcher* GetRunningURLFetcher() {
     // All created URLFetchers have ID 0 by default.
@@ -112,6 +116,19 @@ class OneGoogleBarFetcherImplTest : public testing::Test {
 
   OneGoogleBarFetcherImpl one_google_bar_fetcher_;
 };
+
+TEST_F(OneGoogleBarFetcherImplTest, RequestUrlContainsLanguage) {
+  // Trigger a request.
+  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
+  one_google_bar_fetcher()->Fetch(callback.Get());
+
+  net::TestURLFetcher* fetcher = GetRunningURLFetcher();
+  GURL request_url = fetcher->GetOriginalURL();
+
+  // Make sure the request URL contains the "hl=" query param.
+  std::string expected_query = base::StringPrintf("hl=%s", kApplicationLocale);
+  EXPECT_EQ(expected_query, request_url.query());
+}
 
 TEST_F(OneGoogleBarFetcherImplTest, RequestReturns) {
   base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;

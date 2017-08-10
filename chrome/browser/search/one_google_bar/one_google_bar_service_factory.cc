@@ -5,6 +5,7 @@
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_fetcher_impl.h"
@@ -44,5 +45,6 @@ KeyedService* OneGoogleBarServiceFactory::BuildServiceInstanceFor(
       GoogleURLTrackerFactory::GetForProfile(profile);
   return new OneGoogleBarService(
       cookie_service, base::MakeUnique<OneGoogleBarFetcherImpl>(
-                          profile->GetRequestContext(), google_url_tracker));
+                          profile->GetRequestContext(), google_url_tracker,
+                          g_browser_process->GetApplicationLocale()));
 }
