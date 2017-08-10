@@ -18,6 +18,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebThread.h"
+#include "public/platform/WebTouchEvent.h"
 
 namespace blink {
 
@@ -27,6 +28,7 @@ using protocol::Response;
 namespace EmulationAgentState {
 static const char kScriptExecutionDisabled[] = "scriptExecutionDisabled";
 static const char kTouchEventEmulationEnabled[] = "touchEventEmulationEnabled";
+static const char kMaxTouchPoints[] = "maxTouchPoints";
 static const char kEmulatedMedia[] = "emulatedMedia";
 static const char kDefaultBackgroundColorOverrideRGBA[] =
     "defaultBackgroundColorOverrideRGBA";
@@ -55,7 +57,7 @@ void InspectorEmulationAgent::Restore() {
   setTouchEmulationEnabled(
       state_->booleanProperty(EmulationAgentState::kTouchEventEmulationEnabled,
                               false),
-      protocol::Maybe<String>());
+      state_->integerProperty(EmulationAgentState::kMaxTouchPoints, 1));
   String emulated_media;
   state_->getString(EmulationAgentState::kEmulatedMedia, &emulated_media);
   setEmulatedMedia(emulated_media);
@@ -73,7 +75,7 @@ void InspectorEmulationAgent::Restore() {
 
 Response InspectorEmulationAgent::disable() {
   setScriptExecutionDisabled(false);
-  setTouchEmulationEnabled(false, Maybe<String>());
+  setTouchEmulationEnabled(false, Maybe<int>());
   setEmulatedMedia(String());
   setCPUThrottlingRate(1);
   setDefaultBackgroundColorOverride(Maybe<protocol::DOM::RGBA>());
@@ -98,10 +100,17 @@ Response InspectorEmulationAgent::setScriptExecutionDisabled(bool value) {
 
 Response InspectorEmulationAgent::setTouchEmulationEnabled(
     bool enabled,
-    Maybe<String> configuration) {
+    protocol::Maybe<int> max_touch_points) {
+  int max_points = max_touch_points.fromMaybe(1);
+  if (max_points < 1 || max_points > WebTouchEvent::kTouchesLengthCap) {
+    return Response::InvalidParams(
+        "Touch points must be between 1 and " +
+        String::Number(WebTouchEvent::kTouchesLengthCap));
+  }
   state_->setBoolean(EmulationAgentState::kTouchEventEmulationEnabled, enabled);
+  state_->setInteger(EmulationAgentState::kMaxTouchPoints, max_points);
   GetWebViewImpl()->GetDevToolsEmulator()->SetTouchEventEmulationEnabled(
-      enabled);
+      enabled, max_points);
   return Response::OK();
 }
 

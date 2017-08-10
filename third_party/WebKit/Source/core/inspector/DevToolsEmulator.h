@@ -52,7 +52,7 @@ class CORE_EXPORT DevToolsEmulator final
   void ForceViewport(const WebFloatPoint& position, float scale);
   void ResetViewport();
   bool ResizeIsDeviceSizeChange();
-  void SetTouchEventEmulationEnabled(bool);
+  void SetTouchEventEmulationEnabled(bool, int max_touch_points);
   bool HandleInputEvent(const WebInputEvent&);
   void SetScriptExecutionDisabled(bool);
 

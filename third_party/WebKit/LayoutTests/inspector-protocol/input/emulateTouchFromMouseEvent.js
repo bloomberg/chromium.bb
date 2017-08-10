@@ -79,8 +79,8 @@
     }
   ];
 
-  await dp.Page.enable();
-  await dp.Page.setTouchEmulationEnabled({enabled: true});
+  await dp.Emulation.setTouchEmulationEnabled({enabled: true});
+  await dp.Emulation.setEmitTouchEventsForMouse({enabled: true});
 
   // Moving mouse while not pressed does not generate touch events.
   await session.evaluate(`expectedEventCount = ${events.length - 1}`);
