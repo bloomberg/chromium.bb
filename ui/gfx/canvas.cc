@@ -287,15 +287,19 @@ void Canvas::Draw1pxLine(PointF p1, PointF p2, SkColor color) {
 void Canvas::DrawCircle(const Point& center_point,
                         int radius,
                         const cc::PaintFlags& flags) {
-  DrawCircle(PointF(center_point), radius, flags);
+  canvas_->drawOval(
+      SkRect::MakeLTRB(center_point.x() - radius, center_point.y() - radius,
+                       center_point.x() + radius, center_point.y() + radius),
+      flags);
 }
 
 void Canvas::DrawCircle(const PointF& center_point,
                         float radius,
                         const cc::PaintFlags& flags) {
-  canvas_->drawCircle(SkFloatToScalar(center_point.x()),
-                      SkFloatToScalar(center_point.y()),
-                      SkFloatToScalar(radius), flags);
+  canvas_->drawOval(
+      SkRect::MakeLTRB(center_point.x() - radius, center_point.y() - radius,
+                       center_point.x() + radius, center_point.y() + radius),
+      flags);
 }
 
 void Canvas::DrawRoundRect(const Rect& rect,

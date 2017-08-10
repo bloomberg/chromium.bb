@@ -82,10 +82,6 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   void drawDRRect(const SkRRect& outer,
                   const SkRRect& inner,
                   const PaintFlags& flags) override;
-  void drawCircle(SkScalar cx,
-                  SkScalar cy,
-                  SkScalar radius,
-                  const PaintFlags& flags) override;
   void drawArc(const SkRect& oval,
                SkScalar start_angle,
                SkScalar sweep_angle,

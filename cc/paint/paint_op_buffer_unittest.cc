@@ -1663,14 +1663,6 @@ void PushDrawArcOps(PaintOpBuffer* buffer) {
   }
 }
 
-void PushDrawCircleOps(PaintOpBuffer* buffer) {
-  size_t len = std::min(test_floats.size() - 2, test_flags.size());
-  for (size_t i = 0; i < len; ++i) {
-    buffer->push<DrawCircleOp>(test_floats[i], test_floats[i + 1],
-                               test_floats[i + 2], test_flags[i]);
-  }
-}
-
 void PushDrawColorOps(PaintOpBuffer* buffer) {
   for (size_t i = 0; i < test_colors.size(); ++i) {
     buffer->push<DrawColorOp>(test_colors[i], static_cast<SkBlendMode>(i));
@@ -1896,16 +1888,6 @@ void CompareDrawArcOp(const DrawArcOp* original, const DrawArcOp* written) {
   EXPECT_EQ(original->use_center, written->use_center);
 }
 
-void CompareDrawCircleOp(const DrawCircleOp* original,
-                         const DrawCircleOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareFlags(original->flags, written->flags);
-  EXPECT_EQ(original->cx, written->cx);
-  EXPECT_EQ(original->cy, written->cy);
-  EXPECT_EQ(original->radius, written->radius);
-}
-
 void CompareDrawColorOp(const DrawColorOp* original,
                         const DrawColorOp* written) {
   EXPECT_TRUE(original->IsValid());
@@ -2124,9 +2106,6 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
       case PaintOpType::DrawArc:
         PushDrawArcOps(&buffer_);
         break;
-      case PaintOpType::DrawCircle:
-        PushDrawCircleOps(&buffer_);
-        break;
       case PaintOpType::DrawColor:
         PushDrawColorOps(&buffer_);
         break;
@@ -2227,10 +2206,6 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
       case PaintOpType::DrawArc:
         CompareDrawArcOp(static_cast<const DrawArcOp*>(original),
                          static_cast<const DrawArcOp*>(written));
-        break;
-      case PaintOpType::DrawCircle:
-        CompareDrawCircleOp(static_cast<const DrawCircleOp*>(original),
-                            static_cast<const DrawCircleOp*>(written));
         break;
       case PaintOpType::DrawColor:
         CompareDrawColorOp(static_cast<const DrawColorOp*>(original),
@@ -2702,27 +2677,6 @@ TEST(PaintOpBufferTest, BoundingRect_DrawArcOp) {
 
     ASSERT_TRUE(PaintOp::GetBounds(op, &rect));
     EXPECT_EQ(rect, op->oval.makeSorted());
-  }
-}
-
-TEST(PaintOpBufferTest, BoundingRect_DrawCircleOp) {
-  PaintOpBuffer buffer;
-  PaintFlags flags;
-  buffer.push<DrawCircleOp>(0.f, 0.f, 5.f, flags);
-  buffer.push<DrawCircleOp>(-1.f, 4.f, 44.f, flags);
-  buffer.push<DrawCircleOp>(-99.f, -32.f, 100.f, flags);
-
-  SkRect rect;
-  for (auto* base_op : PaintOpBuffer::Iterator(&buffer)) {
-    auto* op = static_cast<DrawCircleOp*>(base_op);
-
-    SkScalar dimension = 2 * op->radius;
-    SkScalar x = op->cx - op->radius;
-    SkScalar y = op->cy - op->radius;
-    SkRect circle_rect = SkRect::MakeXYWH(x, y, dimension, dimension);
-
-    ASSERT_TRUE(PaintOp::GetBounds(op, &rect));
-    EXPECT_EQ(rect, circle_rect.makeSorted());
   }
 }
 

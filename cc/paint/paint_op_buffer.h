@@ -63,7 +63,6 @@ enum class PaintOpType : uint8_t {
   ClipRRect,
   Concat,
   DrawArc,
-  DrawCircle,
   DrawColor,
   DrawDRRect,
   DrawImage,
@@ -365,30 +364,6 @@ class CC_PAINT_EXPORT DrawArcOp final : public PaintOpWithFlags {
 
  private:
   DrawArcOp() = default;
-};
-
-class CC_PAINT_EXPORT DrawCircleOp final : public PaintOpWithFlags {
- public:
-  static constexpr PaintOpType kType = PaintOpType::DrawCircle;
-  static constexpr bool kIsDrawOp = true;
-  DrawCircleOp(SkScalar cx,
-               SkScalar cy,
-               SkScalar radius,
-               const PaintFlags& flags)
-      : PaintOpWithFlags(flags), cx(cx), cy(cy), radius(radius) {}
-  static void RasterWithFlags(const DrawCircleOp* op,
-                              const PaintFlags* flags,
-                              SkCanvas* canvas,
-                              const PlaybackParams& params);
-  bool IsValid() const { return flags.IsValid(); }
-  HAS_SERIALIZATION_FUNCTIONS();
-
-  SkScalar cx;
-  SkScalar cy;
-  SkScalar radius;
-
- private:
-  DrawCircleOp() = default;
 };
 
 class CC_PAINT_EXPORT DrawColorOp final : public PaintOp {

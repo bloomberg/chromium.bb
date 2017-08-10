@@ -247,10 +247,13 @@ class CircleContentLayerClient : public ContentLayerClient {
     PaintFlags flags;
     flags.setStyle(PaintFlags::kFill_Style);
     flags.setColor(SK_ColorWHITE);
-    display_list->push<DrawCircleOp>(bounds_.width() / 2.f,
-                                     bounds_.height() / 2.f,
-                                     bounds_.width() / 4.f, flags);
-
+    float radius = bounds_.width() / 4.f;
+    float circle_x = bounds_.width() / 2.f;
+    float circle_y = bounds_.height() / 2.f;
+    display_list->push<DrawOvalOp>(
+        SkRect::MakeLTRB(circle_x - radius, circle_y - radius,
+                         circle_x + radius, circle_y + radius),
+        flags);
     display_list->push<RestoreOp>();
     display_list->EndPaintOfUnpaired(PaintableRegion());
     display_list->Finalize();
