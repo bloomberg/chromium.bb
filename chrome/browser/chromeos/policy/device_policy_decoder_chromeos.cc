@@ -948,6 +948,14 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                   std::move(off_hours), nullptr);
   }
+
+  if (policy.has_cast_receiver_name()) {
+    const em::CastReceiverNameProto& container(policy.cast_receiver_name());
+    if (container.has_name())
+      policies->Set(key::kCastReceiverName, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    base::MakeUnique<base::Value>(container.name()), nullptr);
+  }
 }
 }  // namespace
 
