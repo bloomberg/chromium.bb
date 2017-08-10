@@ -73,6 +73,7 @@
         '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:event_target',
         '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
         '<(EXTERNS_GYP):chrome_extensions',
+        '<(EXTERNS_GYP):command_line_private',
         '<(EXTERNS_GYP):file_manager_private',
         'volume_manager_common',
       ],

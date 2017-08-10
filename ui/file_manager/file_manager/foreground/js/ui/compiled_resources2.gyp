@@ -120,6 +120,7 @@
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:grid',
         'drag_selector',
         'file_table_list',
+        'file_tap_handler',
       ],
       'includes': ['../../../../compile_js2.gypi'],
     },
@@ -210,6 +211,14 @@
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:list_selection_controller',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/table/compiled_resources2.gyp:table_list',
         'file_list_selection_model',
+        'file_tap_handler',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'file_tap_handler',
+      'dependencies': [
+        '../../../common/js/compiled_resources2.gyp:util',
       ],
       'includes': ['../../../../compile_js2.gypi'],
     },
