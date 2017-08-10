@@ -68,8 +68,6 @@ class ExpandButton : public views::ImageView {
 };
 
 ExpandButton::ExpandButton() {
-  SetImage(gfx::CreateVectorIcon(kNotificationExpandMoreIcon, kExpandIconSize,
-                                 gfx::kChromeIconGrey));
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor, gfx::Insets(1, 2, 2, 2));
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -159,6 +157,7 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
   app_name_view_ = new views::Label(base::string16());
   app_name_view_->SetFontList(font_list);
   app_name_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  app_name_view_->SetEnabledColor(accent_color_);
   app_info_container->AddChildView(app_name_view_);
 
   // Summary text divider
@@ -193,6 +192,7 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
 
   // Expand button view
   expand_button_ = new ExpandButton();
+  SetExpanded(is_expanded_);
   app_info_container->AddChildView(expand_button_);
 
   // Spacer between left-aligned views and right-aligned views
@@ -222,6 +222,10 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
 
 void NotificationHeaderView::SetAppIcon(const gfx::ImageSkia& img) {
   app_icon_view_->SetImage(img);
+}
+
+void NotificationHeaderView::ClearAppIcon() {
+  app_icon_view_->SetImage(gfx::CreateVectorIcon(kProductIcon, accent_color_));
 }
 
 void NotificationHeaderView::SetAppName(const base::string16& name) {
@@ -277,10 +281,10 @@ void NotificationHeaderView::SetExpandButtonEnabled(bool enabled) {
 }
 
 void NotificationHeaderView::SetExpanded(bool expanded) {
-  expand_button_->SetImage(
-      gfx::CreateVectorIcon(
-          expanded ? kNotificationExpandLessIcon : kNotificationExpandMoreIcon,
-          kExpandIconSize, gfx::kChromeIconGrey));
+  is_expanded_ = expanded;
+  expand_button_->SetImage(gfx::CreateVectorIcon(
+      expanded ? kNotificationExpandLessIcon : kNotificationExpandMoreIcon,
+      kExpandIconSize, accent_color_));
 }
 
 void NotificationHeaderView::SetSettingsButtonEnabled(bool enabled) {
@@ -302,6 +306,12 @@ void NotificationHeaderView::SetControlButtonsVisible(bool visible) {
     is_control_buttons_visible_ = visible;
     UpdateControlButtonsVisibility();
   }
+}
+
+void NotificationHeaderView::SetAccentColor(SkColor color) {
+  accent_color_ = color;
+  app_name_view_->SetEnabledColor(accent_color_);
+  SetExpanded(is_expanded_);
 }
 
 bool NotificationHeaderView::IsExpandButtonEnabled() {

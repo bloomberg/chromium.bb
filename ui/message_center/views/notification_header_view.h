@@ -6,6 +6,7 @@
 #define UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_HEADER_VIEW_H_
 
 #include "base/macros.h"
+#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/padded_button.h"
 #include "ui/views/controls/button/custom_button.h"
 
@@ -30,6 +31,10 @@ class NotificationHeaderView : public views::CustomButton {
   void SetSettingsButtonEnabled(bool enabled);
   void SetCloseButtonEnabled(bool enabled);
   void SetControlButtonsVisible(bool visible);
+  // Set the unified theme color used among the app icon, app name, and expand
+  // button.
+  void SetAccentColor(SkColor color);
+  void ClearAppIcon();
   void ClearProgress();
   void ClearOverflowIndicator();
   void ClearTimestamp();
@@ -53,6 +58,8 @@ class NotificationHeaderView : public views::CustomButton {
   // Update visibility for both |summary_text_view_| and |timestamp_view_|.
   void UpdateSummaryTextVisibility();
 
+  SkColor accent_color_ = message_center::kNotificationDefaultAccentColor;
+
   views::Label* app_name_view_ = nullptr;
   views::Label* summary_text_divider_ = nullptr;
   views::Label* summary_text_view_ = nullptr;
@@ -69,6 +76,7 @@ class NotificationHeaderView : public views::CustomButton {
   bool has_progress_ = false;
   bool has_overflow_indicator_ = false;
   bool has_timestamp_ = false;
+  bool is_expanded_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationHeaderView);
 };
