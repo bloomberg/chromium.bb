@@ -580,11 +580,11 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 // ones that cannot be scrolled off screen by full screen.
 @property(nonatomic, strong, readonly) NSArray<HeaderDefinition*>* headerViews;
 
-// Used to display in-product help promotion bubbles. Nil if no bubble has been
-// presented by this view controller yet. Once a presented bubble is dismissed,
-// remains allocated so |userEngaged| remains accessible.
+// Used to display the new tab tip in-product help promotion bubble. |nil| if
+// the new tab tip bubble has not yet been presented. Once the bubble is
+// dismissed, it remains allocated so that |userEngaged| remains accessible.
 @property(nonatomic, strong)
-    BubbleViewControllerPresenter* bubbleViewControllerPresenter;
+    BubbleViewControllerPresenter* tabTipBubblePresenter;
 
 // BVC initialization:
 // If the BVC is initialized with a valid browser state & tab model immediately,
@@ -683,18 +683,18 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 // TODO(crbug.com/522721): Support size changes for all popups and modal
 // dialogs.
 - (void)dismissPopups;
-// Initializes |bubbleViewControllerPresenter|. |feature| is the
-// base::Feature object associated with the given promotion. If
-// feature_engagement::Tracker->ShouldTriggerHelpUI returns |false|, the bubble
-// is not shown. |direction| is the direction the bubble's arrow is pointing.
-// |alignment| is the alignment of the arrow on the button. |anchorPoint| is the
-// point at which the bubble is anchored in window coordinates. |text| is the
-// text displayed by the bubble.
-- (void)presentBubbleForFeature:(const base::Feature&)feature
-                      direction:(BubbleArrowDirection)direction
-                      alignment:(BubbleAlignment)alignment
-                    anchorPoint:(CGPoint)anchorPoint
-                           text:(NSString*)text;
+
+// Returns a bubble associated with an in-product help promotion if
+// it is valid to show the promotion and |nil| otherwise. |feature| is the
+// base::Feature object associated with the given promotion. |direction| is the
+// direction the bubble's arrow is pointing. |alignment| is the alignment of the
+// arrow on the button. |text| is the text displayed by the bubble.
+- (BubbleViewControllerPresenter*)
+bubblePresenterForFeature:(const base::Feature&)feature
+                direction:(BubbleArrowDirection)direction
+                alignment:(BubbleAlignment)alignment
+                     text:(NSString*)text;
+
 // Create and show the find bar.
 - (void)initFindBarForTab;
 // Search for find bar query string.
@@ -943,7 +943,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 @synthesize presenting = _presenting;
 @synthesize foregroundTabWasAddedCompletionBlock =
     _foregroundTabWasAddedCompletionBlock;
-@synthesize bubbleViewControllerPresenter = _bubbleViewControllerPresenter;
+@synthesize tabTipBubblePresenter = tabTipBubblePresenter;
 
 #pragma mark - Object lifecycle
 
@@ -1208,6 +1208,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_toolbarController cancelOmniboxEdit];
 }
 
+- (void)userEnteredTabSwitcher {
+  if ([self.tabTipBubblePresenter isUserEngaged]) {
+    base::RecordAction(UserMetricsAction("NewTabTipTargetSelected"));
+  }
+}
+
 #pragma mark - UIViewController methods
 
 // Perform additional set up after loading the view, typically from a nib.
@@ -1255,25 +1261,35 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.viewVisible = YES;
   [self updateDialogPresenterActiveState];
 
-  __weak BrowserViewController* weakSelf = self;
-  void (^onInitializedBlock)(bool) = ^(bool successfullyLoaded) {
-    NSString* text =
-        l10n_util::GetNSStringWithFixup(IDS_IOS_NEW_TAB_IPH_PROMOTION_TEXT);
-    CGPoint tabSwitcherAnchor = [weakSelf.toolbarController
-        anchorPointForTabSwitcherButton:BubbleArrowDirectionUp];
-    [weakSelf presentBubbleForFeature:feature_engagement::kIPHNewTabTipFeature
-                            direction:BubbleArrowDirectionUp
-                            alignment:BubbleAlignmentTrailing
-                          anchorPoint:tabSwitcherAnchor
-                                 text:text];
-  };
+  // If the tab tip bubble has already been presented and the user is still
+  // considered engaged, it can't be overwritten or set to |nil| or else it will
+  // reset the |userEngaged| property. Once the user is not engaged, the bubble
+  // can be safely overwritten or set to |nil|.
+  if (!self.tabTipBubblePresenter.isUserEngaged) {
+    __weak BrowserViewController* weakSelf = self;
+    void (^onInitializedBlock)(bool) = ^(bool successfullyLoaded) {
+      NSString* text =
+          l10n_util::GetNSStringWithFixup(IDS_IOS_NEW_TAB_IPH_PROMOTION_TEXT);
+      CGPoint tabSwitcherAnchor = [weakSelf.toolbarController
+          anchorPointForTabSwitcherButton:BubbleArrowDirectionUp];
+      weakSelf.tabTipBubblePresenter = [weakSelf
+          bubblePresenterForFeature:feature_engagement::kIPHNewTabTipFeature
+                          direction:BubbleArrowDirectionUp
+                          alignment:BubbleAlignmentTrailing
+                               text:text];
+      [weakSelf.tabTipBubblePresenter
+          presentInViewController:self
+                             view:self.view
+                      anchorPoint:tabSwitcherAnchor];
+    };
 
-  // Because the new tab tip occurs on startup, the feature engagement tracker's
-  // database is not guaranteed to be loaded by this time. For the bubble to
-  // appear properly, a callback is used to guarantee the event data is loaded
-  // before the check to see if the promotion should be displayed.
-  feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
-      ->AddOnInitializedCallback(base::BindBlockArc(onInitializedBlock));
+    // Because the new tab tip occurs on startup, the feature engagement
+    // tracker's database is not guaranteed to be loaded by this time. For the
+    // bubble to appear properly, a callback is used to guarantee the event data
+    // is loaded before the check to see if the promotion should be displayed.
+    feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
+        ->AddOnInitializedCallback(base::BindBlockArc(onInitializedBlock));
+  }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -2020,17 +2036,17 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)dismissPopups {
   [_toolbarController dismissToolsMenuPopup];
   [self hidePageInfoPopupForView:nil];
-  [self.bubbleViewControllerPresenter dismissAnimated:YES];
+  [self.tabTipBubblePresenter dismissAnimated:YES];
 }
 
-- (void)presentBubbleForFeature:(const base::Feature&)feature
-                      direction:(BubbleArrowDirection)direction
-                      alignment:(BubbleAlignment)alignment
-                    anchorPoint:(CGPoint)anchorPoint
-                           text:(NSString*)text {
+- (BubbleViewControllerPresenter*)
+bubblePresenterForFeature:(const base::Feature&)feature
+                direction:(BubbleArrowDirection)direction
+                alignment:(BubbleAlignment)alignment
+                     text:(NSString*)text {
   if (!feature_engagement::TrackerFactory::GetForBrowserState(_browserState)
            ->ShouldTriggerHelpUI(feature)) {
-    return;
+    return nil;
   }
   // Capture |weakSelf| instead of the feature engagement tracker object
   // because |weakSelf| will safely become |nil| if it is deallocated, whereas
@@ -2046,15 +2062,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     }
   };
 
-  self.bubbleViewControllerPresenter =
+  BubbleViewControllerPresenter* bubbleViewControllerPresenter =
       [[BubbleViewControllerPresenter alloc] initWithText:text
                                            arrowDirection:direction
                                                 alignment:alignment
                                         dismissalCallback:dismissalCallback];
 
-  [self.bubbleViewControllerPresenter presentInViewController:self
-                                                         view:self.view
-                                                  anchorPoint:anchorPoint];
+  return bubbleViewControllerPresenter;
 }
 
 #pragma mark - Tap handling
@@ -4337,7 +4351,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_toolbarController cancelOmniboxEdit];
   [_dialogPresenter cancelAllDialogs];
   [self hidePageInfoPopupForView:nil];
-  [self.bubbleViewControllerPresenter dismissAnimated:NO];
+  [self.tabTipBubblePresenter dismissAnimated:NO];
   if (_voiceSearchController)
     _voiceSearchController->DismissMicPermissionsHelp();
 
