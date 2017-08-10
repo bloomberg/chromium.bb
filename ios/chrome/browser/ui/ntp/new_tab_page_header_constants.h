@@ -20,6 +20,15 @@ extern const CGFloat kAnimationDistance;
 extern const CGFloat kToolbarHeight;
 
 extern const CGFloat kScrolledToTopOmniboxBottomMargin;
+
+extern const CGFloat kHintLabelSidePadding;
+
+// The margin of the subviews of the fake omnibox when it is pinned to top.
+extern const CGFloat kMaxHorizontalMarginDiff;
+
+// The margin added to the fake omnibox to have at the right position.
+extern const CGFloat kMaxTopMarginDiff;
+
 }  // namespace ntp_header
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_HEADER_CONSTANTS_H_
