@@ -23,6 +23,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
@@ -181,15 +182,14 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
   }
 
   void Redirect(const char* url) {
-    GURL redirectUrl(url);
-    blink::WebURLRequest newRequest(redirectUrl);
-    blink::WebURLResponse redirectResponse(gurl_);
+    blink::WebURL new_url{GURL(url)};
+    blink::WebURLResponse redirect_response(gurl_);
 
     EXPECT_CALL(*this, RedirectCallback(_))
         .WillOnce(
             Invoke(this, &ResourceMultiBufferDataProviderTest::SetUrlData));
 
-    loader_->WillFollowRedirect(newRequest, redirectResponse);
+    loader_->WillFollowRedirect(new_url, redirect_response);
 
     base::RunLoop().RunUntilIdle();
   }

@@ -21,6 +21,7 @@
 #include "media/blink/url_index.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebAssociatedURLLoader.h"
@@ -176,12 +177,12 @@ void ResourceMultiBufferDataProvider::SetDeferred(bool deferred) {
 // WebAssociatedURLLoaderClient implementation.
 
 bool ResourceMultiBufferDataProvider::WillFollowRedirect(
-    const WebURLRequest& newRequest,
-    const WebURLResponse& redirectResponse) {
+    const blink::WebURL& new_url,
+    const WebURLResponse& redirect_response) {
   DVLOG(1) << "willFollowRedirect";
-  redirects_to_ = newRequest.Url();
+  redirects_to_ = new_url;
   url_data_->set_valid_until(base::Time::Now() +
-                             GetCacheValidUntil(redirectResponse));
+                             GetCacheValidUntil(redirect_response));
 
   // This test is vital for security!
   if (cors_mode_ == UrlData::CORS_UNSPECIFIED) {

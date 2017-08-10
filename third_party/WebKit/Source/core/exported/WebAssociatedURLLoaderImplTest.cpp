@@ -118,13 +118,10 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
   }
 
   // WebAssociatedURLLoaderClient implementation.
-  bool WillFollowRedirect(const WebURLRequest& new_request,
+  bool WillFollowRedirect(const WebURL& new_url,
                           const WebURLResponse& redirect_response) override {
     will_follow_redirect_ = true;
-    EXPECT_EQ(expected_new_request_.Url(), new_request.Url());
-    // Check that CORS simple headers are transferred to the new request.
-    EXPECT_EQ(expected_new_request_.HttpHeaderField("accept"),
-              new_request.HttpHeaderField("accept"));
+    EXPECT_EQ(expected_new_url_, new_url);
     EXPECT_EQ(expected_redirect_response_.Url(), redirect_response.Url());
     EXPECT_EQ(expected_redirect_response_.HttpStatusCode(),
               redirect_response.HttpStatusCode());
@@ -257,7 +254,7 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
   std::unique_ptr<WebAssociatedURLLoader> expected_loader_;
   WebURLResponse actual_response_;
   WebURLResponse expected_response_;
-  WebURLRequest expected_new_request_;
+  WebURL expected_new_url_;
   WebURLResponse expected_redirect_response_;
   bool will_follow_redirect_;
   bool did_send_data_;
@@ -431,7 +428,7 @@ TEST_F(WebAssociatedURLLoaderTest, RedirectSuccess) {
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, expected_redirect_response_, frame_file_path_);
 
-  expected_new_request_ = WebURLRequest(redirect_url);
+  expected_new_url_ = WebURL(redirect_url);
 
   expected_response_ = WebURLResponse();
   expected_response_.SetMIMEType("text/html");
@@ -467,7 +464,7 @@ TEST_F(WebAssociatedURLLoaderTest, RedirectCrossOriginFailure) {
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, expected_redirect_response_, frame_file_path_);
 
-  expected_new_request_ = WebURLRequest(redirect_url);
+  expected_new_url_ = WebURL(redirect_url);
 
   expected_response_ = WebURLResponse();
   expected_response_.SetMIMEType("text/html");
@@ -507,7 +504,7 @@ TEST_F(WebAssociatedURLLoaderTest,
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, expected_redirect_response_, frame_file_path_);
 
-  expected_new_request_ = WebURLRequest(redirect_url);
+  expected_new_url_ = WebURL(redirect_url);
 
   expected_response_ = WebURLResponse();
   expected_response_.SetMIMEType("text/html");
@@ -556,8 +553,7 @@ TEST_F(WebAssociatedURLLoaderTest,
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, expected_redirect_response_, frame_file_path_);
 
-  expected_new_request_ = WebURLRequest(redirect_url);
-  expected_new_request_.SetHTTPHeaderField("accept", "application/json");
+  expected_new_url_ = WebURL(redirect_url);
 
   expected_response_ = WebURLResponse();
   expected_response_.SetMIMEType("text/html");

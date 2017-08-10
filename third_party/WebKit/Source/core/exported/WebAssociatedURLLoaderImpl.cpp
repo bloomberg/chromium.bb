@@ -115,8 +115,8 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
 
   // DocumentThreadableLoaderClient
   bool WillFollowRedirect(
-      const ResourceRequest& /*newRequest*/,
-      const ResourceResponse& /*redirectResponse*/) override;
+      const KURL& /*new_url*/,
+      const ResourceResponse& /*redirect_response*/) override;
 
   // Sets an error to be reported back to the client, asychronously.
   void SetDelayedError(const ResourceError&);
@@ -184,14 +184,14 @@ WebAssociatedURLLoaderImpl::ClientAdapter::ClientAdapter(
 }
 
 bool WebAssociatedURLLoaderImpl::ClientAdapter::WillFollowRedirect(
-    const ResourceRequest& new_request,
+    const KURL& new_url,
     const ResourceResponse& redirect_response) {
   if (!client_)
     return true;
 
-  WrappedResourceRequest wrapped_new_request(new_request);
+  WebURL wrapped_new_url(new_url);
   WrappedResourceResponse wrapped_redirect_response(redirect_response);
-  return client_->WillFollowRedirect(wrapped_new_request,
+  return client_->WillFollowRedirect(wrapped_new_url,
                                      wrapped_redirect_response);
 }
 

@@ -7,13 +7,13 @@
 
 namespace blink {
 
-class WebURLRequest;
+class WebURL;
 class WebURLResponse;
 struct WebURLError;
 
 class WebAssociatedURLLoaderClient {
  public:
-  virtual bool WillFollowRedirect(const WebURLRequest& new_request,
+  virtual bool WillFollowRedirect(const WebURL& new_url,
                                   const WebURLResponse& redirect_response) {
     return true;
   }

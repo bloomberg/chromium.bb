@@ -35,7 +35,7 @@
 
 namespace blink {
 
-class ResourceRequest;
+class KURL;
 class ResourceResponse;
 
 class DocumentThreadableLoaderClient : public ThreadableLoaderClient {
@@ -45,9 +45,8 @@ class DocumentThreadableLoaderClient : public ThreadableLoaderClient {
  public:
   bool IsDocumentThreadableLoaderClient() final { return true; }
 
-  virtual bool WillFollowRedirect(
-      const ResourceRequest& /*newRequest*/,
-      const ResourceResponse& /*redirectResponse*/) {
+  virtual bool WillFollowRedirect(const KURL& new_url,
+                                  const ResourceResponse&) {
     return true;
   }
 

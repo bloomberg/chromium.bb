@@ -48,8 +48,8 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
 
   // blink::WebAssociatedURLLoaderClient implementation.
   bool WillFollowRedirect(
-      const blink::WebURLRequest& newRequest,
-      const blink::WebURLResponse& redirectResponse) override;
+      const blink::WebURL& new_url,
+      const blink::WebURLResponse& redirect_response) override;
   void DidSendData(unsigned long long bytesSent,
                    unsigned long long totalBytesToBeSent) override;
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
