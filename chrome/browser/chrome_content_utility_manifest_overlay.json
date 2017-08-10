@@ -18,6 +18,7 @@
           "extensions::mojom::WiFiCredentialsGetter",
           "net::interfaces::ProxyResolverFactory",
           "payments::mojom::PaymentManifestParser",
+          "profiling::mojom::MemlogClient",
           "safe_json::mojom::SafeJsonParser"
         ]
       }

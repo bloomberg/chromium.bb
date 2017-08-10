@@ -6,19 +6,24 @@
 #define CHROME_BROWSER_PROFILING_HOST_PROFILING_PROCESS_HOST_H_
 
 #include "base/macros.h"
+#include "base/memory/singleton.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/profiling/memlog.mojom.h"
+#include "chrome/common/profiling/memlog_client.h"
+#include "chrome/common/profiling/memlog_client.mojom.h"
+#include "content/public/browser/browser_child_process_observer.h"
+#include "content/public/browser/child_process_data.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 // The .mojom include above may not be generated unless OOP heap profiling is
 // enabled.
 #if !BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
 #error profiling_process_host.h should only be included with OOP heap profiling
 #endif
-
-namespace base {
-class CommandLine;
-}  // namespace base
 
 namespace profiling {
 
@@ -39,29 +44,53 @@ namespace profiling {
 //
 // TODO(ajwong): This host class seems over kill at this point. Can this be
 // fully subsumed by the ProfilingService class?
-class ProfilingProcessHost {
+class ProfilingProcessHost : public content::BrowserChildProcessObserver,
+                             content::NotificationObserver {
  public:
   // Launches the profiling process if necessary and returns a pointer to it.
-  static ProfilingProcessHost* EnsureStarted();
+  static ProfilingProcessHost* EnsureStarted(
+      content::ServiceManagerConnection* connection);
 
-  // Returns a pointer to the current global profiling process host or, if
-  // no profiling process is launched, nullptr.
-  static ProfilingProcessHost* Get();
-
-  // Appends necessary switches to a command line for a child process so it can
-  // be profiled. These switches will cause the child process to start in the
-  // same mode (either profiling or not) as the browser process.
-  static void AddSwitchesToChildCmdLine(base::CommandLine* child_cmd_line);
+  // Returns a pointer to the current global profiling process host.
+  static ProfilingProcessHost* GetInstance();
 
   // Sends a message to the profiling process that it dump the given process'
   // memory data.
   void RequestProcessDump(base::ProcessId pid);
 
  private:
+  friend struct base::DefaultSingletonTraits<ProfilingProcessHost>;
   ProfilingProcessHost();
-  ~ProfilingProcessHost();
+  ~ProfilingProcessHost() override;
 
+  // Make and store a connector from |connection|.
+  void MakeConnector(content::ServiceManagerConnection* connection);
+
+  // BrowserChildProcessObserver
+  // Observe connection of non-renderer child processes.
+  void BrowserChildProcessLaunchedAndConnected(
+      const content::ChildProcessData& data) override;
+
+  // NotificationObserver
+  // Observe connection of renderer child processes.
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
+  // Starts the profiling process.
   void LaunchAsService();
+  void StartProfilingForClient(profiling::mojom::MemlogClientPtr memlog_client,
+                               base::ProcessId pid);
+  void GetOutputFileOnBlockingThread(base::ProcessId pid);
+  void HandleDumpProcessOnIOThread(base::ProcessId pid, base::File file);
+
+  content::NotificationRegistrar registrar_;
+  std::unique_ptr<service_manager::Connector> connector_;
+  mojom::MemlogPtr memlog_;
+
+  // Handles profiling for the current process, without connecting to any
+  // service manager interfaces.
+  profiling::MemlogClient memlog_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilingProcessHost);
 };

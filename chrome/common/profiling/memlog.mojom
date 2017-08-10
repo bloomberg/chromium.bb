@@ -5,19 +5,18 @@
 module profiling.mojom;
 
 import "mojo/common/file.mojom";
+import "mojo/common/process_id.mojom";
 
 // The profiling process is still in prototype stage, and is behind a
 // compile-time flag. There will be a security review before removing the
 // compile-time flag. https://crbug.com/751759.
 interface Memlog {
   // Adds a new platform-specific pipe to read memlog trace data from.
-  // In normal usage, each child process launch will have a corresponding call
-  // to this.
-  AddSender(handle sender_pipe, int32 sender_id);
+  // In normal usage, each child process will be given the other end of this
+  // pipe.
+  AddSender(mojo.common.mojom.ProcessId pid, handle sender_pipe);
 
-  // Dumps the memory log of the process with the given |sender_id| into
-  // |output_file|.  This currently dumps the memory log of an arbitrary
-  // process, since there does not yet a mechanism to identify specific
-  // processes. See https://crbug.com/751283.
-  DumpProcess(int32 sender_id, handle output_file);
+  // Dumps the memory log of the process with the given |pid| into
+  // |output_file|.
+  DumpProcess(mojo.common.mojom.ProcessId pid, handle output_file);
 };

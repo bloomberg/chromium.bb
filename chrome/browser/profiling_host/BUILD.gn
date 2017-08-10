@@ -7,6 +7,8 @@ import("//chrome/common/features.gni")
 if (enable_oop_heap_profiling) {
   static_library("profiling_host") {
     sources = [
+      "chrome_browser_main_extra_parts_profiling.cc",
+      "chrome_browser_main_extra_parts_profiling.h",
       "profiling_process_host.cc",
       "profiling_process_host.h",
     ]

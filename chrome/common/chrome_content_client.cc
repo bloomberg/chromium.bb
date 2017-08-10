@@ -55,10 +55,6 @@
 #include "url/url_constants.h"
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
-#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
-#include "chrome/common/profiling/memlog_sender.h"
-#endif
-
 #if defined(OS_LINUX)
 #include <fcntl.h>
 #include "chrome/common/component_flash_hint_file_linux.h"
@@ -718,8 +714,12 @@ media::MediaDrmBridgeClient* ChromeContentClient::GetMediaDrmBridgeClient() {
 void ChromeContentClient::OnServiceManagerConnected(
     content::ServiceManagerConnection* connection) {
 #if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
-  // MemlogSender depends on ServiceManager to spawn the utility process that
-  // receives the memory log.
-  profiling::InitMemlogSenderIfNecessary(connection);
+  // ChromeContentClient::OnServiceManagerConnected isn't called from the
+  // browser process or utility processes. This is confusing. :(
+  // For now, profiling in the the browser process is initialized by
+  // ChromeBrowserMainParts::ServiceManagerConnectionStarted, and we ignore
+  // utility processes.
+  // https://crbug.com/753106.
+  memlog_client_.OnServiceManagerConnected(connection);
 #endif  // ENABLE_OOP_HEAP_PROFILING
 }

@@ -8,12 +8,8 @@
           "arc::mojom::VideoDecodeClient",
           "arc::mojom::VideoEncodeAccelerator",
           "arc::mojom::VideoEncodeClient",
-          "chrome::mojom::ResourceUsageReporter"
-        ]
-      },
-      "requires": {
-        "profiling": [
-          "memlog"
+          "chrome::mojom::ResourceUsageReporter",
+          "profiling::mojom::MemlogClient"
         ]
       }
     }

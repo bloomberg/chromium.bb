@@ -6,12 +6,8 @@
         "browser": [
           "chrome::mojom::ResourceUsageReporter",
           "chrome::mojom::SearchBouncer",
-          "spellcheck::mojom::SpellChecker"
-        ]
-      },
-      "requires": {
-        "profiling": [
-          "memlog"
+          "spellcheck::mojom::SpellChecker",
+          "profiling::mojom::MemlogClient"
         ]
       }
     },
