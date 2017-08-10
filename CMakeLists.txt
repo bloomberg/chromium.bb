@@ -20,6 +20,7 @@ endif ()
 option(ENABLE_CCACHE "Enable ccache support." OFF)
 option(ENABLE_DISTCC "Enable distcc support." OFF)
 option(ENABLE_DOCS "Enable documentation generation (doxygen required)." ON)
+option(ENABLE_GOMA "Enable goma support." OFF)
 option(ENABLE_NASM "Use nasm instead of yasm for x86 assembly." OFF)
 option(ENABLE_IDE_TEST_HOSTING
        "Enables running tests within IDEs like Visual Studio and Xcode." OFF)
