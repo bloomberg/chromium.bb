@@ -135,6 +135,9 @@ class UI_ANDROID_EXPORT ViewAndroid {
   // Detaches this view from its parent.
   void RemoveFromParent();
 
+  bool HasFocus();
+  void RequestFocus();
+
   // Sets the layout relative to parent. Used to do hit testing against events.
   void SetLayout(LayoutParams params);
 

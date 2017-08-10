@@ -335,7 +335,7 @@ void ContentViewCore::RenderViewHostChanged(RenderViewHost* old_host,
     }
   }
 
-  SetFocusInternal(HasFocus());
+  SetFocusInternal(GetViewAndroid()->HasFocus());
 }
 
 RenderWidgetHostViewAndroid* ContentViewCore::GetRenderWidgetHostViewAndroid()
@@ -525,7 +525,7 @@ bool ContentViewCore::FilterInputEvent(const blink::WebInputEvent& event) {
   if (j_obj.is_null())
     return false;
 
-  Java_ContentViewCore_requestFocus(env, j_obj);
+  GetViewAndroid()->RequestFocus();
 
   if (event.GetType() == WebInputEvent::kMouseDown)
     return false;
@@ -536,14 +536,6 @@ bool ContentViewCore::FilterInputEvent(const blink::WebInputEvent& event) {
   return Java_ContentViewCore_filterTapOrPressEvent(env, j_obj, gesture_type,
                                                     gesture.x * dpi_scale(),
                                                     gesture.y * dpi_scale());
-}
-
-bool ContentViewCore::HasFocus() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return false;
-  return Java_ContentViewCore_hasFocus(env, obj);
 }
 
 void ContentViewCore::RequestDisallowInterceptTouchEvent() {
