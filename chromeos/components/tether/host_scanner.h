@@ -77,9 +77,10 @@ class HostScanner : public HostScannerOperation::Observer {
   FRIEND_TEST_ALL_PREFIXES(HostScannerTest, TestScan_ResultsFromNoDevices);
 
   enum HostScanResultEventType {
-    NOTIFICATION_NOT_SHOWN = 0,
+    NO_HOSTS_FOUND = 0,
     NOTIFICATION_SHOWN_SINGLE_HOST = 1,
     NOTIFICATION_SHOWN_MULTIPLE_HOSTS = 2,
+    HOSTS_FOUND_BUT_NO_NOTIFICATION_SHOWN = 3,
     HOST_SCAN_RESULT_MAX
   };
 
@@ -100,7 +101,8 @@ class HostScanner : public HostScannerOperation::Observer {
   HostScanCache* host_scan_cache_;
   base::Clock* clock_;
 
-  bool is_fetching_hosts_;
+  bool is_fetching_hosts_ = false;
+  bool was_available_hotspot_notification_shown_ = false;
   std::unique_ptr<HostScannerOperation> host_scanner_operation_;
   std::unordered_set<std::string> tether_guids_in_cache_before_scan_;
 

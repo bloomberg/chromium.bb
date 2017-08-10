@@ -20870,9 +20870,10 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="InstantTethering_HostScanResult">
-  <int value="0" label="Notification not shown"/>
+  <int value="0" label="No hosts found"/>
   <int value="1" label="Notification shown for single host"/>
   <int value="2" label="Notification shown for multiple hosts"/>
+  <int value="3" label="Hosts found but no notification shown"/>
 </enum>
 
 <enum name="IntelMaxMicroArchitecture">

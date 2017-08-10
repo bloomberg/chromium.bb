@@ -39,7 +39,6 @@ HostScanner::HostScanner(
       device_id_tether_network_guid_map_(device_id_tether_network_guid_map),
       host_scan_cache_(host_scan_cache),
       clock_(clock),
-      is_fetching_hosts_(false),
       weak_ptr_factory_(this) {}
 
 HostScanner::~HostScanner() {}
@@ -99,6 +98,8 @@ void HostScanner::OnTetherAvailabilityResponse(
       // notification.
       notification_presenter_->NotifyMultiplePotentialHotspotsNearby();
     }
+
+    was_available_hotspot_notification_shown_ = true;
   }
 
   if (is_final_scan_result) {
@@ -167,7 +168,10 @@ void HostScanner::OnFinalScanResultReceived(
   }
 
   if (final_scan_results.empty()) {
-    RecordHostScanResult(HostScanResultEventType::NOTIFICATION_NOT_SHOWN);
+    RecordHostScanResult(HostScanResultEventType::NO_HOSTS_FOUND);
+  } else if (!was_available_hotspot_notification_shown_) {
+    RecordHostScanResult(
+        HostScanResultEventType::HOSTS_FOUND_BUT_NO_NOTIFICATION_SHOWN);
   } else if (final_scan_results.size() == 1u) {
     RecordHostScanResult(
         HostScanResultEventType::NOTIFICATION_SHOWN_SINGLE_HOST);
@@ -175,6 +179,7 @@ void HostScanner::OnFinalScanResultReceived(
     RecordHostScanResult(
         HostScanResultEventType::NOTIFICATION_SHOWN_MULTIPLE_HOSTS);
   }
+  was_available_hotspot_notification_shown_ = false;
 
   // If the final scan result has been received, the operation is finished.
   // Delete it.
