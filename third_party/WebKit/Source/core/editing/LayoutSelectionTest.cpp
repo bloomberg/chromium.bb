@@ -16,49 +16,15 @@ namespace blink {
 
 class LayoutSelectionTest : public EditingTestBase {
  public:
-  // Test LayoutObject's type, SelectionState and ShouldInvalidateSelection
-  // flag.
-  bool TestNextLayoutObject(bool (LayoutObject::*predicate)(void) const,
-                            SelectionState state) {
-    if (!current_)
+  LayoutObject* Current() const { return current_; }
+  void Next() {
+    if (!current_) {
       current_ = GetDocument().body()->GetLayoutObject();
-    else
-      current_ = current_->NextInPreOrder();
-    if (!current_)
-      return false;
-
-    if (current_->GetSelectionState() != state)
-      return false;
-    if (current_->ShouldInvalidateSelection() !=
-        (state != SelectionState::kNone))
-      return false;
-    if (!(current_->*predicate)())
-      return false;
-    return true;
+      return;
+    }
+    current_ = current_->NextInPreOrder();
   }
-  bool TestNextLayoutObject(const String& text, SelectionState state) {
-    // TODO(yoichio): Share code using Function(see FunctionalTest.cpp).
-    if (!current_)
-      current_ = GetDocument().body()->GetLayoutObject();
-    else
-      current_ = current_->NextInPreOrder();
-    if (!current_)
-      return false;
 
-    if (current_->GetSelectionState() != state)
-      return false;
-    if (current_->ShouldInvalidateSelection() !=
-        (state != SelectionState::kNone))
-      return false;
-
-    if (!current_->IsText())
-      return false;
-    if (text != ToLayoutText(current_)->GetText())
-      return false;
-    return true;
-  }
-  LayoutObject* Current() { return current_; }
-  void Reset() { current_ = nullptr; }
 #ifndef NDEBUG
   void PrintLayoutTreeForDebug() {
     std::stringstream stream;
@@ -75,11 +41,68 @@ class LayoutSelectionTest : public EditingTestBase {
   LayoutObject* current_ = nullptr;
 };
 
-#define TEST_NEXT(predicate, state) \
-  EXPECT_TRUE(TestNextLayoutObject(predicate, state)) << Current()
+std::ostream& operator<<(std::ostream& ostream, LayoutObject* layout_object) {
+  PrintLayoutObjectForSelection(ostream, layout_object);
+  return ostream;
+}
+
+enum class InvalidateOption { ShouldInvalidate, NotInvalidate };
+
+static bool TestLayoutObjectState(LayoutObject* object,
+                                  SelectionState state,
+                                  InvalidateOption invalidate) {
+  if (!object)
+    return false;
+  if (object->GetSelectionState() != state)
+    return false;
+  if (object->ShouldInvalidateSelection() !=
+      (invalidate == InvalidateOption::ShouldInvalidate))
+    return false;
+  return true;
+}
+
+using IsTypeOf = bool (LayoutObject::*)(void) const;
+static IsTypeOf IsLayoutBlock = &LayoutObject::IsLayoutBlock;
+static IsTypeOf IsLayoutBlockFlow = &LayoutObject::IsLayoutBlockFlow;
+static IsTypeOf IsLayoutInline = &LayoutObject::IsLayoutInline;
+static IsTypeOf IsBR = &LayoutObject::IsBR;
+static IsTypeOf IsListItem = &LayoutObject::IsListItem;
+static IsTypeOf IsListMarker = &LayoutObject::IsListMarker;
+
+static bool TestLayoutObject(LayoutObject* object,
+                             IsTypeOf predicate,
+                             SelectionState state,
+                             InvalidateOption invalidate) {
+  if (!TestLayoutObjectState(object, state, invalidate))
+    return false;
+
+  if (!(object->*predicate)())
+    return false;
+  return true;
+}
+static bool TestLayoutObject(LayoutObject* object,
+                             const String& text,
+                             SelectionState state,
+                             InvalidateOption invalidate) {
+  if (!TestLayoutObjectState(object, state, invalidate))
+    return false;
+
+  if (!object->IsText())
+    return false;
+  if (text != ToLayoutText(object)->GetText())
+    return false;
+  return true;
+}
+
+#define TEST_NEXT(predicate, state, invalidate)                             \
+  Next();                                                                   \
+  EXPECT_TRUE(TestLayoutObject(Current(), predicate, SelectionState::state, \
+                               InvalidateOption::invalidate))               \
+      << Current();
 
 #define TEST_NO_NEXT_LAYOUT_OBJECT() \
-  EXPECT_EQ(Current()->NextInPreOrder(), nullptr)
+  Next();                            \
+  EXPECT_EQ(Current(), nullptr)
 
 TEST_F(LayoutSelectionTest, TraverseLayoutObject) {
   SetBodyContent("foo<br>bar");
@@ -87,10 +110,10 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObject) {
                                .SelectAllChildren(*GetDocument().body())
                                .Build());
   Selection().CommitAppearanceIfNeeded();
-  TEST_NEXT(&LayoutObject::IsLayoutBlock, SelectionState::kStartAndEnd);
-  TEST_NEXT("foo", SelectionState::kStart);
-  TEST_NEXT(&LayoutObject::IsBR, SelectionState::kInside);
-  TEST_NEXT("bar", SelectionState::kEnd);
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT("foo", kStart, ShouldInvalidate);
+  TEST_NEXT(IsBR, kInside, ShouldInvalidate);
+  TEST_NEXT("bar", kEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
 }
 
@@ -103,12 +126,12 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectTruncateVisibilityHidden) {
                                .SelectAllChildren(*GetDocument().body())
                                .Build());
   Selection().CommitAppearanceIfNeeded();
-  TEST_NEXT(&LayoutObject::IsLayoutBlock, SelectionState::kStartAndEnd);
-  TEST_NEXT(&LayoutObject::IsLayoutInline, SelectionState::kNone);
-  TEST_NEXT("before", SelectionState::kNone);
-  TEST_NEXT("foo", SelectionState::kStartAndEnd);
-  TEST_NEXT(&LayoutObject::IsLayoutInline, SelectionState::kNone);
-  TEST_NEXT("after", SelectionState::kNone);
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT("before", kNone, NotInvalidate);
+  TEST_NEXT("foo", kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT("after", kNone, NotInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
 }
 
@@ -118,12 +141,12 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectTruncateBR) {
                                .SelectAllChildren(*GetDocument().body())
                                .Build());
   Selection().CommitAppearanceIfNeeded();
-  TEST_NEXT(&LayoutObject::IsLayoutBlock, SelectionState::kStartAndEnd);
-  TEST_NEXT(&LayoutObject::IsBR, SelectionState::kStart);
-  TEST_NEXT(&LayoutObject::IsBR, SelectionState::kInside);
-  TEST_NEXT("foo", SelectionState::kInside);
-  TEST_NEXT(&LayoutObject::IsBR, SelectionState::kEnd);
-  TEST_NEXT(&LayoutObject::IsBR, SelectionState::kNone);
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT(IsBR, kStart, ShouldInvalidate);
+  TEST_NEXT(IsBR, kInside, ShouldInvalidate);
+  TEST_NEXT("foo", kInside, ShouldInvalidate);
+  TEST_NEXT(IsBR, kEnd, ShouldInvalidate);
+  TEST_NEXT(IsBR, kNone, NotInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
 }
 
@@ -137,14 +160,14 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectListStyleImage) {
                                .SelectAllChildren(*GetDocument().body())
                                .Build());
   Selection().CommitAppearanceIfNeeded();
-  TEST_NEXT(&LayoutObject::IsLayoutBlock, SelectionState::kStartAndEnd);
-  TEST_NEXT(&LayoutObject::IsLayoutBlockFlow, SelectionState::kStartAndEnd);
-  TEST_NEXT(&LayoutObject::IsListItem, SelectionState::kStart);
-  TEST_NEXT(&LayoutObject::IsListMarker, SelectionState::kNone);
-  TEST_NEXT("foo", SelectionState::kStart);
-  TEST_NEXT(&LayoutObject::IsListItem, SelectionState::kEnd);
-  TEST_NEXT(&LayoutObject::IsListMarker, SelectionState::kNone);
-  TEST_NEXT("bar", SelectionState::kEnd);
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT(IsListItem, kStart, ShouldInvalidate);
+  TEST_NEXT(IsListMarker, kNone, NotInvalidate);
+  TEST_NEXT("foo", kStart, ShouldInvalidate);
+  TEST_NEXT(IsListItem, kEnd, ShouldInvalidate);
+  TEST_NEXT(IsListMarker, kNone, NotInvalidate);
+  TEST_NEXT("bar", kEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
 }
 
@@ -173,15 +196,15 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectCrossingShadowBoundary) {
                             Position(GetDocument().QuerySelector("span"), 0))
           .Build());
   Selection().CommitAppearanceIfNeeded();
-  TEST_NEXT(&LayoutObject::IsLayoutBlock, SelectionState::kStartAndEnd);
-  TEST_NEXT(&LayoutObject::IsLayoutBlockFlow, SelectionState::kStart);
-  TEST_NEXT("foo", SelectionState::kStart);
-  TEST_NEXT(&LayoutObject::IsLayoutBlock, SelectionState::kEnd);
-  TEST_NEXT("Foo", SelectionState::kInside);
-  TEST_NEXT(&LayoutObject::IsLayoutInline, SelectionState::kNone);
-  TEST_NEXT("bar2", SelectionState::kEnd);
-  TEST_NEXT(&LayoutObject::IsLayoutInline, SelectionState::kNone);
-  TEST_NEXT("bar1", SelectionState::kNone);
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kStart, ShouldInvalidate);
+  TEST_NEXT("foo", kStart, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kEnd, ShouldInvalidate);
+  TEST_NEXT("Foo", kInside, ShouldInvalidate);
+  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT("bar2", kEnd, ShouldInvalidate);
+  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT("bar1", kNone, NotInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
 }
 
@@ -197,14 +220,14 @@ TEST_F(LayoutSelectionTest,
                             Position(span->firstChild(), 3))
           .Build());
   Selection().CommitAppearanceIfNeeded();
-  TEST_NEXT(&LayoutObject::IsLayoutBlock, SelectionState::kStartAndEnd);
-  TEST_NEXT(&LayoutObject::IsLayoutBlockFlow, SelectionState::kNone);
-  TEST_NEXT("div1", SelectionState::kNone);
-  TEST_NEXT(&LayoutObject::IsLayoutBlockFlow, SelectionState::kStartAndEnd);
-  TEST_NEXT("foo", SelectionState::kNone);
-  TEST_NEXT(&LayoutObject::IsLayoutInline, SelectionState::kNone);
-  TEST_NEXT("bar", SelectionState::kStartAndEnd);
-  TEST_NEXT("baz", SelectionState::kNone);
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kNone, NotInvalidate);
+  TEST_NEXT("div1", kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT("foo", kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT("bar", kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT("baz", kNone, NotInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
 
   Node* d1 = GetDocument().QuerySelector("#d1");
@@ -215,18 +238,15 @@ TEST_F(LayoutSelectionTest,
           .Build());
   // This commit should not crash.
   Selection().CommitAppearanceIfNeeded();
-  Reset();
-  TEST_NEXT(&LayoutObject::IsLayoutBlock, SelectionState::kEnd);
-  TEST_NEXT(&LayoutObject::IsLayoutBlockFlow, SelectionState::kStart);
-  TEST_NEXT("div1", SelectionState::kStart);
-  TEST_NEXT(&LayoutObject::IsLayoutBlockFlow, SelectionState::kEnd);
-  TEST_NEXT("foo", SelectionState::kNone);
-  TEST_NEXT(&LayoutObject::IsLayoutInline, SelectionState::kNone);
-  // TODO(yoichio) : Introduce enum class InvalidateOption and confirm
-  // "bar" is SelectionState::kNone and ShouldInvalidation.
-  // TEST_NEXT("bar", SelectionState::kNone);
-  // TEST_NEXT("baz", SelectionState::kNone);
-  // TEST_NO_NEXT_LAYOUT_OBJECT();
+  TEST_NEXT(IsLayoutBlock, kEnd, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kStart, ShouldInvalidate);
+  TEST_NEXT("div1", kStart, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kEnd, ShouldInvalidate);
+  TEST_NEXT("foo", kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT("bar", kNone, ShouldInvalidate);
+  TEST_NEXT("baz", kNone, NotInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
 }
 
 }  // namespace blink
