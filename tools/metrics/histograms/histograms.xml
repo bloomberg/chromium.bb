@@ -27448,6 +27448,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="InstantTethering.FinalFeatureState"
+    enum="InstantTethering_FeatureState">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Breaks down the state of Instant Tethering, at the end of each user session.
+    All states, except for 'Enabled', indicate that the feature was not active.
+    This histogram is emitted to at the end of each user session and should
+    roughly reflect if Instant Tethering was enabled during that session (and if
+    not, why).
+  </summary>
+</histogram>
+
 <histogram name="InstantTethering.HostScanResult"
     enum="InstantTethering_HostScanResult">
   <owner>hansberry@chromium.com</owner>
