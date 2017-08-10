@@ -92,6 +92,14 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
               ++*counter;
             },
             counter));
+    runner_->GetRecentDocuments(
+        kAuthority, kDocumentId,
+        base::Bind(
+            [](int* counter,
+               base::Optional<std::vector<mojom::DocumentPtr>> documents) {
+              ++*counter;
+            },
+            counter));
     runner_->OpenFileToRead(
         GURL(kUrl),
         base::Bind([](int* counter, mojo::ScopedHandle handle) { ++*counter; },
@@ -121,7 +129,7 @@ TEST_F(ArcFileSystemOperationRunnerTest, RunImmediately) {
   CallSetShouldDefer(false);
   CallAllFunctions(&counter);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(7, counter);
+  EXPECT_EQ(8, counter);
 }
 
 TEST_F(ArcFileSystemOperationRunnerTest, DeferAndRun) {
@@ -133,7 +141,7 @@ TEST_F(ArcFileSystemOperationRunnerTest, DeferAndRun) {
 
   CallSetShouldDefer(false);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(7, counter);
+  EXPECT_EQ(8, counter);
 }
 
 // TODO(nya,hidehiko): Check if we should keep this test.
@@ -157,7 +165,7 @@ TEST_F(ArcFileSystemOperationRunnerTest, FileInstanceUnavailable) {
   CallSetShouldDefer(false);
   CallAllFunctions(&counter);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(7, counter);
+  EXPECT_EQ(8, counter);
 }
 
 }  // namespace arc
