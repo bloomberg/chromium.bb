@@ -36,6 +36,9 @@ class RemoteSuggestionBuilder {
   RemoteSuggestionBuilder& SetAmpUrl(const std::string& amp_url);
   RemoteSuggestionBuilder& SetFetchDate(const base::Time& fetch_date);
   RemoteSuggestionBuilder& SetRank(int rank);
+  RemoteSuggestionBuilder& SetShouldNotify(bool should_notify);
+  RemoteSuggestionBuilder& SetNotificationDeadline(
+      const base::Time& notification_deadline);
 
   std::unique_ptr<RemoteSuggestion> Build() const;
 
@@ -54,6 +57,8 @@ class RemoteSuggestionBuilder {
   base::Optional<std::string> amp_url_;
   base::Optional<base::Time> fetch_date_;
   base::Optional<int> rank_;
+  base::Optional<bool> should_notify_;
+  base::Optional<base::Time> notification_deadline_;
 };
 
 class FetchedCategoryBuilder {

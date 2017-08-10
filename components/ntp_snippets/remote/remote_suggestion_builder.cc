@@ -123,6 +123,18 @@ RemoteSuggestionBuilder& RemoteSuggestionBuilder::SetRank(int rank) {
   return *this;
 }
 
+RemoteSuggestionBuilder& RemoteSuggestionBuilder::SetShouldNotify(
+    bool should_notify) {
+  should_notify_ = should_notify;
+  return *this;
+}
+
+RemoteSuggestionBuilder& RemoteSuggestionBuilder::SetNotificationDeadline(
+    const base::Time& notification_deadline) {
+  notification_deadline_ = notification_deadline;
+  return *this;
+}
+
 std::unique_ptr<RemoteSuggestion> RemoteSuggestionBuilder::Build() const {
   SnippetProto proto;
   proto.set_title(title_.value_or("Title"));
@@ -146,7 +158,12 @@ std::unique_ptr<RemoteSuggestion> RemoteSuggestionBuilder::Build() const {
     proto.add_ids(id);
   }
   proto.set_rank(rank_.value_or(std::numeric_limits<int>::max()));
-  return RemoteSuggestion::CreateFromProto(proto);
+  std::unique_ptr<RemoteSuggestion> suggestion =
+      RemoteSuggestion::CreateFromProto(proto);
+  suggestion->set_should_notify(should_notify_.value_or(false));
+  suggestion->set_notification_deadline(
+      notification_deadline_.value_or(base::Time()));
+  return suggestion;
 }
 
 FetchedCategoryBuilder::FetchedCategoryBuilder() = default;
