@@ -7,3 +7,6 @@ yfriedman@chromium.org
 
 per-file java_sources.gni=*
 per-file *.gn*=agrieve@chromium.org
+
+# COMPONENT: Mobile
+# OS: Android
