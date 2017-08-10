@@ -1237,6 +1237,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.ChromeHome.OpenedByStartup">
+  <owner>thildebr@chromium.org</owner>
+  <description>
+    The Chrome Home bottom sheet was automatically opened on startup after a
+    period of inactivity.
+  </description>
+</action>
+
 <action name="Android.ChromeHome.OpenedBySwipe">
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
