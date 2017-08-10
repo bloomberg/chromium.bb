@@ -6,8 +6,10 @@
 #define PaintChunkProperties_h
 
 #include <iosfwd>
+#include "platform/PlatformExport.h"
 #include "platform/graphics/paint/PropertyTreeState.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
 
 namespace blink {
@@ -21,7 +23,7 @@ namespace blink {
 //
 // This differs from |ObjectPaintProperties| because it only stores one property
 // for each type (e.g., either transform or perspective, but not both).
-struct PaintChunkProperties {
+struct PLATFORM_EXPORT PaintChunkProperties {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
   PaintChunkProperties(const PropertyTreeState& state)
@@ -33,6 +35,8 @@ struct PaintChunkProperties {
 
   PropertyTreeState property_tree_state;
   bool backface_hidden;
+
+  String ToString() const;
 };
 
 // Equality is based only on the pointers and is not 'deep' which would require

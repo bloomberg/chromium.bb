@@ -11,6 +11,7 @@
 #include "platform/graphics/paint/PaintChunkProperties.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
