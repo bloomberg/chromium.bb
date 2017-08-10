@@ -243,52 +243,34 @@ if (CONFIG_ANALYZER)
   include(${wxWidgets_USE_FILE})
 
   if (NOT CONFIG_INSPECTION)
-    set(CONFIG_INSPECTION 1)
-    message(WARNING
-            "--- Enabled CONFIG_INSPECTION, required for CONFIG_ANALYZER.")
+    change_config_and_warn(CONFIG_INSPECTION 1 CONFIG_ANALYZER)
   endif ()
 endif ()
 
 if (CONFIG_VAR_TX_NO_TX_MODE AND NOT CONFIG_VAR_TX)
-   message(WARNING
-     "--- CONFIG_VAR_TX_NO_TX_MODE requires CONFIG_VAR_TX, disabling.")
-   set(CONFIG_VAR_TX_NO_TX_MODE 0)
+   change_config_and_warn(CONFIG_VAR_TX 1 CONFIG_VAR_TX_NO_TX_MODE)
 endif()
 
-if (CONFIG_DAALA_DCT4)
-  if (NOT CONFIG_DCT_ONLY)
-     message(WARNING
-       "--- Enabled CONFIG_DCT_ONLY, needed for CONFIG_DAALA_DCT4.")
-     set(CONFIG_DCT_ONLY 1)
-   endif()
+if (CONFIG_DAALA_DCT4 AND NOT CONFIG_DCT_ONLY)
+  change_config_and_warn(CONFIG_DCT_ONLY 1 CONFIG_DAALA_DCT4)
 endif()
 
 if (CONFIG_DAALA_DCT4 OR CONFIG_DAALA_DCT8 OR CONFIG_DAALA_DCT16)
   if (HAVE_MMX)
-     message(WARNING
-       "--- Disabled HAVE_MMX, incompatible with CONFIG_DAALA_DCTx.")
-     set(HAVE_MMX 0)
+    change_config_and_warn(HAVE_MMX 0 CONFIG_DAALA_DCTx)
   endif()
   if (CONFIG_RECT_TX)
-     message(WARNING
-       "--- Disabled CONFIG_RECT_TX, incompatible with  CONFIG_DAALA_DCTx.")
-     set(CONFIG_RECT_TX 0)
+    change_config_and_warn(CONFIG_RECT_TX 0 CONFIG_DAALA_DCTx)
   endif()
   if (CONFIG_VAR_TX)
-     message(WARNING
-       "--- Disabled CONFIG_VAR_TX, incompatible with CONFIG_DAALA_DCTx.")
-     set(CONFIG_VAR_TX 0)
+     change_config_and_warn(CONFIG_VAR_TX 0 CONFIG_DAALA_DCTx)
   endif()
   if (CONFIG_LGT)
-     message(WARNING
-       "--- Disabled CONFIG_LGT, incompatible with CONFIG_DAALA_DCTx.")
-     set(CONFIG_LGT 0)
-   endif()
+    change_config_and_warn(CONFIG_LGT 0 CONFIG_DAALA_DCTx)
+  endif()
   if (NOT CONFIG_LOWBITDEPTH)
-     message(WARNING
-       "--- Enabled CONFIG_LOWBITDEPTH, needed for CONFIG_DAALA_DCTx.")
-     set(CONFIG_LOWBITDEPTH 1)
-   endif()
+    change_config_and_warn(CONFIG_LOWBITDEPTH 1 CONFIG_DAALA_DCTx)
+  endif()
 endif()
 
 if (CONFIG_GCOV)
