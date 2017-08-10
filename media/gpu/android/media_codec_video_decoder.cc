@@ -132,33 +132,44 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                         CdmContext* cdm_context,
                                         const InitCB& init_cb,
                                         const OutputCB& output_cb) {
-  DVLOG(2) << __func__;
-  InitCB bound_init_cb = BindToCurrentLoop(init_cb);
+  const bool first_init = !decoder_config_.IsValidConfig();
+  DVLOG(2) << (first_init ? "Initializing" : "Reinitializing")
+           << " MCVD with config: " << config.AsHumanReadableString();
 
+  InitCB bound_init_cb = BindToCurrentLoop(init_cb);
   if (!ConfigSupported(config, device_info_)) {
     bound_init_cb.Run(false);
     return;
   }
 
-  if (!codec_allocator_->StartThread(&codec_allocator_adapter_)) {
-    LOG(ERROR) << "Unable to start thread";
+  // Disallow codec changes when reinitializing.
+  if (!first_init && decoder_config_.codec() != config.codec()) {
+    DVLOG(1) << "Codec changed: cannot reinitialize";
     bound_init_cb.Run(false);
     return;
   }
 
   decoder_config_ = config;
-  codec_config_ = new CodecConfig();
-  codec_config_->codec = config.codec();
 
-  // TODO(watk): Set |requires_secure_codec| correctly using
-  // MediaDrmBridgeCdmContext::MediaCryptoReadyCB.
-  codec_config_->requires_secure_codec = config.is_encrypted();
+  if (first_init) {
+    if (!codec_allocator_->StartThread(&codec_allocator_adapter_)) {
+      LOG(ERROR) << "Unable to start thread";
+      bound_init_cb.Run(false);
+      return;
+    }
+
+    codec_config_ = new CodecConfig();
+    codec_config_->codec = config.codec();
+    // TODO(watk): Set |requires_secure_codec| correctly using
+    // MediaDrmBridgeCdmContext::MediaCryptoReadyCB.
+    codec_config_->requires_secure_codec = config.is_encrypted();
+  }
 
   codec_config_->initial_expected_coded_size = config.coded_size();
   // TODO(watk): Parse config.extra_data().
 
   // We defer initialization of the Surface and MediaCodec until we
-  // receive a Decode() call to avoid consuming those resources  in cases where
+  // receive a Decode() call to avoid consuming those resources in cases where
   // we'll be destructed before getting a Decode(). Failure to initialize those
   // resources will be reported as a decode error on the first decode.
   // TODO(watk): Initialize the CDM before calling init_cb.
@@ -349,10 +360,6 @@ void MediaCodecVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
     return;
   }
 
-  // If the codec is drained we need to flush it before continuing.
-  if (codec_ && codec_->IsDrained())
-    FlushCodec();
-
   PumpCodec(true);
 }
 
@@ -415,6 +422,18 @@ bool MediaCodecVideoDecoder::QueueInput() {
       state_ == State::kSurfaceDestroyed) {
     return false;
   }
+
+  // Flush the codec when there are no unrendered codec buffers, but decodes
+  // pending. This lets us avoid unbacking any frames when we flush, but only
+  // flush when we have more frames to decode. Without waiting for pending
+  // decodes we would create a new codec at the end of playback on devices that
+  // need the flush workaround.
+  if (codec_->IsDrained()) {
+    if (!codec_->HasValidCodecOutputBuffers() && !pending_decodes_.empty())
+      FlushCodec();
+    return false;
+  }
+
   if (pending_decodes_.empty())
     return false;
 
@@ -434,6 +453,7 @@ bool MediaCodecVideoDecoder::QueueInput() {
   pending_decodes_.pop_front();
 
   if (pending_decode.buffer->end_of_stream()) {
+    DVLOG(2) << ": QueueEOS()";
     codec_->QueueEOS(input_buffer);
     eos_decode_cb_ = std::move(pending_decode.decode_cb);
     return true;
@@ -490,28 +510,27 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
   } else if (status == MEDIA_CODEC_TRY_AGAIN_LATER) {
     return false;
   }
-
   DCHECK(status == MEDIA_CODEC_OK);
-  DVLOG(2) << "DequeueOutputBuffer(): pts=" << presentation_time
-           << " size=" << output_buffer->size().ToString() << " eos=" << eos;
 
   if (eos) {
+    DVLOG(2) << "DequeueOutputBuffer(): EOS";
     if (eos_decode_cb_) {
-      // Post the EOS decode cb through the gpu task runner to ensure it follows
-      // all previous outputs.
+      // Note: It's important to post |eos_decode_cb_| through the gpu task
+      // runner to ensure it follows all previous outputs.
       gpu_task_runner_->PostTaskAndReply(
           FROM_HERE, base::Bind(&base::DoNothing),
-          base::Bind(eos_decode_cb_, DecodeStatus::OK));
-      eos_decode_cb_.Reset();
+          base::Bind(base::ResetAndReturn(&eos_decode_cb_), DecodeStatus::OK));
     }
     if (drain_type_)
       OnCodecDrained();
-    // The codec still needs flushing if we're not doing an explicit drain, but
-    // we can't do it right now without unbacking unrendered frames near EOS.
-    // Instead the codec will be flushed the next time Decode() is called and it
-    // sees that the codec is drained.
+    // We don't want to flush the drained codec immediately if !|drain_type_|
+    // because it might be backing unrendered frames near EOS. Instead we'll
+    // flush it after all outstanding buffers are released.
     return false;
   }
+
+  DVLOG(2) << "DequeueOutputBuffer(): pts="
+           << presentation_time.InMilliseconds();
 
   // If we're draining for reset or destroy we can discard |output_buffer|
   // without rendering it.
