@@ -31,7 +31,6 @@
 #include "core/HTMLNames.h"
 #include "core/css/CSSMarkup.h"
 #include "core/css/CSSSelectorList.h"
-#include "core/css/parser/CSSParserContext.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -496,7 +495,6 @@ void CSSSelector::UpdatePseudoPage(const AtomicString& value) {
 }
 
 void CSSSelector::UpdatePseudoType(const AtomicString& value,
-                                   const CSSParserContext& context,
                                    bool has_arguments,
                                    CSSParserMode mode) {
   DCHECK(match_ == kPseudoClass || match_ == kPseudoElement);
@@ -527,12 +525,9 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoSelection:
     case kPseudoWebKitCustomElement:
     case kPseudoContent:
+    case kPseudoShadow:
     case kPseudoSlotted:
       if (match_ != kPseudoElement)
-        pseudo_type_ = kPseudoUnknown;
-      break;
-    case kPseudoShadow:
-      if (match_ != kPseudoElement || context.IsDynamicProfile())
         pseudo_type_ = kPseudoUnknown;
       break;
     case kPseudoBlinkInternalElement:
@@ -801,7 +796,6 @@ String CSSSelector::SelectorText() const {
         result = " > " + builder.ToString() + result;
         break;
       case kShadowDeep:
-      case kShadowDeepAsDescendant:
         result = " /deep/ " + builder.ToString() + result;
         break;
       case kShadowPiercingDescendant:

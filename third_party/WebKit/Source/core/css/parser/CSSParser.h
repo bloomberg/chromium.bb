@@ -5,11 +5,11 @@
 #ifndef CSSParser_h
 #define CSSParser_h
 
-#include <memory>
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParserContext.h"
+#include <memory>
 
 namespace blink {
 
@@ -40,7 +40,7 @@ class CORE_EXPORT CSSParser {
   static CSSSelectorList ParseSelector(const CSSParserContext*,
                                        StyleSheetContents*,
                                        const String&);
-  static CSSSelectorList ParsePageSelector(const CSSParserContext&,
+  static CSSSelectorList ParsePageSelector(const CSSParserContext*,
                                            StyleSheetContents*,
                                            const String&);
   static bool ParseDeclarationList(const CSSParserContext*,

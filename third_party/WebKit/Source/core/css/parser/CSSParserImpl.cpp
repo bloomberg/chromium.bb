@@ -268,7 +268,6 @@ void CSSParserImpl::ParseStyleSheet(const String& string,
 }
 
 CSSSelectorList CSSParserImpl::ParsePageSelector(
-    const CSSParserContext& context,
     CSSParserTokenRange range,
     StyleSheetContents* style_sheet) {
   // We only support a small subset of the css-page spec.
@@ -754,8 +753,7 @@ StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
 
 StyleRulePage* CSSParserImpl::ConsumePageRule(CSSParserTokenRange prelude,
                                               CSSParserTokenRange block) {
-  CSSSelectorList selector_list =
-      ParsePageSelector(*context_, prelude, style_sheet_);
+  CSSSelectorList selector_list = ParsePageSelector(prelude, style_sheet_);
   if (!selector_list.IsValid())
     return nullptr;  // Parse error, invalid @page selector
 
