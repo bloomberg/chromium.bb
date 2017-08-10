@@ -110,7 +110,12 @@ class RemoteSuggestion {
   float score() const { return score_; }
 
   bool should_notify() const { return should_notify_; }
+  void set_should_notify(bool new_value) { should_notify_ = new_value; }
+
   base::Time notification_deadline() const { return notification_deadline_; }
+  void set_notification_deadline(const base::Time& new_value) {
+    notification_deadline_ = new_value;
+  }
 
   ContentType content_type() const { return content_type_; }
 

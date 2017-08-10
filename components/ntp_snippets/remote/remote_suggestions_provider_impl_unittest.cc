@@ -310,6 +310,10 @@ class MockRemoteSuggestionsStatusService
   MOCK_METHOD0(OnSignInStateChanged, void());
 };
 
+std::string BoolToString(bool value) {
+  return value ? "true" : "false";
+}
+
 }  // namespace
 
 class RemoteSuggestionsProviderImplTest : public ::testing::Test {
@@ -564,6 +568,23 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
                  max_age_for_additional_prefetched_suggestion.InMinutes())},
         },
         {kKeepPrefetchedContentSuggestions.name});
+  }
+
+  void SetTriggeringNotificationsParams(bool fetched_enabled,
+                                        bool pushed_enabled) {
+    // params_manager supports only one
+    // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
+    // previous settings first to make this explicit.
+    params_manager_.ClearAllVariationParams();
+    params_manager_.SetVariationParamsWithFeatureAssociations(
+        kNotificationsFeature.name,
+        {
+            {"enable_fetched_suggestions_notifications",
+             BoolToString(fetched_enabled)},
+            {"enable_pushed_suggestions_notifications",
+             BoolToString(pushed_enabled)},
+        },
+        {kNotificationsFeature.name});
   }
 
  private:
@@ -3147,6 +3168,218 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
               ElementsAreArray(expected));
+}
+
+TEST_F(
+    RemoteSuggestionsProviderImplTest,
+    PrependingShouldNotTriggerFetchedSuggestionNotificationForTheSecondTime) {
+  SetTriggeringNotificationsParams(/*fetched_enabled=*/true,
+                                   /*pushed_enabled=*/true);
+
+  // Set up the provider with an article suggestion triggering a notification.
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/true,
+      /*use_mock_remote_suggestions_status_service=*/false);
+
+  std::vector<FetchedCategory> fetched_categories;
+  fetched_categories.push_back(
+      FetchedCategoryBuilder()
+          .SetCategory(articles_category())
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder()
+                  .AddId("http://fetched.com/")
+                  .SetUrl("http://fetched.com/")
+                  .SetShouldNotify(true)
+                  .SetNotificationDeadline(GetDefaultExpirationTime()))
+          .Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              ElementsAre(Property(&ContentSuggestion::notification_extra,
+                                   Not(nullptr))));
+
+  // Prepend an article suggestion.
+  std::unique_ptr<RemoteSuggestion> prepended_suggestion =
+      RemoteSuggestionBuilder()
+          .AddId("http://prepended.com")
+          .SetUrl("http://prepended.com")
+          .SetShouldNotify(true)
+          .SetNotificationDeadline(GetDefaultExpirationTime())
+          .Build();
+
+  PushArticleSuggestionToTheFront(std::move(prepended_suggestion));
+
+  // Previously fetched suggestion should not trigger a notification.
+  EXPECT_THAT(
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(
+          Property(&ContentSuggestion::notification_extra, Not(nullptr)),
+          Property(&ContentSuggestion::notification_extra, nullptr)));
+}
+
+TEST_F(
+    RemoteSuggestionsProviderImplTest,
+    PrependingShouldNotTriggerPrependedSuggestionNotificationForTheSecondTime) {
+  SetTriggeringNotificationsParams(/*fetched_enabled=*/true,
+                                   /*pushed_enabled=*/true);
+
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/true,
+      /*use_mock_remote_suggestions_status_service=*/false);
+
+  // Prepend an article suggestion.
+  std::unique_ptr<RemoteSuggestion> prepended_suggestion =
+      RemoteSuggestionBuilder()
+          .AddId("http://prepended.com")
+          .SetUrl("http://prepended.com")
+          .SetShouldNotify(true)
+          .SetNotificationDeadline(GetDefaultExpirationTime())
+          .Build();
+
+  PushArticleSuggestionToTheFront(std::move(prepended_suggestion));
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              ElementsAre(Property(&ContentSuggestion::notification_extra,
+                                   Not(nullptr))));
+
+  // Prepend another article suggestion.
+  std::unique_ptr<RemoteSuggestion> another_prepended_suggestion =
+      RemoteSuggestionBuilder()
+          .AddId("http://another_prepended.com")
+          .SetUrl("http://another_prepended.com")
+          .SetShouldNotify(true)
+          .SetNotificationDeadline(GetDefaultExpirationTime())
+          .Build();
+
+  PushArticleSuggestionToTheFront(std::move(another_prepended_suggestion));
+
+  // Previously prepended suggestion should not trigger a notification.
+  EXPECT_THAT(
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(
+          Property(&ContentSuggestion::notification_extra, Not(nullptr)),
+          Property(&ContentSuggestion::notification_extra, nullptr)));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       PrependingShouldNotTriggerNotificationWhenDisabled) {
+  SetTriggeringNotificationsParams(/*fetched_enabled=*/true,
+                                   /*pushed_enabled=*/false);
+
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/true,
+      /*use_mock_remote_suggestions_status_service=*/false);
+
+  // Prepend an article suggestion triggering a notification.
+  std::unique_ptr<RemoteSuggestion> prepended_suggestion =
+      RemoteSuggestionBuilder()
+          .AddId("http://prepended.com")
+          .SetUrl("http://prepended.com")
+          .SetShouldNotify(true)
+          .SetNotificationDeadline(GetDefaultExpirationTime())
+          .Build();
+
+  PushArticleSuggestionToTheFront(std::move(prepended_suggestion));
+
+  // The prepended suggestion should not trigger a notification because such
+  // notifications are disabled.
+  EXPECT_THAT(
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(Property(&ContentSuggestion::notification_extra, nullptr)));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       FetchingShouldNotTriggerNotificationWhenDisabled) {
+  SetTriggeringNotificationsParams(/*fetched_enabled=*/false,
+                                   /*pushed_enabled=*/true);
+
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+
+  // Fetch a suggestion triggering a notification.
+  std::vector<FetchedCategory> fetched_categories;
+  fetched_categories.push_back(
+      FetchedCategoryBuilder()
+          .SetCategory(articles_category())
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder()
+                  .AddId("http://fetched.com/")
+                  .SetUrl("http://fetched.com/")
+                  .SetShouldNotify(true)
+                  .SetNotificationDeadline(GetDefaultExpirationTime()))
+          .Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+
+  // The fetched suggestion should not trigger a notification because such
+  // notifications are disabled.
+  EXPECT_THAT(
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(Property(&ContentSuggestion::notification_extra, nullptr)));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       PrependingShouldTriggerNotificationEvenIfFetchedNotificationsDisabled) {
+  SetTriggeringNotificationsParams(/*fetched_enabled=*/false,
+                                   /*pushed_enabled=*/true);
+
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/true,
+      /*use_mock_remote_suggestions_status_service=*/false);
+
+  // Prepend an article suggestion triggering a notification.
+  std::unique_ptr<RemoteSuggestion> prepended_suggestion =
+      RemoteSuggestionBuilder()
+          .AddId("http://prepended.com")
+          .SetUrl("http://prepended.com")
+          .SetShouldNotify(true)
+          .SetNotificationDeadline(GetDefaultExpirationTime())
+          .Build();
+
+  PushArticleSuggestionToTheFront(std::move(prepended_suggestion));
+
+  // The prepended suggestion should trigger a notification even though fetched
+  // notifications are disabled.
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              ElementsAre(Property(&ContentSuggestion::notification_extra,
+                                   Not(nullptr))));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       FetchingShouldTriggerNotificationEvenIfPrependedNotificationsDisabled) {
+  SetTriggeringNotificationsParams(/*fetched_enabled=*/true,
+                                   /*pushed_enabled=*/false);
+
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+
+  // Fetch a suggestion triggering a notification.
+  std::vector<FetchedCategory> fetched_categories;
+  fetched_categories.push_back(
+      FetchedCategoryBuilder()
+          .SetCategory(articles_category())
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder()
+                  .AddId("http://fetched.com/")
+                  .SetUrl("http://fetched.com/")
+                  .SetShouldNotify(true)
+                  .SetNotificationDeadline(GetDefaultExpirationTime()))
+          .Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+
+  // The fetched suggestion should trigger a notification even though prepended
+  // notifications are disabled.
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              ElementsAre(Property(&ContentSuggestion::notification_extra,
+                                   Not(nullptr))));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
