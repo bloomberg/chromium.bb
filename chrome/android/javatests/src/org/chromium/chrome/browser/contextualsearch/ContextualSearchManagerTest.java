@@ -64,11 +64,13 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.widget.findinpage.FindToolbar;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.FullscreenTestUtils;
+import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.ContentViewCore;
@@ -3106,5 +3108,36 @@ public class ContextualSearchManagerTest {
         Assert.assertEquals(
                 ContextualSearchInternalStateControllerWrapper.EXPECTED_LONGPRESS_SEQUENCE,
                 internalStateControllerWrapper.getFinishedStates());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    public void testLongPressHidesFindInPageOverlay() throws Exception {
+        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity(), R.id.find_in_page_id);
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                FindToolbar findToolbar =
+                        (FindToolbar) mActivityTestRule.getActivity().findViewById(
+                                R.id.find_toolbar);
+                return findToolbar != null && findToolbar.isShown() && !findToolbar.isAnimating();
+            }
+        });
+
+        KeyUtils.singleKeyEventView(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity().findViewById(R.id.find_query), KeyEvent.KEYCODE_T);
+
+        View findToolbar = mActivityTestRule.getActivity().findViewById(R.id.find_toolbar);
+        Assert.assertTrue(findToolbar.isShown());
+
+        longPressNode("states");
+
+        waitForPanelToPeek();
+        Assert.assertFalse(
+                "Find Toolbar should no longer be shown once Contextual Search Panel appeared",
+                findToolbar.isShown());
     }
 }

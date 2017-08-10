@@ -529,9 +529,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 urlFocusChangedCallback);
         mFindToolbarManager = new FindToolbarManager(
                 this, mToolbarManager.getActionModeController().getActionModeCallback());
-        if (getContextualSearchManager() != null) {
-            getContextualSearchManager().setFindToolbarManager(mFindToolbarManager);
-        }
         mAppMenuHandler.addObserver(new AppMenuObserver() {
             @Override
             public void onMenuVisibilityChanged(boolean isVisible) {
@@ -786,6 +783,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         if (isContextualSearchAllowed() && ContextualSearchFieldTrial.isEnabled()) {
             mContextualSearchManager = new ContextualSearchManager(this, this);
+            if (mFindToolbarManager != null) {
+                mContextualSearchManager.setFindToolbarManager(mFindToolbarManager);
+            }
         }
 
         if (ReaderModeManager.isEnabled(this)) {
