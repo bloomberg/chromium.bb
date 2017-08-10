@@ -36,6 +36,7 @@ namespace arc {
 // Documents provider based functions are:
 // - GetDocument()
 // - GetChildDocuments()
+// - GetRecentDocuments()
 // Fake documents for those functions can be set up by AddDocument().
 //
 // Notes:
@@ -139,6 +140,9 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
                    const GetFileSizeCallback& callback) override;
   void GetMimeType(const std::string& url,
                    const GetMimeTypeCallback& callback) override;
+  void GetRecentDocuments(const std::string& authority,
+                          const std::string& root_id,
+                          const GetRecentDocumentsCallback& callback) override;
   void Init(mojom::FileSystemHostPtr host) override;
   void OpenFileToRead(const std::string& url,
                       const OpenFileToReadCallback& callback) override;
