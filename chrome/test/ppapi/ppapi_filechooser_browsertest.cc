@@ -349,7 +349,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest,
 
   RunTestViaHTTP("FileChooser_SaveAsUnsafeDefaultName");
   base::FilePath actual_filename =
-      temp_dir.GetPath().AppendASCII("unsafe.txt-");
+      temp_dir.GetPath().AppendASCII("unsafe.txt_");
 
   ASSERT_TRUE(base::PathExists(actual_filename));
   std::string file_contents;

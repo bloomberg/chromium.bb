@@ -131,7 +131,7 @@ std::string TestFileChooser::TestSaveAsUnsafeDefaultName() {
 
   const std::vector<pp::FileRef>& output_ref = filechooser_callback.output();
   ASSERT_EQ(1u, output_ref.size());
-  ASSERT_EQ("unsafe.txt-", output_ref.front().GetName().AsString());
+  ASSERT_EQ("unsafe.txt_", output_ref.front().GetName().AsString());
 
   ASSERT_TRUE(WriteDefaultContentsToFile(output_ref.front()));
   PASS();
