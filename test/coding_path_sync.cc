@@ -149,17 +149,16 @@ TEST(CodingPathSync, SearchForHbdLbdMismatch) {
 
     CompressedSource enc(i);
     const aom_codec_cx_pkt_t *frame = enc.ReadFrame();
-    // disable the comparison for now.
-    // Re-enable it locally to help diagnosing LBD/HBD mismatches,
-    // and re-enable for everybody when both coding paths match,
+
+    std::vector<int16_t> lbd_yuv = dec_lbd.decode(frame);
+    std::vector<int16_t> hbd_yuv = dec_hbd.decode(frame);
+
+    // TODO(aomedia:39): re-enable the comparison when both coding paths match,
     // so they don't diverge anymore.
+    // Until then, keep doing the decoding to prevent crashes from creeping in,
+    // making this test harder to re-enable.
     if (0) {
-      ASSERT_EQ(dec_lbd.decode(frame), dec_hbd.decode(frame));
-    } else {
-      // until the comparison is re-enabled, keep doing the decoding,
-      // as it still detects decoder crashes (Issue 677)
-      dec_lbd.decode(frame);
-      dec_hbd.decode(frame);
+      ASSERT_EQ(lbd_yuv, hbd_yuv);
     }
   }
 }
