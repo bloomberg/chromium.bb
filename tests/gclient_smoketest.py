@@ -744,8 +744,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         'deps = {',
         '  # src -> src/repo2 -> foo/bar',
         '  "foo/bar": {',
-        '    "url": "git://127.0.0.1:20000/git/repo_3@%s",' % (
-                 self.githash('repo_3', 2)),
+        '    "url": "/repo_3@%s",' % (self.githash('repo_3', 2)),
         '  },',
         '',
         '  # src',
@@ -769,8 +768,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '  # src -> src/repo8',
         '  "src/repo8": {',
-        '    "url": "git://127.0.0.1:20000/git/repo_8@%s",' % (
-                 self.githash('repo_8', 1)),
+        '    "url": "/repo_8@%s",' % (self.githash('repo_8', 1)),
         '  },',
         '',
         '}',

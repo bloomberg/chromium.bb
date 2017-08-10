@@ -1739,8 +1739,9 @@ class Flattener(object):
           continue
         scm = gclient_scm.CreateSCM(
             dep.parsed_url, self._client.root_dir, dep.name, dep.outbuf)
-        dep._parsed_url = dep._raw_url = dep._url = '%s@%s' % (
-            url, scm.revinfo(self._client._options, [], None))
+        revinfo = scm.revinfo(self._client._options, [], None)
+        dep._parsed_url = dep._url = '%s@%s' % (url, revinfo)
+        dep._raw_url = '%s@%s' % (dep._raw_url, revinfo)
 
     self._deps_string = '\n'.join(
         _GNSettingsToLines(
