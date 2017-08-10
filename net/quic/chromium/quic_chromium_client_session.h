@@ -324,7 +324,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   // QuicChromiumPacketWriter::Delegate override.
   int HandleWriteError(int error_code,
-                       scoped_refptr<StringIOBuffer> last_packet) override;
+                       scoped_refptr<QuicChromiumPacketWriter::ReusableIOBuffer>
+                           last_packet) override;
   void OnWriteError(int error_code) override;
   void OnWriteUnblocked() override;
 
@@ -549,7 +550,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   uint64_t bytes_pushed_and_unclaimed_count_;
   // Stores packet that witnesses socket write error. This packet is
   // written to a new socket after migration completes.
-  scoped_refptr<StringIOBuffer> packet_;
+  scoped_refptr<QuicChromiumPacketWriter::ReusableIOBuffer> packet_;
   // TODO(jri): Replace use of migration_pending_ sockets_.size().
   // When a task is posted for MigrateSessionOnError, pass in
   // sockets_.size(). Then in MigrateSessionOnError, check to see if
