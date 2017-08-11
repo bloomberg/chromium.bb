@@ -343,6 +343,8 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   NSInteger sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
 
   if (suggestions.count == 0) {
+    // No suggestions for this section. Add the item signaling this section is
+    // empty if there is currently no item in it.
     if ([model hasSectionForSectionIdentifier:sectionIdentifier] &&
         [model numberOfItemsInSection:[model sectionForSectionIdentifier:
                                                  sectionIdentifier]] == 0) {
@@ -356,6 +358,35 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
     return indexPaths;
   }
 
+  if (sectionIdentifier == SectionIdentifierLearnMore) {
+    // The "Learn more" items should only be displayed if there is at least one
+    // ContentSuggestions section.
+    if ((![model hasSectionForSectionIdentifier:SectionIdentifierArticles] &&
+         !
+         [model hasSectionForSectionIdentifier:SectionIdentifierReadingList]) ||
+        [model itemsInSectionWithIdentifier:sectionIdentifier].count > 0) {
+      return @[];
+    }
+  } else if (IsFromContentSuggestions(sectionIdentifier)) {
+    // If the section is a ContentSuggestions section, add the "Learn more"
+    // items if they are not already present.
+    if ([model hasSectionForSectionIdentifier:SectionIdentifierLearnMore] &&
+        [model itemsInSectionWithIdentifier:SectionIdentifierLearnMore].count ==
+            0) {
+      ContentSuggestionsSectionInformation* learnMoreSectionInfo =
+          self.sectionInfoBySectionIdentifier[@(SectionIdentifierLearnMore)];
+      for (CSCollectionViewItem* item in
+           [self.dataSource itemsForSectionInfo:learnMoreSectionInfo]) {
+        item.type = ItemTypeForInfo(learnMoreSectionInfo);
+        NSIndexPath* addedIndexPath = [self addItem:item
+                            toSectionWithIdentifier:SectionIdentifierLearnMore];
+
+        [indexPaths addObject:addedIndexPath];
+      }
+    }
+  }
+
+  // Add the items from this section.
   [suggestions enumerateObjectsUsingBlock:^(CSCollectionViewItem* item,
                                             NSUInteger index, BOOL* stop) {
     NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
