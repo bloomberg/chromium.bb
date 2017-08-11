@@ -45,8 +45,8 @@ void ChildProcessCrashObserver::OnChildExit(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&CrashDumpManager::ProcessMinidumpFileFromChild,
                  base::Unretained(CrashDumpManager::GetInstance()),
-                 crash_dump_dir_, pid, process_type, termination_status,
-                 app_state));
+                 crash_dump_dir_, child_process_id, process_type,
+                 termination_status, app_state));
 }
 
 }  // namespace breakpad
