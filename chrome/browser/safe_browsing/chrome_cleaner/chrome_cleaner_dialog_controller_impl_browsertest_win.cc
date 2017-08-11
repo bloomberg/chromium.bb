@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(ChromeCleanerPromptUserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeCleanerPromptUserTest,
-                       OnInfectedBrowserNotAvailable) {
+                       DISABLED_OnInfectedBrowserNotAvailable) {
   browser()->window()->Minimize();
   base::RunLoop().RunUntilIdle();
   dialog_controller_->OnInfected(std::set<base::FilePath>());
