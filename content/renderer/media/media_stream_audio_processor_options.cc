@@ -292,9 +292,9 @@ void AudioProcessingProperties::DisableDefaultPropertiesForTesting() {
 // static
 AudioProcessingProperties AudioProcessingProperties::FromConstraints(
     const blink::WebMediaConstraints& constraints,
-    const MediaStreamDevice::AudioDeviceParameters& input_params) {
+    const media::AudioParameters& input_params) {
   DCHECK(IsOldAudioConstraints());
-  MediaAudioConstraints audio_constraints(constraints, input_params.effects);
+  MediaAudioConstraints audio_constraints(constraints, input_params.effects());
   AudioProcessingProperties properties;
   properties.enable_sw_echo_cancellation =
       audio_constraints.GetEchoCancellationProperty();
@@ -524,14 +524,14 @@ void GetAudioProcessingStats(
 
 std::vector<media::Point> GetArrayGeometryPreferringConstraints(
     const MediaAudioConstraints& audio_constraints,
-    const MediaStreamDevice::AudioDeviceParameters& input_params) {
+    const media::AudioParameters& input_params) {
   const std::string constraints_geometry =
       audio_constraints.GetGoogArrayGeometry();
 
   // Give preference to the audio constraint over the device-supplied mic
   // positions. This is mainly for testing purposes.
   return constraints_geometry.empty()
-             ? input_params.mic_positions
+             ? input_params.mic_positions()
              : media::ParsePointsFromString(constraints_geometry);
 }
 

@@ -1175,10 +1175,10 @@ bool MediaStreamManager::FindExistingRequestedDeviceInfo(
           *existing_device_info = device_info;
           // Make sure that the audio |effects| reflect what the request
           // is set to and not what the capabilities are.
-          FilterAudioEffects(request->controls,
-                             &existing_device_info->device.input.effects);
-          EnableHotwordEffect(request->controls,
-                              &existing_device_info->device.input.effects);
+          int effects = existing_device_info->device.input.effects();
+          FilterAudioEffects(request->controls, &effects);
+          EnableHotwordEffect(request->controls, &effects);
+          existing_device_info->device.input.set_effects(effects);
           *existing_request_state = request->state(device_info.device.type);
           return true;
         }
@@ -1308,6 +1308,7 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "Opened({stream_type = " << stream_type <<  "} "
            << "{capture_session_id = " << capture_session_id << "})";
+
   // Find the request(s) containing this device and mark it as used.
   // It can be used in several requests since the same device can be
   // requested from the same web page.
@@ -1336,10 +1337,10 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
             // parameters to the default settings (including supported effects),
             // we need to adjust those settings here according to what the
             // request asks for.
-            FilterAudioEffects(request->controls,
-                               &device_info.device.input.effects);
-            EnableHotwordEffect(request->controls,
-                                &device_info.device.input.effects);
+            int effects = device_info.device.input.effects();
+            FilterAudioEffects(request->controls, &effects);
+            EnableHotwordEffect(request->controls, &effects);
+            device_info.device.input.set_effects(effects);
 
             device_info.device.matched_output = info->device.matched_output;
           }
@@ -1504,8 +1505,13 @@ void MediaStreamManager::HandleAccessRequestResponse(
       if (sample_rate <= 0 || sample_rate > 96000)
         sample_rate = 44100;
 
-      device_info.device.input.sample_rate = sample_rate;
-      device_info.device.input.channel_layout = media::CHANNEL_LAYOUT_STEREO;
+      media::AudioParameters params(
+          device_info.device.input.format(), media::CHANNEL_LAYOUT_STEREO,
+          sample_rate, device_info.device.input.bits_per_sample(),
+          device_info.device.input.frames_per_buffer());
+      params.set_effects(device_info.device.input.effects());
+      params.set_mic_positions(device_info.device.input.mic_positions());
+      device_info.device.input = params;
     }
 
     if (device_info.device.type == request->audio_type())
