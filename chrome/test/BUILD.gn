@@ -2936,6 +2936,8 @@ group("telemetry_perf_unittests") {
     "//testing/scripts/common.py",
     "//testing/xvfb.py",
     "//testing/scripts/run_telemetry_as_googletest.py",
+    # For smoke testing run_telemetry_benchmark_as_googletest
+    "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
   ]
 
   if (enable_package_mash_services) {
