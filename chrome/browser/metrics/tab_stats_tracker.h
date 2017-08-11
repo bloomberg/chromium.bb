@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_METRICS_TAB_STATS_TRACKER_H_
 
 #include "base/macros.h"
+#include "base/power_monitor/power_observer.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -17,7 +18,8 @@ namespace metrics {
 // TODO(sebmarchand): This is just a base class and doesn't do much for now,
 // finish this and document the architecture here.
 class TabStatsTracker : public TabStripModelObserver,
-                        public chrome::BrowserListObserver {
+                        public chrome::BrowserListObserver,
+                        public base::PowerObserver {
  public:
   // Creates the |TabStatsTracker| instance and initializes the
   // observers that notify it.
@@ -31,6 +33,10 @@ class TabStatsTracker : public TabStripModelObserver,
   size_t browser_count() const { return browser_count_; }
 
  protected:
+  // The UmaStatsReportingDelegate is responsible for delivering statistics
+  // reported by the TabStatsTracker via UMA.
+  class UmaStatsReportingDelegate;
+
   TabStatsTracker();
   ~TabStatsTracker() override;
 
@@ -47,16 +53,39 @@ class TabStatsTracker : public TabStripModelObserver,
                     content::WebContents* web_contents,
                     int index) override;
 
+  // base::PowerObserver:
+  void OnResume() override;
+
   // The total number of tabs opened across all the browsers.
   size_t total_tabs_count_;
 
   // The total number of browsers opened.
   size_t browser_count_;
 
+  // The delegate that reports the events.
+  std::unique_ptr<UmaStatsReportingDelegate> reporting_delegate_;
+
  private:
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(TabStatsTracker);
+};
+
+// The reporting delegate, which reports metrics via UMA.
+class TabStatsTracker::UmaStatsReportingDelegate {
+ public:
+  // The name of the histogram that records the number of tabs total at resume
+  // from sleep/hibernate.
+  static const char kNumberOfTabsOnResumeHistogramName[];
+
+  UmaStatsReportingDelegate() {}
+  ~UmaStatsReportingDelegate() {}
+
+  // Called at resume from sleep/hibernate.
+  void ReportTabCountOnResume(size_t tab_count);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UmaStatsReportingDelegate);
 };
 
 }  // namespace metrics
