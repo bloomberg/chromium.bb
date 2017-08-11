@@ -81,9 +81,7 @@ void AwUrlCheckerDelegateImpl::StartApplicationResponse(
     base::Callback<void(SafeBrowsingAction, bool)> callback = base::Bind(
         &AwUrlCheckerDelegateImpl::DoApplicationResponse, ui_manager, resource);
 
-    client->OnSafeBrowsingHit(
-        request, resource.threat_type,
-        security_interstitials::kSafeBrowsingPrivacyPolicyUrl, callback);
+    client->OnSafeBrowsingHit(request, resource.threat_type, callback);
   }
 }
 

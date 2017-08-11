@@ -103,7 +103,6 @@ class AwContentsClientBridge {
   void OnSafeBrowsingHit(
       const AwWebResourceRequest& request,
       const safe_browsing::SBThreatType& threat_type,
-      const std::string& privacy_policy_url,
       const base::Callback<void(AwUrlCheckerDelegateImpl::SafeBrowsingAction,
                                 bool)>& callback);
 

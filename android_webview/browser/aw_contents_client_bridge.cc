@@ -453,7 +453,6 @@ void AwContentsClientBridge::OnReceivedError(
 void AwContentsClientBridge::OnSafeBrowsingHit(
     const AwWebResourceRequest& request,
     const safe_browsing::SBThreatType& threat_type,
-    const std::string& privacy_policy_url,
     const SafeBrowsingActionCallback& callback) {
   int request_id = safe_browsing_callbacks_.Add(
       base::MakeUnique<SafeBrowsingActionCallback>(callback));
@@ -471,7 +470,7 @@ void AwContentsClientBridge::OnSafeBrowsingHit(
       request.has_user_gesture, java_web_resource_request.jmethod,
       java_web_resource_request.jheader_names,
       java_web_resource_request.jheader_values, static_cast<int>(threat_type),
-      ConvertUTF8ToJavaString(env, privacy_policy_url), request_id);
+      request_id);
 }
 
 void AwContentsClientBridge::OnReceivedHttpError(

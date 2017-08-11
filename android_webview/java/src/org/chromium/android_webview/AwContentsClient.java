@@ -370,7 +370,7 @@ public abstract class AwContentsClient {
             AwWebResourceRequest request, AwWebResourceError error);
 
     protected abstract void onSafeBrowsingHit(AwWebResourceRequest request, int threatType,
-            String privacyPolicyUrl, ValueCallback<AwSafeBrowsingResponse> callback);
+            ValueCallback<AwSafeBrowsingResponse> callback);
 
     public abstract void onReceivedHttpError(AwWebResourceRequest request,
             AwWebResourceResponse response);
