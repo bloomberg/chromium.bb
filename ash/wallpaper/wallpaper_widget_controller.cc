@@ -70,6 +70,8 @@ WallpaperWidgetController::WallpaperWidgetController(views::Widget* widget)
 
 WallpaperWidgetController::~WallpaperWidgetController() {
   if (widget_) {
+    if (widget_->GetLayer()->layer_blur() > 0.0f)
+      widget_parent_->layer()->SetCacheRenderSurface(false);
     views::Widget* widget = widget_;
     RemoveObservers();
     widget->CloseNow();
@@ -88,11 +90,15 @@ void WallpaperWidgetController::SetBounds(const gfx::Rect& bounds) {
 bool WallpaperWidgetController::Reparent(aura::Window* root_window,
                                          int container) {
   if (widget_) {
+    // Ensures the cache render surface of the old parent is unset.
+    widget_parent_->layer()->SetCacheRenderSurface(false);
     widget_parent_->RemoveObserver(this);
     aura::Window* window = widget_->GetNativeWindow();
     root_window->GetChildById(container)->AddChild(window);
     widget_parent_ = widget_->GetNativeWindow()->parent();
     widget_parent_->AddObserver(this);
+    if (widget_->GetLayer()->layer_blur() > 0.0f)
+      widget_parent_->layer()->SetCacheRenderSurface(true);
     return true;
   }
   // Nothing to reparent.
@@ -126,6 +132,12 @@ void WallpaperWidgetController::StartAnimating(
     settings.SetTransitionDuration(base::TimeDelta());
     widget_->Show();
   }
+}
+
+void WallpaperWidgetController::SetWallpaperBlur(float blur_sigma) {
+  widget_->GetLayer()->SetLayerBlur(blur_sigma);
+  // Force the use of cache render surface to make blur more efficient.
+  widget_parent_->layer()->SetCacheRenderSurface(blur_sigma > 0.0f);
 }
 
 AnimatingWallpaperWidgetController::AnimatingWallpaperWidgetController(
