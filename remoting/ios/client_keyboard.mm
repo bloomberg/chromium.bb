@@ -26,6 +26,7 @@
 @synthesize keyboardType = _keyboardType;
 @synthesize spellCheckingType = _spellCheckingType;
 
+@synthesize selectedTextRange = _selectedTextRange;
 @synthesize delegate = _delegate;
 
 // TODO(nicholss): For physical keyboard, look at UIKeyCommand
