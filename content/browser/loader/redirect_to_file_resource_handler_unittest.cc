@@ -275,19 +275,24 @@ class RedirectToFileResourceHandlerTest
     create_file_stream_callback_ = create_file_stream_callback;
   }
 
-  // Simulates starting the request, the response starting, and stream creation
-  // completing with the specified error code. Has |test_handler_| resume the
-  // request, if needed. Returns final status of |mock_loader_|.
-  MockResourceLoader::Status StartAndCreateStream(base::File::Error file_error)
-      WARN_UNUSED_RESULT {
-    DCHECK(file_stream_);
+  void PerformOnWillStart() {
+    MockResourceLoader::Status expected_status;
+    if (GetParam() == CompletionMode::ASYNC) {
+      expected_status = MockResourceLoader::Status::CALLBACK_PENDING;
+    } else {
+      expected_status = MockResourceLoader::Status::IDLE;
+    }
+    EXPECT_EQ(expected_status, mock_loader_->OnWillStart(url_request_->url()));
+  }
 
-    EXPECT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
-              mock_loader_->OnWillStart(url_request_->url()));
+  // Sets up the file stream or error, and performs the file callback.
+  void PerformCreateFile(base::File::Error file_error) {
+    DCHECK(file_stream_);
 
     file_stream_->set_expect_closed(file_error == base::File::FILE_OK);
     if (file_error != base::File::FILE_OK)
       file_stream_ = nullptr;
+
     base::ResetAndReturn(&create_file_stream_callback_)
         .Run(file_error, std::move(file_stream_),
              // Not really used by the test, but the ResourceHandler expects it
@@ -297,6 +302,18 @@ class RedirectToFileResourceHandlerTest
                  storage::ShareableFileReference::DELETE_ON_FINAL_RELEASE,
                  base::ThreadTaskRunnerHandle::Get().get())
                  .get());
+  }
+
+  // Simulates starting the request, the response starting, and stream creation
+  // completing with the specified error code. Has |test_handler_| resume the
+  // request, if needed. Returns final status of |mock_loader_|.
+  MockResourceLoader::Status StartAndCreateStream(base::File::Error file_error)
+      WARN_UNUSED_RESULT {
+    PerformOnWillStart();
+
+    // Create the file right away.
+    PerformCreateFile(file_error);
+
     // If this is an async test, |test_handler_| will defer the OnWillStart
     // event on success (On error, its OnWillStart method is not called).
     if (file_error == base::File::FILE_OK &&
@@ -387,6 +404,67 @@ TEST_P(RedirectToFileResourceHandlerTest, SingleBodyRead) {
   base::RunLoop().RunUntilIdle();
 
   CompleteRequestSuccessfully(test_data.size());
+}
+
+TEST_P(RedirectToFileResourceHandlerTest, SingleBodyReadDelayedFileOnResponse) {
+  std::string test_data = CreateTestData(kMaxInitialSyncReadSize);
+
+  PerformOnWillStart();
+  if (GetParam() == CompletionMode::ASYNC) {
+    EXPECT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
+              mock_loader_->status());
+    test_handler_->Resume();
+    mock_loader_->WaitUntilIdleOrCanceled();
+  }
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->status());
+  mock_loader_->OnResponseStarted(make_scoped_refptr(new ResourceResponse()));
+  ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
+            mock_loader_->status());
+
+  PerformCreateFile(base::File::FILE_OK);
+
+  if (GetParam() == CompletionMode::ASYNC) {
+    EXPECT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
+              mock_loader_->status());
+    test_handler_->Resume();
+    mock_loader_->WaitUntilIdleOrCanceled();
+  }
+  EXPECT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->status());
+
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
+  ASSERT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader_->OnReadCompleted(test_data));
+  // Wait for the write to complete, in the async case.
+  base::RunLoop().RunUntilIdle();
+
+  CompleteRequestSuccessfully(test_data.size());
+}
+
+TEST_P(RedirectToFileResourceHandlerTest, SingleBodyReadDelayedFileError) {
+  std::string test_data = CreateTestData(0);
+
+  PerformOnWillStart();
+  if (GetParam() == CompletionMode::ASYNC) {
+    EXPECT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
+              mock_loader_->status());
+    test_handler_->Resume();
+    mock_loader_->WaitUntilIdleOrCanceled();
+  }
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->status());
+  mock_loader_->OnResponseStarted(make_scoped_refptr(new ResourceResponse()));
+  ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
+            mock_loader_->status());
+
+  PerformCreateFile(base::File::FILE_ERROR_FAILED);
+
+  EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->status());
+  EXPECT_EQ(0, test_handler_->on_response_completed_called());
+  EXPECT_EQ(net::ERR_FAILED, mock_loader_->error_code());
+  ASSERT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader_->OnResponseCompleted(
+                net::URLRequestStatus::FromError(net::ERR_FAILED)));
+  EXPECT_FALSE(test_handler_->final_status().is_success());
+  EXPECT_EQ(net::ERR_FAILED, test_handler_->final_status().error());
 }
 
 TEST_P(RedirectToFileResourceHandlerTest, ManySequentialBodyReads) {
@@ -757,9 +835,17 @@ TEST_P(RedirectToFileResourceHandlerTest, CreateFileFails) {
 
   EXPECT_EQ(0, test_handler_->on_response_completed_called());
   EXPECT_EQ(net::ERR_FAILED, mock_loader_->error_code());
-  ASSERT_EQ(MockResourceLoader::Status::IDLE,
-            mock_loader_->OnResponseCompleted(
-                net::URLRequestStatus::FromError(net::ERR_FAILED)));
+  if (GetParam() == CompletionMode::ASYNC) {
+    EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->status());
+    ASSERT_EQ(MockResourceLoader::Status::IDLE,
+              mock_loader_->OnResponseCompletedFromExternalOutOfBandCancel(
+                  net::URLRequestStatus::FromError(net::ERR_FAILED)));
+  } else {
+    ASSERT_EQ(MockResourceLoader::Status::IDLE,
+              mock_loader_->OnResponseCompleted(
+                  net::URLRequestStatus::FromError(net::ERR_FAILED)));
+  }
+
   EXPECT_EQ(0, test_handler_->total_bytes_downloaded());
   EXPECT_FALSE(test_handler_->final_status().is_success());
   EXPECT_EQ(net::ERR_FAILED, test_handler_->final_status().error());
