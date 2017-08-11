@@ -54,7 +54,7 @@ class PrintPreviewHandler
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
-
+  void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
   // SelectFileDialog::Listener implementation.
