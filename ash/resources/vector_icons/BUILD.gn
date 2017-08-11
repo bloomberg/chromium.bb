@@ -100,8 +100,6 @@ aggregate_vector_icons("ash_vector_icons") {
     "shelf_overflow.icon",
     "shelf_overview.1x.icon",
     "shelf_overview.icon",
-    "shelf_voice_interaction.1x.icon",
-    "shelf_voice_interaction.icon",
     "system_menu_accessibility.1x.icon",
     "system_menu_accessibility.icon",
     "system_menu_accessibility_auto_click.1x.icon",
