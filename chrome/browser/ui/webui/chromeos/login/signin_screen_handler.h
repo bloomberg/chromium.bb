@@ -11,6 +11,7 @@
 #include <string>
 
 #include "ash/public/interfaces/touch_view.mojom.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
@@ -241,7 +241,7 @@ class SigninScreenHandler
       public ash::mojom::TouchViewObserver,
       public lock_screen_apps::StateObserver,
       public OobeUI::Observer,
-      public wallpaper::WallpaperManagerBase::Observer {
+      public ash::WallpaperControllerObserver {
  public:
   SigninScreenHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
@@ -275,12 +275,13 @@ class SigninScreenHandler
   // Required Local State preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // OobeUI::Observer implemetation.
+  // OobeUI::Observer implementation:
   void OnCurrentScreenChanged(OobeScreen current_screen,
                               OobeScreen new_screen) override;
 
-  // wallpaper::WallpaperManagerBase::Observer implementation.
+  // ash::WallpaperControllerObserver implementation:
   void OnWallpaperColorsChanged() override;
+  void OnWallpaperDataChanged() override;
 
   void SetFocusPODCallbackForTesting(base::Closure callback);
 
@@ -319,9 +320,9 @@ class SigninScreenHandler
                           NetworkError::ErrorReason reason);
   void ReloadGaia(bool force_reload);
 
-  // Sets signin screen overlay colors based on the wallpaper color extraction
-  // results.
-  void SetSigninScreenColors(SkColor dm_color);
+  // Updates the color of the scrollable container on account picker screen,
+  // based on wallpaper color extraction results.
+  void UpdateAccountPickerColors();
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(

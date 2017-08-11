@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/shutdown_reason.h"
 #include "ash/system/devicetype_utils.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/location.h"
@@ -54,6 +55,7 @@
 #include "chrome/browser/chromeos/login/ui/login_feedback.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -103,6 +105,7 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 
 namespace {
@@ -131,6 +134,12 @@ const char kForegroundLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.FOREGROUND";
 const char kAvailableLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.AVAILABLE";
 const char kLaunchRequestedLockScreenApps[] =
     "LOCK_SCREEN_APPS_STATE.LAUNCH_REQUESTED";
+
+ash::WallpaperController* GetWallpaperController() {
+  if (!ash::Shell::HasInstance())
+    return nullptr;
+  return ash::Shell::Get()->wallpaper_controller();
+}
 
 class CallOnReturn {
  public:
@@ -284,8 +293,9 @@ SigninScreenHandler::SigninScreenHandler(
   touch_view_manager_ptr_->AddObserver(std::move(observer));
   if (lock_screen_apps::StateController::IsEnabled())
     lock_screen_apps_observer_.Add(lock_screen_apps::StateController::Get());
-  if (WallpaperManager::HasInstance())
-    WallpaperManager::Get()->AddObserver(this);
+  ash::WallpaperController* wallpaper_controller = GetWallpaperController();
+  DCHECK(wallpaper_controller);
+  wallpaper_controller->AddObserver(this);
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
@@ -305,8 +315,9 @@ SigninScreenHandler::~SigninScreenHandler() {
   network_state_informer_->RemoveObserver(this);
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
   proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(EmptyAccountId());
-  if (WallpaperManager::HasInstance())
-    WallpaperManager::Get()->RemoveObserver(this);
+  ash::WallpaperController* wallpaper_controller = GetWallpaperController();
+  if (wallpaper_controller)
+    wallpaper_controller->RemoveObserver(this);
 }
 
 void SigninScreenHandler::DeclareLocalizedValues(
@@ -865,8 +876,17 @@ void SigninScreenHandler::ReloadGaia(bool force_reload) {
   gaia_screen_handler_->ReloadGaia(force_reload);
 }
 
-void SigninScreenHandler::SetSigninScreenColors(SkColor dark_muted_color) {
-  // The dark muted color should have 100% opacity.
+void SigninScreenHandler::UpdateAccountPickerColors() {
+  color_utils::ColorProfile color_profile(color_utils::LumaRange::DARK,
+                                          color_utils::SaturationRange::MUTED);
+  ash::WallpaperController* wallpaper_controller = GetWallpaperController();
+  SkColor dark_muted_color =
+      wallpaper_controller
+          ? wallpaper_controller->GetProminentColor(color_profile)
+          : ash::login_constants::kDefaultBaseColor;
+  if (dark_muted_color == ash::WallpaperController::kInvalidColor)
+    dark_muted_color = ash::login_constants::kDefaultBaseColor;
+
   dark_muted_color = SkColorSetA(dark_muted_color, 0xFF);
   SkColor base_color = color_utils::GetResultingPaintColor(
       SkColorSetA(ash::login_constants::kDefaultBaseColor,
@@ -920,12 +940,10 @@ void SigninScreenHandler::OnCurrentScreenChanged(OobeScreen current_screen,
 }
 
 void SigninScreenHandler::OnWallpaperColorsChanged() {
-  base::Optional<SkColor> color = WallpaperManager::Get()->prominent_color();
-  // If color extraction fails, use transparent as default.
-  if (!color.has_value())
-    color = SK_ColorTRANSPARENT;
-  SetSigninScreenColors(color.value());
+  UpdateAccountPickerColors();
 }
+
+void SigninScreenHandler::OnWallpaperDataChanged() {}
 
 void SigninScreenHandler::ClearAndEnablePassword() {
   core_oobe_view_->ResetSignInUI(false);
@@ -1290,6 +1308,9 @@ void SigninScreenHandler::HandleAccountPickerReady() {
     OnLockScreenNoteStateChanged(
         lock_screen_apps::StateController::Get()->GetLockScreenNoteState());
   }
+  // Color calculation of the first wallpaper may have completed before the
+  // instance is initialized, so make sure the colors are properly updated.
+  UpdateAccountPickerColors();
   if (delegate_)
     delegate_->OnSigninScreenReady();
 }

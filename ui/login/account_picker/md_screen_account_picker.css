@@ -74,10 +74,6 @@ html[screen=lock] #signin-banner.message-set {
   position: absolute;
 }
 
-.small-pod-container.scroll {
-  background-color: rgba(0, 0, 0, 0.3);
-}
-
 .small-pod-container.images-loading {
   visibility: hidden;
 }
@@ -105,7 +101,6 @@ html[screen=lock] #signin-banner.message-set {
 }
 
 .small-pod-container-mask {
-  background: linear-gradient(#000, transparent);
   height: 112px;
   position: absolute;
   width: 100%;
