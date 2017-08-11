@@ -42,6 +42,9 @@ class ASH_EXPORT WallpaperWidgetController : public views::WidgetObserver,
   // necessary this as |layer_| doesn't have access to the root window).
   void StartAnimating(RootWindowController* root_window_controller);
 
+  // Blur pixels of the wallpaper layer by 3 * the given amount.
+  void SetWallpaperBlur(float blur_sigma);
+
   views::Widget* widget() { return widget_; }
 
  private:
