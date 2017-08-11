@@ -193,6 +193,8 @@ Still reading?
   <issue id="NewApi" severity="ignore"/>
   <issue id="NewApi">
     <ignore regexp="Attribute `paddingStart` referenced here can result in a crash on some specific devices older than API 17"/>
+    <!-- We support try-with-resources via desugar. -->
+    <ignore regexp="Try-with-resources requires API level 19"/>
     <ignore regexp="chrome/android/java/res/values-v17/styles.xml"/>
     <ignore regexp="chromecast/internal"/>
     <ignore regexp="com/android/tv"/>
