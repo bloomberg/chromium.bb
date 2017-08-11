@@ -15,8 +15,10 @@
 
 namespace bluetooth {
 
+class FakePeripheral;
 class FakeRemoteGattCharacteristic;
 class FakeRemoteGattDescriptor;
+class FakeRemoteGattService;
 
 // Implementation of FakeCentral in
 // src/device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.
@@ -150,6 +152,11 @@ class FakeCentral : NON_EXPORTED_BASE(public mojom::FakeCentral),
  private:
   ~FakeCentral() override;
 
+  FakePeripheral* GetFakePeripheral(
+      const std::string& peripheral_address) const;
+  FakeRemoteGattService* GetFakeRemoteGattService(
+      const std::string& peripheral_address,
+      const std::string& service_id) const;
   FakeRemoteGattCharacteristic* GetFakeRemoteGattCharacteristic(
       const std::string& peripheral_address,
       const std::string& service_id,
