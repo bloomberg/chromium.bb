@@ -1848,6 +1848,9 @@ const char kPullToRefreshEffectName[] = "The pull-to-refresh effect";
 const char kPullToRefreshEffectDescription[] =
     "Page reloads triggered by vertically overscrolling content.";
 
+const char kPwaMinimalUiName[] = "Minimal-UI display mode for PWAs";
+const char kPwaMinimalUiDescription[] =
+    "Enables support for Minimal-UI display mode for installed PWAs";
 const char kPwaPersistentNotificationName[] =
     "Persistent notification in standalone PWA";
 const char kPwaPersistentNotificationDescription[] =

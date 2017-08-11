@@ -3339,6 +3339,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kVoiceSearchOnLocalNtp)},
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+    {"pwa-minimal-ui", flag_descriptions::kPwaMinimalUiName,
+     flag_descriptions::kPwaMinimalUiDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kPwaMinimalUi)},
+#endif  // OS_ANDROID
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.
