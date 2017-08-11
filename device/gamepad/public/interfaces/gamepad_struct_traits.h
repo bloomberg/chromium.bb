@@ -9,7 +9,7 @@
 
 #include "device/gamepad/public/cpp/gamepad.h"
 #include "device/gamepad/public/interfaces/gamepad.mojom.h"
-#include "mojo/public/cpp/bindings/array_traits_carray.h"
+#include "mojo/public/cpp/bindings/array_traits_span.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace mojo {

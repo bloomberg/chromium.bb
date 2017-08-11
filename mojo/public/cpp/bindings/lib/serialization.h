@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include "base/numerics/safe_math.h"
-#include "mojo/public/cpp/bindings/array_traits_carray.h"
+#include "mojo/public/cpp/bindings/array_traits_span.h"
 #include "mojo/public/cpp/bindings/array_traits_stl.h"
 #include "mojo/public/cpp/bindings/lib/array_serialization.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"

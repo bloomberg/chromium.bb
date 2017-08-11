@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_MESSAGE_PORT_MESSAGE_H_
 
 #include <vector>
-#include "mojo/public/cpp/bindings/array_traits_carray.h"
+#include "mojo/public/cpp/bindings/array_traits_span.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace content {

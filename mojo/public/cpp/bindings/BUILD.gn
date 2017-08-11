@@ -22,7 +22,7 @@ component("bindings") {
     "$interfaces_bindings_gen_dir/pipe_control_messages.mojom.cc",
     "$interfaces_bindings_gen_dir/pipe_control_messages.mojom.h",
     "array_data_view.h",
-    "array_traits_carray.h",
+    "array_traits_span.h",
     "array_traits_stl.h",
     "associated_binding.h",
     "associated_binding_set.h",
