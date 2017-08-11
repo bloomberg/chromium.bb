@@ -37,7 +37,6 @@ import org.chromium.ui.R;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -141,12 +140,7 @@ public class AutofillPopupTest {
     public void setUp() throws Exception {
         mAutofillLoggedEntries = new ArrayList<AutofillLogger.LogEntry>();
         AutofillLogger.setLoggerForTesting(
-                new AutofillLogger.Logger() {
-                    @Override
-                    public void didFillField(AutofillLogger.LogEntry logEntry) {
-                        mAutofillLoggedEntries.add(logEntry);
-                    }
-                }
+                logEntry -> mAutofillLoggedEntries.add(logEntry)
         );
     }
 
@@ -184,12 +178,7 @@ public class AutofillPopupTest {
 
         final ChromiumBaseInputConnection inputConnection =
                 viewCore.getImeAdapterForTest().getInputConnectionForTest();
-        inputConnection.getHandler().post(new Runnable() {
-            @Override
-            public void run() {
-                inputConnection.setComposingText(inputText, 1);
-            }
-        });
+        inputConnection.getHandler().post(() -> inputConnection.setComposingText(inputText, 1));
 
         waitForAnchorViewAdd(view);
         View anchorView = view.findViewById(R.id.dropdown_popup_window);
@@ -317,12 +306,7 @@ public class AutofillPopupTest {
     private void waitForKeyboardShowRequest(final TestInputMethodManagerWrapper immw,
             final int count) {
         CriteriaHelper.pollUiThread(
-                Criteria.equals(count, new Callable<Integer>() {
-                    @Override
-                    public Integer call() {
-                        return immw.getShowSoftInputCounter();
-                    }
-                }));
+                Criteria.equals(count, () -> immw.getShowSoftInputCounter()));
     }
 
     private void waitForAnchorViewAdd(final ViewGroup view) {

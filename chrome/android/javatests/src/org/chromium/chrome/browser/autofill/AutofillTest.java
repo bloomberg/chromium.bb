@@ -66,19 +66,16 @@ public class AutofillTest {
                 ViewAndroidDelegate.createBasicDelegate(
                         activity.getCurrentContentViewCore().getContainerView());
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                View anchorView = viewDelegate.acquireView();
-                viewDelegate.setViewPosition(anchorView, 50f, 500f, 500f, 500f, 1f, 10, 10);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            View anchorView = viewDelegate.acquireView();
+            viewDelegate.setViewPosition(anchorView, 50f, 500f, 500f, 500f, 1f, 10, 10);
 
-                mWindowAndroid = new ActivityWindowAndroid(activity);
-                mAutofillPopup = new AutofillPopup(activity, anchorView, mMockAutofillCallback);
-                mAutofillPopup.filterAndShow(new AutofillSuggestion[0], false /* isRtl */,
-                        Color.TRANSPARENT /* backgroundColor */,
-                        Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */,
-                        0 /* margin */);
-            }
+            mWindowAndroid = new ActivityWindowAndroid(activity);
+            mAutofillPopup = new AutofillPopup(activity, anchorView, mMockAutofillCallback);
+            mAutofillPopup.filterAndShow(new AutofillSuggestion[0], false /* isRtl */,
+                    Color.TRANSPARENT /* backgroundColor */,
+                    Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */,
+                    0 /* margin */);
         });
     }
 
@@ -143,15 +140,11 @@ public class AutofillTest {
     }
 
     public void openAutofillPopupAndWaitUntilReady(final AutofillSuggestion[] suggestions) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mAutofillPopup.filterAndShow(suggestions, false /* isRtl */,
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mAutofillPopup.filterAndShow(suggestions, false /* isRtl */,
                         Color.TRANSPARENT /* backgroundColor */,
                         Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */,
-                        0 /* margin */);
-            }
-        });
+                        0 /* margin */));
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

@@ -60,12 +60,9 @@ public class ChromeHomeAppMenuTest {
         assertTrue(iconRow.getReloadButtonForTests().isEnabled());
 
         // Navigate backward, open the menu and assert forward button is enabled.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mAppMenuHandler.hideAppMenu();
-                mBottomSheetTestRule.getActivity().getActivityTab().goBack();
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mAppMenuHandler.hideAppMenu();
+            mBottomSheetTestRule.getActivity().getActivityTab().goBack();
         });
 
         showAppMenuAndAssertMenuShown();
@@ -76,12 +73,8 @@ public class ChromeHomeAppMenuTest {
     @Test
     @SmallTest
     public void testTabSwitcherMenu() throws IllegalArgumentException {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mBottomSheetTestRule.getActivity().getLayoutManager().showOverview(false);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mBottomSheetTestRule.getActivity().getLayoutManager().showOverview(false));
 
         showAppMenuAndAssertMenuShown();
         AppMenu appMenu = mAppMenuHandler.getAppMenu();
@@ -90,12 +83,7 @@ public class ChromeHomeAppMenuTest {
     }
 
     private void showAppMenuAndAssertMenuShown() {
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mAppMenuHandler.showAppMenu(null, false);
-            }
-        });
+        ThreadUtils.runOnUiThread((Runnable) () -> mAppMenuHandler.showAppMenu(null, false));
         CriteriaHelper.pollUiThread(new Criteria("AppMenu did not show") {
             @Override
             public boolean isSatisfied() {

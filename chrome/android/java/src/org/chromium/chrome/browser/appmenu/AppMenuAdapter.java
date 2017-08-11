@@ -15,7 +15,6 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
@@ -258,12 +257,7 @@ class AppMenuAdapter extends BaseAdapter {
                 holder.title.setText(titleItem.getTitle());
                 holder.title.setEnabled(titleItem.isEnabled());
                 holder.title.setFocusable(titleItem.isEnabled());
-                holder.title.setOnClickListener(new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        mAppMenu.onItemClick(titleItem);
-                    }
-                });
+                holder.title.setOnClickListener(v -> mAppMenu.onItemClick(titleItem));
 
                 if (subItem.isCheckable()) {
                     // Display a checkbox for the MenuItem.
@@ -330,19 +324,9 @@ class AppMenuAdapter extends BaseAdapter {
             button.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
         }
 
-        button.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mAppMenu.onItemClick(item);
-            }
-        });
+        button.setOnClickListener(v -> mAppMenu.onItemClick(item));
 
-        button.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                return mAppMenu.onItemLongClick(item, v);
-            }
-        });
+        button.setOnLongClickListener(v -> mAppMenu.onItemLongClick(item, v));
 
         highlightItemIfNecessary(button, true, item.getItemId());
 
@@ -366,12 +350,7 @@ class AppMenuAdapter extends BaseAdapter {
         // This will ensure that the item is not highlighted when selected.
         convertView.setEnabled(isEnabled);
 
-        convertView.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mAppMenu.onItemClick(item);
-            }
-        });
+        convertView.setOnClickListener(v -> mAppMenu.onItemClick(item));
     }
 
     /**
