@@ -1969,7 +1969,7 @@ std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
 #endif
   return renderer_factory_selector_->GetCurrentFactory()->CreateRenderer(
       media_task_runner_, worker_task_runner_, audio_source_provider_.get(),
-      compositor_, request_overlay_info_cb);
+      compositor_, request_overlay_info_cb, client_->TargetColorSpace());
 }
 
 void WebMediaPlayerImpl::StartPipeline() {

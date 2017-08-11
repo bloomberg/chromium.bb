@@ -65,6 +65,7 @@ std::vector<std::unique_ptr<VideoDecoder>>
 DefaultRendererFactory::CreateVideoDecoders(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const RequestOverlayInfoCB& request_overlay_info_cb,
+    const gfx::ColorSpace& target_color_space,
     GpuVideoAcceleratorFactories* gpu_factories) {
   // Create our video decoders and renderer.
   std::vector<std::unique_ptr<VideoDecoder>> video_decoders;
@@ -82,7 +83,8 @@ DefaultRendererFactory::CreateVideoDecoders(
                                             media_log_, &video_decoders);
     }
     video_decoders.push_back(base::MakeUnique<GpuVideoDecoder>(
-        gpu_factories, request_overlay_info_cb, media_log_));
+        gpu_factories, request_overlay_info_cb, target_color_space,
+        media_log_));
   }
 
 #if !defined(MEDIA_DISABLE_LIBVPX)
@@ -101,7 +103,8 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     AudioRendererSink* audio_renderer_sink,
     VideoRendererSink* video_renderer_sink,
-    const RequestOverlayInfoCB& request_overlay_info_cb) {
+    const RequestOverlayInfoCB& request_overlay_info_cb,
+    const gfx::ColorSpace& target_color_space) {
   DCHECK(audio_renderer_sink);
 
   std::unique_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
@@ -130,7 +133,7 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
       // finishes.
       base::Bind(&DefaultRendererFactory::CreateVideoDecoders,
                  base::Unretained(this), media_task_runner,
-                 request_overlay_info_cb, gpu_factories),
+                 request_overlay_info_cb, target_color_space, gpu_factories),
       true, gpu_factories, media_log_));
 
   return base::MakeUnique<RendererImpl>(

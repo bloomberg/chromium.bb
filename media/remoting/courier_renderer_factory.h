@@ -23,7 +23,8 @@ class CourierRendererFactory : public RendererFactory {
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       AudioRendererSink* audio_renderer_sink,
       VideoRendererSink* video_renderer_sink,
-      const RequestOverlayInfoCB& request_overlay_info_cb) override;
+      const RequestOverlayInfoCB& request_overlay_info_cb,
+      const gfx::ColorSpace& target_color_space) override;
 
   // Returns whether remote rendering has started, based off of |controller_|.
   // Called by RendererFactorySelector to determine when to create a

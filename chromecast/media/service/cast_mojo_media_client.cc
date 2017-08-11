@@ -78,7 +78,8 @@ class CastRendererFactory : public ::media::RendererFactory {
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       ::media::AudioRendererSink* audio_renderer_sink,
       ::media::VideoRendererSink* video_renderer_sink,
-      const ::media::RequestOverlayInfoCB& request_overlay_info_cb) final {
+      const ::media::RequestOverlayInfoCB& request_overlay_info_cb,
+      const gfx::ColorSpace& target_color_space) final {
     DCHECK(audio_renderer_sink);
     DCHECK(!video_renderer_sink);
     return base::MakeUnique<CastRenderer>(

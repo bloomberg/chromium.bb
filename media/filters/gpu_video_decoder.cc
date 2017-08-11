@@ -106,10 +106,12 @@ GpuVideoDecoder::BufferData::~BufferData() {}
 GpuVideoDecoder::GpuVideoDecoder(
     GpuVideoAcceleratorFactories* factories,
     const RequestOverlayInfoCB& request_overlay_info_cb,
+    const gfx::ColorSpace& target_color_space,
     MediaLog* media_log)
     : needs_bitstream_conversion_(false),
       factories_(factories),
       request_overlay_info_cb_(request_overlay_info_cb),
+      target_color_space_(target_color_space),
       media_log_(media_log),
       vda_initialized_(false),
       state_(kNormal),
@@ -360,7 +362,8 @@ void GpuVideoDecoder::CompleteInitialization(const OverlayInfo& overlay_info) {
   vda_config.encryption_scheme = config_.encryption_scheme();
   vda_config.is_deferred_initialization_allowed = true;
   vda_config.initial_expected_coded_size = config_.coded_size();
-  vda_config.color_space = config_.color_space_info();
+  vda_config.container_color_space = config_.color_space_info();
+  vda_config.target_color_space = target_color_space_;
 
 #if defined(OS_ANDROID) && BUILDFLAG(USE_PROPRIETARY_CODECS)
   // We pass the SPS and PPS on Android because it lets us initialize
