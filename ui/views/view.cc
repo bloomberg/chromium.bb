@@ -908,10 +908,10 @@ void View::Paint(const PaintInfo& parent_paint_info) {
       // Transform |clip_path_| from local space to parent recording space.
       gfx::Transform to_parent_recording_space;
 
+      to_parent_recording_space.Translate(paint_info.offset_from_parent());
       to_parent_recording_space.Scale(
           SkFloatToScalar(paint_info.paint_recording_scale_x()),
           SkFloatToScalar(paint_info.paint_recording_scale_y()));
-      to_parent_recording_space.Translate(paint_info.offset_from_parent());
 
       clip_path_in_parent.transform(to_parent_recording_space.matrix());
       clip_recorder.ClipPathWithAntiAliasing(clip_path_in_parent);
