@@ -798,14 +798,10 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
             scroll_node.main_thread_scrolling_reasons);
 
   auto* layer = ContentLayerAt(0);
+  auto transform_node_index = layer->transform_tree_index();
+  EXPECT_EQ(transform_node_index, transform_node.id);
   auto scroll_node_index = layer->scroll_tree_index();
   EXPECT_EQ(scroll_node_index, scroll_node.id);
-
-  // Only one content layer, and the first child layer is the dummy layer for
-  // the transform node.
-  const cc::Layer* transform_node_layer = RootLayer()->children()[0].get();
-  auto transform_node_index = transform_node_layer->transform_tree_index();
-  EXPECT_EQ(transform_node_index, transform_node.id);
 
   EXPECT_EQ(0u, scroll_client.did_scroll_count);
   // TODO(pdr): The PaintArtifactCompositor should set the scrolling content
@@ -1715,31 +1711,6 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformWithElementId) {
             ElementIdToTransformNodeIndex(transform->GetCompositorElementId()));
 }
 
-TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
-       TransformNodeHasOwningLayerId) {
-  RefPtr<TransformPaintPropertyNode> transform =
-      TransformPaintPropertyNode::Create(
-          TransformPaintPropertyNode::Root(), TransformationMatrix().Rotate(90),
-          FloatPoint3D(100, 100, 0), false, 0, kCompositingReason3DTransform);
-
-  TestPaintArtifact artifact;
-  artifact
-      .Chunk(transform, ClipPaintPropertyNode::Root(),
-             EffectPaintPropertyNode::Root())
-      .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
-  Update(artifact.Build());
-
-  // Only one content layer, and the first child layer is the dummy layer for
-  // the transform node.
-  ASSERT_EQ(1u, ContentLayerCount());
-  const cc::Layer* transform_node_layer = RootLayer()->children()[0].get();
-  const cc::TransformNode* cc_transform_node =
-      GetPropertyTrees().transform_tree.Node(
-          transform_node_layer->transform_tree_index());
-  auto transform_node_index = transform_node_layer->transform_tree_index();
-  EXPECT_EQ(transform_node_index, cc_transform_node->id);
-}
-
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectWithElementId) {
   RefPtr<EffectPaintPropertyNode> effect =
       CreateSampleEffectNodeWithElementId();
@@ -1826,7 +1797,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
 
   // Two content layers for the differentiated rect drawings and three dummy
   // layers for each of the transform, clip and effect nodes.
-  EXPECT_EQ(5u, RootLayer()->children().size());
+  EXPECT_EQ(2u, RootLayer()->children().size());
   int sequence_number = GetPropertyTrees().sequence_number;
   EXPECT_GT(sequence_number, 0);
   for (auto layer : RootLayer()->children()) {
@@ -1835,7 +1806,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
 
   Update(artifact.Build());
 
-  EXPECT_EQ(5u, RootLayer()->children().size());
+  EXPECT_EQ(2u, RootLayer()->children().size());
   sequence_number++;
   EXPECT_EQ(sequence_number, GetPropertyTrees().sequence_number);
   for (auto layer : RootLayer()->children()) {
@@ -1844,7 +1815,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
 
   Update(artifact.Build());
 
-  EXPECT_EQ(5u, RootLayer()->children().size());
+  EXPECT_EQ(2u, RootLayer()->children().size());
   sequence_number++;
   EXPECT_EQ(sequence_number, GetPropertyTrees().sequence_number);
   for (auto layer : RootLayer()->children()) {
@@ -2344,27 +2315,26 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, SynthesizedClipSimple) {
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //                l2
-  //      l1 [ mask_effect_0 ]
-  // (l0) [ mask_isolation_0 ]
-  // [          e0           ]
-  // One content layer, one dummy, one clip mask.
-  ASSERT_EQ(3u, RootLayer()->children().size());
+  //           l1
+  // l0 [ mask_effect_0 ]
+  // [ mask_isolation_0 ]
+  // [        e0        ]
+  // One content layer, one clip mask.
+  ASSERT_EQ(2u, RootLayer()->children().size());
   ASSERT_EQ(1u, ContentLayerCount());
   ASSERT_EQ(1u, SynthesizedClipLayerCount());
 
-  const cc::Layer* dummy_c1 = RootLayer()->children()[0].get();
-  const cc::Layer* content0 = RootLayer()->children()[1].get();
-  const cc::Layer* clip_mask0 = RootLayer()->children()[2].get();
+  const cc::Layer* content0 = RootLayer()->children()[0].get();
+  const cc::Layer* clip_mask0 = RootLayer()->children()[1].get();
 
+  constexpr int c0_id = 1;
   constexpr int e0_id = 1;
 
-  int c1_id = dummy_c1->clip_tree_index();
-  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
-  ASSERT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
-
   EXPECT_EQ(ContentLayerAt(0), content0);
-  EXPECT_EQ(c1_id, content0->clip_tree_index());
+  int c1_id = content0->clip_tree_index();
+  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+  ASSERT_EQ(c0_id, cc_c1.parent_id);
   int mask_isolation_0_id = content0->effect_tree_index();
   const cc::EffectNode& mask_isolation_0 =
       *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
@@ -2403,44 +2373,40 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //                        l4
-  //      l1 (l2) l3 [ mask_effect_0 ]
-  // (l0) [     mask_isolation_0     ]
-  // [              e0               ]
-  // Two content layers, two dummy, one clip mask.
-  ASSERT_EQ(5u, RootLayer()->children().size());
+  //              l2
+  // l0 l1 [ mask_effect_0 ]
+  // [  mask_isolation_0   ]
+  // [         e0          ]
+  // Two content layers, one clip mask.
+  ASSERT_EQ(3u, RootLayer()->children().size());
   ASSERT_EQ(2u, ContentLayerCount());
   ASSERT_EQ(1u, SynthesizedClipLayerCount());
 
-  const cc::Layer* dummy_c1 = RootLayer()->children()[0].get();
-  const cc::Layer* content0 = RootLayer()->children()[1].get();
-  const cc::Layer* dummy_t1 = RootLayer()->children()[2].get();
-  const cc::Layer* content1 = RootLayer()->children()[3].get();
-  const cc::Layer* clip_mask0 = RootLayer()->children()[4].get();
+  const cc::Layer* content0 = RootLayer()->children()[0].get();
+  const cc::Layer* content1 = RootLayer()->children()[1].get();
+  const cc::Layer* clip_mask0 = RootLayer()->children()[2].get();
 
   constexpr int t0_id = 1;
+  constexpr int c0_id = 1;
   constexpr int e0_id = 1;
-
-  int c1_id = dummy_c1->clip_tree_index();
-  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
-  ASSERT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
 
   EXPECT_EQ(ContentLayerAt(0), content0);
   EXPECT_EQ(t0_id, content0->transform_tree_index());
-  EXPECT_EQ(c1_id, content0->clip_tree_index());
+  int c1_id = content0->clip_tree_index();
+  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+  ASSERT_EQ(c0_id, cc_c1.parent_id);
   int mask_isolation_0_id = content0->effect_tree_index();
   const cc::EffectNode& mask_isolation_0 =
       *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
   ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
   EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
 
-  int t1_id = dummy_t1->transform_tree_index();
+  EXPECT_EQ(ContentLayerAt(1), content1);
+  int t1_id = content1->transform_tree_index();
   const cc::TransformNode& cc_t1 =
       *GetPropertyTrees().transform_tree.Node(t1_id);
   ASSERT_EQ(t0_id, cc_t1.parent_id);
-
-  EXPECT_EQ(ContentLayerAt(1), content1);
-  EXPECT_EQ(t1_id, content1->transform_tree_index());
   EXPECT_EQ(c1_id, content1->clip_tree_index());
   EXPECT_EQ(mask_isolation_0_id, content1->effect_tree_index());
 
@@ -2480,44 +2446,36 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //                     l3                        l6
-  //      l1 (l2) [ mask_effect_0 ]    l5 [   mask_effect_1   ]
-  // (l0) [   mask_isolation_0    ] l4 [   mask_isolation_1   ]
-  // [                          e0                            ]
-  // Three content layers, two dummy, two clip mask.
-  ASSERT_EQ(7u, RootLayer()->children().size());
+  //           l1                      l4
+  // l0 [ mask_effect_0 ]    l3 [ mask_effect_1 ]
+  // [ mask_isolation_0 ] l2 [ mask_isolation_1 ]
+  // [                    e0                    ]
+  // Three content layers, two clip mask.
+  ASSERT_EQ(5u, RootLayer()->children().size());
   ASSERT_EQ(3u, ContentLayerCount());
   ASSERT_EQ(2u, SynthesizedClipLayerCount());
 
-  const cc::Layer* dummy_c1 = RootLayer()->children()[0].get();
-  const cc::Layer* content0 = RootLayer()->children()[1].get();
-  const cc::Layer* dummy_t1 = RootLayer()->children()[2].get();
-  const cc::Layer* clip_mask0 = RootLayer()->children()[3].get();
-  const cc::Layer* content1 = RootLayer()->children()[4].get();
-  const cc::Layer* content2 = RootLayer()->children()[5].get();
-  const cc::Layer* clip_mask1 = RootLayer()->children()[6].get();
+  const cc::Layer* content0 = RootLayer()->children()[0].get();
+  const cc::Layer* clip_mask0 = RootLayer()->children()[1].get();
+  const cc::Layer* content1 = RootLayer()->children()[2].get();
+  const cc::Layer* content2 = RootLayer()->children()[3].get();
+  const cc::Layer* clip_mask1 = RootLayer()->children()[4].get();
 
   constexpr int t0_id = 1;
   constexpr int c0_id = 1;
   constexpr int e0_id = 1;
 
-  int c1_id = dummy_c1->clip_tree_index();
-  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
-  ASSERT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
-
   EXPECT_EQ(ContentLayerAt(0), content0);
   EXPECT_EQ(t0_id, content0->transform_tree_index());
-  EXPECT_EQ(c1_id, content0->clip_tree_index());
+  int c1_id = content0->clip_tree_index();
+  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+  ASSERT_EQ(c0_id, cc_c1.parent_id);
   int mask_isolation_0_id = content0->effect_tree_index();
   const cc::EffectNode& mask_isolation_0 =
       *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
   ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
   EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
-
-  int t1_id = dummy_t1->transform_tree_index();
-  const cc::TransformNode& cc_t1 =
-      *GetPropertyTrees().transform_tree.Node(t1_id);
-  ASSERT_EQ(t0_id, cc_t1.parent_id);
 
   EXPECT_EQ(SynthesizedClipLayerAt(0), clip_mask0);
   EXPECT_EQ(gfx::Size(300, 200), clip_mask0->bounds());
@@ -2530,7 +2488,10 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   EXPECT_EQ(SkBlendMode::kDstIn, mask_effect_0.blend_mode);
 
   EXPECT_EQ(ContentLayerAt(1), content1);
-  EXPECT_EQ(t1_id, content1->transform_tree_index());
+  int t1_id = content1->transform_tree_index();
+  const cc::TransformNode& cc_t1 =
+      *GetPropertyTrees().transform_tree.Node(t1_id);
+  ASSERT_EQ(t0_id, cc_t1.parent_id);
   EXPECT_EQ(c0_id, content1->clip_tree_index());
   EXPECT_EQ(e0_id, content1->effect_tree_index());
 
@@ -2579,43 +2540,39 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //         (l2) l3           l5
-  //      l1 [ e1  ] l4 [ mask_effect_0 ]
-  // (l0) [      mask_isolation_0       ]
-  // [               e0                 ]
-  // Three content layers, two dummy, one clip mask.
-  ASSERT_EQ(6u, RootLayer()->children().size());
+  //      l1             l3
+  // l0 [ e1 ] l2 [ mask_effect_0 ]
+  // [      mask_isolation_0      ]
+  // [             e0             ]
+  // Three content layers, one clip mask.
+  ASSERT_EQ(4u, RootLayer()->children().size());
   ASSERT_EQ(3u, ContentLayerCount());
   ASSERT_EQ(1u, SynthesizedClipLayerCount());
 
-  const cc::Layer* dummy_c1 = RootLayer()->children()[0].get();
-  const cc::Layer* content0 = RootLayer()->children()[1].get();
-  const cc::Layer* dummy_e1 = RootLayer()->children()[2].get();
-  const cc::Layer* content1 = RootLayer()->children()[3].get();
-  const cc::Layer* content2 = RootLayer()->children()[4].get();
-  const cc::Layer* clip_mask0 = RootLayer()->children()[5].get();
+  const cc::Layer* content0 = RootLayer()->children()[0].get();
+  const cc::Layer* content1 = RootLayer()->children()[1].get();
+  const cc::Layer* content2 = RootLayer()->children()[2].get();
+  const cc::Layer* clip_mask0 = RootLayer()->children()[3].get();
 
+  constexpr int c0_id = 1;
   constexpr int e0_id = 1;
 
-  int c1_id = dummy_c1->clip_tree_index();
-  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
-  ASSERT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
-
   EXPECT_EQ(ContentLayerAt(0), content0);
-  EXPECT_EQ(c1_id, content0->clip_tree_index());
+  int c1_id = content0->clip_tree_index();
+  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+  ASSERT_EQ(c0_id, cc_c1.parent_id);
   int mask_isolation_0_id = content0->effect_tree_index();
   const cc::EffectNode& mask_isolation_0 =
       *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
   ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
   EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
 
-  int e1_id = dummy_e1->effect_tree_index();
-  const cc::EffectNode& cc_e1 = *GetPropertyTrees().effect_tree.Node(e1_id);
-  ASSERT_EQ(mask_isolation_0_id, cc_e1.parent_id);
-
   EXPECT_EQ(ContentLayerAt(1), content1);
   EXPECT_EQ(c1_id, content1->clip_tree_index());
-  EXPECT_EQ(e1_id, content1->effect_tree_index());
+  int e1_id = content1->effect_tree_index();
+  const cc::EffectNode& cc_e1 = *GetPropertyTrees().effect_tree.Node(e1_id);
+  ASSERT_EQ(mask_isolation_0_id, cc_e1.parent_id);
 
   EXPECT_EQ(ContentLayerAt(2), content2);
   EXPECT_EQ(c1_id, content2->clip_tree_index());
@@ -2658,33 +2615,31 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //                                          l5
-  //                l2              l4 [ mask_effect_1 ]           l7
-  //      l1 [ mask_effect_0 ] (l3) [ mask_isolation_1 ] l6 [ mask_effect_2 ]
-  // (l0) [ mask_isolation_0 ][           e1           ][ mask_isolation_2  ]
-  // [                                  e0                                  ]
-  // Three content layers, two dummy, three clip mask.
-  ASSERT_EQ(8u, RootLayer()->children().size());
+  //                               l3
+  //           l1        l2 [ mask_effect_1 ]           l5
+  // l0 [ mask_effect_0 ][ mask_isolation_1 ] l4 [ mask_effect_2 ]
+  // [ mask_isolation_0 ][        e1        ][ mask_isolation_2  ]
+  // [                            e0                             ]
+  // Three content layers, three clip mask.
+  ASSERT_EQ(6u, RootLayer()->children().size());
   ASSERT_EQ(3u, ContentLayerCount());
   ASSERT_EQ(3u, SynthesizedClipLayerCount());
 
-  const cc::Layer* dummy_c1 = RootLayer()->children()[0].get();
-  const cc::Layer* content0 = RootLayer()->children()[1].get();
-  const cc::Layer* clip_mask0 = RootLayer()->children()[2].get();
-  const cc::Layer* dummy_e1 = RootLayer()->children()[3].get();
-  const cc::Layer* content1 = RootLayer()->children()[4].get();
-  const cc::Layer* clip_mask1 = RootLayer()->children()[5].get();
-  const cc::Layer* content2 = RootLayer()->children()[6].get();
-  const cc::Layer* clip_mask2 = RootLayer()->children()[7].get();
+  const cc::Layer* content0 = RootLayer()->children()[0].get();
+  const cc::Layer* clip_mask0 = RootLayer()->children()[1].get();
+  const cc::Layer* content1 = RootLayer()->children()[2].get();
+  const cc::Layer* clip_mask1 = RootLayer()->children()[3].get();
+  const cc::Layer* content2 = RootLayer()->children()[4].get();
+  const cc::Layer* clip_mask2 = RootLayer()->children()[5].get();
 
+  constexpr int c0_id = 1;
   constexpr int e0_id = 1;
 
-  int c1_id = dummy_c1->clip_tree_index();
-  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
-  ASSERT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
-
   EXPECT_EQ(ContentLayerAt(0), content0);
-  EXPECT_EQ(c1_id, content0->clip_tree_index());
+  int c1_id = content0->clip_tree_index();
+  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+  ASSERT_EQ(c0_id, cc_c1.parent_id);
   int mask_isolation_0_id = content0->effect_tree_index();
   const cc::EffectNode& mask_isolation_0 =
       *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
@@ -2700,18 +2655,16 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   ASSERT_EQ(mask_isolation_0_id, mask_effect_0.parent_id);
   EXPECT_EQ(SkBlendMode::kDstIn, mask_effect_0.blend_mode);
 
-  int e1_id = dummy_e1->effect_tree_index();
-  const cc::EffectNode& cc_e1 = *GetPropertyTrees().effect_tree.Node(e1_id);
-  ASSERT_EQ(e0_id, cc_e1.parent_id);
-
   EXPECT_EQ(ContentLayerAt(1), content1);
   EXPECT_EQ(c1_id, content1->clip_tree_index());
   int mask_isolation_1_id = content1->effect_tree_index();
   const cc::EffectNode& mask_isolation_1 =
       *GetPropertyTrees().effect_tree.Node(mask_isolation_1_id);
   EXPECT_NE(mask_isolation_0_id, mask_isolation_1_id);
-  ASSERT_EQ(e1_id, mask_isolation_1.parent_id);
   EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_1.blend_mode);
+  int e1_id = mask_isolation_1.parent_id;
+  const cc::EffectNode& cc_e1 = *GetPropertyTrees().effect_tree.Node(e1_id);
+  ASSERT_EQ(e0_id, cc_e1.parent_id);
 
   EXPECT_EQ(SynthesizedClipLayerAt(1), clip_mask1);
   EXPECT_EQ(gfx::Size(300, 200), clip_mask1->bounds());
@@ -2767,32 +2720,30 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //                l2        (l3) l4       l5                   l7
-  //      l1 [ mask_effect_0 ][ e1  ][ mask_effect_1 ] l6 [ mask_effect_2 ]
-  // (l0) [ mask_isolation_0 ][   mask_isolation_1   ][ mask_isolation_2  ]
-  // [                                 e0                                 ]
-  // Three content layers, two dummy, three clip mask.
-  ASSERT_EQ(8u, RootLayer()->children().size());
+  //           l1          l2         l3                   l5
+  // l0 [ mask_effect_0 ][ e1 ][ mask_effect_1 ] l4 [ mask_effect_2 ]
+  // [ mask_isolation_0 ][  mask_isolation_1   ][ mask_isolation_2  ]
+  // [                              e0                              ]
+  // Three content layers, three clip mask.
+  ASSERT_EQ(6u, RootLayer()->children().size());
   ASSERT_EQ(3u, ContentLayerCount());
   ASSERT_EQ(3u, SynthesizedClipLayerCount());
 
-  const cc::Layer* dummy_c1 = RootLayer()->children()[0].get();
-  const cc::Layer* content0 = RootLayer()->children()[1].get();
-  const cc::Layer* clip_mask0 = RootLayer()->children()[2].get();
-  const cc::Layer* dummy_e1 = RootLayer()->children()[3].get();
-  const cc::Layer* content1 = RootLayer()->children()[4].get();
-  const cc::Layer* clip_mask1 = RootLayer()->children()[5].get();
-  const cc::Layer* content2 = RootLayer()->children()[6].get();
-  const cc::Layer* clip_mask2 = RootLayer()->children()[7].get();
+  const cc::Layer* content0 = RootLayer()->children()[0].get();
+  const cc::Layer* clip_mask0 = RootLayer()->children()[1].get();
+  const cc::Layer* content1 = RootLayer()->children()[2].get();
+  const cc::Layer* clip_mask1 = RootLayer()->children()[3].get();
+  const cc::Layer* content2 = RootLayer()->children()[4].get();
+  const cc::Layer* clip_mask2 = RootLayer()->children()[5].get();
 
+  constexpr int c0_id = 1;
   constexpr int e0_id = 1;
 
-  int c1_id = dummy_c1->clip_tree_index();
-  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
-  ASSERT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
-
   EXPECT_EQ(ContentLayerAt(0), content0);
-  EXPECT_EQ(c1_id, content0->clip_tree_index());
+  int c1_id = content0->clip_tree_index();
+  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+  ASSERT_EQ(c0_id, cc_c1.parent_id);
   int mask_isolation_0_id = content0->effect_tree_index();
   const cc::EffectNode& mask_isolation_0 =
       *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
@@ -2808,7 +2759,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   ASSERT_EQ(mask_isolation_0_id, mask_effect_0.parent_id);
   EXPECT_EQ(SkBlendMode::kDstIn, mask_effect_0.blend_mode);
 
-  int e1_id = dummy_e1->effect_tree_index();
+  EXPECT_EQ(ContentLayerAt(1), content1);
+  EXPECT_EQ(c1_id, content1->clip_tree_index());
+  int e1_id = content1->effect_tree_index();
   const cc::EffectNode& cc_e1 = *GetPropertyTrees().effect_tree.Node(e1_id);
   EXPECT_EQ(SkBlendMode::kSrcOver, cc_e1.blend_mode);
   int mask_isolation_1_id = cc_e1.parent_id;
@@ -2817,10 +2770,6 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   EXPECT_NE(mask_isolation_0_id, mask_isolation_1_id);
   ASSERT_EQ(e0_id, mask_isolation_1.parent_id);
   EXPECT_EQ(SkBlendMode::kMultiply, mask_isolation_1.blend_mode);
-
-  EXPECT_EQ(ContentLayerAt(1), content1);
-  EXPECT_EQ(c1_id, content1->clip_tree_index());
-  EXPECT_EQ(e1_id, content1->effect_tree_index());
 
   EXPECT_EQ(SynthesizedClipLayerAt(1), clip_mask1);
   EXPECT_EQ(gfx::Size(300, 200), clip_mask1->bounds());

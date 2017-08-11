@@ -160,7 +160,6 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   if (it != transform_node_map_.end())
     return it->value;
 
-  scoped_refptr<cc::Layer> dummy_layer = cc::Layer::Create();
   int parent_id = EnsureCompositorTransformNode(transform_node->Parent());
   int id = GetTransformTree().Insert(cc::TransformNode(), parent_id);
 
@@ -179,12 +178,6 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
       transform_node->FlattensInheritedTransform();
   compositor_node.sorting_context_id = transform_node->RenderingContextId();
 
-  root_layer_->AddChild(dummy_layer);
-  dummy_layer->SetTransformTreeIndex(id);
-  dummy_layer->SetClipTreeIndex(kSecondaryRootNodeId);
-  dummy_layer->SetEffectTreeIndex(kSecondaryRootNodeId);
-  dummy_layer->SetScrollTreeIndex(kRealRootNodeId);
-  dummy_layer->set_property_tree_sequence_number(sequence_number_);
   CompositorElementId compositor_element_id =
       transform_node->GetCompositorElementId();
   if (compositor_element_id) {
@@ -213,7 +206,6 @@ int PropertyTreeManager::EnsureCompositorClipNode(
   if (it != clip_node_map_.end())
     return it->value;
 
-  scoped_refptr<cc::Layer> dummy_layer = cc::Layer::Create();
   int parent_id = EnsureCompositorClipNode(clip_node->Parent());
   int id = GetClipTree().Insert(cc::ClipNode(), parent_id);
 
@@ -223,13 +215,6 @@ int PropertyTreeManager::EnsureCompositorClipNode(
   compositor_node.transform_id =
       EnsureCompositorTransformNode(clip_node->LocalTransformSpace());
   compositor_node.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
-
-  root_layer_->AddChild(dummy_layer);
-  dummy_layer->SetTransformTreeIndex(compositor_node.transform_id);
-  dummy_layer->SetClipTreeIndex(id);
-  dummy_layer->SetEffectTreeIndex(kSecondaryRootNodeId);
-  dummy_layer->SetScrollTreeIndex(kRealRootNodeId);
-  dummy_layer->set_property_tree_sequence_number(sequence_number_);
 
   auto result = clip_node_map_.Set(clip_node, id);
   DCHECK(result.is_new_entry);
@@ -573,12 +558,6 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
   SkBlendMode used_blend_mode = SynthesizeCcEffectsForClipsIfNeeded(
       next_effect->OutputClip(), next_effect->BlendMode(), newly_built);
 
-  // We currently create dummy layers to host effect nodes and corresponding
-  // render surfaces. This should be removed once cc implements better support
-  // for freestanding property trees.
-  scoped_refptr<cc::Layer> dummy_layer = next_effect->EnsureDummyLayer();
-  root_layer_->AddChild(dummy_layer);
-
   int output_clip_id = EnsureCompositorClipNode(next_effect->OutputClip());
 
   cc::EffectNode& effect_node = *GetEffectTree().Node(
@@ -628,12 +607,6 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
   current_effect_type_ = CcEffectType::kEffect;
   current_effect_ = next_effect;
   current_clip_ = next_effect->OutputClip();
-
-  dummy_layer->set_property_tree_sequence_number(sequence_number_);
-  dummy_layer->SetTransformTreeIndex(kSecondaryRootNodeId);
-  dummy_layer->SetClipTreeIndex(output_clip_id);
-  dummy_layer->SetEffectTreeIndex(effect_node.id);
-  dummy_layer->SetScrollTreeIndex(kRealRootNodeId);
 
   return true;
 }
