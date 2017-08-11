@@ -45,9 +45,6 @@ struct HitTestRegion {
 };
 
 struct HitTestRegionList {
-  // SurfaceId corresponding to this HitTestData.
-  cc.mojom.SurfaceId surface_id;
-
   // Flags indicate how to handle events that match no sub-regions.
   // kHitTestMine routes un-matched events to this surface (opaque).
   // kHitTestIgnore keeps previous match in the parent (transparent).

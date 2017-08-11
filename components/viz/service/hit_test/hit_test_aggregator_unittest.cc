@@ -232,7 +232,6 @@ class HitTestAggregatorTest : public testing::Test {
     id++;
 
     auto hit_test_region_list = mojom::HitTestRegionList::New();
-    hit_test_region_list->surface_id = surface_id;
     hit_test_region_list->flags = mojom::kHitTestMine;
     hit_test_region_list->bounds.SetRect(0, 0, 1024, 768);
 
@@ -251,7 +250,7 @@ class HitTestAggregatorTest : public testing::Test {
     }
 
     GetAggregator(kDisplayFrameSink)
-        ->SubmitHitTestRegionList(std::move(hit_test_region_list));
+        ->SubmitHitTestRegionList(surface_id, std::move(hit_test_region_list));
     return id;
   }
 
@@ -296,11 +295,11 @@ TEST_F(HitTestAggregatorTest, OneSurface) {
   SurfaceId display_surface_id = MakeSurfaceId(kDisplayFrameSink, 1);
 
   auto hit_test_region_list = mojom::HitTestRegionList::New();
-  hit_test_region_list->surface_id = display_surface_id;
   hit_test_region_list->flags = mojom::kHitTestMine;
   hit_test_region_list->bounds.SetRect(0, 0, 1024, 768);
 
-  aggregator->SubmitHitTestRegionList(std::move(hit_test_region_list));
+  aggregator->SubmitHitTestRegionList(display_surface_id,
+                                      std::move(hit_test_region_list));
   EXPECT_EQ(aggregator->Count(), 0);
 
   EXPECT_EQ(aggregator->GetPendingCount(), 1);
@@ -345,10 +344,9 @@ TEST_F(HitTestAggregatorTest, OneEmbedderTwoRegions) {
 
   SurfaceId e_surface_id = MakeSurfaceId(kDisplayFrameSink, 1);
 
-  auto e_hit_test_data = mojom::HitTestRegionList::New();
-  e_hit_test_data->surface_id = e_surface_id;
-  e_hit_test_data->flags = mojom::kHitTestMine;
-  e_hit_test_data->bounds.SetRect(0, 0, 1024, 768);
+  auto e_hit_test_region_list = mojom::HitTestRegionList::New();
+  e_hit_test_region_list->flags = mojom::kHitTestMine;
+  e_hit_test_region_list->bounds.SetRect(0, 0, 1024, 768);
 
   auto e_hit_test_region_r1 = mojom::HitTestRegion::New();
   e_hit_test_region_r1->surface_id = e_surface_id;
@@ -360,14 +358,15 @@ TEST_F(HitTestAggregatorTest, OneEmbedderTwoRegions) {
   e_hit_test_region_r2->flags = mojom::kHitTestMine;
   e_hit_test_region_r2->rect.SetRect(400, 100, 300, 400);
 
-  e_hit_test_data->regions.push_back(std::move(e_hit_test_region_r1));
-  e_hit_test_data->regions.push_back(std::move(e_hit_test_region_r2));
+  e_hit_test_region_list->regions.push_back(std::move(e_hit_test_region_r1));
+  e_hit_test_region_list->regions.push_back(std::move(e_hit_test_region_r2));
 
   // Submit mojom::HitTestRegionList.
 
   EXPECT_EQ(aggregator->GetPendingCount(), 0);
 
-  aggregator->SubmitHitTestRegionList(std::move(e_hit_test_data));
+  aggregator->SubmitHitTestRegionList(e_surface_id,
+                                      std::move(e_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 1);
 
   // Add Surfaces to DisplayFrame in unexpected order.
@@ -427,10 +426,9 @@ TEST_F(HitTestAggregatorTest, OneEmbedderTwoChildren) {
   SurfaceId c1_surface_id = MakeSurfaceId(kDisplayFrameSink, 2);
   SurfaceId c2_surface_id = MakeSurfaceId(kDisplayFrameSink, 3);
 
-  auto e_hit_test_data = mojom::HitTestRegionList::New();
-  e_hit_test_data->surface_id = e_surface_id;
-  e_hit_test_data->flags = mojom::kHitTestMine;
-  e_hit_test_data->bounds.SetRect(0, 0, 1024, 768);
+  auto e_hit_test_region_list = mojom::HitTestRegionList::New();
+  e_hit_test_region_list->flags = mojom::kHitTestMine;
+  e_hit_test_region_list->bounds.SetRect(0, 0, 1024, 768);
 
   auto e_hit_test_region_c1 = mojom::HitTestRegion::New();
   e_hit_test_region_c1->flags = mojom::kHitTestChildSurface;
@@ -442,26 +440,27 @@ TEST_F(HitTestAggregatorTest, OneEmbedderTwoChildren) {
   e_hit_test_region_c2->surface_id = c2_surface_id;
   e_hit_test_region_c2->rect.SetRect(400, 100, 400, 300);
 
-  e_hit_test_data->regions.push_back(std::move(e_hit_test_region_c1));
-  e_hit_test_data->regions.push_back(std::move(e_hit_test_region_c2));
+  e_hit_test_region_list->regions.push_back(std::move(e_hit_test_region_c1));
+  e_hit_test_region_list->regions.push_back(std::move(e_hit_test_region_c2));
 
-  auto c1_hit_test_data = mojom::HitTestRegionList::New();
-  c1_hit_test_data->surface_id = c1_surface_id;
+  auto c1_hit_test_region_list = mojom::HitTestRegionList::New();
 
-  auto c2_hit_test_data = mojom::HitTestRegionList::New();
-  c2_hit_test_data->surface_id = c2_surface_id;
+  auto c2_hit_test_region_list = mojom::HitTestRegionList::New();
 
   // Submit in unexpected order.
 
   EXPECT_EQ(aggregator->GetPendingCount(), 0);
 
-  aggregator->SubmitHitTestRegionList(std::move(c1_hit_test_data));
+  aggregator->SubmitHitTestRegionList(c1_surface_id,
+                                      std::move(c1_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 1);
 
-  aggregator->SubmitHitTestRegionList(std::move(e_hit_test_data));
+  aggregator->SubmitHitTestRegionList(e_surface_id,
+                                      std::move(e_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 2);
 
-  aggregator->SubmitHitTestRegionList(std::move(c2_hit_test_data));
+  aggregator->SubmitHitTestRegionList(c2_surface_id,
+                                      std::move(c2_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 3);
 
   // Surfaces added to DisplayFrame in unexpected order.
@@ -531,10 +530,9 @@ TEST_F(HitTestAggregatorTest, OccludedChildFrame) {
   SurfaceId e_surface_id = MakeSurfaceId(kDisplayFrameSink, 1);
   SurfaceId c_surface_id = MakeSurfaceId(kDisplayFrameSink, 2);
 
-  auto e_hit_test_data = mojom::HitTestRegionList::New();
-  e_hit_test_data->surface_id = e_surface_id;
-  e_hit_test_data->flags = mojom::kHitTestMine;
-  e_hit_test_data->bounds.SetRect(0, 0, 1024, 768);
+  auto e_hit_test_region_list = mojom::HitTestRegionList::New();
+  e_hit_test_region_list->flags = mojom::kHitTestMine;
+  e_hit_test_region_list->bounds.SetRect(0, 0, 1024, 768);
 
   auto e_hit_test_region_div = mojom::HitTestRegion::New();
   e_hit_test_region_div->flags = mojom::kHitTestMine;
@@ -546,22 +544,23 @@ TEST_F(HitTestAggregatorTest, OccludedChildFrame) {
   e_hit_test_region_c->surface_id = c_surface_id;
   e_hit_test_region_c->rect.SetRect(100, 100, 200, 500);
 
-  e_hit_test_data->regions.push_back(std::move(e_hit_test_region_div));
-  e_hit_test_data->regions.push_back(std::move(e_hit_test_region_c));
+  e_hit_test_region_list->regions.push_back(std::move(e_hit_test_region_div));
+  e_hit_test_region_list->regions.push_back(std::move(e_hit_test_region_c));
 
-  auto c_hit_test_data = mojom::HitTestRegionList::New();
-  c_hit_test_data->surface_id = c_surface_id;
-  c_hit_test_data->flags = mojom::kHitTestMine;
-  c_hit_test_data->bounds.SetRect(0, 0, 200, 500);
+  auto c_hit_test_region_list = mojom::HitTestRegionList::New();
+  c_hit_test_region_list->flags = mojom::kHitTestMine;
+  c_hit_test_region_list->bounds.SetRect(0, 0, 200, 500);
 
   // Submit in unexpected order.
 
   EXPECT_EQ(aggregator->GetPendingCount(), 0);
 
-  aggregator->SubmitHitTestRegionList(std::move(c_hit_test_data));
+  aggregator->SubmitHitTestRegionList(c_surface_id,
+                                      std::move(c_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 1);
 
-  aggregator->SubmitHitTestRegionList(std::move(e_hit_test_data));
+  aggregator->SubmitHitTestRegionList(e_surface_id,
+                                      std::move(e_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 2);
 
   // Surfaces added to DisplayFrame in unexpected order.
@@ -629,10 +628,9 @@ TEST_F(HitTestAggregatorTest, ForegroundChildFrame) {
   SurfaceId e_surface_id = MakeSurfaceId(kDisplayFrameSink, 1);
   SurfaceId c_surface_id = MakeSurfaceId(kDisplayFrameSink, 2);
 
-  auto e_hit_test_data = mojom::HitTestRegionList::New();
-  e_hit_test_data->surface_id = e_surface_id;
-  e_hit_test_data->flags = mojom::kHitTestMine;
-  e_hit_test_data->bounds.SetRect(0, 0, 1024, 768);
+  auto e_hit_test_region_list = mojom::HitTestRegionList::New();
+  e_hit_test_region_list->flags = mojom::kHitTestMine;
+  e_hit_test_region_list->bounds.SetRect(0, 0, 1024, 768);
 
   auto e_hit_test_region_div = mojom::HitTestRegion::New();
   e_hit_test_region_div->flags = mojom::kHitTestMine;
@@ -644,22 +642,23 @@ TEST_F(HitTestAggregatorTest, ForegroundChildFrame) {
   e_hit_test_region_c->surface_id = c_surface_id;
   e_hit_test_region_c->rect.SetRect(100, 100, 200, 500);
 
-  e_hit_test_data->regions.push_back(std::move(e_hit_test_region_c));
-  e_hit_test_data->regions.push_back(std::move(e_hit_test_region_div));
+  e_hit_test_region_list->regions.push_back(std::move(e_hit_test_region_c));
+  e_hit_test_region_list->regions.push_back(std::move(e_hit_test_region_div));
 
-  auto c_hit_test_data = mojom::HitTestRegionList::New();
-  c_hit_test_data->surface_id = c_surface_id;
-  c_hit_test_data->flags = mojom::kHitTestMine;
-  c_hit_test_data->bounds.SetRect(0, 0, 200, 500);
+  auto c_hit_test_region_list = mojom::HitTestRegionList::New();
+  c_hit_test_region_list->flags = mojom::kHitTestMine;
+  c_hit_test_region_list->bounds.SetRect(0, 0, 200, 500);
 
   // Submit in unexpected order.
 
   EXPECT_EQ(aggregator->GetPendingCount(), 0);
 
-  aggregator->SubmitHitTestRegionList(std::move(c_hit_test_data));
+  aggregator->SubmitHitTestRegionList(c_surface_id,
+                                      std::move(c_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 1);
 
-  aggregator->SubmitHitTestRegionList(std::move(e_hit_test_data));
+  aggregator->SubmitHitTestRegionList(e_surface_id,
+                                      std::move(e_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 2);
 
   // Surfaces added to DisplayFrame in unexpected order.
@@ -729,10 +728,9 @@ TEST_F(HitTestAggregatorTest, ClippedChildWithTabAndTransparentBackground) {
   SurfaceId a_surface_id = MakeSurfaceId(kDisplayFrameSink, 3);
   SurfaceId b_surface_id = MakeSurfaceId(kDisplayFrameSink, 4);
 
-  auto e_hit_test_data = mojom::HitTestRegionList::New();
-  e_hit_test_data->surface_id = e_surface_id;
-  e_hit_test_data->flags = mojom::kHitTestMine;
-  e_hit_test_data->bounds.SetRect(0, 0, 1024, 768);
+  auto e_hit_test_region_list = mojom::HitTestRegionList::New();
+  e_hit_test_region_list->flags = mojom::kHitTestMine;
+  e_hit_test_region_list->bounds.SetRect(0, 0, 1024, 768);
 
   auto e_hit_test_region_c = mojom::HitTestRegion::New();
   e_hit_test_region_c->flags = mojom::kHitTestChildSurface;
@@ -740,12 +738,11 @@ TEST_F(HitTestAggregatorTest, ClippedChildWithTabAndTransparentBackground) {
   e_hit_test_region_c->rect.SetRect(300, 100, 1600, 800);
   e_hit_test_region_c->transform.Translate(200, 100);
 
-  e_hit_test_data->regions.push_back(std::move(e_hit_test_region_c));
+  e_hit_test_region_list->regions.push_back(std::move(e_hit_test_region_c));
 
-  auto c_hit_test_data = mojom::HitTestRegionList::New();
-  c_hit_test_data->surface_id = c_surface_id;
-  c_hit_test_data->flags = mojom::kHitTestIgnore;
-  c_hit_test_data->bounds.SetRect(0, 0, 1600, 800);
+  auto c_hit_test_region_list = mojom::HitTestRegionList::New();
+  c_hit_test_region_list->flags = mojom::kHitTestIgnore;
+  c_hit_test_region_list->bounds.SetRect(0, 0, 1600, 800);
 
   auto c_hit_test_region_a = mojom::HitTestRegion::New();
   c_hit_test_region_a->flags = mojom::kHitTestChildSurface;
@@ -757,33 +754,35 @@ TEST_F(HitTestAggregatorTest, ClippedChildWithTabAndTransparentBackground) {
   c_hit_test_region_b->surface_id = b_surface_id;
   c_hit_test_region_b->rect.SetRect(0, 100, 800, 600);
 
-  c_hit_test_data->regions.push_back(std::move(c_hit_test_region_a));
-  c_hit_test_data->regions.push_back(std::move(c_hit_test_region_b));
+  c_hit_test_region_list->regions.push_back(std::move(c_hit_test_region_a));
+  c_hit_test_region_list->regions.push_back(std::move(c_hit_test_region_b));
 
-  auto a_hit_test_data = mojom::HitTestRegionList::New();
-  a_hit_test_data->surface_id = a_surface_id;
-  a_hit_test_data->flags = mojom::kHitTestMine;
-  a_hit_test_data->bounds.SetRect(0, 0, 200, 100);
+  auto a_hit_test_region_list = mojom::HitTestRegionList::New();
+  a_hit_test_region_list->flags = mojom::kHitTestMine;
+  a_hit_test_region_list->bounds.SetRect(0, 0, 200, 100);
 
-  auto b_hit_test_data = mojom::HitTestRegionList::New();
-  b_hit_test_data->surface_id = b_surface_id;
-  b_hit_test_data->flags = mojom::kHitTestMine;
-  b_hit_test_data->bounds.SetRect(0, 100, 800, 600);
+  auto b_hit_test_region_list = mojom::HitTestRegionList::New();
+  b_hit_test_region_list->flags = mojom::kHitTestMine;
+  b_hit_test_region_list->bounds.SetRect(0, 100, 800, 600);
 
   // Submit in unexpected order.
 
   EXPECT_EQ(aggregator->GetPendingCount(), 0);
 
-  aggregator->SubmitHitTestRegionList(std::move(c_hit_test_data));
+  aggregator->SubmitHitTestRegionList(c_surface_id,
+                                      std::move(c_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 1);
 
-  aggregator->SubmitHitTestRegionList(std::move(a_hit_test_data));
+  aggregator->SubmitHitTestRegionList(a_surface_id,
+                                      std::move(a_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 2);
 
-  aggregator->SubmitHitTestRegionList(std::move(b_hit_test_data));
+  aggregator->SubmitHitTestRegionList(b_surface_id,
+                                      std::move(b_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 3);
 
-  aggregator->SubmitHitTestRegionList(std::move(e_hit_test_data));
+  aggregator->SubmitHitTestRegionList(e_surface_id,
+                                      std::move(e_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 4);
 
   // Surfaces added to DisplayFrame in unexpected order.
@@ -871,61 +870,61 @@ TEST_F(HitTestAggregatorTest, ThreeChildrenDeep) {
   SurfaceId c2_surface_id = MakeSurfaceId(kDisplayFrameSink, 3);
   SurfaceId c3_surface_id = MakeSurfaceId(kDisplayFrameSink, 4);
 
-  auto e_hit_test_data = mojom::HitTestRegionList::New();
-  e_hit_test_data->surface_id = e_surface_id;
-  e_hit_test_data->flags = mojom::kHitTestMine;
-  e_hit_test_data->bounds.SetRect(0, 0, 1024, 768);
+  auto e_hit_test_region_list = mojom::HitTestRegionList::New();
+  e_hit_test_region_list->flags = mojom::kHitTestMine;
+  e_hit_test_region_list->bounds.SetRect(0, 0, 1024, 768);
 
   auto e_hit_test_region_c1 = mojom::HitTestRegion::New();
   e_hit_test_region_c1->flags = mojom::kHitTestChildSurface;
   e_hit_test_region_c1->surface_id = c1_surface_id;
   e_hit_test_region_c1->rect.SetRect(100, 100, 700, 700);
 
-  e_hit_test_data->regions.push_back(std::move(e_hit_test_region_c1));
+  e_hit_test_region_list->regions.push_back(std::move(e_hit_test_region_c1));
 
-  auto c1_hit_test_data = mojom::HitTestRegionList::New();
-  c1_hit_test_data->surface_id = c1_surface_id;
-  c1_hit_test_data->flags = mojom::kHitTestMine;
-  c1_hit_test_data->bounds.SetRect(0, 0, 600, 600);
+  auto c1_hit_test_region_list = mojom::HitTestRegionList::New();
+  c1_hit_test_region_list->flags = mojom::kHitTestMine;
+  c1_hit_test_region_list->bounds.SetRect(0, 0, 600, 600);
 
   auto c1_hit_test_region_c2 = mojom::HitTestRegion::New();
   c1_hit_test_region_c2->flags = mojom::kHitTestChildSurface;
   c1_hit_test_region_c2->surface_id = c2_surface_id;
   c1_hit_test_region_c2->rect.SetRect(100, 100, 500, 500);
 
-  c1_hit_test_data->regions.push_back(std::move(c1_hit_test_region_c2));
+  c1_hit_test_region_list->regions.push_back(std::move(c1_hit_test_region_c2));
 
-  auto c2_hit_test_data = mojom::HitTestRegionList::New();
-  c2_hit_test_data->surface_id = c2_surface_id;
-  c2_hit_test_data->flags = mojom::kHitTestMine;
-  c2_hit_test_data->bounds.SetRect(0, 0, 400, 400);
+  auto c2_hit_test_region_list = mojom::HitTestRegionList::New();
+  c2_hit_test_region_list->flags = mojom::kHitTestMine;
+  c2_hit_test_region_list->bounds.SetRect(0, 0, 400, 400);
 
   auto c2_hit_test_region_c3 = mojom::HitTestRegion::New();
   c2_hit_test_region_c3->flags = mojom::kHitTestChildSurface;
   c2_hit_test_region_c3->surface_id = c3_surface_id;
   c2_hit_test_region_c3->rect.SetRect(100, 100, 300, 300);
 
-  c2_hit_test_data->regions.push_back(std::move(c2_hit_test_region_c3));
+  c2_hit_test_region_list->regions.push_back(std::move(c2_hit_test_region_c3));
 
-  auto c3_hit_test_data = mojom::HitTestRegionList::New();
-  c3_hit_test_data->surface_id = c3_surface_id;
-  c3_hit_test_data->flags = mojom::kHitTestMine;
-  c3_hit_test_data->bounds.SetRect(0, 0, 200, 200);
+  auto c3_hit_test_region_list = mojom::HitTestRegionList::New();
+  c3_hit_test_region_list->flags = mojom::kHitTestMine;
+  c3_hit_test_region_list->bounds.SetRect(0, 0, 200, 200);
 
   // Submit in unexpected order.
 
   EXPECT_EQ(aggregator->GetPendingCount(), 0);
 
-  aggregator->SubmitHitTestRegionList(std::move(c1_hit_test_data));
+  aggregator->SubmitHitTestRegionList(c1_surface_id,
+                                      std::move(c1_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 1);
 
-  aggregator->SubmitHitTestRegionList(std::move(c3_hit_test_data));
+  aggregator->SubmitHitTestRegionList(c3_surface_id,
+                                      std::move(c3_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 2);
 
-  aggregator->SubmitHitTestRegionList(std::move(e_hit_test_data));
+  aggregator->SubmitHitTestRegionList(e_surface_id,
+                                      std::move(e_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 3);
 
-  aggregator->SubmitHitTestRegionList(std::move(c2_hit_test_data));
+  aggregator->SubmitHitTestRegionList(c2_surface_id,
+                                      std::move(c2_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 4);
 
   // Surfaces added to DisplayFrame in unexpected order.
@@ -1004,10 +1003,9 @@ TEST_F(HitTestAggregatorTest, MissingChildFrame) {
   SurfaceId e_surface_id = MakeSurfaceId(kDisplayFrameSink, 1);
   SurfaceId c_surface_id = MakeSurfaceId(kDisplayFrameSink, 2);
 
-  auto e_hit_test_data = mojom::HitTestRegionList::New();
-  e_hit_test_data->surface_id = e_surface_id;
-  e_hit_test_data->flags = mojom::kHitTestMine;
-  e_hit_test_data->bounds.SetRect(0, 0, 1024, 768);
+  auto e_hit_test_region_list = mojom::HitTestRegionList::New();
+  e_hit_test_region_list->flags = mojom::kHitTestMine;
+  e_hit_test_region_list->bounds.SetRect(0, 0, 1024, 768);
 
   auto e_hit_test_region_div = mojom::HitTestRegion::New();
   e_hit_test_region_div->flags = mojom::kHitTestMine;
@@ -1019,19 +1017,19 @@ TEST_F(HitTestAggregatorTest, MissingChildFrame) {
   e_hit_test_region_c->surface_id = c_surface_id;
   e_hit_test_region_c->rect.SetRect(100, 100, 200, 500);
 
-  e_hit_test_data->regions.push_back(std::move(e_hit_test_region_c));
-  e_hit_test_data->regions.push_back(std::move(e_hit_test_region_div));
+  e_hit_test_region_list->regions.push_back(std::move(e_hit_test_region_c));
+  e_hit_test_region_list->regions.push_back(std::move(e_hit_test_region_div));
 
-  auto c_hit_test_data = mojom::HitTestRegionList::New();
-  c_hit_test_data->surface_id = c_surface_id;
-  c_hit_test_data->flags = mojom::kHitTestMine;
-  c_hit_test_data->bounds.SetRect(0, 0, 200, 500);
+  auto c_hit_test_region_list = mojom::HitTestRegionList::New();
+  c_hit_test_region_list->flags = mojom::kHitTestMine;
+  c_hit_test_region_list->bounds.SetRect(0, 0, 200, 500);
 
   // Submit in unexpected order, but not the child.
 
   EXPECT_EQ(aggregator->GetPendingCount(), 0);
 
-  aggregator->SubmitHitTestRegionList(std::move(e_hit_test_data));
+  aggregator->SubmitHitTestRegionList(e_surface_id,
+                                      std::move(e_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 1);
 
   // Surfaces added to DisplayFrame in unexpected order.
@@ -1152,10 +1150,9 @@ TEST_F(HitTestAggregatorTest, ActiveRegionCount) {
   SurfaceId e_surface_id = MakeSurfaceId(kDisplayFrameSink, 1);
   SurfaceId c_surface_id = MakeSurfaceId(kDisplayFrameSink, 2);
 
-  auto e_hit_test_data = mojom::HitTestRegionList::New();
-  e_hit_test_data->surface_id = e_surface_id;
-  e_hit_test_data->flags = mojom::kHitTestMine;
-  e_hit_test_data->bounds.SetRect(0, 0, 1024, 768);
+  auto e_hit_test_region_list = mojom::HitTestRegionList::New();
+  e_hit_test_region_list->flags = mojom::kHitTestMine;
+  e_hit_test_region_list->bounds.SetRect(0, 0, 1024, 768);
 
   auto e_hit_test_region_div = mojom::HitTestRegion::New();
   e_hit_test_region_div->flags = mojom::kHitTestMine;
@@ -1167,13 +1164,12 @@ TEST_F(HitTestAggregatorTest, ActiveRegionCount) {
   e_hit_test_region_c->surface_id = c_surface_id;
   e_hit_test_region_c->rect.SetRect(100, 100, 200, 500);
 
-  e_hit_test_data->regions.push_back(std::move(e_hit_test_region_c));
-  e_hit_test_data->regions.push_back(std::move(e_hit_test_region_div));
+  e_hit_test_region_list->regions.push_back(std::move(e_hit_test_region_c));
+  e_hit_test_region_list->regions.push_back(std::move(e_hit_test_region_div));
 
-  auto c_hit_test_data = mojom::HitTestRegionList::New();
-  c_hit_test_data->surface_id = c_surface_id;
-  c_hit_test_data->flags = mojom::kHitTestMine;
-  c_hit_test_data->bounds.SetRect(0, 0, 200, 500);
+  auto c_hit_test_region_list = mojom::HitTestRegionList::New();
+  c_hit_test_region_list->flags = mojom::kHitTestMine;
+  c_hit_test_region_list->bounds.SetRect(0, 0, 200, 500);
 
   EXPECT_EQ(aggregator->GetActiveRegionCount(), 0);
 
@@ -1181,10 +1177,12 @@ TEST_F(HitTestAggregatorTest, ActiveRegionCount) {
 
   EXPECT_EQ(aggregator->GetPendingCount(), 0);
 
-  aggregator->SubmitHitTestRegionList(std::move(c_hit_test_data));
+  aggregator->SubmitHitTestRegionList(c_surface_id,
+                                      std::move(c_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 1);
 
-  aggregator->SubmitHitTestRegionList(std::move(e_hit_test_data));
+  aggregator->SubmitHitTestRegionList(e_surface_id,
+                                      std::move(e_hit_test_region_list));
   EXPECT_EQ(aggregator->GetPendingCount(), 2);
 
   EXPECT_EQ(aggregator->GetActiveRegionCount(), 0);
