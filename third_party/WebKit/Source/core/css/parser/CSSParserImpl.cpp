@@ -169,7 +169,8 @@ ImmutableStylePropertySet* CSSParserImpl::ParseInlineStyleDeclaration(
   CSSParserImpl parser(context, document.ElementSheet().Contents());
   CSSTokenizer tokenizer(string);
   CSSParserTokenStream stream(tokenizer);
-  parser.ConsumeDeclarationList(stream, StyleRule::kStyle);
+  // TODO(shend): Use streams instead of ranges
+  parser.ConsumeDeclarationList(stream.MakeRangeToEOF(), StyleRule::kStyle);
   return CreateStylePropertySet(parser.parsed_properties_, mode);
 }
 
@@ -182,7 +183,8 @@ bool CSSParserImpl::ParseDeclarationList(MutableStylePropertySet* declaration,
     rule_type = StyleRule::kViewport;
   CSSTokenizer tokenizer(string);
   CSSParserTokenStream stream(tokenizer);
-  parser.ConsumeDeclarationList(stream, rule_type);
+  // TODO(shend): Use streams instead of ranges
+  parser.ConsumeDeclarationList(stream.MakeRangeToEOF(), rule_type);
   if (parser.parsed_properties_.IsEmpty())
     return false;
 
@@ -844,57 +846,6 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenRange prelude,
   return StyleRule::Create(
       std::move(selector_list),
       CreateStylePropertySet(parsed_properties_, context_->Mode()));
-}
-
-void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,
-                                           StyleRule::RuleType rule_type) {
-  DCHECK(parsed_properties_.IsEmpty());
-
-  bool use_observer = observer_wrapper_ && (rule_type == StyleRule::kStyle ||
-                                            rule_type == StyleRule::kKeyframe);
-  DCHECK(!use_observer);  // TODO(shend): Implement streaming with observers.
-
-  while (!stream.AtEnd()) {
-    switch (stream.UncheckedPeek().GetType()) {
-      case kWhitespaceToken:
-      case kSemicolonToken:
-        stream.UncheckedConsume();
-        break;
-      case kIdentToken: {
-        // TODO(shend): Use streams instead of ranges
-        auto range = stream.MakeRangeToEOF();
-
-        const CSSParserToken* declaration_start = &range.Peek();
-        while (!range.AtEnd() && range.Peek().GetType() != kSemicolonToken)
-          range.ConsumeComponentValue();
-
-        ConsumeDeclaration(range.MakeSubRange(declaration_start, &range.Peek()),
-                           rule_type);
-
-        stream.UpdatePositionFromRange(range);
-        break;
-      }
-      case kAtKeywordToken: {
-        AllowedRulesType allowed_rules =
-            rule_type == StyleRule::kStyle &&
-                    RuntimeEnabledFeatures::CSSApplyAtRulesEnabled()
-                ? kApplyRules
-                : kNoRules;
-
-        // TODO(shend): Use streams instead of ranges
-        auto range = stream.MakeRangeToEOF();
-        StyleRuleBase* rule = ConsumeAtRule(range, allowed_rules);
-        stream.UpdatePositionFromRange(range);
-        DCHECK(!rule);
-        break;
-      }
-      default:  // Parse error, unexpected token in declaration list
-        while (!stream.AtEnd() &&
-               stream.UncheckedPeek().GetType() != kSemicolonToken)
-          stream.UncheckedConsumeComponentValue();
-        break;
-    }
-  }
 }
 
 void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenRange range,
