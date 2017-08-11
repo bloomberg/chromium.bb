@@ -115,6 +115,10 @@ class NavigationSimulator : public WebContentsObserver {
   // Simulates a redirect to |new_url| for the navigation.
   virtual void Redirect(const GURL& new_url);
 
+  // Simulates receiving the navigation response and choosing a final
+  // RenderFrameHost to commit it.
+  virtual void ReadyToCommit();
+
   // Simulates the commit of the navigation in the RenderFrameHost.
   virtual void Commit();
 
@@ -215,6 +219,7 @@ class NavigationSimulator : public WebContentsObserver {
   enum State {
     INITIALIZATION,
     STARTED,
+    READY_TO_COMMIT,
     FAILED,
     FINISHED,
   };

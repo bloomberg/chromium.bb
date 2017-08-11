@@ -284,8 +284,9 @@ TEST_F(CaptivePortalTabHelperTest, UnexpectedProvisionalLoad) {
   if (content::IsBrowserSideNavigationEnabled()) {
     // This chain of event is not possible with PlzNavigate. For the same-site
     // navigation not to be cancelled by the second navigation, it needs to get
-    // to ReadyToCommit stage. This is not currently possible to simulate with
-    // the content/ test API.
+    // to ReadyToCommit stage. Navigation failure after the ReadyToCommit stage
+    // is something we want to suppress, so it is not implemented in the
+    // NavigationSimulator.
     return;
   }
   GURL same_site_url = GURL(kHttpUrl);
@@ -322,13 +323,6 @@ TEST_F(CaptivePortalTabHelperTest, UnexpectedProvisionalLoad) {
 // Similar to the above test, except the original RenderViewHost manages to
 // commit before its navigation is aborted.
 TEST_F(CaptivePortalTabHelperTest, UnexpectedCommit) {
-  if (content::IsBrowserSideNavigationEnabled()) {
-    // This chain of event is not possible with PlzNavigate. For the same-site
-    // navigation not to be cancelled by the second navigation, it needs to get
-    // to ReadyToCommit stage. This is not currently possible to simulate with
-    // the content/ test API.
-    return;
-  }
   GURL same_site_url = GURL(kHttpUrl);
   GURL cross_process_url = GURL(kHttpsUrl2);
 
@@ -337,10 +331,10 @@ TEST_F(CaptivePortalTabHelperTest, UnexpectedCommit) {
               OnLoadStart(same_site_url.SchemeIsCryptographic())).Times(1);
   std::unique_ptr<NavigationSimulator> same_site_navigation =
       NavigationSimulator::CreateRendererInitiated(same_site_url, main_rfh());
-  same_site_navigation->Start();
+  same_site_navigation->ReadyToCommit();
 
   // It's unexpectedly interrupted by a cross-process navigation, which starts
-  // navigating before the old navigation cancels.
+  // navigating before the old navigation commits.
   EXPECT_CALL(mock_reloader(), OnAbort()).Times(1);
   EXPECT_CALL(mock_reloader(),
               OnLoadStart(cross_process_url.SchemeIsCryptographic())).Times(1);

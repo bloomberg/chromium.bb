@@ -174,13 +174,13 @@ void NavigationSimulator::Start() {
 }
 
 void NavigationSimulator::Redirect(const GURL& new_url) {
-  CHECK(state_ <= STARTED) << "NavigationSimulator::Redirect should be "
-                              "called before Fail or Commit";
+  CHECK_LE(state_, STARTED) << "NavigationSimulator::Redirect should be "
+                               "called before Fail or Commit";
   CHECK_EQ(0, num_did_finish_navigation_called_)
       << "NavigationSimulator::Redirect cannot be called after the "
          "navigation has finished";
 
-  if (state_ == INITIALIZATION) {
+  if (state_ < STARTED) {
     Start();
     if (state_ == FAILED)
       return;
@@ -232,15 +232,15 @@ void NavigationSimulator::Redirect(const GURL& new_url) {
   }
 }
 
-void NavigationSimulator::Commit() {
-  CHECK_LE(state_, STARTED) << "NavigationSimulator::Commit can only be "
-                               "called once, and cannot be called after "
+void NavigationSimulator::ReadyToCommit() {
+  CHECK_LE(state_, STARTED) << "NavigationSimulator::ReadyToCommit can only "
+                               "be called once, and cannot be called after "
                                "NavigationSimulator::Fail";
   CHECK_EQ(0, num_did_finish_navigation_called_)
-      << "NavigationSimulator::Commit cannot be called after the "
+      << "NavigationSimulator::ReadyToCommit cannot be called after the "
          "navigation has finished";
 
-  if (state_ == INITIALIZATION) {
+  if (state_ < STARTED) {
     Start();
     if (state_ == FAILED)
       return;
@@ -308,6 +308,22 @@ void NavigationSimulator::Commit() {
     CHECK(!handle_->is_transferring());
   }
   render_frame_host_ = new_render_frame_host;
+  state_ = READY_TO_COMMIT;
+}
+
+void NavigationSimulator::Commit() {
+  CHECK_LE(state_, READY_TO_COMMIT) << "NavigationSimulator::Commit can only "
+                                       "be called once, and cannot be called "
+                                       "after NavigationSimulator::Fail";
+  CHECK_EQ(0, num_did_finish_navigation_called_)
+      << "NavigationSimulator::Commit cannot be called after the navigation "
+         "has finished";
+
+  if (state_ < READY_TO_COMMIT) {
+    ReadyToCommit();
+    if (state_ == FAILED)
+      return;
+  }
 
   // Keep a pointer to the current RenderFrameHost that may be pending deletion
   // after commit.
@@ -648,7 +664,7 @@ void NavigationSimulator::PrepareCompleteCallbackOnHandle() {
 }
 
 RenderFrameHost* NavigationSimulator::GetFinalRenderFrameHost() {
-  CHECK_EQ(state_, FINISHED);
+  CHECK_GE(state_, READY_TO_COMMIT);
   return render_frame_host_;
 }
 
