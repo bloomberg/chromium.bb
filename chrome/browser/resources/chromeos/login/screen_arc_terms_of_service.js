@@ -10,12 +10,40 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
   return {
     EXTERNAL_API: [
       'setMetricsMode', 'setBackupAndRestoreMode', 'setLocationServicesMode',
-      'setCountryCode'
+      'loadPlayStoreToS'
     ],
 
     /** @override */
     decorate: function(element) {
       // Valid newOobeUI is not available at this time.
+      this.countryCode_ = null;
+      this.language_ = null;
+    },
+
+    /**
+     * Returns current language that can be updated in OOBE flow. If OOBE flow
+     * does not exist then use navigator.language.
+     *
+     * @private
+     */
+    getCurrentLanguage_: function() {
+      var languageList = loadTimeData.getValue('languageList');
+      if (languageList) {
+        var language = Oobe.getSelectedValue(languageList);
+        if (language) {
+          return language;
+        }
+      }
+      return navigator.language;
+    },
+
+    /**
+     * Returns true if page was intialized.
+     *
+     * @private
+     */
+    isPageReady_: function() {
+      return typeof this.useMDOobe !== 'undefined';
     },
 
     /**
@@ -25,8 +53,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      */
     setMDMode_: function() {
       var useMDOobe = (loadTimeData.getString('newOobeUI') == 'on');
-      if (typeof this.useMDOobe !== 'undefined' &&
-          this.useMDOobe == useMDOobe) {
+      if (this.isPageReady_() && this.useMDOobe == useMDOobe) {
         return;
       }
 
@@ -75,17 +102,8 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
                   typeof results[0] == 'string') {
                 self.showUrlOverlay(results[0]);
               } else {
-                // currentLanguage can be updated in OOBE but not in Login page.
-                // languageList exists in OOBE otherwise use navigator.language.
-                var currentLanguage;
-                var languageList = loadTimeData.getValue('languageList');
-                if (languageList) {
-                  currentLanguage = Oobe.getSelectedValue(languageList);
-                } else {
-                  currentLanguage = navigator.language;
-                }
                 var defaultLink = 'https://www.google.com/intl/' +
-                    currentLanguage + '/policies/privacy/';
+                    self.getCurrentLanguage_() + '/policies/privacy/';
                 self.showUrlOverlay(defaultLink);
               }
             });
@@ -148,15 +166,35 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     },
 
     /**
-     * Sets current country code for ToS.
+     * Loads Play Store ToS in case country code has been changed or previous
+     * attempt failed.
      * @param {string} countryCode Country code based on current timezone.
      */
-    setCountryCode: function(countryCode) {
+    loadPlayStoreToS: function(countryCode) {
+      // Make sure page is initialized for login mode. For OOBE mode, page is
+      // initialized as result of handling updateLocalizedContent.
+      this.setMDMode_();
+
+      var language = this.getCurrentLanguage_();
+      countryCode = countryCode.toLowerCase();
+
+      if (this.language_ && this.language_ == language && this.countryCode_ &&
+          this.countryCode_ == countryCode &&
+          !this.classList.contains('error')) {
+        return;
+      }
+
+      // Store current ToS parameters.
+      this.language_ = language;
+      this.countryCode_ = countryCode;
+
       var scriptSetParameters =
-          'document.countryCode = \'' + countryCode.toLowerCase() + '\';';
+          'document.countryCode = \'' + countryCode + '\';';
+      scriptSetParameters += 'document.language = \'' + language + '\';';
       if (this.useMDOobe) {
         scriptSetParameters += 'document.viewMode = \'large-view\';';
       }
+
       var termsView = this.getElement_('arc-tos-view');
       termsView.removeContentScripts(['preProcess']);
       termsView.addContentScripts([{
@@ -166,9 +204,21 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
         run_at: 'document_start'
       }]);
 
-      if (!$('arc-tos').hidden) {
-        this.reloadPlayStore();
+      // Try to use currently loaded document first.
+      var self = this;
+      if (termsView.src != '' && this.classList.contains('arc-tos-loaded')) {
+        var navigateScript = 'processLangZoneTerms(true, \'' + language +
+            '\', \'' + countryCode + '\');';
+        termsView.executeScript({code: navigateScript}, function(results) {
+          if (!results || results.length != 1 ||
+              typeof results[0] !== 'boolean' || !results[0]) {
+            self.reloadPlayStoreToS();
+          }
+        });
+      } else {
+        this.reloadPlayStoreToS();
       }
+
     },
 
     /**
@@ -191,7 +241,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       retryButton.id = 'arc-tos-retry-button';
       retryButton.textContent =
           loadTimeData.getString('arcTermsOfServiceRetryButton');
-      retryButton.addEventListener('click', this.reloadPlayStore.bind(this));
+      retryButton.addEventListener('click', this.reloadPlayStoreToS.bind(this));
       buttons.push(retryButton);
 
       var acceptButton = this.ownerDocument.createElement('button');
@@ -288,9 +338,9 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     },
 
     /**
-     * Reloads Play Store.
+     * Reloads Play Store ToS.
      */
-    reloadPlayStore: function() {
+    reloadPlayStoreToS: function() {
       this.termsError = false;
       var termsView = this.getElement_('arc-tos-view');
       termsView.src = 'https://play.google.com/about/play-terms.html';
@@ -372,7 +422,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * @param {object} data Screen init payload.
      */
     onBeforeShow: function(data) {
-      this.setMDMode_();
       this.setLearnMoreHandlers_();
 
       Oobe.getInstance().headerHidden = true;
@@ -383,7 +432,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
           'https://play.google.com/about/images/play_logo.png';
 
       this.hideOverlay();
-      this.reloadPlayStore();
     },
 
     /**
@@ -406,6 +454,11 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     updateLocalizedContent: function() {
       this.setMDMode_();
       this.setLearnMoreHandlers_();
+
+      // We might need to reload Play Store ToS in case language was changed.
+      if (this.countryCode_) {
+        this.loadPlayStoreToS(this.countryCode_);
+      }
     },
 
     /**
