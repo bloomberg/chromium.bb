@@ -413,6 +413,12 @@ void UserMediaClientImpl::RequestUserMedia(
   }
 
   int request_id = g_next_request_id++;
+  WebRtcLogMessage(base::StringPrintf(
+      "UMCI::RequestUserMedia. request_id=%d, audio constraints=%s, "
+      "video constraints=%s",
+      request_id,
+      user_media_request.AudioConstraints().ToString().Utf8().c_str(),
+      user_media_request.VideoConstraints().ToString().Utf8().c_str()));
 
   // The value returned by isProcessingUserGesture() is used by the browser to
   // make decisions about the permissions UI. Its value can be lost while
@@ -701,11 +707,9 @@ void UserMediaClientImpl::FinalizeSelectVideoContentSettings(
 void UserMediaClientImpl::GenerateStreamForCurrentRequestInfo() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
-
   WebRtcLogMessage(base::StringPrintf(
-      "MSI::requestUserMedia. request_id=%d"
-      ", audio source id=%s"
-      ", video source id=%s",
+      "UMCI::GenerateStreamForCurrentRequestInfo. request_id=%d, "
+      "audio device id=\"%s\", video device id=\"%s\"",
       current_request_info_->request_id(),
       current_request_info_->stream_controls()->audio.device_id.c_str(),
       current_request_info_->stream_controls()->video.device_id.c_str()));
@@ -722,6 +726,11 @@ void UserMediaClientImpl::GenerateStreamForCurrentRequestInfo() {
 void UserMediaClientImpl::CancelUserMediaRequest(
     const blink::WebUserMediaRequest& user_media_request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (IsCurrentRequestInfo(user_media_request)) {
+    WebRtcLogMessage(
+        base::StringPrintf("UMCI::CancelUserMediaRequest. request_id=%d",
+                           current_request_info_->request_id()));
+  }
   if (DeleteRequestInfo(user_media_request)) {
     // We can't abort the stream generation process.
     // Instead, erase the request. Once the stream is generated we will stop the
@@ -783,9 +792,10 @@ void UserMediaClientImpl::OnStreamGenerated(
 
   for (const auto* array : {&audio_array, &video_array}) {
     for (const auto& info : *array) {
-      WebRtcLogMessage(base::StringPrintf("Request %d for device \"%s\"",
-                                          request_id,
-                                          info.device.name.c_str()));
+      WebRtcLogMessage(base::StringPrintf(
+          "UMCI::OnStreamGenerated. request_id=%d, device id=\"%s\", "
+          "device name=\"%s\"",
+          request_id, info.device.id.c_str(), info.device.name.c_str()));
     }
   }
 
@@ -1149,6 +1159,11 @@ void UserMediaClientImpl::DevicesChanged(
 void UserMediaClientImpl::GetUserMediaRequestSucceeded(
     const blink::WebMediaStream& stream,
     blink::WebUserMediaRequest request) {
+  DCHECK(IsCurrentRequestInfo(request));
+  WebRtcLogMessage(
+      base::StringPrintf("UMCI::GetUserMediaRequestSucceeded. request_id=%d",
+                         current_request_info_->request_id()));
+
   // Completing the getUserMedia request can lead to that the RenderFrame and
   // the UserMediaClientImpl is destroyed if the JavaScript code request the
   // frame to be destroyed within the scope of the callback. Therefore,
@@ -1172,6 +1187,10 @@ void UserMediaClientImpl::GetUserMediaRequestFailed(
     MediaStreamRequestResult result,
     const blink::WebString& result_name) {
   DCHECK(current_request_info_);
+  WebRtcLogMessage(
+      base::StringPrintf("UMCI::GetUserMediaRequestFailed. request_id=%d",
+                         current_request_info_->request_id()));
+
   // Completing the getUserMedia request can lead to that the RenderFrame and
   // the UserMediaClientImpl is destroyed if the JavaScript code request the
   // frame to be destroyed within the scope of the callback. Therefore,
