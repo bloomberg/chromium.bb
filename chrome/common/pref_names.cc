@@ -730,6 +730,11 @@ const char kNoteTakingAppEnabledOnLockScreen[] =
 const char kNoteTakingAppsLockScreenWhitelist[] =
     "settings.note_taking_apps_lock_screen_whitelist";
 
+// Whether the preferred note taking app should be requested to restore the last
+// note created on lock screen when launched on lock screen.
+const char kRestoreLastLockScreenNote[] =
+    "settings.restore_last_lock_screen_note";
+
 // A boolean pref indicating whether user activity has been observed in the
 // current session already. The pref is used to restore information about user
 // activity after browser crashes.

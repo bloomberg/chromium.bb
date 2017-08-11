@@ -287,6 +287,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[chromeos::kAttestationForContentProtectionEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[prefs::kRestoreLastLockScreenNote] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Bluetooth & Internet settings.
   (*s_whitelist)[chromeos::kAllowBluetooth] =

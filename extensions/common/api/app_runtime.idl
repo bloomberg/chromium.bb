@@ -78,6 +78,11 @@ namespace app.runtime {
     //   is set as the lock screen enabled action handler by the user.
     // </p>
     [nodoc] boolean? isLockScreenAction;
+
+    // Currently, used only with lock screen actions. If set, indicates whether
+    // the app should attempt to restore state from when the action was last
+    // handled.
+    [nodoc] boolean? restoreLastActionState;
   };
 
   // Optional data for the launch. Either <code>items</code>, or

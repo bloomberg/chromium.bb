@@ -208,3 +208,47 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, DataAvailableOnRestart) {
   extensions::ResultCatcher catcher;
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, AppLaunchActionDataParams) {
+  ASSERT_TRUE(lock_screen_apps::StateController::IsEnabled());
+
+  scoped_refptr<const extensions::Extension> app = LoadExtension(
+      test_data_dir_.AppendASCII("lock_screen_apps/app_launch_action_data"));
+  ASSERT_TRUE(app);
+  ASSERT_TRUE(EnableLockScreenAppLaunch(app->id()));
+
+  extensions::ResultCatcher catcher;
+
+  lock_screen_apps::StateController::Get()->RequestNewLockScreenNote();
+  ASSERT_EQ(ash::mojom::TrayActionState::kLaunching,
+            lock_screen_apps::StateController::Get()->GetLockScreenNoteState());
+
+  ExtensionTestMessageListener expected_action_data("getExpectedActionData",
+                                                    true /* will_reply */);
+
+  ASSERT_TRUE(expected_action_data.WaitUntilSatisfied());
+  expected_action_data.Reply(R"({"actionType": "new_note",
+                                 "isLockScreenAction": true,
+                                 "restoreLastActionState": true})");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  expected_action_data.Reset();
+
+  // Reset the lock screen app state by resetting screen lock, so the app is
+  // launchable again.
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::LOCKED);
+
+  profile()->GetPrefs()->SetBoolean(prefs::kRestoreLastLockScreenNote, false);
+
+  lock_screen_apps::StateController::Get()->RequestNewLockScreenNote();
+  ASSERT_EQ(ash::mojom::TrayActionState::kLaunching,
+            lock_screen_apps::StateController::Get()->GetLockScreenNoteState());
+
+  ASSERT_TRUE(expected_action_data.WaitUntilSatisfied());
+  expected_action_data.Reply(R"({"actionType": "new_note",
+                                 "isLockScreenAction": true,
+                                 "restoreLastActionState": false})");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
