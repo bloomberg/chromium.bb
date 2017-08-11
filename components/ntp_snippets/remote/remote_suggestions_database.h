@@ -34,10 +34,7 @@ class RemoteSuggestionsDatabase {
   using SnippetsCallback = base::Callback<void(RemoteSuggestion::PtrVector)>;
   using SnippetImageCallback = base::Callback<void(std::string)>;
 
-  // TODO(gaschler): create the task runner here rather than passing it
-  RemoteSuggestionsDatabase(
-      const base::FilePath& database_dir,
-      scoped_refptr<base::SequencedTaskRunner> file_task_runner);
+  RemoteSuggestionsDatabase(const base::FilePath& database_dir);
   ~RemoteSuggestionsDatabase();
 
   // Returns whether the database has finished initialization. While this is

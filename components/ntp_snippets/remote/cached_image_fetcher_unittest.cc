@@ -12,8 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
-#include "base/test/test_simple_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
@@ -59,17 +58,15 @@ class FakeImageDecoder : public image_fetcher::ImageDecoder {
 
 class CachedImageFetcherTest : public testing::Test {
  public:
-  CachedImageFetcherTest()
-      : fake_url_fetcher_factory_(nullptr),
-        mock_task_runner_(new base::TestSimpleTaskRunner()),
-        mock_task_runner_handle_(mock_task_runner_) {
+  CachedImageFetcherTest() : fake_url_fetcher_factory_(nullptr) {
     EXPECT_TRUE(database_dir_.CreateUniqueTempDir());
 
     RequestThrottler::RegisterProfilePrefs(pref_service_.registry());
-    database_ = base::MakeUnique<RemoteSuggestionsDatabase>(
-        database_dir_.GetPath(), mock_task_runner_);
+    database_ =
+        base::MakeUnique<RemoteSuggestionsDatabase>(database_dir_.GetPath());
     request_context_getter_ = scoped_refptr<net::TestURLRequestContextGetter>(
-        new net::TestURLRequestContextGetter(mock_task_runner_.get()));
+        new net::TestURLRequestContextGetter(
+            scoped_task_environment_.GetMainThreadTaskRunner()));
 
     auto decoder = base::MakeUnique<FakeImageDecoder>();
     fake_image_decoder_ = decoder.get();
@@ -81,6 +78,14 @@ class CachedImageFetcherTest : public testing::Test {
     EXPECT_TRUE(database_->IsInitialized());
   }
 
+  ~CachedImageFetcherTest() override {
+    cached_image_fetcher_.reset();
+    database_.reset();
+    // We need to run until idle after deleting the database, because
+    // ProtoDatabaseImpl deletes the actual LevelDB asynchronously.
+    RunUntilIdle();
+  }
+
   void FetchImage(ImageFetchedCallback callback) {
     ContentSuggestion::ID content_suggestion_id(
         Category::FromKnownCategory(KnownCategories::ARTICLES), kSnippetID);
@@ -88,7 +93,7 @@ class CachedImageFetcherTest : public testing::Test {
         content_suggestion_id, GURL(kImageURL), std::move(callback));
   }
 
-  void RunUntilIdle() { mock_task_runner_->RunUntilIdle(); }
+  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
   RemoteSuggestionsDatabase* database() { return database_.get(); }
   FakeImageDecoder* fake_image_decoder() { return fake_image_decoder_; }
@@ -102,10 +107,9 @@ class CachedImageFetcherTest : public testing::Test {
   base::ScopedTempDir database_dir_;
   FakeImageDecoder* fake_image_decoder_;
   net::FakeURLFetcherFactory fake_url_fetcher_factory_;
-  scoped_refptr<base::TestSimpleTaskRunner> mock_task_runner_;
-  base::ThreadTaskRunnerHandle mock_task_runner_handle_;
   TestingPrefServiceSimple pref_service_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(CachedImageFetcherTest);
 };

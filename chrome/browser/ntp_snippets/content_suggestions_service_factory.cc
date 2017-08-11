@@ -11,8 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "base/sequenced_task_runner.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -189,12 +187,8 @@ void RegisterContextualSuggestionsSourceIfEnabled(
           base::Bind(&safe_json::SafeJsonParser::Parse));
   base::FilePath database_dir(
       profile->GetPath().Append("contextualSuggestionsDatabase"));
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   auto contextual_suggestions_database =
-      base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner);
+      base::MakeUnique<RemoteSuggestionsDatabase>(database_dir);
   auto cached_image_fetcher =
       base::MakeUnique<ntp_snippets::CachedImageFetcher>(
           base::MakeUnique<image_fetcher::ImageFetcherImpl>(
@@ -418,10 +412,6 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
 
   base::FilePath database_dir(
       profile->GetPath().Append(ntp_snippets::kDatabaseFolder));
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   std::string api_key;
   // The API is private. If we don't have the official API key, don't even try.
   if (google_apis::IsGoogleChromeAPIKeyUsed()) {
@@ -462,7 +452,7 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
       std::move(suggestions_fetcher),
       base::MakeUnique<ImageFetcherImpl>(base::MakeUnique<ImageDecoderImpl>(),
                                          request_context.get()),
-      base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner),
+      base::MakeUnique<RemoteSuggestionsDatabase>(database_dir),
       base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(
           signin_manager, pref_service, additional_toggle_pref),
       std::move(prefetched_pages_tracker),
