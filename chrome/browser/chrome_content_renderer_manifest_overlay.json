@@ -9,6 +9,9 @@
           "spellcheck::mojom::SpellChecker",
           "profiling::mojom::MemlogClient"
         ]
+      },
+      "requires": {
+        "chrome": [ "renderer" ]
       }
     },
     "navigation:frame": {
