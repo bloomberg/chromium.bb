@@ -113,9 +113,15 @@
 ../../tools/swarming_client/libs/logdog/stream.py
 ../../tools/swarming_client/libs/logdog/streamname.py
 ../../tools/swarming_client/libs/logdog/varint.py
+../gn_helpers.py
 ../util/lib/common/chrome_test_server_spawner.py
 ../util/lib/common/unittest_util.py
 devil_chromium.py
+gyp/util/__init__.py
+gyp/util/build_utils.py
+gyp/util/md5_check.py
+incremental_install/__init__.py
+incremental_install/installer.py
 pylib/__init__.py
 pylib/android/__init__.py
 pylib/android/logdog_logcat_monitor.py
@@ -179,6 +185,7 @@ pylib/utils/logging_utils.py
 pylib/utils/proguard.py
 pylib/utils/repo_utils.py
 pylib/utils/shared_preference_utils.py
+pylib/utils/time_profile.py
 pylib/valgrind_tools.py
 test_runner.py
 tombstones.py
