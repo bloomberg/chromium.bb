@@ -135,6 +135,88 @@ TEST_F(ScrollbarsTest, TransparentBackgroundUsesDarkOverlayColorTheme) {
             layout_viewport->GetScrollbarOverlayColorTheme());
 }
 
+class ParameterizedScrollbarsTest : public ::testing::WithParamInterface<bool>,
+                                    private ScopedRootLayerScrollingForTest,
+                                    public SimTest {
+ public:
+  ParameterizedScrollbarsTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
+};
+
+INSTANTIATE_TEST_CASE_P(All, ParameterizedScrollbarsTest, ::testing::Bool());
+
+// Ensure overlay scrollbar change to display:none correctly.
+TEST_P(ParameterizedScrollbarsTest,
+       OverlayScrollbarChangeToDisplayNoneDynamically) {
+  // This test is specifically checking the behavior when overlay scrollbars
+  // are enabled.
+  DCHECK(ScrollbarTheme::GetTheme().UsesOverlayScrollbars());
+
+  WebView().Resize(WebSize(200, 200));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<!DOCTYPE html>"
+      "<style>"
+      ".noscrollbars::-webkit-scrollbar { display: none; }"
+      "#div{ height: 100px; width:100px; overflow:scroll; }"
+      ".big{ height: 2000px; }"
+      "body { overflow:scroll; }"
+      "</style>"
+      "<div id='div'>"
+      "  <div class='big'>"
+      "  </div>"
+      "</div>"
+      "<div class='big'>"
+      "</div>");
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+  Element* div = document.getElementById("div");
+
+  // Ensure we have overlay scrollbar for div and root.
+  ScrollableArea* scrollable_div =
+      ToLayoutBox(div->GetLayoutObject())->GetScrollableArea();
+
+  ScrollableArea* scrollable_root =
+      GetDocument().View()->LayoutViewportScrollableArea();
+
+  DCHECK(scrollable_div->VerticalScrollbar());
+  DCHECK(scrollable_div->VerticalScrollbar()->IsOverlayScrollbar());
+
+  DCHECK(!scrollable_div->HorizontalScrollbar());
+
+  DCHECK(scrollable_root->VerticalScrollbar());
+  DCHECK(scrollable_root->VerticalScrollbar()->IsOverlayScrollbar());
+
+  // For PaintLayer Overlay Scrollbar we will remove the scrollbar when it is
+  // not necessary even with overflow:scroll. Should remove after RLS ships.
+  if (GetParam() == 0)
+    DCHECK(scrollable_root->HorizontalScrollbar());
+  else
+    DCHECK(!scrollable_root->HorizontalScrollbar());
+
+  // Set display:none.
+  div->setAttribute(HTMLNames::classAttr, "noscrollbars");
+  document.body()->setAttribute(HTMLNames::classAttr, "noscrollbars");
+  Compositor().BeginFrame();
+
+  EXPECT_TRUE(scrollable_div->VerticalScrollbar());
+  EXPECT_TRUE(scrollable_div->VerticalScrollbar()->IsCustomScrollbar());
+  EXPECT_TRUE(scrollable_div->VerticalScrollbar()->FrameRect().IsEmpty());
+
+  EXPECT_TRUE(scrollable_div->HorizontalScrollbar());
+  EXPECT_TRUE(scrollable_div->HorizontalScrollbar()->IsCustomScrollbar());
+  EXPECT_TRUE(scrollable_div->HorizontalScrollbar()->FrameRect().IsEmpty());
+
+  EXPECT_TRUE(scrollable_root->VerticalScrollbar());
+  EXPECT_TRUE(scrollable_root->VerticalScrollbar()->IsCustomScrollbar());
+  EXPECT_TRUE(scrollable_root->VerticalScrollbar()->FrameRect().IsEmpty());
+
+  EXPECT_TRUE(scrollable_root->HorizontalScrollbar());
+  EXPECT_TRUE(scrollable_root->HorizontalScrollbar()->IsCustomScrollbar());
+  EXPECT_TRUE(scrollable_root->HorizontalScrollbar()->FrameRect().IsEmpty());
+}
+
 typedef bool TestParamOverlayScrollbar;
 class ScrollbarAppearanceTest
     : public SimTest,
