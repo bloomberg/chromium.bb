@@ -1,5 +1,6 @@
 chrisha@chromium.org
 haraken@chromium.org
 oysteine@chromium.org
-primiano@chromium.org
 zhenw@chromium.org
+
+per-file BUILD.gn=file://services/resource_coordinator/memory_instrumentation/OWNERS
