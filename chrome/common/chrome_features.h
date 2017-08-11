@@ -30,6 +30,7 @@ extern const base::Feature kViewsTaskManager;
 #endif  // defined(OS_MACOSX)
 
 #if !defined(OS_ANDROID)
+extern const base::Feature kAnimatedAppMenuIcon;
 extern const base::Feature kAppBanners;
 #endif  // !defined(OS_ANDROID)
 

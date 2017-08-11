@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button.h"
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #import "chrome/browser/themes/theme_properties.h"
@@ -12,7 +11,7 @@
 #include "chrome/browser/ui/cocoa/animated_icon.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -33,8 +32,7 @@
   if ((self = [super initWithFrame:frame])) {
     [self commonInit];
 
-    base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
-    if (commandLine->HasSwitch(switches::kEnableNewAppMenuIcon)) {
+    if (base::FeatureList::IsEnabled(features::kAnimatedAppMenuIcon)) {
       animatedIcon_.reset(new AnimatedIcon(kBrowserToolsAnimatedIcon, self));
       [self updateAnimatedIconColor];
 

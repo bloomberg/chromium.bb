@@ -2973,7 +2973,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(omnibox::kOmniboxTailSuggestions)},
     {"enable-new-app-menu-icon", flag_descriptions::kEnableNewAppMenuIconName,
      flag_descriptions::kEnableNewAppMenuIconDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnableNewAppMenuIcon)},
+     FEATURE_VALUE_TYPE(features::kAnimatedAppMenuIcon)},
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_ANDROID)
