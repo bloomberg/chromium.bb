@@ -1232,10 +1232,17 @@ bool PaintLayerScrollableArea::NeedsScrollbarReconstruction() const {
       style_source.IsBox() &&
       style_source.StyleRef().HasPseudoStyle(kPseudoIdScrollbar);
   bool has_any_scrollbar = HasScrollbar();
-  bool has_custom =
-      (HasHorizontalScrollbar() &&
-       HorizontalScrollbar()->IsCustomScrollbar()) ||
-      (HasVerticalScrollbar() && VerticalScrollbar()->IsCustomScrollbar());
+
+  bool did_scrollbar_theme_changed = false;
+
+  if (HasHorizontalScrollbar() &&
+      HorizontalScrollbar()->IsCustomScrollbar() != should_use_custom)
+    did_scrollbar_theme_changed = true;
+
+  if (HasVerticalScrollbar() &&
+      VerticalScrollbar()->IsCustomScrollbar() != should_use_custom)
+    did_scrollbar_theme_changed = true;
+
   bool did_custom_scrollbar_owner_changed = false;
 
   if (HasHorizontalScrollbar() && HorizontalScrollbar()->IsCustomScrollbar()) {
@@ -1249,7 +1256,7 @@ bool PaintLayerScrollableArea::NeedsScrollbarReconstruction() const {
   }
 
   return has_any_scrollbar &&
-         ((should_use_custom != has_custom) ||
+         (did_scrollbar_theme_changed ||
           (should_use_custom && did_custom_scrollbar_owner_changed));
 }
 
