@@ -264,19 +264,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
     },
-    'Win10 Release (Intel HD 530)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '8086:1912',
-          'os': 'Windows-10',
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'win',
-    },
     'Win10 Release (Intel HD 630)': {
       'swarming_dimensions': [
         {
@@ -285,19 +272,6 @@ FYI_WATERFALL = {
         },
       ],
       'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'win',
-    },
-    'Win10 Debug (Intel HD 530)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '8086:1912',
-          'os': 'Windows-10',
-        },
-      ],
-      'build_config': 'Debug',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
       'swarming': False,
@@ -538,19 +512,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'linux',
     },
-    'Linux Release (Intel HD 530)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '8086:1912',
-          'os': 'Ubuntu'
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'linux',
-    },
     'Linux Release (Intel HD 630)': {
       'swarming_dimensions': [
         {
@@ -559,19 +520,6 @@ FYI_WATERFALL = {
         },
       ],
       'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'linux',
-    },
-    'Linux Debug (Intel HD 530)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '8086:1912',
-          'os': 'Ubuntu'
-        },
-      ],
-      'build_config': 'Debug',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
       'swarming': False,
@@ -1562,8 +1510,6 @@ COMMON_GTESTS = {
     'disabled_tester_configs': [
       {
         'names': [
-          'Win10 Debug (Intel HD 530)',
-          'Win10 Release (Intel HD 530)',
           'Win10 Release (Intel HD 630)',
         ],
       },
