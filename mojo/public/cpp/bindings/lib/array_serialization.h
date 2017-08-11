@@ -116,8 +116,11 @@ struct ArraySerializer<
 
   static_assert(std::is_same<Element, DataElement>::value,
                 "Incorrect array serializer");
-  static_assert(std::is_same<Element, typename Traits::Element>::value,
-                "Incorrect array serializer");
+  static_assert(
+      std::is_same<
+          Element,
+          typename std::remove_const<typename Traits::Element>::type>::value,
+      "Incorrect array serializer");
 
   static void SerializeElements(UserTypeIterator* input,
                                 Buffer* buf,

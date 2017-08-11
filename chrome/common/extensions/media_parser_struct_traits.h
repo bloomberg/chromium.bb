@@ -9,7 +9,7 @@
 
 #include "chrome/common/extensions/media_parser.mojom.h"
 #include "chrome/common/media_galleries/metadata_types.h"
-#include "mojo/public/cpp/bindings/array_traits_carray.h"
+#include "mojo/public/cpp/bindings/array_traits_span.h"
 
 namespace mojo {
 
