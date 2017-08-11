@@ -487,15 +487,15 @@ bool WebRtcAudioDeviceImpl::GetAuthorizedDeviceInfoForAudioRenderer(
   // Don't set output parameters unless all of them are valid.
   const StreamDeviceInfo& device_info = capturers_.back()->device_info();
   if (device_info.session_id <= 0 ||
-      !device_info.device.matched_output.sample_rate ||
-      !device_info.device.matched_output.frames_per_buffer) {
+      !device_info.device.matched_output.sample_rate() ||
+      !device_info.device.matched_output.frames_per_buffer()) {
     return false;
   }
 
   *session_id = device_info.session_id;
-  *output_sample_rate = device_info.device.matched_output.sample_rate;
+  *output_sample_rate = device_info.device.matched_output.sample_rate();
   *output_frames_per_buffer =
-      device_info.device.matched_output.frames_per_buffer;
+      device_info.device.matched_output.frames_per_buffer();
 
   return true;
 }

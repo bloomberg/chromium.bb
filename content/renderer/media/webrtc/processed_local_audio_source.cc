@@ -90,8 +90,8 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
       consumer_render_frame_id_, device_info().device.input.channel_layout,
       device_info().device.input.sample_rate,
       device_info().device.input.frames_per_buffer, device_info().session_id,
-      device_info().device.matched_output.sample_rate,
-      device_info().device.matched_output.frames_per_buffer,
+      device_info().device.matched_output.sample_rate(),
+      device_info().device.matched_output.frames_per_buffer(),
       device_info().device.input.effects));
 
   // Disable HW echo cancellation if constraints explicitly specified no

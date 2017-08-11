@@ -131,11 +131,10 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
     if (info && !info->device.matched_output_device_id.empty()) {
       media::AudioParameters params(
           media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-          static_cast<media::ChannelLayout>(
-              info->device.matched_output.channel_layout),
-          info->device.matched_output.sample_rate, 16,
-          info->device.matched_output.frames_per_buffer);
-      params.set_effects(info->device.matched_output.effects);
+          info->device.matched_output.channel_layout(),
+          info->device.matched_output.sample_rate(), 16,
+          info->device.matched_output.frames_per_buffer());
+      params.set_effects(info->device.matched_output.effects());
 
       // We don't need the origin for authorization in this case, but it's used
       // for hashing the device id before sending it back to the renderer.

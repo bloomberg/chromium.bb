@@ -164,7 +164,8 @@ struct CONTENT_EXPORT MediaStreamDevice {
   // this will contain the properties for the output device.  If no such device
   // exists (e.g. webcam w/mic), then the value of this member will be all
   // zeros.
-  AudioDeviceParameters matched_output;
+  media::AudioParameters matched_output =
+      media::AudioParameters::UnavailableDeviceParams();
 
   // This field is optional and available only for some camera models.
   base::Optional<CameraCalibration> camera_calibration;
