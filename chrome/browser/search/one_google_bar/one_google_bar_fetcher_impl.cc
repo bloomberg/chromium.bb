@@ -10,12 +10,10 @@
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/common/chrome_content_client.h"
-#include "chrome/common/chrome_features.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/safe_json/safe_json_parser.h"
@@ -135,6 +133,7 @@ class OneGoogleBarFetcherImpl::AuthenticatedURLFetcher
   AuthenticatedURLFetcher(net::URLRequestContextGetter* request_context,
                           const GURL& google_base_url,
                           const std::string& application_locale,
+                          const base::Optional<std::string>& api_url_override,
                           FetchDoneCallback callback);
   ~AuthenticatedURLFetcher() override = default;
 
@@ -150,6 +149,7 @@ class OneGoogleBarFetcherImpl::AuthenticatedURLFetcher
   net::URLRequestContextGetter* const request_context_;
   const GURL google_base_url_;
   const std::string application_locale_;
+  const base::Optional<std::string> api_url_override_;
 
   FetchDoneCallback callback_;
 
@@ -161,20 +161,16 @@ OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::AuthenticatedURLFetcher(
     net::URLRequestContextGetter* request_context,
     const GURL& google_base_url,
     const std::string& application_locale,
+    const base::Optional<std::string>& api_url_override,
     FetchDoneCallback callback)
     : request_context_(request_context),
       google_base_url_(google_base_url),
       application_locale_(application_locale),
+      api_url_override_(api_url_override),
       callback_(std::move(callback)) {}
 
 GURL OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GetApiUrl() const {
-  GURL api_url = google_base_url_.Resolve(kApiPath);
-
-  std::string api_url_override = base::GetFieldTrialParamValueByFeature(
-      features::kOneGoogleBarOnLocalNtp, "one-google-api-url");
-  if (!api_url_override.empty()) {
-    api_url = GURL(api_url_override);
-  }
+  GURL api_url = google_base_url_.Resolve(api_url_override_.value_or(kApiPath));
 
   // Add the "hl=" parameter.
   return net::AppendQueryParameter(api_url, "hl", application_locale_);
@@ -236,10 +232,12 @@ void OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::OnURLFetchComplete(
 OneGoogleBarFetcherImpl::OneGoogleBarFetcherImpl(
     net::URLRequestContextGetter* request_context,
     GoogleURLTracker* google_url_tracker,
-    const std::string& application_locale)
+    const std::string& application_locale,
+    const base::Optional<std::string>& api_url_override)
     : request_context_(request_context),
       google_url_tracker_(google_url_tracker),
       application_locale_(application_locale),
+      api_url_override_(api_url_override),
       weak_ptr_factory_(this) {}
 
 OneGoogleBarFetcherImpl::~OneGoogleBarFetcherImpl() = default;
@@ -256,7 +254,7 @@ void OneGoogleBarFetcherImpl::Fetch(OneGoogleCallback callback) {
   // something has changed in the meantime (e.g. signin state) that would make
   // the result obsolete.
   pending_request_ = base::MakeUnique<AuthenticatedURLFetcher>(
-      request_context_, google_base_url, application_locale_,
+      request_context_, google_base_url, application_locale_, api_url_override_,
       base::BindOnce(&OneGoogleBarFetcherImpl::FetchDone,
                      base::Unretained(this)));
   pending_request_->Start();

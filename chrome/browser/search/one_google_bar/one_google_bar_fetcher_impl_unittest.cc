@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
@@ -57,7 +58,10 @@ class GoogleURLTrackerClientStub : public GoogleURLTrackerClient {
 
 class OneGoogleBarFetcherImplTest : public testing::Test {
  public:
-  OneGoogleBarFetcherImplTest()
+  OneGoogleBarFetcherImplTest() : OneGoogleBarFetcherImplTest(base::nullopt) {}
+
+  OneGoogleBarFetcherImplTest(
+      const base::Optional<std::string>& api_url_override)
       : task_runner_(new base::TestSimpleTaskRunner()),
         request_context_getter_(
             new net::TestURLRequestContextGetter(task_runner_)),
@@ -65,7 +69,8 @@ class OneGoogleBarFetcherImplTest : public testing::Test {
                             GoogleURLTracker::UNIT_TEST_MODE),
         one_google_bar_fetcher_(request_context_getter_.get(),
                                 &google_url_tracker_,
-                                kApplicationLocale) {}
+                                kApplicationLocale,
+                                api_url_override) {}
 
   net::TestURLFetcher* GetRunningURLFetcher() {
     // All created URLFetchers have ID 0 by default.
@@ -282,4 +287,47 @@ TEST_F(OneGoogleBarFetcherImplTest, IncompleteJsonErrorIsFatal) {
   "html": {},
   "page_hooks": {}
 }}})json");
+}
+
+class OneGoogleBarFetcherImplWithRelativeApiUrlOverrideTest
+    : public OneGoogleBarFetcherImplTest {
+ public:
+  OneGoogleBarFetcherImplWithRelativeApiUrlOverrideTest()
+      : OneGoogleBarFetcherImplTest(std::string("/testapi?q=a")) {}
+};
+
+TEST_F(OneGoogleBarFetcherImplWithRelativeApiUrlOverrideTest,
+       RequestUrlRespectsOverride) {
+  // Trigger a request.
+  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
+  one_google_bar_fetcher()->Fetch(callback.Get());
+
+  // Make sure the request URL corresponds to the override, but also contains
+  // the "hl=" query param.
+  GURL request_url = GetRunningURLFetcher()->GetOriginalURL();
+  EXPECT_EQ("/testapi", request_url.path());
+  std::string expected_query =
+      base::StringPrintf("q=a&hl=%s", kApplicationLocale);
+  EXPECT_EQ(expected_query, request_url.query());
+}
+
+class OneGoogleBarFetcherImplWithAbsoluteApiUrlOverrideTest
+    : public OneGoogleBarFetcherImplTest {
+ public:
+  OneGoogleBarFetcherImplWithAbsoluteApiUrlOverrideTest()
+      : OneGoogleBarFetcherImplTest(std::string("http://test.com/path?q=a")) {}
+};
+
+TEST_F(OneGoogleBarFetcherImplWithAbsoluteApiUrlOverrideTest,
+       RequestUrlRespectsOverride) {
+  // Trigger a request.
+  base::MockCallback<OneGoogleBarFetcher::OneGoogleCallback> callback;
+  one_google_bar_fetcher()->Fetch(callback.Get());
+
+  // Make sure the request URL corresponds to the override, but also contains
+  // the "hl=" query param.
+  GURL request_url = GetRunningURLFetcher()->GetOriginalURL();
+  GURL expected_url = GURL(
+      base::StringPrintf("http://test.com/path?q=a&hl=%s", kApplicationLocale));
+  EXPECT_EQ(expected_url, request_url);
 }
