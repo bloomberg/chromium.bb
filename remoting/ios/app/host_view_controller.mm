@@ -53,6 +53,8 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
   BOOL _blocksKeyboard;
   BOOL _hasPhysicalKeyboard;
   NSLayoutConstraint* _keyboardHeightConstraint;
+
+  // Identical to self.view. Just casted to EAGLView.
   EAGLView* _hostView;
 }
 @end
@@ -83,20 +85,15 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
 
 #pragma mark - UIViewController
 
+- (void)loadView {
+  _hostView = [[EAGLView alloc] initWithFrame:CGRectZero];
+  self.view = _hostView;
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
-  _hostView = [[EAGLView alloc] initWithFrame:CGRectZero];
   _hostView.displayTaskRunner =
       remoting::ChromotingClientRuntime::GetInstance()->display_task_runner();
-  _hostView.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.view addSubview:_hostView];
-
-  [NSLayoutConstraint activateConstraints:@[
-    [_hostView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-    [_hostView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-    [_hostView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-  ]];
-  [self setKeyboardSize:CGSizeZero needsLayout:NO];
 
   _floatingButton =
       [MDCFloatingButton floatingButtonWithShape:MDCFloatingButtonShapeMini];
@@ -140,12 +137,7 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
                           metrics:metrics
                             views:views];
 
-  [NSLayoutConstraint
-      activateConstraints:[NSLayoutConstraint
-                              constraintsWithVisualFormat:@"V:[fab]-(inset)-|"
-                                                  options:0
-                                                  metrics:metrics
-                                                    views:views]];
+  [self setKeyboardSize:CGSizeZero needsLayout:NO];
 }
 
 - (void)viewDidUnload {
@@ -208,7 +200,14 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
 
-  [_client surfaceChanged:_hostView.bounds];
+  // Pass the actual size of the view to the renderer.
+  [_client.displayHandler onSurfaceChanged:_hostView.bounds];
+
+  // Pass the size of the visible area to GestureInterpreter/DesktopViewport.
+  CGFloat visibleAreaHeight =
+      _hostView.bounds.size.height - _keyboardSize.height;
+  _client.gestureInterpreter->OnSurfaceSizeChanged(_hostView.bounds.size.width,
+                                                   visibleAreaHeight);
   [self resizeHostToFitIfNeeded];
 
   [self updateFABConstraintsAnimated:NO];
@@ -507,15 +506,16 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
   if (_keyboardHeightConstraint) {
     _keyboardHeightConstraint.active = NO;
   }
-  _keyboardHeightConstraint =
-      [_hostView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor
-                                             constant:-keyboardSize.height];
+  // Change FAB bottom constraint to adjust for the keyboard size.
+  _keyboardHeightConstraint = [_floatingButton.bottomAnchor
+      constraintEqualToAnchor:_hostView.bottomAnchor
+                     constant:-kFabInset - keyboardSize.height];
   _keyboardHeightConstraint.active = YES;
 
   if (needsLayout) {
     [UIView animateWithDuration:kKeyboardAnimationTime
                      animations:^{
-                       [self.view setNeedsLayout];
+                       [self.view layoutIfNeeded];
                      }];
   }
 }
