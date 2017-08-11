@@ -34,6 +34,8 @@ const char kRotationalFormat[] = "/sys/block/sd%c/queue/rotational";
 bool DriveMetricsProvider::HasSeekPenalty(const base::FilePath& path,
                                           bool* has_seek_penalty) {
 #if defined(OS_CHROMEOS)
+  // TODO(derat): Remove special-casing after October 2017 when parrot (Acer C7
+  // Chromebook) is unsupported.
   std::string board = base::SysInfo::GetStrippedReleaseBoard();
   // There are "parrot", "parrot_ivb" and "parrot_freon" boards that have
   // devices with rotating disks. All other ChromeOS devices have SSDs.
