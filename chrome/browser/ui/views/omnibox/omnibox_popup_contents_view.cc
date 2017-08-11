@@ -478,7 +478,9 @@ void OmniboxPopupContentsView::PaintChildren(
                         g_bottom_shadow.Get().height());
 
   ui::ClipRecorder clip_recorder(paint_info.context());
-  clip_recorder.ClipRect(contents_bounds);
+  clip_recorder.ClipRect(gfx::ScaleToRoundedRect(
+      contents_bounds, paint_info.paint_recording_scale_x(),
+      paint_info.paint_recording_scale_y()));
   {
     ui::PaintRecorder recorder(paint_info.context(), size());
     SkColor background_color = result_view_at(0)->GetColor(
