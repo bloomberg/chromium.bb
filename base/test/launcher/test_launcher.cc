@@ -62,6 +62,12 @@
 #include "base/win/windows_version.h"
 #endif
 
+#if defined(OS_FUCHSIA)
+// TODO(scottmg): For temporary code in OnOutputTimeout().
+#include <magenta/syscalls.h>
+#include <magenta/syscalls/object.h>
+#endif
+
 namespace base {
 
 // See https://groups.google.com/a/chromium.org/d/msg/chromium-dev/nkdTP7sstSc/uT3FaE_sgkAJ .
@@ -1169,6 +1175,26 @@ void TestLauncher::OnOutputTimeout() {
 #else
     fprintf(stdout, "\t%s\n", pair.second.GetCommandLineString().c_str());
 #endif
+
+#if defined(OS_FUCHSIA)
+    // TODO(scottmg): Temporary code to try to identify why child processes
+    // appear to not be terminated after a timeout correctly.
+    // https://crbug.com/750370 and https://crbug.com/738275.
+
+    mx_info_process_t proc_info = {};
+    mx_status_t status =
+        mx_object_get_info(pair.first, MX_INFO_PROCESS, &proc_info,
+                           sizeof(proc_info), nullptr, nullptr);
+    if (status != MX_OK) {
+      fprintf(stdout, "mx_object_get_info failed for '%s', status=%d\n",
+              pair.second.GetCommandLineString().c_str(), status);
+    } else {
+      fprintf(stdout, "  return_code=%d\n", proc_info.return_code);
+      fprintf(stdout, "  started=%d\n", proc_info.started);
+      fprintf(stdout, "  exited=%d\n", proc_info.exited);
+      fprintf(stdout, "  debugger_attached=%d\n", proc_info.debugger_attached);
+    }
+#endif  // OS_FUCHSIA
   }
 
   fflush(stdout);
