@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -152,6 +153,10 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
     contents2_ = nav_handle2_->GetWebContents();
     contents3_ = nav_handle3_->GetWebContents();
 
+    contents1_->WasShown();
+    contents2_->WasHidden();
+    contents3_->WasHidden();
+
     throttle1_ = base::MakeUnique<NonResumingBackgroundTabNavigationThrottle>(
         nav_handle1_.get());
     throttle2_ = base::MakeUnique<NonResumingBackgroundTabNavigationThrottle>(
@@ -166,6 +171,14 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
     NavigationThrottle::ThrottleCheckResult result3 =
         tab_manager->MaybeThrottleNavigation(throttle3_.get());
 
+    CheckThrottleResults(result1, result2, result3, loading_slots);
+  }
+
+  virtual void CheckThrottleResults(
+      NavigationThrottle::ThrottleCheckResult result1,
+      NavigationThrottle::ThrottleCheckResult result2,
+      NavigationThrottle::ThrottleCheckResult result3,
+      size_t loading_slots) {
     // First tab starts navigation right away because there is no tab loading.
     EXPECT_EQ(content::NavigationThrottle::PROCEED, result1);
     switch (loading_slots) {
@@ -196,6 +209,27 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
   WebContents* contents1_;
   WebContents* contents2_;
   WebContents* contents3_;
+};
+
+class TabManagerWithExperimentDisabledTest : public TabManagerTest {
+ public:
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kStaggeredBackgroundTabOpenExperiment);
+    ChromeRenderViewHostTestHarness::SetUp();
+  }
+
+  void CheckThrottleResults(NavigationThrottle::ThrottleCheckResult result1,
+                            NavigationThrottle::ThrottleCheckResult result2,
+                            NavigationThrottle::ThrottleCheckResult result3,
+                            size_t loading_slots) override {
+    EXPECT_EQ(content::NavigationThrottle::PROCEED, result1);
+    EXPECT_EQ(content::NavigationThrottle::PROCEED, result2);
+    EXPECT_EQ(content::NavigationThrottle::PROCEED, result3);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // TODO(georgesak): Add tests for protection to tabs with form input and
@@ -974,6 +1008,81 @@ TEST_F(TabManagerTest, BackgroundTabsLoadingOrdering) {
   EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents3_));
   EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
   EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
+}
+
+TEST_F(TabManagerTest, IsLoadingBackgroundTabs) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+  tab_manager->ResetMemoryPressureListenerForTest();
+  EXPECT_FALSE(tab_manager->IsLoadingBackgroundTabs());
+
+  MaybeThrottleNavigations(tab_manager);
+  tab_manager->GetWebContentsData(contents1_)
+      ->DidStartNavigation(nav_handle1_.get());
+  EXPECT_TRUE(tab_manager->IsLoadingBackgroundTabs());
+
+  tab_manager->GetWebContentsData(contents1_)->DidStopLoading();
+  EXPECT_TRUE(tab_manager->IsLoadingBackgroundTabs());
+
+  tab_manager->GetWebContentsData(contents2_)->DidStopLoading();
+  EXPECT_TRUE(tab_manager->IsLoadingBackgroundTabs());
+
+  contents3_->WasShown();
+  EXPECT_FALSE(tab_manager->IsLoadingBackgroundTabs());
+
+  contents3_->WasHidden();
+  EXPECT_TRUE(tab_manager->IsLoadingBackgroundTabs());
+
+  tab_manager->GetWebContentsData(contents3_)->DidStopLoading();
+  EXPECT_FALSE(tab_manager->IsLoadingBackgroundTabs());
+}
+
+TEST_F(TabManagerWithExperimentDisabledTest, IsLoadingBackgroundTabs) {
+  EXPECT_FALSE(base::FeatureList::IsEnabled(
+      features::kStaggeredBackgroundTabOpenExperiment));
+
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+  tab_manager->ResetMemoryPressureListenerForTest();
+  EXPECT_FALSE(tab_manager->IsLoadingBackgroundTabs());
+
+  MaybeThrottleNavigations(tab_manager);
+  tab_manager->GetWebContentsData(contents1_)
+      ->DidStartNavigation(nav_handle1_.get());
+  tab_manager->GetWebContentsData(contents2_)
+      ->DidStartNavigation(nav_handle1_.get());
+  tab_manager->GetWebContentsData(contents3_)
+      ->DidStartNavigation(nav_handle1_.get());
+
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents3_));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle1_.get()));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
+  EXPECT_TRUE(tab_manager->IsLoadingBackgroundTabs());
+
+  tab_manager->GetWebContentsData(contents1_)->DidStopLoading();
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents3_));
+  EXPECT_TRUE(tab_manager->IsLoadingBackgroundTabs());
+
+  tab_manager->GetWebContentsData(contents2_)->DidStopLoading();
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents3_));
+  EXPECT_TRUE(tab_manager->IsLoadingBackgroundTabs());
+
+  contents3_->WasShown();
+  EXPECT_FALSE(tab_manager->IsLoadingBackgroundTabs());
+
+  contents3_->WasHidden();
+  EXPECT_TRUE(tab_manager->IsLoadingBackgroundTabs());
+
+  tab_manager->GetWebContentsData(contents3_)->DidStopLoading();
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents3_));
+  EXPECT_FALSE(tab_manager->IsLoadingBackgroundTabs());
 }
 
 TEST_F(TabManagerTest, IsTabRestoredInForeground) {
