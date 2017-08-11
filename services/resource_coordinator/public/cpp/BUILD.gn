@@ -33,6 +33,10 @@ component("resource_coordinator_cpp") {
     set_sources_assignment_filter(sources_assignment_filter)
   }
 
+  if (is_fuchsia) {
+    sources += [ "memory_instrumentation/os_metrics_fuchsia.cc" ]
+  }
+
   defines = [ "SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_IMPLEMENTATION" ]
 
   deps = [
