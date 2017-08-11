@@ -716,7 +716,7 @@ class RemoteDevice(object):
     """
     assert mode in ['rsync', 'scp', 'throttled']
     if mode == 'throttled':
-      logging.info('Throttled copy: %s:%s -> %s', self.hostname, src, dest)
+      logging.info('Throttled copy: %s -> %s:%s', src, self.hostname, dest)
       throttle.ThrottledCopy(self.hostname, src, dest, **kwargs)
       return
     msg = 'Could not copy %s to device.' % src
