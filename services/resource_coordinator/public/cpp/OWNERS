@@ -1,3 +1,5 @@
+per-file BUILD.gn=file://services/resource_coordinator/memory_instrumentation/OWNERS
+
 per-file *.typemap=set noparent
 per-file *.typemap=file://ipc/SECURITY_OWNERS
 
