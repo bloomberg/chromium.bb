@@ -826,8 +826,6 @@ http/tests/xsl/xslt-transform-with-javascript-disabled.html
 images/image-empty-data.html
 images/imagemap-focus-ring-outline-color-not-inherited-from-map.html
 images/link-body-content-imageDimensionChanged-crash.html
-images/optimize-contrast-image.html
-images/paletted-png-with-color-profile.html
 images/percent-height-image.html
 images/png-extra-row-crash.html
 images/script-counter-imageDimensionChanged-crash.html
