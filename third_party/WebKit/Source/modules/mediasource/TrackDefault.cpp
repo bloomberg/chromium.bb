@@ -5,9 +5,11 @@
 #include "modules/mediasource/TrackDefault.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 #include "core/html/track/AudioTrack.h"
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/VideoTrack.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 
@@ -24,6 +26,10 @@ const AtomicString& TrackDefault::VideoKeyword() {
 const AtomicString& TrackDefault::TextKeyword() {
   DEFINE_STATIC_LOCAL(const AtomicString, text, ("text"));
   return text;
+}
+
+ScriptValue TrackDefault::kinds(ScriptState* script_state) const {
+  return ScriptValue(script_state, ToV8(kinds_, script_state));
 }
 
 TrackDefault* TrackDefault::Create(const AtomicString& type,

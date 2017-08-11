@@ -16,9 +16,10 @@ enum TrackDefaultType { "audio", "video", "text" };
     readonly attribute DOMString byteStreamTrackID;
     readonly attribute DOMString language;
     readonly attribute DOMString label;
-    // TODO(wolenetz): |kinds| should be [SameObject] FrozenArray<DOMString> or
-    // a getKinds() method returning sequence<DOMString>.
-    // https://github.com/w3c/media-source/issues/91
-    // https://crbug.com/619665
-    readonly attribute DOMString[] kinds;
+    // TrackDefault was removed from the spec in
+    // https://github.com/w3c/media-source/pull/138, and the last version to
+    // have it had getKinds() instead of |kinds|. Use an object here to avoid
+    // WebIDL arrays (which no longer exist) while not breaking compatibility
+    // See also: https://crbug.com/619665.
+    [CallWith=ScriptState] readonly attribute object kinds;
 };
