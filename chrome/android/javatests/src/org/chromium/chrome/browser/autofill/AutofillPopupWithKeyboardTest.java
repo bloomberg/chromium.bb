@@ -31,7 +31,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.R;
 import org.chromium.ui.UiUtils;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -82,13 +81,10 @@ public class AutofillPopupWithKeyboardTest {
         final AtomicReference<ContentViewCore> viewCoreRef = new AtomicReference<ContentViewCore>();
         final AtomicReference<WebContents> webContentsRef = new AtomicReference<WebContents>();
         final AtomicReference<ViewGroup> viewRef = new AtomicReference<ViewGroup>();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                viewCoreRef.set(mActivityTestRule.getActivity().getCurrentContentViewCore());
-                webContentsRef.set(viewCoreRef.get().getWebContents());
-                viewRef.set(viewCoreRef.get().getContainerView());
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            viewCoreRef.set(mActivityTestRule.getActivity().getCurrentContentViewCore());
+            webContentsRef.set(viewCoreRef.get().getWebContents());
+            viewRef.set(viewCoreRef.get().getContainerView());
         });
         DOMUtils.waitForNonZeroNodeBounds(webContentsRef.get(), "fn");
 
@@ -116,12 +112,8 @@ public class AutofillPopupWithKeyboardTest {
                         return viewRef.get().findViewById(R.id.dropdown_popup_window) != null;
                     }
                 });
-        Object popupObject = ThreadUtils.runOnUiThreadBlocking(new Callable<Object>() {
-            @Override
-            public Object call() {
-                return viewRef.get().findViewById(R.id.dropdown_popup_window).getTag();
-            }
-        });
+        Object popupObject = ThreadUtils.runOnUiThreadBlocking(
+                () -> viewRef.get().findViewById(R.id.dropdown_popup_window).getTag());
         Assert.assertTrue(popupObject instanceof AutofillPopup);
         final AutofillPopup popup = (AutofillPopup) popupObject;
         CriteriaHelper.pollUiThread(new Criteria("Autofill Popup was never shown.") {

@@ -62,14 +62,10 @@ public class DataSaverAppMenuTest {
     @Before
     public void setUp() throws Exception {
         ChromeTabbedActivity.setAppMenuHandlerFactoryForTesting(
-                new ChromeTabbedActivity.AppMenuHandlerFactory() {
-                    @Override
-                    public AppMenuHandler get(Activity activity, AppMenuPropertiesDelegate delegate,
-                            int menuResourceId) {
-                        mAppMenuHandler =
-                                new AppMenuHandlerForTest(activity, delegate, menuResourceId);
-                        return mAppMenuHandler;
-                    }
+                (activity, delegate, menuResourceId) -> {
+                    mAppMenuHandler =
+                            new AppMenuHandlerForTest(activity, delegate, menuResourceId);
+                    return mAppMenuHandler;
                 });
 
         mActivityTestRule.startMainActivityOnBlankPage();
@@ -83,15 +79,12 @@ public class DataSaverAppMenuTest {
     @CommandLineFlags.Add("disable-field-trial-config")
     @Feature({"Browser", "Main"})
     public void testMenuDataSaverNoFeature() throws Throwable {
-        mActivityTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                ContextUtils.getAppSharedPreferences().edit().clear().apply();
-                Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
-                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                        mActivityTestRule.getActivity().getApplicationContext(), true);
-                Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
-            }
+        mActivityTestRule.runOnUiThread((Runnable) () -> {
+            ContextUtils.getAppSharedPreferences().edit().clear().apply();
+            Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
+            DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                    mActivityTestRule.getActivity().getApplicationContext(), true);
+            Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
         });
     }
 
@@ -104,24 +97,21 @@ public class DataSaverAppMenuTest {
             "disable-field-trial-config"})
     @Feature({"Browser", "Main"})
     public void testMenuDataSaver() throws Throwable {
-        mActivityTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                ContextUtils.getAppSharedPreferences().edit().clear().apply();
-                // Data Saver hasn't been turned on, the footer shouldn't show.
-                Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
+        mActivityTestRule.runOnUiThread((Runnable) () -> {
+            ContextUtils.getAppSharedPreferences().edit().clear().apply();
+            // Data Saver hasn't been turned on, the footer shouldn't show.
+            Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
 
-                // Turn Data Saver on, the footer should show.
-                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                        mActivityTestRule.getActivity().getApplicationContext(), true);
-                Assert.assertEquals(R.layout.data_reduction_main_menu_footer,
-                        mAppMenuHandler.getDelegate().getFooterResourceId());
+            // Turn Data Saver on, the footer should show.
+            DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                    mActivityTestRule.getActivity().getApplicationContext(), true);
+            Assert.assertEquals(R.layout.data_reduction_main_menu_footer,
+                    mAppMenuHandler.getDelegate().getFooterResourceId());
 
-                // Ensure the footer is removed if the proxy is turned off.
-                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                        mActivityTestRule.getActivity().getApplicationContext(), false);
-                Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
-            }
+            // Ensure the footer is removed if the proxy is turned off.
+            DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                    mActivityTestRule.getActivity().getApplicationContext(), false);
+            Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
         });
     }
 
@@ -138,25 +128,22 @@ public class DataSaverAppMenuTest {
             "disable-field-trial-config"})
     @Feature({"Browser", "Main"})
     public void testMenuDataSaverPersistent() throws Throwable {
-        mActivityTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                ContextUtils.getAppSharedPreferences().edit().clear().apply();
-                // Data Saver hasn't been turned on, the footer shouldn't show.
-                Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
+        mActivityTestRule.runOnUiThread((Runnable) () -> {
+            ContextUtils.getAppSharedPreferences().edit().clear().apply();
+            // Data Saver hasn't been turned on, the footer shouldn't show.
+            Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
 
-                // Turn Data Saver on, the footer should show.
-                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                        mActivityTestRule.getActivity().getApplicationContext(), true);
-                Assert.assertEquals(R.layout.data_reduction_main_menu_footer,
-                        mAppMenuHandler.getDelegate().getFooterResourceId());
+            // Turn Data Saver on, the footer should show.
+            DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                    mActivityTestRule.getActivity().getApplicationContext(), true);
+            Assert.assertEquals(R.layout.data_reduction_main_menu_footer,
+                    mAppMenuHandler.getDelegate().getFooterResourceId());
 
-                // Ensure the footer remains if the proxy is turned off.
-                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                        mActivityTestRule.getActivity().getApplicationContext(), false);
-                Assert.assertEquals(R.layout.data_reduction_main_menu_footer,
-                        mAppMenuHandler.getDelegate().getFooterResourceId());
-            }
+            // Ensure the footer remains if the proxy is turned off.
+            DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                    mActivityTestRule.getActivity().getApplicationContext(), false);
+            Assert.assertEquals(R.layout.data_reduction_main_menu_footer,
+                    mAppMenuHandler.getDelegate().getFooterResourceId());
         });
     }
 }

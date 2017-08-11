@@ -33,7 +33,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.PopupWindow;
-import android.widget.PopupWindow.OnDismissListener;
 
 import org.chromium.base.AnimationFrameTimeHistogram;
 import org.chromium.base.ApiCompatibilityUtils;
@@ -177,18 +176,15 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
 
         boolean anchorAtBottom = isAnchorAtBottom(anchorView, visibleDisplayFrame);
         int footerHeight = 0;
-        mPopup.setOnDismissListener(new OnDismissListener() {
-            @Override
-            public void onDismiss() {
-                if (anchorView instanceof ImageButton) {
-                    ((ImageButton) anchorView).setSelected(false);
-                }
-
-                if (mMenuItemEnterAnimator != null) mMenuItemEnterAnimator.cancel();
-
-                mHandler.appMenuDismissed();
-                mHandler.onMenuVisibilityChanged(false);
+        mPopup.setOnDismissListener(() -> {
+            if (anchorView instanceof ImageButton) {
+                ((ImageButton) anchorView).setSelected(false);
             }
+
+            if (mMenuItemEnterAnimator != null) mMenuItemEnterAnimator.cancel();
+
+            mHandler.appMenuDismissed();
+            mHandler.onMenuVisibilityChanged(false);
         });
 
         // Some OEMs don't actually let us change the background... but they still return the

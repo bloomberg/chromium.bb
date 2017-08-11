@@ -22,8 +22,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs.FontSizePrefsObserver;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 
-import java.util.concurrent.Callable;
-
 /**
  * Tests for {@link FontSizePrefs}.
  */
@@ -175,89 +173,54 @@ public class FontSizePrefsTest {
         }
 
         private void assertConsistent() {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    Assert.assertEquals(getUserFontScaleFactor(), mUserFontScaleFactor, EPSILON);
-                    Assert.assertEquals(getFontScaleFactor(), mFontScaleFactor, EPSILON);
-                    Assert.assertEquals(getForceEnableZoom(), mForceEnableZoom);
-                }
+            ThreadUtils.runOnUiThreadBlocking(() -> {
+                Assert.assertEquals(getUserFontScaleFactor(), mUserFontScaleFactor, EPSILON);
+                Assert.assertEquals(getFontScaleFactor(), mFontScaleFactor, EPSILON);
+                Assert.assertEquals(getForceEnableZoom(), mForceEnableZoom);
             });
         }
     }
 
     private FontSizePrefs getFontSizePrefs(final Context context) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<FontSizePrefs>() {
-            @Override
-            public FontSizePrefs call() {
-                return FontSizePrefs.getInstance(context);
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> FontSizePrefs.getInstance(context));
     }
 
     private TestingObserver createAndAddFontSizePrefsObserver() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<TestingObserver>() {
-            @Override
-            public TestingObserver call() {
-                TestingObserver observer = new TestingObserver();
-                mFontSizePrefs.addObserver(observer);
-                return observer;
-            }
+        return ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            TestingObserver observer = new TestingObserver();
+            mFontSizePrefs.addObserver(observer);
+            return observer;
         });
     }
 
     private void setUserFontScaleFactor(final float fontsize) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mFontSizePrefs.setUserFontScaleFactor(fontsize);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> mFontSizePrefs.setUserFontScaleFactor(fontsize));
     }
 
     private float getUserFontScaleFactor() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Float>() {
-            @Override
-            public Float call() {
-                return mFontSizePrefs.getUserFontScaleFactor();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mFontSizePrefs.getUserFontScaleFactor());
     }
 
     private float getFontScaleFactor() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Float>() {
-            @Override
-            public Float call() {
-                return mFontSizePrefs.getFontScaleFactor();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mFontSizePrefs.getFontScaleFactor());
     }
 
     private void setForceEnableZoomFromUser(final boolean enabled) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mFontSizePrefs.setForceEnableZoomFromUser(enabled);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> mFontSizePrefs.setForceEnableZoomFromUser(enabled));
     }
 
     private boolean getForceEnableZoom() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return mFontSizePrefs.getForceEnableZoom();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mFontSizePrefs.getForceEnableZoom());
     }
 
     private void setSystemFontScaleForTest(final float systemFontScale) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mFontSizePrefs.setSystemFontScaleForTest(systemFontScale);
-                mFontSizePrefs.onSystemFontScaleChanged();
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mFontSizePrefs.setSystemFontScaleForTest(systemFontScale);
+            mFontSizePrefs.onSystemFontScaleChanged();
         });
     }
 }

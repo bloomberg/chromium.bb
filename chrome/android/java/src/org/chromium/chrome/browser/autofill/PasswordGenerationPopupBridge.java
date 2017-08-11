@@ -54,12 +54,7 @@ public class PasswordGenerationPopupBridge implements AdapterView.OnItemClickLis
             mPopup = null;
             // Prevent destroying the native counterpart when it's about to derefence its own
             // members in UpdateBoundsAndRedrawPopup().
-            new Handler().post(new Runnable() {
-                @Override
-                public void run() {
-                    onDismiss();
-                }
-            });
+            new Handler().post(() -> onDismiss());
         } else {
             mPopup = new DropdownPopupWindow(mContext, anchorView);
             mPopup.setOnItemClickListener(this);
