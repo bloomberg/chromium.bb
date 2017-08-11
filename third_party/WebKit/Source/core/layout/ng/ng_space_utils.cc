@@ -12,50 +12,28 @@
 #include "core/layout/ng/ng_writing_mode.h"
 
 namespace blink {
-namespace {
 
-// Returns max of 2 {@code WTF::Optional} values.
-template <typename T>
-WTF::Optional<T> OptionalMax(const WTF::Optional<T>& value1,
-                             const WTF::Optional<T>& value2) {
-  if (value1 && value2) {
-    return std::max(value1.value(), value2.value());
-  } else if (value1) {
-    return value1;
-  }
-  return value2;
-}
-
-}  // namespace
-
-WTF::Optional<LayoutUnit> GetClearanceOffset(
-    const std::shared_ptr<NGExclusions>& exclusions,
-    EClear clear_type) {
-  const NGExclusion* right_exclusion = exclusions->last_right_float;
-  const NGExclusion* left_exclusion = exclusions->last_left_float;
-
-  WTF::Optional<LayoutUnit> left_offset;
-  if (left_exclusion) {
-    left_offset = left_exclusion->rect.BlockEndOffset();
-  }
-  WTF::Optional<LayoutUnit> right_offset;
-  if (right_exclusion) {
-    right_offset = right_exclusion->rect.BlockEndOffset();
-  }
+LayoutUnit GetClearanceOffset(const std::shared_ptr<NGExclusions>& exclusions,
+                              EClear clear_type) {
+  LayoutUnit float_left_clear_offset =
+      exclusions->float_left_clear_offset.value_or(LayoutUnit::Min());
+  LayoutUnit float_right_clear_offset =
+      exclusions->float_right_clear_offset.value_or(LayoutUnit::Min());
 
   switch (clear_type) {
     case EClear::kNone:
-      return WTF::nullopt;  // nothing to do here.
+      return LayoutUnit::Min();  // nothing to do here.
     case EClear::kLeft:
-      return left_offset;
+      return float_left_clear_offset;
     case EClear::kRight:
-      return right_offset;
+      return float_right_clear_offset;
     case EClear::kBoth:
-      return OptionalMax<LayoutUnit>(left_offset, right_offset);
+      return std::max(float_left_clear_offset, float_right_clear_offset);
     default:
       NOTREACHED();
   }
-  return WTF::nullopt;
+
+  return LayoutUnit::Min();
 }
 
 bool ShouldShrinkToFit(const ComputedStyle& parent_style,

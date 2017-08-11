@@ -25,6 +25,8 @@ NGLayoutOpportunity FindLayoutOpportunityForFragment(
     const NGLogicalSize& size);
 
 class CORE_EXPORT NGLayoutOpportunityIterator final {
+  STACK_ALLOCATED();
+
  public:
   // Default constructor.
   //
@@ -59,19 +61,8 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
 #endif
 
  private:
-  // Mutable Getters.
-  NGLayoutOpportunityTreeNode* MutableOpportunityTreeRoot() {
-    return opportunity_tree_root_.get();
-  }
-
-  // Read-only Getters.
-  const NGLayoutOpportunityTreeNode* OpportunityTreeRoot() const {
-    return opportunity_tree_root_.get();
-  }
-
   NGLayoutOpportunities opportunities_;
   NGLayoutOpportunities::const_iterator opportunity_iter_;
-  std::unique_ptr<NGLayoutOpportunityTreeNode> opportunity_tree_root_;
   NGLogicalOffset offset_;
 };
 

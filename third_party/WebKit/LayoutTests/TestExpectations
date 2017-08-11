@@ -541,7 +541,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/floats-wrap-inside-inline-00
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-wrap-inside-inline-002.htm [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-wrap-inside-inline-003.htm [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-wrap-inside-inline-004.htm [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/floats-wrap-inside-inline-007.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/formatting-context-changes.html [ Failure Crash ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/independent-align-positioning.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/intruding-painted-twice.html [ Failure ]

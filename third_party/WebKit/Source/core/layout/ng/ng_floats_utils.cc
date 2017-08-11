@@ -22,15 +22,9 @@ namespace {
 NGLogicalOffset AdjustToTopEdgeAlignmentRule(const NGConstraintSpace& space,
                                              const NGLogicalOffset& offset) {
   NGLogicalOffset adjusted_offset = offset;
-  LayoutUnit& adjusted_block_offset = adjusted_offset.block_offset;
-  if (space.Exclusions()->last_left_float)
-    adjusted_block_offset =
-        std::max(adjusted_block_offset,
-                 space.Exclusions()->last_left_float->rect.BlockStartOffset());
-  if (space.Exclusions()->last_right_float)
-    adjusted_block_offset =
-        std::max(adjusted_block_offset,
-                 space.Exclusions()->last_right_float->rect.BlockStartOffset());
+  adjusted_offset.block_offset = std::max(
+      adjusted_offset.block_offset, space.Exclusions()->last_float_block_start);
+
   return adjusted_offset;
 }
 
