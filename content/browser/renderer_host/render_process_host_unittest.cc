@@ -754,6 +754,97 @@ TEST_F(RenderProcessHostUnitTest, ReuseExpectedSiteURLChanges) {
   EXPECT_EQ(main_test_rfh()->GetProcess(), site_instance->GetProcess());
 }
 
+// Helper test class to modify the StoragePartition returned for a particular
+// site URL.
+class StoragePartitionContentBrowserClient : public ContentBrowserClient {
+ public:
+  StoragePartitionContentBrowserClient(const GURL& site,
+                                       const std::string& partition_domain,
+                                       const std::string& partition_name)
+      : site_(site),
+        partition_domain_(partition_domain),
+        partition_name_(partition_name) {}
+  ~StoragePartitionContentBrowserClient() override {}
+
+ private:
+  void GetStoragePartitionConfigForSite(BrowserContext* browser_context,
+                                        const GURL& site,
+                                        bool can_be_default,
+                                        std::string* partition_domain,
+                                        std::string* partition_name,
+                                        bool* in_memory) override {
+    partition_domain->clear();
+    partition_name->clear();
+    *in_memory = false;
+
+    if (site == site_) {
+      *partition_domain = partition_domain_;
+      *partition_name = partition_name_;
+    }
+  }
+
+  GURL site_;
+  std::string partition_domain_;
+  std::string partition_name_;
+};
+
+// Check that a SiteInstance cannot reuse a RenderProcessHost in a different
+// StoragePartition.
+TEST_F(RenderProcessHostUnitTest,
+       DoNotReuseProcessInDifferentStoragePartition) {
+  const GURL kUrl("https://foo.com");
+  NavigateAndCommit(kUrl);
+
+  // Change foo.com SiteInstances to use a different StoragePartition.
+  StoragePartitionContentBrowserClient modified_client(kUrl, "foo_domain",
+                                                       "foo_name");
+  ContentBrowserClient* regular_client =
+      SetBrowserClientForTesting(&modified_client);
+
+  // Create a foo.com SiteInstance and check that its process does not
+  // reuse the foo process from the first navigation, since it's now in a
+  // different StoragePartiiton.
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
+  site_instance->set_process_reuse_policy(
+      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  RenderProcessHost* process = site_instance->GetProcess();
+  EXPECT_NE(main_test_rfh()->GetProcess(), process);
+
+  SetBrowserClientForTesting(regular_client);
+}
+
+// Check that a SiteInstance cannot reuse a ServiceWorker process in a
+// different StoragePartition.
+TEST_F(RenderProcessHostUnitTest,
+       DoNotReuseServiceWorkerProcessInDifferentStoragePartition) {
+  const GURL kUrl("https://foo.com");
+
+  // Create a RenderProcessHost for a service worker.
+  scoped_refptr<SiteInstanceImpl> sw_site_instance =
+      SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
+  sw_site_instance->set_is_for_service_worker();
+  RenderProcessHost* sw_process = sw_site_instance->GetProcess();
+
+  // Change foo.com SiteInstances to use a different StoragePartition.
+  StoragePartitionContentBrowserClient modified_client(kUrl, "foo_domain",
+                                                       "foo_name");
+  ContentBrowserClient* regular_client =
+      SetBrowserClientForTesting(&modified_client);
+
+  // Create a foo.com SiteInstance and check that its process does not reuse
+  // the ServiceWorker foo.com process, since it's now in a different
+  // StoragePartition.
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
+  site_instance->set_process_reuse_policy(
+      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  RenderProcessHost* process = site_instance->GetProcess();
+  EXPECT_NE(sw_process, process);
+
+  SetBrowserClientForTesting(regular_client);
+}
+
 class SpareRenderProcessHostUnitTest : public RenderViewHostImplTestHarness {
  protected:
   void SetUp() override {
