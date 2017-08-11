@@ -27,6 +27,8 @@ ImageIndex::ImageIndex(ConstBufferView image,
   }
 }
 
+ImageIndex::ImageIndex(ImageIndex&& that) = default;
+
 ImageIndex::~ImageIndex() = default;
 
 bool ImageIndex::InsertReferences(TypeTag type, ReferenceReader&& ref_reader) {
