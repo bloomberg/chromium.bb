@@ -14,10 +14,10 @@
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_log.h"
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
+#include "platform/PlatformExport.h"
 #include "platform/scheduler/base/pollable_thread_safe_flag.h"
 #include "platform/scheduler/base/queueing_time_estimator.h"
 #include "platform/scheduler/base/task_time_observer.h"
-#include "platform/scheduler/base/thread_load_tracker.h"
 #include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "platform/scheduler/child/idle_helper.h"
 #include "platform/scheduler/renderer/deadline_task_runner.h"
@@ -25,8 +25,8 @@
 #include "platform/scheduler/renderer/main_thread_scheduler_helper.h"
 #include "platform/scheduler/renderer/main_thread_task_queue.h"
 #include "platform/scheduler/renderer/render_widget_signals.h"
+#include "platform/scheduler/renderer/renderer_metrics_helper.h"
 #include "platform/scheduler/renderer/task_cost_estimator.h"
-#include "platform/scheduler/renderer/task_duration_metric_reporter.h"
 #include "platform/scheduler/renderer/user_model.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
@@ -253,9 +253,12 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() override;
 
  private:
-  friend class RendererSchedulerImplTest;
-  friend class RendererSchedulerImplForTest;
   friend class RenderWidgetSchedulingState;
+  friend class RendererMetricsHelper;
+
+  friend class RendererMetricsHelperTest;
+  friend class RendererSchedulerImplForTest;
+  friend class RendererSchedulerImplTest;
   FRIEND_TEST_ALL_PREFIXES(RendererSchedulerImplTest, Tracing);
 
   enum class ExpensiveTaskPolicy { RUN, BLOCK, THROTTLE };
@@ -505,14 +508,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   void AddQueueToWakeUpBudgetPool(MainThreadTaskQueue* queue);
 
-  void RecordTaskMetrics(MainThreadTaskQueue::QueueType queue_type,
-                         base::TimeTicks start_time,
-                         base::TimeTicks end_time);
-
-  void RecordMainThreadTaskLoad(base::TimeTicks time, double load);
-  void RecordForegroundMainThreadTaskLoad(base::TimeTicks time, double load);
-  void RecordBackgroundMainThreadTaskLoad(base::TimeTicks time, double load);
-
   MainThreadSchedulerHelper helper_;
   IdleHelper idle_helper_;
   IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
@@ -560,9 +555,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     TaskCostEstimator loading_task_cost_estimator;
     TaskCostEstimator timer_task_cost_estimator;
     IdleTimeEstimator idle_time_estimator;
-    ThreadLoadTracker main_thread_load_tracker;
-    ThreadLoadTracker background_main_thread_load_tracker;
-    ThreadLoadTracker foreground_main_thread_load_tracker;
     UseCase current_use_case;
     Policy current_policy;
     base::TimeTicks current_policy_expiration_time;
@@ -601,25 +593,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     std::set<WebViewSchedulerImpl*> web_view_schedulers;  // Not owned.
     RAILModeObserver* rail_mode_observer;                 // Not owned.
     WakeUpBudgetPool* wake_up_budget_pool;                // Not owned.
-    base::Optional<base::TimeTicks> last_reported_task;
-    TaskDurationMetricReporter task_duration_reporter;
-    TaskDurationMetricReporter foreground_task_duration_reporter;
-    TaskDurationMetricReporter foreground_first_minute_task_duration_reporter;
-    TaskDurationMetricReporter foreground_second_minute_task_duration_reporter;
-    TaskDurationMetricReporter foreground_third_minute_task_duration_reporter;
-    TaskDurationMetricReporter
-        foreground_after_third_minute_task_duration_reporter;
-    TaskDurationMetricReporter background_task_duration_reporter;
-    TaskDurationMetricReporter background_first_minute_task_duration_reporter;
-    TaskDurationMetricReporter background_second_minute_task_duration_reporter;
-    TaskDurationMetricReporter background_third_minute_task_duration_reporter;
-    TaskDurationMetricReporter background_fourth_minute_task_duration_reporter;
-    TaskDurationMetricReporter background_fifth_minute_task_duration_reporter;
-    TaskDurationMetricReporter
-        background_after_fifth_minute_task_duration_reporter;
-    TaskDurationMetricReporter hidden_task_duration_reporter;
-    TaskDurationMetricReporter visible_task_duration_reporter;
-    TaskDurationMetricReporter hidden_music_task_duration_reporter;
+    RendererMetricsHelper metrics_helper;
     RendererProcessType process_type;
   };
 
