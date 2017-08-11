@@ -2278,6 +2278,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'poppy',
       'quawks',
       'reef',
+      'reef-uni',
       'samus',
       'scarlet',
       'sentry',
@@ -2310,7 +2311,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron_paine',
       'betty-arc64',
       'kevin',
-      'reef-uni',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
