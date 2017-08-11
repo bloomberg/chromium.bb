@@ -376,6 +376,7 @@ namespace {
 MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   MockReauthenticationModule* mock_reauthentication_module =
       [[MockReauthenticationModule alloc] init];
+  // TODO(crbug.com/754642): Stop using TopPresentedViewController();
   SettingsNavigationController* settings_navigation_controller =
       base::mac::ObjCCastStrict<SettingsNavigationController>(
           top_view_controller::TopPresentedViewController());

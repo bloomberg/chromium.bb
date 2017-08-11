@@ -17,6 +17,7 @@ RepostFormTabHelper::~RepostFormTabHelper() = default;
 void RepostFormTabHelper::PresentDialog(
     CGPoint location,
     const base::Callback<void(bool)>& callback) {
+  // TODO(crbug.com/754642): Stop using TopPresentedViewControllerFrom().
   UIViewController* top_controller =
       top_view_controller::TopPresentedViewControllerFrom(
           [UIApplication sharedApplication].keyWindow.rootViewController);
