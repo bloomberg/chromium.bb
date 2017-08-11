@@ -1178,9 +1178,7 @@ TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
     }
     autocomplete_->scoring_params_ = test_cases[i].scoring_params;
 
-    // Test the experiment (scoring enabled). When scoring is disabled, it uses
-    // the default experimental scoring.
-    autocomplete_->scoring_params_.experimental_scoring_enabled = true;
+    // Test the experimental scoring params.
     ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16(test_cases[i].input),
                                     std::string(), false, output, max_matches));
     for (int j = 0; j < max_matches; ++j) {
