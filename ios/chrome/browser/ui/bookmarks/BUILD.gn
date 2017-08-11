@@ -187,6 +187,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/bookmarks:bookmarks_utils",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/authentication:authentication_ui",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/ui/tools_menu",

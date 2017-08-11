@@ -10,6 +10,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
@@ -62,14 +63,19 @@ void SetEarlGreySynchronizationEnabled(BOOL enabled) {
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
 }
 
-// Taps the view with acessibility identifier |accessibility_id|.
-void TapViewWithAccessibilityId(NSString* accessiblity_id) {
+// Taps the view with accessibility matcher |accessibility_matcher|.
+void TapViewWithMatcher(id<GREYMatcher> accessibility_matcher) {
   // grey_sufficientlyVisible() is necessary because reloading a cell in a
   // collection view might duplicate it (with the old one being hidden but
   // EarlGrey can find it).
-  id<GREYMatcher> matcher = grey_allOf(grey_accessibilityID(accessiblity_id),
-                                       grey_sufficientlyVisible(), nil);
+  id<GREYMatcher> matcher =
+      grey_allOf(accessibility_matcher, grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
+}
+
+// Taps the view with acessibility identifier |accessibility_id|.
+void TapViewWithAccessibilityId(NSString* accessiblity_id) {
+  TapViewWithMatcher(grey_accessibilityID(accessiblity_id));
 }
 
 // Taps the button with accessibility label |label|.
@@ -468,7 +474,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   TapButtonWithLabelId(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
   AssertAuthenticatedIdentityInActiveProfile(nil);
 
-  TapViewWithAccessibilityId(kSettingsSignInCellId);
+  TapViewWithMatcher(chrome_test_util::SignInMenuButton());
   [ChromeEarlGreyUI signInToIdentityByEmail:identity1.userEmail];
 
   // Open new tab to cancel sign-in.
@@ -525,7 +531,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   [[EarlGrey selectElementWithMatcher:all_bookmarks_matcher]
       performAction:grey_tap()];
 
-  TapButtonWithLabelId(IDS_IOS_BOOKMARK_PROMO_SIGN_IN_BUTTON);
+  TapViewWithAccessibilityId(kSigninPromoSecondaryButtonId);
 
   // Assert sign-in screen was shown.
   id<GREYMatcher> signin_matcher =
@@ -554,7 +560,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   }
   [[EarlGrey selectElementWithMatcher:all_bookmarks_matcher]
       performAction:grey_tap()];
-  TapButtonWithLabelId(IDS_IOS_BOOKMARK_PROMO_SIGN_IN_BUTTON);
+  TapViewWithAccessibilityId(kSigninPromoSecondaryButtonId);
   [[EarlGrey selectElementWithMatcher:signin_matcher]
       assertWithMatcher:grey_sufficientlyVisible()];
 

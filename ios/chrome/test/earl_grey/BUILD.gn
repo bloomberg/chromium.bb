@@ -179,10 +179,12 @@ source_set("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/signin/core/common",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/authentication:authentication",
+    "//ios/chrome/browser/ui/authentication:authentication_ui",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/commands:commands",
     "//ios/chrome/browser/ui/omnibox:omnibox_internal",

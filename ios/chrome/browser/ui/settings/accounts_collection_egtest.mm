@@ -32,6 +32,7 @@ using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SignOutAccountsButton;
 using chrome_test_util::SignInMenuButton;
+using chrome_test_util::SignInPromoView;
 
 namespace {
 
@@ -121,7 +122,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->ForgetIdentity(identity, nil);
 
-  [[EarlGrey selectElementWithMatcher:SignInMenuButton()]
+  [[EarlGrey selectElementWithMatcher:SignInPromoView()]
       assertWithMatcher:grey_sufficientlyVisible()];
   AssertAuthenticatedIdentityInActiveProfile(nil);
 
@@ -151,7 +152,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->ForgetIdentity(identity, nil);
 
-  [[EarlGrey selectElementWithMatcher:SignInMenuButton()]
+  [[EarlGrey selectElementWithMatcher:SignInPromoView()]
       assertWithMatcher:grey_sufficientlyVisible()];
   AssertAuthenticatedIdentityInActiveProfile(nil);
 
@@ -265,7 +266,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
       performAction:grey_tap()];
 
   // Check that the user is signed out and the Main Settings screen is shown.
-  [[EarlGrey selectElementWithMatcher:SignInMenuButton()]
+  [[EarlGrey selectElementWithMatcher:SignInPromoView()]
       assertWithMatcher:grey_sufficientlyVisible()];
   AssertAuthenticatedIdentityInActiveProfile(nil);
 
