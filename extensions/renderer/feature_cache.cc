@@ -61,7 +61,7 @@ const FeatureCache::FeatureVector& FeatureCache::GetFeaturesFromCache(
   GURL empty_url;
   const Extension* extension = context->extension();
   for (const auto& map_entry : api_feature_provider->GetAllFeatures()) {
-    Feature* feature = map_entry.second.get();
+    const Feature* feature = map_entry.second.get();
     // Exclude internal APIs.
     if (feature->IsInternal())
       continue;
