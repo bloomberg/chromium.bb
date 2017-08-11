@@ -1465,8 +1465,9 @@ class PreCQLauncherStage(SyncStage):
     if self._run.options.debug:
       logging.debug('Would have launched tryjob with %s', cmd)
     else:
+      input_val = 'yes' if plan is None else None
       result = cros_build_lib.RunCommand(
-          cmd, cwd=self._build_root, capture_output=True)
+          cmd, cwd=self._build_root, capture_output=True, input=input_val)
       if result and result.output:
         logging.info('cbuildbot output: %s' % result.output)
         config_buildbucket_id_map = self.GetConfigBuildbucketIdMap(
@@ -1879,6 +1880,8 @@ class PreCQLauncherStage(SyncStage):
     build_id, db = self._run.GetCIDBHandle()
 
     action_history = db.GetActionsForChanges(changes)
+
+    self._LaunchSanityCheckPreCQsIfNeeded(build_id, db, pool, action_history)
 
     if self.buildbucket_client is not None:
       for change in changes:
