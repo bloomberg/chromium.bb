@@ -77,12 +77,20 @@
     return interfaceId !== kInvalidInterfaceId;
   }
 
+  function hasInterfaceIdNamespaceBitSet(interfaceId) {
+    if (interfaceId >= 2 * kInterfaceIdNamespaceMask) {
+      throw new Error("Interface ID should be a 32-bit unsigned integer.");
+    }
+    return interfaceId >= kInterfaceIdNamespaceMask;
+  }
+
   mojo.InterfacePtrInfo = InterfacePtrInfo;
   mojo.InterfaceRequest = InterfaceRequest;
   mojo.AssociatedInterfacePtrInfo = AssociatedInterfacePtrInfo;
   mojo.AssociatedInterfaceRequest = AssociatedInterfaceRequest;
   internal.isMasterInterfaceId = isMasterInterfaceId;
   internal.isValidInterfaceId = isValidInterfaceId;
+  internal.hasInterfaceIdNamespaceBitSet = hasInterfaceIdNamespaceBitSet;
   internal.kInvalidInterfaceId = kInvalidInterfaceId;
   internal.kMasterInterfaceId = kMasterInterfaceId;
   internal.kInterfaceIdNamespaceMask = kInterfaceIdNamespaceMask;
