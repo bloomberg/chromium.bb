@@ -1124,6 +1124,8 @@ extern const char
 extern const char kPullToRefreshEffectName[];
 extern const char kPullToRefreshEffectDescription[];
 
+extern const char kPwaMinimalUiName[];
+extern const char kPwaMinimalUiDescription[];
 extern const char kPwaPersistentNotificationName[];
 extern const char kPwaPersistentNotificationDescription[];
 
