@@ -395,6 +395,8 @@ ScopedIppPtr GetPrinterAttributes(http_t* http,
   ippAddStrings(request.get(), IPP_TAG_OPERATION, IPP_TAG_KEYWORD,
                 kRequestedAttributes, num_attributes, nullptr, attributes);
 
+  DCHECK_EQ(ippValidateAttributes(request.get()), 1);
+
   auto response = WrapIpp(cupsDoRequest(http, request.release(), rp.c_str()));
   *status = ippGetStatusCode(response.get());
 
@@ -427,12 +429,14 @@ void ParsePrinterStatus(ipp_t* response, PrinterStatus* printer_status) {
 bool GetPrinterInfo(const std::string& address,
                     const int port,
                     const std::string& resource,
+                    bool encrypted,
                     PrinterInfo* printer_info) {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  ScopedHttpPtr http = ScopedHttpPtr(
-      httpConnect2(address.data(), port, nullptr, AF_INET,
-                   HTTP_ENCRYPTION_IF_REQUESTED, 0, 200, nullptr));
+  ScopedHttpPtr http = ScopedHttpPtr(httpConnect2(
+      address.data(), port, nullptr, AF_INET,
+      encrypted ? HTTP_ENCRYPTION_REQUIRED : HTTP_ENCRYPTION_IF_REQUESTED, 0,
+      200, nullptr));
   if (!http) {
     LOG(WARNING) << "Could not connect to host";
     return false;

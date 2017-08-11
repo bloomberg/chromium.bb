@@ -28,6 +28,7 @@ using PrinterInfoCallback =
 void QueryIppPrinter(const std::string& host,
                      const int port,
                      const std::string& path,
+                     bool encrypted,
                      const PrinterInfoCallback& callback);
 
 }  // namespace chromeos
