@@ -39,6 +39,15 @@ namespace base {
 
 namespace {
 
+// A constant to be stored in the dummy field and later verified. This could
+// be either 32 or 64 bit but clang won't truncate the value without an error.
+// TODO(bcwhite): Remove this once crbug/736675 is fixed.
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+constexpr uintptr_t kDummyValue = 0xFEEDC0DEDEADBEEF;
+#else
+constexpr uintptr_t kDummyValue = 0xDEADBEEF;
+#endif
+
 // TODO(asvitkine): Remove this after crbug/736675.
 char g_last_logged_histogram_name[256] = {0};
 
@@ -582,7 +591,7 @@ bool Histogram::ValidateHistogramContents(bool crash_if_invalid,
   // Temporary for https://crbug.com/736675.
   base::debug::ScopedCrashKey crash_key("bad_histogram", debug_string);
 #endif
-  CHECK(false) << debug_string;
+  // CHECK(false) << debug_string;
   debug::Alias(&bad_fields);
   return false;
 }
@@ -602,7 +611,7 @@ Histogram::Histogram(const std::string& name,
                      Sample minimum,
                      Sample maximum,
                      const BucketRanges* ranges)
-    : HistogramBase(name) {
+    : HistogramBase(name), dummy_(kDummyValue) {
   // TODO(bcwhite): Make this a DCHECK once crbug/734049 is resolved.
   CHECK(ranges) << name << ": " << minimum << "-" << maximum;
   unlogged_samples_.reset(new SampleVector(HashMetricName(name), ranges));
@@ -617,7 +626,7 @@ Histogram::Histogram(const std::string& name,
                      const DelayedPersistentAllocation& logged_counts,
                      HistogramSamples::Metadata* meta,
                      HistogramSamples::Metadata* logged_meta)
-    : HistogramBase(name) {
+    : HistogramBase(name), dummy_(kDummyValue) {
   // TODO(bcwhite): Make this a DCHECK once crbug/734049 is resolved.
   CHECK(ranges) << name << ": " << minimum << "-" << maximum;
   unlogged_samples_.reset(
