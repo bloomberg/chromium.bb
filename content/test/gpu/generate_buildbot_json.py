@@ -1351,6 +1351,25 @@ COMMON_GTESTS = {
     ],
     'desktop_args': ['--use-gpu-in-tests']
   },
+  'gl_tests_passthrough': {
+    'tester_configs': [
+      {
+        'os_types': ['win'],
+      }
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
+    'test': 'gl_tests',
+    'desktop_args': [
+      '--use-gpu-in-tests',
+      '--use-passthrough-cmd-decoder',
+     ]
+  },
   'gl_unittests': {
     'disabled_tester_configs': [
       {
