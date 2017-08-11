@@ -14,8 +14,10 @@ to transform Java 8 bytecode to Java 7. It is used to enable Java 8 features
 such as lambda experssions for Chrome on Android.
 
 Local Modifications:
-Desugar.jar is the "Desugar_deploy.jar" target defined in
-[bazel]src/tools/android/java/com/google/devtools/build/android/desugar/BUILD
+* Desugar.jar is the "Desugar_deploy.jar" target defined in
+  [bazel]src/tools/android/java/com/google/devtools/build/android/desugar/BUILD
+* Desugar-runtime.jar is derived from Desugar.jar (refer to update
+  instructions).
 
 Update instructions (requires @google.com account for uploading):
 - Check out Bazel from https://github.com/bazelbuild/bazel
@@ -30,4 +32,7 @@ $ mv bazel-bin/src/tools/android/java/com/google/devtools/build/android/desugar/
 $ download_from_google_storage --config
 - Upload new jar to gcloud. In third_party/bazel/desugar, run
 $ upload_to_google_storage.py -b chromium-android-tools/bazel/desugar Desugar.jar
-
+- Update Desugar-runtime.jar:
+$ unzip Desugar.jar "com/google/devtools/build/android/desugar/runtime*"
+$ zip -rD0 Desugar-runtime.jar com
+$ rm -r com

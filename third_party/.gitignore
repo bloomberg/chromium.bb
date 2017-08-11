@@ -24,7 +24,7 @@
 /apache-win32/modules/*.dll
 /apk-patch-size-estimator/lib/*.jar
 /asan
-/bazel/desugar/*.jar
+/bazel/desugar/Desugar.jar
 /bidichecker
 /bison
 /boringssl/src

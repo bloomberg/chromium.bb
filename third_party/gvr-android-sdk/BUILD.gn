@@ -7,6 +7,9 @@ import("//build/config/android/rules.gni")
 android_aar_prebuilt("controller_test_api_java") {
   aar_path = "test-libraries/controller_test_api.aar"
   proguard_configs = [ "test-libraries/proguard.txt" ]
+
+  # Jar includes conflicting copies of Desugar-runtime.jar classes.
+  jar_excluded_patterns = [ "*ThrowableExtension*.class" ]
 }
 
 android_aar_prebuilt("gvr_common_java") {

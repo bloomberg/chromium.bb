@@ -11,6 +11,13 @@ if (enable_java_templates) {
       "buildhooks/java/org/chromium/build/BuildHooks.java",
       "buildhooks/java/org/chromium/build/Callback.java",
     ]
+
+    # Make all targets pull in the try-with-resources support files.
+    # If an apk ends up not using any such statements, ProGuard will remove
+    # them.
+    deps = [
+      "//third_party/bazel/desugar:desugar_runtime_java",
+    ]
     no_build_hooks = true
     supports_android = true
   }
