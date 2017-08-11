@@ -214,7 +214,10 @@ bool ArgumentSpec::IsCorrectType(v8::Local<v8::Value> value,
 
   switch (type_) {
     case ArgumentType::INTEGER:
-      is_valid_type = value->IsInt32();
+      // -0 is treated internally as a double, but we classify it as an integer.
+      is_valid_type =
+          value->IsInt32() ||
+          (value->IsNumber() && value.As<v8::Number>()->Value() == 0.0);
       break;
     case ArgumentType::DOUBLE:
       is_valid_type = value->IsNumber();
@@ -383,8 +386,15 @@ bool ArgumentSpec::ParseArgumentToFundamental(
     std::string* error) const {
   switch (type_) {
     case ArgumentType::INTEGER: {
-      DCHECK(value->IsInt32());
-      int int_val = value.As<v8::Int32>()->Value();
+      DCHECK(value->IsNumber());
+      int int_val = 0;
+      if (value->IsInt32()) {
+        int_val = value.As<v8::Int32>()->Value();
+      } else {
+        // See comment in IsCorrectType().
+        DCHECK_EQ(0.0, value.As<v8::Number>()->Value());
+        int_val = 0;
+      }
       if (!CheckFundamentalBounds(int_val, minimum_, maximum_, error))
         return false;
       if (out_value)
