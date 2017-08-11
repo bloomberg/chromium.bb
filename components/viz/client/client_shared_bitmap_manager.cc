@@ -24,7 +24,7 @@ namespace {
 class ClientSharedBitmap : public SharedBitmap {
  public:
   ClientSharedBitmap(
-      scoped_refptr<cc::mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
+      scoped_refptr<mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
           shared_bitmap_allocation_notifier,
       base::SharedMemory* shared_memory,
       const SharedBitmapId& id,
@@ -36,7 +36,7 @@ class ClientSharedBitmap : public SharedBitmap {
             std::move(shared_bitmap_allocation_notifier)) {}
 
   ClientSharedBitmap(
-      scoped_refptr<cc::mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
+      scoped_refptr<mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
           shared_bitmap_allocation_notifier,
       std::unique_ptr<base::SharedMemory> shared_memory_holder,
       const SharedBitmapId& id,
@@ -60,7 +60,7 @@ class ClientSharedBitmap : public SharedBitmap {
   }
 
  private:
-  scoped_refptr<cc::mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
+  scoped_refptr<mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
       shared_bitmap_allocation_notifier_;
   std::unique_ptr<base::SharedMemory> shared_memory_holder_;
 };
@@ -112,7 +112,7 @@ std::unique_ptr<base::SharedMemory> AllocateSharedMemory(size_t buf_size) {
 }  // namespace
 
 ClientSharedBitmapManager::ClientSharedBitmapManager(
-    scoped_refptr<cc::mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
+    scoped_refptr<mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
         shared_bitmap_allocation_notifier)
     : shared_bitmap_allocation_notifier_(
           std::move(shared_bitmap_allocation_notifier)) {}

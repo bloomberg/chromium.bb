@@ -2034,7 +2034,7 @@ void RenderProcessHostImpl::BindFrameSinkProvider(
 }
 
 void RenderProcessHostImpl::BindSharedBitmapAllocationNotifier(
-    cc::mojom::SharedBitmapAllocationNotifierRequest request) {
+    viz::mojom::SharedBitmapAllocationNotifierRequest request) {
   shared_bitmap_allocation_notifier_impl_.Bind(std::move(request));
 }
 
