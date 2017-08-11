@@ -19,6 +19,7 @@
 (define permitted-dir "PERMITTED_DIR")
 (define homedir-as-literal "USER_HOMEDIR_AS_LITERAL")
 (define elcap-or-later "ELCAP_OR_LATER")
+(define macos-1013 "MACOS_1013")
 
 ; Consumes a subpath and appends it to the user's homedir path.
 (define (user-homedir-path subpath)

@@ -84,6 +84,7 @@ const char* Sandbox::kSandboxOSVersion = "OS_VERSION";
 const char* Sandbox::kSandboxPermittedDir = "PERMITTED_DIR";
 
 const char* Sandbox::kSandboxElCapOrLater = "ELCAP_OR_LATER";
+const char* Sandbox::kSandboxMacOS1013 = "MACOS_1013";
 
 // Warm up System APIs that empirically need to be accessed before the Sandbox
 // is turned on.
@@ -280,6 +281,10 @@ bool Sandbox::EnableSandbox(int sandbox_type,
 
   bool elcap_or_later = base::mac::IsAtLeastOS10_11();
   if (!compiler.InsertBooleanParam(kSandboxElCapOrLater, elcap_or_later))
+    return false;
+
+  bool macos_1013 = base::mac::IsOS10_13();
+  if (!compiler.InsertBooleanParam(kSandboxMacOS1013, macos_1013))
     return false;
 
   // Initialize sandbox.
