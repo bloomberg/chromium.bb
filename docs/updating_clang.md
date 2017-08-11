@@ -27,7 +27,8 @@ $ for x in Linux_x64 Mac Win ; do \
 1.  Run an exhaustive set of try jobs to test the new compiler:
 ```
     git cl try &&
-    git cl try -m tryserver.chromium.mac -b mac_chromium_asan_rel_ng &&
+    git cl try -m tryserver.chromium.mac -b mac_chromium_asan_rel_ng \
+      -b ios-device && \
     git cl try -m tryserver.chromium.linux -b linux_chromium_chromeos_dbg_ng \
       -b linux_chromium_chromeos_asan_rel_ng -b linux_chromium_msan_rel_ng \
       -b fuchsia -b linux_chromium_cfi_rel_ng &&
