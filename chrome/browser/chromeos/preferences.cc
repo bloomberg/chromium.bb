@@ -321,6 +321,7 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kNoteTakingAppEnabledOnLockScreen,
                                 false);
   registry->RegisterListPref(prefs::kNoteTakingAppsLockScreenWhitelist);
+  registry->RegisterBooleanPref(prefs::kRestoreLastLockScreenNote, true);
 
   // We don't sync wake-on-wifi related prefs because they are device specific.
   registry->RegisterBooleanPref(prefs::kWakeOnWifiDarkConnect, true);
