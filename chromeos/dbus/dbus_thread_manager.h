@@ -25,6 +25,7 @@ namespace chromeos {
 
 // Style Note: Clients are sorted by names.
 class ArcObbMounterClient;
+class ArcOemCryptoClient;
 class AuthPolicyClient;
 class BiodClient;
 class CrasAudioClient;
@@ -121,6 +122,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // TODO(jamescook): Replace this with calls to FooClient::Get().
   // http://crbug.com/647367
   ArcObbMounterClient* GetArcObbMounterClient();
+  ArcOemCryptoClient* GetArcOemCryptoClient();
   AuthPolicyClient* GetAuthPolicyClient();
   BiodClient* GetBiodClient();
   CrasAudioClient* GetCrasAudioClient();
