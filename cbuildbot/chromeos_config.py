@@ -552,6 +552,7 @@ _x86_internal_release_boards = frozenset([
     'glimmer',
     'gnawty',
     'guado',
+    'guado-accelerator',
     'guado_labstation',
     'guado_moblab',
     'heli',
@@ -2316,6 +2317,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'cobblepot', # contact:jkoleszar@
       'gonzo', # contact:icoolidge@
+      'guado-accelerator', # contact:perley@ (crbug.com/748635)
       'lasilla-ground', # contact:jemele@
       'lasilla-sky', # contact:jemele@
       'macchiato-ground', # contact:jemele@
