@@ -599,6 +599,10 @@
       status: "experimental",
     },
     {
+      name: "MediaCaptureDepthVideoKind",
+      status: "experimental",
+    },
+    {
       name: "MediaCaptureFromCanvas",
       status: "stable",
     },

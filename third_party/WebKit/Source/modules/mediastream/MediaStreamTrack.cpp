@@ -270,10 +270,13 @@ void MediaStreamTrack::getSettings(MediaTrackSettings& settings) {
     settings.setHeight(platform_settings.height);
   if (platform_settings.HasAspectRatio())
     settings.setAspectRatio(platform_settings.aspect_ratio);
-  if (RuntimeEnabledFeatures::MediaCaptureDepthEnabled() &&
+  if (RuntimeEnabledFeatures::MediaCaptureDepthVideoKindEnabled() &&
       component_->Source()->GetType() == MediaStreamSource::kTypeVideo) {
     if (platform_settings.HasVideoKind())
       settings.setVideoKind(platform_settings.video_kind);
+  }
+  if (RuntimeEnabledFeatures::MediaCaptureDepthEnabled() &&
+      component_->Source()->GetType() == MediaStreamSource::kTypeVideo) {
     if (platform_settings.HasDepthNear())
       settings.setDepthNear(platform_settings.depth_near);
     if (platform_settings.HasDepthFar())

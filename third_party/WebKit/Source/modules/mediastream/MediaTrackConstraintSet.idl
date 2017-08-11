@@ -29,7 +29,7 @@ dictionary MediaTrackConstraintSet {
     // TODO(aleksandar.stojiljkovic): videoKind, depthNear, depthFar,
     // focalLengthX and focalLengthY attributes should be declared as partial
     // dictionary but IDL parser can't support it yet. http://crbug.com/579896.
-    [RuntimeEnabled=MediaCaptureDepth] ConstrainDOMString videoKind;
+    [RuntimeEnabled=MediaCaptureDepthVideoKind] ConstrainDOMString videoKind;
     [RuntimeEnabled=MediaCaptureDepth] ConstrainDouble depthNear;
     [RuntimeEnabled=MediaCaptureDepth] ConstrainDouble depthFar;
     [RuntimeEnabled=MediaCaptureDepth] ConstrainDouble focalLengthX;

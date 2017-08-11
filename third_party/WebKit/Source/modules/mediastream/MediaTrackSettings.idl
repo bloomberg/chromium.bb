@@ -26,7 +26,7 @@ dictionary MediaTrackSettings {
     // TODO(aleksandar.stojiljkovic): videoKind, depthNear, depthFar,
     // focalLengthX and focalLengthY attributes should be declared as partial
     // dictionary but IDL parser can't support it yet. http://crbug.com/579896.
-    [RuntimeEnabled=MediaCaptureDepth] DOMString videoKind;
+    [RuntimeEnabled=MediaCaptureDepthVideoKind] DOMString videoKind;
     [RuntimeEnabled=MediaCaptureDepth] double depthNear;
     [RuntimeEnabled=MediaCaptureDepth] double depthFar;
     [RuntimeEnabled=MediaCaptureDepth] double focalLengthX;
