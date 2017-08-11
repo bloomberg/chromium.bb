@@ -80,8 +80,8 @@ void BrowserControls::ResetBaseline() {
       top_height_ ? ContentOffset() : BottomContentOffset();
 }
 
-float BrowserControls::LayoutHeight() {
-  return shrink_viewport_ ? top_height_ + bottom_height_ : 0;
+float BrowserControls::UnreportedSizeAdjustment() {
+  return (shrink_viewport_ ? top_height_ : 0) - ContentOffset();
 }
 
 float BrowserControls::ContentOffset() {

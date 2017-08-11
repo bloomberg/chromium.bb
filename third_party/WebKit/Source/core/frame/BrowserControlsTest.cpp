@@ -1132,4 +1132,40 @@ TEST_F(BrowserControlsTest, MAYBE(ViewportUnitsWhenControlsLocked)) {
   }
 }
 
+// Test the size adjustment sent to the viewport when top controls exist.
+TEST_F(BrowserControlsTest, MAYBE(TopControlsSizeAdjustment)) {
+  WebViewImpl* web_view = Initialize();
+  web_view->ResizeWithBrowserControls(web_view->Size(), 50.f, 0, false);
+  web_view->GetBrowserControls().SetShownRatio(1);
+  EXPECT_FLOAT_EQ(-50.f,
+                  web_view->GetBrowserControls().UnreportedSizeAdjustment());
+
+  web_view->GetBrowserControls().SetShownRatio(0.5);
+  EXPECT_FLOAT_EQ(-25.f,
+                  web_view->GetBrowserControls().UnreportedSizeAdjustment());
+
+  web_view->GetBrowserControls().SetShownRatio(0.0);
+  EXPECT_FLOAT_EQ(0.f,
+                  web_view->GetBrowserControls().UnreportedSizeAdjustment());
+}
+
+// Test the size adjustment sent to the viewport when bottom controls exist.
+// There should never be an adjustment since the bottom controls do not change
+// the content offset.
+TEST_F(BrowserControlsTest, MAYBE(BottomControlsSizeAdjustment)) {
+  WebViewImpl* web_view = Initialize();
+  web_view->ResizeWithBrowserControls(web_view->Size(), 0, 50.f, false);
+  web_view->GetBrowserControls().SetShownRatio(1);
+  EXPECT_FLOAT_EQ(0.f,
+                  web_view->GetBrowserControls().UnreportedSizeAdjustment());
+
+  web_view->GetBrowserControls().SetShownRatio(0.5);
+  EXPECT_FLOAT_EQ(0.f,
+                  web_view->GetBrowserControls().UnreportedSizeAdjustment());
+
+  web_view->GetBrowserControls().SetShownRatio(0.0);
+  EXPECT_FLOAT_EQ(0.f,
+                  web_view->GetBrowserControls().UnreportedSizeAdjustment());
+}
+
 }  // namespace blink
