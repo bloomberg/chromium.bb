@@ -81,9 +81,10 @@ bool IsAutoconf(const ::printing::PrinterInfo& info) {
 std::unique_ptr<::printing::PrinterInfo> QueryPrinterImpl(
     const std::string& host,
     const int port,
-    const std::string& path) {
+    const std::string& path,
+    bool encrypted) {
   auto info = base::MakeUnique<::printing::PrinterInfo>();
-  if (!::printing::GetPrinterInfo(host, port, path, info.get())) {
+  if (!::printing::GetPrinterInfo(host, port, path, encrypted, info.get())) {
     LOG(ERROR) << "Could not retrieve printer info";
     return nullptr;
   }
@@ -125,6 +126,7 @@ namespace chromeos {
 void QueryIppPrinter(const std::string& host,
                      const int port,
                      const std::string& path,
+                     bool encrypted,
                      const PrinterInfoCallback& callback) {
   DCHECK(!host.empty());
 
@@ -134,7 +136,7 @@ void QueryIppPrinter(const std::string& host,
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       base::TaskTraits(base::TaskPriority::USER_VISIBLE, base::MayBlock()),
-      base::Bind(&QueryPrinterImpl, host, port, path),
+      base::Bind(&QueryPrinterImpl, host, port, path, encrypted),
       base::Bind(&OnPrinterQueried, callback));
 }
 

@@ -54,6 +54,8 @@ const char kIppScheme[] = "ipp";
 const char kIppsScheme[] = "ipps";
 
 const int kIppPort = 631;
+// IPPS commonly uses the HTTPS port despite the spec saying it should use the
+// IPP port.
 const int kIppsPort = 443;
 
 // These values are written to logs.  New enum values can be added, but existing
@@ -311,21 +313,23 @@ void CupsPrintersHandler::HandleGetPrinterInfo(const base::ListValue* args) {
   url::ParseStandardURL(uri_ptr, printer_uri.length(), &parsed);
   base::StringPiece host(&printer_uri[parsed.host.begin], parsed.host.len);
 
+  bool encrypted = printer_protocol != kIppScheme;
   int port = ParsePort(uri_ptr, parsed.port);
+  // Port not specified.
   if (port == url::SpecialPort::PORT_UNSPECIFIED ||
       port == url::SpecialPort::PORT_INVALID) {
-    // imply port from protocol
     if (printer_protocol == kIppScheme) {
       port = kIppPort;
     } else if (printer_protocol == kIppsScheme) {
-      // ipps is ipp over https so it uses the https port.
       port = kIppsPort;
     } else {
+      // Port was not defined explicitly and scheme is not recognized.  Cannot
+      // infer a port number.
       NOTREACHED() << "Unrecognized protocol. Port was not set.";
     }
   }
 
-  QueryIppPrinter(host.as_string(), port, printer_queue,
+  QueryIppPrinter(host.as_string(), port, printer_queue, encrypted,
                   base::Bind(&CupsPrintersHandler::OnPrinterInfo,
                              weak_factory_.GetWeakPtr(), callback_id));
 }

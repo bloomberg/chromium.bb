@@ -12,6 +12,7 @@ namespace chromeos {
 void QueryIppPrinter(const std::string& host,
                      const int port,
                      const std::string& path,
+                     bool encrypted,
                      const PrinterInfoCallback& callback) {
   DCHECK(!host.empty());
 

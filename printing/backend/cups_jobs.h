@@ -153,10 +153,12 @@ void ParseJobsResponse(ipp_t* response,
 void ParsePrinterStatus(ipp_t* response, PrinterStatus* printer_status);
 
 // Queries the printer at |address| on |port| with a Get-Printer-Attributes
-// request to populate |printer_info|.  Returns false if the request failed.
+// request to populate |printer_info|. If |encrypted| is true, request is made
+// using ipps, otherwise, ipp is used. Returns false if the request failed.
 bool PRINTING_EXPORT GetPrinterInfo(const std::string& address,
                                     const int port,
                                     const std::string& resource,
+                                    bool encrypted,
                                     PrinterInfo* printer_info);
 
 // Attempts to retrieve printer status using connection |http| for |printer_id|.
