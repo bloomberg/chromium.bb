@@ -518,6 +518,7 @@ TEST_F(CastAudioOutputStreamTest, StartStopStart) {
   EXPECT_TRUE(audio_device);
   EXPECT_EQ(FakeMediaPipelineBackend::kStateRunning, GetBackend()->state());
 
+  stream->Stop();
   stream->Close();
 }
 
