@@ -12,6 +12,7 @@
 #include "extensions/browser/extensions_test.h"
 
 namespace extensions {
+class AppWindow;
 class ShellTestHelperAura;
 
 class ShellTestBaseAura : public ExtensionsTest {
@@ -22,6 +23,9 @@ class ShellTestBaseAura : public ExtensionsTest {
   // ExtensionsTest:
   void SetUp() override;
   void TearDown() override;
+
+  // Initializes |app_window| for testing.
+  void InitAppWindow(AppWindow* app_window);
 
  private:
   std::unique_ptr<ShellTestHelperAura> helper_;

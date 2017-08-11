@@ -56,12 +56,7 @@ class ShellDesktopControllerAuraTest : public ShellTestBaseAura {
 #endif
 
     ShellTestBaseAura::SetUp();
-
-    // The input method will be used for the next CreateInputMethod call,
-    // causing the host to take ownership.
-    ui::SetUpInputMethodForTesting(new ui::InputMethodMinimal(nullptr));
-
-    controller_.reset(new ShellDesktopControllerAura());
+    controller_.reset(new ShellDesktopControllerAura(browser_context()));
   }
 
   void TearDown() override {
@@ -73,30 +68,6 @@ class ShellDesktopControllerAuraTest : public ShellTestBaseAura {
   }
 
  protected:
-  // Creates an AppWindow, which should delete itself when closed.
-  AppWindow* CreateAppWindow(Extension* extension) {
-    AppWindow* app_window =
-        controller_->CreateAppWindow(browser_context(), extension);
-
-    std::unique_ptr<content::WebContents> web_contents(
-        content::WebContents::Create(
-            content::WebContents::CreateParams(browser_context())));
-    std::unique_ptr<TestAppWindowContents> app_window_contents =
-        base::MakeUnique<TestAppWindowContents>(std::move(web_contents));
-
-    // Init the ShellExtensionsWebContentsObserver.
-    app_window->app_delegate()->InitWebContents(
-        app_window_contents->GetWebContents());
-
-    content::RenderFrameHost* main_frame =
-        app_window_contents->GetWebContents()->GetMainFrame();
-    EXPECT_TRUE(main_frame);
-
-    app_window->Init(GURL(std::string()), app_window_contents.release(),
-                     main_frame, AppWindow::CreateParams());
-    return app_window;
-  }
-
   std::unique_ptr<ShellDesktopControllerAura> controller_;
 
 #if defined(OS_CHROMEOS)
@@ -126,7 +97,8 @@ TEST_F(ShellDesktopControllerAuraTest, PowerButton) {
 // Tests that basic input events are handled and forwarded to the host.
 // TODO(michaelpg): Test other types of input.
 TEST_F(ShellDesktopControllerAuraTest, InputEvents) {
-  ui::InputMethod* input_method = controller_->host()->GetInputMethod();
+  ui::InputMethod* input_method =
+      controller_->GetPrimaryHost()->GetInputMethod();
   ASSERT_TRUE(input_method);
 
   // Set up a focused text input to receive the keypress event.
@@ -137,8 +109,8 @@ TEST_F(ShellDesktopControllerAuraTest, InputEvents) {
   // Dispatch a keypress on the window tree host to verify it is processed.
   ui::KeyEvent key_press(base::char16(97), ui::VKEY_A, ui::EF_NONE);
   ui::EventDispatchDetails details =
-      controller_->host()->dispatcher()->DispatchEvent(
-          controller_->host()->window(), &key_press);
+      controller_->GetPrimaryHost()->dispatcher()->DispatchEvent(
+          controller_->GetPrimaryHost()->window(), &key_press);
   EXPECT_FALSE(details.dispatcher_destroyed);
   EXPECT_FALSE(details.target_destroyed);
   EXPECT_TRUE(key_press.handled());
@@ -148,58 +120,35 @@ TEST_F(ShellDesktopControllerAuraTest, InputEvents) {
   input_method->DetachTextInputClient(&client);
 }
 
-// Tests the basic window layout.
-TEST_F(ShellDesktopControllerAuraTest, FillLayout) {
-  controller_->host()->SetBoundsInPixels(gfx::Rect(0, 0, 500, 700));
-
-  scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
-  CreateAppWindow(extension.get());
-
-  aura::Window* root_window = controller_->host()->window();
-  EXPECT_EQ(1u, root_window->children().size());
-
-  // Test that reshaping the host window also resizes the child window.
-  controller_->host()->SetBoundsInPixels(gfx::Rect(0, 0, 400, 300));
-
-  EXPECT_EQ(400, root_window->bounds().width());
-  EXPECT_EQ(400, root_window->children()[0]->bounds().width());
-
-  // The AppWindow will close on shutdown.
-}
-
-// Tests that the AppWindows are removed when closed.
-TEST_F(ShellDesktopControllerAuraTest, OnAppWindowClose) {
-  scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
-  AppWindow* app_window1 = CreateAppWindow(extension.get());
-
-  aura::Window* root_window = controller_->host()->window();
-  EXPECT_EQ(1u, root_window->children().size());
-
-  AppWindow* app_window2 = CreateAppWindow(extension.get());
-  EXPECT_EQ(2u, root_window->children().size());
-
-  app_window1->GetBaseWindow()->Close();
-  app_window1 = nullptr;  // Close() deletes the AppWindow.
-  // The second window is still open.
-  EXPECT_EQ(1u, root_window->children().size());
-
-  app_window2->GetBaseWindow()->Close();
-  app_window2 = nullptr;  // Close() deletes the AppWindow.
-  EXPECT_EQ(0u, root_window->children().size());
-}
-
 // Tests closing all AppWindows.
 TEST_F(ShellDesktopControllerAuraTest, CloseAppWindows) {
+  const AppWindowRegistry* app_window_registry =
+      AppWindowRegistry::Get(browser_context());
   scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
-  CreateAppWindow(extension.get());
-  CreateAppWindow(extension.get());
-  CreateAppWindow(extension.get());
-
-  aura::Window* root_window = controller_->host()->window();
-  EXPECT_EQ(3u, root_window->children().size());
+  for (int i = 0; i < 3; i++) {
+    InitAppWindow(
+        controller_->CreateAppWindow(browser_context(), extension.get()));
+  }
+  EXPECT_EQ(3u, app_window_registry->app_windows().size());
 
   controller_->CloseAppWindows();
-  EXPECT_EQ(0u, root_window->children().size());
+  EXPECT_EQ(0u, app_window_registry->app_windows().size());
+}
+
+// Tests that the AppWindows are removed when the desktop controller goes away.
+TEST_F(ShellDesktopControllerAuraTest, OnAppWindowClose) {
+  const AppWindowRegistry* app_window_registry =
+      AppWindowRegistry::Get(browser_context());
+  scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
+  for (int i = 0; i < 3; i++) {
+    InitAppWindow(
+        controller_->CreateAppWindow(browser_context(), extension.get()));
+  }
+  EXPECT_EQ(3u, app_window_registry->app_windows().size());
+
+  // Deleting the controller closes all app windows.
+  controller_.reset();
+  EXPECT_EQ(0u, app_window_registry->app_windows().size());
 }
 
 }  // namespace extensions

@@ -174,6 +174,8 @@ source_set("app_shell_lib") {
 
   if (use_aura) {
     sources += [
+      "browser/root_window_controller.cc",
+      "browser/root_window_controller.h",
       "browser/shell_app_window_client_aura.cc",
       "browser/shell_desktop_controller_aura.cc",
       "browser/shell_desktop_controller_aura.h",
@@ -309,6 +311,7 @@ test("app_shell_unittests") {
 
   if (use_aura) {
     sources += [
+      "browser/root_window_controller_unittest.cc",
       "browser/shell_desktop_controller_aura_unittest.cc",
       "browser/shell_native_app_window_aura_unittest.cc",
       "browser/shell_screen_unittest.cc",

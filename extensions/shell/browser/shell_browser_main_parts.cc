@@ -179,7 +179,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   storage_monitor::StorageMonitor::Create();
 
-  desktop_controller_.reset(browser_main_delegate_->CreateDesktopController());
+  desktop_controller_.reset(
+      browser_main_delegate_->CreateDesktopController(browser_context_.get()));
 
   // TODO(jamescook): Initialize user_manager::UserManager.
 

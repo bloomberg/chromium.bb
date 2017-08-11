@@ -101,9 +101,10 @@ void DefaultShellBrowserMainDelegate::Start(
 void DefaultShellBrowserMainDelegate::Shutdown() {
 }
 
-DesktopController* DefaultShellBrowserMainDelegate::CreateDesktopController() {
+DesktopController* DefaultShellBrowserMainDelegate::CreateDesktopController(
+    content::BrowserContext* context) {
 #if defined(USE_AURA)
-  return new ShellDesktopControllerAura();
+  return new ShellDesktopControllerAura(context);
 #elif defined(OS_MACOSX)
   return new ShellDesktopControllerMac();
 #else

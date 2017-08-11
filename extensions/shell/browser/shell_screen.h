@@ -6,7 +6,7 @@
 #define EXTENSIONS_SHELL_BROWSER_SHELL_SCREEN_H_
 
 #include "base/macros.h"
-#include "ui/aura/window_observer.h"
+#include "ui/aura/window_tree_host_observer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen_base.h"
 
@@ -19,23 +19,21 @@ class Size;
 }
 
 namespace extensions {
+class ShellDesktopControllerAura;
 
 // A minimal Aura implementation of a screen. Scale factor is locked at 1.0.
 // When running on a Linux desktop resizing the main window resizes the screen.
-class ShellScreen : public display::ScreenBase, public aura::WindowObserver {
+class ShellScreen : public display::ScreenBase,
+                    public aura::WindowTreeHostObserver {
  public:
-  // Creates a screen occupying |size| physical pixels.
-  explicit ShellScreen(const gfx::Size& size);
+  // Creates a screen occupying |size| physical pixels. |desktop_controller|
+  // can be null in tests.
+  ShellScreen(ShellDesktopControllerAura* desktop_controller,
+              const gfx::Size& size);
   ~ShellScreen() override;
 
-  // Caller owns the returned object.
-  aura::WindowTreeHost* CreateHostForPrimaryDisplay();
-
-  // WindowObserver overrides:
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
-  void OnWindowDestroying(aura::Window* window) override;
+  // aura::WindowTreeHostObserver overrides:
+  void OnHostResized(aura::WindowTreeHost* host) override;
 
   // display::Screen overrides:
   gfx::Point GetCursorScreenPoint() override;
@@ -45,7 +43,7 @@ class ShellScreen : public display::ScreenBase, public aura::WindowObserver {
       gfx::NativeWindow window) const override;
 
  private:
-  aura::WindowTreeHost* host_;  // Not owned.
+  ShellDesktopControllerAura* const desktop_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellScreen);
 };
