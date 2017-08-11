@@ -53,6 +53,7 @@ class ShellAppDelegate : public AppDelegate {
   void SetTerminatingCallback(const base::Closure& callback) override;
   void OnHide() override {}
   void OnShow() override {}
+  bool TakeFocus(content::WebContents* web_contents, bool reverse) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellAppDelegate);

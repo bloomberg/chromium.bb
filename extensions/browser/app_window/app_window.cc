@@ -440,6 +440,10 @@ std::unique_ptr<content::BluetoothChooser> AppWindow::RunBluetoothChooser(
                                                                 event_handler);
 }
 
+bool AppWindow::TakeFocus(WebContents* source, bool reverse) {
+  return app_delegate_->TakeFocus(source, reverse);
+}
+
 void AppWindow::RenderViewCreated(content::RenderViewHost* render_view_host) {
   app_delegate_->RenderViewCreated(render_view_host);
 }
