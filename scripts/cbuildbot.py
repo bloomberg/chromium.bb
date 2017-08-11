@@ -468,7 +468,7 @@ def _CreateParser():
                         'If no branch is specified the current branch of the '
                         'project will be used.')
 
-  parser.add_option_group(group)
+  parser.add_argument_group(group)
 
   #
   # Remote trybot options.
@@ -508,7 +508,7 @@ def _CreateParser():
   group.add_option('--committer-email', type='string',
                    help='Override default git committer email.')
 
-  parser.add_option_group(group)
+  parser.add_argument_group(group)
 
   #
   # Branch creation options.
@@ -531,7 +531,7 @@ def _CreateParser():
                           help='Do not actually push to remote git repos.  '
                                'Used for end-to-end testing branching.')
 
-  parser.add_option_group(group)
+  parser.add_argument_group(group)
 
   #
   # Advanced options.
@@ -668,7 +668,7 @@ def _CreateParser():
                           api=constants.REEXEC_API_SANITY_CHECK_BUILD,
                           help='Run the build as a sanity check build.')
 
-  parser.add_option_group(group)
+  parser.add_argument_group(group)
 
   #
   # Internal options.
@@ -743,7 +743,7 @@ def _CreateParser():
                                'specifying a file with a pickle of the result '
                                'to be returned.')
 
-  parser.add_option_group(group)
+  parser.add_argument_group(group)
 
   #
   # Debug options

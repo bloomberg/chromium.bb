@@ -158,7 +158,7 @@ Production Examples (danger, can break production if misused):
         help='Arguments to pass to cbuildbot.')
 
     # Do we build locally, on on a trybot builder?
-    where_group = parser.add_option_group(
+    where_group = parser.add_argument_group(
         'Where',
         description='Where do we run the tryjob?')
     where_ex = where_group.add_mutually_exclusive_group()
@@ -175,7 +175,7 @@ Production Examples (danger, can break production if misused):
              'NOT the current checkout.')
 
     # What patches do we include in the build?
-    what_group = parser.add_option_group(
+    what_group = parser.add_argument_group(
         'Patch',
         description='Which patches should be included with the tryjob?')
     what_group.add_argument(
@@ -199,7 +199,7 @@ Production Examples (danger, can break production if misused):
              'project will be used.')
 
     # Identifing the request.
-    who_group = parser.add_option_group(
+    who_group = parser.add_argument_group(
         'Requestor',
         description='Who is submitting the jobs?')
     who_group.add_argument(
@@ -212,7 +212,7 @@ Production Examples (danger, can break production if misused):
              'finishes')
 
     # Specialized tryjob options.
-    special_group = parser.add_option_group(
+    special_group = parser.add_argument_group(
         'Specialty',
         description='Options only used by specific tryjobs.')
     special_group.add_argument(

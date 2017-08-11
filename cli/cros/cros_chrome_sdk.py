@@ -543,7 +543,7 @@ class ChromeSDKCommand(command.CliCommand):
         default=False,
         help='Removes everything in the SDK cache before starting.')
 
-    group = parser.add_option_group(
+    group = parser.add_argument_group(
         'Metadata Overrides (Advanced)',
         description='Provide all of these overrides in order to remove '
                     'dependencies on metadata.json existence.')

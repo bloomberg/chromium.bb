@@ -479,7 +479,7 @@ class BaseParser(object):
     # You should also explicitly add default=None here when you want the
     # default to be set up in the parsed option namespace.
     if self.logging_enabled:
-      self.debug_group = self.add_option_group('Debug options')
+      self.debug_group = self.add_argument_group('Debug options')
       self.add_common_argument_to_group(
           self.debug_group, '--log-level', choices=self.log_levels,
           default=self.default_log_level,
@@ -499,7 +499,7 @@ class BaseParser(object):
           help='Do not use colorized output (or `export NOCOLOR=true`)')
 
     if self.caching:
-      self.caching_group = self.add_option_group('Caching Options')
+      self.caching_group = self.add_argument_group('Caching Options')
       self.add_common_argument_to_group(
           self.caching_group, '--cache-dir', default=None, type='path',
           help='Override the calculated chromeos cache directory; '
@@ -574,10 +574,6 @@ class BaseParser(object):
     logging.debug('Cache dir lookup.')
     return path_util.FindCacheDir()
 
-  def add_option_group(self, *args, **kwargs):
-    """Returns a new option group see optparse.OptionParser.add_option_group."""
-    raise NotImplementedError('Subclass must override this method')
-
   @staticmethod
   def add_option_to_group(group, *args, **kwargs):
     """Adds the given option defined by args and kwargs to group."""
@@ -631,6 +627,10 @@ class FilteringParser(optparse.OptionParser, BaseParser):
     kwargs.setdefault('option_class', self.DEFAULT_OPTION_CLASS)
     optparse.OptionParser.__init__(self, usage=usage, **kwargs)
     self.SetupOptions()
+
+  def add_argument_group(self, *args, **kwargs):
+    """Return an option group rather than an argument group."""
+    return self.add_option_group(*args, **kwargs)
 
   def parse_args(self, args=None, values=None):
     # If no Values object is specified then use our custom OptionValues.
@@ -698,10 +698,6 @@ class ArgumentParser(BaseParser, argparse.ArgumentParser):
     """Register types with ArgumentParser."""
     for t, check_f in VALID_TYPES.iteritems():
       self.register('type', t, check_f)
-
-  def add_option_group(self, *args, **kwargs):
-    """Return an argument group rather than an option group."""
-    return self.add_argument_group(*args, **kwargs)
 
   @staticmethod
   def add_option_to_group(group, *args, **kwargs):

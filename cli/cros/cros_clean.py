@@ -40,7 +40,7 @@ class CleanCommand(command.CliCommand):
         '-n', '--dry-run', default=False, action='store_true',
         help='Show which paths would be cleaned up.')
 
-    group = parser.add_option_group(
+    group = parser.add_argument_group(
         'Cache Selection (Advanced)',
         description='Clean out specific caches (--safe does all of these).')
     group.add_argument(
@@ -68,7 +68,7 @@ class CleanCommand(command.CliCommand):
         '--workdirs', default=False, action='store_true',
         help='Clean up build various package build directories.')
 
-    group = parser.add_option_group(
+    group = parser.add_argument_group(
         'Unrecoverable Options (Dangerous)',
         description='Clean out objects that cannot be recovered easily.')
     parser.add_argument(
