@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/ios/ios_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -107,6 +108,12 @@ const char kNoShippingPage[] =
 // Tests that tapping the cancel button closes the Payment Request UI and
 // rejects the Promise returned by request.show() with the appropriate error.
 - (void)testOpenAndCancel {
+  if (!base::ios::IsRunningOnOrLater(10, 3, 0)) {
+    EARL_GREY_TEST_DISABLED(
+        @"Disabled on iOS versions below 10.3 because DOMException is not "
+        @"available.");
+  }
+
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)];
 
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
@@ -133,6 +140,12 @@ const char kNoShippingPage[] =
 // rejects the Promise returned by request.show() with the appropriate error,
 // and displays the Autofill Settings UI.
 - (void)testOpenAndNavigateToSettings {
+  if (!base::ios::IsRunningOnOrLater(10, 3, 0)) {
+    EARL_GREY_TEST_DISABLED(
+        @"Disabled on iOS versions below 10.3 because DOMException is not "
+        @"available.");
+  }
+
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)];
 
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];

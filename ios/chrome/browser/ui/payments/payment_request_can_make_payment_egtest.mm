@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/ios/ios_util.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
@@ -111,6 +112,12 @@ const char kCanMakePaymentMethodIdentifierPage[] =
 // Tests canMakePayment() exceeds query quota when different payment methods are
 // queried one after another.
 - (void)testCanMakePaymentExceedsQueryQuota {
+  if (!base::ios::IsRunningOnOrLater(10, 3, 0)) {
+    EARL_GREY_TEST_DISABLED(
+        @"Disabled on iOS versions below 10.3 because DOMException is not "
+        @"available.");
+  }
+
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentCreditCardPage)];
 
@@ -161,6 +168,12 @@ const char kCanMakePaymentMethodIdentifierPage[] =
 // Tests canMakePayment() exceeds query quota when different payment methods are
 // queried one after another.
 - (void)testCanMakePaymentExceedsQueryQuotaBasicaCard {
+  if (!base::ios::IsRunningOnOrLater(10, 3, 0)) {
+    EARL_GREY_TEST_DISABLED(
+        @"Disabled on iOS versions below 10.3 because DOMException is not "
+        @"available.");
+  }
+
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(
                               kCanMakePaymentMethodIdentifierPage)];
 
