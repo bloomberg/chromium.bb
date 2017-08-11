@@ -4,15 +4,14 @@
 
 #include "extensions/browser/api/storage/backend_task_runner.h"
 
-#include "base/task_scheduler/lazy_task_runner.h"
+#include "extensions/browser/extension_file_task_runner.h"
 
 namespace extensions {
 
-base::LazySequencedTaskRunner g_sequenced_task_task_runner =
-    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER({base::MayBlock()});
-
+// TODO(stanisc): consider switching all calls of GetBackendTaskRunner() to
+// GetExtensionFileTaskRunner().
 scoped_refptr<base::SequencedTaskRunner> GetBackendTaskRunner() {
-  return g_sequenced_task_task_runner.Get();
+  return GetExtensionFileTaskRunner();
 }
 
 bool IsOnBackendSequence() {
