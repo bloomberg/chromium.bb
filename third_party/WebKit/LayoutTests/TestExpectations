@@ -1740,7 +1740,7 @@ crbug.com/626703 virtual/threaded/inspector/tracing/timeline-js/timeline-runtime
 crbug.com/626703 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/beacon/headers/header-content-type.html [ Pass Failure Timeout ]
+crbug.com/626703 external/wpt/beacon/headers/header-content-type.html [ Pass Timeout ]
 crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/outline-004.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-001.html [ Pass Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-002.html [ Pass Failure ]
