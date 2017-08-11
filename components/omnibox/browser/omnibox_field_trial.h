@@ -109,9 +109,7 @@ struct HUPScoringParams {
     bool use_decay_factor_;
   };
 
-  HUPScoringParams() : experimental_scoring_enabled(false) {}
-
-  bool experimental_scoring_enabled;
+  HUPScoringParams() {}
 
   ScoreBuckets typed_count_buckets;
 
@@ -262,8 +260,7 @@ class OmniboxFieldTrial {
   // bundled omnibox field trial.
 
   // Initializes the HUP |scoring_params| based on the active HUP scoring
-  // experiment.  If there is no such experiment, this function simply sets
-  // |scoring_params|->experimental_scoring_enabled to false.
+  // experiment.
   static void GetDefaultHUPScoringParams(HUPScoringParams* scoring_params);
   static void GetExperimentalHUPScoringParams(HUPScoringParams* scoring_params);
 
@@ -469,7 +466,6 @@ class OmniboxFieldTrial {
   static const char kPhysicalWebAfterTypingRule[];
 
   // Parameter names used by the HUP new scoring experiments.
-  static const char kHUPNewScoringEnabledParam[];
   static const char kHUPNewScoringTypedCountRelevanceCapParam[];
   static const char kHUPNewScoringTypedCountHalfLifeTimeParam[];
   static const char kHUPNewScoringTypedCountScoreBucketsParam[];

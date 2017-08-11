@@ -428,19 +428,10 @@ void OmniboxFieldTrial::GetDefaultHUPScoringParams(
 
 void OmniboxFieldTrial::GetExperimentalHUPScoringParams(
     HUPScoringParams* scoring_params) {
-  scoring_params->experimental_scoring_enabled = false;
-
   VariationParams params;
   if (!variations::GetVariationParams(kBundledExperimentFieldTrialName,
                                       &params))
     return;
-
-  VariationParams::const_iterator it = params.find(kHUPNewScoringEnabledParam);
-  if (it != params.end()) {
-    int enabled = 0;
-    if (base::StringToInt(it->second, &enabled))
-      scoring_params->experimental_scoring_enabled = (enabled != 0);
-  }
 
   InitializeScoreBuckets(params, kHUPNewScoringTypedCountRelevanceCapParam,
       kHUPNewScoringTypedCountHalfLifeTimeParam,
@@ -757,8 +748,6 @@ const char OmniboxFieldTrial::kPhysicalWebZeroSuggestRule[] =
 const char OmniboxFieldTrial::kPhysicalWebAfterTypingRule[] =
     "PhysicalWebAfterTyping";
 
-const char OmniboxFieldTrial::kHUPNewScoringEnabledParam[] =
-    "HUPExperimentalScoringEnabled";
 const char OmniboxFieldTrial::kHUPNewScoringTypedCountRelevanceCapParam[] =
     "TypedCountRelevanceCap";
 const char OmniboxFieldTrial::kHUPNewScoringTypedCountHalfLifeTimeParam[] =

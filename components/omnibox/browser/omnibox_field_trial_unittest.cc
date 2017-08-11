@@ -396,7 +396,6 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
 TEST_F(OmniboxFieldTrialTest, HUPNewScoringFieldTrial) {
   {
     std::map<std::string, std::string> params;
-    params[std::string(OmniboxFieldTrial::kHUPNewScoringEnabledParam)] = "1";
     params[std::string(
         OmniboxFieldTrial::kHUPNewScoringTypedCountRelevanceCapParam)] = "56";
     params[std::string(
@@ -419,7 +418,6 @@ TEST_F(OmniboxFieldTrialTest, HUPNewScoringFieldTrial) {
 
   HUPScoringParams scoring_params;
   OmniboxFieldTrial::GetExperimentalHUPScoringParams(&scoring_params);
-  EXPECT_TRUE(scoring_params.experimental_scoring_enabled);
   EXPECT_EQ(56, scoring_params.typed_count_buckets.relevance_cap());
   EXPECT_EQ(77, scoring_params.typed_count_buckets.half_life_days());
   ASSERT_EQ(3u, scoring_params.typed_count_buckets.buckets().size());
@@ -441,7 +439,6 @@ TEST_F(OmniboxFieldTrialTest, HUPNewScoringFieldTrial) {
 TEST_F(OmniboxFieldTrialTest, HUPNewScoringFieldTrialWithDecayFactor) {
   {
     std::map<std::string, std::string> params;
-    params[OmniboxFieldTrial::kHUPNewScoringEnabledParam] = "1";
     params[OmniboxFieldTrial::kHUPNewScoringTypedCountHalfLifeTimeParam] = "10";
     params[OmniboxFieldTrial::kHUPNewScoringTypedCountUseDecayFactorParam] =
         "1";
@@ -455,7 +452,6 @@ TEST_F(OmniboxFieldTrialTest, HUPNewScoringFieldTrialWithDecayFactor) {
 
   HUPScoringParams scoring_params;
   OmniboxFieldTrial::GetExperimentalHUPScoringParams(&scoring_params);
-  EXPECT_TRUE(scoring_params.experimental_scoring_enabled);
   EXPECT_EQ(10, scoring_params.typed_count_buckets.half_life_days());
   ASSERT_EQ(3u, scoring_params.typed_count_buckets.buckets().size());
   ASSERT_TRUE(scoring_params.typed_count_buckets.use_decay_factor());
