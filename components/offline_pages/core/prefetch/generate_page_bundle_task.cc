@@ -69,7 +69,7 @@ std::unique_ptr<std::vector<FetchedUrl>> FetchUrlsSync(sql::Connection* db) {
   return urls;
 }
 
-bool MarkExtraUrlsFinished(sql::Connection* db, const FetchedUrl& url) {
+bool MarkUrlFinishedWithError(sql::Connection* db, const FetchedUrl& url) {
   static const char kSql[] =
       "UPDATE prefetch_items SET state = ?, error_code = ?"
       " WHERE offline_id = ?";
@@ -98,7 +98,7 @@ std::unique_ptr<std::vector<std::string>> SelectUrlsToPrefetchSync(
   // and remove them from the list.
   if (urls->size() > kMaxUrlsToSend) {
     for (size_t index = kMaxUrlsToSend; index < urls->size(); ++index) {
-      if (!MarkExtraUrlsFinished(db, urls->at(index)))
+      if (!MarkUrlFinishedWithError(db, urls->at(index)))
         return nullptr;
     }
     urls->resize(kMaxUrlsToSend);
