@@ -57,11 +57,12 @@ class GpuArcVideoEncodeAccelerator
   void Encode(mojo::ScopedHandle fd,
               std::vector<::arc::VideoFramePlane> planes,
               int64_t timestamp,
-              bool force_keyframe) override;
-  void UseOutputBitstreamBuffer(int32_t bitstream_buffer_id,
-                                mojo::ScopedHandle shmem_fd,
-                                uint32_t offset,
-                                uint32_t size) override;
+              bool force_keyframe,
+              const EncodeCallback& callback) override;
+  void UseBitstreamBuffer(mojo::ScopedHandle shmem_fd,
+                          uint32_t offset,
+                          uint32_t size,
+                          const UseBitstreamBufferCallback& callback) override;
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate) override;
 
@@ -76,6 +77,8 @@ class GpuArcVideoEncodeAccelerator
   gfx::Size coded_size_;
   gfx::Size visible_size_;
   VideoPixelFormat input_pixel_format_;
+  int32_t bitstream_buffer_serial_;
+  std::unordered_map<uint32_t, UseBitstreamBufferCallback> use_bitstream_cbs_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuArcVideoEncodeAccelerator);
 };

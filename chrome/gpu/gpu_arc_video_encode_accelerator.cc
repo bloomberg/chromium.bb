@@ -19,6 +19,21 @@
 namespace chromeos {
 namespace arc {
 
+namespace {
+
+// Helper class to notify client about the end of processing a video frame.
+class VideoFrameDoneNotifier {
+ public:
+  explicit VideoFrameDoneNotifier(base::OnceClosure notify_closure)
+      : notify_closure_(std::move(notify_closure)) {}
+  ~VideoFrameDoneNotifier() { std::move(notify_closure_).Run(); }
+
+ private:
+  base::OnceClosure notify_closure_;
+};
+
+}  // namespace
+
 GpuArcVideoEncodeAccelerator::GpuArcVideoEncodeAccelerator(
     const gpu::GpuPreferences& gpu_preferences)
     : gpu_preferences_(gpu_preferences) {}
@@ -45,8 +60,9 @@ void GpuArcVideoEncodeAccelerator::BitstreamBufferReady(
     base::TimeDelta timestamp) {
   DVLOGF(2) << "id=" << bitstream_buffer_id;
   DCHECK(client_);
-  client_->BitstreamBufferReady(bitstream_buffer_id, payload_size, key_frame,
-                                timestamp.InMicroseconds());
+  auto iter = use_bitstream_cbs_.find(bitstream_buffer_id);
+  DCHECK(iter != use_bitstream_cbs_.end());
+  iter->second.Run(payload_size, key_frame, timestamp.InMicroseconds());
 }
 
 void GpuArcVideoEncodeAccelerator::NotifyError(Error error) {
@@ -87,20 +103,25 @@ void GpuArcVideoEncodeAccelerator::Initialize(
   callback.Run(true);
 }
 
-static void DropSharedMemory(std::unique_ptr<base::SharedMemory> shm) {
-  // Just let |shm| fall out of scope.
+static void DropShareMemoryAndVideoFrameDoneNotifier(
+    std::unique_ptr<base::SharedMemory> shm,
+    std::unique_ptr<VideoFrameDoneNotifier> notifier) {
+  // Just let |shm| and |notifier| fall out of scope.
 }
 
 void GpuArcVideoEncodeAccelerator::Encode(
     mojo::ScopedHandle handle,
     std::vector<::arc::VideoFramePlane> planes,
     int64_t timestamp,
-    bool force_keyframe) {
+    bool force_keyframe,
+    const EncodeCallback& callback) {
   DVLOGF(2) << "timestamp=" << timestamp;
   if (!accelerator_) {
     DLOG(ERROR) << "Accelerator is not initialized.";
     return;
   }
+
+  auto notifier = base::MakeUnique<VideoFrameDoneNotifier>(callback);
 
   if (planes.empty()) {  // EOS
     accelerator_->Encode(media::VideoFrame::CreateEOSFrame(), force_keyframe);
@@ -148,19 +169,23 @@ void GpuArcVideoEncodeAccelerator::Encode(
       shm_memory + aligned_offset, allocation_size, shm_handle,
       planes[0].offset, base::TimeDelta::FromMicroseconds(timestamp));
 
-  // Wrap |shm| in a callback and add it as a destruction observer, so it
-  // stays alive and mapped until |frame| goes out of scope.
+  // Wrap |shm| and |notifier| in a callback and add it as a destruction
+  // observer. When the |frame| goes out of scope, it unmaps and releases
+  // the shared memory as well as notifies |client_| about the end of processing
+  // the |frame|.
   frame->AddDestructionObserver(
-      base::Bind(&DropSharedMemory, base::Passed(&shm)));
+      base::Bind(&DropShareMemoryAndVideoFrameDoneNotifier, base::Passed(&shm),
+                 base::Passed(&notifier)));
+
   accelerator_->Encode(frame, force_keyframe);
 }
 
-void GpuArcVideoEncodeAccelerator::UseOutputBitstreamBuffer(
-    int32_t bitstream_buffer_id,
+void GpuArcVideoEncodeAccelerator::UseBitstreamBuffer(
     mojo::ScopedHandle shmem_fd,
     uint32_t offset,
-    uint32_t size) {
-  DVLOGF(2) << "id=" << bitstream_buffer_id;
+    uint32_t size,
+    const UseBitstreamBufferCallback& callback) {
+  DVLOGF(2) << "serial=" << bitstream_buffer_serial_;
   if (!accelerator_) {
     DLOG(ERROR) << "Accelerator is not initialized.";
     return;
@@ -178,8 +203,12 @@ void GpuArcVideoEncodeAccelerator::UseOutputBitstreamBuffer(
   base::UnguessableToken guid = base::UnguessableToken::Create();
   base::SharedMemoryHandle shm_handle(base::FileDescriptor(fd.release(), true),
                                       0u, guid);
-  accelerator_->UseOutputBitstreamBuffer(
-      media::BitstreamBuffer(bitstream_buffer_id, shm_handle, size, offset));
+  use_bitstream_cbs_[bitstream_buffer_serial_] = callback;
+  accelerator_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
+      bitstream_buffer_serial_, shm_handle, size, offset));
+
+  // Mask against 30 bits to avoid (undefined) wraparound on signed integer.
+  bitstream_buffer_serial_ = (bitstream_buffer_serial_ + 1) & 0x3FFFFFFF;
 }
 
 void GpuArcVideoEncodeAccelerator::RequestEncodingParametersChange(
