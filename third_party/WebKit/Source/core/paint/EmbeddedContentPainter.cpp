@@ -62,10 +62,6 @@ void EmbeddedContentPainter::Paint(const PaintInfo& paint_info,
     return;
 
   if (layout_embedded_content_.GetEmbeddedContentView()) {
-    // TODO(schenney) crbug.com/93805 Speculative release assert to verify that
-    // the crashes we see in EmbeddedContentView painting are due to a destroyed
-    // LayoutEmbeddedContent object.
-    CHECK(layout_embedded_content_.GetNode());
     Optional<RoundedInnerRectClipper> clipper;
     if (layout_embedded_content_.Style()->HasBorderRadius()) {
       if (border_rect.IsEmpty())
