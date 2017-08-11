@@ -9,6 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_file_impl.h"
@@ -22,6 +23,7 @@
 
 using ::testing::_;
 using ::testing::NiceMock;
+using ::testing::Return;
 using ::testing::StrictMock;
 
 namespace content {
@@ -90,6 +92,11 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
   }
 
   ParallelDownloadJob::WorkerMap& workers() { return workers_; }
+
+  void MakeFileInitialized(const DownloadFile::InitializeCallback& callback,
+                           DownloadInterruptReason result) {
+    ParallelDownloadJob::OnDownloadFileInitialized(callback, result);
+  }
 
   int GetParallelRequestCount() const override { return request_count_; }
   int64_t GetMinSliceSize() const override { return min_slice_size_; }
@@ -198,7 +205,7 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithoutSlices) {
   // Task 1:  Range:50-, for 50 bytes.
   CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 2, 1, 10);
   BuildParallelRequests();
-  EXPECT_EQ(1, static_cast<int>(job_->workers().size()));
+  EXPECT_EQ(1u, job_->workers().size());
   VerifyWorker(50, 0);
   DestroyParallelJob();
 
@@ -208,7 +215,7 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithoutSlices) {
   // Task 2:  Range:66-, for 34 bytes.
   CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 3, 1, 10);
   BuildParallelRequests();
-  EXPECT_EQ(2, static_cast<int>(job_->workers().size()));
+  EXPECT_EQ(2u, job_->workers().size());
   VerifyWorker(33, 33);
   VerifyWorker(66, 0);
   DestroyParallelJob();
@@ -242,7 +249,7 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithSlices) {
   DownloadItem::ReceivedSlices slices = {DownloadItem::ReceivedSlice(0, 17)};
   CreateParallelJob(12, 88, slices, 3, 1, 10);
   BuildParallelRequests();
-  EXPECT_EQ(2, static_cast<int>(job_->workers().size()));
+  EXPECT_EQ(2u, job_->workers().size());
   VerifyWorker(44, 27);
   VerifyWorker(71, 0);
   DestroyParallelJob();
@@ -256,7 +263,7 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithSlices) {
   slices = {DownloadItem::ReceivedSlice(0, 60)};
   CreateParallelJob(60, 40, slices, 4, 20, 10);
   BuildParallelRequests();
-  EXPECT_EQ(1, static_cast<int>(job_->workers().size()));
+  EXPECT_EQ(1u, job_->workers().size());
   VerifyWorker(80, 0);
   DestroyParallelJob();
 
@@ -277,7 +284,7 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithSlices) {
       DownloadItem::ReceivedSlice(40, 10), DownloadItem::ReceivedSlice(90, 10)};
   CreateParallelJob(0, 12, slices, 2, 1, 10);
   BuildParallelRequests();
-  EXPECT_EQ(3, static_cast<int>(job_->workers().size()));
+  EXPECT_EQ(3u, job_->workers().size());
   VerifyWorker(30, 10);
   VerifyWorker(50, 40);
   VerifyWorker(100, 0);
@@ -359,7 +366,7 @@ TEST_F(ParallelDownloadJobTest, RemainingContentWillFinishSoon) {
   DownloadItem::ReceivedSlices slices = {DownloadItem::ReceivedSlice(0, 99)};
   CreateParallelJob(99, 1, slices, 3, 1, 10);
   BuildParallelRequests();
-  EXPECT_EQ(0, static_cast<int>(job_->workers().size()));
+  EXPECT_EQ(0u, job_->workers().size());
 
   DestroyParallelJob();
 }
@@ -396,6 +403,28 @@ TEST_F(ParallelDownloadJobTest, ParallelRequestNotCreatedUntilFileInitialized) {
   // be deleted there.
   GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, std::move(download_file));
   task_environment_.RunUntilIdle();
+}
+
+// Interruption from IO thread after the file initialized and before building
+// the parallel requests, should correctly stop the download.
+TEST_F(ParallelDownloadJobTest, InterruptOnStartup) {
+  DownloadItem::ReceivedSlices slices = {DownloadItem::ReceivedSlice(0, 99)};
+  CreateParallelJob(99, 1, slices, 3, 1, 10);
+
+  // Start to build the requests without any error.
+  base::MockCallback<DownloadFile::InitializeCallback> callback;
+  EXPECT_CALL(callback, Run(_)).Times(1);
+  job_->MakeFileInitialized(callback.Get(), DOWNLOAD_INTERRUPT_REASON_NONE);
+
+  // Simulate and inject an error from IO thread after file initializd.
+  EXPECT_CALL(*download_item_.get(), GetLastReason())
+      .WillOnce(Return(DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED));
+
+  // Because of the error, no parallel requests are built.
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(0u, job_->workers().size());
+
+  DestroyParallelJob();
 }
 
 }  // namespace content
