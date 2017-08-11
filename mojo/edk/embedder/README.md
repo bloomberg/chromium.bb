@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
 
   base::Thread ipc_thread("ipc!");
   ipc_thread.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
   // As long as this object is alive, all EDK API surface relevant to IPC
   // connections is usable and message pipes which span a process boundary will
@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
 
   base::Thread ipc_thread("ipc!");
   ipc_thread.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
   mojo::edk::ScopedIPCSupport ipc_support(
       ipc_thread.task_runner(),
@@ -164,7 +164,7 @@ int main(int argc, char** argv) {
 
   base::Thread ipc_thread("ipc!");
   ipc_thread.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
   mojo::edk::ScopedIPCSupport ipc_support(
       ipc_thread.task_runner(),
@@ -212,7 +212,7 @@ int main(int argc, char** argv) {
 
   base::Thread ipc_thread("ipc!");
   ipc_thread.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
   mojo::edk::ScopedIPCSupport ipc_support(
       ipc_thread.task_runner(),
