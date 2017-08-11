@@ -96,9 +96,10 @@ void MockMediaStreamDispatcher::AddAudioInputDeviceToArray(
         kAudioOutputDeviceIdPrefix + base::IntToString(session_id_);
   }
   audio.session_id = session_id_;
-  audio.device.input.sample_rate = media::AudioParameters::kAudioCDSampleRate;
-  audio.device.input.channel_layout = media::CHANNEL_LAYOUT_STEREO;
-  audio.device.input.frames_per_buffer = audio.device.input.sample_rate / 100;
+  audio.device.input = media::AudioParameters(
+      media::AudioParameters::AUDIO_FAKE, media::CHANNEL_LAYOUT_STEREO,
+      media::AudioParameters::kAudioCDSampleRate, 0,
+      media::AudioParameters::kAudioCDSampleRate / 100);
   audio_input_array_.push_back(audio);
 }
 

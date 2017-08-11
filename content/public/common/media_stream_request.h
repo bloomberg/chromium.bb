@@ -122,43 +122,12 @@ struct CONTENT_EXPORT MediaStreamDevice {
   // The device's "friendly" name. Not guaranteed to be unique.
   std::string name;
 
-  // Contains properties that match directly with those with the same name
-  // in media::AudioParameters.
-  // TODO(ajm): Remove this type and use media::AudioParameters directly.
-  struct CONTENT_EXPORT AudioDeviceParameters {
-    AudioDeviceParameters();
-    AudioDeviceParameters(int sample_rate,
-                          int channel_layout,
-                          int frames_per_buffer);
-    AudioDeviceParameters(const AudioDeviceParameters& other);
-
-    ~AudioDeviceParameters();
-
-    // Preferred sample rate in samples per second for the device.
-    int sample_rate;
-
-    // Preferred channel configuration for the device.
-    // TODO(henrika): ideally, we would like to use media::ChannelLayout here
-    // but including media/base/channel_layout.h violates checkdeps rules.
-    int channel_layout;
-
-    // Preferred number of frames per buffer for the device.  This is filled
-    // in on the browser side and can be used by the renderer to match the
-    // expected browser side settings and avoid unnecessary buffering.
-    // See media::AudioParameters for more.
-    int frames_per_buffer;
-
-    // See media::AudioParameters::PlatformEffectsMask.
-    int effects;
-
-    std::vector<media::Point> mic_positions;
-  };
-
   // These below two member variables are valid only when the type of device is
   // audio (i.e. IsAudioInputMediaType returns true).
 
   // Contains the device properties of the capture device.
-  AudioDeviceParameters input;
+  media::AudioParameters input =
+      media::AudioParameters::UnavailableDeviceParams();
 
   // If the capture device has an associated output device (e.g. headphones),
   // this will contain the properties for the output device.  If no such device

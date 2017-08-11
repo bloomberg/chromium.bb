@@ -117,7 +117,7 @@ struct CONTENT_EXPORT AudioProcessingProperties {
   // TODO(guidou): Remove this function. http://crbug.com/706408
   static AudioProcessingProperties FromConstraints(
       const blink::WebMediaConstraints& constraints,
-      const MediaStreamDevice::AudioDeviceParameters& input_params);
+      const media::AudioParameters& input_params);
 
   bool enable_sw_echo_cancellation = true;
   bool disable_hw_echo_cancellation = false;
@@ -213,7 +213,7 @@ void GetAudioProcessingStats(
 // TODO(guidou): Remove this function. http://crbug.com/706408
 CONTENT_EXPORT std::vector<media::Point> GetArrayGeometryPreferringConstraints(
     const MediaAudioConstraints& audio_constraints,
-    const MediaStreamDevice::AudioDeviceParameters& input_params);
+    const media::AudioParameters& input_params);
 
 // TODO(guidou): Remove this function. http://crbug.com/706408
 CONTENT_EXPORT bool IsOldAudioConstraints();

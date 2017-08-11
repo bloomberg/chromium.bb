@@ -220,7 +220,6 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
 
   base::MessageLoop main_thread_message_loop_;
   media::AudioParameters params_;
-  MediaStreamDevice::AudioDeviceParameters input_device_params_;
 
   // TODO(guidou): Remove this field. http://crbug.com/706408
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -383,7 +382,7 @@ TEST_F(MediaStreamAudioProcessorTest, SelectsConstraintsArrayGeometryIfExists) {
   {
     // Both geometries empty.
     MockConstraintFactory constraint_factory;
-    MediaStreamDevice::AudioDeviceParameters input_params;
+    media::AudioParameters input_params;
 
     const auto& actual_geometry = GetArrayGeometryPreferringConstraints(
         MakeMediaAudioConstraints(constraint_factory), input_params);
@@ -392,9 +391,13 @@ TEST_F(MediaStreamAudioProcessorTest, SelectsConstraintsArrayGeometryIfExists) {
   {
     // Constraints geometry empty.
     MockConstraintFactory constraint_factory;
-    MediaStreamDevice::AudioDeviceParameters input_params;
-    input_params.mic_positions.push_back(media::Point(0, 0, 0));
-    input_params.mic_positions.push_back(media::Point(0, 0.05f, 0));
+
+    std::vector<media::Point> mic_positions;
+    mic_positions.push_back(media::Point(0, 0, 0));
+    mic_positions.push_back(media::Point(0, 0.05f, 0));
+
+    media::AudioParameters input_params;
+    input_params.set_mic_positions(mic_positions);
 
     const auto& actual_geometry = GetArrayGeometryPreferringConstraints(
         MakeMediaAudioConstraints(constraint_factory), input_params);
@@ -405,7 +408,7 @@ TEST_F(MediaStreamAudioProcessorTest, SelectsConstraintsArrayGeometryIfExists) {
     MockConstraintFactory constraint_factory;
     constraint_factory.AddAdvanced().goog_array_geometry.SetExact(
         blink::WebString::FromUTF8("-0.02 0 0 0.02 0 0"));
-    MediaStreamDevice::AudioDeviceParameters input_params;
+    media::AudioParameters input_params;
 
     const auto& actual_geometry = GetArrayGeometryPreferringConstraints(
         MakeMediaAudioConstraints(constraint_factory), input_params);
@@ -416,9 +419,13 @@ TEST_F(MediaStreamAudioProcessorTest, SelectsConstraintsArrayGeometryIfExists) {
     MockConstraintFactory constraint_factory;
     constraint_factory.AddAdvanced().goog_array_geometry.SetExact(
         blink::WebString::FromUTF8("-0.02 0 0 0.02 0 0"));
-    MediaStreamDevice::AudioDeviceParameters input_params;
-    input_params.mic_positions.push_back(media::Point(0, 0, 0));
-    input_params.mic_positions.push_back(media::Point(0, 0.05f, 0));
+
+    std::vector<media::Point> mic_positions;
+    mic_positions.push_back(media::Point(0, 0, 0));
+    mic_positions.push_back(media::Point(0, 0.05f, 0));
+
+    media::AudioParameters input_params;
+    input_params.set_mic_positions(mic_positions);
 
     // Constraints geometry is preferred.
     const auto& actual_geometry = GetArrayGeometryPreferringConstraints(

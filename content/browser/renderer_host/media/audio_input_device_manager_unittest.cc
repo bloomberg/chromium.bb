@@ -343,10 +343,9 @@ TEST_F(AudioInputDeviceManagerNoDevicesTest,
         manager_->GetOpenedDeviceInfoById(session_id);
     EXPECT_TRUE(
         media::AudioParameters(media::AudioParameters::AUDIO_FAKE,
-                               static_cast<media::ChannelLayout>(
-                                   device_info->device.input.channel_layout),
-                               device_info->device.input.sample_rate, 16,
-                               device_info->device.input.frames_per_buffer)
+                               device_info->device.input.channel_layout(),
+                               device_info->device.input.sample_rate(), 16,
+                               device_info->device.input.frames_per_buffer())
             .IsValid());
 
     manager_->Close(session_id);
