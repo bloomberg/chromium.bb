@@ -1,5 +1,5 @@
 AXWebArea AXRoleDescription='HTML content'
-++AXGrid AXRoleDescription='grid'
+++AXTable AXRoleDescription='table'
 ++++AXRow AXRoleDescription='row'
 ++++++AXCell AXRoleDescription='cell' AXTitle='Browser'
 ++++++++AXStaticText AXRoleDescription='text' AXValue='Browser'
