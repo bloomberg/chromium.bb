@@ -28,7 +28,8 @@ std::unique_ptr<Renderer> CourierRendererFactory::CreateRenderer(
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     AudioRendererSink* audio_renderer_sink,
     VideoRendererSink* video_renderer_sink,
-    const RequestOverlayInfoCB& request_overlay_info_cb) {
+    const RequestOverlayInfoCB& request_overlay_info_cb,
+    const gfx::ColorSpace& target_color_space) {
   DCHECK(IsRemotingActive());
 #if !defined(ENABLE_MEDIA_REMOTING_RPC)
   return nullptr;

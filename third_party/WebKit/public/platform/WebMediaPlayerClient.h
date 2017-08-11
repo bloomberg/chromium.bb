@@ -33,6 +33,7 @@
 
 #include "WebCommon.h"
 #include "WebMediaPlayer.h"
+#include "ui/gfx/color_space.h"
 
 namespace blink {
 
@@ -137,6 +138,10 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // Returns the remote playback client associated with the media element, if
   // any.
   virtual WebRemotePlaybackClient* RemotePlaybackClient() { return nullptr; };
+
+  // Returns the color space to render media into if.
+  // Rendering media into this color space may avoid some conversions.
+  virtual gfx::ColorSpace TargetColorSpace() { return gfx::ColorSpace(); }
 
  protected:
   ~WebMediaPlayerClient() = default;

@@ -419,6 +419,7 @@ class CORE_EXPORT HTMLMediaElement
   WebRemotePlaybackClient* RemotePlaybackClient() final {
     return remote_playback_client_;
   }
+  gfx::ColorSpace TargetColorSpace() override;
 
   void LoadTimerFired(TimerBase*);
   void ProgressEventTimerFired(TimerBase*);

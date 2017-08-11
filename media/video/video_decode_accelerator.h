@@ -21,6 +21,7 @@
 #include "media/base/surface_manager.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -171,7 +172,12 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     std::vector<uint8_t> pps;
 
     // Color space specified by the container.
-    VideoColorSpace color_space;
+    VideoColorSpace container_color_space;
+
+    // Target color space.
+    // Used as a hint to the decoder. Outputting VideoFrames in this color space
+    // may avoid extra conversion steps.
+    gfx::ColorSpace target_color_space;
   };
 
   // Interface for collaborating with picture interface to provide memory for

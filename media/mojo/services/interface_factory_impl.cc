@@ -102,9 +102,11 @@ void InterfaceFactoryImpl::CreateRenderer(
   auto audio_sink =
       mojo_media_client_->CreateAudioRendererSink(audio_device_id);
   auto video_sink = mojo_media_client_->CreateVideoRendererSink(task_runner);
+  // TODO(hubbe): Find out if gfx::ColorSpace() is correct for the
+  // target_color_space.
   auto renderer = renderer_factory->CreateRenderer(
       task_runner, task_runner, audio_sink.get(), video_sink.get(),
-      RequestOverlayInfoCB());
+      RequestOverlayInfoCB(), gfx::ColorSpace());
   if (!renderer) {
     LOG(ERROR) << "Renderer creation failed.";
     return;
