@@ -161,3 +161,7 @@
 # content/network/url_loader_impl.cc should handle failure in
 # URLLoaderImpl::OnResponseBodyStreamRead().
 -SRC_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
+
+# https://crbug.com/754827
+-ResourceDispatcherHostBrowserTest.SyncXMLHttpRequest_Cancelled
+-BrowserSideNavigationBrowserDisableWebSecurityTest.ValidateBaseUrlForDataUrl
