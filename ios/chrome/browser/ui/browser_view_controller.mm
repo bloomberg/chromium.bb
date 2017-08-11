@@ -694,9 +694,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // promotion until the feature engagement tracker database is fully initialized.
 // Does not present the bubble if |tabTipBubblePresenter.userEngaged| is |YES|
 // to prevent resetting |tabTipBubblePresenter| and affecting the value of
-// |userEngaged|.
+// |userEngaged|. Does not present the bubble if the feature engagement tracker
+// determines it is not valid to present it.
 - (void)presentNewTabTipBubbleOnInitialized;
-// Presents a bubble associated with the new tab tip in-product help promotion.
+// Optionally presents a bubble associated with the new tab tip in-product help
+// promotion. If the feature engagement tracker determines it is valid to show
+// the new tab tip, then it initializes |tabTipBubblePresenter| and presents
+// the bubble. If it is not valid to show the new tab tip,
+// |tabTipBubblePresenter| is set to |nil| and no bubble is shown.
 - (void)presentNewTabTipBubble;
 
 // Create and show the find bar.
@@ -1217,6 +1222,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
+- (void)presentBubblesIfEligible {
+  [self presentNewTabTipBubbleOnInitialized];
+}
+
 #pragma mark - UIViewController methods
 
 // Perform additional set up after loading the view, typically from a nib.
@@ -1263,7 +1272,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [super viewDidAppear:animated];
   self.viewVisible = YES;
   [self updateDialogPresenterActiveState];
-  [self presentNewTabTipBubbleOnInitialized];
+  [self presentBubblesIfEligible];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -2073,6 +2082,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
     tabSwitcherAnchor = [self.toolbarController
         anchorPointForTabSwitcherButton:BubbleArrowDirectionUp];
   }
+  // If the feature engagement tracker does not consider it valid to display
+  // the new tab tip, then |bubblePresenterForFeature| returns |nil| and the
+  // call to |presentInViewController| is a no-op.
   self.tabTipBubblePresenter =
       [self bubblePresenterForFeature:feature_engagement::kIPHNewTabTipFeature
                             direction:BubbleArrowDirectionUp

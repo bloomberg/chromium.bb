@@ -357,13 +357,18 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
                           startupInformation:_startupInformation
                       browserViewInformation:[_browserLauncher
                                                  browserViewInformation]];
-  } else if (_shouldOpenNTPTabOnActive &&
-             ![tabSwitcher openNewTabFromTabSwitcher]) {
-    BrowserViewController* bvc =
-        [[_browserLauncher browserViewInformation] currentBVC];
-    BOOL incognito = bvc == [[_browserLauncher browserViewInformation] otrBVC];
-    [bvc.dispatcher
-        openNewTab:[OpenNewTabCommand commandWithIncognito:incognito]];
+  } else if (_shouldOpenNTPTabOnActive) {
+    if (![tabSwitcher openNewTabFromTabSwitcher]) {
+      BrowserViewController* bvc =
+          [[_browserLauncher browserViewInformation] currentBVC];
+      BOOL incognito =
+          bvc == [[_browserLauncher browserViewInformation] otrBVC];
+      [bvc.dispatcher
+          openNewTab:[OpenNewTabCommand commandWithIncognito:incognito]];
+    }
+  } else {
+    [[[_browserLauncher browserViewInformation] currentBVC]
+        presentBubblesIfEligible];
   }
   _shouldOpenNTPTabOnActive = NO;
 
