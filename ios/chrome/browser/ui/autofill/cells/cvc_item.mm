@@ -31,8 +31,6 @@ const CGFloat kUICVCSpacing = 20;
 const CGFloat kTextFieldHeight = 50;
 // Width of the date text fields.
 const CGFloat kDateTextFieldWidth = 40;
-// Width of the CVC text field.
-const CGFloat kCVCTextFieldWidth = 60;
 }
 
 @interface CVCCell ()<UITextFieldDelegate>
@@ -253,7 +251,6 @@ const CGFloat kCVCTextFieldWidth = 60;
       // CVC content - CVC input
       [_CVCInput.leadingAnchor
           constraintEqualToAnchor:_CVCContainerView.leadingAnchor],
-      [_CVCInput.widthAnchor constraintEqualToConstant:kCVCTextFieldWidth],
       [_CVCInput.firstBaselineAnchor
           constraintEqualToAnchor:_monthInput.firstBaselineAnchor],
       [_CVCInput.bottomAnchor
