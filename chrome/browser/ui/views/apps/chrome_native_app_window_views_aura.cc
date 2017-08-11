@@ -110,10 +110,10 @@ bool ChromeNativeAppWindowViewsAura::IsAlwaysOnTop() const {
 }
 
 void ChromeNativeAppWindowViewsAura::UpdateShape(
-    std::unique_ptr<SkRegion> region) {
+    std::unique_ptr<ShapeRects> rects) {
   bool had_shape = !!shape();
 
-  ChromeNativeAppWindowViews::UpdateShape(std::move(region));
+  ChromeNativeAppWindowViews::UpdateShape(std::move(rects));
 
   aura::Window* native_window = widget()->GetNativeWindow();
   if (shape() && !had_shape) {

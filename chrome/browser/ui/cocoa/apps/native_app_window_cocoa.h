@@ -129,7 +129,7 @@ class NativeAppWindowCocoa : public extensions::NativeAppWindow,
   bool IsFullscreenOrPending() const override;
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
-  void UpdateShape(std::unique_ptr<SkRegion> region) override;
+  void UpdateShape(std::unique_ptr<ShapeRects> rects) override;
   void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) override;
   SkRegion* GetDraggableRegion() override;

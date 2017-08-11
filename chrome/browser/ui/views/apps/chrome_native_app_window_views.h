@@ -21,6 +21,7 @@ class ChromeNativeAppWindowViews
   ~ChromeNativeAppWindowViews() override;
 
   SkRegion* shape() { return shape_.get(); }
+  ShapeRects* shape_rects() { return shape_rects_.get(); }
 
  protected:
   // Called before views::Widget::Init() in InitializeDefaultWindow() to allow
@@ -60,7 +61,7 @@ class ChromeNativeAppWindowViews
   // NativeAppWindow implementation.
   void SetFullscreen(int fullscreen_types) override;
   bool IsFullscreenOrPending() const override;
-  void UpdateShape(std::unique_ptr<SkRegion> region) override;
+  void UpdateShape(std::unique_ptr<ShapeRects> rects) override;
   bool HasFrameColor() const override;
   SkColor ActiveFrameColor() const override;
   SkColor InactiveFrameColor() const override;
@@ -80,6 +81,8 @@ class ChromeNativeAppWindowViews
   // Custom shape of the window. If this is not set then the window has a
   // default shape, usually rectangular.
   std::unique_ptr<SkRegion> shape_;
+
+  std::unique_ptr<ShapeRects> shape_rects_;
 
   bool has_frame_color_;
   SkColor active_frame_color_;

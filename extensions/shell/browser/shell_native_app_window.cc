@@ -131,7 +131,7 @@ SkRegion* ShellNativeAppWindow::GetDraggableRegion() {
   return NULL;
 }
 
-void ShellNativeAppWindow::UpdateShape(std::unique_ptr<SkRegion> region) {
+void ShellNativeAppWindow::UpdateShape(std::unique_ptr<ShapeRects> rects) {
   NOTIMPLEMENTED();
 }
 

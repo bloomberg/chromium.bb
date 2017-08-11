@@ -23,6 +23,7 @@
 #include "components/zoom/zoom_controller.h"
 #include "extensions/browser/app_window/app_delegate.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
@@ -357,7 +358,17 @@ bool ChromeNativeAppWindowViews::IsFullscreenOrPending() const {
   return widget()->IsFullscreen();
 }
 
-void ChromeNativeAppWindowViews::UpdateShape(std::unique_ptr<SkRegion> region) {
+void ChromeNativeAppWindowViews::UpdateShape(
+    std::unique_ptr<ShapeRects> rects) {
+  shape_rects_ = std::move(rects);
+
+  // Build a region from the list of rects when it is supplied.
+  std::unique_ptr<SkRegion> region;
+  if (shape_rects_) {
+    region = base::MakeUnique<SkRegion>();
+    for (const gfx::Rect& input_rect : *shape_rects_.get())
+      region->op(gfx::RectToSkIRect(input_rect), SkRegion::kUnion_Op);
+  }
   shape_ = std::move(region);
   widget()->SetShape(shape() ? base::MakeUnique<SkRegion>(*shape()) : nullptr);
   widget()->OnSizeConstraintsChanged();

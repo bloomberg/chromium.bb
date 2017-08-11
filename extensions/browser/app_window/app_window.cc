@@ -578,8 +578,8 @@ void AppWindow::SetAppIconUrl(const GURL& url) {
                  image_loader_ptr_factory_.GetWeakPtr()));
 }
 
-void AppWindow::UpdateShape(std::unique_ptr<SkRegion> region) {
-  native_app_window_->UpdateShape(std::move(region));
+void AppWindow::UpdateShape(std::unique_ptr<ShapeRects> rects) {
+  native_app_window_->UpdateShape(std::move(rects));
 }
 
 void AppWindow::UpdateDraggableRegions(
