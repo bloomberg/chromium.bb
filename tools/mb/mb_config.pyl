@@ -119,8 +119,8 @@
       'Chromium Mac 10.9 Goma Canary (dbg)': 'debug_bot',
       'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'debug_bot',
       'Chromium Mac Goma Canary LocalOutputCache': 'release_bot',
-      'Chromium Win 10 GCE Tests (Win 7 Build)': 'release_bot_x86_minimal_symbols',
-      'Chromium Win 10 GCE Tests (Win 10 Build)': 'release_bot_x86_minimal_symbols',
+      'Chromium Win 10 GCE Tests (Win 7 Build)': 'release_bot_minimal_symbols',
+      'Chromium Win 10 GCE Tests (Win 10 Build)': 'release_bot_minimal_symbols',
       'Chromium Win PGO Builder': {
         '1': 'official_optimize_chrome_pgo_phase_1_x86',
         '2': 'official_optimize_chrome_pgo_phase_2_x86',
@@ -645,6 +645,7 @@
     'tryserver.chromium.win': {
       'win10_chromium_x64_rel_ng': 'release_trybot',
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',
+      'win10_gce_x64_rel': 'release_bot_minimal_symbols',
       'win8_chromium_gn_upload': 'release_bot_x86_minimal_symbols',
       'win_x64_archive': 'release_trybot',
       'win_archive': 'release_trybot_x86',
