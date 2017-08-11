@@ -63,12 +63,27 @@ class VersionUpdaterCrosTest : public ::testing::Test {
     CrosSettings::Initialize();
 
     NetworkHandler::Initialize();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetEthernetService() {
     ShillServiceClient::TestInterface* service_test =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+    service_test->ClearServices();
     service_test->AddService("/service/eth",
                              "eth" /* guid */,
                              "eth",
                              shill::kTypeEthernet, shill::kStateOnline,
+                             true /* visible */);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetCellularService() {
+    ShillServiceClient::TestInterface* service_test =
+        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+    service_test->ClearServices();
+    service_test->AddService("/service/cell", "cell" /* guid */, "cell",
+                             shill::kTypeCellular, shill::kStateOnline,
                              true /* visible */);
     base::RunLoop().RunUntilIdle();
   }
@@ -101,6 +116,7 @@ class VersionUpdaterCrosTest : public ::testing::Test {
 // 4. When update engine becomes idle downloading of the stable channel is
 // initiated.
 TEST_F(VersionUpdaterCrosTest, TwoOverlappingSetChannelRequests) {
+  SetEthernetService();
   version_updater_->SetChannel("beta-channel", true);
 
   {
@@ -150,6 +166,29 @@ TEST_F(VersionUpdaterCrosTest, TwoOverlappingSetChannelRequests) {
   }
 
   EXPECT_EQ(2, fake_update_engine_client_->request_update_check_call_count());
+}
+
+// Test that when interactively checking for update, cellular connection is
+// allowed in Chrome by default, so that the request will be sent to Update
+// Engine.
+TEST_F(VersionUpdaterCrosTest, InteractiveCellularUpdateAllowed) {
+  SetCellularService();
+  EXPECT_EQ(0, fake_update_engine_client_->request_update_check_call_count());
+  version_updater_->CheckForUpdate(base::Bind(&CheckNotification),
+                                   VersionUpdater::PromoteCallback());
+  EXPECT_EQ(1, fake_update_engine_client_->request_update_check_call_count());
+}
+
+// Test that after update over cellular one time permission is set successfully,
+// an update check will be triggered.
+TEST_F(VersionUpdaterCrosTest, CellularUpdateOneTimePermission) {
+  SetCellularService();
+  EXPECT_EQ(0, fake_update_engine_client_->request_update_check_call_count());
+  const std::string& update_version = "9999.0.0";
+  const int64_t update_size = 99999;
+  version_updater_->SetUpdateOverCellularOneTimePermission(
+      base::Bind(&CheckNotification), update_version, update_size);
+  EXPECT_EQ(1, fake_update_engine_client_->request_update_check_call_count());
 }
 
 }  // namespace chromeos

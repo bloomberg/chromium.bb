@@ -102,7 +102,9 @@ void FakeUpdateEngineClient::SetUpdateOverCellularPermission(
 void FakeUpdateEngineClient::SetUpdateOverCellularOneTimePermission(
     const std::string& target_version,
     int64_t target_size,
-    const UpdateOverCellularOneTimePermissionCallback& callback) {}
+    const UpdateOverCellularOneTimePermissionCallback& callback) {
+  callback.Run(true);
+}
 
 void FakeUpdateEngineClient::set_default_status(
     const UpdateEngineClient::Status& status) {
