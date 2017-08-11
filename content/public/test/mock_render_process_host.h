@@ -66,8 +66,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool IsForGuestsOnly() const override;
   RendererAudioOutputStreamFactoryContext*
   GetRendererAudioOutputStreamFactoryContext() override;
-  void OnAudioStreamAdded() override;
-  void OnAudioStreamRemoved() override;
+  void OnMediaStreamAdded() override;
+  void OnMediaStreamRemoved() override;
   StoragePartition* GetStoragePartition() const override;
   virtual void AddWord(const base::string16& word);
   bool Shutdown(int exit_code, bool wait) override;

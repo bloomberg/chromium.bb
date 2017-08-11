@@ -334,11 +334,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   RendererAudioOutputStreamFactoryContext*
   GetRendererAudioOutputStreamFactoryContext() override;
 
-  // Called when an audio stream is added or removed and used to determine if
-  // the process should be backgrounded or not.
-  void OnAudioStreamAdded() override;
-  void OnAudioStreamRemoved() override;
-  int get_audio_stream_count_for_testing() const { return audio_stream_count_; }
+  // Called when a video capture stream or an audio stream is added or removed
+  // and used to determine if the process should be backgrounded or not.
+  void OnMediaStreamAdded() override;
+  void OnMediaStreamRemoved() override;
+  int get_media_stream_count_for_testing() const { return media_stream_count_; }
 
   // Sets the global factory used to create new RenderProcessHosts.  It may be
   // nullptr, in which case the default RenderProcessHost will be created (this
@@ -738,9 +738,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   mojom::RendererAssociatedPtr renderer_interface_;
   mojo::Binding<mojom::RendererHost> renderer_host_binding_;
 
-  // Tracks active audio streams within the render process; used to determine if
-  // if a process should be backgrounded.
-  int audio_stream_count_ = 0;
+  // Tracks active audio and video streams within the render process; used to
+  // determine if if a process should be backgrounded.
+  int media_stream_count_ = 0;
 
   std::unique_ptr<resource_coordinator::ResourceCoordinatorInterface>
       process_resource_coordinator_;

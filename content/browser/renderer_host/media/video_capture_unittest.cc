@@ -134,7 +134,8 @@ class VideoCaptureTest : public testing::Test,
         base::MakeUnique<MediaStreamManager>(audio_system_.get());
 
     // Create a Host and connect it to a simulated IPC channel.
-    host_.reset(new VideoCaptureHost(media_stream_manager_.get()));
+    host_.reset(new VideoCaptureHost(0 /* render_process_id */,
+                                     media_stream_manager_.get()));
 
     OpenSession();
   }
