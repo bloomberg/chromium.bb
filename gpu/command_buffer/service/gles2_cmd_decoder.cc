@@ -88,7 +88,6 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
-#include "ui/gl/gl_workarounds.h"
 #include "ui/gl/gpu_timing.h"
 
 #if defined(OS_MACOSX)
@@ -3186,13 +3185,6 @@ bool GLES2DecoderImpl::Initialize(
 
   // Create GPU Tracer for timing values.
   gpu_tracer_.reset(new GPUTracer(this));
-
-  // Pass some workarounds to GLContext so that we can apply them in RealGLApi.
-  gl::GLWorkarounds gl_workarounds;
-  if (workarounds().clear_to_zero_or_one_broken) {
-    gl_workarounds.clear_to_zero_or_one_broken = true;
-  }
-  GetGLContext()->SetGLWorkarounds(gl_workarounds);
 
   if (workarounds().disable_timestamp_queries) {
     // Forcing time elapsed query for any GPU Timing Client forces it for all

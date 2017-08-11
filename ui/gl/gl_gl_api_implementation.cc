@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -283,37 +282,18 @@ void GLApiBase::InitializeBase(DriverGL* driver) {
 }
 
 RealGLApi::RealGLApi() {
-#if DCHECK_IS_ON()
-  filtered_exts_initialized_ = false;
-#endif
 }
 
 RealGLApi::~RealGLApi() {
 }
 
 void RealGLApi::Initialize(DriverGL* driver) {
-  InitializeWithCommandLine(driver, base::CommandLine::ForCurrentProcess());
-}
-
-void RealGLApi::InitializeWithCommandLine(DriverGL* driver,
-                                          base::CommandLine* command_line) {
-  DCHECK(command_line);
   InitializeBase(driver);
-
-  const std::string disabled_extensions = command_line->GetSwitchValueASCII(
-      switches::kDisableGLExtensions);
-  if (!disabled_extensions.empty()) {
-    disabled_exts_ = base::SplitString(
-        disabled_extensions, ", ;",
-        base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  }
 }
 
 void RealGLApi::glGetIntegervFn(GLenum pname, GLint* params) {
   if (pname == GL_NUM_EXTENSIONS && disabled_exts_.size()) {
-#if DCHECK_IS_ON()
-    DCHECK(filtered_exts_initialized_);
-#endif
+    InitializeFilteredExtensionsIfNeeded();
     *params = static_cast<GLint>(filtered_exts_.size());
   } else {
     GLApiBase::glGetIntegervFn(pname, params);
@@ -322,9 +302,7 @@ void RealGLApi::glGetIntegervFn(GLenum pname, GLint* params) {
 
 const GLubyte* RealGLApi::glGetStringFn(GLenum name) {
   if (name == GL_EXTENSIONS && disabled_exts_.size()) {
-#if DCHECK_IS_ON()
-    DCHECK(filtered_exts_initialized_);
-#endif
+    InitializeFilteredExtensionsIfNeeded();
     return reinterpret_cast<const GLubyte*>(filtered_exts_str_.c_str());
   }
   return GLApiBase::glGetStringFn(name);
@@ -332,11 +310,9 @@ const GLubyte* RealGLApi::glGetStringFn(GLenum name) {
 
 const GLubyte* RealGLApi::glGetStringiFn(GLenum name, GLuint index) {
   if (name == GL_EXTENSIONS && disabled_exts_.size()) {
-#if DCHECK_IS_ON()
-    DCHECK(filtered_exts_initialized_);
-#endif
+    InitializeFilteredExtensionsIfNeeded();
     if (index >= filtered_exts_.size()) {
-      return NULL;
+      return nullptr;
     }
     return reinterpret_cast<const GLubyte*>(filtered_exts_[index].c_str());
   }
@@ -478,32 +454,46 @@ void RealGLApi::glDepthRangeFn(GLclampd z_near, GLclampd z_far) {
   }
 }
 
-void RealGLApi::InitializeFilteredExtensions() {
-  if (disabled_exts_.size()) {
-    filtered_exts_.clear();
-    if (WillUseGLGetStringForExtensions(this)) {
-      filtered_exts_str_ =
-          FilterGLExtensionList(reinterpret_cast<const char*>(
-                                    GLApiBase::glGetStringFn(GL_EXTENSIONS)),
-                                disabled_exts_);
-      filtered_exts_ = base::SplitString(
-          filtered_exts_str_, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    } else {
-      GLint num_extensions = 0;
-      GLApiBase::glGetIntegervFn(GL_NUM_EXTENSIONS, &num_extensions);
-      for (GLint i = 0; i < num_extensions; ++i) {
-        const char* gl_extension = reinterpret_cast<const char*>(
-            GLApiBase::glGetStringiFn(GL_EXTENSIONS, i));
-        DCHECK(gl_extension != NULL);
-        if (!base::ContainsValue(disabled_exts_, gl_extension))
-          filtered_exts_.push_back(gl_extension);
-      }
-      filtered_exts_str_ = base::JoinString(filtered_exts_, " ");
+void RealGLApi::InitializeFilteredExtensionsIfNeeded() {
+  DCHECK(disabled_exts_.size());
+  if (filtered_exts_.size())
+    return;
+  DCHECK(filtered_exts_str_.empty());
+  if (WillUseGLGetStringForExtensions(this)) {
+    filtered_exts_str_ = FilterGLExtensionList(
+        reinterpret_cast<const char*>(GLApiBase::glGetStringFn(GL_EXTENSIONS)),
+        disabled_exts_);
+    filtered_exts_ = base::SplitString(
+        filtered_exts_str_, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  } else {
+    GLint num_extensions = 0;
+    GLApiBase::glGetIntegervFn(GL_NUM_EXTENSIONS, &num_extensions);
+    for (GLint i = 0; i < num_extensions; ++i) {
+      const char* gl_extension = reinterpret_cast<const char*>(
+          GLApiBase::glGetStringiFn(GL_EXTENSIONS, i));
+      DCHECK(gl_extension);
+      if (!base::ContainsValue(disabled_exts_, gl_extension))
+        filtered_exts_.push_back(gl_extension);
     }
-#if DCHECK_IS_ON()
-    filtered_exts_initialized_ = true;
-#endif
+    filtered_exts_str_ = base::JoinString(filtered_exts_, " ");
   }
+}
+
+void RealGLApi::SetDisabledGLExtensions(
+    const std::string& disabled_extensions) {
+  ClearCachedGLExtensions();
+  disabled_exts_.clear();
+  if (disabled_extensions.empty())
+    return;
+  disabled_exts_ =
+      base::SplitString(disabled_extensions, ", ;", base::KEEP_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  DCHECK(disabled_exts_.size());
+}
+
+void RealGLApi::ClearCachedGLExtensions() {
+  filtered_exts_.clear();
+  filtered_exts_str_.clear();
 }
 
 void RealGLApi::set_gl_workarounds(const GLWorkarounds& workarounds) {

@@ -51,6 +51,7 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_workarounds.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_WIN)
@@ -564,6 +565,21 @@ void GpuCommandBufferStub::Destroy() {
   command_buffer_.reset();
 }
 
+// static
+void GpuCommandBufferStub::SetContextGpuFeatureInfo(
+    gl::GLContext* context,
+    const GpuFeatureInfo& gpu_feature_info) {
+  DCHECK(context);
+  gl::GLWorkarounds gl_workarounds;
+  GpuDriverBugWorkarounds workarounds(
+      gpu_feature_info.enabled_gpu_driver_bug_workarounds);
+  if (workarounds.clear_to_zero_or_one_broken) {
+    gl_workarounds.clear_to_zero_or_one_broken = true;
+  }
+  context->SetGLWorkarounds(gl_workarounds);
+  context->SetDisabledGLExtensions(gpu_feature_info.disabled_extensions);
+}
+
 bool GpuCommandBufferStub::Initialize(
     GpuCommandBufferStub* share_command_buffer_stub,
     const GPUCreateCommandBufferConfig& init_params,
@@ -749,6 +765,10 @@ bool GpuCommandBufferStub::Initialize(
       // group.
       DCHECK(context->share_group() == share_group_.get());
       share_group_->SetSharedContext(surface_.get(), context.get());
+
+      // This needs to be called against the real shared context, not the
+      // virtual context created below.
+      SetContextGpuFeatureInfo(context.get(), manager->gpu_feature_info());
     }
     // This should be either:
     // (1) a non-virtual GL context, or
@@ -768,16 +788,17 @@ bool GpuCommandBufferStub::Initialize(
       DLOG(ERROR) << "Failed to initialize virtual GL context.";
       return false;
     }
-  }
-  if (!context.get()) {
+  } else {
     context = gl::init::CreateGLContext(
         share_group_.get(), surface_.get(),
         GenerateGLContextAttribs(init_params.attribs,
                                  context_group_->gpu_preferences()));
-  }
-  if (!context.get()) {
-    DLOG(ERROR) << "Failed to create context.";
-    return false;
+    if (!context.get()) {
+      DLOG(ERROR) << "Failed to create context.";
+      return false;
+    }
+
+    SetContextGpuFeatureInfo(context.get(), manager->gpu_feature_info());
   }
 
   if (!context->MakeCurrent(surface_.get())) {
