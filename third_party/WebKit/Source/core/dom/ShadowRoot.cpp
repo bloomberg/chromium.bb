@@ -364,7 +364,7 @@ DEFINE_TRACE(ShadowRoot) {
 }
 
 DEFINE_TRACE_WRAPPERS(ShadowRoot) {
-  visitor->TraceWrappersWithManualWriteBarrier(style_sheet_list_);
+  visitor->TraceWrappers(style_sheet_list_);
   DocumentFragment::TraceWrappers(visitor);
 }
 

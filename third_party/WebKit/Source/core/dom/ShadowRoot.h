@@ -34,6 +34,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/TreeScope.h"
 #include "platform/bindings/ScriptWrappableVisitor.h"
+#include "platform/bindings/TraceWrapperMember.h"
 
 namespace blink {
 
@@ -155,7 +156,6 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   StyleSheetList& StyleSheets();
   void SetStyleSheets(StyleSheetList* style_sheet_list) {
     style_sheet_list_ = style_sheet_list;
-    ScriptWrappableVisitor::WriteBarrier(style_sheet_list_);
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -179,7 +179,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   void SkipRebuildLayoutTree(WhitespaceAttacher&) const;
 
   Member<ShadowRootRareDataV0> shadow_root_rare_data_v0_;
-  Member<StyleSheetList> style_sheet_list_;
+  TraceWrapperMember<StyleSheetList> style_sheet_list_;
   Member<SlotAssignment> slot_assignment_;
   unsigned child_shadow_root_count_ : 13;
   unsigned type_ : 2;
