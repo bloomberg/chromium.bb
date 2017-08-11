@@ -180,19 +180,18 @@ def _vulcanize(in_folder, args):
       f.close()
 
   try:
+    crisper_html_out_paths = []
     for index, html_in_file in enumerate(args.html_in_files):
-      html_out_file = args.html_out_files[index]
+      crisper_html_out_paths.append(
+          os.path.join(tmp_out_dir, args.html_out_files[index]))
       js_out_file = args.js_out_files[index]
 
       # Run crisper to separate the JS from the HTML file.
       node.RunNode([node_modules.PathToCrisper(),
                    '--source', os.path.join(tmp_out_dir, html_in_file),
                    '--script-in-head', 'false',
-                   '--html', os.path.join(tmp_out_dir, html_out_file),
+                   '--html', crisper_html_out_paths[index],
                    '--js', os.path.join(tmp_out_dir, js_out_file)])
-
-      # Move the HTML file to its final destination.
-      shutil.copy(os.path.join(tmp_out_dir, html_out_file), out_path)
 
       # Pass the JS file through Uglify and write the output to its final
       # destination.
@@ -200,6 +199,14 @@ def _vulcanize(in_folder, args):
                     os.path.join(tmp_out_dir, js_out_file),
                     '--comments', '"/Copyright|license|LICENSE|\<\/?if/"',
                     '--output', os.path.join(out_path, js_out_file)])
+
+    # Run polymer-css-build and write the output HTML files to their final
+    # destination.
+    pcb_html_out_paths = [
+        os.path.join(out_path, f) for f in args.html_out_files]
+    node.RunNode([node_modules.PathToPolymerCssBuild()] +
+                 ['--no-inline-includes', '-f'] +
+                 crisper_html_out_paths + ['-o'] + pcb_html_out_paths)
   finally:
     shutil.rmtree(tmp_out_dir)
   return manifest_out_path
