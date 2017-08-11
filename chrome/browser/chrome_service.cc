@@ -12,10 +12,10 @@ std::unique_ptr<service_manager::Service> ChromeService::Create() {
 }
 
 ChromeService::ChromeService() {
+#if defined(OS_CHROMEOS)
 #if defined(USE_OZONE)
   input_device_controller_.AddInterface(&registry_);
 #endif
-#if defined(OS_CHROMEOS)
   registry_.AddInterface(
       base::Bind(&chromeos::Launchable::Bind, base::Unretained(&launchable_)));
 #endif
