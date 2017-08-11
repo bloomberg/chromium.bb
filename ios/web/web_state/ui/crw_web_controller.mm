@@ -320,9 +320,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   base::scoped_nsobject<NSMutableArray> _webViewToolbars;
   // Flag to say if browsing is enabled.
   BOOL _webUsageEnabled;
-  // The next time the view is requested, reload the page (using the placeholder
-  // overlay until it's loaded).
-  BOOL _requireReloadOnDisplay;
   // Overlay view used instead of webView.
   base::scoped_nsobject<UIImageView> _placeholderOverlayView;
   // The touch tracking recognizer allowing us to decide if a navigation is
@@ -1109,10 +1106,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)requirePageReconstruction {
   [self removeWebView];
-}
-
-- (void)requirePageReload {
-  _requireReloadOnDisplay = YES;
 }
 
 - (void)resetContainerView {
@@ -1967,10 +1960,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // then transition away.
     if (_overlayPreviewMode && !isChromeScheme)
       [self addPlaceholderOverlay];
-  } else if (_requireReloadOnDisplay && _webView) {
-    _requireReloadOnDisplay = NO;
-    [self addPlaceholderOverlay];
-    [self loadCurrentURL];
   }
 }
 

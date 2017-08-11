@@ -196,12 +196,6 @@ class WebStateImpl;
 // only checks on creation, such that the whole object needs to be rebuilt.
 - (void)requirePageReconstruction;
 
-// Requires that the next display reload the page, using a placeholder while
-// loading. This could be used, e.g., to handle a crash in a WebController that
-// is not currently visible.
-// TODO(stuartmorgan): When revisiting the methods above, revisit this as well.
-- (void)requirePageReload;
-
 // Show overlay, don't reload web page. Used when the view will be
 // visible only briefly (e.g., tablet side swipe).
 - (void)setOverlayPreviewMode:(BOOL)overlayPreviewMode;
