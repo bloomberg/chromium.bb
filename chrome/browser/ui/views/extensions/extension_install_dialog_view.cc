@@ -302,9 +302,9 @@ void ExtensionInstallDialogView::InitView() {
       views::GridLayout::USE_PREF, content_width, content_width);
 
   // Pad to the very right of the dialog, so the scrollbar will be on the edge.
-  const gfx::Insets button_row_insets =
-      provider->GetInsetsMetric(views::INSETS_DIALOG_BUTTON_ROW);
-  scrollable_column_set->AddPaddingColumn(0, button_row_insets.right());
+  const gfx::Insets dialog_insets =
+      provider->GetInsetsMetric(views::INSETS_DIALOG);
+  scrollable_column_set->AddPaddingColumn(0, dialog_insets.right());
 
   layout->StartRow(0, column_set_id);
   scroll_view_ = new views::ScrollView();
@@ -386,7 +386,7 @@ void ExtensionInstallDialogView::InitView() {
       0,
       std::min(kScrollViewMaxHeight, scrollable->GetPreferredSize().height()));
 
-  SetPreferredSize(gfx::Size(content_width + button_row_insets.width(),
+  SetPreferredSize(gfx::Size(content_width + dialog_insets.width(),
                              container_->GetPreferredSize().height()));
 
   std::string event_name = ExperienceSamplingEvent::kExtensionInstallDialog;

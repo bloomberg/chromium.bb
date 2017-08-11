@@ -84,6 +84,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   gfx::Insets content_margins() const { return content_margins_; }
 
   void SetFootnoteView(View* view);
+  void set_footnote_margins(const gfx::Insets& footnote_margins) {
+    footnote_margins_ = footnote_margins;
+  }
 
   // Given the size of the contents and the rect to point at, returns the bounds
   // of the bubble window. The bubble's arrow location may change if the bubble
@@ -131,6 +134,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   // Margins between the content and the inside of the border, in pixels.
   gfx::Insets content_margins_;
+
+  // Margins between the footnote view and the footnote container.
+  gfx::Insets footnote_margins_;
 
   // The optional title icon.
   views::ImageView* title_icon_;
