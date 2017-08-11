@@ -171,8 +171,7 @@ void CastMediaSinkServiceImpl::OnChannelOpened(
 
 void CastMediaSinkServiceImpl::OnDialSinkAdded(const MediaSinkInternal& sink) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto ip_address = sink.dial_data().ip_address;
-  net::IPEndPoint ip_endpoint(ip_address, kCastControlPort);
+  net::IPEndPoint ip_endpoint(sink.dial_data().ip_address, kCastControlPort);
 
   if (base::ContainsKey(current_service_ip_endpoints_, ip_endpoint)) {
     DVLOG(2) << "Sink discovered by mDNS, skip adding [name]: "
