@@ -9,9 +9,12 @@
 
 namespace top_view_controller {
 
+// DEPRECATED -- do not add further usage of these functions.
+// TODO(crbug.com/754642): Remove TopPresentedViewControllerFrom().
 UIViewController* TopPresentedViewControllerFrom(
     UIViewController* base_view_controller);
 
+// TODO(crbug.com/754642): Remove TopPresentedViewController().
 UIViewController* TopPresentedViewController();
 
 }  // namespace top_view_controller
