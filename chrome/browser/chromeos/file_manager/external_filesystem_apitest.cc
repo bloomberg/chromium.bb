@@ -467,9 +467,12 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
   // DriveIntegrationService factory function for this test.
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
-    // Ignore signin profile.
-    if (profile->GetPath() == chromeos::ProfileHelper::GetSigninProfileDir())
+    // Ignore signin and lock screen apps profile.
+    if (profile->GetPath() == chromeos::ProfileHelper::GetSigninProfileDir() ||
+        profile->GetPath() ==
+            chromeos::ProfileHelper::GetLockScreenAppProfilePath()) {
       return nullptr;
+    }
 
     // DriveFileSystemExtensionApiTest doesn't expect that several user profiles
     // could exist simultaneously.
