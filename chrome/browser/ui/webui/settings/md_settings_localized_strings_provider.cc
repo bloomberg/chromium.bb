@@ -1497,7 +1497,6 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
     {"cupsPrintersLearnMoreLabel",
      IDS_SETTINGS_PRINTING_CUPS_PRINTERS_LEARN_MORE_LABEL},
     {"addCupsPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER},
-    {"cupsPrinterDetails", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_DETAILS},
     {"editPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_EDIT},
     {"removePrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_REMOVE},
     {"searchLabel", IDS_SETTINGS_PRINTING_CUPS_SEARCH_LABEL},
