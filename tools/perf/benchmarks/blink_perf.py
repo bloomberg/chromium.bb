@@ -322,8 +322,11 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
       values = [float(v.replace(',', '')) for v in parts[1:-1]]
       units = parts[-1]
       metric = page.name.split('.')[0].replace('/', '_')
-      results.AddValue(list_of_scalar_values.ListOfScalarValues(
-          results.current_page, metric, units, values))
+      if values:
+        results.AddValue(list_of_scalar_values.ListOfScalarValues(
+            results.current_page, metric, units, values))
+      else:
+        raise legacy_page_test.MeasurementFailure('Empty test results')
 
       break
 
