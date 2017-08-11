@@ -222,17 +222,13 @@ class LocalNtpSource::GoogleSearchProviderTracker
 
 LocalNtpSource::LocalNtpSource(Profile* profile)
     : profile_(profile),
-      one_google_bar_service_(nullptr),
+      one_google_bar_service_(
+          OneGoogleBarServiceFactory::GetForProfile(profile_)),
       one_google_bar_service_observer_(this),
       default_search_provider_is_google_(false),
       default_search_provider_is_google_io_thread_(false),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (base::FeatureList::IsEnabled(features::kOneGoogleBarOnLocalNtp)) {
-    one_google_bar_service_ =
-        OneGoogleBarServiceFactory::GetForProfile(profile_);
-  }
 
   // |one_google_bar_service_| is null in incognito, or when the feature is
   // disabled.
