@@ -1822,12 +1822,13 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   #
   toolchain_tryjob_boards = frozenset([
       'caroline',
-      'chell',
       'daisy',
+      'eve',
+      'gale',
       'kevin',
       'lakitu',
       'link',
-      'lulu',
+      'lumpy',
       'nyan_big',
       'peach_pit',
       'peppy',

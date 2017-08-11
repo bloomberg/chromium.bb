@@ -5703,12 +5703,6 @@
         ],
         "vm_tests": []
     },
-    "chell-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "chell"
-        ]
-    },
     "chell-incremental": {
         "_template": "incremental",
         "active_waterfall": "chromeos",
@@ -5720,18 +5714,6 @@
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both"
-    },
-    "chell-llvm-next-toolchain": {
-        "_template": "llvm_next_toolchain",
-        "boards": [
-            "chell"
-        ]
-    },
-    "chell-llvm-toolchain": {
-        "_template": "llvm_toolchain",
-        "boards": [
-            "chell"
-        ]
     },
     "chell-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -7983,6 +7965,24 @@
         ],
         "vm_tests": []
     },
+    "eve-gcc-toolchain": {
+        "_template": "gcc_toolchain",
+        "boards": [
+            "eve"
+        ]
+    },
+    "eve-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "eve"
+        ]
+    },
+    "eve-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "eve"
+        ]
+    },
     "eve-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -8939,6 +8939,33 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "gale-gcc-toolchain": {
+        "_template": "gcc_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "gale"
+        ],
+        "chrome_sdk": false,
+        "sync_chrome": false
+    },
+    "gale-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "gale"
+        ],
+        "chrome_sdk": false,
+        "sync_chrome": false
+    },
+    "gale-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "gale"
+        ],
+        "chrome_sdk": false,
+        "sync_chrome": false
     },
     "gale-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -14628,24 +14655,6 @@
         ],
         "vm_tests": []
     },
-    "lulu-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "lulu"
-        ]
-    },
-    "lulu-llvm-next-toolchain": {
-        "_template": "llvm_next_toolchain",
-        "boards": [
-            "lulu"
-        ]
-    },
-    "lulu-llvm-toolchain": {
-        "_template": "llvm_toolchain",
-        "boards": [
-            "lulu"
-        ]
-    },
     "lulu-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -14856,6 +14865,12 @@
             "-chrome_internal"
         ]
     },
+    "lumpy-gcc-toolchain": {
+        "_template": "gcc_toolchain",
+        "boards": [
+            "lumpy"
+        ]
+    },
     "lumpy-incremental-paladin": {
         "_template": "paladin",
         "active_waterfall": "chromeos",
@@ -14876,6 +14891,18 @@
             "chrome_internal"
         ],
         "vm_tests": []
+    },
+    "lumpy-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "lumpy"
+        ]
+    },
+    "lumpy-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "lumpy"
+        ]
     },
     "lumpy-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
