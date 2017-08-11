@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/user_metrics.h"
+#include "components/guest_view/browser/bad_message.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
@@ -20,7 +20,6 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 
@@ -421,9 +420,9 @@ bool GuestViewManager::CanEmbedderAccessInstanceIDMaybeKill(
   if (!CanEmbedderAccessInstanceID(embedder_render_process_id,
                                    guest_instance_id)) {
     // The embedder process is trying to access a guest it does not own.
-    base::RecordAction(base::UserMetricsAction("BadMessageTerminate_BPGM"));
-    content::RenderProcessHost::FromID(embedder_render_process_id)
-        ->Shutdown(content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
+    bad_message::ReceivedBadMessage(
+        embedder_render_process_id,
+        bad_message::GVM_EMBEDDER_FORBIDDEN_ACCESS_TO_GUEST);
     return false;
   }
   return true;

@@ -11,6 +11,8 @@ assert(!is_android && !is_ios)
 static_library("browser") {
   output_name = "guest_view_browser"
   sources = [
+    "//components/guest_view/browser/bad_message.cc",
+    "//components/guest_view/browser/bad_message.h",
     "//components/guest_view/browser/guest_view.h",
     "//components/guest_view/browser/guest_view_base.cc",
     "//components/guest_view/browser/guest_view_base.h",
