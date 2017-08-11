@@ -59,7 +59,7 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
         self.DisableStory('http://www.cnn.com', [story.expectations.ALL],
                           'crbug.com/528472')
         self.DisableStory('https://mail.google.com/mail/',
-                          [story.expectations.ALL_LINUX],
+                          [story.expectations.ALL],
                           'crbug.com/747021')
     return StoryExpectations()
 
