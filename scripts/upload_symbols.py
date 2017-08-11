@@ -708,11 +708,11 @@ def main(argv):
     sym_paths = [opts.breakpad_root]
   elif opts.root:
     if not opts.board:
-      raise ValueError('--board must be set if --root is used.')
+      cros_build_lib.Die('--board must be set if --root is used.')
     breakpad_dir = cros_generate_breakpad_symbols.FindBreakpadDir(opts.board)
     sym_paths = [os.path.join(opts.root, breakpad_dir.lstrip('/'))]
   else:
-    raise ValueError('--sym_paths, --breakpad_root, or --root must be set.')
+    cros_build_lib.Die('--sym_paths, --breakpad_root, or --root must be set.')
 
   if opts.sym_paths or opts.breakpad_root:
     if opts.regenerate:
