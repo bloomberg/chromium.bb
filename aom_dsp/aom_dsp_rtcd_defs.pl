@@ -40,7 +40,7 @@ foreach $w (@block_widths) {
     push @block_sizes, [$w, $h] if ($w <= 2*$h && $h <= 2*$w) ;
   }
 }
-if (aom_config("CONFIG_EXT_PARTITION_TYPES")) {
+if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
   push @block_sizes, [4, 16];
   push @block_sizes, [16, 4];
   push @block_sizes, [8, 32];
@@ -947,7 +947,7 @@ specialize qw/aom_sub_pixel_avg_variance8x4        msa sse2 ssse3/;
 specialize qw/aom_sub_pixel_avg_variance4x8        msa sse2 ssse3/;
 specialize qw/aom_sub_pixel_avg_variance4x4        msa sse2 ssse3/;
 
-if (aom_config("CONFIG_EXT_PARTITION_TYPES")) {
+if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
   specialize qw/aom_variance4x16 sse2/;
   specialize qw/aom_variance16x4 sse2/;
   specialize qw/aom_variance8x32 sse2/;
