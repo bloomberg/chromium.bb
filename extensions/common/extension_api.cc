@@ -183,11 +183,10 @@ bool ExtensionAPI::IsAnyFeatureAvailableToContext(
 
   // Check to see if there are any parts of this API that are allowed in this
   // context.
-  const std::vector<Feature*> features = provider->second->GetChildren(api);
-  for (std::vector<Feature*>::const_iterator it = features.begin();
-       it != features.end();
-       ++it) {
-    if ((*it)->IsAvailableToContext(extension, context, url).is_available())
+  const std::vector<const Feature*> features =
+      provider->second->GetChildren(api);
+  for (const Feature* feature : features) {
+    if (feature->IsAvailableToContext(extension, context, url).is_available())
       return true;
   }
 

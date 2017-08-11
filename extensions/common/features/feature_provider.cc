@@ -149,7 +149,7 @@ const Feature* FeatureProvider::GetParent(const Feature& feature) const {
 
 // Children of a given API are named starting with parent.name()+".", which
 // means they'll be contiguous in the features_ std::map.
-std::vector<Feature*> FeatureProvider::GetChildren(
+std::vector<const Feature*> FeatureProvider::GetChildren(
     const Feature& parent) const {
   std::string prefix = parent.name() + ".";
   const FeatureMap::const_iterator first_child = features_.lower_bound(prefix);
@@ -159,7 +159,7 @@ std::vector<Feature*> FeatureProvider::GetChildren(
   const FeatureMap::const_iterator after_children =
       features_.lower_bound(prefix);
 
-  std::vector<Feature*> result;
+  std::vector<const Feature*> result;
   result.reserve(std::distance(first_child, after_children));
   for (FeatureMap::const_iterator it = first_child; it != after_children;
        ++it) {
