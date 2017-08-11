@@ -339,7 +339,7 @@ static Resource* PreloadIfNeeded(const LinkRelAttribute& rel_attribute,
         String("<link rel=preload> has an unsupported `type` value")));
     return nullptr;
   }
-  ResourceRequest resource_request(document.CompleteURL(href));
+  ResourceRequest resource_request(href);
   resource_request.SetRequestContext(ResourceFetcher::DetermineRequestContext(
       resource_type.value(), ResourceFetcher::kImageNotImageSet, false));
 
@@ -376,7 +376,7 @@ static Resource* PrefetchIfNeeded(Document& document,
   if (rel_attribute.IsLinkPrefetch() && href.IsValid() && document.GetFrame()) {
     UseCounter::Count(document, WebFeature::kLinkRelPrefetch);
 
-    ResourceRequest resource_request(document.CompleteURL(href));
+    ResourceRequest resource_request(href);
     if (referrer_policy != kReferrerPolicyDefault) {
       resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
           referrer_policy, href, document.OutgoingReferrer()));
