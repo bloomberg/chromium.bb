@@ -72,9 +72,6 @@ extern NSString* const kHostSessionPin;
 
 - (void)handleExtensionMessageOfType:(NSString*)type message:(NSString*)message;
 
-// Notifies all components that the frame of the surface has changed.
-- (void)surfaceChanged:(const CGRect&)frame;
-
 - (void)setHostResolution:(CGSize)dipsResolution scale:(int)scale;
 
 // The display handler tied to the remoting client used to display the host.
