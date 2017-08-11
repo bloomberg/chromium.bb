@@ -434,53 +434,58 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       return;
     }
     for (size_t j = 0; j < textures_per_buffer_; j++) {
-      gpu::gles2::TextureRef* texture_ref =
-          texture_manager->GetTexture(buffer_texture_ids[j]);
-      if (!texture_ref) {
+      GLuint service_id = 0;
+      if (!command_decoder->GetServiceTextureId(buffer_texture_ids[j],
+                                                &service_id)) {
         DLOG(ERROR) << "Failed to find texture id " << buffer_texture_ids[j];
         NotifyError(VideoDecodeAccelerator::INVALID_ARGUMENT);
         return;
       }
-      gpu::gles2::Texture* info = texture_ref->texture();
-      if (info->target() != texture_target_) {
-        DLOG(ERROR) << "Texture target mismatch for texture id "
-                    << buffer_texture_ids[j];
-        NotifyError(VideoDecodeAccelerator::INVALID_ARGUMENT);
-        return;
-      }
-      if (texture_target_ == GL_TEXTURE_EXTERNAL_OES ||
-          texture_target_ == GL_TEXTURE_RECTANGLE_ARB) {
-        // These textures have their dimensions defined by the underlying
-        // storage.
-        // Use |texture_dimensions_| for this size.
-        texture_manager->SetLevelInfo(texture_ref, texture_target_, 0, GL_RGBA,
-                                      texture_dimensions_.width(),
-                                      texture_dimensions_.height(), 1, 0,
-                                      GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
-      } else {
-        // For other targets, texture dimensions should already be defined.
-        GLsizei width = 0, height = 0;
-        info->GetLevelSize(texture_target_, 0, &width, &height, nullptr);
-        if (width != texture_dimensions_.width() ||
-            height != texture_dimensions_.height()) {
-          DLOG(ERROR) << "Size mismatch for texture id "
+
+      gpu::gles2::TextureRef* texture_ref =
+          texture_manager->GetTexture(buffer_texture_ids[j]);
+      if (texture_ref) {
+        gpu::gles2::Texture* info = texture_ref->texture();
+        if (info->target() != texture_target_) {
+          DLOG(ERROR) << "Texture target mismatch for texture id "
                       << buffer_texture_ids[j];
           NotifyError(VideoDecodeAccelerator::INVALID_ARGUMENT);
           return;
         }
+        if (texture_target_ == GL_TEXTURE_EXTERNAL_OES ||
+            texture_target_ == GL_TEXTURE_RECTANGLE_ARB) {
+          // These textures have their dimensions defined by the underlying
+          // storage.
+          // Use |texture_dimensions_| for this size.
+          texture_manager->SetLevelInfo(texture_ref, texture_target_, 0,
+                                        GL_RGBA, texture_dimensions_.width(),
+                                        texture_dimensions_.height(), 1, 0,
+                                        GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
+        } else {
+          // For other targets, texture dimensions should already be defined.
+          GLsizei width = 0, height = 0;
+          info->GetLevelSize(texture_target_, 0, &width, &height, nullptr);
+          if (width != texture_dimensions_.width() ||
+              height != texture_dimensions_.height()) {
+            DLOG(ERROR) << "Size mismatch for texture id "
+                        << buffer_texture_ids[j];
+            NotifyError(VideoDecodeAccelerator::INVALID_ARGUMENT);
+            return;
+          }
 
-        // TODO(dshwang): after moving to D3D11, remove this. crbug.com/438691
-        GLenum format =
-            video_decode_accelerator_.get()->GetSurfaceInternalFormat();
-        if (format != GL_RGBA) {
-          DCHECK(format == GL_BGRA_EXT);
-          texture_manager->SetLevelInfo(texture_ref, texture_target_, 0, format,
-                                        width, height, 1, 0, format,
-                                        GL_UNSIGNED_BYTE, gfx::Rect());
+          // TODO(dshwang): after moving to D3D11, remove this. crbug.com/438691
+          GLenum format =
+              video_decode_accelerator_.get()->GetSurfaceInternalFormat();
+          if (format != GL_RGBA) {
+            DCHECK(format == GL_BGRA_EXT);
+            texture_manager->SetLevelInfo(texture_ref, texture_target_, 0,
+                                          format, width, height, 1, 0, format,
+                                          GL_UNSIGNED_BYTE, gfx::Rect());
+          }
         }
+        current_textures.push_back(texture_ref);
       }
-      service_ids.push_back(texture_ref->service_id());
-      current_textures.push_back(texture_ref);
+      service_ids.push_back(service_id);
     }
     textures.push_back(current_textures);
     buffers.push_back(PictureBuffer(buffer_ids[i], texture_dimensions_,
