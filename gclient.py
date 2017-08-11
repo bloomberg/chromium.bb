@@ -1734,14 +1734,19 @@ class Flattener(object):
       for dep in self._deps.itervalues():
         if dep.parsed_url is None:
           continue
-        url, revision = gclient_utils.SplitUrlRevision(dep.parsed_url)
-        if revision and gclient_utils.IsGitSha(revision):
-          continue
+
         scm = gclient_scm.CreateSCM(
             dep.parsed_url, self._client.root_dir, dep.name, dep.outbuf)
         revinfo = scm.revinfo(self._client._options, [], None)
+
+        # Make sure the revision is always fully specified (a hash),
+        # as opposed to refs or tags which might change.
+        url, revision = gclient_utils.SplitUrlRevision(dep.parsed_url)
+        if revision and gclient_utils.IsGitSha(revision):
+          continue
         dep._parsed_url = dep._url = '%s@%s' % (url, revinfo)
-        dep._raw_url = '%s@%s' % (dep._raw_url, revinfo)
+        raw_url, _ = gclient_utils.SplitUrlRevision(dep._raw_url)
+        dep._raw_url = '%s@%s' % (raw_url, revinfo)
 
     self._deps_string = '\n'.join(
         _GNSettingsToLines(
