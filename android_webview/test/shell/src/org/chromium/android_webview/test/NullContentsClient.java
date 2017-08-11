@@ -185,7 +185,7 @@ public class NullContentsClient extends AwContentsClient {
 
     @Override
     public void onSafeBrowsingHit(AwWebResourceRequest request, int threatType,
-            String privacyPolicyUrl, ValueCallback<AwSafeBrowsingResponse> callback) {
+            ValueCallback<AwSafeBrowsingResponse> callback) {
         callback.onReceiveValue(new AwSafeBrowsingResponse(SafeBrowsingAction.SHOW_INTERSTITIAL,
                 /* reporting */ true));
     }

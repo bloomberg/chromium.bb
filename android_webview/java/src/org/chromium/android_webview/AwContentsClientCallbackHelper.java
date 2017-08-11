@@ -79,14 +79,12 @@ public class AwContentsClientCallbackHelper {
     private static class OnSafeBrowsingHitInfo {
         final AwContentsClient.AwWebResourceRequest mRequest;
         final int mThreatType;
-        final String mPrivacyPolicyUrl;
         final ValueCallback<AwSafeBrowsingResponse> mCallback;
 
         OnSafeBrowsingHitInfo(AwContentsClient.AwWebResourceRequest request, int threatType,
-                String privacyPolicyUrl, ValueCallback<AwSafeBrowsingResponse> callback) {
+                ValueCallback<AwSafeBrowsingResponse> callback) {
             mRequest = request;
             mThreatType = threatType;
-            mPrivacyPolicyUrl = privacyPolicyUrl;
             mCallback = callback;
         }
     }
@@ -192,8 +190,8 @@ public class AwContentsClientCallbackHelper {
                 }
                 case MSG_ON_SAFE_BROWSING_HIT: {
                     OnSafeBrowsingHitInfo info = (OnSafeBrowsingHitInfo) msg.obj;
-                    mContentsClient.onSafeBrowsingHit(info.mRequest, info.mThreatType,
-                            info.mPrivacyPolicyUrl, info.mCallback);
+                    mContentsClient.onSafeBrowsingHit(
+                            info.mRequest, info.mThreatType, info.mCallback);
                     break;
                 }
                 case MSG_ON_NEW_PICTURE: {
@@ -295,9 +293,8 @@ public class AwContentsClientCallbackHelper {
     }
 
     public void postOnSafeBrowsingHit(AwContentsClient.AwWebResourceRequest request, int threatType,
-            final String privacyPolicyUrl, ValueCallback<AwSafeBrowsingResponse> callback) {
-        OnSafeBrowsingHitInfo info =
-                new OnSafeBrowsingHitInfo(request, threatType, privacyPolicyUrl, callback);
+            ValueCallback<AwSafeBrowsingResponse> callback) {
+        OnSafeBrowsingHitInfo info = new OnSafeBrowsingHitInfo(request, threatType, callback);
         mHandler.sendMessage(mHandler.obtainMessage(MSG_ON_SAFE_BROWSING_HIT, info));
     }
 

@@ -97,9 +97,6 @@ public class SafeBrowsingTest extends AwTestBase {
     private static final String WEB_UI_MALWARE_URL = "chrome://safe-browsing/match?type=malware";
     private static final String WEB_UI_PHISHING_URL = "chrome://safe-browsing/match?type=phishing";
 
-    private static final String PRIVACY_POLICY_URL =
-            "https://www.google.com/chrome/browser/privacy/#safe-browsing-policies";
-
     /**
      * A fake SafeBrowsingApiHandler which treats URLs ending in MALWARE_HTML_PATH as malicious URLs
      * that should be blocked.
@@ -222,16 +219,14 @@ public class SafeBrowsingTest extends AwTestBase {
     private static class SafeBrowsingContentsClient extends TestAwContentsClient {
         private AwWebResourceRequest mLastRequest;
         private int mLastThreatType;
-        private String mPrivacyPolicyUrl;
         private int mAction = SafeBrowsingAction.SHOW_INTERSTITIAL;
         private boolean mReporting = true;
 
         @Override
         public void onSafeBrowsingHit(AwWebResourceRequest request, int threatType,
-                String privacyPolicyUrl, ValueCallback<AwSafeBrowsingResponse> callback) {
+                ValueCallback<AwSafeBrowsingResponse> callback) {
             mLastRequest = request;
             mLastThreatType = threatType;
-            mPrivacyPolicyUrl = privacyPolicyUrl;
             callback.onReceiveValue(new AwSafeBrowsingResponse(mAction, mReporting));
         }
 
@@ -241,10 +236,6 @@ public class SafeBrowsingTest extends AwTestBase {
 
         public int getLastThreatType() {
             return mLastThreatType;
-        }
-
-        public String getLastPrivacyPolicyUrl() {
-            return mPrivacyPolicyUrl;
         }
 
         public void setSafeBrowsingAction(int action) {
@@ -730,8 +721,11 @@ public class SafeBrowsingTest extends AwTestBase {
         // Assume that we are rendering the interstitial, since we see neither the previous page nor
         // the target page
 
-        checkOnSafeBrowsingHitArguments(mTestServer.getURL(PHISHING_HTML_PATH),
-                AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_PHISHING);
+        // Check onSafeBrowsingHit arguments
+        final String responseUrl = mTestServer.getURL(PHISHING_HTML_PATH);
+        assertEquals(responseUrl, mContentsClient.getLastRequest().url);
+        assertEquals(AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_PHISHING,
+                mContentsClient.getLastThreatType());
     }
 
     @SmallTest
@@ -746,8 +740,10 @@ public class SafeBrowsingTest extends AwTestBase {
         waitForVisualStateCallback(mAwContents);
         assertTargetPageHasLoaded(PHISHING_PAGE_BACKGROUND_COLOR);
 
-        checkOnSafeBrowsingHitArguments(
-                responseUrl, AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_PHISHING);
+        // Check onSafeBrowsingHit arguments
+        assertEquals(responseUrl, mContentsClient.getLastRequest().url);
+        assertEquals(AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_PHISHING,
+                mContentsClient.getLastThreatType());
     }
 
     @SmallTest
@@ -770,8 +766,10 @@ public class SafeBrowsingTest extends AwTestBase {
         assertEquals("Original page should be showing", GREEN_PAGE_BACKGROUND_COLOR,
                 GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
 
-        checkOnSafeBrowsingHitArguments(
-                responseUrl, AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_MALWARE);
+        // Check onSafeBrowsingHit arguments
+        assertEquals(responseUrl, mContentsClient.getLastRequest().url);
+        assertEquals(AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_MALWARE,
+                mContentsClient.getLastThreatType());
     }
 
     @SmallTest
@@ -795,9 +793,11 @@ public class SafeBrowsingTest extends AwTestBase {
             }
         });
 
+        // Check onSafeBrowsingHit arguments
         assertFalse(mContentsClient.getLastRequest().isMainFrame);
-        checkOnSafeBrowsingHitArguments(
-                subresourceUrl, AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_MALWARE);
+        assertEquals(subresourceUrl, mContentsClient.getLastRequest().url);
+        assertEquals(AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_MALWARE,
+                mContentsClient.getLastThreatType());
     }
 
     @SmallTest
@@ -824,9 +824,11 @@ public class SafeBrowsingTest extends AwTestBase {
             }
         });
 
+        // Check onSafeBrowsingHit arguments
         assertFalse(mContentsClient.getLastRequest().isMainFrame);
-        checkOnSafeBrowsingHitArguments(
-                subresourceUrl, AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_MALWARE);
+        assertEquals(subresourceUrl, mContentsClient.getLastRequest().url);
+        assertEquals(AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_MALWARE,
+                mContentsClient.getLastThreatType());
 
         mContentsClient.setSafeBrowsingAction(SafeBrowsingAction.PROCEED);
 
@@ -835,14 +837,9 @@ public class SafeBrowsingTest extends AwTestBase {
         assertTargetPageHasLoaded(IFRAME_EMBEDDER_BACKGROUND_COLOR);
 
         assertFalse(mContentsClient.getLastRequest().isMainFrame);
-        checkOnSafeBrowsingHitArguments(
-                subresourceUrl, AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_MALWARE);
-    }
-
-    private void checkOnSafeBrowsingHitArguments(String requestUrl, int threatType) {
-        assertEquals(requestUrl, mContentsClient.getLastRequest().url);
-        assertEquals(threatType, mContentsClient.getLastThreatType());
-        assertEquals(PRIVACY_POLICY_URL, mContentsClient.getLastPrivacyPolicyUrl());
+        assertEquals(subresourceUrl, mContentsClient.getLastRequest().url);
+        assertEquals(AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_MALWARE,
+                mContentsClient.getLastThreatType());
     }
 
     @SmallTest

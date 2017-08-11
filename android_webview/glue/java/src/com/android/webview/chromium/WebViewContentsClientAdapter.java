@@ -634,7 +634,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
 
     @Override
     public void onSafeBrowsingHit(AwWebResourceRequest request, int threatType,
-            String privacyPolicyUrl, ValueCallback<AwSafeBrowsingResponse> callback) {
+            ValueCallback<AwSafeBrowsingResponse> callback) {
         // TODO(ntfschr): invoke the WebViewClient method once the next SDK rolls
         callback.onReceiveValue(new AwSafeBrowsingResponse(SafeBrowsingAction.SHOW_INTERSTITIAL,
                 /* reporting */ true));
