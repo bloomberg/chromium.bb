@@ -649,7 +649,7 @@ void CupsPrintersHandler::HandleGetPrinterPpdManufacturerAndModel(
   AllowJavascript();
   CHECK_EQ(2U, args->GetSize());
   std::string callback_id;
-  DCHECK(args->GetString(0, &callback_id));
+  CHECK(args->GetString(0, &callback_id));
   std::string printer_id;
   CHECK(args->GetString(1, &printer_id));
 
