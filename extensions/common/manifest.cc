@@ -247,7 +247,8 @@ bool Manifest::CanAccessPath(const std::string& path) const {
 }
 
 bool Manifest::CanAccessKey(const std::string& key) const {
-  Feature* feature = FeatureProvider::GetManifestFeatures()->GetFeature(key);
+  const Feature* feature =
+      FeatureProvider::GetManifestFeatures()->GetFeature(key);
   if (!feature)
     return true;
 

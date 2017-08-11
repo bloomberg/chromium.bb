@@ -117,7 +117,7 @@ bool ParseHelper(Extension* extension,
   for (APIPermissionSet::const_iterator iter = api_permissions->begin();
        iter != api_permissions->end();
        ++iter) {
-    Feature* feature = permission_features->GetFeature(iter->name());
+    const Feature* feature = permission_features->GetFeature(iter->name());
 
     // The feature should exist since we just got an APIPermission for it. The
     // two systems should be updated together whenever a permission is added.

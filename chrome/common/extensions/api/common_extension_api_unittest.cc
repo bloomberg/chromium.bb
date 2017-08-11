@@ -252,7 +252,8 @@ TEST(ExtensionAPITest, APIFeaturesAlias) {
                            .Set("manifest_version", 2)
                            .Build())
           .Build();
-  Feature* test_feature = api_feature_provider.GetFeature("alias_api_source");
+  const Feature* test_feature =
+      api_feature_provider.GetFeature("alias_api_source");
   ASSERT_TRUE(test_feature);
   ASSERT_FALSE(api.IsAnyFeatureAvailableToContext(
       *test_feature, extension.get(), Feature::UNBLESSED_EXTENSION_CONTEXT,
@@ -327,7 +328,7 @@ TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
       api.add_fake_schema(key);
     ExtensionAPI::OverrideSharedInstanceForTest scope(&api);
 
-    Feature* test_feature =
+    const Feature* test_feature =
         api_feature_provider.GetFeature(test_data[i].api_full_name);
     ASSERT_TRUE(test_feature);
     EXPECT_EQ(test_data[i].expect_is_available,
@@ -753,18 +754,19 @@ TEST(ExtensionAPITest, DefaultConfigurationFeatures) {
   std::unique_ptr<ExtensionAPI> api(
       ExtensionAPI::CreateWithDefaultConfiguration());
 
-  SimpleFeature* browser_action = static_cast<SimpleFeature*>(
+  const SimpleFeature* browser_action = static_cast<const SimpleFeature*>(
       api->GetFeatureDependency("api:browserAction"));
-  SimpleFeature* browser_action_set_title = static_cast<SimpleFeature*>(
-      api->GetFeatureDependency("api:browserAction.setTitle"));
+  const SimpleFeature* browser_action_set_title =
+      static_cast<const SimpleFeature*>(
+          api->GetFeatureDependency("api:browserAction.setTitle"));
 
   struct {
-    SimpleFeature* feature;
+    const SimpleFeature* feature;
     // TODO(aa): More stuff to test over time.
   } test_data[] = {{browser_action}, {browser_action_set_title}};
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {
-    SimpleFeature* feature = test_data[i].feature;
+    const SimpleFeature* feature = test_data[i].feature;
     ASSERT_TRUE(feature) << i;
 
     EXPECT_TRUE(feature->whitelist().empty());
