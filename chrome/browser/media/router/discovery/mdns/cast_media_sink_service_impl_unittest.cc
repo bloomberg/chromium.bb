@@ -284,10 +284,6 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnFetchCompleted) {
   media_sink_service_impl_.current_sinks_by_mdns_[ip_endpoint1] = cast_sink1;
   media_sink_service_impl_.current_sinks_by_mdns_[ip_endpoint2] = cast_sink2;
   // Cast sink 2, 3 from dial discovery
-  auto extra_data = cast_sink2.cast_data();
-  extra_data.discovered_by_dial = true;
-  extra_data.model_name += " dial";
-
   media_sink_service_impl_.current_sinks_by_dial_[ip_endpoint2] = cast_sink2;
   media_sink_service_impl_.current_sinks_by_dial_[ip_endpoint3] = cast_sink3;
 
