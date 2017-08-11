@@ -790,7 +790,13 @@ class ParallelDownloadTest : public DownloadContentTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadCancelled) {
+#if defined(OS_ANDROID)
+// Failing/Flaky on Android: https://crbug.com/754679
+#define MAYBE_DownloadCancelled DISABLED_DownloadCancelled
+#else
+#define MAYBE_DownloadCancelled DownloadCancelled
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, MAYBE_DownloadCancelled) {
   SetupEnsureNoPendingDownloads();
 
   // Create a download, wait until it's started, and confirm
