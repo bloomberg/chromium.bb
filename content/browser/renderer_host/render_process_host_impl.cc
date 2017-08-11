@@ -803,6 +803,12 @@ class RenderProcessHostIsReadyObserver : public RenderProcessHostObserver {
 // sites are hosted by a RenderProcessHost. This class is meant to help reusing
 // RenderProcessHosts among SiteInstances, not to perform security checks for a
 // RenderProcessHost.
+//
+// TODO(alexmos): Currently, the tracking in this class and in
+// UnmatchedServiceWorkerProcessTracker is associated with a BrowserContext,
+// but it needs to also consider StoragePartitions, so that process reuse is
+// allowed only within the same StoragePartition.  For now, the tracking is
+// done only for the default StoragePartition.  See https://crbug.com/752667.
 const void* const kCommittedSiteProcessCountTrackerKey =
     "CommittedSiteProcessCountTrackerKey";
 const void* const kPendingSiteProcessCountTrackerKey =
@@ -898,6 +904,37 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
   CountPerProcessPerSiteMap map_;
 };
 
+bool ShouldUseSiteProcessTracking(BrowserContext* browser_context,
+                                  StoragePartition* dest_partition,
+                                  const GURL& site_url) {
+  if (site_url.is_empty())
+    return false;
+
+  // TODO(alexmos): Sites should be tracked separately for each
+  // StoragePartition.  For now, track them only in the default one.
+  StoragePartition* default_partition =
+      BrowserContext::GetDefaultStoragePartition(browser_context);
+  if (dest_partition != default_partition)
+    return false;
+
+  return true;
+}
+
+bool ShouldTrackProcessForSite(BrowserContext* browser_context,
+                               RenderProcessHost* render_process_host,
+                               const GURL& site_url) {
+  return ShouldUseSiteProcessTracking(
+      browser_context, render_process_host->GetStoragePartition(), site_url);
+}
+
+bool ShouldFindReusableProcessHostForSite(BrowserContext* browser_context,
+                                          const GURL& site_url) {
+  return ShouldUseSiteProcessTracking(
+      browser_context,
+      BrowserContext::GetStoragePartitionForSite(browser_context, site_url),
+      site_url);
+}
+
 const void* const kUnmatchedServiceWorkerProcessTrackerKey =
     "UnmatchedServiceWorkerProcessTrackerKey";
 
@@ -910,6 +947,12 @@ const void* const kUnmatchedServiceWorkerProcessTrackerKey =
 // processes are reused for a navigation to a matching site. After a single
 // matching navigation is put into the process, all service workers for that
 // site in that process are considered 'matched.'
+//
+// TODO(alexmos): Currently, the tracking in this class and in
+// SiteProcessCountTracker is associated with a BrowserContext, but it needs to
+// also consider StoragePartitions, so that process reuse is allowed only
+// within the same StoragePartition.  For now, the tracking is done only for
+// the default StoragePartition.  See https://crbug.com/752667.
 class UnmatchedServiceWorkerProcessTracker
     : public base::SupportsUserData::Data,
       public RenderProcessHostObserver {
@@ -920,6 +963,10 @@ class UnmatchedServiceWorkerProcessTracker
                        RenderProcessHost* render_process_host,
                        const GURL& site_url) {
     DCHECK(!site_url.is_empty());
+    if (!ShouldTrackProcessForSite(browser_context, render_process_host,
+                                   site_url))
+      return;
+
     UnmatchedServiceWorkerProcessTracker* tracker =
         static_cast<UnmatchedServiceWorkerProcessTracker*>(
             browser_context->GetUserData(
@@ -936,8 +983,9 @@ class UnmatchedServiceWorkerProcessTracker
   // the process from the tracker if it exists.
   static RenderProcessHost* MatchWithSite(BrowserContext* browser_context,
                                           const GURL& site_url) {
-    if (site_url.is_empty())
+    if (!ShouldFindReusableProcessHostForSite(browser_context, site_url))
       return nullptr;
+
     UnmatchedServiceWorkerProcessTracker* tracker =
         static_cast<UnmatchedServiceWorkerProcessTracker*>(
             browser_context->GetUserData(
@@ -2261,7 +2309,8 @@ void RenderProcessHostImpl::AddFrameWithSite(
     BrowserContext* browser_context,
     RenderProcessHost* render_process_host,
     const GURL& site_url) {
-  if (site_url.is_empty())
+  if (!ShouldTrackProcessForSite(browser_context, render_process_host,
+                                 site_url))
     return;
 
   SiteProcessCountTracker* tracker = static_cast<SiteProcessCountTracker*>(
@@ -2279,7 +2328,8 @@ void RenderProcessHostImpl::RemoveFrameWithSite(
     BrowserContext* browser_context,
     RenderProcessHost* render_process_host,
     const GURL& site_url) {
-  if (site_url.is_empty())
+  if (!ShouldTrackProcessForSite(browser_context, render_process_host,
+                                 site_url))
     return;
 
   SiteProcessCountTracker* tracker = static_cast<SiteProcessCountTracker*>(
@@ -2297,7 +2347,8 @@ void RenderProcessHostImpl::AddExpectedNavigationToSite(
     BrowserContext* browser_context,
     RenderProcessHost* render_process_host,
     const GURL& site_url) {
-  if (site_url.is_empty())
+  if (!ShouldTrackProcessForSite(browser_context, render_process_host,
+                                 site_url))
     return;
 
   SiteProcessCountTracker* tracker = static_cast<SiteProcessCountTracker*>(
@@ -2315,7 +2366,8 @@ void RenderProcessHostImpl::RemoveExpectedNavigationToSite(
     BrowserContext* browser_context,
     RenderProcessHost* render_process_host,
     const GURL& site_url) {
-  if (site_url.is_empty())
+  if (!ShouldTrackProcessForSite(browser_context, render_process_host,
+                                 site_url))
     return;
 
   SiteProcessCountTracker* tracker = static_cast<SiteProcessCountTracker*>(
@@ -3889,7 +3941,7 @@ RenderProcessHost* RenderProcessHostImpl::GetDefaultSubframeProcessHost(
 RenderProcessHost* RenderProcessHostImpl::FindReusableProcessHostForSite(
     BrowserContext* browser_context,
     const GURL& site_url) {
-  if (site_url.is_empty())
+  if (!ShouldFindReusableProcessHostForSite(browser_context, site_url))
     return nullptr;
 
   std::set<RenderProcessHost*> eligible_foreground_hosts;

@@ -62,6 +62,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
@@ -79,6 +80,7 @@
 #include "extensions/common/extensions_client.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "media/base/media_switches.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -4222,3 +4224,164 @@ IN_PROC_BROWSER_TEST_F(ChromeSignInWebViewTest,
   chrome::CloseTab(browser());
 }
 #endif
+
+// This test class makes "isolated.com" an isolated origin, to be used in
+// testing isolated origins inside of a WebView.
+class IsolatedOriginWebViewTest : public WebViewTest {
+ public:
+  IsolatedOriginWebViewTest() {}
+  ~IsolatedOriginWebViewTest() override {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+
+    std::string origin =
+        embedded_test_server()->GetURL("isolated.com", "/").spec();
+    command_line->AppendSwitchASCII(switches::kIsolateOrigins, origin);
+    WebViewTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    embedded_test_server()->StartAcceptingConnections();
+    WebViewTest::SetUpOnMainThread();
+  }
+};
+INSTANTIATE_TEST_CASE_P(WebViewTests,
+                        IsolatedOriginWebViewTest,
+                        testing::Bool());
+
+// Test isolated origins inside a WebView, and make sure that loading an
+// isolated origin in a regular tab's subframe doesn't reuse a WebView process
+// that had loaded it previously, which would result in renderer kills. See
+// https://crbug.com/751916 and https://crbug.com/751920.
+IN_PROC_BROWSER_TEST_P(IsolatedOriginWebViewTest, IsolatedOriginInWebview) {
+  LoadAppWithGuest("web_view/simple");
+  content::WebContents* guest = GetGuestWebContents();
+
+  // Navigate <webview> to an isolated origin.
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.com", "/title1.html"));
+  {
+    content::TestNavigationObserver load_observer(guest);
+    EXPECT_TRUE(
+        ExecuteScript(guest, "location.href = '" + isolated_url.spec() + "';"));
+    load_observer.Wait();
+  }
+
+  // TODO(alexmos, creis): The isolated origin currently has to use the
+  // chrome-guest:// SiteInstance, rather than a SiteInstance with its own
+  // meaningful site URL.  This should be fixed as part of
+  // https://crbug.com/734722.
+  EXPECT_TRUE(guest->GetMainFrame()->GetSiteInstance()->GetSiteURL().SchemeIs(
+      content::kGuestScheme));
+
+  // Now, navigate <webview> to a regular page with a subframe.
+  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/iframe.html"));
+  {
+    content::TestNavigationObserver load_observer(guest);
+    EXPECT_TRUE(
+        ExecuteScript(guest, "location.href = '" + foo_url.spec() + "';"));
+    load_observer.Wait();
+  }
+
+  // Navigate subframe in <webview> to an isolated origin.
+  EXPECT_TRUE(NavigateIframeToURL(guest, "test", isolated_url));
+
+  // TODO(alexmos, creis): Unfortunately, the subframe currently has to stay in
+  // the guest process.  The expectations here should change once WebViews
+  // can support OOPIFs.  See https://crbug.com/614463.
+  content::RenderFrameHost* webview_subframe =
+      ChildFrameAt(guest->GetMainFrame(), 0);
+  EXPECT_EQ(webview_subframe->GetProcess(),
+            guest->GetMainFrame()->GetProcess());
+  EXPECT_EQ(webview_subframe->GetSiteInstance(),
+            guest->GetMainFrame()->GetSiteInstance());
+
+  // Load a page with subframe in a regular tab.
+  AddTabAtIndex(0, foo_url, ui::PAGE_TRANSITION_TYPED);
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate that subframe to an isolated origin.  This should not join the
+  // WebView process, which has isolated.foo.com committed in a different
+  // storage partition.
+  EXPECT_TRUE(NavigateIframeToURL(tab, "test", isolated_url));
+  content::RenderFrameHost* subframe = ChildFrameAt(tab->GetMainFrame(), 0);
+  EXPECT_NE(guest->GetMainFrame()->GetProcess(), subframe->GetProcess());
+
+  // Check that the guest process hasn't crashed.
+  EXPECT_TRUE(guest->GetMainFrame()->IsRenderFrameLive());
+
+  // Check that accessing a foo.com cookie from the WebView doesn't result in a
+  // renderer kill. This might happen if we erroneously applied an isolated.com
+  // origin lock to the WebView process when committing isolated.com.
+  bool cookie_is_correct = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      guest,
+      "document.cookie = 'foo=bar';\n"
+      "window.domAutomationController.send(document.cookie == 'foo=bar');\n",
+      &cookie_is_correct));
+  EXPECT_TRUE(cookie_is_correct);
+}
+
+// This test is similar to IsolatedOriginInWebview above, but loads an isolated
+// origin in a <webview> subframe *after* loading the same isolated origin in a
+// regular tab's subframe.  The isolated origin's subframe in the <webview>
+// subframe should not reuse the regular tab's subframe process.  See
+// https://crbug.com/751916 and https://crbug.com/751920.
+IN_PROC_BROWSER_TEST_P(IsolatedOriginWebViewTest,
+                       LoadIsolatedOriginInWebviewAfterLoadingInRegularTab) {
+  LoadAppWithGuest("web_view/simple");
+  content::WebContents* guest = GetGuestWebContents();
+
+  // Load a page with subframe in a regular tab.
+  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/iframe.html"));
+  AddTabAtIndex(0, foo_url, ui::PAGE_TRANSITION_TYPED);
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate that subframe to an isolated origin.
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.com", "/title1.html"));
+  EXPECT_TRUE(NavigateIframeToURL(tab, "test", isolated_url));
+  content::RenderFrameHost* subframe = ChildFrameAt(tab->GetMainFrame(), 0);
+  EXPECT_NE(tab->GetMainFrame()->GetProcess(), subframe->GetProcess());
+
+  // Navigate <webview> to a regular page with an isolated origin subframe.
+  {
+    content::TestNavigationObserver load_observer(guest);
+    EXPECT_TRUE(
+        ExecuteScript(guest, "location.href = '" + foo_url.spec() + "';"));
+    load_observer.Wait();
+  }
+  EXPECT_TRUE(NavigateIframeToURL(guest, "test", isolated_url));
+
+  // TODO(alexmos, creis): The subframe currently has to stay in the guest
+  // process.  The expectations here should change once WebViews can support
+  // OOPIFs.  See https://crbug.com/614463.
+  content::RenderFrameHost* webview_subframe =
+      ChildFrameAt(guest->GetMainFrame(), 0);
+  EXPECT_EQ(webview_subframe->GetProcess(),
+            guest->GetMainFrame()->GetProcess());
+  EXPECT_EQ(webview_subframe->GetSiteInstance(),
+            guest->GetMainFrame()->GetSiteInstance());
+  EXPECT_NE(webview_subframe->GetProcess(), subframe->GetProcess());
+
+  // Check that the guest and regular tab processes haven't crashed.
+  EXPECT_TRUE(guest->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_TRUE(tab->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_TRUE(subframe->IsRenderFrameLive());
+
+  // Check that accessing a foo.com cookie from the WebView doesn't result in a
+  // renderer kill. This might happen if we erroneously applied an isolated.com
+  // origin lock to the WebView process when committing isolated.com.
+  bool cookie_is_correct = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      guest,
+      "document.cookie = 'foo=bar';\n"
+      "window.domAutomationController.send(document.cookie == 'foo=bar');\n",
+      &cookie_is_correct));
+  EXPECT_TRUE(cookie_is_correct);
+}
