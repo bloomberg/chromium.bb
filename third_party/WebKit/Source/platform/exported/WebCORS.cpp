@@ -40,6 +40,7 @@
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebURLResponse.h"
 #include "url/gurl.h"
+#include "url/url_util.h"
 
 namespace blink {
 
@@ -171,22 +172,23 @@ static bool IsOriginSeparator(UChar ch) {
 }  // namespace
 
 AccessStatus CheckAccess(
-    const WebURLResponse& response,
+    const WebURL response_url,
+    const int response_status_code,
+    const HTTPHeaderMap& response_header,
     const WebURLRequest::FetchCredentialsMode credentials_mode,
     const WebSecurityOrigin& security_origin) {
-  int status_code = response.HttpStatusCode();
-  if (!status_code)
+  if (!response_status_code)
     return AccessStatus::kInvalidResponse;
 
   const WebString& allow_origin_header_value =
-      response.HttpHeaderField(HTTPNames::Access_Control_Allow_Origin);
+      response_header.Get(HTTPNames::Access_Control_Allow_Origin);
 
   // Check Suborigins, unless the Access-Control-Allow-Origin is '*', which
   // implies that all Suborigins are okay as well.
   if (!security_origin.Suborigin().IsEmpty() &&
       allow_origin_header_value != WebString(g_star_atom)) {
     const WebString& allow_suborigin_header_value =
-        response.HttpHeaderField(HTTPNames::Access_Control_Allow_Suborigin);
+        response_header.Get(HTTPNames::Access_Control_Allow_Suborigin);
     if (allow_suborigin_header_value != WebString(g_star_atom) &&
         allow_suborigin_header_value != security_origin.Suborigin()) {
       return AccessStatus::kSubOriginMismatch;
@@ -200,7 +202,7 @@ AccessStatus CheckAccess(
       return AccessStatus::kAccessAllowed;
     // TODO(hintzed): Is the following a sound substitute for
     // blink::ResourceResponse::IsHTTP()?
-    if (GURL(response.Url().GetString().Utf16()).SchemeIsHTTPOrHTTPS()) {
+    if (GURL(response_url.GetString().Utf16()).SchemeIsHTTPOrHTTPS()) {
       return AccessStatus::kWildcardOriginNotAllowed;
     }
   } else if (allow_origin_header_value != security_origin.ToString()) {
@@ -219,7 +221,7 @@ AccessStatus CheckAccess(
 
   if (FetchUtils::ShouldTreatCredentialsModeAsInclude(credentials_mode)) {
     const WebString& allow_credentials_header_value =
-        response.HttpHeaderField(HTTPNames::Access_Control_Allow_Credentials);
+        response_header.Get(HTTPNames::Access_Control_Allow_Credentials);
     if (allow_credentials_header_value != "true") {
       return AccessStatus::kDisallowCredentialsNotSetToTrue;
     }
@@ -229,11 +231,13 @@ AccessStatus CheckAccess(
 
 bool HandleRedirect(WebSecurityOrigin& current_security_origin,
                     WebURLRequest& new_request,
-                    const WebURLResponse& redirect_response,
+                    const WebURL redirect_response_url,
+                    const int redirect_response_status_code,
+                    const HTTPHeaderMap& redirect_response_header,
                     WebURLRequest::FetchCredentialsMode credentials_mode,
                     ResourceLoaderOptions& options,
                     WebString& error_message) {
-  const KURL& last_url = redirect_response.Url();
+  const KURL& last_url = redirect_response_url;
   const KURL& new_url = new_request.Url();
 
   WebSecurityOrigin& new_security_origin = current_security_origin;
@@ -252,15 +256,16 @@ bool HandleRedirect(WebSecurityOrigin& current_security_origin,
       return false;
     }
 
-    AccessStatus cors_status = CheckAccess(redirect_response, credentials_mode,
-                                           current_security_origin);
+    AccessStatus cors_status = CheckAccess(
+        redirect_response_url, redirect_response_status_code,
+        redirect_response_header, credentials_mode, current_security_origin);
     if (cors_status != AccessStatus::kAccessAllowed) {
       StringBuilder builder;
       builder.Append("Redirect from '");
       builder.Append(last_url.GetString());
       builder.Append("' has been blocked by CORS policy: ");
       builder.Append(AccessControlErrorString(
-          cors_status, redirect_response,
+          cors_status, redirect_response_status_code, redirect_response_header,
           WebSecurityOrigin(current_security_origin.Get()),
           new_request.GetRequestContext()));
       error_message = builder.ToString();
@@ -314,25 +319,23 @@ RedirectStatus CheckRedirectLocation(const WebURL& web_request_url) {
   return RedirectStatus::kRedirectSuccess;
 }
 
-PreflightStatus CheckPreflight(const WebURLResponse& response) {
+PreflightStatus CheckPreflight(const int preflight_response_status_code) {
   // CORS preflight with 3XX is considered network error in
   // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch
   // CORS Spec: http://www.w3.org/TR/cors/#cross-origin-request-with-preflight-0
   // https://crbug.com/452394
-  int status_code = response.HttpStatusCode();
-  if (!FetchUtils::IsOkStatus(status_code))
+  if (!FetchUtils::IsOkStatus(preflight_response_status_code))
     return PreflightStatus::kPreflightInvalidStatus;
 
   return PreflightStatus::kPreflightSuccess;
 }
 
-PreflightStatus CheckExternalPreflight(const WebURLResponse& response) {
+PreflightStatus CheckExternalPreflight(const HTTPHeaderMap& response_header) {
   WebString result =
-      response.HttpHeaderField(HTTPNames::Access_Control_Allow_External);
+      response_header.Get(HTTPNames::Access_Control_Allow_External);
   if (result.IsNull())
     return PreflightStatus::kPreflightMissingAllowExternal;
-  // TODO(hintzed) replace with EqualIgnoringASCIICase()
-  if (!DeprecatedEqualIgnoringCase(result, "true"))
+  if (!EqualIgnoringASCIICase(result, "true"))
     return PreflightStatus::kPreflightInvalidAllowExternal;
   return PreflightStatus::kPreflightSuccess;
 }
@@ -372,7 +375,8 @@ WebURLRequest CreateAccessControlPreflightRequest(
 
 WebString AccessControlErrorString(
     const AccessStatus status,
-    const WebURLResponse& response,
+    const int response_status_code,
+    const HTTPHeaderMap& response_header,
     const WebSecurityOrigin& origin,
     const WebURLRequest::RequestContext context) {
   String origin_denied =
@@ -395,7 +399,7 @@ WebString AccessControlErrorString(
       return String::Format(
           "The 'Access-Control-Allow-Suborigin' header has a value '%s' that "
           "is not equal to the supplied suborigin. %s",
-          response.HttpHeaderField(HTTPNames::Access_Control_Allow_Suborigin)
+          response_header.Get(HTTPNames::Access_Control_Allow_Suborigin)
               .Utf8()
               .data(),
           origin_denied.Utf8().data());
@@ -413,9 +417,9 @@ WebString AccessControlErrorString(
     }
     case AccessStatus::kMissingAllowOriginHeader: {
       String status_code_msg =
-          IsInterestingStatusCode(response.HttpStatusCode())
+          IsInterestingStatusCode(response_status_code)
               ? String::Format(" The response had HTTP status code %d.",
-                               response.HttpStatusCode())
+                               response_status_code)
               : "";
 
       return String::Format(
@@ -431,7 +435,7 @@ WebString AccessControlErrorString(
       return String::Format(
           "The 'Access-Control-Allow-Origin' header contains multiple values "
           "'%s', but only one is allowed. %s%s",
-          response.HttpHeaderField(HTTPNames::Access_Control_Allow_Origin)
+          response_header.Get(HTTPNames::Access_Control_Allow_Origin)
               .Utf8()
               .data(),
           origin_denied.Utf8().data(), no_cors_information.Utf8().data());
@@ -440,7 +444,7 @@ WebString AccessControlErrorString(
       return String::Format(
           "The 'Access-Control-Allow-Origin' header contains the invalid value "
           "'%s'. %s%s",
-          response.HttpHeaderField(HTTPNames::Access_Control_Allow_Origin)
+          response_header.Get(HTTPNames::Access_Control_Allow_Origin)
               .Utf8()
               .data(),
           origin_denied.Utf8().data(), no_cors_information.Utf8().data());
@@ -449,7 +453,7 @@ WebString AccessControlErrorString(
       return String::Format(
           "The 'Access-Control-Allow-Origin' header has a value '%s' that is "
           "not equal to the supplied origin. %s%s",
-          response.HttpHeaderField(HTTPNames::Access_Control_Allow_Origin)
+          response_header.Get(HTTPNames::Access_Control_Allow_Origin)
               .Utf8()
               .data(),
           origin_denied.Utf8().data(), no_cors_information.Utf8().data());
@@ -459,7 +463,7 @@ WebString AccessControlErrorString(
           "The value of the 'Access-Control-Allow-Credentials' header in "
           "the response is '%s' which must be 'true' when the request's "
           "credentials mode is 'include'. %s%s",
-          response.HttpHeaderField(HTTPNames::Access_Control_Allow_Credentials)
+          response_header.Get(HTTPNames::Access_Control_Allow_Credentials)
               .Utf8()
               .data(),
           origin_denied.Utf8().data(),
@@ -475,13 +479,14 @@ WebString AccessControlErrorString(
   }
 }
 
-WebString PreflightErrorString(PreflightStatus status,
-                               const WebURLResponse& response) {
+WebString PreflightErrorString(const PreflightStatus status,
+                               const HTTPHeaderMap& response_header,
+                               const int preflight_response_status_code) {
   switch (status) {
     case PreflightStatus::kPreflightInvalidStatus: {
       return String::Format(
           "Response for preflight has invalid HTTP status code %d",
-          response.HttpStatusCode());
+          preflight_response_status_code);
     }
     case PreflightStatus::kPreflightMissingAllowExternal: {
       return String::Format(
@@ -496,7 +501,7 @@ WebString PreflightErrorString(PreflightStatus status,
           "response for this external request had a value of '%s',  not 'true' "
           "(This is an experimental header which is defined in "
           "'https://wicg.github.io/cors-rfc1918/').",
-          response.HttpHeaderField("access-control-allow-external")
+          response_header.Get(HTTPNames::Access_Control_Allow_External)
               .Utf8()
               .data());
     }

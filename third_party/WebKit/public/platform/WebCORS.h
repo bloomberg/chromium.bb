@@ -28,6 +28,7 @@
 #define WebCORS_h
 
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/network/HTTPHeaderMap.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/StringHash.h"
 #include "public/platform/WebString.h"
@@ -86,11 +87,14 @@ enum RedirectStatus {
   kRedirectContainsCredentials,
 };
 
-// Perform a CORS access check on the response. Returns |kAccessAllowed| if
-// access is allowed. Use |AccessControlErrorString()| to construct a
-// user-friendly error message for any of the other (error) conditions.
+// Perform a CORS access check on the response parameters. Returns
+// |kAccessAllowed| if access is allowed. Use |AccessControlErrorString()| to
+// construct a user-friendly error message for any of the other (error)
+// conditions.
 BLINK_PLATFORM_EXPORT AccessStatus
-CheckAccess(const WebURLResponse&,
+CheckAccess(const WebURL,
+            const int response_status_code,
+            const HTTPHeaderMap&,
             WebURLRequest::FetchCredentialsMode,
             const WebSecurityOrigin&);
 
@@ -108,13 +112,14 @@ BLINK_PLATFORM_EXPORT RedirectStatus CheckRedirectLocation(const WebURL&);
 // Returns |kPreflightSuccess| if preflight response was successful.
 // Use |PreflightErrorString()| to construct a user-friendly error message
 // for any of the other (error) conditions.
-BLINK_PLATFORM_EXPORT PreflightStatus CheckPreflight(const WebURLResponse&);
+BLINK_PLATFORM_EXPORT PreflightStatus
+CheckPreflight(const int preflight_response_status_code);
 
 // Error checking for the currently experimental
 // "Access-Control-Allow-External:" header. Shares error conditions with
 // standard preflight checking.
 BLINK_PLATFORM_EXPORT PreflightStatus
-CheckExternalPreflight(const WebURLResponse&);
+CheckExternalPreflight(const HTTPHeaderMap&);
 
 BLINK_PLATFORM_EXPORT WebURLRequest
 CreateAccessControlPreflightRequest(const WebURLRequest&);
@@ -122,22 +127,28 @@ CreateAccessControlPreflightRequest(const WebURLRequest&);
 // TODO(tyoshino): Using platform/loader/fetch/ResourceLoaderOptions violates
 // the DEPS rule. This will be fixed soon by making HandleRedirect() not
 // depending on ResourceLoaderOptions.
-BLINK_PLATFORM_EXPORT bool HandleRedirect(WebSecurityOrigin&,
-                                          WebURLRequest&,
-                                          const WebURLResponse&,
-                                          WebURLRequest::FetchCredentialsMode,
-                                          ResourceLoaderOptions&,
-                                          WebString&);
+BLINK_PLATFORM_EXPORT bool HandleRedirect(
+    WebSecurityOrigin&,
+    WebURLRequest&,
+    const WebURL,
+    const int redirect_response_status_code,
+    const HTTPHeaderMap&,
+    WebURLRequest::FetchCredentialsMode,
+    ResourceLoaderOptions&,
+    WebString&);
 
 // Stringify errors from CORS access checks, preflight or redirect checks.
 BLINK_PLATFORM_EXPORT WebString
 AccessControlErrorString(const AccessStatus,
-                         const WebURLResponse&,
+                         const int response_status_code,
+                         const HTTPHeaderMap&,
                          const WebSecurityOrigin&,
                          const WebURLRequest::RequestContext);
 
-BLINK_PLATFORM_EXPORT WebString PreflightErrorString(const PreflightStatus,
-                                                     const WebURLResponse&);
+BLINK_PLATFORM_EXPORT WebString
+PreflightErrorString(const PreflightStatus,
+                     const HTTPHeaderMap&,
+                     const int preflight_response_status_code);
 
 BLINK_PLATFORM_EXPORT WebString RedirectErrorString(const RedirectStatus,
                                                     const WebURL&);
