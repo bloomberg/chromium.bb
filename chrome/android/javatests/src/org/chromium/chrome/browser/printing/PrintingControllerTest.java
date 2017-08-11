@@ -14,6 +14,7 @@ import android.print.PrintDocumentAdapter;
 import android.print.PrintDocumentInfo;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
+import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -31,6 +33,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
@@ -57,7 +60,7 @@ import java.util.concurrent.TimeUnit;
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
 public class PrintingControllerTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+    public final ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     private static final String TEMP_FILE_NAME = "temp_print";
@@ -196,6 +199,37 @@ public class PrintingControllerTest {
         mActivityTestRule.runJavaScriptCodeInCurrentTab("printClosedWindow();");
         mOnTitleUpdatedHelper.waitForTitleUpdate(5);
         Assert.assertEquals("JS did not finish running", "completed", mTab.getTitle());
+    }
+
+    /**
+     * Test for http://crbug.com/528909
+     */
+    @Test
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @MediumTest
+    @Feature({"Printing"})
+    public void testPrintCloseWindowBeforeStart() throws Throwable {
+        if (!ApiCompatibilityUtils.isPrintingSupported()) return;
+
+        mActivityTestRule.startMainActivityWithURL(URL);
+        final Tab currentTab = mActivityTestRule.getActivity().getActivityTab();
+        final PrintingControllerImpl printingController = createControllerOnUiThread();
+        final PrintManagerDelegate mockPrintManagerDelegate = new PrintManagerDelegate() {
+            @Override
+            public void print(String printJobName, PrintDocumentAdapter documentAdapter,
+                    PrintAttributes attributes) {
+                Assert.fail("Shouldn't start a printing job.");
+            }
+        };
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            printingController.setPendingPrint(
+                    new TabPrinter(currentTab), mockPrintManagerDelegate, -1, -1);
+            TabModelUtils.closeCurrentTab(mActivityTestRule.getActivity().getCurrentTabModel());
+            Assert.assertTrue("currentTab should be closed already.",
+                    currentTab == null || !currentTab.isInitialized());
+            printingController.startPendingPrint(null);
+        });
     }
 
     private PrintingControllerImpl createControllerOnUiThread() {
