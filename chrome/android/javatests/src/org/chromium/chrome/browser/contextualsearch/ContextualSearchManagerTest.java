@@ -3113,7 +3113,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testLongPressHidesFindInPageOverlay() throws Exception {
+    public void testTriggeringContextualSearchHidesFindInPageOverlay() throws Exception {
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), R.id.find_in_page_id);
 
@@ -3133,7 +3133,7 @@ public class ContextualSearchManagerTest {
         View findToolbar = mActivityTestRule.getActivity().findViewById(R.id.find_toolbar);
         Assert.assertTrue(findToolbar.isShown());
 
-        longPressNode("states");
+        simulateTapSearch("search");
 
         waitForPanelToPeek();
         Assert.assertFalse(
