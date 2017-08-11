@@ -134,6 +134,18 @@
       ]
     },
     {
+      "name": "betty-arc64",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "vm builds",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "bob",
       "configs": [
         {
@@ -788,6 +800,18 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
+          "board_group": "vm builds",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
+      "name": "novato-arc64",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
           "board_group": "vm builds",
           "arch": "X86_INTERNAL"
         }

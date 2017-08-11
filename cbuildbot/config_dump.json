@@ -3703,10 +3703,12 @@
     },
     "betty-arc64-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "betty-arc64"
         ],
-        "buildslave_type": "baremetal"
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": []
     },
     "betty-arc64-release-afdo": {
         "_template": "release_afdo_generate",
@@ -15107,6 +15109,7 @@
             "banon-release",
             "beaglebone-release",
             "beaglebone_servo-release",
+            "betty-arc64-release",
             "betty-release",
             "bob-release",
             "buddy-release",
@@ -15162,6 +15165,7 @@
             "nefario-release",
             "newbie-release",
             "ninja-release",
+            "novato-arc64-release",
             "novato-release",
             "nyan_big-release",
             "nyan_blaze-release",
@@ -16240,10 +16244,12 @@
     },
     "novato-arc64-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "novato-arc64"
         ],
-        "buildslave_type": "baremetal"
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": []
     },
     "novato-arc64-release-afdo": {
         "_template": "release_afdo_generate",
