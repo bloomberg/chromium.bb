@@ -47,15 +47,16 @@ HitTestAggregator::HitTestAggregator(HitTestAggregatorDelegate* delegate)
 HitTestAggregator::~HitTestAggregator() = default;
 
 void HitTestAggregator::SubmitHitTestRegionList(
+    const SurfaceId& frame_sink_id,
     mojom::HitTestRegionListPtr hit_test_region_list) {
   DCHECK(ValidateHitTestRegionList(hit_test_region_list));
   // TODO(gklassen): Runtime validation that hit_test_region_list is valid.
   // TODO(gklassen): Inform FrameSink that the hit_test_region_list is invalid.
   // TODO(gklassen): FrameSink needs to inform the host of a difficult renderer.
-  pending_[hit_test_region_list->surface_id] = std::move(hit_test_region_list);
+  pending_[frame_sink_id] = std::move(hit_test_region_list);
 }
 
-void HitTestAggregator::PostTaskAggregate(SurfaceId display_surface_id) {
+void HitTestAggregator::PostTaskAggregate(const SurfaceId& display_surface_id) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&HitTestAggregator::Aggregate,
@@ -170,7 +171,7 @@ void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
   AggregatedHitTestRegion* regions =
       static_cast<AggregatedHitTestRegion*>(write_buffer_.get());
 
-  regions[0].frame_sink_id = hit_test_region_list->surface_id.frame_sink_id();
+  regions[0].frame_sink_id = surface_id.frame_sink_id();
   regions[0].flags = hit_test_region_list->flags;
   regions[0].rect = hit_test_region_list->bounds;
   regions[0].transform = hit_test_region_list->transform;

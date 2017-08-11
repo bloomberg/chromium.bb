@@ -30,11 +30,12 @@ class VIZ_SERVICE_EXPORT HitTestAggregator : public SurfaceObserver {
   // to SubmitCompositorFrame.  This is collected in pending_ until
   // surfaces are aggregated and put on the display.
   void SubmitHitTestRegionList(
+      const SurfaceId& surface_id,
       mojom::HitTestRegionListPtr hit_test_region_list);
 
   // Performs the work of Aggregate by creating a PostTask so that
   // the work is not directly on the call.
-  void PostTaskAggregate(SurfaceId display_surface_id);
+  void PostTaskAggregate(const SurfaceId& display_surface_id);
 
   // Called after surfaces have been aggregated into the DisplayFrame.
   // In this call HitTestRegionList structures received from active surfaces
