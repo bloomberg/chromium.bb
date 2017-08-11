@@ -21,6 +21,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
@@ -777,7 +778,7 @@ bool IsCertificateCleared() {
 
   // Present the Sign-in UI.
   id<GREYMatcher> matcher =
-      grey_allOf(grey_accessibilityID(kSettingsSignInCellId),
+      grey_allOf(grey_accessibilityID(kSigninPromoPrimaryButtonId),
                  grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
   // Wait for UI to finish loading the Sign-in screen.

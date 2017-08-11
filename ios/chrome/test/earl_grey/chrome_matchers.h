@@ -104,6 +104,9 @@ id<GREYMatcher> SettingsMenuButton();
 // Returns matcher for the OK button.
 id<GREYMatcher> OKButton();
 
+// Returns matcher for the sign-in promo view in the settings menu.
+id<GREYMatcher> SignInPromoView();
+
 // Returns matcher for the signin button in the settings menu.
 id<GREYMatcher> SignInMenuButton();
 
