@@ -15,9 +15,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.WebContents;
 
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -41,19 +39,15 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
      */
     private void installMockServiceWorkerPaymentApp(final boolean hasSupportedMethods) {
         PaymentAppFactory.getInstance().addAdditionalFactory(
-                new PaymentAppFactory.PaymentAppFactoryAddition() {
-                    @Override
-                    public void create(WebContents webContents, Set<String> methodNames,
-                            PaymentAppFactory.PaymentAppCreatedCallback callback) {
-                        String[] supportedMethodNames = {"https://bobpay.com", "basic-card"};
-                        callback.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents,
-                                0 /* registrationId */, "BobPay" /* label */,
-                                "https://bobpay.com" /* sublabel */, null /* icon */,
-                                hasSupportedMethods ? supportedMethodNames
-                                                    : new String[0] /* methodNames */,
-                                new String[0] /* preferredRelatedApplicationIds */));
-                        callback.onAllPaymentAppsCreated();
-                    }
+                (webContents, methodNames, callback) -> {
+                    String[] supportedMethodNames = {"https://bobpay.com", "basic-card"};
+                    callback.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents,
+                            0 /* registrationId */, "BobPay" /* label */,
+                            "https://bobpay.com" /* sublabel */, null /* icon */,
+                            hasSupportedMethods ? supportedMethodNames
+                                    : new String[0] /* methodNames */,
+                            new String[0] /* preferredRelatedApplicationIds */));
+                    callback.onAllPaymentAppsCreated();
                 });
     }
 

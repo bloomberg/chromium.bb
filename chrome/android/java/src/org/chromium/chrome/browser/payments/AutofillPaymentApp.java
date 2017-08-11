@@ -96,12 +96,7 @@ public class AutofillPaymentApp implements PaymentApp {
             }
         }
 
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                callback.onInstrumentsReady(AutofillPaymentApp.this, instruments);
-            }
-        });
+        new Handler().post(() -> callback.onInstrumentsReady(AutofillPaymentApp.this, instruments));
     }
 
     /** @return A set of card networks (e.g., "visa", "amex") accepted by "basic-card" method. */

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.payments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Handler;
 import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
@@ -30,7 +29,8 @@ import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
 import org.chromium.chrome.browser.payments.ui.LineItem;
 import org.chromium.chrome.browser.payments.ui.PaymentInformation;
 import org.chromium.chrome.browser.payments.ui.PaymentOption;
-import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection.FocusChangedObserver;
+import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection
+        .FocusChangedObserver;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
@@ -190,12 +190,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private static final String ANDROID_PAY_METHOD_NAME = "https://android.com/pay";
     private static final String PAY_WITH_GOOGLE_METHOD_NAME = "https://google.com/pay";
     private static final Comparator<Completable> COMPLETENESS_COMPARATOR =
-            new Comparator<Completable>() {
-                @Override
-                public int compare(Completable a, Completable b) {
-                    return (b.isComplete() ? 1 : 0) - (a.isComplete() ? 1 : 0);
-                }
-            };
+            (a, b) -> (b.isComplete() ? 1 : 0) - (a.isComplete() ? 1 : 0);
 
     /**
      * Sorts the payment instruments by several rules:
@@ -207,34 +202,31 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      *         instruments.
      */
     private static final Comparator<PaymentInstrument> PAYMENT_INSTRUMENT_COMPARATOR =
-            new Comparator<PaymentInstrument>() {
-                @Override
-                public int compare(PaymentInstrument a, PaymentInstrument b) {
-                    // Payment apps (not autofill) first.
-                    int autofill =
-                            (a.isAutofillInstrument() ? 1 : 0) - (b.isAutofillInstrument() ? 1 : 0);
-                    if (autofill != 0) return autofill;
+            (a, b) -> {
+                // Payment apps (not autofill) first.
+                int autofill =
+                        (a.isAutofillInstrument() ? 1 : 0) - (b.isAutofillInstrument() ? 1 : 0);
+                if (autofill != 0) return autofill;
 
-                    // Complete cards before cards with missing information.
-                    int completeness = (b.isComplete() ? 1 : 0) - (a.isComplete() ? 1 : 0);
-                    if (completeness != 0) return completeness;
+                // Complete cards before cards with missing information.
+                int completeness = (b.isComplete() ? 1 : 0) - (a.isComplete() ? 1 : 0);
+                if (completeness != 0) return completeness;
 
-                    // Cards with matching type before unknown type cards.
-                    int typeMatch = (b.isExactlyMatchingMerchantRequest() ? 1 : 0)
-                            - (a.isExactlyMatchingMerchantRequest() ? 1 : 0);
-                    if (typeMatch != 0) return typeMatch;
+                // Cards with matching type before unknown type cards.
+                int typeMatch = (b.isExactlyMatchingMerchantRequest() ? 1 : 0)
+                        - (a.isExactlyMatchingMerchantRequest() ? 1 : 0);
+                if (typeMatch != 0) return typeMatch;
 
-                    // Preselectable instruments before non-preselectable instruments.
-                    // Note that this only affects service worker payment apps' instruments for now
-                    // since autofill payment instruments have already been sorted by preselect
-                    // after sorting by completeness and typeMatch. And the other payment apps'
-                    // instruments can always be preselected.
-                    int canPreselect = (b.canPreselect() ? 1 : 0) - (a.canPreselect() ? 1 : 0);
-                    if (canPreselect != 0) return canPreselect;
+                // Preselectable instruments before non-preselectable instruments.
+                // Note that this only affects service worker payment apps' instruments for now
+                // since autofill payment instruments have already been sorted by preselect
+                // after sorting by completeness and typeMatch. And the other payment apps'
+                // instruments can always be preselected.
+                int canPreselect = (b.canPreselect() ? 1 : 0) - (a.canPreselect() ? 1 : 0);
+                if (canPreselect != 0) return canPreselect;
 
-                    // More frequently and recently used instruments first.
-                    return compareInstrumentsByFrecency(b, a);
-                }
+                // More frequently and recently used instruments first.
+                return compareInstrumentsByFrecency(b, a);
             };
 
     /** Every origin can call canMakePayment() every 30 minutes. */
@@ -544,13 +536,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         faviconHelper.getLocalFaviconImageForURL(Profile.getLastUsedProfile(),
                 mWebContents.getLastCommittedUrl(),
                 activity.getResources().getDimensionPixelSize(R.dimen.payments_favicon_size),
-                new FaviconHelper.FaviconImageCallback() {
-                    @Override
-                    public void onFaviconAvailable(Bitmap bitmap, String iconUrl) {
-                        if (mClient != null && bitmap == null) mClient.warnNoFavicon();
-                        if (mUI != null && bitmap != null) mUI.setTitleBitmap(bitmap);
-                        faviconHelper.destroy();
-                    }
+                (bitmap, iconUrl) -> {
+                    if (mClient != null && bitmap == null) mClient.warnNoFavicon();
+                    if (mUI != null && bitmap != null) mUI.setTitleBitmap(bitmap);
+                    faviconHelper.destroy();
                 });
 
         // Add the callback to change the label of shipping addresses depending on the focus.
@@ -1054,11 +1043,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (mPaymentMethodsSection == null) return;
 
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (mUI != null) providePaymentInformation();
-            }
+        mHandler.post(() -> {
+            if (mUI != null) providePaymentInformation();
         });
     }
 
@@ -1077,30 +1063,22 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
     @Override
     public void getShoppingCart(final Callback<ShoppingCart> callback) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                callback.onResult(mUiShoppingCart);
-            }
-        });
+        mHandler.post(() -> callback.onResult(mUiShoppingCart));
     }
 
     @Override
     public void getSectionInformation(@PaymentRequestUI.DataType final int optionType,
             final Callback<SectionInformation> callback) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
-                    callback.onResult(mShippingAddressesSection);
-                } else if (optionType == PaymentRequestUI.TYPE_SHIPPING_OPTIONS) {
-                    callback.onResult(mUiShippingOptions);
-                } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
-                    callback.onResult(mContactSection);
-                } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
-                    assert mPaymentMethodsSection != null;
-                    callback.onResult(mPaymentMethodsSection);
-                }
+        mHandler.post(() -> {
+            if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
+                callback.onResult(mShippingAddressesSection);
+            } else if (optionType == PaymentRequestUI.TYPE_SHIPPING_OPTIONS) {
+                callback.onResult(mUiShippingOptions);
+            } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
+                callback.onResult(mContactSection);
+            } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
+                assert mPaymentMethodsSection != null;
+                callback.onResult(mPaymentMethodsSection);
             }
         });
     }
@@ -1462,12 +1440,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             // period expires.
             query = new CanMakePaymentQuery(Collections.unmodifiableMap(mMethodData));
             sCanMakePaymentQueries.put(canMakePaymentId, query);
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    sCanMakePaymentQueries.remove(canMakePaymentId);
-                }
-            }, CAN_MAKE_PAYMENT_QUERY_PERIOD_MS);
+            mHandler.postDelayed(() -> sCanMakePaymentQueries.remove(canMakePaymentId),
+                    CAN_MAKE_PAYMENT_QUERY_PERIOD_MS);
         } else if (shouldEnforceCanMakePaymentQueryQuota()
                 && !query.matchesPaymentMethods(Collections.unmodifiableMap(mMethodData))) {
             // If there has been a canMakePayment() query in the last 30 minutes, but the previous
@@ -1810,12 +1784,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     private void closeUI(boolean immediateClose) {
         if (mUI != null) {
-            mUI.close(immediateClose, new Runnable() {
-                @Override
-                public void run() {
-                    if (mClient != null) mClient.onComplete();
-                    closeClient();
-                }
+            mUI.close(immediateClose, () -> {
+                if (mClient != null) mClient.onComplete();
+                closeClient();
             });
             mUI = null;
             mIsCurrentPaymentRequestShowing = false;

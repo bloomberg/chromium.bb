@@ -70,12 +70,7 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
     @Before
     public void setUp() throws Throwable {
         mRule.startMainActivityOnBlankPage();
-        mRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mParser.startUtilityProcess();
-            }
-        });
+        mRule.runOnUiThread((Runnable) () -> mParser.startUtilityProcess());
         mWebAppManifestUris = null;
         mSupportedOrigins = null;
         mAllOriginsSupported = false;
@@ -87,25 +82,15 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
 
     @After
     public void tearDown() throws Throwable {
-        mRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mParser.stopUtilityProcess();
-            }
-        });
+        mRule.runOnUiThread((Runnable) () -> mParser.stopUtilityProcess());
     }
 
     @Test
     @MediumTest
     @Feature({"Payments"})
     public void testParseInvalidPaymentMethodManifest() throws Throwable {
-        mRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mParser.parsePaymentMethodManifest(
-                        "invalid payment method manifest", PaymentManifestParserTest.this);
-            }
-        });
+        mRule.runOnUiThread((Runnable) () -> mParser.parsePaymentMethodManifest(
+                "invalid payment method manifest", PaymentManifestParserTest.this));
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -118,22 +103,17 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
     @MediumTest
     @Feature({"Payments"})
     public void testParsePaymentMethodManifest() throws Throwable {
-        mRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mParser.parsePaymentMethodManifest("{"
-                                + "  \"default_applications\": ["
-                                + "    \"https://bobpay.com/app.json\","
-                                + "    \"https://alicepay.com/app.json\""
-                                + "  ],"
-                                + "  \"supported_origins\": ["
-                                + "    \"https://charliepay.com\","
-                                + "    \"https://evepay.com\""
-                                + "  ]"
-                                + "}",
-                        PaymentManifestParserTest.this);
-            }
-        });
+        mRule.runOnUiThread((Runnable) () -> mParser.parsePaymentMethodManifest("{"
+                        + "  \"default_applications\": ["
+                        + "    \"https://bobpay.com/app.json\","
+                        + "    \"https://alicepay.com/app.json\""
+                        + "  ],"
+                        + "  \"supported_origins\": ["
+                        + "    \"https://charliepay.com\","
+                        + "    \"https://evepay.com\""
+                        + "  ]"
+                        + "}",
+                PaymentManifestParserTest.this));
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -155,13 +135,8 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
     @MediumTest
     @Feature({"Payments"})
     public void testParsePaymentMethodManifestWithAllOriginsSupported() throws Throwable {
-        mRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mParser.parsePaymentMethodManifest(
-                        "{\"supported_origins\": \"*\"}", PaymentManifestParserTest.this);
-            }
-        });
+        mRule.runOnUiThread((Runnable) () -> mParser.parsePaymentMethodManifest(
+                "{\"supported_origins\": \"*\"}", PaymentManifestParserTest.this));
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -179,13 +154,8 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
     @MediumTest
     @Feature({"Payments"})
     public void testParseInvalidWebAppManifest() throws Throwable {
-        mRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mParser.parseWebAppManifest(
-                        "invalid web app manifest", PaymentManifestParserTest.this);
-            }
-        });
+        mRule.runOnUiThread((Runnable) () -> mParser.parseWebAppManifest(
+                "invalid web app manifest", PaymentManifestParserTest.this));
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -198,26 +168,21 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
     @MediumTest
     @Feature({"Payments"})
     public void testParseWebAppManifest() throws Throwable {
-        mRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mParser.parseWebAppManifest("{"
-                                + "  \"related_applications\": [{"
-                                + "    \"platform\": \"play\", "
-                                + "    \"id\": \"com.bobpay.app\", "
-                                + "    \"min_version\": \"1\", "
-                                + "    \"fingerprints\": [{"
-                                + "      \"type\": \"sha256_cert\", "
-                                + "      \"value\": \""
-                                + "00:01:02:03:04:05:06:07:08:09:"
-                                + "A0:A1:A2:A3:A4:A5:A6:A7:A8:A9:"
-                                + "B0:B1:B2:B3:B4:B5:B6:B7:B8:B9:C0:C1\""
-                                + "    }]"
-                                + "  }]"
-                                + "}",
-                        PaymentManifestParserTest.this);
-            }
-        });
+        mRule.runOnUiThread((Runnable) () -> mParser.parseWebAppManifest("{"
+                        + "  \"related_applications\": [{"
+                        + "    \"platform\": \"play\", "
+                        + "    \"id\": \"com.bobpay.app\", "
+                        + "    \"min_version\": \"1\", "
+                        + "    \"fingerprints\": [{"
+                        + "      \"type\": \"sha256_cert\", "
+                        + "      \"value\": \""
+                        + "00:01:02:03:04:05:06:07:08:09:"
+                        + "A0:A1:A2:A3:A4:A5:A6:A7:A8:A9:"
+                        + "B0:B1:B2:B3:B4:B5:B6:B7:B8:B9:C0:C1\""
+                        + "    }]"
+                        + "  }]"
+                        + "}",
+                PaymentManifestParserTest.this));
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
