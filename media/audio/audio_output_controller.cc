@@ -48,11 +48,12 @@ AudioOutputController::AudioOutputController(
           params.sample_rate(),
           TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMillis)),
       on_more_io_data_called_(0),
-      ignore_errors_during_stop_close_(false) {
+      weak_factory_for_errors_(this) {
   DCHECK(audio_manager);
   DCHECK(handler_);
   DCHECK(sync_reader_);
   DCHECK(message_loop_.get());
+  weak_this_for_errors_ = weak_factory_for_errors_.GetWeakPtr();
 }
 
 AudioOutputController::~AudioOutputController() {
@@ -341,15 +342,14 @@ void AudioOutputController::LogAudioPowerLevel(const std::string& call_name) {
 }
 
 void AudioOutputController::OnError() {
-  {
-    base::AutoLock auto_lock(error_lock_);
-    if (ignore_errors_during_stop_close_)
-      return;
-  }
-
-  // Handle error on the audio controller thread.
-  message_loop_->PostTask(
-      FROM_HERE, base::BindOnce(&AudioOutputController::DoReportError, this));
+  // Handle error on the audio controller thread.  We defer errors for one
+  // second in case they are the result of a device change; delay chosen to
+  // exceed duration of device changes which take a few hundred milliseconds.
+  message_loop_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&AudioOutputController::DoReportError,
+                     weak_this_for_errors_),
+      base::TimeDelta::FromSeconds(1));
 }
 
 void AudioOutputController::DoStopCloseAndClearStream() {
@@ -357,10 +357,9 @@ void AudioOutputController::DoStopCloseAndClearStream() {
 
   // Allow calling unconditionally and bail if we don't have a stream_ to close.
   if (stream_) {
-    {
-      base::AutoLock auto_lock(error_lock_);
-      ignore_errors_during_stop_close_ = true;
-    }
+    // Ensure no errors will be delivered while we cycle streams and any that
+    // occurred immediately prior to the device change are dropped.
+    weak_factory_for_errors_.InvalidateWeakPtrs();
 
     // De-register from state change callbacks if stream_ was created via
     // AudioManager.
@@ -374,8 +373,8 @@ void AudioOutputController::DoStopCloseAndClearStream() {
       diverting_to_stream_ = NULL;
     stream_ = NULL;
 
-    // Since the stream is no longer running, no lock is necessary.
-    ignore_errors_during_stop_close_ = false;
+    // Since the stream is stopped, we can now update |weak_this_for_errors_|.
+    weak_this_for_errors_ = weak_factory_for_errors_.GetWeakPtr();
   }
 
   state_ = kEmpty;
