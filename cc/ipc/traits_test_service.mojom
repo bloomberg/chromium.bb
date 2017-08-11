@@ -10,7 +10,6 @@ import "cc/ipc/copy_output_result.mojom";
 import "cc/ipc/filter_operation.mojom";
 import "cc/ipc/filter_operations.mojom";
 import "cc/ipc/quads.mojom";
-import "cc/ipc/render_pass.mojom";
 import "cc/ipc/selection.mojom";
 import "cc/ipc/shared_quad_state.mojom";
 import "cc/ipc/surface_id.mojom";
@@ -37,9 +36,6 @@ interface TraitsTestService {
 
   [Sync]
   EchoFilterOperations(FilterOperations f) => (FilterOperations pass);
-
-  [Sync]
-  EchoRenderPass(RenderPass r) => (RenderPass pass);
 
   [Sync]
   EchoSelection(Selection s) => (Selection pass);
