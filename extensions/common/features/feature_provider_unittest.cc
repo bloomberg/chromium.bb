@@ -171,7 +171,7 @@ TEST(FeatureProviderTest, GetChildren) {
 
   const Feature* parent = provider.GetFeature("parent");
   ASSERT_TRUE(parent);
-  std::vector<Feature*> children = provider.GetChildren(*parent);
+  std::vector<const Feature*> children = provider.GetChildren(*parent);
   std::set<std::string> children_names;
   for (const Feature* child : children)
     children_names.insert(child->name());

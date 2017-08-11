@@ -52,7 +52,7 @@ class FeatureProvider {
   const Feature* GetParent(const Feature& feature) const;
 
   // Returns the features inside the |parent| namespace, recursively.
-  std::vector<Feature*> GetChildren(const Feature& parent) const;
+  std::vector<const Feature*> GetChildren(const Feature& parent) const;
 
   // Returns a map containing all features described by this instance.
   // TODO(devlin): Rename this to be features().
