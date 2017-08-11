@@ -136,18 +136,6 @@ bool PaymentsProfileComparator::IsContactInfoComplete(
            GetRequiredProfileFieldsForContact());
 }
 
-base::string16 PaymentsProfileComparator::GetStringForMissingContactFields(
-    const autofill::AutofillProfile& profile) const {
-  return GetStringForMissingFields(GetMissingProfileFields(&profile) &
-                                   GetRequiredProfileFieldsForContact());
-}
-
-base::string16 PaymentsProfileComparator::GetTitleForMissingContactFields(
-    const autofill::AutofillProfile& profile) const {
-  return GetTitleForMissingFields(GetMissingProfileFields(&profile) &
-                                  GetRequiredProfileFieldsForContact());
-}
-
 std::vector<autofill::AutofillProfile*>
 PaymentsProfileComparator::FilterProfilesForShipping(
     const std::vector<autofill::AutofillProfile*>& profiles) const {
@@ -188,10 +176,28 @@ bool PaymentsProfileComparator::IsShippingComplete(
            GetRequiredProfileFieldsForShipping());
 }
 
+base::string16 PaymentsProfileComparator::GetStringForMissingContactFields(
+    const autofill::AutofillProfile& profile) const {
+  return GetStringForMissingFields(GetMissingProfileFields(&profile) &
+                                   GetRequiredProfileFieldsForContact());
+}
+
+base::string16 PaymentsProfileComparator::GetTitleForMissingContactFields(
+    const autofill::AutofillProfile& profile) const {
+  return GetTitleForMissingFields(GetMissingProfileFields(&profile) &
+                                  GetRequiredProfileFieldsForContact());
+}
+
 base::string16 PaymentsProfileComparator::GetStringForMissingShippingFields(
     const autofill::AutofillProfile& profile) const {
   return GetStringForMissingFields(GetMissingProfileFields(&profile) &
                                    GetRequiredProfileFieldsForShipping());
+}
+
+base::string16 PaymentsProfileComparator::GetTitleForMissingShippingFields(
+    const autofill::AutofillProfile& profile) const {
+  return GetTitleForMissingFields(GetMissingProfileFields(&profile) &
+                                  GetRequiredProfileFieldsForShipping());
 }
 
 void PaymentsProfileComparator::Invalidate(
