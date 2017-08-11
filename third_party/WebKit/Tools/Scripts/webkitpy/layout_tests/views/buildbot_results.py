@@ -34,9 +34,11 @@ from webkitpy.common.net.layout_test_results import LayoutTestResults
 
 
 class BuildBotPrinter(object):
-    # This output is parsed by buildbots and must only be changed in coordination with buildbot scripts (see webkit.org's
-    # Tools/BuildSlaveSupport/build.webkit.org-config/master.cfg: RunWebKitTests._parseNewRunWebKitTestsOutput
-    # and chromium.org's buildbot/master.chromium/scripts/master/log_parser/webkit_test_command.py).
+    # This output was previously parsed on buildbot runs by
+    # build/scripts/master/log_parser/webkit_test_command.py,
+    # but this is no longer the case.
+    # TODO(qyearsley): Remove this module, and potentially
+    # move any useful printing to printing.py.
 
     def __init__(self, stream, debug_logging):
         self.stream = stream
@@ -63,9 +65,6 @@ class BuildBotPrinter(object):
         self._print_run_results_entry(run_results, test_expectations.NOW, 'Tests to be fixed')
 
         self._print('')
-        # FIXME: We should be skipping anything marked WONTFIX, so we shouldn't bother logging these stats.
-        self._print_run_results_entry(run_results, test_expectations.WONTFIX,
-                                      'Tests that will only be fixed if they crash (WONTFIX)')
         self._print('')
 
     def _print_run_results_entry(self, run_results, timeline, heading):
