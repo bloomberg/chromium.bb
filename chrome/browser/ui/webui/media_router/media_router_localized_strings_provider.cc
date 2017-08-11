@@ -49,6 +49,10 @@ void AddRouteDetailsStrings(content::WebUIDataSource* html_source) {
                                   IDS_MEDIA_ROUTER_ROUTE_DETAILS_SEEK_TITLE);
   html_source->AddLocalizedString("volumeTitle",
                                   IDS_MEDIA_ROUTER_ROUTE_DETAILS_VOLUME_TITLE);
+  html_source->AddLocalizedString(
+      "currentTimeLabel", IDS_MEDIA_ROUTER_ROUTE_DETAILS_CURRENT_TIME_LABEL);
+  html_source->AddLocalizedString(
+      "durationLabel", IDS_MEDIA_ROUTER_ROUTE_DETAILS_DURATION_LABEL);
 }
 
 void AddIssuesStrings(content::WebUIDataSource* html_source) {

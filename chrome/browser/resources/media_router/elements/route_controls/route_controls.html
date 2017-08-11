@@ -17,6 +17,7 @@
       <div>
         <div id="route-time-controls" hidden="[[!routeStatus.canSeek]]">
           <paper-slider
+              aria-valuetext$="[[getTimeSliderValueText_(displayedCurrentTime_)]]"
               dir="ltr"
               id="route-time-slider"
               on-change="onSeekComplete_"
@@ -25,10 +26,12 @@
               title="[[i18n('seekTitle')]]"
               value="[[displayedCurrentTime_]]"></paper-slider>
           <div id="timeline">
-            <span id="current-time">
+            <span id="current-time"
+                  aria-label$="[[getCurrentTimeLabel_(displayedCurrentTime_)]]">
               [[getFormattedTime_(displayedCurrentTime_)]]
             </span>
-            <span id="duration">
+            <span id="duration"
+                  aria-label$="[[getDurationLabel_(routeStatus.duration)]]">
               [[getFormattedTime_(routeStatus.duration)]]
             </span>
           </div>

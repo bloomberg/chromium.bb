@@ -169,6 +169,12 @@
   <message name="IDS_MEDIA_ROUTER_ROUTE_DETAILS_VOLUME_TITLE" desc="The title label for a volume control bar for media contents.">
     Volume
   </message>
+  <message name="IDS_MEDIA_ROUTER_ROUTE_DETAILS_CURRENT_TIME_LABEL" desc="The label for the current time position of media contents.">
+    Current time
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ROUTE_DETAILS_DURATION_LABEL" desc="The label for the total duration of media contents.">
+    Duration
+  </message>
 
   <!-- Sink List -->
   <message name="IDS_MEDIA_ROUTER_DESTINATION_MISSING" desc="Link to display when no Cast destinations are found which, on click, opens a page to the Chromecast help center explaining possible reasons why none are detected.">
