@@ -540,7 +540,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   }
 
   void SetOrderNewRemoteCategoriesBasedOnArticlesCategoryParam(bool value) {
-    // params_manager supports only one
+    // VariationParamsManager supports only one
     // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
     // previous settings first to make this explicit.
     params_manager_.ClearAllVariationParams();
@@ -554,7 +554,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   void EnableKeepingPrefetchedContentSuggestions(
       int max_additional_prefetched_suggestions,
       const base::TimeDelta& max_age_for_additional_prefetched_suggestion) {
-    // params_manager supports only one
+    // VariationParamsManager supports only one
     // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
     // previous settings first to make this explicit.
     params_manager_.ClearAllVariationParams();
@@ -572,7 +572,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
 
   void SetTriggeringNotificationsParams(bool fetched_enabled,
                                         bool pushed_enabled) {
-    // params_manager supports only one
+    // VariationParamsManager supports only one
     // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
     // previous settings first to make this explicit.
     params_manager_.ClearAllVariationParams();

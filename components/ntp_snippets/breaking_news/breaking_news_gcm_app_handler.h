@@ -53,7 +53,8 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
       std::unique_ptr<SubscriptionManager> subscription_manager,
       const ParseJSONCallback& parse_json_callback,
       std::unique_ptr<base::Clock> clock,
-      std::unique_ptr<base::OneShotTimer> token_validation_timer);
+      std::unique_ptr<base::OneShotTimer> token_validation_timer,
+      std::unique_ptr<base::OneShotTimer> forced_subscription_timer);
 
   // If still listening, calls StopListening()
   ~BreakingNewsGCMAppHandler() override;
@@ -100,6 +101,12 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
   // If the validation is due, it may be scheduled immediately.
   void ScheduleNextTokenValidation();
 
+  // Subscribe to content suggestions service using the existing token.
+  void ForceSubscribe();
+
+  // If the subscription is due, it may be scheduled immediately.
+  void ScheduleNextForcedSubscription();
+
   // Called after successfully parsing the received suggestion JSON.
   void OnJsonSuccess(std::unique_ptr<base::Value> content);
 
@@ -119,6 +126,7 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
   OnNewRemoteSuggestionCallback on_new_remote_suggestion_callback_;
 
   std::unique_ptr<base::OneShotTimer> token_validation_timer_;
+  std::unique_ptr<base::OneShotTimer> forced_subscription_timer_;
 
   base::WeakPtrFactory<BreakingNewsGCMAppHandler> weak_ptr_factory_;
 

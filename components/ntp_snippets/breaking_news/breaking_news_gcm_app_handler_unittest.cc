@@ -19,10 +19,12 @@
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/test_utils.h"
 #include "components/ntp_snippets/time_serialization.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/variations/variations_params_manager.h"
 #include "google_apis/gcm/engine/account_mapping.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -182,7 +184,15 @@ base::TimeDelta GetTokenValidationPeriod() {
   return base::TimeDelta::FromHours(24);
 }
 
+base::TimeDelta GetForcedSubscriptionPeriod() {
+  return base::TimeDelta::FromHours(7 * 24);
+}
+
 const char kBreakingNewsGCMAppID[] = "com.google.breakingnews.gcm";
+
+std::string BoolToString(bool value) {
+  return value ? "true" : "false";
+}
 
 }  // namespace
 
@@ -208,6 +218,8 @@ class BreakingNewsGCMAppHandlerTest : public testing::Test {
     tick_clock_ = timer_mock_task_runner->GetMockTickClock();
     message_loop_.SetTaskRunner(timer_mock_task_runner);
 
+    // TODO(vitaliii): Initialize MockSubscriptionManager in the constructor, so
+    // that one could set up expectations before creating the handler.
     auto wrapped_mock_subscription_manager =
         base::MakeUnique<NiceMock<MockSubscriptionManager>>();
     mock_subscription_manager_ = wrapped_mock_subscription_manager.get();
@@ -216,12 +228,33 @@ class BreakingNewsGCMAppHandlerTest : public testing::Test {
         base::MakeUnique<base::OneShotTimer>(tick_clock_.get());
     token_validation_timer->SetTaskRunner(timer_mock_task_runner);
 
+    auto forced_subscription_timer =
+        base::MakeUnique<base::OneShotTimer>(tick_clock_.get());
+    forced_subscription_timer->SetTaskRunner(timer_mock_task_runner);
+
     return base::MakeUnique<BreakingNewsGCMAppHandler>(
         mock_gcm_driver_.get(), mock_instance_id_driver_.get(), pref_service(),
         std::move(wrapped_mock_subscription_manager),
         BreakingNewsGCMAppHandler::ParseJSONCallback(),
         timer_mock_task_runner->GetMockClock(),
-        std::move(token_validation_timer));
+        std::move(token_validation_timer),
+        std::move(forced_subscription_timer));
+  }
+
+  void SetFeatureParams(bool enable_token_validation,
+                        bool enable_forced_subscription) {
+    // VariationParamsManager supports only one
+    // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
+    // previous settings first to make this explicit.
+    params_manager_.ClearAllVariationParams();
+    params_manager_.SetVariationParamsWithFeatureAssociations(
+        kBreakingNewsPushFeature.name,
+        {
+            {"enable_token_validation", BoolToString(enable_token_validation)},
+            {"enable_forced_subscription",
+             BoolToString(enable_forced_subscription)},
+        },
+        {kBreakingNewsPushFeature.name});
   }
 
   PrefService* pref_service() { return utils_.pref_service(); }
@@ -233,6 +266,7 @@ class BreakingNewsGCMAppHandlerTest : public testing::Test {
   }
 
  private:
+  variations::testing::VariationParamsManager params_manager_;
   base::MessageLoop message_loop_;
   test::RemoteSuggestionsTestUtils utils_;
   NiceMock<MockSubscriptionManager>* mock_subscription_manager_;
@@ -244,6 +278,9 @@ class BreakingNewsGCMAppHandlerTest : public testing::Test {
 
 TEST_F(BreakingNewsGCMAppHandlerTest,
        ShouldValidateTokenImmediatelyIfValidationIsDue) {
+  SetFeatureParams(/*enable_token_validation=*/true,
+                   /*enable_forced_subscription=*/false);
+
   // Last validation was long time ago.
   const base::Time last_validation =
       GetDummyNow() - 10 * GetTokenValidationPeriod();
@@ -270,6 +307,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
 
 TEST_F(BreakingNewsGCMAppHandlerTest,
        ShouldScheduleTokenValidationIfNotYetDue) {
+  SetFeatureParams(/*enable_token_validation=*/true,
+                   /*enable_forced_subscription=*/false);
+
   // The next validation will be soon.
   const base::TimeDelta time_to_validation = base::TimeDelta::FromHours(1);
   const base::Time last_validation =
@@ -292,7 +332,7 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
   task_runner->FastForwardBy(time_to_validation -
                              base::TimeDelta::FromSeconds(1));
 
-  // But when it is a time, validation happens.
+  // But when it is time, validation happens.
   EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
       .WillOnce(
           InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
@@ -300,6 +340,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
 }
 
 TEST_F(BreakingNewsGCMAppHandlerTest, ShouldNotValidateTokenBeforeListening) {
+  SetFeatureParams(/*enable_token_validation=*/true,
+                   /*enable_forced_subscription=*/false);
+
   // Last validation was long time ago.
   const base::Time last_validation =
       GetDummyNow() - 10 * GetTokenValidationPeriod();
@@ -317,7 +360,11 @@ TEST_F(BreakingNewsGCMAppHandlerTest, ShouldNotValidateTokenBeforeListening) {
   task_runner->FastForwardBy(10 * GetTokenValidationPeriod());
 }
 
-TEST_F(BreakingNewsGCMAppHandlerTest, ShouldNotValidateTokenAfterListening) {
+TEST_F(BreakingNewsGCMAppHandlerTest,
+       ShouldNotValidateTokenAfterStopListening) {
+  SetFeatureParams(/*enable_token_validation=*/true,
+                   /*enable_forced_subscription=*/false);
+
   // The next validation will be soon.
   const base::TimeDelta time_to_validation = base::TimeDelta::FromHours(1);
   const base::Time last_validation =
@@ -344,6 +391,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest, ShouldNotValidateTokenAfterListening) {
 
 TEST_F(BreakingNewsGCMAppHandlerTest,
        ShouldRescheduleTokenValidationWhenRetrievingToken) {
+  SetFeatureParams(/*enable_token_validation=*/true,
+                   /*enable_forced_subscription=*/false);
+
   // The next validation will be soon.
   const base::TimeDelta time_to_validation = base::TimeDelta::FromHours(1);
   const base::Time last_validation =
@@ -377,6 +427,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
 
 TEST_F(BreakingNewsGCMAppHandlerTest,
        ShouldScheduleNewTokenValidationAfterValidation) {
+  SetFeatureParams(/*enable_token_validation=*/true,
+                   /*enable_forced_subscription=*/false);
+
   // The next validation will be soon.
   const base::TimeDelta time_to_validation = base::TimeDelta::FromHours(1);
   const base::Time last_validation =
@@ -413,6 +466,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
 
 TEST_F(BreakingNewsGCMAppHandlerTest,
        ShouldResubscribeWithNewTokenIfOldIsInvalidAfterValidation) {
+  SetFeatureParams(/*enable_token_validation=*/true,
+                   /*enable_forced_subscription=*/false);
+
   // Last validation was long time ago.
   const base::Time last_validation =
       GetDummyNow() - 10 * GetTokenValidationPeriod();
@@ -441,6 +497,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
 
 TEST_F(BreakingNewsGCMAppHandlerTest,
        ShouldDoNothingIfOldTokenIsValidAfterValidation) {
+  SetFeatureParams(/*enable_token_validation=*/true,
+                   /*enable_forced_subscription=*/false);
+
   // Last validation was long time ago.
   const base::Time last_validation =
       GetDummyNow() - 10 * GetTokenValidationPeriod();
@@ -469,6 +528,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
 
 TEST_F(BreakingNewsGCMAppHandlerTest,
        IsListeningShouldReturnFalseBeforeListening) {
+  SetFeatureParams(/*enable_token_validation=*/false,
+                   /*enable_forced_subscription=*/false);
+
   scoped_refptr<TestMockTimeTaskRunner> task_runner(
       new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
   auto handler = MakeHandler(task_runner);
@@ -478,6 +540,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
 
 TEST_F(BreakingNewsGCMAppHandlerTest,
        IsListeningShouldReturnTrueAfterStartListening) {
+  SetFeatureParams(/*enable_token_validation=*/false,
+                   /*enable_forced_subscription=*/false);
+
   scoped_refptr<TestMockTimeTaskRunner> task_runner(
       new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
   auto handler = MakeHandler(task_runner);
@@ -494,6 +559,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
 
 TEST_F(BreakingNewsGCMAppHandlerTest,
        IsListeningShouldReturnFalseAfterStopListening) {
+  SetFeatureParams(/*enable_token_validation=*/false,
+                   /*enable_forced_subscription=*/false);
+
   scoped_refptr<TestMockTimeTaskRunner> task_runner(
       new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
   auto handler = MakeHandler(task_runner);
@@ -513,6 +581,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
 
 TEST_F(BreakingNewsGCMAppHandlerTest,
        IsListeningShouldReturnTrueAfterSecondStartListening) {
+  SetFeatureParams(/*enable_token_validation=*/false,
+                   /*enable_forced_subscription=*/false);
+
   scoped_refptr<TestMockTimeTaskRunner> task_runner(
       new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
   auto handler = MakeHandler(task_runner);
@@ -532,6 +603,193 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
       base::Bind([](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}));
 
   EXPECT_TRUE(handler->IsListening());
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest, ShouldForceSubscribeImmediatelyIfDue) {
+  SetFeatureParams(/*enable_token_validation=*/false,
+                   /*enable_forced_subscription=*/true);
+
+  // Last subscription was long time ago.
+  const base::Time last_subscription =
+      GetDummyNow() - 10 * GetForcedSubscriptionPeriod();
+  pref_service()->SetInt64(prefs::kBreakingNewsGCMLastForcedSubscriptionTime,
+                           SerializeTime(last_subscription));
+  // Omit receiving the token by putting it there directly.
+  pref_service()->SetString(prefs::kBreakingNewsGCMSubscriptionTokenCache,
+                            "token");
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+  auto handler = MakeHandler(task_runner);
+
+  handler->StartListening(
+      base::Bind([](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}));
+  EXPECT_CALL(*mock_subscription_manager(), Subscribe("token"));
+  task_runner->RunUntilIdle();
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest,
+       ShouldScheduleForcedSubscribtionIfNotYetDue) {
+  SetFeatureParams(/*enable_token_validation=*/false,
+                   /*enable_forced_subscription=*/true);
+
+  // The next forced subscription will be soon.
+  const base::TimeDelta time_to_subscription = base::TimeDelta::FromHours(1);
+  const base::Time last_subscription =
+      GetDummyNow() - (GetForcedSubscriptionPeriod() - time_to_subscription);
+  pref_service()->SetInt64(prefs::kBreakingNewsGCMLastForcedSubscriptionTime,
+                           SerializeTime(last_subscription));
+  // Omit receiving the token by putting it there directly.
+  pref_service()->SetString(prefs::kBreakingNewsGCMSubscriptionTokenCache,
+                            "token");
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+  auto handler = MakeHandler(task_runner);
+
+  // Check that handler does not force subscribe yet.
+  handler->StartListening(
+      base::Bind([](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}));
+  // TODO(vitaliii): Consider making FakeSubscriptionManager, because
+  // IsSubscribed() affects forced subscriptions. Currently we have to carefully
+  // avoid the initial subscription.
+  EXPECT_CALL(*mock_subscription_manager(), Subscribe("token")).Times(0);
+  task_runner->FastForwardBy(time_to_subscription -
+                             base::TimeDelta::FromSeconds(1));
+
+  // But when it is time, forced subscription happens.
+  testing::Mock::VerifyAndClearExpectations(mock_subscription_manager());
+  EXPECT_CALL(*mock_subscription_manager(), Subscribe("token"));
+  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest, ShouldNotForceSubscribeBeforeListening) {
+  SetFeatureParams(/*enable_token_validation=*/false,
+                   /*enable_forced_subscription=*/true);
+
+  // Last subscription was long time ago.
+  const base::Time last_subscription =
+      GetDummyNow() - 10 * GetForcedSubscriptionPeriod();
+  pref_service()->SetInt64(prefs::kBreakingNewsGCMLastForcedSubscriptionTime,
+                           SerializeTime(last_subscription));
+  // Omit receiving the token by putting it there directly.
+  pref_service()->SetString(prefs::kBreakingNewsGCMSubscriptionTokenCache,
+                            "token");
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+
+  // Check that handler does not force subscribe before StartListening even
+  // though a forced subscription is due.
+  auto handler = MakeHandler(task_runner);
+  EXPECT_CALL(*mock_subscription_manager(), Subscribe("token")).Times(0);
+  task_runner->FastForwardBy(10 * GetForcedSubscriptionPeriod());
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest,
+       ShouldNotForceSubscribeAfterStopListening) {
+  SetFeatureParams(/*enable_token_validation=*/false,
+                   /*enable_forced_subscription=*/true);
+
+  // The next forced subscription will be soon.
+  const base::TimeDelta time_to_subscription = base::TimeDelta::FromHours(1);
+  const base::Time last_subscription =
+      GetDummyNow() - (GetForcedSubscriptionPeriod() - time_to_subscription);
+  pref_service()->SetInt64(prefs::kBreakingNewsGCMLastForcedSubscriptionTime,
+                           SerializeTime(last_subscription));
+  // Omit receiving the token by putting it there directly.
+  pref_service()->SetString(prefs::kBreakingNewsGCMSubscriptionTokenCache,
+                            "token");
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+
+  // Check that handler does not force subscribe after StopListening even
+  // though a forced subscription is due.
+  auto handler = MakeHandler(task_runner);
+  handler->StartListening(
+      base::Bind([](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}));
+  handler->StopListening();
+  EXPECT_CALL(*mock_subscription_manager(), Subscribe("token")).Times(0);
+  task_runner->FastForwardBy(10 * GetForcedSubscriptionPeriod());
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest,
+       ShouldScheduleNewForcedSubscriptionAfterForcedSubscription) {
+  SetFeatureParams(/*enable_token_validation=*/false,
+                   /*enable_forced_subscription=*/true);
+
+  // The next forced subscription will be soon.
+  const base::TimeDelta time_to_subscription = base::TimeDelta::FromHours(1);
+  const base::Time last_subscription =
+      GetDummyNow() - (GetForcedSubscriptionPeriod() - time_to_subscription);
+  pref_service()->SetInt64(prefs::kBreakingNewsGCMLastForcedSubscriptionTime,
+                           SerializeTime(last_subscription));
+  // Omit receiving the token by putting it there directly.
+  pref_service()->SetString(prefs::kBreakingNewsGCMSubscriptionTokenCache,
+                            "token");
+
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+  auto handler = MakeHandler(task_runner);
+  handler->StartListening(
+      base::Bind([](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}));
+
+  // Handler force subscribes.
+  EXPECT_CALL(*mock_subscription_manager(), Subscribe("token"));
+  task_runner->FastForwardBy(time_to_subscription);
+
+  // Check that the next forced subscription is scheduled in time.
+  EXPECT_CALL(*mock_subscription_manager(), Subscribe("token")).Times(0);
+  task_runner->FastForwardBy(GetForcedSubscriptionPeriod() -
+                             base::TimeDelta::FromSeconds(1));
+
+  EXPECT_CALL(*mock_subscription_manager(), Subscribe("token"));
+  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest,
+       TokenValidationAndForcedSubscriptionShouldNotAffectEachOther) {
+  SetFeatureParams(/*enable_token_validation=*/true,
+                   /*enable_forced_subscription=*/true);
+
+  // The next forced subscription will be soon.
+  const base::TimeDelta time_to_subscription = base::TimeDelta::FromHours(1);
+  const base::Time last_subscription =
+      GetDummyNow() - (GetForcedSubscriptionPeriod() - time_to_subscription);
+  pref_service()->SetInt64(prefs::kBreakingNewsGCMLastForcedSubscriptionTime,
+                           SerializeTime(last_subscription));
+
+  // The next validation will be sooner.
+  const base::TimeDelta time_to_validation = base::TimeDelta::FromMinutes(30);
+  const base::Time last_validation =
+      GetDummyNow() - (GetTokenValidationPeriod() - time_to_validation);
+  pref_service()->SetInt64(prefs::kBreakingNewsGCMLastTokenValidationTime,
+                           SerializeTime(last_validation));
+
+  // Omit receiving the token by putting it there directly.
+  pref_service()->SetString(prefs::kBreakingNewsGCMSubscriptionTokenCache,
+                            "token");
+
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+  auto handler = MakeHandler(task_runner);
+  handler->StartListening(
+      base::Bind([](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}));
+
+  // Check that the next validation is scheduled in time.
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _)).Times(0);
+  task_runner->FastForwardBy(time_to_validation -
+                             base::TimeDelta::FromSeconds(1));
+
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+      .WillOnce(
+          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // Check that the next forced subscription is scheduled in time.
+  EXPECT_CALL(*mock_subscription_manager(), Subscribe("token")).Times(0);
+  task_runner->FastForwardBy((time_to_subscription - time_to_validation) -
+                             base::TimeDelta::FromSeconds(1));
+
+  EXPECT_CALL(*mock_subscription_manager(), Subscribe("token"));
+  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
 
 }  // namespace ntp_snippets
