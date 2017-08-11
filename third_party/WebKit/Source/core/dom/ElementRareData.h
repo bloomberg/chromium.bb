@@ -38,6 +38,7 @@
 #include "core/html/custom/V0CustomElementDefinition.h"
 #include "core/intersection_observer/ElementIntersectionObserverData.h"
 #include "platform/bindings/ScriptWrappableVisitor.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
 
@@ -77,7 +78,6 @@ class ElementRareData : public NodeRareData {
   ElementShadow& EnsureShadow() {
     if (!shadow_) {
       shadow_ = ElementShadow::Create();
-      ScriptWrappableVisitor::WriteBarrier(shadow_);
     }
     return *shadow_;
   }
@@ -85,7 +85,6 @@ class ElementRareData : public NodeRareData {
   NamedNodeMap* AttributeMap() const { return attribute_map_.Get(); }
   void SetAttributeMap(NamedNodeMap* attribute_map) {
     attribute_map_ = attribute_map;
-    ScriptWrappableVisitor::WriteBarrier(attribute_map_);
   }
 
   ComputedStyle* GetComputedStyle() const { return computed_style_.Get(); }
@@ -97,13 +96,11 @@ class ElementRareData : public NodeRareData {
   DOMTokenList* GetClassList() const { return class_list_.Get(); }
   void SetClassList(DOMTokenList* class_list) {
     class_list_ = class_list;
-    ScriptWrappableVisitor::WriteBarrier(class_list_);
   }
 
   DatasetDOMStringMap* Dataset() const { return dataset_.Get(); }
   void SetDataset(DatasetDOMStringMap* dataset) {
     dataset_ = dataset;
-    ScriptWrappableVisitor::WriteBarrier(dataset_);
   }
 
   ScrollOffset SavedLayerScrollOffset() const {
@@ -141,7 +138,6 @@ class ElementRareData : public NodeRareData {
   AccessibleNode* EnsureAccessibleNode(Element* owner_element) {
     if (!accessible_node_) {
       accessible_node_ = new AccessibleNode(owner_element);
-      ScriptWrappableVisitor::WriteBarrier(accessible_node_);
     }
     return accessible_node_;
   }
@@ -151,7 +147,6 @@ class ElementRareData : public NodeRareData {
   void RemoveAttrNodeList() { attr_node_list_.Clear(); }
   void AddAttr(Attr* attr) {
     EnsureAttrNodeList().push_back(attr);
-    ScriptWrappableVisitor::WriteBarrier(attr);
   }
 
   ElementIntersectionObserverData* IntersectionObserverData() const {
@@ -160,13 +155,12 @@ class ElementRareData : public NodeRareData {
   ElementIntersectionObserverData& EnsureIntersectionObserverData() {
     if (!intersection_observer_data_) {
       intersection_observer_data_ = new ElementIntersectionObserverData();
-      ScriptWrappableVisitor::WriteBarrier(intersection_observer_data_);
     }
     return *intersection_observer_data_;
   }
 
-  using ResizeObserverDataMap =
-      HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>;
+  using ResizeObserverDataMap = HeapHashMap<TraceWrapperMember<ResizeObserver>,
+                                            Member<ResizeObservation>>;
 
   ResizeObserverDataMap* ResizeObserverData() const {
     return resize_observer_data_;
@@ -183,16 +177,17 @@ class ElementRareData : public NodeRareData {
   ScrollOffset saved_layer_scroll_offset_;
   AtomicString nonce_;
 
-  Member<DatasetDOMStringMap> dataset_;
-  Member<ElementShadow> shadow_;
-  Member<DOMTokenList> class_list_;
-  Member<NamedNodeMap> attribute_map_;
+  TraceWrapperMember<DatasetDOMStringMap> dataset_;
+  TraceWrapperMember<ElementShadow> shadow_;
+  TraceWrapperMember<DOMTokenList> class_list_;
+  TraceWrapperMember<NamedNodeMap> attribute_map_;
   Member<AttrNodeList> attr_node_list_;
   Member<InlineCSSStyleDeclaration> cssom_wrapper_;
   Member<InlineStylePropertyMap> cssom_map_wrapper_;
 
   Member<ElementAnimations> element_animations_;
-  Member<ElementIntersectionObserverData> intersection_observer_data_;
+  TraceWrapperMember<ElementIntersectionObserverData>
+      intersection_observer_data_;
   Member<ResizeObserverDataMap> resize_observer_data_;
 
   RefPtr<ComputedStyle> computed_style_;
@@ -202,7 +197,7 @@ class ElementRareData : public NodeRareData {
 
   Member<PseudoElementData> pseudo_element_data_;
 
-  Member<AccessibleNode> accessible_node_;
+  TraceWrapperMember<AccessibleNode> accessible_node_;
 
   explicit ElementRareData(NodeRenderingData*);
 };

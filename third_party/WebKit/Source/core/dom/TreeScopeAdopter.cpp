@@ -33,6 +33,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/html/custom/CustomElement.h"
+#include "platform/bindings/TraceWrapperMember.h"
 
 namespace blink {
 
@@ -72,7 +73,8 @@ void TreeScopeAdopter::MoveTreeToNewScope(Node& root) const {
       continue;
     Element& element = ToElement(node);
 
-    if (HeapVector<Member<Attr>>* attrs = element.GetAttrNodeList()) {
+    if (HeapVector<TraceWrapperMember<Attr>>* attrs =
+            element.GetAttrNodeList()) {
       for (const auto& attr : *attrs)
         MoveTreeToNewScope(*attr);
     }
@@ -97,7 +99,8 @@ void TreeScopeAdopter::MoveTreeToNewDocument(Node& root,
       continue;
     Element& element = ToElement(node);
 
-    if (HeapVector<Member<Attr>>* attrs = element.GetAttrNodeList()) {
+    if (HeapVector<TraceWrapperMember<Attr>>* attrs =
+            element.GetAttrNodeList()) {
       for (const auto& attr : *attrs)
         MoveTreeToNewDocument(*attr, old_document, new_document);
     }
