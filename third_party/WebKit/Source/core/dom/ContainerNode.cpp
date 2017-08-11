@@ -626,8 +626,8 @@ DEFINE_TRACE(ContainerNode) {
 }
 
 DEFINE_TRACE_WRAPPERS(ContainerNode) {
-  visitor->TraceWrappersWithManualWriteBarrier(first_child_);
-  visitor->TraceWrappersWithManualWriteBarrier(last_child_);
+  visitor->TraceWrappers(first_child_);
+  visitor->TraceWrappers(last_child_);
   Node::TraceWrappers(visitor);
 }
 
