@@ -496,9 +496,8 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
 
   base::TimeDelta timeout =
       base::TimeDelta::FromMilliseconds(kLockFailTimeoutMs);
-  // Increase lock timeout for "daisy", see http://crbug.com/350628. (The boards
-  // "daisy_spring" and "daisy_skate" are fast thus using an exact string match
-  // instead of base::StartsWith().)
+  // TODO(derat): Remove this scaling after October 2017 when daisy (Samsung
+  // Chromebook XE303) is unsupported.
   if (base::SysInfo::GetStrippedReleaseBoard() == "daisy")
     timeout *= 2;
   lock_fail_timer_.Start(FROM_HERE, timeout, this,
