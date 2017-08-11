@@ -23,7 +23,9 @@ namespace {
 // coordinate system in which the bubble is drawn.
 CGFloat LeadingDistance(CGPoint anchorPoint,
                         BubbleAlignment alignment,
-                        CGFloat bubbleWidth) {
+                        CGFloat bubbleWidth,
+                        CGFloat boundingWidth,
+                        bool isRTL) {
   // Find |leadingOffset|, the distance from the bubble's leading edge to the
   // anchor point. This depends on alignment and bubble width.
   CGFloat leadingOffset;
@@ -41,7 +43,11 @@ CGFloat LeadingDistance(CGPoint anchorPoint,
       NOTREACHED() << "Invalid bubble alignment " << alignment;
       break;
   }
-  return anchorPoint.x - leadingOffset;
+  if (isRTL) {
+    return boundingWidth - (anchorPoint.x + leadingOffset);
+  } else {
+    return anchorPoint.x - leadingOffset;
+  }
 }
 
 // Calculate the y-coordinate of the bubble's origin based on |anchorPoint|, the
@@ -189,7 +195,8 @@ CGRect BubbleFrame(CGPoint anchorPoint,
                    BubbleAlignment alignment,
                    CGFloat boundingWidth,
                    bool isRTL) {
-  CGFloat leading = LeadingDistance(anchorPoint, alignment, size.width);
+  CGFloat leading =
+      LeadingDistance(anchorPoint, alignment, size.width, boundingWidth, isRTL);
   CGFloat originY = OriginY(anchorPoint, direction, size.height);
   // Use a |LayoutRect| to ensure that the bubble is mirrored in RTL contexts.
   base::i18n::TextDirection textDirection =
