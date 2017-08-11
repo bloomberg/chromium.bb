@@ -99,8 +99,7 @@ interface VideoEncodeAccelerator {
   GetSupportedProfiles@0() => (array<VideoEncodeProfile> profiles);
 
   // Initializes the video encoder with specific configuration.  Called once per
-  // encoder construction.  This call returns true iff initialization is
-  // successful.
+  // encoder construction.
   // Parameters:
   //  |input_format| is the pixel format of the input frames.
   //  |visible_size| is the resolution of the input frames.
@@ -110,6 +109,9 @@ interface VideoEncodeAccelerator {
   //  in bits per second.
   //  |client| is the client of this video encoder. The client must be valid
   //  during the lifetime of this accelerator.
+  // Callback:
+  //  Called with true iff initialization is successful. The client should not
+  //  invoke any other methods before the callback.
   Initialize@1(VideoPixelFormat input_format,
                Size visible_size,
                StorageType input_storage,
@@ -125,24 +127,30 @@ interface VideoEncodeAccelerator {
   //  |planes| is arrays of offset and stride of planes in the video frame.
   //  |timestamp| the timestamp of the video frame(in microseconds).
   //  |force_keyframe| forces the encoding of a keyframe for this frame.
+  // Callback:
+  //  Called when the frame has been processed and no longer used by this
+  //  accelerator.
   Encode@2(handle frame_fd,
            array<VideoFramePlane> planes,
            int64 timestamp,
-           bool force_keyframe);
+           bool force_keyframe) => ();
 
-  // Sends a bitstream buffer to the encoder for storing future encoded output.
-  // Each call here will cause the shared memory buffer to be filled once, then
-  // returned with VideoEncodeClient::BitstreamBufferReady().
+  // Sends a bitstream buffer to the encoder for storing encoded output. The
+  // shared memory buffer will be filled with the encoded bitstream, and the
+  // callback will be called.
   // Parameters:
   //  |bitstream_buffer_id| is the id of the bitstream buffer. It is used to
   //  identify the bitstream in VideoEncodeClient::BitstreamBufferReady().
   //  |shmem_fd| is the file descriptor of the shared memory.
   //  |offset| and |size| define the region in the shared memory to be used
   //  as the bitstream buffer.
-  UseOutputBitstreamBuffer@3(int32 bitstream_buffer_id,
-                             handle shmem_fd,
-                             uint32 offset,
-                             uint32 size);
+  // Callback:
+  //  Called when the encoded data has been filled in the bitstream buffer.
+  //  |payload_size| is the byte size of the used portion of the buffer.
+  //  |key_frame| is true if this delivered frame is a keyframe.
+  //  |timestamp| is the same timestamp as the one passed to Encode().
+  UseBitstreamBuffer@3(handle shmem_fd, uint32 offset, uint32 size)
+      => (uint32 payload_size, bool key_frame, int64 timestamp);
 
   // Requests a change to the encoding parameters. This is only a request,
   // fulfilled on a best-effort basis.
@@ -176,18 +184,6 @@ interface VideoEncodeClient {
   RequireBitstreamBuffers@0(uint32 input_count,
                             Size input_coded_size,
                             uint32 output_buffer_size);
-
-  // Callback to deliver encoded bitstream buffers. Ownership of the buffer is
-  // transferred back to the VideoEncodeClient once this callback is made.
-  // Parameters:
-  //  |bitstream_buffer_id| is the id of the buffer that is ready.
-  //  |payload_size| is the byte size of the used portion of the buffer.
-  //  |key_frame| is true if this delivered frame is a keyframe.
-  //  |timestamp| is the same timestamp as the one passed to Encode().
-  BitstreamBufferReady@1(int32 bitstream_buffer_id,
-                         uint32 payload_size,
-                         bool key_frame,
-                         int64 timestamp);
 
   // Error notification callback. Note that errors in
   // VideoEncodeAccelerator::Initialize() will not be reported here, but will
