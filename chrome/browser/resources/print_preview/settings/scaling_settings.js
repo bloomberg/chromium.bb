@@ -121,11 +121,13 @@ cr.define('print_preview', function() {
 
     /**
      * Display the fit to page scaling in the scaling field if there is a valid
-     * fit to page scaling value. If not, make the field blank.
+     * fit to page scaling value. If not, make the field blank. The fit to page
+     * value is always considered valid, so remove the hint if it is displayed.
      * @private
      */
     displayFitToPageScaling: function() {
       this.inputField_.value = this.fitToPageScaling_ || '';
+      this.removeHint_();
     },
 
     /**
@@ -151,17 +153,24 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Removes the error message and red background from the input.
+     * @private
+     */
+    removeHint_: function() {
+      this.inputField_.classList.remove('invalid');
+      fadeOutElement(this.getChildElement('.hint'));
+    },
+
+    /**
      * Updates the state of the scaling settings UI controls.
      * @private
      */
     updateState_: function() {
       if (this.isAvailable()) {
-        var displayedValue = this.getInputAsNumber();
         // If fit to page is selected and the display matches, mark valid
         // and return.
         if (this.isFitToPageSelected() && this.displayMatchesFitToPage()) {
-          this.inputField_.classList.remove('invalid');
-          fadeOutElement(this.getChildElement('.hint'));
+          this.removeHint_();
           this.updateUiStateInternal();
           return;
         }
@@ -174,8 +183,7 @@ cr.define('print_preview', function() {
         }
 
         this.inputField_.value = this.scalingTicketItem_.getValue();
-        this.inputField_.classList.remove('invalid');
-        fadeOutElement(this.getChildElement('.hint'));
+        this.removeHint_();
       }
       this.updateUiStateInternal();
     },
@@ -191,9 +199,11 @@ cr.define('print_preview', function() {
         this.displayFitToPageScaling();
       } else if (
           this.fitToPageTicketItem_.isCapabilityAvailable() &&
-          this.displayMatchesFitToPage()) {
+          (this.displayMatchesFitToPage() ||
+           !this.inputField_.validity.valid)) {
         // Fit to page unchecked. Return to last scaling.
         this.inputField_.value = this.scalingTicketItem_.getValue();
+        this.removeHint_();
       }
     },
 
@@ -207,7 +217,8 @@ cr.define('print_preview', function() {
         this.updateState_();
         return;
       }
-      if (this.isFitToPageSelected() && !this.displayMatchesFitToPage()) {
+      if (this.isFitToPageSelected() && !this.displayMatchesFitToPage() &&
+          this.inputField_.value != '') {
         // User modified value away from fit to page.
         this.fitToPageTicketItem_.updateValue(false);
       }
@@ -262,12 +273,12 @@ cr.define('print_preview', function() {
       if (this.inputField_.value == '' && this.inputField_.validity.valid) {
         if (this.isFitToPageSelected()) {
           this.displayFitToPageScaling();
+        } else if (this.scalingTicketItem_.getValue() == '100') {
+          // No need to update the ticket, but change the display to match.
+          this.inputField_.value = '100';
+          this.removeHint_();
         } else {
-          if (this.scalingTicketItem_.getValue() == '100')
-            // No need to update the ticket, but change the display to match.
-            this.inputField_.value = '100';
-          else
-            this.scalingTicketItem_.updateValue('100');
+          this.scalingTicketItem_.updateValue('100');
         }
       }
     },
