@@ -239,6 +239,30 @@
       <message name="IDS_LOGIN_DEFAULT_USER_DESC_57" desc="Description of the default user icon with a picture of a pair of sunglasses">
         Sunglasses
       </message>
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_58" desc="Description of the default user icon with a picture of a pizza">
+        Pizza
+      </message>
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_59" desc="Description of the default user icon with a picture of a sandwich">
+        Sandwich
+      </message>
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_60" desc="Description of the default user icon with a picture of a cappocino">
+        Cappocino
+      </message>
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_61" desc="Description of the default user icon with a picture of an ice water">
+        Ice water
+      </message>
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_62" desc="Description of the default user icon with a picture of an ice cream">
+        Ice cream
+      </message>
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_63" desc="Description of the default user icon with a picture of onigiri">
+        Onigiri
+      </message>
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_64" desc="Description of the default user icon with a picture of a melon">
+        Melon
+      </message>
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_65" desc="Description of the default user icon with a picture of an avocado">
+        Avocado
+      </message>
 
       <!-- Attribution strings for stock user images, not translateable. -->
       <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR">
