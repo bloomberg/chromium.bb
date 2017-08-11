@@ -621,6 +621,7 @@ spv = {
         'ImageGatherBiasLodAMD' : 5009,
         'SampleMaskOverrideCoverageNV' : 5249,
         'GeometryShaderPassthroughNV' : 5251,
+        'ShaderViewportIndexLayerEXT' : 5254,
         'ShaderViewportIndexLayerNV' : 5254,
         'ShaderViewportMaskNV' : 5255,
         'ShaderStereoViewNV' : 5259,

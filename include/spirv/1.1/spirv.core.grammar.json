@@ -5647,6 +5647,12 @@
           "extensions" : [ "SPV_NV_viewport_array2" ]
         },
         {
+          "enumerant" : "ShaderViewportIndexLayerEXT",
+          "value" : 5254,
+          "capabilities" : [ "MultiViewport" ],
+          "extensions" : [ "SPV_EXT_shader_viewport_index_layer" ]
+        },
+        {
           "enumerant" : "ShaderViewportMaskNV",
           "value" : 5255,
           "capabilities" : [ "ShaderViewportIndexLayerNV" ],

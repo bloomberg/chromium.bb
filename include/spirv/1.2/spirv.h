@@ -663,6 +663,7 @@ typedef enum SpvCapability_ {
     SpvCapabilityImageGatherBiasLodAMD = 5009,
     SpvCapabilitySampleMaskOverrideCoverageNV = 5249,
     SpvCapabilityGeometryShaderPassthroughNV = 5251,
+    SpvCapabilityShaderViewportIndexLayerEXT = 5254,
     SpvCapabilityShaderViewportIndexLayerNV = 5254,
     SpvCapabilityShaderViewportMaskNV = 5255,
     SpvCapabilityShaderStereoViewNV = 5259,

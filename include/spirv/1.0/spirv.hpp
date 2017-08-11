@@ -642,6 +642,7 @@ enum Capability {
     CapabilityImageGatherBiasLodAMD = 5009,
     CapabilitySampleMaskOverrideCoverageNV = 5249,
     CapabilityGeometryShaderPassthroughNV = 5251,
+    CapabilityShaderViewportIndexLayerEXT = 5254,
     CapabilityShaderViewportIndexLayerNV = 5254,
     CapabilityShaderViewportMaskNV = 5255,
     CapabilityShaderStereoViewNV = 5259,
