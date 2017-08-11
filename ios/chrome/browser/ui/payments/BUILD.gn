@@ -149,6 +149,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "address_edit_coordinator_unittest.mm",
+    "address_edit_mediator_unittest.mm",
     "billing_address_selection_coordinator_unittest.mm",
     "billing_address_selection_mediator_unittest.mm",
     "contact_info_edit_coordinator_unittest.mm",

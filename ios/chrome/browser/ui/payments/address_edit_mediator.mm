@@ -112,10 +112,17 @@
 #pragma mark - CreditCardEditViewControllerDataSource
 
 - (NSString*)title {
-  // TODO(crbug.com/602666): Title varies depending on what field is missing.
-  // e.g., Add Email vs. Add Phone Number.
-  return self.address ? l10n_util::GetNSString(IDS_PAYMENTS_EDIT_ADDRESS)
-                      : l10n_util::GetNSString(IDS_PAYMENTS_ADD_ADDRESS);
+  if (!self.address)
+    return l10n_util::GetNSString(IDS_PAYMENTS_ADD_ADDRESS);
+
+  if (self.paymentRequest->profile_comparator()->IsShippingComplete(
+          self.address)) {
+    return l10n_util::GetNSString(IDS_PAYMENTS_EDIT_ADDRESS);
+  }
+
+  return base::SysUTF16ToNSString(
+      self.paymentRequest->profile_comparator()
+          ->GetTitleForMissingShippingFields(*self.address));
 }
 
 - (CollectionViewItem*)headerItem {
