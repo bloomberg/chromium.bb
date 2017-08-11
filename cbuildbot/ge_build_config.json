@@ -278,18 +278,6 @@
       ]
     },
     {
-      "name": "coral",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": true,
-          "board_group": "coral",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "cyan",
       "configs": [
         {
@@ -1420,6 +1408,27 @@
   ],
   "release_branch": false,
   "reference_board_unified_builds": [
+    {
+      "name": "coral",
+      "reference_board_name": "coral",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": false,
+      "models": [
+        {
+          "board_name": "coral",
+          "name": "coral",
+          "test_suites": [
+            "sanity",
+            "bvt-inline",
+            "bvt-arc",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild"
+          ]
+        }
+      ]
+    },
     {
       "name": "reef-uni",
       "reference_board_name": "reef-uni",
