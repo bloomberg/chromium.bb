@@ -13650,14 +13650,32 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Mac-10.12"
+              "gpu": "8086:0d26",
+              "hidpi": "1",
+              "os": "Mac-10.11.6"
+            },
+            {
+              "gpu": "8086:0d26",
+              "os": "Mac-10.12.5"
+            },
+            {
+              "gpu": "none",
+              "os": "Mac-10.9.5"
+            },
+            {
+              "gpu": "none",
+              "os": "Mac-10.10.5"
+            },
+            {
+              "gpu": "none",
+              "os": "Mac-10.11.6"
             },
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.5"
             }
           ],
-          "shards": 8
+          "shards": 2
         }
       }
     ]
