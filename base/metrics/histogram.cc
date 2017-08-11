@@ -48,9 +48,6 @@ constexpr uintptr_t kDummyValue = 0xFEEDC0DEDEADBEEF;
 constexpr uintptr_t kDummyValue = 0xDEADBEEF;
 #endif
 
-// TODO(asvitkine): Remove this after crbug/736675.
-char g_last_logged_histogram_name[256] = {0};
-
 bool ReadHistogramArguments(PickleIterator* iter,
                             std::string* histogram_name,
                             int* flags,
@@ -478,9 +475,6 @@ void Histogram::AddCount(int value, int count) {
   DCHECK_EQ(0, ranges(0));
   DCHECK_EQ(kSampleType_MAX, ranges(bucket_count()));
 
-  strlcpy(g_last_logged_histogram_name, histogram_name().c_str(),
-          sizeof(g_last_logged_histogram_name));
-
   if (value > kSampleType_MAX - 1)
     value = kSampleType_MAX - 1;
   if (value < 0)
@@ -584,9 +578,9 @@ bool Histogram::ValidateHistogramContents(bool crash_if_invalid,
     return is_valid;
 
   // Abort if a problem is found (except "flags", which could legally be zero).
-  const std::string debug_string = base::StringPrintf(
-      "%s/%" PRIu32 "/%d/%s", histogram_name().c_str(), bad_fields,
-      corrupted_count, g_last_logged_histogram_name);
+  const std::string debug_string =
+      base::StringPrintf("%s/%" PRIu32 "/%d", histogram_name().c_str(),
+                         bad_fields, corrupted_count);
 #if !defined(OS_NACL)
   // Temporary for https://crbug.com/736675.
   base::debug::ScopedCrashKey crash_key("bad_histogram", debug_string);
