@@ -16,7 +16,6 @@
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
