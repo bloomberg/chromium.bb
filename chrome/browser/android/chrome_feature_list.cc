@@ -87,7 +87,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kPayWithGoogleV1,
     &kPhysicalWebFeature,
     &kPhysicalWebSharing,
-    &kPwaMinimalUi,
     &kPwaPersistentNotification,
     &kReaderModeInCCT,
     &kSearchEnginePromoExistingDevice,
@@ -246,9 +245,6 @@ const base::Feature kPhysicalWebFeature{"PhysicalWeb",
 
 const base::Feature kPhysicalWebSharing{"PhysicalWebSharing",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kPwaMinimalUi{"PwaMinimalUi",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPwaPersistentNotification{
     "PwaPersistentNotification", base::FEATURE_DISABLED_BY_DEFAULT};

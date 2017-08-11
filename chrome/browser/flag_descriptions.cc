@@ -990,6 +990,10 @@ const char kPushApiBackgroundModeDescription[] =
     "running after the last window is closed, and to launch at OS startup, if "
     "the Push API needs it.";
 
+const char kPwaMinimalUiName[] = "Minimal-UI display mode for PWAs";
+const char kPwaMinimalUiDescription[] =
+    "Enables support for Minimal-UI display mode for installed PWAs";
+
 const char kQuicName[] = "Experimental QUIC protocol";
 const char kQuicDescription[] = "Enable experimental QUIC protocol support.";
 
@@ -1848,9 +1852,6 @@ const char kPullToRefreshEffectName[] = "The pull-to-refresh effect";
 const char kPullToRefreshEffectDescription[] =
     "Page reloads triggered by vertically overscrolling content.";
 
-const char kPwaMinimalUiName[] = "Minimal-UI display mode for PWAs";
-const char kPwaMinimalUiDescription[] =
-    "Enables support for Minimal-UI display mode for installed PWAs";
 const char kPwaPersistentNotificationName[] =
     "Persistent notification in standalone PWA";
 const char kPwaPersistentNotificationDescription[] =
