@@ -20,6 +20,8 @@
 
 namespace service_manager {
 
+class EmbeddedInstanceManager;
+
 // Hosts in-process service instances for a given service.
 class SERVICE_MANAGER_EMBEDDER_EXPORT EmbeddedServiceRunner {
  public:
@@ -43,7 +45,7 @@ class SERVICE_MANAGER_EMBEDDER_EXPORT EmbeddedServiceRunner {
   void OnQuit();
 
   // A reference to the instance manager, which may operate on another thread.
-  scoped_refptr<InstanceManager> instance_manager_;
+  scoped_refptr<EmbeddedInstanceManager> instance_manager_;
 
   base::Closure quit_closure_;
 
