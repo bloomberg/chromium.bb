@@ -102,6 +102,7 @@
 #import "ios/chrome/browser/web/auto_reload_bridge.h"
 #import "ios/chrome/browser/web/external_app_launcher.h"
 #import "ios/chrome/browser/web/navigation_manager_util.h"
+#import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #include "ios/chrome/browser/web/print_observer.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -230,6 +231,9 @@ class TabHistoryContext : public history::Context {
 
   // YES if the Tab needs to be reloaded after the app becomes active.
   BOOL _requireReloadAfterBecomingActive;
+
+  // YES if the Tab needs to be reloaded after displaying.
+  BOOL _requireReloadOnDisplay;
 
   // Last visited timestamp.
   double _lastVisitedTimestamp;
@@ -1227,7 +1231,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     self.navigationManager->Reload(web::ReloadType::NORMAL,
                                    false /* check_for_repost */);
   } else {
-    [self.webController requirePageReload];
+    _requireReloadOnDisplay = YES;
   }
   _requireReloadAfterBecomingActive = NO;
 }
@@ -1719,13 +1723,10 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     if (!applicationIsNotActive)
       [_fullScreenController disableFullScreen];
   } else {
-    [self.webController requirePageReload];
+    _requireReloadOnDisplay = YES;
   }
   // Returning to the app (after the renderer crashed in the background) and
   // having the page reload is much less confusing for the user.
-  // Note: Given that the tab is visible, calling |requirePageReload| will not
-  // work when the app becomes active because there is nothing to trigger
-  // a view redisplay in that scenario.
   _requireReloadAfterBecomingActive = _visible && applicationIsNotActive;
   [self.dialogDelegate cancelDialogForTab:self];
 }
@@ -1813,6 +1814,13 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if (self.webState)
     self.webState->WasShown();
   [_inputAccessoryViewController wasShown];
+
+  if (_requireReloadOnDisplay) {
+    PagePlaceholderTabHelper::FromWebState(self.webState)
+        ->AddPlaceholderForNextNavigation();
+    [self.webController loadCurrentURL];
+    _requireReloadOnDisplay = NO;
+  }
 }
 
 - (void)wasHidden {
