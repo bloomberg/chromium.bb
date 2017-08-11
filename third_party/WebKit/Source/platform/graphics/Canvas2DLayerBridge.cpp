@@ -201,7 +201,6 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
                                          const CanvasColorParams& color_params,
                                          bool is_unit_test)
     : ImageBufferSurface(size, opacity_mode, color_params),
-      context_provider_wrapper_(SharedGpuContext::ContextProviderWrapper()),
       logger_(WTF::WrapUnique(new Logger)),
       weak_ptr_factory_(this),
       image_buffer_(0),
@@ -219,8 +218,12 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
       opacity_mode_(opacity_mode),
       size_(size),
       color_params_(color_params) {
-  DCHECK(context_provider_wrapper_);
-  DCHECK(!context_provider_wrapper_->ContextProvider()->IsSoftwareRendering());
+  if (acceleration_mode != kDisableAcceleration) {
+    context_provider_wrapper_ = SharedGpuContext::ContextProviderWrapper();
+    DCHECK(context_provider_wrapper_);
+    DCHECK(
+        !context_provider_wrapper_->ContextProvider()->IsSoftwareRendering());
+  }
   DCHECK(color_params_.GetGfxColorSpace().IsValid());
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
   TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation",

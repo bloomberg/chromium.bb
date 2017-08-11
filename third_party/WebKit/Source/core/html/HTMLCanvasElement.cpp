@@ -963,8 +963,9 @@ HTMLCanvasElement::CreateUnacceleratedImageBufferSurface(
     // here.
   }
 
-  auto surface = WTF::MakeUnique<UnacceleratedImageBufferSurface>(
-      Size(), opacity_mode, kInitializeImagePixels, GetCanvasColorParams());
+  auto surface = WTF::MakeUnique<Canvas2DLayerBridge>(
+      Size(), 0, opacity_mode, Canvas2DLayerBridge::kDisableAcceleration,
+      GetCanvasColorParams());
   if (surface->IsValid()) {
     CanvasMetrics::CountCanvasContextUsage(
         CanvasMetrics::kUnaccelerated2DCanvasImageBufferCreated);
