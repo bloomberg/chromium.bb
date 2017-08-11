@@ -17,16 +17,14 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/image_fetcher/core/image_decoder.h"
@@ -334,10 +332,10 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   }
 
   ~RemoteSuggestionsProviderImplTest() override {
-    // We need to run the message loop after deleting the database, because
+    // We need to run until idle after deleting the database, because
     // ProtoDatabaseImpl deletes the actual LevelDB asynchronously on the task
     // runner. Without this, we'd get reports of memory leaks.
-    base::RunLoop().RunUntilIdle();
+    RunUntilIdle();
   }
 
   // TODO(vitaliii): Rewrite this function to initialize a test class member
@@ -358,9 +356,6 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
       bool use_mock_prefetched_pages_tracker,
       bool use_fake_breaking_news_listener,
       bool use_mock_remote_suggestions_status_service) {
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner(
-        base::ThreadTaskRunnerHandle::Get());
-
     utils_.ResetSigninManager();
     auto mock_suggestions_fetcher =
         base::MakeUnique<StrictMock<MockRemoteSuggestionsFetcher>>();
@@ -407,8 +402,8 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         .WillByDefault(Return(&image_decoder_));
     EXPECT_FALSE(observer_);
     observer_ = base::MakeUnique<FakeContentSuggestionsProviderObserver>();
-    auto database = base::MakeUnique<RemoteSuggestionsDatabase>(
-        database_dir_.GetPath(), task_runner);
+    auto database =
+        base::MakeUnique<RemoteSuggestionsDatabase>(database_dir_.GetPath());
     database_ = database.get();
     return base::MakeUnique<RemoteSuggestionsProviderImpl>(
         observer_.get(), utils_.pref_service(), "fr", category_ranker_.get(),
@@ -434,7 +429,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
               provider->state_);
 
     // TODO(treib): Find a better way to wait for initialization to finish.
-    base::RunLoop().RunUntilIdle();
+    RunUntilIdle();
   }
 
   void ResetSuggestionsProvider(
@@ -443,11 +438,15 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
       bool use_fake_breaking_news_listener,
       bool use_mock_remote_suggestions_status_service) {
     provider->reset();
+    // We need to run until idle after deleting the RemoteSuggestionsDatabase.
+    RunUntilIdle();
     observer_.reset();
     *provider = MakeSuggestionsProvider(
         use_mock_prefetched_pages_tracker, use_fake_breaking_news_listener,
         use_mock_remote_suggestions_status_service);
   }
+
+  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
   void SetCategoryRanker(std::unique_ptr<CategoryRanker> category_ranker) {
     category_ranker_ = std::move(category_ranker);
@@ -590,7 +589,6 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
  private:
   variations::testing::VariationParamsManager params_manager_;
   test::RemoteSuggestionsTestUtils utils_;
-  base::MessageLoop message_loop_;
   std::unique_ptr<CategoryRanker> category_ranker_;
   UserClassifier user_classifier_;
   std::unique_ptr<FakeContentSuggestionsProviderObserver> observer_;
@@ -601,6 +599,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   std::unique_ptr<MockScheduler> scheduler_;
   FakeBreakingNewsListener* fake_breaking_news_listener_;
   RemoteSuggestionsStatusService* remote_suggestions_status_service_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   RemoteSuggestionsStatusService::StatusChangeCallback status_change_callback_;
 
@@ -1480,7 +1479,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ReturnFetchRequestEmptyBeforeInit) {
                            IsEmpty()));
   provider->Fetch(articles_category(), std::set<std::string>(),
                   base::Bind(&SuggestionsLoaded, &loaded));
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
@@ -1666,7 +1665,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, GetDismissed) {
             }
           },
           provider.get(), this));
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   // There should be no dismissed suggestion after clearing the list.
   provider->ClearDismissedSuggestionsForDebugging(articles_category());
@@ -1679,7 +1678,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, GetDismissed) {
             EXPECT_EQ(0u, dismissed_suggestions.size());
           },
           provider.get(), this));
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, RemoveExpiredDismissedContent) {
@@ -1973,7 +1972,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ImageReturnedWithTheSameId) {
       MakeArticleID(kSuggestionUrl),
       base::Bind(&MockFunction<void(const gfx::Image&)>::Call,
                  base::Unretained(&image_fetched)));
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
   // Check that the image by ServeOneByOneImage is really served.
   EXPECT_EQ(1, image.Width());
 }
@@ -1994,7 +1993,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, EmptyImageReturnedForNonExistentId) {
       base::Bind(&MockFunction<void(const gfx::Image&)>::Call,
                  base::Unretained(&image_fetched)));
 
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
   EXPECT_TRUE(image.IsEmpty());
 }
 
@@ -2023,7 +2022,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       base::Bind(&MockFunction<void(const gfx::Image&)>::Call,
                  base::Unretained(&image_fetched)));
 
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
   EXPECT_TRUE(image.IsEmpty()) << "got image with width: " << image.Width();
 }
 
@@ -2189,7 +2188,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       .RetiresOnSaturation();
   provider->RefetchInTheBackground(
       RemoteSuggestionsProvider::FetchStatusCallback());
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
   std::move(snippets_callback).Run(Status::Success(), base::nullopt);
   // TODO(jkrcal): Move together with the pref storage into the scheduler.
   EXPECT_EQ(

@@ -9,7 +9,6 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -169,10 +168,6 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       browser_state->GetRequestContext();
   base::FilePath database_dir(
       browser_state->GetStatePath().Append(ntp_snippets::kDatabaseFolder));
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
   std::string api_key;
   // This API needs whitelisted API keys. Get the key only if it is not a
@@ -194,7 +189,7 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       std::move(suggestions_fetcher),
       base::MakeUnique<ImageFetcherImpl>(CreateIOSImageDecoder(),
                                          request_context.get()),
-      base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner),
+      base::MakeUnique<RemoteSuggestionsDatabase>(database_dir),
       base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(signin_manager,
                                                            prefs, pref_name),
       /*prefetched_pages_tracker=*/nullptr,
