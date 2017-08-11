@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_footer_item.h"
 
-#import "ios/chrome/browser/ui/material_components/activity_indicator.h"
+#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 
@@ -82,7 +82,7 @@ const CGFloat kButtonPadding = 16;
   self = [super initWithFrame:frame];
   if (self) {
     _activityIndicator = [[MDCActivityIndicator alloc] init];
-    _activityIndicator.cycleColors = ActivityIndicatorBrandedCycleColors();
+    _activityIndicator.cycleColors = @[ [[MDCPalette cr_bluePalette] tint500] ];
     _activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
     _button = [UIButton buttonWithType:UIButtonTypeSystem];
     _button.translatesAutoresizingMaskIntoConstraints = NO;
