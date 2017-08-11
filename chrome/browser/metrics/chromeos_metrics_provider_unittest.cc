@@ -28,10 +28,6 @@
 #include "device/bluetooth/dbus/fake_bluetooth_input_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_X11)
-#include "ui/events/devices/x11/device_data_manager_x11.h"
-#endif
-
 using bluez::BluetoothAdapterClient;
 using bluez::BluetoothAgentManagerClient;
 using bluez::BluetoothDeviceClient;
@@ -59,9 +55,6 @@ class ChromeOSMetricsProviderTest : public testing::Test {
 
  protected:
   void SetUp() override {
-#if defined(USE_X11)
-    ui::DeviceDataManagerX11::CreateInstance();
-#endif
 
     // Set up the fake Bluetooth environment,
     std::unique_ptr<BluezDBusManagerSetter> bluez_dbus_setter =

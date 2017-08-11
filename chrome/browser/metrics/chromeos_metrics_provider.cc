@@ -33,10 +33,6 @@
 #include "ui/display/display.h"
 #include "ui/events/event_utils.h"
 
-#if defined(USE_X11)
-#include "ui/events/devices/x11/touch_factory_x11.h"
-#endif  // defined(USE_X11)
-
 using metrics::ChromeUserMetricsExtension;
 using metrics::SampledProfile;
 using metrics::SystemProfileProto;
@@ -82,18 +78,8 @@ PairedDevice::Type AsBluetoothDeviceType(
 }
 
 void WriteExternalTouchscreensProto(SystemProfileProto::Hardware* hardware) {
-#if defined(USE_X11)
-  std::set<std::pair<int, int> > touchscreen_ids =
-      ui::TouchFactory::GetInstance()->GetTouchscreenIds();
-  for (std::set<std::pair<int, int> >::iterator it = touchscreen_ids.begin();
-       it != touchscreen_ids.end();
-       ++it) {
-    SystemProfileProto::Hardware::TouchScreen* touchscreen =
-        hardware->add_external_touchscreen();
-    touchscreen->set_vendor_id(it->first);
-    touchscreen->set_product_id(it->second);
-  }
-#endif  // defined(USE_X11)
+  // TODO: this needs to be converted to Ozone, or remove the protos.
+  NOTIMPLEMENTED();
 }
 
 void IncrementPrefValue(const char* path) {
