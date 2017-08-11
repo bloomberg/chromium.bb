@@ -4939,8 +4939,8 @@ interface PerformanceResourceTiming : PerformanceEntry
 interface PerformanceServerTiming
     attribute @@toStringTag
     getter description
-    getter metric
-    getter value
+    getter duration
+    getter name
     method constructor
 interface PerformanceTiming
     attribute @@toStringTag

@@ -28,14 +28,14 @@ class CORE_EXPORT PerformanceServerTiming final
     No,
   };
 
-  PerformanceServerTiming(const String& metric,
-                          double value,
+  PerformanceServerTiming(const String& name,
+                          double duration,
                           const String& description,
                           ShouldAllowTimingDetails);
   ~PerformanceServerTiming();
 
-  String metric() const;
-  double value() const;
+  String name() const;
+  double duration() const;
   String description() const;
 
   static PerformanceServerTimingVector ParseServerTiming(
@@ -47,8 +47,8 @@ class CORE_EXPORT PerformanceServerTiming final
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  private:
-  const String metric_;
-  double value_;
+  const String name_;
+  double duration_;
   const String description_;
   ShouldAllowTimingDetails shouldAllowTimingDetails_;
 };

@@ -835,8 +835,8 @@ std::unique_ptr<ServerTimingHeaderVector> ParseServerTimingHeader(
 
     HeaderFieldTokenizer tokenizer(headerValue);
     while (!tokenizer.IsConsumed()) {
-      StringView metric;
-      if (!tokenizer.ConsumeToken(Mode::kNormal, metric)) {
+      StringView name;
+      if (!tokenizer.ConsumeToken(Mode::kNormal, name)) {
         break;
       }
 
@@ -853,7 +853,7 @@ std::unique_ptr<ServerTimingHeaderVector> ParseServerTimingHeader(
       }
 
       headers->push_back(WTF::MakeUnique<ServerTimingHeader>(
-          metric.ToString(), value, description));
+          name.ToString(), value, description));
 
       if (!tokenizer.Consume(',')) {
         break;

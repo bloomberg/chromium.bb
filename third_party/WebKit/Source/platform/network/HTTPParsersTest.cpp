@@ -501,8 +501,8 @@ void testServerTimingHeader(const char* headerValue,
   unsigned i = 0;
   for (const auto& header : *results) {
     Vector<String> expectedResult = expectedResults[i++];
-    EXPECT_EQ(header->metric, expectedResult[0]);
-    EXPECT_EQ(header->value, expectedResult[1].ToDouble());
+    EXPECT_EQ(header->name, expectedResult[0]);
+    EXPECT_EQ(header->duration, expectedResult[1].ToDouble());
     EXPECT_EQ(header->description, expectedResult[2]);
   }
 }
