@@ -154,6 +154,10 @@ TEST_F(ArgumentSpecUnitTest, Test) {
     ExpectSuccess(spec, "-1", "-1");
     ExpectSuccess(spec, "0", "0");
     ExpectSuccess(spec, "0.0", "0");
+    ExpectSuccess(spec, "-0.0", "0");
+    ExpectSuccess(spec, "-0.", "0");
+    ExpectSuccess(spec, "-.0", "0");
+    ExpectSuccess(spec, "-0", "0");
     ExpectFailure(spec, "undefined", InvalidType(kTypeInteger, kTypeUndefined));
     ExpectFailure(spec, "null", InvalidType(kTypeInteger, kTypeNull));
     ExpectFailure(spec, "1.1", InvalidType(kTypeInteger, kTypeDouble));
