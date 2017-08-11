@@ -51,8 +51,8 @@ AccessibilityTest.Definition;
 AccessibilityTest.runAudit_ = function(testDef) {
   // Ignore iron-iconset-svg elements that have duplicate ids and result in
   // false postives from the audit.
-  var context = {exclude: ['iron-iconset-svg']};
-  options = testDef.axeOptions || {};
+  let context = {exclude: ['iron-iconset-svg']};
+  let options = testDef.axeOptions || {};
   // Element references needed for filtering audit results.
   options.elementRef = true;
 
@@ -61,10 +61,10 @@ AccessibilityTest.runAudit_ = function(testDef) {
       if (err)
         reject(err);
 
-      var filteredViolations = AccessibilityTest.filterViolations_(
+      let filteredViolations = AccessibilityTest.filterViolations_(
           results.violations, testDef.violationFilter || {});
 
-      var violationCount = filteredViolations.length;
+      let violationCount = filteredViolations.length;
       if (violationCount) {
         AccessibilityTest.print_(filteredViolations);
         reject('Found ' + violationCount + ' accessibility violations.');
@@ -87,11 +87,11 @@ AccessibilityTest.filterViolations_ = function(violations, filter) {
     return violations;
   }
 
-  var filteredViolations = [];
+  let filteredViolations = [];
   // Check for and remove any nodes specified by filter.
   for (let violation of violations) {
     if (violation.id in filter) {
-      var exclusionRule = filter[violation.id];
+      let exclusionRule = filter[violation.id];
       violation.nodes = violation.nodes.filter(
           (node) => !exclusionRule(node));
     }
@@ -104,48 +104,50 @@ AccessibilityTest.filterViolations_ = function(violations, filter) {
 };
 
 /**
- * Define a different test for each audit rule, unless overridden by
- * |test.options.runOnly|.
- * @param {AccessibilityTestDefinition} test Object configuring the test.
+ * Define a GTest test for each audit rule.
+ * @param {string} testFixture Name of test fixture associated with the test.
+ * @param {AccessibilityTestDefinition} testDef Object configuring the test.
  * @constructor
  */
-AccessibilityTest.define = function(test) {
-  var axeOptions = test.axeOptions || {};
-  // Maintain a list of tests to define.
-  var tests = [test];
+AccessibilityTest.define = function(testFixture, testDef) {
+  // Disable in debug mode because of timeouts.
+  GEN('#if defined(NDEBUG)');
 
-  // This option override should go first b/c it creates multiple test targets.
-  if (!axeOptions.runOnly) {
-    tests = [];
-    // Define a test for each audit rule separately.
-    for (let ruleId of AccessibilityTest.ruleIds) {
-      var newTestDefinition = Object.assign({}, test);
-      newTestDefinition.name += '_' + ruleId;
-      newTestDefinition.axeOptions = Object.assign({}, axeOptions);
-      newTestDefinition.axeOptions.runOnly = {type: 'rule', values: [ruleId]};
+  let axeOptions = testDef.axeOptions || {};
+  testDef.setup = testDef.setup || (() => {});
 
-      tests.push(newTestDefinition)
-    }
-  }
+  // Define a test for each audit rule separately.
+  let rules = axeOptions.runOnly ?
+      axeOptions.runOnly.values : AccessibilityTest.ruleIds;
+  rules.forEach((ruleId) => {
+    // Skip rules disabled in axeOptions.
+    if (ruleId in axeOptions.rules && !axeOptions.rules[ruleId].enabled)
+      return;
 
-  // Define the mocha tests.
-  AccessibilityTest.defineAccessibilityTestSuite_(tests);
-}
+    let newTestDef = Object.assign({}, testDef);
+    newTestDef.name += '_' + ruleId;
+    // Replace hyphens, which break the build.
+    newTestDef.name = newTestDef.name.replace(new RegExp('-', 'g'), '_');
+    newTestDef.axeOptions = Object.assign({}, axeOptions);
+    newTestDef.axeOptions.runOnly = {
+      type: 'rule',
+      values: [ruleId]
+    };
 
-/**
- * Define mocha suite(s) testing accessibility for each test definition in
- * given list.
- * @param {Array<AccessibilityTestDefinition>} List of test definitions.
- */
-AccessibilityTest.defineAccessibilityTestSuite_ = function(tests) {
-  for (let testDef of tests) {
-    suite(testDef.name, () => {
-      setup(testDef.setup.bind(testDef));
-      for (var testMember in testDef.tests) {
-        test(testMember, AccessibilityTest.getMochaTest_(testMember, testDef));
-      }
+    TEST_F(testFixture, newTestDef.name, () => {
+      // Define the mocha tests
+      suite(newTestDef.name, () => {
+        setup(newTestDef.setup.bind(newTestDef));
+        for (let testMember in newTestDef.tests) {
+          test(testMember, AccessibilityTest.getMochaTest_(
+              testMember, newTestDef));
+        }
+      });
+      mocha.grep(newTestDef.name).run();
     });
-  }
+  });
+
+  GEN('#endif  // defined(NDEBUG)');
 }
 
 /**
@@ -160,7 +162,7 @@ AccessibilityTest.getMochaTest_ = function(testMember, testDef) {
   return () => {
     // Run commands specified by the test definition followed by the
     // accessibility audit.
-    var promise = testDef.tests[testMember].call(testDef);
+    let promise = testDef.tests[testMember].call(testDef);
     if (promise) {
       return promise.then(() => AccessibilityTest.runAudit_(testDef));
     } else {
