@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 
-#include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -26,7 +25,7 @@
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -53,8 +52,7 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
   SetInkDropMode(InkDropMode::ON);
   SetFocusPainter(nullptr);
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableNewAppMenuIcon)) {
+  if (base::FeatureList::IsEnabled(features::kAnimatedAppMenuIcon)) {
     toolbar_view_->browser()->tab_strip_model()->AddObserver(this);
     should_use_new_icon_ = true;
   }

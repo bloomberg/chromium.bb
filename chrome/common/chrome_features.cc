@@ -35,6 +35,8 @@ const base::Feature kViewsTaskManager{"ViewsTaskManager",
 #endif  // defined(OS_MACOSX)
 
 #if !defined(OS_ANDROID)
+const base::Feature kAnimatedAppMenuIcon{"AnimatedAppMenuIcon",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAppBanners {
   "AppBanners",
 #if defined(OS_CHROMEOS)
