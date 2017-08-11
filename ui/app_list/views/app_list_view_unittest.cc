@@ -584,6 +584,36 @@ TEST_F(AppListViewFullscreenTest, StartPageUpArrowFocusTest) {
             start_page_view()->GetSelectedIndexForTest());
 }
 
+// Tests that when a click or tap event propagates to the AppListView, if the
+// event location is within the bounds of AppsGridView, do not close the
+// AppListView.
+TEST_F(AppListViewFullscreenTest, TapAndClickWithinAppsGridView) {
+  Initialize(0, false, false);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  Show();
+  view_->SetState(AppListView::FULLSCREEN_ALL_APPS);
+  EXPECT_EQ(AppListView::FULLSCREEN_ALL_APPS, view_->app_list_state());
+  ContentsView* contents_view = view_->app_list_main_view()->contents_view();
+  AppsContainerView* container_view = contents_view->apps_container_view();
+  const gfx::Rect grid_view_bounds =
+      container_view->apps_grid_view()->GetBoundsInScreen();
+  gfx::Point target_point = grid_view_bounds.origin();
+  target_point.Offset(100, 100);
+  ASSERT_TRUE(grid_view_bounds.Contains(target_point));
+
+  // Tests gesture tap within apps grid view doesn't close app list view.
+  ui::GestureEvent tap(target_point.x(), target_point.y(), 0, base::TimeTicks(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  view_->OnGestureEvent(&tap);
+  EXPECT_EQ(AppListView::FULLSCREEN_ALL_APPS, view_->app_list_state());
+
+  // Tests mouse click within apps grid view doesn't close app list view.
+  ui::MouseEvent mouse_click(ui::ET_MOUSE_PRESSED, target_point, target_point,
+                             base::TimeTicks(), 0, 0);
+  view_->OnMouseEvent(&mouse_click);
+  EXPECT_EQ(AppListView::FULLSCREEN_ALL_APPS, view_->app_list_state());
+}
+
 // Tests displaying the app list and performs a standard set of checks on its
 // top level views. Then closes the window.
 TEST_F(AppListViewTest, DisplayTest) {
