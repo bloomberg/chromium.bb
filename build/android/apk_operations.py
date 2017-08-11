@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import argparse
-import json
+import imp
 import logging
 import os
 import pipes
@@ -18,26 +18,44 @@ from devil.android.sdk import intent
 from devil.android.sdk import adb_wrapper
 from devil.utils import run_tests_helper
 
-from incremental_install import installer
 from pylib import constants
 
 
-def _InstallApk(apk, install_dict, devices_obj):
-  def install(device):
-    if install_dict:
-      installer.Install(device, install_dict, apk=apk)
-    else:
-      device.Install(apk)
-  devices_obj.pMap(install)
+def _InstallApk(install_incremental, inc_install_script, devices_obj,
+                apk_to_install):
+  if install_incremental:
+    helper = apk_helper.ApkHelper(apk_to_install)
+    try:
+      install_wrapper = imp.load_source('install_wrapper', inc_install_script)
+    except IOError:
+      raise Exception('Incremental install script not found: %s\n' %
+                      inc_install_script)
+    params = install_wrapper.GetInstallParameters()
+
+    def install_incremental_apk(device):
+      from incremental_install import installer
+      installer.Install(device, helper, split_globs=params['splits'],
+                        native_libs=params['native_libs'],
+                        dex_files=params['dex_files'], permissions=None)
+    devices_obj.pMap(install_incremental_apk)
+  else:
+    # Install the regular apk on devices.
+    def install(device):
+      device.Install(apk_to_install)
+    devices_obj.pMap(install)
 
 
-def _UninstallApk(install_dict, devices_obj, apk_package):
-  def uninstall(device):
-    if install_dict:
+def _UninstallApk(install_incremental, devices_obj, apk_package):
+  if install_incremental:
+    def uninstall_incremental_apk(device):
+      from incremental_install import installer
       installer.Uninstall(device, apk_package)
-    else:
+    devices_obj.pMap(uninstall_incremental_apk)
+  else:
+    # Uninstall the regular apk on devices.
+    def uninstall(device):
       device.Uninstall(apk_package)
-  devices_obj.pMap(uninstall)
+    devices_obj.pMap(uninstall)
 
 
 def _LaunchUrl(devices_obj, input_args, device_args_file, url, apk_package):
@@ -142,60 +160,8 @@ def _DeviceCachePath(device):
   return os.path.join(constants.GetOutDirectory(), file_name)
 
 
-def _SelectApk(apk_path, incremental_install_json_path, parser, args):
-  if apk_path and not os.path.exists(apk_path):
-    apk_path = None
-  if (incremental_install_json_path and
-      not os.path.exists(incremental_install_json_path)):
-    incremental_install_json_path = None
-
-  if args.incremental and args.non_incremental:
-    parser.error('--incremental and --non-incremental cannot both be used.')
-  elif args.non_incremental:
-    if not apk_path:
-      parser.error('Apk has not been built.')
-    incremental_install_json_path = None
-  elif args.incremental:
-    if not incremental_install_json_path:
-      parser.error('Incremental apk has not been built.')
-    apk_path = None
-
-  if args.command in ('install', 'run'):
-    if apk_path and incremental_install_json_path:
-      parser.error('Both incremental and non-incremental apks exist, please '
-                   'use --incremental or --non-incremental to select one.')
-    elif apk_path:
-      logging.info('Using the non-incremental apk.')
-    elif incremental_install_json_path:
-      logging.info('Using the incremental apk.')
-    else:
-      parser.error('Neither incremental nor non-incremental apk is built.')
-  return apk_path, incremental_install_json_path
-
-
-def _LoadDeviceCaches(devices):
-  for d in devices:
-    cache_path = _DeviceCachePath(d)
-    if os.path.exists(cache_path):
-      logging.info('Using device cache: %s', cache_path)
-      with open(cache_path) as f:
-        d.LoadCacheData(f.read())
-      # Delete the cached file so that any exceptions cause it to be cleared.
-      os.unlink(cache_path)
-    else:
-      logging.info('No cache present for device: %s', d)
-
-
-def _SaveDeviceCaches(devices):
-  for d in devices:
-    cache_path = _DeviceCachePath(d)
-    with open(cache_path, 'w') as f:
-      f.write(d.DumpCacheData())
-      logging.info('Wrote device cache: %s', cache_path)
-
-
-def Run(output_directory, apk_path, incremental_install_json_path,
-        command_line_flags_file):
+def Run(output_directory, apk_path, inc_apk_path, inc_install_script,
+         command_line_flags_file):
   constants.SetOutputDirectory(output_directory)
 
   parser = argparse.ArgumentParser()
@@ -263,33 +229,79 @@ def Run(output_directory, apk_path, incremental_install_json_path,
   if len(devices) > 1 and not args.all:
     raise Exception(_GenerateMissingAllFlagMessage(devices, devices_obj))
 
+  if args.incremental and args.non_incremental:
+    raise Exception('--incremental and --non-incremental cannot be set at the '
+                    'same time.')
+  install_incremental = False
+  active_apk = None
+  apk_package = None
   apk_name = os.path.basename(apk_path)
-  apk_path, incremental_install_json_path = _SelectApk(
-      apk_path, incremental_install_json_path, parser, args)
-  install_dict = None
+  if apk_path and not os.path.exists(apk_path):
+    apk_path = None
 
-  if incremental_install_json_path:
-    with open(incremental_install_json_path) as f:
-      install_dict = json.load(f)
-    apk = apk_helper.ToHelper(
-        os.path.join(output_directory, install_dict['apk_path']))
-  else:
-    apk = apk_helper.ToHelper(apk_path)
+  if args.non_incremental:
+    if apk_path:
+      active_apk = apk_path
+      logging.info('Use the non-incremental apk.')
+    else:
+      raise Exception("No regular apk is available.")
 
-  apk_package = apk.GetPackageName()
+  if inc_apk_path and not os.path.exists(inc_apk_path):
+    inc_apk_path = None
+
+  if args.incremental:
+    if inc_apk_path:
+      active_apk = inc_apk_path
+      install_incremental = True
+      logging.info('Use the incremental apk.')
+    else:
+      raise Exception("No incremental apk is available.")
+
+  if not args.incremental and not args.non_incremental and command in {
+      'install', 'run'}:
+    if apk_path and inc_apk_path:
+      raise Exception('Both incremental and non-incremental apks exist, please '
+                      'use --incremental or --non-incremental to select one.')
+    if not apk_path and not inc_apk_path:
+      raise Exception('Neither incremental nor non-incremental apk is '
+                      'available.')
+    if apk_path:
+      active_apk = apk_path
+      logging.info('Use the non-incremental apk.')
+    else:
+      active_apk = inc_apk_path
+      install_incremental = True
+      logging.info('Use the incremental apk.')
+
+  if apk_path is not None:
+    apk_package = apk_helper.GetPackageName(apk_path)
+  elif inc_apk_path is not None:
+    apk_package = apk_helper.GetPackageName(inc_apk_path)
 
   if use_cache:
-    _LoadDeviceCaches(devices)
+    for d in devices:
+      cache_path = _DeviceCachePath(d)
+      if os.path.exists(cache_path):
+        logging.info('Using device cache: %s', cache_path)
+        with open(cache_path) as f:
+          d.LoadCacheData(f.read())
+        # Delete the cached file so that any exceptions cause it to be cleared.
+        os.unlink(cache_path)
+      else:
+        logging.info('No cache present for device: %s', d)
 
   if command == 'install':
-    _InstallApk(apk, install_dict, devices_obj)
+    _InstallApk(install_incremental, inc_install_script, devices_obj,
+                active_apk)
   elif command == 'uninstall':
-    _UninstallApk(install_dict, devices_obj, apk_package)
+    _UninstallApk(install_incremental, devices_obj, apk_package)
   elif command == 'launch':
     _LaunchUrl(devices_obj, args.args, command_line_flags_file,
                args.url, apk_package)
   elif command == 'run':
-    _InstallApk(apk, install_dict, devices_obj)
+    _InstallApk(install_incremental, inc_install_script, devices_obj,
+                active_apk)
+    devices_obj.pFinish(None)
     _LaunchUrl(devices_obj, args.args, command_line_flags_file,
                args.url, apk_package)
   elif command == 'stop':
@@ -324,6 +336,13 @@ def Run(output_directory, apk_path, incremental_install_json_path,
     flags = [adb_path, '-s', devices[0].adb.GetDeviceSerial(), 'logcat']
     os.execv(adb_path, flags)
 
+  # Wait for all threads to finish.
+  devices_obj.pFinish(None)
+
   # Save back to the cache.
   if use_cache:
-    _SaveDeviceCaches(devices)
+    for d in devices:
+      cache_path = _DeviceCachePath(d)
+      with open(cache_path, 'w') as f:
+        f.write(d.DumpCacheData())
+        logging.info('Wrote device cache: %s', cache_path)

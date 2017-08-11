@@ -19,7 +19,6 @@ from devil.android import device_temp_file
 from devil.android import flag_changer
 from devil.android.tools import system_app
 from devil.utils import reraiser_thread
-from incremental_install import installer
 from pylib import valgrind_tools
 from pylib.android import logdog_logcat_monitor
 from pylib.base import base_test_result
@@ -163,30 +162,31 @@ class LocalDeviceInstrumentationTestRun(
         return lambda: crash_handler.RetryOnSystemCrash(
             install_helper_internal, dev)
 
-      def incremental_install_helper(apk, json_path):
+      def incremental_install_helper(apk, script):
         @trace_event.traced("apk_path")
         def incremental_install_helper_internal(d, apk_path=apk.path):
           # pylint: disable=unused-argument
-          installer.Install(d, json_path, apk=apk)
+          local_device_test_run.IncrementalInstall(
+              d, apk, script)
         return lambda: crash_handler.RetryOnSystemCrash(
             incremental_install_helper_internal, dev)
 
       if self._test_instance.apk_under_test:
-        if self._test_instance.apk_under_test_incremental_install_json:
+        if self._test_instance.apk_under_test_incremental_install_script:
           steps.append(incremental_install_helper(
                            self._test_instance.apk_under_test,
                            self._test_instance.
-                               apk_under_test_incremental_install_json))
+                               apk_under_test_incremental_install_script))
         else:
           permissions = self._test_instance.apk_under_test.GetPermissions()
           steps.append(install_helper(self._test_instance.apk_under_test,
                                       permissions))
 
-      if self._test_instance.test_apk_incremental_install_json:
+      if self._test_instance.test_apk_incremental_install_script:
         steps.append(incremental_install_helper(
                          self._test_instance.test_apk,
                          self._test_instance.
-                             test_apk_incremental_install_json))
+                             test_apk_incremental_install_script))
       else:
         permissions = self._test_instance.test_apk.GetPermissions()
         steps.append(install_helper(self._test_instance.test_apk,
