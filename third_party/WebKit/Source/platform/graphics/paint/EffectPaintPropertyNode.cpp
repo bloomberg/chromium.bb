@@ -26,13 +26,6 @@ FloatRect EffectPaintPropertyNode::MapRect(const FloatRect& input_rect) const {
   return result;
 }
 
-cc::Layer* EffectPaintPropertyNode::EnsureDummyLayer() const {
-  if (dummy_layer_)
-    return dummy_layer_.get();
-  dummy_layer_ = cc::Layer::Create();
-  return dummy_layer_.get();
-}
-
 String EffectPaintPropertyNode::ToString() const {
   return String::Format(
       "parent=%p localTransformSpace=%p outputClip=%p opacity=%f filter=%s "

@@ -138,9 +138,8 @@ class PropertyTreeManager {
   cc::PropertyTrees& property_trees_;
 
   // The special layer which is the parent of every other layers.
-  // We currently add dummy layers as required by cc property nodes, but this
-  // may change in the future. We also generate clip mask layers for clips
-  // that can't be rendered by pure cc clip nodes.
+  // This is where clip mask layers we generated for synthesized clips are
+  // appended into.
   cc::Layer* root_layer_;
 
   // Maps from Blink-side property tree nodes to cc property node indices.

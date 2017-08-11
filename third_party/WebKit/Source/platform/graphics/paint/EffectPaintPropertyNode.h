@@ -100,8 +100,6 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   // |inputRect|. The rects are in the space of localTransformSpace.
   FloatRect MapRect(const FloatRect& input_rect) const;
 
-  cc::Layer* EnsureDummyLayer() const;
-
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // an effect node before it has been updated, to later detect changes.
@@ -184,13 +182,6 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   float opacity_;
   SkBlendMode blend_mode_;
   // === End of effects ===
-
-  // TODO(trchen): Remove the dummy layer.
-  // The main purpose of the dummy layer is to maintain a permanent identity
-  // to associate with cc::RenderSurfaceImpl for damage tracking. This shall
-  // be removed in favor of a stable ID once cc::LayerImpl no longer owns
-  // RenderSurfaceImpl.
-  mutable scoped_refptr<cc::Layer> dummy_layer_;
 
   CompositingReasons direct_compositing_reasons_;
   CompositorElementId compositor_element_id_;
