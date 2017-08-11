@@ -1089,11 +1089,14 @@ void GraphicsContext::FillEllipse(const FloatRect& ellipse) {
   DrawOval(ellipse, ImmutableState()->FillFlags());
 }
 
-void GraphicsContext::StrokePath(const Path& path_to_stroke) {
+void GraphicsContext::StrokePath(const Path& path_to_stroke,
+                                 const int length,
+                                 const int dash_thickness) {
   if (ContextDisabled() || path_to_stroke.IsEmpty())
     return;
 
-  DrawPath(path_to_stroke.GetSkPath(), ImmutableState()->StrokeFlags());
+  DrawPath(path_to_stroke.GetSkPath(),
+           ImmutableState()->StrokeFlags(length, dash_thickness));
 }
 
 void GraphicsContext::StrokeRect(const FloatRect& rect, float line_width) {
@@ -1103,7 +1106,7 @@ void GraphicsContext::StrokeRect(const FloatRect& rect, float line_width) {
   PaintFlags flags(ImmutableState()->StrokeFlags());
   flags.setStrokeWidth(WebCoreFloatToSkScalar(line_width));
   // Reset the dash effect to account for the width
-  ImmutableState()->GetStrokeData().SetupPaintDashPathEffect(&flags, 0);
+  ImmutableState()->GetStrokeData().SetupPaintDashPathEffect(&flags);
   // strokerect has special rules for CSS when the rect is degenerate:
   // if width==0 && height==0, do nothing
   // if width==0 || height==0, then just draw line for the other dimension

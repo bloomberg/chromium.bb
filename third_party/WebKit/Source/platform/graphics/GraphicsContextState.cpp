@@ -49,8 +49,10 @@ void GraphicsContextState::Copy(const GraphicsContextState& source) {
 }
 
 const PaintFlags& GraphicsContextState::StrokeFlags(
-    int stroked_path_length) const {
-  stroke_data_.SetupPaintDashPathEffect(&stroke_flags_, stroked_path_length);
+    const int stroked_path_length,
+    const int dash_thickness) const {
+  stroke_data_.SetupPaintDashPathEffect(&stroke_flags_, stroked_path_length,
+                                        dash_thickness);
   return stroke_flags_;
 }
 

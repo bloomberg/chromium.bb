@@ -168,7 +168,16 @@ class PLATFORM_EXPORT GraphicsContext {
   void DrawLine(const IntPoint&, const IntPoint&);
 
   void FillPath(const Path&);
-  void StrokePath(const Path&);
+  // The length parameter is only used when the path has a dashed or dotted
+  // stroke style, with the default dash/dot path effect. If a non-zero length
+  // is provided the number of dashes/dots on a dashed/dotted
+  // line will be adjusted to start and end that length with a dash/dot.
+  // The dash_thickness parameter is only used when drawing dashed borders,
+  // where the stroke thickness has been set for corner miters but we want the
+  // dash length set from the border width.
+  void StrokePath(const Path&,
+                  const int length = 0,
+                  const int dash_thickness = 0);
 
   void FillEllipse(const FloatRect&);
   void StrokeEllipse(const FloatRect&);
@@ -332,8 +341,13 @@ class PLATFORM_EXPORT GraphicsContext {
                        Edges clipped_edges = kNoEdge);
 
   const PaintFlags& FillFlags() const { return ImmutableState()->FillFlags(); }
-  const PaintFlags& StrokeFlags() const {
-    return ImmutableState()->StrokeFlags();
+  // If the length of the path to be stroked is known, pass it in for correct
+  // dash or dot placement. Border painting uses a stroke thickness determined
+  // by the corner miters. Set the dash_thickness to a non-zero number for
+  // cases where dashes should be based on a different thickness.
+  const PaintFlags& StrokeFlags(const int length = 0,
+                                const int dash_thickness = 0) const {
+    return ImmutableState()->StrokeFlags(length, dash_thickness);
   }
 
   // ---------- Transformation methods -----------------
