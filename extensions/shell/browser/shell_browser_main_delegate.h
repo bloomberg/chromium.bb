@@ -28,7 +28,8 @@ class ShellBrowserMainDelegate {
   // Creates the ShellDesktopControllerAura instance to initialize the root
   // window and window manager. Subclass may return its subclass to customize
   // the window manager.
-  virtual DesktopController* CreateDesktopController() = 0;
+  virtual DesktopController* CreateDesktopController(
+      content::BrowserContext* context) = 0;
 };
 
 }  // namespace extensions

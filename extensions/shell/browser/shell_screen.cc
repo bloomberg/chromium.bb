@@ -8,9 +8,12 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "extensions/shell/browser/root_window_controller.h"
+#include "extensions/shell/browser/shell_desktop_controller_aura.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -22,8 +25,11 @@ const int64_t kDisplayId = 0;
 
 }  // namespace
 
-ShellScreen::ShellScreen(const gfx::Size& size) : host_(nullptr) {
+ShellScreen::ShellScreen(ShellDesktopControllerAura* desktop_controller,
+                         const gfx::Size& size)
+    : desktop_controller_(desktop_controller) {
   DCHECK(!size.IsEmpty());
+
   // Screen is positioned at (0,0).
   display::Display display(kDisplayId);
   gfx::Rect bounds(size);
@@ -32,37 +38,16 @@ ShellScreen::ShellScreen(const gfx::Size& size) : host_(nullptr) {
 }
 
 ShellScreen::~ShellScreen() {
-  DCHECK(!host_) << "Window not closed before destroying ShellScreen";
+  DCHECK(!desktop_controller_ || !desktop_controller_->root_window_controller())
+      << "WindowTreeHost not closed before destroying ShellScreen";
 }
 
-aura::WindowTreeHost* ShellScreen::CreateHostForPrimaryDisplay() {
-  DCHECK(!host_);
-  host_ = aura::WindowTreeHost::Create(
-      gfx::Rect(GetPrimaryDisplay().GetSizeInPixel()));
-  host_->window()->AddObserver(this);
-  host_->InitHost();
-  host_->window()->Show();
-  return host_;
-}
-
-// aura::WindowObserver overrides:
-
-void ShellScreen::OnWindowBoundsChanged(aura::Window* window,
-                                        const gfx::Rect& old_bounds,
-                                        const gfx::Rect& new_bounds) {
-  DCHECK_EQ(host_->window(), window);
-  display::Display display(GetPrimaryDisplay());
-  display.SetSize(new_bounds.size());
+void ShellScreen::OnHostResized(aura::WindowTreeHost* host) {
+  // Based on ash::WindowTreeHostManager.
+  display::Display display = GetDisplayNearestWindow(host->window());
+  display.SetSize(host->GetBoundsInPixels().size());
   display_list().UpdateDisplay(display);
 }
-
-void ShellScreen::OnWindowDestroying(aura::Window* window) {
-  DCHECK_EQ(host_->window(), window);
-  host_->window()->RemoveObserver(this);
-  host_ = nullptr;
-}
-
-// display::Screen overrides:
 
 gfx::Point ShellScreen::GetCursorScreenPoint() {
   return aura::Env::GetInstance()->last_mouse_location();
@@ -73,7 +58,9 @@ bool ShellScreen::IsWindowUnderCursor(gfx::NativeWindow window) {
 }
 
 gfx::NativeWindow ShellScreen::GetWindowAtScreenPoint(const gfx::Point& point) {
-  return host_->window()->GetEventHandlerForPoint(point);
+  return desktop_controller_->GetPrimaryHost()
+      ->window()
+      ->GetEventHandlerForPoint(point);
 }
 
 display::Display ShellScreen::GetDisplayNearestWindow(

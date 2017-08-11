@@ -6,8 +6,8 @@
 
 #include <memory>
 
+#include "extensions/shell/test/shell_test_base_aura.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
@@ -16,11 +16,11 @@
 
 namespace extensions {
 
-using ShellScreenTest = aura::test::AuraTestBase;
+using ShellScreenTest = ShellTestBaseAura;
 
 // Basic sanity tests for ShellScreen.
 TEST_F(ShellScreenTest, ShellScreen) {
-  ShellScreen screen(gfx::Size(640, 480));
+  ShellScreen screen(nullptr, gfx::Size(640, 480));
 
   // There is only one display.
   EXPECT_EQ(1, screen.GetNumDisplays());
@@ -30,13 +30,16 @@ TEST_F(ShellScreenTest, ShellScreen) {
   EXPECT_EQ("640x480", screen.GetPrimaryDisplay().size().ToString());
 
   // Tests that reshaping the host window reshapes the display.
-  // NOTE: AuraTestBase already has its own WindowTreeHost. This is creating a
-  // second one.
-  std::unique_ptr<aura::WindowTreeHost> host(
-      screen.CreateHostForPrimaryDisplay());
+  std::unique_ptr<aura::WindowTreeHost> host(aura::WindowTreeHost::Create(
+      gfx::Rect(screen.GetPrimaryDisplay().GetSizeInPixel())));
+  host->AddObserver(&screen);
+  host->InitHost();
   EXPECT_TRUE(host->window());
-  host->window()->SetBounds(gfx::Rect(0, 0, 800, 600));
+
+  host->SetBoundsInPixels(gfx::Rect(0, 0, 800, 600));
   EXPECT_EQ("800x600", screen.GetPrimaryDisplay().size().ToString());
+
+  host->RemoveObserver(&screen);
 }
 
 }  // namespace extensions
