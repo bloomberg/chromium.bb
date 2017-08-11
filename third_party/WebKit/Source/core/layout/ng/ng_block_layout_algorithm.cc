@@ -36,10 +36,10 @@ bool ClearanceMayAffectLayout(
   bool should_clear_left = (clear == EClear::kBoth || clear == EClear::kLeft);
   bool should_clear_right = (clear == EClear::kBoth || clear == EClear::kRight);
 
-  if (exclusions.last_left_float && should_clear_left)
+  if (exclusions.float_left_clear_offset && should_clear_left)
     return true;
 
-  if (exclusions.last_right_float && should_clear_right)
+  if (exclusions.float_right_clear_offset && should_clear_right)
     return true;
 
   auto should_clear_pred =

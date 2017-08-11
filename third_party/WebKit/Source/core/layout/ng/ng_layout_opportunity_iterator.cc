@@ -228,10 +228,9 @@ void InsertExclusion(NGLayoutOpportunityTreeNode* node,
 }
 
 // Compares exclusions by their top position.
-bool CompareNGExclusionsByTopAsc(
-    const std::unique_ptr<const NGExclusion>& lhs,
-    const std::unique_ptr<const NGExclusion>& rhs) {
-  return rhs->rect.offset.block_offset > lhs->rect.offset.block_offset;
+bool CompareNGExclusionsByTopAsc(const NGExclusion& lhs,
+                                 const NGExclusion& rhs) {
+  return rhs.rect.offset.block_offset > lhs.rect.offset.block_offset;
 }
 
 // Compares Layout Opportunities by Start Point.
@@ -294,14 +293,12 @@ NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
 
   NGLayoutOpportunity initial_opportunity =
       CreateInitialOpportunity(available_size, Offset());
-  opportunity_tree_root_.reset(
-      new NGLayoutOpportunityTreeNode(initial_opportunity));
 
+  NGLayoutOpportunityTreeNode tree(initial_opportunity);
   for (const auto& exclusion : exclusions->storage) {
-    InsertExclusion(MutableOpportunityTreeRoot(), exclusion.get(),
-                    opportunities_);
+    InsertExclusion(&tree, &exclusion, opportunities_);
   }
-  CollectAllOpportunities(OpportunityTreeRoot(), opportunities_);
+  CollectAllOpportunities(&tree, opportunities_);
   std::sort(opportunities_.begin(), opportunities_.end(),
             &CompareNGLayoutOpportunitesByStartPoint);
 
@@ -315,14 +312,5 @@ const NGLayoutOpportunity NGLayoutOpportunityIterator::Next() {
   opportunity_iter_++;
   return NGLayoutOpportunity(*opportunity);
 }
-
-#ifndef NDEBUG
-void NGLayoutOpportunityIterator::ShowLayoutOpportunityTree() const {
-  StringBuilder string_builder;
-  string_builder.Append("\n.:: LayoutOpportunity Tree ::.\n\nRoot Node: ");
-  AppendNodeToString(opportunity_tree_root_.get(), &string_builder);
-  fprintf(stderr, "%s\n", string_builder.ToString().Utf8().data());
-}
-#endif
 
 }  // namespace blink

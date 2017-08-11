@@ -18,9 +18,9 @@ struct NGLogicalOffset;
 
 // Gets the clearance offset based on the provided {@code clear_type} and list
 // of exclusions that represent left/right float.
-CORE_EXPORT WTF::Optional<LayoutUnit> GetClearanceOffset(
-    const std::shared_ptr<NGExclusions>& exclusions,
-    EClear clear_type);
+CORE_EXPORT LayoutUnit
+GetClearanceOffset(const std::shared_ptr<NGExclusions>& exclusions,
+                   EClear clear_type);
 
 // Whether child's constraint space should shrink to its intrinsic width.
 // This is needed for buttons, select, input, floats and orthogonal children.
