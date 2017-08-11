@@ -22,8 +22,9 @@ const base::Feature kDropSyncCredential = {"drop-sync-credential",
 
 // Enable additional elements in the form popup UI, which will allow the user to
 // view all saved passwords.
+// TODO(melandory): Re-enable once crbug.com/754326 has been fixed.
 const base::Feature kEnableManualFallbacksFilling = {
-    "EnableManualFallbacksFilling", base::FEATURE_ENABLED_BY_DEFAULT};
+    "EnableManualFallbacksFilling", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable a context menu item in the password field that allows the user
 // to manually enforce saving of their password.
