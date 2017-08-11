@@ -131,7 +131,9 @@ typedef base::Callback<void(std::unique_ptr<ShortcutInfo>)>
     ShortcutInfoCallback;
 
 #if defined(TOOLKIT_VIEWS)
-// Extracts shortcut info of the given WebContents.
+// Extracts shortcut info of the given WebContents. The result's |favicon|
+// member does *not* share a backing store with |web_contents| (so it is
+// safe to use it on another thread).
 std::unique_ptr<ShortcutInfo> GetShortcutInfoForTab(
     content::WebContents* web_contents);
 #endif
