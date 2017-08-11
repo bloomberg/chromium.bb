@@ -110,14 +110,20 @@ struct Equivalence {
   offset_t src_offset;
   offset_t dst_offset;
   offset_t length;
+
+  offset_t src_end() const { return src_offset + length; }
+  offset_t dst_end() const { return dst_offset + length; }
 };
 
-// Same as Equivalence, but with a similarity score.
-// This is only used when generating the patch.
+inline bool operator==(const Equivalence& a, const Equivalence& b) {
+  return a.src_offset == b.src_offset && a.dst_offset == b.dst_offset &&
+         a.length == b.length;
+}
+
+// Same as Equivalence, but with a similarity score. This is only used when
+// generating the patch.
 struct EquivalenceCandidate {
-  offset_t src_offset;
-  offset_t dst_offset;
-  offset_t length;
+  Equivalence eq;
   double similarity;
 };
 

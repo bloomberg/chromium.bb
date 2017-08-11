@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/installer/zucchini/buffer_view.h"
 #include "chrome/installer/zucchini/image_utils.h"
@@ -25,6 +24,8 @@ class ImageIndex {
  public:
   ImageIndex(ConstBufferView image,
              std::vector<ReferenceTypeTraits>&& traits_map);
+  ImageIndex(const ImageIndex&) = delete;
+  ImageIndex(ImageIndex&& that);
   ~ImageIndex();
 
   // Inserts all references of type |type_tag| read from |ref_reader| to this
@@ -140,8 +141,6 @@ class ImageIndex {
 
   std::vector<TypeInfo> types_;
   std::vector<PoolInfo> pools_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageIndex);
 };
 
 }  // namespace zucchini
