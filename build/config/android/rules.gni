@@ -1647,16 +1647,8 @@ if (enable_java_templates) {
     _final_apk_path_no_ext = _final_apk_path_no_ext_list[0]
     assert(_final_apk_path_no_ext != "")  # Mark as used.
 
-    _install_script_name = "install_$_template_name"
-    if (defined(invoker.install_script_name)) {
-      _install_script_name = invoker.install_script_name
-    }
-    _incremental_install_script_path =
-        "${root_out_dir}/bin/${_install_script_name}"
-    if (!incremental_apk_by_default) {
-      _incremental_install_script_path =
-          "${_incremental_install_script_path}_incremental"
-    }
+    _incremental_install_json_path =
+        "$target_gen_dir/$target_name.incremental.json"
 
     _version_code = android_default_version_code
     if (defined(invoker.version_code)) {
@@ -1814,7 +1806,7 @@ if (enable_java_templates) {
       apk_path = _final_apk_path
       incremental_allowed = _incremental_allowed
       incremental_apk_path = "${_final_apk_path_no_ext}_incremental.apk"
-      incremental_install_script_path = _incremental_install_script_path
+      incremental_install_json_path = _incremental_install_json_path
       resources_zip = resources_zip_path
       build_config = _build_config
       android_manifest = _android_root_manifest
@@ -2400,28 +2392,27 @@ if (enable_java_templates) {
       }
     }
 
-    _create_incremental_script_rule_name =
-        "${_template_name}__incremental_script"
-    action(_create_incremental_script_rule_name) {
-      script = "//build/android/incremental_install/create_install_script.py"
+    _write_installer_json_rule_name = "${_template_name}__incremental_json"
+    action(_write_installer_json_rule_name) {
+      script = "//build/android/incremental_install/write_installer_json.py"
       depfile = "$target_gen_dir/$target_name.d"
       deps = [
         _native_libs_file_arg_dep,
       ]
 
       outputs = [
-        _incremental_install_script_path,
+        _incremental_install_json_path,
       ]
 
       _rebased_apk_path_no_ext =
           rebase_path(_final_apk_path_no_ext, root_build_dir)
-      _rebased_incremental_install_script_path =
-          rebase_path(_incremental_install_script_path, root_build_dir)
+      _rebased_incremental_install_json_path =
+          rebase_path(_incremental_install_json_path, root_build_dir)
       _rebased_depfile = rebase_path(depfile, root_build_dir)
       _dex_arg_key = "${_rebased_build_config}:final_dex:dependency_dex_files"
       args = [
         "--apk-path=${_rebased_apk_path_no_ext}_incremental.apk",
-        "--script-output-path=$_rebased_incremental_install_script_path",
+        "--output-path=$_rebased_incremental_install_json_path",
         "--dex-file=$_rebased_lib_dex_path",
         "--dex-file-list=@FileArg($_dex_arg_key)",
         "--depfile=$_rebased_depfile",
@@ -2465,6 +2456,8 @@ if (enable_java_templates) {
         args = [
           "--script-output-path",
           rebase_path(_generated_script, root_build_dir),
+          "--apk-path",
+          rebase_path(_final_apk_path, root_build_dir),
         ]
         if (defined(invoker.command_line_flags_file)) {
           args += [
@@ -2472,20 +2465,10 @@ if (enable_java_templates) {
             invoker.command_line_flags_file,
           ]
         }
-
         if (_incremental_allowed) {
           args += [
-            "--incremental-apk-path",
-            rebase_path("${_final_apk_path_no_ext}_incremental.apk",
-                        root_build_dir),
-            "--incremental-install-script",
-            rebase_path(_incremental_install_script_path, root_build_dir),
-          ]
-        }
-        if (!incremental_apk_by_default) {
-          args += [
-            "--apk-path",
-            rebase_path(_final_apk_path, root_build_dir),
+            "--incremental-install-json-path",
+            rebase_path(_incremental_install_json_path, root_build_dir),
           ]
         }
       }
@@ -2538,8 +2521,8 @@ if (enable_java_templates) {
         # actual target, but instead loads them at runtime, we need to explicitly
         # depend on them here.
         public_deps = [
-          ":${_create_incremental_script_rule_name}",
           ":${_template_name}__create_incremental",
+          ":${_write_installer_json_rule_name}",
           ":${java_target}",
         ]
 
@@ -2592,7 +2575,6 @@ if (enable_java_templates) {
     testonly = true
     _apk_target_name = "${target_name}__apk"
     _test_runner_target_name = "${target_name}__test_runner_script"
-    _install_script_name = "install_$target_name"
     _dist_ijar_path =
         "$root_build_dir/test.lib.java/" + invoker.apk_name + ".jar"
     _incremental_test_runner_target_name =
@@ -2643,7 +2625,6 @@ if (enable_java_templates) {
       deps = []
       data_deps = []
       forward_variables_from(invoker, "*")
-      install_script_name = _install_script_name
       deps += [ "//testing/android/broker:broker_java" ]
       data_deps += [
         "//build/android/pylib/device/commands",
