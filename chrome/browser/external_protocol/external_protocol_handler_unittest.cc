@@ -186,7 +186,8 @@ TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnBlockedChromeUnknown) {
          shell_integration::UNKNOWN_DEFAULT, false, true, false);
 }
 
-TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnknownChromeDefault) {
+TEST_F(ExternalProtocolHandlerTest,
+       DISABLED_TestLaunchSchemeUnknownChromeDefault) {
   DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::IS_DEFAULT, false,
          false, true);
 }
