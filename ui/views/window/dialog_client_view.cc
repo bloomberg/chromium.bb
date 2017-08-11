@@ -139,9 +139,11 @@ const DialogClientView* DialogClientView::AsDialogClientView() const {
 // DialogClientView, View overrides:
 
 gfx::Size DialogClientView::CalculatePreferredSize() const {
+  gfx::Size contents_size = ClientView::CalculatePreferredSize();
+  const gfx::Insets& content_margins = GetDialogDelegate()->margins();
+  contents_size.Enlarge(content_margins.width(), content_margins.height());
   return GetBoundingSizeForVerticalStack(
-      ClientView::CalculatePreferredSize(),
-      button_row_container_->GetPreferredSize());
+      contents_size, button_row_container_->GetPreferredSize());
 }
 
 gfx::Size DialogClientView::GetMinimumSize() const {
@@ -172,8 +174,11 @@ void DialogClientView::Layout() {
   button_row_container_->SetSize(
       gfx::Size(width(), button_row_container_->GetHeightForWidth(width())));
   button_row_container_->SetY(height() - button_row_container_->height());
-  if (contents_view())
-    contents_view()->SetSize(gfx::Size(width(), button_row_container_->y()));
+  if (contents_view()) {
+    gfx::Rect contents_bounds(width(), button_row_container_->y());
+    contents_bounds.Inset(GetDialogDelegate()->margins());
+    contents_view()->SetBoundsRect(contents_bounds);
+  }
 }
 
 bool DialogClientView::AcceleratorPressed(const ui::Accelerator& accelerator) {

@@ -111,6 +111,9 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   // frame.
   virtual bool ShouldUseCustomFrame() const;
 
+  const gfx::Insets& margins() const { return margins_; }
+  void set_margins(const gfx::Insets& margins) { margins_ = margins; }
+
   // A helper for accessing the DialogClientView object contained by this
   // delegate's Window.
   const DialogClientView* GetDialogClientView() const;
@@ -124,6 +127,9 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   // A flag indicating whether this dialog is able to use the custom frame
   // style for dialogs.
   bool supports_custom_frame_;
+
+  // The margins between the content and the inside of the border.
+  gfx::Insets margins_;
 };
 
 // A DialogDelegate implementation that is-a View. Used to override GetWidget()

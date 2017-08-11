@@ -95,6 +95,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
     : bubble_border_(nullptr),
       title_margins_(title_margins),
       content_margins_(content_margins),
+      footnote_margins_(content_margins_),
       title_icon_(new views::ImageView()),
       default_title_(CreateDefaultTitleLabel(base::string16()).release()),
       custom_title_(nullptr),
@@ -456,7 +457,7 @@ void BubbleFrameView::SetFootnoteView(View* view) {
   DCHECK(!footnote_container_);
   footnote_container_ = new FootnoteContainerView();
   footnote_container_->SetLayoutManager(
-      new BoxLayout(BoxLayout::kVertical, content_margins_, 0));
+      new BoxLayout(BoxLayout::kVertical, footnote_margins_, 0));
   footnote_container_->SetBackground(
       CreateSolidBackground(kFootnoteBackgroundColor));
   footnote_container_->SetBorder(

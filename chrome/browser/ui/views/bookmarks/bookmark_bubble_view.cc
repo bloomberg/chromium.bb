@@ -337,12 +337,6 @@ void BookmarkBubbleView::Init() {
       l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_BUBBLE_FOLDER_LABEL));
   layout->AddView(parent_combobox_);
 
-  if (provider->UseExtraDialogPadding()) {
-    layout->AddPaddingRow(
-        kFixed,
-        provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS).bottom());
-  }
-
   AddChildView(bookmark_contents_view_);
 }
 

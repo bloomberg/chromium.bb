@@ -41,14 +41,14 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // Create and initialize the bubble Widget(s) with proper bounds.
   static Widget* CreateBubble(BubbleDialogDelegateView* bubble_delegate);
 
-  // WidgetDelegateView overrides:
+  // WidgetDelegateView:
   BubbleDialogDelegateView* AsBubbleDialogDelegate() override;
   bool ShouldShowCloseButton() const override;
   ClientView* CreateClientView(Widget* widget) override;
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
   const char* GetClassName() const override;
 
-  // WidgetObserver overrides:
+  // WidgetObserver:
   void OnWidgetDestroying(Widget* widget) override;
   void OnWidgetVisibilityChanging(Widget* widget, bool visible) override;
   void OnWidgetVisibilityChanged(Widget* widget, bool visible) override;
@@ -79,8 +79,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
     color_explicitly_set_ = true;
   }
 
-  const gfx::Insets& margins() const { return margins_; }
-  void set_margins(const gfx::Insets& margins) { margins_ = margins; }
   void set_title_margins(const gfx::Insets& title_margins) {
     title_margins_ = title_margins;
   }
@@ -104,7 +102,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   virtual void OnBeforeBubbleWidgetInit(Widget::InitParams* params,
                                         Widget* widget) const;
 
-  // Sets |margins_| to a default picked for smaller bubbles.
+  // Sets the content margins to a default picked for smaller bubbles.
   void UseCompactMargins();
 
   // Sets the bubble alignment relative to the anchor. This may only be called
@@ -184,9 +182,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // The background color of the bubble; and flag for when it's explicitly set.
   SkColor color_;
   bool color_explicitly_set_;
-
-  // The margins between the content and the inside of the border.
-  gfx::Insets margins_;
 
   // The margins around the title.
   // TODO(tapted): Investigate deleting this when MD is default.

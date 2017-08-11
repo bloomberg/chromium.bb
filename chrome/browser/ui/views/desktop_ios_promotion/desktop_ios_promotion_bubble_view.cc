@@ -45,7 +45,7 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetBorder(views::CreateEmptyBorder(
       0,
-      provider->GetInsetsMetric(views::INSETS_BUBBLE_CONTENTS).left() +
+      provider->GetInsetsMetric(views::INSETS_DIALOG).left() +
           desktop_ios_promotion::GetPromoImage(
               GetNativeTheme()->GetSystemColor(
                   ui::NativeTheme::kColorId_TextfieldDefaultColor))

@@ -456,8 +456,8 @@ class TitleCard : public views::View {
     titled_view->SetLayoutManager(layout);
 
     ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-    gfx::Insets dialog_insets =
-        provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS);
+    const gfx::Insets dialog_insets =
+        provider->GetInsetsMetric(views::INSETS_DIALOG);
     // Column set 0 is a single column layout with horizontal padding at left
     // and right, and column set 1 is a single column layout with no padding.
     views::ColumnSet* columns = layout->AddColumnSet(0);
@@ -1431,8 +1431,7 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
     add_account_link_ = CreateLink(l10n_util::GetStringFUTF16(
         IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON, avatar_item.name), this);
     add_account_link_->SetBorder(views::CreateEmptyBorder(
-        0,
-        provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS).left(),
+        0, provider->GetInsetsMetric(views::INSETS_DIALOG).left(),
         vertical_spacing, 0));
     layout->StartRow(1, 0);
     layout->AddView(add_account_link_);
@@ -1464,8 +1463,8 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
         provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
   }
 
-  gfx::Insets dialog_insets =
-      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS);
+  const gfx::Insets dialog_insets =
+      provider->GetInsetsMetric(views::INSETS_DIALOG);
 
   int available_width = width - dialog_insets.width() -
       kDeleteButtonWidth - warning_button_width;
@@ -1493,9 +1492,8 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
     delete_button->SetImage(views::ImageButton::STATE_PRESSED,
                             rb->GetImageSkiaNamed(IDR_CLOSE_1_P));
     delete_button->SetBounds(
-        width -
-        provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS).right() -
-        kDeleteButtonWidth,
+        width - provider->GetInsetsMetric(views::INSETS_DIALOG).right() -
+            kDeleteButtonWidth,
         0, kDeleteButtonWidth, kButtonHeight);
 
     email_button->set_notify_enter_exit_on_child(true);
@@ -1509,8 +1507,8 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
 views::View* ProfileChooserView::CreateAccountRemovalView() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
-  gfx::Insets dialog_insets = provider->GetInsetsMetric(
-      views::INSETS_DIALOG_CONTENTS);
+  const gfx::Insets dialog_insets =
+      provider->GetInsetsMetric(views::INSETS_DIALOG);
 
   views::View* view = new views::View();
   views::GridLayout* layout = CreateSingleColumnLayout(
@@ -1583,8 +1581,8 @@ views::View* ProfileChooserView::CreateSwitchUserView() {
   views::GridLayout* layout = CreateSingleColumnLayout(
       view, kFixedSwitchUserViewWidth);
   views::ColumnSet* columns = layout->AddColumnSet(1);
-  gfx::Insets dialog_insets = provider->GetInsetsMetric(
-      views::INSETS_DIALOG_CONTENTS);
+  const gfx::Insets dialog_insets =
+      provider->GetInsetsMetric(views::INSETS_DIALOG);
   columns->AddPaddingColumn(0, dialog_insets.left());
   int label_width = kFixedSwitchUserViewWidth - dialog_insets.width();
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,

@@ -34,32 +34,27 @@ LayoutProvider* LayoutProvider::Get() {
 gfx::Insets LayoutProvider::GetInsetsMetric(int metric) const {
   DCHECK_LT(metric, VIEWS_INSETS_MAX);
   switch (metric) {
-    case InsetsMetric::INSETS_BUBBLE_CONTENTS:
+    case InsetsMetric::INSETS_DIALOG:
       return gfx::Insets(13, 13);
-    case InsetsMetric::INSETS_BUBBLE_TITLE: {
-      const gfx::Insets bubble_contents =
-          GetInsetsMetric(INSETS_BUBBLE_CONTENTS);
-      return gfx::Insets(bubble_contents.top(), bubble_contents.left(), 0,
-                         bubble_contents.right());
+    case InsetsMetric::INSETS_DIALOG_BUTTON_ROW: {
+      const gfx::Insets dialog_insets = GetInsetsMetric(INSETS_DIALOG);
+      return gfx::Insets(0, dialog_insets.left(), dialog_insets.bottom(),
+                         dialog_insets.right());
+    }
+    case InsetsMetric::INSETS_DIALOG_CONTENTS: {
+      const gfx::Insets dialog_insets = GetInsetsMetric(INSETS_DIALOG);
+      return gfx::Insets(GetDistanceMetric(DISTANCE_DIALOG_TITLE_TO_CONTENT),
+                         dialog_insets.left(),
+                         GetDistanceMetric(DISTANCE_DIALOG_CONTENT_TO_BUTTONS),
+                         dialog_insets.right());
+    }
+    case InsetsMetric::INSETS_DIALOG_TITLE: {
+      const gfx::Insets dialog_insets = GetInsetsMetric(INSETS_DIALOG);
+      return gfx::Insets(dialog_insets.top(), dialog_insets.left(), 0,
+                         dialog_insets.right());
     }
     case InsetsMetric::INSETS_CHECKBOX_RADIO_BUTTON:
       return gfx::Insets(5, 6);
-    case InsetsMetric::INSETS_DIALOG_BUTTON_ROW: {
-      const gfx::Insets dialog_contents =
-          GetInsetsMetric(INSETS_DIALOG_CONTENTS);
-      return gfx::Insets(
-          0, dialog_contents.left(),
-          GetDistanceMetric(DISTANCE_DIALOG_BUTTON_BOTTOM_MARGIN),
-          dialog_contents.right());
-    }
-    case InsetsMetric::INSETS_DIALOG_CONTENTS:
-      return gfx::Insets(13, 20);
-    case InsetsMetric::INSETS_DIALOG_TITLE: {
-      const gfx::Insets dialog_contents =
-          GetInsetsMetric(INSETS_DIALOG_CONTENTS);
-      return gfx::Insets(dialog_contents.top(), dialog_contents.left(), 0,
-                         dialog_contents.right());
-    }
     case InsetsMetric::INSETS_VECTOR_IMAGE_BUTTON:
       return gfx::Insets(4);
   }
@@ -76,15 +71,16 @@ int LayoutProvider::GetDistanceMetric(int metric) const {
       return 0;
     case DistanceMetric::DISTANCE_CLOSE_BUTTON_MARGIN:
       return 7;
+    case DistanceMetric::DISTANCE_DIALOG_CONTENT_TO_BUTTONS:
+      return 13;
+    case DistanceMetric::DISTANCE_DIALOG_TITLE_TO_CONTENT:
+      return 13;
     case DistanceMetric::DISTANCE_RELATED_BUTTON_HORIZONTAL:
       return 6;
     case DistanceMetric::DISTANCE_RELATED_CONTROL_HORIZONTAL:
       return 8;
-    case DistanceMetric::DISTANCE_BUBBLE_BUTTON_TOP_MARGIN:
     case DistanceMetric::DISTANCE_RELATED_CONTROL_VERTICAL:
       return 8;
-    case DISTANCE_DIALOG_BUTTON_BOTTOM_MARGIN:
-      return 20;
     case DistanceMetric::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH:
       return 75;
     case DISTANCE_UNRELATED_CONTROL_VERTICAL:
