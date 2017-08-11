@@ -37,8 +37,6 @@ using ::testing::AnyNumber;
 using ::testing::CreateFunctor;
 using ::testing::DeleteArg;
 using ::testing::DoAll;
-// TODO(scherkus): Remove InSequence after refactoring Pipeline.
-using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Mock;
@@ -424,7 +422,6 @@ TEST_F(PipelineImplTest, DemuxerErrorDuringStop) {
 TEST_F(PipelineImplTest, NoStreams) {
   EXPECT_CALL(*demuxer_, Initialize(_, _, _))
       .WillOnce(PostCallback<1>(PIPELINE_OK));
-  EXPECT_CALL(*demuxer_, Stop());
   EXPECT_CALL(callbacks_, OnMetadata(_));
 
   StartPipelineAndExpect(PIPELINE_ERROR_COULD_NOT_RENDER);
@@ -536,8 +533,9 @@ TEST_F(PipelineImplTest, SeekAfterError) {
   // Initialize then seek!
   StartPipelineAndExpect(PIPELINE_OK);
 
+  // Pipeline::Client is supposed to call Pipeline::Stop() after errors.
+  EXPECT_CALL(callbacks_, OnError(_)).WillOnce(Stop(pipeline_.get()));
   EXPECT_CALL(*demuxer_, Stop());
-  EXPECT_CALL(callbacks_, OnError(_));
   OnDemuxerError();
   base::RunLoop().RunUntilIdle();
 
@@ -701,7 +699,8 @@ TEST_F(PipelineImplTest, ErrorDuringSeek) {
 
   pipeline_->Seek(seek_time, base::Bind(&CallbackHelper::OnSeek,
                                         base::Unretained(&callbacks_)));
-  EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ));
+  EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ))
+      .WillOnce(Stop(pipeline_.get()));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -754,7 +753,8 @@ TEST_F(PipelineImplTest, NoMessageDuringTearDownFromError) {
 
   pipeline_->Seek(seek_time, base::Bind(&CallbackHelper::OnSeek,
                                         base::Unretained(&callbacks_)));
-  EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ));
+  EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ))
+      .WillOnce(Stop(pipeline_.get()));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -934,7 +934,8 @@ class PipelineTeardownTest : public PipelineImplTest {
       } else {
         EXPECT_CALL(*demuxer_, Initialize(_, _, _))
             .WillOnce(PostCallback<1>(DEMUXER_ERROR_COULD_NOT_OPEN));
-        EXPECT_CALL(callbacks_, OnStart(DEMUXER_ERROR_COULD_NOT_OPEN));
+        EXPECT_CALL(callbacks_, OnStart(DEMUXER_ERROR_COULD_NOT_OPEN))
+            .WillOnce(Stop(pipeline_.get()));
       }
 
       EXPECT_CALL(*demuxer_, Stop());
@@ -957,7 +958,8 @@ class PipelineTeardownTest : public PipelineImplTest {
       } else {
         EXPECT_CALL(*renderer_, Initialize(_, _, _))
             .WillOnce(PostCallback<2>(PIPELINE_ERROR_INITIALIZATION_FAILED));
-        EXPECT_CALL(callbacks_, OnStart(PIPELINE_ERROR_INITIALIZATION_FAILED));
+        EXPECT_CALL(callbacks_, OnStart(PIPELINE_ERROR_INITIALIZATION_FAILED))
+            .WillOnce(Stop(pipeline_.get()));
       }
 
       EXPECT_CALL(callbacks_, OnMetadata(_));
@@ -1008,7 +1010,8 @@ class PipelineTeardownTest : public PipelineImplTest {
                 SetError(&renderer_client_, PIPELINE_ERROR_READ),
                 RunClosure<0>()));
         EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
-        EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ));
+        EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ))
+            .WillOnce(Stop(pipeline_.get()));
       }
       return;
     }
@@ -1028,7 +1031,8 @@ class PipelineTeardownTest : public PipelineImplTest {
       } else {
         EXPECT_CALL(*demuxer_, Seek(_, _))
             .WillOnce(RunCallback<1>(PIPELINE_ERROR_READ));
-        EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ));
+        EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ))
+            .WillOnce(Stop(pipeline_.get()));
       }
       return;
     }
@@ -1068,7 +1072,8 @@ class PipelineTeardownTest : public PipelineImplTest {
       } else {
         EXPECT_CALL(*demuxer_, Seek(_, _))
             .WillOnce(RunCallback<1>(PIPELINE_ERROR_READ));
-        EXPECT_CALL(callbacks_, OnResume(PIPELINE_ERROR_READ));
+        EXPECT_CALL(callbacks_, OnResume(PIPELINE_ERROR_READ))
+            .WillOnce(Stop(pipeline_.get()));
       }
     } else if (state != kSuspended && state != kSuspending) {
       NOTREACHED() << "State not supported: " << state;
@@ -1085,7 +1090,8 @@ class PipelineTeardownTest : public PipelineImplTest {
       case kError:
         if (expect_errors) {
           EXPECT_CALL(*demuxer_, Stop());
-          EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_READ));
+          EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_READ))
+              .WillOnce(Stop(pipeline_.get()));
         }
         renderer_client_->OnError(PIPELINE_ERROR_READ);
         break;
