@@ -56,7 +56,7 @@ TEST(FeatureProviderTest, ManifestFeatureAvailability) {
           .Build();
   ASSERT_TRUE(extension.get());
 
-  Feature* feature = provider->GetFeature("description");
+  const Feature* feature = provider->GetFeature("description");
   EXPECT_EQ(Feature::IS_AVAILABLE,
             feature
                 ->IsAvailableToContext(extension.get(),
@@ -125,7 +125,7 @@ TEST(FeatureProviderTest, PermissionFeatureAvailability) {
   ASSERT_TRUE(app->is_platform_app());
 
   // A permission requested in the manifest is available.
-  Feature* feature = provider->GetFeature("power");
+  const Feature* feature = provider->GetFeature("power");
   EXPECT_EQ(Feature::IS_AVAILABLE,
             feature
                 ->IsAvailableToContext(app.get(), Feature::UNSPECIFIED_CONTEXT,
@@ -169,7 +169,7 @@ TEST(FeatureProviderTest, GetChildren) {
   add_feature("parent.other_child.other_grandchild");
   add_feature("parent.unparented_child", true);
 
-  Feature* parent = provider.GetFeature("parent");
+  const Feature* parent = provider.GetFeature("parent");
   ASSERT_TRUE(parent);
   std::vector<Feature*> children = provider.GetChildren(*parent);
   std::set<std::string> children_names;

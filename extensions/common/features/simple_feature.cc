@@ -469,7 +469,7 @@ bool SimpleFeature::MatchesSessionTypes(FeatureSessionType session_type) const {
 Feature::Availability SimpleFeature::CheckDependencies(
     const base::Callback<Availability(const Feature*)>& checker) const {
   for (const auto& dep_name : dependencies_) {
-    Feature* dependency =
+    const Feature* dependency =
         ExtensionAPI::GetSharedInstance()->GetFeatureDependency(dep_name);
     if (!dependency)
       return CreateAvailability(NOT_PRESENT);

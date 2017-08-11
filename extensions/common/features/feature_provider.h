@@ -46,7 +46,7 @@ class FeatureProvider {
   static const Feature* GetBehaviorFeature(const std::string& name);
 
   // Returns the feature with the specified name.
-  Feature* GetFeature(const std::string& name) const;
+  const Feature* GetFeature(const std::string& name) const;
 
   // Returns the parent feature of |feature|, or null if there isn't one.
   const Feature* GetParent(const Feature& feature) const;

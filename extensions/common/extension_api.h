@@ -142,7 +142,7 @@ class ExtensionAPI {
 
   // Gets a feature from any dependency provider registered with ExtensionAPI.
   // Returns NULL if the feature could not be found.
-  Feature* GetFeatureDependency(const std::string& dependency_name);
+  const Feature* GetFeatureDependency(const std::string& dependency_name);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionAPITest, DefaultConfigurationFeatures);
@@ -157,7 +157,7 @@ class ExtensionAPI {
   // Checks if |full_name| is available to provided context and extension under
   // associated API's alias name.
   Feature::Availability IsAliasAvailable(const std::string& full_name,
-                                         Feature* feature,
+                                         const Feature& feature,
                                          const Extension* extension,
                                          Feature::Context context,
                                          const GURL& url);
