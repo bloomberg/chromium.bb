@@ -65,6 +65,9 @@ void CreateTestAddressFormData(FormData* form);
 void CreateTestAddressFormData(FormData* form,
                                std::vector<ServerFieldTypeSet>* types);
 
+// Returns a full profile with valid info.
+AutofillProfile GetFullValidProfile();
+
 // Returns a profile full of dummy info.
 AutofillProfile GetFullProfile();
 
