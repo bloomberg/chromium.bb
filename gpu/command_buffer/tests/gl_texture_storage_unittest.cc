@@ -169,6 +169,12 @@ TEST_F(TextureStorageTest, InternalFormatBleedingToTexImage) {
 TEST_F(TextureStorageTest, CorrectImagePixels) {
   if (!extension_available_)
     return;
+  if (gl_.gpu_preferences().use_passthrough_cmd_decoder) {
+    // TODO(geofflang): crbug.com/754710
+    LOG(INFO) << "Passthrough command decoder unimplemented feature. Skipping "
+                 "test...";
+    return;
+  }
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BUFFER_USAGE_CHROMIUM,
                   GL_TEXTURE_BUFFER_SCANOUT_CHROMIUM);
