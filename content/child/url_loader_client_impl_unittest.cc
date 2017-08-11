@@ -30,7 +30,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
     mojo_binding_.Bind(mojo::MakeRequest(&url_loader_factory_proxy_));
 
     request_id_ = dispatcher_->StartAsync(
-        base::MakeUnique<ResourceRequest>(), 0, nullptr, url::Origin(),
+        base::MakeUnique<ResourceRequest>(), 0, nullptr, url::Origin(), false,
         base::MakeUnique<TestRequestPeer>(dispatcher_.get(),
                                           &request_peer_context_),
         blink::WebURLRequest::LoadingIPCType::kMojo,
@@ -64,12 +64,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
     url_loader_client_ = std::move(client);
   }
 
-  void SyncLoad(int32_t routing_id,
-                int32_t request_id,
-                const ResourceRequest& request,
-                SyncLoadCallback callback) override {
-    NOTREACHED();
-  }
+  void Clone(mojom::URLLoaderFactoryRequest request) override { NOTREACHED(); }
 
   static MojoCreateDataPipeOptions DataPipeOptions() {
     MojoCreateDataPipeOptions options;

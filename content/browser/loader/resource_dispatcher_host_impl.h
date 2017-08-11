@@ -285,18 +285,13 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Called when loading a request with mojo.
   void OnRequestResourceWithMojo(
       ResourceRequesterInfo* requester_info,
-      int routing_id,
-      int request_id,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
       const ResourceRequest& request,
       mojom::URLLoaderRequest mojo_request,
       mojom::URLLoaderClientPtr url_loader_client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
-
-  void OnSyncLoadWithMojo(ResourceRequesterInfo* requester_info,
-                          int routing_id,
-                          int request_id,
-                          const ResourceRequest& request_data,
-                          const SyncLoadResultCallback& result_handler);
 
   // Helper function for initializing the |request| passed in. By initializing
   // we mean setting the |referrer| on the |request|, associating the
@@ -548,6 +543,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       ResourceRequesterInfo* requester_info,
       int routing_id,
       int request_id,
+      bool is_sync_load,
       const ResourceRequest& request_data,
       mojom::URLLoaderRequest mojo_request,
       mojom::URLLoaderClientPtr url_loader_client,
@@ -583,6 +579,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       ResourceRequesterInfo* requester_info,
       int request_id,
       const ResourceRequest& request_data,
+      bool is_sync_load,
       const SyncLoadResultCallback& sync_result_handler,  // only valid for sync
       int route_id,
       mojom::URLLoaderRequest mojo_request,
@@ -601,6 +598,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       scoped_refptr<ResourceRequesterInfo> requester_info,
       int request_id,
       const ResourceRequest& request_data,
+      bool is_sync_load,
       const SyncLoadResultCallback& sync_result_handler,  // only valid for sync
       int route_id,
       const net::HttpRequestHeaders& headers,

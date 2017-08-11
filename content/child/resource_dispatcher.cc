@@ -585,26 +585,14 @@ void ResourceDispatcher::StartSync(
 
   SyncLoadResult result;
 
-  if (ipc_type == blink::WebURLRequest::LoadingIPCType::kMojo) {
-    // TODO(yzshen): There is no way to apply a throttle to sync loading. We
-    // could use async loading + sync handle watching to emulate this behavior.
-    // That may require to extend the bindings API to change the priority of
-    // messages. It would result in more messages during this blocking
-    // operation, but sync loading is discouraged anyway.
-    if (!url_loader_factory->SyncLoad(
-            routing_id, MakeRequestID(), *request, &result)) {
-      response->error_code = net::ERR_FAILED;
-      return;
-    }
-  } else {
-    IPC::SyncMessage* msg = new ResourceHostMsg_SyncLoad(
-        routing_id, MakeRequestID(), *request, &result);
+  DCHECK_NE(ipc_type, blink::WebURLRequest::LoadingIPCType::kMojo);
+  IPC::SyncMessage* msg = new ResourceHostMsg_SyncLoad(
+      routing_id, MakeRequestID(), *request, &result);
 
-    // NOTE: This may pump events (see RenderThread::Send).
-    if (!message_sender_->Send(msg)) {
-      response->error_code = net::ERR_FAILED;
-      return;
-    }
+  // NOTE: This may pump events (see RenderThread::Send).
+  if (!message_sender_->Send(msg)) {
+    response->error_code = net::ERR_FAILED;
+    return;
   }
 
   response->error_code = result.error_code;
@@ -628,6 +616,7 @@ int ResourceDispatcher::StartAsync(
     int routing_id,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
     const url::Origin& frame_origin,
+    bool is_sync,
     std::unique_ptr<RequestPeer> peer,
     blink::WebURLRequest::LoadingIPCType ipc_type,
     mojom::URLLoaderFactory* url_loader_factory,
@@ -699,6 +688,8 @@ int ResourceDispatcher::StartAsync(
       // MIME sniffing should be disabled for a request initiated by fetch().
       options |= mojom::kURLLoadOptionSniffMimeType;
     }
+    if (is_sync)
+      options |= mojom::kURLLoadOptionSynchronous;
 
     std::unique_ptr<ThrottlingURLLoader> url_loader =
         ThrottlingURLLoader::CreateLoaderAndStart(

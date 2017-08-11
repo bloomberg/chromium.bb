@@ -888,7 +888,8 @@ void ResourceDispatcherHostImpl::OnRequestResource(
     const ResourceRequest& request_data,
     net::MutableNetworkTrafficAnnotationTag traffic_annotation) {
   OnRequestResourceInternal(
-      requester_info, routing_id, request_id, request_data, nullptr, nullptr,
+      requester_info, routing_id, request_id, false /* is_sync_load */,
+      request_data, nullptr, nullptr,
       net::NetworkTrafficAnnotationTag(traffic_annotation));
 }
 
@@ -896,6 +897,7 @@ void ResourceDispatcherHostImpl::OnRequestResourceInternal(
     ResourceRequesterInfo* requester_info,
     int routing_id,
     int request_id,
+    bool is_sync_load,
     const ResourceRequest& request_data,
     mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client,
@@ -917,7 +919,7 @@ void ResourceDispatcherHostImpl::OnRequestResourceInternal(
                                              request_data.render_frame_id,
                                              request_data.url);
   }
-  BeginRequest(requester_info, request_id, request_data,
+  BeginRequest(requester_info, request_id, request_data, is_sync_load,
                SyncLoadResultCallback(), routing_id, std::move(mojo_request),
                std::move(url_loader_client), traffic_annotation);
 }
@@ -938,8 +940,9 @@ void ResourceDispatcherHostImpl::OnSyncLoad(
   SyncLoadResultCallback callback =
       base::Bind(&HandleSyncLoadResult, requester_info->filter()->GetWeakPtr(),
                  base::Passed(WrapUnique(sync_result)));
-  BeginRequest(requester_info, request_id, request_data, callback,
-               sync_result->routing_id(), nullptr, nullptr, kTrafficAnnotation);
+  BeginRequest(requester_info, request_id, request_data,
+               true /* is_sync_load */, callback, sync_result->routing_id(),
+               nullptr, nullptr, kTrafficAnnotation);
 }
 
 bool ResourceDispatcherHostImpl::IsRequestIDInUse(
@@ -1098,6 +1101,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
     ResourceRequesterInfo* requester_info,
     int request_id,
     const ResourceRequest& request_data,
+    bool is_sync_load,
     const SyncLoadResultCallback& sync_result_handler,  // only valid for sync
     int route_id,
     mojom::URLLoaderRequest mojo_request,
@@ -1218,8 +1222,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
               base::Bind(
                   &ResourceDispatcherHostImpl::ContinuePendingBeginRequest,
                   base::Unretained(this), make_scoped_refptr(requester_info),
-                  request_id, request_data, sync_result_handler, route_id,
-                  headers, base::Passed(std::move(mojo_request)),
+                  request_id, request_data, is_sync_load, sync_result_handler,
+                  route_id, headers, base::Passed(std::move(mojo_request)),
                   base::Passed(std::move(url_loader_client)),
                   base::Passed(std::move(blob_handles)), traffic_annotation));
           return;
@@ -1228,9 +1232,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
     }
   }
   ContinuePendingBeginRequest(
-      requester_info, request_id, request_data, sync_result_handler, route_id,
-      headers, std::move(mojo_request), std::move(url_loader_client),
-      std::move(blob_handles), traffic_annotation,
+      requester_info, request_id, request_data, is_sync_load,
+      sync_result_handler, route_id, headers, std::move(mojo_request),
+      std::move(url_loader_client), std::move(blob_handles), traffic_annotation,
       HeaderInterceptorResult::CONTINUE);
 }
 
@@ -1238,6 +1242,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     scoped_refptr<ResourceRequesterInfo> requester_info,
     int request_id,
     const ResourceRequest& request_data,
+    bool is_sync_load,
     const SyncLoadResultCallback& sync_result_handler,  // only valid for sync
     int route_id,
     const net::HttpRequestHeaders& headers,
@@ -1247,6 +1252,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     HeaderInterceptorResult interceptor_result) {
   DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
+  DCHECK(!sync_result_handler || is_sync_load);
   if (interceptor_result != HeaderInterceptorResult::CONTINUE) {
     if (requester_info->IsRenderer() &&
         interceptor_result == HeaderInterceptorResult::KILL) {
@@ -1265,7 +1271,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   bool allow_download = false;
   bool do_not_prompt_for_login = false;
   bool report_raw_headers = false;
-  bool is_sync_load = !!sync_result_handler;
   int load_flags = BuildLoadFlagsForRequest(request_data, is_sync_load);
   bool is_navigation_stream_request =
       IsBrowserSideNavigationEnabled() &&
@@ -2266,25 +2271,19 @@ void ResourceDispatcherHostImpl::OnRenderFrameDeleted(
 
 void ResourceDispatcherHostImpl::OnRequestResourceWithMojo(
     ResourceRequesterInfo* requester_info,
-    int routing_id,
-    int request_id,
+    int32_t routing_id,
+    int32_t request_id,
+    uint32_t options,
     const ResourceRequest& request,
     mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-  OnRequestResourceInternal(requester_info, routing_id, request_id, request,
-                            std::move(mojo_request),
+  DCHECK_EQ(mojom::kURLLoadOptionNone,
+            options & ~mojom::kURLLoadOptionSynchronous);
+  bool is_sync_load = options & mojom::kURLLoadOptionSynchronous;
+  OnRequestResourceInternal(requester_info, routing_id, request_id,
+                            is_sync_load, request, std::move(mojo_request),
                             std::move(url_loader_client), traffic_annotation);
-}
-
-void ResourceDispatcherHostImpl::OnSyncLoadWithMojo(
-    ResourceRequesterInfo* requester_info,
-    int routing_id,
-    int request_id,
-    const ResourceRequest& request_data,
-    const SyncLoadResultCallback& result_handler) {
-  BeginRequest(requester_info, request_id, request_data, result_handler,
-               routing_id, nullptr, nullptr, kTrafficAnnotation);
 }
 
 // static

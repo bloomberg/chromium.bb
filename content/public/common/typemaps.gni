@@ -12,5 +12,4 @@ typemaps = [
   "//content/public/common/url_request.typemap",
   "//content/public/common/url_request_redirect_info.typemap",
   "//content/public/common/url_response_head.typemap",
-  "//content/public/common/url_sync_load_result.typemap",
 ]
