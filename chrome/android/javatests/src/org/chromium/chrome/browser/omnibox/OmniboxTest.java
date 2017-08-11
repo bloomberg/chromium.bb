@@ -28,13 +28,13 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.base.test.util.parameter.CommandLineParameter;
+import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -597,8 +597,8 @@ public class OmniboxTest {
      * Test to verify that the security icon is present when visiting http:// URLs.
      */
     @Test
-    //@MediumTest
-    @DisabledTest(message = "crbug.com/754723")
+    @MediumTest
+    @SkipCommandLineParameterization
     public void testSecurityIconOnHTTP() throws InterruptedException {
         EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
@@ -613,8 +613,15 @@ public class OmniboxTest {
                     (LocationBarLayout) mActivityTestRule.getActivity().findViewById(
                             R.id.location_bar);
             boolean securityIcon = locationBar.isSecurityButtonShown();
-            Assert.assertFalse("Omnibox should not have a Security icon", securityIcon);
-            Assert.assertFalse(securityButton.isShown());
+            if (DeviceFormFactor.isTablet()) {
+                Assert.assertTrue("Omnibox should have a Security icon", securityIcon);
+                Assert.assertTrue(securityButton.isShown());
+                Assert.assertEquals(
+                        R.drawable.omnibox_info, locationBar.getSecurityIconResourceId());
+            } else {
+                Assert.assertFalse("Omnibox should not have a Security icon", securityIcon);
+                Assert.assertFalse(securityButton.isShown());
+            }
         } finally {
             testServer.stopAndDestroyServer();
         }
@@ -625,6 +632,7 @@ public class OmniboxTest {
      */
     @Test
     @MediumTest
+    @SkipCommandLineParameterization
     public void testSecurityIconOnHTTPS() throws InterruptedException {
         EmbeddedTestServer httpsTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getInstrumentation().getContext(),
@@ -645,6 +653,8 @@ public class OmniboxTest {
             Assert.assertEquals("security_button with wrong resource-id", R.id.security_button,
                     securityButton.getId());
             Assert.assertTrue(securityButton.isShown());
+            Assert.assertEquals(
+                    R.drawable.omnibox_https_valid, locationBar.getSecurityIconResourceId());
         } finally {
             httpsTestServer.stopAndDestroyServer();
         }
