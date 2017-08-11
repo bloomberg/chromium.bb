@@ -24,9 +24,10 @@ def main():
       script_directory, p))
   sys.path.append(resolve(${APK_OPERATIONS_DIR}))
   import apk_operations
-  apk_operations.Run(resolve(${OUTPUT_DIR}),
-                     resolve(${APK_PATH}),
-                     resolve(${INC_JSON_PATH}),
+  apk_operations.Run(output_directory=resolve(${OUTPUT_DIR}),
+                     apk_path=resolve(${APK_PATH}),
+                     inc_apk_path=resolve(${INC_APK_PATH}),
+                     inc_install_script=resolve(${INC_INSTALL_SCRIPT}),
                      command_line_flags_file=${FLAGS_FILE})
 
 
@@ -40,7 +41,8 @@ def main(args):
   parser.add_argument('--script-output-path',
                       help='Output path for executable script.')
   parser.add_argument('--apk-path')
-  parser.add_argument('--incremental-install-json-path')
+  parser.add_argument('--incremental-apk-path')
+  parser.add_argument('--incremental-install-script')
   parser.add_argument('--command-line-flags-file')
   args = parser.parse_args(args)
 
@@ -57,7 +59,8 @@ def main(args):
         'APK_OPERATIONS_DIR': repr(apk_operations_dir),
         'OUTPUT_DIR': repr(relativize('.')),
         'APK_PATH': repr(relativize(args.apk_path)),
-        'INC_JSON_PATH': repr(relativize(args.incremental_install_json_path)),
+        'INC_APK_PATH': repr(relativize(args.incremental_apk_path)),
+        'INC_INSTALL_SCRIPT': repr(relativize(args.incremental_install_script)),
         'FLAGS_FILE': repr(args.command_line_flags_file),
     }
     script.write(SCRIPT_TEMPLATE.substitute(script_dict))

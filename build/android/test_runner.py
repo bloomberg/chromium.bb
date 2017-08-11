@@ -330,7 +330,7 @@ def AddGTestOptions(parser):
       dest='suite_name', nargs='+', metavar='SUITE_NAME', required=True,
       help='Executable name of the test suite to run.')
   parser.add_argument(
-      '--test-apk-incremental-install-json',
+      '--test-apk-incremental-install-script',
       type=os.path.realpath,
       help='Path to install script for the test apk.')
 
@@ -475,10 +475,10 @@ def AddInstrumentationTestOptions(parser):
   # These arguments are suppressed from the help text because they should
   # only ever be specified by an intermediate script.
   parser.add_argument(
-      '--apk-under-test-incremental-install-json',
+      '--apk-under-test-incremental-install-script',
       help=argparse.SUPPRESS)
   parser.add_argument(
-      '--test-apk-incremental-install-json',
+      '--test-apk-incremental-install-script',
       type=os.path.realpath,
       help=argparse.SUPPRESS)
 
