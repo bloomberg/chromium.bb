@@ -553,11 +553,7 @@ void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
   bool element_id_collision_detected =
       existing_layer && existing_layer != layer;
 
-  // TODO(pdr): Remove this suppression and always check for id collisions.
-  // This is a temporary suppression for SPV2 which generates unnecessary
-  // layers that collide. Remove once crbug.com/693693 is fixed.
-  if (!settings().use_layer_lists)
-    DCHECK(!element_id_collision_detected);
+  DCHECK(!element_id_collision_detected);
 #endif
 
   element_layers_map_[element_id] = layer->id();
