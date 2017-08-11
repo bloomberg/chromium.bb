@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/ui/public/interfaces/input_devices/input_device_controller.mojom.h"
 
@@ -24,8 +23,7 @@ class InputDeviceController : public mojom::InputDeviceController {
   ~InputDeviceController() override;
 
   // Registers the interface provided by this class with |registry|.
-  void AddInterface(service_manager::BinderRegistryWithArgs<
-                    const service_manager::BindSourceInfo&>* registry);
+  void AddInterface(service_manager::BinderRegistry* registry);
 
   // mojom::InputDeviceController::
   void AddKeyboardDeviceObserver(
@@ -67,8 +65,7 @@ class InputDeviceController : public mojom::InputDeviceController {
   void NotifyObserver(mojom::KeyboardDeviceObserver* observer);
 
   void BindInputDeviceControllerRequest(
-      mojom::InputDeviceControllerRequest request,
-      const service_manager::BindSourceInfo& source_info);
+      mojom::InputDeviceControllerRequest request);
 
   mojo::BindingSet<mojom::InputDeviceController> bindings_;
   mojo::InterfacePtrSet<mojom::KeyboardDeviceObserver> observers_;

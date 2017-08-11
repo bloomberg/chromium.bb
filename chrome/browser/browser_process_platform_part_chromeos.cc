@@ -27,11 +27,7 @@
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/prefs/active_profile_pref_service.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
@@ -39,7 +35,6 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/discardable_shared_memory_manager.h"
-#include "mash/public/interfaces/launchable.mojom.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -57,82 +52,6 @@
 #endif
 
 namespace {
-// Packaged service implementation used to expose miscellaneous application
-// control features. This is a singleton service which runs on the main thread
-// and never stops.
-class ChromeServiceChromeOS : public service_manager::Service,
-                              public mash::mojom::Launchable {
- public:
-  ChromeServiceChromeOS() {
-#if defined(USE_OZONE)
-    input_device_controller_.AddInterface(&interfaces_);
-#endif
-    interfaces_.AddInterface<mash::mojom::Launchable>(
-        base::Bind(&ChromeServiceChromeOS::Create, base::Unretained(this)));
-  }
-  ~ChromeServiceChromeOS() override {}
-
-  static std::unique_ptr<service_manager::Service> CreateService() {
-    return base::MakeUnique<ChromeServiceChromeOS>();
-  }
-
- private:
-  void CreateNewWindowImpl(bool is_incognito) {
-    Profile* profile = ProfileManager::GetActiveUserProfile();
-    chrome::NewEmptyWindow(is_incognito ? profile->GetOffTheRecordProfile()
-                                        : profile);
-  }
-
-  // service_manager::Service:
-  void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
-                       const std::string& name,
-                       mojo::ScopedMessagePipeHandle handle) override {
-    interfaces_.BindInterface(name, std::move(handle), remote_info);
-  }
-
-  // mash::mojom::Launchable:
-  void Launch(uint32_t what, mash::mojom::LaunchMode how) override {
-    bool is_incognito;
-    switch (what) {
-      case mash::mojom::kWindow:
-        is_incognito = false;
-        break;
-      case mash::mojom::kIncognitoWindow:
-        is_incognito = true;
-        break;
-      default:
-        NOTREACHED();
-    }
-
-    bool reuse = how != mash::mojom::LaunchMode::MAKE_NEW;
-    if (reuse) {
-      Profile* profile = ProfileManager::GetActiveUserProfile();
-      Browser* browser = chrome::FindTabbedBrowser(
-          is_incognito ? profile->GetOffTheRecordProfile() : profile, false);
-      if (browser) {
-        browser->window()->Show();
-        return;
-      }
-    }
-
-    CreateNewWindowImpl(is_incognito);
-  }
-
-  void Create(mash::mojom::LaunchableRequest request,
-              const service_manager::BindSourceInfo& source_info) {
-    bindings_.AddBinding(this, std::move(request));
-  }
-
-  service_manager::BinderRegistryWithArgs<
-      const service_manager::BindSourceInfo&>
-      interfaces_;
-  mojo::BindingSet<mash::mojom::Launchable> bindings_;
-#if defined(USE_OZONE)
-  ui::InputDeviceController input_device_controller_;
-#endif
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeServiceChromeOS);
-};
 
 std::unique_ptr<service_manager::Service> CreateEmbeddedUIService(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -266,13 +185,6 @@ BrowserProcessPlatformPart::CreateBrowserPolicyConnector() {
 
 void BrowserProcessPlatformPart::RegisterInProcessServices(
     content::ContentBrowserClient::StaticServiceMap* services) {
-  {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = base::Bind(&ChromeServiceChromeOS::CreateService);
-    info.task_runner = base::ThreadTaskRunnerHandle::Get();
-    services->insert(std::make_pair(chromeos::kChromeServiceName, info));
-  }
-
   {
     service_manager::EmbeddedServiceInfo info;
     info.factory = base::Bind([] {

@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/constants.mojom.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pause_tabs_field_trial.h"
@@ -397,7 +398,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   {
     startup_metric_utils::mojom::StartupMetricHostPtr startup_metric_host;
-    thread->GetConnector()->BindInterface(content::mojom::kBrowserServiceName,
+    thread->GetConnector()->BindInterface(chrome::mojom::kServiceName,
                                           &startup_metric_host);
     startup_metric_host->RecordRendererMainEntryTime(main_entry_time_);
   }

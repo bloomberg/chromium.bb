@@ -11,6 +11,9 @@
         ],
         "mash:launchable": [
           "mash::mojom::Launchable"
+        ],
+        "renderer": [
+          "startup_metric_utils::mojom::StartupMetricHost"
         ]
       },
       "requires": {

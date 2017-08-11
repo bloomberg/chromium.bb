@@ -234,6 +234,8 @@ split_static_library("browser") {
     "chrome_notification_types.h",
     "chrome_quota_permission_context.cc",
     "chrome_quota_permission_context.h",
+    "chrome_service.cc",
+    "chrome_service.h",
     "command_observer.h",
     "command_updater.cc",
     "command_updater.h",

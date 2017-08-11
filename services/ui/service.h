@@ -140,19 +140,13 @@ class Service : public service_manager::Service,
       mojom::DisplayManagerRequest request,
       const service_manager::BindSourceInfo& source_info);
 
-  void BindGpuRequest(mojom::GpuRequest request,
-                      const service_manager::BindSourceInfo& source_info);
+  void BindGpuRequest(mojom::GpuRequest request);
 
-  void BindIMERegistrarRequest(
-      mojom::IMERegistrarRequest request,
-      const service_manager::BindSourceInfo& source_info);
+  void BindIMERegistrarRequest(mojom::IMERegistrarRequest request);
 
-  void BindIMEDriverRequest(mojom::IMEDriverRequest request,
-                            const service_manager::BindSourceInfo& source_info);
+  void BindIMEDriverRequest(mojom::IMEDriverRequest request);
 
-  void BindUserAccessManagerRequest(
-      mojom::UserAccessManagerRequest request,
-      const service_manager::BindSourceInfo& source_info);
+  void BindUserAccessManagerRequest(mojom::UserAccessManagerRequest request);
 
   void BindUserActivityMonitorRequest(
       mojom::UserActivityMonitorRequest request,
@@ -174,9 +168,7 @@ class Service : public service_manager::Service,
       discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request,
       const service_manager::BindSourceInfo& source_info);
 
-  void BindWindowServerTestRequest(
-      mojom::WindowServerTestRequest request,
-      const service_manager::BindSourceInfo& source_info);
+  void BindWindowServerTestRequest(mojom::WindowServerTestRequest request);
 
   std::unique_ptr<ws::WindowServer> window_server_;
   std::unique_ptr<PlatformEventSource> event_source_;
@@ -221,7 +213,8 @@ class Service : public service_manager::Service,
 
   service_manager::BinderRegistryWithArgs<
       const service_manager::BindSourceInfo&>
-      registry_;
+      registry_with_source_info_;
+  service_manager::BinderRegistry registry_;
 
   // Set to true in StartDisplayInit().
   bool is_gpu_ready_ = false;
