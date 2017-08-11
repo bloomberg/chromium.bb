@@ -348,6 +348,11 @@ void TapEdit() {
 
 @interface MockReauthenticationModule : NSObject<ReauthenticationProtocol>
 
+// Indicates whether the device is capable of reauthenticating the user.
+@property(nonatomic, assign) BOOL canAttempt;
+
+// Indicates whether (mock) authentication should succeed or not. Setting
+// |shouldSucceed| to any value sets |canAttempt| to YES.
 @property(nonatomic, assign) BOOL shouldSucceed;
 
 @end
@@ -355,9 +360,15 @@ void TapEdit() {
 @implementation MockReauthenticationModule
 
 @synthesize shouldSucceed = _shouldSucceed;
+@synthesize canAttempt = _canAttempt;
+
+- (void)setShouldSucceed:(BOOL)shouldSucceed {
+  _canAttempt = YES;
+  _shouldSucceed = shouldSucceed;
+}
 
 - (BOOL)canAttemptReauth {
-  return YES;
+  return _canAttempt;
 }
 
 - (void)attemptReauthWithLocalizedReason:(NSString*)localizedReason
@@ -1187,6 +1198,70 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
+}
+
+// Checks that an attempt to copy a password provides appropriate feedback when
+// reauthentication cannot be attempted.
+- (void)testCopyPasswordToastNoReauth {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kViewPasswords);
+
+  // Saving a form is needed for using the "password details" view.
+  SaveExamplePasswordForm();
+
+  OpenPasswordSettings();
+
+  [GetInteractionForPasswordEntry(@"example.com, concrete username")
+      performAction:grey_tap()];
+
+  MockReauthenticationModule* mock_reauthentication_module =
+      SetUpAndReturnMockReauthenticationModule();
+
+  mock_reauthentication_module.canAttempt = NO;
+  [GetInteractionForPasswordDetailItem(CopyPasswordButton())
+      performAction:grey_tap()];
+
+  NSString* snackbarLabel =
+      l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_MESSAGE);
+  // The tap checks the existence of the snackbar and also closes it.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
+}
+
+// Checks that an attempt to view a password provides appropriate feedback when
+// reauthentication cannot be attempted.
+- (void)testShowPasswordToastNoReauth {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kViewPasswords);
+
+  // Saving a form is needed for using the "password details" view.
+  SaveExamplePasswordForm();
+
+  OpenPasswordSettings();
+
+  [GetInteractionForPasswordEntry(@"example.com, concrete username")
+      performAction:grey_tap()];
+
+  MockReauthenticationModule* mock_reauthentication_module =
+      SetUpAndReturnMockReauthenticationModule();
+
+  mock_reauthentication_module.canAttempt = NO;
+  [GetInteractionForPasswordDetailItem(ShowPasswordButton())
+      performAction:grey_tap()];
+
+  NSString* snackbarLabel =
+      l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_MESSAGE);
+  // The tap checks the existence of the snackbar and also closes it.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
+      performAction:grey_tap()];
+
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 }
