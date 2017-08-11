@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
@@ -269,6 +270,38 @@ public class WebappModeTest {
                 return isWebappActivityReady(ApplicationStatus.getLastTrackedFocusedActivity());
             }
         });
+    }
+
+    /**
+     * Test that a WebappActivity uses WebappInfo set via WebappActivity#putWebappInfo() if
+     * available instead of constructing the WebappInfo from the launch intent.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Webapps"})
+    public void testWebappInfoReuse() throws Exception {
+        Intent intent = createIntent(
+                WebappActivityTestRule.WEBAPP_ID, WEBAPP_2_URL, WEBAPP_2_TITLE, WEBAPP_ICON, true);
+        Intent newIntent = createIntent(
+                WebappActivityTestRule.WEBAPP_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true);
+        WebappInfo webappInfo = WebappInfo.create(intent);
+        WebappActivity.addWebappInfo(WebappActivityTestRule.WEBAPP_ID, webappInfo);
+
+        WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
+        mActivityTestRule.startWebappActivity(newIntent);
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return isWebappActivityReady(ApplicationStatus.getLastTrackedFocusedActivity());
+            }
+        });
+
+        Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
+        WebappActivity lastWebappActivity = (WebappActivity) lastActivity;
+
+        Assert.assertEquals(webappInfo, lastWebappActivity.getWebappInfo());
+        Assert.assertTrue(lastWebappActivity.getWebappInfo().uri().equals(Uri.parse(WEBAPP_2_URL)));
     }
 
     /** Test that on first launch {@link WebappDataStorage#hasBeenLaunched()} is set. */

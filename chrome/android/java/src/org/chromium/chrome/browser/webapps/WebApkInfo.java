@@ -240,6 +240,7 @@ public class WebApkInfo extends WebappInfo {
     @Override
     public void setWebappIntentExtras(Intent intent) {
         // For launching a {@link WebApkActivity}.
+        intent.putExtra(ShortcutHelper.EXTRA_ID, id());
         intent.putExtra(ShortcutHelper.EXTRA_URL, uri().toString());
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, source());
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackageName());
