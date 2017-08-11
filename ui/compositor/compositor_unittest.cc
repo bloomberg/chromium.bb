@@ -451,38 +451,6 @@ TEST_F(CompositorTestWithMockedTime,
   compositor()->SetVisible(true);
 }
 
-// Verify that when allow_locks_to_extend_timeout_ is false and a lock with
-// no timeout has been created, a second lock that has a timeout will correctly
-// time out.
-TEST_F(CompositorTestWithMockedTime,
-       LockWithTimeoutOverridesLockWithNoTimeout) {
-  testing::StrictMock<MockCompositorLockClient> lock_client1;
-  std::unique_ptr<CompositorLock> lock1;
-  testing::StrictMock<MockCompositorLockClient> lock_client2;
-  std::unique_ptr<CompositorLock> lock2;
-
-  base::TimeDelta timeout1 = base::TimeDelta();
-  base::TimeDelta timeout2 = base::TimeDelta::FromMilliseconds(10);
-
-  // False is the default, but ensure this test is still valid if that ever
-  // changes.
-  compositor()->set_allow_locks_to_extend_timeout(false);
-
-  // Take a lock with no timeout.
-  lock1 = compositor()->GetCompositorLock(&lock_client1, timeout1);
-  EXPECT_TRUE(compositor()->IsLocked());
-
-  // Setting a lock with a timeout should cause boths locks to time out.
-  lock2 = compositor()->GetCompositorLock(&lock_client2, timeout2);
-  EXPECT_TRUE(compositor()->IsLocked());
-
-  EXPECT_CALL(lock_client1, CompositorLockTimedOut()).Times(1);
-  EXPECT_CALL(lock_client2, CompositorLockTimedOut()).Times(1);
-  task_runner()->FastForwardBy(timeout2);
-  task_runner()->RunUntilIdle();
-  EXPECT_FALSE(compositor()->IsLocked());
-}
-
 #if defined(OS_WIN)
 // TODO(crbug.com/608436): Flaky on windows trybots
 #define MAYBE_CreateAndReleaseOutputSurface \

@@ -340,12 +340,9 @@ class COMPOSITOR_EXPORT Compositor
   void RemoveAnimationObserver(CompositorAnimationObserver* observer);
   bool HasAnimationObserver(const CompositorAnimationObserver* observer) const;
 
-  // Creates a compositor lock. If the timeout is null, then no timeout is used.
-  // If multiple locks exist simultaneously, the timeout behavior is as follows:
-  //   1. if allow_locks_to_extend_timeouts has been set, all locks time out at
-  //      the latest chronological timeout value provided;
-  //   2. otherwise, all locks time out at the time specified by the first lock
-  //      that was created with a non-zero timeout value.
+  // Creates a compositor lock. Returns NULL if it is not possible to lock at
+  // this time (i.e. we're waiting to complete a previous unlock). If the
+  // timeout is null, then no timeout is used.
   std::unique_ptr<CompositorLock> GetCompositorLock(
       CompositorLockClient* client,
       base::TimeDelta timeout =
