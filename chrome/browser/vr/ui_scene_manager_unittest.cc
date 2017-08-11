@@ -32,9 +32,10 @@ std::set<UiElementDebugId> kFloorCeilingBackgroundElements = {
     kBackgroundFront, kBackgroundLeft,   kBackgroundBack, kBackgroundRight,
     kBackgroundTop,   kBackgroundBottom, kCeiling,        kFloor};
 std::set<UiElementDebugId> kElementsVisibleInBrowsing = {
-    kBackgroundFront, kBackgroundLeft,   kBackgroundBack, kBackgroundRight,
-    kBackgroundTop,   kBackgroundBottom, kCeiling,        kFloor,
-    kContentQuad,     kBackplane,        kUrlBar};
+    kBackgroundFront, kBackgroundLeft, kBackgroundBack,
+    kBackgroundRight, kBackgroundTop,  kBackgroundBottom,
+    kCeiling,         kFloor,          kContentQuad,
+    kBackplane,       kUrlBar,         kUnderDevelopmentNotice};
 std::set<UiElementDebugId> kElementsVisibleWithExitPrompt = {
     kBackgroundFront, kBackgroundLeft,     kBackgroundBack, kBackgroundRight,
     kBackgroundTop,   kBackgroundBottom,   kCeiling,        kFloor,

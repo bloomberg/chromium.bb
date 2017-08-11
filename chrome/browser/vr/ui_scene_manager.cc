@@ -20,6 +20,7 @@
 #include "chrome/browser/vr/elements/screen_dimmer.h"
 #include "chrome/browser/vr/elements/splash_screen_icon.h"
 #include "chrome/browser/vr/elements/system_indicator.h"
+#include "chrome/browser/vr/elements/text.h"
 #include "chrome/browser/vr/elements/transient_url_bar.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_debug_id.h"
@@ -134,6 +135,14 @@ static constexpr int kFloorGridlineCount = 40;
 // Tiny distance to offset textures that should appear in the same plane.
 static constexpr float kTextureOffset = 0.01;
 
+static constexpr float kUnderDevelopmentNoticeFontHeightM =
+    0.02f * kUrlBarDistance;
+static constexpr float kUnderDevelopmentNoticeHeightM = 0.1f * kUrlBarDistance;
+static constexpr float kUnderDevelopmentNoticeWidthM = 0.44f * kUrlBarDistance;
+static constexpr float kUnderDevelopmentNoticeVerticalOffsetM =
+    0.5f * kUnderDevelopmentNoticeHeightM + kUrlBarHeight;
+static constexpr float kUnderDevelopmentNoticeRotationRad = -0.19;
+
 enum DrawPhase : int {
   kPhaseBackground = 0,
   kPhaseFloorCeiling,
@@ -166,6 +175,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateExitPrompt();
   CreateToasts();
   CreateSplashScreen();
+  CreateUnderDevelopmentNotice();
 
   ConfigureScene();
 }
@@ -331,6 +341,24 @@ void UiSceneManager::CreateSplashScreen() {
                      -kSplashScreenDistance);
   splash_screen_icon_ = icon.get();
   scene_->AddUiElement(std::move(icon));
+}
+
+void UiSceneManager::CreateUnderDevelopmentNotice() {
+  std::unique_ptr<Text> text = base::MakeUnique<Text>(
+      512, kUnderDevelopmentNoticeFontHeightM, kUnderDevelopmentNoticeWidthM,
+      IDS_VR_UNDER_DEVELOPMENT_NOTICE);
+  text->set_debug_id(kUnderDevelopmentNotice);
+  text->set_id(AllocateId());
+  text->set_draw_phase(kPhaseForeground);
+  text->set_hit_testable(false);
+  text->SetSize(kUnderDevelopmentNoticeWidthM, kUnderDevelopmentNoticeHeightM);
+  text->SetTranslate(0, -kUnderDevelopmentNoticeVerticalOffsetM, 0);
+  text->SetRotate(1, 0, 0, kUnderDevelopmentNoticeRotationRad);
+  text->SetEnabled(true);
+  text->set_y_anchoring(YAnchoring::YBOTTOM);
+  url_bar_->AddChild(text.get());
+  control_elements_.push_back(text.get());
+  scene_->AddUiElement(std::move(text));
 }
 
 void UiSceneManager::CreateBackground() {

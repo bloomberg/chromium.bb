@@ -65,6 +65,8 @@ static_library("vr_common") {
     "elements/system_indicator.h",
     "elements/system_indicator_texture.cc",
     "elements/system_indicator_texture.h",
+    "elements/text.cc",
+    "elements/text.h",
     "elements/textured_element.cc",
     "elements/textured_element.h",
     "elements/transience_manager.cc",
