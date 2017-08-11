@@ -33,7 +33,7 @@ namespace {
 const char kHighContrastExtensionUrl[] =
     "https://chrome.google.com/webstore/detail/djcfdncoelnlbldjfhinnjlhdjlikmph";
 const char kDarkThemeSearchUrl[] =
-    "https://chrome.google.com/webstore/search-themes/dark";
+    "https://chrome.google.com/webstore/category/collection/dark_themes";
 const char kLearnMoreUrl[] =
     "https://groups.google.com/a/googleproductforums.com/d/topic/chrome/Xrco2HsXS-8/discussion";
 
