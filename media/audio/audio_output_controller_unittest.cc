@@ -115,6 +115,7 @@ class AudioOutputControllerTest : public testing::Test {
   AudioOutputControllerTest()
       : audio_manager_(AudioManager::CreateForTesting(
             base::MakeUnique<TestAudioThread>())) {
+    EXPECT_CALL(mock_event_handler_, OnLog(_)).Times(testing::AnyNumber());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -256,6 +257,13 @@ class AudioOutputControllerTest : public testing::Test {
     run_loop.Run();
   }
 
+  void SimulateErrorThenDeviceChange() {
+    audio_manager_->GetTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AudioOutputControllerTest::TriggerErrorThenDeviceChange,
+                       base::Unretained(this)));
+  }
+
   // These help make test sequences more readable.
   void DivertNeverPlaying() { Divert(false, 0); }
   void DivertWillEventuallyBeTwicePlayed() { Divert(false, 2); }
@@ -264,6 +272,18 @@ class AudioOutputControllerTest : public testing::Test {
   void RevertWhilePlaying() { Revert(true); }
 
  private:
+  void TriggerErrorThenDeviceChange() {
+    DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+
+    // Errors should be deferred; the device change should ensure it's dropped.
+    EXPECT_CALL(mock_event_handler_, OnControllerError()).Times(0);
+    controller_->OnError();
+
+    EXPECT_CALL(mock_event_handler_, OnControllerPlaying());
+    EXPECT_CALL(mock_event_handler_, OnControllerPaused()).Times(0);
+    controller_->OnDeviceChange();
+  }
+
   base::TestMessageLoop message_loop_;
   std::unique_ptr<AudioManager> audio_manager_;
   MockAudioOutputControllerEventHandler mock_event_handler_;
@@ -305,6 +325,13 @@ TEST_F(AudioOutputControllerTest, PlayDeviceChangeClose) {
   Create(kSamplesPerPacket);
   Play();
   ChangeDevice();
+  Close();
+}
+
+TEST_F(AudioOutputControllerTest, PlayDeviceChangeError) {
+  Create(kSamplesPerPacket);
+  Play();
+  SimulateErrorThenDeviceChange();
   Close();
 }
 

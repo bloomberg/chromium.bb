@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -266,15 +267,16 @@ class MEDIA_EXPORT AudioOutputController
   base::AtomicRefCount on_more_io_data_called_;
   std::unique_ptr<base::OneShotTimer> wedge_timer_;
 
-  // Flag which indicates errors received during Stop/Close should be ignored.
-  // These errors are generally harmless since a fresh stream is about to be
-  // recreated, but if forwarded, renderer side clients may consider them
-  // catastrophic and abort their operations.
+  // WeakPtrFactory and WeakPtr for ignoring errors which occur arround a
+  // Stop/Close cycle; e.g., device changes. These errors are generally harmless
+  // since a fresh stream is about to be recreated, but if forwarded, renderer
+  // side clients may consider them catastrophic and abort their operations.
   //
-  // If |stream_| is started then |ignore_errors_during_stop_close_| must only
-  // be accessed while |error_lock_| is held.
-  bool ignore_errors_during_stop_close_;
-  base::Lock error_lock_;
+  // |weak_this_for_errors_| must not be reassigned while a stream is active or
+  // we'll have concurrent access from different threads. Only the factory may
+  // be used to invalidate WeakPtrs while the stream is active.
+  base::WeakPtr<AudioOutputController> weak_this_for_errors_;
+  base::WeakPtrFactory<AudioOutputController> weak_factory_for_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputController);
 };
