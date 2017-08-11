@@ -101,6 +101,12 @@ class PaymentsProfileComparator : public autofill::AutofillProfileComparator {
   base::string16 GetStringForMissingShippingFields(
       const autofill::AutofillProfile& profile) const;
 
+  // Returns a localized string to be displayed as the title of a piece of UI,
+  // indicating what action must be taken for the given profile to be used as
+  // shipping address.
+  base::string16 GetTitleForMissingShippingFields(
+      const autofill::AutofillProfile& profile) const;
+
   // Clears the cached evaluation result for |profile|. Must be called when a
   // profile is modified and saved during the course of a PaymentRequest.
   virtual void Invalidate(const autofill::AutofillProfile& profile);
