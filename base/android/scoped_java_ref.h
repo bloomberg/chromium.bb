@@ -286,7 +286,9 @@ class JavaRefOrBare {
  public:
   JavaRefOrBare(std::nullptr_t) : obj_(nullptr) {}
   JavaRefOrBare(const JavaRef<T>& ref) : obj_(ref.obj()) {}
-  JavaRefOrBare(T obj) : obj_(obj) {}
+  // TODO(torne): this is no longer permitted; remove the entire class and just
+  // use JavaRef once this removal sticks.
+  // JavaRefOrBare(T obj) : obj_(obj) {}
   T obj() const { return obj_; }
 
  private:
