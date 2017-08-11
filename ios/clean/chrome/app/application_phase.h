@@ -9,7 +9,7 @@
 // states.
 typedef NS_ENUM(NSUInteger, ApplicationPhase) {
   // The initial state of the application performing a cold launch.
-  APPLICATION_COLD,
+  APPLICATION_COLD = 0,
   // The minimal initialization that must be completed before any further
   // startup can happen. |applicationDidFinishLaunching:withOptions:| must
   // bring the appication to at least this phase before returning.

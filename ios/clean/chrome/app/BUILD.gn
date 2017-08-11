@@ -98,13 +98,14 @@ source_set("application_state") {
     "application_phase.h",
     "application_state.h",
     "application_state.mm",
-    "application_step.h",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
     "//base",
+    "//ios/clean/chrome/app/steps:step_runner",
+    "//ios/clean/chrome/app/steps:steps",
     "//ios/shared/chrome/browser/ui/coordinators",
     "//ios/testing/perf:startup",
   ]
@@ -120,7 +121,10 @@ source_set("app") {
 
   deps = [
     ":application_state",
-    "//ios/clean/chrome/app/steps",
+    "//base",
+    "//ios/clean/chrome/app/steps:step_runner",
+    "//ios/clean/chrome/app/steps:steps",
+    "//ios/clean/chrome/browser",
     "//ios/testing/perf:startup",
   ]
 }

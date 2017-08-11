@@ -2,21 +2,49 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("steps") {
+source_set("step_runner") {
   sources = [
-    "launch_to_background.h",
-    "launch_to_background.mm",
-    "launch_to_basic.h",
-    "launch_to_basic.mm",
-    "launch_to_foreground.h",
-    "launch_to_foreground.mm",
-    "root_coordinator+application_step.h",
-    "root_coordinator+application_step.mm",
+    "application_step.h",
+    "phased_step_runner.h",
+    "phased_step_runner.mm",
+    "step_context.h",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    "//base",
+  ]
+}
+
+source_set("steps") {
+  sources = [
+    "browser_state_setter.h",
+    "browser_state_setter.mm",
+    "bundle_and_defaults_configurator.h",
+    "bundle_and_defaults_configurator.mm",
+    "chrome_main.h",
+    "chrome_main.mm",
+    "foregrounder.h",
+    "foregrounder.mm",
+    "provider_initializer.h",
+    "provider_initializer.mm",
+    "root_coordinator_initializer.h",
+    "root_coordinator_initializer.mm",
+    "simple_application_step.h",
+    "simple_application_step.mm",
+    "step_collections.h",
+    "step_collections.mm",
+    "step_features.h",
+    "step_features.mm",
+    "ui_initializer.h",
+    "ui_initializer.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":step_runner",
     "//base",
     "//components/content_settings/core/browser",
     "//ios/chrome/app:app_internal",
@@ -29,7 +57,6 @@ source_set("steps") {
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/web:web_internal",
     "//ios/chrome/browser/web_state_list",
-    "//ios/clean/chrome/app:application_state",
     "//ios/clean/chrome/browser/ui/root",
     "//ios/net",
     "//ios/shared/chrome/browser/ui/browser_list",
@@ -42,14 +69,16 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "root_coordinator+application_step_unittest.mm",
+    "phased_step_runner_unittest.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":step_runner",
     ":steps",
     "//base",
+    "//ios/chrome/test/base",
     "//ios/clean/chrome/app:application_state",
     "//testing/gtest",
     "//third_party/ocmock",
