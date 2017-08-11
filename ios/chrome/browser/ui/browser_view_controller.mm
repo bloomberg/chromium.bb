@@ -283,10 +283,6 @@ bool IsURLAllowedInIncognito(const GURL& url) {
   return !(url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIHistoryHost);
 }
 
-// Temporary key to use when storing native controllers vended to tabs before
-// they are added to the tab model.
-NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
-
 }  // namespace
 
 #pragma mark - HeaderDefinition helper
@@ -514,9 +510,8 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
   // The currently displayed "Rate This App" dialog, if one exists.
   id<AppRatingPrompt> _rateThisAppDialog;
 
-  // Maps tab IDs to the most recent native content controller vended to that
-  // tab's web controller.
-  NSMapTable* _nativeControllersForTabIDs;
+  // Native controller vended to tab before Tab is added to the tab model.
+  id _temporaryNativeController;
 
   // Notifies the toolbar menu of reading list changes.
   ReadingListMenuNotifier* _readingListMenuNotifier;
@@ -966,7 +961,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     DCHECK(factory);
 
     _dependencyFactory = factory;
-    _nativeControllersForTabIDs = [NSMapTable strongToWeakObjectsMapTable];
     _dialogPresenter = [[DialogPresenter alloc] initWithDelegate:self
                                         presentingViewController:self];
     _dispatcher = [[CommandDispatcher alloc] init];
@@ -1562,14 +1556,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   Tab* tab = notify.userInfo[kTabModelTabKey];
   DCHECK(tab);
 
-  // Update map if a native controller was vended before the tab was added.
-  id<CRWNativeContent> nativeController =
-      [_nativeControllersForTabIDs objectForKey:kNativeControllerTemporaryKey];
-  if (nativeController) {
-    [_nativeControllersForTabIDs
-        removeObjectForKey:kNativeControllerTemporaryKey];
-    [_nativeControllersForTabIDs setObject:nativeController forKey:tab.tabId];
-  }
+  _temporaryNativeController = nil;
 
   // When adding new tabs, check what kind of reminder infobar should
   // be added to the new tab. Try to add only one of them.
@@ -3269,27 +3256,17 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // TODO(crbug.com/498568): To reduce complexity here, refactor the flow so
   // that native controllers vended here always correspond to the current tab.
   Tab* currentTab = [_model currentTab];
-  NSString* nativeControllerKey = currentTab.tabId;
   if (!currentTab || currentTab.lastCommittedURL != url ||
-      [[_nativeControllersForTabIDs objectForKey:nativeControllerKey]
+      [currentTab.webController.nativeController
           isKindOfClass:[nativeController class]]) {
-    nativeControllerKey = kNativeControllerTemporaryKey;
+    _temporaryNativeController = nativeController;
   }
-  DCHECK(nativeControllerKey);
-  [_nativeControllersForTabIDs setObject:nativeController
-                                  forKey:nativeControllerKey];
   return nativeController;
 }
 
 - (id)nativeControllerForTab:(Tab*)tab {
-  id nativeController = [_nativeControllersForTabIDs objectForKey:tab.tabId];
-  if (!nativeController) {
-    // If there is no controller, check for a native controller stored under
-    // the temporary key.
-    nativeController = [_nativeControllersForTabIDs
-        objectForKey:kNativeControllerTemporaryKey];
-  }
-  return nativeController;
+  id nativeController = tab.webController.nativeController;
+  return nativeController ? nativeController : _temporaryNativeController;
 }
 
 #pragma mark - DialogPresenterDelegate methods
@@ -4766,9 +4743,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
   // Cancel dialogs for |tab|'s WebState.
   [self.dialogPresenter cancelDialogForWebState:tab.webState];
-
-  // Remove stored native controllers for the tab.
-  [_nativeControllersForTabIDs removeObjectForKey:tab.tabId];
 
   // Ignore changes while the tab stack view is visible (or while suspended).
   // The display will be refreshed when this view becomes active again.
