@@ -30,6 +30,10 @@ inline bool IsValidInterfaceId(InterfaceId id) {
   return id != kInvalidInterfaceId;
 }
 
+inline bool HasInterfaceIdNamespaceBitSet(InterfaceId id) {
+  return (id & kInterfaceIdNamespaceMask) != 0;
+}
+
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_ID_H_

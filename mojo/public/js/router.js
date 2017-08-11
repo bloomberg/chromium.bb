@@ -194,14 +194,14 @@ define("mojo/public/js/router", [
             EndpointStateUpdateType.PEER_ENDPOINT_CLOSED);
       }
     } else {
+      if (endpoint.handleCreated) {
+        return new InterfaceEndpointHandle();
+      }
+
       // If the endpoint already exist, it is because we have received a
       // notification that the peer endpoint has closed.
       check(!endpoint.closed);
       check(endpoint.peerClosed);
-
-      if (endpoint.handleCreated) {
-        return new InterfaceEndpointHandle();
-      }
     }
 
     endpoint.handleCreated = true;
