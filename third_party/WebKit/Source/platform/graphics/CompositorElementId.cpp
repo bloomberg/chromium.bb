@@ -55,6 +55,12 @@ CompositorElementId CompositorElementIdFromRootEffectId(uint64_t id) {
                                    CompositorElementIdNamespace::kEffectRoot);
 }
 
+CompositorElementId CompositorElementIdFromSyntheticEffectId(
+    SyntheticEffectId id) {
+  return CreateCompositorElementId(
+      id, CompositorElementIdNamespace::kSyntheticEffect);
+}
+
 CompositorElementIdNamespace NamespaceFromCompositorElementId(
     CompositorElementId element_id) {
   return static_cast<CompositorElementIdNamespace>(
