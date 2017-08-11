@@ -21,6 +21,9 @@ bool ShapedAppWindowTargeter::GetHitTestMask(aura::Window* window,
   if (!shape)
     return false;
 
+  // TODO(varkha): Use app_window_->shape_rects() to obtain a list of hit-test
+  // rectangles. Use the rectangles directly rather than a mask which should
+  // allow this class to inherit directly from WindowTargeter.
   shape->getBoundaryPath(mask);
   return true;
 }

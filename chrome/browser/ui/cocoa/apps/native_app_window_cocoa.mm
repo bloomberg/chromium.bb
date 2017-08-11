@@ -540,7 +540,7 @@ void NativeAppWindowCocoa::UpdateWindowTitle() {
   [window() setTitle:base::SysUTF16ToNSString(title)];
 }
 
-void NativeAppWindowCocoa::UpdateShape(std::unique_ptr<SkRegion> region) {
+void NativeAppWindowCocoa::UpdateShape(std::unique_ptr<ShapeRects> rects) {
   NOTIMPLEMENTED();
 }
 

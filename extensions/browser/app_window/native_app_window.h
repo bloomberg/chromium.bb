@@ -29,6 +29,8 @@ struct DraggableRegion;
 class NativeAppWindow : public ui::BaseWindow,
                         public web_modal::WebContentsModalDialogHost {
  public:
+  using ShapeRects = std::vector<gfx::Rect>;
+
   // Sets whether the window is fullscreen and the type of fullscreen.
   // |fullscreen_types| is a bit field of AppWindow::FullscreenType.
   virtual void SetFullscreen(int fullscreen_types) = 0;
@@ -46,12 +48,13 @@ class NativeAppWindow : public ui::BaseWindow,
   virtual void UpdateDraggableRegions(
       const std::vector<DraggableRegion>& regions) = 0;
 
-  // Returns the region used by frameless windows for dragging. May return NULL.
+  // Returns the region used by frameless windows for dragging. May return
+  // nullptr.
   virtual SkRegion* GetDraggableRegion() = 0;
 
-  // Called when the window shape is changed. If |region| is NULL then the
+  // Called when the window shape is changed. If |region| is nullptr then the
   // window is restored to the default shape.
-  virtual void UpdateShape(std::unique_ptr<SkRegion> region) = 0;
+  virtual void UpdateShape(std::unique_ptr<ShapeRects> rects) = 0;
 
   // Allows the window to handle unhandled keyboard messages coming back from
   // the renderer.

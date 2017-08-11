@@ -36,7 +36,7 @@ class ChromeNativeAppWindowViewsAura : public ChromeNativeAppWindowViews {
   bool IsAlwaysOnTop() const override;
 
   // NativeAppWindow implementation.
-  void UpdateShape(std::unique_ptr<SkRegion> region) override;
+  void UpdateShape(std::unique_ptr<ShapeRects> rects) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ShapedAppWindowTargeterTest,

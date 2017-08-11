@@ -130,7 +130,7 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) override;
   SkRegion* GetDraggableRegion() override;
-  void UpdateShape(std::unique_ptr<SkRegion> region) override;
+  void UpdateShape(std::unique_ptr<ShapeRects> rects) override;
   void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override;
   bool IsFrameless() const override;

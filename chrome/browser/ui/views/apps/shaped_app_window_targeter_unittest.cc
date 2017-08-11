@@ -20,6 +20,8 @@
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
 
+using extensions::AppWindow;
+
 class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
  public:
   ShapedAppWindowTargeterTest()
@@ -85,9 +87,9 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestBasic) {
     EXPECT_EQ(window, move.target());
   }
 
-  std::unique_ptr<SkRegion> region(new SkRegion);
-  region->op(SkIRect::MakeXYWH(0, 0, 0, 0), SkRegion::kUnion_Op);
-  app_window()->UpdateShape(std::move(region));
+  auto rects = base::MakeUnique<AppWindow::ShapeRects>();
+  rects->emplace_back();
+  app_window()->UpdateShape(std::move(rects));
   {
     // With an empty custom shape, all events within the window should fall
     // through to the root window.
@@ -108,10 +110,10 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestBasic) {
   //  90 +--------+     +---------+
   //              |     |
   // 130          +-----+
-  region.reset(new SkRegion);
-  region->op(SkIRect::MakeXYWH(40, 0, 20, 100), SkRegion::kUnion_Op);
-  region->op(SkIRect::MakeXYWH(0, 40, 100, 20), SkRegion::kUnion_Op);
-  app_window()->UpdateShape(std::move(region));
+  rects = base::MakeUnique<AppWindow::ShapeRects>();
+  rects->emplace_back(40, 0, 20, 100);
+  rects->emplace_back(0, 40, 100, 20);
+  app_window()->UpdateShape(std::move(rects));
   {
     // With the custom shape, the events that don't fall within the custom shape
     // will go through to the root window.
@@ -178,10 +180,10 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
     EXPECT_EQ(window, move.target());
   }
 
-  std::unique_ptr<SkRegion> region(new SkRegion);
-  region->op(SkIRect::MakeXYWH(40, 0, 20, 100), SkRegion::kUnion_Op);
-  region->op(SkIRect::MakeXYWH(0, 40, 100, 20), SkRegion::kUnion_Op);
-  app_window()->UpdateShape(std::move(region));
+  auto rects = base::MakeUnique<AppWindow::ShapeRects>();
+  rects->emplace_back(40, 0, 20, 100);
+  rects->emplace_back(0, 40, 100, 20);
+  app_window()->UpdateShape(std::move(rects));
   {
     // With the custom shape, the events that don't fall within the custom shape
     // will go through to the root window.
@@ -193,7 +195,7 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
 
   // Remove the custom shape. This should restore the behaviour of targeting the
   // app window for events just outside its bounds (for a resizable window).
-  app_window()->UpdateShape(std::unique_ptr<SkRegion>());
+  app_window()->UpdateShape(std::unique_ptr<AppWindow::ShapeRects>());
   SetWindowResizable(true);
   {
     ui::MouseEvent move(move_outside);

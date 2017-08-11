@@ -330,27 +330,21 @@ AppCurrentWindowInternalSetShapeFunction::Run() {
   std::unique_ptr<SetShape::Params> params(SetShape::Params::Create(*args_));
   const Region& shape = params->region;
 
-  // Build a region from the supplied list of rects.
+  // Build the list of hit-test rects from the supplied list of rects.
   // If |rects| is missing, then the input region is removed. This clears the
   // input region so that the entire window accepts input events.
   // To specify an empty input region (so the window ignores all input),
   // |rects| should be an empty list.
-  std::unique_ptr<SkRegion> region(new SkRegion);
+  std::unique_ptr<AppWindow::ShapeRects> shape_rects;
   if (shape.rects) {
+    shape_rects = base::MakeUnique<AppWindow::ShapeRects>();
+    shape_rects->reserve(shape.rects->size());
     for (const RegionRect& input_rect : *shape.rects) {
-      int32_t x = input_rect.left;
-      int32_t y = input_rect.top;
-      int32_t width = input_rect.width;
-      int32_t height = input_rect.height;
-
-      SkIRect rect = SkIRect::MakeXYWH(x, y, width, height);
-      region->op(rect, SkRegion::kUnion_Op);
+      shape_rects->emplace_back(input_rect.left, input_rect.top,
+                                input_rect.width, input_rect.height);
     }
-  } else {
-    region.reset(NULL);
   }
-
-  window()->UpdateShape(std::move(region));
+  window()->UpdateShape(std::move(shape_rects));
 
   return RespondNow(NoArguments());
 }
