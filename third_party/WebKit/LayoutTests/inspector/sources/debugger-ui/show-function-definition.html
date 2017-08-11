@@ -40,7 +40,8 @@ function test()
         function testDumpFunctionDefinition(next)
         {
             InspectorTest.addSniffer(ObjectUI.ObjectPropertiesSection, "formatObjectAsFunction", onConsoleMessagesReceived);
-            ConsoleModel.consoleModel.evaluateCommandInConsole(UI.context.flavor(SDK.ExecutionContext), "jumpToMe");
+            var consoleView = Console.ConsoleView.instance();
+            consoleView._prompt._appendCommand("jumpToMe", true);
 
             function onConsoleMessagesReceived()
             {
