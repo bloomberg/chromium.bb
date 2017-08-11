@@ -1376,14 +1376,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                               completion:nil];
 }
 
-- (void)closeSettingsUIAndOpenURL:(OpenUrlCommand*)command {
-  [self openUrlFromSettings:command];
-}
-
-- (void)closeSettingsUI {
-  [self closeSettingsAnimated:YES completion:NULL];
-}
-
 #pragma mark - chromeExecuteCommand
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -2378,12 +2370,12 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 #pragma mark - SettingsNavigationControllerDelegate
 
 - (void)closeSettings {
-  [self closeSettingsUI];
+  [self closeSettingsAnimated:YES completion:NULL];
 }
 
 // Handle a close settings and open URL command.
 - (void)closeSettingsAndOpenUrl:(OpenUrlCommand*)command {
-  [self closeSettingsAndOpenUrl:command];
+  [self openUrlFromSettings:command];
 }
 
 - (void)closeSettingsAndOpenNewIncognitoTab {
