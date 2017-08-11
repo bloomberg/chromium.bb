@@ -1062,39 +1062,10 @@ void BoxBorderPainter::DrawDashedDottedBoxSideFromPath(
   graphics_context.SetStrokeStyle(
       border_style == EBorderStyle::kDashed ? kDashedStroke : kDottedStroke);
 
-  // TODO(schenney): This code for setting up the dash effect is trying to
-  // do the same thing as StrokeData::setupPaintDashPathEffect and should be
-  // refactored to re-use that code. It would require
-  // GraphicsContext::strokePath to take a length parameter.
-  float dash_length = border_thickness;
-  float gap_length = dash_length;
-  if (border_style == EBorderStyle::kDashed) {
-    dash_length *= StrokeData::DashLengthRatio(border_thickness);
-    gap_length *= StrokeData::DashGapRatio(border_thickness);
-  }
-  float path_length = centerline_path.length();
-  // Don't try to show dashes if we have less than 2 dashes + 2 gaps.
-  // TODO(schenney): should do this test per side.
-  if (path_length >= 2 * dash_length + gap_length) {
-    float gap = gap_length;
-    if (border_style == EBorderStyle::kDashed)
-      gap = StrokeData::SelectBestDashGap(path_length, dash_length, gap_length);
-    DashArray line_dash;
-    line_dash.push_back(dash_length);
-    line_dash.push_back(gap);
-    graphics_context.SetLineDash(line_dash, dash_length);
-  } else if (path_length > dash_length) {
-    // Exactly 2 dashes proportionally sized
-    float multiplier = path_length / (2 * dash_length + gap_length);
-    DashArray line_dash;
-    line_dash.push_back(dash_length * multiplier);
-    line_dash.push_back(gap_length * multiplier);
-    graphics_context.SetLineDash(line_dash, 0);
-  }  // else don't dash at all
-
   // TODO(schenney): stroking the border path causes issues with tight corners:
   // https://bugs.chromium.org/p/chromium/issues/detail?id=344234
-  graphics_context.StrokePath(centerline_path);
+  graphics_context.StrokePath(centerline_path, centerline_path.length(),
+                              border_thickness);
 }
 
 void BoxBorderPainter::DrawWideDottedBoxSideFromPath(
@@ -1103,37 +1074,12 @@ void BoxBorderPainter::DrawWideDottedBoxSideFromPath(
     float border_thickness) const {
   graphics_context.SetStrokeThickness(border_thickness);
   graphics_context.SetStrokeStyle(kDottedStroke);
-
-  // TODO(schenney): This code for setting up the dash effect is largely
-  // duplicated from StrokeData::setupPaintDashPathEffect and both this code
-  // and the method above should be refactored to re-use that code. It would
-  // require GraphicsContext::strokePath to take a length parameter.
   graphics_context.SetLineCap(kRoundCap);
-
-  // Adjust the width to get equal dot spacing as much as possible.
-  float per_dot_length = border_thickness * 2;
-  float path_length = border_path.length();
-
-  if (path_length < per_dot_length) {
-    // Not enoguh space for 2 dots. Just draw 1 by giving a gap that is
-    // bigger than the length.
-    DashArray line_dash;
-    line_dash.push_back(0);
-    line_dash.push_back(per_dot_length);
-    graphics_context.SetLineDash(line_dash, 0);
-  } else {
-    float gap = StrokeData::SelectBestDashGap(path_length, border_thickness,
-                                              border_thickness);
-    static const float kEpsilon = 1.0e-2f;
-    DashArray line_dash;
-    line_dash.push_back(0);
-    line_dash.push_back(gap + border_thickness - kEpsilon);
-    graphics_context.SetLineDash(line_dash, 0);
-  }
 
   // TODO(schenney): stroking the border path causes issues with tight corners:
   // https://bugs.webkit.org/show_bug.cgi?id=58711
-  graphics_context.StrokePath(border_path);
+  graphics_context.StrokePath(border_path, border_path.length(),
+                              border_thickness);
 }
 
 void BoxBorderPainter::DrawDoubleBoxSideFromPath(

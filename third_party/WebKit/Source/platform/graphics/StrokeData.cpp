@@ -55,50 +55,56 @@ void StrokeData::SetLineDash(const DashArray& dashes, float dash_offset) {
   dash_ = SkDashPathEffect::Make(intervals.get(), count, dash_offset);
 }
 
-void StrokeData::SetupPaint(PaintFlags* flags, int length) const {
+void StrokeData::SetupPaint(PaintFlags* flags,
+                            const int length,
+                            const int dash_thickness) const {
   flags->setStyle(PaintFlags::kStroke_Style);
   flags->setStrokeWidth(SkFloatToScalar(thickness_));
   flags->setStrokeCap(line_cap_);
   flags->setStrokeJoin(line_join_);
   flags->setStrokeMiter(SkFloatToScalar(miter_limit_));
 
-  SetupPaintDashPathEffect(flags, length);
+  SetupPaintDashPathEffect(flags, length, dash_thickness);
 }
 
-void StrokeData::SetupPaintDashPathEffect(PaintFlags* flags, int length) const {
+void StrokeData::SetupPaintDashPathEffect(PaintFlags* flags,
+                                          const int length,
+                                          const int dash_thickness) const {
+  int path_length = length;
+  int dash_width = dash_thickness ? dash_thickness : thickness_;
   if (dash_) {
     flags->setPathEffect(dash_);
-  } else if (StrokeIsDashed(thickness_, style_)) {
-    float dash_length = thickness_;
+  } else if (StrokeIsDashed(dash_width, style_)) {
+    float dash_length = dash_width;
     float gap_length = dash_length;
     if (style_ == kDashedStroke) {
-      dash_length *= StrokeData::DashLengthRatio(thickness_);
-      gap_length *= StrokeData::DashGapRatio(thickness_);
+      dash_length *= StrokeData::DashLengthRatio(dash_width);
+      gap_length *= StrokeData::DashGapRatio(dash_width);
     }
     // Account for modification to effective length in
     // GraphicsContext::adjustLineToPixelBoundaries
-    length -= 2 * thickness_;
-    if (length <= dash_length) {
+    path_length -= 2 * dash_width;
+    if (path_length <= dash_length) {
       // No space for dashes
       flags->setPathEffect(0);
-    } else if (length <= 2 * dash_length + gap_length) {
+    } else if (path_length <= 2 * dash_length + gap_length) {
       // Exactly 2 dashes proportionally sized
-      float multiplier = length / (2 * dash_length + gap_length);
+      float multiplier = path_length / (2 * dash_length + gap_length);
       SkScalar intervals[2] = {dash_length * multiplier,
                                gap_length * multiplier};
       flags->setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
     } else {
       float gap = gap_length;
       if (style_ == kDashedStroke)
-        gap = SelectBestDashGap(length, dash_length, gap_length);
+        gap = SelectBestDashGap(path_length, dash_length, gap_length);
       SkScalar intervals[2] = {dash_length, gap};
       flags->setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
     }
   } else if (style_ == kDottedStroke) {
     flags->setStrokeCap((PaintFlags::Cap)kRoundCap);
     // Adjust the width to get equal dot spacing as much as possible.
-    float per_dot_length = thickness_ * 2;
-    if (length < per_dot_length) {
+    float per_dot_length = dash_width * 2;
+    if (path_length < per_dot_length) {
       // Not enoguh space for 2 dots. Just draw 1 by giving a gap that is
       // bigger than the length.
       SkScalar intervals[2] = {0, per_dot_length};
@@ -107,8 +113,8 @@ void StrokeData::SetupPaintDashPathEffect(PaintFlags* flags, int length) const {
     }
 
     static const float kEpsilon = 1.0e-2f;
-    float gap = SelectBestDashGap(length, thickness_, thickness_);
-    SkScalar intervals[2] = {0, gap + thickness_ - kEpsilon};
+    float gap = SelectBestDashGap(path_length, dash_width, dash_width);
+    SkScalar intervals[2] = {0, gap + dash_width - kEpsilon};
     flags->setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
   } else {
     // TODO(schenney): WavyStroke https://crbug.com/229574
