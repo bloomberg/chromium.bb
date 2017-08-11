@@ -3707,8 +3707,7 @@
         "boards": [
             "betty-arc64"
         ],
-        "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "buildslave_type": "baremetal"
     },
     "betty-arc64-release-afdo": {
         "_template": "release_afdo_generate",
@@ -16318,8 +16317,7 @@
         "boards": [
             "novato-arc64"
         ],
-        "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "buildslave_type": "baremetal"
     },
     "novato-arc64-release-afdo": {
         "_template": "release_afdo_generate",
