@@ -1245,7 +1245,7 @@ static struct wayland_output *
 wayland_output_create_common(const char *name)
 {
 	struct wayland_output *output;
-	size_t len;
+	char *title;
 
 	/* name can't be NULL. */
 	assert(name);
@@ -1256,21 +1256,16 @@ wayland_output_create_common(const char *name)
 		return NULL;
 	}
 
+	if (asprintf(&title, "%s - %s", WINDOW_TITLE, name) < 0) {
+		free(output);
+		return NULL;
+	}
+	output->title = title;
+
 	output->base.destroy = wayland_output_destroy;
 	output->base.disable = wayland_output_disable;
 	output->base.enable = wayland_output_enable;
 	output->base.name = strdup(name);
-
-	/* setup output name/title. */
-	len = strlen(WINDOW_TITLE " - ") + strlen(name) + 1;
-	output->title = zalloc(len);
-	if (!output->title) {
-		free(output->base.name);
-		free(output);
-		return NULL;
-	}
-
-	snprintf(output->title, len, WINDOW_TITLE " - %s", name);
 
 	return output;
 }
