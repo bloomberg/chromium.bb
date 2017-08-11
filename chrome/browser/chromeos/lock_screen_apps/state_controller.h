@@ -49,6 +49,7 @@ class InputDeviceManager;
 
 namespace lock_screen_apps {
 
+class FocusCyclerDelegate;
 class StateObserver;
 
 // Manages state of lock screen action handler apps, and notifies
@@ -107,6 +108,10 @@ class StateController : public ash::mojom::TrayActionClient,
   void AddObserver(StateObserver* observer);
   void RemoveObserver(StateObserver* observer);
 
+  // Sets the focus cycler delegate the state controller should use to pass on
+  // from and give focus to the active lock screen app window.
+  void SetFocusCyclerDelegate(FocusCyclerDelegate* delegate);
+
   // Gets current state assiciated with the lock screen note action.
   ash::mojom::TrayActionState GetLockScreenNoteState() const;
 
@@ -137,6 +142,12 @@ class StateController : public ash::mojom::TrayActionClient,
       const extensions::Extension* extension,
       extensions::api::app_runtime::ActionType action,
       std::unique_ptr<extensions::AppDelegate> app_delegate);
+
+  // Should be called when the active app window is tabbed through. If needed,
+  // the method will take focus from the app window and pass it on using
+  // |focus_cycler_delegate_|.
+  // Returns whether the focus has been taken from the app window.
+  bool HandleTakeFocus(content::WebContents* web_contents, bool reverse);
 
   // If there are any active lock screen action handlers, moved their windows
   // to background, to ensure lock screen UI is visible.
@@ -183,6 +194,11 @@ class StateController : public ash::mojom::TrayActionClient,
   // Notifies observers that the lock screen note action state changed.
   void NotifyLockScreenNoteStateChanged();
 
+  // Passed as a focus handler to |focus_cycler_delegate_| when the assiciated
+  // app window is visible (active or in background).
+  // It focuses the app window.
+  void FocusAppWindow(bool reverse);
+
   // Lock screen note action state.
   ash::mojom::TrayActionState lock_screen_note_state_ =
       ash::mojom::TrayActionState::kNotAvailable;
@@ -198,6 +214,8 @@ class StateController : public ash::mojom::TrayActionClient,
       lock_screen_data_;
 
   std::unique_ptr<AppManager> app_manager_;
+
+  FocusCyclerDelegate* focus_cycler_delegate_ = nullptr;
 
   extensions::AppWindow* note_app_window_ = nullptr;
 

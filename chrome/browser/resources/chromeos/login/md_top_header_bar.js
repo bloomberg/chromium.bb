@@ -391,13 +391,12 @@ cr.define('login', function() {
           this.lockScreenAppsState_ != LOCK_SCREEN_APPS_STATE.AVAILABLE &&
           this.lockScreenAppsState_ != LOCK_SCREEN_APPS_STATE.FOREGROUND;
 
+      var newNoteActionEnabled =
+          this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.AVAILABLE;
+      $('new-note-action').classList.toggle('disabled', !newNoteActionEnabled);
       $('new-note-action')
-          .classList.toggle(
-              'disabled',
-              this.lockScreenAppsState_ != LOCK_SCREEN_APPS_STATE.AVAILABLE);
-
-      $('new-note-action-icon').hidden =
-          this.lockScreenAppsState_ != LOCK_SCREEN_APPS_STATE.AVAILABLE;
+          .setAttribute('tabIndex', newNoteActionEnabled ? '0' : '-1');
+      $('new-note-action-icon').hidden = !newNoteActionEnabled;
 
       // This might get set when the action is activated - reset it when the
       // lock screen action is updated.

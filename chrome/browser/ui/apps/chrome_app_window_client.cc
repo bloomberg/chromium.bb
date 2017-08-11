@@ -59,10 +59,12 @@ ChromeAppWindowClient::CreateAppWindowForLockScreenAction(
   if (!lock_screen_apps::StateController::IsEnabled())
     return nullptr;
 
+  auto app_delegate = base::MakeUnique<ChromeAppDelegate>(true /*keep_alive*/);
+  app_delegate->set_for_lock_screen_app(true);
+
   return lock_screen_apps::StateController::Get()
-      ->CreateAppWindowForLockScreenAction(
-          context, extension, action,
-          base::MakeUnique<ChromeAppDelegate>(true /* keep_alive */));
+      ->CreateAppWindowForLockScreenAction(context, extension, action,
+                                           std::move(app_delegate));
 #else
   return nullptr;
 #endif

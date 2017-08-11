@@ -16,6 +16,7 @@
 #include "base/test/scoped_command_line.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
+#include "chrome/browser/chromeos/lock_screen_apps/focus_cycler_delegate.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_observer.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -45,6 +46,7 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/window.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/events/test/device_data_manager_test_api.h"
@@ -93,6 +95,44 @@ scoped_refptr<extensions::Extension> CreateTestNoteTakingApp(
       .SetID(app_id)
       .Build();
 }
+
+class TestFocusCyclerDelegate : public lock_screen_apps::FocusCyclerDelegate {
+ public:
+  TestFocusCyclerDelegate() = default;
+  ~TestFocusCyclerDelegate() override = default;
+
+  void RegisterLockScreenAppFocusHandler(
+      const LockScreenAppFocusCallback& handler) override {
+    focus_handler_ = handler;
+    lock_screen_app_focused_ = true;
+  }
+
+  void UnregisterLockScreenAppFocusHandler() override {
+    ASSERT_FALSE(focus_handler_.is_null());
+    focus_handler_.Reset();
+  }
+
+  void HandleLockScreenAppFocusOut(bool reverse) override {
+    ASSERT_FALSE(focus_handler_.is_null());
+    lock_screen_app_focused_ = false;
+  }
+
+  void RequestAppFocus(bool reverse) {
+    ASSERT_FALSE(focus_handler_.is_null());
+    lock_screen_app_focused_ = true;
+    focus_handler_.Run(reverse);
+  }
+
+  bool HasHandler() const { return !focus_handler_.is_null(); }
+
+  bool lock_screen_app_focused() const { return lock_screen_app_focused_; }
+
+ private:
+  bool lock_screen_app_focused_ = false;
+  LockScreenAppFocusCallback focus_handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestFocusCyclerDelegate);
+};
 
 class TestAppManager : public lock_screen_apps::AppManager {
  public:
@@ -380,6 +420,8 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
             profile(), lock_screen_profile()->GetOriginalProfile());
     app_manager_ = app_manager.get();
 
+    focus_cycler_delegate_ = base::MakeUnique<TestFocusCyclerDelegate>();
+
     state_controller_ = base::MakeUnique<lock_screen_apps::StateController>();
     state_controller_->SetTrayActionPtrForTesting(
         tray_action_.CreateInterfacePtrAndBind());
@@ -387,6 +429,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     state_controller_->SetReadyCallbackForTesting(ready_waiter_.QuitClosure());
     state_controller_->Initialize();
     state_controller_->FlushTrayActionForTesting();
+    state_controller_->SetFocusCyclerDelegate(focus_cycler_delegate_.get());
 
     state_controller_->AddObserver(&observer_);
   }
@@ -404,6 +447,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     app_window_.reset();
     BrowserWithTestWindowTest::TearDown();
     DestroyProfile(lock_screen_profile());
+    focus_cycler_delegate_.reset();
   }
 
   TestingProfile* CreateProfile() override {
@@ -548,6 +592,10 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   TestAppWindow* app_window() { return app_window_.get(); }
   const extensions::Extension* app() { return app_.get(); }
 
+  TestFocusCyclerDelegate* focus_cycler_delegate() {
+    return focus_cycler_delegate_.get();
+  }
+
  private:
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
   TestingProfileManager profile_manager_;
@@ -574,6 +622,8 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   std::unique_ptr<session_manager::SessionManager> session_manager_;
 
   std::unique_ptr<lock_screen_apps::StateController> state_controller_;
+
+  std::unique_ptr<TestFocusCyclerDelegate> focus_cycler_delegate_;
 
   TestStateObserver observer_;
   TestTrayAction tray_action_;
@@ -1207,4 +1257,102 @@ TEST_F(LockScreenAppStateTest, AppWindowClosedOnNoteTakingAppChange) {
                         extensions::UnloadedExtensionReason::UNINSTALL);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(secondary_app_window->closed());
+}
+
+// Goes through different states with no focus cycler set; mainly to check
+// there are no crashes.
+TEST_F(LockScreenAppStateTest, NoFocusCyclerDelegate) {
+  lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(nullptr);
+
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kActive,
+                                      true /* enable_app_launch */));
+
+  state_controller()->MoveToBackground();
+  state_controller()->FlushTrayActionForTesting();
+
+  EXPECT_EQ(TrayActionState::kBackground,
+            state_controller()->GetLockScreenNoteState());
+
+  state_controller()->MoveToForeground();
+  state_controller()->FlushTrayActionForTesting();
+
+  EXPECT_EQ(TrayActionState::kActive,
+            state_controller()->GetLockScreenNoteState());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(app_window()->closed());
+}
+
+TEST_F(LockScreenAppStateTest, ResetFocusCyclerDelegateWhileActive) {
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kActive,
+                                      true /* enable_app_launch */));
+
+  lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(nullptr);
+  ASSERT_FALSE(focus_cycler_delegate()->HasHandler());
+
+  lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(
+      focus_cycler_delegate());
+  EXPECT_TRUE(focus_cycler_delegate()->HasHandler());
+}
+
+TEST_F(LockScreenAppStateTest, FocusCyclerDelegateGetsSetOnAppWindowCreation) {
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kAvailable,
+                                      true /* enable_app_launch */));
+
+  tray_action()->SendNewNoteRequest();
+  state_controller()->FlushTrayActionForTesting();
+
+  EXPECT_FALSE(focus_cycler_delegate()->HasHandler());
+
+  std::unique_ptr<TestAppWindow> app_window =
+      CreateNoteTakingWindow(lock_screen_profile(), app());
+  app_window->Initialize(true /* shown */);
+
+  EXPECT_TRUE(focus_cycler_delegate()->HasHandler());
+
+  state_controller()->MoveToBackground();
+
+  EXPECT_TRUE(focus_cycler_delegate()->HasHandler());
+
+  app_window->Close();
+  EXPECT_FALSE(focus_cycler_delegate()->HasHandler());
+}
+
+TEST_F(LockScreenAppStateTest, TakeFocus) {
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kActive,
+                                      true /* enable_app_launch */));
+
+  auto regular_app_window = base::MakeUnique<TestAppWindow>(
+      profile(),
+      new extensions::AppWindow(profile(), new ChromeAppDelegate(true), app()));
+  EXPECT_FALSE(state_controller()->HandleTakeFocus(
+      regular_app_window->window()->web_contents(), true));
+  EXPECT_TRUE(focus_cycler_delegate()->lock_screen_app_focused());
+
+  ASSERT_TRUE(state_controller()->HandleTakeFocus(
+      app_window()->window()->web_contents(), true));
+  EXPECT_FALSE(focus_cycler_delegate()->lock_screen_app_focused());
+
+  focus_cycler_delegate()->RequestAppFocus(true);
+  EXPECT_TRUE(focus_cycler_delegate()->lock_screen_app_focused());
+}
+
+TEST_F(LockScreenAppStateTest, RequestFocusFromBackgroundMovesAppToForeground) {
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kActive,
+                                      true /* enable_app_launch */));
+
+  ASSERT_TRUE(state_controller()->HandleTakeFocus(
+      app_window()->window()->web_contents(), true));
+  EXPECT_FALSE(focus_cycler_delegate()->lock_screen_app_focused());
+
+  state_controller()->MoveToBackground();
+
+  EXPECT_EQ(TrayActionState::kBackground,
+            state_controller()->GetLockScreenNoteState());
+
+  focus_cycler_delegate()->RequestAppFocus(true);
+  EXPECT_TRUE(focus_cycler_delegate()->lock_screen_app_focused());
+
+  EXPECT_EQ(TrayActionState::kActive,
+            state_controller()->GetLockScreenNoteState());
 }

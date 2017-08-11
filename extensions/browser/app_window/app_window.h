@@ -437,6 +437,7 @@ class AppWindow : public content::WebContentsDelegate,
   std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler) override;
+  bool TakeFocus(content::WebContents* source, bool reverse) override;
 
   // content::WebContentsObserver implementation.
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
