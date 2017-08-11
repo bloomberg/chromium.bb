@@ -1634,12 +1634,7 @@ void LayoutText::SecureText(UChar mask) {
       revealed_text = text_[last_typed_character_offset_to_reveal];
   }
 
-  // Replace all grapheme clusters in the text with the mask character.
-  size_t length = NumGraphemeClusters(text_);
-  CHECK_LE(length, text_.length());
-  text_.Truncate(length);
   text_.Fill(mask);
-
   if (last_typed_character_offset_to_reveal >= 0) {
     text_.replace(last_typed_character_offset_to_reveal, 1,
                   String(&revealed_text, 1));
