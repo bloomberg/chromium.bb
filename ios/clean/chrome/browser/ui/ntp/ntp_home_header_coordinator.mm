@@ -11,7 +11,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface NTPHomeHeaderCoordinator ()
+@interface NTPHomeHeaderCoordinator ()<NTPHomeHeaderMediatorAlerter>
 
 @property(nonatomic, strong) NTPHomeHeaderMediator* mediator;
 @property(nonatomic, strong) NTPHomeHeaderViewController* viewController;
@@ -54,6 +54,7 @@
   self.mediator.commandHandler = self.commandHandler;
   self.mediator.collectionSynchronizer = self.collectionSynchronizer;
   self.mediator.headerViewController = self.viewController;
+  self.mediator.alerter = self;
 
   [super start];
 }
@@ -62,6 +63,23 @@
   [super stop];
   self.mediator = nil;
   self.viewController = nil;
+}
+
+#pragma mark - NTPHomeHeaderMediatorAlerter
+
+- (void)showAlert:(NSString*)title {
+  UIAlertController* alertController =
+      [UIAlertController alertControllerWithTitle:title
+                                          message:nil
+                                   preferredStyle:UIAlertControllerStyleAlert];
+  UIAlertAction* action =
+      [UIAlertAction actionWithTitle:@"Done"
+                               style:UIAlertActionStyleCancel
+                             handler:nil];
+  [alertController addAction:action];
+  [self.viewController presentViewController:alertController
+                                    animated:YES
+                                  completion:nil];
 }
 
 @end

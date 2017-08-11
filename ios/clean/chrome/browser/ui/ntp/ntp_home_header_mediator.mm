@@ -31,6 +31,7 @@
 @synthesize commandHandler = _commandHandler;
 @synthesize collectionSynchronizer = _collectionSynchronizer;
 @synthesize headerViewController = _headerViewController;
+@synthesize alerter = _alerter;
 
 @synthesize isShowing = _isShowing;
 @synthesize omniboxFocused = _omniboxFocused;
@@ -55,7 +56,7 @@
 - (void)unfocusOmnibox {
   if (self.omniboxFocused) {
     // TODO(crbug.com/740793): Remove alert once VoiceSearch is implemented.
-    [self showAlert:@"Cancel omnibox edit"];
+    [self.alerter showAlert:@"Cancel omnibox edit"];
   } else {
     [self locationBarResignsFirstResponder];
   }
@@ -159,7 +160,7 @@
   if (!IsIPadIdiom()) {
     [self.headerViewController collectionWillShiftDown];
     // TODO(crbug.com/740793): Remove alert once VoiceSearch is implemented.
-    [self showAlert:@"Omnibox unfocused"];
+    [self.alerter showAlert:@"Omnibox unfocused"];
   }
 
   [self.collectionSynchronizer shiftTilesDown];
@@ -171,28 +172,11 @@
   void (^completionBlock)() = ^{
     if (!IsIPadIdiom()) {
       // TODO(crbug.com/740793): Remove alert once VoiceSearch is implemented.
-      [self showAlert:@"Omnibox animation completed"];
+      [self.alerter showAlert:@"Omnibox animation completed"];
       [self.headerViewController collectionDidShiftUp];
     }
   };
   [self.collectionSynchronizer shiftTilesUpWithCompletionBlock:completionBlock];
-}
-
-// TODO(crbug.com/740793): Remove this method once no item is using it.
-- (void)showAlert:(NSString*)title {
-  UIAlertController* alertController =
-      [UIAlertController alertControllerWithTitle:title
-                                          message:nil
-                                   preferredStyle:UIAlertControllerStyleAlert];
-  UIAlertAction* action =
-      [UIAlertAction actionWithTitle:@"Done"
-                               style:UIAlertActionStyleCancel
-                             handler:nil];
-  [alertController addAction:action];
-  [self.headerViewController.parentViewController
-      presentViewController:alertController
-                   animated:YES
-                 completion:nil];
 }
 
 @end
