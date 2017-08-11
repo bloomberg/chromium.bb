@@ -311,6 +311,13 @@ class BASE_EXPORT Histogram : public HistogramBase {
                              int64_t* sum,
                              ListValue* buckets) const override;
 
+  // This is a dummy field placed where corruption is frequently seen on
+  // current Android builds. The hope is that it will mitigate the problem
+  // sufficiently to continue with the M61 beta branch while investigation
+  // into the true problem continues.
+  // TODO(bcwhite): Remove this once crbug/736675 is fixed.
+  const uintptr_t dummy_;
+
   // Samples that have not yet been logged with SnapshotDelta().
   std::unique_ptr<SampleVectorBase> unlogged_samples_;
 
