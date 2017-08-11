@@ -4,7 +4,6 @@
 
 module content.mojom;
 
-import "cc/ipc/shared_bitmap_allocation_notifier.mojom";
 import "content/common/input/input_handler.mojom";
 import "content/common/native_types.mojom";
 import "content/common/widget.mojom";

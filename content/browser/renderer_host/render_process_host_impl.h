@@ -439,7 +439,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       blink::mojom::OffscreenCanvasProviderRequest request);
   void BindFrameSinkProvider(mojom::FrameSinkProviderRequest request);
   void BindSharedBitmapAllocationNotifier(
-      cc::mojom::SharedBitmapAllocationNotifierRequest request);
+      viz::mojom::SharedBitmapAllocationNotifierRequest request);
   void CreateStoragePartitionService(
       mojom::StoragePartitionServiceRequest request);
   void CreateRendererHost(mojom::RendererHostRequest request);

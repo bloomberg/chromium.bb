@@ -21,7 +21,7 @@ SharedBitmapAllocationNotifierImpl::~SharedBitmapAllocationNotifierImpl() {
 }
 
 void SharedBitmapAllocationNotifierImpl::Bind(
-    cc::mojom::SharedBitmapAllocationNotifierRequest request) {
+    mojom::SharedBitmapAllocationNotifierRequest request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (binding_.is_bound()) {
     DLOG(ERROR) << "Only one SharedBitmapAllocationNotifierRequest is "

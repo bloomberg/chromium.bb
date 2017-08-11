@@ -13,9 +13,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/lock.h"
-#include "cc/ipc/shared_bitmap_allocation_notifier.mojom.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
+#include "services/viz/public/interfaces/compositing/shared_bitmap_allocation_notifier.mojom.h"
 
 namespace viz {
 
@@ -25,7 +25,7 @@ namespace viz {
 class ClientSharedBitmapManager : public SharedBitmapManager {
  public:
   explicit ClientSharedBitmapManager(
-      scoped_refptr<cc::mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
+      scoped_refptr<mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
           shared_bitmap_allocation_notifier);
   ~ClientSharedBitmapManager() override;
 
@@ -43,7 +43,7 @@ class ClientSharedBitmapManager : public SharedBitmapManager {
   uint32_t NotifyAllocatedSharedBitmap(base::SharedMemory* memory,
                                        const SharedBitmapId& id);
 
-  scoped_refptr<cc::mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
+  scoped_refptr<mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
       shared_bitmap_allocation_notifier_;
 
   base::Lock lock_;
