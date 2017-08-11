@@ -47,6 +47,7 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/guest_view/web_view/web_view_internal_api.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
+#include "extensions/browser/bad_message.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
@@ -331,9 +332,8 @@ void WebViewGuest::CreateWebContents(
   // creation. If the validation fails, treat it as a bad message and kill the
   // renderer process.
   if (!base::IsStringUTF8(storage_partition_id)) {
-    base::RecordAction(base::UserMetricsAction("BadMessageTerminate_BPGM"));
-    owner_render_process_host->Shutdown(content::RESULT_CODE_KILLED_BAD_MESSAGE,
-                                        false);
+    bad_message::ReceivedBadMessage(owner_render_process_host,
+                                    bad_message::WVG_PARTITION_ID_NOT_UTF8);
     callback.Run(nullptr);
     return;
   }
