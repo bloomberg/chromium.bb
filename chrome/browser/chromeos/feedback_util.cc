@@ -6,10 +6,11 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
+#include "chrome/browser/feedback/system_logs/chrome_system_logs_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/feedback/system_logs/system_logs_fetcher.h"
 
 using feedback::FeedbackData;
 
@@ -34,7 +35,7 @@ void OnGetSystemInformation(
   feedback_data->set_description(description);
   feedback_data->SetAndCompressSystemInfo(std::move(sys_info));
 
-  GetFeedbackService(profile)->SendFeedback(profile, feedback_data, callback);
+  GetFeedbackService(profile)->SendFeedback(feedback_data, callback);
 }
 
 }  // namespace
@@ -42,7 +43,10 @@ void OnGetSystemInformation(
 void SendSysLogFeedback(Profile* profile,
                         const std::string& description,
                         const SendSysLogFeedbackCallback& callback) {
-  GetFeedbackService(profile)->GetSystemInformation(
+  // |fetcher| deletes itself after calling its callback.
+  system_logs::SystemLogsFetcher* fetcher =
+      system_logs::BuildChromeSystemLogsFetcher();
+  fetcher->Fetch(
       base::Bind(&OnGetSystemInformation, profile, description, callback));
 }
 

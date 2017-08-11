@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/feedback/system_logs/chrome_system_logs_fetcher.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/blob_reader.h"
@@ -22,14 +21,13 @@ using feedback::FeedbackData;
 
 namespace extensions {
 
-FeedbackService::FeedbackService() {
-}
+FeedbackService::FeedbackService(content::BrowserContext* browser_context)
+    : browser_context_(browser_context) {}
 
 FeedbackService::~FeedbackService() {
 }
 
-void FeedbackService::SendFeedback(content::BrowserContext* browser_context,
-                                   scoped_refptr<FeedbackData> feedback_data,
+void FeedbackService::SendFeedback(scoped_refptr<FeedbackData> feedback_data,
                                    const SendFeedbackCallback& callback) {
   feedback_data->set_locale(
       ExtensionsBrowserClient::Get()->GetApplicationLocale());
@@ -38,7 +36,7 @@ void FeedbackService::SendFeedback(content::BrowserContext* browser_context,
   if (!feedback_data->attached_file_uuid().empty()) {
     // Self-deleting object.
     BlobReader* attached_file_reader =
-        new BlobReader(browser_context, feedback_data->attached_file_uuid(),
+        new BlobReader(browser_context_, feedback_data->attached_file_uuid(),
                        base::Bind(&FeedbackService::AttachedFileCallback,
                                   AsWeakPtr(), feedback_data, callback));
     attached_file_reader->Start();
@@ -47,21 +45,13 @@ void FeedbackService::SendFeedback(content::BrowserContext* browser_context,
   if (!feedback_data->screenshot_uuid().empty()) {
     // Self-deleting object.
     BlobReader* screenshot_reader =
-        new BlobReader(browser_context, feedback_data->screenshot_uuid(),
+        new BlobReader(browser_context_, feedback_data->screenshot_uuid(),
                        base::Bind(&FeedbackService::ScreenshotCallback,
                                   AsWeakPtr(), feedback_data, callback));
     screenshot_reader->Start();
   }
 
   CompleteSendFeedback(feedback_data, callback);
-}
-
-void FeedbackService::GetSystemInformation(
-    const system_logs::SysLogsFetcherCallback& callback) {
-  // Self-deleting object.
-  system_logs::SystemLogsFetcher* fetcher =
-      system_logs::BuildChromeSystemLogsFetcher();
-  fetcher->Fetch(callback);
 }
 
 void FeedbackService::AttachedFileCallback(
