@@ -144,6 +144,9 @@ SearchResultPageView::SearchResultPageView()
     : selected_index_(0),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
       contents_view_(new views::View) {
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+
   if (is_fullscreen_app_list_enabled_) {
     contents_view_->SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 0));

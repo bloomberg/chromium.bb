@@ -193,11 +193,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // The grid view must be inside a folder view.
   void OnFolderItemRemoved();
 
-  // Updates the opacity of all the items in the grid during dragging. The
-  // opacity of each item is based on how much the item's |centroid_y| is above
-  // |work_area_bottom|. If |is_end_gesture| is true, set all the items opacity
-  // to 1.0f.
-  void UpdateOpacity(float work_area_bottom, bool is_end_gesture);
+  // Updates the opacity of all the items in the grid during dragging.
+  void UpdateOpacity(int app_list_y_position_in_screen);
 
   // Return the view model for test purposes.
   const views::ViewModelT<AppListItemView>* view_model_for_test() const {
@@ -488,9 +485,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns true if the grid view is under an OEM folder.
   bool IsUnderOEMFolder();
 
-  // Updates opacity of |view_item| in the app list based on |centroid_y|.
-  void UpdateOpacityOfItem(views::View* view_item, float centroid_y);
-
   AppListModel* model_ = nullptr;         // Owned by AppListView.
   AppListItemList* item_list_ = nullptr;  // Not owned.
 
@@ -598,9 +592,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // True if the fullscreen app list feature is enabled.
   const bool is_fullscreen_app_list_enabled_;
-
-  // The bottom of work area.
-  float work_area_bottom_ = 0.f;
 
   // True if it is the end gesture from shelf dragging.
   bool is_end_gesture_ = false;

@@ -135,7 +135,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   SkColor GetBackgroundColorForState(AppListModel::State state) const;
 
   // Updates the opacity of the searchbox.
-  void UpdateOpacity(float work_area_bottom, bool is_end_gesture);
+  void UpdateOpacity(int app_list_y_position_in_screen);
 
   // Used only in the tests to get the current search icon.
   views::ImageView* get_search_icon_for_test() { return search_icon_; }

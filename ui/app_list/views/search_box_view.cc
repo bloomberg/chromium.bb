@@ -22,6 +22,7 @@
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
+#include "ui/app_list/views/search_result_page_view.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -54,7 +55,6 @@ constexpr int kPadding = 12;
 constexpr int kInnerPadding = 24;
 constexpr int kPreferredWidth = 360;
 constexpr int kPreferredWidthFullscreen = 544;
-constexpr int kSearchBoxPreferredHeight = 48;
 constexpr int kSearchBoxBorderWidth = 4;
 
 constexpr SkColor kHintTextColor = SkColorSetARGBMacro(0xFF, 0xA0, 0xA0, 0xA0);
@@ -68,6 +68,11 @@ constexpr int kCloseIconSize = 24;
 constexpr int kSearchBoxFocusBorderCornerRadius = 28;
 
 constexpr int kLightVibrantBlendAlpha = 0xE6;
+
+// Range of the fraction of app list from collapsed to peeking that search box
+// should change opacity.
+constexpr float kOpacityStartFraction = 0.1f;
+constexpr float kOpacityEndFraction = 0.6f;
 
 // Color of placeholder text in zero query state.
 constexpr SkColor kZeroQuerySearchboxColor =
@@ -644,21 +649,28 @@ SkColor SearchBoxView::GetBackgroundColorForState(
   return background_color_;
 }
 
-void SearchBoxView::UpdateOpacity(float work_area_bottom, bool is_end_gesture) {
-  float opacity = 1.0f;
-  if (!is_end_gesture) {
-    gfx::Rect search_box_bounds = this->GetBoundsInScreen();
-    float delta_y = std::max(
-        (work_area_bottom - search_box_bounds.CenterPoint().y()), 0.0f);
-    opacity = std::min(
-        delta_y / (AppListView::kNumOfShelfSize * AppListView::kShelfSize),
-        1.0f);
-  }
+void SearchBoxView::UpdateOpacity(int app_list_y_position_in_screen) {
+  // The opacity of searchbox is a function of the fractional displacement of
+  // the app list from collapsed(0) to peeking(1) state. When the fraction
+  // changes from |kOpacityStartFraction| to |kOpaticyEndFraction|, the opacity
+  // of searchbox changes from 0.f to 1.0f.
+  ContentsView* contents_view = static_cast<ContentsView*>(contents_view_);
+  float fraction =
+      std::max<float>(0, contents_view->app_list_view()->work_area_bottom() -
+                             app_list_y_position_in_screen) /
+      (kPeekingAppListHeight - kShelfSize);
 
-  // Restores the opacity of searchbox to 1.0f if it is the end of the gesture
-  // dragging.
+  float opacity = 1.0f;
+  if (contents_view->app_list_view()->is_in_drag())
+    opacity =
+        std::min(std::max((fraction - kOpacityStartFraction) /
+                              (kOpacityEndFraction - kOpacityStartFraction),
+                          0.f),
+                 1.0f);
+
+  // Restores the opacity of searchbox if the gesture dragging ends.
   this->layer()->SetOpacity(opacity);
-  contents_view_->layer()->SetOpacity(opacity);
+  contents_view->search_results_page_view()->layer()->SetOpacity(opacity);
 }
 
 bool SearchBoxView::IsArrowKey(const ui::KeyEvent& event) {
