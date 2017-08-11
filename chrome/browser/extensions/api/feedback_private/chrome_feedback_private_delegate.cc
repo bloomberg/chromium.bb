@@ -9,7 +9,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/feedback/system_logs/chrome_system_logs_fetcher.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -84,6 +86,12 @@ ChromeFeedbackPrivateDelegate::GetStrings(
   webui::SetLoadTimeDataDefaults(app_locale, dict.get());
 
   return dict;
+}
+
+system_logs::SystemLogsFetcher*
+ChromeFeedbackPrivateDelegate::CreateSystemLogsFetcher(
+    content::BrowserContext* context) const {
+  return system_logs::BuildChromeSystemLogsFetcher();
 }
 
 }  // namespace extensions

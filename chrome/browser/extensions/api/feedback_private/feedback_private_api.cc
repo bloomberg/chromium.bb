@@ -27,6 +27,7 @@
 #include "chrome/common/extensions/api/feedback_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "components/feedback/tracing_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -92,9 +93,9 @@ FeedbackPrivateAPI::GetFactoryInstance() {
 FeedbackPrivateAPI::FeedbackPrivateAPI(content::BrowserContext* context)
     : browser_context_(context),
 #if !defined(OS_CHROMEOS)
-      service_(new FeedbackService()) {
+      service_(new FeedbackService(context)) {
 #else
-      service_(new FeedbackService()),
+      service_(new FeedbackService(context)),
       log_source_access_manager_(new LogSourceAccessManager(context)){
 #endif  // defined(OS_CHROMEOS)
 }
@@ -211,13 +212,16 @@ ExtensionFunction::ResponseAction FeedbackPrivateGetUserEmailFunction::Run() {
 
 ExtensionFunction::ResponseAction
 FeedbackPrivateGetSystemInformationFunction::Run() {
-  FeedbackService* service = FeedbackPrivateAPI::GetFactoryInstance()
-                                 ->Get(browser_context())
-                                 ->GetService();
-  DCHECK(service);
-  service->GetSystemInformation(
-      base::Bind(
-          &FeedbackPrivateGetSystemInformationFunction::OnCompleted, this));
+  FeedbackPrivateDelegate* feedback_private_delegate =
+      ExtensionsAPIClient::Get()->GetFeedbackPrivateDelegate();
+  DCHECK(feedback_private_delegate);
+
+  // Self-deleting object.
+  system_logs::SystemLogsFetcher* fetcher =
+      feedback_private_delegate->CreateSystemLogsFetcher(browser_context());
+  fetcher->Fetch(base::Bind(
+      &FeedbackPrivateGetSystemInformationFunction::OnCompleted, this));
+
   return RespondLater();
 }
 
@@ -329,7 +333,7 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
   }
 
   service->SendFeedback(
-      browser_context(), feedback_data,
+      feedback_data,
       base::Bind(&FeedbackPrivateSendFeedbackFunction::OnCompleted, this));
 
   return RespondLater();

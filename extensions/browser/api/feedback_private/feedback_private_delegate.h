@@ -15,6 +15,10 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace system_logs {
+class SystemLogsFetcher;
+}  // namespace system_logs
+
 namespace extensions {
 
 // Delegate class for embedder-specific chrome.feedbackPrivate behavior.
@@ -29,6 +33,10 @@ class FeedbackPrivateDelegate {
   virtual std::unique_ptr<base::DictionaryValue> GetStrings(
       content::BrowserContext* browser_context,
       bool from_crash) const = 0;
+
+  // Returns a SystemLogsFetcher for responding to a request for system logs.
+  virtual system_logs::SystemLogsFetcher* CreateSystemLogsFetcher(
+      content::BrowserContext* context) const = 0;
 };
 
 }  // namespace extensions

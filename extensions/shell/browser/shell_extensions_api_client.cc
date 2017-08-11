@@ -51,4 +51,10 @@ MessagingDelegate* ShellExtensionsAPIClient::GetMessagingDelegate() {
   return messaging_delegate_.get();
 }
 
+FeedbackPrivateDelegate*
+ShellExtensionsAPIClient::GetFeedbackPrivateDelegate() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 }  // namespace extensions

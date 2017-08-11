@@ -22,6 +22,8 @@ class ChromeFeedbackPrivateDelegate : public FeedbackPrivateDelegate {
   std::unique_ptr<base::DictionaryValue> GetStrings(
       content::BrowserContext* browser_context,
       bool from_crash) const override;
+  system_logs::SystemLogsFetcher* CreateSystemLogsFetcher(
+      content::BrowserContext* context) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeFeedbackPrivateDelegate);

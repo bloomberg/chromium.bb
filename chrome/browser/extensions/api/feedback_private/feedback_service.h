@@ -13,11 +13,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/feedback/feedback_data.h"
-#include "components/feedback/system_logs/system_logs_fetcher.h"
 
 namespace content {
 class BrowserContext;
-}
+}  // namespace content
 
 namespace extensions {
 
@@ -32,18 +31,12 @@ class FeedbackService : public base::SupportsWeakPtr<FeedbackService> {
   // offline).
   using SendFeedbackCallback = base::Callback<void(bool)>;
 
-  FeedbackService();
+  explicit FeedbackService(content::BrowserContext* browser_context);
   virtual ~FeedbackService();
 
   // Sends a feedback report.
-  void SendFeedback(content::BrowserContext* browser_context,
-                    scoped_refptr<feedback::FeedbackData> feedback_data,
+  void SendFeedback(scoped_refptr<feedback::FeedbackData> feedback_data,
                     const SendFeedbackCallback& callback);
-
-  // Start to gather system information.
-  // The |callback| will be invoked once the query is completed.
-  void GetSystemInformation(
-      const system_logs::SysLogsFetcherCallback& callback);
 
  private:
   // Callbacks to receive blob data.
@@ -60,6 +53,8 @@ class FeedbackService : public base::SupportsWeakPtr<FeedbackService> {
   // data object once all the requisite data has been populated.
   void CompleteSendFeedback(scoped_refptr<feedback::FeedbackData> feedback_data,
                             const SendFeedbackCallback& callback);
+
+  content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackService);
 };
