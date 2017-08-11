@@ -67,8 +67,8 @@ AttrNodeList& ElementRareData::EnsureAttrNodeList() {
 ElementRareData::ResizeObserverDataMap&
 ElementRareData::EnsureResizeObserverData() {
   if (!resize_observer_data_)
-    resize_observer_data_ =
-        new HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>();
+    resize_observer_data_ = new HeapHashMap<TraceWrapperMember<ResizeObserver>,
+                                            Member<ResizeObservation>>();
   return *resize_observer_data_;
 }
 
@@ -93,18 +93,18 @@ DEFINE_TRACE_AFTER_DISPATCH(ElementRareData) {
 DEFINE_TRACE_WRAPPERS_AFTER_DISPATCH(ElementRareData) {
   if (attr_node_list_.Get()) {
     for (auto& attr : *attr_node_list_) {
-      visitor->TraceWrappersWithManualWriteBarrier(attr);
+      visitor->TraceWrappers(attr);
     }
   }
-  visitor->TraceWrappersWithManualWriteBarrier(shadow_);
-  visitor->TraceWrappersWithManualWriteBarrier(attribute_map_);
-  visitor->TraceWrappersWithManualWriteBarrier(dataset_);
-  visitor->TraceWrappersWithManualWriteBarrier(class_list_);
-  visitor->TraceWrappersWithManualWriteBarrier(accessible_node_);
-  visitor->TraceWrappersWithManualWriteBarrier(intersection_observer_data_);
+  visitor->TraceWrappers(dataset_);
+  visitor->TraceWrappers(shadow_);
+  visitor->TraceWrappers(class_list_);
+  visitor->TraceWrappers(attribute_map_);
+  visitor->TraceWrappers(accessible_node_);
+  visitor->TraceWrappers(intersection_observer_data_);
   if (resize_observer_data_) {
     for (auto& resize_observer : resize_observer_data_->Keys()) {
-      visitor->TraceWrappersWithManualWriteBarrier(resize_observer);
+      visitor->TraceWrappers(resize_observer);
     }
   }
   NodeRareData::TraceWrappersAfterDispatch(visitor);
