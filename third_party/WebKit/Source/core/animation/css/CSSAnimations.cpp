@@ -265,7 +265,8 @@ void CSSAnimations::CalculateCompositorAnimationUpdate(
 
     bool update_compositor_keyframes = false;
     if ((transform_zoom_changed || was_viewport_resized) &&
-        keyframe_effect->Affects(PropertyHandle(CSSPropertyTransform)) &&
+        (keyframe_effect->Affects(PropertyHandle(CSSPropertyTransform)) ||
+         keyframe_effect->Affects(PropertyHandle(CSSPropertyTranslate))) &&
         keyframe_effect->SnapshotAllCompositorKeyframes(element, style,
                                                         parent_style)) {
       update_compositor_keyframes = true;
