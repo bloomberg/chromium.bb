@@ -17,6 +17,7 @@ class Bus;
 namespace chromeos {
 
 class ArcObbMounterClient;
+class ArcOemCryptoClient;
 class AuthPolicyClient;
 class CrosDisksClient;
 class DebugDaemonClient;
@@ -43,6 +44,7 @@ class CHROMEOS_EXPORT DBusClientsBrowser {
   friend class DBusThreadManagerSetter;
 
   std::unique_ptr<ArcObbMounterClient> arc_obb_mounter_client_;
+  std::unique_ptr<ArcOemCryptoClient> arc_oemcrypto_client_;
   std::unique_ptr<AuthPolicyClient> auth_policy_client_;
   std::unique_ptr<CrosDisksClient> cros_disks_client_;
   std::unique_ptr<DebugDaemonClient> debug_daemon_client_;
