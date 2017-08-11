@@ -591,9 +591,6 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
 
   if (scrollbar) {
     bool should_update_capture = false;
-    // scrollbar->gestureEvent always returns true for touchpad based GSB
-    // events. Therefore, while mouse is over a fully scrolled scrollbar, GSB
-    // won't propagate to the next scrollable layer.
     if (scrollbar->GestureEvent(gesture_event, &should_update_capture)) {
       if (should_update_capture)
         scrollbar_handling_scroll_gesture_ = scrollbar;
