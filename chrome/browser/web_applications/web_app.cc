@@ -236,7 +236,11 @@ std::unique_ptr<ShortcutInfo> GetShortcutInfoForTab(
                                           web_contents->GetTitle()) :
       app_info.title;
   info->description = app_info.description;
-  info->favicon.Add(favicon_driver->GetFavicon());
+  // Even though GetFavicon returns a gfx::Image, we *deliberately* call
+  // AsImageSkia to get the internal ImageSkia, then construct a new gfx::Image.
+  // This ensures the ShortcutInfo's favicon does not share a backing store with
+  // |web_contents|, which would not be thread safe. https://crbug.com/596348.
+  info->favicon.Add(favicon_driver->GetFavicon().AsImageSkia());
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
