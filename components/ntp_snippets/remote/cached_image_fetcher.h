@@ -46,9 +46,9 @@ class CachedImageFetcher : public image_fetcher::ImageFetcherDelegate {
 
   // Fetches the image for a suggestion. The fetcher will first issue a lookup
   // to the underlying cache with a fallback to the network.
-  void FetchSuggestionImage(const ContentSuggestion::ID& suggestion_id,
-                            const GURL& image_url,
-                            ImageFetchedCallback callback);
+  virtual void FetchSuggestionImage(const ContentSuggestion::ID& suggestion_id,
+                                    const GURL& image_url,
+                                    ImageFetchedCallback callback);
 
  private:
   // image_fetcher::ImageFetcherDelegate implementation.
