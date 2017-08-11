@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "ash/test/ash_test_base.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -31,8 +31,6 @@ using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
-
-namespace ash {
 
 namespace {
 
@@ -67,7 +65,7 @@ std::unique_ptr<KeyedService> BuildMockLoginUIService(
   return base::MakeUnique<FakeLoginUIService>();
 }
 
-class SyncErrorNotifierTest : public AshTestBase {
+class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
  public:
   SyncErrorNotifierTest() {}
   ~SyncErrorNotifierTest() override {}
@@ -75,7 +73,7 @@ class SyncErrorNotifierTest : public AshTestBase {
   void SetUp() override {
     DCHECK(TestingBrowserProcess::GetGlobal());
 
-    AshTestBase::SetUp();
+    BrowserWithTestWindowTest::SetUp();
 
     profile_manager_ = base::MakeUnique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
@@ -104,7 +102,7 @@ class SyncErrorNotifierTest : public AshTestBase {
     service_.reset();
     profile_manager_.reset();
 
-    AshTestBase::TearDown();
+    BrowserWithTestWindowTest::TearDown();
   }
 
  protected:
@@ -147,8 +145,6 @@ class SyncErrorNotifierTest : public AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncErrorNotifierTest);
 };
-
-}  // namespace
 
 // Test that SyncErrorNotifier shows an notification if a passphrase is
 // required.
@@ -209,4 +205,4 @@ TEST_F(SyncErrorNotifierTest, PassphraseNotification) {
   }
 }
 
-}  // namespace ash
+}  // namespace

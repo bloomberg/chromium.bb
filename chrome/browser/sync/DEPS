@@ -5,14 +5,3 @@ include_rules = [
   "+components/sync_wifi",
   "+google/cacheinvalidation",
 ]
-specific_include_rules = {
-  "sync_error_notifier_ash\.cc": [
-    "+ash/system/system_notifier.h",
-  ],
-  "sync_error_notifier_factory_ash\.cc": [
-    "+ash/shell.h",
-  ],
-  ".*_unittest\.cc": [
-    "+ash/test/ash_test_base.h",
-  ]
-}

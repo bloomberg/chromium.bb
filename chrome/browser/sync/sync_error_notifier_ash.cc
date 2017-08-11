@@ -4,10 +4,11 @@
 
 #include "chrome/browser/sync/sync_error_notifier_ash.h"
 
-#include "ash/system/system_notifier.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/user_flow.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,16 +21,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_flow.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "components/user_manager/user_manager.h"
-#endif
 
 namespace {
 
@@ -137,7 +133,6 @@ void SyncErrorNotifier::OnErrorChanged() {
     return;
   }
 
-#if defined(OS_CHROMEOS)
   if (user_manager::UserManager::IsInitialized()) {
     chromeos::UserFlow* user_flow =
         chromeos::ChromeUserManager::Get()->GetCurrentUserFlow();
@@ -148,7 +143,6 @@ void SyncErrorNotifier::OnErrorChanged() {
     if (!user_flow->ShouldLaunchBrowser())
       return;
   }
-#endif
 
   // Error state just got triggered. There shouldn't be previous notification.
   // Let's display one.
