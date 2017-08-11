@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -596,7 +597,8 @@ public class OmniboxTest {
      * Test to verify that the security icon is present when visiting http:// URLs.
      */
     @Test
-    @MediumTest
+    //@MediumTest
+    @DisabledTest(message = "crbug.com/754723")
     public void testSecurityIconOnHTTP() throws InterruptedException {
         EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
