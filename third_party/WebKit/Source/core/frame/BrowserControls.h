@@ -30,12 +30,11 @@ class CORE_EXPORT BrowserControls final
 
   DECLARE_TRACE();
 
-  // The amount that the viewport was shrunk by to accommodate the top
-  // controls.
-  float LayoutHeight();
+  // The height the top controls are hidden; used for viewport adjustments
+  // while the controls are resizing.
+  float UnreportedSizeAdjustment();
   // The amount that browser controls are currently shown.
   float ContentOffset();
-  float BottomContentOffset();
 
   float TopHeight() const { return top_height_; }
   float BottomHeight() const { return bottom_height_; }
@@ -61,6 +60,7 @@ class CORE_EXPORT BrowserControls final
  private:
   explicit BrowserControls(const Page&);
   void ResetBaseline();
+  float BottomContentOffset();
 
   Member<const Page> page_;
 

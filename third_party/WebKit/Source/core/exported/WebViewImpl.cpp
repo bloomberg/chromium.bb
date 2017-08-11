@@ -1853,11 +1853,8 @@ void WebViewImpl::DidUpdateBrowserControls() {
     // apparent position unchanged.
     ResizeViewportAnchor::ResizeScope resize_scope(*resize_viewport_anchor_);
 
-    float browser_controls_viewport_adjustment =
-        GetBrowserControls().LayoutHeight() -
-        GetBrowserControls().ContentOffset();
     visual_viewport.SetBrowserControlsAdjustment(
-        browser_controls_viewport_adjustment);
+        GetBrowserControls().UnreportedSizeAdjustment());
   }
 }
 
