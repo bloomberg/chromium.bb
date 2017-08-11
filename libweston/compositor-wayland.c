@@ -1242,7 +1242,8 @@ err_output:
 }
 
 static struct wayland_output *
-wayland_output_create_common(const char *name)
+wayland_output_create_common(struct weston_compositor *compositor,
+			     const char *name)
 {
 	struct wayland_output *output;
 	char *title;
@@ -1262,6 +1263,8 @@ wayland_output_create_common(const char *name)
 	}
 	output->title = title;
 
+	weston_output_init(&output->base, compositor, name);
+
 	output->base.destroy = wayland_output_destroy;
 	output->base.disable = wayland_output_disable;
 	output->base.enable = wayland_output_enable;
@@ -1272,12 +1275,12 @@ wayland_output_create_common(const char *name)
 static int
 wayland_output_create(struct weston_compositor *compositor, const char *name)
 {
-	struct wayland_output *output = wayland_output_create_common(name);
+	struct wayland_output *output;
 
+	output = wayland_output_create_common(compositor, name);
 	if (!output)
 		return -1;
 
-	weston_output_init(&output->base, compositor, name);
 	weston_compositor_add_pending_output(&output->base, compositor);
 
 	return 0;
@@ -1337,7 +1340,7 @@ wayland_output_create_for_parent_output(struct wayland_backend *b,
 	struct wayland_output *output;
 	struct weston_mode *mode;
 
-	output = wayland_output_create_common("wlparent");
+	output = wayland_output_create_common(b->compositor, "wlparent");
 	if (!output)
 		return -1;
 
@@ -1352,8 +1355,6 @@ wayland_output_create_for_parent_output(struct wayland_backend *b,
 		weston_log("No valid modes found. Skipping output.\n");
 		goto out;
 	}
-
-	weston_output_init(&output->base, b->compositor, "wlparent");
 
 	output->base.scale = 1;
 	output->base.transform = WL_OUTPUT_TRANSFORM_NORMAL;
@@ -1375,7 +1376,7 @@ wayland_output_create_for_parent_output(struct wayland_backend *b,
 	return 0;
 
 out:
-	free(output->base.name);
+	weston_output_destroy(&output->base);
 	free(output->title);
 	free(output);
 
@@ -1388,11 +1389,9 @@ wayland_output_create_fullscreen(struct wayland_backend *b)
 	struct wayland_output *output;
 	int width = 0, height = 0;
 
-	output = wayland_output_create_common("wayland-fullscreen");
+	output = wayland_output_create_common(b->compositor, "wayland-fullscreen");
 	if (!output)
 		return -1;
-
-	weston_output_init(&output->base, b->compositor, "wayland-fullscreen");
 
 	output->base.scale = 1;
 	output->base.transform = WL_OUTPUT_TRANSFORM_NORMAL;
@@ -1425,7 +1424,7 @@ wayland_output_create_fullscreen(struct wayland_backend *b)
 err_set_size:
 	wayland_backend_destroy_output_surface(output);
 err_surface:
-	free(output->base.name);
+	weston_output_destroy(&output->base);
 	free(output->title);
 	free(output);
 
