@@ -382,6 +382,12 @@ const base::Feature kSiteDetails{"SiteDetails",
 // foreground tab's user experience.
 const base::Feature kStaggeredBackgroundTabOpen{
     "StaggeredBackgroundTabOpen", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// This controls whether we are running experiment with staggered background
+// tab open. For control group, this should be disabled. This depends on
+// |kStaggeredBackgroundTabOpen| above.
+const base::Feature kStaggeredBackgroundTabOpenExperiment{
+    "StaggeredBackgroundTabOpenExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enables or disables the creation of (legacy) supervised users. Does not

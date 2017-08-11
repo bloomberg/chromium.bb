@@ -197,6 +197,7 @@ extern const base::Feature kSiteNotificationChannels;
 
 #if !defined(OS_ANDROID)
 extern const base::Feature kStaggeredBackgroundTabOpen;
+extern const base::Feature kStaggeredBackgroundTabOpenExperiment;
 #endif
 
 extern const base::Feature kSupervisedUserCreation;

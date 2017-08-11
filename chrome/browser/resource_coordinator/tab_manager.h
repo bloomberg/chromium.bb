@@ -226,6 +226,11 @@ class TabManager : public TabStripModelObserver,
   // foreground.
   bool IsTabRestoredInForeground(content::WebContents* web_contents) const;
 
+  // Returns whether the tab manager is currently loading background tabs. This
+  // always returns false during an ongoing session restore, even if background
+  // tabs are being loaded, in order to separate the two activities.
+  bool IsLoadingBackgroundTabs() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, PurgeBackgroundRenderer);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ActivateTabResetPurgeState);
@@ -257,6 +262,9 @@ class TabManager : public TabStripModelObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabLoadingMode);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabLoadingSlots);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabsLoadingOrdering);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsLoadingBackgroundTabs);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerWithExperimentDisabledTest,
+                           IsLoadingBackgroundTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTest,
                            HistogramsSessionRestoreSwitchToTab);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,

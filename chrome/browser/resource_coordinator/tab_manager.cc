@@ -602,6 +602,25 @@ bool TabManager::IsTabRestoredInForeground(WebContents* web_contents) const {
   return GetWebContentsData(web_contents)->is_restored_in_foreground();
 }
 
+bool TabManager::IsLoadingBackgroundTabs() const {
+  if (IsSessionRestoreLoadingTabs())
+    return false;
+
+  if (!pending_navigations_.empty())
+    return true;
+
+  // Excluding session restore above leaves only background opening tabs in
+  // |loading_contents_|. As long as they still remain in background, we are
+  // still loading background tabs, even after we emptied our pending navigation
+  // list.
+  for (const content::WebContents* tab : loading_contents_) {
+    if (!tab->IsVisible())
+      return true;
+  }
+
+  return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // TabManager, private:
 
@@ -1132,7 +1151,9 @@ std::vector<BrowserInfo> TabManager::GetBrowserInfoList() const {
 content::NavigationThrottle::ThrottleCheckResult
 TabManager::MaybeThrottleNavigation(BackgroundTabNavigationThrottle* throttle) {
   content::NavigationHandle* navigation_handle = throttle->navigation_handle();
-  if (CanLoadNextTab()) {
+  if (!base::FeatureList::IsEnabled(
+          features::kStaggeredBackgroundTabOpenExperiment) ||
+      CanLoadNextTab()) {
     loading_contents_.insert(navigation_handle->GetWebContents());
     return content::NavigationThrottle::PROCEED;
   }
