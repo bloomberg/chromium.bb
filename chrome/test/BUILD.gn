@@ -2352,6 +2352,7 @@ test("browser_tests") {
         "//services/preferences/public/interfaces",
         "//services/service_manager/public/cpp",
         "//ui/login:resources",
+        "//url",
       ]
 
       if (use_dbus) {

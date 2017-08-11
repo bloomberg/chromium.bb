@@ -20,6 +20,9 @@
 // Called when the payment method details have been successfully received.
 - (void)paymentResponseHelperDidReceivePaymentMethodDetails;
 
+// Called if an error occured when attempting to receive payment method details.
+- (void)paymentResponseHelperDidFailToReceivePaymentMethodDetails;
+
 // Called when the payment method details have been successfully received and
 // the shipping address and the contact info are normalized, if applicable.
 - (void)paymentResponseHelperDidCompleteWithPaymentResponse:
@@ -44,7 +47,7 @@ class PaymentResponseHelper
   void OnInstrumentDetailsReady(
       const std::string& method_name,
       const std::string& stringified_details) override;
-  void OnInstrumentDetailsError() override {}
+  void OnInstrumentDetailsError() override;
 
  private:
   // Called when the AddressNormalizationManager is done, whether any autofill

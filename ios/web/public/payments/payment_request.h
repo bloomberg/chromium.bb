@@ -25,6 +25,11 @@ class DictionaryValue;
 
 namespace web {
 
+// These constants are for Univesral Link query parameters when receiving
+// payment response data from an external application.
+extern const char kPaymentRequestIDExternal[];
+extern const char kPaymentRequestDataExternal[];
+
 // Supplies monetary amounts.
 class PaymentCurrencyAmount {
  public:

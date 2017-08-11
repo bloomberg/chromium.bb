@@ -59,6 +59,9 @@ static const char kPaymentShippingOptionSelected[] = "selected";
 
 namespace web {
 
+const char kPaymentRequestIDExternal[] = "payment-request-id";
+const char kPaymentRequestDataExternal[] = "payment-request-data";
+
 PaymentCurrencyAmount::PaymentCurrencyAmount()
     // By default, the currency is defined by [ISO4217]. For example, USD for
     // US Dollars.

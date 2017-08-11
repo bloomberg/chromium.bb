@@ -63,7 +63,7 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 
 // Called when a native iOS payment app should be launched.
 - (void)paymentInstrument:(payments::IOSPaymentInstrument*)paymentInstrument
-    launchAppWithUniversalLink:(std::string)universalLink
+    launchAppWithUniversalLink:(GURL)universalLink
             instrumentDelegate:(payments::PaymentInstrument::Delegate*)delegate;
 
 @end

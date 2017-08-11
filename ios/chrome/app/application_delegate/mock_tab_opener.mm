@@ -50,4 +50,10 @@
   return nil;
 }
 
+- (BOOL)shouldCompletePaymentRequestOnCurrentTab:
+    (id<StartupInformation>)startupInformation {
+  // Stub.
+  return NO;
+}
+
 @end

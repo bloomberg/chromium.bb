@@ -343,8 +343,8 @@ void IOSPaymentInstrumentFinder::CreateIOSPaymentInstrument(
           UIImage* icon =
               [UIImage imageWithData:data scale:[UIScreen mainScreen].scale];
           instruments_found_.push_back(base::MakeUnique<IOSPaymentInstrument>(
-              local_method_name.spec(), local_universal_link.spec(),
-              local_app_name, icon, payment_request_ui_delegate_));
+              local_method_name.spec(), local_universal_link, local_app_name,
+              icon, payment_request_ui_delegate_));
         }
         OnPaymentInstrumentProcessed();
       };

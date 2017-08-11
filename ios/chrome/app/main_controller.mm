@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/ios/block_types.h"
 #import "base/mac/bind_objc_block.h"
@@ -29,6 +30,7 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
+#include "components/payments/core/features.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/url_formatter/url_formatter.h"
@@ -83,6 +85,8 @@
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/net/cookie_util.h"
 #include "ios/chrome/browser/net/crl_set_fetcher.h"
+#include "ios/chrome/browser/payments/ios_payment_instrument_launcher.h"
+#include "ios/chrome/browser/payments/ios_payment_instrument_launcher_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/pref_observer_bridge.h"
 #import "ios/chrome/browser/reading_list/reading_list_download_service.h"
@@ -141,6 +145,7 @@
 #include "ios/web/net/request_tracker_impl.h"
 #include "ios/web/net/web_http_protocol_handler_delegate.h"
 #import "ios/web/public/navigation_manager.h"
+#include "ios/web/public/payments/payment_request.h"
 #include "ios/web/public/web_capabilities.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_view_creation_util.h"
@@ -2373,6 +2378,40 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                 startupInformation:startupInformation
                           appState:appState];
   }
+}
+
+- (BOOL)shouldCompletePaymentRequestOnCurrentTab:
+    (id<StartupInformation>)startupInformation {
+  if (!startupInformation.startupParameters)
+    return NO;
+
+  if (!startupInformation.startupParameters.completePaymentRequest)
+    return NO;
+
+  if (!base::FeatureList::IsEnabled(payments::features::kWebPaymentsNativeApps))
+    return NO;
+
+  payments::IOSPaymentInstrumentLauncher* paymentAppLauncher =
+      payments::IOSPaymentInstrumentLauncherFactory::GetInstance()
+          ->GetForBrowserState(_mainBrowserState);
+
+  if (!paymentAppLauncher->delegate())
+    return NO;
+
+  std::string payment_id =
+      startupInformation.startupParameters.externalURLParams
+          .find(web::kPaymentRequestIDExternal)
+          ->second;
+  if (paymentAppLauncher->payment_request_id() != payment_id)
+    return NO;
+
+  std::string payment_response =
+      startupInformation.startupParameters.externalURLParams
+          .find(web::kPaymentRequestDataExternal)
+          ->second;
+  paymentAppLauncher->ReceiveResponseFromIOSPaymentInstrument(payment_response);
+  [startupInformation setStartupParameters:nil];
+  return YES;
 }
 
 #pragma mark - SettingsNavigationControllerDelegate

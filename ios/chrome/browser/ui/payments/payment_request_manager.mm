@@ -39,6 +39,8 @@
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/payments/ios_can_make_payment_query_factory.h"
+#include "ios/chrome/browser/payments/ios_payment_instrument_launcher.h"
+#include "ios/chrome/browser/payments/ios_payment_instrument_launcher_factory.h"
 #include "ios/chrome/browser/payments/ios_payment_request_cache_factory.h"
 #include "ios/chrome/browser/payments/origin_security_checker.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -308,10 +310,19 @@ struct PendingPaymentResponse {
                                            (ProceduralBlockWithBool)callback {
   DCHECK(_pendingPaymentRequest);
   _pendingPaymentRequest = nullptr;
+  [self resetIOSPaymentInstrumentLauncherDelegate];
   [self dismissUI];
   [_paymentRequestJsManager rejectRequestPromiseWithErrorName:kAbortErrorName
                                                  errorMessage:errorMessage
                                             completionHandler:callback];
+}
+
+- (void)resetIOSPaymentInstrumentLauncherDelegate {
+  payments::IOSPaymentInstrumentLauncher* paymentAppLauncher =
+      payments::IOSPaymentInstrumentLauncherFactory::GetInstance()
+          ->GetForBrowserState(_browserState);
+  DCHECK(paymentAppLauncher);
+  paymentAppLauncher->set_delegate(nullptr);
 }
 
 - (void)close {
@@ -756,12 +767,24 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 }
 
 - (void)paymentInstrument:(payments::IOSPaymentInstrument*)paymentInstrument
-    launchAppWithUniversalLink:(std::string)universalLink
+    launchAppWithUniversalLink:(GURL)universalLink
             instrumentDelegate:
                 (payments::PaymentInstrument::Delegate*)delegate {
-  // TODO(crbug.com/748556): Implement this function to use a native app's
-  // universal link to open it from Chrome with several arguments supplied
-  // from the Payment Request object.
+  DCHECK(_pendingPaymentRequest);
+  DCHECK(_activeWebState);
+
+  [_paymentRequestCoordinator setPending:YES];
+  [_paymentRequestCoordinator setCancellable:YES];
+
+  payments::IOSPaymentInstrumentLauncher* paymentAppLauncher =
+      payments::IOSPaymentInstrumentLauncherFactory::GetInstance()
+          ->GetForBrowserState(_browserState);
+  DCHECK(paymentAppLauncher);
+  if (!paymentAppLauncher->LaunchIOSPaymentInstrument(
+          _pendingPaymentRequest, _activeWebState, universalLink, delegate)) {
+    [_paymentRequestCoordinator setPending:NO];
+    [_paymentRequestCoordinator setCancellable:YES];
+  }
 }
 
 #pragma mark - PaymentRequestCoordinatorDelegate methods
@@ -840,6 +863,11 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
   [_paymentRequestCoordinator setCancellable:NO];
 }
 
+- (void)paymentResponseHelperDidFailToReceivePaymentMethodDetails {
+  [_paymentRequestCoordinator setPending:NO];
+  [_paymentRequestCoordinator setCancellable:YES];
+}
+
 - (void)paymentResponseHelperDidCompleteWithPaymentResponse:
     (const web::PaymentResponse&)paymentResponse {
   [_paymentRequestJsManager
@@ -859,6 +887,7 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
     _pendingPaymentRequest->journey_logger().SetAborted(
         payments::JourneyLogger::ABORT_REASON_MERCHANT_NAVIGATION);
     _pendingPaymentRequest = nullptr;
+    [self resetIOSPaymentInstrumentLauncherDelegate];
   }
 
   [self dismissUI];

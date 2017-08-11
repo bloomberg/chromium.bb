@@ -59,6 +59,10 @@ void PaymentResponseHelper::OnInstrumentDetailsReady(
           &PaymentResponseHelper::AddressNormalizationCompleted, AsWeakPtr()));
 }
 
+void PaymentResponseHelper::OnInstrumentDetailsError() {
+  [consumer_ paymentResponseHelperDidFailToReceivePaymentMethodDetails];
+}
+
 void PaymentResponseHelper::AddressNormalizationCompleted() {
   web::PaymentResponse response;
 
