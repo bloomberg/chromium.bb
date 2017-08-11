@@ -240,6 +240,56 @@ class DeviceParseTest(cros_test_lib.OutputTestCase):
                            hostname='foo_host')
 
 
+class SplitExtendActionTest(cros_test_lib.TestCase):
+  """Verify _SplitExtendAction/split_extend action."""
+
+  def _CheckArgs(self, cliargs, expected):
+    """Check |cliargs| produces |expected|."""
+    parser = commandline.ArgumentParser()
+    parser.add_argument('-x', action='split_extend', default=[])
+    opts = parser.parse_args(
+        cros_build_lib.iflatten_instance(['-x', x] for x in cliargs))
+    self.assertEqual(opts.x, expected)
+
+  def testDefaultNone(self):
+    """Verify default=None works."""
+    parser = commandline.ArgumentParser()
+    parser.add_argument('-x', action='split_extend', default=None)
+
+    opts = parser.parse_args([])
+    self.assertIs(opts.x, None)
+
+    opts = parser.parse_args(['-x', ''])
+    self.assertEqual(opts.x, [])
+
+    opts = parser.parse_args(['-x', 'f'])
+    self.assertEqual(opts.x, ['f'])
+
+  def testNoArgs(self):
+    """This is more of a sanity check for resting state."""
+    self._CheckArgs([], [])
+
+  def testEmptyArg(self):
+    """Make sure '' produces nothing."""
+    self._CheckArgs(['', ''], [])
+
+  def testEmptyWhitespaceArg(self):
+    """Make sure whitespace produces nothing."""
+    self._CheckArgs([' ', '\t', '  \t   '], [])
+
+  def testSingleSingleArg(self):
+    """Verify splitting one arg works."""
+    self._CheckArgs(['a'], ['a'])
+
+  def testMultipleSingleArg(self):
+    """Verify splitting one arg works."""
+    self._CheckArgs(['a b  c\td '], ['a', 'b', 'c', 'd'])
+
+  def testMultipleMultipleArgs(self):
+    """Verify splitting multiple args works."""
+    self._CheckArgs(['a b  c', '', 'x', ' k '], ['a', 'b', 'c', 'x', 'k'])
+
+
 class CacheTest(cros_test_lib.MockTempDirTestCase):
   """Test cache dir default / override functionality."""
 

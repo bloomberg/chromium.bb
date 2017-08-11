@@ -331,6 +331,21 @@ class DeviceParser(object):
       raise ValueError('Unknown device scheme "%s" in "%s"' % (scheme, value))
 
 
+class _SplitExtendAction(argparse.Action):
+  """Callback to split the argument and extend existing value.
+
+  We normalize whitespace before splitting.  This is to support the forms:
+    cbuildbot -p 'proj:branch ' ...
+    cbuildbot -p ' proj:branch' ...
+    cbuildbot -p 'proj:branch  proj2:branch' ...
+    cbuildbot -p "$(some_command_that_returns_nothing)" ...
+  """
+  def __call__(self, parser, namespace, values, option_string=None):
+    if getattr(namespace, self.dest, None) is None:
+      setattr(namespace, self.dest, [])
+    getattr(namespace, self.dest).extend(values.split())
+
+
 VALID_TYPES = {
     'ab_url': NormalizeAbUrl,
     'bool': ParseBool,
@@ -339,6 +354,10 @@ VALID_TYPES = {
     'gs_path': NormalizeGSPath,
     'local_or_gs_path': NormalizeLocalOrGSPath,
     'path_or_uri': NormalizeUri,
+}
+
+VALID_ACTIONS = {
+    'split_extend': _SplitExtendAction,
 }
 
 
@@ -364,8 +383,17 @@ class Option(optparse.Option):
 class FilteringOption(Option):
   """Subclass that supports Option filtering for FilteringOptionParser"""
 
+  _EXTRA_ACTIONS = ('split_extend',)
+  ACTIONS = Option.ACTIONS + _EXTRA_ACTIONS
+  STORE_ACTIONS = Option.STORE_ACTIONS + _EXTRA_ACTIONS
+  TYPED_ACTIONS = Option.TYPED_ACTIONS + _EXTRA_ACTIONS
+  ALWAYS_TYPED_ACTIONS = (Option.ALWAYS_TYPED_ACTIONS + _EXTRA_ACTIONS)
+
   def take_action(self, action, dest, opt, value, values, parser):
-    if action in FilteringOption.ACTIONS:
+    if action == 'split_extend':
+      lvalue = value.split()
+      values.ensure_value(dest, []).extend(lvalue)
+    else:
       Option.take_action(self, action, dest, opt, value, values, parser)
 
     if value is None:
@@ -693,6 +721,8 @@ class ArgumentParser(BaseParser, argparse.ArgumentParser):
     """Register types with ArgumentParser."""
     for t, check_f in VALID_TYPES.iteritems():
       self.register('type', t, check_f)
+    for a, class_a in VALID_ACTIONS.iteritems():
+      self.register('action', a, class_a)
 
   def add_common_argument_to_group(self, group, *args, **kwargs):
     """Adds the given argument to the group.
