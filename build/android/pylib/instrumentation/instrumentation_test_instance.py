@@ -445,11 +445,11 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
     self._additional_apks = []
     self._apk_under_test = None
-    self._apk_under_test_incremental_install_script = None
+    self._apk_under_test_incremental_install_json = None
     self._package_info = None
     self._suite = None
     self._test_apk = None
-    self._test_apk_incremental_install_script = None
+    self._test_apk_incremental_install_json = None
     self._test_jar = None
     self._test_package = None
     self._junit3_runner_class = None
@@ -536,12 +536,12 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
     self._test_apk = apk_helper.ToHelper(test_apk_path)
 
-    self._apk_under_test_incremental_install_script = (
-        args.apk_under_test_incremental_install_script)
-    self._test_apk_incremental_install_script = (
-        args.test_apk_incremental_install_script)
+    self._apk_under_test_incremental_install_json = (
+        args.apk_under_test_incremental_install_json)
+    self._test_apk_incremental_install_json = (
+        args.test_apk_incremental_install_json)
 
-    if self._test_apk_incremental_install_script:
+    if self._test_apk_incremental_install_json:
       assert self._suite.endswith('_incremental')
       self._suite = self._suite[:-len('_incremental')]
 
@@ -700,8 +700,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return self._apk_under_test
 
   @property
-  def apk_under_test_incremental_install_script(self):
-    return self._apk_under_test_incremental_install_script
+  def apk_under_test_incremental_install_json(self):
+    return self._apk_under_test_incremental_install_json
 
   @property
   def coverage_directory(self):
@@ -780,8 +780,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return self._test_apk
 
   @property
-  def test_apk_incremental_install_script(self):
-    return self._test_apk_incremental_install_script
+  def test_apk_incremental_install_json(self):
+    return self._test_apk_incremental_install_json
 
   @property
   def test_jar(self):

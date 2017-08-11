@@ -303,12 +303,12 @@ template("write_build_config") {
         _rebased_apk_path = rebase_path(invoker.apk_path, root_build_dir)
         _rebased_incremental_apk_path =
             rebase_path(invoker.incremental_apk_path, root_build_dir)
-        _rebased_incremental_install_script_path =
-            rebase_path(invoker.incremental_install_script_path, root_build_dir)
+        _rebased_incremental_install_json_path =
+            rebase_path(invoker.incremental_install_json_path, root_build_dir)
         _incremental_allowed =
             defined(invoker.incremental_allowed) && invoker.incremental_allowed
         args += [ "--apk-path=$_rebased_apk_path" ]
-        args += [ "--incremental-install-script-path=$_rebased_incremental_install_script_path" ]
+        args += [ "--incremental-install-json-path=$_rebased_incremental_install_json_path" ]
 
         assert(_rebased_incremental_apk_path != "")  # Mark as used.
         if (_incremental_allowed) {
@@ -644,13 +644,13 @@ template("test_runner_script") {
     }
     if (_incremental_install) {
       test_runner_args += [
-        "--test-apk-incremental-install-script",
-        "@FileArg($_rebased_apk_build_config:deps_info:incremental_install_script_path)",
+        "--test-apk-incremental-install-json",
+        "@FileArg($_rebased_apk_build_config:deps_info:incremental_install_json_path)",
       ]
       if (defined(invoker.apk_under_test)) {
         test_runner_args += [
-          "--apk-under-test-incremental-install-script",
-          "@FileArg($_rebased_apk_under_test_build_config:deps_info:incremental_install_script_path)",
+          "--apk-under-test-incremental-install-json",
+          "@FileArg($_rebased_apk_under_test_build_config:deps_info:incremental_install_json_path)",
         ]
       }
       test_runner_args += [ "--fast-local-dev" ]
@@ -1197,7 +1197,7 @@ if (enable_java_templates) {
         (is_java_debug || dcheck_always_on)
 
     _desugar = defined(invoker.supports_android) && invoker.supports_android
-    
+
     _deps = []
     _previous_output_jar = _input_jar_path
 
