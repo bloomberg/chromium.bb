@@ -357,6 +357,11 @@ Profile* ProfileHelper::GetProfileByUserUnsafe(const user_manager::User* user) {
 
 const user_manager::User* ProfileHelper::GetUserByProfile(
     const Profile* profile) const {
+  if (ProfileHelper::IsSigninProfile(profile) ||
+      ProfileHelper::IsLockScreenAppProfile(profile)) {
+    return nullptr;
+  }
+
   // This map is non-empty only in tests.
   if (enable_profile_to_user_testing || !user_list_for_testing_.empty()) {
     if (always_return_primary_user_for_testing)
@@ -378,10 +383,6 @@ const user_manager::User* ProfileHelper::GetUserByProfile(
   DCHECK(!content::BrowserThread::IsThreadInitialized(
              content::BrowserThread::UI) ||
          content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (ProfileHelper::IsSigninProfile(profile) ||
-      ProfileHelper::IsLockScreenAppProfile(profile)) {
-    return nullptr;
-  }
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 

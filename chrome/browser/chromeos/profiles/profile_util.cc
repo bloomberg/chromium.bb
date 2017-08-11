@@ -25,6 +25,8 @@ bool IsProfileAssociatedWithGaiaAccount(Profile* profile) {
   // not try to access the sign-in profile.
   if (profile->GetPath() == ProfileHelper::GetSigninProfileDir())
     return false;
+  if (profile->GetPath() == ProfileHelper::GetLockScreenAppProfilePath())
+    return false;
   return true;
 }
 

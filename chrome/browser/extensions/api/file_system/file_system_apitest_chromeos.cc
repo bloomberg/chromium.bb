@@ -152,8 +152,11 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
     // Ignore signin profile.
-    if (profile->GetPath() == chromeos::ProfileHelper::GetSigninProfileDir())
+    if (profile->GetPath() == chromeos::ProfileHelper::GetSigninProfileDir() ||
+        profile->GetPath() ==
+            chromeos::ProfileHelper::GetLockScreenAppProfilePath()) {
       return nullptr;
+    }
 
     // FileSystemApiTestForDrive doesn't expect that several user profiles could
     // exist simultaneously.

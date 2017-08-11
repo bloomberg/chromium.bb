@@ -61,6 +61,7 @@
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/updater/chromeos_extension_cache_delegate.h"
@@ -833,6 +834,9 @@ class ExtensionInstallObserver : public content::NotificationObserver,
     DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
 
     Profile* profile = content::Source<Profile>(source).ptr();
+    // Ignore lock screen apps profile.
+    if (chromeos::ProfileHelper::IsLockScreenAppProfile(profile))
+      return;
     registry_ = extensions::ExtensionRegistry::Get(profile);
 
     // Check if extension is already installed with newly created profile.

@@ -25,6 +25,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
@@ -159,8 +160,15 @@ void StateController::OnProfilesReady(Profile* primary_profile,
                                       Profile::CreateStatus status) {
   // Ignore CREATED status - wait for profile to be initialized before
   // continuing.
-  if (status == Profile::CREATE_STATUS_CREATED)
+  if (status == Profile::CREATE_STATUS_CREATED) {
+    // Disable safe browsing for the profile to avoid activating
+    // SafeBrowsingService when the user has safe browsing disabled (reasoning
+    // similar to http://crbug.com/461493).
+    // TODO(tbarzic): Revisit this if webviews get enabled for lock screen apps.
+    lock_screen_profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
+                                                false);
     return;
+  }
 
   // On error, bail out - this will cause the lock screen apps to remain
   // unavailable on the device.
