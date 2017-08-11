@@ -557,35 +557,62 @@ void VideoRendererImpl::FrameReady(base::TimeTicks read_time,
 
   // Paint the first frame if possible and necessary. Paint ahead of
   // HAVE_ENOUGH_DATA to ensure the user sees the frame as early as possible.
+  bool just_painted_first_frame = false;
   if (!sink_started_ && algorithm_->frames_queued() && !painted_first_frame_) {
     // We want to paint the first frame under two conditions: Either (1) we have
     // enough frames to know it's definitely the first frame or (2) there may be
     // no more frames coming (sometimes unless we paint one of them).
     //
-    // For the first condition, we need at least two frames or the first frame
-    // must have a timestamp >= |start_timestamp_|, since otherwise we may be
-    // prerolling frames before the actual start time that will be dropped.
-    if (algorithm_->frames_queued() > 1 || received_end_of_stream_ ||
-        frame->timestamp() >= start_timestamp_ || low_delay_ ||
-        !video_frame_stream_->CanReadWithoutStalling()) {
+    // For the first condition, we need at least two effective frames, since
+    // otherwise we may be prerolling frames before the actual start time that
+    // will be dropped.
+    bool should_paint_first_frame =
+        algorithm_->effective_frames_queued() > 1 || received_end_of_stream_ ||
+        !video_frame_stream_->CanReadWithoutStalling();
+
+    // For the very first frame (i.e. not after seeks), we want to paint as fast
+    // as possible to ensure users don't abandon the playback. For live streams
+    // with long duration frames, waiting for a second frame may take seconds.
+    //
+    // Before time starts progressing we may not know if frames are effective or
+    // not, so the first frame must check if timestamp >= |start_timestamp_|.
+    //
+    // We only do this for the very first frame ever painted, since later frames
+    // risk being wrong due to the lack of duration on the first frame. This
+    // avoids any fast-forward or frame-flipping type effects as we try to
+    // resume after a seek.
+    if (!have_renderered_frames_ && !should_paint_first_frame) {
+      should_paint_first_frame =
+          frame->timestamp() >= start_timestamp_ || low_delay_;
+    }
+
+    if (should_paint_first_frame) {
       scoped_refptr<VideoFrame> first_frame =
           algorithm_->Render(base::TimeTicks(), base::TimeTicks(), nullptr);
       CheckForMetadataChanges(first_frame->format(),
                               first_frame->natural_size());
       sink_->PaintSingleFrame(first_frame);
-      painted_first_frame_ = true;
+      just_painted_first_frame = painted_first_frame_ = true;
     }
   }
 
   // Signal buffering state if we've met our conditions.
-  if (buffering_state_ == BUFFERING_HAVE_NOTHING && HaveEnoughData_Locked())
+  //
+  // If we've just painted the first frame, require the standard 1 frame for low
+  // latency playback. If we're resuming after a Flush(), wait until we have two
+  // frames even in low delay mode to avoid any kind of fast-forward or frame
+  // flipping effect while we attempt to find the best frame.
+  if (buffering_state_ == BUFFERING_HAVE_NOTHING &&
+      HaveEnoughData_Locked(just_painted_first_frame ? 1u : 2u)) {
     TransitionToHaveEnough_Locked();
+  }
 
   // Always request more decoded video if we have capacity.
   AttemptRead_Locked();
 }
 
-bool VideoRendererImpl::HaveEnoughData_Locked() {
+bool VideoRendererImpl::HaveEnoughData_Locked(
+    size_t low_latency_frames_required) const {
   DCHECK_EQ(state_, kPlaying);
   lock_.AssertAcquired();
 
@@ -602,10 +629,16 @@ bool VideoRendererImpl::HaveEnoughData_Locked() {
   if (was_background_rendering_ && frames_decoded_)
     return true;
 
-  if (!low_delay_ && video_frame_stream_->CanReadWithoutStalling())
+  // Note: We still require an effective frame in the stalling case since this
+  // method is also used to inform TransitionToHaveNothing_Locked() and thus
+  // would never pause and rebuffer if we always return true here.
+  if (!video_frame_stream_->CanReadWithoutStalling())
+    return algorithm_->effective_frames_queued() > 0u;
+
+  if (!low_delay_)
     return false;
 
-  return algorithm_->effective_frames_queued() > 0;
+  return algorithm_->effective_frames_queued() >= low_latency_frames_required;
 }
 
 void VideoRendererImpl::TransitionToHaveEnough_Locked() {
@@ -725,7 +758,7 @@ void VideoRendererImpl::UpdateStats_Locked() {
   }
 }
 
-bool VideoRendererImpl::HaveReachedBufferingCap() {
+bool VideoRendererImpl::HaveReachedBufferingCap() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (use_complexity_based_buffering_)

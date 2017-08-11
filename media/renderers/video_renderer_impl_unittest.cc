@@ -433,13 +433,14 @@ class VideoRendererImplTest : public testing::Test {
       EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
       EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
           .WillOnce(RunClosure(event.GetClosure()));
+
       // Note: In the normal underflow case we queue 5 frames here instead of
       // four since the underflow increases the number of required frames to
       // reach the have enough state.
       if (type == UnderflowTestType::NORMAL)
         QueueFrames("80 100 120 140 160");
       else
-        QueueFrames("40 60 80 90");
+        QueueFrames("40 60 80 90 100");
       SatisfyPendingDecode();
       event.RunAndWait();
     }
