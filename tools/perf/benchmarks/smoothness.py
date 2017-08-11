@@ -439,7 +439,82 @@ class SmoothnessToughPinchZoomCases(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing.
+        self.DisableStory('https://www.google.com/#hl=en&q=barack+obama',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('https://mail.google.com/mail/',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('https://www.google.com/calendar/',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('https://www.google.com/search?q=cats&tbm=isch',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('http://www.youtube.com',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('Blogger',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('Facebook',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('LinkedIn',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('Wikipedia (1 tab)',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('Twitter',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('ESPN',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('http://news.yahoo.com',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('http://www.cnn.com',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('Weather.com',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('http://www.amazon.com',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('http://www.ebay.com',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('http://games.yahoo.com',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('http://booking.com',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
+        self.DisableStory('http://sports.yahoo.com/',
+                          [story_module.expectations.ALL_ANDROID,
+                          story_module.expectations.ALL_WIN],
+                          'crbug.com/631015')
     return StoryExpectations()
 
 
@@ -480,9 +555,63 @@ class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
     return 'smoothness.gpu_rasterization.tough_pinch_zoom_cases'
 
   def GetExpectations(self):
+
     class StoryExpectations(story_module.expectations.StoryExpectations):
+
       def SetExpectations(self):
-        pass # Nothing.
+        self.DisableStory('https://www.google.com/#hl=en&q=barack+obama',
+                          [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('https://mail.google.com/mail/',
+                          [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('https://www.google.com/calendar/',
+                          [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('https://www.google.com/search?q=cats&tbm=isch',
+                          [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('http://www.youtube.com',
+                          [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('Blogger', [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('Facebook', [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('LinkedIn', [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('Wikipedia (1 tab)',
+                          [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('Twitter', [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('ESPN', [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('http://news.yahoo.com',
+                          [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('http://www.cnn.com',
+                          [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('Weather.com',
+                          [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('http://www.amazon.com',
+                          [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('http://www.ebay.com',
+                          [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('http://games.yahoo.com',
+                          [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('http://booking.com',
+                          [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+        self.DisableStory('http://sports.yahoo.com/',
+                          [story_module.expectations.ALL_ANDROID],
+                          'crbug.com/610021')
+
     return StoryExpectations()
 
 
