@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/ipc/render_pass_struct_traits.h"
+#include "services/viz/public/cpp/compositing/render_pass_struct_traits.h"
 
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -11,9 +11,9 @@
 namespace mojo {
 
 // static
-bool StructTraits<cc::mojom::RenderPassDataView,
+bool StructTraits<viz::mojom::RenderPassDataView,
                   std::unique_ptr<cc::RenderPass>>::
-    Read(cc::mojom::RenderPassDataView data,
+    Read(viz::mojom::RenderPassDataView data,
          std::unique_ptr<cc::RenderPass>* out) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                "StructTraits::RenderPass::Read");

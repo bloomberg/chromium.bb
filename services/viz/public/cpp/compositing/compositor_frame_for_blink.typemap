@@ -7,7 +7,6 @@ public_headers = [ "//cc/output/compositor_frame.h" ]
 traits_headers = [
   "//cc/ipc/filter_operation_struct_traits.h",
   "//cc/ipc/filter_operations_struct_traits.h",
-  "//cc/ipc/render_pass_struct_traits.h",
   "//cc/ipc/selection_struct_traits.h",
   "//cc/ipc/shared_quad_state_struct_traits.h",
   "//cc/ipc/transferable_resource_struct_traits.h",
@@ -19,6 +18,7 @@ traits_headers = [
   "//mojo/common/common_custom_types_struct_traits.h",
   "//services/viz/public/cpp/compositing/compositor_frame_struct_traits.h",
   "//services/viz/public/cpp/compositing/compositor_frame_metadata_struct_traits.h",
+  "//services/viz/public/cpp/compositing/render_pass_struct_traits.h",
   "//skia/public/interfaces/image_filter_struct_traits.h",
   "//ui/gfx/mojo/selection_bound_struct_traits.h",
   "//ui/gfx/mojo/transform_struct_traits.h",
