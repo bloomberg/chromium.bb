@@ -54,8 +54,6 @@ SKIP = {
   # is not there yet -- so don't let manage.py add swarming automatically there.
   'Android User Builder Tests',
   'Android GN',
-  'Android Tests',
-  'Android Tests (dbg)',
 
   # http://crbug.com/441429
   'Linux Trusty (32)', 'Linux Trusty (dbg)(32)',
