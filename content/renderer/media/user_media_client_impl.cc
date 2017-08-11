@@ -1086,7 +1086,7 @@ void UserMediaClientImpl::CreateAudioTracks(
     for (auto& device_info : overridden_audio_array) {
       device_info.device.matched_output_device_id = "";
       device_info.device.matched_output =
-          MediaStreamDevice::AudioDeviceParameters();
+          media::AudioParameters::UnavailableDeviceParams();
     }
   }
 

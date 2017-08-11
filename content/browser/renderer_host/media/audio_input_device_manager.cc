@@ -181,12 +181,7 @@ void AudioInputDeviceManager::OpenedOnIOThread(
   info.device.input.effects = valid_input_params.effects();
   info.device.input.mic_positions = valid_input_params.mic_positions();
   info.device.matched_output_device_id = matched_output_device_id;
-  info.device.matched_output.sample_rate = matched_output_params.sample_rate();
-  info.device.matched_output.channel_layout =
-      matched_output_params.channel_layout();
-  info.device.matched_output.frames_per_buffer =
-      matched_output_params.frames_per_buffer();
-  info.device.matched_output.effects = matched_output_params.effects();
+  info.device.matched_output = matched_output_params;
 
   devices_.push_back(info);
 
