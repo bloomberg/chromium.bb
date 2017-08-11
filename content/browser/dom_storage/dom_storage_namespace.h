@@ -85,6 +85,8 @@ class CONTENT_EXPORT DOMStorageNamespace
 
   void GetOriginsWithAreas(std::vector<GURL>* origins) const;
 
+  int GetAreaOpenCount(const GURL& origin) const;
+
  private:
   friend class base::RefCountedThreadSafe<DOMStorageNamespace>;
 

@@ -77,17 +77,19 @@ IPC_SYNC_MESSAGE_CONTROL1_1(DOMStorageHostMsg_LoadStorageArea,
 
 // Set a value that's associated with a key in a storage area.
 // A completion notification is sent in response.
-IPC_MESSAGE_CONTROL4(DOMStorageHostMsg_SetItem,
+IPC_MESSAGE_CONTROL5(DOMStorageHostMsg_SetItem,
                      int /* connection_id */,
                      base::string16 /* key */,
                      base::string16 /* value */,
+                     base::NullableString16 /* client_old_value */,
                      GURL /* page_url */)
 
 // Remove the value associated with a key in a storage area.
 // A completion notification is sent in response.
-IPC_MESSAGE_CONTROL3(DOMStorageHostMsg_RemoveItem,
+IPC_MESSAGE_CONTROL4(DOMStorageHostMsg_RemoveItem,
                      int /* connection_id */,
                      base::string16 /* key */,
+                     base::NullableString16 /* client_old_value */,
                      GURL /* page_url */)
 
 // Clear the storage area. A completion notification is sent in response.

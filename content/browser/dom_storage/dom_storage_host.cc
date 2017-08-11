@@ -32,8 +32,16 @@ DOMStorageHost::OpenStorageArea(
   references.namespace_ = context_->GetStorageNamespace(namespace_id);
   if (!references.namespace_.get())
     return context_->DiagnoseSessionNamespaceId(namespace_id);
-  references.area_ = references.namespace_->OpenStorageArea(origin);
-  DCHECK(references.area_.get());
+
+  // namespace->OpenStorageArea() is called only once per process
+  // (areas_open_count[area] is 0).
+  references.area_ = references.namespace_->GetOpenStorageArea(origin);
+  if (!references.area_ || !areas_open_count_[references.area_.get()]) {
+    references.area_ = references.namespace_->OpenStorageArea(origin);
+    DCHECK(references.area_.get());
+    DCHECK_EQ(0, areas_open_count_[references.area_.get()]);
+  }
+  ++areas_open_count_[references.area_.get()];
   connections_[connection_id] = references;
   return base::nullopt;
 }
@@ -42,7 +50,15 @@ void DOMStorageHost::CloseStorageArea(int connection_id) {
   const auto found = connections_.find(connection_id);
   if (found == connections_.end())
     return;
-  found->second.namespace_->CloseStorageArea(found->second.area_.get());
+  DOMStorageArea* area = found->second.area_.get();
+  DCHECK(areas_open_count_[area]);
+
+  // namespace->CloseStorageArea() is called only once per process
+  // (areas_open_count[area] becomes 0).
+  if (--areas_open_count_[area] == 0) {
+    found->second.namespace_->CloseStorageArea(area);
+    areas_open_count_.erase(area);
+  }
   connections_.erase(found);
 }
 
@@ -84,29 +100,34 @@ base::NullableString16 DOMStorageHost::GetAreaItem(int connection_id,
   return area->GetItem(key);
 }
 
-bool DOMStorageHost::SetAreaItem(
-    int connection_id, const base::string16& key,
-    const base::string16& value, const GURL& page_url,
-    base::NullableString16* old_value) {
+bool DOMStorageHost::SetAreaItem(int connection_id,
+                                 const base::string16& key,
+                                 const base::string16& value,
+                                 const base::NullableString16& client_old_value,
+                                 const GURL& page_url) {
   DOMStorageArea* area = GetOpenArea(connection_id);
   if (!area)
     return false;
-  if (!area->SetItem(key, value, old_value))
+  base::NullableString16 old_value;
+  if (!area->SetItem(key, value, &old_value))
     return false;
-  if (old_value->is_null() || old_value->string() != value)
-    context_->NotifyItemSet(area, key, value, *old_value, page_url);
+  if (old_value.is_null() || old_value.string() != value)
+    context_->NotifyItemSet(area, key, value, old_value, page_url);
   return true;
 }
 
 bool DOMStorageHost::RemoveAreaItem(
-    int connection_id, const base::string16& key, const GURL& page_url,
-    base::string16* old_value) {
+    int connection_id,
+    const base::string16& key,
+    const base::NullableString16& client_old_value,
+    const GURL& page_url) {
   DOMStorageArea* area = GetOpenArea(connection_id);
   if (!area)
     return false;
-  if (!area->RemoveItem(key, old_value))
+  base::string16 old_value;
+  if (!area->RemoveItem(key, &old_value))
     return false;
-  context_->NotifyItemRemoved(area, key, *old_value, page_url);
+  context_->NotifyItemRemoved(area, key, old_value, page_url);
   return true;
 }
 

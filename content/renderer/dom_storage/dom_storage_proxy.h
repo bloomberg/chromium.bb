@@ -26,11 +26,13 @@ class DOMStorageProxy : public base::RefCounted<DOMStorageProxy> {
   virtual void SetItem(int connection_id,
                        const base::string16& key,
                        const base::string16& value,
+                       const base::NullableString16& old_value,
                        const GURL& page_url,
                        const CompletionCallback& callback) = 0;
 
   virtual void RemoveItem(int connection_id,
                           const base::string16& key,
+                          const base::NullableString16& old_value,
                           const GURL& page_url,
                           const CompletionCallback& callback) = 0;
 
