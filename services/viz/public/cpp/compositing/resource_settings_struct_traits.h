@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_VIZ_PUBLIC_INTERFACES_COMPOSITING_RESOURCE_SETTINGS_STRUCT_TRAITS_H_
-#define SERVICES_VIZ_PUBLIC_INTERFACES_COMPOSITING_RESOURCE_SETTINGS_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_RESOURCE_SETTINGS_STRUCT_TRAITS_H_
+#define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_RESOURCE_SETTINGS_STRUCT_TRAITS_H_
+
+#include <utility>
 
 #include "components/viz/common/resources/resource_settings.h"
 #include "services/viz/public/interfaces/compositing/resource_settings.mojom.h"
@@ -21,15 +23,21 @@ struct ArrayTraits<viz::BufferToTextureTargetMap> {
   static ConstIterator GetBegin(const viz::BufferToTextureTargetMap& input) {
     return input.begin();
   }
-  static Iterator GetBegin(viz::BufferToTextureTargetMap& input) {
+  static Iterator GetBegin(viz::BufferToTextureTargetMap& input) {  // NOLINT
     return input.begin();
   }
 
-  static void AdvanceIterator(ConstIterator& iterator) { iterator++; }
-  static void AdvanceIterator(Iterator& iterator) { iterator++; }
+  static void AdvanceIterator(ConstIterator& iterator) {  // NOLINT
+    iterator++;
+  }
+  static void AdvanceIterator(Iterator& iterator) {  // NOLINT
+    iterator++;
+  }
 
-  static const Element& GetValue(ConstIterator& iterator) { return *iterator; }
-  static Element& GetValue(Iterator& iterator) { return *iterator; }
+  static const Element& GetValue(ConstIterator& iterator) {  // NOLINT
+    return *iterator;
+  }
+  static Element& GetValue(Iterator& iterator) { return *iterator; }  // NOLINT
 
   static size_t GetSize(const viz::BufferToTextureTargetMap& input) {
     return input.size();
@@ -89,4 +97,4 @@ struct StructTraits<viz::mojom::ResourceSettingsDataView,
 
 }  // namespace mojo
 
-#endif  // SERVICES_VIZ_PUBLIC_INTERFACES_COMPOSITING_RESOURCE_SETTINGS_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_RESOURCE_SETTINGS_STRUCT_TRAITS_H_
