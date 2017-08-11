@@ -202,8 +202,6 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   ExecutionPhaseManager::RegisterPrefs(registry);
   MetricsReportingService::RegisterPrefs(registry);
 
-  registry->RegisterInt64Pref(prefs::kInstallDate, 0);
-
   registry->RegisterIntegerPref(prefs::kMetricsSessionID, -1);
 
   registry->RegisterInt64Pref(prefs::kUninstallLaunchCount, 0);
@@ -228,11 +226,6 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
   DCHECK(state_manager_);
   DCHECK(client_);
   DCHECK(local_state_);
-
-  // Set the install date if this is our first run.
-  int64_t install_date = local_state_->GetInt64(prefs::kInstallDate);
-  if (install_date == 0)
-    local_state_->SetInt64(prefs::kInstallDate, base::Time::Now().ToTimeT());
 
   RegisterMetricsProvider(
       base::MakeUnique<StabilityMetricsProvider>(local_state_));
@@ -303,11 +296,7 @@ std::string MetricsService::GetClientId() {
 }
 
 int64_t MetricsService::GetInstallDate() {
-  return local_state_->GetInt64(prefs::kInstallDate);
-}
-
-int64_t MetricsService::GetMetricsReportingEnabledDate() {
-  return local_state_->GetInt64(prefs::kMetricsReportingEnabledTimestamp);
+  return state_manager_->GetInstallDate();
 }
 
 bool MetricsService::WasLastShutdownClean() const {
@@ -849,20 +838,17 @@ std::unique_ptr<MetricsLog> MetricsService::CreateLog(
 std::string MetricsService::RecordCurrentEnvironmentHelper(
     MetricsLog* log,
     PrefService* local_state,
-    DelegatingProvider* delegating_provider,
-    int64_t install_date,
-    int64_t enable_date) {
+    DelegatingProvider* delegating_provider) {
   const SystemProfileProto& system_profile =
-      log->RecordEnvironment(delegating_provider, install_date, enable_date);
+      log->RecordEnvironment(delegating_provider);
   EnvironmentRecorder recorder(local_state);
   return recorder.SerializeAndRecordEnvironmentToPrefs(system_profile);
 }
 
 void MetricsService::RecordCurrentEnvironment(MetricsLog* log) {
   DCHECK(client_);
-  std::string serialized_proto = RecordCurrentEnvironmentHelper(
-      log, local_state_, &delegating_provider_, GetInstallDate(),
-      GetMetricsReportingEnabledDate());
+  std::string serialized_proto =
+      RecordCurrentEnvironmentHelper(log, local_state_, &delegating_provider_);
   GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(
       serialized_proto, /*complete=*/true);
   client_->OnEnvironmentUpdate(&serialized_proto);
