@@ -12466,6 +12466,7 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
     const int overlap =
         AOMMIN(block_size_high[bsize] >> 1, block_size_high[BLOCK_64X64] >> 1);
     const int miw = AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
+    const int mi_row_offset = -1;
     const uint8_t *const mask1d = av1_get_obmc_mask(overlap);
     const int neighbor_limit = max_neighbor_obmc[b_width_log2_lookup[bsize]];
     int neighbor_count = 0;
@@ -12474,24 +12475,22 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
 
     i = 0;
     do {  // for each mi in the above row
-      const MB_MODE_INFO *above_mbmi = &xd->mi[i + (-1) * xd->mi_stride]->mbmi;
-      const int above_width = mi_size_wide[above_mbmi->sb_type];
-      int above_step = AOMMIN(above_width, mi_size_wide[BLOCK_64X64]);
-
+      const int mi_col_offset = i;
+      const MB_MODE_INFO *above_mbmi =
+          &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
 #if CONFIG_CHROMA_SUB8X8
-      // If the block above is narrower than 8x8 and starts at an even column,
-      // we need to skip right one to get to the block with the correct chroma
-      // information.
-      if (above_width == 1 && ((mi_col + i) % 2 == 0)) {
-        above_mbmi = &xd->mi[i + 1 + (-1) * xd->mi_stride]->mbmi;
-        above_step = 2;
-      }
+      if (above_mbmi->sb_type < BLOCK_8X8)
+        above_mbmi =
+            &xd->mi[mi_col_offset + 1 + mi_row_offset * xd->mi_stride]->mbmi;
 #endif
+      const BLOCK_SIZE a_bsize = AOMMAX(above_mbmi->sb_type, BLOCK_8X8);
+      const int above_step =
+          AOMMIN(mi_size_wide[a_bsize], mi_size_wide[BLOCK_64X64]);
       const int mi_step = AOMMIN(xd->n8_w, above_step);
       const int neighbor_bw = mi_step * MI_SIZE;
 
       if (is_neighbor_overlappable(above_mbmi)) {
-        if (!CONFIG_CB4X4 && above_width == mi_size_wide[BLOCK_4X4])
+        if (!CONFIG_CB4X4 && (a_bsize == BLOCK_4X4 || a_bsize == BLOCK_4X8))
           neighbor_count += 2;
         else
           neighbor_count++;
@@ -12549,6 +12548,7 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
     const int overlap =
         AOMMIN(block_size_wide[bsize] >> 1, block_size_wide[BLOCK_64X64] >> 1);
     const int mih = AOMMIN(xd->n8_h, cm->mi_rows - mi_row);
+    const int mi_col_offset = -1;
     const uint8_t *const mask1d = av1_get_obmc_mask(overlap);
     const int neighbor_limit = max_neighbor_obmc[b_height_log2_lookup[bsize]];
     int neighbor_count = 0;
@@ -12557,23 +12557,23 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
 
     i = 0;
     do {  // for each mi in the left column
-      const MB_MODE_INFO *left_mbmi = &xd->mi[-1 + i * xd->mi_stride]->mbmi;
-      const int left_height = mi_size_high[left_mbmi->sb_type];
-      int left_step = AOMMIN(left_height, mi_size_high[BLOCK_64X64]);
+      const int mi_row_offset = i;
+      MB_MODE_INFO *left_mbmi =
+          &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
 
 #if CONFIG_CHROMA_SUB8X8
-      // If the block is shorter than 8x8 and starts on an even row, we need to
-      // skip down one to get to the block with the correct chroma information.
-      if (left_height == 1 && ((mi_row + i) % 2 == 0)) {
-        left_mbmi = &xd->mi[-1 + (i + 1) * xd->mi_stride]->mbmi;
-        left_step = 2;
-      }
+      if (left_mbmi->sb_type < BLOCK_8X8)
+        left_mbmi =
+            &xd->mi[mi_col_offset + (mi_row_offset + 1) * xd->mi_stride]->mbmi;
 #endif
+      const BLOCK_SIZE l_bsize = AOMMAX(left_mbmi->sb_type, BLOCK_8X8);
+      const int left_step =
+          AOMMIN(mi_size_high[l_bsize], mi_size_high[BLOCK_64X64]);
       const int mi_step = AOMMIN(xd->n8_h, left_step);
       const int neighbor_bh = mi_step * MI_SIZE;
 
       if (is_neighbor_overlappable(left_mbmi)) {
-        if (!CONFIG_CB4X4 && (left_height == mi_size_wide[BLOCK_4X4]))
+        if (!CONFIG_CB4X4 && (l_bsize == BLOCK_4X4 || l_bsize == BLOCK_8X4))
           neighbor_count += 2;
         else
           neighbor_count++;
