@@ -50,6 +50,7 @@
 #include "common/linux/linux_libc_support.h"
 #include "common/linux/memory_mapped_file.h"
 #include "common/linux/safe_readlink.h"
+#include "google_breakpad/common/minidump_exception_linux.h"
 #include "third_party/lss/linux_syscall_support.h"
 
 #if defined(__ANDROID__)
@@ -334,6 +335,77 @@ LinuxDumper::ElfFileIdentifierForMapping(const MappingInfo& mapping,
   }
 
   return success;
+}
+
+const char* LinuxDumper::GetCrashSignalString() const {
+  switch (static_cast<unsigned int>(crash_signal_)) {
+    case MD_EXCEPTION_CODE_LIN_SIGHUP:
+      return "SIGHUP";
+    case MD_EXCEPTION_CODE_LIN_SIGINT:
+      return "SIGINT";
+    case MD_EXCEPTION_CODE_LIN_SIGQUIT:
+      return "SIGQUIT";
+    case MD_EXCEPTION_CODE_LIN_SIGILL:
+      return "SIGILL";
+    case MD_EXCEPTION_CODE_LIN_SIGTRAP:
+      return "SIGTRAP";
+    case MD_EXCEPTION_CODE_LIN_SIGABRT:
+      return "SIGABRT";
+    case MD_EXCEPTION_CODE_LIN_SIGBUS:
+      return "SIGBUS";
+    case MD_EXCEPTION_CODE_LIN_SIGFPE:
+      return "SIGFPE";
+    case MD_EXCEPTION_CODE_LIN_SIGKILL:
+      return "SIGKILL";
+    case MD_EXCEPTION_CODE_LIN_SIGUSR1:
+      return "SIGUSR1";
+    case MD_EXCEPTION_CODE_LIN_SIGSEGV:
+      return "SIGSEGV";
+    case MD_EXCEPTION_CODE_LIN_SIGUSR2:
+      return "SIGUSR2";
+    case MD_EXCEPTION_CODE_LIN_SIGPIPE:
+      return "SIGPIPE";
+    case MD_EXCEPTION_CODE_LIN_SIGALRM:
+      return "SIGALRM";
+    case MD_EXCEPTION_CODE_LIN_SIGTERM:
+      return "SIGTERM";
+    case MD_EXCEPTION_CODE_LIN_SIGSTKFLT:
+      return "SIGSTKFLT";
+    case MD_EXCEPTION_CODE_LIN_SIGCHLD:
+      return "SIGCHLD";
+    case MD_EXCEPTION_CODE_LIN_SIGCONT:
+      return "SIGCONT";
+    case MD_EXCEPTION_CODE_LIN_SIGSTOP:
+      return "SIGSTOP";
+    case MD_EXCEPTION_CODE_LIN_SIGTSTP:
+      return "SIGTSTP";
+    case MD_EXCEPTION_CODE_LIN_SIGTTIN:
+      return "SIGTTIN";
+    case MD_EXCEPTION_CODE_LIN_SIGTTOU:
+      return "SIGTTOU";
+    case MD_EXCEPTION_CODE_LIN_SIGURG:
+      return "SIGURG";
+    case MD_EXCEPTION_CODE_LIN_SIGXCPU:
+      return "SIGXCPU";
+    case MD_EXCEPTION_CODE_LIN_SIGXFSZ:
+      return "SIGXFSZ";
+    case MD_EXCEPTION_CODE_LIN_SIGVTALRM:
+      return "SIGVTALRM";
+    case MD_EXCEPTION_CODE_LIN_SIGPROF:
+      return "SIGPROF";
+    case MD_EXCEPTION_CODE_LIN_SIGWINCH:
+      return "SIGWINCH";
+    case MD_EXCEPTION_CODE_LIN_SIGIO:
+      return "SIGIO";
+    case MD_EXCEPTION_CODE_LIN_SIGPWR:
+      return "SIGPWR";
+    case MD_EXCEPTION_CODE_LIN_SIGSYS:
+      return "SIGSYS";
+    case MD_EXCEPTION_CODE_LIN_DUMP_REQUESTED:
+      return "DUMP_REQUESTED";
+    default:
+      return "UNKNOWN";
+  }
 }
 
 bool LinuxDumper::GetMappingAbsolutePath(const MappingInfo& mapping,

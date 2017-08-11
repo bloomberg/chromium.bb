@@ -181,6 +181,7 @@ class MicrodumpWriter {
     DumpProductInformation();
     DumpOSInformation();
     DumpProcessType();
+    DumpCrashReason();
     DumpGPUInformation();
 #if !defined(__LP64__)
     DumpFreeSpace();
@@ -295,6 +296,16 @@ class MicrodumpWriter {
     } else {
       LogAppend("UNKNOWN");
     }
+    LogCommitLine();
+  }
+
+  void DumpCrashReason() {
+    LogAppend("R ");
+    LogAppend(dumper_->crash_signal());
+    LogAppend(" ");
+    LogAppend(dumper_->GetCrashSignalString());
+    LogAppend(" ");
+    LogAppend(dumper_->crash_address());
     LogCommitLine();
   }
 

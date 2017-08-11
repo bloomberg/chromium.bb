@@ -65,6 +65,7 @@ MicrodumpExtraInfo MakeMicrodumpExtraInfo(
   info.build_fingerprint = build_fingerprint;
   info.product_info = product_info;
   info.gpu_fingerprint = gpu_fingerprint;
+  info.process_type = "Browser";
   return info;
 }
 
@@ -74,6 +75,7 @@ bool ContainsMicrodump(const std::string& buf) {
 }
 
 const char kIdentifiableString[] = "_IDENTIFIABLE_";
+const uintptr_t kCrashAddress = 0xdeaddeadu;
 
 void CrashAndGetMicrodump(const MappingList& mappings,
                           const MicrodumpExtraInfo& microdump_extra_info,
@@ -115,6 +117,8 @@ void CrashAndGetMicrodump(const MappingList& mappings,
   getcontext(&context.context);
   // Set a non-zero tid to avoid tripping asserts.
   context.tid = child;
+  context.siginfo.si_signo = MD_EXCEPTION_CODE_LIN_DUMP_REQUESTED;
+  context.siginfo.si_addr = reinterpret_cast<void*>(kCrashAddress);
 
   // Redirect temporarily stderr to the stderr.log file.
   int save_err = dup(STDERR_FILENO);
@@ -172,6 +176,8 @@ void CheckMicrodumpContents(const string& microdump_content,
   std::istringstream iss(microdump_content);
   bool did_find_os_info = false;
   bool did_find_product_info = false;
+  bool did_find_process_type = false;
+  bool did_find_crash_reason = false;
   bool did_find_gpu_info = false;
   for (string line; std::getline(iss, line);) {
     if (line.find("O ") == 0) {
@@ -190,9 +196,28 @@ void CheckMicrodumpContents(const string& microdump_content,
 
       // Check that the build fingerprint is in the right place.
       os_info_tokens >> token;
+      ASSERT_FALSE(os_info_tokens.fail());
       if (expected_info.build_fingerprint)
         ASSERT_EQ(expected_info.build_fingerprint, token);
       did_find_os_info = true;
+    } else if (line.find("P ") == 0) {
+      if (expected_info.process_type)
+        ASSERT_EQ(string("P ") + expected_info.process_type, line);
+      did_find_process_type = true;
+    } else if (line.find("R ") == 0) {
+      std::istringstream crash_reason_tokens(line);
+      string token;
+      unsigned crash_reason;
+      string crash_reason_str;
+      intptr_t crash_address;
+      crash_reason_tokens.ignore(2); // Ignore the "R " preamble.
+      crash_reason_tokens >> std::hex >> crash_reason >> crash_reason_str >>
+          crash_address;
+      ASSERT_FALSE(crash_reason_tokens.fail());
+      ASSERT_EQ(MD_EXCEPTION_CODE_LIN_DUMP_REQUESTED, crash_reason);
+      ASSERT_EQ("DUMP_REQUESTED", crash_reason_str);
+      ASSERT_EQ(0xDEADDEADu, kCrashAddress);
+      did_find_crash_reason = true;
     } else if (line.find("V ") == 0) {
       if (expected_info.product_info)
         ASSERT_EQ(string("V ") + expected_info.product_info, line);
@@ -205,6 +230,8 @@ void CheckMicrodumpContents(const string& microdump_content,
   }
   ASSERT_TRUE(did_find_os_info);
   ASSERT_TRUE(did_find_product_info);
+  ASSERT_TRUE(did_find_process_type);
+  ASSERT_TRUE(did_find_crash_reason);
   ASSERT_TRUE(did_find_gpu_info);
 }
 
