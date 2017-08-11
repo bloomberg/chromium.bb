@@ -1,17 +1,14 @@
 import("../vulcanize.gni")
 
-app_unbuilt = "app.vulcanized.unbuilt.html"
-lazy_load_unbuilt = "lazy_load.vulcanized.unbuilt.html"
-
-vulcanize("vulcanize_app") {
+vulcanize("build") {
   host = "history"
   html_in_files = [
     "app.html",
     "lazy_load.html",
   ]
   html_out_files = [
-    app_unbuilt,
-    lazy_load_unbuilt,
+    "app.vulcanized.html",
+    "lazy_load.vulcanized.html",
   ]
 
   input = rebase_path(".", root_build_dir)
@@ -26,18 +23,4 @@ vulcanize("vulcanize_app") {
   ]
 
   deps = []
-}
-
-polymer_css_build("build") {
-  input_files = [
-    app_unbuilt,
-    lazy_load_unbuilt,
-  ]
-  output_files = [
-    "app.vulcanized.html",
-    "lazy_load.vulcanized.html",
-  ]
-  deps = [
-    ":vulcanize_app",
-  ]
 }

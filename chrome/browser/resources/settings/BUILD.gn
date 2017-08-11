@@ -2,20 +2,18 @@ import("../vulcanize.gni")
 import("//tools/grit/grit_rule.gni")
 import("//chrome/common/features.gni")
 
-app_unbuilt = "vulcanized.unbuilt.html"
-lazy_load_unbuilt = "lazy_load.vulcanized.unbuilt.html"
 settings_pak_file = "settings_resources.pak"
 unpak_folder = "settings_resources.unpak"
 
-vulcanize("vulcanize_app") {
+vulcanize("build") {
   host = "settings"
   html_in_files = [
     "settings.html",
     "lazy_load.html",
   ]
   html_out_files = [
-    app_unbuilt,
-    lazy_load_unbuilt,
+    "vulcanized.html",
+    "lazy_load.vulcanized.html",
   ]
   insert_in_head = "<base href=\"chrome://\$i18n{hostname}\">"
   input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
@@ -35,20 +33,6 @@ unpak("unpak") {
 
   deps = [
     ":flattened_resources",
-  ]
-}
-
-polymer_css_build("build") {
-  input_files = [
-    app_unbuilt,
-    lazy_load_unbuilt,
-  ]
-  output_files = [
-    "vulcanized.html",
-    "lazy_load.vulcanized.html",
-  ]
-  deps = [
-    ":vulcanize_app",
   ]
 }
 
