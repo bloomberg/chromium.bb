@@ -69,7 +69,9 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_FOOTER, NSAccessibilityGroupRole},
       {ui::AX_ROLE_FORM, NSAccessibilityGroupRole},
       {ui::AX_ROLE_GENERIC_CONTAINER, NSAccessibilityGroupRole},
-      {ui::AX_ROLE_GRID, NSAccessibilityGridRole},
+      // Should be NSAccessibilityGridRole but VoiceOver treating it like
+      // a list as of 10.12.6, so following WebKit and using table role:
+      {ui::AX_ROLE_GRID, NSAccessibilityTableRole},  // crbug.com/753925
       {ui::AX_ROLE_GROUP, NSAccessibilityGroupRole},
       {ui::AX_ROLE_HEADING, @"AXHeading"},
       {ui::AX_ROLE_IFRAME, NSAccessibilityGroupRole},

@@ -1,5 +1,5 @@
 AXWebArea
-++AXGrid AXARIAColumnCount='4'
+++AXTable AXARIAColumnCount='4'
 ++++AXRow
 ++++++AXCell AXTitle='Month' AXARIAColumnIndex='1' AXARIARowIndex='1'
 ++++++++AXStaticText AXValue='Month'
