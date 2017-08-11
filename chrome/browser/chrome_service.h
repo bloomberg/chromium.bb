@@ -10,9 +10,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/launchable.h"
-#endif
 #if defined(USE_OZONE)
 #include "services/ui/public/cpp/input_devices/input_device_controller.h"
+#endif
 #endif
 
 class ChromeService : public service_manager::Service {
@@ -32,9 +32,9 @@ class ChromeService : public service_manager::Service {
 
 #if defined(OS_CHROMEOS)
   chromeos::Launchable launchable_;
-#endif
 #if defined(USE_OZONE)
   ui::InputDeviceController input_device_controller_;
+#endif
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeService);
