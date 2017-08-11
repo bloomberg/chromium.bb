@@ -574,15 +574,6 @@ class BaseParser(object):
     logging.debug('Cache dir lookup.')
     return path_util.FindCacheDir()
 
-  @staticmethod
-  def add_option_to_group(group, *args, **kwargs):
-    """Adds the given option defined by args and kwargs to group."""
-    return group.add_option(*args, **kwargs)
-
-  def add_common_argument_to_group(self, group, *args, **kwargs):
-    """Adds the given option defined by args and kwargs to group."""
-    return self.add_option_to_group(group, *args, **kwargs)
-
 
 class ArgumentNamespace(argparse.Namespace):
   """Class to mimic argparse.Namespace with value freezing support."""
@@ -627,6 +618,10 @@ class FilteringParser(optparse.OptionParser, BaseParser):
     kwargs.setdefault('option_class', self.DEFAULT_OPTION_CLASS)
     optparse.OptionParser.__init__(self, usage=usage, **kwargs)
     self.SetupOptions()
+
+  def add_common_argument_to_group(self, group, *args, **kwargs):
+    """Adds the given option defined by args and kwargs to group."""
+    return group.add_option(*args, **kwargs)
 
   def add_argument_group(self, *args, **kwargs):
     """Return an option group rather than an argument group."""
@@ -699,11 +694,6 @@ class ArgumentParser(BaseParser, argparse.ArgumentParser):
     for t, check_f in VALID_TYPES.iteritems():
       self.register('type', t, check_f)
 
-  @staticmethod
-  def add_option_to_group(group, *args, **kwargs):
-    """Adds an argument rather than an option to the given group."""
-    return group.add_argument(*args, **kwargs)
-
   def add_common_argument_to_group(self, group, *args, **kwargs):
     """Adds the given argument to the group.
 
@@ -716,7 +706,7 @@ class ArgumentParser(BaseParser, argparse.ArgumentParser):
     """
     default = kwargs.pop('default', None)
     kwargs['default'] = argparse.SUPPRESS
-    action = self.add_option_to_group(group, *args, **kwargs)
+    action = group.add_argument(*args, **kwargs)
     self._cros_defaults.setdefault(action.dest, default)
     return action
 
