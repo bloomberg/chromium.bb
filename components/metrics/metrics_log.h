@@ -93,9 +93,7 @@ class MetricsLog {
   // the specified |delegating_provider|. The current environment is
   // returned as a SystemProfileProto.
   const SystemProfileProto& RecordEnvironment(
-      DelegatingProvider* delegating_provider,
-      int64_t install_date,
-      int64_t metrics_reporting_enabled_date);
+      DelegatingProvider* delegating_provider);
 
   // Loads a saved system profile and the associated metrics into the log.
   // Returns true on success. Keep calling it with fresh logs until it returns
@@ -147,10 +145,6 @@ class MetricsLog {
   }
 
  private:
-  // Returns true if the environment has already been filled in by a call to
-  // RecordEnvironment() or LoadSavedEnvironmentFromPrefs().
-  bool HasEnvironment() const;
-
   // Write the default state of the enable metrics checkbox.
   void WriteMetricsEnableDefault(EnableMetricsDefault metrics_default,
                                  SystemProfileProto* system_profile);
@@ -178,6 +172,10 @@ class MetricsLog {
 
   // The time when the current log was created.
   const base::TimeTicks creation_time_;
+
+  // True if the environment has already been filled in by a call to
+  // RecordEnvironment() or LoadSavedEnvironmentFromPrefs().
+  bool has_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsLog);
 };

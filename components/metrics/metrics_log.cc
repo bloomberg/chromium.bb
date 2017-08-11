@@ -75,13 +75,6 @@ bool IsTestingID(const std::string& id) {
   return id.size() < 16;
 }
 
-// Round a timestamp measured in seconds since epoch to one with a granularity
-// of an hour. This can be used before uploaded potentially sensitive
-// timestamps.
-int64_t RoundSecondsToHour(int64_t time_in_seconds) {
-  return 3600 * (time_in_seconds / 3600);
-}
-
 }  // namespace
 
 MetricsLog::MetricsLog(const std::string& client_id,
@@ -91,7 +84,8 @@ MetricsLog::MetricsLog(const std::string& client_id,
     : closed_(false),
       log_type_(log_type),
       client_(client),
-      creation_time_(base::TimeTicks::Now()) {
+      creation_time_(base::TimeTicks::Now()),
+      has_environment_(false) {
   if (IsTestingID(client_id))
     uma_proto_.set_client_id(0);
   else
@@ -202,7 +196,7 @@ void MetricsLog::RecordCurrentSessionData(
     base::TimeDelta incremental_uptime,
     base::TimeDelta uptime) {
   DCHECK(!closed_);
-  DCHECK(HasEnvironment());
+  DCHECK(has_environment_);
 
   // Record recent delta for critical stability metrics.  We can't wait for a
   // restart to gather these, as that delay biases our observation away from
@@ -211,10 +205,6 @@ void MetricsLog::RecordCurrentSessionData(
   WriteRealtimeStabilityAttributes(incremental_uptime, uptime);
 
   delegating_provider->ProvideCurrentSessionData(uma_proto());
-}
-
-bool MetricsLog::HasEnvironment() const {
-  return uma_proto()->system_profile().has_uma_enabled_date();
 }
 
 void MetricsLog::WriteMetricsEnableDefault(EnableMetricsDefault metrics_default,
@@ -260,10 +250,9 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
 }
 
 const SystemProfileProto& MetricsLog::RecordEnvironment(
-    DelegatingProvider* delegating_provider,
-    int64_t install_date,
-    int64_t metrics_reporting_enabled_date) {
-  DCHECK(!HasEnvironment());
+    DelegatingProvider* delegating_provider) {
+  DCHECK(!has_environment_);
+  has_environment_ = true;
 
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
 
@@ -273,13 +262,6 @@ const SystemProfileProto& MetricsLog::RecordEnvironment(
   std::string brand_code;
   if (client_->GetBrand(&brand_code))
     system_profile->set_brand_code(brand_code);
-
-  // Reduce granularity of the enabled_date field to nearest hour.
-  system_profile->set_uma_enabled_date(
-      RoundSecondsToHour(metrics_reporting_enabled_date));
-
-  // Reduce granularity of the install_date field to nearest hour.
-  system_profile->set_install_date(RoundSecondsToHour(install_date));
 
   SystemProfileProto::Hardware::CPU* cpu =
       system_profile->mutable_hardware()->mutable_cpu();
@@ -304,7 +286,8 @@ bool MetricsLog::LoadIndependentMetrics(MetricsProvider* metrics_provider) {
 
 bool MetricsLog::LoadSavedEnvironmentFromPrefs(PrefService* local_state,
                                                std::string* app_version) {
-  DCHECK(app_version);
+  DCHECK(!has_environment_);
+  has_environment_ = true;
   app_version->clear();
 
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();

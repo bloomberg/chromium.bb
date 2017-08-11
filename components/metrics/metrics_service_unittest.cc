@@ -188,8 +188,8 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   TestMetricsServiceClient client;
   TestMetricsLog log("client", 1, &client);
   DelegatingProvider delegating_provider;
-  TestMetricsService::RecordCurrentEnvironmentHelper(
-      &log, GetLocalState(), &delegating_provider, 0, 0);
+  TestMetricsService::RecordCurrentEnvironmentHelper(&log, GetLocalState(),
+                                                     &delegating_provider);
 
   // Record stability build time and version from previous session, so that
   // stability metrics (including exited cleanly flag) won't be cleared.
@@ -260,8 +260,8 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   TestMetricsServiceClient client;
   TestMetricsLog log("client", 1, &client);
   DelegatingProvider delegating_provider;
-  TestMetricsService::RecordCurrentEnvironmentHelper(
-      &log, GetLocalState(), &delegating_provider, 0, 0);
+  TestMetricsService::RecordCurrentEnvironmentHelper(&log, GetLocalState(),
+                                                     &delegating_provider);
 
   // Record stability build time and version from previous session, so that
   // stability metrics (including exited cleanly flag) won't be cleared.

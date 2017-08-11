@@ -189,9 +189,7 @@ class MetricsService : public base::HistogramFlattener {
   static std::string RecordCurrentEnvironmentHelper(
       MetricsLog* log,
       PrefService* local_state,
-      DelegatingProvider* delegating_provider,
-      int64_t install_date,
-      int64_t enable_date);
+      DelegatingProvider* delegating_provider);
 
  private:
   // The MetricsService has a lifecycle that is stored as a state.
