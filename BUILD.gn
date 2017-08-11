@@ -714,6 +714,10 @@ group("gn_all") {
       deps += [ "//tools/perf/contrib/vr_benchmarks:vr_perf_tests" ]
     }
   }
+
+  if (is_fuchsia) {
+    deps += [ "//headless" ]
+  }
 }
 
 # TODO(GYP_GONE): This target exists for compatibility with GYP, specifically

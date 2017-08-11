@@ -223,7 +223,7 @@ js_library("js_devtools_bindings_lib") {
   extra_deps = [ ":gen_devtools_client_api" ]
 }
 
-if (headless_fontconfig_utils) {
+if (headless_fontconfig_utils && !is_fuchsia) {
   static_library("headless_fontconfig_utils") {
     sources = [
       "public/util/fontconfig.cc",
@@ -280,8 +280,6 @@ component("headless") {
     "lib/browser/headless_window_tree_host.h",
     "lib/headless_content_client.cc",
     "lib/headless_content_client.h",
-    "lib/headless_crash_reporter_client.cc",
-    "lib/headless_crash_reporter_client.h",
     "public/headless_browser.cc",
     "public/headless_browser.h",
     "public/headless_browser_context.h",
@@ -322,6 +320,13 @@ component("headless") {
     "public/util/user_agent.cc",
     "public/util/user_agent.h",
   ]
+
+  if (!is_fuchsia) {
+    sources += [
+      "lib/headless_crash_reporter_client.cc",
+      "lib/headless_crash_reporter_client.h",
+    ]
+  }
 
   sources += generated_devtools_api
 
@@ -391,10 +396,13 @@ component("headless") {
     ]
 
     deps += [
-      "//components/crash/content/browser",
       "//components/security_state/content",
       "//third_party/WebKit/public:blink_headers",
     ]
+
+    if (!is_fuchsia) {
+      deps += [ "//components/crash/content/browser" ]
+    }
 
     if (enable_basic_printing) {
       deps += [
@@ -431,7 +439,7 @@ component("headless") {
     deps += [ "//ui/ozone" ]
   }
 
-  if (headless_fontconfig_utils) {
+  if (headless_fontconfig_utils && !is_fuchsia) {
     deps += [ ":headless_fontconfig_utils" ]
   }
 
@@ -510,7 +518,6 @@ test("headless_unittests") {
     ":headless_renderer",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
-    "//components/crash/content/browser",
     "//components/security_state/content",
     "//content/public/app:both",
     "//content/public/child:child",
@@ -518,6 +525,10 @@ test("headless_unittests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (!is_fuchsia) {
+    deps += [ "//components/crash/content/browser" ]
+  }
 
   if (enable_basic_printing) {
     sources += [ "lib/browser/headless_printing_unittest.cc" ]
@@ -655,12 +666,15 @@ test("headless_browsertests") {
   deps = [
     ":headless_renderer",
     "//base",
-    "//components/crash/content/browser",
     "//components/security_state/content",
     "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (!is_fuchsia) {
+    deps += [ "//components/crash/content/browser" ]
+  }
 
   # Only include this if we built the js_binary
   if (is_linux) {
@@ -774,13 +788,16 @@ static_library("headless_shell_lib") {
 
   deps = [
     ":headless_renderer",
-    "//components/crash/content/browser",
     "//components/security_state/content",
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/child:child",
     "//content/public/common",
   ]
+
+  if (!is_fuchsia) {
+    deps += [ "//components/crash/content/browser" ]
+  }
 
   if (enable_basic_printing) {
     deps += [
