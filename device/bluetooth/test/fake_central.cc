@@ -28,17 +28,14 @@ void FakeCentral::SimulatePreconnectedPeripheral(
     const std::string& name,
     const std::vector<device::BluetoothUUID>& known_service_uuids,
     SimulatePreconnectedPeripheralCallback callback) {
-  auto device_iter = devices_.find(address);
-  if (device_iter == devices_.end()) {
-    auto fake_peripheral = base::MakeUnique<FakePeripheral>(this, address);
-
-    auto insert_iter = devices_.emplace(address, std::move(fake_peripheral));
-    DCHECK(insert_iter.second);
-    device_iter = insert_iter.first;
+  FakePeripheral* fake_peripheral = GetFakePeripheral(address);
+  if (fake_peripheral == nullptr) {
+    auto fake_peripheral_ptr = base::MakeUnique<FakePeripheral>(this, address);
+    fake_peripheral = fake_peripheral_ptr.get();
+    auto pair = devices_.emplace(address, std::move(fake_peripheral_ptr));
+    DCHECK(pair.second);
   }
 
-  FakePeripheral* fake_peripheral =
-      static_cast<FakePeripheral*>(device_iter->second.get());
   fake_peripheral->SetName(name);
   fake_peripheral->SetSystemConnected(true);
   fake_peripheral->SetServiceUUIDs(device::BluetoothDevice::UUIDSet(
@@ -51,14 +48,12 @@ void FakeCentral::SetNextGATTConnectionResponse(
     const std::string& address,
     uint16_t code,
     SetNextGATTConnectionResponseCallback callback) {
-  auto device_iter = devices_.find(address);
-  if (device_iter == devices_.end()) {
+  FakePeripheral* fake_peripheral = GetFakePeripheral(address);
+  if (fake_peripheral == nullptr) {
     std::move(callback).Run(false);
     return;
   }
 
-  FakePeripheral* fake_peripheral =
-      static_cast<FakePeripheral*>(device_iter->second.get());
   fake_peripheral->SetNextGATTConnectionResponse(code);
   std::move(callback).Run(true);
 }
@@ -67,13 +62,12 @@ void FakeCentral::SetNextGATTDiscoveryResponse(
     const std::string& address,
     uint16_t code,
     SetNextGATTDiscoveryResponseCallback callback) {
-  auto device_iter = devices_.find(address);
-  if (device_iter == devices_.end()) {
+  FakePeripheral* fake_peripheral = GetFakePeripheral(address);
+  if (fake_peripheral == nullptr) {
     std::move(callback).Run(false);
+    return;
   }
 
-  FakePeripheral* fake_peripheral =
-      static_cast<FakePeripheral*>(device_iter->second.get());
   fake_peripheral->SetNextGATTDiscoveryResponse(code);
   std::move(callback).Run(true);
 }
@@ -81,19 +75,24 @@ void FakeCentral::SetNextGATTDiscoveryResponse(
 void FakeCentral::SimulateGATTServicesChanged(
     const std::string& address,
     SimulateGATTServicesChangedCallback callback) {
+  FakePeripheral* fake_peripheral = GetFakePeripheral(address);
+  if (fake_peripheral == nullptr) {
+    std::move(callback).Run(false);
+    return;
+  }
+
   std::move(callback).Run(true);
 }
 
 void FakeCentral::AddFakeService(const std::string& peripheral_address,
                                  const device::BluetoothUUID& service_uuid,
                                  AddFakeServiceCallback callback) {
-  auto device_iter = devices_.find(peripheral_address);
-  if (device_iter == devices_.end()) {
+  FakePeripheral* fake_peripheral = GetFakePeripheral(peripheral_address);
+  if (fake_peripheral == nullptr) {
     std::move(callback).Run(base::nullopt);
+    return;
   }
 
-  FakePeripheral* fake_peripheral =
-      static_cast<FakePeripheral*>(device_iter->second.get());
   std::move(callback).Run(fake_peripheral->AddFakeService(service_uuid));
 }
 
@@ -103,16 +102,11 @@ void FakeCentral::AddFakeCharacteristic(
     const std::string& service_id,
     const std::string& peripheral_address,
     AddFakeCharacteristicCallback callback) {
-  auto device_iter = devices_.find(peripheral_address);
-  if (device_iter == devices_.end()) {
-    std::move(callback).Run(base::nullopt);
-  }
-
   FakeRemoteGattService* fake_remote_gatt_service =
-      static_cast<FakeRemoteGattService*>(
-          device_iter->second.get()->GetGattService(service_id));
+      GetFakeRemoteGattService(peripheral_address, service_id);
   if (fake_remote_gatt_service == nullptr) {
     std::move(callback).Run(base::nullopt);
+    return;
   }
 
   std::move(callback).Run(fake_remote_gatt_service->AddFakeCharacteristic(
@@ -124,15 +118,8 @@ void FakeCentral::RemoveFakeCharacteristic(
     const std::string& service_id,
     const std::string& peripheral_address,
     RemoveFakeCharacteristicCallback callback) {
-  auto device_iter = devices_.find(peripheral_address);
-  if (device_iter == devices_.end()) {
-    std::move(callback).Run(false);
-    return;
-  }
-
   FakeRemoteGattService* fake_remote_gatt_service =
-      static_cast<FakeRemoteGattService*>(
-          device_iter->second.get()->GetGattService(service_id));
+      GetFakeRemoteGattService(peripheral_address, service_id);
   if (fake_remote_gatt_service == nullptr) {
     std::move(callback).Run(false);
     return;
@@ -374,18 +361,34 @@ void FakeCentral::RemovePairingDelegateInternal(
 
 FakeCentral::~FakeCentral() {}
 
-FakeRemoteGattCharacteristic* FakeCentral::GetFakeRemoteGattCharacteristic(
-    const std::string& peripheral_address,
-    const std::string& service_id,
-    const std::string& characteristic_id) const {
+FakePeripheral* FakeCentral::GetFakePeripheral(
+    const std::string& peripheral_address) const {
   auto device_iter = devices_.find(peripheral_address);
   if (device_iter == devices_.end()) {
     return nullptr;
   }
 
+  return static_cast<FakePeripheral*>(device_iter->second.get());
+}
+
+FakeRemoteGattService* FakeCentral::GetFakeRemoteGattService(
+    const std::string& peripheral_address,
+    const std::string& service_id) const {
+  FakePeripheral* fake_peripheral = GetFakePeripheral(peripheral_address);
+  if (fake_peripheral == nullptr) {
+    return nullptr;
+  }
+
+  return static_cast<FakeRemoteGattService*>(
+      fake_peripheral->GetGattService(service_id));
+}
+
+FakeRemoteGattCharacteristic* FakeCentral::GetFakeRemoteGattCharacteristic(
+    const std::string& peripheral_address,
+    const std::string& service_id,
+    const std::string& characteristic_id) const {
   FakeRemoteGattService* fake_remote_gatt_service =
-      static_cast<FakeRemoteGattService*>(
-          device_iter->second.get()->GetGattService(service_id));
+      GetFakeRemoteGattService(peripheral_address, service_id);
   if (fake_remote_gatt_service == nullptr) {
     return nullptr;
   }
