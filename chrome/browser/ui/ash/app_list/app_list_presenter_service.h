@@ -9,8 +9,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/app_list/presenter/app_list_presenter.mojom.h"
 
-class Profile;
-
 namespace app_list {
 class AppListPresenterImpl;
 }
@@ -18,8 +16,11 @@ class AppListPresenterImpl;
 // A service providing the Mojo interface to manipulate the App List.
 class AppListPresenterService : public app_list::mojom::AppListPresenter {
  public:
-  explicit AppListPresenterService(Profile* profile);
+  AppListPresenterService();
   ~AppListPresenterService() override;
+
+  // Initialize service and mojo bindings.
+  void Init();
 
   // app_list::mojom::AppListPresenter:
   void Show(int64_t display_id) override;
@@ -33,7 +34,6 @@ class AppListPresenterService : public app_list::mojom::AppListPresenter {
  private:
   app_list::AppListPresenterImpl* GetPresenter();
 
-  Profile* const profile_;  // Owned by ProfileManager.
   mojo::Binding<app_list::mojom::AppListPresenter> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterService);
