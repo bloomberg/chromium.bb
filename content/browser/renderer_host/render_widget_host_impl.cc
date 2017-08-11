@@ -2614,7 +2614,7 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
     saved_frame_.frame = std::move(frame);
     saved_frame_.local_surface_id = local_surface_id;
     saved_frame_.max_shared_bitmap_sequence_number = max_sequence_number;
-    // TODO(gklassen): save hit-test data and restore on use.
+    saved_frame_.hit_test_region_list = std::move(hit_test_region_list);
     TRACE_EVENT_ASYNC_BEGIN2("renderer_host", "PauseCompositorFrameSink", this,
                              "LastRegisteredSequenceNumber",
                              last_registered_sequence_number,
@@ -2729,7 +2729,8 @@ void RenderWidgetHostImpl::DidAllocateSharedBitmap(uint32_t sequence_number) {
     TRACE_EVENT_CATEGORY_GROUP_ENABLED(
         TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"), &tracing_enabled);
     SubmitCompositorFrame(
-        saved_frame_.local_surface_id, std::move(saved_frame_.frame), nullptr,
+        saved_frame_.local_surface_id, std::move(saved_frame_.frame),
+        std::move(saved_frame_.hit_test_region_list),
         tracing_enabled ? base::TimeTicks::Now().since_origin().InMicroseconds()
                         : 0);
     saved_frame_.local_surface_id = viz::LocalSurfaceId();
