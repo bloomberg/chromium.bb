@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.payments;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -183,11 +181,8 @@ public class AndroidPaymentApp
             return;
         }
 
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (!mIsReadyToPayQueried) respondToGetInstrumentsQuery(null);
-            }
+        mHandler.postDelayed(() -> {
+            if (!mIsReadyToPayQueried) respondToGetInstrumentsQuery(null);
         }, SERVICE_CONNECTION_TIMEOUT_MS);
     }
 
@@ -198,19 +193,16 @@ public class AndroidPaymentApp
         }
 
         if (mInstrumentsCallback == null) return;
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                ThreadUtils.assertOnUiThread();
-                if (mInstrumentsCallback == null) return;
-                List<PaymentInstrument> instruments = null;
-                if (instrument != null) {
-                    instruments = new ArrayList<>();
-                    instruments.add(instrument);
-                }
-                mInstrumentsCallback.onInstrumentsReady(AndroidPaymentApp.this, instruments);
-                mInstrumentsCallback = null;
+        mHandler.post(() -> {
+            ThreadUtils.assertOnUiThread();
+            if (mInstrumentsCallback == null) return;
+            List<PaymentInstrument> instruments = null;
+            if (instrument != null) {
+                instruments = new ArrayList<>();
+                instruments.add(instrument);
             }
+            mInstrumentsCallback.onInstrumentsReady(AndroidPaymentApp.this, instruments);
+            mInstrumentsCallback = null;
         });
     }
 
@@ -235,12 +227,7 @@ public class AndroidPaymentApp
             respondToGetInstrumentsQuery(null);
             return;
         }
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                respondToGetInstrumentsQuery(null);
-            }
-        }, READY_TO_PAY_TIMEOUT_MS);
+        mHandler.postDelayed(() -> respondToGetInstrumentsQuery(null), READY_TO_PAY_TIMEOUT_MS);
     }
 
     @Override
@@ -298,27 +285,13 @@ public class AndroidPaymentApp
                 .setTitle(R.string.external_app_leave_incognito_warning_title)
                 .setMessage(R.string.external_payment_app_leave_incognito_warning)
                 .setPositiveButton(R.string.ok,
-                        new OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                launchPaymentApp(id, merchantName, schemelessOrigin,
-                                        schemelessIframeOrigin, certificateChain, methodDataMap,
-                                        total, displayItems, modifiers);
-                            }
-                        })
+                        (OnClickListener) (dialog, which) -> launchPaymentApp(id, merchantName,
+                                schemelessOrigin,
+                                schemelessIframeOrigin, certificateChain, methodDataMap,
+                                total, displayItems, modifiers))
                 .setNegativeButton(R.string.cancel,
-                        new OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                notifyErrorInvokingPaymentApp();
-                            }
-                        })
-                .setOnCancelListener(new OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        notifyErrorInvokingPaymentApp();
-                    }
-                })
+                        (OnClickListener) (dialog, which) -> notifyErrorInvokingPaymentApp())
+                .setOnCancelListener(dialog -> notifyErrorInvokingPaymentApp())
                 .show();
     }
 
@@ -443,12 +416,7 @@ public class AndroidPaymentApp
     }
 
     private void notifyErrorInvokingPaymentApp() {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                mInstrumentDetailsCallback.onInstrumentDetailsError();
-            }
-        });
+        mHandler.post(() -> mInstrumentDetailsCallback.onInstrumentDetailsError());
     }
 
     private static String serializeDetails(

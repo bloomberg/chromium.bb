@@ -78,13 +78,10 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     public void getInstruments(Map<String, PaymentMethodData> unusedMethodDataMap,
             String unusedOrigin, String unusedIFrameOrigin, byte[][] unusedCertificateChain,
             final InstrumentsCallback callback) {
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                List<PaymentInstrument> instruments = new ArrayList();
-                instruments.add(ServiceWorkerPaymentApp.this);
-                callback.onInstrumentsReady(ServiceWorkerPaymentApp.this, instruments);
-            }
+        new Handler().post(() -> {
+            List<PaymentInstrument> instruments = new ArrayList();
+            instruments.add(ServiceWorkerPaymentApp.this);
+            callback.onInstrumentsReady(ServiceWorkerPaymentApp.this, instruments);
         });
     }
 

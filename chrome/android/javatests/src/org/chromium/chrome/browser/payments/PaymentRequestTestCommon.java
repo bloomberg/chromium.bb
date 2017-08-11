@@ -23,7 +23,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt.CardUnmaskObserverForTest;
-import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppFactoryAddition;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
 import org.chromium.chrome.browser.payments.ui.EditorTextField;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
@@ -141,15 +140,12 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
 
     private void openPage() throws InterruptedException, ExecutionException, TimeoutException {
         mCallback.onMainActivityStarted();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mViewCoreRef.set(mCallback.getActivity().getCurrentContentViewCore());
-                mWebContentsRef.set(mViewCoreRef.get().getWebContents());
-                PaymentRequestUI.setObserverForTest(PaymentRequestTestCommon.this);
-                PaymentRequestImpl.setObserverForTest(PaymentRequestTestCommon.this);
-                CardUnmaskPrompt.setObserverForTest(PaymentRequestTestCommon.this);
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mViewCoreRef.set(mCallback.getActivity().getCurrentContentViewCore());
+            mWebContentsRef.set(mViewCoreRef.get().getWebContents());
+            PaymentRequestUI.setObserverForTest(PaymentRequestTestCommon.this);
+            PaymentRequestImpl.setObserverForTest(PaymentRequestTestCommon.this);
+            CardUnmaskPrompt.setObserverForTest(PaymentRequestTestCommon.this);
         });
         mCallback.assertWaitForPageScaleFactorMatch(1);
     }
@@ -200,86 +196,62 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
     protected void clickAndWait(final int resourceId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mUI.getDialogForTest().findViewById(resourceId).performClick();
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> mUI.getDialogForTest().findViewById(resourceId).performClick());
         helper.waitForCallback(callCount);
     }
 
     protected void clickInShippingAddressAndWait(final int resourceId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mUI.getShippingAddressSectionForTest().findViewById(resourceId).performClick();
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> mUI.getShippingAddressSectionForTest().findViewById(
+                        resourceId).performClick());
         helper.waitForCallback(callCount);
     }
 
     protected void clickInPaymentMethodAndWait(final int resourceId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mUI.getPaymentMethodSectionForTest().findViewById(resourceId).performClick();
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> mUI.getPaymentMethodSectionForTest().findViewById(
+                        resourceId).performClick());
         helper.waitForCallback(callCount);
     }
 
     protected void clickInContactInfoAndWait(final int resourceId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mUI.getContactDetailsSectionForTest().findViewById(resourceId).performClick();
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> mUI.getContactDetailsSectionForTest().findViewById(
+                        resourceId).performClick());
         helper.waitForCallback(callCount);
     }
 
     protected void clickInCardEditorAndWait(final int resourceId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mUI.getCardEditorDialog().findViewById(resourceId).performClick();
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> mUI.getCardEditorDialog().findViewById(resourceId).performClick());
         helper.waitForCallback(callCount);
     }
 
     protected void clickInEditorAndWait(final int resourceId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mUI.getEditorDialog().findViewById(resourceId).performClick();
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> mUI.getEditorDialog().findViewById(resourceId).performClick());
         helper.waitForCallback(callCount);
     }
 
     protected void clickAndroidBackButtonInEditorAndWait(CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mUI.getEditorDialog().dispatchKeyEvent(
-                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                mUI.getEditorDialog().dispatchKeyEvent(
-                        new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
-            }
+        ThreadUtils.runOnUiThread(() -> {
+            mUI.getEditorDialog().dispatchKeyEvent(
+                    new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+            mUI.getEditorDialog().dispatchKeyEvent(
+                    new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
         });
         helper.waitForCallback(callCount);
     }
@@ -287,152 +259,98 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
     protected void clickCardUnmaskButtonAndWait(final int dialogButtonId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mCardUnmaskPrompt.getDialogForTest().getButton(dialogButtonId).performClick();
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> mCardUnmaskPrompt.getDialogForTest().getButton(
+                        dialogButtonId).performClick());
         helper.waitForCallback(callCount);
     }
 
     protected int getShippingAddressSectionButtonState() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return mUI.getShippingAddressSectionForTest().getEditButtonState();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> mUI.getShippingAddressSectionForTest().getEditButtonState());
     }
 
     protected int getContactDetailsButtonState() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return mUI.getContactDetailsSectionForTest().getEditButtonState();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> mUI.getContactDetailsSectionForTest().getEditButtonState());
     }
 
     protected String getPaymentInstrumentLabel(final int index) throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
-            @Override
-            public String call() {
-                return ((OptionSection) mUI.getPaymentMethodSectionForTest())
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> ((OptionSection) mUI.getPaymentMethodSectionForTest())
                         .getOptionLabelsForTest(index)
                         .getText()
-                        .toString();
-            }
-        });
+                        .toString());
     }
 
     protected String getSelectedPaymentInstrumentLabel() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
-            @Override
-            public String call() {
-                OptionSection section = ((OptionSection) mUI.getPaymentMethodSectionForTest());
-                int size = section.getNumberOfOptionLabelsForTest();
-                for (int i = 0; i < size; i++) {
-                    if (section.getOptionRowAtIndex(i).isChecked()) {
-                        return section.getOptionRowAtIndex(i).getLabelText().toString();
-                    }
+        return ThreadUtils.runOnUiThreadBlocking(() -> {
+            OptionSection section = ((OptionSection) mUI.getPaymentMethodSectionForTest());
+            int size = section.getNumberOfOptionLabelsForTest();
+            for (int i = 0; i < size; i++) {
+                if (section.getOptionRowAtIndex(i).isChecked()) {
+                    return section.getOptionRowAtIndex(i).getLabelText().toString();
                 }
-                return null;
             }
+            return null;
         });
     }
 
     protected String getOrderSummaryTotal() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
-            @Override
-            public String call() {
-                return mUI.getOrderSummaryTotalTextViewForTest().getText().toString();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> mUI.getOrderSummaryTotalTextViewForTest().getText().toString());
     }
 
     protected String getContactDetailsSuggestionLabel(final int suggestionIndex)
             throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
-            @Override
-            public String call() {
-                return ((OptionSection) mUI.getContactDetailsSectionForTest())
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> ((OptionSection) mUI.getContactDetailsSectionForTest())
                         .getOptionLabelsForTest(suggestionIndex)
                         .getText()
-                        .toString();
-            }
-        });
+                        .toString());
     }
 
     protected int getNumberOfPaymentInstruments() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return ((OptionSection) mUI.getPaymentMethodSectionForTest())
-                        .getNumberOfOptionLabelsForTest();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> ((OptionSection) mUI.getPaymentMethodSectionForTest())
+                        .getNumberOfOptionLabelsForTest());
     }
 
     protected int getNumberOfContactDetailSuggestions() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return ((OptionSection) mUI.getContactDetailsSectionForTest())
-                        .getNumberOfOptionLabelsForTest();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> ((OptionSection) mUI.getContactDetailsSectionForTest())
+                        .getNumberOfOptionLabelsForTest());
     }
 
     protected String getShippingAddressSuggestionLabel(final int suggestionIndex)
             throws ExecutionException {
         Assert.assertTrue(suggestionIndex < getNumberOfShippingAddressSuggestions());
 
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
-            @Override
-            public String call() {
-                return mUI.getShippingAddressSectionForTest()
-                        .getOptionLabelsForTest(suggestionIndex)
-                        .getText()
-                        .toString();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(() -> mUI.getShippingAddressSectionForTest()
+                .getOptionLabelsForTest(suggestionIndex)
+                .getText()
+                .toString());
     }
 
     protected String getShippingAddressSummary() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
-            @Override
-            public String call() {
-                return mUI.getShippingAddressSectionForTest()
-                        .getLeftSummaryLabelForTest()
-                        .getText()
-                        .toString();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(() -> mUI.getShippingAddressSectionForTest()
+                .getLeftSummaryLabelForTest()
+                .getText()
+                .toString());
     }
 
     protected String getShippingOptionSummary() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
-            @Override
-            public String call() {
-                return mUI.getShippingOptionSectionForTest()
-                        .getLeftSummaryLabelForTest()
-                        .getText()
-                        .toString();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(() -> mUI.getShippingOptionSectionForTest()
+                .getLeftSummaryLabelForTest()
+                .getText()
+                .toString());
     }
 
     protected String getShippingOptionCostSummaryOnBottomSheet() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
-            @Override
-            public String call() {
-                return mUI.getShippingOptionSectionForTest()
-                        .getRightSummaryLabelForTest()
-                        .getText()
-                        .toString();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(() -> mUI.getShippingOptionSectionForTest()
+                .getRightSummaryLabelForTest()
+                .getText()
+                .toString());
     }
 
     protected View getCardEditorFocusedView() {
@@ -445,14 +363,10 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         Assert.assertTrue(suggestionIndex < getNumberOfShippingAddressSuggestions());
 
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ((OptionSection) mUI.getShippingAddressSectionForTest())
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> ((OptionSection) mUI.getShippingAddressSectionForTest())
                         .getOptionLabelsForTest(suggestionIndex)
-                        .performClick();
-            }
-        });
+                        .performClick());
         helper.waitForCallback(callCount);
     }
 
@@ -462,14 +376,10 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         Assert.assertTrue(suggestionIndex < getNumberOfPaymentInstruments());
 
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ((OptionSection) mUI.getPaymentMethodSectionForTest())
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> ((OptionSection) mUI.getPaymentMethodSectionForTest())
                         .getOptionLabelsForTest(suggestionIndex)
-                        .performClick();
-            }
-        });
+                        .performClick());
         helper.waitForCallback(callCount);
     }
 
@@ -479,14 +389,10 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         Assert.assertTrue(suggestionIndex < getNumberOfContactDetailSuggestions());
 
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ((OptionSection) mUI.getContactDetailsSectionForTest())
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> ((OptionSection) mUI.getContactDetailsSectionForTest())
                         .getOptionLabelsForTest(suggestionIndex)
-                        .performClick();
-            }
-        });
+                        .performClick());
         helper.waitForCallback(callCount);
     }
 
@@ -496,78 +402,51 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         Assert.assertTrue(suggestionIndex < getNumberOfPaymentInstruments());
 
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ((OptionSection) mUI.getPaymentMethodSectionForTest())
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> ((OptionSection) mUI.getPaymentMethodSectionForTest())
                         .getOptionRowAtIndex(suggestionIndex)
                         .getEditIconForTest()
-                        .performClick();
-            }
-        });
+                        .performClick());
         helper.waitForCallback(callCount);
     }
 
     protected int getNumberOfShippingAddressSuggestions() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return ((OptionSection) mUI.getShippingAddressSectionForTest())
-                        .getNumberOfOptionLabelsForTest();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> ((OptionSection) mUI.getShippingAddressSectionForTest())
+                        .getNumberOfOptionLabelsForTest());
     }
 
     protected OptionRow getShippingAddressOptionRowAtIndex(final int index)
             throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<OptionRow>() {
-            @Override
-            public OptionRow call() {
-                return ((OptionSection) mUI.getShippingAddressSectionForTest())
-                        .getOptionRowAtIndex(index);
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> ((OptionSection) mUI.getShippingAddressSectionForTest())
+                        .getOptionRowAtIndex(index));
     }
 
     protected String getSpinnerSelectionTextInCardEditor(final int dropdownIndex)
             throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
-            @Override
-            public String call() {
-                return mUI.getCardEditorDialog()
-                        .getDropdownFieldsForTest()
-                        .get(dropdownIndex)
-                        .getSelectedItem()
-                        .toString();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(() -> mUI.getCardEditorDialog()
+                .getDropdownFieldsForTest()
+                .get(dropdownIndex)
+                .getSelectedItem()
+                .toString());
     }
 
     protected String getSpinnerTextAtPositionInCardEditor(
             final int dropdownIndex, final int itemPosition) throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
-            @Override
-            public String call() {
-                return mUI.getCardEditorDialog()
-                        .getDropdownFieldsForTest()
-                        .get(dropdownIndex)
-                        .getItemAtPosition(itemPosition)
-                        .toString();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(() -> mUI.getCardEditorDialog()
+                .getDropdownFieldsForTest()
+                .get(dropdownIndex)
+                .getItemAtPosition(itemPosition)
+                .toString());
     }
 
     protected int getSpinnerItemCountInCardEditor(final int dropdownIndex)
             throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return mUI.getCardEditorDialog()
-                        .getDropdownFieldsForTest()
-                        .get(dropdownIndex)
-                        .getCount();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(() -> mUI.getCardEditorDialog()
+                .getDropdownFieldsForTest()
+                .get(dropdownIndex)
+                .getCount());
     }
 
     protected String getUnmaskPromptErrorMessage() {
@@ -577,13 +456,10 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
     protected void setSpinnerSelectionsInCardEditorAndWait(final int[] selections,
             CallbackHelper helper) throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                List<Spinner> fields = mUI.getCardEditorDialog().getDropdownFieldsForTest();
-                for (int i = 0; i < selections.length && i < fields.size(); i++) {
-                    fields.get(i).setSelection(selections[i]);
-                }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            List<Spinner> fields = mUI.getCardEditorDialog().getDropdownFieldsForTest();
+            for (int i = 0; i < selections.length && i < fields.size(); i++) {
+                fields.get(i).setSelection(selections[i]);
             }
         });
         helper.waitForCallback(callCount);
@@ -592,30 +468,23 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
     protected void setSpinnerSelectionInEditorAndWait(final int selection, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ((Spinner) mUI.getEditorDialog().findViewById(R.id.spinner))
-                        .setSelection(selection);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> ((Spinner) mUI.getEditorDialog().findViewById(
+                R.id.spinner))
+                .setSelection(selection));
         helper.waitForCallback(callCount);
     }
 
     protected void setTextInCardEditorAndWait(final String[] values, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ViewGroup contents =
-                        (ViewGroup) mUI.getCardEditorDialog().findViewById(R.id.contents);
-                Assert.assertNotNull(contents);
-                for (int i = 0, j = 0; i < contents.getChildCount() && j < values.length; i++) {
-                    View view = contents.getChildAt(i);
-                    if (view instanceof EditorTextField) {
-                        ((EditorTextField) view).getEditText().setText(values[j++]);
-                    }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            ViewGroup contents =
+                    (ViewGroup) mUI.getCardEditorDialog().findViewById(R.id.contents);
+            Assert.assertNotNull(contents);
+            for (int i = 0, j = 0; i < contents.getChildCount() && j < values.length; i++) {
+                View view = contents.getChildAt(i);
+                if (view instanceof EditorTextField) {
+                    ((EditorTextField) view).getEditText().setText(values[j++]);
                 }
             }
         });
@@ -625,13 +494,10 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
     protected void setTextInEditorAndWait(final String[] values, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                List<EditText> fields = mUI.getEditorDialog().getEditableTextFieldsForTest();
-                for (int i = 0; i < values.length; i++) {
-                    fields.get(i).setText(values[i]);
-                }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            List<EditText> fields = mUI.getEditorDialog().getEditableTextFieldsForTest();
+            for (int i = 0; i < values.length; i++) {
+                fields.get(i).setText(values[i]);
             }
         });
         helper.waitForCallback(callCount);
@@ -640,27 +506,20 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
     protected void selectCheckboxAndWait(final int resourceId, final boolean isChecked,
             CallbackHelper helper) throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ((CheckBox) mUI.getCardEditorDialog().findViewById(resourceId))
-                        .setChecked(isChecked);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> ((CheckBox) mUI.getCardEditorDialog().findViewById(
+                resourceId))
+                .setChecked(isChecked));
         helper.waitForCallback(callCount);
     }
 
     protected void setTextInCardUnmaskDialogAndWait(final int resourceId, final String input,
             CallbackHelper helper) throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                EditText editText =
-                        ((EditText) mCardUnmaskPrompt.getDialogForTest().findViewById(resourceId));
-                editText.setText(input);
-                editText.getOnFocusChangeListener().onFocusChange(null, false);
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            EditText editText =
+                    ((EditText) mCardUnmaskPrompt.getDialogForTest().findViewById(resourceId));
+            editText.setText(input);
+            editText.getOnFocusChangeListener().onFocusChange(null, false);
         });
         helper.waitForCallback(callCount);
     }
@@ -670,16 +529,13 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
             throws InterruptedException, TimeoutException {
         assert resourceIds.length == values.length;
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < resourceIds.length; ++i) {
-                    EditText editText =
-                            ((EditText) mCardUnmaskPrompt.getDialogForTest().findViewById(
-                                    resourceIds[i]));
-                    editText.setText(values[i]);
-                    editText.getOnFocusChangeListener().onFocusChange(null, false);
-                }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            for (int i = 0; i < resourceIds.length; ++i) {
+                EditText editText =
+                        ((EditText) mCardUnmaskPrompt.getDialogForTest().findViewById(
+                                resourceIds[i]));
+                editText.setText(values[i]);
+                editText.getOnFocusChangeListener().onFocusChange(null, false);
             }
         });
         helper.waitForCallback(callCount);
@@ -688,14 +544,11 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
     /* package */ void hitSoftwareKeyboardSubmitButtonAndWait(final int resourceId,
             CallbackHelper helper) throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                EditText editText =
-                        (EditText) mCardUnmaskPrompt.getDialogForTest().findViewById(resourceId);
-                editText.requestFocus();
-                editText.onEditorAction(EditorInfo.IME_ACTION_DONE);
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            EditText editText =
+                    (EditText) mCardUnmaskPrompt.getDialogForTest().findViewById(resourceId);
+            editText.requestFocus();
+            editText.onEditorAction(EditorInfo.IME_ACTION_DONE);
         });
         helper.waitForCallback(callCount);
     }
@@ -794,13 +647,9 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
     }
 
     /* package */ View getCardUnmaskView() throws Throwable {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
-            @Override
-            public View call() {
-                return mCardUnmaskPrompt.getDialogForTest().findViewById(
-                        R.id.autofill_card_unmask_prompt);
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> mCardUnmaskPrompt.getDialogForTest().findViewById(
+                        R.id.autofill_card_unmask_prompt));
     }
 
     @Override
@@ -937,25 +786,20 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
 
     void installPaymentApp(final String appMethodName, final int instrumentPresence,
             final int responseSpeed, final int creationSpeed) {
-        PaymentAppFactory.getInstance().addAdditionalFactory(new PaymentAppFactoryAddition() {
-            @Override
-            public void create(WebContents webContents, Set<String> methodNames,
-                    final PaymentAppFactory.PaymentAppCreatedCallback callback) {
-                final TestPay app = new TestPay(appMethodName, instrumentPresence, responseSpeed);
-                if (creationSpeed == IMMEDIATE_CREATION) {
-                    callback.onPaymentAppCreated(app);
-                    callback.onAllPaymentAppsCreated();
-                } else {
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
+        PaymentAppFactory.getInstance().addAdditionalFactory(
+                (webContents, methodNames, callback) -> {
+                    final TestPay app = new TestPay(appMethodName, instrumentPresence,
+                            responseSpeed);
+                    if (creationSpeed == IMMEDIATE_CREATION) {
+                        callback.onPaymentAppCreated(app);
+                        callback.onAllPaymentAppsCreated();
+                    } else {
+                        new Handler().postDelayed(() -> {
                             callback.onPaymentAppCreated(app);
                             callback.onAllPaymentAppsCreated();
-                        }
-                    }, 100);
-                }
-            }
-        });
+                        }, 100);
+                    }
+                });
     }
 
     /** A payment app implementation for test. */
@@ -985,12 +829,9 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
                 instruments.add(new TestPayInstrument(
                         getAppIdentifier(), mDefaultMethodName, mDefaultMethodName));
             }
-            Runnable instrumentsReady = new Runnable() {
-                @Override
-                public void run() {
-                    ThreadUtils.assertOnUiThread();
-                    mCallback.onInstrumentsReady(TestPay.this, instruments);
-                }
+            Runnable instrumentsReady = () -> {
+                ThreadUtils.assertOnUiThread();
+                mCallback.onInstrumentsReady(TestPay.this, instruments);
             };
             if (mResponseSpeed == IMMEDIATE_RESPONSE) {
                 instrumentsReady.run();
