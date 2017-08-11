@@ -84,12 +84,12 @@ struct CacheControlHeader {
 };
 
 struct ServerTimingHeader {
-  String metric;
-  double value;
+  String name;
+  double duration;
   String description;
 
-  ServerTimingHeader(String metric, double value, String description)
-      : metric(metric), value(value), description(description) {}
+  ServerTimingHeader(String name, double duration, String description)
+      : name(name), duration(duration), description(description) {}
 };
 
 using ServerTimingHeaderVector = Vector<std::unique_ptr<ServerTimingHeader>>;
@@ -158,11 +158,11 @@ PLATFORM_EXPORT bool ParseMultipartHeadersFromBody(const char* bytes,
                                                    ResourceResponse*,
                                                    size_t* end);
 
-// Parses a header value containing JSON data, according to
+// Parses a header duration containing JSON data, according to
 // https://tools.ietf.org/html/draft-ietf-httpbis-jfv-01
 // Returns an empty unique_ptr if the header cannot be parsed as JSON. JSON
 // strings which represent object nested deeper than |maxParseDepth| will also
-// cause an empty return value.
+// cause an empty return duration.
 PLATFORM_EXPORT std::unique_ptr<JSONArray> ParseJSONHeader(const String& header,
                                                            int max_parse_depth);
 

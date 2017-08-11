@@ -11,23 +11,23 @@
 namespace blink {
 
 PerformanceServerTiming::PerformanceServerTiming(
-    const String& metric,
-    double value,
+    const String& name,
+    double duration,
     const String& description,
     ShouldAllowTimingDetails shouldAllowTimingDetails)
-    : metric_(metric),
-      value_(value),
+    : name_(name),
+      duration_(duration),
       description_(description),
       shouldAllowTimingDetails_(shouldAllowTimingDetails) {}
 
 PerformanceServerTiming::~PerformanceServerTiming() {}
 
-String PerformanceServerTiming::metric() const {
-  return metric_;
+String PerformanceServerTiming::name() const {
+  return name_;
 }
 
-double PerformanceServerTiming::value() const {
-  return shouldAllowTimingDetails_ == ShouldAllowTimingDetails::Yes ? value_
+double PerformanceServerTiming::duration() const {
+  return shouldAllowTimingDetails_ == ShouldAllowTimingDetails::Yes ? duration_
                                                                     : 0.0;
 }
 
@@ -40,8 +40,8 @@ String PerformanceServerTiming::description() const {
 ScriptValue PerformanceServerTiming::toJSONForBinding(
     ScriptState* script_state) const {
   V8ObjectBuilder builder(script_state);
-  builder.AddString("metric", metric());
-  builder.AddNumber("value", value());
+  builder.AddString("name", name());
+  builder.AddNumber("duration", duration());
   builder.AddString("description", description());
   return builder.GetScriptValue();
 }
@@ -56,7 +56,7 @@ PerformanceServerTimingVector PerformanceServerTiming::ParseServerTiming(
         response.HttpHeaderField(HTTPNames::Server_Timing));
     for (const auto& header : *headers) {
       entries.push_back(new PerformanceServerTiming(
-          header->metric, header->value, header->description,
+          header->name, header->duration, header->description,
           shouldAllowTimingDetails));
     }
   }
