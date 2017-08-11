@@ -137,7 +137,7 @@ class URLResponseBodyConsumerTest : public ::testing::Test,
   int SetUpRequestPeer(std::unique_ptr<ResourceRequest> request,
                        TestRequestPeer::Context* context) {
     return dispatcher_->StartAsync(
-        std::move(request), 0, nullptr, url::Origin(),
+        std::move(request), 0, nullptr, url::Origin(), false,
         base::MakeUnique<TestRequestPeer>(context, message_loop_.task_runner()),
         blink::WebURLRequest::LoadingIPCType::kChromeIPC, nullptr,
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),

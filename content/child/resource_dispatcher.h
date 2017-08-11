@@ -110,6 +110,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       int routing_id,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
       const url::Origin& frame_origin,
+      bool is_sync,
       std::unique_ptr<RequestPeer> peer,
       blink::WebURLRequest::LoadingIPCType ipc_type,
       mojom::URLLoaderFactory* url_loader_factory,

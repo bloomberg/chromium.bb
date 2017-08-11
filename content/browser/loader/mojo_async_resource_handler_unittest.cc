@@ -309,12 +309,7 @@ class TestURLLoaderFactory final : public mojom::URLLoaderFactory {
 
   mojom::URLLoaderClientPtr PassClientPtr() { return std::move(client_ptr_); }
 
-  void SyncLoad(int32_t routing_id,
-                int32_t request_id,
-                const ResourceRequest& url_request,
-                SyncLoadCallback callback) override {
-    NOTREACHED();
-  }
+  void Clone(mojom::URLLoaderFactoryRequest request) override { NOTREACHED(); }
 
  private:
   mojom::URLLoaderRequest loader_request_;

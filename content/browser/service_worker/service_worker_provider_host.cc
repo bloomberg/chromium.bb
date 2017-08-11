@@ -241,10 +241,9 @@ class ScriptURLLoaderFactory : public mojom::URLLoaderFactory {
         std::move(request));
   }
 
-  void SyncLoad(int32_t routing_id,
-                int32_t request_id,
-                const ResourceRequest& request,
-                SyncLoadCallback callback) override {
+  void Clone(mojom::URLLoaderFactoryRequest request) override {
+    // This method is required to support synchronous requests which are not
+    // performed during installation.
     NOTREACHED();
   }
 

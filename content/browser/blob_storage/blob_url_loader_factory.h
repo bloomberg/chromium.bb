@@ -59,10 +59,7 @@ class BlobURLLoaderFactory
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void SyncLoad(int32_t routing_id,
-                int32_t request_id,
-                const ResourceRequest& request,
-                SyncLoadCallback callback) override;
+  void Clone(mojom::URLLoaderFactoryRequest request) override;
 
  private:
   friend class base::DeleteHelper<BlobURLLoaderFactory>;

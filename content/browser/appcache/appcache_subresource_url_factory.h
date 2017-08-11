@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/common/url_loader_factory.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
@@ -32,9 +32,7 @@ class CONTENT_EXPORT AppCacheSubresourceURLFactory
   // 2. The |host| parameter contains the appcache host instance. This is used
   //    to create the AppCacheRequestHandler instances for handling subresource
   //    requests.
-  // Returns the AppCacheSubresourceURLFactory instance. The URLLoaderFactoryPtr
-  // is returned in the |loader_factory| parameter.
-  static AppCacheSubresourceURLFactory* CreateURLLoaderFactory(
+  static void CreateURLLoaderFactory(
       URLLoaderFactoryGetter* factory_getter,
       base::WeakPtr<AppCacheHost> host,
       mojom::URLLoaderFactoryPtr* loader_factory);
@@ -48,16 +46,12 @@ class CONTENT_EXPORT AppCacheSubresourceURLFactory
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void SyncLoad(int32_t routing_id,
-                int32_t request_id,
-                const ResourceRequest& request,
-                SyncLoadCallback callback) override;
+  void Clone(mojom::URLLoaderFactoryRequest request) override;
 
  private:
   friend class AppCacheNetworkServiceBrowserTest;
 
-  AppCacheSubresourceURLFactory(mojom::URLLoaderFactoryRequest request,
-                                URLLoaderFactoryGetter* factory_getter,
+  AppCacheSubresourceURLFactory(URLLoaderFactoryGetter* factory_getter,
                                 base::WeakPtr<AppCacheHost> host);
 
   void OnConnectionError();
@@ -66,8 +60,8 @@ class CONTENT_EXPORT AppCacheSubresourceURLFactory
   // actual error.
   void NotifyError(mojom::URLLoaderClientPtr client, int error_code);
 
-  // Mojo binding.
-  mojo::Binding<mojom::URLLoaderFactory> binding_;
+  // Mojo bindings.
+  mojo::BindingSet<mojom::URLLoaderFactory> bindings_;
 
   // Used to retrieve the network service factory to pass unhandled requests to
   // the network service.

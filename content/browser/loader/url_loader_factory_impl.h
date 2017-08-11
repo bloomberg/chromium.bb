@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/public/common/url_loader_factory.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace content {
@@ -31,25 +32,17 @@ class URLLoaderFactoryImpl final : public mojom::URLLoaderFactory {
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void SyncLoad(int32_t routing_id,
-                int32_t request_id,
-                const ResourceRequest& request,
-                SyncLoadCallback callback) override;
+  void Clone(mojom::URLLoaderFactoryRequest request) override;
 
   static void CreateLoaderAndStart(
       ResourceRequesterInfo* requester_info,
       mojom::URLLoaderRequest request,
       int32_t routing_id,
       int32_t request_id,
+      uint32_t options,
       const ResourceRequest& url_request,
       mojom::URLLoaderClientPtr client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
-
-  static void SyncLoad(ResourceRequesterInfo* requester_info,
-                       int32_t routing_id,
-                       int32_t request_id,
-                       const ResourceRequest& request,
-                       SyncLoadCallback callback);
 
   // Creates a URLLoaderFactoryImpl instance. The instance is held by the
   // StrongBinding in it, so this function doesn't return the instance.
@@ -62,6 +55,10 @@ class URLLoaderFactoryImpl final : public mojom::URLLoaderFactory {
   explicit URLLoaderFactoryImpl(
       scoped_refptr<ResourceRequesterInfo> requester_info,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner);
+
+  void OnConnectionError();
+
+  mojo::BindingSet<mojom::URLLoaderFactory> bindings_;
 
   scoped_refptr<ResourceRequesterInfo> requester_info_;
 

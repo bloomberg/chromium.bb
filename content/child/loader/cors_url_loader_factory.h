@@ -31,11 +31,7 @@ class CONTENT_EXPORT CORSURLLoaderFactory : public mojom::URLLoaderFactory {
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-
-  void SyncLoad(int32_t routing_id,
-                int32_t request_id,
-                const ResourceRequest& resource_request,
-                SyncLoadCallback callback) override;
+  void Clone(mojom::URLLoaderFactoryRequest request) override;
 
  private:
   PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory>

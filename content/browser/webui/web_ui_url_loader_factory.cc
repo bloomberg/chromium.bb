@@ -266,11 +266,8 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
             storage_partition_->browser_context()->GetResourceContext()));
   }
 
-  void SyncLoad(int32_t routing_id,
-                int32_t request_id,
-                const ResourceRequest& request,
-                SyncLoadCallback callback) override {
-    NOTREACHED();
+  void Clone(mojom::URLLoaderFactoryRequest request) override {
+    loader_factory_bindings_.AddBinding(this, std::move(request));
   }
 
   // FrameTreeNode::Observer implementation:
