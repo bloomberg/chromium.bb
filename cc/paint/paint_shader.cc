@@ -245,4 +245,28 @@ bool PaintShader::IsOpaque() const {
   return GetSkShader()->isOpaque();
 }
 
+bool PaintShader::IsValid() const {
+  // If we managed to create a shader already, then we should be valid.
+  if (cached_shader_)
+    return true;
+
+  switch (shader_type_) {
+    case Type::kColor:
+      return true;
+    case Type::kLinearGradient:
+    case Type::kRadialGradient:
+    case Type::kTwoPointConicalGradient:
+    case Type::kSweepGradient:
+      return colors_.size() >= 2 &&
+             (positions_.empty() || positions_.size() == colors_.size());
+    case Type::kImage:
+      return !!image_;
+    case Type::kPaintRecord:
+      return !!record_;
+    case Type::kShaderCount:
+      return false;
+  }
+  return false;
+}
+
 }  // namespace cc

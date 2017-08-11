@@ -116,6 +116,12 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
 
   bool IsOpaque() const;
 
+  // Returns true if the shader looks like it is valid (ie the members required
+  // for this shader type all look reasonable. Returns false otherwise. Note
+  // that this is a best effort function since truly validating whether the
+  // shader is correct is hard.
+  bool IsValid() const;
+
  private:
   friend class PaintFlags;
   friend class PaintOpReader;

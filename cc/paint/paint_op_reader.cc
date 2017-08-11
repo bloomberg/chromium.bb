@@ -248,7 +248,11 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
   }
   ref.positions_.resize(positions_size);
   ReadData(positions_size * sizeof(SkScalar), ref.positions_.data());
+
   // We don't write the cached shader, so don't attempt to read it either.
+
+  if (!(*shader)->IsValid())
+    valid_ = false;
 }
 
 bool PaintOpReader::AlignMemory(size_t alignment) {
