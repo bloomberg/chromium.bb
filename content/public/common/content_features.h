@@ -30,8 +30,6 @@ CONTENT_EXPORT extern const base::Feature kCompositeOpaqueFixedPosition;
 CONTENT_EXPORT extern const base::Feature kCompositeOpaqueScrollers;
 CONTENT_EXPORT extern const base::Feature kCompositorTouchAction;
 CONTENT_EXPORT extern const base::Feature
-    kDisablePreferCompositingToLCDTextOnLowEndAndroid;
-CONTENT_EXPORT extern const base::Feature
     kReducedSoftTileMemoryLimitOnLowEndAndroid;
 CONTENT_EXPORT extern const base::Feature kExpensiveBackgroundTimerThrottling;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicy;

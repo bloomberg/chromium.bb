@@ -71,12 +71,6 @@ const base::Feature kCompositeOpaqueScrollers{"CompositeOpaqueScrollers",
 const base::Feature kCompositorTouchAction{"CompositorTouchAction",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether PreferCompositingToLCDText is forced off, even for
-// screens with high resolution.
-const base::Feature kDisablePreferCompositingToLCDTextOnLowEndAndroid{
-    "DisablePreferCompositingToLCDTextOnLowEndAndroid",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Throttle tasks in Blink background timer queues based on CPU budgets
 // for the background tab. Bug: https://crbug.com/639852.
 const base::Feature kExpensiveBackgroundTimerThrottling{
