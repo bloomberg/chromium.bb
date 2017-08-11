@@ -208,12 +208,14 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       needs_paint_property_update_(true),
       current_update_lifecycle_phases_target_state_(
           DocumentLifecycle::kUninitialized),
+      past_layout_lifecycle_update_(false),
       scroll_anchor_(this),
       scrollbar_manager_(*this),
       needs_scrollbars_update_(false),
       suppress_adjust_view_size_(false),
       allows_layout_invalidation_after_layout_clean_(true),
       forcing_layout_parent_view_(false),
+      needs_intersection_observation_(false),
       main_thread_scrolling_reasons_(0),
       paint_frame_count_(0) {
   Init();
@@ -3143,6 +3145,9 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     return;
   }
 
+  AutoReset<bool> past_layout_lifecycle_update(&past_layout_lifecycle_update_,
+                                               true);
+
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.PerformScrollAnchoringAdjustments();
   });
@@ -4977,6 +4982,7 @@ void LocalFrameView::UpdateViewportIntersectionsForSubtree(
        child = child->Tree().NextSibling()) {
     child->View()->UpdateViewportIntersectionsForSubtree(target_state);
   }
+  needs_intersection_observation_ = false;
 }
 
 void LocalFrameView::UpdateRenderThrottlingStatusForTesting() {
@@ -5137,9 +5143,23 @@ void LocalFrameView::RecordDeferredLoadingStats() {
                                    total_screens_away));
 }
 
+void LocalFrameView::SetNeedsIntersectionObservation() {
+  needs_intersection_observation_ = true;
+  if (LocalFrameView* parent = ParentFrameView())
+    parent->SetNeedsIntersectionObservation();
+}
+
 bool LocalFrameView::ShouldThrottleRendering() const {
-  return CanThrottleRendering() && frame_->GetDocument() &&
-         Lifecycle().ThrottlingAllowed();
+  bool throttled_for_global_reasons = CanThrottleRendering() &&
+                                      frame_->GetDocument() &&
+                                      Lifecycle().ThrottlingAllowed();
+  if (!throttled_for_global_reasons)
+    return false;
+
+  // Only lifecycle phases up to layout are needed to generate an
+  // intersection observation.
+  return !needs_intersection_observation_ ||
+         GetFrame().LocalFrameRoot().View()->past_layout_lifecycle_update_;
 }
 
 bool LocalFrameView::CanThrottleRendering() const {

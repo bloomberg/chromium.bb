@@ -257,8 +257,12 @@ void IntersectionObserver::observe(Element* target,
       new IntersectionObservation(*this, *target);
   target->EnsureIntersectionObserverData().AddObservation(*observation);
   observations_.insert(observation);
-  if (LocalFrameView* frame_view = target_frame->View())
+  if (LocalFrameView* frame_view = target_frame->View()) {
+    // The IntersectionObsever spec requires that at least one observation
+    // be recorded afer observe() is called, even if the frame is throttled.
+    frame_view->SetNeedsIntersectionObservation();
     frame_view->ScheduleAnimation();
+  }
 }
 
 void IntersectionObserver::unobserve(Element* target,

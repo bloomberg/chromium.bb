@@ -27,6 +27,7 @@
 #define PaintLayerCompositor_h
 
 #include <memory>
+#include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "core/dom/DocumentLifecycle.h"
 #include "core/paint/compositing/CompositingReasonFinder.h"
@@ -298,6 +299,9 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   std::unique_ptr<GraphicsLayer> layer_for_horizontal_scrollbar_;
   std::unique_ptr<GraphicsLayer> layer_for_vertical_scrollbar_;
   std::unique_ptr<GraphicsLayer> layer_for_scroll_corner_;
+
+  FRIEND_TEST_ALL_PREFIXES(FrameThrottlingTest,
+                           IntersectionObservationOverridesThrottling);
 };
 
 }  // namespace blink
