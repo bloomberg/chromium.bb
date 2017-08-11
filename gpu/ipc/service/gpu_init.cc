@@ -252,9 +252,6 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
   UMA_HISTOGRAM_TIMES("GPU.CollectContextGraphicsInfo", collect_context_time);
 
   gpu_feature_info_ = gpu::GetGpuFeatureInfo(gpu_info_, command_line);
-  // TODO(zmo): Apply disabled extensions to GL bindings. Even though the GL
-  // bindings have already been initialized, we can still set the disabled
-  // extensions, so the next GetString call will return desired value.
   if (!gpu_feature_info_.enabled_gpu_driver_bug_workarounds.empty()) {
     // TODO(zmo): Remove this block of code. They are only for existing tests.
     std::set<int> workarounds;

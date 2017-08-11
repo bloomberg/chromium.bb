@@ -100,6 +100,8 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // Set the GL workarounds.
   void SetGLWorkarounds(const GLWorkarounds& workarounds);
 
+  void SetDisabledGLExtensions(const std::string& disabled_gl_extensions);
+
   // Gets the GLStateRestorer for the context.
   GLStateRestorer* GetGLStateRestorer();
 
@@ -227,6 +229,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   std::unique_ptr<GLVersionInfo> GenerateGLVersionInfo();
 
   GLWorkarounds gl_workarounds_;
+  std::string disabled_gl_extensions_;
 
   bool static_bindings_initialized_ = false;
   bool dynamic_bindings_initialized_ = false;

@@ -13,10 +13,6 @@
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_workarounds.h"
 
-namespace base {
-class CommandLine;
-}
-
 namespace gl {
 
 struct GLVersionInfo;
@@ -53,8 +49,6 @@ class GL_EXPORT RealGLApi : public GLApiBase {
   RealGLApi();
   ~RealGLApi() override;
   void Initialize(DriverGL* driver);
-  void InitializeWithCommandLine(DriverGL* driver,
-                                 base::CommandLine* command_line);
 
   void glGetIntegervFn(GLenum pname, GLint* params) override;
   const GLubyte* glGetStringFn(GLenum name) override;
@@ -117,22 +111,22 @@ class GL_EXPORT RealGLApi : public GLApiBase {
   void glClearDepthFn(GLclampd depth) override;
   void glDepthRangeFn(GLclampd z_near, GLclampd z_far) override;
 
-  void InitializeFilteredExtensions();
   void set_gl_workarounds(const GLWorkarounds& workarounds);
   void set_version(std::unique_ptr<GLVersionInfo> version);
+  void SetDisabledGLExtensions(const std::string& disabled_extensions);
+  void ClearCachedGLExtensions();
 
  private:
-  // Filtered GL_EXTENSIONS we return to glGetString(i) calls.
+  // Compute |filtered_exts_| & |filtered_exts_str_| from |disabled_ext_|.
+  void InitializeFilteredExtensionsIfNeeded();
+
   std::vector<std::string> disabled_exts_;
+  // Filtered GL_EXTENSIONS we return to glGetString(i) calls.
   std::vector<std::string> filtered_exts_;
   std::string filtered_exts_str_;
 
   GLWorkarounds gl_workarounds_;
   std::unique_ptr<GLVersionInfo> version_;
-
-#if DCHECK_IS_ON()
-  bool filtered_exts_initialized_;
-#endif
 };
 
 // Inserts a TRACE for every GL call.

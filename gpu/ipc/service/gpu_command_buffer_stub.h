@@ -215,6 +215,10 @@ class GPU_EXPORT GpuCommandBufferStub
   bool CheckContextLost();
   void CheckCompleteWaits();
 
+  // Set driver bug workarounds and disabled GL extensions to the context.
+  static void SetContextGpuFeatureInfo(gl::GLContext* context,
+                                       const GpuFeatureInfo& gpu_feature_info);
+
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuCommandBufferStubs that they own when they
   // are destroyed. So a raw pointer is safe.
