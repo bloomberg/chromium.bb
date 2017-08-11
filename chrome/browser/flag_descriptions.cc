@@ -2081,6 +2081,11 @@ const char kTetherDescription[] =
     "Enables Instant Tethering. Instant Tethering allows your nearby Google "
     "phone to share its Internet connection with this device.";
 
+const char kEnablePerUserTimezoneName[] = "Per-user time zone preferences.";
+const char kEnablePerUserTimezoneDescription[] =
+    "Chrome OS system timezone preference is stored and handled for each user "
+    "individually.";
+
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)

@@ -245,4 +245,7 @@ const char kDeviceLoginScreenLocales[] = "cros.device_login_screen_locales";
 const char kDeviceLoginScreenInputMethods[] =
     "cros.device_login_screen_input_methods";
 
+// A boolean pref that matches enable-per-user-time-zone chrome://flags value.
+const char kPerUserTimezoneEnabled[] = "cros.flags.per_user_timezone_enabled";
+
 }  // namespace chromeos

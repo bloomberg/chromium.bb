@@ -35,25 +35,61 @@
       <div id="timezoneGeolocateToggleLabel" class="start">
         $i18n{timeZoneGeolocation}
       </div>
-      <template is="dom-if" if="[[hasTimeZoneAutoDetectPolicy_]]" restamp>
-        <cr-policy-indicator indicator-type="devicePolicy"
-            icon-aria-label="$i18n{timeZoneGeolocation}">
-        </cr-policy-indicator>
+      <template is="dom-if" restamp
+          if="[[!prefs.cros.flags.per_user_timezone_enabled.value]]">
+        <template is="dom-if" if="[[hasTimeZoneAutoDetectPolicy_]]" restamp>
+          <cr-policy-indicator indicator-type="devicePolicy"
+              icon-aria-label="$i18n{timeZoneGeolocation}">
+          </cr-policy-indicator>
+        </template>
+        <paper-toggle-button
+            id="timeZoneAutoDetect"
+            aria-labelledby="timezoneGeolocateToggleLabel"
+            checked="[[timeZoneAutoDetect_]]"
+            disabled="[[hasTimeZoneAutoDetectPolicy_]]"
+            on-change="onTimeZoneAutoDetectChange_">
+        </paper-toggle-button>
       </template>
-      <paper-toggle-button
-          id="timeZoneAutoDetect"
-          aria-labelledby="timezoneGeolocateToggleLabel"
-          checked="[[timeZoneAutoDetect_]]"
-          disabled="[[hasTimeZoneAutoDetectPolicy_]]"
-          on-change="onTimeZoneAutoDetectChange_">
-      </paper-toggle-button>
+      <template is="dom-if" restamp
+          if="[[prefs.cros.flags.per_user_timezone_enabled.value]]">
+        <settings-toggle-button
+            pref="{{prefs.settings.resolve_timezone_by_geolocation}}"
+            id="timeZoneAutoDetect"
+            aria-labelledby="timezoneGeolocateToggleLabel">
+        </settings-toggle-button>
+      </template>
     </div>
     <div class="settings-box continuation embedded">
-      <settings-dropdown-menu pref="{{prefs.cros.system.timezone}}"
-          label="$i18n{timeZone}"
-          menu-options="[[timeZoneList_]]"
-          disabled="[[timeZoneAutoDetect_]]">
-      </settings-dropdown-menu>
+      <template is="dom-if" restamp
+          if="[[!prefs.cros.flags.per_user_timezone_enabled.value]]">
+        <settings-dropdown-menu pref="{{prefs.cros.system.timezone}}"
+            label="$i18n{timeZone}"
+            menu-options="[[timeZoneList_]]"
+            disabled="[[timeZoneAutoDetect_]]">
+        </settings-dropdown-menu>
+      </template>
+      <template is="dom-if" restamp
+          if="[[prefs.cros.flags.per_user_timezone_enabled.value]]">
+        <template is="dom-if" if="[[!isUserTimeZoneSelectorHidden_(
+               prefs.settings.timezone,
+               prefs.settings.resolve_timezone_by_geolocation.value)]]" restamp>
+          <settings-dropdown-menu id="userTimeZoneSelector"
+              pref="{{prefs.settings.timezone}}"
+              label="$i18n{timeZone}"
+              menu-options="[[timeZoneList_]]">
+          </settings-dropdown-menu>
+        </template>
+        <template is="dom-if" if="[[isUserTimeZoneSelectorHidden_(
+               prefs.settings.timezone,
+               prefs.settings.resolve_timezone_by_geolocation.value)]]" restamp>
+          <settings-dropdown-menu id="systemTimezoneSelector"
+              pref="{{prefs.cros.system.timezone}}"
+              label="$i18n{timeZone}"
+              menu-options="[[timeZoneList_]]"
+              disabled>
+          </settings-dropdown-menu>
+        </template>
+      </template>
     </div>
     <div class="settings-box">
       <settings-toggle-button class="start"

@@ -9,6 +9,8 @@
 
 #include "base/strings/string16.h"
 
+class Profile;
+
 namespace base {
 class ListValue;
 }
@@ -30,6 +32,29 @@ bool HasSystemTimezonePolicy();
 
 // Apply TimeZone update from TimeZoneProvider.
 void ApplyTimeZone(const TimeZoneResponseData* timezone);
+
+// Returns true if given timezone preference is enterprise-managed.
+// Works for:
+// - prefs::kUserTimezone
+// - prefs::kResolveTimezoneByGeolocation
+bool IsTimezonePrefsManaged(const std::string& pref_name);
+
+// Updates system timezone from user profile data if needed.
+// This is called from chromeos::Preferences after updating profile
+// preferences to apply new value to system time zone.
+void UpdateSystemTimezone(Profile* profile);
+
+// Updates Local State preference prefs::kSigninScreenTimezone AND
+// also immediately sets system timezone (chromeos::system::TimezoneSettings).
+// This is called when there is no user session (i.e. OOBE and signin screen),
+// or when device policies are updated.
+void SetSystemAndSigninScreenTimezone(const std::string& timezone);
+
+// Returns true if per-user timezone preferences are enabled.
+bool PerUserTimezoneEnabled();
+
+// This is called from UI code to apply user-selected time zone.
+void SetTimezoneFromUI(Profile* profile, const std::string& timezone_id);
 
 }  // namespace system
 }  // namespace chromeos

@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/screens/network_view.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/common/pref_names.h"
@@ -133,12 +134,11 @@ std::string NetworkScreen::GetInputMethod() const {
 }
 
 void NetworkScreen::SetTimezone(const std::string& timezone_id) {
-  std::string current_timezone_id;
-  CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
-  if (current_timezone_id == timezone_id || timezone_id.empty())
+  if (timezone_id.empty())
     return;
+
   timezone_ = timezone_id;
-  CrosSettings::Get()->SetString(kSystemTimezone, timezone_id);
+  chromeos::system::SetSystemAndSigninScreenTimezone(timezone_id);
 }
 
 std::string NetworkScreen::GetTimezone() const {

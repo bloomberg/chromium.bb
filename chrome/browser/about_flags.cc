@@ -3204,7 +3204,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableNewVirtualKeyboardBehaviorName,
      flag_descriptions::kDisableNewVirtualKeyboardBehaviorDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableNewVirtualKeyboardBehavior)},
-#endif  // defined(OS_CHROMEOS)
+    {"enable-per-user-timezone", flag_descriptions::kEnablePerUserTimezoneName,
+     flag_descriptions::kEnablePerUserTimezoneDescription, kOsCrOS,
+     SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisablePerUserTimezone)},
+#endif  // OS_CHROMEOS
 
 #if !defined(OS_ANDROID)
     {"enable-picture-in-picture",

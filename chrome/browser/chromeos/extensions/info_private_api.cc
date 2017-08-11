@@ -326,6 +326,13 @@ std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(
   }
 
   if (property_name == kPropertyTimezone) {
+    if (chromeos::system::PerUserTimezoneEnabled()) {
+      return base::WrapUnique<base::Value>(
+          Profile::FromBrowserContext(context_)
+              ->GetPrefs()
+              ->GetUserPrefValue(prefs::kUserTimezone)
+              ->DeepCopy());
+    }
     // TODO(crbug.com/697817): Convert CrosSettings::Get to take a unique_ptr.
     return base::WrapUnique<base::Value>(
         chromeos::CrosSettings::Get()
@@ -363,8 +370,13 @@ ExtensionFunction::ResponseAction ChromeosInfoPrivateSetFunction::Run() {
   if (param_name == kPropertyTimezone) {
     std::string param_value;
     EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &param_value));
-    chromeos::CrosSettings::Get()->Set(chromeos::kSystemTimezone,
-                                       base::Value(param_value));
+    if (chromeos::system::PerUserTimezoneEnabled()) {
+      Profile::FromBrowserContext(context_)->GetPrefs()->SetString(
+          prefs::kUserTimezone, param_value);
+    } else {
+      chromeos::CrosSettings::Get()->Set(chromeos::kSystemTimezone,
+                                         base::Value(param_value));
+    }
   } else {
     const char* pref_name = GetBoolPrefNameForApiProperty(param_name.c_str());
     if (pref_name) {

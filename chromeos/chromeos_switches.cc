@@ -522,6 +522,9 @@ const char kVoiceInteractionLocales[] = "voice-interaction-supported-locales";
 const char kEnterpriseEnableLicenseTypeSelection[] =
     "enterprise-enable-license-type-selection";
 
+// Disables per-user timezone.
+const char kDisablePerUserTimezone[] = "disable-per-user-timezone";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }

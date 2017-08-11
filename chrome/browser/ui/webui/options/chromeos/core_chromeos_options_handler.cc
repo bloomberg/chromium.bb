@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
@@ -47,20 +48,34 @@ namespace options {
 
 namespace {
 
-// List of settings that should be changeable by all users.
-const char* kNonPrivilegedSettings[] = {
+// List of settings that are not changeable by users.
+const char* kReadOnlySettings[] = {
     kSystemTimezone
 };
 
 // List of settings that should only be changeable by the primary user.
 const char* kPrimaryUserSettings[] = {
     prefs::kWakeOnWifiDarkConnect,
+    prefs::kUserTimezone,
+    prefs::kResolveTimezoneByGeolocation
 };
 
 // Returns true if |pref| can be controlled (e.g. by policy or owner).
 bool IsSettingPrivileged(const std::string& pref) {
-  const char** end = kNonPrivilegedSettings + arraysize(kNonPrivilegedSettings);
-  return std::find(kNonPrivilegedSettings, end, pref) == end;
+  if (!chromeos::system::PerUserTimezoneEnabled()) {
+    return pref != kSystemTimezone;
+  }
+  // All the other Cros Settings are controlled.
+  return true;
+}
+
+// Returns true if |pref| is modifiable from UI.
+bool IsSettingWritable(const std::string& pref) {
+  if (!system::PerUserTimezoneEnabled())
+    return true;
+
+  const char** end = kReadOnlySettings + arraysize(kReadOnlySettings);
+  return std::find(kReadOnlySettings, end, pref) == end;
 }
 
 // Returns true if |pref| is shared (controlled by the primary user).
@@ -200,8 +215,14 @@ std::unique_ptr<base::Value> CoreChromeOSOptionsHandler::FetchPref(
       return value;
     dict->SetString("controlledBy", "shared");
     dict->SetBoolean("disabled", true);
-    dict->SetBoolean("value", primary_profile->GetPrefs()->GetBoolean(
-        pref_name));
+    if (system::PerUserTimezoneEnabled()) {
+      const PrefService::Preference* pref =
+          primary_profile->GetPrefs()->FindPreference(pref_name);
+      dict->Set("value", base::MakeUnique<base::Value>(*pref->GetValue()));
+    } else {
+      dict->SetBoolean("value",
+                       primary_profile->GetPrefs()->GetBoolean(pref_name));
+    }
     return value;
   }
 
@@ -218,7 +239,7 @@ std::unique_ptr<base::Value> CoreChromeOSOptionsHandler::FetchPref(
     dict->Set("value", base::MakeUnique<base::Value>(*pref_value));
 
   std::string controlled_by;
-  if (IsSettingPrivileged(pref_name)) {
+  if (system::PerUserTimezoneEnabled() || IsSettingPrivileged(pref_name)) {
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     if (connector->IsEnterpriseManaged())
@@ -226,9 +247,12 @@ std::unique_ptr<base::Value> CoreChromeOSOptionsHandler::FetchPref(
     else if (!ProfileHelper::IsOwnerProfile(profile))
       controlled_by = "owner";
   }
-  dict->SetBoolean("disabled", !controlled_by.empty());
   if (!controlled_by.empty())
     dict->SetString("controlledBy", controlled_by);
+
+  // Read-only setting is always disabled.
+  dict->SetBoolean("disabled",
+                   !controlled_by.empty() || !IsSettingWritable(pref_name));
   return std::move(dict);
 }
 
@@ -262,6 +286,10 @@ void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
   }
   if (!CrosSettings::IsCrosSettings(pref_name))
     return ::options::CoreOptionsHandler::SetPref(pref_name, value, metric);
+  if (!IsSettingWritable(pref_name)) {
+    NOTREACHED() << pref_name;
+    return;
+  }
   OwnerSettingsServiceChromeOS* service =
       OwnerSettingsServiceChromeOS::FromWebUI(web_ui());
   if (service && service->HandlesSetting(pref_name))
