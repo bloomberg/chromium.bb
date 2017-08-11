@@ -134,8 +134,23 @@ const int kAppsGridLeftRightPaddingFullscreen = 28;
 const int kSearchBoxPadding = 16;
 const int kSearchBoxTopPadding = 24;
 
+// Bottom padding of search box in peeking state.
+const int kSearchBoxPeekingBottomPadding = 12;
+
+// Bottom padding of search box in fullscreen state.
+const int kSearchBoxFullscreenBottomPadding = 24;
+
 // The background border corner radius of the search box in fullscreen mode.
 const int kSearchBoxBorderCornerRadiusFullscreen = 24;
+
+// Preferred height of search box.
+const int kSearchBoxPreferredHeight = 48;
+
+// The height of the peeking app list from the bottom of the screen.
+const int kPeekingAppListHeight = 320;
+
+// The height/width of the shelf from the bottom/side of the screen.
+const int kShelfSize = 48;
 
 // Max items allowed in a folder.
 size_t kMaxFolderItems = 16;

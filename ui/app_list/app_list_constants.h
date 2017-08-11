@@ -99,7 +99,13 @@ APP_LIST_EXPORT extern const int kAppsGridPadding;
 APP_LIST_EXPORT extern const int kAppsGridLeftRightPaddingFullscreen;
 APP_LIST_EXPORT extern const int kSearchBoxPadding;
 APP_LIST_EXPORT extern const int kSearchBoxTopPadding;
+APP_LIST_EXPORT extern const int kSearchBoxPeekingBottomPadding;
+APP_LIST_EXPORT extern const int kSearchBoxFullscreenBottomPadding;
 APP_LIST_EXPORT extern const int kSearchBoxBorderCornerRadiusFullscreen;
+APP_LIST_EXPORT extern const int kSearchBoxPreferredHeight;
+
+APP_LIST_EXPORT extern const int kPeekingAppListHeight;
+APP_LIST_EXPORT extern const int kShelfSize;
 
 APP_LIST_EXPORT extern size_t kMaxFolderItems;
 APP_LIST_EXPORT extern const size_t kNumFolderTopItems;

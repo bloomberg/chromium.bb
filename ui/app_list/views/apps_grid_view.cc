@@ -97,9 +97,6 @@ constexpr int kFolderItemReparentDelay = 50;
 // UI.
 constexpr int kFolderDroppingCircleRadius = 39;
 
-// Bottom padding for search box.
-constexpr int kSearchBoxBottomPadding = 24;
-
 // Padding between suggested apps tiles and all apps indicator.
 constexpr int kSuggestionsAllAppsIndicatorPadding = 16;
 
@@ -108,6 +105,21 @@ constexpr int kAllAppsIndicatorExtraPadding = 6;
 
 // The height of gradient fade-out zones.
 constexpr int kFadeoutZoneHeight = 24;
+
+// Range of the fraction of app list from collapsed to peeking that suggested
+// apps should change opacity.
+constexpr float kSuggestedAppsOpacityStartFraction = 0.3f;
+constexpr float kSuggestedAppsOpacityEndFraction = 0.7f;
+
+// Range of the fraction of app list from peeking to fullscreen that all apps
+// indictor should change opacity.
+constexpr float kAllAppsIndicatorOpacityStartFraction = 0.7f;
+constexpr float kAllAppsIndicatorOpacityEndFraction = 1.0f;
+
+// Range of the height of centerline above screen bottom that all apps should
+// change opacity.
+constexpr float kAllAppsOpacityStartPx = 8.0f;
+constexpr float kAllAppsOpacityEndPx = 144.0f;
 
 // Returns the size of a tile view excluding its padding.
 gfx::Size GetTileViewSize() {
@@ -774,7 +786,7 @@ void AppsGridView::Layout() {
 
   if (is_fullscreen_app_list_enabled_) {
     fadeout_layer_delegate_->layer()->SetBounds(layer()->bounds());
-    rect.Inset(0, kSearchBoxBottomPadding, 0, 0);
+    rect.Inset(0, kSearchBoxFullscreenBottomPadding, 0, 0);
   }
 
   if (!folder_delegate_) {
@@ -1618,14 +1630,6 @@ bool AppsGridView::IsUnderOEMFolder() {
   return folder_delegate_->IsOEMFolder();
 }
 
-void AppsGridView::UpdateOpacityOfItem(views::View* view_item,
-                                       float centroid_y) {
-  float delta_y = std::max(work_area_bottom_ - centroid_y, 0.0f);
-  float opacity = std::min(
-      delta_y / (AppListView::kNumOfShelfSize * AppListView::kShelfSize), 1.0f);
-  view_item->layer()->SetOpacity(is_end_gesture_ ? 1.0f : opacity);
-}
-
 void AppsGridView::DispatchDragEventForReparent(Pointer pointer,
                                                 const gfx::Point& drag_point) {
   folder_delegate_->DispatchDragEventForReparent(pointer, drag_point);
@@ -1689,36 +1693,75 @@ void AppsGridView::OnFolderItemRemoved() {
   item_list_ = nullptr;
 }
 
-void AppsGridView::UpdateOpacity(float work_area_bottom, bool is_end_gesture) {
-  work_area_bottom_ = work_area_bottom;
-  is_end_gesture_ = is_end_gesture;
+void AppsGridView::UpdateOpacity(int app_list_y_position_in_screen) {
+  int work_area_bottom = contents_view_->app_list_view()->work_area_bottom();
+  bool is_in_drag = contents_view_->app_list_view()->is_in_drag();
+  // The opacity of suggested apps is a function of the fractional displacement
+  // of the app list from collapsed(0) to peeking(1) state. When the fraction
+  // changes from |kSuggestedAppsOpacityStartFraction| to
+  // |kSuggestedAppsOpacityEndFraction|, the opacity of suggested apps changes
+  // from 0.f to 1.0f.
+  float fraction =
+      std::max<float>(work_area_bottom - app_list_y_position_in_screen, 0) /
+      (kPeekingAppListHeight - kShelfSize);
+  float opacity =
+      std::min(std::max((fraction - kSuggestedAppsOpacityStartFraction) /
+                            (kSuggestedAppsOpacityEndFraction -
+                             kSuggestedAppsOpacityStartFraction),
+                        0.f),
+               1.0f);
+  suggestions_container_->layer()->SetOpacity(is_in_drag ? opacity : 1.0f);
 
-  // Updates the opacity of suggestions container.
-  gfx::Rect suggestions_container_bounds =
-      suggestions_container_->GetBoundsInScreen();
-  UpdateOpacityOfItem(suggestions_container_,
-                      suggestions_container_bounds.CenterPoint().y());
+  // The opacity of all apps indicator is a function of the fractional
+  // displacement of the app list from peeking(0) to fullscreen(1) state. When
+  // the fraction changes from |kAllAppsIndicatorOpacityStartFraction| to
+  // |kAllAppsIndicatorOpacityEndFraction|, the opacity of all apps indicator
+  // changes from 0.f to 1.0f.
+  float peeking_to_fullscreen_height =
+      contents_view_->GetDisplayHeight() - kPeekingAppListHeight;
+  float drag_amount = (work_area_bottom + kShelfSize) -
+                      app_list_y_position_in_screen - kPeekingAppListHeight;
+  fraction = std::max(drag_amount / peeking_to_fullscreen_height, 0.f);
+  opacity = std::min(std::max((fraction + kAllAppsIndicatorOpacityEndFraction -
+                               kAllAppsIndicatorOpacityStartFraction - 1.0f) /
+                                  (kAllAppsIndicatorOpacityEndFraction -
+                                   kAllAppsIndicatorOpacityStartFraction),
+                              0.f),
+                     1.0f);
+  all_apps_indicator_->layer()->SetOpacity(is_in_drag ? opacity : 1.0f);
 
-  // Updates the opacity of all apps indicator.
-  gfx::Rect all_apps_indicator_bounds =
-      all_apps_indicator_->GetLabelBoundsInScreen();
-  UpdateOpacityOfItem(all_apps_indicator_,
-                      all_apps_indicator_bounds.CenterPoint().y());
-
-  // Updates the opacity of all apps.
+  // Updates the opacity of all apps. The opacity of the app starting at 0.f
+  // when the ceterline of the app is |kAllAppsOpacityStartPx| above the bottom
+  // of work area and transitioning to 1.0f by the time the centerline reaches
+  // |kAllAppsOpacityEndPx| above the work area bottom.
+  float centerline_above_work_area = 0.f;
   for (int i = 0; i < view_model_.view_size(); ++i) {
     AppListItemView* item_view = GetItemViewAt(i);
     if (item_view != drag_view_) {
       gfx::Rect view_bounds = view_model_.ideal_bounds(i);
       views::View::ConvertRectToScreen(this, &view_bounds);
-      UpdateOpacityOfItem(item_view, view_bounds.CenterPoint().y());
+      centerline_above_work_area = std::max<float>(
+          work_area_bottom + kShelfSize - view_bounds.CenterPoint().y(), 0.f);
+      opacity = std::min(
+          std::max((centerline_above_work_area - kAllAppsOpacityStartPx) /
+                       (kAllAppsOpacityEndPx - kAllAppsOpacityStartPx),
+                   0.f),
+          1.0f);
+      item_view->layer()->SetOpacity(is_in_drag ? opacity : 1.0f);
     }
   }
 
-  // Updates the opacity of page switcher buttons.
+  // Updates the opacity of page switcher buttons. The same rule as all apps.
   if (page_switcher_view_) {
     gfx::Rect switcher_bounds = page_switcher_view_->GetBoundsInScreen();
-    UpdateOpacityOfItem(page_switcher_view_, switcher_bounds.CenterPoint().y());
+    centerline_above_work_area = std::max<float>(
+        work_area_bottom + kShelfSize - switcher_bounds.CenterPoint().y(), 0.f);
+    opacity = std::min(
+        std::max((centerline_above_work_area - kAllAppsOpacityStartPx) /
+                     (kAllAppsOpacityEndPx - kAllAppsOpacityStartPx),
+                 0.f),
+        1.0f);
+    page_switcher_view_->layer()->SetOpacity(is_in_drag ? opacity : 1.0f);
   }
 }
 
@@ -2249,13 +2292,13 @@ int AppsGridView::GetHeightOnTopOfAllAppsTiles(int page) const {
     return 0;
 
   if (page == 0) {
-    return kSearchBoxBottomPadding +
+    return kSearchBoxFullscreenBottomPadding +
            suggestions_container_->GetPreferredSize().height() +
            kSuggestionsAllAppsIndicatorPadding +
            all_apps_indicator_->GetPreferredSize().height() +
            kAllAppsIndicatorExtraPadding;
   }
-  return kSearchBoxBottomPadding - kTileVerticalPadding;
+  return kSearchBoxFullscreenBottomPadding - kTileVerticalPadding;
 }
 
 gfx::Rect AppsGridView::GetExpectedTileBounds(int slot) const {

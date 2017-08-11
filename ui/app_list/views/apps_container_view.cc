@@ -15,15 +15,26 @@
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/folder_background_view.h"
+#include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/suggestions_container_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace app_list {
+
+// Initial search box top padding in shelf mode.
+constexpr int kSearchBoxInitalTopPadding = 12;
+
+// Top padding of search box in peeking state.
+constexpr int kSearchBoxPeekingTopPadding = 24;
+
+// Minimum top padding of search box in fullscreen state.
+constexpr int kSearchBoxMinimumTopPadding = 24;
 
 AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
                                      AppListModel* model)
@@ -163,14 +174,56 @@ gfx::Rect AppsContainerView::GetSearchBoxBounds() const {
   if (!is_fullscreen_app_list_enabled_)
     return AppListPage::GetSearchBoxBounds();
 
-  // Makes search box and content vertically centered in screen.
   gfx::Rect search_box_bounds(contents_view()->GetDefaultSearchBoxBounds());
-  const int total_height =
-      GetDefaultContentsBounds().bottom() - search_box_bounds.y();
-  search_box_bounds.set_y(
-      std::max(search_box_bounds.y(),
-               (contents_view()->GetDisplayHeight() - total_height) / 2));
+  if (contents_view()->app_list_view()->is_in_drag())
+    search_box_bounds.set_y(GetSearchBoxTopPaddingDuringDragging());
+  else
+    search_box_bounds.set_y(GetSearchBoxFinalTopPadding());
+
   return search_box_bounds;
+}
+
+gfx::Rect AppsContainerView::GetPageBoundsDuringDragging(
+    AppListModel::State state) const {
+  float app_list_y_position_in_screen =
+      contents_view()->app_list_view()->app_list_y_position_in_screen();
+  float work_area_bottom = contents_view()->app_list_view()->work_area_bottom();
+  float drag_amount =
+      std::max(0.f, work_area_bottom - app_list_y_position_in_screen);
+
+  float y = 0;
+  float peeking_final_y =
+      kSearchBoxPeekingTopPadding + kSearchBoxPreferredHeight +
+      kSearchBoxPeekingBottomPadding - kSearchBoxFullscreenBottomPadding;
+  if (drag_amount <= (kPeekingAppListHeight - kShelfSize)) {
+    // App list is dragged from collapsed to peeking, which moved up at most
+    // |kPeekingAppListHeight - kShelfSize| (272px). The top padding of apps
+    // container view changes from |-kSearchBoxFullscreenBottomPadding| to
+    // |kSearchBoxPeekingTopPadding + kSearchBoxPreferredHeight +
+    // kSearchBoxPeekingBottomPadding - kSearchBoxFullscreenBottomPadding|.
+    y = std::ceil(
+        ((peeking_final_y + kSearchBoxFullscreenBottomPadding) * drag_amount) /
+            (kPeekingAppListHeight - kShelfSize) -
+        kSearchBoxFullscreenBottomPadding);
+  } else {
+    // App list is dragged from peeking to fullscreen, which moved up at most
+    // |peeking_to_fullscreen_height|. The top padding of apps container view
+    // changes from |peeking_final_y| to |final_y|.
+    float final_y = GetSearchBoxFinalTopPadding() + kSearchBoxPreferredHeight;
+    float peeking_to_fullscreen_height =
+        contents_view()->GetDisplayHeight() - kPeekingAppListHeight;
+    y = std::ceil((final_y - peeking_final_y) *
+                      (drag_amount - (kPeekingAppListHeight - kShelfSize)) /
+                      peeking_to_fullscreen_height +
+                  peeking_final_y);
+    y = std::max(std::min(final_y, y), peeking_final_y);
+  }
+
+  gfx::Rect onscreen_bounds = GetPageBoundsForState(state);
+  if (state == AppListModel::STATE_APPS)
+    onscreen_bounds.set_y(y);
+
+  return onscreen_bounds;
 }
 
 void AppsContainerView::OnTopIconAnimationsComplete() {
@@ -271,6 +324,51 @@ void AppsContainerView::PrepareToShowApps(AppListFolderItem* folder_item) {
   // Hide the active folder item until the animation completes.
   if (apps_grid_view_->activated_folder_item_view())
     apps_grid_view_->activated_folder_item_view()->SetVisible(false);
+}
+
+int AppsContainerView::GetSearchBoxFinalTopPadding() const {
+  gfx::Rect search_box_bounds(contents_view()->GetDefaultSearchBoxBounds());
+  const int total_height =
+      GetDefaultContentsBounds().bottom() - search_box_bounds.y();
+
+  // Makes search box and content vertically centered in contents_view.
+  int y = std::max(search_box_bounds.y(),
+                   (contents_view()->GetDisplayHeight() - total_height) / 2);
+
+  // Top padding of the searchbox should not be smaller than
+  // |kSearchBoxMinimumTopPadding|
+  return std::max(y, kSearchBoxMinimumTopPadding);
+}
+
+int AppsContainerView::GetSearchBoxTopPaddingDuringDragging() const {
+  float searchbox_final_y = GetSearchBoxFinalTopPadding();
+  float peeking_to_fullscreen_height =
+      contents_view()->GetDisplayHeight() - kPeekingAppListHeight;
+  float drag_amount = std::max(
+      0, contents_view()->app_list_view()->work_area_bottom() -
+             contents_view()->app_list_view()->app_list_y_position_in_screen());
+
+  if (drag_amount <= (kPeekingAppListHeight - kShelfSize)) {
+    // App list is dragged from collapsed to peeking, which moved up at most
+    // |kPeekingAppListHeight - kShelfSize| (272px). The top padding of search
+    // box changes from |kSearchBoxInitalTopPadding| to
+    // |kSearchBoxPeekingTopPadding|,
+    return std::ceil(
+        (kSearchBoxPeekingTopPadding - kSearchBoxInitalTopPadding) +
+        ((kSearchBoxPeekingTopPadding - kSearchBoxInitalTopPadding) *
+         drag_amount) /
+            (kPeekingAppListHeight - kShelfSize));
+  } else {
+    // App list is dragged from peeking to fullscreen, which moved up at most
+    // |peeking_to_fullscreen_height|. The top padding of search box changes
+    // from |kSearchBoxPeekingTopPadding| to |searchbox_final_y|.
+    int y = (kSearchBoxPeekingTopPadding +
+             std::ceil((searchbox_final_y - kSearchBoxPeekingTopPadding) *
+                       (drag_amount - (kPeekingAppListHeight - kShelfSize)) /
+                       peeking_to_fullscreen_height));
+    y = std::max(kSearchBoxPeekingTopPadding, y);
+    return y;
+  }
 }
 
 }  // namespace app_list

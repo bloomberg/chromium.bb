@@ -487,7 +487,10 @@ void ContentsView::Layout() {
     return;
 
   for (AppListPage* page : app_list_pages_) {
-    page->SetBoundsRect(page->GetPageBoundsForState(GetActiveState()));
+    if (app_list_view_ && app_list_view_->is_in_drag())
+      page->SetBoundsRect(page->GetPageBoundsDuringDragging(GetActiveState()));
+    else
+      page->SetBoundsRect(page->GetPageBoundsForState(GetActiveState()));
   }
 
   // The search box is contained in a widget so set the bounds of the widget

@@ -47,7 +47,6 @@ namespace {
 
 // Layout constants.
 constexpr int kInstantContainerSpacing = 24;
-constexpr int kSearchBoxBottomPadding = 12;
 constexpr int kSearchBoxAndTilesSpacing = 35;
 constexpr int kStartPageSearchBoxWidth = 480;
 constexpr int kStartPageSearchBoxWidthFullscreen = 544;
@@ -147,8 +146,8 @@ void StartPageView::InitInstantContainer() {
   views::BoxLayout* instant_layout_manager = new views::BoxLayout(
       views::BoxLayout::kVertical, gfx::Insets(), kInstantContainerSpacing);
   if (is_fullscreen_app_list_enabled_) {
-    instant_layout_manager->set_inside_border_insets(
-        gfx::Insets(kSearchBoxTopPadding, 0, kSearchBoxBottomPadding, 0));
+    instant_layout_manager->set_inside_border_insets(gfx::Insets(
+        kSearchBoxTopPadding, 0, kSearchBoxPeekingBottomPadding, 0));
   } else {
     instant_layout_manager->set_inside_border_insets(
         gfx::Insets(0, 0, kSearchBoxAndTilesSpacing, 0));
@@ -446,8 +445,8 @@ TileItemView* StartPageView::GetTileItemView(size_t index) {
 void StartPageView::UpdateOpacityOfItem(views::View* view_item,
                                         float centroid_y) {
   float delta_y = std::max(work_area_bottom_ - centroid_y, 0.f);
-  float opacity = std::min(
-      delta_y / (AppListView::kNumOfShelfSize * AppListView::kShelfSize), 1.0f);
+  float opacity =
+      std::min(delta_y / (AppListView::kNumOfShelfSize * kShelfSize), 1.0f);
   view_item->layer()->SetOpacity(is_end_gesture_ ? 1.0f : opacity);
 }
 
