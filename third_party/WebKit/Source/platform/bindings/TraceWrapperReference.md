@@ -148,7 +148,6 @@ The write barrier will check for the problem case above and make sure
 ```c++
 class SomeDOMObject : public ScriptWrappable {
  public:
-  SomeDOMObject() : other_wrappable_(this, nullptr) {}
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
@@ -188,58 +187,35 @@ DEFINE_TRACE_WRAPPERS(SomeDOMObject) {
 ```
 
 Note that this is different to Oilpan which can just trace the whole collection.
-Whenever an element is added through ``append()`` the value needs to be
-constructed using ``TraceWrapperMember``, e.g.
+``TraceWrapperMember`` can be constructed in place, so  using ``append`` and
+friends will work out of the box, e.g.
 
 ```c++
 void SomeDOMObject::AppendNewValue(OtherWrappable* newValue) {
-  other_wrappables_.append(TraceWrapperMember(this, newValue));
+  other_wrappables_.append(newValue);
 }
 ```
 
-The compiler will throw an error for each ommitted ``TraceWrapperMember``
+The compiler will throw an error for each omitted ``TraceWrapperMember``
 construction.
 
-### Corner-case: Pre-sized containers
+### Swapping ``HeapVector`` containing ``TraceWrapperMember`` and ``Member``
 
-Containers know how to construct an empty ``TraceWrapperMember`` slot. This
-allows simple creation of containers at the cost of loosing the compile-time
-check for assigning a raw value.
-
-```c++
-class SomeDOMObject : public ScriptWrappable {
- public:
-  SomeDOMObject() {
-    other_wrappables_.resize(5);
-  }
-
-  void writeAt(int i, OtherWrappable* other) {
-    other_wrappables_[i] = other;
-  }
-
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
- private:
-  HeapVector<TraceWrapperMember<OtherWrappable>> other_wrappables_;
-};
-
-DEFINE_TRACE_WRAPPERS(SomeDOMObject) {
-  for (auto other : other_wrappables_)
-    visitor->TraceWrappers(other);
-}
-```
-
-In this example, the compiler will not warn you on
-``other_wrappables_[i] = other``, but an assertion will throw at runtime as long
-as there exists a test covering that branch.
-
-The correct assignment looks like
+It is possible to swap two ``HeapVectors`` containing ``TraceWrapperMember`` and
+``Member`` by using ``blink::swap``. The underlying swap will avoid copies and
+write barriers if possible.
 
 ```c++
-other_wrappables_[i] = TraceWrapperMember<OtherWrappable>(this, other);
-```
+// Swap two wrapper traced heap vectors.
+HeapVector<TraceWrapperMember<Wrappable>> a;
+HeapVector<TraceWrapperMember<Wrappable>> b;
+blink::swap(a, b);
 
-Note that the assertion that triggers when the annotation is not present does
-not require wrapper tracing to be enabled.
+// Swap in a non-traced heap vector into a wrapper traced one.
+HeapVector<TraceWrapperMember<Wrappable>> c;
+HeapVector<Member<Wrappable>> temporary;
+blink::swap(c, temporary);
+```
 
 ## Tracing through non-``ScriptWrappable`` types
 
@@ -261,17 +237,15 @@ add a vtable pointer for tracing wrappers, use
 ## Explicit write barriers
 
 Sometimes it is necessary to stick with the regular types and issue the write
-barriers explicitly. For example, if memory footprint is really important and
-it's not possible to use ``TraceWrapperMember`` which adds another pointer
-field. In this case, tracing needs to be adjusted to tell the system that all
-barriers will be done manually.
+barriers explicitly. In this case, tracing needs to be adjusted to tell the
+system that all barriers will be done manually.
 
 ```c++
 class ManualWrappable : public ScriptWrappable {
  public:
   void setNew(OtherWrappable* newValue) {
     other_wrappable_ = newValue;
-    SriptWrappableVisitor::WriteBarrier(this, other_wrappable_);
+    SriptWrappableVisitor::WriteBarrier(other_wrappable_);
   }
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
