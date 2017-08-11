@@ -2986,6 +2986,9 @@ crbug.com/626703 [ Win7 ] external/wpt/html/semantics/tabular-data/processing-mo
 crbug.com/708499 [ Win7 Mac10.11 Retina Debug ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Failure Pass ]
 crbug.com/752845 [ Win ] inspector/sha1.html [ Pass Crash ]
 
+# Sheriff failure 2017-08-11
+crbug.com/754657 http/tests/media/media-source/mediasource-duration.html [ Pass Failure ]
+
 # Ganesh dither changes
 crbug.com/753462 virtual/gpu/fast/canvas/canvas-text-alignment.html [ NeedsManualRebaseline ]
 crbug.com/753462 virtual/gpu/fast/canvas/fillrect_gradient.html [ NeedsManualRebaseline ]
