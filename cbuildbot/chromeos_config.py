@@ -2984,6 +2984,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       important=False)
 
   _chrome_pfq_important_boards = frozenset([
+      'betty',
       'caroline',
       'chell',
       'cyan',
@@ -2998,7 +2999,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _chrome_pfq_experimental_boards = frozenset([
-      'betty',
       'bob',
       'hana',
       'nyan_big',
