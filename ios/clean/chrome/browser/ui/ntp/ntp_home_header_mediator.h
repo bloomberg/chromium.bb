@@ -17,6 +17,11 @@
 @protocol ContentSuggestionsHeaderViewControllerDelegate;
 @class NTPHomeHeaderViewController;
 
+// TODO(crbug.com/740793): Remove this protocol once no item is using it.
+@protocol NTPHomeHeaderMediatorAlerter
+- (void)showAlert:(NSString*)title;
+@end
+
 @interface NTPHomeHeaderMediator
     : NSObject<ContentSuggestionsHeaderControlling,
                ContentSuggestionsHeaderProvider,
@@ -30,6 +35,7 @@
         commandHandler;
 @property(nonatomic, weak) id<ContentSuggestionsCollectionSynchronizing>
     collectionSynchronizer;
+@property(nonatomic, weak) id<NTPHomeHeaderMediatorAlerter> alerter;
 
 @property(nonatomic, weak) NTPHomeHeaderViewController* headerViewController;
 
