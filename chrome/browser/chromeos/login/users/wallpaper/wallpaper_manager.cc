@@ -64,7 +64,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "crypto/sha2.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/gfx/color_analysis.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -204,7 +203,6 @@ void SetKnownUserWallpaperFilesId(
 
 // A helper to set the wallpaper image for Classic Ash and Mash.
 void SetWallpaper(const gfx::ImageSkia& image, wallpaper::WallpaperInfo info) {
-  WallpaperManager::Get()->CalculateProminentColor(image);
   if (ash_util::IsRunningInMash()) {
     // In mash, connect to the WallpaperController interface via mojo.
     service_manager::Connector* connector =
@@ -397,10 +395,6 @@ class WallpaperManager::PendingWallpaper :
 WallpaperManager::~WallpaperManager() {
   show_user_name_on_signin_subscription_.reset();
   device_wallpaper_image_subscription_.reset();
-  if (color_calculator_) {
-    color_calculator_->RemoveObserver(this);
-    color_calculator_.reset();
-  }
   user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   weak_factory_.InvalidateWeakPtrs();
 }
@@ -424,11 +418,6 @@ void WallpaperManager::Shutdown() {
   wallpaper_manager = nullptr;
 }
 
-// static
-bool WallpaperManager::HasInstance() {
-  return wallpaper_manager != nullptr;
-}
-
 bool WallpaperManager::IsPendingWallpaper(uint32_t image_id) {
   for (size_t i = 0; i < loading_.size(); ++i) {
     if (loading_[i]->GetImageId() == image_id) {
@@ -436,32 +425,6 @@ bool WallpaperManager::IsPendingWallpaper(uint32_t image_id) {
     }
   }
   return false;
-}
-
-void WallpaperManager::CalculateProminentColor(const gfx::ImageSkia& image) {
-  // Cancel in-flight color calculations, if any.
-  if (color_calculator_) {
-    color_calculator_->RemoveObserver(this);
-    color_calculator_.reset();
-  }
-
-  // TODO(wzang): the color fetching should go through ash::WallpaperController.
-  // See crbug.com/733709.
-  std::vector<color_utils::ColorProfile> color_profiles;
-  color_profiles.emplace_back(color_utils::LumaRange::DARK,
-                              color_utils::SaturationRange::MUTED);
-  color_calculator_ = base::MakeUnique<wallpaper::WallpaperColorCalculator>(
-      image, color_profiles, task_runner_);
-  color_calculator_->AddObserver(this);
-  if (!color_calculator_->StartCalculation()) {
-    color_calculator_->RemoveObserver(this);
-    color_calculator_.reset();
-    if (!prominent_color_.has_value())
-      return;
-    prominent_color_.reset();
-    for (auto& observer : observers_)
-      observer.OnWallpaperColorsChanged();
-  }
 }
 
 WallpaperManager::WallpaperResolution
@@ -959,20 +922,6 @@ void WallpaperManager::OnWindowDestroying(aura::Window* window) {
   window_observer_.Remove(window);
   chromeos::WallpaperWindowStateManager::RestoreWindows(
       user_manager::UserManager::Get()->GetActiveUser()->username_hash());
-}
-
-void WallpaperManager::OnColorCalculationComplete() {
-  size_t num_of_calculation = color_calculator_->prominent_colors().size();
-  DCHECK_EQ(1u, num_of_calculation);
-  SkColor color = color_calculator_->prominent_colors()[num_of_calculation - 1];
-  color_calculator_->RemoveObserver(this);
-  color_calculator_.reset();
-  if (prominent_color_ == color)
-    return;
-  prominent_color_ = color;
-
-  for (auto& observer : observers_)
-    observer.OnWallpaperColorsChanged();
 }
 
 // WallpaperManager, private: --------------------------------------------------
