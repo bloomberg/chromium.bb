@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 @class OpenNewTabCommand;
+@class OpenUrlCommand;
 @class StartVoiceSearchCommand;
 
 // This protocol groups commands that are part of ApplicationCommands, but
@@ -44,6 +45,12 @@
 
 // Shows the History UI.
 - (void)showHistory;
+
+// Closes the History UI and opens a URL.
+- (void)closeSettingsUIAndOpenURL:(OpenUrlCommand*)command;
+
+// Closes the History UI.
+- (void)closeSettingsUI;
 
 @end
 
