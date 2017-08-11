@@ -24,6 +24,8 @@ function (create_dummy_source_file basename extension out_file_path)
   set(${out_file_path} ${dummy_source_file} PARENT_SCOPE)
 endfunction ()
 
+# Convenience function for adding a dummy source file to $target_name using
+# $extension as the file extension. Wraps create_dummy_source_file().
 function (add_dummy_source_file_to_target target_name extension)
   create_dummy_source_file("${target_name}" "${extension}" "dummy_source_file")
   target_sources(${target_name} PRIVATE ${dummy_source_file})
@@ -43,6 +45,21 @@ function (change_config_and_warn feature value cause)
   endif ()
   set(warning_message "${verb} ${feature}, ${reason} ${cause}.")
   message(WARNING "--- ${warning_message}")
+endfunction ()
+
+# Sets CMake compiler launcher to $launcher_name when $launcher_name is found in
+# $PATH. Warns user about ignoring build flag $launcher_flag when $launcher_name
+# is not found in $PATH.
+function (set_compiler_launcher launcher_flag launcher_name)
+  find_program(launcher_path "${launcher_name}")
+  if (launcher_path)
+    set(CMAKE_C_COMPILER_LAUNCHER "${launcher_path}" PARENT_SCOPE)
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${launcher_path}" PARENT_SCOPE)
+    message("--- Using ${launcher_name} as compiler launcher.")
+  else ()
+    message(WARNING
+            "--- Cannot find ${launcher_name}, ${launcher_flag} ignored.")
+  endif ()
 endfunction ()
 
 endif()  # AOM_BUILD_CMAKE_UTIL_CMAKE_
