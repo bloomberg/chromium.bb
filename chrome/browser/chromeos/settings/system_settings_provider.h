@@ -39,6 +39,7 @@ class SystemSettingsProvider : public CrosSettingsProvider,
   void DoSet(const std::string& path, const base::Value& in_value) override;
 
   std::unique_ptr<base::Value> timezone_value_;
+  std::unique_ptr<base::Value> per_user_timezone_enabled_value_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemSettingsProvider);
 };

@@ -190,20 +190,29 @@ void ShowLoginWizardFinish(
     chromeos::LoginDisplayHost* display_host) {
   TRACE_EVENT0("chromeos", "ShowLoginWizard::ShowLoginWizardFinish");
 
+  // Restore system timezone.
+  std::string timezone;
+  if (chromeos::system::PerUserTimezoneEnabled()) {
+    timezone = g_browser_process->local_state()->GetString(
+        prefs::kSigninScreenTimezone);
+  }
+
   if (ShouldShowSigninScreen(first_screen)) {
     display_host->StartSignInScreen(chromeos::LoginScreenContext());
   } else {
     display_host->StartWizard(first_screen);
 
     // Set initial timezone if specified by customization.
-    const std::string timezone_name = startup_manifest->initial_timezone();
-    VLOG(1) << "Initial time zone: " << timezone_name;
+    const std::string customization_timezone =
+        startup_manifest->initial_timezone();
+    VLOG(1) << "Initial time zone: " << customization_timezone;
     // Apply locale customizations only once to preserve whatever locale
     // user has changed to during OOBE.
-    if (!timezone_name.empty()) {
-      chromeos::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
-          base::UTF8ToUTF16(timezone_name));
-    }
+    if (!customization_timezone.empty())
+      timezone = customization_timezone;
+  }
+  if (!timezone.empty()) {
+    chromeos::system::SetSystemAndSigninScreenTimezone(timezone);
   }
 }
 

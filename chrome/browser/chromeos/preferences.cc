@@ -25,8 +25,11 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
+#include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -34,6 +37,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/devicemode.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/timezone/timezone_resolver.h"
@@ -116,6 +120,7 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kAccessibilityMonoAudioEnabled,
                                 false);
   registry->RegisterStringPref(prefs::kLogoutStartedLast, std::string());
+  registry->RegisterStringPref(prefs::kSigninScreenTimezone, std::string());
   registry->RegisterBooleanPref(prefs::kResolveDeviceTimezoneByGeolocation,
                                 true);
   registry->RegisterIntegerPref(
@@ -353,6 +358,16 @@ void Preferences::RegisterProfilePrefs(
 
   input_method::InputMethodSyncer::RegisterProfilePrefs(registry);
 
+  std::string current_timezone_id;
+  if (chromeos::CrosSettings::IsInitialized()) {
+    // In unit tests CrosSettings is not always initialized.
+    chromeos::CrosSettings::Get()->GetString(kSystemTimezone,
+                                             &current_timezone_id);
+  }
+  // |current_timezone_id| will be empty if CrosSettings doesn't know the
+  // timezone yet.
+  registry->RegisterStringPref(prefs::kUserTimezone, current_timezone_id);
+
   registry->RegisterBooleanPref(
       prefs::kResolveTimezoneByGeolocation, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
@@ -432,6 +447,7 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
                                  callback);
 
   pref_change_registrar_.Init(prefs);
+  pref_change_registrar_.Add(prefs::kUserTimezone, callback);
   pref_change_registrar_.Add(prefs::kResolveTimezoneByGeolocation, callback);
   pref_change_registrar_.Add(prefs::kUse24HourClock, callback);
   for (auto* remap_pref : kLanguageRemapPrefs)
@@ -725,6 +741,11 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     }
     WakeOnWifiManager::Get()->OnPreferenceChanged(
         static_cast<WakeOnWifiManager::WakeOnWifiFeature>(features));
+  }
+
+  if (pref_name == prefs::kUserTimezone &&
+      reason != REASON_ACTIVE_USER_CHANGED) {
+    system::UpdateSystemTimezone(ProfileHelper::Get()->GetProfileByUser(user_));
   }
 
   if (pref_name == prefs::kResolveTimezoneByGeolocation &&

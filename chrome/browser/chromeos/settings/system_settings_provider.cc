@@ -7,6 +7,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/settings/cros_settings_names.h"
 
@@ -20,6 +21,8 @@ SystemSettingsProvider::SystemSettingsProvider(
   timezone_settings->AddObserver(this);
   timezone_value_.reset(
       new base::Value(timezone_settings->GetCurrentTimezoneID()));
+  per_user_timezone_enabled_value_.reset(
+      new base::Value(system::PerUserTimezoneEnabled()));
 }
 
 SystemSettingsProvider::~SystemSettingsProvider() {
@@ -41,11 +44,16 @@ void SystemSettingsProvider::DoSet(const std::string& path,
     // This will call TimezoneChanged.
     system::TimezoneSettings::GetInstance()->SetTimezoneFromID(timezone_id);
   }
+  // kPerUserTimezoneEnabled is read-only.
 }
 
 const base::Value* SystemSettingsProvider::Get(const std::string& path) const {
   if (path == kSystemTimezone)
     return timezone_value_.get();
+
+  if (path == kPerUserTimezoneEnabled)
+    return per_user_timezone_enabled_value_.get();
+
   return NULL;
 }
 
@@ -56,7 +64,7 @@ CrosSettingsProvider::TrustedStatus
 }
 
 bool SystemSettingsProvider::HandlesSetting(const std::string& path) const {
-  return path == kSystemTimezone;
+  return path == kSystemTimezone || path == kPerUserTimezoneEnabled;
 }
 
 void SystemSettingsProvider::TimezoneChanged(const icu::TimeZone& timezone) {

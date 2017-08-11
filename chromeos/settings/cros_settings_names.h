@@ -119,6 +119,8 @@ CHROMEOS_EXPORT extern const char kDeviceWallpaperImage[];
 CHROMEOS_EXPORT extern const char kDeviceLoginScreenLocales[];
 CHROMEOS_EXPORT extern const char kDeviceLoginScreenInputMethods[];
 
+CHROMEOS_EXPORT extern const char kPerUserTimezoneEnabled[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

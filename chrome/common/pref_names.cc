@@ -544,6 +544,9 @@ const char kTouchpadSensitivity[] = "settings.touchpad.sensitivity2";
 // A boolean pref set to true if time should be displayed in 24-hour clock.
 const char kUse24HourClock[] = "settings.clock.use_24hour_clock";
 
+// A string pref containing Timezone ID for this user.
+const char kUserTimezone[] = "settings.timezone";
+
 // This setting disables manual timezone selection and starts periodic timezone
 // refresh.
 const char kResolveTimezoneByGeolocation[] =
@@ -2034,6 +2037,10 @@ const char kFactoryResetRequested[] = "FactoryResetRequested";
 const char kDebuggingFeaturesRequested[] = "DebuggingFeaturesRequested";
 
 #if defined(OS_CHROMEOS)
+// This setting controls initial device timezone that is used before user
+// session started. It is controlled by device owner.
+const char kSigninScreenTimezone[] = "settings.signin_screen_timezone";
+
 // This setting starts periodic timezone refresh when not in user session.
 // (user session is controlled by user profile preference
 // kResolveTimezoneByGeolocation

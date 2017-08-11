@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
+#include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/policy/device_management_service_configuration.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation_flow.h"
@@ -354,8 +355,7 @@ void BrowserPolicyConnectorChromeOS::SetTimezoneIfPolicyAvailable() {
   if (chromeos::CrosSettings::Get()->GetString(chromeos::kSystemTimezonePolicy,
                                                &timezone) &&
       !timezone.empty()) {
-    chromeos::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
-        base::UTF8ToUTF16(timezone));
+    chromeos::system::SetSystemAndSigninScreenTimezone(timezone);
   }
 }
 

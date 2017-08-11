@@ -498,6 +498,7 @@ void ChromeUserManagerImpl::Observe(
           multi_profile_user_controller_->StartObserving(profile);
         }
       }
+      system::UpdateSystemTimezone(profile);
       UpdateUserTimeZoneRefresher(profile);
       break;
     }
