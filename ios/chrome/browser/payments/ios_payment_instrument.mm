@@ -5,7 +5,6 @@
 #include "ios/chrome/browser/payments/ios_payment_instrument.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,7 +31,7 @@ const std::map<std::string, std::string>& GetMethodNameToSchemeName() {
 
 IOSPaymentInstrument::IOSPaymentInstrument(
     const std::string& method_name,
-    const std::string& universal_link,
+    const GURL& universal_link,
     const std::string& app_name,
     UIImage* icon_image,
     id<PaymentRequestUIDelegate> payment_request_ui_delegate)

@@ -46,6 +46,9 @@ typedef void (^mock_payment_response_helper_did_complete_with_payment_response)(
 - (void)paymentResponseHelperDidReceivePaymentMethodDetails {
 }
 
+- (void)paymentResponseHelperDidFailToReceivePaymentMethodDetails {
+}
+
 - (void)paymentResponseHelperDidCompleteWithPaymentResponse:
     (const web::PaymentResponse&)paymentResponse {
   return static_cast<

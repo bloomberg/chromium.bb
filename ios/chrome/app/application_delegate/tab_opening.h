@@ -41,6 +41,11 @@ class GURL;
 - (ProceduralBlock)completionBlockForTriggeringAction:
     (NTPTabOpeningPostOpeningAction)action;
 
+// Attempts to complete a Payment Request flow with a payment response from a
+// a third party app. Returns whether or not this operation was successful.
+- (BOOL)shouldCompletePaymentRequestOnCurrentTab:
+    (id<StartupInformation>)startupInformation;
+
 @end
 
 #endif  // IOS_CHROME_APP_APPLICATION_DELEGATE_TAB_OPENING_H_

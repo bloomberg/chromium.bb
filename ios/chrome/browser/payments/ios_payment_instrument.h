@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "components/payments/core/payment_instrument.h"
 #include "ios/chrome/browser/payments/payment_request.h"
+#include "url/gurl.h"
 
 @class PaymentRequestUIDelegate;
 
@@ -40,7 +41,7 @@ class IOSPaymentInstrument : public PaymentInstrument {
   // the native payment app from Chrome.
   IOSPaymentInstrument(
       const std::string& method_name,
-      const std::string& universal_link,
+      const GURL& universal_link,
       const std::string& app_name,
       UIImage* icon_image,
       id<PaymentRequestUIDelegate> payment_request_ui_delegate);
@@ -69,7 +70,7 @@ class IOSPaymentInstrument : public PaymentInstrument {
 
  private:
   std::string method_name_;
-  std::string universal_link_;
+  GURL universal_link_;
   std::string app_name_;
   base::scoped_nsobject<UIImage> icon_image_;
 

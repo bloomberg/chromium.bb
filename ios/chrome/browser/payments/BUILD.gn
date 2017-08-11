@@ -13,6 +13,10 @@ source_set("payments") {
     "ios_payment_instrument.mm",
     "ios_payment_instrument_finder.h",
     "ios_payment_instrument_finder.mm",
+    "ios_payment_instrument_launcher.h",
+    "ios_payment_instrument_launcher.mm",
+    "ios_payment_instrument_launcher_factory.h",
+    "ios_payment_instrument_launcher_factory.mm",
     "ios_payment_request_cache_factory.h",
     "ios_payment_request_cache_factory.mm",
     "origin_security_checker.h",
@@ -53,6 +57,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "ios_payment_instrument_finder_unittest.mm",
+    "ios_payment_instrument_launcher_unittest.mm",
     "payment_request_unittest.mm",
     "payment_response_helper_unittest.mm",
   ]
