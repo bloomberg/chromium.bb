@@ -199,4 +199,11 @@ component("ime") {
       "//ui/ozone",
     ]
   }
+
+  if (is_fuchsia) {
+    sources -= [
+      "input_method_auralinux.cc",
+      "input_method_auralinux.h",
+    ]
+  }
 }

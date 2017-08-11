@@ -377,8 +377,6 @@ component("base") {
 
   if (is_fuchsia) {
     sources += [
-      "clipboard/clipboard_fuchsia.cc",
-      "clipboard/clipboard_fuchsia.h",
       "idle/idle_fuchsia.cc",
       "resource/resource_bundle_fuchsia.cc",
     ]
@@ -648,10 +646,6 @@ component("base") {
 
   if (is_android || is_ios) {
     sources -= [ "device_form_factor_desktop.cc" ]
-  }
-
-  if (is_fuchsia) {
-    sources += [ "cursor/cursor_loader_fuchsia.cc" ]
   }
 }
 
