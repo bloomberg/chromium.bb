@@ -3,33 +3,40 @@
 # found in the LICENSE file.
 
 component("embedder") {
-  sources = [
-    "embedded_service_info.cc",
+  public = [
     "embedded_service_info.h",
-    "embedded_service_runner.cc",
     "embedded_service_runner.h",
-    "manifest_utils.cc",
     "manifest_utils.h",
+  ]
+
+  sources = [
+    "embedded_instance_manager.cc",
+    "embedded_instance_manager.h",
+    "embedded_service_info.cc",
+    "embedded_service_runner.cc",
+    "manifest_utils.cc",
   ]
 
   # iOS embeds the Service Manager but does not use service_manager::Main() (and
   # cannot use or even build it as-is).
   if (!is_ios) {
-    sources += [
-      "main.cc",
+    public += [
       "main.h",
-      "main_delegate.cc",
       "main_delegate.h",
       "process_type.h",
+      "set_process_title.h",
+      "set_process_title_linux.h",
+      "shared_file_util.h",
+      "switches.h",
+    ]
+    sources += [
+      "main.cc",
+      "main_delegate.cc",
       "service_manager_embedder_export.h",
       "set_process_title.cc",
-      "set_process_title.h",
       "set_process_title_linux.cc",
-      "set_process_title_linux.h",
       "shared_file_util.cc",
-      "shared_file_util.h",
       "switches.cc",
-      "switches.h",
     ]
   }
 
