@@ -5,12 +5,14 @@
 #ifndef TrackDefault_h
 #define TrackDefault_h
 
+#include "bindings/core/v8/ScriptValue.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
 class ExceptionState;
+class ScriptState;
 
 class TrackDefault final : public GarbageCollectedFinalized<TrackDefault>,
                            public ScriptWrappable {
@@ -35,7 +37,7 @@ class TrackDefault final : public GarbageCollectedFinalized<TrackDefault>,
   String byteStreamTrackID() const { return byte_stream_track_id_; }
   String language() const { return language_; }
   String label() const { return label_; }
-  const Vector<String>& kinds() const { return kinds_; }
+  ScriptValue kinds(ScriptState*) const;
 
   DEFINE_INLINE_TRACE() {}
 
