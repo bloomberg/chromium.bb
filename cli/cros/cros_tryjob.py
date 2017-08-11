@@ -47,9 +47,6 @@ def CbuildbotArgs(options):
   for g in options.gerrit_patches:
     args.extend(('-g', g))
 
-  for r in options.rietveld_patches:
-    args.extend(('-G', r))
-
   # Specialty options.
   if options.version:
     args.extend(('--version', options.version))
@@ -185,12 +182,6 @@ Production Examples (danger, can break production if misused):
              "Change-Id's or change numbers to patch. "
              "Please prepend '*' to internal Change-Id's")
     what_group.add_argument(
-        '-G', '--rietveld-patches', action='append', default=[],
-        # metavar='id1[:subdir1]...idN[:subdirN]',
-        help='Space-separated list of short-form Rietveld '
-             'issue numbers to patch. If no subdir is '
-             'specified, the src directory is used.')
-    what_group.add_argument(
         '-p', '--local-patches', action='append', default=[],
         # metavar="'<project1>[:<branch1>]...<projectN>[:<branchN>]'",
         help='Space-separated list of project branches with '
@@ -233,8 +224,7 @@ Production Examples (danger, can break production if misused):
     if (not self.options.yes and
         not self.options.production and
         not self.options.gerrit_patches and
-        not self.options.local_patches and
-        not self.options.rietveld_patches):
+        not self.options.local_patches):
       prompt = ('No patches were provided; are you sure you want to just '
                 'run a remote build of %s?' % (
                     self.options.branch if self.options.branch else 'ToT'))

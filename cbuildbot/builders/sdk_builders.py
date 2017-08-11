@@ -30,7 +30,6 @@ class ChrootSdkBuilder(simple_builders.SimpleBuilder):
     self._RunStage(build_stages.SetupBoardStage, constants.CHROOT_BUILDER_BOARD)
     self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(android_stages.UprevAndroidStage)
-    self._RunStage(chrome_stages.PatchChromeStage)
     self._RunStage(sdk_stages.SDKBuildToolchainsStage)
     self._RunStage(sdk_stages.SDKPackageStage, version=version)
     # Note: This produces badly named toolchain tarballs.  Before

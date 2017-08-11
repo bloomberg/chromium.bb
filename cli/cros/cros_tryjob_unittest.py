@@ -42,7 +42,6 @@ class TryjobTest(cros_test_lib.MockTestCase):
     self.assertEqual(options.passthrough, [])
     self.assertFalse(options.yes)
     self.assertEqual(options.gerrit_patches, [])
-    self.assertEqual(options.rietveld_patches, [])
     self.assertEqual(options.local_patches, [])
 
   def testComplexParsing(self):
@@ -51,7 +50,6 @@ class TryjobTest(cros_test_lib.MockTestCase):
         '--yes', '--hwtest',
         '--local', '--buildroot', '/buildroot',
         '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
-        '--rietveld-patches', '12345', '-G', '12345[:/sub]',
         '--local-patches', 'chromiumos/chromite:tryjob', '-p', 'other:other',
         'lumpy-paladin', 'lumpy-release',
         '--passthrough', 'foo', '--cbuild-arg', '--b-arg', 'bar',
@@ -68,7 +66,6 @@ class TryjobTest(cros_test_lib.MockTestCase):
                      ['foo', '--cbuild-arg', '--b-arg', 'bar'])
     self.assertTrue(options.yes)
     self.assertEqual(options.gerrit_patches, ['123', '*123', '123..456'])
-    self.assertEqual(options.rietveld_patches, ['12345', '12345[:/sub]'])
     self.assertEqual(options.local_patches,
                      ['chromiumos/chromite:tryjob', 'other:other'])
 
@@ -87,7 +84,6 @@ class TryjobTest(cros_test_lib.MockTestCase):
     self.assertEqual(options.passthrough, [])
     self.assertFalse(options.yes)
     self.assertEqual(options.gerrit_patches, [])
-    self.assertEqual(options.rietveld_patches, [])
     self.assertEqual(options.local_patches, [])
 
   def testDashDashParsing(self):
@@ -107,5 +103,4 @@ class TryjobTest(cros_test_lib.MockTestCase):
                      ['foo', '--cbuild-arg', '--b-arg', 'bar'])
     self.assertFalse(options.yes)
     self.assertEqual(options.gerrit_patches, [])
-    self.assertEqual(options.rietveld_patches, [])
     self.assertEqual(options.local_patches, [])

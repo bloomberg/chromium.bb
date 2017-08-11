@@ -396,7 +396,7 @@ def UpdateBinhostJson(buildroot):
 
 
 def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
-          packages=(), skip_chroot_upgrade=True, noworkon=False,
+          packages=(), skip_chroot_upgrade=True,
           extra_env=None, chrome_root=None, noretry=False,
           chroot_args=None, event_file=None, run_goma=False):
   """Wrapper around build_packages.
@@ -412,7 +412,6 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
       build_packages will calculate a list of packages automatically.
     skip_chroot_upgrade: Whether to skip the chroot update. If the chroot is
       not yet up to date, you should specify skip_chroot_upgrade=False.
-    noworkon: If set, don't force-build workon packages.
     extra_env: A dictionary of environmental variables to set during generation.
     chrome_root: The directory where chrome is stored.
     noretry: Do not retry package failures.
@@ -435,9 +434,6 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
 
   if chrome_binhost_only:
     cmd.append('--chrome_binhost_only')
-
-  if noworkon:
-    cmd.append('--noworkon')
 
   if noretry:
     cmd.append('--nobuildretry')

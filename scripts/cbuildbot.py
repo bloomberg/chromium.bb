@@ -197,7 +197,7 @@ def _RunBuildStagesWrapper(options, site_config, build_config):
     options.managed_chrome = (
         chrome_rev != constants.CHROME_REV_LOCAL and
         (not build_config['usepkg_build_packages'] or chrome_rev or
-         build_config['profile'] or options.rietveld_patches))
+         build_config['profile']))
   else:
     options.managed_chrome = build_config['sync_chrome']
 
@@ -213,8 +213,6 @@ def _RunBuildStagesWrapper(options, site_config, build_config):
                                        target_name, chrome_src)
     # Create directory if in need
     osutils.SafeMakedirsNonRoot(options.chrome_root)
-  elif options.rietveld_patches:
-    cros_build_lib.Die('This builder does not support Rietveld patches.')
 
   metadata_dump_dict = {}
   if options.metadata_dump:
@@ -436,12 +434,6 @@ def _CreateParser():
                           help='Space-separated list of short-form Gerrit '
                                "Change-Id's or change numbers to patch. "
                                "Please prepend '*' to internal Change-Id's")
-  group.add_remote_option('-G', '--rietveld-patches', action='split_extend',
-                          type='string', default=[],
-                          metavar="'id1[:subdir1]...idN[:subdirN]'",
-                          help='Space-separated list of short-form Rietveld '
-                               'issue numbers to patch. If no subdir is '
-                               'specified, the src directory is used.')
   group.add_option('-p', '--local-patches', action='split_extend', default=[],
                    metavar="'<project1>[:<branch1>]...<projectN>[:<branchN>]'",
                    help='Space-separated list of project branches with '
@@ -774,8 +766,7 @@ def _FinishParsing(options, args):
         'Chrome rev must not be %s if chrome_version is not set.'
         % constants.CHROME_REV_SPEC)
 
-  patches = bool(options.gerrit_patches or options.local_patches or
-                 options.rietveld_patches)
+  patches = bool(options.gerrit_patches or options.local_patches)
   if options.remote:
     if options.local:
       cros_build_lib.Die('Cannot specify both --remote and --local')

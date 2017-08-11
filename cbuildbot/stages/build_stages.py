@@ -442,8 +442,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     return chroot_args
 
   def PerformStage(self):
-    # If we have rietveld patches, always compile Chrome from source.
-    noworkon = not self._run.options.rietveld_patches
     packages = self.GetListOfPackagesToBuild()
     self.VerifyChromeBinpkg(packages)
     self.RecordPackagesUnderTest(packages)
@@ -470,7 +468,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                    packages=packages,
                    skip_chroot_upgrade=True,
                    chrome_root=self._run.options.chrome_root,
-                   noworkon=noworkon,
                    noretry=self._run.config.nobuildretry,
                    chroot_args=chroot_args,
                    extra_env=self._portage_extra_env,

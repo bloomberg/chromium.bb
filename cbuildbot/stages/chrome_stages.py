@@ -131,22 +131,6 @@ class SyncChromeStage(generic_stages.BuilderStage,
     self._WriteChromeVersionToMetadata()
     super(SyncChromeStage, self).Finish()
 
-class PatchChromeStage(generic_stages.BuilderStage):
-  """Stage that applies Chrome patches if needed."""
-
-  option_name = 'rietveld_patches'
-
-  URL_BASE = 'https://codereview.chromium.org/%(id)s'
-
-  def PerformStage(self):
-    for spatch in ' '.join(self._run.options.rietveld_patches).split():
-      patch, colon, subdir = spatch.partition(':')
-      if not colon:
-        subdir = 'src'
-      url = self.URL_BASE % {'id': patch}
-      logging.PrintBuildbotLink(spatch, url)
-      commands.PatchChrome(self._run.options.chrome_root, patch, subdir)
-
 
 class SimpleChromeArtifactsStage(generic_stages.BoardSpecificBuilderStage,
                                  generic_stages.ArchivingStageMixin):

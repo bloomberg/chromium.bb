@@ -92,26 +92,6 @@ class SimpleChromeArtifactsStage(cbuildbot_unittest.SimpleBuilderTestCase,
     cros_test_lib.VerifyTarball(env_tar, ['./', 'environment'])
 
 
-class PatchChromeStageTest(generic_stages_unittest.AbstractStageTestCase):
-  """Tests for PatchChromeStage."""
-
-  def setUp(self):
-    self._Prepare(cmd_args=[
-        '-r', self.build_root,
-        '--rietveld-patches=1234',
-        '--rietveld-patches=555:adir',
-    ])
-    self.PatchObject(commands, 'PatchChrome')
-
-  def ConstructStage(self):
-    return chrome_stages.PatchChromeStage(self._run)
-
-  def testBasic(self):
-    """Verify requested patches are applied."""
-    stage = self.ConstructStage()
-    stage.PerformStage()
-
-
 class SyncChromeStageTest(generic_stages_unittest.AbstractStageTestCase,
                           cros_build_lib_unittest.RunCommandTestCase):
   """Tests for SyncChromeStage."""
