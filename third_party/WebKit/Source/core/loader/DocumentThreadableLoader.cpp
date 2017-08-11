@@ -51,7 +51,6 @@
 #include "core/probe/CoreProbes.h"
 #include "platform/SharedBuffer.h"
 #include "platform/exported/WrappedResourceRequest.h"
-#include "platform/exported/WrappedResourceResponse.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/Resource.h"
@@ -648,10 +647,11 @@ bool DocumentThreadableLoader::RedirectReceived(
   if (cors_flag_) {
     // The redirect response must pass the access control check if the CORS
     // flag is set.
-    WebCORS::AccessStatus cors_status =
-        WebCORS::CheckAccess(WrappedResourceResponse(redirect_response),
-                             new_request.GetFetchCredentialsMode(),
-                             WebSecurityOrigin(GetSecurityOrigin()));
+    WebCORS::AccessStatus cors_status = WebCORS::CheckAccess(
+        redirect_response.Url(), redirect_response.HttpStatusCode(),
+        redirect_response.HttpHeaderFields(),
+        new_request.GetFetchCredentialsMode(),
+        WebSecurityOrigin(GetSecurityOrigin()));
     if (cors_status != WebCORS::AccessStatus::kAccessAllowed) {
       StringBuilder builder;
       builder.Append("Redirect from '");
@@ -660,7 +660,8 @@ bool DocumentThreadableLoader::RedirectReceived(
       builder.Append(new_url.GetString());
       builder.Append("' has been blocked by CORS policy: ");
       builder.Append(WebCORS::AccessControlErrorString(
-          cors_status, WrappedResourceResponse(redirect_response),
+          cors_status, redirect_response.HttpStatusCode(),
+          redirect_response.HttpHeaderFields(),
           WebSecurityOrigin(GetSecurityOrigin()), request_context_));
       DispatchDidFailAccessControlCheck(
           ResourceError::CancelledDueToAccessCheckError(
@@ -780,41 +781,41 @@ void DocumentThreadableLoader::HandlePreflightResponse(
     const ResourceResponse& response) {
   String access_control_error_description;
 
-  WebCORS::AccessStatus cors_status =
-      WebCORS::CheckAccess(WrappedResourceResponse(response),
-                           actual_request_.GetFetchCredentialsMode(),
-                           WebSecurityOrigin(GetSecurityOrigin()));
+  WebCORS::AccessStatus cors_status = WebCORS::CheckAccess(
+      response.Url(), response.HttpStatusCode(), response.HttpHeaderFields(),
+      actual_request_.GetFetchCredentialsMode(),
+      WebSecurityOrigin(GetSecurityOrigin()));
   if (cors_status != WebCORS::AccessStatus::kAccessAllowed) {
     StringBuilder builder;
     builder.Append(
         "Response to preflight request doesn't pass access "
         "control check: ");
     builder.Append(WebCORS::AccessControlErrorString(
-        cors_status, WrappedResourceResponse(response),
+        cors_status, response.HttpStatusCode(), response.HttpHeaderFields(),
         WebSecurityOrigin(GetSecurityOrigin()), request_context_));
     HandlePreflightFailure(response.Url(), builder.ToString());
     return;
   }
 
   WebCORS::PreflightStatus preflight_status =
-      WebCORS::CheckPreflight(WrappedResourceResponse(response));
+      WebCORS::CheckPreflight(response.HttpStatusCode());
   if (preflight_status != WebCORS::PreflightStatus::kPreflightSuccess) {
-    HandlePreflightFailure(
-        response.Url(),
-        WebCORS::PreflightErrorString(preflight_status,
-                                      WrappedResourceResponse(response)));
+    HandlePreflightFailure(response.Url(),
+                           WebCORS::PreflightErrorString(
+                               preflight_status, response.HttpHeaderFields(),
+                               response.HttpStatusCode()));
     return;
   }
 
   if (actual_request_.IsExternalRequest()) {
     WebCORS::PreflightStatus external_preflight_status =
-        WebCORS::CheckExternalPreflight(WrappedResourceResponse(response));
+        WebCORS::CheckExternalPreflight(response.HttpHeaderFields());
     if (external_preflight_status !=
         WebCORS::PreflightStatus::kPreflightSuccess) {
-      HandlePreflightFailure(
-          response.Url(),
-          WebCORS::PreflightErrorString(external_preflight_status,
-                                        WrappedResourceResponse(response)));
+      HandlePreflightFailure(response.Url(), WebCORS::PreflightErrorString(
+                                                 external_preflight_status,
+                                                 response.HttpHeaderFields(),
+                                                 response.HttpStatusCode()));
       return;
     }
   }
@@ -893,9 +894,9 @@ void DocumentThreadableLoader::HandleResponse(
             network::mojom::FetchResponseType::kOpaque) {
       StringBuilder builder;
       builder.Append(WebCORS::AccessControlErrorString(
-          WebCORS::AccessStatus::kInvalidResponse,
-          WrappedResourceResponse(response),
-          WebSecurityOrigin(GetSecurityOrigin()), request_context_));
+          WebCORS::AccessStatus::kInvalidResponse, response.HttpStatusCode(),
+          response.HttpHeaderFields(), WebSecurityOrigin(GetSecurityOrigin()),
+          request_context_));
       DispatchDidFailAccessControlCheck(
           ResourceError::CancelledDueToAccessCheckError(
               response.Url(), ResourceRequestBlockedReason::kOther,
@@ -924,15 +925,16 @@ void DocumentThreadableLoader::HandleResponse(
 
   if (IsCORSEnabledRequestMode(request_mode) && cors_flag_) {
     WebCORS::AccessStatus cors_status = WebCORS::CheckAccess(
-        WrappedResourceResponse(response), credentials_mode,
-        WebSecurityOrigin(GetSecurityOrigin()));
+        response.Url(), response.HttpStatusCode(), response.HttpHeaderFields(),
+        credentials_mode, WebSecurityOrigin(GetSecurityOrigin()));
     if (cors_status != WebCORS::AccessStatus::kAccessAllowed) {
       ReportResponseReceived(identifier, response);
       DispatchDidFailAccessControlCheck(
           ResourceError::CancelledDueToAccessCheckError(
               response.Url(), ResourceRequestBlockedReason::kOther,
               WebCORS::AccessControlErrorString(
-                  cors_status, WrappedResourceResponse(response),
+                  cors_status, response.HttpStatusCode(),
+                  response.HttpHeaderFields(),
                   WebSecurityOrigin(GetSecurityOrigin()), request_context_)));
       return;
     }

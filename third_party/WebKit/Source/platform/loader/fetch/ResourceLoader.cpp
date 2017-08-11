@@ -280,11 +280,11 @@ bool ResourceLoader::WillFollowRedirect(
       WebSecurityOrigin source_web_origin(source_origin.Get());
       WrappedResourceRequest new_request_wrapper(new_request);
       WebString cors_error_msg;
-      if (!WebCORS::HandleRedirect(source_web_origin, new_request_wrapper,
-                                   WrappedResourceResponse(redirect_response),
-                                   fetch_credentials_mode,
-                                   resource_->MutableOptions(),
-                                   cors_error_msg)) {
+      if (!WebCORS::HandleRedirect(
+              source_web_origin, new_request_wrapper, redirect_response.Url(),
+              redirect_response.HttpStatusCode(),
+              redirect_response.HttpHeaderFields(), fetch_credentials_mode,
+              resource_->MutableOptions(), cors_error_msg)) {
         resource_->SetCORSStatus(CORSStatus::kFailed);
 
         if (!unused_preload) {
@@ -432,7 +432,9 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
           : response;
 
   WebCORS::AccessStatus cors_status =
-      WebCORS::CheckAccess(WrappedResourceResponse(response_for_access_control),
+      WebCORS::CheckAccess(response_for_access_control.Url(),
+                           response_for_access_control.HttpStatusCode(),
+                           response_for_access_control.HttpHeaderFields(),
                            initial_request.GetFetchCredentialsMode(),
                            WebSecurityOrigin(source_origin));
 
@@ -449,7 +451,8 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
   error_msg.Append(source_origin->ToString());
   error_msg.Append("' has been blocked by CORS policy: ");
   error_msg.Append(WebCORS::AccessControlErrorString(
-      cors_status, WrappedResourceResponse(response_for_access_control),
+      cors_status, response_for_access_control.HttpStatusCode(),
+      response_for_access_control.HttpHeaderFields(),
       WebSecurityOrigin(source_origin), initial_request.GetRequestContext()));
 
   return CORSStatus::kFailed;
