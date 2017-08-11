@@ -2051,9 +2051,18 @@ int HttpCache::Transaction::DoCacheReadDataComplete(int result) {
   if (result > 0) {
     read_offset_ += result;
   } else if (result == 0) {  // End of file.
-    RecordHistograms();
-    cache_->DoneReadingFromEntry(entry_, this);
-    entry_ = NULL;
+    // TODO(shivanisha@), ideally it should not happen that |this| is not a
+    // reader but referenced from entry in another field, but it seems to be
+    // happening in some edge case (crbug.com/752774). Thus not invoking
+    // DoneReadingFromEntry here.
+    if (entry_->writer == this) {
+      DoneWritingToEntry(true);
+    } else {
+      RecordHistograms();
+      cache_->DoneWithEntry(entry_, this, false /* process_cancel */,
+                            partial_ != nullptr);
+      entry_ = NULL;
+    }
   } else {
     return OnCacheReadError(result, false);
   }
