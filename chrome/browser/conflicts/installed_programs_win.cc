@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/win/registry.h"
@@ -113,7 +114,7 @@ void CheckRegistryKeyForInstalledProgram(
   // Ignore Microsoft programs.
   base::string16 publisher;
   if (GetValue(candidate, L"Publisher", &publisher) &&
-      publisher == L"Microsoft Corporation") {
+      base::StartsWith(publisher, L"Microsoft", base::CompareCase::SENSITIVE)) {
     return;
   }
 
