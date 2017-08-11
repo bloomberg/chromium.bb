@@ -102,7 +102,7 @@ def parse_args(args):
                 action='append',
                 default=[],
                 dest='adb_devices',
-                help='Run Android layout tests on these devices.'),
+                help='Run Android layout tests on these devices'),
             # FIXME: Flip this to be off by default once we can log the
             # device setup more cleanly.
             optparse.make_option(
@@ -110,8 +110,8 @@ def parse_args(args):
                 dest='android_logging',
                 action='store_false',
                 default=True,
-                help=('Do not log android-specific debug messages (default is to log as part '
-                      'of --debug-rwt-logging')),
+                help=('Do not log android-specific debug messages (default '
+                      'is to log as part of --debug-rwt-logging)')),
         ]))
 
     option_group_definitions.append(
@@ -183,7 +183,7 @@ def parse_args(args):
                 '--new-flag-specific-baseline',
                 action='store_true',
                 default=False,
-                help=('Together with --addtional-driver-flag, if actual results are '
+                help=('Together with --additional-driver-flag, if actual results are '
                       'different from expected, save actual results as new baselines '
                       'into the flag-specific generic-platform directory.')),
             optparse.make_option(
@@ -413,10 +413,10 @@ def parse_args(args):
                 action='store',
                 default=None,
                 help=('control how tests marked SKIP are run. '
-                      "'default' == Skip tests unless explicitly listed on the command line, "
-                      "'ignore' == Run them anyway, "
-                      "'only' == only run the SKIP tests, "
-                      "'always' == always skip, even if listed on the command line.")),
+                      '"default" == Skip tests unless explicitly listed on the command line, '
+                      '"ignore" == Run them anyway, '
+                      '"only" == only run the SKIP tests, '
+                      '"always" == always skip, even if listed on the command line.')),
             optparse.make_option(
                 '--fastest',
                 action='store',
@@ -433,9 +433,9 @@ def parse_args(args):
             optparse.make_option(
                 '--wrapper',
                 help=('wrapper command to insert before invocations of the driver; option '
-                      "is split on whitespace before running. (Example: --wrapper='valgrind "
-                      "--smc-check=all')")),
-            # FIXME: Display default number of child processes that will run.
+                      'is split on whitespace before running. (Example: --wrapper="valgrind '
+                      '--smc-check=all")')),
+            # FIXME: Display the default number of child processes that will run.
             optparse.make_option(
                 '-f', '--fully-parallel',
                 action='store_true',
@@ -502,11 +502,11 @@ def _set_up_derived_options(port, options, args):
         options.batch_size = port.default_batch_size()
 
     if not options.child_processes:
-        options.child_processes = port.host.environ.get('WEBKIT_TEST_CHILD_PROCESSES',
-                                                        str(port.default_child_processes()))
+        options.child_processes = port.host.environ.get(
+            'WEBKIT_TEST_CHILD_PROCESSES', str(port.default_child_processes()))
     if not options.max_locked_shards:
-        options.max_locked_shards = int(port.host.environ.get('WEBKIT_TEST_MAX_LOCKED_SHARDS',
-                                                              str(port.default_max_locked_shards())))
+        options.max_locked_shards = int(port.host.environ.get(
+            'WEBKIT_TEST_MAX_LOCKED_SHARDS', str(port.default_max_locked_shards())))
 
     if not options.configuration:
         options.configuration = port.default_configuration()
@@ -601,12 +601,12 @@ def run(port, options, args, logging_stream, stdout):
             stdout.flush()
 
         _log.debug('')
-        _log.debug('Testing completed, Exit status: %d', run_details.exit_code)
+        _log.debug('Testing completed. Exit status: %d', run_details.exit_code)
         return run_details
 
     finally:
         printer.cleanup()
 
+
 if __name__ == '__main__':
-    exit_code = main(sys.argv[1:], sys.stdout, sys.stderr)
-    sys.exit(exit_code)
+    sys.exit(main(sys.argv[1:], sys.stdout, sys.stderr))
