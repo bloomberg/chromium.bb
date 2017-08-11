@@ -26,6 +26,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/search_provider_logos/google_logo_api.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
@@ -697,7 +698,14 @@ void EnqueueObservers(
                             base::ConstRef(observers), start_index + 1));
 }
 
-TEST_F(LogoTrackerTest, SupportOverlappingLogoRequests) {
+#if defined(THREAD_SANITIZER)
+// Flakes on Linux TSan: http://crbug/754599 (data race).
+#define MAYBE_SupportOverlappingLogoRequests \
+  DISABLED_SupportOverlappingLogoRequests
+#else
+#define MAYBE_SupportOverlappingLogoRequests SupportOverlappingLogoRequests
+#endif
+TEST_F(LogoTrackerTest, MAYBE_SupportOverlappingLogoRequests) {
   Logo cached_logo = GetSampleLogo(logo_url_, test_clock_->Now());
   logo_cache_->EncodeAndSetCachedLogo(cached_logo);
   ON_CALL(*logo_cache_, SetCachedLogo(_)).WillByDefault(Return());
