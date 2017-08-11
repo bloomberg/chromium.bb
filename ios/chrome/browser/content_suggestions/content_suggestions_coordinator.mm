@@ -491,10 +491,11 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
 - (void)openNewTabWithURL:(const GURL&)URL incognito:(BOOL)incognito {
   // TODO(crbug.com/691979): Add metrics.
 
+  // Open the tab in background if it is non-incognito only.
   [self.URLLoader webPageOrderedOpen:URL
                             referrer:web::Referrer()
                          inIncognito:incognito
-                        inBackground:NO
+                        inBackground:!incognito
                             appendTo:kCurrentTab];
 }
 
