@@ -49,6 +49,7 @@ import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -87,6 +88,14 @@ public class WebappActivity extends SingleTabActivity {
 
     private Runnable mSetImmersiveRunnable;
 
+    /** Initialization-on-demand holder. This exists for thread-safe lazy initialization. */
+    private static class Holder {
+        // This static map is used to cache WebappInfo objects between their initial creation in
+        // WebappLauncherActivity and final use in WebappActivity.
+        private static final HashMap<String, WebappInfo> sWebappInfoMap =
+                new HashMap<String, WebappInfo>();
+    }
+
     /**
      * Construct all the variables that shouldn't change.  We do it here both to clarify when the
      * objects are created and to ensure that they exist throughout the parallelized initialization
@@ -107,7 +116,9 @@ public class WebappActivity extends SingleTabActivity {
         if (intent == null) return;
         super.onNewIntent(intent);
 
-        WebappInfo newWebappInfo = createWebappInfo(intent);
+        WebappInfo newWebappInfo = popWebappInfo(WebappInfo.idFromIntent(intent));
+        if (newWebappInfo == null) newWebappInfo = createWebappInfo(intent);
+
         if (newWebappInfo == null) {
             Log.e(TAG, "Failed to parse new Intent: " + intent);
             ApiCompatibilityUtils.finishAndRemoveTask(this);
@@ -143,13 +154,13 @@ public class WebappActivity extends SingleTabActivity {
 
     @Override
     public void preInflationStartup() {
-        WebappInfo info = createWebappInfo(getIntent());
-
-        String id = "";
-        if (info != null) {
-            mWebappInfo = info;
-            id = info.id();
+        Intent intent = getIntent();
+        WebappInfo info = popWebappInfo(WebappInfo.idFromIntent(intent));
+        if (info == null) {
+            info = createWebappInfo(intent);
         }
+
+        mWebappInfo = info;
 
         // Initialize the WebappRegistry and warm up the shared preferences for this web app. No-ops
         // if the registry and this web app are already initialized. Must override Strict Mode to
@@ -157,7 +168,7 @@ public class WebappActivity extends SingleTabActivity {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             WebappRegistry.getInstance();
-            WebappRegistry.warmUpSharedPrefsForId(id);
+            WebappRegistry.warmUpSharedPrefsForId(info.id());
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
@@ -252,7 +263,6 @@ public class WebappActivity extends SingleTabActivity {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
 
         if (mSetImmersiveRunnable == null) {
-
             final View decor = getWindow().getDecorView();
 
             mSetImmersiveRunnable = new Runnable() {
@@ -361,6 +371,14 @@ public class WebappActivity extends SingleTabActivity {
      */
     public String getWebappScope() {
         return mWebappInfo.scopeUri().toString();
+    }
+
+    public static void addWebappInfo(String id, WebappInfo info) {
+        Holder.sWebappInfoMap.put(id, info);
+    }
+
+    public static WebappInfo popWebappInfo(String id) {
+        return Holder.sWebappInfoMap.remove(id);
     }
 
     private void initializeWebappData() {

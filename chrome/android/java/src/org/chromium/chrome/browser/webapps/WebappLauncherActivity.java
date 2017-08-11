@@ -89,6 +89,12 @@ public class WebappLauncherActivity extends Activity {
                 source = getWebApkSource(webappInfo);
             }
             LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(webappUrl, source);
+
+            // Add all information needed to launch WebappActivity without {@link
+            // WebappActivity#sWebappInfoMap} to launch intent. When the Android OS has killed a
+            // WebappActivity and the user selects the WebappActivity from "Android Recents" the
+            // WebappActivity is launched without going through WebappLauncherActivity first.
+            WebappActivity.addWebappInfo(webappInfo.id(), webappInfo);
             Intent launchIntent = createWebappLaunchIntent(webappInfo, webappSource, validWebApk);
             startActivity(launchIntent);
             return;

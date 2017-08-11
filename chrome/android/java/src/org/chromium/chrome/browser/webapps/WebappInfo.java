@@ -108,9 +108,10 @@ public class WebappInfo {
      * @param intent Intent containing info about the app.
      */
     public static WebappInfo create(Intent intent) {
-        String id = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ID);
-        String icon = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ICON);
+        String id = idFromIntent(intent);
         String url = urlFromIntent(intent);
+
+        String icon = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ICON);
         String scope = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_SCOPE);
         int displayMode = IntentUtils.safeGetIntExtra(
                 intent, ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.STANDALONE);
@@ -323,6 +324,9 @@ public class WebappInfo {
         intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, isIconGenerated());
     }
 
+    public static String idFromIntent(Intent intent) {
+        return IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ID);
+    }
     /**
      * Returns true if the WebappInfo was created for an Intent fired from a launcher shortcut (as
      * opposed to an intent from a push notification or other internal source).
