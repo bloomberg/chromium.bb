@@ -71,8 +71,11 @@ void OneGoogleBarService::RemoveObserver(
 }
 
 void OneGoogleBarService::SigninStatusChanged() {
-  one_google_bar_data_ = base::nullopt;
-  NotifyObservers();
+  // If we have cached data, clear it and notify observers.
+  if (one_google_bar_data_.has_value()) {
+    one_google_bar_data_ = base::nullopt;
+    NotifyObservers();
+  }
 }
 
 void OneGoogleBarService::OneGoogleBarDataFetched(

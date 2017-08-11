@@ -225,9 +225,15 @@ TEST_F(OneGoogleBarServiceTest, ResetsOnSignIn) {
   fetcher()->RespondToAllCallbacks(OneGoogleBarFetcher::Status::OK, data);
   ASSERT_THAT(service()->one_google_bar_data(), Eq(data));
 
-  // Sign in. This should clear the cached data.
+  StrictMock<MockOneGoogleBarServiceObserver> observer;
+  service()->AddObserver(&observer);
+
+  // Sign in. This should clear the cached data and notify the observer.
+  EXPECT_CALL(observer, OnOneGoogleBarDataUpdated());
   SignIn();
   EXPECT_THAT(service()->one_google_bar_data(), Eq(base::nullopt));
+
+  service()->RemoveObserver(&observer);
 }
 
 TEST_F(OneGoogleBarServiceTest, ResetsOnSignOut) {
@@ -240,7 +246,27 @@ TEST_F(OneGoogleBarServiceTest, ResetsOnSignOut) {
   fetcher()->RespondToAllCallbacks(OneGoogleBarFetcher::Status::OK, data);
   ASSERT_THAT(service()->one_google_bar_data(), Eq(data));
 
-  // Sign out. This should clear the cached data.
+  StrictMock<MockOneGoogleBarServiceObserver> observer;
+  service()->AddObserver(&observer);
+
+  // Sign in. This should clear the cached data and notify the observer.
+  EXPECT_CALL(observer, OnOneGoogleBarDataUpdated());
   SignOut();
   EXPECT_THAT(service()->one_google_bar_data(), Eq(base::nullopt));
+
+  service()->RemoveObserver(&observer);
+}
+
+TEST_F(OneGoogleBarServiceTest, DoesNotNotifyObserverOnSignInIfNoCachedData) {
+  ASSERT_THAT(service()->one_google_bar_data(), Eq(base::nullopt));
+
+  StrictMock<MockOneGoogleBarServiceObserver> observer;
+  service()->AddObserver(&observer);
+
+  // Sign in. This should *not* notify the observer, since there was no cached
+  // data before.
+  SignIn();
+  EXPECT_THAT(service()->one_google_bar_data(), Eq(base::nullopt));
+
+  service()->RemoveObserver(&observer);
 }
