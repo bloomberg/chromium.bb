@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
 
-#include "ash/shell.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -35,9 +34,6 @@ SyncErrorNotifierFactory* SyncErrorNotifierFactory::GetInstance() {
 
 KeyedService* SyncErrorNotifierFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (!ash::Shell::HasInstance())
-    return nullptr;
-
   Profile* profile = static_cast<Profile*>(context);
   browser_sync::ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
