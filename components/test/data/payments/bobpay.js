@@ -7,14 +7,23 @@
 /* global PaymentRequest:false */
 
 /**
+ * Builds a payment request with URL based payment methods.
+ * @return {!PaymentRequest} A payment request with URL based payment methods.
+ * @private
+ */
+function buildPaymentRequest() {
+  return new PaymentRequest(
+      [{supportedMethods: ['https://bobpay.com', 'https://alicepay.com']}],
+      {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
+}
+
+/**
  * Launches the PaymentRequest UI with Bob Pay as one of multiple payment
  * methods.
  */
 function buy() {  // eslint-disable-line no-unused-vars
   try {
-    new PaymentRequest(
-        [{supportedMethods: ['https://bobpay.com', 'https://alicepay.com']}],
-        {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
+    buildPaymentRequest()
         .show()
         .then(function(resp) {
           resp.complete('success')
@@ -29,6 +38,24 @@ function buy() {  // eslint-disable-line no-unused-vars
         })
         .catch(function(error) {
           print('show() rejected<br>' + error);
+        });
+  } catch (error) {
+    print('exception thrown<br>' + error);
+  }
+}
+
+/**
+ * Queries CanMakePayment but does not show the PaymentRequest after.
+ */
+function canMakePayment() {  // eslint-disable-line no-unused-vars
+  try {
+    buildPaymentRequest()
+        .canMakePayment()
+        .then(function(result) {
+          print(result);
+        })
+        .catch(function(error) {
+          print(error);
         });
   } catch (error) {
     print('exception thrown<br>' + error);

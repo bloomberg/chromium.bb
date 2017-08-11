@@ -12,7 +12,12 @@ found in the LICENSE file.
 <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-<div><button onclick="buy()" id="buy">Bob Pay Test</button></div>
+<div><button onclick="buy()" id="buy">Query buy</button></div>
+<div>
+  <button onclick="canMakePayment()" id="canMakePayment">
+    Query canMakePayment
+  </button>
+</div>
 <pre id="result"></pre>
 <script src="util.js"></script>
 <script src="bobpay.js"></script>
