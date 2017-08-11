@@ -37,6 +37,7 @@ class MockProxy : public DOMStorageProxy {
   void SetItem(int connection_id,
                const base::string16& key,
                const base::string16& value,
+               const base::NullableString16& old_value,
                const GURL& page_url,
                const CompletionCallback& callback) override {
     pending_callbacks_.push_back(callback);
@@ -49,6 +50,7 @@ class MockProxy : public DOMStorageProxy {
 
   void RemoveItem(int connection_id,
                   const base::string16& key,
+                  const base::NullableString16& old_value,
                   const GURL& page_url,
                   const CompletionCallback& callback) override {
     pending_callbacks_.push_back(callback);

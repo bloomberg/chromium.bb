@@ -196,6 +196,13 @@ void DOMStorageNamespace::GetOriginsWithAreas(
     origins->push_back(entry.first);
 }
 
+int DOMStorageNamespace::GetAreaOpenCount(const GURL& origin) const {
+  const auto& found = areas_.find(origin);
+  if (found == areas_.end())
+    return 0;
+  return found->second.open_count_;
+}
+
 DOMStorageNamespace::AreaHolder*
 DOMStorageNamespace::GetAreaHolder(const GURL& origin) {
   AreaMap::iterator found = areas_.find(origin);

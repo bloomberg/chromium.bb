@@ -45,13 +45,15 @@ class CONTENT_EXPORT DOMStorageHost {
   base::NullableString16 GetAreaKey(int connection_id, unsigned index);
   base::NullableString16 GetAreaItem(int connection_id,
                                      const base::string16& key);
-  bool SetAreaItem(int connection_id, const base::string16& key,
-                   const base::string16& value, const GURL& page_url,
-                   base::NullableString16* old_value);
+  bool SetAreaItem(int connection_id,
+                   const base::string16& key,
+                   const base::string16& value,
+                   const base::NullableString16& client_old_value,
+                   const GURL& page_url);
   bool RemoveAreaItem(int connection_id,
                       const base::string16& key,
-                      const GURL& page_url,
-                      base::string16* old_value);
+                      const base::NullableString16& client_old_value,
+                      const GURL& page_url);
   bool ClearArea(int connection_id, const GURL& page_url);
   bool HasAreaOpen(int namespace_id, const GURL& origin) const;
   bool HasConnection(int connection_id) const {
@@ -75,6 +77,7 @@ class CONTENT_EXPORT DOMStorageHost {
 
   scoped_refptr<DOMStorageContextImpl> context_;
   AreaMap connections_;
+  std::map<DOMStorageArea*, int> areas_open_count_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMStorageHost);
 };

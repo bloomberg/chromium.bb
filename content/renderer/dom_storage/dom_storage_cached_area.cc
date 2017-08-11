@@ -53,16 +53,15 @@ bool DOMStorageCachedArea::SetItem(int connection_id,
     return false;
 
   PrimeIfNeeded(connection_id);
-  base::NullableString16 unused;
-  if (!map_->SetItem(key, value, &unused))
+  base::NullableString16 old_value;
+  if (!map_->SetItem(key, value, &old_value))
     return false;
 
   // Ignore mutations to 'key' until OnSetItemComplete.
   ignore_key_mutations_[key]++;
-  proxy_->SetItem(
-      connection_id, key, value, page_url,
-      base::Bind(&DOMStorageCachedArea::OnSetItemComplete,
-                 weak_factory_.GetWeakPtr(), key));
+  proxy_->SetItem(connection_id, key, value, old_value, page_url,
+                  base::Bind(&DOMStorageCachedArea::OnSetItemComplete,
+                             weak_factory_.GetWeakPtr(), key));
   return true;
 }
 
@@ -70,16 +69,16 @@ void DOMStorageCachedArea::RemoveItem(int connection_id,
                                       const base::string16& key,
                                       const GURL& page_url) {
   PrimeIfNeeded(connection_id);
-  base::string16 unused;
-  if (!map_->RemoveItem(key, &unused))
+  base::string16 old_value;
+  if (!map_->RemoveItem(key, &old_value))
     return;
 
   // Ignore mutations to 'key' until OnRemoveItemComplete.
   ignore_key_mutations_[key]++;
-  proxy_->RemoveItem(
-      connection_id, key, page_url,
-      base::Bind(&DOMStorageCachedArea::OnRemoveItemComplete,
-                 weak_factory_.GetWeakPtr(), key));
+  proxy_->RemoveItem(connection_id, key,
+                     base::NullableString16(old_value, false), page_url,
+                     base::Bind(&DOMStorageCachedArea::OnRemoveItemComplete,
+                                weak_factory_.GetWeakPtr(), key));
 }
 
 void DOMStorageCachedArea::Clear(int connection_id, const GURL& page_url) {
