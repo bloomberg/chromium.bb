@@ -444,6 +444,19 @@ class BlinkPerfLayout(_BlinkPerfBenchmark):
     return Expectations()
 
 
+@benchmark.Owner(emails=['dmurph@chromium.org'])
+@benchmark.Disabled('all')
+class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
+  tag = 'owp_storage'
+  subdir = 'OWPStorage'
+
+  def GetExpectations(self):
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing disabled.
+    return StoryExpectations()
+
+
 @benchmark.Owner(emails=['wangxianzhu@chromium.org'])
 class BlinkPerfPaint(_BlinkPerfBenchmark):
   tag = 'paint'
