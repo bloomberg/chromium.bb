@@ -70,7 +70,6 @@ void SystemNetworkContextManager::SetUp(
     content::mojom::NetworkContextParamsPtr* network_context_params,
     bool* is_quic_allowed) {
   SystemNetworkContextManager* manager = GetInstance();
-  DCHECK(!manager->io_thread_network_context_);
   *network_context_request =
       mojo::MakeRequest(&manager->io_thread_network_context_);
   *network_context_params = CreateNetworkContextParams();
