@@ -12,7 +12,7 @@
 
 #include "remoting/client/gesture_interpreter.h"
 
-remoting::GestureInterpreter::GestureState toGestureState(
+static remoting::GestureInterpreter::GestureState toGestureState(
     UIGestureRecognizerState state) {
   switch (state) {
     case UIGestureRecognizerStateBegan:

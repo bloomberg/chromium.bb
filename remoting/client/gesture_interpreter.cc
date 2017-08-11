@@ -94,6 +94,9 @@ void GestureInterpreter::ThreeFingerTap(float x, float y) {
 void GestureInterpreter::Drag(float x, float y, GestureState state) {
   AbortAnimations();
 
+  bool is_dragging_mode = state != GESTURE_ENDED;
+  SetGestureInProgress(TouchInputStrategy::DRAG, is_dragging_mode);
+
   if (!input_strategy_->TrackTouchInput({x, y}, viewport_)) {
     return;
   }
@@ -104,8 +107,6 @@ void GestureInterpreter::Drag(float x, float y, GestureState state) {
                        TouchInputStrategy::DRAG_FEEDBACK);
   }
 
-  bool is_dragging_mode = state != GESTURE_ENDED;
-  SetGestureInProgress(TouchInputStrategy::DRAG, is_dragging_mode);
   input_stub_->SendMouseEvent(cursor_position.x, cursor_position.y,
                               protocol::MouseEvent_MouseButton_BUTTON_LEFT,
                               is_dragging_mode);
