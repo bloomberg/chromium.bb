@@ -1002,6 +1002,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     viz::LocalSurfaceId local_surface_id;
     cc::CompositorFrame frame;
     uint32_t max_shared_bitmap_sequence_number = 0;
+    viz::mojom::HitTestRegionListPtr hit_test_region_list;
   } saved_frame_;
 
   std::unique_ptr<LegacyIPCWidgetInputHandler> legacy_widget_input_handler_;
