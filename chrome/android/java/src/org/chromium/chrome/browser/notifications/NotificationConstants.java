@@ -92,4 +92,6 @@ public class NotificationConstants {
     // For example, 'Web:chromium.org' for a notification from chromium.org.
     static final String GROUP_WEB_PREFIX = "Web:";
 
+    // Default notificationId until it has been set.
+    public static final int DEFAULT_NOTIFICATION_ID = -1;
 }
