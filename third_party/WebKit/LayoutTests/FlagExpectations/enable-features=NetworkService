@@ -277,7 +277,6 @@ Bug(none) external/wpt/mixed-content/allowed/http-csp/same-host-wss/websocket-re
 Bug(none) external/wpt/navigation-timing/nav2_test_attributes_values.html [ Failure Timeout ]
 Bug(none) external/wpt/navigation-timing/nav2_test_unloadEvents_previous_document_cross_origin.sub.html [ Failure Timeout ]
 Bug(none) external/wpt/notifications/shownotification-resolve-manual.https.html [ Failure Timeout ]
-Bug(none) external/wpt/offscreen-canvas [ Crash Failure Timeout ]
 Bug(none) external/wpt/preload/fetch-destination.https.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/preload/single-download-preload.html [ Failure Timeout ]
 Bug(none) external/wpt/resource-timing/resource_TAO_match_origin.htm [ Failure Timeout ]
