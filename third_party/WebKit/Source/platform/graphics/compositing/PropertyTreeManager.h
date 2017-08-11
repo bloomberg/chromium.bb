@@ -5,10 +5,12 @@
 #ifndef PropertyTreeManager_h
 #define PropertyTreeManager_h
 
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace cc {
 class ClipTree;
@@ -26,15 +28,28 @@ class EffectPaintPropertyNode;
 class ScrollPaintPropertyNode;
 class TransformPaintPropertyNode;
 
+class PropertyTreeManagerClient {
+ public:
+  virtual cc::Layer* CreateOrReuseSynthesizedClipLayer(
+      const ClipPaintPropertyNode*,
+      CompositorElementId& mask_isolation_id,
+      CompositorElementId& mask_effect_id) = 0;
+};
+
 // Mutates a cc property tree to reflect Blink paint property tree
 // state. Intended for use by PaintArtifactCompositor.
 class PropertyTreeManager {
   WTF_MAKE_NONCOPYABLE(PropertyTreeManager);
 
  public:
-  PropertyTreeManager(cc::PropertyTrees&,
+  PropertyTreeManager(PropertyTreeManagerClient&,
+                      cc::PropertyTrees&,
                       cc::Layer* root_layer,
                       int sequence_number);
+  ~PropertyTreeManager() {
+    DCHECK(!effect_stack_.size()) << "PropertyTreeManager::Finalize() must be "
+                                     "called at the end of tree conversion.";
+  }
 
   void SetupRootTransformNode();
   void SetupRootClipNode();
@@ -79,13 +94,33 @@ class PropertyTreeManager {
   // until |owning_layer_id| is removed from the scroll node.
   void UpdateLayerScrollMapping(cc::Layer*, const TransformPaintPropertyNode*);
 
-  int SwitchToEffectNode(const EffectPaintPropertyNode& next_effect);
-  int GetCurrentCompositorEffectNodeIndex() const {
-    return effect_stack_.back().id;
-  }
+  // This function is expected to be invoked right before emitting each layer.
+  // It keeps track of the nesting of clip and effects, output a composited
+  // effect node whenever an effect is entered, or a non-trivial clip is
+  // entered. In the latter case, the generated composited effect node is
+  // called a "synthetic effect", and the corresponding clip a "synthesized
+  // clip". Upon exiting a synthesized clip, a mask layer will be appended,
+  // which will be kDstIn blended on top of contents enclosed by the synthetic
+  // effect, i.e. applying the clip as a mask.
+  int SwitchToEffectNodeWithSynthesizedClip(
+      const EffectPaintPropertyNode& next_effect,
+      const ClipPaintPropertyNode& next_clip);
+  // Expected to be invoked after emitting the last layer. This will exit all
+  // effects on the effect stack, generating clip mask layers for all the
+  // unclosed synthesized clips.
+  void Finalize();
 
  private:
-  void BuildEffectNodesRecursively(const EffectPaintPropertyNode* next_effect);
+  bool BuildEffectNodesRecursively(const EffectPaintPropertyNode* next_effect);
+  SkBlendMode SynthesizeCcEffectsForClipsIfNeeded(
+      const ClipPaintPropertyNode* target_clip,
+      SkBlendMode delegated_blend,
+      bool effect_is_newly_built);
+  void EmitClipMaskLayer();
+  void CloseCcEffect();
+  bool IsCurrentCcEffectSynthetic() const {
+    return current_effect_type_ != CcEffectType::kEffect;
+  }
 
   cc::TransformTree& GetTransformTree();
   cc::ClipTree& GetClipTree();
@@ -94,16 +129,18 @@ class PropertyTreeManager {
 
   int EnsureCompositorScrollNode(const ScrollPaintPropertyNode*);
 
-  const EffectPaintPropertyNode* CurrentEffectNode() const;
-
   // Scroll translation has special treatment in the transform and scroll trees.
   void UpdateScrollAndScrollTranslationNodes(const TransformPaintPropertyNode*);
+
+  PropertyTreeManagerClient& client_;
 
   // Property trees which should be updated by the manager.
   cc::PropertyTrees& property_trees_;
 
-  // Layer to which transform "owner" layers should be added. These will not
-  // have any actual children, but at present must exist in the tree.
+  // The special layer which is the parent of every other layers.
+  // We currently add dummy layers as required by cc property nodes, but this
+  // may change in the future. We also generate clip mask layers for clips
+  // that can't be rendered by pure cc clip nodes.
   cc::Layer* root_layer_;
 
   // Maps from Blink-side property tree nodes to cc property node indices.
@@ -111,13 +148,33 @@ class PropertyTreeManager {
   HashMap<const ClipPaintPropertyNode*, int> clip_node_map_;
   HashMap<const ScrollPaintPropertyNode*, int> scroll_node_map_;
 
-  struct BlinkEffectAndCcIdPair {
+  // The cc effect node that has the corresponding drawing state to the
+  // effect and clip state from the last SwitchToEffectNodeWithSynthesizedClip.
+  int current_effect_id_;
+  // The type of operation the current cc effect node applies. kEffect means
+  // it corresponds to a Blink effect node. kSynthesizedClip means it implements
+  // a Blink clip node that has to be rasterized.
+  enum class CcEffectType { kEffect, kSynthesizedClip } current_effect_type_;
+  // The effect state of the current cc effect node.
+  const EffectPaintPropertyNode* current_effect_;
+  // The clip state of the current cc effect node. This value may be shallower
+  // than the one passed into SwitchToEffectNodeWithSynthesizedClip because not
+  // every clip needs to be synthesized as cc effect.
+  // Is set to output clip of the effect if the type is kEffect, or set to the
+  // synthesized clip node if the type is kSynthesizedClip.
+  const ClipPaintPropertyNode* current_clip_;
+  // This keep track of cc effect stack. Whenever a new cc effect is nested,
+  // a new entry is pushed, and the entry will be popped when the effect closed.
+  // Note: This is a "restore stack", i.e. the top element does not represent
+  // the current state, but the state prior to most recent push.
+  struct EffectStackEntry {
+    int effect_id;
+    CcEffectType effect_type;
     const EffectPaintPropertyNode* effect;
-    // The cc property tree effect node id, or 'node index', for the cc effect
-    // node corresponding to the above Blink effect paint property node.
-    int id;
+    const ClipPaintPropertyNode* clip;
   };
-  Vector<BlinkEffectAndCcIdPair> effect_stack_;
+  Vector<EffectStackEntry> effect_stack_;
+
   int sequence_number_;
 
 #if DCHECK_IS_ON()

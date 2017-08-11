@@ -11,7 +11,6 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/compositing/ContentLayerClientImpl.h"
-#include "platform/graphics/compositing/PropertyTreeManager.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
@@ -415,6 +414,90 @@ void PaintArtifactCompositor::CollectPendingLayers(
   DCHECK_EQ(paint_artifact.PaintChunks().end(), cursor);
 }
 
+// This class maintains a persistent mask layer and unique stable cc effect IDs
+// for reuse across compositing cycles. The mask layer paints a rounded rect,
+// which is an updatable parameter of the class. The caller is responsible for
+// inserting the layer into layer list and associating with property nodes.
+//
+// The typical application of the mask layer is to create an isolating effect
+// node to paint the clipped contents, and at the end draw the mask layer with
+// a kDstIn blend effect. This is why two stable cc effect IDs are provided for
+// the convenience of the caller, although they are not directly related to the
+// class functionality.
+class SynthesizedClip : private cc::ContentLayerClient {
+ public:
+  SynthesizedClip() : layer_(cc::PictureLayer::Create(this)) {
+    static SyntheticEffectId serial;
+    mask_isolation_id_ = CompositorElementIdFromSyntheticEffectId(++serial);
+    mask_effect_id_ = CompositorElementIdFromSyntheticEffectId(++serial);
+    layer_->SetIsDrawable(true);
+  }
+
+  void Update(const FloatRoundedRect& rrect) {
+    IntRect layer_bounds = EnclosingIntRect(rrect.Rect());
+    layer_->set_offset_to_transform_parent(
+        gfx::Vector2dF(layer_bounds.X(), layer_bounds.Y()));
+    layer_->SetBounds(gfx::Size(layer_bounds.Width(), layer_bounds.Height()));
+
+    SkRRect new_rrect(rrect);
+    new_rrect.offset(-layer_bounds.X(), -layer_bounds.Y());
+    if (rrect_ == new_rrect)
+      return;
+    rrect_ = new_rrect;
+    layer_->SetNeedsDisplay();
+  }
+
+  cc::Layer* GetLayer() const { return layer_.get(); }
+  CompositorElementId GetMaskIsolationId() const { return mask_isolation_id_; }
+  CompositorElementId GetMaskEffectId() const { return mask_effect_id_; }
+
+ private:
+  // ContentLayerClient implementation.
+  gfx::Rect PaintableRegion() final { return gfx::Rect(layer_->bounds()); }
+  bool FillsBoundsCompletely() const final { return false; }
+  size_t GetApproximateUnsharedMemoryUsage() const final { return 0; }
+
+  scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
+      PaintingControlSetting) final {
+    auto cc_list = base::MakeRefCounted<cc::DisplayItemList>(
+        cc::DisplayItemList::kTopLevelDisplayItemList);
+    cc_list->StartPaint();
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    cc_list->push<cc::DrawRRectOp>(rrect_, flags);
+    cc_list->EndPaintOfUnpaired(gfx::Rect(layer_->bounds()));
+    cc_list->Finalize();
+    return cc_list;
+  }
+
+ private:
+  scoped_refptr<cc::PictureLayer> layer_;
+  SkRRect rrect_ = SkRRect::MakeEmpty();
+  CompositorElementId mask_isolation_id_;
+  CompositorElementId mask_effect_id_;
+};
+
+cc::Layer* PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
+    const ClipPaintPropertyNode* node,
+    CompositorElementId& mask_isolation_id,
+    CompositorElementId& mask_effect_id) {
+  auto entry = std::find_if(
+      synthesized_clip_cache_.begin(), synthesized_clip_cache_.end(),
+      [node](const auto& entry) { return entry.key == node && !entry.in_use; });
+  if (entry == synthesized_clip_cache_.end()) {
+    entry = synthesized_clip_cache_.insert(
+        entry,
+        SynthesizedClipEntry{node, std::make_unique<SynthesizedClip>(), false});
+  }
+
+  entry->in_use = true;
+  SynthesizedClip& synthesized_clip = *entry->synthesized_clip;
+  synthesized_clip.Update(node->ClipRect());
+  mask_isolation_id = synthesized_clip.GetMaskIsolationId();
+  mask_effect_id = synthesized_clip.GetMaskEffectId();
+  return synthesized_clip.GetLayer();
+}
+
 void PaintArtifactCompositor::Update(
     const PaintArtifact& paint_artifact,
     CompositorElementIdSet& composited_element_ids) {
@@ -443,15 +526,17 @@ void PaintArtifactCompositor::Update(
   root_layer_->set_property_tree_sequence_number(
       g_s_property_tree_sequence_number);
 
-  PropertyTreeManager property_tree_manager(*host->property_trees(),
+  PropertyTreeManager property_tree_manager(*this, *host->property_trees(),
                                             root_layer_.get(),
                                             g_s_property_tree_sequence_number);
-
   Vector<PendingLayer, 0> pending_layers;
   CollectPendingLayers(paint_artifact, pending_layers);
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> new_content_layer_clients;
   new_content_layer_clients.ReserveCapacity(pending_layers.size());
+
+  for (auto& entry : synthesized_clip_cache_)
+    entry.in_use = false;
 
   bool store_debug_info = false;
 #ifndef NDEBUG
@@ -469,8 +554,9 @@ void PaintArtifactCompositor::Update(
         property_tree_manager.EnsureCompositorTransformNode(transform);
     int clip_id = property_tree_manager.EnsureCompositorClipNode(
         pending_layer.property_tree_state.Clip());
-    int effect_id = property_tree_manager.SwitchToEffectNode(
-        *pending_layer.property_tree_state.Effect());
+    int effect_id = property_tree_manager.SwitchToEffectNodeWithSynthesizedClip(
+        *pending_layer.property_tree_state.Effect(),
+        *pending_layer.property_tree_state.Clip());
 
     layer->set_offset_to_transform_parent(layer_offset);
     CompositorElementId element_id =
@@ -506,8 +592,20 @@ void PaintArtifactCompositor::Update(
     if (extra_data_for_testing_enabled_)
       extra_data_for_testing_->content_layers.push_back(layer);
   }
-  content_layer_clients_.clear();
+  property_tree_manager.Finalize();
   content_layer_clients_.swap(new_content_layer_clients);
+
+  synthesized_clip_cache_.erase(
+      std::remove_if(synthesized_clip_cache_.begin(),
+                     synthesized_clip_cache_.end(),
+                     [](const auto& entry) { return !entry.in_use; }),
+      synthesized_clip_cache_.end());
+  if (extra_data_for_testing_enabled_) {
+    for (const auto& entry : synthesized_clip_cache_) {
+      extra_data_for_testing_->synthesized_clip_layers.push_back(
+          entry.synthesized_clip->GetLayer());
+    }
+  }
 
   // Mark the property trees as having been rebuilt.
   host->property_trees()->sequence_number = g_s_property_tree_sequence_number;
