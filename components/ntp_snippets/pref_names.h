@@ -110,8 +110,11 @@ extern const char kBreakingNewsSubscriptionDataIsAuthenticated[];
 // with the new one and update kBreakingNewsSubscriptionDataToken.
 extern const char kBreakingNewsGCMSubscriptionTokenCache[];
 
-// When the next GCM token validation is scheduled.
+// When the last GCM token validation was.
 extern const char kBreakingNewsGCMLastTokenValidationTime[];
+
+// When the last forced subscription to content suggestions service was.
+extern const char kBreakingNewsGCMLastForcedSubscriptionTime[];
 
 }  // namespace prefs
 }  // namespace ntp_snippets

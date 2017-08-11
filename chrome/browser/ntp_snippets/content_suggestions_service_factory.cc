@@ -387,7 +387,8 @@ MakeBreakingNewsGCMAppHandlerIfEnabled(Profile* profile) {
       std::move(subscription_manager),
       base::Bind(&safe_json::SafeJsonParser::Parse),
       base::MakeUnique<base::DefaultClock>(),
-      /*token_validation_timer=*/base::MakeUnique<base::OneShotTimer>());
+      /*token_validation_timer=*/base::MakeUnique<base::OneShotTimer>(),
+      /*forced_subscription_timer=*/base::MakeUnique<base::OneShotTimer>());
 }
 
 #endif  // OS_ANDROID

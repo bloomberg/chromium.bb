@@ -93,5 +93,8 @@ const char kBreakingNewsGCMSubscriptionTokenCache[] =
 const char kBreakingNewsGCMLastTokenValidationTime[] =
     "ntp_suggestions.breaking_news_gcm_last_token_validation_time";
 
+const char kBreakingNewsGCMLastForcedSubscriptionTime[] =
+    "ntp_suggestions.breaking_news_gcm_last_forced_subscription_time";
+
 }  // namespace prefs
 }  // namespace ntp_snippets
