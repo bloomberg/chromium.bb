@@ -127,8 +127,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       content::WebContents* source,
       const content::OpenURLParams& params) override;
 
-  void ShowCertificateViewer(scoped_refptr<net::X509Certificate> certificate);
-
   // BeforeUnload interception ////////////////////////////////////////////////
 
   // In order to preserve any edits the user may have made in devtools, the
@@ -315,9 +313,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                       const content::FileChooserParams& params) override;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override;
-  void ShowCertificateViewerInDevTools(
-      content::WebContents* web_contents,
-      scoped_refptr<net::X509Certificate> certificate) override;
 
   // content::DevToolsUIBindings::Delegate overrides
   void ActivateWindow() override;
@@ -335,6 +330,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   void ReadyForTest() override;
   InfoBarService* GetInfoBarService() override;
   void RenderProcessGone(bool crashed) override;
+  void ShowCertificateViewer(const std::string& cert_viewer) override;
 
   void ColorPickedInEyeDropper(int r, int g, int b, int a);
   void CreateDevToolsBrowser();

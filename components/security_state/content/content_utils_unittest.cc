@@ -580,7 +580,7 @@ TEST(SecurityStateContentUtilsTest, SubjectAltNameWarning) {
 TEST(SecurityStateContentUtilsTest, DefaultSecurityStyleExplanation) {
   content::SecurityStyleExplanation explanation("summary", "description");
 
-  EXPECT_EQ(false, explanation.has_certificate);
+  EXPECT_EQ(false, !!explanation.certificate);
   EXPECT_EQ(blink::WebMixedContentContextType::kNotMixedContent,
             explanation.mixed_content_type);
 }

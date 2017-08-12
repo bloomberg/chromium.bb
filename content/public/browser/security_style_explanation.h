@@ -8,6 +8,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "net/cert/x509_certificate.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 
 namespace content {
@@ -17,32 +18,24 @@ namespace content {
 // resource. An example summary phrase would be "Expired Certificate",
 // with a description along the lines of "This site's certificate chain
 // contains errors (net::CERT_DATE_INVALID)".
-struct SecurityStyleExplanation {
-  CONTENT_EXPORT SecurityStyleExplanation(){};
-  CONTENT_EXPORT SecurityStyleExplanation(const std::string& summary,
-                                          const std::string& description)
-      : summary(summary),
-        description(description),
-        has_certificate(false),
-        mixed_content_type(
-            blink::WebMixedContentContextType::kNotMixedContent) {}
-  CONTENT_EXPORT SecurityStyleExplanation(
+struct CONTENT_EXPORT SecurityStyleExplanation {
+  SecurityStyleExplanation();
+  SecurityStyleExplanation(const std::string& summary,
+                           const std::string& description);
+  SecurityStyleExplanation(
       const std::string& summary,
       const std::string& description,
-      bool has_certificate,
-      blink::WebMixedContentContextType mixed_content_type)
-      : summary(summary),
-        description(description),
-        has_certificate(has_certificate),
-        mixed_content_type(mixed_content_type) {}
-  CONTENT_EXPORT ~SecurityStyleExplanation() {}
+      scoped_refptr<net::X509Certificate> certificate,
+      blink::WebMixedContentContextType mixed_content_type);
+  SecurityStyleExplanation(const SecurityStyleExplanation& other);
+  SecurityStyleExplanation& operator=(const SecurityStyleExplanation& other);
+  ~SecurityStyleExplanation();
 
   std::string summary;
   std::string description;
-  // |has_certificate| indicates that this explanation has an associated
-  // certificate. UI surfaces can use this to add a button/link for viewing the
-  // certificate of the current page.
-  bool has_certificate;
+  // |certificate| indicates that this explanation has an associated
+  // certificate.
+  scoped_refptr<net::X509Certificate> certificate;
   // |mixed_content_type| indicates that the explanation describes a particular
   // type of mixed content. A value of kNotMixedContent means that the
   // explanation does not relate to mixed content. UI surfaces can use this to

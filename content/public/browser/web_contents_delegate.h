@@ -63,10 +63,6 @@ class Rect;
 class Size;
 }
 
-namespace net {
-class X509Certificate;
-}
-
 namespace url {
 class Origin;
 }
@@ -545,11 +541,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual blink::WebSecurityStyle GetSecurityStyle(
       WebContents* web_contents,
       SecurityStyleExplanations* security_style_explanations);
-
-  // Displays platform-specific (OS) dialog with the certificate details.
-  virtual void ShowCertificateViewerInDevTools(
-      WebContents* web_contents,
-      scoped_refptr<net::X509Certificate> certificate);
 
   // Requests the app banner. This method is called from the DevTools.
   virtual void RequestAppBannerFromDevTools(content::WebContents* web_contents);

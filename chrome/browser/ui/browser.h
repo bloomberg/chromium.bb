@@ -491,9 +491,6 @@ class Browser : public TabStripModelObserver,
   blink::WebSecurityStyle GetSecurityStyle(
       content::WebContents* web_contents,
       content::SecurityStyleExplanations* security_style_explanations) override;
-  void ShowCertificateViewerInDevTools(
-      content::WebContents* web_contents,
-      scoped_refptr<net::X509Certificate> certificate) override;
   std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler) override;

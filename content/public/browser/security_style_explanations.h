@@ -25,11 +25,10 @@ namespace content {
 // SecurityStyleExplanation that contains a human-readable explanation of the
 // factor. A single page may contain multiple explanations, each of which may
 // have a different severity level ("secure", "warning", "insecure" and "info").
-struct SecurityStyleExplanations {
-  CONTENT_EXPORT SecurityStyleExplanations();
-  CONTENT_EXPORT SecurityStyleExplanations(
-      const SecurityStyleExplanations& other);
-  CONTENT_EXPORT ~SecurityStyleExplanations();
+struct CONTENT_EXPORT SecurityStyleExplanations {
+  SecurityStyleExplanations();
+  SecurityStyleExplanations(const SecurityStyleExplanations& other);
+  ~SecurityStyleExplanations();
 
   // True if the page was loaded over HTTPS and ran mixed (HTTP) content
   // such as scripts.

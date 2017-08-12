@@ -11,7 +11,13 @@ function test()
     InspectorTest.addResult("\nBefore Refresh --------------");
 
     var mixedExplanations = [
-        /** @type {!Protocol.Security.SecurityStateExplanation} */ ({"securityState": Protocol.Security.SecurityState.Neutral, "summary": "Neutral Test Summary", "description": "Neutral Test Description", mixedContentType: Protocol.Security.MixedContentType.OptionallyBlockable})
+        {
+            securityState: Protocol.Security.SecurityState.Neutral,
+            summary: "Neutral Test Summary",
+            description: "Neutral Test Description",
+            mixedContentType: Protocol.Security.MixedContentType.OptionallyBlockable,
+            certificate: []
+        }
     ];
     InspectorTest.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Neutral, true, mixedExplanations, insecureContentStatus, null));
 
