@@ -6,8 +6,10 @@ import json
 import os
 import subprocess
 import sys
-from telemetry.testing import options_for_unittests
 import unittest
+
+from telemetry import decorators
+from telemetry.testing import options_for_unittests
 
 
 class ScriptsSmokeTest(unittest.TestCase):
@@ -58,6 +60,7 @@ class ScriptsSmokeTest(unittest.TestCase):
     self.assertEquals(return_code, 0, stdout)
     self.assertIn('kraken', stdout)
 
+  @decorators.Disabled('chromeos')  # crbug.com/754913
   def testRunTelemetryBenchmarkAsGoogletest(self):
     options = options_for_unittests.GetCopy()
     browser_type = options.browser_type
