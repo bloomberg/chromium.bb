@@ -13,6 +13,7 @@ date:
       user interaction.
 """
 
+from distutils.version import LooseVersion
 import os
 import platform
 import plistlib
@@ -132,10 +133,11 @@ def LoadPlist(path):
     os.unlink(name)
 
 
-def AcceptLicense(target_os):
-  """Use xcodebuild to accept new toolchain license if necessary.  Don't accept
-  the license if a newer license has already been accepted. This only works if
-  xcodebuild and xcode-select are passwordless in sudoers."""
+def FinalizeUnpack(target_os):
+  """Use xcodebuild to accept new toolchain license and run first launch
+  installers if necessary.  Don't accept the license if a newer license has
+  already been accepted. This only works if xcodebuild and xcode-select are
+  passwordless in sudoers."""
 
   # Check old license
   try:
@@ -164,6 +166,11 @@ def AcceptLicense(target_os):
     pass
 
   print "Accepting license."
+  target_version_plist_path = \
+      os.path.join(TOOLCHAIN_BUILD_DIR % target_os,
+                   *['Contents','version.plist'])
+  target_version_plist = LoadPlist(target_version_plist_path)
+  short_version_string = target_version_plist['CFBundleShortVersionString']
   old_path = subprocess.Popen(['/usr/bin/xcode-select', '-p'],
                                stdout=subprocess.PIPE).communicate()[0].strip()
   try:
@@ -171,6 +178,11 @@ def AcceptLicense(target_os):
         TOOLCHAIN_BUILD_DIR % target_os, 'Contents/Developer')
     subprocess.check_call(['sudo', '/usr/bin/xcode-select', '-s', build_dir])
     subprocess.check_call(['sudo', '/usr/bin/xcodebuild', '-license', 'accept'])
+
+    if target_os == 'ios' and \
+        LooseVersion(short_version_string) >= LooseVersion("9.0"):
+      print "Installing packages."
+      subprocess.check_call(['sudo', '/usr/bin/xcodebuild', '-runFirstLaunch'])
   finally:
     subprocess.check_call(['sudo', '/usr/bin/xcode-select', '-s', old_path])
 
@@ -216,7 +228,7 @@ def DownloadHermeticBuild(target_os, default_version, toolchain_filename):
 
   if ReadStampFile(target_os) == toolchain_version:
     print 'Toolchain (%s) is already up to date.' % toolchain_version
-    AcceptLicense(target_os)
+    FinalizeUnpack(target_os)
     return 0
 
   if not CanAccessToolchainBucket():
@@ -234,7 +246,7 @@ def DownloadHermeticBuild(target_os, default_version, toolchain_filename):
     toolchain_file = toolchain_filename % toolchain_version
     toolchain_full_url = TOOLCHAIN_URL + toolchain_file
     DownloadAndUnpack(toolchain_full_url, TOOLCHAIN_BUILD_DIR % target_os)
-    AcceptLicense(target_os)
+    FinalizeUnpack(target_os)
 
     print 'Toolchain %s unpacked.' % toolchain_version
     WriteStampFile(target_os, toolchain_version)
