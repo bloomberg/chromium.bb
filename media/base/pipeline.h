@@ -34,6 +34,7 @@ class MEDIA_EXPORT Pipeline {
     // Executed whenever an error occurs except when the error occurs during
     // Start/Seek/Resume or Suspend. Those errors are reported via |seek_cb|
     // and |suspend_cb| respectively.
+    // NOTE: The client is responsible for calling Pipeline::Stop().
     virtual void OnError(PipelineStatus status) = 0;
 
     // Executed whenever the media reaches the end.

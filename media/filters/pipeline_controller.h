@@ -30,7 +30,7 @@ class Demuxer;
 class MEDIA_EXPORT PipelineController {
  public:
   enum class State {
-    CREATED,
+    STOPPED,
     STARTING,
     PLAYING,
     SEEKING,
@@ -169,7 +169,7 @@ class MEDIA_EXPORT PipelineController {
   bool is_static_ = true;
 
   // Tracks the current state of |pipeline_|.
-  State state_ = State::CREATED;
+  State state_ = State::STOPPED;
 
   // Indicates that a seek has occurred. When set, a seeked callback will be
   // issued at the next stable state.
