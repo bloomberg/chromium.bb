@@ -551,7 +551,7 @@ bool BrowserPlugin::ExecuteEditCommand(const blink::WebString& name,
 
 bool BrowserPlugin::SetComposition(
     const blink::WebString& text,
-    const blink::WebVector<blink::WebCompositionUnderline>& underlines,
+    const blink::WebVector<blink::WebImeTextSpan>& ime_text_spans,
     const blink::WebRange& replacementRange,
     int selectionStart,
     int selectionEnd) {
@@ -560,8 +560,8 @@ bool BrowserPlugin::SetComposition(
 
   BrowserPluginHostMsg_SetComposition_Params params;
   params.text = text.Utf16();
-  for (size_t i = 0; i < underlines.size(); ++i) {
-    params.underlines.push_back(underlines[i]);
+  for (size_t i = 0; i < ime_text_spans.size(); ++i) {
+    params.ime_text_spans.push_back(ime_text_spans[i]);
   }
 
   params.replacement_range =
@@ -580,15 +580,15 @@ bool BrowserPlugin::SetComposition(
 
 bool BrowserPlugin::CommitText(
     const blink::WebString& text,
-    const blink::WebVector<blink::WebCompositionUnderline>& underlines,
+    const blink::WebVector<blink::WebImeTextSpan>& ime_text_spans,
     const blink::WebRange& replacementRange,
     int relative_cursor_pos) {
   if (!attached())
     return false;
 
-  std::vector<blink::WebCompositionUnderline> std_underlines;
-  for (size_t i = 0; i < underlines.size(); ++i) {
-    std_underlines.push_back(underlines[i]);
+  std::vector<blink::WebImeTextSpan> std_ime_text_spans;
+  for (size_t i = 0; i < ime_text_spans.size(); ++i) {
+    std_ime_text_spans.push_back(ime_text_spans[i]);
   }
   gfx::Range replacement_range =
       replacementRange.IsNull()
@@ -597,7 +597,7 @@ bool BrowserPlugin::CommitText(
                        static_cast<uint32_t>(replacementRange.EndOffset()));
 
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_ImeCommitText(
-      browser_plugin_instance_id_, text.Utf16(), std_underlines,
+      browser_plugin_instance_id_, text.Utf16(), std_ime_text_spans,
       replacement_range, relative_cursor_pos));
   // TODO(kochi): This assumes the IPC handling always succeeds.
   return true;

@@ -9,7 +9,7 @@
 #include "services/ui/public/interfaces/ime/ime.mojom-shared.h"
 #include "ui/base/ime/candidate_window.h"
 #include "ui/base/ime/composition_text.h"
-#include "ui/base/ime/composition_underline.h"
+#include "ui/base/ime/ime_text_span.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 
@@ -74,36 +74,32 @@ struct StructTraits<ui::mojom::CandidateWindowEntryDataView,
 };
 
 template <>
-struct StructTraits<ui::mojom::CompositionUnderlineDataView,
-                    ui::CompositionUnderline> {
-  static uint32_t start_offset(const ui::CompositionUnderline& c) {
-    return c.start_offset;
-  }
-  static uint32_t end_offset(const ui::CompositionUnderline& c) {
-    return c.end_offset;
-  }
-  static uint32_t color(const ui::CompositionUnderline& c) { return c.color; }
-  static uint32_t thick(const ui::CompositionUnderline& c) { return c.thick; }
-  static uint32_t background_color(const ui::CompositionUnderline& c) {
-    return c.background_color;
-  }
-  static bool Read(ui::mojom::CompositionUnderlineDataView data,
-                   ui::CompositionUnderline* out);
-};
-
-template <>
 struct StructTraits<ui::mojom::CompositionTextDataView, ui::CompositionText> {
   static std::string text(const ui::CompositionText& c) {
     return base::UTF16ToUTF8(c.text);
   }
-  static ui::CompositionUnderlines underlines(const ui::CompositionText& c) {
-    return c.underlines;
+  static ui::ImeTextSpans ime_text_spans(const ui::CompositionText& c) {
+    return c.ime_text_spans;
   }
   static gfx::Range selection(const ui::CompositionText& c) {
     return c.selection;
   }
   static bool Read(ui::mojom::CompositionTextDataView data,
                    ui::CompositionText* out);
+};
+
+template <>
+struct StructTraits<ui::mojom::ImeTextSpanDataView, ui::ImeTextSpan> {
+  static uint32_t start_offset(const ui::ImeTextSpan& c) {
+    return c.start_offset;
+  }
+  static uint32_t end_offset(const ui::ImeTextSpan& c) { return c.end_offset; }
+  static uint32_t color(const ui::ImeTextSpan& c) { return c.color; }
+  static uint32_t thick(const ui::ImeTextSpan& c) { return c.thick; }
+  static uint32_t background_color(const ui::ImeTextSpan& c) {
+    return c.background_color;
+  }
+  static bool Read(ui::mojom::ImeTextSpanDataView data, ui::ImeTextSpan* out);
 };
 
 template <>

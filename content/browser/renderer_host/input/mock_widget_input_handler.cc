@@ -32,14 +32,14 @@ void MockWidgetInputHandler::CursorVisibilityChanged(bool visible) {}
 
 void MockWidgetInputHandler::ImeSetComposition(
     const base::string16& text,
-    const std::vector<ui::CompositionUnderline>& underlines,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& range,
     int32_t start,
     int32_t end) {}
 
 void MockWidgetInputHandler::ImeCommitText(
     const base::string16& text,
-    const std::vector<ui::CompositionUnderline>& underlines,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& range,
     int32_t relative_cursor_position) {}
 

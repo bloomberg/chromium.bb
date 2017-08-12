@@ -61,7 +61,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
+#include "third_party/WebKit/public/web/WebImeTextSpan.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
@@ -1191,7 +1191,7 @@ void RenderWidgetHostViewAura::SetCompositionText(
   // TODO(suzhe): due to a bug of webkit, we can't use selection range with
   // composition string. See: https://bugs.webkit.org/show_bug.cgi?id=37788
   text_input_manager_->GetActiveWidget()->ImeSetComposition(
-      composition.text, composition.underlines, gfx::Range::InvalidRange(),
+      composition.text, composition.ime_text_spans, gfx::Range::InvalidRange(),
       composition.selection.end(), composition.selection.end());
 
   has_composition_text_ = !composition.text.empty();
@@ -1218,8 +1218,7 @@ void RenderWidgetHostViewAura::InsertText(const base::string16& text) {
   if (text_input_manager_ && text_input_manager_->GetActiveWidget()) {
     if (text.length())
       text_input_manager_->GetActiveWidget()->ImeCommitText(
-          text, std::vector<ui::CompositionUnderline>(),
-          gfx::Range::InvalidRange(), 0);
+          text, std::vector<ui::ImeTextSpan>(), gfx::Range::InvalidRange(), 0);
     else if (has_composition_text_)
       text_input_manager_->GetActiveWidget()->ImeFinishComposingText(false);
   }

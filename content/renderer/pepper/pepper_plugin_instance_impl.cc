@@ -110,9 +110,9 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebDocumentLoader.h"
+#include "third_party/WebKit/public/web/WebImeTextSpan.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebPluginScriptForbiddenScope.h"
@@ -945,22 +945,19 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
 bool PepperPluginInstanceImpl::SendCompositionEventToPlugin(
     PP_InputEvent_Type type,
     const base::string16& text) {
-  std::vector<blink::WebCompositionUnderline> empty;
-  return SendCompositionEventWithUnderlineInformationToPlugin(
-      type,
-      text,
-      empty,
-      static_cast<int>(text.size()),
+  std::vector<blink::WebImeTextSpan> empty;
+  return SendCompositionEventWithImeTextSpanInformationToPlugin(
+      type, text, empty, static_cast<int>(text.size()),
       static_cast<int>(text.size()));
 }
 
-bool
-PepperPluginInstanceImpl::SendCompositionEventWithUnderlineInformationToPlugin(
-    PP_InputEvent_Type type,
-    const base::string16& text,
-    const std::vector<blink::WebCompositionUnderline>& underlines,
-    int selection_start,
-    int selection_end) {
+bool PepperPluginInstanceImpl::
+    SendCompositionEventWithImeTextSpanInformationToPlugin(
+        PP_InputEvent_Type type,
+        const base::string16& text,
+        const std::vector<blink::WebImeTextSpan>& ime_text_spans,
+        int selection_start,
+        int selection_end) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
 
@@ -981,9 +978,9 @@ PepperPluginInstanceImpl::SendCompositionEventWithUnderlineInformationToPlugin(
   std::vector<size_t> utf16_offsets;
   utf16_offsets.push_back(selection_start);
   utf16_offsets.push_back(selection_end);
-  for (size_t i = 0; i < underlines.size(); ++i) {
-    utf16_offsets.push_back(underlines[i].start_offset);
-    utf16_offsets.push_back(underlines[i].end_offset);
+  for (size_t i = 0; i < ime_text_spans.size(); ++i) {
+    utf16_offsets.push_back(ime_text_spans[i].start_offset);
+    utf16_offsets.push_back(ime_text_spans[i].end_offset);
   }
   std::vector<size_t> utf8_offsets(utf16_offsets);
   event.character_text = base::UTF16ToUTF8AndAdjustOffsets(text, &utf8_offsets);
@@ -1006,8 +1003,8 @@ PepperPluginInstanceImpl::SendCompositionEventWithUnderlineInformationToPlugin(
                                            offset_set.end());
 
   // Set the composition target.
-  for (size_t i = 0; i < underlines.size(); ++i) {
-    if (underlines[i].thick) {
+  for (size_t i = 0; i < ime_text_spans.size(); ++i) {
+    if (ime_text_spans[i].thick) {
       std::vector<uint32_t>::iterator it =
           std::find(event.composition_segment_offsets.begin(),
                     event.composition_segment_offsets.end(),
@@ -1049,15 +1046,12 @@ bool PepperPluginInstanceImpl::HandleCompositionStart(
 
 bool PepperPluginInstanceImpl::HandleCompositionUpdate(
     const base::string16& text,
-    const std::vector<blink::WebCompositionUnderline>& underlines,
+    const std::vector<blink::WebImeTextSpan>& ime_text_spans,
     int selection_start,
     int selection_end) {
-  return SendCompositionEventWithUnderlineInformationToPlugin(
-      PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE,
-      text,
-      underlines,
-      selection_start,
-      selection_end);
+  return SendCompositionEventWithImeTextSpanInformationToPlugin(
+      PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE, text, ime_text_spans,
+      selection_start, selection_end);
 }
 
 bool PepperPluginInstanceImpl::HandleCompositionEnd(
@@ -2335,7 +2329,7 @@ bool PepperPluginInstanceImpl::SimulateIMEEvent(
         return false;
       render_frame_->SimulateImeCommitText(
           base::UTF8ToUTF16(input_event.character_text),
-          std::vector<blink::WebCompositionUnderline>(), gfx::Range());
+          std::vector<blink::WebImeTextSpan>(), gfx::Range());
       break;
     default:
       return false;
@@ -2358,18 +2352,18 @@ void PepperPluginInstanceImpl::SimulateImeSetCompositionEvent(
   base::string16 utf16_text =
       base::UTF8ToUTF16AndAdjustOffsets(input_event.character_text, &offsets);
 
-  std::vector<blink::WebCompositionUnderline> underlines;
+  std::vector<blink::WebImeTextSpan> ime_text_spans;
   for (size_t i = 2; i + 1 < offsets.size(); ++i) {
-    blink::WebCompositionUnderline underline;
-    underline.start_offset = offsets[i];
-    underline.end_offset = offsets[i + 1];
+    blink::WebImeTextSpan ime_text_span;
+    ime_text_span.start_offset = offsets[i];
+    ime_text_span.end_offset = offsets[i + 1];
     if (input_event.composition_target_segment == static_cast<int32_t>(i - 2))
-      underline.thick = true;
-    underlines.push_back(underline);
+      ime_text_span.thick = true;
+    ime_text_spans.push_back(ime_text_span);
   }
 
-  render_frame_->SimulateImeSetComposition(
-      utf16_text, underlines, offsets[0], offsets[1]);
+  render_frame_->SimulateImeSetComposition(utf16_text, ime_text_spans,
+                                           offsets[0], offsets[1]);
 }
 
 ContentDecryptorDelegate*

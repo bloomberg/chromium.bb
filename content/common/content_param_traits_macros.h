@@ -21,7 +21,7 @@
 #include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
-#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
+#include "third_party/WebKit/public/web/WebImeTextSpan.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerCreationContextType.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
@@ -52,7 +52,7 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPageVisibilityState,
                           blink::kWebPageVisibilityStateLast)
 
-IPC_STRUCT_TRAITS_BEGIN(blink::WebCompositionUnderline)
+IPC_STRUCT_TRAITS_BEGIN(blink::WebImeTextSpan)
   IPC_STRUCT_TRAITS_MEMBER(start_offset)
   IPC_STRUCT_TRAITS_MEMBER(end_offset)
   IPC_STRUCT_TRAITS_MEMBER(color)

@@ -8,7 +8,7 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
-#include "public/web/WebCompositionUnderline.h"
+#include "public/web/WebImeTextSpan.h"
 #include "public/web/WebInputMethodController.h"
 
 namespace blink {
@@ -31,12 +31,12 @@ class CORE_EXPORT WebInputMethodControllerImpl
 
   // WebInputMethodController overrides.
   bool SetComposition(const WebString& text,
-                      const WebVector<WebCompositionUnderline>& underlines,
+                      const WebVector<WebImeTextSpan>& ime_text_spans,
                       const WebRange& replacement_range,
                       int selection_start,
                       int selection_end) override;
   bool CommitText(const WebString& text,
-                  const WebVector<WebCompositionUnderline>& underlines,
+                  const WebVector<WebImeTextSpan>& ime_text_spans,
                   const WebRange& replacement_range,
                   int relative_caret_position) override;
   bool FinishComposingText(

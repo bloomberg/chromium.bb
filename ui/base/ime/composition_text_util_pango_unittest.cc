@@ -25,7 +25,7 @@ struct AttributeInfo {
   int end_offset;
 };
 
-struct Underline {
+struct ImeTextSpan {
   unsigned start_offset;
   unsigned end_offset;
   uint32_t color;
@@ -36,7 +36,7 @@ struct Underline {
 struct TestData {
   const char* text;
   const AttributeInfo attrs[10];
-  const Underline underlines[10];
+  const ImeTextSpan ime_text_spans[10];
 };
 
 const TestData kTestData[] = {
@@ -95,8 +95,7 @@ const TestData kTestData[] = {
       {0, 0, 0, false, SK_ColorTRANSPARENT}}},
 };
 
-void CompareUnderline(const Underline& a,
-                      const ui::CompositionUnderline& b) {
+void CompareImeTextSpan(const ImeTextSpan& a, const ui::ImeTextSpan& b) {
   EXPECT_EQ(a.start_offset, b.start_offset);
   EXPECT_EQ(a.end_offset, b.end_offset);
   EXPECT_EQ(a.color, b.color);
@@ -135,11 +134,11 @@ TEST(CompositionTextUtilPangoTest, ExtractCompositionText) {
     ui::CompositionText result;
     ui::ExtractCompositionTextFromGtkPreedit(text, pango_attrs, 0, &result);
 
-    const Underline* underlines = kTestData[i].underlines;
-    for (size_t u = 0; underlines[u].color &&
-         u < result.underlines.size(); ++u) {
-      SCOPED_TRACE(testing::Message() << "Underline:" << u);
-      CompareUnderline(underlines[u], result.underlines[u]);
+    const ImeTextSpan* ime_text_spans = kTestData[i].ime_text_spans;
+    for (size_t u = 0;
+         ime_text_spans[u].color && u < result.ime_text_spans.size(); ++u) {
+      SCOPED_TRACE(testing::Message() << "ImeTextSpan:" << u);
+      CompareImeTextSpan(ime_text_spans[u], result.ime_text_spans[u]);
     }
 
     pango_attr_list_unref(pango_attrs);

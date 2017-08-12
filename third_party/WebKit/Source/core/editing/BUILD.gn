@@ -9,10 +9,6 @@ blink_core_sources("editing") {
   sources = [
     "CaretDisplayItemClient.cpp",
     "CaretDisplayItemClient.h",
-    "CompositionUnderline.cpp",
-    "CompositionUnderline.h",
-    "CompositionUnderlineVectorBuilder.cpp",
-    "CompositionUnderlineVectorBuilder.h",
     "DOMSelection.cpp",
     "DOMSelection.h",
     "DragCaret.cpp",
@@ -42,6 +38,10 @@ blink_core_sources("editing") {
     "FrameSelection.h",
     "GranularityStrategy.cpp",
     "GranularityStrategy.h",
+    "ImeTextSpan.cpp",
+    "ImeTextSpan.h",
+    "ImeTextSpanVectorBuilder.cpp",
+    "ImeTextSpanVectorBuilder.h",
     "InlineBoxTraversal.cpp",
     "InlineBoxTraversal.h",
     "InputMethodController.cpp",
@@ -310,7 +310,6 @@ blink_core_sources("editing") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "CompositionUnderlineTest.cpp",
     "EditingCommandTest.cpp",
     "EditingStrategyTest.cpp",
     "EditingStyleTest.cpp",
@@ -322,6 +321,7 @@ source_set("unit_tests") {
     "FrameCaretTest.cpp",
     "FrameSelectionTest.cpp",
     "GranularityStrategyTest.cpp",
+    "ImeTextSpanTest.cpp",
     "InputMethodControllerTest.cpp",
     "LayoutSelectionTest.cpp",
     "PositionIteratorTest.cpp",

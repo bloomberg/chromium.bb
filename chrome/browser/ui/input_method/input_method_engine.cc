@@ -138,10 +138,10 @@ void InputMethodEngine::UpdateComposition(
   composition_.CopyFrom(composition_text);
 
   // Use a black thin underline by default.
-  if (composition_.underlines.empty()) {
-    composition_.underlines.push_back(
-        ui::CompositionUnderline(0, composition_.text.length(), SK_ColorBLACK,
-                                 false /* thick */, SK_ColorTRANSPARENT));
+  if (composition_.ime_text_spans.empty()) {
+    composition_.ime_text_spans.push_back(
+        ui::ImeTextSpan(0, composition_.text.length(), SK_ColorBLACK,
+                        false /* thick */, SK_ColorTRANSPARENT));
   }
 
   ui::IMEInputContextHandlerInterface* input_context =

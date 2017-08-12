@@ -57,8 +57,8 @@ struct CandidateWindowEntry {
 };
 
 // Represents an underlined segment of text currently composed by IME.
-// Corresponds to ui::CompositionUnderline.
-struct CompositionUnderline {
+// Corresponds to ui::ImeTextSpan.
+struct ImeTextSpan {
   uint32 start_offset;
   uint32 end_offset;
   bool thick;
@@ -70,7 +70,7 @@ struct CompositionUnderline {
 // ui::CompositionText.
 struct CompositionText {
   string text;
-  array<CompositionUnderline> underlines;
+  array<ImeTextSpan> ime_text_spans;
   gfx.mojom.Range selection;
 };
 
@@ -167,7 +167,7 @@ interface TextInputClient {
   // Sets composition text and attributes. See comments for
   // ui::TextInputClient::SetCompositionText() for more details.
   SetCompositionText(CompositionText composition);
-  
+
   // Converts current composition text into final content.
   ConfirmCompositionText();
 

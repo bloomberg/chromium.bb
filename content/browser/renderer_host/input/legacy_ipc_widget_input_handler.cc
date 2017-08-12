@@ -13,15 +13,16 @@
 namespace content {
 
 namespace {
-std::vector<blink::WebCompositionUnderline> ConvertToBlinkUnderline(
-    const std::vector<ui::CompositionUnderline>& ui_underlines) {
-  std::vector<blink::WebCompositionUnderline> underlines;
-  for (const auto& underline : ui_underlines) {
-    underlines.emplace_back(blink::WebCompositionUnderline(
-        underline.start_offset, underline.end_offset, underline.color,
-        underline.thick, underline.background_color));
+std::vector<blink::WebImeTextSpan> ConvertToBlinkImeTextSpan(
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
+  std::vector<blink::WebImeTextSpan> ime_text_spans;
+  for (const auto& ime_text_span : ui_ime_text_spans) {
+    ime_text_spans.emplace_back(blink::WebImeTextSpan(
+        ime_text_span.start_offset, ime_text_span.end_offset,
+        ime_text_span.color, ime_text_span.thick,
+        ime_text_span.background_color));
   }
-  return underlines;
+  return ime_text_spans;
 }
 
 }  // namespace
@@ -29,7 +30,6 @@ std::vector<blink::WebCompositionUnderline> ConvertToBlinkUnderline(
 LegacyIPCWidgetInputHandler::LegacyIPCWidgetInputHandler(
     LegacyInputRouterImpl* input_router)
     : input_router_(input_router) {}
-
 LegacyIPCWidgetInputHandler::~LegacyIPCWidgetInputHandler() {}
 
 void LegacyIPCWidgetInputHandler::SetFocus(bool focused) {
@@ -52,25 +52,25 @@ void LegacyIPCWidgetInputHandler::CursorVisibilityChanged(bool visible) {
 
 void LegacyIPCWidgetInputHandler::ImeSetComposition(
     const base::string16& text,
-    const std::vector<ui::CompositionUnderline>& ui_underlines,
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans,
     const gfx::Range& range,
     int32_t start,
     int32_t end) {
-  std::vector<blink::WebCompositionUnderline> underlines =
-      ConvertToBlinkUnderline(ui_underlines);
+  std::vector<blink::WebImeTextSpan> ime_text_spans =
+      ConvertToBlinkImeTextSpan(ui_ime_text_spans);
   SendInput(base::MakeUnique<InputMsg_ImeSetComposition>(
-      input_router_->routing_id(), text, underlines, range, start, end));
+      input_router_->routing_id(), text, ime_text_spans, range, start, end));
 }
 
 void LegacyIPCWidgetInputHandler::ImeCommitText(
     const base::string16& text,
-    const std::vector<ui::CompositionUnderline>& ui_underlines,
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans,
     const gfx::Range& range,
     int32_t relative_cursor_position) {
-  std::vector<blink::WebCompositionUnderline> underlines =
-      ConvertToBlinkUnderline(ui_underlines);
+  std::vector<blink::WebImeTextSpan> ime_text_spans =
+      ConvertToBlinkImeTextSpan(ui_ime_text_spans);
   SendInput(base::MakeUnique<InputMsg_ImeCommitText>(
-      input_router_->routing_id(), text, underlines, range,
+      input_router_->routing_id(), text, ime_text_spans, range,
       relative_cursor_position));
 }
 

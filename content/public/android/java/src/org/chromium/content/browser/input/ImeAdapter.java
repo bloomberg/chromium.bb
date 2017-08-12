@@ -872,9 +872,10 @@ public class ImeAdapter {
     }
 
     @CalledByNative
-    private void populateUnderlinesFromSpans(CharSequence text, long underlines) {
+    private void populateImeTextSpansFromJava(CharSequence text, long imeTextSpans) {
         if (DEBUG_LOGS) {
-            Log.i(TAG, "populateUnderlinesFromSpans: text [%s], underlines [%d]", text, underlines);
+            Log.i(TAG, "populateImeTextSpansFromJava: text [%s], ime_text_spans [%d]", text,
+                    imeTextSpans);
         }
         if (!(text instanceof SpannableString)) return;
 
@@ -883,11 +884,11 @@ public class ImeAdapter {
                 spannableString.getSpans(0, text.length(), CharacterStyle.class);
         for (CharacterStyle span : spans) {
             if (span instanceof BackgroundColorSpan) {
-                nativeAppendBackgroundColorSpan(underlines, spannableString.getSpanStart(span),
+                nativeAppendBackgroundColorSpan(imeTextSpans, spannableString.getSpanStart(span),
                         spannableString.getSpanEnd(span),
                         ((BackgroundColorSpan) span).getBackgroundColor());
             } else if (span instanceof UnderlineSpan) {
-                nativeAppendUnderlineSpan(underlines, spannableString.getSpanStart(span),
+                nativeAppendUnderlineSpan(imeTextSpans, spannableString.getSpanStart(span),
                         spannableString.getSpanEnd(span));
             }
         }
@@ -917,9 +918,9 @@ public class ImeAdapter {
     private native boolean nativeSendKeyEvent(long nativeImeAdapterAndroid, KeyEvent event,
             int type, int modifiers, long timestampMs, int keyCode, int scanCode,
             boolean isSystemKey, int unicodeChar);
-    private static native void nativeAppendUnderlineSpan(long underlinePtr, int start, int end);
-    private static native void nativeAppendBackgroundColorSpan(long underlinePtr, int start,
-            int end, int backgroundColor);
+    private static native void nativeAppendUnderlineSpan(long spanPtr, int start, int end);
+    private static native void nativeAppendBackgroundColorSpan(
+            long spanPtr, int start, int end, int backgroundColor);
     private native void nativeSetComposingText(long nativeImeAdapterAndroid, CharSequence text,
             String textStr, int newCursorPosition);
     private native void nativeCommitText(

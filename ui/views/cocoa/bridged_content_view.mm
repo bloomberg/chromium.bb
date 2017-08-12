@@ -1449,7 +1449,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   // the Chrome renderer. Add code to extract underlines from |text| once our
   // render text implementation supports thick underlines and discontinous
   // underlines for consecutive characters. See http://crbug.com/612675.
-  composition.underlines.push_back(ui::CompositionUnderline(
+  composition.ime_text_spans.push_back(ui::ImeTextSpan(
       0, [text length], SK_ColorBLACK, false, SK_ColorTRANSPARENT));
   textInputClient_->SetCompositionText(composition);
   hasUnhandledKeyDownEvent_ = NO;

@@ -169,9 +169,9 @@ IPC_MESSAGE_ROUTED1(InputMsg_CursorVisibilityChange,
 // Sets the text composition to be between the given start and end offsets in
 // the currently focused editable field.
 IPC_MESSAGE_ROUTED3(InputMsg_SetCompositionFromExistingText,
-    int /* start */,
-    int /* end */,
-    std::vector<blink::WebCompositionUnderline> /* underlines */)
+                    int /* start */,
+                    int /* end */,
+                    std::vector<blink::WebImeTextSpan> /* ime_text_spans */)
 
 // Deletes the current selection plus the specified number of characters before
 // and after the selection or caret.
@@ -201,22 +201,20 @@ IPC_MESSAGE_ROUTED2(InputMsg_SetEditableSelectionOffsets,
                     int /* end */)
 
 // This message sends a string being composed with an input method.
-IPC_MESSAGE_ROUTED5(
-    InputMsg_ImeSetComposition,
-    base::string16, /* text */
-    std::vector<blink::WebCompositionUnderline>, /* underlines */
-    gfx::Range /* replacement_range */,
-    int, /* selectiont_start */
-    int /* selection_end */)
+IPC_MESSAGE_ROUTED5(InputMsg_ImeSetComposition,
+                    base::string16,                     /* text */
+                    std::vector<blink::WebImeTextSpan>, /* ime_text_spans */
+                    gfx::Range /* replacement_range */,
+                    int, /* selectiont_start */
+                    int /* selection_end */)
 
 // This message deletes the current composition, inserts specified text, and
 // moves the cursor.
-IPC_MESSAGE_ROUTED4(
-    InputMsg_ImeCommitText,
-    base::string16 /* text */,
-    std::vector<blink::WebCompositionUnderline>, /* underlines */
-    gfx::Range /* replacement_range */,
-    int /* relative_cursor_pos */)
+IPC_MESSAGE_ROUTED4(InputMsg_ImeCommitText,
+                    base::string16 /* text */,
+                    std::vector<blink::WebImeTextSpan>, /* ime_text_spans */
+                    gfx::Range /* replacement_range */,
+                    int /* relative_cursor_pos */)
 
 // This message inserts the ongoing composition.
 IPC_MESSAGE_ROUTED1(InputMsg_ImeFinishComposingText, bool /* keep_selection */)

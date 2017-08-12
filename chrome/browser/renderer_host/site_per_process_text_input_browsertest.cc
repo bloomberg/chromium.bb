@@ -26,7 +26,7 @@
 #include "content/public/test/text_input_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "ui/base/ime/composition_underline.h"
+#include "ui/base/ime/ime_text_span.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_mode.h"
@@ -820,8 +820,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
     // Commit some text for this frame.
     content::SendImeCommitTextToWidget(
         frames[index]->GetView()->GetRenderWidgetHost(),
-        base::UTF8ToUTF16(sample_text[index]),
-        std::vector<ui::CompositionUnderline>(), gfx::Range(), 0);
+        base::UTF8ToUTF16(sample_text[index]), std::vector<ui::ImeTextSpan>(),
+        gfx::Range(), 0);
 
     // Verify that the text we committed is now selected by listening to a
     // selection update from a RenderWidgetHostView which has the expected

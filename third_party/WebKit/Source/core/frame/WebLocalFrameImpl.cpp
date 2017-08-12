@@ -109,11 +109,11 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/UserGestureIndicator.h"
-#include "core/editing/CompositionUnderlineVectorBuilder.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FindInPageCoordinates.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/ImeTextSpanVectorBuilder.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/SetSelectionData.h"
@@ -954,7 +954,7 @@ void WebLocalFrameImpl::ReplaceSelection(const WebString& text) {
 void WebLocalFrameImpl::SetMarkedText(const WebString& text,
                                       unsigned location,
                                       unsigned length) {
-  Vector<CompositionUnderline> decorations;
+  Vector<ImeTextSpan> decorations;
   GetFrame()->GetInputMethodController().SetComposition(text, decorations,
                                                         location, length);
 }
@@ -1289,7 +1289,7 @@ bool WebLocalFrameImpl::SetEditableSelectionOffsets(int start, int end) {
 bool WebLocalFrameImpl::SetCompositionFromExistingText(
     int composition_start,
     int composition_end,
-    const WebVector<WebCompositionUnderline>& underlines) {
+    const WebVector<WebImeTextSpan>& ime_text_spans) {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::setCompositionFromExistingText");
   if (!GetFrame()->GetEditor().CanEdit())
     return false;
@@ -1302,7 +1302,7 @@ bool WebLocalFrameImpl::SetCompositionFromExistingText(
   GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   input_method_controller.SetCompositionFromExistingText(
-      CompositionUnderlineVectorBuilder::Build(underlines), composition_start,
+      ImeTextSpanVectorBuilder::Build(ime_text_spans), composition_start,
       composition_end);
 
   return true;

@@ -12,7 +12,7 @@
 #include "services/ui/public/interfaces/ime/ime_struct_traits_test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/composition_text.h"
-#include "ui/base/ime/composition_underline.h"
+#include "ui/base/ime/ime_text_span.h"
 #include "ui/gfx/range/mojo/range_struct_traits.h"
 
 namespace ui {
@@ -110,9 +110,9 @@ TEST_F(IMEStructTraitsTest, CandidateWindowEntry) {
 TEST_F(IMEStructTraitsTest, CompositionText) {
   CompositionText input;
   input.text = base::UTF8ToUTF16("abcdefghij");
-  input.underlines.push_back(CompositionUnderline(0, 2, SK_ColorGRAY, false));
-  input.underlines.push_back(
-      CompositionUnderline(3, 6, SK_ColorRED, true, SK_ColorGREEN));
+  input.ime_text_spans.push_back(ImeTextSpan(0, 2, SK_ColorGRAY, false));
+  input.ime_text_spans.push_back(
+      ImeTextSpan(3, 6, SK_ColorRED, true, SK_ColorGREEN));
   input.selection = gfx::Range(1, 7);
 
   CompositionText output;

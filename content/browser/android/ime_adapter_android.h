@@ -16,7 +16,7 @@
 
 namespace ui {
 
-struct CompositionUnderline;
+struct ImeTextSpan;
 
 }  // namespace ui
 
@@ -113,7 +113,7 @@ class CONTENT_EXPORT ImeAdapterAndroid : public RenderWidgetHostConnector {
  private:
   RenderWidgetHostImpl* GetFocusedWidget();
   RenderFrameHost* GetFocusedFrame();
-  std::vector<ui::CompositionUnderline> GetUnderlinesFromSpans(
+  std::vector<ui::ImeTextSpan> GetImeTextSpansFromJava(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& text,

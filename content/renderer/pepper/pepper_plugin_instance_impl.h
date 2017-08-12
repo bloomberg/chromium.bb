@@ -78,7 +78,7 @@ class WebLayer;
 class WebMouseEvent;
 class WebPluginContainer;
 class WebURLResponse;
-struct WebCompositionUnderline;
+struct WebImeTextSpan;
 struct WebCursorInfo;
 struct WebURLError;
 struct WebPrintParams;
@@ -240,7 +240,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool HandleCompositionStart(const base::string16& text);
   bool HandleCompositionUpdate(
       const base::string16& text,
-      const std::vector<blink::WebCompositionUnderline>& underlines,
+      const std::vector<blink::WebImeTextSpan>& ime_text_spans,
       int selection_start,
       int selection_end);
   bool HandleCompositionEnd(const base::string16& text);
@@ -688,10 +688,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // Internal helper functions for HandleCompositionXXX().
   bool SendCompositionEventToPlugin(PP_InputEvent_Type type,
                                     const base::string16& text);
-  bool SendCompositionEventWithUnderlineInformationToPlugin(
+  bool SendCompositionEventWithImeTextSpanInformationToPlugin(
       PP_InputEvent_Type type,
       const base::string16& text,
-      const std::vector<blink::WebCompositionUnderline>& underlines,
+      const std::vector<blink::WebImeTextSpan>& ime_text_spans,
       int selection_start,
       int selection_end);
 

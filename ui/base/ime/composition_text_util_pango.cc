@@ -75,44 +75,41 @@ void ExtractCompositionTextFromGtkPreedit(const gchar* utf8_text,
 
       if (background_attr || underline_attr) {
         // Use a black thin underline by default.
-        CompositionUnderline underline(char16_offsets[start],
-                                       char16_offsets[end],
-                                       SK_ColorBLACK,
-                                       false,
-                                       SK_ColorTRANSPARENT);
+        ImeTextSpan ime_text_span(char16_offsets[start], char16_offsets[end],
+                                  SK_ColorBLACK, false, SK_ColorTRANSPARENT);
 
         // Always use thick underline for a range with background color, which
         // is usually the selection range.
         if (background_attr) {
-          underline.thick = true;
+          ime_text_span.thick = true;
           // If the cursor is at start or end of this underline, then we treat
           // it as the selection range as well, but make sure to set the cursor
           // position to the selection end.
-          if (underline.start_offset == cursor_offset) {
-            composition->selection.set_start(underline.end_offset);
+          if (ime_text_span.start_offset == cursor_offset) {
+            composition->selection.set_start(ime_text_span.end_offset);
             composition->selection.set_end(cursor_offset);
-          } else if (underline.end_offset == cursor_offset) {
-            composition->selection.set_start(underline.start_offset);
+          } else if (ime_text_span.end_offset == cursor_offset) {
+            composition->selection.set_start(ime_text_span.start_offset);
             composition->selection.set_end(cursor_offset);
           }
         }
         if (underline_attr) {
           int type = reinterpret_cast<PangoAttrInt*>(underline_attr)->value;
           if (type == PANGO_UNDERLINE_DOUBLE)
-            underline.thick = true;
+            ime_text_span.thick = true;
           else if (type == PANGO_UNDERLINE_ERROR)
-            underline.color = SK_ColorRED;
+            ime_text_span.color = SK_ColorRED;
         }
-        composition->underlines.push_back(underline);
+        composition->ime_text_spans.push_back(ime_text_span);
       }
     } while (pango_attr_iterator_next(iter));
     pango_attr_iterator_destroy(iter);
   }
 
   // Use a black thin underline by default.
-  if (composition->underlines.empty()) {
-    composition->underlines.push_back(CompositionUnderline(
-        0, length, SK_ColorBLACK, false, SK_ColorTRANSPARENT));
+  if (composition->ime_text_spans.empty()) {
+    composition->ime_text_spans.push_back(
+        ImeTextSpan(0, length, SK_ColorBLACK, false, SK_ColorTRANSPARENT));
   }
 }
 

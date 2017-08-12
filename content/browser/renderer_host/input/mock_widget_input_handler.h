@@ -36,14 +36,13 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
   void SetEditCommandsForNextKeyEvent(
       const std::vector<content::EditCommand>& commands) override;
   void CursorVisibilityChanged(bool visible) override;
-  void ImeSetComposition(
-      const base::string16& text,
-      const std::vector<ui::CompositionUnderline>& underlines,
-      const gfx::Range& range,
-      int32_t start,
-      int32_t end) override;
+  void ImeSetComposition(const base::string16& text,
+                         const std::vector<ui::ImeTextSpan>& ime_text_spans,
+                         const gfx::Range& range,
+                         int32_t start,
+                         int32_t end) override;
   void ImeCommitText(const base::string16& text,
-                     const std::vector<ui::CompositionUnderline>& underlines,
+                     const std::vector<ui::ImeTextSpan>& ime_text_spans,
                      const gfx::Range& range,
                      int32_t relative_cursor_position) override;
   void ImeFinishComposingText(bool keep_selection) override;
