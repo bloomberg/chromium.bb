@@ -59,6 +59,23 @@ public class WebVrTransitionTest {
     }
 
     /**
+     * Tests that WebVR is not exposed if the flag is not on and the page does
+     * not have an origin trial token.
+     */
+    @Test
+    @MediumTest
+    @CommandLineFlags.Remove({"enable-webvr"})
+    public void testWebVrDisabledWithoutFlagSet() throws InterruptedException {
+        // TODO(bsheedy): Remove this test once WebVR is on by default without
+        // requiring an origin trial.
+        mVrTestRule.loadUrlAndAwaitInitialization(
+                VrTestRule.getHtmlTestFile("test_webvr_disabled_without_flag_set"),
+                PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.waitOnJavaScriptStep(mVrTestRule.getFirstTabWebContents());
+        mVrTestRule.endTest(mVrTestRule.getFirstTabWebContents());
+    }
+
+    /**
      * Tests that scanning the Daydream View NFC tag on supported devices fires the
      * vrdisplayactivate event.
      */
