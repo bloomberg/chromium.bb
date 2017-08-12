@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/login/login_handler_test_utils.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -57,6 +58,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -3268,6 +3270,52 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWarning,
   ASSERT_FALSE(observing_autofill_client->popup_shown());
   // Ensure the histogram remains empty.
   histograms.ExpectTotalCount(kHistogram, 0);
+}
+
+// Harness for showing dialogs as part of the DialogBrowserTest suite. Allows
+// the dialogs to be shown interactively when invoked with, e.g.,
+//   browser_tests --gtest_filter=BrowserDialogTest.Invoke --interactive
+//       --dialog=PasswordManagerDialogBrowserTest.InvokeDialog_normal.
+class PasswordManagerDialogBrowserTest
+    : public SupportsTestDialog<PasswordManagerBrowserTestBase> {
+ public:
+  PasswordManagerDialogBrowserTest() = default;
+
+  // content::BrowserTestBase:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // BrowserDialogTest only works on Mac with --secondary-ui-md.
+    command_line->AppendSwitch(switches::kExtendMdToSecondaryUi);
+  }
+
+  void ShowDialog(const std::string& name) override {
+    // Note regarding flakiness: LocationBarBubbleDelegateView::ShowForReason()
+    // uses ShowInactive() unless the bubble is invoked with reason ==
+    // USER_GESTURE. This means that, so long as these dialogs are not triggered
+    // by gesture, the dialog does not attempt to take focus, and so should
+    // never _lose_ focus in the test, which could cause flakes when tests are
+    // run in parallel. LocationBarBubbles also dismiss on other events, but
+    // only events in the WebContents. E.g. Rogue mouse clicks should not cause
+    // the dialog to dismiss since they won't be sent via WebContents.
+    // A user gesture is determined in browser_commands.cc by checking
+    // ManagePasswordsUIController::IsAutomaticallyOpeningBubble(), but that's
+    // set and cleared immediately while showing the bubble, so it can't be
+    // checked here.
+    NavigateToFile("/password/password_form.html");
+    NavigationObserver observer(WebContents());
+    std::string fill_and_submit =
+        "document.getElementById('username_field').value = 'temp';"
+        "document.getElementById('password_field').value = 'random';"
+        "document.getElementById('input_submit_button').click()";
+    ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+    observer.Wait();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PasswordManagerDialogBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerDialogBrowserTest, InvokeDialog_normal) {
+  RunDialog();
 }
 
 }  // namespace password_manager
