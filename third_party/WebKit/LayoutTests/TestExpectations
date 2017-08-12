@@ -3022,3 +3022,9 @@ crbug.com/753462 virtual/gpu/fast/canvas/fillrect_gradient.html [ NeedsManualReb
 crbug.com/753462 virtual/gpu/fast/canvas/gradient-add-second-start-end-stop.html [ NeedsManualRebaseline ]
 
 crbug.com/746904 [ Win ] fast/text/ellipsis-in-relative-inline.html [ Failure Pass ]
+
+crbug.com/731018 [ Mac ] sensor/accelerometer.html [ Failure Pass Crash ]
+crbug.com/731018 [ Mac ] sensor/ambient-light-sensor.html [ Failure Pass Crash ]
+crbug.com/731018 [ Mac ] sensor/gyroscope.html [ Failure Pass Crash ]
+crbug.com/731018 [ Mac ] sensor/magnetometer.html [ Failure Pass Crash ]
+crbug.com/731018 [ Mac ] sensor/orientation-sensor.html [ Failure Pass Crash ]
