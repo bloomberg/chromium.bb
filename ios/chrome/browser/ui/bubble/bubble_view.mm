@@ -12,7 +12,7 @@
 #error "This file requires ARC support."
 #endif
 
-const CGFloat kBubbleAlignmentOffset = 40.0f;
+const CGFloat kBubbleAlignmentOffset = 25.0f;
 
 namespace {
 // The color of the bubble (both circular background and arrow).

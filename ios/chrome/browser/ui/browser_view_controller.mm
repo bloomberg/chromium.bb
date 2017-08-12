@@ -581,6 +581,10 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 @property(nonatomic, strong)
     BubbleViewControllerPresenter* tabTipBubblePresenter;
 
+// Used to display the new incognito tab tip in-product help promotion bubble.
+@property(nonatomic, strong)
+    BubbleViewControllerPresenter* incognitoTabTipBubblePresenter;
+
 // BVC initialization:
 // If the BVC is initialized with a valid browser state & tab model immediately,
 // the path is straightforward: functionality is enabled, and the UI is built
@@ -703,6 +707,13 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // the bubble. If it is not valid to show the new tab tip,
 // |tabTipBubblePresenter| is set to |nil| and no bubble is shown.
 - (void)presentNewTabTipBubble;
+// Waits to present a bubble associated with the new incognito tab tip
+// in-product help promotion until the feature engagement tracker database is
+// fully initialized.
+- (void)presentNewIncognitoTabTipBubbleOnInitialized;
+// Presents a bubble associated with the new incognito tab tip in-product help
+// promotion.
+- (void)presentNewIncognitoTabTipBubble;
 
 // Create and show the find bar.
 - (void)initFindBarForTab;
@@ -952,7 +963,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 @synthesize presenting = _presenting;
 @synthesize foregroundTabWasAddedCompletionBlock =
     _foregroundTabWasAddedCompletionBlock;
-@synthesize tabTipBubblePresenter = tabTipBubblePresenter;
+@synthesize tabTipBubblePresenter = _tabTipBubblePresenter;
+@synthesize incognitoTabTipBubblePresenter = _incognitoTabTipBubblePresenter;
 
 #pragma mark - Object lifecycle
 
@@ -1224,6 +1236,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)presentBubblesIfEligible {
   [self presentNewTabTipBubbleOnInitialized];
+  [self presentNewIncognitoTabTipBubble];
 }
 
 #pragma mark - UIViewController methods
@@ -2093,6 +2106,46 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [self.tabTipBubblePresenter presentInViewController:self
                                                  view:self.view
                                           anchorPoint:tabSwitcherAnchor];
+}
+
+- (void)presentNewIncognitoTabTipBubbleOnInitialized {
+  // Do not override |incognitoTabtipBubblePresenter| or set it to nil if the
+  // user is still considered engaged.
+  if (!self.incognitoTabTipBubblePresenter.isUserEngaged) {
+    __weak BrowserViewController* weakSelf = self;
+    void (^onInitializedBlock)(bool) = ^(bool successfullyLoaded) {
+      [weakSelf presentNewIncognitoTabTipBubble];
+    };
+
+    // Use a callback in case the new incognito tab tip should be shown on
+    // startup. This ensures that the tracker's database will be fully loaded
+    // before checking if the promotion should be displayed.
+    feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
+        ->AddOnInitializedCallback(base::BindBlockArc(onInitializedBlock));
+  }
+}
+
+- (void)presentNewIncognitoTabTipBubble {
+  DCHECK([self.toolbarController
+      respondsToSelector:@selector(anchorPointForToolsMenuButton:)]);
+  NSString* text = l10n_util::GetNSStringWithFixup(
+      IDS_IOS_NEW_INCOGNITO_TAB_IPH_PROMOTION_TEXT);
+  CGPoint toolsButtonAnchor = [self.toolbarController
+      anchorPointForToolsMenuButton:BubbleArrowDirectionUp];
+  self.incognitoTabTipBubblePresenter =
+      [self bubblePresenterForFeature:feature_engagement::
+                                          kIPHNewIncognitoTabTipFeature
+                            direction:BubbleArrowDirectionUp
+                            alignment:BubbleAlignmentTrailing
+                                 text:text];
+  [self.incognitoTabTipBubblePresenter
+      presentInViewController:self
+                         view:self.view
+                  anchorPoint:toolsButtonAnchor];
+  // Only trigger the tools menu button animation if the bubble is shown.
+  if (self.incognitoTabTipBubblePresenter) {
+    [self.toolbarController triggerToolsMenuButtonAnimation];
+  }
 }
 
 #pragma mark - Tap handling
@@ -4108,6 +4161,15 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [configuration setReadingListMenuNotifier:_readingListMenuNotifier];
 
   [configuration setUserAgentType:self.userAgentType];
+
+  if (self.incognitoTabTipBubblePresenter.triggerFollowUpAction) {
+    [configuration setHighlightNewIncognitoTabCell:YES];
+    [self.incognitoTabTipBubblePresenter setTriggerFollowUpAction:NO];
+  }
+
+  if (self.incognitoTabTipBubblePresenter.isUserEngaged) {
+    base::RecordAction(UserMetricsAction("NewIncognitoTabTipTargetSelected"));
+  }
 
   [_toolbarController showToolsMenuPopupWithConfiguration:configuration];
 

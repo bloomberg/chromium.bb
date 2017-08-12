@@ -32,6 +32,8 @@ class Tracker;
 @property(nonatomic, getter=isInNewTabPage) BOOL inNewTabPage;
 // Indicates that the menu should show a "NEW" badge on the reading list item.
 @property(nonatomic, assign) BOOL showReadingListNewBadge;
+// Indicates that the New Incognito Tab cell should be highlighted in blue.
+@property(nonatomic, assign) BOOL highlightNewIncognitoTabCell;
 
 // Indicates that the menu is being shown while user agent is |userAgentType|.
 // If NONE, shows "Request Desktop Site" in disabled state.

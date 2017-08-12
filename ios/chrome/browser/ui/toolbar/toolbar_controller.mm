@@ -1040,6 +1040,10 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
   return hash;
 }
 
+- (void)triggerToolsMenuButtonAnimation {
+  [toolsMenuButton_ triggerAnimation];
+}
+
 #pragma mark -
 #pragma mark PopupMenuDelegate methods.
 

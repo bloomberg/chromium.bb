@@ -18,6 +18,7 @@
 @synthesize noOpenedTabs = _noOpenedTabs;
 @synthesize inIncognito = _inIncognito;
 @synthesize showReadingListNewBadge = _showReadingListNewBadge;
+@synthesize highlightNewIncognitoTabCell = _highlightNewIncognitoTabCell;
 @synthesize userAgentType = _userAgentType;
 @synthesize requestStartTime = _requestStartTime;
 @synthesize inNewTabPage = _inNewTabPage;

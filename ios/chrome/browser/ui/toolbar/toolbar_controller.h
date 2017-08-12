@@ -294,6 +294,9 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 // Shows/hides iPhone toolbar views for when the new tab page is displayed.
 - (void)hideViewsForNewTabPage:(BOOL)hide;
 
+// Triggers an animation on the tools menu button to draw the user's attention.
+- (void)triggerToolsMenuButtonAnimation;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONTROLLER_H_
