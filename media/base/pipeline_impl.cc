@@ -222,8 +222,8 @@ void PipelineImpl::RendererWrapper::Start(
     std::unique_ptr<TextRenderer> text_renderer,
     base::WeakPtr<PipelineImpl> weak_pipeline) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(kCreated, state_) << "Received start in unexpected state: "
-                              << state_;
+  DCHECK(state_ == kCreated || state_ == kStopped)
+      << "Received start in unexpected state: " << state_;
 
   SetState(kStarting);
 
@@ -232,7 +232,6 @@ void PipelineImpl::RendererWrapper::Start(
   DCHECK(!text_renderer_);
   DCHECK(!renderer_ended_);
   DCHECK(!text_renderer_ended_);
-  DCHECK(!weak_pipeline_);
   demuxer_ = demuxer;
   {
     base::AutoLock auto_lock(shared_state_lock_);
@@ -1275,18 +1274,16 @@ void PipelineImpl::OnError(PipelineStatus error) {
   // Else report error via the client interface.
   if (!seek_cb_.is_null()) {
     base::ResetAndReturn(&seek_cb_).Run(error);
-  } else if (!suspend_cb_.is_null()) {
-    base::ResetAndReturn(&suspend_cb_).Run(error);
-  } else {
-    DCHECK(client_);
-    client_->OnError(error);
+    return;
   }
 
-  // Any kind of error stops the pipeline.
-  //
-  // TODO (tguilbert): Move this out to PipelineController to make the state
-  // changes more consistent. See crbug.com/695734.
-  Stop();
+  if (!suspend_cb_.is_null()) {
+    base::ResetAndReturn(&suspend_cb_).Run(error);
+    return;
+  }
+
+  DCHECK(client_);
+  client_->OnError(error);
 }
 
 void PipelineImpl::OnEnded() {

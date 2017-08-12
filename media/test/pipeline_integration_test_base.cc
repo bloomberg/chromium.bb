@@ -192,6 +192,7 @@ PipelineStatus PipelineIntegrationTestBase::WaitUntilEndedOrError() {
 void PipelineIntegrationTestBase::OnError(PipelineStatus status) {
   DCHECK_NE(status, PIPELINE_OK);
   pipeline_status_ = status;
+  pipeline_->Stop();
   scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }

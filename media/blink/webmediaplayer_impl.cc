@@ -1323,6 +1323,9 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
     SetNetworkState(PipelineErrorToNetworkState(status));
   }
 
+  // PipelineController::Stop() is idempotent.
+  pipeline_controller_.Stop();
+
   UpdatePlayState();
 }
 
