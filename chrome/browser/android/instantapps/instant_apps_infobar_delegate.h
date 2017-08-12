@@ -24,6 +24,9 @@ class InstantAppsInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   base::android::ScopedJavaGlobalRef<jobject> data() { return data_; }
 
+  // ConfirmInfoBarDelegate:
+  bool ShouldExpire(const NavigationDetails& details) const override;
+
   // WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
