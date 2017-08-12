@@ -20,7 +20,7 @@ TestRenderViewContextMenu::TestRenderViewContextMenu(
 TestRenderViewContextMenu::~TestRenderViewContextMenu() {}
 
 // static
-TestRenderViewContextMenu* TestRenderViewContextMenu::Create(
+std::unique_ptr<TestRenderViewContextMenu> TestRenderViewContextMenu::Create(
     content::WebContents* web_contents,
     const GURL& page_url,
     const GURL& link_url,
@@ -29,18 +29,19 @@ TestRenderViewContextMenu* TestRenderViewContextMenu::Create(
   params.page_url = page_url;
   params.link_url = link_url;
   params.frame_url = frame_url;
-  TestRenderViewContextMenu* menu =
-      new TestRenderViewContextMenu(web_contents->GetMainFrame(), params);
+  auto menu = base::MakeUnique<TestRenderViewContextMenu>(
+      web_contents->GetMainFrame(), params);
   menu->Init();
   return menu;
 }
 
-bool TestRenderViewContextMenu::IsItemPresent(int command_id) {
+bool TestRenderViewContextMenu::IsItemPresent(int command_id) const {
   return menu_model_.GetIndexOfCommandId(command_id) != -1;
 }
 
-bool TestRenderViewContextMenu::IsItemInRangePresent(int command_id_first,
-                                                     int command_id_last) {
+bool TestRenderViewContextMenu::IsItemInRangePresent(
+    int command_id_first,
+    int command_id_last) const {
   DCHECK_LE(command_id_first, command_id_last);
   for (int command_id = command_id_first; command_id <= command_id_last;
        ++command_id) {
@@ -65,7 +66,8 @@ bool TestRenderViewContextMenu::GetMenuModelAndItemIndex(
         *found_model = model;
         *found_index = i;
         return true;
-      } else if (model->GetTypeAt(i) == MenuModel::TYPE_SUBMENU) {
+      }
+      if (model->GetTypeAt(i) == MenuModel::TYPE_SUBMENU) {
         models_to_search.push_back(model->GetSubmenuModelAt(i));
       }
     }
@@ -75,11 +77,12 @@ bool TestRenderViewContextMenu::GetMenuModelAndItemIndex(
 }
 
 int TestRenderViewContextMenu::GetCommandIDByProfilePath(
-    const base::FilePath& path) {
+    const base::FilePath& path) const {
   size_t count = profile_link_paths_.size();
-  for (size_t i = 0; i < count; ++i)
+  for (size_t i = 0; i < count; ++i) {
     if (profile_link_paths_[i] == path)
       return IDC_OPEN_LINK_IN_PROFILE_FIRST + static_cast<int>(i);
+  }
   return -1;
 }
 

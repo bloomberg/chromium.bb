@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
@@ -34,20 +36,21 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   // This is a lightweight method to create a test RenderViewContextMenu
   // instance.
   // Use the constructor if you want to create menu with fine-grained params.
-  static TestRenderViewContextMenu* Create(content::WebContents* web_contents,
-                                           const GURL& page_url,
-                                           const GURL& link_url,
-                                           const GURL& frame_url);
+  static std::unique_ptr<TestRenderViewContextMenu> Create(
+      content::WebContents* web_contents,
+      const GURL& page_url,
+      const GURL& link_url,
+      const GURL& frame_url);
 
   // Returns true if the command specified by |command_id| is present
   // in the menu.
   // A list of command ids can be found in chrome/app/chrome_command_ids.h.
-  bool IsItemPresent(int command_id);
+  bool IsItemPresent(int command_id) const;
 
   // Returns true if a command specified by any command id between
   // |command_id_first| and |command_id_last| (inclusive) is present in the
   // menu.
-  bool IsItemInRangePresent(int command_id_first, int command_id_last);
+  bool IsItemInRangePresent(int command_id_first, int command_id_last) const;
 
   // Searches for an menu item with |command_id|. If it's found, the return
   // value is true and the model and index where it appears in that model are
@@ -57,7 +60,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
                                 int* found_index);
 
   // Returns the command id of the menu item with the specified |path|.
-  int GetCommandIDByProfilePath(const base::FilePath& path);
+  int GetCommandIDByProfilePath(const base::FilePath& path) const;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ContextMenuMatcher& extension_items() { return extension_items_; }
