@@ -14,6 +14,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_command_line.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
@@ -358,7 +359,9 @@ class LockScreenAppManagerImplTest
 
   AppManager* app_manager() { return app_manager_.get(); }
 
-  void ResetAppManager() { app_manager_ = base::MakeUnique<AppManagerImpl>(); }
+  void ResetAppManager() {
+    app_manager_ = base::MakeUnique<AppManagerImpl>(&tick_clock_);
+  }
 
   int note_taking_changed_count() const { return note_taking_changed_count_; }
 
@@ -377,6 +380,9 @@ class LockScreenAppManagerImplTest
   bool IsInstallAsync() { return GetParam() != TestAppLocation::kUnpacked; }
 
   int NoteTakingChangedCountOnStart() { return IsInstallAsync() ? 1 : 0; }
+
+ protected:
+  base::SimpleTestTickClock tick_clock_;
 
  private:
   void OnNoteTakingChanged() { ++note_taking_changed_count_; }

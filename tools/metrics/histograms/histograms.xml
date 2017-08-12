@@ -1803,6 +1803,91 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="Apps.LockScreen.NoteTakingApp.AppWindowLifeTime"
+    units="ms">
+  <owner>tbarzic@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    The amount of time a lock screen enabled app window spent in a certain state
+    during the app window activity. The state to which the histogram refers to
+    is defined by the suffix. The metric is logged upon leaving the associated
+    state.
+  </summary>
+</histogram>
+
+<histogram name="Apps.LockScreen.NoteTakingApp.AvailabilityOnScreenLock"
+    enum="LockScreenActionAvailability">
+  <owner>tbarzic@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    The note taking action availability state on the lock screen, recorded when
+    the user session is locked.
+  </summary>
+</histogram>
+
+<histogram name="Apps.LockScreen.NoteTakingApp.FinalAppSessionState"
+    enum="LockScreenAppSessionState">
+  <owner>tbarzic@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    The state in which lock screen enabled note taking app was when the note
+    taking session ended.
+  </summary>
+</histogram>
+
+<histogram name="Apps.LockScreen.NoteTakingApp.LaunchDurationAtLaunchCancel"
+    units="ms">
+  <owner>tbarzic@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    The amount time a lock screen app had been launching when the app launch was
+    canceled. Logged if the lock screen app session ends before the lock screen
+    app window is shown.
+  </summary>
+</histogram>
+
+<histogram name="Apps.LockScreen.NoteTakingApp.LaunchRequestOrdinalNumber">
+  <owner>tbarzic@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    Ordinal number of a note taking app launch request from a lock screen within
+    a lock screen session. If a note taking app is launched n times during a
+    single lock screen session, this histogram will be reported with values 1
+    through n. The launch counter is reset on screen unlock.
+  </summary>
+</histogram>
+
+<histogram name="Apps.LockScreen.NoteTakingApp.LockScreenInstallationDuration"
+    units="ms">
+  <owner>tbarzic@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    Amount of time needed to install a copy of a lock screen note taking app
+    into lock screen apps profile.
+  </summary>
+</histogram>
+
+<histogram name="Apps.LockScreen.NoteTakingApp.TimeToLoadAppWindowContents"
+    units="ms">
+  <owner>tbarzic@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    The amount of time needed to load a note taking app window contents on the
+    lock screen - i.e. the time passed from the user requesting an app launch to
+    the app window contents being loaded.
+  </summary>
+</histogram>
+
+<histogram name="Apps.LockScreen.NoteTakingApp.TimeToShowWindow" units="ms">
+  <owner>tbarzic@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    The amount of time needed to launch a note taking app window from the lock
+    screen - i.e. the time passed from the user requesting an app launch to the
+    app window appearing on the screen.
+  </summary>
+</histogram>
+
 <histogram name="Apps.NoteTakingApp.DefaultLaunchResult"
     enum="NoteTakingAppLaunchResult">
   <owner>derat@chromium.org</owner>
@@ -94230,6 +94315,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       name="Apps.LockScreen.DataItemStorage.FailedOperationDuration"/>
   <affected-histogram name="Apps.LockScreen.DataItemStorage.OperationDuration"/>
   <affected-histogram name="Apps.LockScreen.DataItemStorage.OperationResult"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="LockScreenNoteTakingAppWindowState" separator=".">
+  <suffix name="Foreground"
+      label="The app window is in foreground (on top of the lock screen)"/>
+  <suffix name="Background"
+      label="The app window is in background (behind the lock screen)"/>
+  <suffix name="TotalActive"
+      label="The total amount of time an app window was active on lock screen"/>
+  <affected-histogram name="Apps.LockScreen.NoteTakingApp.AppWindowLifeTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="LowMemoryMargin" separator="_">
