@@ -421,22 +421,17 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent,
                                        int initial_apps_page) {
   const display::Display display_nearest_view = GetDisplayNearestView();
   const gfx::Rect display_work_area_bounds = display_nearest_view.work_area();
-  const int bottom_of_screen = display_nearest_view.size().height();
 
   // Set the widget height to the shelf height to replace the shelf background
   // on show animation with no flicker. In shelf mode we set the bounds to the
   // top of the screen because the widget does not animate.
-  const int overlay_view_bounds_y =
-      is_side_shelf_ ? 0 : (bottom_of_screen - kShelfSize);
-  const int overlay_view_bounds_x =
-      is_side_shelf_ ? 0 : display_work_area_bounds.x();
-  const int overlay_view_bounds_width =
-      display_work_area_bounds.width() + (is_side_shelf_ ? kShelfSize : 0);
-  const int overlay_view_bounds_height =
-      display_work_area_bounds.height() + (is_side_shelf_ ? 0 : kShelfSize);
+  const int overlay_view_bounds_y = is_side_shelf_
+                                        ? display_work_area_bounds.y()
+                                        : display_work_area_bounds.bottom();
   gfx::Rect app_list_overlay_view_bounds(
-      overlay_view_bounds_x, overlay_view_bounds_y, overlay_view_bounds_width,
-      overlay_view_bounds_height);
+      display_nearest_view.bounds().x(), overlay_view_bounds_y,
+      display_nearest_view.bounds().width(),
+      display_nearest_view.bounds().height());
 
   fullscreen_widget_ = new views::Widget;
   views::Widget::InitParams app_list_overlay_view_params(
@@ -447,9 +442,14 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent,
   app_list_overlay_view_params.delegate = this;
   app_list_overlay_view_params.opacity =
       views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  app_list_overlay_view_params.bounds = app_list_overlay_view_bounds;
   app_list_overlay_view_params.layer_type = ui::LAYER_SOLID_COLOR;
   fullscreen_widget_->Init(app_list_overlay_view_params);
+
+  // Set bounds directly in screen coordinates to avoid screen position
+  // controller setting bounds in the display where the widget has the largest
+  // intersection.
+  fullscreen_widget_->GetNativeView()->SetBoundsInScreen(
+      app_list_overlay_view_bounds, GetDisplayNearestView());
 
   overlay_view_ = new AppListOverlayView(0 /* no corners */);
 
@@ -496,17 +496,19 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
 }
 
 void AppListView::StartDrag(const gfx::Point& location) {
+  // Convert drag point from widget coordinates to screen coordinates because
+  // the widget bounds changes during the dragging.
   initial_drag_point_ = location;
+  ConvertPointToScreen(this, &initial_drag_point_);
+  initial_window_bounds_ = fullscreen_widget_->GetWindowBoundsInScreen();
 }
 
 void AppListView::UpdateDrag(const gfx::Point& location) {
-  // Update the bounds of the widget while maintaining the
-  // relative position of the top of the widget and the mouse/gesture.
-  // Block drags north of 0 and recalculate the initial_drag_point_.
-  int new_y_position = location.y() - initial_drag_point_.y() +
-                       fullscreen_widget_->GetWindowBoundsInScreen().y();
-  if (new_y_position < 0)
-    initial_drag_point_ = location;
+  // Update the widget bounds based on the initial widget bounds and drag delta.
+  gfx::Point location_in_screen_coordinates = location;
+  ConvertPointToScreen(this, &location_in_screen_coordinates);
+  int new_y_position = location_in_screen_coordinates.y() -
+                       initial_drag_point_.y() + initial_window_bounds_.y();
 
   UpdateYPositionAndOpacity(new_y_position,
                             GetAppListBackgroundOpacityDuringDragging(),
@@ -582,13 +584,15 @@ void AppListView::EndDrag(const gfx::Point& location) {
         break;
     }
 
-    gfx::Point location_in_screen_coordinates = location;
-    ConvertPointToScreen(this, &location_in_screen_coordinates);
-    const int new_y_position =
-        location_in_screen_coordinates.y() - initial_drag_point_.y();
     const int app_list_threshold =
         app_list_height / kAppListThresholdDenominator;
-    const int drag_delta = app_list_y_for_state - new_y_position;
+    gfx::Point location_in_screen_coordinates = location;
+    ConvertPointToScreen(this, &location_in_screen_coordinates);
+    const int drag_delta =
+        initial_drag_point_.y() - location_in_screen_coordinates.y();
+    const int location_y_in_current_display =
+        location_in_screen_coordinates.y() -
+        GetDisplayNearestView().bounds().y();
     switch (app_list_state_) {
       case FULLSCREEN_ALL_APPS:
         if (std::abs(drag_delta) > app_list_threshold)
@@ -605,7 +609,7 @@ void AppListView::EndDrag(const gfx::Point& location) {
       case HALF:
         if (std::abs(drag_delta) > app_list_threshold) {
           SetState(drag_delta > 0 ? FULLSCREEN_SEARCH : CLOSED);
-        } else if (location_in_screen_coordinates.y() >=
+        } else if (location_y_in_current_display >=
                    display_height - kAppListBezelMargin) {
           // If the user drags to the bezel, close the app list.
           SetState(CLOSED);
@@ -616,7 +620,7 @@ void AppListView::EndDrag(const gfx::Point& location) {
       case PEEKING:
         if (std::abs(drag_delta) > app_list_threshold) {
           SetState(drag_delta > 0 ? FULLSCREEN_ALL_APPS : CLOSED);
-        } else if (location_in_screen_coordinates.y() >=
+        } else if (location_y_in_current_display >=
                    display_height - kAppListBezelMargin) {
           // If the user drags to the bezel, close the app list.
           SetState(CLOSED);
@@ -720,8 +724,13 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       if (is_side_shelf_)
         return;
+      // There may be multiple scroll begin events in one drag because the
+      // relative location of the finger and widget is almost unchanged and
+      // scroll begin event occurs when the relative location changes beyond a
+      // threshold. So avoid resetting the initial drag point in drag.
+      if (!is_in_drag_)
+        StartDrag(event->location());
       is_in_drag_ = true;
-      StartDrag(event->location());
       event->SetHandled();
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
@@ -947,7 +956,7 @@ void AppListView::StartAnimationForState(AppListState target_state) {
       break;
   }
 
-  gfx::Rect target_bounds = fullscreen_widget_->GetWindowBoundsInScreen();
+  gfx::Rect target_bounds = fullscreen_widget_->GetNativeView()->bounds();
   target_bounds.set_y(target_state_y);
 
   std::unique_ptr<ui::LayerAnimationElement> bounds_animation_element =
@@ -1001,9 +1010,11 @@ void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
     SetState(FULLSCREEN_ALL_APPS);
   } else {
     gfx::Rect new_widget_bounds = fullscreen_widget_->GetWindowBoundsInScreen();
-    app_list_y_position_in_screen_ = std::max(y_position_in_screen, 0);
+    app_list_y_position_in_screen_ =
+        std::max(y_position_in_screen, GetDisplayNearestView().bounds().y());
     new_widget_bounds.set_y(app_list_y_position_in_screen_);
-    fullscreen_widget_->SetBounds(new_widget_bounds);
+    fullscreen_widget_->GetNativeView()->SetBoundsInScreen(
+        new_widget_bounds, GetDisplayNearestView());
   }
 
   DraggingLayout();
@@ -1088,8 +1099,7 @@ void AppListView::OnDisplayMetricsChanged(const display::Display& display,
     return;
 
   // Set the |fullscreen_widget_| size to fit the new display metrics.
-  gfx::Size size = GetDisplayNearestView().work_area().size();
-  size.Enlarge(0, kShelfSize);
+  gfx::Size size = GetDisplayNearestView().size();
   fullscreen_widget_->SetSize(size);
 
   // Update the |fullscreen_widget_| bounds to accomodate the new work

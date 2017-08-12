@@ -285,8 +285,12 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // The opacity of app list background during dragging.
   float background_opacity_ = 0.f;
 
-  // The gap between the initial gesture event and the top of the window.
+  // The location of initial gesture event in screen coordinates.
   gfx::Point initial_drag_point_;
+
+  // The rectangle of initial widget's window in screen coordinates.
+  gfx::Rect initial_window_bounds_;
+
   // The velocity of the gesture event.
   float last_fling_velocity_ = 0;
   // Whether the fullscreen app list feature is enabled.
