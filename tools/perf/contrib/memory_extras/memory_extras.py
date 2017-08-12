@@ -18,15 +18,23 @@ class DualBrowserBenchmark(memory._MemoryInfra):
   on a webview-based browser (a stand in for the Search app), and loading
   pages on a select browser.
   """
-  page_set = page_sets.DualBrowserStorySet
   options = {'pageset_repeat': 5}
 
   @classmethod
   def Name(cls):
     return 'memory.dual_browser_test'
 
+  def CreateStorySet(self, options):
+    del options
+    return page_sets.DualBrowserStorySet()
+
   @classmethod
   def ShouldTearDownStateAfterEachStoryRun(cls):
+    return False
+
+  @classmethod
+  def ShouldTearDownStateAfterEachStorySetRun(cls):
+    # Browser will now be closed as instructed by the shared state.
     return False
 
   @classmethod
@@ -49,12 +57,15 @@ class LongRunningDualBrowserBenchmark(memory._MemoryInfra):
   Same as memory.dual_browser_test, but the test is run for 60 iterations
   and the browser is *not* restarted between page set repeats.
   """
-  page_set = page_sets.DualBrowserStorySet
   options = {'pageset_repeat': 60}
 
   @classmethod
   def Name(cls):
     return 'memory.long_running_dual_browser_test'
+
+  def CreateStorySet(self, options):
+    del options
+    return page_sets.DualBrowserStorySet(long_running=True)
 
   @classmethod
   def ShouldTearDownStateAfterEachStoryRun(cls):

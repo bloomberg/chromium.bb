@@ -132,6 +132,11 @@ class MemoryBenchmarkTop10Mobile(_MemoryInfra):
     return False
 
   @classmethod
+  def ShouldTearDownStateAfterEachStorySetRun(cls):
+    # Browser will now be closed as instructed by the shared state.
+    return False
+
+  @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
     return DefaultValueCanBeAddedPredicateForMemoryMeasurement(value)
 
