@@ -664,7 +664,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           (this.screenMode_ == ScreenMode.SAML_INTERSTITIAL);
       params.menuGuestMode = data.guestSignin;
       params.menuKeyboardOptions = false;
-      params.menuEnterpriseEnrollment = true;
+      params.menuEnterpriseEnrollment =
+          !(data.enterpriseManagedDevice || data.hasDeviceOwner);
 
       this.gaiaAuthParams_ = params;
 
