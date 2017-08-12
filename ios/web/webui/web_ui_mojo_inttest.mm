@@ -174,13 +174,7 @@ class WebUIMojoTest : public WebIntTest {
 // Tests that JS can send messages to the native code and vice versa.
 // TestUIHandler is used for communication and test succeeds only when
 // |TestUIHandler| successfully receives "ack" message from WebUI page.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_MessageExchange MessageExchange
-#else
-#define MAYBE_MessageExchange FLAKY_MessageExchange
-#endif
-// TODO(crbug.com/720098): Enable this test on device.
-TEST_F(WebUIMojoTest, MAYBE_MessageExchange) {
+TEST_F(WebUIMojoTest, MessageExchange) {
   @autoreleasepool {
     web_state()->SetWebUsageEnabled(true);
     web_state()->GetView();  // WebState won't load URL without view.
