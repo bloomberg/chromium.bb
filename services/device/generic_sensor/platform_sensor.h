@@ -84,7 +84,7 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
 
   // Updates shared buffer with new sensor reading data.
   // Note: this method is thread-safe.
-  void UpdateSensorReading(const SensorReading& reading, bool notify_clients);
+  void UpdateSensorReading(const SensorReading& reading);
 
   void NotifySensorReadingChanged();
   void NotifySensorError();

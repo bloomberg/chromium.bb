@@ -55,26 +55,13 @@ bool PlatformSensorFusion::StartSensor(
       return false;
   }
 
-  if (GetReportingMode() == mojom::ReportingMode::CONTINUOUS) {
-    timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond /
-                                          configuration.frequency()),
-        base::Bind(&PlatformSensorFusion::OnSensorReadingChanged,
-                   base::Unretained(this), GetType()));
-  }
-
   fusion_algorithm_->SetFrequency(configuration.frequency());
-
   return true;
 }
 
 void PlatformSensorFusion::StopSensor() {
   for (const auto& sensor : source_sensors_)
     sensor->StopSensor();
-
-  if (timer_.IsRunning())
-    timer_.Stop();
 
   fusion_algorithm_->Reset();
 }
@@ -102,8 +89,7 @@ void PlatformSensorFusion::OnSensorReadingChanged(mojom::SensorType type) {
   }
 
   reading_ = reading;
-  UpdateSensorReading(reading_,
-                      GetReportingMode() == mojom::ReportingMode::ON_CHANGE);
+  UpdateSensorReading(reading_);
 }
 
 void PlatformSensorFusion::OnSensorError() {

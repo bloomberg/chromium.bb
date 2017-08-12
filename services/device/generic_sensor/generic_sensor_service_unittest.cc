@@ -53,7 +53,7 @@ class FakePlatformSensor : public PlatformSensor {
     if (GetType() == SensorType::AMBIENT_LIGHT) {
       // Set the shared buffer value as frequency for testing purpose.
       reading.als.value = configuration.frequency();
-      UpdateSensorReading(reading, true);
+      UpdateSensorReading(reading);
     }
     return true;
   }

@@ -171,7 +171,7 @@ bool PlatformSensorAmbientLightMac::ReadAndUpdate() {
   reading.als.timestamp =
       (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
   reading.als.value = current_lux_;
-  UpdateSensorReading(reading, true);
+  UpdateSensorReading(reading);
   return true;
 }
 
