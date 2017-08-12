@@ -245,88 +245,13 @@ static void GetDeviceSupportedFormatsDirectShow(const Descriptor& descriptor,
                                                 VideoCaptureFormats* formats) {
   DVLOG(1) << "GetDeviceSupportedFormatsDirectShow for "
            << descriptor.display_name;
-  ScopedComPtr<ICreateDevEnum> dev_enum;
-  HRESULT hr = ::CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC,
-                                  IID_PPV_ARGS(&dev_enum));
-  if (FAILED(hr))
-    return;
-
-  ScopedComPtr<IEnumMoniker> enum_moniker;
-  hr = dev_enum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,
-                                       enum_moniker.GetAddressOf(), 0);
-  // CreateClassEnumerator returns S_FALSE on some Windows OS when no camera
-  // exists. Therefore the FAILED macro can't be used.
-  if (hr != S_OK)
-    return;
-
-  // Walk the capture devices. No need to check for device presence again since
-  // that is anyway needed in GetDeviceFilter(). "google camera adapter" and old
-  // VFW devices are already skipped previously in GetDeviceNames() enumeration.
-  base::win::ScopedComPtr<IBaseFilter> capture_filter;
-  hr = VideoCaptureDeviceWin::GetDeviceFilter(descriptor.device_id,
-                                              capture_filter.GetAddressOf());
-  if (!capture_filter.Get()) {
-    DLOG(ERROR) << "Failed to create capture filter: "
-                << logging::SystemErrorCodeToString(hr);
-    return;
-  }
-
-  base::win::ScopedComPtr<IPin> output_capture_pin(
-      VideoCaptureDeviceWin::GetPin(capture_filter.Get(), PINDIR_OUTPUT,
-                                    PIN_CATEGORY_CAPTURE, GUID_NULL));
-  if (!output_capture_pin.Get()) {
-    DLOG(ERROR) << "Failed to get capture output pin";
-    return;
-  }
-
-  ScopedComPtr<IAMStreamConfig> stream_config;
-  hr = output_capture_pin.CopyTo(stream_config.GetAddressOf());
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to get IAMStreamConfig interface from "
-                   "capture device: " << logging::SystemErrorCodeToString(hr);
-    return;
-  }
-
-  int count = 0, size = 0;
-  hr = stream_config->GetNumberOfCapabilities(&count, &size);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "GetNumberOfCapabilities failed: "
-                << logging::SystemErrorCodeToString(hr);
-    return;
-  }
-
-  std::unique_ptr<BYTE[]> caps(new BYTE[size]);
-  for (int i = 0; i < count; ++i) {
-    VideoCaptureDeviceWin::ScopedMediaType media_type;
-    hr = stream_config->GetStreamCaps(i, media_type.Receive(), caps.get());
-    // GetStreamCaps() may return S_FALSE, so don't use FAILED() or SUCCEED()
-    // macros here since they'll trigger incorrectly.
-    if (hr != S_OK || !media_type.get()) {
-      DLOG(ERROR) << "GetStreamCaps failed: "
-                  << logging::SystemErrorCodeToString(hr);
-      return;
-    }
-
-    if (media_type->majortype == MEDIATYPE_Video &&
-        media_type->formattype == FORMAT_VideoInfo) {
-      VideoCaptureFormat format;
-      format.pixel_format =
-          VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
-              media_type->subtype);
-      if (format.pixel_format == PIXEL_FORMAT_UNKNOWN)
-        continue;
-      VIDEOINFOHEADER* h =
-          reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
-      format.frame_size.SetSize(h->bmiHeader.biWidth, h->bmiHeader.biHeight);
-      // Trust the frame rate from the VIDEOINFOHEADER.
-      format.frame_rate =
-          (h->AvgTimePerFrame > 0)
-              ? kSecondsToReferenceTime / static_cast<float>(h->AvgTimePerFrame)
-              : 0.0f;
-      formats->push_back(format);
-      DVLOG(1) << descriptor.display_name << " "
-               << VideoCaptureFormat::ToString(format);
-    }
+  CapabilityList capability_list;
+  VideoCaptureDeviceWin::GetDeviceCapabilityList(descriptor.device_id,
+                                                 &capability_list);
+  for (const auto& entry : capability_list) {
+    formats->emplace_back(entry.supported_format);
+    DVLOG(1) << descriptor.display_name << " "
+             << VideoCaptureFormat::ToString(entry.supported_format);
   }
 }
 
