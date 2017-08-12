@@ -161,13 +161,6 @@ int SaveCardBubbleViews::GetDialogButtons() const {
 
 base::string16 SaveCardBubbleViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  if (!IsAutofillUpstreamShowNewUiExperimentEnabled()) {
-    // New UI experiment disabled:
-    return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
-                                         ? IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT
-                                         : IDS_NO_THANKS);
-  }
-  // New UI experiment enabled:
   switch (GetCurrentFlowStep()) {
     // Local save has two buttons:
     case LOCAL_SAVE_ONLY_STEP:
@@ -176,14 +169,17 @@ base::string16 SaveCardBubbleViews::GetDialogButtonLabel(
                                          : IDS_NO_THANKS);
     // Upload save has one button but it can say three different things:
     case UPLOAD_SAVE_ONLY_STEP:
-      DCHECK(button == ui::DIALOG_BUTTON_OK);
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
+      return l10n_util::GetStringUTF16(
+          button == ui::DIALOG_BUTTON_OK ? IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT
+                                         : IDS_NO_THANKS);
     case UPLOAD_SAVE_CVC_FIX_FLOW_STEP_1_OFFER_UPLOAD:
-      DCHECK(button == ui::DIALOG_BUTTON_OK);
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_NEXT);
+      return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
+                                           ? IDS_AUTOFILL_SAVE_CARD_PROMPT_NEXT
+                                           : IDS_NO_THANKS);
     case UPLOAD_SAVE_CVC_FIX_FLOW_STEP_2_REQUEST_CVC:
-      DCHECK(button == ui::DIALOG_BUTTON_OK);
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_CONFIRM);
+      return l10n_util::GetStringUTF16(
+          button == ui::DIALOG_BUTTON_OK ? IDS_AUTOFILL_SAVE_CARD_PROMPT_CONFIRM
+                                         : IDS_NO_THANKS);
     default:
       NOTREACHED();
       return base::string16();
@@ -315,17 +311,17 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
       views::CreateSolidBorder(1, SkColorSetA(SK_ColorBLACK, 10)));
   description_view->AddChildView(card_type_icon);
 
-  // Old UI shows last four digits and expiration.  New UI shows network and
-  // last four digits, but no expiration.
+  // Old UI shows last four digits and expiration.  New UI shows network, last
+  // four digits, and expiration.
   if (IsAutofillUpstreamShowNewUiExperimentEnabled()) {
     description_view->AddChildView(
         new views::Label(card.NetworkAndLastFourDigits()));
   } else {
     description_view->AddChildView(new views::Label(
         base::string16(kMidlineEllipsis) + card.LastFourDigits()));
-    description_view->AddChildView(
-        new views::Label(card.AbbreviatedExpirationDateForDisplay()));
   }
+  description_view->AddChildView(
+      new views::Label(card.AbbreviatedExpirationDateForDisplay()));
 
   // If applicable, add the upload explanation label.  Appears below the card
   // info when new UI experiment is disabled.
