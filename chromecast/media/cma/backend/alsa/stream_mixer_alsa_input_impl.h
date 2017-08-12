@@ -107,8 +107,7 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
   void SetPaused(bool paused);
 
   // Sets the volume multiplier for this stream. If |multiplier| < 0, sets the
-  // volume multiplier to 0. If |multiplier| > 1, sets the volume multiplier
-  // to 1.
+  // volume multiplier to 0.
   void SetVolumeMultiplier(float multiplier);
 
   // Prevents any further calls to the delegate (ie, called when the delegate

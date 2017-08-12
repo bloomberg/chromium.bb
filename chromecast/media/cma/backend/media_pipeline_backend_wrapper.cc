@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chromecast/media/cma/backend/audio_decoder_wrapper.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/cast_media_shlib.h"
 
@@ -20,9 +21,9 @@ MediaPipelineBackendWrapper::MediaPipelineBackendWrapper(
     : backend_(base::WrapUnique(
           media::CastMediaShlib::CreateMediaPipelineBackend(params))),
       backend_manager_(backend_manager),
+      content_type_(params.content_type),
       sfx_backend_(params.audio_type ==
                    media::MediaPipelineDeviceParams::kAudioStreamSoundEffects),
-      have_audio_decoder_(false),
       have_video_decoder_(false),
       playing_(false) {
   DCHECK(backend_);
@@ -30,7 +31,7 @@ MediaPipelineBackendWrapper::MediaPipelineBackendWrapper(
 }
 
 MediaPipelineBackendWrapper::~MediaPipelineBackendWrapper() {
-  if (have_audio_decoder_)
+  if (audio_decoder_)
     backend_manager_->DecrementDecoderCount(
         sfx_backend_ ? DecoderType::SFX_DECODER : DecoderType::AUDIO_DECODER);
   if (have_video_decoder_)
@@ -38,7 +39,7 @@ MediaPipelineBackendWrapper::~MediaPipelineBackendWrapper() {
 
   if (playing_) {
     LOG(WARNING) << "Destroying media backend while still in 'playing' state";
-    if (have_audio_decoder_ && !sfx_backend_) {
+    if (audio_decoder_ && !sfx_backend_) {
       backend_manager_->UpdatePlayingAudioCount(-1);
     }
   }
@@ -54,14 +55,19 @@ void MediaPipelineBackendWrapper::LogicalResume() {
 
 MediaPipelineBackend::AudioDecoder*
 MediaPipelineBackendWrapper::CreateAudioDecoder() {
-  DCHECK(!have_audio_decoder_);
+  DCHECK(!audio_decoder_);
 
   if (!backend_manager_->IncrementDecoderCount(
           sfx_backend_ ? DecoderType::SFX_DECODER : DecoderType::AUDIO_DECODER))
     return nullptr;
-  have_audio_decoder_ = true;
-
-  return backend_->CreateAudioDecoder();
+  MediaPipelineBackend::AudioDecoder* real_decoder =
+      backend_->CreateAudioDecoder();
+  if (!real_decoder) {
+    return nullptr;
+  }
+  audio_decoder_ = base::MakeUnique<AudioDecoderWrapper>(
+      backend_manager_, real_decoder, content_type_);
+  return audio_decoder_.get();
 }
 
 MediaPipelineBackend::VideoDecoder*
@@ -121,7 +127,7 @@ void MediaPipelineBackendWrapper::SetPlaying(bool playing) {
     return;
   }
   playing_ = playing;
-  if (have_audio_decoder_ && !sfx_backend_) {
+  if (audio_decoder_ && !sfx_backend_) {
     backend_manager_->UpdatePlayingAudioCount(playing_ ? 1 : -1);
   }
 }
