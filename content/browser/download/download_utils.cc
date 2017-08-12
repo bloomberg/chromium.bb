@@ -10,12 +10,14 @@
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/common/resource_request.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context.h"
 
 namespace content {
@@ -250,5 +252,105 @@ CreateURLRequestOnIOThread(DownloadUrlParameters* params) {
   return request;
 }
 
+DownloadInterruptReason HandleSuccessfulServerResponse(
+    const net::HttpResponseHeaders& http_headers,
+    DownloadSaveInfo* save_info) {
+  switch (http_headers.response_code()) {
+    case -1:  // Non-HTTP request.
+    case net::HTTP_OK:
+    case net::HTTP_NON_AUTHORITATIVE_INFORMATION:
+    case net::HTTP_PARTIAL_CONTENT:
+      // Expected successful codes.
+      break;
+
+    case net::HTTP_CREATED:
+    case net::HTTP_ACCEPTED:
+      // Per RFC 7231 the entity being transferred is metadata about the
+      // resource at the target URL and not the resource at that URL (or the
+      // resource that would be at the URL once processing is completed in the
+      // case of HTTP_ACCEPTED). However, we currently don't have special
+      // handling for these response and they are downloaded the same as a
+      // regular response.
+      break;
+
+    case net::HTTP_NO_CONTENT:
+    case net::HTTP_RESET_CONTENT:
+    // These two status codes don't have an entity (or rather RFC 7231
+    // requires that there be no entity). They are treated the same as the
+    // resource not being found since there is no entity to download.
+
+    case net::HTTP_NOT_FOUND:
+      return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+      break;
+
+    case net::HTTP_REQUESTED_RANGE_NOT_SATISFIABLE:
+      // Retry by downloading from the start automatically:
+      // If we haven't received data when we get this error, we won't.
+      return DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
+      break;
+    case net::HTTP_UNAUTHORIZED:
+    case net::HTTP_PROXY_AUTHENTICATION_REQUIRED:
+      // Server didn't authorize this request.
+      return DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED;
+      break;
+    case net::HTTP_FORBIDDEN:
+      // Server forbids access to this resource.
+      return DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN;
+      break;
+    default:  // All other errors.
+      // Redirection and informational codes should have been handled earlier
+      // in the stack.
+      // TODO(xingliu): Handle HTTP_PRECONDITION_FAILED and resurrect
+      // DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION for range requests.
+      // This will change extensions::api::download::InterruptReason.
+      DCHECK_NE(3, http_headers.response_code() / 100);
+      DCHECK_NE(1, http_headers.response_code() / 100);
+      return DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
+  }
+
+  // The caller is expecting a partial response.
+  if (save_info && (save_info->offset > 0 || save_info->length > 0)) {
+    if (http_headers.response_code() != net::HTTP_PARTIAL_CONTENT) {
+      // Server should send partial content when "If-Match" or
+      // "If-Unmodified-Since" check passes, and the range request header has
+      // last byte position. e.g. "Range:bytes=50-99".
+      if (save_info->length != DownloadSaveInfo::kLengthFullContent)
+        return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+
+      // Requested a partial range, but received the entire response, when
+      // the range request header is "Range:bytes={offset}-".
+      save_info->offset = 0;
+      save_info->hash_of_partial_file.clear();
+      save_info->hash_state.reset();
+      return DOWNLOAD_INTERRUPT_REASON_NONE;
+    }
+
+    int64_t first_byte = -1;
+    int64_t last_byte = -1;
+    int64_t length = -1;
+    if (!http_headers.GetContentRangeFor206(&first_byte, &last_byte, &length))
+      return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+    DCHECK_GE(first_byte, 0);
+
+    if (first_byte != save_info->offset ||
+        (save_info->length > 0 &&
+         last_byte != save_info->offset + save_info->length - 1)) {
+      // The server returned a different range than the one we requested. Assume
+      // the response is bad.
+      //
+      // In the future we should consider allowing offsets that are less than
+      // the offset we've requested, since in theory we can truncate the partial
+      // file at the offset and continue.
+      return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+    }
+
+    return DOWNLOAD_INTERRUPT_REASON_NONE;
+  }
+
+  if (http_headers.response_code() == net::HTTP_PARTIAL_CONTENT)
+    return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+
+  return DOWNLOAD_INTERRUPT_REASON_NONE;
+}
 
 }  // namespace content
