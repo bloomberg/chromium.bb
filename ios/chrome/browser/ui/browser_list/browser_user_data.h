@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_USER_DATA_H_
-#define IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_USER_DATA_H_
+#ifndef IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_USER_DATA_H_
+#define IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_USER_DATA_H_
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
-#import "ios/shared/chrome/browser/ui/browser_list/browser.h"
+#import "ios/chrome/browser/ui/browser_list/browser.h"
 
 // A base class for classes attached to, and scoped to, the lifetime of a
 // Browser. For example:
@@ -71,4 +71,4 @@ class BrowserUserData : public base::SupportsUserData::Data {
   template <>                              \
   int BrowserUserData<TYPE>::kLocatorKey = 0
 
-#endif  // IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_USER_DATA_H_
+#endif  // IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_USER_DATA_H_

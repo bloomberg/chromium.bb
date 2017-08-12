@@ -4,10 +4,10 @@
 
 #import "ios/clean/chrome/browser/ui/tools/tools_coordinator.h"
 
+#import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/clean/chrome/browser/ui/tools/menu_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_mediator.h"
 #import "ios/clean/chrome/browser/ui/transitions/zooming_menu_transition_controller.h"
-#import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

@@ -17,10 +17,10 @@ source_set("settings") {
   deps = [
     "//base:base",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/ui/browser_list",
     "//ios/chrome/browser/ui/settings",
     "//ios/clean/chrome/browser/ui/actions",
     "//ios/clean/chrome/browser/ui/commands",
-    "//ios/shared/chrome/browser/ui/browser_list",
     "//ios/shared/chrome/browser/ui/commands",
     "//ios/shared/chrome/browser/ui/coordinators",
   ]
@@ -37,8 +37,8 @@ source_set("unit_tests") {
   deps = [
     ":settings",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/ui/browser_list",
     "//ios/chrome/browser/ui/settings",
-    "//ios/shared/chrome/browser/ui/browser_list",
     "//ios/shared/chrome/browser/ui/coordinators:test_support",
     "//testing/gtest",
   ]

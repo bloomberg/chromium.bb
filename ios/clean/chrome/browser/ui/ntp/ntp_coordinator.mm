@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/ntp/ntp_coordinator.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/browser_list/browser.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/clean/chrome/browser/ui/bookmarks/bookmarks_coordinator.h"
 #import "ios/clean/chrome/browser/ui/commands/ntp_commands.h"
@@ -12,7 +13,6 @@
 #import "ios/clean/chrome/browser/ui/ntp/ntp_mediator.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_view_controller.h"
 #import "ios/clean/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
-#import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 

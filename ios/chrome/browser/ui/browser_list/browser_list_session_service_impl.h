@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_SESSION_SERVICE_IMPL_H_
-#define IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_SESSION_SERVICE_IMPL_H_
+#ifndef IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_SESSION_SERVICE_IMPL_H_
+#define IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_SESSION_SERVICE_IMPL_H_
 
 #import <Foundation/Foundation.h>
 
@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#import "ios/shared/chrome/browser/ui/browser_list/browser_list_session_service.h"
+#import "ios/chrome/browser/ui/browser_list/browser_list_session_service.h"
 #import "ios/web/public/web_state/web_state.h"
 
 class BrowserList;
@@ -62,4 +62,4 @@ class BrowserListSessionServiceImpl : public BrowserListSessionService {
   DISALLOW_COPY_AND_ASSIGN(BrowserListSessionServiceImpl);
 };
 
-#endif  // IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_SESSION_SERVICE_IMPL_H_
+#endif  // IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_SESSION_SERVICE_IMPL_H_

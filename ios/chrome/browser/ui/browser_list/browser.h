@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_H_
-#define IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_H_
+#ifndef IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_H_
+#define IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_H_
 
 #include <memory>
 
@@ -46,4 +46,4 @@ class Browser : public base::SupportsUserData {
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };
 
-#endif  // IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_H_
+#endif  // IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_H_
