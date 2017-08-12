@@ -755,26 +755,14 @@ void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
 
   if (page_scale_factor) {
     DCHECK(!IsActiveTree() || !layer_tree_host_impl_->pending_tree());
-    changed_page_scale |= page_scale_factor_->Delta() != 1.f;
-    // TODO(enne): Once CDP goes away, ignore this call below.  The only time
-    // the property trees will differ is if there's been a page scale on the
-    // compositor thread after the begin frame, which is the delta check above.
     changed_page_scale |=
-        page_scale_factor_->PushFromMainThread(*page_scale_factor);
+        page_scale_factor_->PushMainToPending(*page_scale_factor);
   }
 
   if (IsActiveTree()) {
-    // TODO(enne): Pushing from pending to active should never require
-    // DidUpdatePageScale.  The values should already be set by the fully
-    // computed property trees being synced from one tree to another.  Remove
-    // this once CDP goes away.
     changed_page_scale |= page_scale_factor_->PushPendingToActive();
   }
 
-  // TODO(pdr): Simplify the logic here and the equivalent logic in
-  // ScrollTree::PushScrollUpdatesFromMainThread where two types of changes
-  // are detected: whether the current value changed, and whether the pushes
-  // have any effect.
   if (changed_page_scale)
     DidUpdatePageScale();
 
@@ -840,7 +828,7 @@ void LayerTreeImpl::PushBrowserControls(const float* top_controls_shown_ratio) {
 
   if (top_controls_shown_ratio) {
     DCHECK(!IsActiveTree() || !layer_tree_host_impl_->pending_tree());
-    top_controls_shown_ratio_->PushFromMainThread(*top_controls_shown_ratio);
+    top_controls_shown_ratio_->PushMainToPending(*top_controls_shown_ratio);
   }
   if (IsActiveTree()) {
     bool changed_active = top_controls_shown_ratio_->PushPendingToActive();
