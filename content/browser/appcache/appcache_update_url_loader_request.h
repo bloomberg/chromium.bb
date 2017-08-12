@@ -13,6 +13,7 @@
 #include "content/browser/appcache/appcache_update_request_base.h"
 #include "content/common/net_adapters.h"
 #include "content/public/common/resource_request.h"
+#include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -26,7 +27,6 @@ namespace content {
 
 class URLLoaderFactoryGetter;
 struct ResourceRequest;
-struct ResourceResponseHead;
 
 // URLLoaderClient subclass for the UpdateRequestBase class. Provides
 // functionality to update the AppCache using functionality provided by the
@@ -91,7 +91,7 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
 
   ResourceRequest request_;
-  std::unique_ptr<ResourceResponseHead> response_;
+  ResourceResponseHead response_;
   ResourceRequestCompletionStatus response_status_;
   // Response details.
   std::unique_ptr<net::HttpResponseInfo> http_response_info_;
