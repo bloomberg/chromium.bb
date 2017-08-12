@@ -6,6 +6,7 @@ from core import perf_benchmark
 
 from measurements import rasterize_and_record_micro
 import page_sets
+from telemetry import benchmark
 from telemetry import story
 
 
@@ -43,6 +44,9 @@ class _RasterizeAndRecordMicro(perf_benchmark.PerfBenchmark):
         options.record_repeat, options.timeout, options.report_detailed_results)
 
 
+@benchmark.Owner(
+    emails=['vmpstr@chromium.org', 'wkorman@chromium.org'],
+    component='Internals>Compositing>Rasterization')
 class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
   """Measures rasterize and record performance on the top 25 web pages.
 
@@ -64,6 +68,9 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
     return StoryExpectations()
 
 
+@benchmark.Owner(
+    emails=['vmpstr@chromium.org', 'wkorman@chromium.org'],
+    component='Internals>Compositing>Rasterization')
 class RasterizeAndRecordMicroPartialInvalidation(_RasterizeAndRecordMicro):
   """Measures rasterize and record performance for partial inval. on big pages.
 
