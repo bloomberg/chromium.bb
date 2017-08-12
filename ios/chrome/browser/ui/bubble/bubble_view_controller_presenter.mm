@@ -71,6 +71,7 @@ const NSTimeInterval kBubbleEngagementDuration = 30.0;
 @synthesize bubbleDismissalTimer = _bubbleDismissalTimer;
 @synthesize engagementTimer = _engagementTimer;
 @synthesize userEngaged = _userEngaged;
+@synthesize triggerFollowUpAction = _triggerFollowUpAction;
 @synthesize arrowDirection = _arrowDirection;
 @synthesize alignment = _alignment;
 @synthesize dismissalCallback = _dismissalCallback;
@@ -96,6 +97,7 @@ const NSTimeInterval kBubbleEngagementDuration = 30.0;
     _insideBubbleTapRecognizer.delegate = self;
     _insideBubbleTapRecognizer.cancelsTouchesInView = NO;
     _userEngaged = NO;
+    _triggerFollowUpAction = NO;
     _arrowDirection = arrowDirection;
     _alignment = alignment;
     _dismissalCallback = dismissalCallback;
@@ -132,6 +134,7 @@ const NSTimeInterval kBubbleEngagementDuration = 30.0;
                              repeats:NO];
 
   self.userEngaged = YES;
+  self.triggerFollowUpAction = YES;
   self.engagementTimer =
       [NSTimer scheduledTimerWithTimeInterval:kBubbleEngagementDuration
                                        target:self
@@ -206,6 +209,7 @@ const NSTimeInterval kBubbleEngagementDuration = 30.0;
 // Marks the user as not engaged when |engagementTimer| fires.
 - (void)engagementTimerFired:(id)sender {
   self.userEngaged = NO;
+  self.triggerFollowUpAction = NO;
   self.engagementTimer = nil;
 }
 

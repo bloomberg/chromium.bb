@@ -98,6 +98,10 @@ extern NSString* const kToolsMenuRequestMobileId;
 
 - (void)hideContent;
 
+// Highlight the New Incognito Tab cell in blue. The highlight fades in, pulses
+// once, and fades out.
+- (void)triggerNewIncognitoTabCellHighlight;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLS_MENU_TOOLS_MENU_VIEW_CONTROLLER_H_

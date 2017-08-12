@@ -30,6 +30,13 @@
 // the bubble had an effect on the user's action.
 @property(nonatomic, assign, readonly, getter=isUserEngaged) BOOL userEngaged;
 
+// Determines whether a follow-up action, such as highlighting a UI element,
+// should be triggered. This depends on |userEngaged|, since a follow-up action
+// should only occur if the user is engaged with the bubble. Defaults to |YES|,
+// and is set to |NO| once |userEngaged| is set to |NO| or after the user has
+// triggered the follow-up action.
+@property(nonatomic, assign) BOOL triggerFollowUpAction;
+
 // Initializes the presenter. |text| is the text displayed by the bubble.
 // |arrowDirection| is the direction the bubble's arrow is pointing. |alignment|
 // is the position of the arrow on the bubble. |dismissalCallback| is a block

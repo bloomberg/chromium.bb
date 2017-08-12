@@ -15,6 +15,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/animation_util.h"
+#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -120,6 +121,9 @@ NS_INLINE void AnimateInViews(NSArray* views,
 // Determines if the reading list should display a new feature badge. Defaults
 // to |NO|.
 @property(nonatomic, assign) BOOL showReadingListNewBadge;
+// Indicates whether the New Incognito Tab cell should be highlighted. Defaults
+// to |NO|.
+@property(nonatomic, assign) BOOL highlightNewIncognitoTabCell;
 // Tracks events for the purpose of in-product help. Does not take ownership of
 // tracker. Tracker must not be destroyed during lifetime of
 // ToolsMenuViewController. Defaults to |NULL|.
@@ -139,6 +143,7 @@ NS_INLINE void AnimateInViews(NSArray* views,
 @implementation ToolsMenuViewController
 
 @synthesize showReadingListNewBadge = _showReadingListNewBadge;
+@synthesize highlightNewIncognitoTabCell = _highlightNewIncognitoTabCell;
 @synthesize engagementTracker = _engagementTracker;
 @synthesize menuView = _menuView;
 @synthesize isCurrentPageBookmarked = _isCurrentPageBookmarked;
@@ -232,6 +237,8 @@ NS_INLINE void AnimateInViews(NSArray* views,
   self.requestStartTime = configuration.requestStartTime;
   self.showReadingListNewBadge = configuration.showReadingListNewBadge;
   self.engagementTracker = configuration.engagementTracker;
+  self.highlightNewIncognitoTabCell =
+      configuration.highlightNewIncognitoTabCell;
 
   if (configuration.readingListMenuNotifier) {
     _readingListMenuNotifier = configuration.readingListMenuNotifier;
@@ -473,6 +480,9 @@ NS_INLINE void AnimateInViews(NSArray* views,
   [[self readingListCell]
       updateSeenState:_readingListMenuNotifier.readingListUnseenItemsExist
              animated:YES];
+  if (self.highlightNewIncognitoTabCell) {
+    [self triggerNewIncognitoTabCellHighlight];
+  }
 }
 
 - (void)hideContent {
@@ -676,6 +686,35 @@ NS_INLINE void AnimateInViews(NSArray* views,
 
 - (void)unseenStateChanged:(BOOL)unseenItemsExist {
   [[self readingListCell] updateSeenState:unseenItemsExist animated:YES];
+}
+
+#pragma mark - New Incognito Tab in-product help promotion
+
+- (void)triggerNewIncognitoTabCellHighlight {
+  for (ToolsMenuViewCell* visibleCell in [_menuView visibleCells]) {
+    if ([visibleCell.accessibilityIdentifier
+            isEqualToString:kToolsMenuNewIncognitoTabId]) {
+      // Set the label's background color to be clear so that the highlight is
+      // is not covered by the label.
+      visibleCell.title.backgroundColor = [UIColor clearColor];
+      [UIView animateWithDuration:ios::material::kDuration5
+          delay:0.0
+          options:UIViewAnimationOptionAllowUserInteraction |
+                  UIViewAnimationOptionRepeat |
+                  UIViewAnimationOptionAutoreverse |
+                  UIViewAnimationOptionCurveEaseInOut
+          animations:^{
+            [UIView setAnimationRepeatCount:2];
+            visibleCell.contentView.backgroundColor =
+                [[MDCPalette cr_bluePalette] tint100];
+          }
+          completion:^(BOOL finished) {
+            visibleCell.contentView.backgroundColor = [UIColor whiteColor];
+          }];
+      self.highlightNewIncognitoTabCell = NO;
+      break;
+    }
+  }
 }
 
 @end

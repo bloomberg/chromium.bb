@@ -737,6 +737,9 @@ To adjust your search term, long press to select. To refine your search, slide t
       <message name="IDS_IOS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_TITLE" desc="The title of the alert informing a user with no email accounts that they need to configure an email account to send net-export data. [Length: 20em]">
         No Email Accounts
       </message>
+      <message name="IDS_IOS_NEW_INCOGNITO_TAB_IPH_PROMOTION_TEXT" desc="Text for the New Incognito Tab Tip in-product help promotion, explaining that incognito tabs can be used to browse privately. [iOS only]" meaning="The user has never created an incognito tab before. A bubble is displayed pointing to the tools menu button and informing users about how to use incognito mode.">
+        To browse privately, open an incognito tab
+      </message>
       <message name="IDS_IOS_NEW_TAB_BOOKMARKS_PAGE_TITLE_MOBILE" desc="The 'Bookmarks' title on the new tab page [Length: 10em]">
         Bookmarks
       </message>
