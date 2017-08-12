@@ -508,8 +508,7 @@ int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
 int QuicStreamFactory::Job::DoConnect() {
   io_state_ = STATE_CONNECT_COMPLETE;
 
-  bool require_confirmation = factory_->require_confirmation() ||
-                              was_alternative_service_recently_broken_;
+  bool require_confirmation = was_alternative_service_recently_broken_;
   net_log_.BeginEvent(
       NetLogEventType::QUIC_STREAM_FACTORY_JOB_CONNECT,
       NetLog::BoolCallback("require_confirmation", require_confirmation));
@@ -1532,6 +1531,11 @@ int QuicStreamFactory::CreateSession(const QuicSessionKey& key,
         socket_performance_watcher_factory_->CreateSocketPerformanceWatcher(
             SocketPerformanceWatcherFactory::PROTOCOL_QUIC, address_list);
   }
+
+  // Wait for handshake confirmation before allowing streams to be created if
+  // either this session or the factory require confirmation.
+  if (require_confirmation_)
+    require_confirmation = true;
 
   *session = new QuicChromiumClientSession(
       connection, std::move(socket), this, quic_crypto_client_stream_factory_,
