@@ -137,6 +137,8 @@ static_library("host") {
     "dns_blackhole_checker.h",
     "evaluate_capability.cc",
     "evaluate_capability.h",
+    "file_proxy_wrapper.cc",
+    "file_proxy_wrapper.h",
     "file_transfer_message_handler.cc",
     "file_transfer_message_handler.h",
     "file_transfer_message_handler_factory.cc",
