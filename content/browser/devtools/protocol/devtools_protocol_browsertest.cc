@@ -586,17 +586,21 @@ bool ColorsMatchWithinLimit(SkColor color1,
 bool MatchesBitmap(const SkBitmap& expected_bmp,
                    const SkBitmap& actual_bmp,
                    const gfx::Rect& matching_mask,
+                   float device_scale_factor,
                    int error_limit) {
   // Number of pixels with an error
   int error_pixels_count = 0;
 
   gfx::Rect error_bounding_rect = gfx::Rect();
 
+  // Scale expectations along with the mask.
+  device_scale_factor = device_scale_factor ? device_scale_factor : 1;
+
   // Check that bitmaps have identical dimensions.
-  EXPECT_EQ(expected_bmp.width(), actual_bmp.width());
-  EXPECT_EQ(expected_bmp.height(), actual_bmp.height());
-  if (expected_bmp.width() != actual_bmp.width() ||
-      expected_bmp.height() != actual_bmp.height()) {
+  EXPECT_EQ(expected_bmp.width() * device_scale_factor, actual_bmp.width());
+  EXPECT_EQ(expected_bmp.height() * device_scale_factor, actual_bmp.height());
+  if (expected_bmp.width() * device_scale_factor != actual_bmp.width() ||
+      expected_bmp.height() * device_scale_factor != actual_bmp.height()) {
     return false;
   }
 
@@ -604,7 +608,8 @@ bool MatchesBitmap(const SkBitmap& expected_bmp,
 
   for (int x = matching_mask.x(); x < matching_mask.right(); ++x) {
     for (int y = matching_mask.y(); y < matching_mask.bottom(); ++y) {
-      SkColor actual_color = actual_bmp.getColor(x, y);
+      SkColor actual_color =
+          actual_bmp.getColor(x * device_scale_factor, y * device_scale_factor);
       SkColor expected_color = expected_bmp.getColor(x, y);
       if (!ColorsMatchWithinLimit(actual_color, expected_color, error_limit)) {
         if (error_pixels_count < 10) {
@@ -632,13 +637,14 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
   enum ScreenshotEncoding { ENCODING_PNG, ENCODING_JPEG };
   void CaptureScreenshotAndCompareTo(const SkBitmap& expected_bitmap,
                                      ScreenshotEncoding encoding,
-                                     bool fromSurface,
+                                     bool from_surface,
+                                     float device_scale_factor = 0,
                                      const gfx::RectF& clip = gfx::RectF(),
                                      float clip_scale = 0) {
     std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
     params->SetString("format", encoding == ENCODING_PNG ? "png" : "jpeg");
     params->SetInteger("quality", 100);
-    params->SetBoolean("fromSurface", fromSurface);
+    params->SetBoolean("fromSurface", from_surface);
     if (clip_scale) {
       std::unique_ptr<base::DictionaryValue> clip_value(
           new base::DictionaryValue());
@@ -674,13 +680,14 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
     matching_mask.Inset(4, 4, 4, 4);
 #endif
     EXPECT_TRUE(MatchesBitmap(expected_bitmap, *result_bitmap, matching_mask,
-                              error_limit));
+                              device_scale_factor, error_limit));
   }
 
   // Takes a screenshot of a colored box that is positioned inside the frame.
   void PlaceAndCaptureBox(const gfx::Size& frame_size,
                           const gfx::Size& box_size,
-                          float screenshot_scale) {
+                          float screenshot_scale,
+                          float device_scale_factor) {
     static const int kBoxOffsetHeight = 100;
     const gfx::Size scaled_box_size =
         ScaleToFlooredSize(box_size, screenshot_scale);
@@ -711,7 +718,7 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
     params.reset(new base::DictionaryValue());
     params->SetInteger("width", frame_size.width());
     params->SetInteger("height", frame_size.height());
-    params->SetDouble("deviceScaleFactor", 1);
+    params->SetDouble("deviceScaleFactor", device_scale_factor);
     params->SetBoolean("mobile", false);
     SendCommand("Emulation.setDeviceMetricsOverride", std::move(params));
 
@@ -727,8 +734,8 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
     expected_bitmap.allocN32Pixels(scaled_box_size.width(),
                                    scaled_box_size.height());
     expected_bitmap.eraseColor(SkColorSetRGB(0x00, 0x00, 0xff));
-    CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true, clip,
-                                  screenshot_scale);
+    CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true,
+                                  device_scale_factor, clip, screenshot_scale);
 
     // Reset for next screenshot.
     SendCommand("Emulation.clearDeviceMetricsOverride", nullptr);
@@ -801,12 +808,17 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
   Attach();
 
   // Test capturing a subarea inside the emulated frame at different scales.
-  PlaceAndCaptureBox(kFrameSize, gfx::Size(100, 200), 1.0);
-  PlaceAndCaptureBox(kFrameSize, gfx::Size(100, 200), 2.0);
-  PlaceAndCaptureBox(kFrameSize, gfx::Size(100, 200), 0.5);
+  PlaceAndCaptureBox(kFrameSize, gfx::Size(100, 200), 1.0, 1.);
+  PlaceAndCaptureBox(kFrameSize, gfx::Size(100, 200), 2.0, 1.);
+  PlaceAndCaptureBox(kFrameSize, gfx::Size(100, 200), 0.5, 1.);
 
   // Ensure that content outside the emulated frame is painted, too.
-  PlaceAndCaptureBox(kFrameSize, gfx::Size(10, 8192), 1.0);
+  PlaceAndCaptureBox(kFrameSize, gfx::Size(10, 8192), 1.0, 1.);
+
+  // Check non-1 device scale factor.
+  PlaceAndCaptureBox(kFrameSize, gfx::Size(100, 200), 1.0, 2.);
+  // Ensure not emulating device scale factor works.
+  PlaceAndCaptureBox(kFrameSize, gfx::Size(100, 200), 1.0, 0.);
 }
 
 // Verifies that setDefaultBackgroundColor and captureScreenshot support a

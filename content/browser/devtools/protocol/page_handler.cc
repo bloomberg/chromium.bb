@@ -458,8 +458,10 @@ void PageHandler::CaptureScreenshot(
     if (!modified_params.view_size.height)
       emulated_view_size.set_height(original_view_size.height());
 
-    dpfactor =
-        modified_params.device_scale_factor / screen_info.device_scale_factor;
+    dpfactor = modified_params.device_scale_factor
+                   ? modified_params.device_scale_factor /
+                         screen_info.device_scale_factor
+                   : 1;
     // When clip is specified, we scale viewport via clip, otherwise we use
     // scale.
     modified_params.scale = clip.isJust() ? 1 : dpfactor;
