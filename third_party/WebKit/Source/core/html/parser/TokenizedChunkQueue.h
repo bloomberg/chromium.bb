@@ -35,16 +35,11 @@ class TokenizedChunkQueue : public ThreadSafeRefCounted<TokenizedChunkQueue> {
   void Clear();
 
   void TakeAll(Vector<std::unique_ptr<HTMLDocumentParser::TokenizedChunk>>&);
-  size_t PeakPendingChunkCount();
-  size_t PeakPendingTokenCount();
 
  private:
   TokenizedChunkQueue();
 
   Vector<std::unique_ptr<HTMLDocumentParser::TokenizedChunk>> pending_chunks_;
-  size_t peak_pending_chunk_count_ = 0;
-  size_t peak_pending_token_count_ = 0;
-  size_t pending_token_count_ = 0;
 };
 
 }  // namespace blink

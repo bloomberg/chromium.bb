@@ -181,18 +181,6 @@ DEFINE_TRACE_WRAPPERS(HTMLDocumentParser) {
 }
 
 void HTMLDocumentParser::Detach() {
-  if (!IsParsingFragment() && tokenized_chunk_queue_.Get() &&
-      tokenized_chunk_queue_->PeakPendingChunkCount()) {
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, peak_pending_chunk_histogram,
-                        ("Parser.PeakPendingChunkCount", 1, 1000, 50));
-    peak_pending_chunk_histogram.Count(
-        tokenized_chunk_queue_->PeakPendingChunkCount());
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, peak_pending_token_histogram,
-                        ("Parser.PeakPendingTokenCount", 1, 100000, 50));
-    peak_pending_token_histogram.Count(
-        tokenized_chunk_queue_->PeakPendingTokenCount());
-  }
-
   if (have_background_parser_)
     StopBackgroundParser();
   DocumentParser::Detach();
@@ -1186,7 +1174,6 @@ void HTMLDocumentParser::AppendBytes(const char* data, size_t length) {
     return;
 
   if (ShouldUseThreading()) {
-    double bytes_received_time = MonotonicallyIncreasingTimeMS();
     if (!have_background_parser_)
       StartBackgroundParser();
 
@@ -1199,8 +1186,7 @@ void HTMLDocumentParser::AppendBytes(const char* data, size_t length) {
     loading_task_runner_->PostTask(
         BLINK_FROM_HERE,
         WTF::Bind(&BackgroundHTMLParser::AppendRawBytesFromMainThread,
-                  background_parser_, WTF::Passed(std::move(buffer)),
-                  bytes_received_time));
+                  background_parser_, WTF::Passed(std::move(buffer))));
     return;
   }
 

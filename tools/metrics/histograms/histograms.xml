@@ -53133,6 +53133,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Parser.AppendBytesDelay" units="ms">
+  <obsolete>
+    Deprecated Aug 2017
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     The delay from when bytes are received on the main thread to when the
@@ -53160,6 +53163,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Parser.PeakPendingChunkCount" units="chunks">
+  <obsolete>
+    Deprecated Aug 2017
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     The maximum number of pending Chunks in the ParsedChunkQueue after the
@@ -53168,6 +53174,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Parser.PeakPendingTokenCount" units="tokens">
+  <obsolete>
+    Deprecated Aug 2017
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     The maximum number of pending tokens in the ParsedChunkQueue after the

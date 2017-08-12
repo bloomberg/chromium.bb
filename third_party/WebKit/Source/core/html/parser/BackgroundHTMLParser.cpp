@@ -137,12 +137,8 @@ BackgroundHTMLParser::BackgroundHTMLParser(
 BackgroundHTMLParser::~BackgroundHTMLParser() {}
 
 void BackgroundHTMLParser::AppendRawBytesFromMainThread(
-    std::unique_ptr<Vector<char>> buffer,
-    double bytes_received_time) {
+    std::unique_ptr<Vector<char>> buffer) {
   DCHECK(decoder_);
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, queue_delay,
-                      ("Parser.AppendBytesDelay", 1, 5000, 50));
-  queue_delay.Count(MonotonicallyIncreasingTimeMS() - bytes_received_time);
   UpdateDocument(decoder_->Decode(buffer->data(), buffer->size()));
 }
 
