@@ -8,6 +8,8 @@ viz_component("host") {
   defines = [ "VIZ_HOST_IMPLEMENTATION" ]
 
   sources = [
+    "hit_test/hit_test_query.cc",
+    "hit_test/hit_test_query.h",
     "host_frame_sink_client.h",
     "host_frame_sink_manager.cc",
     "host_frame_sink_manager.h",
@@ -21,6 +23,7 @@ viz_component("host") {
   deps = [
     "//base",
     "//cc/ipc:interfaces",
+    "//components/viz/common",
     "//gpu/ipc/client",
     "//gpu/ipc/common",
     "//services/ui/gpu/interfaces",
@@ -36,6 +39,8 @@ viz_component("host") {
     "//gpu/command_buffer/client",
     "//gpu/ipc/host",
     "//services/viz/compositing/privileged/interfaces",
+    "//services/viz/public/interfaces/hit_test",
+    "//ui/gfx/geometry",
   ]
 }
 
@@ -43,6 +48,7 @@ viz_source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "hit_test/hit_test_query_unittest.cc",
     "host_frame_sink_manager_unittests.cc",
     "server_gpu_memory_buffer_manager_unittest.cc",
   ]
@@ -52,7 +58,6 @@ viz_source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//cc/ipc:interfaces",
-    "//components/viz/host/hit_test:unit_tests",
     "//gpu/ipc/host",
     "//mojo/public/cpp/bindings",
     "//services/ui/gpu/interfaces",

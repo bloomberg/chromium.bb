@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
+#include "components/viz/host/viz_host_export.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -26,7 +27,7 @@ struct Target {
 // Finds the target for a given location based on the AggregatedHitTestRegion
 // list aggregated by HitTestAggregator.
 // TODO(riajiang): Handle 3d space cases correctly.
-class HitTestQuery {
+class VIZ_HOST_EXPORT HitTestQuery {
  public:
   HitTestQuery();
   ~HitTestQuery();
