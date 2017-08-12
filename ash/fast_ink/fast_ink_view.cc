@@ -128,19 +128,19 @@ void FastInkView::DidReceiveCompositorFrameAck() {
 
 void FastInkView::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
-  DCHECK_EQ(resources.size(), 1u);
+  for (auto& entry : resources) {
+    auto it = resources_.find(entry.id);
+    DCHECK(it != resources_.end());
+    std::unique_ptr<FastInkResource> resource = std::move(it->second);
+    resources_.erase(it);
 
-  auto it = resources_.find(resources.front().id);
-  DCHECK(it != resources_.end());
-  std::unique_ptr<FastInkResource> resource = std::move(it->second);
-  resources_.erase(it);
+    gpu::gles2::GLES2Interface* gles2 = resource->context_provider->ContextGL();
+    if (entry.sync_token.HasData())
+      gles2->WaitSyncTokenCHROMIUM(entry.sync_token.GetConstData());
 
-  gpu::gles2::GLES2Interface* gles2 = resource->context_provider->ContextGL();
-  if (resources.front().sync_token.HasData())
-    gles2->WaitSyncTokenCHROMIUM(resources.front().sync_token.GetConstData());
-
-  if (!resources.front().lost)
-    returned_resources_.push_back(std::move(resource));
+    if (!entry.lost)
+      returned_resources_.push_back(std::move(resource));
+  }
 }
 
 void FastInkView::UpdateDamageRect(const gfx::Rect& rect) {
