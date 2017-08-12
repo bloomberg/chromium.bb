@@ -89,8 +89,7 @@ class BackgroundHTMLParser {
     String unparsed_input;
   };
 
-  void AppendRawBytesFromMainThread(std::unique_ptr<Vector<char>>,
-                                    double bytes_received_time);
+  void AppendRawBytesFromMainThread(std::unique_ptr<Vector<char>>);
   void SetDecoder(std::unique_ptr<TextResourceDecoder>);
   void Flush();
   void ResumeFrom(std::unique_ptr<Checkpoint>);
