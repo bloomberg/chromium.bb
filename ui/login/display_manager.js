@@ -809,6 +809,9 @@ cr.define('cr.ui.login', function() {
       var currentScreen = $(currentScreenId);
       if (currentScreen)
         currentScreen.onWindowResize();
+      // The account picker always needs to be notified of window size changes.
+      if (currentScreenId != SCREEN_ACCOUNT_PICKER && $(SCREEN_ACCOUNT_PICKER))
+        $(SCREEN_ACCOUNT_PICKER).onWindowResize();
     },
 
     /*

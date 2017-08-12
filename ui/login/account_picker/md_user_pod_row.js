@@ -2915,6 +2915,8 @@ cr.define('login', function() {
     // If testing mode is enabled.
     testingModeEnabled_: false,
 
+    // The color used by the scroll list when the user count exceeds
+    // LANDSCAPE_MODE_LIMIT or PORTRAIT_MODE_LIMIT.
     overlayColors_: {maskColor: undefined, scrollColor: undefined},
 
     /** @override */
@@ -3577,7 +3579,15 @@ cr.define('login', function() {
      * screen orientation and showing the virtual keyboard.
      */
     onWindowResize: function() {
-      this.placePods_();
+      var isAccountPicker =
+          $('login-header-bar').signinUIState == SIGNIN_UI_STATE.ACCOUNT_PICKER;
+      if (isAccountPicker) {
+        // Redo pod placement if account picker is the current screen.
+        this.placePods_();
+      } else {
+        // Postpone pod placement. |handleBeforeShow| will check this flag.
+        this.podPlacementPostponed_ = true;
+      }
     },
 
     /**

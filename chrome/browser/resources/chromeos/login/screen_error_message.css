@@ -42,10 +42,6 @@
   display: block;
 }
 
-#oobe.error-message #step-logo {
-  z-index: 1;
-}
-
 .error-header {
   background-clip: padding-box;
   background-color: white;
