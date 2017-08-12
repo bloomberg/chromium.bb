@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chrome/process_version_rc_template.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 static_library("zucchini_lib") {
@@ -77,6 +78,16 @@ if (is_win) {
     template_file = "zucchini_exe_version.rc.version"
     output = "$target_gen_dir/zucchini_exe_version.rc"
   }
+}
+
+fuzzer_test("zucchini_patch_fuzzer") {
+  sources = [
+    "patch_fuzzer.cc",
+  ]
+  deps = [
+    ":zucchini_lib",
+    "//base",
+  ]
 }
 
 test("zucchini_unittests") {
