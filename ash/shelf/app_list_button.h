@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/voice_interaction_state.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -69,7 +70,8 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   // ShellObserver:
   void OnAppListVisibilityChanged(bool shown,
                                   aura::Window* root_window) override;
-  void OnVoiceInteractionStatusChanged(bool running) override;
+  void OnVoiceInteractionStatusChanged(
+      ash::VoiceInteractionState state) override;
 
   void StartVoiceInteractionAnimation();
 
@@ -98,7 +100,8 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   std::unique_ptr<base::OneShotTimer>
       voice_interaction_animation_hide_delay_timer_;
 
-  bool voice_interaction_running_ = false;
+  ash::VoiceInteractionState voice_interaction_state_ =
+      ash::VoiceInteractionState::STOPPED;
 
   // Flag that gets set each time we receive a mouse or gesture event. It is
   // then used to render the ink drop in the right location.

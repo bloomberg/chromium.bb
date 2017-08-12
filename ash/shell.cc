@@ -617,9 +617,9 @@ void Shell::NotifyAppListVisibilityChanged(bool visible,
     observer.OnAppListVisibilityChanged(visible, root_window);
 }
 
-void Shell::NotifyVoiceInteractionStatusChanged(bool running) {
+void Shell::NotifyVoiceInteractionStatusChanged(VoiceInteractionState state) {
   for (auto& observer : shell_observers_)
-    observer.OnVoiceInteractionStatusChanged(running);
+    observer.OnVoiceInteractionStatusChanged(state);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

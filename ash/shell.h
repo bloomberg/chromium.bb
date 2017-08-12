@@ -173,6 +173,7 @@ class WindowTreeHostManager;
 
 enum class Config;
 enum class LoginStatus;
+enum class VoiceInteractionState;
 
 // Shell is a singleton object that presents the Shell API and implements the
 // RootWindow's delegate interface.
@@ -617,7 +618,7 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   void NotifyAppListVisibilityChanged(bool visible, aura::Window* root_window);
 
-  void NotifyVoiceInteractionStatusChanged(bool running);
+  void NotifyVoiceInteractionStatusChanged(VoiceInteractionState state);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
