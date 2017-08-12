@@ -121,8 +121,10 @@ AccessibilityTest.define = function(testFixture, testDef) {
       axeOptions.runOnly.values : AccessibilityTest.ruleIds;
   rules.forEach((ruleId) => {
     // Skip rules disabled in axeOptions.
-    if (ruleId in axeOptions.rules && !axeOptions.rules[ruleId].enabled)
+    if (axeOptions.rules && ruleId in axeOptions.rules &&
+        !axeOptions.rules[ruleId].enabled) {
       return;
+    }
 
     let newTestDef = Object.assign({}, testDef);
     newTestDef.name += '_' + ruleId;
