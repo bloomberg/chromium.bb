@@ -62,12 +62,12 @@ bool StartupHelper::PackExtension(const base::CommandLine& cmd_line) {
     private_key_path = cmd_line.GetSwitchValuePath(switches::kPackExtensionKey);
   }
 
-  // Launch a job to perform the packing on the file thread.  Ignore warnings
-  // from the packing process. (e.g. Overwrite any existing crx file.)
-  pack_job_ = new PackExtensionJob(this, src_dir, private_key_path,
-                                   ExtensionCreator::kOverwriteCRX);
-  pack_job_->set_asynchronous(false);
-  pack_job_->Start();
+  // Launch a job to perform the packing on the blocking thread.  Ignore
+  // warnings from the packing process. (e.g. Overwrite any existing crx file.)
+  PackExtensionJob pack_job(this, src_dir, private_key_path,
+                            ExtensionCreator::kOverwriteCRX);
+  pack_job.set_synchronous();
+  pack_job.Start();
 
   return pack_job_succeeded_;
 }
@@ -186,9 +186,6 @@ bool StartupHelper::ValidateCrx(const base::CommandLine& cmd_line,
   return success;
 }
 
-StartupHelper::~StartupHelper() {
-  if (pack_job_.get())
-    pack_job_->ClearClient();
-}
+StartupHelper::~StartupHelper() {}
 
 }  // namespace extensions

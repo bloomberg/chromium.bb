@@ -902,6 +902,7 @@ void DeveloperPrivatePackDirectoryFunction::OnPackSuccess(
       PackExtensionJob::StandardSuccessMessage(crx_file, pem_file));
   response.status = developer::PACK_STATUS_SUCCESS;
   Respond(OneArgument(response.ToValue()));
+  pack_job_.reset();
   Release();  // Balanced in Run().
 }
 
@@ -919,6 +920,7 @@ void DeveloperPrivatePackDirectoryFunction::OnPackFailure(
     response.status = developer::PACK_STATUS_ERROR;
   }
   Respond(OneArgument(response.ToValue()));
+  pack_job_.reset();
   Release();  // Balanced in Run().
 }
 
@@ -958,8 +960,8 @@ ExtensionFunction::ResponseAction DeveloperPrivatePackDirectoryFunction::Run() {
 
   AddRef();  // Balanced in OnPackSuccess / OnPackFailure.
 
-  // TODO(devlin): Why is PackExtensionJob ref-counted?
-  pack_job_ = new PackExtensionJob(this, root_directory, key_file, flags);
+  pack_job_ =
+      base::MakeUnique<PackExtensionJob>(this, root_directory, key_file, flags);
   pack_job_->Start();
   return RespondLater();
 }

@@ -9,16 +9,20 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ptr_util.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_creator.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace extensions {
 
 // Manages packing an extension on the file thread and reporting the result
 // back to the UI.
-class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
+// Ownership note: In "asynchronous" mode, |Client| has to make sure this
+// class's instances are kept alive until OnPackSuccess|OnPackFailure is called.
+// Therefore this class assumes that posting task with base::Unretained(this)
+// is safe.
+class PackExtensionJob {
  public:
   // Interface for people who want to use PackExtensionJob to implement.
   class Client {
@@ -36,40 +40,37 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
                    const base::FilePath& root_directory,
                    const base::FilePath& key_file,
                    int run_flags);
+  ~PackExtensionJob();
 
   // Starts the packing job.
   void Start();
-
-  // The client should call this when it is destroyed to prevent
-  // PackExtensionJob from attempting to access it.
-  void ClearClient();
 
   // The standard packing success message.
   static base::string16 StandardSuccessMessage(const base::FilePath& crx_file,
                                          const base::FilePath& key_file);
 
-  void set_asynchronous(bool async) { asynchronous_ = async; }
+  void set_synchronous() { run_mode_ = RunMode::SYNCHRONOUS; }
 
  private:
-  friend class base::RefCountedThreadSafe<PackExtensionJob>;
+  enum class RunMode { SYNCHRONOUS, ASYNCHRONOUS };
 
-  virtual ~PackExtensionJob();
+  // If |run_mode_| is SYNCHRONOUS, this is run on whichever thread calls it.
+  void Run(scoped_refptr<base::SequencedTaskRunner> async_reply_task_runner);
+  void ReportSuccessOnClientSequence(
+      std::unique_ptr<base::FilePath> crx_file_out,
+      std::unique_ptr<base::FilePath> key_file_out);
+  void ReportFailureOnClientSequence(const std::string& error,
+                                     ExtensionCreator::ErrorType error_type);
 
-  // If |asynchronous_| is false, this is run on whichever thread calls it.
-  void Run();
-  void ReportSuccessOnClientThread();
-  void ReportFailureOnClientThread(const std::string& error,
-                                   ExtensionCreator::ErrorType error_type);
-
-  content::BrowserThread::ID client_thread_id_;
-  Client* client_;
+  Client* const client_;  // Owns us.
   base::FilePath root_directory_;
   base::FilePath key_file_;
-  base::FilePath crx_file_out_;
-  base::FilePath key_file_out_;
-  bool asynchronous_;
+  RunMode run_mode_ = RunMode::ASYNCHRONOUS;
   int run_flags_;  // Bitset of ExtensionCreator::RunFlags values - we always
                    // assume kRequireModernManifestVersion, though.
+
+  // Used to check methods that run on |client_|'s sequence.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PackExtensionJob);
 };
