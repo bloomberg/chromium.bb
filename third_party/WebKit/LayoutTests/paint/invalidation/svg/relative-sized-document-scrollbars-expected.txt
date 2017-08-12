@@ -7,6 +7,11 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 800, 600],
+          "reason": "style change"
+        },
+        {
           "object": "LayoutSVGRect rect",
           "rect": [6, 4, 788, 592],
           "reason": "style change"
@@ -20,6 +25,10 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "style change"
+    },
     {
       "object": "LayoutSVGRoot svg",
       "reason": "style change"
