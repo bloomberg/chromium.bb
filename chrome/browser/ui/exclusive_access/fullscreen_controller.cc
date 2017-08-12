@@ -32,7 +32,10 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 
-#if !defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+#include "base/feature_list.h"
+#include "chrome/common/chrome_features.h"
+#else
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #endif
@@ -96,7 +99,7 @@ bool FullscreenController::IsTabFullscreen() const {
 
 bool FullscreenController::IsFullscreenForTabOrPending(
     const WebContents* web_contents) const {
-  if (IsFullscreenForCapturedTab(web_contents))
+  if (IsFullscreenWithinTab(web_contents))
     return true;
   if (web_contents == exclusive_access_tab()) {
     DCHECK(web_contents ==
@@ -114,7 +117,7 @@ void FullscreenController::EnterFullscreenModeForTab(WebContents* web_contents,
                                                      const GURL& origin) {
   DCHECK(web_contents);
 
-  if (MaybeToggleFullscreenForCapturedTab(web_contents, true)) {
+  if (MaybeToggleFullscreenWithinTab(web_contents, true)) {
     // During tab capture of fullscreen-within-tab views, the browser window
     // fullscreen state is unchanged, so return now.
     return;
@@ -158,7 +161,7 @@ void FullscreenController::EnterFullscreenModeForTab(WebContents* web_contents,
 }
 
 void FullscreenController::ExitFullscreenModeForTab(WebContents* web_contents) {
-  if (MaybeToggleFullscreenForCapturedTab(web_contents, false)) {
+  if (MaybeToggleFullscreenWithinTab(web_contents, false)) {
     // During tab capture of fullscreen-within-tab views, the browser window
     // fullscreen state is unchanged, so return now.
     return;
@@ -199,7 +202,7 @@ void FullscreenController::ExitFullscreenModeForTab(WebContents* web_contents) {
 }
 
 void FullscreenController::OnTabDetachedFromView(WebContents* old_contents) {
-  if (!IsFullscreenForCapturedTab(old_contents))
+  if (!IsFullscreenWithinTab(old_contents))
     return;
 
   // A fullscreen-within-tab view undergoing screen capture has been detached
@@ -231,7 +234,7 @@ void FullscreenController::OnTabDetachedFromView(WebContents* old_contents) {
 }
 
 void FullscreenController::OnTabClosing(WebContents* web_contents) {
-  if (IsFullscreenForCapturedTab(web_contents))
+  if (IsFullscreenWithinTab(web_contents))
     web_contents->ExitFullscreen(
         /* will_cause_resize */ IsFullscreenCausedByTab());
   else
@@ -264,7 +267,7 @@ void FullscreenController::WindowFullscreenStateChanged() {
 bool FullscreenController::HandleUserPressedEscape() {
   WebContents* const active_web_contents =
       exclusive_access_manager()->context()->GetActiveWebContents();
-  if (IsFullscreenForCapturedTab(active_web_contents)) {
+  if (IsFullscreenWithinTab(active_web_contents)) {
     active_web_contents->ExitFullscreen(
         /* will_cause_resize */ IsFullscreenCausedByTab());
     return true;
@@ -415,17 +418,22 @@ void FullscreenController::SetPrivilegedFullscreenForTesting(
   is_privileged_fullscreen_for_testing_ = is_privileged;
 }
 
-bool FullscreenController::MaybeToggleFullscreenForCapturedTab(
-    WebContents* web_contents, bool enter_fullscreen) {
+bool FullscreenController::MaybeToggleFullscreenWithinTab(
+    WebContents* web_contents,
+    bool enter_fullscreen) {
   if (enter_fullscreen) {
-    if (web_contents->GetCapturerCount() > 0) {
+    if (web_contents->GetCapturerCount() > 0
+#if defined(OS_MACOSX)
+        || base::FeatureList::IsEnabled(features::kContentFullscreen)
+#endif
+            ) {
       FullscreenWithinTabHelper::CreateForWebContents(web_contents);
-      FullscreenWithinTabHelper::FromWebContents(web_contents)->
-          SetIsFullscreenForCapturedTab(true);
+      FullscreenWithinTabHelper::FromWebContents(web_contents)
+          ->SetIsFullscreenWithinTab(true);
       return true;
     }
   } else {
-    if (IsFullscreenForCapturedTab(web_contents)) {
+    if (IsFullscreenWithinTab(web_contents)) {
       FullscreenWithinTabHelper::RemoveForWebContents(web_contents);
       return true;
     }
@@ -434,7 +442,7 @@ bool FullscreenController::MaybeToggleFullscreenForCapturedTab(
   return false;
 }
 
-bool FullscreenController::IsFullscreenForCapturedTab(
+bool FullscreenController::IsFullscreenWithinTab(
     const WebContents* web_contents) const {
   // Note: On Mac, some of the OnTabXXX() methods get called with a nullptr
   // value
@@ -442,7 +450,7 @@ bool FullscreenController::IsFullscreenForCapturedTab(
   const FullscreenWithinTabHelper* const helper =
       web_contents ? FullscreenWithinTabHelper::FromWebContents(web_contents)
                    : nullptr;
-  if (helper && helper->is_fullscreen_for_captured_tab()) {
+  if (helper && helper->is_fullscreen_within_tab()) {
     DCHECK_NE(exclusive_access_tab(), web_contents);
     return true;
   }
