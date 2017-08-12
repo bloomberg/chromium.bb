@@ -22668,6 +22668,22 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="6" label="Wrong encryption key"/>
 </enum>
 
+<enum name="LockScreenNoteTakingExitReason">
+  <int value="0" label="Session was unlocked"/>
+  <int value="1" label="Session shutdown"/>
+  <int value="2" label="Screen turned off"/>
+  <int value="3" label="Device suspended"/>
+  <int value="4" label="App window closed"/>
+  <int value="5" label="Lock screen note taking disabled"/>
+</enum>
+
+<enum name="LockScreenNoteTakingUnlockUIAction">
+  <int value="0" label="User unlocked the session"/>
+  <int value="1" label="Session unlock was cancelled"/>
+  <int value="2" label="Device shut down"/>
+  <int value="3" label="User signed out"/>
+</enum>
+
 <enum name="LockScreenProgress">
   <int value="0" label="Start screen lock"/>
   <int value="1" label="Enter password correctly"/>
@@ -27038,6 +27054,14 @@ from previous Chrome versions.
   <int value="4" label="WiMax"/>
   <int value="5" label="VPN"/>
   <int value="6" label="Unknown"/>
+</enum>
+
+<enum name="NewLockScreenNoteRequestType">
+  <int value="0" label="System tray action"/>
+  <int value="1" label="Lock screen - button tap"/>
+  <int value="2" label="Lock screen - swipe gesture"/>
+  <int value="3" label="Lock screen - button activated by keyboard"/>
+  <int value="4" label="Stylus ejected"/>
 </enum>
 
 <enum name="NewTabPageActionAndroid">
