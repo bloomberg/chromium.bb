@@ -126,7 +126,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
     }
 
     @Override
-    protected TestDependencyFactory createTestDependencyFactory() {
+    public TestDependencyFactory createTestDependencyFactory() {
         return new TestDependencyFactory() {
             @Override
             public AwScrollOffsetManager createScrollOffsetManager(

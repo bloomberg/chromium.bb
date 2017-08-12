@@ -33,13 +33,13 @@ public class AwStrictModeTest extends AwTestBase {
     }
 
     @Override
-    protected boolean needsAwBrowserContextCreated() {
+    public boolean needsAwBrowserContextCreated() {
         return false;
     }
 
 
     @Override
-    protected boolean needsBrowserProcessStarted() {
+    public boolean needsBrowserProcessStarted() {
         // Don't start the browser process in AwTestBase - we want to start it ourselves with
         // strictmode policies turned on.
         return false;

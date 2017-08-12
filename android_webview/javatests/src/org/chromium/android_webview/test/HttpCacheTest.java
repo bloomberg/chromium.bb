@@ -18,7 +18,7 @@ import java.io.File;
 public class HttpCacheTest extends AwTestBase {
 
     @Override
-    protected boolean needsBrowserProcessStarted() {
+    public boolean needsBrowserProcessStarted() {
         return false;
     }
 

@@ -102,7 +102,7 @@ public class GeolocationTest extends AwTestBase {
     }
 
     @Override
-    protected TestDependencyFactory createTestDependencyFactory() {
+    public TestDependencyFactory createTestDependencyFactory() {
         return mOverridenFactory == null ? new TestDependencyFactory() : mOverridenFactory;
     }
 

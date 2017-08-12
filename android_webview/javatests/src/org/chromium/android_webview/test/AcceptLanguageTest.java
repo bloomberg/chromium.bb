@@ -85,9 +85,9 @@ public class AcceptLanguageTest extends AwTestBase {
                 getJavaScriptResultBodyTextContent(mAwContents, mContentsClient));
         assertEquals(LocaleUtils.getDefaultLocaleString(), acceptLanguages[0]);
 
-        String[] acceptLanguagesJs = getAcceptLanguages(
-                JSUtils.executeJavaScriptAndWaitForResult(
-                        this, mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
+        String[] acceptLanguagesJs =
+                getAcceptLanguages(JSUtils.executeJavaScriptAndWaitForResult(getInstrumentation(),
+                        mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
                         "navigator.languages.join(',')"));
         assertEquals(acceptLanguagesJs.length, acceptLanguages.length);
         for (int i = 0; i < acceptLanguagesJs.length; ++i) {
@@ -128,9 +128,10 @@ public class AcceptLanguageTest extends AwTestBase {
         assertEquals(
                 LocaleUtils.getDefaultLocaleListString(), TextUtils.join(",", acceptLanguages));
 
-        String[] acceptLanguagesJs = getAcceptLanguages(JSUtils.executeJavaScriptAndWaitForResult(
-                this, mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
-                "navigator.languages.join(',')"));
+        String[] acceptLanguagesJs =
+                getAcceptLanguages(JSUtils.executeJavaScriptAndWaitForResult(getInstrumentation(),
+                        mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
+                        "navigator.languages.join(',')"));
         assertEquals(acceptLanguagesJs.length, acceptLanguages.length);
         for (int i = 0; i < acceptLanguagesJs.length; ++i) {
             assertEquals(acceptLanguagesJs[i], acceptLanguages[i]);

@@ -310,7 +310,7 @@ public class SafeBrowsingTest extends AwTestBase {
      * sites are malicious
      */
     @Override
-    protected AwBrowserContext createAwBrowserContextOnUiThread(
+    public AwBrowserContext createAwBrowserContextOnUiThread(
             InMemorySharedPreferences prefs, Context appContext) {
         return new MockAwBrowserContext(prefs, appContext);
     }

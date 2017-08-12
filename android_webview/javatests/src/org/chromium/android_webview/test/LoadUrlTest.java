@@ -288,8 +288,8 @@ public class LoadUrlTest extends AwTestBase {
         validateHeadersValue(awContents, contentsClient, extraHeaders, true);
 
         int currentCallCount = contentsClient.getOnPageFinishedHelper().getCallCount();
-        JSUtils.clickOnLinkUsingJs(
-                this, awContents, contentsClient.getOnEvaluateJavaScriptResultHelper(), "click");
+        JSUtils.clickOnLinkUsingJs(getInstrumentation(), awContents,
+                contentsClient.getOnEvaluateJavaScriptResultHelper(), "click");
         contentsClient.getOnPageFinishedHelper().waitForCallback(
                 currentCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         // No extra headers for the page navigated via clicking.

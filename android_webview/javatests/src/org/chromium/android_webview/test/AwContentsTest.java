@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import static org.chromium.android_webview.test.AwTestCommon.WAIT_TIMEOUT_MS;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,13 +13,18 @@ import android.graphics.Canvas;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
-import android.test.UiThreadTest;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.JavascriptInterface;
+
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
@@ -52,117 +59,141 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * AwContents tests.
  */
-public class AwContentsTest extends AwTestBase {
+@RunWith(AwJUnit4ClassRunner.class)
+public class AwContentsTest {
+    @Rule
+    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 
     private TestAwContentsClient mContentsClient = new TestAwContentsClient();
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @UiThreadTest
     public void testCreateDestroy() throws Throwable {
         // NOTE this test runs on UI thread, so we cannot call any async methods.
-        createAwTestContainerView(mContentsClient).getAwContents().destroy();
+        mActivityTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mActivityTestRule.createAwTestContainerView(mContentsClient)
+                        .getAwContents()
+                        .destroy();
+            }
+        });
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testCreateLoadPageDestroy() throws Throwable {
         AwTestContainerView awTestContainerView =
-                createAwTestContainerViewOnMainSync(mContentsClient);
-        loadDataSync(awTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(),
-                CommonResources.ABOUT_HTML, "text/html", false);
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        mActivityTestRule.loadDataSync(awTestContainerView.getAwContents(),
+                mContentsClient.getOnPageFinishedHelper(), CommonResources.ABOUT_HTML, "text/html",
+                false);
 
-        destroyAwContentsOnMainSync(awTestContainerView.getAwContents());
+        mActivityTestRule.destroyAwContentsOnMainSync(awTestContainerView.getAwContents());
         // It should be safe to call destroy multiple times.
-        destroyAwContentsOnMainSync(awTestContainerView.getAwContents());
+        mActivityTestRule.destroyAwContentsOnMainSync(awTestContainerView.getAwContents());
     }
 
+    @Test
     @LargeTest
     @Feature({"AndroidWebView"})
     public void testCreateLoadDestroyManyTimes() throws Throwable {
         for (int i = 0; i < 10; ++i) {
-            AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+            AwTestContainerView testView =
+                    mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
             AwContents awContents = testView.getAwContents();
 
-            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+            mActivityTestRule.loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
                     ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
-            destroyAwContentsOnMainSync(awContents);
+            mActivityTestRule.destroyAwContentsOnMainSync(awContents);
         }
     }
 
+    @Test
     @LargeTest
     @Feature({"AndroidWebView"})
     public void testCreateLoadDestroyManyAtOnce() throws Throwable {
         AwTestContainerView views[] = new AwTestContainerView[10];
 
         for (int i = 0; i < views.length; ++i) {
-            views[i] = createAwTestContainerViewOnMainSync(mContentsClient);
-            loadUrlSync(views[i].getAwContents(), mContentsClient.getOnPageFinishedHelper(),
+            views[i] = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+            mActivityTestRule.loadUrlSync(views[i].getAwContents(),
+                    mContentsClient.getOnPageFinishedHelper(),
                     ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         }
 
         for (int i = 0; i < views.length; ++i) {
-            destroyAwContentsOnMainSync(views[i].getAwContents());
+            mActivityTestRule.destroyAwContentsOnMainSync(views[i].getAwContents());
             views[i] = null;
         }
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @UiThreadTest
     public void testWebViewApisFailGracefullyAfterDestruction() throws Throwable {
-        AwContents awContents =
-                createAwTestContainerView(mContentsClient).getAwContents();
-        awContents.destroy();
+        mActivityTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                AwContents awContents = mActivityTestRule.createAwTestContainerView(mContentsClient)
+                                                .getAwContents();
+                awContents.destroy();
 
-        // The documentation for WebView#destroy() reads "This method should be called
-        // after this WebView has been removed from the view system. No other methods
-        // may be called on this WebView after destroy".
-        // However, some apps do not respect that restriction so we need to ensure that
-        // we fail gracefully and do not crash when APIs are invoked after destruction.
-        // Due to the large number of APIs we only test a representative selection here.
-        awContents.clearHistory();
-        awContents.loadUrl("http://www.google.com");
-        awContents.findAllAsync("search");
-        assertNull(awContents.getUrl());
-        assertFalse(awContents.canGoBack());
-        awContents.disableJavascriptInterfacesInspection();
-        awContents.invokeZoomPicker();
-        awContents.onResume();
-        awContents.stopLoading();
-        awContents.onWindowVisibilityChanged(View.VISIBLE);
-        awContents.requestFocus();
-        awContents.isMultiTouchZoomSupported();
-        awContents.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        awContents.pauseTimers();
-        awContents.onContainerViewScrollChanged(200, 200, 100, 100);
-        awContents.computeScroll();
-        awContents.onMeasure(100, 100);
-        awContents.onDraw(new Canvas());
-        awContents.getMostRecentProgress();
-        assertEquals(0, awContents.computeHorizontalScrollOffset());
-        assertEquals(0, awContents.getContentWidthCss());
-        awContents.onKeyUp(KeyEvent.KEYCODE_BACK,
-                new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MENU));
+                // The documentation for WebView#destroy() reads "This method should be called
+                // after this WebView has been removed from the view system. No other methods
+                // may be called on this WebView after destroy".
+                // However, some apps do not respect that restriction so we need to ensure that
+                // we fail gracefully and do not crash when APIs are invoked after destruction.
+                // Due to the large number of APIs we only test a representative selection here.
+                awContents.clearHistory();
+                awContents.loadUrl("http://www.google.com");
+                awContents.findAllAsync("search");
+                Assert.assertNull(awContents.getUrl());
+                Assert.assertFalse(awContents.canGoBack());
+                awContents.disableJavascriptInterfacesInspection();
+                awContents.invokeZoomPicker();
+                awContents.onResume();
+                awContents.stopLoading();
+                awContents.onWindowVisibilityChanged(View.VISIBLE);
+                awContents.requestFocus();
+                awContents.isMultiTouchZoomSupported();
+                awContents.setOverScrollMode(View.OVER_SCROLL_NEVER);
+                awContents.pauseTimers();
+                awContents.onContainerViewScrollChanged(200, 200, 100, 100);
+                awContents.computeScroll();
+                awContents.onMeasure(100, 100);
+                awContents.onDraw(new Canvas());
+                awContents.getMostRecentProgress();
+                Assert.assertEquals(0, awContents.computeHorizontalScrollOffset());
+                Assert.assertEquals(0, awContents.getContentWidthCss());
+                awContents.onKeyUp(KeyEvent.KEYCODE_BACK,
+                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MENU));
+            }
+        });
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testUseAwSettingsAfterDestroy() throws Throwable {
         AwTestContainerView awTestContainerView =
-                createAwTestContainerViewOnMainSync(mContentsClient);
-        AwSettings awSettings = getAwSettingsOnUiThread(awTestContainerView.getAwContents());
-        loadDataSync(awTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(),
-                CommonResources.ABOUT_HTML, "text/html", false);
-        destroyAwContentsOnMainSync(awTestContainerView.getAwContents());
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        AwSettings awSettings =
+                mActivityTestRule.getAwSettingsOnUiThread(awTestContainerView.getAwContents());
+        mActivityTestRule.loadDataSync(awTestContainerView.getAwContents(),
+                mContentsClient.getOnPageFinishedHelper(), CommonResources.ABOUT_HTML, "text/html",
+                false);
+        mActivityTestRule.destroyAwContentsOnMainSync(awTestContainerView.getAwContents());
 
         // AwSettings should still be usable even after native side is destroyed.
         String newFontFamily = "serif";
         awSettings.setStandardFontFamily(newFontFamily);
-        assertEquals(newFontFamily, awSettings.getStandardFontFamily());
+        Assert.assertEquals(newFontFamily, awSettings.getStandardFontFamily());
         boolean newBlockNetworkLoads = !awSettings.getBlockNetworkLoads();
         awSettings.setBlockNetworkLoads(newBlockNetworkLoads);
-        assertEquals(newBlockNetworkLoads, awSettings.getBlockNetworkLoads());
+        Assert.assertEquals(newBlockNetworkLoads, awSettings.getBlockNetworkLoads());
     }
 
     private int callDocumentHasImagesSync(final AwContents awContents)
@@ -178,21 +209,23 @@ public class AwContentsTest extends AwTestBase {
                 s.release();
             }
         });
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 awContents.documentHasImages(msg);
             }
         });
-        assertTrue(s.tryAcquire(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(s.tryAcquire(AwActivityTestRule.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         int result = val.get();
         return result;
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testDocumentHasImages() throws Throwable {
-        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
 
         final CallbackHelper loadHelper = mContentsClient.getOnPageFinishedHelper();
@@ -202,21 +235,22 @@ public class AwContentsTest extends AwTestBase {
         final String imageDoc = "<head/><body><img/><img/></body>";
 
         // Make sure a document that does not have images returns 0
-        loadDataSync(awContents, loadHelper, emptyDoc, mime, false);
+        mActivityTestRule.loadDataSync(awContents, loadHelper, emptyDoc, mime, false);
         int result = callDocumentHasImagesSync(awContents);
-        assertEquals(0, result);
+        Assert.assertEquals(0, result);
 
         // Make sure a document that does have images returns 1
-        loadDataSync(awContents, loadHelper, imageDoc, mime, false);
+        mActivityTestRule.loadDataSync(awContents, loadHelper, imageDoc, mime, false);
         result = callDocumentHasImagesSync(awContents);
-        assertEquals(1, result);
+        Assert.assertEquals(1, result);
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testClearCacheMemoryAndDisk() throws Throwable {
         final AwTestContainerView testContainer =
-                createAwTestContainerViewOnMainSync(mContentsClient);
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testContainer.getAwContents();
 
         TestWebServer webServer = TestWebServer.start();
@@ -230,46 +264,44 @@ public class AwContentsTest extends AwTestBase {
                     pagePath, "<html><body>foo</body></html>", headers);
 
             // First load to populate cache.
-            clearCacheOnUiThread(awContents, true);
-            loadUrlSync(awContents,
-                        mContentsClient.getOnPageFinishedHelper(),
-                        pageUrl);
-            assertEquals(1, webServer.getRequestCount(pagePath));
+            mActivityTestRule.clearCacheOnUiThread(awContents, true);
+            mActivityTestRule.loadUrlSync(
+                    awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+            Assert.assertEquals(1, webServer.getRequestCount(pagePath));
 
             // Load about:blank so next load is not treated as reload by webkit and force
             // revalidate with the server.
-            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+            mActivityTestRule.loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
                     ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
             // No clearCache call, so should be loaded from cache.
-            loadUrlSync(awContents,
-                        mContentsClient.getOnPageFinishedHelper(),
-                        pageUrl);
-            assertEquals(1, webServer.getRequestCount(pagePath));
+            mActivityTestRule.loadUrlSync(
+                    awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+            Assert.assertEquals(1, webServer.getRequestCount(pagePath));
 
             // Same as above.
-            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+            mActivityTestRule.loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
                     ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
             // Clear cache, so should hit server again.
-            clearCacheOnUiThread(awContents, true);
-            loadUrlSync(awContents,
-                        mContentsClient.getOnPageFinishedHelper(),
-                        pageUrl);
-            assertEquals(2, webServer.getRequestCount(pagePath));
+            mActivityTestRule.clearCacheOnUiThread(awContents, true);
+            mActivityTestRule.loadUrlSync(
+                    awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+            Assert.assertEquals(2, webServer.getRequestCount(pagePath));
         } finally {
             webServer.shutdown();
         }
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testClearCacheInQuickSuccession() throws Throwable {
         final AwTestContainerView testContainer =
-                createAwTestContainerViewOnMainSync(new TestAwContentsClient());
+                mActivityTestRule.createAwTestContainerViewOnMainSync(new TestAwContentsClient());
         final AwContents awContents = testContainer.getAwContents();
 
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 for (int i = 0; i < 10; ++i) {
@@ -279,11 +311,13 @@ public class AwContentsTest extends AwTestBase {
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testGetFavicon() throws Throwable {
         AwContents.setShouldDownloadFavicons();
-        final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testView.getAwContents();
 
         TestWebServer webServer = TestWebServer.start();
@@ -298,10 +332,11 @@ public class AwContentsTest extends AwTestBase {
             // the page load completes which makes it slightly hard to test.
             final Bitmap defaultFavicon = awContents.getFavicon();
 
-            getAwSettingsOnUiThread(awContents).setImagesEnabled(true);
-            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+            mActivityTestRule.getAwSettingsOnUiThread(awContents).setImagesEnabled(true);
+            mActivityTestRule.loadUrlSync(
+                    awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
 
-            pollUiThread(new Callable<Boolean>() {
+            mActivityTestRule.pollUiThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
                     return awContents.getFavicon() != null
@@ -312,19 +347,21 @@ public class AwContentsTest extends AwTestBase {
             final Object originalFaviconSource = (new URL(faviconUrl)).getContent();
             final Bitmap originalFavicon =
                     BitmapFactory.decodeStream((InputStream) originalFaviconSource);
-            assertNotNull(originalFavicon);
+            Assert.assertNotNull(originalFavicon);
 
-            assertTrue(awContents.getFavicon().sameAs(originalFavicon));
+            Assert.assertTrue(awContents.getFavicon().sameAs(originalFavicon));
 
         } finally {
             webServer.shutdown();
         }
     }
 
+    @Test
     @Feature({"AndroidWebView", "Downloads"})
     @SmallTest
     public void testDownload() throws Throwable {
-        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
 
         final String data = "download data";
@@ -343,42 +380,47 @@ public class AwContentsTest extends AwTestBase {
             final OnDownloadStartHelper downloadStartHelper =
                     mContentsClient.getOnDownloadStartHelper();
             final int callCount = downloadStartHelper.getCallCount();
-            loadUrlAsync(awContents, pageUrl);
+            mActivityTestRule.loadUrlAsync(awContents, pageUrl);
             downloadStartHelper.waitForCallback(callCount);
 
-            assertEquals(pageUrl, downloadStartHelper.getUrl());
-            assertEquals(contentDisposition, downloadStartHelper.getContentDisposition());
-            assertEquals(mimeType, downloadStartHelper.getMimeType());
-            assertEquals(data.length(), downloadStartHelper.getContentLength());
+            Assert.assertEquals(pageUrl, downloadStartHelper.getUrl());
+            Assert.assertEquals(contentDisposition, downloadStartHelper.getContentDisposition());
+            Assert.assertEquals(mimeType, downloadStartHelper.getMimeType());
+            Assert.assertEquals(data.length(), downloadStartHelper.getContentLength());
         } finally {
             webServer.shutdown();
         }
     }
 
+    @Test
     @Feature({"AndroidWebView", "setNetworkAvailable"})
     @SmallTest
     public void testSetNetworkAvailable() throws Throwable {
-        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
         String script = "navigator.onLine";
 
-        enableJavaScriptOnUiThread(awContents);
-        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        mActivityTestRule.loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
                 ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         // Default to "online".
-        assertEquals("true", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
-                script));
+        Assert.assertEquals("true",
+                mActivityTestRule.executeJavaScriptAndWaitForResult(
+                        awContents, mContentsClient, script));
 
         // Forcing "offline".
-        setNetworkAvailableOnUiThread(awContents, false);
-        assertEquals("false", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
-                script));
+        mActivityTestRule.setNetworkAvailableOnUiThread(awContents, false);
+        Assert.assertEquals("false",
+                mActivityTestRule.executeJavaScriptAndWaitForResult(
+                        awContents, mContentsClient, script));
 
         // Forcing "online".
-        setNetworkAvailableOnUiThread(awContents, true);
-        assertEquals("true", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
-                script));
+        mActivityTestRule.setNetworkAvailableOnUiThread(awContents, true);
+        Assert.assertEquals("true",
+                mActivityTestRule.executeJavaScriptAndWaitForResult(
+                        awContents, mContentsClient, script));
     }
 
 
@@ -394,13 +436,15 @@ public class AwContentsTest extends AwTestBase {
         }
     }
 
+    @Test
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     @SmallTest
     public void testJavaBridge() throws Throwable {
-        final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         final CallbackHelper callback = new CallbackHelper();
 
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 AwContents awContents = testView.getAwContents();
@@ -413,56 +457,64 @@ public class AwContentsTest extends AwTestBase {
         callback.waitForCallback(0, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
 
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testEscapingOfErrorPage() throws Throwable {
-        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
         String script = "window.failed == true";
 
-        enableJavaScriptOnUiThread(awContents);
+        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = mContentsClient.getOnPageFinishedHelper();
         int currentCallCount = onPageFinishedHelper.getCallCount();
-        loadUrlAsync(awContents,
+        mActivityTestRule.loadUrlAsync(awContents,
                 "file:///file-that-does-not-exist#<script>window.failed = true;</script>");
-        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS,
-                                             TimeUnit.MILLISECONDS);
+        onPageFinishedHelper.waitForCallback(
+                currentCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
-        assertEquals("false", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
-                script));
+        Assert.assertEquals("false",
+                mActivityTestRule.executeJavaScriptAndWaitForResult(
+                        awContents, mContentsClient, script));
     }
 
+    @Test
     @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testCanInjectHeaders() throws Throwable {
         final AwTestContainerView testContainer =
-                createAwTestContainerViewOnMainSync(mContentsClient);
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testContainer.getAwContents();
 
-        enableJavaScriptOnUiThread(awContents);
+        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
 
-        EmbeddedTestServer testServer =
-                EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
 
         try {
             String url = testServer.getURL("/echoheader?X-foo");
 
             final Map<String, String> extraHeaders = new HashMap<String, String>();
             extraHeaders.put("X-foo", "bar");
-            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), url, extraHeaders);
+            mActivityTestRule.loadUrlSync(
+                    awContents, mContentsClient.getOnPageFinishedHelper(), url, extraHeaders);
 
-            String xfoo = getJavaScriptResultBodyTextContent(awContents, mContentsClient);
-            assertEquals("bar", xfoo);
+            String xfoo = mActivityTestRule.getJavaScriptResultBodyTextContent(
+                    awContents, mContentsClient);
+            Assert.assertEquals("bar", xfoo);
 
             url = testServer.getURL("/echoheader?Referer");
 
             extraHeaders.clear();
             extraHeaders.put("Referer", "http://www.example.com/");
-            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), url, extraHeaders);
+            mActivityTestRule.loadUrlSync(
+                    awContents, mContentsClient.getOnPageFinishedHelper(), url, extraHeaders);
 
-            String referer = getJavaScriptResultBodyTextContent(awContents, mContentsClient);
-            assertEquals("http://www.example.com/", referer);
+            String referer = mActivityTestRule.getJavaScriptResultBodyTextContent(
+                    awContents, mContentsClient);
+            Assert.assertEquals("http://www.example.com/", referer);
         } finally {
             testServer.stopAndDestroyServer();
         }
@@ -471,17 +523,19 @@ public class AwContentsTest extends AwTestBase {
     // This is a meta test that we don't accidentally turn off hardware
     // acceleration in instrumentation tests without notice. Do not add the
     // @DisableHardwareAccelerationForTest annotation for this test.
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testHardwareModeWorks() throws Throwable {
         AwTestContainerView testContainer =
-                createAwTestContainerViewOnMainSync(mContentsClient);
-        assertTrue(testContainer.isHardwareAccelerated());
-        assertTrue(testContainer.isBackedByHardwareView());
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        Assert.assertTrue(testContainer.isHardwareAccelerated());
+        Assert.assertTrue(testContainer.isBackedByHardwareView());
     }
 
     // TODO(hush): more ssl tests. And put the ssl tests into a separate test
     // class.
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     // If the user allows the ssl error, the same ssl error will not trigger
@@ -489,7 +543,7 @@ public class AwContentsTest extends AwTestBase {
     // error will still trigger the onReceivedSslError callback.
     public void testSslPreferences() throws Throwable {
         final AwTestContainerView testContainer =
-                createAwTestContainerViewOnMainSync(mContentsClient);
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testContainer.getAwContents();
         TestWebServer webServer = TestWebServer.startSsl();
         final String pagePath = "/hello.html";
@@ -499,54 +553,62 @@ public class AwContentsTest extends AwTestBase {
                 mContentsClient.getOnReceivedSslErrorHelper();
         int onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
 
-        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        mActivityTestRule.loadUrlSync(
+                awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
 
-        assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
-        assertEquals(1, webServer.getRequestCount(pagePath));
+        Assert.assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
+        Assert.assertEquals(1, webServer.getRequestCount(pagePath));
 
         // Now load the page again. This time, we expect no ssl error, because
         // user's decision should be remembered.
         onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
-        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-        assertEquals(onSslErrorCallCount, onReceivedSslErrorHelper.getCallCount());
+        mActivityTestRule.loadUrlSync(
+                awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        Assert.assertEquals(onSslErrorCallCount, onReceivedSslErrorHelper.getCallCount());
 
         // Now clear the ssl preferences then load the same url again. Expect to see
         // onReceivedSslError getting called again.
         awContents.clearSslPreferences();
         onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
-        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-        assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
+        mActivityTestRule.loadUrlSync(
+                awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        Assert.assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
 
         // Now clear the stored decisions and tell the client to deny ssl errors.
         awContents.clearSslPreferences();
         mContentsClient.setAllowSslError(false);
         onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
-        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-        assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
+        mActivityTestRule.loadUrlSync(
+                awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        Assert.assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
 
         // Now load the same page again. This time, we still expect onReceivedSslError,
         // because we only remember user's decision if it is "allow".
         onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
-        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-        assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
+        mActivityTestRule.loadUrlSync(
+                awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        Assert.assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
     }
 
     /**
      * Verifies that Web Notifications and the Push API are not exposed in WebView.
      */
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testPushAndNotificationsDisabled() throws Throwable {
-        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
 
         String script = "window.Notification || window.PushManager";
 
-        enableJavaScriptOnUiThread(awContents);
-        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        mActivityTestRule.loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
                 ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
-        assertEquals("null", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
-                script));
+        Assert.assertEquals("null",
+                mActivityTestRule.executeJavaScriptAndWaitForResult(
+                        awContents, mContentsClient, script));
     }
 
     private static class MockBindingManager implements BindingManager {
@@ -573,8 +635,8 @@ public class AwContentsTest extends AwTestBase {
                     } catch (InterruptedException e) {
                     }
                 }
-                assertTrue(mForegroundState.size() != 0);
-                assertEquals(inForeground, mForegroundState.get(0).booleanValue());
+                Assert.assertTrue(mForegroundState.size() != 0);
+                Assert.assertEquals(inForeground, mForegroundState.get(0));
                 mForegroundState.remove(0);
                 return;
             }
@@ -612,6 +674,7 @@ public class AwContentsTest extends AwTestBase {
     /**
      * Verifies that a child process is actually gets created with WEBVIEW_SANDBOXED_RENDERER flag.
      */
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
@@ -619,21 +682,24 @@ public class AwContentsTest extends AwTestBase {
     public void testSandboxedRendererWorks() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
         ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
-        assertFalse(bindingManager.isChildProcessCreated());
+        Assert.assertFalse(bindingManager.isChildProcessCreated());
 
-        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
         final String pageTitle = "I am sandboxed";
-        loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+        mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
                 "<html><head><title>" + pageTitle + "</title></head></html>", "text/html", false);
-        assertEquals(pageTitle, getTitleOnUiThread(awContents));
+        Assert.assertEquals(pageTitle, mActivityTestRule.getTitleOnUiThread(awContents));
 
-        assertTrue(bindingManager.isChildProcessCreated());
+        Assert.assertTrue(bindingManager.isChildProcessCreated());
 
         // Test end-to-end interaction with the renderer.
-        AwSettings awSettings = getAwSettingsOnUiThread(awContents);
+        AwSettings awSettings = mActivityTestRule.getAwSettingsOnUiThread(awContents);
         awSettings.setJavaScriptEnabled(true);
-        assertEquals("42", JSUtils.executeJavaScriptAndWaitForResult(this, awContents,
+        Assert.assertEquals("42",
+                JSUtils.executeJavaScriptAndWaitForResult(
+                        InstrumentationRegistry.getInstrumentation(), awContents,
                         mContentsClient.getOnEvaluateJavaScriptResultHelper(), "21 + 21"));
     }
 
@@ -641,6 +707,7 @@ public class AwContentsTest extends AwTestBase {
      * By default the renderer should be considererd to be in the
      * foreground.
      */
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
@@ -648,14 +715,15 @@ public class AwContentsTest extends AwTestBase {
     public void testRendererPriorityStartsHigh() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
         ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
-        assertFalse(bindingManager.isChildProcessCreated());
+        Assert.assertFalse(bindingManager.isChildProcessCreated());
 
-        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
-        loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(), "<html></html>",
-                "text/html", false);
+        mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                "<html></html>", "text/html", false);
 
-        assertTrue(bindingManager.isChildProcessCreated());
+        Assert.assertTrue(bindingManager.isChildProcessCreated());
         bindingManager.assertSetInForegroundCall(true);
     }
 
@@ -663,6 +731,7 @@ public class AwContentsTest extends AwTestBase {
      * If we specify that the priority is WAIVED, then the renderer
      * should not be in the foreground.
      */
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
@@ -670,21 +739,22 @@ public class AwContentsTest extends AwTestBase {
     public void testRendererPriorityLow() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
         ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
-        assertFalse(bindingManager.isChildProcessCreated());
+        Assert.assertFalse(bindingManager.isChildProcessCreated());
 
-        final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testView.getAwContents();
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 awContents.setRendererPriorityPolicy(RendererPriority.WAIVED, false);
             }
         });
-        loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(), "<html></html>",
-                "text/html", false);
+        mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                "<html></html>", "text/html", false);
 
-        assertTrue(awContents.isPageVisible());
-        assertTrue(bindingManager.isChildProcessCreated());
+        Assert.assertTrue(awContents.isPageVisible());
+        Assert.assertTrue(bindingManager.isChildProcessCreated());
         bindingManager.assertSetInForegroundCall(false);
     }
 
@@ -693,6 +763,7 @@ public class AwContentsTest extends AwTestBase {
      * background, then pausing the view should send the renderer to
      * the background.
      */
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
@@ -700,23 +771,24 @@ public class AwContentsTest extends AwTestBase {
     public void testRendererPriorityManaged() throws Throwable {
         MockBindingManager bindingManager = new MockBindingManager();
         ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
-        assertFalse(bindingManager.isChildProcessCreated());
+        Assert.assertFalse(bindingManager.isChildProcessCreated());
 
-        final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testView.getAwContents();
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 awContents.setRendererPriorityPolicy(RendererPriority.HIGH, true);
             }
         });
-        loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(), "<html></html>",
-                "text/html", false);
+        mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                "<html></html>", "text/html", false);
 
-        assertTrue(awContents.isPageVisible());
-        assertTrue(bindingManager.isChildProcessCreated());
+        Assert.assertTrue(awContents.isPageVisible());
+        Assert.assertTrue(bindingManager.isChildProcessCreated());
         bindingManager.assertSetInForegroundCall(true);
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 awContents.onPause();
@@ -725,30 +797,39 @@ public class AwContentsTest extends AwTestBase {
         bindingManager.assertSetInForegroundCall(false);
     }
 
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @UiThreadTest
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
     @SkipCommandLineParameterization
     public void testPauseDestroyResume() throws Throwable {
-        AwContents awContents;
-        awContents = createAwTestContainerView(mContentsClient).getAwContents();
-        awContents.pauseTimers();
-        awContents.pauseTimers();
-        awContents.destroy();
-        awContents = createAwTestContainerView(mContentsClient).getAwContents();
-        awContents.resumeTimers();
+        mActivityTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                AwContents awContents;
+                awContents = mActivityTestRule.createAwTestContainerView(mContentsClient)
+                                     .getAwContents();
+                awContents.pauseTimers();
+                awContents.pauseTimers();
+                awContents.destroy();
+                awContents = mActivityTestRule.createAwTestContainerView(mContentsClient)
+                                     .getAwContents();
+                awContents.resumeTimers();
+            }
+        });
     }
 
     /** Regression test for https://crbug.com/732976. Load a data URL, then immediately
      * after that load a javascript URL. The data URL navigation shouldn't be blocked.
      */
+    @Test
     @LargeTest
     @Feature({"AndroidWebView"})
     public void testJavaScriptUrlAfterLoadData() throws Throwable {
-        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testView.getAwContents();
-        getInstrumentation().runOnMainSync(new Runnable() {
+        mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 // Run javascript navigation immediately, without waiting for the completion of data
@@ -760,10 +841,10 @@ public class AwContentsTest extends AwTestBase {
 
         mContentsClient.getOnPageFinishedHelper().waitForCallback(
                 0, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        assertEquals("data:text/html,<html>test</html>", awContents.getLastCommittedUrl());
+        Assert.assertEquals("data:text/html,<html>test</html>", awContents.getLastCommittedUrl());
 
         TestAwContentsClient.AddMessageToConsoleHelper consoleHelper =
                 mContentsClient.getAddMessageToConsoleHelper();
-        assertEquals(0, consoleHelper.getMessages().size());
+        Assert.assertEquals(0, consoleHelper.getMessages().size());
     }
 }
