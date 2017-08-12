@@ -296,4 +296,20 @@ TEST_F(RangeTest, BoundingRectMustIndependentFromSelection) {
   EXPECT_EQ(rect_before, rect_after);
 }
 
+// Regression test for crbug.com/681536
+TEST_F(RangeTest, BorderAndTextQuadsWithInputInBetween) {
+  GetDocument().body()->setInnerHTML("<div>foo <u><input> bar</u></div>");
+  GetDocument().UpdateStyleAndLayout();
+
+  Node* foo = GetDocument().QuerySelector("div")->firstChild();
+  Node* bar = GetDocument().QuerySelector("u")->lastChild();
+  Range* range = Range::Create(GetDocument(), foo, 2, bar, 2);
+
+  Vector<FloatQuad> quads;
+  range->GetBorderAndTextQuads(quads);
+
+  // Should get one quad for "o ", <input> and " b", respectively.
+  ASSERT_EQ(3u, quads.size());
+}
+
 }  // namespace blink
