@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/safe_browsing/web_ui/webui.pb.h"
+#include "components/safe_browsing/proto/webui.pb.h"
 #include "components/safe_browsing_db/v4_database.h"
 #include "content/public/browser/browser_thread.h"
 

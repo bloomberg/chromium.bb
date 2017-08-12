@@ -204,7 +204,7 @@ static_library("v4_database") {
     ":v4_protocol_manager_util",
     ":v4_store",
     "//base",
-    "//components/safe_browsing/web_ui:webui_proto",
+    "//components/safe_browsing:webui_proto",
     "//content/public/browser",
   ]
 }
@@ -233,7 +233,7 @@ static_library("v4_get_hash_protocol_manager") {
     ":v4_protocol_manager_util",
     "//base",
     "//components/data_use_measurement/core",
-    "//components/safe_browsing/web_ui:webui_proto",
+    "//components/safe_browsing:webui_proto",
     "//content/public/browser",
     "//net",
     "//url",
@@ -255,7 +255,7 @@ static_library("v4_local_database_manager") {
     ":v4_protocol_manager_util",
     ":v4_update_protocol_manager",
     "//base",
-    "//components/safe_browsing/web_ui:webui_proto",
+    "//components/safe_browsing:webui_proto",
     "//content/public/browser",
     "//net",
     "//url",
@@ -310,7 +310,7 @@ source_set("v4_store") {
     ":v4_protocol_manager_util",
     ":v4_rice",
     "//base",
-    "//components/safe_browsing/web_ui:webui_proto",
+    "//components/safe_browsing:webui_proto",
     "//crypto",
   ]
 }
@@ -338,8 +338,8 @@ static_library("v4_update_protocol_manager") {
     ":v4_protocol_manager_util",
     "//base",
     "//components/data_use_measurement/core",
+    "//components/safe_browsing:webui_proto",
     "//components/safe_browsing/common:safe_browsing_prefs",
-    "//components/safe_browsing/web_ui:webui_proto",
     "//net",
     "//url",
   ]

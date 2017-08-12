@@ -12,7 +12,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/mock_incident_receiver.h"
-#include "components/safe_browsing/csd.pb.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"

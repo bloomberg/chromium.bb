@@ -9,7 +9,7 @@
 #define CHROME_COMMON_SAFE_BROWSING_ZIP_ANALYZER_H_
 
 #include "base/files/file.h"
-#include "components/safe_browsing/csd.pb.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 
 namespace safe_browsing {
 

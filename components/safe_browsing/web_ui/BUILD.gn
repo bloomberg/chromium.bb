@@ -12,11 +12,11 @@ static_library("web_ui") {
 
   deps = [
     ":constants",
-    ":webui_proto",
     "//base",
     "//components/resources:components_resources_grit",
     "//components/resources:components_scaled_resources_grit",
     "//components/safe_browsing:features",
+    "//components/safe_browsing:webui_proto",
     "//components/safe_browsing/common:safe_browsing_prefs",
     "//components/safe_browsing_db:v4_local_database_manager",
     "//components/strings:components_strings_grit",
@@ -31,11 +31,5 @@ static_library("constants") {
   sources = [
     "constants.cc",
     "constants.h",
-  ]
-}
-
-proto_library("webui_proto") {
-  sources = [
-    "webui.proto",
   ]
 }

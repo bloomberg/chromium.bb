@@ -12,7 +12,7 @@
 #include <unordered_set>
 
 #include "base/memory/weak_ptr.h"
-#include "components/safe_browsing/web_ui/webui.pb.h"
+#include "components/safe_browsing/proto/webui.pb.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/hit_report.h"
 #include "components/safe_browsing_db/v4_database.h"

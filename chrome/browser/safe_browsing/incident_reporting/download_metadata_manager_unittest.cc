@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/safe_browsing/csd.pb.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/test/mock_download_item.h"

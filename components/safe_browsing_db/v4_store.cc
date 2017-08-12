@@ -12,7 +12,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "components/safe_browsing/web_ui/webui.pb.h"
+#include "components/safe_browsing/proto/webui.pb.h"
 #include "components/safe_browsing_db/v4_rice.h"
 #include "components/safe_browsing_db/v4_store.pb.h"
 #include "crypto/secure_hash.h"

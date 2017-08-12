@@ -19,7 +19,7 @@
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/download_protection_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
-#include "components/safe_browsing/csd.pb.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "third_party/zlib/google/zip_reader.h"

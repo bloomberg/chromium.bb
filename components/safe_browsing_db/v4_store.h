@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "components/safe_browsing/web_ui/webui.pb.h"
+#include "components/safe_browsing/proto/webui.pb.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 
 namespace safe_browsing {
