@@ -2,14 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 8
+// Next MinVersion: 9
 
 module arc.mojom;
 
 import "screen_rect.mojom";
 
+[Extensible]
+enum VoiceInteractionState {
+  NOT_READY = 0,
+  STOPPED,
+  RUNNING
+};
+
 // Handles voice interaction queries from Android.
-// Next method ID: 5
+// Next method ID: 6
 interface VoiceInteractionFrameworkHost {
   // Returns a screenshot of currently focused window or empty array if
   // no window is focused. |data| represents the image encoded in JPEG
@@ -28,6 +35,9 @@ interface VoiceInteractionFrameworkHost {
 
   // Notifies Chrome whether voice interaction session is running.
   [MinVersion=6]SetVoiceInteractionRunning@4(bool running);
+
+  // Notifies Chrome the state of voice interaction session.
+  [MinVersion=8]SetVoiceInteractionState@5(VoiceInteractionState state);
 };
 
 // Indicates voice interaction configuration status.
@@ -69,6 +79,6 @@ interface VoiceInteractionFrameworkInstance {
   [MinVersion=5] StartVoiceInteractionSetupWizard@6();
 
   // Queries voice interaction settings status.
-  [MinVersion=7] GetVoiceInteractionSettings@7() => 
+  [MinVersion=7] GetVoiceInteractionSettings@7() =>
     (VoiceInteractionStatus status);
 };

@@ -381,7 +381,8 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
 
     if (chromeos::switches::IsVoiceInteractionEnabled())
       // active: 100% alpha, inactive: 54% alpha
-      fg_flags.setAlpha(voice_interaction_running_
+      fg_flags.setAlpha(voice_interaction_state_ ==
+                                ash::VoiceInteractionState::RUNNING
                             ? kVoiceInteractionRunningAlpha
                             : kVoiceInteractionNotRunningAlpha);
 
@@ -459,19 +460,34 @@ void AppListButton::OnAppListVisibilityChanged(bool shown,
     OnAppListDismissed();
 }
 
-void AppListButton::OnVoiceInteractionStatusChanged(bool running) {
-  voice_interaction_running_ = running;
+void AppListButton::OnVoiceInteractionStatusChanged(
+    ash::VoiceInteractionState state) {
+  voice_interaction_state_ = state;
   SchedulePaint();
 
-  // Voice interaction window shows up, we start hiding the animation if it is
-  // running.
-  if (running && voice_interaction_overlay_->IsBursting()) {
-    voice_interaction_animation_hide_delay_timer_->Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(
-            kVoiceInteractionAnimationHideDelayMs),
-        base::Bind(&VoiceInteractionOverlay::HideAnimation,
-                   base::Unretained(voice_interaction_overlay_)));
+  switch (state) {
+    case ash::VoiceInteractionState::STOPPED:
+      break;
+    case ash::VoiceInteractionState::NOT_READY:
+      // If we are showing the bursting or waiting animation, no need to do
+      // anything. Otherwise show the waiting animation now.
+      if (!voice_interaction_overlay_->IsBursting() &&
+          !voice_interaction_overlay_->IsWaiting()) {
+        voice_interaction_overlay_->WaitingAnimation();
+      }
+      break;
+    case ash::VoiceInteractionState::RUNNING:
+      // we start hiding the animation if it is running.
+      if (voice_interaction_overlay_->IsBursting() ||
+          voice_interaction_overlay_->IsWaiting()) {
+        voice_interaction_animation_hide_delay_timer_->Start(
+            FROM_HERE,
+            base::TimeDelta::FromMilliseconds(
+                kVoiceInteractionAnimationHideDelayMs),
+            base::Bind(&VoiceInteractionOverlay::HideAnimation,
+                       base::Unretained(voice_interaction_overlay_)));
+      }
+      break;
   }
 }
 
@@ -479,9 +495,10 @@ void AppListButton::StartVoiceInteractionAnimation() {
   // We only show the voice interaction icon and related animation when the
   // shelf is at the bottom position and voice interaction is not running.
   ShelfAlignment alignment = shelf_->alignment();
-  bool show_icon = (alignment == SHELF_ALIGNMENT_BOTTOM ||
-                    alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) &&
-                   !voice_interaction_running_;
+  bool show_icon =
+      (alignment == SHELF_ALIGNMENT_BOTTOM ||
+       alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) &&
+      (voice_interaction_state_ == ash::VoiceInteractionState::STOPPED);
   voice_interaction_overlay_->StartAnimation(show_icon);
 }
 
