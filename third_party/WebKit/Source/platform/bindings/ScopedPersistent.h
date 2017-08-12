@@ -61,7 +61,7 @@ class ScopedPersistent {
       handle_.Reset(isolate, local);
   }
 
-  virtual ~ScopedPersistent() { Clear(); }
+  ~ScopedPersistent() { Clear(); }
 
   ALWAYS_INLINE v8::Local<T> NewLocal(v8::Isolate* isolate) const {
     return v8::Local<T>::New(isolate, handle_);
@@ -85,7 +85,7 @@ class ScopedPersistent {
   bool IsEmpty() const { return handle_.IsEmpty(); }
   bool IsWeak() const { return handle_.IsWeak(); }
 
-  virtual void Set(v8::Isolate* isolate, v8::Local<T> handle) {
+  void Set(v8::Isolate* isolate, v8::Local<T> handle) {
     handle_.Reset(isolate, handle);
   }
 
