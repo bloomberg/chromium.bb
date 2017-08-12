@@ -188,6 +188,8 @@ source_set("browser") {
   ]
 
   sources = [
+    "$target_gen_dir/devtools/protocol/browser.cc",
+    "$target_gen_dir/devtools/protocol/browser.h",
     "$target_gen_dir/devtools/protocol/dom.cc",
     "$target_gen_dir/devtools/protocol/dom.h",
     "$target_gen_dir/devtools/protocol/emulation.cc",
@@ -547,6 +549,8 @@ source_set("browser") {
     "devtools/devtools_url_request_interceptor.h",
     "devtools/forwarding_agent_host.cc",
     "devtools/forwarding_agent_host.h",
+    "devtools/protocol/browser_handler.cc",
+    "devtools/protocol/browser_handler.h",
     "devtools/protocol/devtools_domain_handler.cc",
     "devtools/protocol/devtools_domain_handler.h",
     "devtools/protocol/dom_handler.cc",

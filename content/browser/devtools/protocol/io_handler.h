@@ -49,4 +49,4 @@ class IOHandler : public DevToolsDomainHandler,
 }  // namespace protocol
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DEVTOOLS_PROTOCOL_TRACING_HANDLER_H_
+#endif  // CONTENT_BROWSER_DEVTOOLS_PROTOCOL_IO_HANDLER_H_
