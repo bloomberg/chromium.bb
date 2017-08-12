@@ -13,7 +13,17 @@
       }
 
       cr-camera {
-        --cr-camera-image-size: var(--cr-picture-image-size, 228px);
+        --cr-camera-image-size: 288px;
+      }
+
+      #preview {
+        bottom: 0;
+        height: var(--cr-picture-image-size, 228px);
+        left: 0;
+        margin: auto;
+        position: absolute;
+        right: 0;
+        top: 0;
       }
 
       img {
@@ -43,18 +53,21 @@
 
       #discard button {
         --iron-icon-fill-color: white;
+        -webkit-margin-start: 0;
         border-radius: 50%;
       }
     </style>
     <template is="dom-if"
         if="[[showImagePreview_(cameraActive_, imageSrc)]]">
-      <img alt="[[previewAltText]]" src="[[getImgSrc_(imageSrc)]]"
-          data-show-discard$="[[showDiscard_(imageType)]]">
-      <div id="discard" hidden="[[!showDiscard_(imageType)]]">
-        <button is="paper-icon-button-light" id="discardImage"
-            class="icon-delete-white" title="[[discardImageLabel]]"
-            on-tap="onTapDiscardImage_">
-        </button>
+      <div id="preview">
+        <img alt="[[previewAltText]]" src="[[getImgSrc_(imageSrc)]]"
+            data-show-discard$="[[showDiscard_(imageType)]]">
+        <div id="discard" hidden="[[!showDiscard_(imageType)]]">
+          <button is="paper-icon-button-light" id="discardImage"
+              class="icon-delete-white" title="[[discardImageLabel]]"
+              on-tap="onTapDiscardImage_">
+          </button>
+        </div>
       </div>
     </template>
     <template is="dom-if" if="[[cameraActive_]]">
