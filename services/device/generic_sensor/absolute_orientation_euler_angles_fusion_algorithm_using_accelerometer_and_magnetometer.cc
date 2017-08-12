@@ -118,10 +118,8 @@ bool AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetome
   // angles.
   DCHECK(fusion_sensor_);
 
-  // Not generating a new sensor value when the |fusion_sensor_|'s reporting
-  // mode is ON_CHANGE and the accelerometer reading doesn't change.
-  if (fusion_sensor_->GetReportingMode() == mojom::ReportingMode::ON_CHANGE &&
-      which_sensor_changed != mojom::SensorType::ACCELEROMETER) {
+  // Only generate a new sensor value when the accelerometer reading changes.
+  if (which_sensor_changed != mojom::SensorType::ACCELEROMETER) {
     return false;
   }
 

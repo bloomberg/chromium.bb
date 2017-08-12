@@ -35,6 +35,8 @@ using mojom::SensorType;
 // Zero value can mean whether value is not being not used or zero value.
 constexpr double kZero = 0.0;
 
+constexpr double kAmbientLightFrequencyValue = 10.0;
+
 constexpr double kAccelerometerFrequencyValue = 10.0;
 constexpr double kAccelerometerOffsetValue = 1.0;
 constexpr double kAccelerometerScalingValue = 0.009806;
@@ -653,6 +655,45 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckMagnetometerReadingConversion) {
               scaling * (sensor_values[1] + kMagnetometerOffsetValue));
   EXPECT_THAT(buffer->reading.magn.z,
               scaling * (sensor_values[2] + kMagnetometerOffsetValue));
+}
+
+// Tests that Ambient Light sensor client's OnSensorReadingChanged() is called
+// when the Ambient Light sensor's reporting mode is
+// mojom::ReportingMode::CONTINUOUS.
+TEST_F(PlatformSensorAndProviderLinuxTest,
+       SensorClientGetReadingChangedNotificationWhenSensorIsInContinuousMode) {
+  mojo::ScopedSharedBufferHandle handle = provider_->CloneSharedBufferHandle();
+  mojo::ScopedSharedBufferMapping mapping = handle->MapAtOffset(
+      sizeof(SensorReadingSharedBuffer),
+      SensorReadingSharedBuffer::GetOffset(SensorType::AMBIENT_LIGHT));
+
+  double sensor_value[3] = {22};
+  // Set a non-zero frequency here and sensor's reporting mode will be
+  // mojom::ReportingMode::CONTINUOUS.
+  InitializeSupportedSensor(SensorType::AMBIENT_LIGHT,
+                            kAmbientLightFrequencyValue, kZero, kZero,
+                            sensor_value);
+
+  InitializeMockUdevMethods(sensors_dir_.GetPath());
+  SetServiceStart();
+
+  auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
+  EXPECT_TRUE(sensor);
+  EXPECT_EQ(mojom::ReportingMode::CONTINUOUS, sensor->GetReportingMode());
+
+  auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
+
+  PlatformSensorConfiguration configuration(
+      sensor->GetMaximumSupportedFrequency());
+  EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
+
+  WaitOnSensorReadingChangedEvent(client.get(), sensor->GetType());
+
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
+
+  SensorReadingSharedBuffer* buffer =
+      static_cast<SensorReadingSharedBuffer*>(mapping.get());
+  EXPECT_THAT(buffer->reading.als.value, sensor_value[0]);
 }
 
 }  // namespace device

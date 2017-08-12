@@ -70,9 +70,6 @@ class PlatformSensorFusion : public PlatformSensor,
   SensorReading reading_;
   std::vector<scoped_refptr<PlatformSensor>> source_sensors_;
   std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm_;
-  // Repeating timer for data polling if all source sensors are CONTINUOUS
-  // reporting mode.
-  base::RepeatingTimer timer_;
   mojom::ReportingMode reporting_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorFusion);

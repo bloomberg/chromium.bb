@@ -93,8 +93,7 @@ void PlatformSensorAndroid::UpdatePlatformSensorReading(
   reading.raw.values[2] = value3;
   reading.raw.values[3] = value4;
 
-  bool needNotify = (GetReportingMode() == mojom::ReportingMode::ON_CHANGE);
-  UpdateSensorReading(reading, needNotify);
+  UpdateSensorReading(reading);
 }
 
 }  // namespace device

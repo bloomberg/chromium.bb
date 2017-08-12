@@ -45,9 +45,7 @@ double PlatformSensorWin::GetMaximumSupportedFrequency() {
 }
 
 void PlatformSensorWin::OnReadingUpdated(const SensorReading& reading) {
-  // Default reporting mode is ON_CHANGE, thus, set notify_clients parameter
-  // to true.
-  UpdateSensorReading(reading, true);
+  UpdateSensorReading(reading);
 }
 
 void PlatformSensorWin::OnSensorError() {
