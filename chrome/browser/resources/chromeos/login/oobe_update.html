@@ -38,6 +38,10 @@
       </div>
       <div class="footer flex layout vertical">
         <paper-progress id="checking-progress" indeterminate></paper-progress>
+        <div class="flex"></div>
+        <img class="update-illustration"
+            srcset="images/1x/updating_1x.png 1x,
+                    images/2x/updating_2x.png 2x">
       </div>
     </oobe-dialog>
     <oobe-dialog hidden="[[checkingForUpdate]]" tabindex="0"
@@ -58,6 +62,10 @@
             hidden="[[!estimatedTimeLeftShown]]">[[estimatedTimeLeft]]</div>
         <div id="progress-message" class="progress-message"
             hidden="[[!progressMessageShown]]">[[progressMessage]]</div>
+        <div class="flex"></div>
+        <img class="update-illustration"
+            srcset="images/1x/updating_1x.png 1x,
+                    images/2x/updating_2x.png 2x">
       </div>
     </oobe-dialog>
   </template>
