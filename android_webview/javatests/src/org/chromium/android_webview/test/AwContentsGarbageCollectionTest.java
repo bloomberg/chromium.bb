@@ -42,7 +42,7 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
     }
 
     @Override
-    protected TestDependencyFactory createTestDependencyFactory() {
+    public TestDependencyFactory createTestDependencyFactory() {
         if (mOverridenFactory == null) {
             return new TestDependencyFactory();
         } else {

@@ -70,7 +70,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
     }
 
     @Override
-    protected TestDependencyFactory createTestDependencyFactory() {
+    public TestDependencyFactory createTestDependencyFactory() {
         return new TestDependencyFactory() {
             @Override
             public AwLayoutSizer createLayoutSizer() {

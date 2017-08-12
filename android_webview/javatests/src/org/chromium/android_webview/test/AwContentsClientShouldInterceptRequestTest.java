@@ -214,7 +214,7 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
                 mShouldInterceptRequestHelper.getRequestsForUrl(pageWithFormUrl).method);
 
         callCount = mShouldInterceptRequestHelper.getCallCount();
-        JSUtils.clickOnLinkUsingJs(this, mAwContents,
+        JSUtils.clickOnLinkUsingJs(getInstrumentation(), mAwContents,
                 mContentsClient.getOnEvaluateJavaScriptResultHelper(), "link");
         mShouldInterceptRequestHelper.waitForCallback(callCount);
         assertEquals("POST",

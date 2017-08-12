@@ -114,13 +114,12 @@ public class CookieManagerTest extends AwTestBase {
 
     private void setCookieWithJavaScript(final String name, final String value)
             throws Throwable {
-        JSUtils.executeJavaScriptAndWaitForResult(
-                this, mAwContents,
+        JSUtils.executeJavaScriptAndWaitForResult(getInstrumentation(), mAwContents,
                 mContentsClient.getOnEvaluateJavaScriptResultHelper(),
                 "var expirationDate = new Date();"
-                + "expirationDate.setDate(expirationDate.getDate() + 5);"
-                + "document.cookie='" + name + "=" + value
-                + "; expires=' + expirationDate.toUTCString();");
+                        + "expirationDate.setDate(expirationDate.getDate() + 5);"
+                        + "document.cookie='" + name + "=" + value
+                        + "; expires=' + expirationDate.toUTCString();");
     }
 
     @MediumTest
@@ -366,15 +365,14 @@ public class CookieManagerTest extends AwTestBase {
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testThirdPartyCookie() throws Throwable {
-        // In theory we need two servers to test this, one server ('the first party') which returns
-        // a response with a link to a second server ('the third party') at different origin. This
-        // second server attempts to set a cookie which should fail if AcceptThirdPartyCookie() is
-        // false.
-        // Strictly according to the letter of RFC6454 it should be possible to set this situation
-        // up with two TestServers on different ports (these count as having different origins) but
-        // Chrome is not strict about this and does not check the port. Instead we cheat making some
-        // of the urls come from localhost and some from 127.0.0.1 which count (both in theory and
-        // pratice) as having different origins.
+        // In theory we need two servers to test this, one server ('the first
+        // party') which returns a response with a link to a second server ('the third party') at
+        // different origin. This second server attempts to set a cookie which should fail if
+        // AcceptThirdPartyCookie() is false. Strictly according to the letter of RFC6454 it should
+        // be possible to set this situation up with two TestServers on different ports (these count
+        // as having different origins) but Chrome is not strict about this and does not check the
+        // port. Instead we cheat making some of the urls come from localhost and some from
+        // 127.0.0.1 which count (both in theory and pratice) as having different origins.
         TestWebServer webServer = TestWebServer.start();
         try {
             // Turn global allow on.

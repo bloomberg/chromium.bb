@@ -264,7 +264,7 @@ public class ClientOnPageFinishedTest extends AwTestBase {
             int onPageFinishedCallCount = onPageFinishedHelper.getCallCount();
             int onPageStartedCallCount = onPageStartedHelper.getCallCount();
 
-            JSUtils.clickOnLinkUsingJs(this, mAwContents,
+            JSUtils.clickOnLinkUsingJs(getInstrumentation(), mAwContents,
                     mContentsClient.getOnEvaluateJavaScriptResultHelper(), "link");
 
             onPageFinishedHelper.waitForCallback(onPageFinishedCallCount);

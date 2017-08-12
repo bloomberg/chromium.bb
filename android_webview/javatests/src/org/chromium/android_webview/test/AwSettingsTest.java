@@ -2930,7 +2930,7 @@ public class AwSettingsTest extends AwTestBase {
     }
 
     @Override
-    protected TestDependencyFactory createTestDependencyFactory() {
+    public TestDependencyFactory createTestDependencyFactory() {
         if (mOverridenFactory == null) {
             return new TestDependencyFactory();
         } else {
@@ -2960,12 +2960,12 @@ public class AwSettingsTest extends AwTestBase {
         final AwTestContainerView mContainerView = createAwTestContainerViewOnMainSync(client);
         final AwContents awContents = mContainerView.getAwContents();
         enableJavaScriptOnUiThread(awContents);
-        JSUtils.executeJavaScriptAndWaitForResult(this, awContents,
+        JSUtils.executeJavaScriptAndWaitForResult(getInstrumentation(), awContents,
                 client.getOnEvaluateJavaScriptResultHelper(),
                 "window.emptyDocumentPersistenceTest = true;");
         loadUrlSync(awContents, client.getOnPageFinishedHelper(),
                 ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
-        String result = JSUtils.executeJavaScriptAndWaitForResult(this, awContents,
+        String result = JSUtils.executeJavaScriptAndWaitForResult(getInstrumentation(), awContents,
                 client.getOnEvaluateJavaScriptResultHelper(),
                 "window.emptyDocumentPersistenceTest ? 'set' : 'not set';");
         assertEquals(allow ? "\"set\"" : "\"not set\"", result);
@@ -3038,12 +3038,12 @@ public class AwSettingsTest extends AwTestBase {
                 awContents, client.getOnPageFinishedHelper(), testPageHtml, "text/html", false);
 
         // Focus on an empty DIV.
-        JSUtils.executeJavaScriptAndWaitForResult(this, awContents,
+        JSUtils.executeJavaScriptAndWaitForResult(getInstrumentation(), awContents,
                 client.getOnEvaluateJavaScriptResultHelper(), "window.a.focus();");
         assertEquals(1, getSelectionChangeCountForSelectionUpdateTest(awContents, client));
 
         // Create and delete a zero-width space. See crbug.com/698752 for details.
-        JSUtils.executeJavaScriptAndWaitForResult(this, awContents,
+        JSUtils.executeJavaScriptAndWaitForResult(getInstrumentation(), awContents,
                 client.getOnEvaluateJavaScriptResultHelper(),
                 "(function() {"
                         + "var sel = window.getSelection();"
@@ -3075,16 +3075,16 @@ public class AwSettingsTest extends AwTestBase {
         String expectedTitle = Integer.toString(mTitleIdx);
         // Since selectionchange event is posted on a message loop, we run another message loop
         // before we get the result. On Chromium both run on the same message loop.
-        JSUtils.executeJavaScriptAndWaitForResult(this, awContents,
+        JSUtils.executeJavaScriptAndWaitForResult(getInstrumentation(), awContents,
                 client.getOnEvaluateJavaScriptResultHelper(),
                 "setTimeout(function() { document.title = '" + expectedTitle + "'; });");
         pollTitleAs(expectedTitle, awContents);
 
-        String result = JSUtils.executeJavaScriptAndWaitForResult(
-                this, awContents, client.getOnEvaluateJavaScriptResultHelper(), "window.cnt");
+        String result = JSUtils.executeJavaScriptAndWaitForResult(getInstrumentation(), awContents,
+                client.getOnEvaluateJavaScriptResultHelper(), "window.cnt");
         // Clean up
-        JSUtils.executeJavaScriptAndWaitForResult(
-                this, awContents, client.getOnEvaluateJavaScriptResultHelper(), "window.cnt = 0;");
+        JSUtils.executeJavaScriptAndWaitForResult(getInstrumentation(), awContents,
+                client.getOnEvaluateJavaScriptResultHelper(), "window.cnt = 0;");
         return Integer.parseInt(result);
     }
 

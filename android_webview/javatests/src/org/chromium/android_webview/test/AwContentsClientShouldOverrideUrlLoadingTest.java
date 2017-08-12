@@ -78,7 +78,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
     private void clickOnLinkUsingJs() throws Throwable {
         enableJavaScriptOnUiThread(mAwContents);
-        JSUtils.clickOnLinkUsingJs(this, mAwContents,
+        JSUtils.clickOnLinkUsingJs(getInstrumentation(), mAwContents,
                 mContentsClient.getOnEvaluateJavaScriptResultHelper(), "link");
     }
 
@@ -926,8 +926,9 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
             loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), urlWithLink);
             // Executing JS code that tries to navigate somewhere should not create an intent.
-            assertEquals("\"" + testUrl + "\"", JSUtils.executeJavaScriptAndWaitForResult(
-                            this, mAwContents, new OnEvaluateJavaScriptResultHelper(),
+            assertEquals("\"" + testUrl + "\"",
+                    JSUtils.executeJavaScriptAndWaitForResult(getInstrumentation(), mAwContents,
+                            new OnEvaluateJavaScriptResultHelper(),
                             "document.location.href='" + testUrl + "'"));
             assertNull(getActivity().getLastSentIntent());
 

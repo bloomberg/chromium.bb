@@ -43,12 +43,12 @@ public class CookieManagerStartupTest extends AwTestBase {
     }
 
     @Override
-    protected boolean needsAwBrowserContextCreated() {
+    public boolean needsAwBrowserContextCreated() {
         return false;
     }
 
     @Override
-    protected boolean needsBrowserProcessStarted() {
+    public boolean needsBrowserProcessStarted() {
         return false;
     }
 

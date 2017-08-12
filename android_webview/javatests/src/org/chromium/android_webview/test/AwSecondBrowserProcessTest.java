@@ -31,7 +31,7 @@ public class AwSecondBrowserProcessTest extends AwTestBase {
     private int mSecondBrowserServicePid;
 
     @Override
-    protected boolean needsBrowserProcessStarted() {
+    public boolean needsBrowserProcessStarted() {
         return false;
     }
 
