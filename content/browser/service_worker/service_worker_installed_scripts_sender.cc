@@ -10,8 +10,8 @@
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/browser/service_worker/service_worker_storage.h"
-#include "content/common/net_adapters.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/net_adapters.h"
 
 namespace content {
 
@@ -176,7 +176,7 @@ class ServiceWorkerInstalledScriptsSender::Sender {
     // an equivalent error.
     DCHECK(!pending_write_);
     uint32_t num_bytes = 0;
-    MojoResult rv = NetToMojoPendingBuffer::BeginWrite(
+    MojoResult rv = network::NetToMojoPendingBuffer::BeginWrite(
         &body_handle_, &pending_write_, &num_bytes);
     switch (rv) {
       case MOJO_RESULT_INVALID_ARGUMENT:
@@ -193,8 +193,8 @@ class ServiceWorkerInstalledScriptsSender::Sender {
         break;
     }
 
-    scoped_refptr<NetToMojoIOBuffer> buffer =
-        base::MakeRefCounted<NetToMojoIOBuffer>(pending_write_.get());
+    scoped_refptr<network::NetToMojoIOBuffer> buffer =
+        base::MakeRefCounted<network::NetToMojoIOBuffer>(pending_write_.get());
     reader_->ReadData(buffer.get(), num_bytes,
                       base::Bind(&Sender::OnResponseDataRead, AsWeakPtr()));
   }
@@ -253,7 +253,7 @@ class ServiceWorkerInstalledScriptsSender::Sender {
   std::unique_ptr<MetaDataSender> meta_data_sender_;
 
   // For body.
-  scoped_refptr<NetToMojoPendingBuffer> pending_write_;
+  scoped_refptr<network::NetToMojoPendingBuffer> pending_write_;
   mojo::SimpleWatcher watcher_;
 
   // Pipes.

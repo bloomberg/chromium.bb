@@ -11,13 +11,13 @@
 
 #include "base/macros.h"
 #include "content/browser/appcache/appcache_update_request_base.h"
-#include "content/common/net_adapters.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/io_buffer.h"
+#include "services/network/public/cpp/net_adapters.h"
 
 namespace net {
 class HttpResponseInfo;
@@ -114,7 +114,7 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
   // Please look at the StartReading() function for details.
   bool read_requested_;
   // Adapter for transferring data from a mojo data pipe to net.
-  scoped_refptr<MojoToNetPendingBuffer> pending_read_;
+  scoped_refptr<network::MojoToNetPendingBuffer> pending_read_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateURLLoaderRequest);
 };

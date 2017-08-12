@@ -18,10 +18,13 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 
+namespace network {
+class NetToMojoPendingBuffer;
+}
+
 namespace content {
 
 class NetworkContext;
-class NetToMojoPendingBuffer;
 struct ResourceResponse;
 
 class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
@@ -73,7 +76,7 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
   int64_t total_written_bytes_ = 0;
 
   mojo::ScopedDataPipeProducerHandle response_body_stream_;
-  scoped_refptr<NetToMojoPendingBuffer> pending_write_;
+  scoped_refptr<network::NetToMojoPendingBuffer> pending_write_;
   uint32_t pending_write_buffer_size_ = 0;
   uint32_t pending_write_buffer_offset_ = 0;
   mojo::SimpleWatcher writable_handle_watcher_;
