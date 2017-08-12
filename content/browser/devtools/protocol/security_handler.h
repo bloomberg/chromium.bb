@@ -40,7 +40,6 @@ class SecurityHandler : public DevToolsDomainHandler,
   // Security::Backend overrides.
   Response Enable() override;
   Response Disable() override;
-  Response ShowCertificateViewer() override;
   Response HandleCertificateError(int event_id, const String& action) override;
   Response SetOverrideCertificateErrors(bool override) override;
 

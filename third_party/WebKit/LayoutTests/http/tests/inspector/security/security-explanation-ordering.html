@@ -13,26 +13,28 @@ function test()
     // first to make sure it gets reordered.
     var explanations = [
         {
-            "description": "Public-key pinning was bypassed by a local root certificate.",
-            "securityState": "info",
-            "summary": "Public-Key Pinning Bypassed"
+            description: "Public-key pinning was bypassed by a local root certificate.",
+            securityState: "info",
+            summary: "Public-Key Pinning Bypassed",
+            certificate: []
         },
         {
-            "hasCertificate": "true",
-            "description": "The connection to this site is using a valid, trusted server certificate.",
-            "securityState": "secure",
-            "summary": "Valid Certificate"
+            description: "The connection to this site is using a valid, trusted server certificate.",
+            securityState: "secure",
+            summary: "Valid Certificate",
+            certificate: ["BASE64CERTIFICATE"]
         },
         {
-            "description": "The connection to this site uses a strong protocol (TLS 1.2), a strong key exchange (ECDHE_RSA), and an obsolete cipher (AES_256_CBC with HMAC-SHA1).",
-            "securityState": "secure",
-            "summary": "Obsolete Connection Settings"
-
+            description: "The connection to this site uses a strong protocol (TLS 1.2), a strong key exchange (ECDHE_RSA), and an obsolete cipher (AES_256_CBC with HMAC-SHA1).",
+            securityState: "secure",
+            summary: "Obsolete Connection Settings",
+            certificate: []
         },
         {
-            "description": "All resources on this page are served securely.",
-            "securityState": "secure",
-            "summary": "Secure resources"
+            description: "All resources on this page are served securely.",
+            securityState: "secure",
+            summary: "Secure resources",
+            certificate: []
         }
     ];
 

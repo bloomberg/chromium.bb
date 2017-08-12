@@ -14,7 +14,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
-#include "net/cert/x509_certificate.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace content {
@@ -264,11 +263,6 @@ blink::WebSecurityStyle WebContentsDelegate::GetSecurityStyle(
     WebContents* web_contents,
     SecurityStyleExplanations* security_style_explanations) {
   return blink::kWebSecurityStyleUnknown;
-}
-
-void WebContentsDelegate::ShowCertificateViewerInDevTools(
-    WebContents* web_contents,
-    scoped_refptr<net::X509Certificate> certificate) {
 }
 
 void WebContentsDelegate::RequestAppBannerFromDevTools(

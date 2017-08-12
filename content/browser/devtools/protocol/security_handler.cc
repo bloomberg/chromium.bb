@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/base64.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/navigation_controller.h"
@@ -14,6 +15,7 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "net/cert/x509_certificate.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 
 namespace content {
@@ -66,12 +68,32 @@ void AddExplanations(
     const std::vector<SecurityStyleExplanation>& explanations_to_add,
     Explanations* explanations) {
   for (const auto& it : explanations_to_add) {
+    std::unique_ptr<protocol::Array<String>> certificate =
+        protocol::Array<String>::create();
+    if (it.certificate) {
+      std::string der;
+      std::string encoded;
+      bool rv = net::X509Certificate::GetDEREncoded(
+          it.certificate->os_cert_handle(), &der);
+      DCHECK(rv);
+      base::Base64Encode(der, &encoded);
+
+      certificate->addItem(encoded);
+
+      for (auto* cert : it.certificate->GetIntermediateCertificates()) {
+        rv = net::X509Certificate::GetDEREncoded(cert, &der);
+        DCHECK(rv);
+        base::Base64Encode(der, &encoded);
+        certificate->addItem(encoded);
+      }
+    }
+
     explanations->addItem(
         Security::SecurityStateExplanation::Create()
             .SetSecurityState(security_style)
             .SetSummary(it.summary)
             .SetDescription(it.description)
-            .SetHasCertificate(it.has_certificate)
+            .SetCertificate(std::move(certificate))
             .SetMixedContentType(MixedContentTypeToProtocolMixedContentType(
                 it.mixed_content_type))
             .Build());
@@ -207,19 +229,6 @@ Response SecurityHandler::Disable() {
   certificate_errors_overriden_ = false;
   WebContentsObserver::Observe(nullptr);
   FlushPendingCertificateErrorNotifications();
-  return Response::OK();
-}
-
-Response SecurityHandler::ShowCertificateViewer() {
-  if (!host_)
-    return Response::InternalError();
-  WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
-  scoped_refptr<net::X509Certificate> certificate =
-      web_contents->GetController().GetVisibleEntry()->GetSSL().certificate;
-  if (!certificate)
-    return Response::Error("Could not find certificate");
-  web_contents->GetDelegate()->ShowCertificateViewerInDevTools(
-      web_contents, certificate);
   return Response::OK();
 }
 

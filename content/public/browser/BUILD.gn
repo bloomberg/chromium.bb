@@ -231,6 +231,7 @@ source_set("browser_sources") {
     "restore_type.h",
     "save_page_type.h",
     "screen_orientation_delegate.h",
+    "security_style_explanation.cc",
     "security_style_explanation.h",
     "security_style_explanations.cc",
     "security_style_explanations.h",

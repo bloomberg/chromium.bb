@@ -167,12 +167,6 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     return true;
   }
 
-  void ShowCertificateViewerInDevTools(
-      WebContents* web_contents,
-      scoped_refptr<net::X509Certificate> certificate) override {
-    last_shown_certificate_ = certificate;
-  }
-
   base::DictionaryValue* SendCommand(
       const std::string& method,
       std::unique_ptr<base::DictionaryValue> params) {
@@ -353,10 +347,6 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     return urls;
   }
 
-  const scoped_refptr<net::X509Certificate>& last_shown_certificate() {
-    return last_shown_certificate_;
-  }
-
   const scoped_refptr<net::X509Certificate>& ok_cert() { return ok_cert_; }
 
   const scoped_refptr<net::X509Certificate>& expired_cert() {
@@ -419,7 +409,6 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   std::unique_ptr<base::DictionaryValue> waiting_for_notification_params_;
   int waiting_for_command_result_id_;
   bool in_dispatch_;
-  scoped_refptr<net::X509Certificate> last_shown_certificate_;
   scoped_refptr<net::X509Certificate> ok_cert_;
   scoped_refptr<net::X509Certificate> expired_cert_;
   bool agent_host_can_close_;
@@ -1558,59 +1547,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VirtualTimeTest) {
   WaitForNotification("Emulation.virtualTimeBudgetExpired");
 
   EXPECT_THAT(console_messages_, ElementsAre("before", "at", "done", "after"));
-}
-
-// Tests that the Security.showCertificateViewer command shows the
-// certificate corresponding to the visible navigation entry, even when
-// an interstitial is showing. Regression test for
-// https://crbug.com/647759.
-IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ShowCertificateViewer) {
-  // First test that the correct certificate is shown for a normal
-  // (non-interstitial) page.
-  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
-  Attach();
-
-  // Set a dummy certificate on the NavigationEntry.
-  shell()
-      ->web_contents()
-      ->GetController()
-      .GetVisibleEntry()
-      ->GetSSL()
-      .certificate = ok_cert();
-
-  std::unique_ptr<base::DictionaryValue> params1(new base::DictionaryValue());
-  SendCommand("Security.showCertificateViewer", std::move(params1), true);
-
-  scoped_refptr<net::X509Certificate> normal_page_cert = shell()
-                                                             ->web_contents()
-                                                             ->GetController()
-                                                             .GetVisibleEntry()
-                                                             ->GetSSL()
-                                                             .certificate;
-  ASSERT_TRUE(normal_page_cert);
-  EXPECT_EQ(normal_page_cert, last_shown_certificate());
-
-  // Now test that the correct certificate is shown on an interstitial.
-  TestInterstitialDelegate* delegate = new TestInterstitialDelegate;
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  GURL interstitial_url("https://example.test");
-  InterstitialPageImpl* interstitial = new InterstitialPageImpl(
-      web_contents, static_cast<RenderWidgetHostDelegate*>(web_contents), true,
-      interstitial_url, delegate);
-  interstitial->Show();
-  WaitForInterstitialAttach(web_contents);
-
-  // Set the transient navigation entry certificate.
-  NavigationEntry* transient_entry =
-      web_contents->GetController().GetTransientEntry();
-  ASSERT_TRUE(transient_entry);
-  transient_entry->GetSSL().certificate = expired_cert();
-  ASSERT_TRUE(transient_entry->GetSSL().certificate);
-
-  std::unique_ptr<base::DictionaryValue> params2(new base::DictionaryValue());
-  SendCommand("Security.showCertificateViewer", std::move(params2), true);
-  EXPECT_EQ(transient_entry->GetSSL().certificate, last_shown_certificate());
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CertificateError) {

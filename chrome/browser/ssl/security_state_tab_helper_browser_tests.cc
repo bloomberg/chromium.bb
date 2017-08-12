@@ -160,7 +160,7 @@ void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
                                    ->GetSSL()
                                    .certificate.get();
   EXPECT_TRUE(cert->Equals(expected_cert));
-  EXPECT_TRUE(expired_explanation.insecure_explanations[0].has_certificate);
+  EXPECT_TRUE(!!expired_explanation.insecure_explanations[0].certificate);
 }
 
 // Checks that the given |explanation| contains an appropriate
@@ -184,7 +184,7 @@ void CheckSecureCertificateExplanation(
                                    ->GetSSL()
                                    .certificate.get();
   EXPECT_TRUE(cert->Equals(expected_cert));
-  EXPECT_TRUE(explanation.has_certificate);
+  EXPECT_TRUE(!!explanation.certificate);
 }
 
 // Checks that the given |explanation| contains an appropriate

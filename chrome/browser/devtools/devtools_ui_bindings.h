@@ -65,6 +65,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
     virtual void ReadyForTest() = 0;
     virtual InfoBarService* GetInfoBarService() = 0;
     virtual void RenderProcessGone(bool crashed) = 0;
+    virtual void ShowCertificateViewer(const std::string& cert_chain) = 0;
   };
 
   explicit DevToolsUIBindings(content::WebContents* web_contents);
