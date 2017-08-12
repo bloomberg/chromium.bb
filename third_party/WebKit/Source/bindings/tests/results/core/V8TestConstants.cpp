@@ -199,7 +199,7 @@ void V8TestConstants::installFeatureName1(v8::Isolate* isolate, const DOMWrapper
 }
 
 void V8TestConstants::installFeatureName1(ScriptState* scriptState, v8::Local<v8::Object> instance) {
-  V8PerContextData* perContextData = V8PerContextData::From(scriptState->GetContext());
+  V8PerContextData* perContextData = scriptState->PerContextData();
   v8::Local<v8::Object> prototype = perContextData->PrototypeForType(&V8TestConstants::wrapperTypeInfo);
   v8::Local<v8::Function> interface = perContextData->ConstructorForType(&V8TestConstants::wrapperTypeInfo);
   ALLOW_UNUSED_LOCAL(interface);
@@ -218,7 +218,7 @@ void V8TestConstants::installFeatureName2(v8::Isolate* isolate, const DOMWrapper
 }
 
 void V8TestConstants::installFeatureName2(ScriptState* scriptState, v8::Local<v8::Object> instance) {
-  V8PerContextData* perContextData = V8PerContextData::From(scriptState->GetContext());
+  V8PerContextData* perContextData = scriptState->PerContextData();
   v8::Local<v8::Object> prototype = perContextData->PrototypeForType(&V8TestConstants::wrapperTypeInfo);
   v8::Local<v8::Function> interface = perContextData->ConstructorForType(&V8TestConstants::wrapperTypeInfo);
   ALLOW_UNUSED_LOCAL(interface);

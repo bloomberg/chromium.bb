@@ -13060,7 +13060,7 @@ void V8TestObject::installFeatureName(v8::Isolate* isolate, const DOMWrapperWorl
 }
 
 void V8TestObject::installFeatureName(ScriptState* scriptState, v8::Local<v8::Object> instance) {
-  V8PerContextData* perContextData = V8PerContextData::From(scriptState->GetContext());
+  V8PerContextData* perContextData = scriptState->PerContextData();
   v8::Local<v8::Object> prototype = perContextData->PrototypeForType(&V8TestObject::wrapperTypeInfo);
   v8::Local<v8::Function> interface = perContextData->ConstructorForType(&V8TestObject::wrapperTypeInfo);
   ALLOW_UNUSED_LOCAL(interface);
