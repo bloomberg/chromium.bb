@@ -46,3 +46,20 @@ source_set("run_all_service_tests") {
     "//base/test:test_support",
   ]
 }
+
+source_set("test_support") {
+  sources = [
+    "test_connector_factory.cc",
+    "test_connector_factory.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/interfaces",
+  ]
+
+  deps = [
+    "//mojo/public/cpp/bindings",
+  ]
+}
