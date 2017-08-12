@@ -911,7 +911,7 @@ void {{v8_class_or_partial}}::install{{feature.name}}(v8::Isolate* isolate, cons
 }
 
 void {{v8_class_or_partial}}::install{{feature.name}}(ScriptState* scriptState, v8::Local<v8::Object> instance) {
-  V8PerContextData* perContextData = V8PerContextData::From(scriptState->GetContext());
+  V8PerContextData* perContextData = scriptState->PerContextData();
   v8::Local<v8::Object> prototype = perContextData->PrototypeForType(&{{v8_class}}::wrapperTypeInfo);
   v8::Local<v8::Function> interface = perContextData->ConstructorForType(&{{v8_class}}::wrapperTypeInfo);
   ALLOW_UNUSED_LOCAL(interface);
