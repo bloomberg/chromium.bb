@@ -5,12 +5,15 @@
 #ifndef CHROME_PROFILING_MEMLOG_IMPL_H_
 #define CHROME_PROFILING_MEMLOG_IMPL_H_
 
+#include "base/files/file.h"
 #include "base/files/platform_file.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/profiling/memlog.mojom.h"
 #include "chrome/profiling/backtrace_storage.h"
 #include "chrome/profiling/memlog_connection_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace profiling {
@@ -46,9 +49,18 @@ class MemlogImpl : public mojom::Memlog {
     base::SequencedTaskRunner* runner;
   };
 
+  void OnGetVmRegionsComplete(
+      base::ProcessId pid,
+      base::File file,
+      bool success,
+      memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
+
   scoped_refptr<base::SequencedTaskRunner> io_runner_;
   BacktraceStorage backtrace_storage_;
   std::unique_ptr<MemlogConnectionManager, DeleteOnRunner> connection_manager_;
+
+  // Must be last.
+  base::WeakPtrFactory<MemlogImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MemlogImpl);
 };

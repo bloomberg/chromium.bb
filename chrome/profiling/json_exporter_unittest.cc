@@ -6,14 +6,19 @@
 
 #include <sstream>
 
+#include "base/gtest_prod_util.h"
 #include "base/json/json_reader.h"
+#include "base/process/process.h"
 #include "base/values.h"
 #include "chrome/profiling/backtrace_storage.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace profiling {
 
 namespace {
+
+using MemoryMap = std::vector<memory_instrumentation::mojom::VmRegionPtr>;
 
 // Finds the first period_interval trace event in the given JSON trace.
 // Returns null on failure.
@@ -28,6 +33,37 @@ const base::Value* FindFirstPeriodicInterval(const base::Value& root) {
     if (found_name == cur.DictEnd())
       return nullptr;
     if (found_name->second.GetString() == "periodic_interval")
+      return &cur;
+  }
+  return nullptr;
+}
+
+// Finds the first vm region in the given periodic interval. Returns null on
+// failure.
+const base::Value* FindFirstRegionWithAnyName(
+    const base::Value* periodic_interval) {
+  auto found_args =
+      periodic_interval->FindKeyOfType("args", base::Value::Type::DICTIONARY);
+  if (found_args == periodic_interval->DictEnd())
+    return nullptr;
+  auto found_dumps =
+      found_args->second.FindKeyOfType("dumps", base::Value::Type::DICTIONARY);
+  if (found_dumps == found_args->second.DictEnd())
+    return nullptr;
+  auto found_mmaps = found_dumps->second.FindKeyOfType(
+      "process_mmaps", base::Value::Type::DICTIONARY);
+  if (found_mmaps == found_dumps->second.DictEnd())
+    return nullptr;
+  auto found_regions =
+      found_mmaps->second.FindKeyOfType("vm_regions", base::Value::Type::LIST);
+  if (found_regions == found_mmaps->second.DictEnd())
+    return nullptr;
+
+  for (const base::Value& cur : found_regions->second.GetList()) {
+    auto found_name = cur.FindKeyOfType("mf", base::Value::Type::STRING);
+    if (found_name == cur.DictEnd())
+      return nullptr;
+    if (found_name->second.GetString() != "")
       return &cur;
   }
   return nullptr;
@@ -53,7 +89,7 @@ TEST(ProfilingJsonExporter, Simple) {
   events.insert(AllocationEvent(Address(0x3), 16, bt1));
 
   std::ostringstream stream;
-  ExportAllocationEventSetToJSON(1234, events, stream);
+  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -82,6 +118,40 @@ TEST(ProfilingJsonExporter, Simple) {
                counts->GetList()[1].GetInt() == 2) ||
               (counts->GetList()[0].GetInt() == 2 &&
                counts->GetList()[1].GetInt() == 1));
+}
+
+TEST(ProfilingJsonExporterTest, MemoryMaps) {
+  AllocationEventSet events;
+  std::vector<memory_instrumentation::mojom::VmRegionPtr> memory_maps =
+      memory_instrumentation::OSMetrics::GetProcessMemoryMaps(
+          base::Process::Current().Pid());
+  ASSERT_GT(memory_maps.size(), 2u);
+
+  std::ostringstream stream;
+  ExportAllocationEventSetToJSON(1234, events, memory_maps, stream);
+  std::string json = stream.str();
+
+  // JSON should parse.
+  base::JSONReader reader(base::JSON_PARSE_RFC);
+  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
+  ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
+      << reader.GetErrorMessage();
+  ASSERT_TRUE(root.get());
+
+  const base::Value* periodic_interval = FindFirstPeriodicInterval(*root);
+  ASSERT_TRUE(periodic_interval) << "Array contains no periodic_interval";
+  const base::Value* region = FindFirstRegionWithAnyName(periodic_interval);
+  ASSERT_TRUE(region) << "Array contains no named vm regions";
+
+  auto start_address = region->FindKeyOfType("sa", base::Value::Type::STRING);
+  ASSERT_NE(start_address, region->DictEnd());
+  EXPECT_NE(start_address->second.GetString(), "");
+  EXPECT_NE(start_address->second.GetString(), "0");
+
+  auto size = region->FindKeyOfType("sz", base::Value::Type::STRING);
+  ASSERT_NE(size, region->DictEnd());
+  EXPECT_NE(size->second.GetString(), "");
+  EXPECT_NE(size->second.GetString(), "0");
 }
 
 }  // namespace profiling
