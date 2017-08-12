@@ -776,9 +776,8 @@ bool IsCertificateCleared() {
                    @"Settings should register key commands when presented.");
 
   // Present the Sign-in UI.
-  id<GREYMatcher> matcher =
-      grey_allOf(grey_accessibilityID(kSettingsSignInCellId),
-                 grey_sufficientlyVisible(), nil);
+  id<GREYMatcher> matcher = grey_allOf(chrome_test_util::SignInMenuButton(),
+                                       grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
   // Wait for UI to finish loading the Sign-in screen.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];

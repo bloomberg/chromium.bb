@@ -115,8 +115,7 @@ const CGFloat kScrollDisplacement = 50.0;
 - (void)selectToolsMenuItem:(id<GREYMatcher>)toolsMenuItem {
   [ChromeEarlGreyUI openToolsMenu];
 
-  id<GREYMatcher> toolsMenuTableView =
-      grey_accessibilityID(kToolsMenuTableViewId);
+  id<GREYMatcher> toolsMenuTableView = chrome_test_util::ToolsMenuView();
   [[[EarlGrey selectElementWithMatcher:toolsMenuItem]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
                                                   kScrollDisplacement)
