@@ -12,3 +12,6 @@ per-file ios_chrome_tests.gyp=*
 per-file ios_share_extension_resources.gyp=*
 per-file ios_today_extension_resources.gyp=*
 per-file ios_today_extension_resources_bundle.gypi=*
+
+# TEAM: ios-directory-owners@chromium.org
+# OS: iOS
