@@ -16,7 +16,6 @@
       assert_equals(xhr.responseText, "PASS: Cross-domain access allowed.");
       test.done();
     }
-
     function runAsync(test, url)
     {
       const xhr = new XMLHttpRequest();
@@ -28,7 +27,6 @@
       xhr.send();
       test.done();
     }
-
     test(t => {
       runSync(t, "resources/redirect-cors.py?location=" + get_host_info().HTTP_REMOTE_ORIGIN +
           "/XMLHttpRequest/resources/access-control-basic-allow.py")
@@ -37,7 +35,6 @@
       runAsync(t, "resources/redirect-cors.py?location=" + get_host_info().HTTP_REMOTE_ORIGIN +
           "/XMLHttpRequest/resources/access-control-basic-allow.py")
     }, "Local async redirect to remote origin");
-
     test(t => {
       runSync(t, get_host_info().HTTP_REMOTE_ORIGIN +
           "/XMLHttpRequest/resources/redirect-cors.py?location=" + get_host_info().HTTP_ORIGIN +
@@ -48,7 +45,6 @@
           "/XMLHttpRequest/resources/redirect-cors.py?location=" + get_host_info().HTTP_ORIGIN +
           "/XMLHttpRequest/resources/access-control-basic-allow.py&allow_origin=true")
     }, "Remote async redirect to local origin");
-
     test(t => {
       runSync(t, get_host_info().HTTP_REMOTE_ORIGIN +
           "/XMLHttpRequest/resources/redirect-cors.py?location=" + get_host_info().HTTP_REMOTE_ORIGIN +
