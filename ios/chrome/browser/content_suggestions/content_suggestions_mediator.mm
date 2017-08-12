@@ -196,11 +196,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     if (!self.sectionInformationByCategory[categoryWrapper]) {
       [self addSectionInformationForCategory:category];
     }
-    if (IsCategoryStatusAvailable(
-            self.contentService->GetCategoryStatus(category))) {
-      [sectionsInfo
-          addObject:self.sectionInformationByCategory[categoryWrapper]];
-    }
+    [sectionsInfo addObject:self.sectionInformationByCategory[categoryWrapper]];
   }
 
   [sectionsInfo addObject:self.learnMoreSectionInfo];
@@ -344,21 +340,15 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
             (ntp_snippets::ContentSuggestionsService*)suggestionsService
                          category:(ntp_snippets::Category)category
                   statusChangedTo:(ntp_snippets::CategoryStatus)status {
-  ContentSuggestionsCategoryWrapper* wrapper =
-      [[ContentSuggestionsCategoryWrapper alloc] initWithCategory:category];
   if (!ntp_snippets::IsCategoryStatusInitOrAvailable(status)) {
     // Remove the category from the UI if it is not available.
+    ContentSuggestionsCategoryWrapper* wrapper =
+        [[ContentSuggestionsCategoryWrapper alloc] initWithCategory:category];
     ContentSuggestionsSectionInformation* sectionInfo =
         self.sectionInformationByCategory[wrapper];
 
     [self.dataSink clearSection:sectionInfo];
     [self.sectionInformationByCategory removeObjectForKey:wrapper];
-  } else {
-    if (!self.sectionInformationByCategory[wrapper]) {
-      [self addSectionInformationForCategory:category];
-    }
-    [self.dataSink
-        dataAvailableForSection:self.sectionInformationByCategory[wrapper]];
   }
 }
 
