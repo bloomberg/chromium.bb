@@ -25,6 +25,10 @@
 
 class PrefRegistrySimple;
 
+namespace base {
+class TickClock;
+}
+
 namespace content {
 class BrowserContext;
 }
@@ -49,6 +53,7 @@ class InputDeviceManager;
 
 namespace lock_screen_apps {
 
+class AppWindowMetricsTracker;
 class FocusCyclerDelegate;
 class StateObserver;
 
@@ -122,6 +127,7 @@ class StateController : public ash::mojom::TrayActionClient,
   void OnSessionStateChanged() override;
 
   // extensions::AppWindowRegistry::Observer:
+  void OnAppWindowAdded(extensions::AppWindow* app_window) override;
   void OnAppWindowRemoved(extensions::AppWindow* app_window) override;
 
   // ui::InputDeviceEventObserver:
@@ -218,6 +224,11 @@ class StateController : public ash::mojom::TrayActionClient,
   FocusCyclerDelegate* focus_cycler_delegate_ = nullptr;
 
   extensions::AppWindow* note_app_window_ = nullptr;
+  // Used to track metrics for app window launches - it is set when the user
+  // session is locked (and reset on unlock). Note that a single instance
+  // should not be reused for different lock sessions - it tracks number of app
+  // launches per lock screen.
+  std::unique_ptr<AppWindowMetricsTracker> note_app_window_metrics_;
 
   ScopedObserver<extensions::AppWindowRegistry,
                  extensions::AppWindowRegistry::Observer>
@@ -236,6 +247,10 @@ class StateController : public ash::mojom::TrayActionClient,
   // is ready for action - i.e. until the state controller starts reacting
   // to session / app manager changes.
   base::Closure ready_callback_;
+
+  // The clock used to keep track of time, for example to report app window
+  // lifetime metrics.
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   base::WeakPtrFactory<StateController> weak_ptr_factory_;
 

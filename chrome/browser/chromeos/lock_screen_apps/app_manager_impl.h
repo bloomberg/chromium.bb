@@ -11,11 +11,16 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
+
+namespace base {
+class TickClock;
+}
 
 namespace extensions {
 class Extension;
@@ -29,7 +34,7 @@ class AppManagerImpl : public AppManager,
                        public chromeos::NoteTakingHelper::Observer,
                        public extensions::ExtensionRegistryObserver {
  public:
-  AppManagerImpl();
+  explicit AppManagerImpl(base::TickClock* tick_clock);
   ~AppManagerImpl() override;
 
   // AppManager implementation:
@@ -77,6 +82,7 @@ class AppManagerImpl : public AppManager,
   //     installation failed.
   void CompleteLockScreenAppInstall(
       int install_id,
+      base::TimeTicks install_start_time,
       const scoped_refptr<const extensions::Extension>& app);
 
   // Installs app to the lock screen profile's extension service and enables
@@ -105,6 +111,8 @@ class AppManagerImpl : public AppManager,
 
   State state_ = State::kNotInitialized;
   std::string lock_screen_app_id_;
+
+  base::TickClock* tick_clock_;
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>

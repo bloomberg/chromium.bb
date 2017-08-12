@@ -15,9 +15,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/tick_clock.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_assets_manager.h"
@@ -39,6 +41,38 @@ namespace {
 
 using ExtensionCallback = base::Callback<void(
     const scoped_refptr<const extensions::Extension>& extension)>;
+
+// The lock screen note taking availability state.
+// Used to report UMA histograms - the values should map to
+// LockScreenActionAvailability UMA enum values, and the values assigned to
+// enum states should NOT be changed.
+enum class ActionAvailability {
+  kAvailable = 0,
+  kNoActionHandlerApp = 1,
+  kAppNotSupportingLockScreen = 2,
+  kActionNotEnabledOnLockScreen = 3,
+  kDisallowedByPolicy = 4,
+  kCount,
+};
+
+ActionAvailability GetLockScreenNoteTakingAvailability(
+    chromeos::NoteTakingAppInfo* app_info) {
+  if (!app_info || !app_info->preferred)
+    return ActionAvailability::kNoActionHandlerApp;
+
+  switch (app_info->lock_screen_support) {
+    case chromeos::NoteTakingLockScreenSupport::kNotSupported:
+      return ActionAvailability::kAppNotSupportingLockScreen;
+    case chromeos::NoteTakingLockScreenSupport::kSupported:
+      return ActionAvailability::kActionNotEnabledOnLockScreen;
+    case chromeos::NoteTakingLockScreenSupport::kNotAllowedByPolicy:
+      return ActionAvailability::kDisallowedByPolicy;
+    case chromeos::NoteTakingLockScreenSupport::kEnabled:
+      return ActionAvailability::kAvailable;
+  }
+
+  return ActionAvailability::kAppNotSupportingLockScreen;
+}
 
 void InvokeCallbackOnTaskRunner(
     const ExtensionCallback& callback,
@@ -113,8 +147,9 @@ void InstallExtensionCopy(
 
 }  // namespace
 
-AppManagerImpl::AppManagerImpl()
-    : extensions_observer_(this),
+AppManagerImpl::AppManagerImpl(base::TickClock* tick_clock)
+    : tick_clock_(tick_clock),
+      extensions_observer_(this),
       note_taking_helper_observer_(this),
       weak_ptr_factory_(this) {}
 
@@ -264,12 +299,15 @@ std::string AppManagerImpl::FindLockScreenNoteTakingApp() const {
   std::unique_ptr<chromeos::NoteTakingAppInfo> note_taking_app =
       chromeos::NoteTakingHelper::Get()->GetPreferredChromeAppInfo(
           primary_profile_);
+  ActionAvailability availability =
+      GetLockScreenNoteTakingAvailability(note_taking_app.get());
 
-  if (!note_taking_app || !note_taking_app->preferred ||
-      note_taking_app->lock_screen_support !=
-          chromeos::NoteTakingLockScreenSupport::kEnabled) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Apps.LockScreen.NoteTakingApp.AvailabilityOnScreenLock", availability,
+      ActionAvailability::kCount);
+
+  if (availability != ActionAvailability::kAvailable)
     return std::string();
-  }
 
   return note_taking_app->app_id;
 }
@@ -325,14 +363,20 @@ AppManagerImpl::State AppManagerImpl::AddAppToLockScreenProfile(
           lock_screen_service->install_directory(), lock_screen_profile_,
           base::Bind(&InvokeCallbackOnTaskRunner,
                      base::Bind(&AppManagerImpl::CompleteLockScreenAppInstall,
-                                weak_ptr_factory_.GetWeakPtr(), install_count_),
+                                weak_ptr_factory_.GetWeakPtr(), install_count_,
+                                tick_clock_->NowTicks()),
                      base::ThreadTaskRunnerHandle::Get())));
   return State::kActivating;
 }
 
 void AppManagerImpl::CompleteLockScreenAppInstall(
     int install_id,
+    base::TimeTicks install_start_time,
     const scoped_refptr<const extensions::Extension>& app) {
+  UMA_HISTOGRAM_TIMES(
+      "Apps.LockScreen.NoteTakingApp.LockScreenInstallationDuration",
+      tick_clock_->NowTicks() - install_start_time);
+
   // Bail out if the app manager is no longer waiting for this app's
   // installation - the copied resources will be cleaned up when the (ephemeral)
   // lock screen profile is destroyed.
