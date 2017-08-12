@@ -583,6 +583,16 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                         AwContentsStatics.setSafeBrowsingWhitelist(urls, callback);
                     }
 
+                    /**
+                     * Returns a URL pointing to the privacy policy for Safe Browsing reporting.
+                     *
+                     * @return the url pointing to a privacy policy document which can be displayed
+                     * to users.
+                     */
+                    // TODO(ntfschr): add @Override once next android SDK rolls
+                    public Uri getSafeBrowsingPrivacyPolicyUrl() {
+                        return AwContentsStatics.getSafeBrowsingPrivacyPolicyUrl();
+                    }
                 };
             }
         }

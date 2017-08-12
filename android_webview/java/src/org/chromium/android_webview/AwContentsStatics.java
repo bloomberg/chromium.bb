@@ -6,6 +6,7 @@ package org.chromium.android_webview;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.net.Uri;
 import android.webkit.ValueCallback;
 
 import org.chromium.base.ThreadUtils;
@@ -154,6 +155,10 @@ public class AwContentsStatics {
         }
     }
 
+    public static Uri getSafeBrowsingPrivacyPolicyUrl() {
+        return Uri.parse(nativeGetSafeBrowsingPrivacyPolicyUrl());
+    }
+
     public static void setCheckClearTextPermitted(boolean permitted) {
         nativeSetCheckClearTextPermitted(permitted);
     }
@@ -176,6 +181,7 @@ public class AwContentsStatics {
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
+    private static native String nativeGetSafeBrowsingPrivacyPolicyUrl();
     private static native void nativeClearClientCertPreferences(Runnable callback);
     private static native String nativeGetUnreachableWebDataUrl();
     private static native String nativeGetProductVersion();
