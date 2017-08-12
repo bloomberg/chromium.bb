@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/net_adapters.h"
+#include "services/network/public/cpp/net_adapters.h"
 
 #include "net/base/net_errors.h"
 
-namespace content {
+namespace network {
 
 namespace {
 const uint32_t kMaxBufSize = 64 * 1024;
@@ -99,4 +99,4 @@ MojoToNetIOBuffer::~MojoToNetIOBuffer() {
   pending_buffer_->CompleteRead(bytes_to_be_read_);
 }
 
-}  // namespace content
+}  // namespace network

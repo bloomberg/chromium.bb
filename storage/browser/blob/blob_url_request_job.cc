@@ -142,9 +142,9 @@ void BlobURLRequestJob::SetExtraRequestHeaders(
 scoped_refptr<net::HttpResponseHeaders> BlobURLRequestJob::GenerateHeaders(
     net::HttpStatusCode status_code,
     BlobDataHandle* blob_handle,
-    BlobReader* blob_reader,
     net::HttpByteRange* byte_range,
-    int64_t* content_size) {
+    uint64_t total_size,
+    uint64_t content_size) {
   std::string status("HTTP/1.1 ");
   status.append(base::IntToString(status_code));
   status.append(" ");
@@ -154,10 +154,9 @@ scoped_refptr<net::HttpResponseHeaders> BlobURLRequestJob::GenerateHeaders(
       new net::HttpResponseHeaders(status);
 
   if (status_code == net::HTTP_OK || status_code == net::HTTP_PARTIAL_CONTENT) {
-    *content_size = blob_reader->remaining_bytes();
     std::string content_length_header(net::HttpRequestHeaders::kContentLength);
     content_length_header.append(": ");
-    content_length_header.append(base::Int64ToString(*content_size));
+    content_length_header.append(base::Uint64ToString(content_size));
     headers->AddHeader(content_length_header);
     if (status_code == net::HTTP_PARTIAL_CONTENT) {
       DCHECK(byte_range->IsValid());
@@ -167,8 +166,7 @@ scoped_refptr<net::HttpResponseHeaders> BlobURLRequestJob::GenerateHeaders(
           "%" PRId64 "-%" PRId64, byte_range->first_byte_position(),
           byte_range->last_byte_position()));
       content_range_header.append("/");
-      content_range_header.append(
-          base::StringPrintf("%" PRId64, blob_reader->total_size()));
+      content_range_header.append(base::StringPrintf("%" PRId64, total_size));
       headers->AddHeader(content_range_header);
     }
     if (!blob_handle->content_type().empty()) {
@@ -323,12 +321,16 @@ void BlobURLRequestJob::NotifyFailure(int error_code) {
 }
 
 void BlobURLRequestJob::HeadersCompleted(net::HttpStatusCode status_code) {
-  int64_t content_size = 0;
+  uint64_t content_size = 0;
+  uint64_t total_size = 0;
+  if (status_code == net::HTTP_OK || status_code == net::HTTP_PARTIAL_CONTENT) {
+    content_size = blob_reader_->remaining_bytes();
+    set_expected_content_size(content_size);
+    total_size = blob_reader_->total_size();
+  }
   response_info_.reset(new net::HttpResponseInfo());
-  response_info_->headers =
-      GenerateHeaders(status_code, blob_handle_.get(), blob_reader_.get(),
-                      &byte_range_, &content_size);
-  set_expected_content_size(content_size);
+  response_info_->headers = GenerateHeaders(
+      status_code, blob_handle_.get(), &byte_range_, total_size, content_size);
   if (blob_reader_)
     response_info_->metadata = blob_reader_->side_data();
 

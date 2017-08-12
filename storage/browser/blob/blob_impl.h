@@ -20,6 +20,12 @@ class STORAGE_EXPORT BlobImpl : public mojom::Blob {
                                         mojom::BlobRequest request);
 
   void Clone(mojom::BlobRequest request) override;
+  void ReadRange(uint64_t offset,
+                 uint64_t length,
+                 mojo::ScopedDataPipeProducerHandle handle,
+                 mojom::BlobReaderClientPtr client) override;
+  void ReadAll(mojo::ScopedDataPipeProducerHandle handle,
+               mojom::BlobReaderClientPtr client) override;
   void GetInternalUUID(GetInternalUUIDCallback callback) override;
 
   void FlushForTesting();

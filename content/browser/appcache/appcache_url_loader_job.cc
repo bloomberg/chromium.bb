@@ -9,9 +9,9 @@
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/common/net_adapters.h"
 #include "content/public/common/resource_type.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/cpp/net_adapters.h"
 
 namespace content {
 
@@ -393,7 +393,7 @@ void AppCacheURLLoaderJob::ReadMore() {
 
   uint32_t num_bytes;
   // TODO: we should use the abstractions in MojoAsyncResourceHandler.
-  MojoResult result = NetToMojoPendingBuffer::BeginWrite(
+  MojoResult result = network::NetToMojoPendingBuffer::BeginWrite(
       &response_body_stream_, &pending_write_, &num_bytes);
   if (result == MOJO_RESULT_SHOULD_WAIT) {
     // The pipe is full. We need to wait for it to have more space.
@@ -410,8 +410,8 @@ void AppCacheURLLoaderJob::ReadMore() {
   }
 
   CHECK_GT(static_cast<uint32_t>(std::numeric_limits<int>::max()), num_bytes);
-  scoped_refptr<NetToMojoIOBuffer> buffer =
-      new NetToMojoIOBuffer(pending_write_.get());
+  auto buffer =
+      base::MakeRefCounted<network::NetToMojoIOBuffer>(pending_write_.get());
 
   reader_->ReadData(
       buffer.get(), info_->response_data_size(),

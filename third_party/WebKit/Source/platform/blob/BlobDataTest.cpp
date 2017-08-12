@@ -68,6 +68,18 @@ class MockBlob : public Blob {
                             std::move(request));
   }
 
+  void ReadRange(uint64_t offset,
+                 uint64_t length,
+                 mojo::ScopedDataPipeProducerHandle,
+                 storage::mojom::blink::BlobReaderClientPtr) override {
+    NOTREACHED();
+  }
+
+  void ReadAll(mojo::ScopedDataPipeProducerHandle,
+               storage::mojom::blink::BlobReaderClientPtr) override {
+    NOTREACHED();
+  }
+
   void GetInternalUUID(GetInternalUUIDCallback callback) override {
     std::move(callback).Run(uuid_);
   }

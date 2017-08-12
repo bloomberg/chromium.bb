@@ -22,11 +22,14 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
+namespace network {
+class NetToMojoPendingBuffer;
+}
+
 namespace content {
 
 class AppCacheRequest;
 class AppCacheURLLoaderRequest;
-class NetToMojoPendingBuffer;
 class URLLoaderFactoryGetter;
 
 // Holds information about the subresource load request like the routing id,
@@ -183,7 +186,7 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   // mojo data pipe entities.
   mojo::ScopedDataPipeProducerHandle response_body_stream_;
 
-  scoped_refptr<NetToMojoPendingBuffer> pending_write_;
+  scoped_refptr<network::NetToMojoPendingBuffer> pending_write_;
 
   mojo::SimpleWatcher writable_handle_watcher_;
 

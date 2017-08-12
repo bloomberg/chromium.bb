@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_NET_ADAPTERS_
-#define CONTENT_COMMON_NET_ADAPTERS_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_NET_ADAPTERS_
+#define SERVICES_NETWORK_PUBLIC_CPP_NET_ADAPTERS_
 
 #include <stdint.h>
 
@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/io_buffer.h"
 
-namespace content {
+namespace network {
 
 // These adapters are used to transfer data between a Mojo pipe and the net
 // library.
@@ -131,6 +131,6 @@ class MojoToNetIOBuffer : public net::WrappedIOBuffer {
   int bytes_to_be_read_;
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_COMMON_NET_ADAPTERS_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_NET_ADAPTERS_

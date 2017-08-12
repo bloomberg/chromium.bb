@@ -8,7 +8,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/common/loader_util.h"
-#include "content/common/net_adapters.h"
 #include "content/network/network_context.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_response.h"
@@ -19,6 +18,7 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/public/cpp/net_adapters.h"
 
 namespace content {
 
@@ -289,7 +289,7 @@ void URLLoaderImpl::ReadMore() {
   if (!pending_write_.get()) {
     // TODO: we should use the abstractions in MojoAsyncResourceHandler.
     pending_write_buffer_offset_ = 0;
-    MojoResult result = NetToMojoPendingBuffer::BeginWrite(
+    MojoResult result = network::NetToMojoPendingBuffer::BeginWrite(
         &response_body_stream_, &pending_write_, &pending_write_buffer_size_);
     if (result != MOJO_RESULT_OK && result != MOJO_RESULT_SHOULD_WAIT) {
       // The response body stream is in a bad state. Bail.
@@ -313,8 +313,8 @@ void URLLoaderImpl::ReadMore() {
     }
   }
 
-  scoped_refptr<net::IOBuffer> buf(new NetToMojoIOBuffer(
-      pending_write_.get(), pending_write_buffer_offset_));
+  auto buf = base::MakeRefCounted<network::NetToMojoIOBuffer>(
+      pending_write_.get(), pending_write_buffer_offset_);
   int bytes_read;
   url_request_->Read(buf.get(),
                      static_cast<int>(pending_write_buffer_size_ -
