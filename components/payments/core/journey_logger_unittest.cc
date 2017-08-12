@@ -338,6 +338,9 @@ TEST(JourneyLoggerTest,
   logger.SetRequestedInformation(
       /*requested_shipping=*/false, /*requested_email=*/false,
       /*requested_phone=*/false, /*requested_name=*/false);
+  logger.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for all the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_PAYMENT_METHOD, 1,
@@ -364,6 +367,9 @@ TEST(JourneyLoggerTest,
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
 }
 
 // Tests that the completion status metrics based on whether the user had
@@ -378,6 +384,9 @@ TEST(JourneyLoggerTest,
   logger.SetRequestedInformation(
       /*requested_shipping=*/false, /*requested_email=*/false,
       /*requested_phone=*/false, /*requested_name=*/false);
+  logger.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for all the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_PAYMENT_METHOD, 1,
@@ -404,6 +413,9 @@ TEST(JourneyLoggerTest,
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
 }
 
 // Tests that the completion status metrics based on whether the user had
@@ -418,6 +430,9 @@ TEST(JourneyLoggerTest,
   logger.SetRequestedInformation(
       /*requested_shipping=*/false, /*requested_email=*/false,
       /*requested_phone=*/false, /*requested_name=*/false);
+  logger.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for all the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_PAYMENT_METHOD, 1,
@@ -444,6 +459,9 @@ TEST(JourneyLoggerTest,
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
 }
 
 // Tests that the completion status metrics based on whether the user had
@@ -459,6 +477,9 @@ TEST(JourneyLoggerTest,
   logger.SetRequestedInformation(
       /*requested_shipping=*/false, /*requested_email=*/false,
       /*requested_phone=*/false, /*requested_name=*/false);
+  logger.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for all the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_PAYMENT_METHOD, 1,
@@ -485,6 +506,9 @@ TEST(JourneyLoggerTest,
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
 }
 
 // Tests that the completion status metrics based on whether the user had
@@ -499,6 +523,9 @@ TEST(JourneyLoggerTest,
   logger.SetRequestedInformation(
       /*requested_shipping=*/false, /*requested_email=*/false,
       /*requested_phone=*/false, /*requested_name=*/false);
+  logger.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for none of the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_PAYMENT_METHOD, 0,
@@ -525,6 +552,9 @@ TEST(JourneyLoggerTest,
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
 }
 
 // Tests that the completion status metrics based on whether the user had
@@ -539,6 +569,9 @@ TEST(JourneyLoggerTest,
   logger.SetRequestedInformation(
       /*requested_shipping=*/false, /*requested_email=*/false,
       /*requested_phone=*/false, /*requested_name=*/false);
+  logger.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for none of the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_PAYMENT_METHOD, 0,
@@ -565,6 +598,9 @@ TEST(JourneyLoggerTest,
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
 }
 
 // Tests that the completion status metrics based on whether the user had
@@ -579,6 +615,9 @@ TEST(JourneyLoggerTest,
   logger.SetRequestedInformation(
       /*requested_shipping=*/false, /*requested_email=*/false,
       /*requested_phone=*/false, /*requested_name=*/false);
+  logger.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for none of the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_PAYMENT_METHOD, 0,
@@ -605,6 +644,9 @@ TEST(JourneyLoggerTest,
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
 }
 
 // Tests that the completion status metrics based on whether the user had
@@ -620,6 +662,9 @@ TEST(JourneyLoggerTest,
   logger.SetRequestedInformation(
       /*requested_shipping=*/false, /*requested_email=*/false,
       /*requested_phone=*/false, /*requested_name=*/false);
+  logger.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for none of the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_PAYMENT_METHOD, 0,
@@ -646,6 +691,9 @@ TEST(JourneyLoggerTest,
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
 }
 
 // Tests that the completion status metrics based on whether the user had
@@ -661,6 +709,9 @@ TEST(
   logger.SetRequestedInformation(
       /*requested_shipping=*/false, /*requested_email=*/false,
       /*requested_phone=*/false, /*requested_name=*/false);
+  logger.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_other=*/false);
 
   // Simulate that the user had incomplete suggestions for the requested
   // sections.
@@ -688,6 +739,9 @@ TEST(
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
 }
 
 // Tests that the completion status metrics based on whether the user had
@@ -703,6 +757,9 @@ TEST(
   logger.SetRequestedInformation(
       /*requested_shipping=*/true, /*requested_email=*/false,
       /*requested_phone=*/false, /*requested_name=*/false);
+  logger.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_other=*/false);
 
   // Simulate that the user had incomplete suggestions for one of the requested
   // sections.
@@ -732,6 +789,9 @@ TEST(
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
 }
 
 // Tests that the completion status metrics based on whether the user had
@@ -747,6 +807,9 @@ TEST(
   logger.SetRequestedInformation(
       /*requested_shipping=*/true, /*requested_email=*/false,
       /*requested_phone=*/false, /*requested_name=*/false);
+  logger.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_other=*/false);
 
   // Simulate that the user had incomplete suggestions for one of the requested
   // sections.
@@ -776,6 +839,9 @@ TEST(
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
 }
 
 // Tests that the metrics are logged correctly for two simultaneous Payment
@@ -792,10 +858,16 @@ TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_TwoPaymentRequests) {
   logger1.SetRequestedInformation(
       /*requested_shipping=*/true, /*requested_email=*/true,
       /*requested_phone=*/false, /*requested_name=*/false);
+  logger1.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_other=*/true);
   logger2.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
   logger2.SetRequestedInformation(
       /*requested_shipping=*/true, /*requested_email=*/false,
       /*requested_phone=*/false, /*requested_name=*/false);
+  logger2.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/false, /*requested_method_google=*/false,
+      /*requested_method_other=*/true);
 
   logger1.SetCanMakePaymentValue(true);
 
@@ -827,6 +899,9 @@ TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_TwoPaymentRequests) {
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_TRUE);
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_FALSE);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
   // logger1
   EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_SHOWN);
   EXPECT_FALSE(buckets[1].min &
@@ -842,6 +917,9 @@ TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_TwoPaymentRequests) {
   EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
   EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_TRUE);
   EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_FALSE);
+  EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
 }
 
 // Tests that the Payment Request UKMs are logged correctly when the user aborts
@@ -857,6 +935,9 @@ TEST(JourneyLoggerTest,
   logger.SetRequestedInformation(
       /*requested_shipping=*/true, /*requested_email=*/true,
       /*requested_phone=*/false, /*requested_name=*/false);
+  logger.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/true, /*requested_method_google=*/false,
+      /*requested_method_other=*/false);
 
   // Simulate that the user aborts after being shown the Payment Request and
   // clicking pay.
@@ -886,7 +967,8 @@ TEST(JourneyLoggerTest,
   ASSERT_NE(nullptr, step_metric);
   EXPECT_EQ(JourneyLogger::EVENT_SHOWN | JourneyLogger::EVENT_PAY_CLICKED |
                 JourneyLogger::EVENT_REQUEST_SHIPPING |
-                JourneyLogger::EVENT_REQUEST_PAYER_EMAIL,
+                JourneyLogger::EVENT_REQUEST_PAYER_EMAIL |
+                JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD,
             step_metric->value);
 }
 
@@ -903,6 +985,9 @@ TEST(JourneyLoggerTest,
   logger.SetRequestedInformation(
       /*requested_shipping=*/true, /*requested_email=*/true,
       /*requested_phone=*/false, /*requested_name=*/false);
+  logger.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/true, /*requested_method_google=*/false,
+      /*requested_method_other=*/false);
 
   // Simulate that the user aborts after being shown the Payment Request.
   logger.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
@@ -928,7 +1013,8 @@ TEST(JourneyLoggerTest,
       ukm::TestUkmRecorder::FindMetric(entry, internal::kUKMEventsMetricName);
   ASSERT_NE(nullptr, step_metric);
   EXPECT_EQ(JourneyLogger::EVENT_SHOWN | JourneyLogger::EVENT_REQUEST_SHIPPING |
-                JourneyLogger::EVENT_REQUEST_PAYER_EMAIL,
+                JourneyLogger::EVENT_REQUEST_PAYER_EMAIL |
+                JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD,
             step_metric->value);
 }
 

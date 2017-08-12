@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "components/payments/content/can_make_payment_query_factory.h"
 #include "components/payments/content/origin_security_checker.h"
 #include "components/payments/content/payment_details_validation.h"
@@ -110,6 +111,30 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
   state_ = base::MakeUnique<PaymentRequestState>(
       spec_.get(), this, delegate_->GetApplicationLocale(),
       delegate_->GetPersonalDataManager(), delegate_.get(), &journey_logger_);
+
+  journey_logger_.SetRequestedInformation(
+      spec_->request_shipping(), spec_->request_payer_email(),
+      spec_->request_payer_phone(), spec_->request_payer_name());
+
+  // Log metrics around which payment methods are requested by the merchant.
+  GURL google_pay_url(kGooglePayMethodName);
+  GURL android_pay_url(kAndroidPayMethodName);
+  // Looking for payment methods that are NOT google-related payment methods.
+  auto non_google_it =
+      std::find_if(spec_->url_payment_method_identifiers().begin(),
+                   spec_->url_payment_method_identifiers().end(),
+                   [google_pay_url, android_pay_url](const GURL& url) {
+                     return url != google_pay_url && url != android_pay_url;
+                   });
+  journey_logger_.SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/!spec_->supported_card_networks().empty(),
+      /*requested_method_google=*/
+      base::ContainsValue(spec_->url_payment_method_identifiers(),
+                          google_pay_url) ||
+          base::ContainsValue(spec_->url_payment_method_identifiers(),
+                              android_pay_url),
+      /*requested_method_other=*/non_google_it !=
+          spec_->url_payment_method_identifiers().end());
 }
 
 void PaymentRequest::Show() {
@@ -124,7 +149,6 @@ void PaymentRequest::Show() {
     LOG(ERROR) << "A PaymentRequest UI is already showing";
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_CONCURRENT_REQUESTS);
-    has_recorded_completion_ = true;
     client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);
     OnConnectionTerminated();
     return;
@@ -133,7 +157,6 @@ void PaymentRequest::Show() {
   if (!state_->AreRequestedMethodsSupported()) {
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
-    has_recorded_completion_ = true;
     client_->OnError(mojom::PaymentErrorReason::NOT_SUPPORTED);
     if (observer_for_testing_)
       observer_for_testing_->OnNotSupportedError();
@@ -142,9 +165,6 @@ void PaymentRequest::Show() {
   }
 
   journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
-  journey_logger_.SetRequestedInformation(
-      spec_->request_shipping(), spec_->request_payer_email(),
-      spec_->request_payer_phone(), spec_->request_payer_name());
 
   delegate_->ShowDialog(this);
 }

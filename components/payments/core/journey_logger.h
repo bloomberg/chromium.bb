@@ -69,23 +69,44 @@ class JourneyLogger {
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: Event
   enum Event {
+    // Initiated means the PaymentRequest object was constructed.
     EVENT_INITIATED = 0,
+    // PaymentRequest was triggered via .show() and a native UI was shown.
     EVENT_SHOWN = 1 << 0,
     EVENT_PAY_CLICKED = 1 << 1,
     EVENT_RECEIVED_INSTRUMENT_DETAILS = 1 << 2,
+    // PaymentRequest was triggered via .show() and no UI was shown because we
+    // skipped directly to the payment app.
     EVENT_SKIPPED_SHOW = 1 << 3,
+    // .complete() was called by the merchant, completing the flow.
     EVENT_COMPLETED = 1 << 4,
+    // The user aborted the flow by either dismissing it explicitely, or
+    // navigating away (if possible).
     EVENT_USER_ABORTED = 1 << 5,
+    // Other reasons for aborting include the merchant calling .abort(), the
+    // merchant triggering a navigation, the tab closing, the browser closing,
+    // etc. See implementation for details.
     EVENT_OTHER_ABORTED = 1 << 6,
     EVENT_HAD_INITIAL_FORM_OF_PAYMENT = 1 << 7,
     EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS = 1 << 8,
+    // canMakePayment was called with a result of "true" or "false",
+    // respectively. An absence of both events means canMakePayment was not
+    // called, or the user was in incognito mode.
     EVENT_CAN_MAKE_PAYMENT_TRUE = 1 << 9,
     EVENT_CAN_MAKE_PAYMENT_FALSE = 1 << 10,
+    // Correspond to the merchant specifying requestShipping, requestPayerName,
+    // requestPayerEmail, requestPayerPhone.
     EVENT_REQUEST_SHIPPING = 1 << 11,
     EVENT_REQUEST_PAYER_NAME = 1 << 12,
     EVENT_REQUEST_PAYER_EMAIL = 1 << 13,
     EVENT_REQUEST_PAYER_PHONE = 1 << 14,
-    EVENT_ENUM_MAX = 32768,
+    // The merchant requested at least one basic-card method.
+    EVENT_REQUEST_METHOD_BASIC_CARD = 1 << 15,
+    // The merchant requested a Google payment method.
+    EVENT_REQUEST_METHOD_GOOGLE = 1 << 16,
+    // The merchant requested a non-Google, non-basic-card payment method.
+    EVENT_REQUEST_METHOD_OTHER = 1 << 17,
+    EVENT_ENUM_MAX = 262144,
   };
 
   // The reason why the Payment Request was aborted.
@@ -151,6 +172,14 @@ class JourneyLogger {
                                bool requested_email,
                                bool requested_phone,
                                bool requested_name);
+
+  // Records the requested payment method types. A value should be true if at
+  // least one payment method in the category (basic-card, google payment method
+  // or other url-based payment method, respectively) is requested.
+  // TODO(crbug.com/754811): Add support for non-basic-card, non-URL methods.
+  void SetRequestedPaymentMethodTypes(bool requested_basic_card,
+                                      bool requested_method_google,
+                                      bool requested_method_other);
 
   // Records that the Payment Request was completed successfully, and starts the
   // logging of all the journey metrics.

@@ -111,6 +111,16 @@ void JourneyLoggerAndroid::SetRequestedInformation(
                                           requested_phone, requested_name);
 }
 
+void JourneyLoggerAndroid::SetRequestedPaymentMethodTypes(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jboolean requested_basic_card,
+    jboolean requested_method_google,
+    jboolean requested_method_other) {
+  journey_logger_.SetRequestedPaymentMethodTypes(
+      requested_basic_card, requested_method_google, requested_method_other);
+}
+
 void JourneyLoggerAndroid::SetCompleted(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
