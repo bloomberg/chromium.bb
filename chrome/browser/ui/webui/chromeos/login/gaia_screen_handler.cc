@@ -331,6 +331,13 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
     params.SetString("enterpriseEnrollmentDomain",
                      enterprise_enrollment_domain);
   }
+  params.SetBoolean("enterpriseManagedDevice",
+                    g_browser_process->platform_part()
+                        ->browser_policy_connector_chromeos()
+                        ->IsEnterpriseManaged());
+  params.SetBoolean(
+      "hasDeviceOwner",
+      user_manager::UserManager::Get()->GetOwnerAccountId().is_valid());
 
   params.SetString("chromeType", GetChromeType());
   params.SetString("clientId",
