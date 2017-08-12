@@ -116,7 +116,7 @@ MultibufferDataSource::MultibufferDataSource(
       stop_signal_received_(false),
       media_has_played_(false),
       single_origin_(true),
-      cancel_on_defer_(true),
+      cancel_on_defer_(false),
       preload_(AUTO),
       bitrate_(0),
       playback_rate_(0.0),
@@ -414,7 +414,6 @@ void MultibufferDataSource::ReadTask() {
 }
 
 void MultibufferDataSource::StopInternal_Locked() {
-  DVLOG(1) << __func__;
   lock_.AssertAcquired();
   if (stop_signal_received_)
     return;
@@ -444,7 +443,6 @@ void MultibufferDataSource::SetBitrateTask(int bitrate) {
 /////////////////////////////////////////////////////////////////////////////
 // BufferedResourceLoader callback methods.
 void MultibufferDataSource::StartCallback() {
-  DVLOG(1) << __func__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (init_cb_.is_null()) {
@@ -495,8 +493,6 @@ void MultibufferDataSource::StartCallback() {
     media_log_->SetBooleanProperty("range_header_supported",
                                    url_data_->range_supported());
   }
-  if (!url_data_->range_supported())
-    cancel_on_defer_ = false;
 
   render_task_runner_->PostTask(
       FROM_HERE, base::Bind(base::ResetAndReturn(&init_cb_), success));
@@ -540,8 +536,7 @@ void MultibufferDataSource::UpdateLoadingState_Locked(bool force_loading) {
     bool loading = is_loading || force_loading;
 
     if (!loading && cancel_on_defer_) {
-      DVLOG(2) << "Cancel on defer";
-      if (read_op_ || !init_cb_.is_null()) {
+      if (read_op_) {
         // We can't destroy the reader if a read operation is pending.
         // UpdateLoadingState_Locked will be called again when the read
         // operation is done.
