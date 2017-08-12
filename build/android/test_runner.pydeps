@@ -71,6 +71,7 @@
 ../../third_party/catapult/devil/devil/utils/host_utils.py
 ../../third_party/catapult/devil/devil/utils/lazy/__init__.py
 ../../third_party/catapult/devil/devil/utils/lazy/weak_constant.py
+../../third_party/catapult/devil/devil/utils/logging_common.py
 ../../third_party/catapult/devil/devil/utils/lsusb.py
 ../../third_party/catapult/devil/devil/utils/parallelizer.py
 ../../third_party/catapult/devil/devil/utils/reraiser_thread.py
