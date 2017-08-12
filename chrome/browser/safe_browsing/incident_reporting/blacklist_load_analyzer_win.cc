@@ -22,7 +22,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome_elf/blacklist/blacklist.h"
-#include "components/safe_browsing/csd.pb.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 
 namespace safe_browsing {
 

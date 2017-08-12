@@ -6,7 +6,7 @@
 #define CHROME_COMMON_SAFE_BROWSING_DOWNLOAD_PROTECTION_UTIL_H_
 
 #include "base/files/file_path.h"
-#include "components/safe_browsing/csd.pb.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 
 namespace safe_browsing {
 namespace download_protection_util {
