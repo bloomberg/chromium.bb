@@ -8,6 +8,7 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/http/http_response_headers.h"
 
 namespace net {
 class URLRequest;
@@ -17,6 +18,7 @@ namespace content {
 
 class DownloadUrlParameters;
 struct ResourceRequest;
+struct DownloadSaveInfo;
 
 // Handle the url request completion status and return the interrupt reasons.
 // |cert_status| is ignored if error_code is not net::ERR_ABORTED.
@@ -29,8 +31,12 @@ std::unique_ptr<ResourceRequest> CONTENT_EXPORT CreateResourceRequest(
     DownloadUrlParameters* params);
 
 // Create a URLRequest from |params|.
-std::unique_ptr<net::URLRequest> CreateURLRequestOnIOThread(
+std::unique_ptr<net::URLRequest> CONTENT_EXPORT CreateURLRequestOnIOThread(
     DownloadUrlParameters* params);
+
+DownloadInterruptReason CONTENT_EXPORT
+HandleSuccessfulServerResponse(const net::HttpResponseHeaders& http_headers,
+                               DownloadSaveInfo* save_info);
 
 }  // namespace content
 

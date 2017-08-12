@@ -115,10 +115,6 @@ class CONTENT_EXPORT DownloadRequestCore
   net::URLRequest* request() const { return request_; }
 
  private:
-  static DownloadInterruptReason HandleSuccessfulServerResponse(
-      const net::HttpResponseHeaders& http_headers,
-      DownloadSaveInfo* save_info);
-
   std::unique_ptr<DownloadCreateInfo> CreateDownloadCreateInfo(
       DownloadInterruptReason result);
 
