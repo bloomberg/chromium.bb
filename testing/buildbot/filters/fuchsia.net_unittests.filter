@@ -32,6 +32,7 @@
 -TokenBindingURLRequest*
 -URLFetcher*
 -URLRequest*
+-HostResolverImplDnsTest.DnsTask
 
 # TODO(fuchsia): These run too slowly at present. crbug.com/745094
 -BbrSenderTest.*

@@ -4,8 +4,11 @@
 -Mojo*
 
 # These tests are slow and may flake under qemu. crbug.com/745094
--Pipeline*
+-*AesDecryptorTest.*
+-*SincResamplerTest*
+-AudioRendererAlgorithmTest.FillBuffer_LargeBufferSize
 -MediaRemotingIntegrationTest*
+-Pipeline*
 
 # These tests depend on base::CancelableSyncSocket, which is currently
 # broken, see https://crbug.com/741783
