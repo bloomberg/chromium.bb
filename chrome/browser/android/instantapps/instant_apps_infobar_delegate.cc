@@ -78,6 +78,17 @@ void InstantAppsInfoBarDelegate::DidFinishNavigation(
   }
 }
 
+bool InstantAppsInfoBarDelegate::ShouldExpire(
+    const NavigationDetails& details) const {
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
+  bool navigation_url_is_launch_url =
+      web_contents != NULL &&
+      web_contents->GetURL().EqualsIgnoringRef(GURL(url_));
+  return !navigation_url_is_launch_url &&
+         ConfirmInfoBarDelegate::ShouldExpire(details);
+}
+
 void Launch(JNIEnv* env,
             const base::android::JavaParamRef<jclass>& clazz,
             const base::android::JavaParamRef<jobject>& jweb_contents,
