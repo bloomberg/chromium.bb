@@ -89,7 +89,8 @@ class NewTabTrackerBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(NewTabTrackerBrowserTest, TestShowPromo) {
   // Bypassing the 2 hour active session time requirement.
-  EXPECT_CALL(*feature_engagement_tracker_, NotifyEvent(events::kSessionTime));
+  EXPECT_CALL(*feature_engagement_tracker_,
+              NotifyEvent(events::kNewTabSessionTimeMet));
   NewTabTrackerFactory::GetInstance()
       ->GetForProfile(browser()->profile())
       ->OnSessionTimeMet();

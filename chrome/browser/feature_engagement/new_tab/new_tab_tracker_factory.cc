@@ -6,6 +6,8 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
+#include "chrome/browser/feature_engagement/session_duration_updater.h"
+#include "chrome/browser/feature_engagement/session_duration_updater_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,6 +30,7 @@ NewTabTrackerFactory::NewTabTrackerFactory()
     : BrowserContextKeyedServiceFactory(
           "NewTabTracker",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(SessionDurationUpdaterFactory::GetInstance());
   DependsOn(TrackerFactory::GetInstance());
 }
 
@@ -35,7 +38,10 @@ NewTabTrackerFactory::~NewTabTrackerFactory() = default;
 
 KeyedService* NewTabTrackerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new NewTabTracker(Profile::FromBrowserContext(context));
+  return new NewTabTracker(
+      Profile::FromBrowserContext(context),
+      feature_engagement::SessionDurationUpdaterFactory::GetInstance()
+          ->GetForProfile(Profile::FromBrowserContext(context)));
 }
 
 content::BrowserContext* NewTabTrackerFactory::GetBrowserContextToUse(

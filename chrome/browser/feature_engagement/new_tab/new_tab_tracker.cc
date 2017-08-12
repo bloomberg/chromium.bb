@@ -14,8 +14,6 @@
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_service.h"
 
 namespace {
 
@@ -25,31 +23,21 @@ const int kTwoHoursInMinutes = 120;
 
 namespace feature_engagement {
 
-NewTabTracker::NewTabTracker(Profile* profile)
-    : profile_(profile), duration_tracker_observer_(this) {
-  AddDurationTrackerObserver();
-}
+NewTabTracker::NewTabTracker(Profile* profile,
+                             SessionDurationUpdater* session_duration_updater)
+    : FeatureTracker(profile, session_duration_updater) {}
 
-NewTabTracker::NewTabTracker() : NewTabTracker(nullptr) {}
+NewTabTracker::NewTabTracker(SessionDurationUpdater* session_duration_updater)
+    : NewTabTracker(nullptr, session_duration_updater) {}
 
 NewTabTracker::~NewTabTracker() = default;
 
-// static
-void NewTabTracker::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(prefs::kSessionTimeTotal, 0);
-}
-
 void NewTabTracker::OnNewTabOpened() {
-  GetFeatureTracker()->NotifyEvent(events::kNewTabOpened);
+  GetTracker()->NotifyEvent(events::kNewTabOpened);
 }
 
 void NewTabTracker::OnOmniboxNavigation() {
-  GetFeatureTracker()->NotifyEvent(events::kOmniboxInteraction);
-}
-
-void NewTabTracker::OnSessionTimeMet() {
-  GetFeatureTracker()->NotifyEvent(events::kSessionTime);
+  GetTracker()->NotifyEvent(events::kOmniboxInteraction);
 }
 
 void NewTabTracker::OnOmniboxFocused() {
@@ -58,61 +46,23 @@ void NewTabTracker::OnOmniboxFocused() {
 }
 
 void NewTabTracker::OnPromoClosed() {
-  GetFeatureTracker()->Dismissed(kIPHNewTabFeature);
+  GetTracker()->Dismissed(kIPHNewTabFeature);
 }
 
 bool NewTabTracker::ShouldShowPromo() {
-  return GetFeatureTracker()->ShouldTriggerHelpUI(kIPHNewTabFeature);
+  return GetTracker()->ShouldTriggerHelpUI(kIPHNewTabFeature);
 }
 
-void NewTabTracker::AddDurationTrackerObserver() {
-  duration_tracker_observer_.Add(metrics::DesktopSessionDurationTracker::Get());
+void NewTabTracker::OnSessionTimeMet() {
+  GetTracker()->NotifyEvent(events::kNewTabSessionTimeMet);
 }
 
-void NewTabTracker::RemoveDurationTrackerObserver() {
-  duration_tracker_observer_.Remove(
-      metrics::DesktopSessionDurationTracker::Get());
-}
-
-bool NewTabTracker::HasEnoughSessionTimeElapsed() {
-  return GetPrefs()->GetInteger(prefs::kSessionTimeTotal) >= kTwoHoursInMinutes;
+int NewTabTracker::GetSessionTimeRequiredToShowInMinutes() {
+  return kTwoHoursInMinutes;
 }
 
 void NewTabTracker::ShowPromo() {
   NewTabButton::ShowPromoForLastActiveBrowser();
-}
-
-Tracker* NewTabTracker::GetFeatureTracker() {
-  return TrackerFactory::GetForBrowserContext(profile_);
-}
-
-PrefService* NewTabTracker::GetPrefs() {
-  return profile_->GetPrefs();
-}
-
-void NewTabTracker::UpdateSessionTime(base::TimeDelta elapsed) {
-  // Session time does not need to be tracked anymore if the
-  // in-product help has been shown already.
-  // This prevents unnecessary interaction with prefs.
-  if (GetFeatureTracker()->GetTriggerState(kIPHNewTabFeature) ==
-      Tracker::TriggerState::HAS_BEEN_DISPLAYED) {
-    return;
-  }
-
-  base::TimeDelta elapsed_session_time;
-  elapsed_session_time += base::TimeDelta::FromMinutes(GetPrefs()->GetInteger(
-                              prefs::kSessionTimeTotal)) +
-                          elapsed;
-  GetPrefs()->SetInteger(prefs::kSessionTimeTotal,
-                         elapsed_session_time.InMinutes());
-}
-
-void NewTabTracker::OnSessionEnded(base::TimeDelta delta) {
-  UpdateSessionTime(delta);
-  if (HasEnoughSessionTimeElapsed()) {
-    OnSessionTimeMet();
-    RemoveDurationTrackerObserver();
-  }
 }
 
 }  // namespace feature_engagement

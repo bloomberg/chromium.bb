@@ -3875,8 +3875,11 @@ test("unit_tests") {
   }
 
   if ((is_linux && !is_chromeos) || is_win) {
-    sources +=
-        [ "../browser/feature_engagement/new_tab/new_tab_tracker_unittest.cc" ]
+    sources += [
+      "../browser/feature_engagement/feature_tracker_unittest.cc",
+      "../browser/feature_engagement/new_tab/new_tab_tracker_unittest.cc",
+      "../browser/feature_engagement/session_duration_updater_unittest.cc",
+    ]
     deps += [ "//components/feature_engagement/test:test_support" ]
   }
 
