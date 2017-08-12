@@ -58,10 +58,10 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump {
     // This bool is used by the pump when invoking the MxHandleWatcher callback,
     // and by the FdHandleWatchController when invoking read & write callbacks,
     // to cope with the possibility of the caller deleting the *Watcher within
-    // the callback. The pump sets |was_destroyed_| to a location on the stack,
+    // the callback. The pump sets |was_stopped_| to a location on the stack,
     // and the Watcher writes to it, if set, when deleted, allowing the pump
     // to check the value on the stack to short-cut any post-callback work.
-    bool* was_destroyed_ = nullptr;
+    bool* was_stopped_ = nullptr;
 
    protected:
     friend class MessagePumpFuchsia;
