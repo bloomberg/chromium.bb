@@ -390,21 +390,18 @@ class MultibufferDataSourceTest : public testing::Test {
   }
 
   void CheckCapacityDefer() {
-    if (loader()) {
-      EXPECT_EQ(2 << 20, preload_low());
-      EXPECT_EQ(3 << 20, preload_high());
-    } else {
-      EXPECT_EQ(preload(), MultibufferDataSource::AUTO);
-    }
+    EXPECT_EQ(2 << 20, preload_low());
+    EXPECT_EQ(3 << 20, preload_high());
   }
 
   void CheckReadThenDefer() {
-    if (loader()) {
-      EXPECT_EQ(0, preload_low());
-      EXPECT_EQ(0, preload_high());
-    } else {
-      EXPECT_EQ(preload(), MultibufferDataSource::METADATA);
-    }
+    EXPECT_EQ(0, preload_low());
+    EXPECT_EQ(0, preload_high());
+  }
+
+  void CheckNeverDefer() {
+    EXPECT_EQ(1LL << 40, preload_low());
+    EXPECT_EQ(1LL << 40, preload_high());
   }
 
   // Accessors for private variables on |data_source_|.
@@ -1189,20 +1186,15 @@ TEST_F(MultibufferDataSourceTest, ExternalResource_Response206_VerifyDefer) {
   set_preload(MultibufferDataSource::METADATA);
   InitializeWith206Response();
 
-  data_source_->MediaIsPlaying();
-  data_source_->SetPreload(MultibufferDataSource::METADATA);
+  EXPECT_EQ(MultibufferDataSource::METADATA, preload());
   EXPECT_FALSE(is_local_source());
   EXPECT_TRUE(data_source_->range_supported());
   CheckReadThenDefer();
 
-  // Read next block. (Needed to start up the loader again.)
+  // Read a bit from the beginning.
   EXPECT_CALL(*this, ReadCallback(kDataSize));
-  ReadAt(kDataSize);
-  Respond(response_generator_->Generate206(kDataSize));
-  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
-  ReceiveData(kDataSize);
+  ReadAt(0);
 
-  // After reading, we should be in a deferred state.
   ASSERT_TRUE(active_loader());
   EXPECT_TRUE(data_provider()->deferred());
 }
