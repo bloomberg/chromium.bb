@@ -125,7 +125,6 @@ static_library("lib") {
 
   deps = [
     "//components/viz/host",
-    "//components/viz/host/hit_test",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc/client",
