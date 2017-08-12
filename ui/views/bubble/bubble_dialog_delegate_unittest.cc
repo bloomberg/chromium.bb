@@ -13,6 +13,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/views_test_base.h"
@@ -58,6 +59,7 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
 
   using BubbleDialogDelegateView::SetAnchorRect;
   using BubbleDialogDelegateView::GetBubbleFrameView;
+  using BubbleDialogDelegateView::SizeToContents;
 
  private:
   View* view_;
@@ -382,6 +384,39 @@ TEST_F(BubbleDialogDelegateTest, CustomTitle) {
   EXPECT_EQ(close_button->x() - LayoutProvider::Get()->GetDistanceMetric(
                                     DISTANCE_CLOSE_BUTTON_MARGIN),
             title_view->bounds().right());
+}
+
+// Ensure the BubbleFrameView correctly resizes when the title is provided by a
+// StyledLabel.
+TEST_F(BubbleDialogDelegateTest, StyledLabelTitle) {
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
+  TestBubbleDialogDelegateView* bubble_delegate =
+      new TestBubbleDialogDelegateView(anchor_widget->GetContentsView());
+  StyledLabel* title_view = new StyledLabel(base::ASCIIToUTF16("123"), nullptr);
+  bubble_delegate->set_title_view(title_view);
+
+  Widget* bubble_widget =
+      BubbleDialogDelegateView::CreateBubble(bubble_delegate);
+  bubble_widget->Show();
+
+  const gfx::Size size_before_new_title =
+      bubble_widget->GetWindowBoundsInScreen().size();
+  title_view->SetText(base::ASCIIToUTF16("12"));
+  bubble_delegate->SizeToContents();
+
+  // A shorter title should change nothing, since both will be within the
+  // minimum dialog width.
+  EXPECT_EQ(size_before_new_title,
+            bubble_widget->GetWindowBoundsInScreen().size());
+
+  title_view->SetText(base::UTF8ToUTF16(std::string(200, '0')));
+  bubble_delegate->SizeToContents();
+
+  // A (much) longer title should increase the height, but not the width.
+  EXPECT_EQ(size_before_new_title.width(),
+            bubble_widget->GetWindowBoundsInScreen().width());
+  EXPECT_LT(size_before_new_title.height(),
+            bubble_widget->GetWindowBoundsInScreen().height());
 }
 
 }  // namespace views
