@@ -177,7 +177,9 @@ void AppListPresenterImpl::ScheduleAnimation() {
   views::Widget* widget = view_->GetWidget();
   ui::Layer* layer = GetLayer(widget);
   layer->GetAnimator()->StopAnimating();
-  gfx::Rect target_bounds = widget->GetWindowBoundsInScreen();
+  gfx::Rect target_bounds = is_fullscreen_app_list_enabled_
+                                ? widget->GetNativeView()->bounds()
+                                : widget->GetWindowBoundsInScreen();
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   aura::Window* root_window = widget->GetNativeView()->GetRootWindow();
   const gfx::Vector2d offset =
@@ -200,6 +202,10 @@ void AppListPresenterImpl::ScheduleAnimation() {
 
   animation.AddObserver(this);
   layer->SetOpacity(is_visible_ ? 1.0 : 0.0);
+  if (is_fullscreen_app_list_enabled_) {
+    widget->GetNativeView()->SetBounds(target_bounds);
+    return;
+  }
   widget->SetBounds(target_bounds);
 }
 
