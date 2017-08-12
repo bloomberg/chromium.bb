@@ -40,7 +40,7 @@ int AppCacheUpdateJob::UpdateURLLoaderRequest::GetLoadFlags() const {
 }
 
 std::string AppCacheUpdateJob::UpdateURLLoaderRequest::GetMimeType() const {
-  return response_->mime_type;
+  return response_.mime_type;
 }
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::SetSiteForCookies(
@@ -55,12 +55,12 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::SetInitiator(
 
 net::HttpResponseHeaders*
 AppCacheUpdateJob::UpdateURLLoaderRequest::GetResponseHeaders() const {
-  return response_->headers.get();
+  return response_.headers.get();
 }
 
 int AppCacheUpdateJob::UpdateURLLoaderRequest::GetResponseCode() const {
-  if (response_->headers)
-    return response_->headers->response_code();
+  if (response_.headers)
+    return response_.headers->response_code();
   return 0;
 }
 
@@ -82,7 +82,7 @@ int AppCacheUpdateJob::UpdateURLLoaderRequest::Cancel() {
   url_loader_ = nullptr;
   handle_watcher_.Cancel();
   handle_.reset();
-  response_.reset(nullptr);
+  response_ = ResourceResponseHead();
   http_response_info_.reset(nullptr);
   read_requested_ = false;
   return 0;
@@ -92,8 +92,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveResponse(
     const ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
-  response_.reset(new ResourceResponseHead());
-  *response_ = response_head;
+  response_ = response_head;
 
   // TODO(ananta/michaeln)
   // Populate other fields in the HttpResponseInfo class. It would be good to
@@ -116,7 +115,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveResponse(
 void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const ResourceResponseHead& response_head) {
-  *response_ = response_head;
+  response_ = response_head;
   fetcher_->OnReceivedRedirect(redirect_info);
 }
 
