@@ -18,16 +18,19 @@ MessagePumpFuchsia::MxHandleWatchController::MxHandleWatchController(
 MessagePumpFuchsia::MxHandleWatchController::~MxHandleWatchController() {
   if (!StopWatchingMxHandle())
     NOTREACHED();
-  if (was_destroyed_) {
-    DCHECK(!*was_destroyed_);
-    *was_destroyed_ = true;
-  }
 }
 
 bool MessagePumpFuchsia::MxHandleWatchController::StopWatchingMxHandle() {
-  // Clear |persistent_| flag, so that if we are stopped mid-callback, we
-  // won't re-instate the wait operation.
-  persistent_ = false;
+  if (was_stopped_) {
+    DCHECK(!*was_stopped_);
+    *was_stopped_ = true;
+
+    // |was_stopped_| points at a value stored on the stack, which will go out
+    // of scope. MessagePumpFuchsia::Run() will reset it only if the value is
+    // false. So we need to reset this pointer here as well, to make sure it's
+    // not used again.
+    was_stopped_ = nullptr;
+  }
 
   // If the pump is gone, or we haven't begun waiting, then there is nothing
   // to cancel.
@@ -50,17 +53,17 @@ void MessagePumpFuchsia::FdWatchController::OnMxHandleSignalled(
   uint32_t events;
   __mxio_wait_end(io_, signals, &events);
 
-  // Each |watcher_| callback we invoke may delete |this| from under us. The
-  // pump has set |was_destroyed_| to point to a safe location on the calling
-  // stack, so we can use that to detect deletion mid-callback avoid doing
-  // further work that would touch |this|.
-  bool* was_destroyed = was_destroyed_;
+  // Each |watcher_| callback we invoke may stop or delete |this|. The pump has
+  // set |was_stopped_| to point to a safe location on the calling stack, so we
+  // can use that to detect being stopped mid-callback and avoid doing further
+  // work that would touch |this|.
+  bool* was_stopped = was_stopped_;
   if (events & MXIO_EVT_WRITABLE)
     watcher_->OnFileCanWriteWithoutBlocking(fd_);
-  if (!*was_destroyed && (events & MXIO_EVT_READABLE))
+  if (!*was_stopped && (events & MXIO_EVT_READABLE))
     watcher_->OnFileCanReadWithoutBlocking(fd_);
 
-  // Don't add additional work here without checking |*was_destroyed_| again.
+  // Don't add additional work here without checking |*was_stopped_| again.
 }
 
 MessagePumpFuchsia::FdWatchController::FdWatchController(
@@ -247,18 +250,18 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
 
       mx_signals_t signals = controller->WaitEnd(packet.signal.observed);
 
-      // In the case of a persistent Watch, the Watch may be deleted by the
-      // caller within the callback, in which case |controller| is no longer
-      // valid, and we mustn't continue the watch. We check for this with a bool
-      // on the stack, which the Watch receives a pointer to, to set it so we
-      // can detect destruction.
-      bool controller_was_destroyed = false;
-      controller->was_destroyed_ = &controller_was_destroyed;
+      // In the case of a persistent Watch, the Watch may be stopped and
+      // potentially deleted by the caller within the callback, in which case
+      // |controller| should not be accessed again, and we mustn't continue the
+      // watch. We check for this with a bool on the stack, which the Watch
+      // receives a pointer to.
+      bool controller_was_stopped = false;
+      controller->was_stopped_ = &controller_was_stopped;
 
       controller->watcher_->OnMxHandleSignalled(controller->handle_, signals);
 
-      if (!controller_was_destroyed) {
-        controller->was_destroyed_ = nullptr;
+      if (!controller_was_stopped) {
+        controller->was_stopped_ = nullptr;
         if (controller->persistent_)
           controller->WaitBegin();
       }

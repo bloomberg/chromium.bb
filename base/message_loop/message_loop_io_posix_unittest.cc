@@ -36,26 +36,10 @@ class MessageLoopForIoPosixTest : public testing::Test {
     int err = pipe(pipefds);
     ASSERT_EQ(0, err);
     read_fd_ = ScopedFD(pipefds[0]);
-    ASSERT_TRUE(SetNonBlocking(read_fd_.get()));
     write_fd_ = ScopedFD(pipefds[1]);
   }
 
   void TriggerReadEvent() {
-    // First empty the pipe buffer.
-    while (true) {
-      char c;
-      int result = HANDLE_EINTR(read(read_fd_.get(), &c, 1));
-      if (result == -1) {
-        if (errno != EWOULDBLOCK) {
-          PLOG(ERROR) << "read";
-          FAIL();
-        }
-        break;
-      }
-
-      EXPECT_GT(result, 0);
-    };
-
     // Write from the other end of the pipe to trigger the event.
     char c = '\0';
     EXPECT_EQ(1, HANDLE_EINTR(write(write_fd_.get(), &c, 1)));
@@ -87,20 +71,49 @@ class TestHandler : public MessageLoopForIO::Watcher {
   std::unique_ptr<MessageLoopForIO::FileDescriptorWatcher> watcher_to_delete_;
 };
 
-// Watcher that calls specified closures when read/write events occur.
+// Watcher that calls specified closures when read/write events occur. Verifies
+// that each non-null closure passed to this class is called once and only once.
+// Also resets the read event by reading from the FD.
 class CallClosureHandler : public MessageLoopForIO::Watcher {
  public:
   CallClosureHandler(OnceClosure read_closure, OnceClosure write_closure)
       : read_closure_(std::move(read_closure)),
         write_closure_(std::move(write_closure)) {}
 
-  ~CallClosureHandler() override {}
+  ~CallClosureHandler() override {
+    EXPECT_TRUE(read_closure_.is_null());
+    EXPECT_TRUE(write_closure_.is_null());
+  }
 
-  // base:MessagePumpFuchsia::Watcher interface
+  void SetReadClosure(OnceClosure read_closure) {
+    EXPECT_TRUE(read_closure_.is_null());
+    read_closure_ = std::move(read_closure);
+  }
+
+  void SetWriteClosure(OnceClosure write_closure) {
+    EXPECT_TRUE(write_closure_.is_null());
+    write_closure_ = std::move(write_closure);
+  }
+
+  // base:MessagePumpFuchsia::Watcher interface.
   void OnFileCanReadWithoutBlocking(int fd) override {
+    // Empty the pipe buffer to reset the event. Otherwise libevent
+    // implementation of MessageLoop may call the event handler again even if
+    // |read_closure_| below quits the RunLoop.
+    char c;
+    int result = HANDLE_EINTR(read(fd, &c, 1));
+    if (result == -1) {
+      PLOG(ERROR) << "read";
+      FAIL();
+    }
+    EXPECT_EQ(result, 1);
+
+    ASSERT_FALSE(read_closure_.is_null());
     std::move(read_closure_).Run();
   }
+
   void OnFileCanWriteWithoutBlocking(int fd) override {
+    ASSERT_FALSE(write_closure_.is_null());
     std::move(write_closure_).Run();
   }
 
@@ -236,6 +249,92 @@ TEST_F(MessageLoopForIoPosixTest, StopFromHandler) {
   // Trigger the event again. The event handler should not be called again.
   TriggerReadEvent();
   RunLoop().RunUntilIdle();
+}
+
+// Verify that non-persistent watcher is called only once.
+TEST_F(MessageLoopForIoPosixTest, NonPersistentWatcher) {
+  MessageLoopForIO message_loop;
+  MessageLoopForIO::FileDescriptorWatcher watcher(FROM_HERE);
+
+  RunLoop run_loop;
+  CallClosureHandler handler(run_loop.QuitClosure(), OnceClosure());
+
+  // Create a non-persistent watcher.
+  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
+      read_fd_.get(), /* persistent= */ false, MessageLoopForIO::WATCH_READ,
+      &watcher, &handler));
+
+  TriggerReadEvent();
+  run_loop.Run();
+
+  // Trigger the event again. handler should not be called again.
+  TriggerReadEvent();
+  RunLoop().RunUntilIdle();
+}
+
+// Verify that persistent watcher is called every time the event is triggered.
+TEST_F(MessageLoopForIoPosixTest, PersistentWatcher) {
+  MessageLoopForIO message_loop;
+  MessageLoopForIO::FileDescriptorWatcher watcher(FROM_HERE);
+
+  RunLoop run_loop1;
+  CallClosureHandler handler(run_loop1.QuitClosure(), OnceClosure());
+
+  // Create persistent watcher.
+  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
+      read_fd_.get(), /* persistent= */ true, MessageLoopForIO::WATCH_READ,
+      &watcher, &handler));
+
+  TriggerReadEvent();
+  run_loop1.Run();
+
+  RunLoop run_loop2;
+  handler.SetReadClosure(run_loop2.QuitClosure());
+
+  // Trigger the event again. handler should be called now, which will quit
+  // run_loop2.
+  TriggerReadEvent();
+  run_loop2.Run();
+}
+
+void StopWatchingAndWatchAgain(
+    MessageLoopForIO::FileDescriptorWatcher* controller,
+    int fd,
+    MessageLoopForIO::Watcher* new_handler,
+    RunLoop* run_loop) {
+  controller->StopWatchingFileDescriptor();
+
+  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
+      fd, /* persistent= */ true, MessageLoopForIO::WATCH_READ, controller,
+      new_handler));
+
+  run_loop->Quit();
+}
+
+// Verify that a watcher can be stopped and reused from an event handler.
+TEST_F(MessageLoopForIoPosixTest, StopAndRestartFromHandler) {
+  MessageLoopForIO message_loop;
+  MessageLoopForIO::FileDescriptorWatcher watcher(FROM_HERE);
+
+  RunLoop run_loop1;
+  RunLoop run_loop2;
+  CallClosureHandler handler2(run_loop2.QuitClosure(), OnceClosure());
+  CallClosureHandler handler1(BindOnce(&StopWatchingAndWatchAgain, &watcher,
+                                       read_fd_.get(), &handler2, &run_loop1),
+                              OnceClosure());
+
+  // Create persistent watcher.
+  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
+      read_fd_.get(), /* persistent= */ true, MessageLoopForIO::WATCH_READ,
+      &watcher, &handler1));
+
+  TriggerReadEvent();
+  run_loop1.Run();
+
+  // Trigger the event again. handler2 should be called now, which will quit
+  // run_loop2
+  TriggerReadEvent();
+  run_loop2.Run();
 }
 
 }  // namespace
