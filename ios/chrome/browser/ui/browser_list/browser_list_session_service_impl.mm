@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/shared/chrome/browser/ui/browser_list/browser_list_session_service_impl.h"
+#import "ios/chrome/browser/ui/browser_list/browser_list_session_service_impl.h"
 
 #include <map>
 
@@ -14,12 +14,12 @@
 #import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
+#import "ios/chrome/browser/ui/browser_list/browser.h"
+#import "ios/chrome/browser/ui/browser_list/browser_list.h"
+#import "ios/chrome/browser/ui/browser_list/browser_list_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
-#import "ios/shared/chrome/browser/ui/browser_list/browser.h"
-#import "ios/shared/chrome/browser/ui/browser_list/browser_list.h"
-#import "ios/shared/chrome/browser/ui/browser_list/browser_list_observer.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"

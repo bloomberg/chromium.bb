@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/shared/chrome/browser/ui/browser_list/browser_list_session_service_factory.h"
+#import "ios/chrome/browser/ui/browser_list/browser_list_session_service_factory.h"
 
 #include <memory>
 
@@ -16,8 +16,8 @@
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
-#import "ios/shared/chrome/browser/ui/browser_list/browser_list.h"
-#import "ios/shared/chrome/browser/ui/browser_list/browser_list_session_service_impl.h"
+#import "ios/chrome/browser/ui/browser_list/browser_list.h"
+#import "ios/chrome/browser/ui/browser_list/browser_list_session_service_impl.h"
 #import "ios/web/public/certificate_policy_cache.h"
 #import "ios/web/public/web_state/session_certificate_policy_cache.h"
 

@@ -16,10 +16,10 @@ source_set("tools") {
   deps = [
     ":tools_ui",
     "//base",
+    "//ios/chrome/browser/ui/browser_list",
     "//ios/chrome/browser/ui/tools_menu:configuration",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/transitions",
-    "//ios/shared/chrome/browser/ui/browser_list",
     "//ios/shared/chrome/browser/ui/coordinators",
     "//ios/web",
     "//ui/base",

@@ -8,13 +8,4 @@ source_set("settings") {
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
-
-  deps = [
-    # "//base",
-    # "//ios/chrome/app:tests_fake_hook",
-    # "//ios/chrome/browser",
-    # "//ios/chrome/browser/browser_state",
-    # "//ios/chrome/browser/tabs:tabs_internal",
-    # "//ios/shared/chrome/browser/ui/browser_list",
-  ]
 }

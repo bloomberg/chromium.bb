@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_SESSION_SERVICE_H_
-#define IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_SESSION_SERVICE_H_
+#ifndef IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_SESSION_SERVICE_H_
+#define IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_SESSION_SERVICE_H_
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -31,4 +31,4 @@ class BrowserListSessionService : public KeyedService {
   DISALLOW_COPY_AND_ASSIGN(BrowserListSessionService);
 };
 
-#endif  // IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_SESSION_SERVICE_H_
+#endif  // IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_SESSION_SERVICE_H_

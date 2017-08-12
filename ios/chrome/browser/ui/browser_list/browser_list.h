@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_H_
-#define IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_H_
+#ifndef IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_H_
+#define IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_H_
 
 #include <memory>
 #include <vector>
@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
-#include "ios/shared/chrome/browser/ui/browser_list/browser.h"
+#include "ios/chrome/browser/ui/browser_list/browser.h"
 
 class BrowserListObserver;
 
@@ -60,4 +60,4 @@ class BrowserList : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(BrowserList);
 };
 
-#endif  // IOS_SHARED_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_H_
+#endif  // IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_H_

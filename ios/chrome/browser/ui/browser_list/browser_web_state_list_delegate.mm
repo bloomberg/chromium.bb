@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/shared/chrome/browser/ui/browser_list/browser_web_state_list_delegate.h"
+#import "ios/chrome/browser/ui/browser_list/browser_web_state_list_delegate.h"
 
 #include "base/logging.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"

@@ -4,10 +4,10 @@
 
 #import "ios/clean/chrome/browser/ui/context_menu/context_menu_mediator.h"
 
+#import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/clean/chrome/browser/ui/commands/context_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/context_menu/context_menu_consumer.h"
 #import "ios/clean/chrome/browser/ui/context_menu/context_menu_context_impl.h"
-#import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/web/public/url_scheme_util.h"
 #include "url/gurl.h"
 

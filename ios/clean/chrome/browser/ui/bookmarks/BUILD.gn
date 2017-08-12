@@ -13,7 +13,7 @@ source_set("bookmarks") {
   deps = [
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/bookmarks",
-    "//ios/shared/chrome/browser/ui/browser_list",
+    "//ios/chrome/browser/ui/browser_list",
     "//ios/shared/chrome/browser/ui/coordinators",
   ]
 }

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/shared/chrome/browser/ui/browser_list/browser_list.h"
+#import "ios/chrome/browser/ui/browser_list/browser_list.h"
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/shared/chrome/browser/ui/browser_list/browser_list_observer.h"
+#import "ios/chrome/browser/ui/browser_list/browser_list_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

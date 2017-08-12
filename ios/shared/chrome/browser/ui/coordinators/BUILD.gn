@@ -17,7 +17,7 @@ source_set("coordinators") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/tabs:tabs_internal",
-    "//ios/shared/chrome/browser/ui/browser_list",
+    "//ios/chrome/browser/ui/browser_list",
   ]
 }
 
@@ -34,7 +34,7 @@ source_set("test_support") {
     ":coordinators",
     "//base",
     "//ios/chrome/browser/browser_state:test_support",
-    "//ios/shared/chrome/browser/ui/browser_list",
+    "//ios/chrome/browser/ui/browser_list",
     "//testing/gtest",
   ]
 }
