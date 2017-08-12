@@ -20,6 +20,10 @@
   padding: 0;
 }
 
+.update-illustration {
+  padding-bottom: 10px;
+}
+
 paper-progress {
   --paper-progress-active-color: var(--google-blue-500);
   --paper-progress-secondary-color: var(--google-blue-100);
