@@ -78,17 +78,18 @@ std::unique_ptr<SearchController> CreateSearchController(
           model->search_box(), model->results(),
           HistoryFactory::GetForBrowserContext(profile));
 
-  // Add mixer groups. There are three main groups: apps, webstore and
-  // omnibox. Each group has a "soft" maximum number of results. However, if
+  // Add mixer groups. There are four main groups: answer card, apps, webstore
+  // and omnibox. Each group has a "soft" maximum number of results. However, if
   // a query turns up very few results, the mixer may take more than this
   // maximum from a particular group.
 
-  // Multiplier 100 is used because the answer card is designed to be the most
-  // relevant result and must be on the top of the result list.
-  size_t answer_card_group_id = controller->AddGroup(1, 100.0);
-  size_t apps_group_id = controller->AddGroup(kMaxAppsGroupResults, 1.0);
-  size_t omnibox_group_id = controller->AddGroup(kMaxOmniboxResults, 1.0);
-  size_t webstore_group_id = controller->AddGroup(kMaxWebstoreResults, 0.4);
+  size_t answer_card_group_id = controller->AddGroup(1, 1.0, 10.0);
+  size_t apps_group_id =
+      controller->AddGroup(kMaxAppsGroupResults, 1.0,
+                           features::IsFullscreenAppListEnabled() ? 5.0 : 0.0);
+  size_t omnibox_group_id = controller->AddGroup(kMaxOmniboxResults, 1.0, 0.0);
+  size_t webstore_group_id =
+      controller->AddGroup(kMaxWebstoreResults, 0.4, 0.0);
 
   // Add search providers.
   controller->AddProvider(
@@ -112,7 +113,7 @@ std::unique_ptr<SearchController> CreateSearchController(
   }
   if (IsSuggestionsSearchProviderEnabled()) {
     size_t suggestions_group_id =
-        controller->AddGroup(kMaxSuggestionsResults, 1.0);
+        controller->AddGroup(kMaxSuggestionsResults, 1.0, 0.0);
     controller->AddProvider(
         suggestions_group_id,
         base::MakeUnique<SuggestionsSearchProvider>(profile, list_controller));
@@ -123,7 +124,7 @@ std::unique_ptr<SearchController> CreateSearchController(
   if (app_list::switches::IsDriveSearchInChromeLauncherEnabled() &&
       !profile->IsGuestSession()) {
     size_t search_api_group_id =
-        controller->AddGroup(kMaxLauncherSearchResults, 1.0);
+        controller->AddGroup(kMaxLauncherSearchResults, 1.0, 0.0);
     controller->AddProvider(search_api_group_id,
                             base::MakeUnique<LauncherSearchProvider>(profile));
   }
@@ -131,7 +132,7 @@ std::unique_ptr<SearchController> CreateSearchController(
 #if defined(OS_CHROMEOS)
   if (features::IsPlayStoreAppSearchEnabled()) {
     size_t playstore_api_group_id =
-        controller->AddGroup(kMaxPlayStoreResults, 1.0);
+        controller->AddGroup(kMaxPlayStoreResults, 1.0, 0.0);
     controller->AddProvider(
         playstore_api_group_id,
         base::MakeUnique<ArcPlayStoreSearchProvider>(kMaxPlayStoreResults,

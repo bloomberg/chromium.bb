@@ -131,9 +131,12 @@ class MixerTest : public testing::Test {
 
     mixer_.reset(new Mixer(results_.get()));
 
-    size_t apps_group_id = mixer_->AddGroup(kMaxAppsGroupResults, 1.0);
-    size_t omnibox_group_id = mixer_->AddGroup(kMaxOmniboxResults, 1.0);
-    size_t webstore_group_id = mixer_->AddGroup(kMaxWebstoreResults, 0.5);
+    // TODO(warx): when fullscreen app list is default enabled, modify this test
+    // to (1) test answer card/apps group having relevance boost, (2) remove
+    // known results boost tests.
+    size_t apps_group_id = mixer_->AddGroup(kMaxAppsGroupResults, 1.0, 0.0);
+    size_t omnibox_group_id = mixer_->AddGroup(kMaxOmniboxResults, 1.0, 0.0);
+    size_t webstore_group_id = mixer_->AddGroup(kMaxWebstoreResults, 0.5, 0.0);
 
     mixer_->AddProviderToGroup(apps_group_id, providers_[0].get());
     mixer_->AddProviderToGroup(omnibox_group_id, providers_[1].get());

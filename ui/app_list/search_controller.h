@@ -42,7 +42,7 @@ class APP_LIST_EXPORT SearchController {
                           int event_flags);
 
   // Adds a new mixer group. See Mixer::AddGroup.
-  size_t AddGroup(size_t max_results, double multiplier);
+  size_t AddGroup(size_t max_results, double multiplier, double boost);
 
   // Takes ownership of |provider| and associates it with given mixer group.
   void AddProvider(size_t group_id, std::unique_ptr<SearchProvider> provider);
