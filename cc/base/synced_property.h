@@ -62,31 +62,39 @@ class SyncedProperty : public base::RefCounted<SyncedProperty<T>> {
   }
 
   // Push the latest value from the main thread onto pending tree-associated
-  // state.  Returns true if this had any effect.
-  bool PushFromMainThread(typename T::ValueType main_thread_value) {
-    bool changed = pending_base_.get() != main_thread_value;
-
+  // state. Returns true if pushing the value results in different values
+  // between the main layer tree and the pending tree.
+  bool PushMainToPending(typename T::ValueType main_thread_value) {
     reflected_delta_in_pending_tree_ = reflected_delta_in_main_tree_;
     reflected_delta_in_main_tree_ = T::Identity();
     pending_base_ = T(main_thread_value);
 
-    return changed;
+    return Current(false) != main_thread_value;
   }
 
   // Push the value associated with the pending tree to be the active base
-  // value.  As part of this, subtract the delta reflected in the pending tree
+  // value. As part of this, subtract the delta reflected in the pending tree
   // from the active tree delta (which will make the delta zero at steady state,
   // or make it contain only the difference since the last send).
+  // Returns true if pushing the update results in:
+  // 1) Different values on the pending tree and the active tree.
+  // 2) An update to the current value on the active tree.
+  // The reason for considering the second case only when pushing to the active
+  // tree, as opposed to when pushing to the pending tree, is that only the
+  // active tree computes state using this value which is not computed on the
+  // pending tree and not pushed during activation (aka scrollbar geometries).
   bool PushPendingToActive() {
-    bool changed = active_base_.get() != pending_base_.get() ||
-                   active_delta_.get() != PendingDelta().get();
+    typename T::ValueType pending_value_before_push = Current(false);
+    typename T::ValueType active_value_before_push = Current(true);
 
     active_base_ = pending_base_;
     active_delta_ = PendingDelta();
     reflected_delta_in_pending_tree_ = T::Identity();
     clobber_active_value_ = false;
 
-    return changed;
+    typename T::ValueType current_active_value = Current(true);
+    return pending_value_before_push != current_active_value ||
+           active_value_before_push != current_active_value;
   }
 
   // This simulates the consequences of the sent value getting committed and

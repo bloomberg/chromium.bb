@@ -4979,7 +4979,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   DrawFrame();
 
   host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(0.f);
-  host_impl_->active_tree()->top_controls_shown_ratio()->PushFromMainThread(
+  host_impl_->active_tree()->top_controls_shown_ratio()->PushMainToPending(
       30.f / top_controls_height_);
   host_impl_->active_tree()->top_controls_shown_ratio()->PushPendingToActive();
   EXPECT_FLOAT_EQ(30.f,
@@ -5013,7 +5013,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest, ApplyDeltaOnTreeActivation) {
       layer_size_, layer_size_, layer_size_);
   DrawFrame();
 
-  host_impl_->active_tree()->top_controls_shown_ratio()->PushFromMainThread(
+  host_impl_->active_tree()->top_controls_shown_ratio()->PushMainToPending(
       20.f / top_controls_height_);
   host_impl_->active_tree()->top_controls_shown_ratio()->PushPendingToActive();
   host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(
@@ -5066,8 +5066,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   host_impl_->sync_tree()->PushBrowserControlsFromMainThread(1.f);
   host_impl_->sync_tree()->set_browser_controls_shrink_blink_size(true);
 
-  host_impl_->active_tree()->top_controls_shown_ratio()->PushFromMainThread(
-      1.f);
+  host_impl_->active_tree()->top_controls_shown_ratio()->PushMainToPending(1.f);
   host_impl_->active_tree()->top_controls_shown_ratio()->PushPendingToActive();
   host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(0.f);
 
@@ -5432,7 +5431,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
     host_impl_->active_tree()
         ->top_controls_shown_ratio()
         ->PullDeltaForMainThread();
-    host_impl_->active_tree()->top_controls_shown_ratio()->PushFromMainThread(
+    host_impl_->active_tree()->top_controls_shown_ratio()->PushMainToPending(
         delta);
   }
 
@@ -12392,7 +12391,7 @@ TEST_F(LayerTreeHostImplTest, JitterTest) {
 
     // When building property trees from impl side, the builder uses the scroll
     // offset of layer_impl to initialize the scroll offset in scroll tree:
-    //  scroll_tree.synced_scroll_offset.PushFromMainThread(
+    //  scroll_tree.synced_scroll_offset.PushMainToPending(
     //                                   layer->CurrentScrollOffset()).
     // However, layer_impl does not store scroll_offset, so it is using scroll
     // tree's scroll offset to initialize itself. Usually this approach works

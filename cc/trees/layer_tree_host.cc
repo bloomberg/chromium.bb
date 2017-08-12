@@ -1256,7 +1256,7 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   tree_impl->set_top_controls_height(top_controls_height_);
   tree_impl->set_bottom_controls_height(bottom_controls_height_);
   tree_impl->PushBrowserControlsFromMainThread(top_controls_shown_ratio_);
-  tree_impl->elastic_overscroll()->PushFromMainThread(elastic_overscroll_);
+  tree_impl->elastic_overscroll()->PushMainToPending(elastic_overscroll_);
   if (tree_impl->IsActiveTree())
     tree_impl->elastic_overscroll()->PushPendingToActive();
 
