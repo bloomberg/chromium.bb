@@ -466,7 +466,7 @@ class DeveloperPrivatePackDirectoryFunction
   ResponseAction Run() override;
 
  private:
-  scoped_refptr<PackExtensionJob> pack_job_;
+  std::unique_ptr<PackExtensionJob> pack_job_;
   std::string item_path_str_;
   std::string key_path_str_;
 };

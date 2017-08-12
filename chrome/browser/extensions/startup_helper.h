@@ -37,7 +37,6 @@ class StartupHelper : public PackExtensionJob::Client {
   bool ValidateCrx(const base::CommandLine& cmd_line, std::string* error);
 
  private:
-  scoped_refptr<PackExtensionJob> pack_job_;
   bool pack_job_succeeded_;
 
   DISALLOW_COPY_AND_ASSIGN(StartupHelper);

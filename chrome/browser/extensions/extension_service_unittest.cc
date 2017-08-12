@@ -1912,18 +1912,20 @@ TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
         temp_dir.GetPath().Append(expected_private_key_names[i]);
     PackExtensionTestClient pack_client(expected_crx_path,
                                         expected_private_key_path);
-    scoped_refptr<extensions::PackExtensionJob> packer(
-        new extensions::PackExtensionJob(&pack_client, output_dir,
-                                         base::FilePath(),
-                                         ExtensionCreator::kOverwriteCRX));
-    packer->Start();
+    {
+      extensions::PackExtensionJob packer(&pack_client, output_dir,
+                                          base::FilePath(),
+                                          ExtensionCreator::kOverwriteCRX);
+      packer.Start();
 
-    // The packer will post a notification task to the current thread's message
-    // loop when it is finished.  We manually run the loop here so that we
-    // block and catch the notification; otherwise, the process would exit.
-    // This call to |Run()| is matched by a call to |Quit()| in the
-    // |PackExtensionTestClient|'s notification handling code.
-    base::RunLoop().Run();
+      // The packer will post a notification task to the current thread's
+      // message loop when it is finished.  We manually run the loop here so
+      // that we block and catch the notification; otherwise, the process would
+      // exit.
+      // This call to |Run()| is matched by a call to |Quit()| in the
+      // |PackExtensionTestClient|'s notification handling code.
+      base::RunLoop().Run();
+    }
 
     if (HasFatalFailure())
       return;
