@@ -2003,34 +2003,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
   display::Screen* screen = display::Screen::GetScreen();
   BOOL hasMultipleMonitors = screen && screen->GetNumDisplays() > 1;
 
-  if (base::FeatureList::IsEnabled(features::kContentFullscreen)) {
-    // Getting the current's window view and its boundaries.
-    NSWindow* window = [self window];
-    WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
-    NSView* view = contents->GetNativeView();
-    NSRect windowFrame = window.frame;
-    NSRect viewFrame = [view convertRect:view.bounds toView:nil];
-
-    // Moving the origin from the lower-left corner to the upper-left corner of
-    // the view and cropping out the scrollbar
-    viewFrame.origin.y = NSHeight(windowFrame) - NSMaxY(viewFrame);
-    viewFrame.size.width -= gfx::scrollbar_size();
-
-    // Taking a screenshot of the view and creating the custom view to display
-    CGImageRef windowScreenshot = (CGImageRef)[(id)CGWindowListCreateImage(
-        CGRectZero, kCGWindowListOptionIncludingWindow, [window windowNumber],
-        kCGWindowImageBoundsIgnoreFraming) autorelease];
-    CGImageRef viewScreenshot = (CGImageRef)[(id)CGImageCreateWithImageInRect(
-        windowScreenshot, [window convertRectToBacking:viewFrame]) autorelease];
-    FullscreenPlaceholderView* screenshotView =
-        [[[FullscreenPlaceholderView alloc]
-            initWithFrame:[[self tabContentArea] bounds]
-                    image:viewScreenshot] autorelease];
-    screenshotView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-
-    [[self tabContentArea] addSubview:screenshotView];
-  }
-
   if (base::mac::IsAtLeastOS10_10() &&
       !(hasMultipleMonitors && ![NSScreen screensHaveSeparateSpaces])) {
     [self enterAppKitFullscreen];

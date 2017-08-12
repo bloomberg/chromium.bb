@@ -8,7 +8,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(FullscreenWithinTabHelper);
 
 FullscreenWithinTabHelper::FullscreenWithinTabHelper(
     content::WebContents* ignored)
-    : is_fullscreen_for_captured_tab_(false) {}
+    : is_fullscreen_within_tab_(false) {}
 
 FullscreenWithinTabHelper::~FullscreenWithinTabHelper() {}
 

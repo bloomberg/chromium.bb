@@ -3056,6 +3056,8 @@ split_static_library("ui") {
         "cocoa/restart_browser.mm",
         "cocoa/screen_capture_notification_ui_cocoa.h",
         "cocoa/screen_capture_notification_ui_cocoa.mm",
+        "cocoa/separate_fullscreen_window.h",
+        "cocoa/separate_fullscreen_window.mm",
         "cocoa/session_crashed_bubble.mm",
         "cocoa/simple_message_box_bridge_views.mm",
         "cocoa/simple_message_box_cocoa.h",
