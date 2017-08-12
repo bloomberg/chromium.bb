@@ -21,7 +21,7 @@ class MemlogImpl;
 // ServiceManager) to set manage the global state as well as the bound
 // interface.
 //
-// Currently the servcie only manages a memlog interface, but there could be
+// Currently the service only manages a memlog interface, but there could be
 // more in the future.
 //
 // The expectation is each memlog sender will bind a connection to this service

@@ -1,5 +1,6 @@
 include_rules = [
   "+content/public/child",
   "+mojo/edk/embedder",
+  "+services/resource_coordinator/public",
   "+services/service_manager/public/cpp",
 ]

@@ -7,6 +7,8 @@
 #include <map>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/trace_event/trace_event_argument.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer.h"
 
 namespace profiling {
 
@@ -54,21 +56,38 @@ void WriteProcessName(int pid, std::ostream& out) {
       << "\"args\":{\"name\":\"Browser process\"}}";
 }
 
-// Writes the dictionary keys to preceed a "heaps_v2" trace argument. This is
-// "v2" heap dump format.
-void WriteHeapsV2Header(int pid, std::ostream& out) {
+// Writes the dictionary keys to preceed a "dumps" trace argument.
+void WriteDumpsHeader(int pid, std::ostream& out) {
   out << "{ \"pid\":" << pid << ",";
   out << "\"ph\":\"v\",";
   out << "\"name\":\"periodic_interval\",";
   out << "\"args\":{";
-  out << "\"dumps\":{";
-  out << "\"level_of_detail\":\"detailed\",";
+  out << "\"dumps\":{\n";
+}
+
+void WriteDumpsFooter(std::ostream& out) {
+  out << "}}}";  // dumps, args, event
+}
+
+// Writes the dictionary keys to preceed a "heaps_v2" trace argument inside a
+// "dumps". This is "v2" heap dump format.
+void WriteHeapsV2Header(std::ostream& out) {
+  out << "\"level_of_detail\":\"detailed\",\n";
   out << "\"heaps_v2\": {\n";
 }
 
 // Closes the dictionaries from the WriteHeapsV2Header function above.
 void WriteHeapsV2Footer(std::ostream& out) {
-  out << "}}}}";  // heaps_v2, dumps, args, event
+  out << "}";  // heaps_v2
+}
+
+void WriteMemoryMaps(
+    const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps,
+    std::ostream& out) {
+  base::trace_event::TracedValue traced_value;
+  memory_instrumentation::TracingObserver::MemoryMapsAsValueInto(maps,
+                                                                 &traced_value);
+  out << "\"process_mmaps\":" << traced_value.ToString();
 }
 
 // Inserts or retrieves the ID for a string in the string table.
@@ -200,13 +219,20 @@ void WriteAllocatorNodes(const UniqueAllocCount& alloc_counts,
 
 }  // namespace
 
-void ExportAllocationEventSetToJSON(int pid,
-                                    const AllocationEventSet& event_set,
-                                    std::ostream& out) {
+void ExportAllocationEventSetToJSON(
+    int pid,
+    const AllocationEventSet& event_set,
+    const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps,
+    std::ostream& out) {
   out << "{ \"traceEvents\": [";
   WriteProcessName(pid, out);
   out << ",\n";
-  WriteHeapsV2Header(pid, out);
+  WriteDumpsHeader(pid, out);
+
+  WriteMemoryMaps(maps, out);
+  out << ",\n";
+
+  WriteHeapsV2Header(out);
 
   StringTable string_table;
 
@@ -261,6 +287,7 @@ void ExportAllocationEventSetToJSON(int pid,
   out << "}}\n";  // End of allocators section.
 
   WriteHeapsV2Footer(out);
+  WriteDumpsFooter(out);
   out << "]}\n";
 }
 

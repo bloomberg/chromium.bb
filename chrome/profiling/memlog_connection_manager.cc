@@ -91,8 +91,10 @@ void MemlogConnectionManager::OnConnectionCompleteThunk(
                                  base::Unretained(this), pid));
 }
 
-void MemlogConnectionManager::DumpProcess(base::ProcessId pid,
-                                          base::File output_file) {
+void MemlogConnectionManager::DumpProcess(
+    base::ProcessId pid,
+    const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps,
+    base::File output_file) {
   base::AutoLock l(connections_lock_);
 
   // Lock all connections to prevent deallocations of atoms from
@@ -114,7 +116,8 @@ void MemlogConnectionManager::DumpProcess(base::ProcessId pid,
   Connection* connection = it->second.get();
 
   std::ostringstream oss;
-  ExportAllocationEventSetToJSON(pid, connection->tracker.live_allocs(), oss);
+  ExportAllocationEventSetToJSON(pid, connection->tracker.live_allocs(), maps,
+                                 oss);
   std::string reply = oss.str();
   output_file.WriteAtCurrentPos(reply.c_str(), reply.size());
 }

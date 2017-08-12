@@ -6,6 +6,7 @@
 #define CHROME_PROFILING_MEMLOG_CONNECTION_MANAGER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/files/file.h"
@@ -15,11 +16,14 @@
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "chrome/profiling/backtrace_storage.h"
+#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace base {
+
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
-}
+
+}  // namespace base
 
 namespace profiling {
 
@@ -36,8 +40,13 @@ class MemlogConnectionManager {
                           BacktraceStorage* backtrace_storage);
   ~MemlogConnectionManager();
 
-  // Dumps the memory log for the given process into |output_file|.
-  void DumpProcess(base::ProcessId pid, base::File output_file);
+  // Dumps the memory log for the given process into |output_file|.  This must
+  // be provided the memory map for the given process since that is not tracked
+  // as part of the normal allocation process.
+  void DumpProcess(
+      base::ProcessId pid,
+      const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps,
+      base::File output_file);
 
   void OnNewConnection(base::ScopedPlatformFile file, base::ProcessId pid);
 
