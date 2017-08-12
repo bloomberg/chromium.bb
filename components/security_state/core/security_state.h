@@ -32,8 +32,8 @@ extern const base::Feature kHttpFormWarningFeature;
 
 // Describes the overall security state of the page.
 //
-// If you reorder, add, or delete values from this enum, you must also
-// update the UI icons in ToolbarModelImpl::GetIconForSecurityLevel.
+// If you change this enum, you may need to update the UI icons in
+// ToolbarModelImpl::GetVectorIcon and GetIconForSecurityState.
 //
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.security_state
@@ -56,7 +56,7 @@ enum SecurityLevel {
   // HTTPS (non-EV) with valid cert.
   SECURE,
 
-  // HTTPS, but with an outdated protocol version.
+  // Obsolete, do not use. TODO(lgarron): Remove via https://crbug.com/645698.
   SECURITY_WARNING,
 
   // HTTPS, but the certificate verification chain is anchored on a
