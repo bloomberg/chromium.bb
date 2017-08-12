@@ -136,6 +136,20 @@ void JourneyLogger::SetRequestedInformation(bool requested_shipping,
     SetEventOccurred(EVENT_REQUEST_PAYER_NAME);
 }
 
+void JourneyLogger::SetRequestedPaymentMethodTypes(
+    bool requested_basic_card,
+    bool requested_method_google,
+    bool requested_method_other) {
+  if (requested_basic_card)
+    SetEventOccurred(EVENT_REQUEST_METHOD_BASIC_CARD);
+
+  if (requested_method_google)
+    SetEventOccurred(EVENT_REQUEST_METHOD_GOOGLE);
+
+  if (requested_method_other)
+    SetEventOccurred(EVENT_REQUEST_METHOD_OTHER);
+}
+
 void JourneyLogger::SetCompleted() {
   RecordJourneyStatsHistograms(COMPLETION_STATUS_COMPLETED);
 }

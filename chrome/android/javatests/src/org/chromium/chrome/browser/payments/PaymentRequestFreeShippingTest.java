@@ -290,7 +290,8 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
-                | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.REQUEST_SHIPPING;
+                | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.REQUEST_SHIPPING
+                | Event.REQUEST_METHOD_BASIC_CARD;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));

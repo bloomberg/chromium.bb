@@ -115,6 +115,20 @@ public class JourneyLogger {
                 mJourneyLoggerAndroid, requestShipping, requestEmail, requestPhone, requestName);
     }
 
+    /*
+     * Records what types of payment methods were requested by the merchant in the Payment Request.
+     *
+     * @param requestedBasicCard    Whether the merchant requested basic-card.
+     * @param requestedMethodGoogle Whether the merchant requested a Google payment method.
+     * @param requestedMethodOther  Whether the merchant requested a non basic-card, non-Google
+     *                              payment method.
+     */
+    public void setRequestedPaymentMethodTypes(boolean requestedBasicCard,
+            boolean requestedMethodGoogle, boolean requestedMethodOther) {
+        nativeSetRequestedPaymentMethodTypes(mJourneyLoggerAndroid, requestedBasicCard,
+                requestedMethodGoogle, requestedMethodOther);
+    }
+
     /**
      * Records the payment method that was selected by the user.
      *
@@ -189,6 +203,9 @@ public class JourneyLogger {
     private native void nativeSetRequestedInformation(long nativeJourneyLoggerAndroid,
             boolean requestShipping, boolean requestEmail, boolean requestPhone,
             boolean requestName);
+    private native void nativeSetRequestedPaymentMethodTypes(long nativeJourneyLoggerAndroid,
+            boolean requestedBasicCard, boolean requestedMethodGoogle,
+            boolean requestedMethodOther);
     private native void nativeSetCompleted(long nativeJourneyLoggerAndroid);
     private native void nativeSetAborted(long nativeJourneyLoggerAndroid, int reason);
     private native void nativeSetNotShown(long nativeJourneyLoggerAndroid, int reason);

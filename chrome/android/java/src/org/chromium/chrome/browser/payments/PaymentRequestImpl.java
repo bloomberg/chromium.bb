@@ -489,6 +489,22 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         PaymentAppFactory.getInstance().create(mWebContents,
                 Collections.unmodifiableSet(mMethodData.keySet()), this /* callback */);
 
+        // Log the various types of payment methods that were requested by the merchant.
+        boolean requestedMethodGoogle = false;
+        boolean requestedMethodOther = false;
+        for (String methodName : mMethodData.keySet()) {
+            if (methodName.equals(ANDROID_PAY_METHOD_NAME)
+                    || methodName.equals(PAY_WITH_GOOGLE_METHOD_NAME)) {
+                requestedMethodGoogle = true;
+            } else if (methodName.startsWith(UrlConstants.HTTPS_URL_PREFIX)) {
+                // Any method that starts with https and is not Android pay or Google pay is in the
+                // "other" category.
+                requestedMethodOther = true;
+            }
+        }
+        mJourneyLogger.setRequestedPaymentMethodTypes(mMerchantSupportsAutofillPaymentInstruments,
+                requestedMethodGoogle, requestedMethodOther);
+
         // If there is a single payment method and the merchant has not requested any other
         // information, we can safely go directly to the payment app instead of showing
         // Payment Request UI.
