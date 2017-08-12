@@ -12,11 +12,7 @@
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
-#import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
-#import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -60,16 +56,6 @@ void SetEarlGreySynchronizationEnabled(BOOL enabled) {
   [[GREYConfiguration sharedInstance]
           setValue:[NSNumber numberWithBool:enabled]
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
-}
-
-// Taps the view with acessibility identifier |accessibility_id|.
-void TapViewWithAccessibilityId(NSString* accessiblity_id) {
-  // grey_sufficientlyVisible() is necessary because reloading a cell in a
-  // collection view might duplicate it (with the old one being hidden but
-  // EarlGrey can find it).
-  id<GREYMatcher> matcher = grey_allOf(grey_accessibilityID(accessiblity_id),
-                                       grey_sufficientlyVisible(), nil);
-  [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
 }
 
 // Taps the button with accessibility label |label|.
@@ -158,13 +144,16 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   AssertAuthenticatedIdentityInActiveProfile(identity1);
 
   // Open accounts settings, then sync settings.
-  TapViewWithAccessibilityId(kSettingsAccountCellId);
-  TapViewWithAccessibilityId(kSettingsAccountsSyncCellId);
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsAccountButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AccountsSyncButton()]
+      performAction:grey_tap()];
 
   // Switch Sync account to |identity2|.
   TapButtonWithAccessibilityLabel(identity2.userEmail);
-
-  TapViewWithAccessibilityId(kImportDataKeepSeparateCellId);
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::SettingsImportDataKeepSeparateButton()]
+      performAction:grey_tap()];
   TapButtonWithLabelId(IDS_IOS_OPTIONS_IMPORT_DATA_CONTINUE_BUTTON);
 
   // Check the signed-in user did change.
@@ -193,13 +182,16 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   AssertAuthenticatedIdentityInActiveProfile(identity1);
 
   // Open accounts settings, then sync settings.
-  TapViewWithAccessibilityId(kSettingsAccountCellId);
-  TapViewWithAccessibilityId(kSettingsAccountsSyncCellId);
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsAccountButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AccountsSyncButton()]
+      performAction:grey_tap()];
 
   // Switch Sync account to |identity2|.
   TapButtonWithAccessibilityLabel(identity2.userEmail);
-
-  TapViewWithAccessibilityId(kImportDataImportCellId);
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          SettingsImportDataImportButton()]
+      performAction:grey_tap()];
   TapButtonWithLabelId(IDS_IOS_OPTIONS_IMPORT_DATA_CONTINUE_BUTTON);
 
   // Check the signed-in user did change.
@@ -240,8 +232,11 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   AssertAuthenticatedIdentityInActiveProfile(managed_identity);
 
   // Switch Sync account to |identity|.
-  TapViewWithAccessibilityId(kSettingsAccountCellId);
-  TapViewWithAccessibilityId(kSettingsAccountsSyncCellId);
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsAccountButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AccountsSyncButton()]
+      performAction:grey_tap()];
+
   TapButtonWithAccessibilityLabel(identity.userEmail);
 
   SetEarlGreySynchronizationEnabled(NO);
@@ -270,16 +265,19 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   AssertAuthenticatedIdentityInActiveProfile(identity);
 
   // Go to Accounts Settings and tap the sign out button.
-  TapViewWithAccessibilityId(kSettingsAccountCellId);
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsAccountButton()]
+      performAction:grey_tap()];
+
   const CGFloat scroll_displacement = 100.0;
-  [[[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                           kSettingsAccountsSignoutCellId)]
+  [[[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   chrome_test_util::SignOutAccountsButton(),
+                                   grey_interactable(), nil)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
                                                   scroll_displacement)
-      onElementWithMatcher:grey_accessibilityID(kSettingsAccountsId)]
+      onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]
       performAction:grey_tap()];
   TapButtonWithLabelId(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
-
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 
@@ -313,16 +311,19 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   AssertAuthenticatedIdentityInActiveProfile(identity);
 
   // Go to Accounts Settings and tap the sign out button.
-  TapViewWithAccessibilityId(kSettingsAccountCellId);
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsAccountButton()]
+      performAction:grey_tap()];
+
   const CGFloat scroll_displacement = 100.0;
-  [[[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                           kSettingsAccountsSignoutCellId)]
+  [[[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   chrome_test_util::SignOutAccountsButton(),
+                                   grey_interactable(), nil)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
                                                   scroll_displacement)
-      onElementWithMatcher:grey_accessibilityID(kSettingsAccountsId)]
+      onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]
       performAction:grey_tap()];
   TapButtonWithLabelId(IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT);
-
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 
@@ -457,18 +458,22 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   AssertAuthenticatedIdentityInActiveProfile(identity2);
 
   // Go to Accounts Settings and tap the sign out button.
-  TapViewWithAccessibilityId(kSettingsAccountCellId);
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsAccountButton()]
+      performAction:grey_tap()];
+
   const CGFloat scroll_displacement = 100.0;
-  [[[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                           kSettingsAccountsSignoutCellId)]
+  [[[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   chrome_test_util::SignOutAccountsButton(),
+                                   grey_interactable(), nil)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
                                                   scroll_displacement)
-      onElementWithMatcher:grey_accessibilityID(kSettingsAccountsId)]
+      onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]
       performAction:grey_tap()];
   TapButtonWithLabelId(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
   AssertAuthenticatedIdentityInActiveProfile(nil);
-
-  TapViewWithAccessibilityId(kSettingsSignInCellId);
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SignInMenuButton()]
+      performAction:grey_tap()];
   [ChromeEarlGreyUI signInToIdentityByEmail:identity1.userEmail];
 
   // Open new tab to cancel sign-in.
@@ -508,7 +513,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
       selectElementWithMatcher:grey_accessibilityID(kToolsMenuBookmarksId)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
                                                   scroll_displacement)
-      onElementWithMatcher:grey_accessibilityID(kToolsMenuTableViewId)]
+      onElementWithMatcher:chrome_test_util::ToolsMenuView()]
       performAction:grey_tap()];
 
   if (!IsIPadIdiom()) {
@@ -524,7 +529,6 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
                  grey_descendant(grey_text(topLevelFolderTitle)), nil);
   [[EarlGrey selectElementWithMatcher:all_bookmarks_matcher]
       performAction:grey_tap()];
-
   TapButtonWithLabelId(IDS_IOS_BOOKMARK_PROMO_SIGN_IN_BUTTON);
 
   // Assert sign-in screen was shown.
@@ -546,7 +550,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
       selectElementWithMatcher:grey_accessibilityID(kToolsMenuBookmarksId)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
                                                   scroll_displacement)
-      onElementWithMatcher:grey_accessibilityID(kToolsMenuTableViewId)]
+      onElementWithMatcher:chrome_test_util::ToolsMenuView()]
       performAction:grey_tap()];
   if (!IsIPadIdiom()) {
     [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Menu")]

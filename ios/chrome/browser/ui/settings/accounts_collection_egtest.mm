@@ -9,7 +9,6 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -299,7 +298,8 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
       performAction:grey_tap()];
 
   // Check that Account Settings screen is open and |identity| is signed in.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(kSettingsAccountsId)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          SettingsAccountsCollectionView()]
       assertWithMatcher:grey_sufficientlyVisible()];
   AssertAuthenticatedIdentityInActiveProfile(identity);
 

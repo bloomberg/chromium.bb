@@ -101,6 +101,9 @@ id<GREYMatcher> ClearBrowsingDataCollectionView();
 // Returns matcher for the settings button in the tools menu.
 id<GREYMatcher> SettingsMenuButton();
 
+// Returns matcher for the tools menu table view.
+id<GREYMatcher> ToolsMenuView();
+
 // Returns matcher for the OK button.
 id<GREYMatcher> OKButton();
 
@@ -110,6 +113,15 @@ id<GREYMatcher> SignInMenuButton();
 // Returns matcher for the button for the currently signed in account in the
 // settings menu.
 id<GREYMatcher> SettingsAccountButton();
+
+// Returns matcher for the accounts collection view.
+id<GREYMatcher> SettingsAccountsCollectionView();
+
+// Returns matcher for the Import Data cell in switch sync account view.
+id<GREYMatcher> SettingsImportDataImportButton();
+
+// Returns matcher for the Keep Data Separate cell in switch sync account view.
+id<GREYMatcher> SettingsImportDataKeepSeparateButton();
 
 // Returns matcher for the menu button to sync accounts.
 id<GREYMatcher> AccountsSyncButton();

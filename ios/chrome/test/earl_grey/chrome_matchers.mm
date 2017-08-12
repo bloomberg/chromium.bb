@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
@@ -189,6 +190,10 @@ id<GREYMatcher> SettingsMenuButton() {
   return grey_accessibilityID(kToolsMenuSettingsId);
 }
 
+id<GREYMatcher> ToolsMenuView() {
+  return grey_accessibilityID(kToolsMenuTableViewId);
+}
+
 id<GREYMatcher> OKButton() {
   return ButtonWithAccessibilityLabelId(IDS_OK);
 }
@@ -199,6 +204,18 @@ id<GREYMatcher> SignInMenuButton() {
 
 id<GREYMatcher> SettingsAccountButton() {
   return grey_accessibilityID(kSettingsAccountCellId);
+}
+
+id<GREYMatcher> SettingsAccountsCollectionView() {
+  return grey_accessibilityID(kSettingsAccountsId);
+}
+
+id<GREYMatcher> SettingsImportDataImportButton() {
+  return grey_accessibilityID(kImportDataImportCellId);
+}
+
+id<GREYMatcher> SettingsImportDataKeepSeparateButton() {
+  return grey_accessibilityID(kImportDataKeepSeparateCellId);
 }
 
 id<GREYMatcher> AccountsSyncButton() {
