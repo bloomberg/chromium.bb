@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/first_run/goodies_displayer.h"
+
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/first_run/goodies_displayer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -84,6 +85,13 @@ class GoodiesDisplayerBrowserTest : public InProcessBrowserTest,
   // InProcessBrowserTest overrides.
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     base::CommandLine default_command_line(base::CommandLine::NO_PROGRAM);
+    if (command_line->HasSwitch(switches::kMus)) {
+      default_command_line.AppendSwitch(switches::kMus);
+    } else if (command_line->HasSwitch(switches::kMusConfig)) {
+      default_command_line.AppendSwitchASCII(
+          switches::kMusConfig,
+          command_line->GetSwitchValueASCII(switches::kMusConfig));
+    }
     InProcessBrowserTest::SetUpDefaultCommandLine(&default_command_line);
     if (NoFirstRunSpecified()) {  // --no-first-run is present by default.
       *command_line = default_command_line;
