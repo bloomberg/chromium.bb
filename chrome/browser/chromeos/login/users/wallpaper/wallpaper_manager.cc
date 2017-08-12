@@ -1011,10 +1011,14 @@ void WallpaperManager::SetPolicyControlledWallpaper(
   if (!wallpaper_files_id.is_valid())
     LOG(FATAL) << "Wallpaper flies id if invalid!";
 
+  // If we're at the login screen, do not change the wallpaper to the user
+  // policy controlled wallpaper but only update the cache. It will be later
+  // updated after the user logs in.
   SetCustomWallpaper(account_id, wallpaper_files_id, "policy-controlled.jpeg",
                      wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
                      wallpaper::POLICY, user_image->image(),
-                     true /* update wallpaper */);
+                     user_manager::UserManager::Get()
+                         ->IsUserLoggedIn() /* update wallpaper */);
 }
 
 void WallpaperManager::OnDeviceWallpaperPolicyChanged() {

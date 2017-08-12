@@ -51,6 +51,7 @@
 #include "components/policy/proto/cloud_policy.pb.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/test/browser_test_utils.h"
 #include "crypto/rsa_private_key.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -287,6 +288,27 @@ class WallpaperManagerPolicyTest : public LoginManagerTest,
               store->validation_status());
   }
 
+  // Inject |filename| as the device wallpaper policy. Set empty |filename| to
+  // clear policy.
+  void InjectDevicePolicy(const std::string& filename) {
+    if (!filename.empty()) {
+      device_policy_.payload()
+          .mutable_device_wallpaper_image()
+          ->set_device_wallpaper_image(ConstructPolicy(filename));
+    } else {
+      device_policy_.payload().Clear();
+    }
+    device_policy_.Build();
+    fake_session_manager_client_->set_device_policy(device_policy_.GetBlob());
+    fake_session_manager_client_->OnPropertyChangeComplete(true /* success */);
+  }
+
+  bool ShouldSetDeviceWallpaper(const AccountId& account_id) {
+    std::string url, hash;
+    return WallpaperManager::Get()->ShouldSetDeviceWallpaper(account_id, &url,
+                                                             &hash);
+  }
+
   // Obtain WallpaperInfo for |user_number| from WallpaperManager.
   void GetUserWallpaperInfo(int user_number,
                             wallpaper::WallpaperInfo* wallpaper_info) {
@@ -439,6 +461,43 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PersistOverLogout) {
   // Wait until wallpaper has been loaded.
   RunUntilWallpaperChangeCount(1);
   ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
+}
+
+IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_DevicePolicyTest) {
+  SetSystemSalt();
+  RegisterUser(testUsers_[0].GetUserEmail());
+  StartupUtils::MarkOobeCompleted();
+}
+
+// Test that if device policy wallpaper and user policy wallpaper are both
+// specified, the device policy wallpaper is used in the login screen and the
+// user policy wallpaper is used inside of a user session.
+IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, DevicePolicyTest) {
+  SetSystemSalt();
+
+  // Wait until default wallpaper has been loaded in the login screen.
+  RunUntilWallpaperChangeCount(1);
+
+  // Set the device wallpaper policy. Test that the device policy controlled
+  // wallpaper shows up in the login screen.
+  InjectDevicePolicy(kRedImageFileName);
+  RunUntilWallpaperChangeCount(2);
+  EXPECT_TRUE(ShouldSetDeviceWallpaper(user_manager::SignInAccountId()));
+  EXPECT_EQ(kRedImageColor, GetAverageWallpaperColor());
+
+  // Log in a test user and set the user wallpaper policy. The user policy
+  // controlled wallpaper shows up in the user session.
+  LoginUser(testUsers_[0].GetUserEmail());
+  InjectPolicy(0, kGreenImageFileName);
+  RunUntilWallpaperChangeCount(3);
+  EXPECT_EQ(kGreenImageColor, GetAverageWallpaperColor());
+
+  // Set the device wallpaper policy inside the user session. That that the
+  // user wallpaper doesn't change.
+  InjectDevicePolicy(kBlueImageFileName);
+  EXPECT_FALSE(ShouldSetDeviceWallpaper(
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId()));
+  EXPECT_EQ(kGreenImageColor, GetAverageWallpaperColor());
 }
 
 }  // namespace chromeos

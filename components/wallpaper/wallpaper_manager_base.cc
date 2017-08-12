@@ -450,7 +450,11 @@ void WallpaperManagerBase::OnPolicyCleared(const std::string& policy,
   GetUserWallpaperInfo(account_id, &info);
   info.type = DEFAULT;
   SetUserWallpaperInfo(account_id, info, true /* is_persistent */);
-  SetDefaultWallpaperNow(account_id);
+
+  // If we're at the login screen, do not change the wallpaper but defer it
+  // until the user logs in to the system.
+  if (user_manager::UserManager::Get()->IsUserLoggedIn())
+    SetDefaultWallpaperNow(account_id);
 }
 
 // static
