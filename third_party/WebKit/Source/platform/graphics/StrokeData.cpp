@@ -117,7 +117,6 @@ void StrokeData::SetupPaintDashPathEffect(PaintFlags* flags,
     SkScalar intervals[2] = {0, gap + dash_width - kEpsilon};
     flags->setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
   } else {
-    // TODO(schenney): WavyStroke https://crbug.com/229574
     flags->setPathEffect(0);
   }
 }
