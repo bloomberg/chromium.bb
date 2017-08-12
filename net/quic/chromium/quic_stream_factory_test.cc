@@ -222,7 +222,6 @@ class QuicStreamFactoryTestBase {
         allow_server_migration_, force_hol_blocking_, race_cert_verification_,
         estimate_initial_rtt_, connection_options_, client_connection_options_,
         /*enable_token_binding*/ false));
-    factory_->set_require_confirmation(false);
   }
 
   void InitializeConnectionMigrationTest(
@@ -469,6 +468,7 @@ class QuicStreamFactoryTestBase {
     store_server_configs_in_properties_ = true;
     idle_connection_timeout_seconds_ = 500;
     Initialize();
+    factory_->set_require_confirmation(false);
     ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -781,8 +781,8 @@ TEST_P(QuicStreamFactoryTest, Create) {
   EXPECT_EQ(OK, request3.Request(host_port_pair_, version_, privacy_mode_,
                                  /*cert_verify_flags=*/0, url_, "GET", net_log_,
                                  callback_.callback()));
-  stream = request3.CreateStream();   // Will reset stream 5.
-  stream.reset();                     // Will reset stream 7.
+  stream = request3.CreateStream();  // Will reset stream 5.
+  stream.reset();                    // Will reset stream 7.
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
@@ -790,6 +790,7 @@ TEST_P(QuicStreamFactoryTest, Create) {
 
 TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
   Initialize();
+  factory_->set_require_confirmation(false);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
@@ -816,6 +817,7 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
 
 TEST_P(QuicStreamFactoryTest, CreateZeroRttPost) {
   Initialize();
+  factory_->set_require_confirmation(false);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
@@ -861,8 +863,73 @@ TEST_P(QuicStreamFactoryTest, DefaultInitialRtt) {
   EXPECT_TRUE(stream.get());
 
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(session->require_confirmation());
   EXPECT_EQ(100000u, session->connection()->GetStats().srtt_us);
   ASSERT_FALSE(session->config()->HasInitialRoundTripTimeUsToSend());
+}
+
+TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::ZERO_RTT);
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
+                                           "192.168.0.1", "");
+  Initialize();
+  factory_->set_require_confirmation(true);
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, version_, privacy_mode_,
+                            /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                            callback_.callback()));
+
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      QuicSession::HANDSHAKE_CONFIRMED);
+
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream = request.CreateStream();
+  EXPECT_TRUE(stream.get());
+
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(session->require_confirmation());
+}
+
+TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::ZERO_RTT);
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
+                                           "192.168.0.1", "");
+  Initialize();
+  factory_->set_require_confirmation(true);
+  http_server_properties_.SetSupportsQuic(IPAddress(192, 0, 2, 33));
+
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+
+  QuicStreamRequest request(factory_.get());
+  EXPECT_THAT(request.Request(host_port_pair_, version_, privacy_mode_,
+                              /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                              callback_.callback()),
+              IsOk());
+
+  std::unique_ptr<HttpStream> stream = request.CreateStream();
+  EXPECT_TRUE(stream.get());
+
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_FALSE(session->require_confirmation());
 }
 
 TEST_P(QuicStreamFactoryTest, CachedInitialRtt) {
@@ -4269,6 +4336,7 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
 
 TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
   Initialize();
+  factory_->set_require_confirmation(false);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
@@ -4453,6 +4521,7 @@ TEST_P(QuicStreamFactoryTest, StartCertVerifyJob) {
 
 TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
   Initialize();
+  factory_->set_require_confirmation(false);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   QuicStreamFactoryPeer::SetYieldAfterPackets(factory_.get(), 0);
@@ -4497,6 +4566,7 @@ TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
 
 TEST_P(QuicStreamFactoryTest, YieldAfterDuration) {
   Initialize();
+  factory_->set_require_confirmation(false);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   QuicStreamFactoryPeer::SetYieldAfterDuration(

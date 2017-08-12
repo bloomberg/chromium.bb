@@ -475,6 +475,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // TODO(xunjieli): It only tracks |packet_readers_|. Write a better estimate.
   size_t EstimateMemoryUsage() const;
 
+  bool require_confirmation() const { return require_confirmation_; }
+
  protected:
   // QuicSession methods:
   bool ShouldCreateIncomingDynamicStream(QuicStreamId id) override;
