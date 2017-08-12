@@ -125,10 +125,10 @@ void AwMetricsServiceClient::Initialize(
   request_context_ = request_context;
   channel_ = GetChannelFromPackageName();
 
-  // If Finch is enabled for WebView the GUID will already have been read at
-  // startup
+  // If variations are enabled for WebView the GUID will already have been read
+  // at startup
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebViewFinch)) {
+          switches::kEnableWebViewVariations)) {
     InitializeWithGUID();
   } else {
     content::BrowserThread::PostTaskAndReply(
@@ -141,7 +141,8 @@ void AwMetricsServiceClient::Initialize(
 
 void AwMetricsServiceClient::InitializeWithGUID() {
   // The guid must have already been initialized at this point, either
-  // synchronously or asynchronously depending on the kEnableWebViewFinch flag
+  // synchronously or asynchronously depending on the kEnableWebViewVariations
+  // flag
   DCHECK_EQ(g_client_id_guid.Get().length(), GUID_SIZE);
   pref_service_->SetString(metrics::prefs::kMetricsClientID,
                            g_client_id_guid.Get());

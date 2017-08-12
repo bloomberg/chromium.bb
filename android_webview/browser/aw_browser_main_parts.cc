@@ -149,7 +149,7 @@ int AwBrowserMainParts::PreCreateThreads() {
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebViewFinch)) {
+          switches::kEnableWebViewVariations)) {
     AwMetricsServiceClient::GetOrCreateGUID();
   }
 
