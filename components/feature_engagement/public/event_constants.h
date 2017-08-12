@@ -17,6 +17,9 @@ namespace events {
 
 // The user has interacted with the omnibox.
 extern const char kOmniboxInteraction[];
+// The user has satisfied the session time requirement to show the NewTabPromo
+// by accumulating 2 hours of active session time (one-off event).
+extern const char kNewTabSessionTimeMet[];
 
 // All the events declared below are the string names
 // of deferred onboarding events for the Incognito Window
@@ -25,12 +28,6 @@ extern const char kOmniboxInteraction[];
 extern const char kHistoryDeleted[];
 // The user has opened an incognito window.
 extern const char kIncognitoWindowOpened[];
-
-// All the events declared below are the string names
-// of common deferred onboarding events
-
-// The user has accumulated 2 hours of active session time (one-off event).
-extern const char kSessionTime[];
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 

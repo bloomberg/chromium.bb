@@ -1696,8 +1696,8 @@
                     "params": {
                         "availability": "any",
                         "event_new_tab_opened": "name:new_tab_opened;comparator:==0;window:3650;storage:3650",
+                        "event_new_tab_session_time_met": "name:new_tab_session_time_met;comparator:>=1;window:3650;storage:3650",
                         "event_omnibox_used": "name:omnibox_used;comparator:>=1;window:3650;storage:3650",
-                        "event_session_time": "name:session_time;comparator:>=1;window:3650;storage:3650",
                         "event_trigger": "name:new_tab_trigger;comparator:any;window:3650;storage:3650",
                         "event_used": "name:new_tab_clicked;comparator:any;window:3650;storage:3650",
                         "session_rate": "<=3",
