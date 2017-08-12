@@ -56,6 +56,12 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
     AM_MEDIA_TYPE* media_type_;
   };
 
+  static void GetDeviceCapabilityList(const std::string& device_id,
+                                      CapabilityList* out_capability_list);
+  static void GetPinCapabilityList(
+      base::win::ScopedComPtr<IBaseFilter> capture_filter,
+      base::win::ScopedComPtr<IPin> output_capture_pin,
+      CapabilityList* out_capability_list);
   static HRESULT GetDeviceFilter(const std::string& device_id,
                                  IBaseFilter** filter);
   static base::win::ScopedComPtr<IPin> GetPin(IBaseFilter* filter,

@@ -101,6 +101,120 @@ mojom::RangePtr RetrieveControlRangeAndCurrent(
   return control_range;
 }
 
+// static
+void VideoCaptureDeviceWin::GetDeviceCapabilityList(
+    const std::string& device_id,
+    CapabilityList* out_capability_list) {
+  base::win::ScopedComPtr<IBaseFilter> capture_filter;
+  HRESULT hr = VideoCaptureDeviceWin::GetDeviceFilter(
+      device_id, capture_filter.GetAddressOf());
+  if (!capture_filter.Get()) {
+    DLOG(ERROR) << "Failed to create capture filter: "
+                << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  base::win::ScopedComPtr<IPin> output_capture_pin(
+      VideoCaptureDeviceWin::GetPin(capture_filter.Get(), PINDIR_OUTPUT,
+                                    PIN_CATEGORY_CAPTURE, GUID_NULL));
+  if (!output_capture_pin.Get()) {
+    DLOG(ERROR) << "Failed to get capture output pin";
+    return;
+  }
+
+  GetPinCapabilityList(capture_filter, output_capture_pin, out_capability_list);
+}
+
+// static
+void VideoCaptureDeviceWin::GetPinCapabilityList(
+    base::win::ScopedComPtr<IBaseFilter> capture_filter,
+    base::win::ScopedComPtr<IPin> output_capture_pin,
+    CapabilityList* out_capability_list) {
+  ScopedComPtr<IAMStreamConfig> stream_config;
+  HRESULT hr = output_capture_pin.CopyTo(stream_config.GetAddressOf());
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get IAMStreamConfig interface from "
+                   "capture device: "
+                << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  // Get interface used for getting the frame rate.
+  ScopedComPtr<IAMVideoControl> video_control;
+  hr = capture_filter.CopyTo(video_control.GetAddressOf());
+
+  int count = 0, size = 0;
+  hr = stream_config->GetNumberOfCapabilities(&count, &size);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "GetNumberOfCapabilities failed: "
+                << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  std::unique_ptr<BYTE[]> caps(new BYTE[size]);
+  for (int i = 0; i < count; ++i) {
+    VideoCaptureDeviceWin::ScopedMediaType media_type;
+    hr = stream_config->GetStreamCaps(i, media_type.Receive(), caps.get());
+    // GetStreamCaps() may return S_FALSE, so don't use FAILED() or SUCCEED()
+    // macros here since they'll trigger incorrectly.
+    if (hr != S_OK || !media_type.get()) {
+      DLOG(ERROR) << "GetStreamCaps failed: "
+                  << logging::SystemErrorCodeToString(hr);
+      return;
+    }
+
+    if (media_type->majortype == MEDIATYPE_Video &&
+        media_type->formattype == FORMAT_VideoInfo) {
+      VideoCaptureFormat format;
+      format.pixel_format =
+          VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
+              media_type->subtype);
+      if (format.pixel_format == PIXEL_FORMAT_UNKNOWN)
+        continue;
+      VIDEOINFOHEADER* h =
+          reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
+      format.frame_size.SetSize(h->bmiHeader.biWidth, h->bmiHeader.biHeight);
+
+      // Try to get a better |time_per_frame| from IAMVideoControl. If not, use
+      // the value from VIDEOINFOHEADER.
+      std::vector<float> frame_rates;
+      if (video_control.Get()) {
+        ScopedCoMem<LONGLONG> time_per_frame_list;
+        LONG list_size = 0;
+        const SIZE size = {format.frame_size.width(),
+                           format.frame_size.height()};
+        hr = video_control->GetFrameRateList(output_capture_pin.Get(), i, size,
+                                             &list_size, &time_per_frame_list);
+        // Sometimes |list_size| will be > 0, but time_per_frame_list will be
+        // NULL. Some drivers may return an HRESULT of S_FALSE which SUCCEEDED()
+        // translates into success, so explicitly check S_OK.
+        // See http://crbug.com/306237.
+        if (hr == S_OK && list_size > 0 && time_per_frame_list) {
+          for (int k = 0; k < list_size; k++) {
+            LONGLONG time_per_frame = *(time_per_frame_list + k);
+            if (time_per_frame <= 0)
+              continue;
+            frame_rates.push_back(kSecondsToReferenceTime /
+                                  static_cast<float>(time_per_frame));
+          }
+        }
+      }
+
+      if (frame_rates.empty() && h->AvgTimePerFrame > 0) {
+        frame_rates.push_back(kSecondsToReferenceTime /
+                              static_cast<float>(h->AvgTimePerFrame));
+      }
+      if (frame_rates.empty())
+        frame_rates.push_back(0.0f);
+
+      for (const auto& frame_rate : frame_rates) {
+        format.frame_rate = frame_rate;
+        out_capability_list->emplace_back(i, format, h->bmiHeader);
+      }
+    }
+  }
+}
+
 // Finds and creates a DirectShow Video Capture filter matching the |device_id|.
 // static
 HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
@@ -746,77 +860,7 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
 
 bool VideoCaptureDeviceWin::CreateCapabilityMap() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScopedComPtr<IAMStreamConfig> stream_config;
-  HRESULT hr = output_capture_pin_.CopyTo(stream_config.GetAddressOf());
-  DLOG_IF_FAILED_WITH_HRESULT(
-      "Failed to get IAMStreamConfig from capture device", hr);
-  if (FAILED(hr))
-    return false;
-
-  // Get interface used for getting the frame rate.
-  ScopedComPtr<IAMVideoControl> video_control;
-  hr = capture_filter_.CopyTo(video_control.GetAddressOf());
-
-  int count = 0, size = 0;
-  hr = stream_config->GetNumberOfCapabilities(&count, &size);
-  DLOG_IF_FAILED_WITH_HRESULT("Failed to GetNumberOfCapabilities", hr);
-  if (FAILED(hr))
-    return false;
-
-  std::unique_ptr<BYTE[]> caps(new BYTE[size]);
-  for (int stream_index = 0; stream_index < count; ++stream_index) {
-    ScopedMediaType media_type;
-    hr = stream_config->GetStreamCaps(stream_index, media_type.Receive(),
-                                      caps.get());
-    // GetStreamCaps() may return S_FALSE, so don't use FAILED() or SUCCEED()
-    // macros here since they'll trigger incorrectly.
-    if (hr != S_OK) {
-      DLOG(ERROR) << "Failed to GetStreamCaps";
-      return false;
-    }
-
-    if (media_type->majortype == MEDIATYPE_Video &&
-        media_type->formattype == FORMAT_VideoInfo) {
-      VideoCaptureFormat format;
-      format.pixel_format =
-          TranslateMediaSubtypeToPixelFormat(media_type->subtype);
-      if (format.pixel_format == PIXEL_FORMAT_UNKNOWN)
-        continue;
-
-      VIDEOINFOHEADER* h =
-          reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
-      format.frame_size.SetSize(h->bmiHeader.biWidth, h->bmiHeader.biHeight);
-
-      // Try to get a better |time_per_frame| from IAMVideoControl. If not, use
-      // the value from VIDEOINFOHEADER.
-      REFERENCE_TIME time_per_frame = h->AvgTimePerFrame;
-      if (video_control.Get()) {
-        ScopedCoMem<LONGLONG> max_fps;
-        LONG list_size = 0;
-        const SIZE size = {format.frame_size.width(),
-                           format.frame_size.height()};
-        hr = video_control->GetFrameRateList(output_capture_pin_.Get(),
-                                             stream_index, size, &list_size,
-                                             &max_fps);
-        // Can't assume the first value will return the max fps.
-        // Sometimes |list_size| will be > 0, but max_fps will be NULL. Some
-        // drivers may return an HRESULT of S_FALSE which SUCCEEDED() translates
-        // into success, so explicitly check S_OK. See http://crbug.com/306237.
-        if (hr == S_OK && list_size > 0 && max_fps) {
-          time_per_frame =
-              *std::min_element(max_fps.get(), max_fps.get() + list_size);
-        }
-      }
-
-      format.frame_rate =
-          (time_per_frame > 0)
-              ? (kSecondsToReferenceTime / static_cast<float>(time_per_frame))
-              : 0.0;
-
-      capabilities_.emplace_back(stream_index, format, h->bmiHeader);
-    }
-  }
-
+  GetPinCapabilityList(capture_filter_, output_capture_pin_, &capabilities_);
   return !capabilities_.empty();
 }
 

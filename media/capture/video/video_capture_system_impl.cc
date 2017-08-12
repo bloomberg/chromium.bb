@@ -9,41 +9,36 @@
 namespace {
 
 // Compares two VideoCaptureFormat by checking smallest frame_size area, then
-// by _largest_ frame_rate. Used to order a VideoCaptureFormats vector so that
-// the first entry for a given resolution has the largest frame rate, as needed
-// by the ConsolidateCaptureFormats() method.
+// by width, and then by _largest_ frame_rate. Used to order a
+// VideoCaptureFormats vector so that the first entry for a given resolution has
+// the largest frame rate.
 bool IsCaptureFormatSmaller(const media::VideoCaptureFormat& format1,
                             const media::VideoCaptureFormat& format2) {
   DCHECK(format1.frame_size.GetCheckedArea().IsValid());
   DCHECK(format2.frame_size.GetCheckedArea().IsValid());
   if (format1.frame_size.GetCheckedArea().ValueOrDefault(0) ==
       format2.frame_size.GetCheckedArea().ValueOrDefault(0)) {
-    return format1.frame_rate > format2.frame_rate;
+    if (format1.frame_size.width() == format2.frame_size.width()) {
+      return format1.frame_rate > format2.frame_rate;
+    }
+    return format1.frame_size.width() < format2.frame_size.width();
   }
   return format1.frame_size.GetCheckedArea().ValueOrDefault(0) <
          format2.frame_size.GetCheckedArea().ValueOrDefault(0);
 }
 
-bool IsCaptureFormatSizeEqual(const media::VideoCaptureFormat& format1,
-                              const media::VideoCaptureFormat& format2) {
-  DCHECK(format1.frame_size.GetCheckedArea().IsValid());
-  DCHECK(format2.frame_size.GetCheckedArea().IsValid());
-  return format1.frame_size.GetCheckedArea().ValueOrDefault(0) ==
-         format2.frame_size.GetCheckedArea().ValueOrDefault(0);
+bool IsCaptureFormatEqual(const media::VideoCaptureFormat& format1,
+                          const media::VideoCaptureFormat& format2) {
+  return format1.frame_size == format2.frame_size &&
+         format1.frame_rate == format2.frame_rate &&
+         format1.pixel_format == format2.pixel_format;
 }
 
-// This function receives a list of capture formats, removes duplicated
-// resolutions while keeping the highest frame rate for each, and forcing I420
-// pixel format.
+// This function receives a list of capture formats, sets all of them to I420
+// (while keeping Y16 as is), and then removes duplicates.
 void ConsolidateCaptureFormats(media::VideoCaptureFormats* formats) {
   if (formats->empty())
     return;
-  std::sort(formats->begin(), formats->end(), IsCaptureFormatSmaller);
-  // Due to the ordering imposed, the largest frame_rate is kept while removing
-  // duplicated resolutions.
-  media::VideoCaptureFormats::iterator last =
-      std::unique(formats->begin(), formats->end(), IsCaptureFormatSizeEqual);
-  formats->erase(last, formats->end());
   // Mark all formats as I420, since this is what the renderer side will get
   // anyhow: the actual pixel format is decided at the device level.
   // Don't do this for Y16 format as it is handled separatelly.
@@ -51,6 +46,11 @@ void ConsolidateCaptureFormats(media::VideoCaptureFormats* formats) {
     if (format.pixel_format != media::PIXEL_FORMAT_Y16)
       format.pixel_format = media::PIXEL_FORMAT_I420;
   }
+  std::sort(formats->begin(), formats->end(), IsCaptureFormatSmaller);
+  // Remove duplicates
+  media::VideoCaptureFormats::iterator last =
+      std::unique(formats->begin(), formats->end(), IsCaptureFormatEqual);
+  formats->erase(last, formats->end());
 }
 
 }  // anonymous namespace
