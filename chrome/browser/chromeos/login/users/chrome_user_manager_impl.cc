@@ -855,6 +855,13 @@ void ChromeUserManagerImpl::PublicAccountUserLoggedIn(
   // for the first time. Tell the UserImageManager that this user is not new to
   // prevent the avatar from getting changed.
   GetUserImageManager(user->GetAccountId())->UserLoggedIn(false, true);
+
+  // For public account, it's possible that the user-policy controlled wallpaper
+  // was fetched/cleared at the login screen (while for a regular user it was
+  // always fetched/cleared inside a user session), in the case the user-policy
+  // controlled wallpaper was cached/cleared by not updated in the login screen,
+  // so we need to update the wallpaper after the public user logged in.
+  WallpaperManager::Get()->SetUserWallpaperNow(user->GetAccountId());
   WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
 
   SetPublicAccountDelegates();
