@@ -52,7 +52,8 @@ size_t GetDefaultThreadStackSize(const pthread_attr_t& attributes) {
 void PlatformThread::SetName(const std::string& name) {
   // TODO(fuchsia): There's no system-level API to communicate a thread name
   // (for the debugger, etc.), so for now only set to our internal mechanisms.
-  ThreadIdNameManager::GetInstance()->SetName(pthread_self(), name);
+  ThreadIdNameManager::GetInstance()->SetName(PlatformThread::CurrentId(),
+                                              name);
   tracked_objects::ThreadData::InitializeThreadContext(name);
 }
 
