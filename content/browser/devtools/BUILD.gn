@@ -74,6 +74,8 @@ inspector_protocol_generate("protocol_sources") {
 
   # These are relative to $target_gen_dir.
   outputs = [
+    "protocol/browser.cc",
+    "protocol/browser.h",
     "protocol/dom.cc",
     "protocol/dom.h",
     "protocol/emulation.cc",

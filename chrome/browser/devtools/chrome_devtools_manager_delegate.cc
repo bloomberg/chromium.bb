@@ -365,9 +365,9 @@ base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
   if (method == chrome::devtools::Page::disable::kName)
     TogglePageEnable(false /* enable */, agent_host);
 
-  if (agent_host->GetType() == DevToolsAgentHost::kTypeBrowser &&
-      method.find("Browser.") == 0)
-    return HandleBrowserCommand(id, method, params).release();
+  auto* result = HandleBrowserCommand(id, method, params).release();
+  if (result)
+    return result;
 
   if (method == chrome::devtools::Page::setAdBlockingEnabled::kName)
     return SetAdBlockingEnabled(agent_host, id, params).release();
