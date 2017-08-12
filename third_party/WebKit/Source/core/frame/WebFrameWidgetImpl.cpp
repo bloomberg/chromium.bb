@@ -35,7 +35,6 @@
 #include "build/build_config.h"
 #include "core/animation/CompositorMutatorImpl.h"
 #include "core/dom/UserGestureIndicator.h"
-#include "core/editing/CompositionUnderlineVectorBuilder.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"

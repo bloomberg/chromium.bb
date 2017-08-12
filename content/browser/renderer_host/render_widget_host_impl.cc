@@ -83,7 +83,7 @@
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "storage/browser/fileapi/isolated_context.h"
-#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
+#include "third_party/WebKit/public/web/WebImeTextSpan.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
@@ -1719,21 +1719,21 @@ void RenderWidgetHostImpl::NotifyTextDirection() {
 
 void RenderWidgetHostImpl::ImeSetComposition(
     const base::string16& text,
-    const std::vector<ui::CompositionUnderline>& underlines,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range,
     int selection_start,
     int selection_end) {
   GetWidgetInputHandler()->ImeSetComposition(
-      text, underlines, replacement_range, selection_start, selection_end);
+      text, ime_text_spans, replacement_range, selection_start, selection_end);
 }
 
 void RenderWidgetHostImpl::ImeCommitText(
     const base::string16& text,
-    const std::vector<ui::CompositionUnderline>& underlines,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range,
     int relative_cursor_pos) {
-  GetWidgetInputHandler()->ImeCommitText(text, underlines, replacement_range,
-                                         relative_cursor_pos);
+  GetWidgetInputHandler()->ImeCommitText(
+      text, ime_text_spans, replacement_range, relative_cursor_pos);
 }
 
 void RenderWidgetHostImpl::ImeFinishComposingText(bool keep_selection) {
@@ -1741,9 +1741,9 @@ void RenderWidgetHostImpl::ImeFinishComposingText(bool keep_selection) {
 }
 
 void RenderWidgetHostImpl::ImeCancelComposition() {
-  GetWidgetInputHandler()->ImeSetComposition(
-      base::string16(), std::vector<ui::CompositionUnderline>(),
-      gfx::Range::InvalidRange(), 0, 0);
+  GetWidgetInputHandler()->ImeSetComposition(base::string16(),
+                                             std::vector<ui::ImeTextSpan>(),
+                                             gfx::Range::InvalidRange(), 0, 0);
 }
 
 void RenderWidgetHostImpl::RejectMouseLockOrUnlockIfNecessary() {

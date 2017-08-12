@@ -280,7 +280,7 @@ blink::WebColor WebColorFromNSColor(NSColor *color) {
 // Extract underline information from an attributed string. Mostly copied from
 // third_party/WebKit/Source/WebKit/mac/WebView/WebHTMLView.mm
 void ExtractUnderlines(NSAttributedString* string,
-                       std::vector<ui::CompositionUnderline>* underlines) {
+                       std::vector<ui::ImeTextSpan>* ime_text_spans) {
   int length = [[string string] length];
   int i = 0;
   while (i < length) {
@@ -295,9 +295,9 @@ void ExtractUnderlines(NSAttributedString* string,
         color = WebColorFromNSColor(
             [colorAttr colorUsingColorSpaceName:NSDeviceRGBColorSpace]);
       }
-      underlines->push_back(
-          ui::CompositionUnderline(range.location, NSMaxRange(range), color,
-                                   [style intValue] > 1, SK_ColorTRANSPARENT));
+      ime_text_spans->push_back(
+          ui::ImeTextSpan(range.location, NSMaxRange(range), color,
+                          [style intValue] > 1, SK_ColorTRANSPARENT));
     }
     i = range.location + range.length;
   }
@@ -2197,7 +2197,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   textToBeInserted_.clear();
   markedText_.clear();
   markedTextSelectedRange_ = NSMakeRange(NSNotFound, 0);
-  underlines_.clear();
+  ime_text_spans_.clear();
   setMarkedTextReplacementRange_ = gfx::Range::InvalidRange();
   unmarkTextCalled_ = NO;
   hasEditCommands_ = NO;
@@ -2259,8 +2259,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   BOOL textInserted = NO;
   if (textToBeInserted_.length() >
       ((hasMarkedText_ || oldHasMarkedText) ? 0u : 1u)) {
-    widgetHost->ImeCommitText(textToBeInserted_,
-                              std::vector<ui::CompositionUnderline>(),
+    widgetHost->ImeCommitText(textToBeInserted_, std::vector<ui::ImeTextSpan>(),
                               gfx::Range::InvalidRange(), 0);
     textInserted = YES;
   }
@@ -2272,7 +2271,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     // composition node in WebKit.
     // When marked text is available, |markedTextSelectedRange_| will be the
     // range being selected inside the marked text.
-    widgetHost->ImeSetComposition(markedText_, underlines_,
+    widgetHost->ImeSetComposition(markedText_, ime_text_spans_,
                                   setMarkedTextReplacementRange_,
                                   markedTextSelectedRange_.location,
                                   NSMaxRange(markedTextSelectedRange_));
@@ -3306,7 +3305,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   hasMarkedText_ = NO;
   markedText_.clear();
   markedTextSelectedRange_ = NSMakeRange(NSNotFound, 0);
-  underlines_.clear();
+  ime_text_spans_.clear();
 
   // If we are handling a key down event, then FinishComposingText() will be
   // called in keyEvent: method.
@@ -3335,13 +3334,13 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   markedText_ = base::SysNSStringToUTF16(im_text);
   hasMarkedText_ = (length > 0);
 
-  underlines_.clear();
+  ime_text_spans_.clear();
   if (isAttributedString) {
-    ExtractUnderlines(string, &underlines_);
+    ExtractUnderlines(string, &ime_text_spans_);
   } else {
     // Use a thin black underline by default.
-    underlines_.push_back(ui::CompositionUnderline(0, length, SK_ColorBLACK,
-                                                   false, SK_ColorTRANSPARENT));
+    ime_text_spans_.push_back(
+        ui::ImeTextSpan(0, length, SK_ColorBLACK, false, SK_ColorTRANSPARENT));
   }
 
   // If we are handling a key down event, then SetComposition() will be
@@ -3356,7 +3355,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   } else {
     if (renderWidgetHostView_->GetActiveWidget()) {
       renderWidgetHostView_->GetActiveWidget()->ImeSetComposition(
-          markedText_, underlines_, gfx::Range(replacementRange),
+          markedText_, ime_text_spans_, gfx::Range(replacementRange),
           newSelRange.location, NSMaxRange(newSelRange));
     }
   }
@@ -3415,8 +3414,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     gfx::Range replacement_range(replacementRange);
     if (renderWidgetHostView_->GetActiveWidget()) {
       renderWidgetHostView_->GetActiveWidget()->ImeCommitText(
-          base::SysNSStringToUTF16(im_text),
-          std::vector<ui::CompositionUnderline>(), replacement_range, 0);
+          base::SysNSStringToUTF16(im_text), std::vector<ui::ImeTextSpan>(),
+          replacement_range, 0);
     }
   }
 

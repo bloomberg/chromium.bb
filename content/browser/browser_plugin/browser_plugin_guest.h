@@ -38,8 +38,8 @@
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebDragStatus.h"
+#include "third_party/WebKit/public/web/WebImeTextSpan.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
@@ -336,12 +336,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnImeSetComposition(
       int instance_id,
       const BrowserPluginHostMsg_SetComposition_Params& params);
-  void OnImeCommitText(
-      int instance_id,
-      const base::string16& text,
-      const std::vector<blink::WebCompositionUnderline>& underlines,
-      const gfx::Range& replacement_range,
-      int relative_cursor_pos);
+  void OnImeCommitText(int instance_id,
+                       const base::string16& text,
+                       const std::vector<blink::WebImeTextSpan>& ime_text_spans,
+                       const gfx::Range& replacement_range,
+                       int relative_cursor_pos);
   void OnImeFinishComposingText(int instance_id, bool keep_selection);
   void OnExtendSelectionAndDelete(int instance_id, int before, int after);
   void OnImeCancelComposition();

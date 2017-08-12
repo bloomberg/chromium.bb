@@ -27,7 +27,7 @@
 #include "jni/ImeAdapter_jni.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebTextInputType.h"
-#include "ui/base/ime/composition_underline.h"
+#include "ui/base/ime/ime_text_span.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -73,37 +73,37 @@ jlong Init(JNIEnv* env,
 }
 
 // Callback from Java to convert BackgroundColorSpan data to a
-// ui::CompositionUnderline instance, and append it to |underlines_ptr|.
+// ui::ImeTextSpan instance, and append it to |ime_text_spans_ptr|.
 void AppendBackgroundColorSpan(JNIEnv*,
                                const JavaParamRef<jclass>&,
-                               jlong underlines_ptr,
+                               jlong ime_text_spans_ptr,
                                jint start,
                                jint end,
                                jint background_color) {
   DCHECK_GE(start, 0);
   DCHECK_GE(end, 0);
   // Do not check |background_color|.
-  std::vector<ui::CompositionUnderline>* underlines =
-      reinterpret_cast<std::vector<ui::CompositionUnderline>*>(underlines_ptr);
-  underlines->push_back(ui::CompositionUnderline(
+  std::vector<ui::ImeTextSpan>* ime_text_spans =
+      reinterpret_cast<std::vector<ui::ImeTextSpan>*>(ime_text_spans_ptr);
+  ime_text_spans->push_back(ui::ImeTextSpan(
       static_cast<unsigned>(start), static_cast<unsigned>(end),
       SK_ColorTRANSPARENT, false, static_cast<unsigned>(background_color)));
 }
 
 // Callback from Java to convert UnderlineSpan data to a
-// ui::CompositionUnderline instance, and append it to |underlines_ptr|.
+// ui::ImeTextSpan instance, and append it to |ime_text_spans_ptr|.
 void AppendUnderlineSpan(JNIEnv*,
                          const JavaParamRef<jclass>&,
-                         jlong underlines_ptr,
+                         jlong ime_text_spans_ptr,
                          jint start,
                          jint end) {
   DCHECK_GE(start, 0);
   DCHECK_GE(end, 0);
-  std::vector<ui::CompositionUnderline>* underlines =
-      reinterpret_cast<std::vector<ui::CompositionUnderline>*>(underlines_ptr);
-  underlines->push_back(ui::CompositionUnderline(
-      static_cast<unsigned>(start), static_cast<unsigned>(end), SK_ColorBLACK,
-      false, SK_ColorTRANSPARENT));
+  std::vector<ui::ImeTextSpan>* ime_text_spans =
+      reinterpret_cast<std::vector<ui::ImeTextSpan>*>(ime_text_spans_ptr);
+  ime_text_spans->push_back(
+      ui::ImeTextSpan(static_cast<unsigned>(start), static_cast<unsigned>(end),
+                      SK_ColorBLACK, false, SK_ColorTRANSPARENT));
 }
 
 ImeAdapterAndroid::ImeAdapterAndroid(JNIEnv* env,
@@ -210,13 +210,13 @@ void ImeAdapterAndroid::SetComposingText(JNIEnv* env,
 
   base::string16 text16 = ConvertJavaStringToUTF16(env, text_str);
 
-  std::vector<ui::CompositionUnderline> underlines =
-      GetUnderlinesFromSpans(env, obj, text, text16);
+  std::vector<ui::ImeTextSpan> ime_text_spans =
+      GetImeTextSpansFromJava(env, obj, text, text16);
 
   // Default to plain underline if we didn't find any span that we care about.
-  if (underlines.empty()) {
-    underlines.push_back(ui::CompositionUnderline(
-        0, text16.length(), SK_ColorBLACK, false, SK_ColorTRANSPARENT));
+  if (ime_text_spans.empty()) {
+    ime_text_spans.push_back(ui::ImeTextSpan(0, text16.length(), SK_ColorBLACK,
+                                             false, SK_ColorTRANSPARENT));
   }
 
   // relative_cursor_pos is as described in the Android API for
@@ -225,7 +225,7 @@ void ImeAdapterAndroid::SetComposingText(JNIEnv* env,
   if (relative_cursor_pos > 0)
     relative_cursor_pos = text16.length() + relative_cursor_pos - 1;
 
-  rwhi->ImeSetComposition(text16, underlines, gfx::Range::InvalidRange(),
+  rwhi->ImeSetComposition(text16, ime_text_spans, gfx::Range::InvalidRange(),
                           relative_cursor_pos, relative_cursor_pos);
 }
 
@@ -240,8 +240,8 @@ void ImeAdapterAndroid::CommitText(JNIEnv* env,
 
   base::string16 text16 = ConvertJavaStringToUTF16(env, text_str);
 
-  std::vector<ui::CompositionUnderline> underlines =
-      GetUnderlinesFromSpans(env, obj, text, text16);
+  std::vector<ui::ImeTextSpan> ime_text_spans =
+      GetImeTextSpansFromJava(env, obj, text, text16);
 
   // relative_cursor_pos is as described in the Android API for
   // InputConnection#commitText, whereas the parameters for
@@ -251,7 +251,7 @@ void ImeAdapterAndroid::CommitText(JNIEnv* env,
   else
     relative_cursor_pos -= text16.length();
 
-  rwhi->ImeCommitText(text16, underlines, gfx::Range::InvalidRange(),
+  rwhi->ImeCommitText(text16, ime_text_spans, gfx::Range::InvalidRange(),
                       relative_cursor_pos);
 }
 
@@ -336,12 +336,12 @@ void ImeAdapterAndroid::SetComposingRegion(JNIEnv*,
   if (!rfh)
     return;
 
-  std::vector<ui::CompositionUnderline> underlines;
-  underlines.push_back(ui::CompositionUnderline(0, end - start, SK_ColorBLACK,
-                                                false, SK_ColorTRANSPARENT));
+  std::vector<ui::ImeTextSpan> ime_text_spans;
+  ime_text_spans.push_back(ui::ImeTextSpan(0, end - start, SK_ColorBLACK, false,
+                                           SK_ColorTRANSPARENT));
 
   rfh->GetFrameInputHandler()->SetCompositionFromExistingText(start, end,
-                                                              underlines);
+                                                              ime_text_spans);
 }
 
 void ImeAdapterAndroid::DeleteSurroundingText(JNIEnv*,
@@ -412,22 +412,22 @@ RenderFrameHost* ImeAdapterAndroid::GetFocusedFrame() {
   return nullptr;
 }
 
-std::vector<ui::CompositionUnderline> ImeAdapterAndroid::GetUnderlinesFromSpans(
+std::vector<ui::ImeTextSpan> ImeAdapterAndroid::GetImeTextSpansFromJava(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jobject>& text,
     const base::string16& text16) {
-  std::vector<ui::CompositionUnderline> underlines;
+  std::vector<ui::ImeTextSpan> ime_text_spans;
   // Iterate over spans in |text|, dispatch those that we care about (e.g.,
   // BackgroundColorSpan) to a matching callback (e.g.,
-  // AppendBackgroundColorSpan()), and populate |underlines|.
-  Java_ImeAdapter_populateUnderlinesFromSpans(
-      env, obj, text, reinterpret_cast<jlong>(&underlines));
+  // AppendBackgroundColorSpan()), and populate |ime_text_spans|.
+  Java_ImeAdapter_populateImeTextSpansFromJava(
+      env, obj, text, reinterpret_cast<jlong>(&ime_text_spans));
 
   // Sort spans by |.startOffset|.
-  std::sort(underlines.begin(), underlines.end());
+  std::sort(ime_text_spans.begin(), ime_text_spans.end());
 
-  return underlines;
+  return ime_text_spans;
 }
 
 }  // namespace content

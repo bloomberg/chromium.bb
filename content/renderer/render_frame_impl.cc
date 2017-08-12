@@ -1478,19 +1478,19 @@ void RenderFrameImpl::PluginCrashed(const base::FilePath& plugin_path,
 
 void RenderFrameImpl::SimulateImeSetComposition(
     const base::string16& text,
-    const std::vector<blink::WebCompositionUnderline>& underlines,
+    const std::vector<blink::WebImeTextSpan>& ime_text_spans,
     int selection_start,
     int selection_end) {
-  render_view_->OnImeSetComposition(
-      text, underlines, gfx::Range::InvalidRange(),
-      selection_start, selection_end);
+  render_view_->OnImeSetComposition(text, ime_text_spans,
+                                    gfx::Range::InvalidRange(), selection_start,
+                                    selection_end);
 }
 
 void RenderFrameImpl::SimulateImeCommitText(
     const base::string16& text,
-    const std::vector<blink::WebCompositionUnderline>& underlines,
+    const std::vector<blink::WebImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range) {
-  render_view_->OnImeCommitText(text, underlines, replacement_range, 0);
+  render_view_->OnImeCommitText(text, ime_text_spans, replacement_range, 0);
 }
 
 void RenderFrameImpl::SimulateImeFinishComposingText(bool keep_selection) {
@@ -1499,7 +1499,7 @@ void RenderFrameImpl::SimulateImeFinishComposingText(bool keep_selection) {
 
 void RenderFrameImpl::OnImeSetComposition(
     const base::string16& text,
-    const std::vector<blink::WebCompositionUnderline>& underlines,
+    const std::vector<blink::WebImeTextSpan>& ime_text_spans,
     int selection_start,
     int selection_end) {
   // When a PPAPI plugin has focus, we bypass WebKit.
@@ -1523,7 +1523,8 @@ void RenderFrameImpl::OnImeSetComposition(
     // Nonempty: composition is ongoing.
     if (!pepper_composition_text_.empty()) {
       focused_pepper_plugin_->HandleCompositionUpdate(
-          pepper_composition_text_, underlines, selection_start, selection_end);
+          pepper_composition_text_, ime_text_spans, selection_start,
+          selection_end);
     }
   }
 }
@@ -2215,10 +2216,11 @@ void RenderFrameImpl::OnSetEditableSelectionOffsets(int start, int end) {
 }
 
 void RenderFrameImpl::OnSetCompositionFromExistingText(
-    int start, int end,
-    const std::vector<blink::WebCompositionUnderline>& underlines) {
+    int start,
+    int end,
+    const std::vector<blink::WebImeTextSpan>& ime_text_spans) {
   ImeEventGuard guard(GetRenderWidget());
-  frame_->SetCompositionFromExistingText(start, end, underlines);
+  frame_->SetCompositionFromExistingText(start, end, ime_text_spans);
 }
 
 void RenderFrameImpl::OnExecuteNoValueEditCommand(const std::string& name) {

@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CompositionUnderline_h
-#define CompositionUnderline_h
+#ifndef ImeTextSpan_h
+#define ImeTextSpan_h
 
 #include "core/CoreExport.h"
 #include "platform/graphics/Color.h"
@@ -32,19 +32,19 @@
 
 namespace blink {
 
-struct WebCompositionUnderline;
+struct WebImeTextSpan;
 
-class CORE_EXPORT CompositionUnderline {
+class CORE_EXPORT ImeTextSpan {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  CompositionUnderline(unsigned start_offset,
-                       unsigned end_offset,
-                       const Color&,
-                       bool thick,
-                       const Color& background_color);
+  ImeTextSpan(unsigned start_offset,
+              unsigned end_offset,
+              const Color&,
+              bool thick,
+              const Color& background_color);
 
-  CompositionUnderline(const WebCompositionUnderline&);
+  ImeTextSpan(const WebImeTextSpan&);
 
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
@@ -62,4 +62,4 @@ class CORE_EXPORT CompositionUnderline {
 
 }  // namespace blink
 
-#endif  // CompositionUnderline_h
+#endif  // ImeTextSpan_h

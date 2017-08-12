@@ -47,7 +47,7 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/ime/composition_text.h"
-#include "ui/base/ime/composition_underline.h"
+#include "ui/base/ime/ime_text_span.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -1724,7 +1724,7 @@ IN_PROC_BROWSER_TEST_P(WebViewImeInteractiveTest,
       target_web_contents->GetRenderWidgetHostView()->GetRenderWidgetHost();
   content::SendImeCommitTextToWidget(
       target_rwh_for_input, base::UTF8ToUTF16("C"),
-      std::vector<ui::CompositionUnderline>(), gfx::Range(4, 5), 0);
+      std::vector<ui::ImeTextSpan>(), gfx::Range(4, 5), 0);
   input_listener.WaitUntilSatisfied();
 
   // Get the input value from the guest.
@@ -1790,7 +1790,7 @@ IN_PROC_BROWSER_TEST_P(WebViewImeInteractiveTest, CompositionRangeUpdates) {
   CompositionRangeUpdateObserver observer(embedder_web_contents);
   content::SendImeSetCompositionTextToWidget(
       target_web_contents->GetRenderWidgetHostView()->GetRenderWidgetHost(),
-      base::UTF8ToUTF16("ABC"), std::vector<ui::CompositionUnderline>(),
+      base::UTF8ToUTF16("ABC"), std::vector<ui::ImeTextSpan>(),
       gfx::Range::InvalidRange(), 0, 3);
   observer.WaitForCompositionRangeLength(3U);
 }

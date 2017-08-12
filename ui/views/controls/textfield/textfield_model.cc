@@ -256,8 +256,8 @@ namespace {
 // representing the target clause (on Windows). Returns an invalid range if
 // there is no such a range.
 gfx::Range GetFirstEmphasizedRange(const ui::CompositionText& composition) {
-  for (size_t i = 0; i < composition.underlines.size(); ++i) {
-    const ui::CompositionUnderline& underline = composition.underlines[i];
+  for (size_t i = 0; i < composition.ime_text_spans.size(); ++i) {
+    const ui::ImeTextSpan& underline = composition.ime_text_spans[i];
     if (underline.thick)
       return gfx::Range(underline.start_offset, underline.end_offset);
   }
@@ -659,8 +659,9 @@ void TextfieldModel::SetCompositionText(
   base::string16 new_text = text();
   render_text_->SetText(new_text.insert(cursor, composition.text));
   composition_range_ = gfx::Range(cursor, cursor + composition.text.length());
-  // Don't render transparent composition underlines.
-  if (composition.underlines.size() > 0 && composition.underlines[0].color != 0)
+  // Don't render transparent IME spans.
+  if (composition.ime_text_spans.size() > 0 &&
+      composition.ime_text_spans[0].color != 0)
     render_text_->SetCompositionRange(composition_range_);
   else
     render_text_->SetCompositionRange(gfx::Range::InvalidRange());

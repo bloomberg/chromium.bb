@@ -23,7 +23,7 @@
 #include <Cocoa/Cocoa.h>
 
 using blink::WebFrameContentDumper;
-using blink::WebCompositionUnderline;
+using blink::WebImeTextSpan;
 
 namespace content {
 
@@ -182,11 +182,11 @@ TEST_F(RenderViewTest, HandleIPCsInSwappedOutState) {
 
   // Simulate some IME related IPCs.
   using Text = base::string16;
-  using Underlines = std::vector<blink::WebCompositionUnderline>;
+  using ImeTextSpans = std::vector<blink::WebImeTextSpan>;
   view->OnMessageReceived(InputMsg_ImeSetComposition(
-      routing_id, Text(), Underlines(), Range(), 0, 0));
+      routing_id, Text(), ImeTextSpans(), Range(), 0, 0));
   view->OnMessageReceived(
-      InputMsg_ImeCommitText(routing_id, Text(), Underlines(), Range(), 0));
+      InputMsg_ImeCommitText(routing_id, Text(), ImeTextSpans(), Range(), 0));
   view->OnMessageReceived(InputMsg_ImeFinishComposingText(routing_id, false));
 }
 

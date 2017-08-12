@@ -37,7 +37,7 @@
 #import "ui/base/cocoa/command_dispatcher.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #import "ui/base/cocoa/tool_tip_base_view.h"
-#include "ui/base/ime/composition_underline.h"
+#include "ui/base/ime/ime_text_span.h"
 #include "ui/display/display_observer.h"
 
 namespace content {
@@ -127,7 +127,7 @@ struct TextInputState;
   NSRange markedTextSelectedRange_;
 
   // Underline information of the |markedText_|.
-  std::vector<ui::CompositionUnderline> underlines_;
+  std::vector<ui::ImeTextSpan> ime_text_spans_;
 
   // Replacement range information received from |setMarkedText:|.
   gfx::Range setMarkedTextReplacementRange_;

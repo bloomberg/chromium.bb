@@ -24,17 +24,17 @@ namespace content {
 
 namespace {
 
-std::vector<blink::WebCompositionUnderline>
-ConvertUIUnderlinesToBlinkUnderlines(
-    const std::vector<ui::CompositionUnderline>& ui_underlines) {
-  std::vector<blink::WebCompositionUnderline> underlines;
-  for (const auto& underline : ui_underlines) {
-    blink::WebCompositionUnderline blink_underline(
-        underline.start_offset, underline.end_offset, underline.color,
-        underline.thick, underline.background_color);
-    underlines.push_back(blink_underline);
+std::vector<blink::WebImeTextSpan> ConvertUIImeTextSpansToBlinkImeTextSpans(
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
+  std::vector<blink::WebImeTextSpan> ime_text_spans;
+  for (const auto& ime_text_span : ui_ime_text_spans) {
+    blink::WebImeTextSpan blink_ime_text_span(
+        ime_text_span.start_offset, ime_text_span.end_offset,
+        ime_text_span.color, ime_text_span.thick,
+        ime_text_span.background_color);
+    ime_text_spans.push_back(blink_ime_text_span);
   }
-  return underlines;
+  return ime_text_spans;
 }
 }  // namespace
 
@@ -89,24 +89,25 @@ void WidgetInputHandlerImpl::CursorVisibilityChanged(bool visible) {
 
 void WidgetInputHandlerImpl::ImeSetComposition(
     const base::string16& text,
-    const std::vector<ui::CompositionUnderline>& underlines,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& range,
     int32_t start,
     int32_t end) {
-  RunOnMainThread(base::Bind(
-      &RenderWidget::OnImeSetComposition, render_widget_, text,
-      ConvertUIUnderlinesToBlinkUnderlines(underlines), range, start, end));
+  RunOnMainThread(
+      base::Bind(&RenderWidget::OnImeSetComposition, render_widget_, text,
+                 ConvertUIImeTextSpansToBlinkImeTextSpans(ime_text_spans),
+                 range, start, end));
 }
 
 void WidgetInputHandlerImpl::ImeCommitText(
     const base::string16& text,
-    const std::vector<ui::CompositionUnderline>& underlines,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& range,
     int32_t relative_cursor_position) {
-  RunOnMainThread(base::Bind(&RenderWidget::OnImeCommitText, render_widget_,
-                             text,
-                             ConvertUIUnderlinesToBlinkUnderlines(underlines),
-                             range, relative_cursor_position));
+  RunOnMainThread(
+      base::Bind(&RenderWidget::OnImeCommitText, render_widget_, text,
+                 ConvertUIImeTextSpansToBlinkImeTextSpans(ime_text_spans),
+                 range, relative_cursor_position));
 }
 
 void WidgetInputHandlerImpl::ImeFinishComposingText(bool keep_selection) {

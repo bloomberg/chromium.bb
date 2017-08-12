@@ -52,7 +52,7 @@
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebTextInputInfo.h"
-#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
+#include "third_party/WebKit/public/web/WebImeTextSpan.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
@@ -435,15 +435,14 @@ class CONTENT_EXPORT RenderWidget
   void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   void OnImeSetComposition(
       const base::string16& text,
-      const std::vector<blink::WebCompositionUnderline>& underlines,
+      const std::vector<blink::WebImeTextSpan>& ime_text_spans,
       const gfx::Range& replacement_range,
       int selection_start,
       int selection_end);
-  void OnImeCommitText(
-      const base::string16& text,
-      const std::vector<blink::WebCompositionUnderline>& underlines,
-      const gfx::Range& replacement_range,
-      int relative_cursor_pos);
+  void OnImeCommitText(const base::string16& text,
+                       const std::vector<blink::WebImeTextSpan>& ime_text_spans,
+                       const gfx::Range& replacement_range,
+                       int relative_cursor_pos);
   void OnImeFinishComposingText(bool keep_selection);
 
   // Called by the browser process to update text input state.

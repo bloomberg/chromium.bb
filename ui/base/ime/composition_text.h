@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "base/strings/string16.h"
-#include "ui/base/ime/composition_underline.h"
+#include "ui/base/ime/ime_text_span.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/gfx/range/range.h"
 
@@ -21,12 +21,11 @@ struct UI_BASE_IME_EXPORT CompositionText {
   ~CompositionText();
 
   bool operator==(const CompositionText& rhs) const {
-    if ((this->text != rhs.text) ||
-        (this->selection != rhs.selection) ||
-        (this->underlines.size() != rhs.underlines.size()))
+    if ((this->text != rhs.text) || (this->selection != rhs.selection) ||
+        (this->ime_text_spans.size() != rhs.ime_text_spans.size()))
       return false;
-    for (size_t i = 0; i < this->underlines.size(); ++i) {
-      if (this->underlines[i] != rhs.underlines[i])
+    for (size_t i = 0; i < this->ime_text_spans.size(); ++i) {
+      if (this->ime_text_spans[i] != rhs.ime_text_spans[i])
         return false;
     }
     return true;
@@ -43,10 +42,8 @@ struct UI_BASE_IME_EXPORT CompositionText {
   // Content of the composition text.
   base::string16 text;
 
-  // Underline information of the composition text.
-  // They must be sorted in ascending order by their start_offset and cannot be
-  // overlapped with each other.
-  CompositionUnderlines underlines;
+  // ImeTextSpan information for the composition text.
+  ImeTextSpans ime_text_spans;
 
   // Selection range in the composition text. It represents the caret position
   // if the range length is zero. Usually it's used for representing the target

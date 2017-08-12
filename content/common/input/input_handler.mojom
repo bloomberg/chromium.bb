@@ -169,13 +169,13 @@ interface WidgetInputHandler {
 
   // This message sends a string being composed with an input method.
   ImeSetComposition(mojo.common.mojom.String16 text,
-                    array<ui.mojom.CompositionUnderline> underlines,
+                    array<ui.mojom.ImeTextSpan> ime_text_spans,
                     gfx.mojom.Range range, int32 start, int32 end);
 
   // This message deletes the current composition, inserts specified text, and
   // moves the cursor.
   ImeCommitText(mojo.common.mojom.String16 text,
-                array<ui.mojom.CompositionUnderline> underlines,
+                array<ui.mojom.ImeTextSpan> ime_text_spans,
                 gfx.mojom.Range range, int32 relative_cursor_position);
 
   // This message inserts the ongoing composition.
@@ -216,7 +216,7 @@ interface FrameInputHandler {
   // Sets the text composition to be between the given start and end offsets in
   // the currently focused editable field.
   SetCompositionFromExistingText(
-      int32 start, int32 end, array<ui.mojom.CompositionUnderline> underlines);
+      int32 start, int32 end, array<ui.mojom.ImeTextSpan> ime_text_spans);
 
   // Deletes the current selection plus the specified number of characters
   // before and after the selection or caret.

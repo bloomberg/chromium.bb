@@ -62,10 +62,10 @@ void GetCompositionTargetRange(HIMC imm_context, int* target_start,
 
 // Helper function for IMM32Manager::GetCompositionInfo() method, to get
 // underlines information of the current composition string.
-void GetCompositionUnderlines(HIMC imm_context,
-                              int target_start,
-                              int target_end,
-                              ui::CompositionUnderlines* underlines) {
+void GetImeTextSpans(HIMC imm_context,
+                     int target_start,
+                     int target_end,
+                     ui::ImeTextSpans* ime_text_spans) {
   int clause_size = ::ImmGetCompositionString(imm_context, GCS_COMPCLAUSE,
                                               NULL, 0);
   int clause_length = clause_size / sizeof(uint32_t);
@@ -75,19 +75,19 @@ void GetCompositionUnderlines(HIMC imm_context,
       ::ImmGetCompositionString(imm_context, GCS_COMPCLAUSE,
                                 clause_data.get(), clause_size);
       for (int i = 0; i < clause_length - 1; ++i) {
-        ui::CompositionUnderline underline;
-        underline.start_offset = clause_data[i];
-        underline.end_offset = clause_data[i+1];
-        underline.color = SK_ColorBLACK;
-        underline.thick = false;
-        underline.background_color = SK_ColorTRANSPARENT;
+        ui::ImeTextSpan ime_text_span;
+        ime_text_span.start_offset = clause_data[i];
+        ime_text_span.end_offset = clause_data[i + 1];
+        ime_text_span.color = SK_ColorBLACK;
+        ime_text_span.thick = false;
+        ime_text_span.background_color = SK_ColorTRANSPARENT;
 
         // Use thick underline for the target clause.
-        if (underline.start_offset >= static_cast<uint32_t>(target_start) &&
-            underline.end_offset <= static_cast<uint32_t>(target_end)) {
-          underline.thick = true;
+        if (ime_text_span.start_offset >= static_cast<uint32_t>(target_start) &&
+            ime_text_span.end_offset <= static_cast<uint32_t>(target_end)) {
+          ime_text_span.thick = true;
         }
-        underlines->push_back(underline);
+        ime_text_spans->push_back(ime_text_span);
       }
     }
   }
@@ -294,8 +294,8 @@ void IMM32Manager::GetCompositionInfo(HIMC imm_context,
                                       LPARAM lparam,
                                       CompositionText* composition) {
   // We only care about GCS_COMPATTR, GCS_COMPCLAUSE and GCS_CURSORPOS, and
-  // convert them into underlines and selection range respectively.
-  composition->underlines.clear();
+  // convert them into composition underlines and selection range respectively.
+  composition->ime_text_spans.clear();
 
   int length = static_cast<int>(composition->text.length());
 
@@ -320,36 +320,36 @@ void IMM32Manager::GetCompositionInfo(HIMC imm_context,
     composition->selection = gfx::Range(0);
   }
 
-  // Retrieve the clause segmentations and convert them to underlines.
+  // Retrieve the clause segmentations and convert them to ime_text_spans.
   if (lparam & GCS_COMPCLAUSE) {
-    GetCompositionUnderlines(imm_context, target_start, target_end,
-                             &composition->underlines);
+    GetImeTextSpans(imm_context, target_start, target_end,
+                    &composition->ime_text_spans);
   }
 
-  // Set default underlines in case there is no clause information.
-  if (!composition->underlines.empty())
+  // Set default composition underlines in case there is no clause information.
+  if (!composition->ime_text_spans.empty())
     return;
 
-  CompositionUnderline underline;
-  underline.color = SK_ColorBLACK;
-  underline.background_color = SK_ColorTRANSPARENT;
+  ImeTextSpan ime_text_span;
+  ime_text_span.color = SK_ColorBLACK;
+  ime_text_span.background_color = SK_ColorTRANSPARENT;
   if (target_start > 0) {
-    underline.start_offset = 0U;
-    underline.end_offset = static_cast<uint32_t>(target_start);
-    underline.thick = false;
-    composition->underlines.push_back(underline);
+    ime_text_span.start_offset = 0U;
+    ime_text_span.end_offset = static_cast<uint32_t>(target_start);
+    ime_text_span.thick = false;
+    composition->ime_text_spans.push_back(ime_text_span);
   }
   if (target_end > target_start) {
-    underline.start_offset = static_cast<uint32_t>(target_start);
-    underline.end_offset = static_cast<uint32_t>(target_end);
-    underline.thick = true;
-    composition->underlines.push_back(underline);
+    ime_text_span.start_offset = static_cast<uint32_t>(target_start);
+    ime_text_span.end_offset = static_cast<uint32_t>(target_end);
+    ime_text_span.thick = true;
+    composition->ime_text_spans.push_back(ime_text_span);
   }
   if (target_end < length) {
-    underline.start_offset = static_cast<uint32_t>(target_end);
-    underline.end_offset = static_cast<uint32_t>(length);
-    underline.thick = false;
-    composition->underlines.push_back(underline);
+    ime_text_span.start_offset = static_cast<uint32_t>(target_end);
+    ime_text_span.end_offset = static_cast<uint32_t>(length);
+    ime_text_span.thick = false;
+    composition->ime_text_spans.push_back(ime_text_span);
   }
 }
 
@@ -403,7 +403,7 @@ bool IMM32Manager::GetComposition(HWND window_handle, LPARAM lparam,
         composition->text[0] = 0xFF3F;
       }
 
-      // Retrieve the composition underlines and selection range information.
+      // Retrieve the IME text spans and selection range information.
       GetCompositionInfo(imm_context, lparam, composition);
 
       // Mark that there is an ongoing composition.

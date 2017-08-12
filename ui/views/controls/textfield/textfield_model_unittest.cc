@@ -867,7 +867,7 @@ TEST_F(TextfieldModelTest, CompositionTextTest) {
 
   ui::CompositionText composition;
   composition.text = base::ASCIIToUTF16("678");
-  composition.underlines.push_back(ui::CompositionUnderline(0, 3, 0, false));
+  composition.ime_text_spans.push_back(ui::ImeTextSpan(0, 3, 0, false));
 
   // Cursor should be at the end of composition when characters are just typed.
   composition.selection = gfx::Range(3, 3);
@@ -881,15 +881,15 @@ TEST_F(TextfieldModelTest, CompositionTextTest) {
 
   // Restart composition with targeting "67" in "678".
   composition.selection = gfx::Range(1, 3);
-  composition.underlines.clear();
-  composition.underlines.push_back(ui::CompositionUnderline(0, 2, 0, true));
-  composition.underlines.push_back(ui::CompositionUnderline(2, 3, 0, false));
+  composition.ime_text_spans.clear();
+  composition.ime_text_spans.push_back(ui::ImeTextSpan(0, 2, 0, true));
+  composition.ime_text_spans.push_back(ui::ImeTextSpan(2, 3, 0, false));
   model.SetCompositionText(composition);
   EXPECT_TRUE(model.HasCompositionText());
   EXPECT_TRUE(model.HasSelection());
 #if !defined(OS_CHROMEOS)
   // |composition.selection| is ignored because SetCompositionText checks
-  // if a bold underline exists first.
+  // if a thick underline exists first.
   EXPECT_EQ(gfx::Range(5, 7), model.render_text()->selection());
   EXPECT_EQ(7U, model.render_text()->cursor_position());
 #else
@@ -922,9 +922,9 @@ TEST_F(TextfieldModelTest, CompositionTextTest) {
   composition_text_confirmed_or_cleared_ = false;
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, gfx::SELECTION_NONE);
 
-  // Also test the case where a selection exists but a bold underline doesn't.
+  // Also test the case where a selection exists but a thick underline doesn't.
   composition.selection = gfx::Range(0, 1);
-  composition.underlines.clear();
+  composition.ime_text_spans.clear();
   model.SetCompositionText(composition);
   EXPECT_STR_EQ("1234567890678", model.text());
   EXPECT_TRUE(model.HasSelection());
@@ -1475,7 +1475,7 @@ TEST_F(TextfieldModelTest, UndoRedo_CompositionText) {
 
   ui::CompositionText composition;
   composition.text = base::ASCIIToUTF16("abc");
-  composition.underlines.push_back(ui::CompositionUnderline(0, 3, 0, false));
+  composition.ime_text_spans.push_back(ui::ImeTextSpan(0, 3, 0, false));
   composition.selection = gfx::Range(2, 3);
 
   model.SetText(base::ASCIIToUTF16("ABCDE"));

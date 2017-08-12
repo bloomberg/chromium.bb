@@ -24,7 +24,7 @@ class CONTENT_EXPORT LegacyIPCFrameInputHandler
   void SetCompositionFromExistingText(
       int32_t start,
       int32_t end,
-      const std::vector<ui::CompositionUnderline>& underlines) override;
+      const std::vector<ui::ImeTextSpan>& ime_text_spans) override;
   void ExtendSelectionAndDelete(int32_t before, int32_t after) override;
   void DeleteSurroundingText(int32_t before, int32_t after) override;
   void DeleteSurroundingTextInCodePoints(int32_t before,

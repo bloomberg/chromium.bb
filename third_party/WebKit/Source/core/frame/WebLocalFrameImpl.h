@@ -203,7 +203,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool SetCompositionFromExistingText(
       int composition_start,
       int composition_end,
-      const WebVector<WebCompositionUnderline>& underlines) override;
+      const WebVector<WebImeTextSpan>& ime_text_spans) override;
   void ExtendSelectionAndDelete(int before, int after) override;
   void DeleteSurroundingText(int before, int after) override;
   void DeleteSurroundingTextInCodePoints(int before, int after) override;

@@ -28,41 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebCompositionUnderline_h
-#define WebCompositionUnderline_h
+#ifndef WebImeTextSpan_h
+#define WebImeTextSpan_h
 
 #include "public/platform/WebColor.h"
 
 namespace blink {
 
-// Class WebCompositionUnderline is intended to be used with WebWidget's
+// Class WebImeTextSpan is intended to be used with WebWidget's
 // setComposition() method.
-struct WebCompositionUnderline {
-  WebCompositionUnderline()
+struct WebImeTextSpan {
+  WebImeTextSpan()
       : start_offset(0),
         end_offset(0),
         color(0),
         thick(false),
         background_color(0) {}
 
-  WebCompositionUnderline(unsigned s,
-                          unsigned e,
-                          WebColor c,
-                          bool t,
-                          WebColor bc)
+  WebImeTextSpan(unsigned s, unsigned e, WebColor c, bool t, WebColor bc)
       : start_offset(s),
         end_offset(e),
         color(c),
         thick(t),
         background_color(bc) {}
 
-  bool operator<(const WebCompositionUnderline& other) const {
+  bool operator<(const WebImeTextSpan& other) const {
     return start_offset != other.start_offset
                ? start_offset < other.start_offset
                : end_offset < other.end_offset;
   }
 
-  // Need to update IPC_STRUCT_TRAITS_BEGIN(blink::WebCompositionUnderline)
+  // Need to update IPC_STRUCT_TRAITS_BEGIN(blink::WebImeTextSpan)
   // if members change.
   unsigned start_offset;
   unsigned end_offset;
