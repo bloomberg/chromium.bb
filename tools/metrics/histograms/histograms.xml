@@ -1857,6 +1857,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Apps.LockScreen.NoteTakingApp.LaunchRequestReason"
+    enum="NewLockScreenNoteRequestType">
+  <owner>tbarzic@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    The user action that launched note taking from the lock screen.
+  </summary>
+</histogram>
+
 <histogram name="Apps.LockScreen.NoteTakingApp.LockScreenInstallationDuration"
     units="ms">
   <owner>tbarzic@chromium.org</owner>
@@ -1864,6 +1873,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Amount of time needed to install a copy of a lock screen note taking app
     into lock screen apps profile.
+  </summary>
+</histogram>
+
+<histogram name="Apps.LockScreen.NoteTakingApp.NoteTakingExitReason"
+    enum="LockScreenNoteTakingExitReason">
+  <owner>tbarzic@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    The reason the note taking on lock screen was ended (and lock screen app
+    window was closed).
   </summary>
 </histogram>
 
@@ -1885,6 +1904,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The amount of time needed to launch a note taking app window from the lock
     screen - i.e. the time passed from the user requesting an app launch to the
     app window appearing on the screen.
+  </summary>
+</histogram>
+
+<histogram name="Apps.LockScreen.NoteTakingApp.UnlockUIAction"
+    enum="LockScreenNoteTakingUnlockUIAction">
+  <owner>tbarzic@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    The action the user took on the lock screen UI shown when lock screen app
+    window is in background, shown under the lock screen.
   </summary>
 </histogram>
 

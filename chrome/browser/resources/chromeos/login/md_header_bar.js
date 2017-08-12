@@ -8,6 +8,16 @@
 
 cr.define('login', function() {
   /**
+   * Enum for user actions taken from lock screen header while a lock screen
+   * app is in background.
+   * @enum {string}
+   */
+  var LOCK_SCREEN_APPS_UNLOCK_ACTION = {
+    SIGN_OUT: 'LOCK_SCREEN_APPS_UNLOCK_ACTION.SIGN_OUT',
+    SHUTDOWN: 'LOCK_SCREEN_APPS_UNLOCK_ACTION.SHUTDOWN'
+  };
+
+  /**
    * Creates a header bar element.
    *
    * @constructor
@@ -50,11 +60,13 @@ cr.define('login', function() {
     decorate: function() {
       document.addEventListener('click', this.handleClick_.bind(this));
       $('shutdown-header-bar-item')
-          .addEventListener('click', this.handleShutdownClick_);
-      $('shutdown-button').addEventListener('click', this.handleShutdownClick_);
+          .addEventListener('click', this.handleShutdownClick_.bind(this));
+      $('shutdown-button')
+          .addEventListener('click', this.handleShutdownClick_.bind(this));
       $('restart-header-bar-item')
-          .addEventListener('click', this.handleShutdownClick_);
-      $('restart-button').addEventListener('click', this.handleShutdownClick_);
+          .addEventListener('click', this.handleShutdownClick_.bind(this));
+      $('restart-button')
+          .addEventListener('click', this.handleShutdownClick_.bind(this));
       $('add-user-button').addEventListener('click', this.handleAddUserClick_);
       $('more-settings-button')
           .addEventListener('click', this.handleMoreSettingsClick_.bind(this));
@@ -62,7 +74,7 @@ cr.define('login', function() {
           .addEventListener('click', this.handleGuestClick_);
       $('guest-user-button').addEventListener('click', this.handleGuestClick_);
       $('sign-out-user-button')
-          .addEventListener('click', this.handleSignoutClick_);
+          .addEventListener('click', this.handleSignoutClick_.bind(this));
       $('cancel-multiple-sign-in-button')
           .addEventListener('click', this.handleCancelMultipleSignInClick_);
       $('unlock-user-button')
@@ -184,6 +196,12 @@ cr.define('login', function() {
      */
     handleSignoutClick_: function(e) {
       this.disabled = true;
+      if (this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.BACKGROUND) {
+        chrome.send(
+            'recordLockScreenAppUnlockAction',
+            [LOCK_SCREEN_APPS_UNLOCK_ACTION.SIGN_OUT]);
+      }
+
       chrome.send('signOutUser');
       e.stopPropagation();
     },
@@ -194,6 +212,11 @@ cr.define('login', function() {
      * @private
      */
     handleShutdownClick_: function(e) {
+      if (this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.BACKGROUND) {
+        chrome.send(
+            'recordLockScreenAppUnlockAction',
+            [LOCK_SCREEN_APPS_UNLOCK_ACTION.SHUTDOWN]);
+      }
       chrome.send('shutdownSystem');
       e.stopPropagation();
     },

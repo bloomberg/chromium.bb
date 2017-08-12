@@ -11,6 +11,15 @@
  */
 
 cr.define('login', function() {
+  /**
+   * The new note request type.
+   * @enum {string}
+   */
+  var NEW_NOTE_REQUEST = {
+    TAP: 'NEW_NOTE_REQUEST.TAP',
+    SWIPE: 'NEW_NOTE_REQUEST.SWIPE',
+    KEYBOARD: 'NEW_NOTE_REQUEST.KEYBOARD'
+  };
 
   /**
    * Calculates diagonal length of a rectangle with the provided sides.
@@ -349,7 +358,7 @@ cr.define('login', function() {
     /** override */
     decorate: function() {
       $('new-note-action')
-          .addEventListener('click', this.activateNoteAction_.bind(this));
+          .addEventListener('click', this.handleNewNoteActionClick_.bind(this));
       $('new-note-action')
           .addEventListener(
               'keydown', this.handleNewNoteActionKeyDown_.bind(this));
@@ -416,6 +425,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Handler for clicks on note action element.
+     * @private
+     */
+    handleNewNoteActionClick_: function() {
+      this.activateNoteAction_(NEW_NOTE_REQUEST.TAP);
+    },
+
+    /**
      * Handler for key down event.
      * @param {!KeyboardEvent} evt The key down event.
      * @private
@@ -423,7 +440,7 @@ cr.define('login', function() {
     handleNewNoteActionKeyDown_: function(evt) {
       if (evt.code != 'Enter')
         return;
-      this.activateNoteAction_();
+      this.activateNoteAction_(NEW_NOTE_REQUEST.KEYBOARD);
     },
 
     /**
@@ -442,13 +459,15 @@ cr.define('login', function() {
       if (diag(velocity.x, velocity.y) < MIN_SWIPE_VELOCITY)
         return;
 
-      this.activateNoteAction_();
+      this.activateNoteAction_(NEW_NOTE_REQUEST.SWIPE);
     },
 
     /**
+     * @param {!NEW_NOTE_REQUEST} requestType The type of request that triggered
+     *      new note action.
      * @private
      */
-    activateNoteAction_: function() {
+    activateNoteAction_: function(requestType) {
       $('new-note-action').classList.toggle('disabled', true);
       $('new-note-action-icon').hidden = true;
       $('top-header-bar').classList.toggle('version-labels-unset', true);
@@ -457,9 +476,7 @@ cr.define('login', function() {
           (function() {
             if (this.lockScreenAppsState_ != LOCK_SCREEN_APPS_STATE.AVAILABLE)
               return;
-            chrome.send(
-                'setLockScreenAppsState',
-                [LOCK_SCREEN_APPS_STATE.LAUNCH_REQUESTED]);
+            chrome.send('requestNewLockScreenNote', [requestType]);
           }).bind(this));
 
       var container = $('new-note-action-container');

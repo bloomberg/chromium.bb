@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/time/default_tick_clock.h"
@@ -149,7 +150,8 @@ void StateController::Shutdown() {
   lock_screen_data_.reset();
   if (app_manager_) {
     app_manager_->Stop();
-    ResetNoteTakingWindowAndMoveToNextState(true /*close_window*/);
+    ResetNoteTakingWindowAndMoveToNextState(true /*close_window*/,
+                                            NoteTakingExitReason::kShutdown);
     app_manager_.reset();
   }
   focus_cycler_delegate_ = nullptr;
@@ -274,27 +276,18 @@ TrayActionState StateController::GetLockScreenNoteState() const {
 }
 
 void StateController::RequestNewLockScreenNote() {
-  if (lock_screen_note_state_ != TrayActionState::kAvailable)
-    return;
-
-  DCHECK(app_manager_->IsNoteTakingAppAvailable());
-
-  // Update state to launching even if app fails to launch - this is to notify
-  // listeners that a lock screen note request was handled.
-  UpdateLockScreenNoteState(TrayActionState::kLaunching);
-  if (!app_manager_->LaunchNoteTaking()) {
-    UpdateLockScreenNoteState(TrayActionState::kAvailable);
-    return;
-  }
-
-  note_app_window_metrics_->AppLaunchRequested();
+  HandleNewNoteRequest(NewNoteRequestType::kTrayAction);
 }
 
 void StateController::OnSessionStateChanged() {
   if (!session_manager::SessionManager::Get()->IsScreenLocked()) {
     lock_screen_data_->SetSessionLocked(false);
     app_manager_->Stop();
-    ResetNoteTakingWindowAndMoveToNextState(true /*close_window*/);
+    if (lock_screen_note_state_ == TrayActionState::kBackground) {
+      RecordLockScreenAppUnlockAction(LockScreenUnlockAction::kSessionUnlocked);
+    }
+    ResetNoteTakingWindowAndMoveToNextState(
+        true /*close_window*/, NoteTakingExitReason::kSessionUnlock);
     note_app_window_metrics_.reset();
     return;
   }
@@ -320,7 +313,8 @@ void StateController::OnAppWindowAdded(extensions::AppWindow* app_window) {
 void StateController::OnAppWindowRemoved(extensions::AppWindow* app_window) {
   if (note_app_window_ != app_window)
     return;
-  ResetNoteTakingWindowAndMoveToNextState(false /*close_window*/);
+  ResetNoteTakingWindowAndMoveToNextState(
+      false /*close_window*/, NoteTakingExitReason::kAppWindowClosed);
 }
 
 void StateController::OnStylusStateChanged(ui::StylusState state) {
@@ -328,16 +322,19 @@ void StateController::OnStylusStateChanged(ui::StylusState state) {
     return;
 
   if (state == ui::StylusState::REMOVED)
-    RequestNewLockScreenNote();
+    HandleNewNoteRequest(NewNoteRequestType::kStylusEject);
 }
 
 void StateController::BrightnessChanged(int level, bool user_initiated) {
-  if (level == 0 && !user_initiated)
-    ResetNoteTakingWindowAndMoveToNextState(true /*close_window*/);
+  if (level == 0 && !user_initiated) {
+    ResetNoteTakingWindowAndMoveToNextState(
+        true /*close_window*/, NoteTakingExitReason::kScreenDimmed);
+  }
 }
 
 void StateController::SuspendImminent() {
-  ResetNoteTakingWindowAndMoveToNextState(true /*close_window*/);
+  ResetNoteTakingWindowAndMoveToNextState(true /*close_window*/,
+                                          NoteTakingExitReason::kSuspend);
 }
 
 extensions::AppWindow* StateController::CreateAppWindowForLockScreenAction(
@@ -399,15 +396,57 @@ void StateController::MoveToForeground() {
   if (GetLockScreenNoteState() != TrayActionState::kBackground)
     return;
 
+  RecordLockScreenAppUnlockAction(LockScreenUnlockAction::kUnlockCancelled);
+
   note_app_window_metrics_->MovedToForeground();
   UpdateLockScreenNoteState(TrayActionState::kActive);
+}
+
+void StateController::HandleNewNoteRequestFromLockScreen(
+    NewNoteRequestType type) {
+  DCHECK(type == NewNoteRequestType::kLockScreenUiTap ||
+         type == NewNoteRequestType::kLockScreenUiSwipe ||
+         type == NewNoteRequestType::kLockScreenUiKeyboard);
+
+  HandleNewNoteRequest(type);
+}
+
+void StateController::RecordLockScreenAppUnlockAction(
+    LockScreenUnlockAction action) {
+  if (lock_screen_note_state_ != TrayActionState::kBackground)
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION("Apps.LockScreen.NoteTakingApp.UnlockUIAction",
+                            action, LockScreenUnlockAction::kCount);
+}
+
+void StateController::HandleNewNoteRequest(NewNoteRequestType type) {
+  if (lock_screen_note_state_ != TrayActionState::kAvailable)
+    return;
+
+  DCHECK(app_manager_->IsNoteTakingAppAvailable());
+
+  UMA_HISTOGRAM_ENUMERATION("Apps.LockScreen.NoteTakingApp.LaunchRequestReason",
+                            type, NewNoteRequestType::kCount);
+
+  // Update state to launching even if app fails to launch - this is to notify
+  // listeners that a lock screen note request was handled.
+  UpdateLockScreenNoteState(TrayActionState::kLaunching);
+  if (!app_manager_->LaunchNoteTaking()) {
+    UpdateLockScreenNoteState(TrayActionState::kAvailable);
+    return;
+  }
+
+  note_app_window_metrics_->AppLaunchRequested();
 }
 
 void StateController::OnNoteTakingAvailabilityChanged() {
   if (!app_manager_->IsNoteTakingAppAvailable() ||
       (note_app_window_ && note_app_window_->GetExtension()->id() !=
                                app_manager_->GetNoteTakingAppId())) {
-    ResetNoteTakingWindowAndMoveToNextState(true /*close_window*/);
+    ResetNoteTakingWindowAndMoveToNextState(
+        true /*close_window*/,
+        NoteTakingExitReason::kAppLockScreenSupportDisabled);
     return;
   }
 
@@ -436,11 +475,19 @@ void StateController::FocusAppWindow(bool reverse) {
 }
 
 void StateController::ResetNoteTakingWindowAndMoveToNextState(
-    bool close_window) {
+    bool close_window,
+    NoteTakingExitReason exit_reason) {
   app_window_observer_.RemoveAll();
 
   if (note_app_window_metrics_)
     note_app_window_metrics_->Reset();
+
+  if (lock_screen_note_state_ != TrayActionState::kAvailable &&
+      lock_screen_note_state_ != TrayActionState::kNotAvailable) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Apps.LockScreen.NoteTakingApp.NoteTakingExitReason", exit_reason,
+        NoteTakingExitReason::kCount);
+  }
 
   if (note_app_window_) {
     if (focus_cycler_delegate_)

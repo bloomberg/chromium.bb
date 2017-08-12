@@ -132,8 +132,18 @@ const char kNoLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.NONE";
 const char kBackgroundLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.BACKGROUND";
 const char kForegroundLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.FOREGROUND";
 const char kAvailableLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.AVAILABLE";
-const char kLaunchRequestedLockScreenApps[] =
-    "LOCK_SCREEN_APPS_STATE.LAUNCH_REQUESTED";
+
+// Constants for new lock screen note request type.
+const char kNewNoteRequestTap[] = "NEW_NOTE_REQUEST.TAP";
+const char kNewNoteRequestSwipe[] = "NEW_NOTE_REQUEST.SWIPE";
+const char kNewNoteRequestKeyboard[] = "NEW_NOTE_REQUEST.KEYBOARD";
+
+// Constants for reporting action taken on lock screen UI when lock screen app
+// window was in background.
+const char kRequestShutdownFromLockScreenAppUnlockUi[] =
+    "LOCK_SCREEN_APPS_UNLOCK_ACTION.SHUTDOWN";
+const char kRequestSignoutFromLockScreenAppUnlockUi[] =
+    "LOCK_SCREEN_APPS_UNLOCK_ACTION.SIGN_OUT";
 
 ash::WallpaperController* GetWallpaperController() {
   if (!ash::Shell::HasInstance())
@@ -546,6 +556,10 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleLaunchArcKioskApp);
   AddCallback("setLockScreenAppsState",
               &SigninScreenHandler::HandleSetLockScreenAppsState);
+  AddCallback("recordLockScreenAppUnlockAction",
+              &SigninScreenHandler::HandleRecordLockScreenAppUnlockUIAction);
+  AddCallback("requestNewLockScreenNote",
+              &SigninScreenHandler::HandleRequestNewNoteAction);
 }
 
 void SigninScreenHandler::Show(const LoginScreenContext& context) {
@@ -1519,6 +1533,44 @@ void SigninScreenHandler::HandleSendFeedbackAndResyncUserData() {
                                       weak_factory_.GetWeakPtr()));
 }
 
+void SigninScreenHandler::HandleRequestNewNoteAction(
+    const std::string& request_type) {
+  lock_screen_apps::StateController* state_controller =
+      lock_screen_apps::StateController::Get();
+
+  if (request_type == kNewNoteRequestTap) {
+    state_controller->HandleNewNoteRequestFromLockScreen(
+        lock_screen_apps::StateController::NewNoteRequestType::
+            kLockScreenUiTap);
+  } else if (request_type == kNewNoteRequestSwipe) {
+    state_controller->HandleNewNoteRequestFromLockScreen(
+        lock_screen_apps::StateController::NewNoteRequestType::
+            kLockScreenUiSwipe);
+  } else if (request_type == kNewNoteRequestKeyboard) {
+    state_controller->HandleNewNoteRequestFromLockScreen(
+        lock_screen_apps::StateController::NewNoteRequestType::
+            kLockScreenUiKeyboard);
+  } else {
+    NOTREACHED() << "Unknown request type " << request_type;
+  }
+}
+
+void SigninScreenHandler::HandleRecordLockScreenAppUnlockUIAction(
+    const std::string& action) {
+  lock_screen_apps::StateController* state_controller =
+      lock_screen_apps::StateController::Get();
+
+  if (action == kRequestShutdownFromLockScreenAppUnlockUi) {
+    state_controller->RecordLockScreenAppUnlockAction(
+        lock_screen_apps::StateController::LockScreenUnlockAction::kShutdown);
+  } else if (action == kRequestSignoutFromLockScreenAppUnlockUi) {
+    state_controller->RecordLockScreenAppUnlockAction(
+        lock_screen_apps::StateController::LockScreenUnlockAction::kSignOut);
+  } else {
+    NOTREACHED() << "Unknown action " << action;
+  }
+}
+
 void SigninScreenHandler::HandleSetLockScreenAppsState(
     const std::string& state) {
   lock_screen_apps::StateController* state_controller =
@@ -1528,8 +1580,6 @@ void SigninScreenHandler::HandleSetLockScreenAppsState(
     state_controller->MoveToBackground();
   } else if (state == kForegroundLockScreenApps) {
     state_controller->MoveToForeground();
-  } else if (state == kLaunchRequestedLockScreenApps) {
-    state_controller->RequestNewLockScreenNote();
   }
 }
 

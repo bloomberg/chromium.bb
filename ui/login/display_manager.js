@@ -105,10 +105,6 @@
   // A lock screen enabled app is running in foreground - an app window is
   // shown over the lock screen user pods (header bar should still be visible).
   FOREGROUND: 'LOCK_SCREEN_APPS_STATE.FOREGROUND',
-  // State used to request launch of a lock screen note-taking app - this state
-  // is not expected to be received from platform as a current state (instead,
-  // on successful launch, state will be changed to FOREGROUND).
-  LAUNCH_REQUESTED: 'LOCK_SCREEN_APPS_STATE.LAUNCH_REQUESTED'
 };
 
 /** @const */ var USER_ACTION_ROLLBACK_TOGGLED = 'rollback-toggled';
