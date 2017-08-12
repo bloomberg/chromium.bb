@@ -11272,18 +11272,6 @@
             }
           ]
         },
-        "test": "oop_heap_profiling_unit_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "1",
-              "device_type": "coho"
-            }
-          ]
-        },
         "test": "remoting_unittests"
       },
       {
@@ -11691,12 +11679,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "oop_heap_profiling_unit_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "pdf_unittests"
       },
       {
@@ -12009,12 +11991,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "oop_heap_profiling_unit_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "pdf_unittests"
       },
       {
@@ -12299,12 +12275,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "net_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "oop_heap_profiling_unit_tests"
       },
       {
         "swarming": {
