@@ -7,7 +7,8 @@ class PixelTestPage(object):
   from the old-style GPU tests.
   """
   def __init__(self, url, name, test_rect, revision,
-               tolerance=2, browser_args=None, expected_colors=None):
+               tolerance=2, browser_args=None, expected_colors=None,
+               create_and_close_new_tab=False):
     super(PixelTestPage, self).__init__()
     self.url = url
     self.name = name
@@ -22,6 +23,7 @@ class PixelTestPage(object):
     # by contract with _CompareScreenshotSamples in
     # cloud_storage_integration_test_base.py.
     self.expected_colors = expected_colors
+    self.create_and_close_new_tab = create_and_close_new_tab
 
   def CopyWithNewBrowserArgsAndSuffix(self, browser_args, suffix):
     return PixelTestPage(
@@ -95,6 +97,13 @@ def DefaultPages(base_name):
       base_name + '_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
       test_rect=[0, 0, 300, 300],
       revision=1),
+
+    PixelTestPage(
+      'pixel_webgl_preserved_after_tab_switch.html',
+      base_name + '_WebGLPreserved_After_Tab_Switch',
+      test_rect=[0, 0, 300, 300],
+      revision=1,
+      create_and_close_new_tab=True),
 
     PixelTestPage(
       'pixel_scissor.html',
