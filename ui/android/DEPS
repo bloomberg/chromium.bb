@@ -12,6 +12,7 @@ include_rules = [
   "+components/viz/service/surfaces",
   "+jni",
   "+skia/ext",
+  "+third_party/WebKit/public/platform/WebCursorInfo.h",
   "+third_party/skia",
   "+ui/base",
   "+ui/display",

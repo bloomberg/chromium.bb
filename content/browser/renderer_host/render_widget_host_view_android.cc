@@ -743,7 +743,10 @@ float RenderWidgetHostViewAndroid::GetBottomControlsHeight() const {
 }
 
 void RenderWidgetHostViewAndroid::UpdateCursor(const WebCursor& cursor) {
-  // There are no cursors on Android.
+  CursorInfo cursor_info;
+  cursor.GetCursorInfo(&cursor_info);
+  view_.OnCursorChanged(cursor_info.type, cursor_info.custom_image,
+                        cursor_info.hotspot);
 }
 
 void RenderWidgetHostViewAndroid::SetIsLoading(bool is_loading) {

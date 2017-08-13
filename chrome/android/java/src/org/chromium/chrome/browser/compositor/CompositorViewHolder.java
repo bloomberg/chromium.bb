@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.ViewCompat;
@@ -20,6 +21,7 @@ import android.util.AttributeSet;
 import android.util.Pair;
 import android.view.DragEvent;
 import android.view.MotionEvent;
+import android.view.PointerIcon;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
@@ -179,6 +181,14 @@ public class CompositorViewHolder extends FrameLayout
         super(c);
 
         internalInit();
+    }
+
+    @Override
+    public PointerIcon onResolvePointerIcon(MotionEvent event, int pointerIndex) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return null;
+        View activeView = getActiveView();
+        if (activeView == null || !ViewCompat.isAttachedToWindow(activeView)) return null;
+        return activeView.onResolvePointerIcon(event, pointerIndex);
     }
 
     /**

@@ -82,6 +82,12 @@ if (is_android) {
     ]
   }
 
+  java_cpp_enum("blink_cursor_type_java_enums_srcjar") {
+    sources = [
+      "./platform/WebCursorInfo.h",
+    ]
+  }
+
   android_library("blink_headers_java") {
     deps = [
       "//third_party/android_tools:android_support_annotations_java",

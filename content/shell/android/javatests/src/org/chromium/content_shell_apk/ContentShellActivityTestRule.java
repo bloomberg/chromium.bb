@@ -21,6 +21,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell.Shell;
+import org.chromium.content_shell.ShellViewAndroidDelegate.OnCursorUpdateHelper;
 import org.chromium.content_shell_apk.ContentShellTestCommon.TestCommonCallback;
 
 import java.lang.annotation.ElementType;
@@ -73,6 +74,13 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     public ContentShellActivity launchContentShellWithUrlSync(String url) {
         Assert.assertFalse(mLaunchActivity);
         return mDelegate.launchContentShellWithUrlSync(url);
+    }
+
+    /**
+     * Returns the OnCursorUpdateHelper.
+     */
+    public OnCursorUpdateHelper getOnCursorUpdateHelper() throws ExecutionException {
+        return mDelegate.getOnCursorUpdateHelper();
     }
 
     /**

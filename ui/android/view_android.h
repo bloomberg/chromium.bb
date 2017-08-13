@@ -14,8 +14,14 @@
 #include "ui/android/ui_android_export.h"
 #include "ui/gfx/geometry/rect_f.h"
 
+class SkBitmap;
+
 namespace cc {
 class Layer;
+}
+
+namespace gfx {
+class Point;
 }
 
 namespace ui {
@@ -146,6 +152,9 @@ class UI_ANDROID_EXPORT ViewAndroid {
 
   gfx::Size GetPhysicalBackingSize();
   void OnPhysicalBackingSizeChanged(const gfx::Size& size);
+  void OnCursorChanged(int type,
+                       const SkBitmap& custom_image,
+                       const gfx::Point& hotspot);
   void OnBackgroundColorChanged(unsigned int color);
   void OnTopControlsChanged(float top_controls_offset,
                             float top_content_offset);
