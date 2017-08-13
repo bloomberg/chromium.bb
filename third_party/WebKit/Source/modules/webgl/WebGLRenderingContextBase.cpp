@@ -1462,11 +1462,9 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   if (isContextLost())
     return false;
 
-  bool must_clear_now = ClearIfComposited() != kSkipped;
-  if (!marked_canvas_dirty_ && !must_clear_now)
-    return false;
+  if (ClearIfComposited() != kSkipped)
+    canvas()->ClearCopiedImage();
 
-  canvas()->ClearCopiedImage();
   marked_canvas_dirty_ = false;
 
   if (!canvas()->GetOrCreateImageBuffer())
