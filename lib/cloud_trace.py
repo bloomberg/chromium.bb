@@ -12,17 +12,11 @@ import json
 import os
 import random
 
-from chromite.lib import cros_logging as log
-from chromite.lib import factory
-from chromite.lib import structured
-
-from googleapiclient import discovery
-from oauth2client.client import GoogleCredentials
 import google.protobuf.internal.well_known_types as types
 
+from chromite.lib import cros_logging as log
+from chromite.lib import structured
 
-CREDS_PATH = '/creds/service_accounts/service-account-trace.json'
-SCOPES = ['https://www.googleapis.com/auth/trace.append']
 PROJECT_ID = 'google.com:chromeos-infra-logging'
 SPANS_LOG = '/var/log/trace/{pid}-{span_id}.json'
 
@@ -56,23 +50,6 @@ def LogSpan(span):
       return None
     else:
       raise
-
-#-- Code for talking to the trace API. -----------------------------------------
-def MakeCreds(creds_path):
-  """Creates a GoogleCredentials object with the trace.append scope.
-
-  Args:
-    creds_path: Path to the credentials file to use.
-  """
-  return GoogleCredentials.from_stream(
-      os.path.expanduser(creds_path)
-  ).create_scoped(SCOPES)
-
-
-def Client(creds_path=CREDS_PATH):
-  """Returns a Cloud Trace API client object."""
-  return discovery.build('cloudtrace', 'v1', credentials=MakeCreds(creds_path))
-
 
 #-- User-facing API ------------------------------------------------------------
 class Span(structured.Structured):

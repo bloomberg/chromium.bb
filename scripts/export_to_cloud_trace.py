@@ -12,9 +12,10 @@ import os
 import pprint
 import time
 
+from googleapiclient import discovery
 import inotify_simple
+from oauth2client.client import GoogleCredentials
 
-from chromite.lib import cloud_trace
 from chromite.lib import commandline
 from chromite.lib import cros_logging as log
 
@@ -22,13 +23,15 @@ from chromite.lib import cros_logging as log
 BATCH_PATIENCE = 10 * 60
 MIN_BATCH_SIZE = 300
 SPAN_LOG_DIR = '/var/log/trace'
+CREDS_PATH = '/creds/service_accounts/service-account-trace.json'
+SCOPES = ['https://www.googleapis.com/auth/trace.append']
 
 
 def GetParser():
   """Creates the argparse parser."""
   parser = commandline.ArgumentParser(description=__doc__)
   parser.add_argument('--service-acct-json', type=str, action='store',
-                      default=cloud_trace.CREDS_PATH,
+                      default=CREDS_PATH,
                       help='Path to service account credentials JSON file.')
   parser.add_argument('--project-id', '-i', type=str, action='store',
                       default=None,
@@ -129,7 +132,7 @@ def _MapIgnoringErrors(f, sequence, exception_type=Exception):
     try:
       yield f(item)
     except exception_type as e:
-      log.exception("Ignoring error while mapping: %s.", e)
+      log.exception('Ignoring error while mapping: %s.', e)
 
 
 def _ImpatientlyRebatched(batch_sequence, ideal_size, patience):
@@ -204,7 +207,7 @@ def _ReadAndDeletePreexisting(log_dir):
   preexisting_files = [os.path.join(log_dir, f)
                        for f in os.listdir(SPAN_LOG_DIR)]
   log.info("Processing pre-existing logs: %s",
-      pprint.pformat(preexisting_files))
+           pprint.pformat(preexisting_files))
   preexisting_lines = tuple(_ReadBatch(preexisting_files))
   _CleanupBatch(preexisting_files)
   return preexisting_lines
@@ -234,6 +237,22 @@ def _WatchAndSendSpans(project_id, client):
     # Rebatch the lines.
     _BatchAndSendSpans(project_id, client, batches)
 
+#-- Code for talking to the trace API. -----------------------------------------
+def _MakeCreds(creds_path):
+  """Creates a GoogleCredentials object with the trace.append scope.
+
+  Args:
+    creds_path: Path to the credentials file to use.
+  """
+  return GoogleCredentials.from_stream(
+      os.path.expanduser(creds_path)
+  ).create_scoped(SCOPES)
+
+
+def _Client(creds_path):
+  """Returns a Cloud Trace API client object."""
+  return discovery.build('cloudtrace', 'v1', credentials=_MakeCreds(creds_path))
+
 
 def main(argv):
   parser = GetParser()
@@ -241,6 +260,6 @@ def main(argv):
 
   creds_file = options.service_acct_json
   project_id = options.project_id
-  client = cloud_trace.Client(creds_path=creds_file)
+  client = _Client(creds_path=creds_file)
 
   _WatchAndSendSpans(project_id, client)
