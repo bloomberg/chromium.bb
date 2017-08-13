@@ -61,7 +61,6 @@ void EmbeddedInstanceManager::ShutDown() {
         FROM_HERE,
         base::Bind(&EmbeddedInstanceManager::QuitOnServiceSequence, this));
   }
-  thread_.reset();
 }
 
 EmbeddedInstanceManager::~EmbeddedInstanceManager() {
