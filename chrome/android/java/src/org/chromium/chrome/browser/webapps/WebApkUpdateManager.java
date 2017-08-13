@@ -9,6 +9,7 @@ import static org.chromium.webapk.lib.common.WebApkConstants.WEBAPK_PACKAGE_PREF
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.os.Handler;
 import android.text.TextUtils;
 
 import org.chromium.base.ActivityState;
@@ -25,6 +26,7 @@ import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.webapk.lib.client.WebApkVersion;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * WebApkUpdateManager manages when to check for updates to the WebAPK's Web Manifest, and sends
@@ -32,6 +34,9 @@ import java.util.Map;
  */
 public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     private static final String TAG = "WebApkUpdateManager";
+
+    // Maximum wait time for WebAPK update to be scheduled.
+    private static final long UPDATE_TIMEOUT_MILLISECONDS = TimeUnit.SECONDS.toMillis(30);
 
     /**
      * Number of times to wait for updating the WebAPK after it is moved to the background prior
@@ -58,6 +63,9 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     private final WebappDataStorage mStorage;
 
     private WebApkUpdateDataFetcher mFetcher;
+
+    /** Runs failure callback if WebAPK update is not scheduled within deadline. */
+    private Handler mUpdateFailureHandler;
 
     /**
      * Contains all the data which is cached for a pending update request once the WebAPK is no
@@ -97,6 +105,13 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
 
         mFetcher = buildFetcher();
         mFetcher.start(tab, mInfo, this);
+        mUpdateFailureHandler = new Handler();
+        mUpdateFailureHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                onGotManifestData(null, null, null);
+            }
+        }, UPDATE_TIMEOUT_MILLISECONDS);
     }
 
     /**
@@ -124,14 +139,12 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     }
 
     @Override
-    public void onWebManifestForInitialUrlNotWebApkCompatible() {
-        onGotManifestData(null, null, null);
-    }
-
-    @Override
     public void onGotManifestData(WebApkInfo fetchedInfo, String primaryIconUrl,
             String badgeIconUrl) {
         mStorage.updateTimeOfLastCheckForUpdatedWebManifest();
+        if (mUpdateFailureHandler != null) {
+            mUpdateFailureHandler.removeCallbacksAndMessages(null);
+        }
 
         boolean gotManifest = (fetchedInfo != null);
         boolean needsUpgrade = isShellApkVersionOutOfDate(mInfo)

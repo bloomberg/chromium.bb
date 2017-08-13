@@ -80,12 +80,6 @@ public class WebApkUpdateManagerTest {
         }
 
         @Override
-        public void onWebManifestForInitialUrlNotWebApkCompatible() {
-            super.onWebManifestForInitialUrlNotWebApkCompatible();
-            mWaiter.notifyCalled();
-        }
-
-        @Override
         public void onGotManifestData(WebApkInfo fetchedInfo, String primaryIconUrl,
                 String badgeIconUrl) {
             super.onGotManifestData(fetchedInfo, primaryIconUrl, badgeIconUrl);

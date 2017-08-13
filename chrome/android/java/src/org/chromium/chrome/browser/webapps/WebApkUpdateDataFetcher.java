@@ -22,12 +22,6 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
     /** Observes fetching of the Web Manifest. */
     public interface Observer {
         /**
-         * Called when the initial URL load has completed and the page has no Web Manifest or the
-         * Web Manifest is not WebAPK compatible.
-         */
-        void onWebManifestForInitialUrlNotWebApkCompatible();
-
-        /**
          * Called when the Web Manifest has been successfully fetched (including on the initial URL
          * load).
          * @param fetchedInfo    The fetched Web Manifest data.
@@ -122,15 +116,6 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
                 mOldInfo.webApkPackageName(), mOldInfo.shellApkVersion(), mOldInfo.manifestUrl(),
                 manifestStartUrl, iconUrlToMurmur2HashMap, mOldInfo.shouldForceNavigation());
         mObserver.onGotManifestData(info, primaryIconUrl, badgeIconUrl);
-    }
-
-    /**
-     * Called when the initial URL load has completed and the page has no Web Manifest or the
-     * Web Manifest is not WebAPK compatible.
-     */
-    @CalledByNative
-    private void onWebManifestForInitialUrlNotWebApkCompatible() {
-        mObserver.onWebManifestForInitialUrlNotWebApkCompatible();
     }
 
     private native long nativeInitialize(String scope, String webManifestUrl);

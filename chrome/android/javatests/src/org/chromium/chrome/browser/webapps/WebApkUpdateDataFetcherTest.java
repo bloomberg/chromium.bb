@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -72,12 +71,6 @@ public class WebApkUpdateDataFetcherTest {
         private boolean mWebApkCompatible;
         private String mName;
         private String mPrimaryIconMurmur2Hash;
-
-        @Override
-        public void onWebManifestForInitialUrlNotWebApkCompatible() {
-            mWebApkCompatible = false;
-            notifyCalled();
-        }
 
         @Override
         public void onGotManifestData(
@@ -165,32 +158,12 @@ public class WebApkUpdateDataFetcherTest {
         CallbackWaiter waiter = new CallbackWaiter();
         startWebApkUpdateDataFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
                 mTestServer.getURL(WEB_MANIFEST_URL2), waiter);
-        waiter.waitForCallback(0);
-        Assert.assertFalse(waiter.isWebApkCompatible());
 
         WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
                 mTestServer, mTab, WEB_MANIFEST_URL2);
-        waiter.waitForCallback(1);
+        waiter.waitForCallback(0);
         Assert.assertTrue(waiter.isWebApkCompatible());
         Assert.assertEquals(WEB_MANIFEST_NAME2, waiter.name());
-    }
-
-    /**
-     * Test that {@link onWebManifestForInitialUrlNotWebApkCompatible()} is called after attempting
-     * to fetch Web Manifest for page with no Web Manifest.
-     */
-    @Test
-    @MediumTest
-    @Feature({"Webapps"})
-    public void testNoWebManifest() throws Exception {
-        new TabLoadObserver(mTab).fullyLoadUrl(
-                mTestServer.getURL("/chrome/test/data/banners/no_manifest_test_page.html"));
-
-        CallbackWaiter waiter = new CallbackWaiter();
-        startWebApkUpdateDataFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
-                mTestServer.getURL(WEB_MANIFEST_URL2), waiter);
-        waiter.waitForCallback(0);
-        Assert.assertFalse(waiter.isWebApkCompatible());
     }
 
     /**
