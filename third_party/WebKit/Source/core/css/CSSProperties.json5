@@ -3885,6 +3885,7 @@
       name: "border",
       longhands: ["border-top-color", "border-top-style", "border-top-width", "border-right-color", "border-right-style", "border-right-width", "border-bottom-color", "border-bottom-style", "border-bottom-width", "border-left-color", "border-left-style", "border-left-width", "border-image-source", "border-image-slice", "border-image-width", "border-image-outset", "border-image-repeat"],
       api_class: true,
+      api_methods: ["ParseShorthand"],
     },
     {
       name: "border-bottom",

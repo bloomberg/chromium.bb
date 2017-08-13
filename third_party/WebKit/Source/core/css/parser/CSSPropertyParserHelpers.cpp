@@ -1712,6 +1712,20 @@ bool ConsumeShorthandGreedilyViaLonghandAPIs(
   return true;
 }
 
+void AddExpandedPropertyForValue(CSSPropertyID property,
+                                 const CSSValue& value,
+                                 bool important,
+                                 HeapVector<CSSProperty, 256>& properties) {
+  const StylePropertyShorthand& shorthand = shorthandForProperty(property);
+  unsigned shorthand_length = shorthand.length();
+  DCHECK(shorthand_length);
+  const CSSPropertyID* longhands = shorthand.properties();
+  for (unsigned i = 0; i < shorthand_length; ++i) {
+    AddProperty(longhands[i], property, value, important,
+                IsImplicitProperty::kNotImplicit, properties);
+  }
+}
+
 }  // namespace CSSPropertyParserHelpers
 
 }  // namespace blink

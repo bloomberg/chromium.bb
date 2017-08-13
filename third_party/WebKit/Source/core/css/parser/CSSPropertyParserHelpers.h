@@ -150,6 +150,11 @@ bool ConsumeShorthandGreedilyViaLonghandAPIs(
     CSSParserTokenRange&,
     HeapVector<CSSProperty, 256>& properties);
 
+void AddExpandedPropertyForValue(CSSPropertyID prop_id,
+                                 const CSSValue&,
+                                 bool,
+                                 HeapVector<CSSProperty, 256>& properties);
+
 // Template implementations are at the bottom of the file for readability.
 
 template <typename... emptyBaseCase>

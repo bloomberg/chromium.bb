@@ -77,17 +77,6 @@ void CSSPropertyParser::AddParsedProperty(CSSPropertyID resolved_property,
               *parsed_properties_);
 }
 
-void CSSPropertyParser::AddExpandedPropertyForValue(CSSPropertyID property,
-                                                    const CSSValue& value,
-                                                    bool important) {
-  const StylePropertyShorthand& shorthand = shorthandForProperty(property);
-  unsigned shorthand_length = shorthand.length();
-  DCHECK(shorthand_length);
-  const CSSPropertyID* longhands = shorthand.properties();
-  for (unsigned i = 0; i < shorthand_length; ++i)
-    AddParsedProperty(longhands[i], property, value, important);
-}
-
 bool CSSPropertyParser::ParseValue(
     CSSPropertyID unresolved_property,
     bool important,
@@ -166,7 +155,8 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
     if (is_shorthand) {
       const CSSPendingSubstitutionValue& pending_value =
           *CSSPendingSubstitutionValue::Create(property_id, variable);
-      AddExpandedPropertyForValue(property_id, pending_value, important);
+      AddExpandedPropertyForValue(property_id, pending_value, important,
+                                  *parsed_properties_);
     } else {
       AddParsedProperty(property_id, CSSPropertyInvalid, *variable, important);
     }
@@ -273,7 +263,8 @@ bool CSSPropertyParser::ConsumeCSSWideKeyword(CSSPropertyID unresolved_property,
       return false;
     AddParsedProperty(property, CSSPropertyInvalid, *value, important);
   } else {
-    AddExpandedPropertyForValue(property, *value, important);
+    AddExpandedPropertyForValue(property, *value, important,
+                                *parsed_properties_);
   }
   range_ = range_copy;
   return true;
@@ -710,50 +701,6 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
   }
 }
 
-bool CSSPropertyParser::ConsumeBorder(bool important) {
-  CSSValue* width = nullptr;
-  const CSSValue* style = nullptr;
-  CSSValue* color = nullptr;
-
-  while (!width || !style || !color) {
-    if (!width) {
-      width =
-          ConsumeLineWidth(range_, context_->Mode(), UnitlessQuirk::kForbid);
-      if (width)
-        continue;
-    }
-    if (!style) {
-      style = ParseSingleValue(CSSPropertyBorderLeftStyle, CSSPropertyBorder);
-      if (style)
-        continue;
-    }
-    if (!color) {
-      color = ConsumeColor(range_, context_->Mode());
-      if (color)
-        continue;
-    }
-    break;
-  }
-
-  if (!width && !style && !color)
-    return false;
-
-  if (!width)
-    width = CSSInitialValue::Create();
-  if (!style)
-    style = CSSInitialValue::Create();
-  if (!color)
-    color = CSSInitialValue::Create();
-
-  AddExpandedPropertyForValue(CSSPropertyBorderWidth, *width, important);
-  AddExpandedPropertyForValue(CSSPropertyBorderStyle, *style, important);
-  AddExpandedPropertyForValue(CSSPropertyBorderColor, *color, important);
-  AddExpandedPropertyForValue(CSSPropertyBorderImage,
-                              *CSSInitialValue::Create(), important);
-
-  return range_.AtEnd();
-}
-
 static bool ConsumeRepeatStyleComponent(CSSParserTokenRange& range,
                                         CSSValue*& value1,
                                         CSSValue*& value2,
@@ -920,8 +867,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
   }
 
   switch (property) {
-    case CSSPropertyBorder:
-      return ConsumeBorder(important);
     case CSSPropertyBackgroundRepeat:
     case CSSPropertyWebkitMaskRepeat: {
       CSSValue* result_x = nullptr;
