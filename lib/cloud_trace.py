@@ -24,23 +24,28 @@ import google.protobuf.internal.well_known_types as types
 CREDS_PATH = '/creds/service_accounts/service-account-trace.json'
 SCOPES = ['https://www.googleapis.com/auth/trace.append']
 PROJECT_ID = 'google.com:chromeos-infra-logging'
-SPANS_LOG = '/var/log/trace/{pid}.json'
+SPANS_LOG = '/var/log/trace/{pid}-{span_id}.json'
 
 #--- Code for logging spans to a file for later processing. --------------------
+def GetSpanLogFilePath(span):
+  """Gets the path to write a span to.
 
-# Singleton for serializing and unserializing spans to the span log.
-# TODO(phobbs) this doesn't work with multiprocessing (although we don't need
-# it to, now). Consider using a filelock instead if we need it.
-@factory.CachedFunctionCall
-def GetSpanLogFileHandle():
-  """Gets the singleton span log file handle, catching common errors."""
-  log_path = SPANS_LOG.format(pid=os.getpid())
+  Args:
+    span: The span to write.
+  """
+  return SPANS_LOG.format(pid=os.getpid(), span_id=span.spanId)
+
+
+def LogSpan(span):
+  """Serializes and logs a Span to a file.
+
+  Args:
+    span: A Span instance to serialize.
+  """
   try:
-    fh = open(log_path, 'w')
-    _SPAN_LOG_FH = fh
-    return fh
-
-  # Permissions errors
+    with open(GetSpanLogFilePath(span), 'w') as fh:
+      fh.write(json.dumps(span.ToDict()))
+  # Catch various configuration errors
   except OSError as error:
     if error.errno == errno.EPERM:
       log.warning(
@@ -51,20 +56,6 @@ def GetSpanLogFileHandle():
       return None
     else:
       raise
-
-
-def LogSpan(span):
-  """Serializes and logs a Span to a file.
-
-  Args:
-    fh: A log filehandle.
-    span: A Span instance to serialize.
-  """
-  fh = GetSpanLogFileHandle()
-  fh.write(json.dumps(span.ToDict()))
-  # Flush to avoid dropping spans if our process is killed
-  fh.flush()
-
 
 #-- Code for talking to the trace API. -----------------------------------------
 def MakeCreds(creds_path):
