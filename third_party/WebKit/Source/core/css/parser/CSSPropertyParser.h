@@ -77,11 +77,6 @@ class CSSPropertyParser {
                          const CSSValue&,
                          bool important,
                          bool implicit = false);
-  void AddExpandedPropertyForValue(CSSPropertyID prop_id,
-                                   const CSSValue&,
-                                   bool);
-
-  bool ConsumeBorder(bool important);
 
   bool ParseShorthand(CSSPropertyID, bool important);
 
