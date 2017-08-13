@@ -2893,7 +2893,6 @@ crbug.com/736177 [ Mac10.12 ] fast/css/clip-zooming.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] fast/css/h1-in-section-elements.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] fast/css/rem-calc-dynamic-scaling.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] fast/css/rem-dynamic-scaling.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 ] fast/css/text-overflow-input.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] fast/dom/HTMLMeterElement/meter-optimums.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] fast/dynamic/012.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] fast/forms/form-element-geometry.html [ Failure Pass ]
@@ -2982,6 +2981,8 @@ crbug.com/736177 [ Mac10.12 Retina ] paint/invalidation/forms/checkbox-focus-by-
 crbug.com/736177 [ Mac10.12 Retina ] paint/invalidation/forms/radio-focus-by-mouse-then-keydown.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla/bugs/bug1318.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla/bugs/bug4527.html [ Failure Pass ]
+# fast/css/text-overflow-input.html test is flaky on all Mac platforms
+crbug.com/736177 [ Mac ] fast/css/text-overflow-input.html [ Failure Pass ]
 
 crbug.com/736177 [ Mac ] svg/as-border-image/svg-as-border-image.html [ Failure Pass ]
 
