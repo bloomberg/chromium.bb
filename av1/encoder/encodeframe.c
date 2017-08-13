@@ -5096,6 +5096,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
       ref_buf[frame] = get_ref_frame_buffer(cpi, frame);
       int pframe;
+      set_default_warp_params(&cm->global_motion[frame]);
       // check for duplicate buffer
       for (pframe = LAST_FRAME; pframe < frame; ++pframe) {
         if (ref_buf[frame] == ref_buf[pframe]) break;

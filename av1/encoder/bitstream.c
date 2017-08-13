@@ -4577,9 +4577,15 @@ static void write_global_motion_params(WarpedMotionParams *params,
 static void write_global_motion(AV1_COMP *cpi, aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
   int frame;
-  YV12_BUFFER_CONFIG *ref_buf;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
-    ref_buf = get_ref_frame_buffer(cpi, frame);
+    write_global_motion_params(&cm->global_motion[frame],
+                               &cm->prev_frame->global_motion[frame], w,
+                               cm->allow_high_precision_mv);
+    // TODO(sarahparker, debargha): The logic in the commented out code below
+    // does not work currently and causes mismatches when resize is on.
+    // Fix it before turning the optimization back on.
+    /*
+    YV12_BUFFER_CONFIG *ref_buf = get_ref_frame_buffer(cpi, frame);
     if (cpi->source->y_crop_width == ref_buf->y_crop_width &&
         cpi->source->y_crop_height == ref_buf->y_crop_height) {
       write_global_motion_params(&cm->global_motion[frame],
@@ -4589,6 +4595,7 @@ static void write_global_motion(AV1_COMP *cpi, aom_writer *w) {
       assert(cm->global_motion[frame].wmtype == IDENTITY &&
              "Invalid warp type for frames of different resolutions");
     }
+    */
     /*
     printf("Frame %d/%d: Enc Ref %d (used %d): %d %d %d %d\n",
            cm->current_video_frame, cm->show_frame, frame,

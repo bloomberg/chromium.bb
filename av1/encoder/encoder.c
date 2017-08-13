@@ -4271,11 +4271,6 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
 
   set_size_independent_vars(cpi);
 
-  cpi->source =
-      av1_scale_if_required(cm, cpi->unscaled_source, &cpi->scaled_source);
-  if (cpi->unscaled_last_source != NULL)
-    cpi->last_source = av1_scale_if_required(cm, cpi->unscaled_last_source,
-                                             &cpi->scaled_last_source);
 #if CONFIG_HIGHBITDEPTH && CONFIG_GLOBAL_MOTION
   cpi->source->buf_8bit_valid = 0;
 #endif
@@ -4309,6 +4304,16 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
                                        &frame_under_shoot_limit,
                                        &frame_over_shoot_limit);
     }
+
+    cpi->source =
+        av1_scale_if_required(cm, cpi->unscaled_source, &cpi->scaled_source);
+#if CONFIG_GLOBAL_MOTION
+    // if frame was scaled calculate global_motion_search again if already done
+    if (cpi->source != cpi->unscaled_source) cpi->global_motion_search_done = 0;
+#endif  // CONFIG_GLOBAL_MOTION
+    if (cpi->unscaled_last_source != NULL)
+      cpi->last_source = av1_scale_if_required(cm, cpi->unscaled_last_source,
+                                               &cpi->scaled_last_source);
 
     if (frame_is_intra_only(cm) == 0) {
       if (loop_count > 0) {

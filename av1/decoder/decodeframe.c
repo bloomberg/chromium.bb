@@ -4957,9 +4957,15 @@ static void read_global_motion_params(WarpedMotionParams *params,
 
 static void read_global_motion(AV1_COMMON *cm, aom_reader *r) {
   int frame;
-  YV12_BUFFER_CONFIG *ref_buf;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
-    ref_buf = get_ref_frame(cm, frame);
+    read_global_motion_params(&cm->global_motion[frame],
+                              &cm->prev_frame->global_motion[frame], r,
+                              cm->allow_high_precision_mv);
+    // TODO(sarahparker, debargha): The logic in the commented out code below
+    // does not work currently and causes mismatches when resize is on. Fix it
+    // before turning the optimization back on.
+    /*
+    YV12_BUFFER_CONFIG *ref_buf = get_ref_frame(cm, frame);
     if (cm->width == ref_buf->y_crop_width &&
         cm->height == ref_buf->y_crop_height) {
       read_global_motion_params(&cm->global_motion[frame],
@@ -4968,6 +4974,7 @@ static void read_global_motion(AV1_COMMON *cm, aom_reader *r) {
     } else {
       set_default_warp_params(&cm->global_motion[frame]);
     }
+    */
     /*
     printf("Dec Ref %d [%d/%d]: %d %d %d %d\n",
            frame, cm->current_video_frame, cm->show_frame,
