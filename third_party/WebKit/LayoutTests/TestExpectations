@@ -2987,11 +2987,11 @@ crbug.com/736177 [ Mac10.12 Retina ] virtual/mojo-loading/css1/box_properties/ac
 crbug.com/736177 [ Mac10.12 Retina ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure Pass ]
 # These tests are failing on Mac-10.9.5 when using no GPU
-crbug.com/736177 [ Mac10.9 ] editing/selection/modify_move/move_left_right_character_in_mixed_bidi.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.9 ] external/wpt/css/css-writing-modes-3/bidi-isolate-override-007.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.9 ] fast/text/international/bidi-LDB-2-formatting-characters.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.9 ] fast/text/international/bidi-neutral-run.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.9 ] inspector/elements/bidi-dom-tree.html [ Failure Pass ]
+crbug.com/736177 [ Mac10.9 ] editing/selection/modify_move/move_left_right_character_in_mixed_bidi.html [ Skip ]
+crbug.com/736177 [ Mac10.9 ] external/wpt/css/css-writing-modes-3/bidi-isolate-override-007.html [ Skip ]
+crbug.com/736177 [ Mac10.9 ] fast/text/international/bidi-LDB-2-formatting-characters.html [ Skip ]
+crbug.com/736177 [ Mac10.9 ] fast/text/international/bidi-neutral-run.html [ Skip ]
+crbug.com/736177 [ Mac10.9 ] inspector/elements/bidi-dom-tree.html [ Skip ]
 # fast/css/text-overflow-input.html test is flaky on all Mac platforms
 crbug.com/736177 [ Mac ] fast/css/text-overflow-input.html [ Failure Pass ]
 
