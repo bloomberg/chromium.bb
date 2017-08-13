@@ -370,8 +370,7 @@ public class WebApkUpdateManagerTest {
         }
 
         // Chrome is killed. Neither
-        // {@link WebApkUpdateManager#onWebManifestForInitialUrlNotWebApkCompatible()} nor
-        // {@link WebApkUpdateManager#OnGotManifestData()} is called.
+        // {@link WebApkUpdateManager#OnGotManifestData()} is not called.
 
         {
             // Relaunching the WebAPK should do an is-update-needed check.
@@ -483,13 +482,12 @@ public class WebApkUpdateManagerTest {
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
 
-        updateManager.onWebManifestForInitialUrlNotWebApkCompatible();
+        updateManager.onGotManifestData(null, null, null);
         assertTrue(updateManager.updateRequested());
         assertEquals(NAME, updateManager.requestedUpdateName());
 
         // Check that the {@link ManifestUpgradeDetector} has been destroyed. This prevents
-        // {@link #onWebManifestForInitialUrlNotWebApkCompatible()} and {@link #onGotManifestData()}
-        // from getting called.
+        // {@link #onGotManifestData()} from getting called.
         assertTrue(updateManager.destroyedFetcher());
     }
 
@@ -534,7 +532,6 @@ public class WebApkUpdateManagerTest {
         assertTrue(updateManager.updateCheckStarted());
 
         // start_url does not have a Web Manifest. No update should be requested.
-        updateManager.onWebManifestForInitialUrlNotWebApkCompatible();
         assertFalse(updateManager.updateRequested());
         // {@link ManifestUpgradeDetector} should still be alive so that it can get
         // {@link #onGotManifestData} when page with the Web Manifest finishes loading.
@@ -566,7 +563,6 @@ public class WebApkUpdateManagerTest {
         TestWebApkUpdateManager updateManager =
                 new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
         updateIfNeeded(updateManager);
-        updateManager.onWebManifestForInitialUrlNotWebApkCompatible();
         onGotManifestData(updateManager, defaultManifestData());
         assertFalse(updateManager.updateRequested());
 

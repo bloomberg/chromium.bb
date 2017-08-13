@@ -77,9 +77,6 @@ class WebApkUpdateDataFetcher : public content::WebContentsObserver {
   // The WebAPK's Web Manifest URL that the detector is looking for.
   const GURL web_manifest_url_;
 
-  // Whether this is the initial URL fetch.
-  bool is_initial_fetch_;
-
   // The URL for which the installable data is being fetched / was last fetched.
   GURL last_fetched_url_;
 
