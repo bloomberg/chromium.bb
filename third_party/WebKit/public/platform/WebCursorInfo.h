@@ -44,6 +44,9 @@ namespace blink {
 class Cursor;
 
 struct WebCursorInfo {
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blink_public.web
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: WebCursorInfoType
   enum Type {
     kTypePointer,
     kTypeCross,

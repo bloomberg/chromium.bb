@@ -12,12 +12,14 @@
 #include "base/stl_util.h"
 #include "cc/layers/layer.h"
 #include "jni/ViewAndroidDelegate_jni.h"
+#include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/android/event_forwarder.h"
 #include "ui/android/view_client.h"
 #include "ui/android/window_android.h"
 #include "ui/base/layout.h"
 #include "ui/events/android/drag_event_android.h"
 #include "ui/events/android/motion_event_android.h"
+#include "ui/gfx/android/java_bitmap.h"
 #include "url/gurl.h"
 
 namespace ui {
@@ -25,6 +27,7 @@ namespace ui {
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
+using blink::WebCursorInfo;
 
 ViewAndroid::ScopedAnchorView::ScopedAnchorView(
     JNIEnv* env,
@@ -286,6 +289,23 @@ bool ViewAndroid::StartDragAndDrop(const JavaRef<jstring>& jtext,
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_ViewAndroidDelegate_startDragAndDrop(env, delegate, jtext,
                                                    jimage);
+}
+
+void ViewAndroid::OnCursorChanged(int type,
+                                  const SkBitmap& custom_image,
+                                  const gfx::Point& hotspot) {
+  ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
+  if (delegate.is_null())
+    return;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (type == WebCursorInfo::kTypeCustom) {
+    ScopedJavaLocalRef<jobject> java_bitmap =
+        gfx::ConvertToJavaBitmap(&custom_image);
+    Java_ViewAndroidDelegate_onCursorChangedToCustom(env, delegate, java_bitmap,
+                                                     hotspot.x(), hotspot.y());
+  } else {
+    Java_ViewAndroidDelegate_onCursorChanged(env, delegate, type);
+  }
 }
 
 void ViewAndroid::OnBackgroundColorChanged(unsigned int color) {

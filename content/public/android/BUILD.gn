@@ -378,7 +378,10 @@ group("jni") {
 android_library("content_javatests") {
   testonly = true
 
-  srcjar_deps = [ "//content/shell/android:content_javatests_aidl" ]
+  srcjar_deps = [
+    "//content/shell/android:content_javatests_aidl",
+    "//third_party/WebKit/public:blink_cursor_type_java_enums_srcjar",
+  ]
 
   deps = [
     ":content_java",
@@ -403,6 +406,7 @@ android_library("content_javatests") {
     "//net/android:net_java_test_support",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/android_tools:android_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/junit",
     "//ui/android:ui_java",
@@ -418,6 +422,7 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/ContentCommandLineTest.java",
     "javatests/src/org/chromium/content/browser/ContentViewCoreSelectionTest.java",
     "javatests/src/org/chromium/content/browser/ContentViewLocationTest.java",
+    "javatests/src/org/chromium/content/browser/ContentViewPointerTypeTest.java",
     "javatests/src/org/chromium/content/browser/ContentViewPopupZoomerTest.java",
     "javatests/src/org/chromium/content/browser/ContentViewScrollingTest.java",
     "javatests/src/org/chromium/content/browser/EncodeHtmlDataUriTest.java",
