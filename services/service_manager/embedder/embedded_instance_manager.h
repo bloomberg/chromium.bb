@@ -29,8 +29,6 @@ enum class ThreadPriority : int;
 
 namespace service_manager {
 
-class EmbeddedInstanceManagerTestApi;
-
 // EmbeddedInstanceManager is an implementation detail of EmbeddedServiceRunner.
 // Outside of tests there is no need to use it directly.
 class SERVICE_MANAGER_EMBEDDER_EXPORT EmbeddedInstanceManager
@@ -46,7 +44,6 @@ class SERVICE_MANAGER_EMBEDDER_EXPORT EmbeddedInstanceManager
 
  private:
   friend class base::RefCountedThreadSafe<EmbeddedInstanceManager>;
-  friend class EmbeddedInstanceManagerTestApi;
 
   ~EmbeddedInstanceManager();
 
