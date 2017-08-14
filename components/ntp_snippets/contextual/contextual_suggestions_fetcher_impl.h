@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_CONTEXTUAL_SUGGESTIONS_FETCHER_IMPL_H_
-#define COMPONENTS_NTP_SNIPPETS_REMOTE_CONTEXTUAL_SUGGESTIONS_FETCHER_IMPL_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_FETCHER_IMPL_H_
+#define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_FETCHER_IMPL_H_
 
 #include <memory>
 #include <queue>
@@ -15,8 +15,8 @@
 #include "base/time/clock.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
-#include "components/ntp_snippets/remote/contextual_json_request.h"
-#include "components/ntp_snippets/remote/contextual_suggestions_fetcher.h"
+#include "components/ntp_snippets/contextual/contextual_json_request.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestion.h"
 #include "components/ntp_snippets/status.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -101,4 +101,4 @@ class ContextualSuggestionsFetcherImpl : public ContextualSuggestionsFetcher {
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_CONTEXTUAL_SUGGESTIONS_FETCHER_IMPL_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_FETCHER_IMPL_H_

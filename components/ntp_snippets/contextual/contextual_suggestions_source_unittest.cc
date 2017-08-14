@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/contextual_suggestions_source.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_source.h"
 
 #include <memory>
 #include <utility>
@@ -17,8 +17,8 @@
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
-#include "components/ntp_snippets/remote/contextual_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/json_to_categories.h"
 #include "components/ntp_snippets/remote/remote_suggestion.h"
 #include "components/ntp_snippets/remote/remote_suggestion_builder.h"

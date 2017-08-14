@@ -26,7 +26,7 @@
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
-#include "components/ntp_snippets/contextual_suggestions_source.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_source.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/signin/core/browser/signin_manager.h"

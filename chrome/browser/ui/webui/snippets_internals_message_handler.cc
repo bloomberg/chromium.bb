@@ -33,7 +33,7 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
-#include "components/ntp_snippets/contextual_suggestions_source.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_source.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/contextual_json_request.h"
+#include "components/ntp_snippets/contextual/contextual_json_request.h"
 
 #include <utility>
 
