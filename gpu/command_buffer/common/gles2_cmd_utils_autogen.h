@@ -81,7 +81,6 @@ static std::string GetStringSyncCondition(uint32_t value);
 static std::string GetStringSyncParameter(uint32_t value);
 static std::string GetStringTexture3DTarget(uint32_t value);
 static std::string GetStringTextureBindTarget(uint32_t value);
-static std::string GetStringTextureBufferUsage(uint32_t value);
 static std::string GetStringTextureCompareFunc(uint32_t value);
 static std::string GetStringTextureCompareMode(uint32_t value);
 static std::string GetStringTextureDepthRenderableInternalFormat(

@@ -2848,7 +2848,7 @@ bool BackTexture::AllocateNativeGpuMemoryBuffer(const gfx::Size& size,
               gfx::BufferFormat::RGBX_8888
 #endif
               : gfx::BufferFormat::RGBA_8888,
-          gfx::BufferUsage::SCANOUT, format);
+          format);
   if (!image || !image->BindTexImage(Target()))
     return false;
 
@@ -3879,8 +3879,6 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       !surface_->IsOffscreen()) {
     caps.disable_non_empty_post_sub_buffers = true;
   }
-  caps.texture_buffer_chromium =
-      feature_info_->feature_flags().chromium_texture_buffer;
 
   return caps;
 }
@@ -10984,13 +10982,6 @@ void GLES2DecoderImpl::GetTexParameterImpl(
         iparams[0] = texture->swizzle_a();
       }
       return;
-    case GL_TEXTURE_BUFFER_USAGE_CHROMIUM:
-      if (fparams) {
-        fparams[0] = static_cast<GLfloat>(texture->buffer_usage());
-      } else {
-        iparams[0] = texture->buffer_usage();
-      }
-      return;
     default:
       break;
   }
@@ -17567,62 +17558,6 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
   if (texture->IsImmutable()) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, function_name, "texture is immutable");
-    return;
-  }
-
-  if (texture->buffer_usage() != GL_NONE) {
-    ScopedGLErrorSuppressor suppressor("GLES2CmdDecoder::TexStorageImpl",
-                                       state_.GetErrorState());
-    gfx::Size size(width, height);
-    gfx::BufferFormat buffer_format;
-    GLint real_internal_format;
-    switch (internal_format) {
-      case GL_RGBA8_OES:
-        buffer_format = gfx::BufferFormat::RGBA_8888;
-        real_internal_format = GL_RGBA;
-        break;
-      case GL_BGRA8_EXT:
-        buffer_format = gfx::BufferFormat::BGRA_8888;
-        real_internal_format = GL_BGRA_EXT;
-        break;
-      case GL_RGBA16F_EXT:
-        buffer_format = gfx::BufferFormat::RGBA_F16;
-        real_internal_format = GL_RGBA;
-        break;
-      default:
-        LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, function_name,
-                           "Invalid buffer format");
-        return;
-    }
-
-    if (levels != 1) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name,
-                         "Levels != 1 for buffer");
-      return;
-    }
-    if (depth > 1) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name,
-                         "depth > 1 for buffer");
-      return;
-    }
-    DCHECK_EQ(GL_TEXTURE_BUFFER_SCANOUT_CHROMIUM, texture->buffer_usage());
-
-    gfx::BufferUsage buffer_usage = gfx::BufferUsage::SCANOUT;
-    scoped_refptr<gl::GLImage> image =
-        GetContextGroup()->image_factory()->CreateAnonymousImage(
-            gfx::Size(width, height), buffer_format, buffer_usage,
-            real_internal_format);
-    if (!image || !image->BindTexImage(target)) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-                         "Cannot create GL Image");
-      return;
-    }
-
-    texture_manager()->SetLevelInfo(
-        texture_ref, target, 0, image->GetInternalFormat(), width, height, 1, 0,
-        image->GetInternalFormat(), GL_UNSIGNED_BYTE, gfx::Rect(size));
-    texture_manager()->SetLevelImage(texture_ref, target, 0, image.get(),
-                                     Texture::BOUND);
     return;
   }
 

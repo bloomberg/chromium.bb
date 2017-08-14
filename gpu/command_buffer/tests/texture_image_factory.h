@@ -20,7 +20,6 @@ class TextureImageFactory : public gpu::ImageFactory {
   scoped_refptr<gl::GLImage> CreateAnonymousImage(
       const gfx::Size& size,
       gfx::BufferFormat format,
-      gfx::BufferUsage usage,
       unsigned internalformat) override;
   unsigned RequiredTextureType() override;
   bool SupportsFormatRGB() override;

@@ -76,8 +76,7 @@ class CC_EXPORT ResourceProvider
     TEXTURE_HINT_IMMUTABLE = 0x1,
     TEXTURE_HINT_FRAMEBUFFER = 0x2,
     TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER =
-        TEXTURE_HINT_IMMUTABLE | TEXTURE_HINT_FRAMEBUFFER,
-    TEXTURE_HINT_IMAGE = 0x4
+        TEXTURE_HINT_IMMUTABLE | TEXTURE_HINT_FRAMEBUFFER
   };
   enum ResourceType {
     RESOURCE_TYPE_GPU_MEMORY_BUFFER,
@@ -781,7 +780,6 @@ class CC_EXPORT ResourceProvider
     bool use_texture_format_bgra = false;
     bool use_texture_usage_hint = false;
     bool use_sync_query = false;
-    bool use_texture_buffer_chromium = false;
     ResourceType default_resource_type = RESOURCE_TYPE_GL_TEXTURE;
     viz::ResourceFormat yuv_resource_format = viz::LUMINANCE_8;
     viz::ResourceFormat yuv_highbit_resource_format = viz::LUMINANCE_8;

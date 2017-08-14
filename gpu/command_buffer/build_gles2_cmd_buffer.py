@@ -1052,14 +1052,6 @@ _NAMED_TYPE_INFO = {
       'GL_TEXTURE_3D',
     ],
   },
-  'TextureBufferUsage': {
-    'type': 'GLenum',
-    'is_complete': True,
-    'valid': [
-      'GL_NONE',
-      'GL_TEXTURE_BUFFER_SCANOUT_CHROMIUM',
-    ],
-  },
   'TransformFeedbackBindTarget': {
     'type': 'GLenum',
     'valid': [
