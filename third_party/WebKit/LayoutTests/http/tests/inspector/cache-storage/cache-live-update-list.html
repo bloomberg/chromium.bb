@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="cache-storage-test.js"></script>
+<script>
+
+function test() {
+    var cacheStorageModel = InspectorTest.mainTarget.model(SDK.ServiceWorkerCacheModel);
+    cacheStorageModel.enable();
+
+    function errorAndExit(error) {
+        if (error)
+            InspectorTest.addResult(error);
+        InspectorTest.completeTest();
+    }
+
+    function main() {
+        InspectorTest.clearAllCaches()
+            .then(InspectorTest.dumpCacheTree)
+            .then(InspectorTest.createCache.bind(this, "testCache1"))
+            .then(InspectorTest.dumpCacheTree)
+            .then(InspectorTest.createCache.bind(this, "testCache2"))
+            .then(InspectorTest.dumpCacheTree)
+            .then(InspectorTest.deleteCache.bind(this, "testCache1"))
+            .then(InspectorTest.dumpCacheTree)
+            .then(InspectorTest.clearAllCaches)
+            .then(InspectorTest.completeTest)
+            .catch(errorAndExit);
+    }
+
+    InspectorTest.waitForCacheRefresh(main);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that the cache storage list live updates.</p>
+</body>
+</html>

@@ -33,6 +33,7 @@
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/quota/quota_status_code.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -251,6 +252,28 @@ void CacheStorageManager::SetBlobParametersForCache(
   blob_context_ = blob_storage_context;
 }
 
+void CacheStorageManager::AddObserver(
+    CacheStorageContextImpl::Observer* observer) {
+  DCHECK(!observers_.HasObserver(observer));
+  observers_.AddObserver(observer);
+}
+
+void CacheStorageManager::RemoveObserver(
+    CacheStorageContextImpl::Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void CacheStorageManager::NotifyCacheListChanged(const GURL& origin) {
+  for (auto& observer : observers_)
+    observer.OnCacheListChanged(url::Origin(origin));
+}
+
+void CacheStorageManager::NotifyCacheContentChanged(const GURL& origin,
+                                                    const std::string& name) {
+  for (auto& observer : observers_)
+    observer.OnCacheContentChanged(url::Origin(origin), name);
+}
+
 void CacheStorageManager::GetAllOriginsUsage(
     const CacheStorageContext::GetUsageInfoCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -373,6 +396,7 @@ void CacheStorageManager::DeleteOriginData(
   DCHECK(it != cache_storage_map_.end());
 
   CacheStorage* cache_storage = it->second.release();
+  cache_storage->ResetManager();
   cache_storage_map_.erase(origin);
   cache_storage->GetSizeThenCloseAllCaches(
       base::BindOnce(&CacheStorageManager::DeleteOriginDidClose,
@@ -398,6 +422,7 @@ void CacheStorageManager::DeleteOriginDidClose(
   quota_manager_proxy_->NotifyStorageModified(
       storage::QuotaClient::kServiceWorkerCache, origin,
       storage::kStorageTypeTemporary, -1 * origin_size);
+  NotifyCacheListChanged(origin);
 
   if (IsMemoryBacked()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -434,7 +459,7 @@ CacheStorage* CacheStorageManager::FindOrCreateCacheStorage(
     CacheStorage* cache_storage = new CacheStorage(
         ConstructOriginPath(root_path_, origin), IsMemoryBacked(),
         cache_task_runner_.get(), request_context_getter_, quota_manager_proxy_,
-        blob_context_, origin);
+        blob_context_, this, origin);
     cache_storage_map_.insert(
         std::make_pair(origin, base::WrapUnique(cache_storage)));
     return cache_storage;
