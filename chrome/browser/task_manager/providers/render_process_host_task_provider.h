@@ -20,9 +20,9 @@ namespace task_manager {
 
 class ChildProcessTask;
 
-// Defines a provider to provide possibly redundant tasks that represent RPHs
-// that are active. This can track interstitial pages and tracks RPHs that have
-// service workers still alive in them.
+// This provides tasks that represent RenderProcessHost processes. It does so by
+// listening to the notification service for the creation and destruction of the
+// RenderProcessHost.
 class RenderProcessHostTaskProvider : public TaskProvider,
                                       public content::NotificationObserver {
  public:
@@ -48,7 +48,7 @@ class RenderProcessHostTaskProvider : public TaskProvider,
   // observer of its addition.
   void CreateTask(const int render_process_host_id);
 
-  // Deletes a RenderProcessHostTask whose |render_process_host_ID| is provided
+  // Deletes a RenderProcessHostTask whose |render_process_host_id| is provided
   // after notifying the observer of its deletion.
   void DeleteTask(const int render_process_host_id);
 

@@ -101,11 +101,10 @@ base::string16 GetLocalizedTitle(const base::string16& title,
                                         result_title);
     }
     case content::PROCESS_TYPE_RENDERER: {
-      // TODO: (cburn) Start the UI Localization process for this. Currently the
-      // best name for this is "Renderer".
       if (base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kTaskManagerShowExtraRenderers)) {
-        return base::ASCIIToUTF16("Renderer");
+        return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_RENDERER_PREFIX,
+                                          result_title);
       }
     }
     // These types don't need display names or get them from elsewhere.
