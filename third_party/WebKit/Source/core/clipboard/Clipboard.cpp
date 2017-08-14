@@ -38,7 +38,7 @@ ExecutionContext* Clipboard::GetExecutionContext() const {
 }
 
 DEFINE_TRACE(Clipboard) {
-  EventTarget::Trace(visitor);
+  EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }
 
