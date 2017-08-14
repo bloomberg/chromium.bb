@@ -176,6 +176,8 @@ class CORE_EXPORT ImageResource final
 
   Timer<ImageResource> flush_timer_;
   double last_flush_time_ = 0.;
+
+  bool is_during_finish_as_error_ = false;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Image);

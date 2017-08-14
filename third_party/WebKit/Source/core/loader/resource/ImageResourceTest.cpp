@@ -41,6 +41,7 @@
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceFinishObserver.h"
 #include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/loader/fetch/UniqueIdentifier.h"
 #include "platform/loader/testing/MockFetchContext.h"
@@ -57,6 +58,7 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -496,6 +498,64 @@ TEST(ImageResourceTest, CancelOnRemoveObserver) {
   blink::testing::RunPendingTasks();
   EXPECT_EQ(ResourceStatus::kLoadError, image_resource->GetStatus());
   EXPECT_FALSE(GetMemoryCache()->ResourceForURL(test_url));
+}
+
+class MockFinishObserver : public GarbageCollectedFinalized<MockFinishObserver>,
+                           public ResourceFinishObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(MockFinishObserver);
+
+ public:
+  static MockFinishObserver* Create() {
+    return
+
+        new ::testing::StrictMock<MockFinishObserver>;
+  }
+  MOCK_METHOD0(NotifyFinished, void());
+  String DebugName() const override { return "MockFinishObserver"; }
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    blink::ResourceFinishObserver::Trace(visitor);
+  }
+
+ protected:
+  MockFinishObserver() {}
+};
+
+TEST(ImageResourceTest, CancelWithImageAndFinishObserver) {
+  KURL test_url(kParsedURLString, kTestURL);
+  ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
+
+  ResourceFetcher* fetcher = CreateFetcher();
+
+  // Emulate starting a real load.
+  ImageResource* image_resource = ImageResource::CreateForTest(test_url);
+  image_resource->SetIdentifier(CreateUniqueIdentifier());
+
+  fetcher->StartLoad(image_resource);
+  GetMemoryCache()->Add(image_resource);
+
+  Persistent<MockFinishObserver> finish_observer = MockFinishObserver::Create();
+  image_resource->AddFinishObserver(finish_observer);
+
+  // Send the image response.
+  image_resource->ResponseReceived(
+      ResourceResponse(NullURL(), "image/jpeg", sizeof(kJpegImage),
+                       g_null_atom),
+      nullptr);
+  image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
+                             sizeof(kJpegImage));
+  ASSERT_TRUE(image_resource->GetContent()->HasImage());
+  EXPECT_EQ(ResourceStatus::kPending, image_resource->GetStatus());
+
+  // This shouldn't crash. crbug.com/701723
+  image_resource->Loader()->Cancel();
+
+  EXPECT_EQ(ResourceStatus::kLoadError, image_resource->GetStatus());
+  EXPECT_FALSE(GetMemoryCache()->ResourceForURL(test_url));
+
+  // ResourceFinishObserver is notified asynchronously.
+  EXPECT_CALL(*finish_observer, NotifyFinished());
+  blink::testing::RunPendingTasks();
 }
 
 TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
