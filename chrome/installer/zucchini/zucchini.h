@@ -26,6 +26,7 @@ enum Code {
   kStatusPatchWriteError = 5,
   kStatusInvalidOldImage = 6,
   kStatusInvalidNewImage = 7,
+  kStatusFatal = 8,
 };
 
 }  // namespace status
