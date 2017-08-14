@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -31,6 +32,7 @@ class Image;
 
 namespace base {
 class DictionaryValue;
+class SequencedTaskRunner;
 }
 
 class PrefService;
@@ -257,6 +259,9 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Determines of the ProfileAvatarDownloader should be created and executed
   // or not. Only set to true for tests.
   bool disable_avatar_download_for_testing_;
+
+  // Task runner used for file operation on avatar images.
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoCache);
 };

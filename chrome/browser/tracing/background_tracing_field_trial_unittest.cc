@@ -6,6 +6,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/tracing/common/trace_startup.h"
@@ -42,6 +43,9 @@ TEST_P(BackgroundTracingTest, SetupBackgroundTracingFieldTrial) {
   base::AssociateFieldTrialParams(kTrialName, kExperimentName,
                                   {{"config", kTestConfig}});
   base::FieldTrialList::CreateFieldTrial(kTrialName, kExperimentName);
+
+  base::test::ScopedTaskEnvironment task_environment;
+
   TestingProfileManager testing_profile_manager(
       TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(testing_profile_manager.SetUp());
