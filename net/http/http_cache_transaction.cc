@@ -549,6 +549,12 @@ void HttpCache::Transaction::SetBeforeHeadersSentCallback(
   before_headers_sent_callback_ = callback;
 }
 
+void HttpCache::Transaction::SetRequestHeadersCallback(
+    RequestHeadersCallback callback) {
+  DCHECK(!network_trans_);
+  request_headers_callback_ = std::move(callback);
+}
+
 int HttpCache::Transaction::ResumeNetworkStart() {
   if (network_trans_)
     return network_trans_->ResumeNetworkStart();
@@ -1494,6 +1500,7 @@ int HttpCache::Transaction::DoSendRequest() {
   }
   network_trans_->SetBeforeNetworkStartCallback(before_network_start_callback_);
   network_trans_->SetBeforeHeadersSentCallback(before_headers_sent_callback_);
+  network_trans_->SetRequestHeadersCallback(request_headers_callback_);
 
   // Old load timing information, if any, is now obsolete.
   old_network_trans_load_timing_.reset();

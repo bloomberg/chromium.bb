@@ -554,6 +554,7 @@ int QuicHttpStream::DoSendHeaders() {
       NetLogEventType::HTTP_TRANSACTION_QUIC_SEND_REQUEST_HEADERS,
       base::Bind(&QuicRequestNetLogCallback, stream_->id(), &request_headers_,
                  priority_));
+  DispatchRequestHeadersCallback(request_headers_);
   bool has_upload_data = request_body_stream_ != nullptr;
 
   next_state_ = STATE_SEND_HEADERS_COMPLETE;

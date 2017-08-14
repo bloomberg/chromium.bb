@@ -382,6 +382,10 @@ void URLRequestJob::GetConnectionAttempts(ConnectionAttempts* out) const {
   out->clear();
 }
 
+void URLRequestJob::SetRequestHeadersCallback(RequestHeadersCallback callback) {
+  request_headers_callback_ = std::move(callback);
+}
+
 // static
 GURL URLRequestJob::ComputeReferrerForPolicy(URLRequest::ReferrerPolicy policy,
                                              const GURL& original_referrer,
