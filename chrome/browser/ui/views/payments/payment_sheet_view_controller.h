@@ -20,6 +20,7 @@ class StyledLabel;
 namespace payments {
 
 class PaymentRequestDialogView;
+class PaymentRequestRowView;
 
 // The PaymentRequestSheetController subtype for the Payment Sheet screen of the
 // Payment Request dialog.
@@ -62,13 +63,13 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
   // be null, with the screen reader string that represents their contents.
   std::unique_ptr<views::View> CreateShippingSectionContent(
       base::string16* accessible_content);
-  std::unique_ptr<views::Button> CreateShippingRow();
-  std::unique_ptr<views::Button> CreatePaymentSheetSummaryRow();
-  std::unique_ptr<views::Button> CreatePaymentMethodRow();
+  std::unique_ptr<PaymentRequestRowView> CreateShippingRow();
+  std::unique_ptr<PaymentRequestRowView> CreatePaymentSheetSummaryRow();
+  std::unique_ptr<PaymentRequestRowView> CreatePaymentMethodRow();
   std::unique_ptr<views::View> CreateContactInfoSectionContent(
       base::string16* accessible_content);
-  std::unique_ptr<views::Button> CreateContactInfoRow();
-  std::unique_ptr<views::Button> CreateShippingOptionRow();
+  std::unique_ptr<PaymentRequestRowView> CreateContactInfoRow();
+  std::unique_ptr<PaymentRequestRowView> CreateShippingOptionRow();
   std::unique_ptr<views::View> CreateDataSourceRow();
 
   DISALLOW_COPY_AND_ASSIGN(PaymentSheetViewController);

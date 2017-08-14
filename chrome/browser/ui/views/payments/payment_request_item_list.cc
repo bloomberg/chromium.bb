@@ -185,6 +185,8 @@ PaymentRequestItemList::~PaymentRequestItemList() {}
 void PaymentRequestItemList::AddItem(
     std::unique_ptr<PaymentRequestItemList::Item> item) {
   DCHECK_EQ(this, item->list());
+  if (!items_.empty())
+    item->set_previous_row(items_.back().get());
   items_.push_back(std::move(item));
   if (items_.back()->selected()) {
     if (selected_item_)
