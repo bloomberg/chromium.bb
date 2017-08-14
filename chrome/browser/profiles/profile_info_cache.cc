@@ -16,6 +16,8 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -77,7 +79,7 @@ typedef std::vector<unsigned char> ImageData;
 void SaveBitmap(std::unique_ptr<ImageData> data,
                 const base::FilePath& image_path,
                 const base::Closure& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   // Make sure the destination directory exists.
   base::FilePath dir = image_path.DirName();
@@ -100,7 +102,7 @@ void SaveBitmap(std::unique_ptr<ImageData> data,
 // will be NULL.
 void ReadBitmap(const base::FilePath& image_path,
                 gfx::Image** out_image) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   *out_image = NULL;
 
   // If the path doesn't exist, don't even try reading it.
@@ -125,13 +127,13 @@ void ReadBitmap(const base::FilePath& image_path,
 
 void RunCallbackIfFileMissing(const base::FilePath& file_path,
                               const base::Closure& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   if (!base::PathExists(file_path))
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
 
 void DeleteBitmap(const base::FilePath& image_path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   base::DeleteFile(image_path, false);
 }
 
@@ -140,7 +142,10 @@ void DeleteBitmap(const base::FilePath& image_path) {
 ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
                                    const base::FilePath& user_data_dir)
     : ProfileAttributesStorage(prefs, user_data_dir),
-      disable_avatar_download_for_testing_(false) {
+      disable_avatar_download_for_testing_(false),
+      file_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   // Populate the cache
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   base::DictionaryValue* cache = update.Get();
@@ -690,8 +695,8 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
     // Delete the old bitmap from disk.
     if (!old_file_name.empty()) {
       base::FilePath image_path = path.AppendASCII(old_file_name);
-      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                              base::BindOnce(&DeleteBitmap, image_path));
+      file_task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(&DeleteBitmap, image_path));
     }
   } else {
     // Save the new bitmap to disk.
@@ -824,8 +829,8 @@ void ProfileInfoCache::DownloadHighResAvatarIfNeeded(
                  AsWeakPtr(),
                  icon_index,
                  profile_path);
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  file_task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(&RunCallbackIfFileMissing, file_path, callback));
 }
 
@@ -856,8 +861,8 @@ void ProfileInfoCache::SaveAvatarImageAtPath(
   } else {
     base::Closure callback = base::Bind(&ProfileInfoCache::OnAvatarPictureSaved,
         AsWeakPtr(), key, profile_path);
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
+    file_task_runner_->PostTask(
+        FROM_HERE,
         base::BindOnce(&SaveBitmap, base::Passed(&data), image_path, callback));
   }
 }
@@ -1001,9 +1006,8 @@ const gfx::Image* ProfileInfoCache::LoadAvatarPictureFromPath(
   cached_avatar_images_loading_[key] = true;
 
   gfx::Image** image = new gfx::Image*;
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::BindOnce(&ReadBitmap, image_path, image),
+  file_task_runner_->PostTaskAndReply(
+      FROM_HERE, base::BindOnce(&ReadBitmap, image_path, image),
       base::BindOnce(&ProfileInfoCache::OnAvatarPictureLoaded,
                      const_cast<ProfileInfoCache*>(this)->AsWeakPtr(),
                      profile_path, key, image));
