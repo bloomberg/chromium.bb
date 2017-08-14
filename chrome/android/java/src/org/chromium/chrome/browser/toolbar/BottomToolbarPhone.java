@@ -906,6 +906,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
                 mAnimatingToolbarButtonDisappearance = false;
                 mAnimatingToolbarButtonAppearance = false;
                 mToolbarButtonVisibilityAnimator = null;
+                mLocationBar.scrollUrlBarToTld();
             }
         });
 

@@ -2561,4 +2561,12 @@ public class LocationBarLayout extends FrameLayout
     public boolean mustQueryUrlBarLocationForSuggestions() {
         return DeviceFormFactor.isTablet();
     }
+
+    /**
+     * Scroll to ensure the TLD is visible.
+     * @return Whether the TLD was discovered and successfully scrolled to.
+     */
+    public boolean scrollUrlBarToTld() {
+        return mUrlBar.scrollToTLD();
+    }
 }
