@@ -44,10 +44,10 @@ const char BaseRenderingContext2D::kLtrDirectionString[] = "ltr";
 const double BaseRenderingContext2D::kCDeviceScaleFactor = 1.0;
 
 BaseRenderingContext2D::BaseRenderingContext2D()
-    : clip_antialiasing_(kNotAntiAliased), color_management_enabled_(false) {
+    : clip_antialiasing_(kNotAntiAliased),
+      color_management_enabled_(
+          RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()) {
   state_stack_.push_back(CanvasRenderingContext2DState::Create());
-  color_management_enabled_ =
-      RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled();
 }
 
 BaseRenderingContext2D::~BaseRenderingContext2D() {}

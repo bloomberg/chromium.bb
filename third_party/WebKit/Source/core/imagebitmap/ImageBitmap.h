@@ -150,7 +150,6 @@ class CORE_EXPORT ImageBitmap final
     IntRect crop_rect;
     SkFilterQuality resize_quality = kLow_SkFilterQuality;
     CanvasColorParams color_params;
-    bool color_canvas_extensions_enabled = false;
   };
 
   DECLARE_VIRTUAL_TRACE();

@@ -165,9 +165,16 @@ static sk_sp<SkSurface> CreateSkSurface(GrContext* gr,
 
   SkAlphaType alpha_type =
       (kOpaque == opacity_mode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
-  SkImageInfo info = SkImageInfo::Make(
-      size.Width(), size.Height(), color_params.GetSkColorType(), alpha_type,
-      color_params.GetSkColorSpaceForSkSurfaces());
+  // If we need color correction for all color spaces, we set the proper color
+  // space when creating the surface. If color correct rendering is only toward
+  // SRGB, we leave the surface with no color space. The painting canvas will
+  // get wrapped with a proper SkColorSpaceXformCanvas in GetOrCreateSurface().
+  sk_sp<SkColorSpace> color_space = nullptr;
+  if (CanvasColorParams::ColorCorrectRenderingInAnyColorSpace())
+    color_space = color_params.GetSkColorSpaceForSkSurfaces();
+  SkImageInfo info =
+      SkImageInfo::Make(size.Width(), size.Height(),
+                        color_params.GetSkColorType(), alpha_type, color_space);
   SkSurfaceProps disable_lcd_props(0, kUnknown_SkPixelGeometry);
   sk_sp<SkSurface> surface;
 
@@ -363,7 +370,7 @@ bool Canvas2DLayerBridge::PrepareIOSurfaceMailboxFromImage(
   *out_mailbox =
       viz::TextureMailbox(mailbox, sync_token, texture_target, gfx::Size(size_),
                           is_overlay_candidate, secure_output_only);
-  if (RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()) {
+  if (CanvasColorParams::ColorCorrectRenderingEnabled()) {
     gfx::ColorSpace color_space = color_params_.GetGfxColorSpace();
     out_mailbox->set_color_space(color_space);
     image_info->gpu_memory_buffer_->SetColorSpaceForScanout(color_space);
@@ -627,8 +634,13 @@ SkSurface* Canvas2DLayerBridge::GetOrCreateSurface(AccelerationHint hint) {
   bool surface_is_accelerated;
   surface_ = CreateSkSurface(gr, size_, msaa_sample_count_, opacity_mode_,
                              color_params_, &surface_is_accelerated);
-  surface_paint_canvas_ =
-      WTF::WrapUnique(new SkiaPaintCanvas(surface_->getCanvas()));
+  if (color_params_.ColorCorrectNoColorSpaceToSRGB()) {
+    surface_paint_canvas_ = WTF::WrapUnique(new SkiaPaintCanvas(
+        surface_->getCanvas(), color_params_.GetSkColorSpace()));
+  } else {
+    surface_paint_canvas_ =
+        WTF::WrapUnique(new SkiaPaintCanvas(surface_->getCanvas()));
+  }
 
   if (surface_) {
     // Always save an initial frame, to support resetting the top level matrix
@@ -848,8 +860,7 @@ void Canvas2DLayerBridge::FlushRecordingOnly() {
     // be done using target space pixel values.
     SkCanvas* canvas = GetOrCreateSurface()->getCanvas();
     std::unique_ptr<SkCanvas> color_transform_canvas;
-    if (RuntimeEnabledFeatures::ColorCorrectRenderingEnabled() &&
-        color_params_.UsesOutputSpaceBlending()) {
+    if (color_params_.ColorCorrectNoColorSpaceToSRGB()) {
       color_transform_canvas = SkCreateColorSpaceXformCanvas(
           canvas, color_params_.GetSkColorSpace());
       canvas = color_transform_canvas.get();

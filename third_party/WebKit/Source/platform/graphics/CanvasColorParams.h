@@ -41,9 +41,23 @@ class PLATFORM_EXPORT CanvasColorParams {
   void SetCanvasColorSpace(CanvasColorSpace);
   void SetCanvasPixelFormat(CanvasPixelFormat);
 
-  // Returns true if the canvas uses blends output color space values (that is,
+  // Returns true if the canvas blends output color space values (that is,
   // not linear space colors).
   bool UsesOutputSpaceBlending() const;
+
+  // Returns true if color correct rendering flag is set.
+  static bool ColorCorrectRenderingEnabled();
+  // Returns true if color correct rendering flag is set but canvas color
+  // extensions flag is not.
+  static bool ColorCorrectRenderingInSRGBOnly();
+  // Returns true if both color correct rendering and canvas color extensions
+  // flags are set. This activates the color management pipeline for all color
+  // spaces.
+  static bool ColorCorrectRenderingInAnyColorSpace();
+  // Returns true if color correct rendering flag is set but color canvas
+  // extensions flag is not set and the color space stored in CanvasColorParams
+  // object is null.
+  bool ColorCorrectNoColorSpaceToSRGB() const;
 
   // The SkColorSpace to use in the SkImageInfo for allocated SkSurfaces. This
   // is nullptr in legacy rendering mode.
