@@ -1,22 +1,25 @@
 <style>
-  #hsts-view-tab-content tt {
+  #domain-security-policy-view-tab-content tt {
     word-wrap: break-word;
   }
 </style>
   
-<!-- HSTS tab -->
-<div id=hsts-view-tab-content class=content-box>
+<!-- HSTS/PKP/Expect-CT tab -->
+<div id=domain-security-policy-view-tab-content class=content-box>
   <div class=deindent-header>
     HSTS is HTTP Strict Transport Security: a way for sites to elect to
     always use HTTPS. See <a href="https://www.chromium.org/hsts" target=_blank>
-    https://www.chromium.org/hsts</a>.</div>
+    https://www.chromium.org/hsts</a>. PKP is Public Key Pinning: a way for sites
+    to "pin" themselves to particular public keys that must appear in their
+    certificate chain. See
+    <a href="https://tools.ietf.org/html/rfc7469" target=_blank>https://tools.ietf.org/html/rfc7469</a>.</div>
 
     <!-- This UI allows a user to query and update the browser's list of
-         HSTS domains. -->
+         HSTS/PKP/Expect-CT domains. -->
 
-  <h4>Add domain</h4>
+  <h4>Add HSTS/PKP domain</h4>
 
-  <p>Input a domain name to add it to the HSTS set:</p>
+  <p>Input a domain name to add it to the HSTS/PKP set:</p>
   <form id=hsts-view-add-form>
     Domain: <input type=text id=hsts-view-add-input type="url"
              placeholder="example.com"><br>
@@ -27,10 +30,10 @@
     <input type=submit value="Add" id=hsts-view-add-submit>
   </form>
 
-  <h4>Delete domain</h4>
+  <h4>Delete HSTS/PKP domain</h4>
 
   <p>
-    Input a domain name to delete it from the HSTS set
+    Input a domain name to delete it from the HSTS/PKP set
     (<i>you cannot delete preloaded entries</i>):
   </p>
   <form id=hsts-view-delete-form>
@@ -39,9 +42,9 @@
     <input type=submit value="Delete" id=hsts-view-delete-submit>
   </form>
 
-  <h4>Query domain</h4>
+  <h4>Query HSTS/PKP domain</h4>
 
-  <p>Input a domain name to query the current HSTS set:</p>
+  <p>Input a domain name to query the current HSTS/PKP set:</p>
   <form id=hsts-view-query-form>
     Domain: <input type=text id=hsts-view-query-input type="url"
              placeholder="example.com">

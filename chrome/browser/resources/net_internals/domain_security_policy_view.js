@@ -3,15 +3,19 @@
 // found in the LICENSE file.
 
 /**
- * HSTS is HTTPS Strict Transport Security: a way for sites to elect to always
- * use HTTPS. See http://dev.chromium.org/sts
- *
- * This UI allows a user to query and update the browser's list of HSTS domains.
- * It also allows users to query and update the browser's list of public key
- * pins.
+ * This UI allows a user to query and update the browser's list of per-domain
+ * security policies. These policies include:
+ * - HSTS: HTTPS Strict Transport Security. A way for sites to elect to always
+ *   use HTTPS. See http://dev.chromium.org/sts
+ * - PKP: Public Key Pinning. A way for sites to pin themselves to particular
+ *   public key fingerprints that must appear in their certificate chains. See
+ *   https://tools.ietf.org/html/rfc7469
+ * - Expect-CT. A way for sites to elect to always require valid Certificate
+ *   Transparency information to be present. See
+ *   https://tools.ietf.org/html/draft-ietf-httpbis-expect-ct-01
  */
 
-var HSTSView = (function() {
+var DomainSecurityPolicyView = (function() {
   'use strict';
 
   // We inherit from DivView.
@@ -20,55 +24,59 @@ var HSTSView = (function() {
   /**
    * @constructor
    */
-  function HSTSView() {
-    assertFirstConstructorCall(HSTSView);
+  function DomainSecurityPolicyView() {
+    assertFirstConstructorCall(DomainSecurityPolicyView);
 
     // Call superclass's constructor.
-    superClass.call(this, HSTSView.MAIN_BOX_ID);
+    superClass.call(this, DomainSecurityPolicyView.MAIN_BOX_ID);
 
-    this.addInput_ = $(HSTSView.ADD_INPUT_ID);
-    this.addStsCheck_ = $(HSTSView.ADD_STS_CHECK_ID);
-    this.addPkpCheck_ = $(HSTSView.ADD_PKP_CHECK_ID);
-    this.addPins_ = $(HSTSView.ADD_PINS_ID);
-    this.deleteInput_ = $(HSTSView.DELETE_INPUT_ID);
-    this.queryInput_ = $(HSTSView.QUERY_INPUT_ID);
-    this.queryOutputDiv_ = $(HSTSView.QUERY_OUTPUT_DIV_ID);
+    this.addInput_ = $(DomainSecurityPolicyView.ADD_INPUT_ID);
+    this.addStsCheck_ = $(DomainSecurityPolicyView.ADD_STS_CHECK_ID);
+    this.addPkpCheck_ = $(DomainSecurityPolicyView.ADD_PKP_CHECK_ID);
+    this.addPins_ = $(DomainSecurityPolicyView.ADD_PINS_ID);
+    this.deleteInput_ = $(DomainSecurityPolicyView.DELETE_INPUT_ID);
+    this.queryInput_ = $(DomainSecurityPolicyView.QUERY_INPUT_ID);
+    this.queryOutputDiv_ = $(DomainSecurityPolicyView.QUERY_OUTPUT_DIV_ID);
 
-    var form = $(HSTSView.ADD_FORM_ID);
+    var form = $(DomainSecurityPolicyView.ADD_FORM_ID);
     form.addEventListener('submit', this.onSubmitAdd_.bind(this), false);
 
-    form = $(HSTSView.DELETE_FORM_ID);
+    form = $(DomainSecurityPolicyView.DELETE_FORM_ID);
     form.addEventListener('submit', this.onSubmitDelete_.bind(this), false);
 
-    form = $(HSTSView.QUERY_FORM_ID);
+    form = $(DomainSecurityPolicyView.QUERY_FORM_ID);
     form.addEventListener('submit', this.onSubmitQuery_.bind(this), false);
 
     g_browser.addHSTSObserver(this);
   }
 
-  HSTSView.TAB_ID = 'tab-handle-hsts';
-  HSTSView.TAB_NAME = 'HSTS';
-  HSTSView.TAB_HASH = '#hsts';
+  DomainSecurityPolicyView.TAB_ID = 'tab-handle-domain-security-policy';
+  DomainSecurityPolicyView.TAB_NAME = 'Domain Security Policy';
+  // This tab was originally limited to HSTS. Even though it now encompasses
+  // domain security policy more broadly, keep the hash as "#hsts" to preserve
+  // links/documentation that directs users to chrome://net-internals#hsts.
+  DomainSecurityPolicyView.TAB_HASH = '#hsts';
 
-  // IDs for special HTML elements in hsts_view.html
-  HSTSView.MAIN_BOX_ID = 'hsts-view-tab-content';
-  HSTSView.ADD_INPUT_ID = 'hsts-view-add-input';
-  HSTSView.ADD_STS_CHECK_ID = 'hsts-view-check-sts-input';
-  HSTSView.ADD_PKP_CHECK_ID = 'hsts-view-check-pkp-input';
-  HSTSView.ADD_PINS_ID = 'hsts-view-add-pins';
-  HSTSView.ADD_FORM_ID = 'hsts-view-add-form';
-  HSTSView.ADD_SUBMIT_ID = 'hsts-view-add-submit';
-  HSTSView.DELETE_INPUT_ID = 'hsts-view-delete-input';
-  HSTSView.DELETE_FORM_ID = 'hsts-view-delete-form';
-  HSTSView.DELETE_SUBMIT_ID = 'hsts-view-delete-submit';
-  HSTSView.QUERY_INPUT_ID = 'hsts-view-query-input';
-  HSTSView.QUERY_OUTPUT_DIV_ID = 'hsts-view-query-output';
-  HSTSView.QUERY_FORM_ID = 'hsts-view-query-form';
-  HSTSView.QUERY_SUBMIT_ID = 'hsts-view-query-submit';
+  // IDs for special HTML elements in domain_security_policy_view.html
+  DomainSecurityPolicyView.MAIN_BOX_ID =
+      'domain-security-policy-view-tab-content';
+  DomainSecurityPolicyView.ADD_INPUT_ID = 'hsts-view-add-input';
+  DomainSecurityPolicyView.ADD_STS_CHECK_ID = 'hsts-view-check-sts-input';
+  DomainSecurityPolicyView.ADD_PKP_CHECK_ID = 'hsts-view-check-pkp-input';
+  DomainSecurityPolicyView.ADD_PINS_ID = 'hsts-view-add-pins';
+  DomainSecurityPolicyView.ADD_FORM_ID = 'hsts-view-add-form';
+  DomainSecurityPolicyView.ADD_SUBMIT_ID = 'hsts-view-add-submit';
+  DomainSecurityPolicyView.DELETE_INPUT_ID = 'hsts-view-delete-input';
+  DomainSecurityPolicyView.DELETE_FORM_ID = 'hsts-view-delete-form';
+  DomainSecurityPolicyView.DELETE_SUBMIT_ID = 'hsts-view-delete-submit';
+  DomainSecurityPolicyView.QUERY_INPUT_ID = 'hsts-view-query-input';
+  DomainSecurityPolicyView.QUERY_OUTPUT_DIV_ID = 'hsts-view-query-output';
+  DomainSecurityPolicyView.QUERY_FORM_ID = 'hsts-view-query-form';
+  DomainSecurityPolicyView.QUERY_SUBMIT_ID = 'hsts-view-query-submit';
 
-  cr.addSingletonGetter(HSTSView);
+  cr.addSingletonGetter(DomainSecurityPolicyView);
 
-  HSTSView.prototype = {
+  DomainSecurityPolicyView.prototype = {
     // Inherit the superclass's methods.
     __proto__: superClass.prototype,
 
@@ -195,5 +203,5 @@ var HSTSView = (function() {
     }, 0);
   }
 
-  return HSTSView;
+  return DomainSecurityPolicyView;
 })();
