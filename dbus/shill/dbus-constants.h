@@ -312,6 +312,7 @@ const char kEapPhase2AuthTTLSEAPGTC[] = "autheap=GTC";
 const char kProviderL2tpIpsec[] = "l2tpipsec";
 const char kProviderOpenVpn[] = "openvpn";
 const char kProviderThirdPartyVpn[] = "thirdpartyvpn";
+const char kProviderArcVpn[] = "arcvpn";
 
 // Flimflam VPN service properties
 const char kVPNDomainProperty[] = "VPN.Domain";
@@ -386,6 +387,9 @@ const char kOpenVPNTLSAuthContentsProperty[] = "OpenVPN.TLSAuthContents";
 const char kOpenVPNTLSRemoteProperty[] = "OpenVPN.TLSRemote";
 const char kOpenVPNUserProperty[] = "OpenVPN.User";
 
+// Flimflam ARCVPN property names.
+const char kArcVpnTunnelChromeProperty[] = "ArcVpn.TunnelChrome";
+
 // FlimFlam PPPoE property names.
 const char kPPPoEUsernameProperty[] = "PPPoE.Username";
 const char kPPPoEPasswordProperty[] = "PPPoE.Password";
@@ -408,9 +412,16 @@ const char kGatewayProperty[] = "Gateway";
 const char kDomainNameProperty[] = "DomainName";
 const char kAcceptedHostnameProperty[] = "AcceptedHostname";
 const char kNameServersProperty[] = "NameServers";
+const char kSearchDomainsProperty[] = "SearchDomains";
 const char kDhcpv6AddressesProperty[] = "Dhcpv6Addresses";
 const char kDhcpv6DelegatedPrefixesProperty[] = "Dhcpv6DelegatedPrefixes";
 const char kLeaseDurationSecondsProperty[] = "LeaseDurationSeconds";
+const char kVendorEncapsulatedOptionsProperty[] = "VendorEncapsulatedOptions";
+const char kWebProxyAutoDiscoveryUrlProperty[] = "WebProxyAutoDiscoveryUrl";
+// DHCP Option for iSNS (RFC 4174)
+const char kiSNSOptionDataProperty[] = "iSNSOptionData";
+const char kIncludedRoutesProperty[] = "IncludedRoutes";
+const char kExcludedRoutesProperty[] = "ExcludedRoutes";
 
 // These constants are deprecated in favor of kDhcpv6DelegatedPrefixesProperty.
 // TODO(tjennison): Remove when shill no longer uses them b/26778228
@@ -558,13 +569,6 @@ const char kTypeEthernetEap[] = "etherneteap";
 const char kErrorEapAuthenticationFailed[] = "eap-authentication-failed";
 const char kErrorEapLocalTlsFailed[] = "eap-local-tls-failed";
 const char kErrorEapRemoteTlsFailed[] = "eap-remote-tls-failed";
-
-// IPConfig property names.
-const char kSearchDomainsProperty[] = "SearchDomains";
-const char kVendorEncapsulatedOptionsProperty[] = "VendorEncapsulatedOptions";
-const char kWebProxyAutoDiscoveryUrlProperty[] = "WebProxyAutoDiscoveryUrl";
-// DHCP Option for iSNS (RFC 4174)
-const char kiSNSOptionDataProperty[] = "iSNSOptionData";
 
 // Manager property names.
 const char kDefaultServiceProperty[] = "DefaultService";
