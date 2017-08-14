@@ -129,8 +129,9 @@ public class ImageFetcher {
         }
 
         if (!suggestion.isArticle() || !SnippetsConfig.isFaviconsFromNewServerEnabled()) {
-            // The old code path. Remove when the experiment is successful.
-            // Currently, we have to use this for non-articles, due to privacy.
+            // The old code path. Currently, we have to use this for non-articles, due to privacy.
+            // TODO(jkrcal): Remove this path when we completely switch to the new code on Stable.
+            // https://crbug.com/751628
             fetchFaviconFromLocalCache(pageUrl, true, faviconFetchStartTimeMs, faviconSizePx,
                     suggestion, faviconCallback);
         } else {
@@ -194,6 +195,10 @@ public class ImageFetcher {
                                     fallbackToService ? FaviconFetchResult.SUCCESS_CACHED
                                                       : FaviconFetchResult.SUCCESS_FETCHED,
                                     SystemClock.elapsedRealtime() - faviconFetchStartTimeMs);
+
+                            // Update the time when the icon was last requested therefore postponing
+                            // the automatic eviction of the favicon from the favicon database.
+                            getFaviconHelper().touchOnDemandFavicon(mProfile, iconUrl);
                         } else if (fallbackToService) {
                             if (!fetchFaviconFromService(suggestion, snippetUri,
                                         faviconFetchStartTimeMs, faviconSizePx, faviconCallback)) {
@@ -234,8 +239,7 @@ public class ImageFetcher {
         ensureIconIsAvailable(
                 getSnippetDomain(snippetUri), // Store to the cache for the whole domain.
                 String.format(FAVICON_SERVICE_FORMAT, snippetUri.getHost(), sizePx),
-                /* useLargeIcon = */ false, /* isTemporary = */ true,
-                new FaviconHelper.IconAvailabilityCallback() {
+                /* useLargeIcon = */ false, new FaviconHelper.IconAvailabilityCallback() {
                     @Override
                     public void onIconAvailabilityChecked(boolean newlyAvailable) {
                         if (!newlyAvailable) {
@@ -261,11 +265,10 @@ public class ImageFetcher {
      * @param callback The callback to be notified when the favicon has been checked.
      */
     private void ensureIconIsAvailable(String pageUrl, String iconUrl, boolean isLargeIcon,
-            boolean isTemporary, FaviconHelper.IconAvailabilityCallback callback) {
+            FaviconHelper.IconAvailabilityCallback callback) {
         if (mHost.getActiveTab() != null && mHost.getActiveTab().getWebContents() != null) {
             getFaviconHelper().ensureIconIsAvailable(mProfile,
-                    mHost.getActiveTab().getWebContents(), pageUrl, iconUrl, isLargeIcon,
-                    isTemporary, callback);
+                    mHost.getActiveTab().getWebContents(), pageUrl, iconUrl, isLargeIcon, callback);
         }
     }
 
