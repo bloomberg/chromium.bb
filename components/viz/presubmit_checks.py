@@ -244,6 +244,32 @@ def CheckNamespace(input_api, output_api):
       items=errors)]
   return []
 
+# Verifies that we use the right module name (viz.mojom) in mojom files and we
+# don't specify module name viz.mojom when referring to types in viz.mojom.
+def CheckMojoms(input_api, output_api):
+  source_file_filter = lambda x: input_api.FilterSourceFile(x,
+                                                            ['.*\.mojom$'],
+                                                            [])
+  wrong_module_name=[]
+  omit_module_name=[]
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    contents = input_api.ReadFile(f, 'rb')
+    if 'module viz.mojom;' not in contents:
+      wrong_module_name.append(f.LocalPath())
+    elif 'viz.mojom.' in contents:
+      omit_module_name.append(f.LocalPath())
+
+  errors=[]
+  if wrong_module_name:
+    errors.append(output_api.PresubmitError(
+        'Use viz.mojom as the module name in mojom files.',
+        items=wrong_module_name))
+  if omit_module_name:
+    errors.append(output_api.PresubmitError(
+      'Do not specify module name viz.mojom when referring to types '
+      + 'in the same module.', items=omit_module_name))
+  return errors
+
 def CheckForUseOfWrongClock(input_api,
                             output_api,
                             white_list,
@@ -307,6 +333,7 @@ def RunAllChecks(input_api, output_api, white_list):
   results += CheckDoubleAngles(input_api, output_api, white_list)
   results += CheckUniquePtr(input_api, output_api, white_list)
   results += CheckNamespace(input_api, output_api)
+  results += CheckMojoms(input_api, output_api)
   results += CheckForUseOfWrongClock(input_api, output_api, white_list)
   results += FindUselessIfdefs(input_api, output_api)
   return results
