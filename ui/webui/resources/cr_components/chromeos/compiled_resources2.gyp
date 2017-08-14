@@ -24,7 +24,7 @@
         '<(INTERFACES_GYP):bluetooth_interface',
         '<(INTERFACES_GYP):bluetooth_private_interface',
       ],
-      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
   ],
 }

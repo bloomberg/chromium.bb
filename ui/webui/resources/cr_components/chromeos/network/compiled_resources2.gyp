@@ -9,7 +9,7 @@
         '<(DEPTH)/ui/webui/resources/cr_elements/chromeos/network/compiled_resources2.gyp:cr_onc_types',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'network_ip_config',
@@ -17,7 +17,7 @@
         '<(DEPTH)/ui/webui/resources/cr_elements/chromeos/network/compiled_resources2.gyp:cr_onc_types',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'network_nameservers',
@@ -25,7 +25,7 @@
         '<(DEPTH)/ui/webui/resources/cr_elements/chromeos/network/compiled_resources2.gyp:cr_onc_types',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'network_property_list',
@@ -35,7 +35,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'network_proxy',
@@ -45,7 +45,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'network_proxy_input',
@@ -53,11 +53,11 @@
         '<(DEPTH)/ui/webui/resources/cr_elements/chromeos/network/compiled_resources2.gyp:cr_onc_types',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'network_proxy_exclusions',
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
   ],
 }

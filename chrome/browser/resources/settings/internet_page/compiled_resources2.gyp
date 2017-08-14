@@ -89,7 +89,7 @@
         '../compiled_resources2.gyp:route',
         '../controls/compiled_resources2.gyp:settings_checkbox',
         '../prefs/compiled_resources2.gyp:prefs_behavior',
-        '<(DEPTH)/ui/webui/resources/chromeos/network/compiled_resources2.gyp:network_proxy',
+        '<(DEPTH)/ui/webui/resources/cr_components/chromeos/network/compiled_resources2.gyp:network_proxy',
         '<(DEPTH)/ui/webui/resources/cr_elements/chromeos/network/compiled_resources2.gyp:cr_onc_types',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
