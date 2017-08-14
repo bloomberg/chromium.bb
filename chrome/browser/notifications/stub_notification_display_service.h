@@ -29,10 +29,17 @@ class StubNotificationDisplayService : public NotificationDisplayService {
   explicit StubNotificationDisplayService(Profile* profile);
   ~StubNotificationDisplayService() override;
 
-  // Removes the notification identified by |notification_id|.
+  // Returns a vector of the displayed Notification objects.
+  std::vector<Notification> GetDisplayedNotificationsForType(
+      NotificationCommon::Type type) const;
+
+  // Removes the notification identified by |notification_id|. This can
+  // optionally be |silent|, which means the delegate events won't be invoked
+  // to imitate behaviour on operating systems that don't support such events.
   void RemoveNotification(NotificationCommon::Type notification_type,
                           const std::string& notification_id,
-                          bool by_user);
+                          bool by_user,
+                          bool silent = false);
 
   // Removes all notifications shown by this display service.
   void RemoveAllNotifications(NotificationCommon::Type notification_type,
