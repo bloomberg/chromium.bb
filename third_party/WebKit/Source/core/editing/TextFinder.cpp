@@ -373,7 +373,6 @@ void TextFinder::StartScopingStringMatches(int identifier,
   // Clear the counters from last operation.
   last_match_count_ = 0;
   next_invalidate_after_ = 0;
-  resume_scoping_from_range_ = nullptr;
 
   // The view might be null on detached frames.
   LocalFrame* frame = OwnerFrame().GetFrame();
@@ -558,6 +557,8 @@ void TextFinder::CancelPendingScopingEffort() {
     last_find_request_completed_with_no_matches_ = false;
 
   scoping_in_progress_ = false;
+
+  resume_scoping_from_range_ = nullptr;
 }
 
 void TextFinder::IncreaseMatchCount(int identifier, int count) {
