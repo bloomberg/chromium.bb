@@ -103,6 +103,7 @@ Bug(none) bluetooth/service/getCharacteristics/gen-invalid-characteristic-name.h
 Bug(none) compositing/video-frame-size-change.html [ Timeout ]
 Bug(none) external/wpt/2dcontext/imagebitmap/createImageBitmap-drawImage.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/clear-site-data/storage.https.html [ Failure ]
+Bug(none) external/wpt/fetch/api/abort/general-serviceworker.https.html [ Failure ]
 Bug(none) external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/FileAPI/historical.https.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/FileAPI/url/url_xmlhttprequest.html [ Crash Failure Timeout ]
