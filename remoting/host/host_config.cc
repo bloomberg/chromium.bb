@@ -13,6 +13,20 @@
 
 namespace remoting {
 
+const char kHostEnabledConfigPath[] = "enabled";
+const char kHostOwnerConfigPath[] = "host_owner";
+const char kHostOwnerEmailConfigPath[] = "host_owner_email";
+const char kXmppLoginConfigPath[] = "xmpp_login";
+const char kOAuthRefreshTokenConfigPath[] = "oauth_refresh_token";
+const char kHostIdConfigPath[] = "host_id";
+const char kHostNameConfigPath[] = "host_name";
+const char kHostSecretHashConfigPath[] = "host_secret_hash";
+const char kPrivateKeyConfigPath[] = "private_key";
+const char kUsageStatsConsentConfigPath[] = "usage_stats_consent";
+const char kEnableVp9ConfigPath[] = "enable_vp9";
+const char kEnableH264ConfigPath[] = "enable_h264";
+const char kFrameRecorderBufferKbConfigPath[] = "frame-recorder-buffer-kb";
+
 std::unique_ptr<base::DictionaryValue> HostConfigFromJson(
     const std::string& json) {
   std::unique_ptr<base::Value> value =

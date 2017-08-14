@@ -157,7 +157,6 @@ static_library("host") {
     "host_change_notification_listener.h",
     "host_config.cc",
     "host_config.h",
-    "host_config_constants.cc",
     "host_details.cc",
     "host_details.h",
     "host_event_logger.h",
@@ -672,7 +671,6 @@ if (enable_remoting_host) {
     sources = [
       "installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2",
       "it2me/remote_assistance_host-InfoPlist.strings.jinja2",
-      "mac/me2me_preference_pane-InfoPlist.strings.jinja2",
       "remoting_me2me_host-InfoPlist.strings.jinja2",
       "setup/native_messaging_host-InfoPlist.strings.jinja2",
     ]

@@ -10,19 +10,6 @@ namespace remoting {
 // The name of the Remoting Host service that is registered with launchd.
 extern const char kServiceName[];
 
-// Use separate named notifications for success and failure because sandboxed
-// components can't include a dictionary when sending distributed notifications.
-// The preferences panel is not yet sandboxed, but err on the side of caution.
-// These are #defines because they are used with CFSTR macro, which requires
-// string literals.
-#define UPDATE_SUCCEEDED_NOTIFICATION_NAME \
-  "org.chromium.chromoting.update_succeeded"
-#define UPDATE_FAILED_NOTIFICATION_NAME "org.chromium.chromoting.update_failed"
-
-// Chromoting's preference pane file.
-extern const char kPrefPaneFileName[];
-extern const char kPrefPaneFilePath[];
-
 // Use a single configuration file, instead of separate "auth" and "host" files.
 // This is because the SetConfigAndStart() API only provides a single
 // dictionary, and splitting this into two dictionaries would require

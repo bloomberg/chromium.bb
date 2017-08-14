@@ -7,7 +7,6 @@
 ME2ME_HOST="/Library/PrivilegedHelperTools/ChromeRemoteDesktopHost.bundle"
 UNINSTALLER_CHROME="/Applications/Chrome Remote Desktop Host Uninstaller.app"
 UNINSTALLER_CHROMIUM="/Applications/Chromoting Host Uninstaller.app"
-PREFPANE="/Library/PreferencePanes/ChromeRemoteDesktop.prefPane"
 KEYSTONE="/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle"
 
 INFO_PLIST="Contents/Info.plist"
@@ -28,5 +27,4 @@ function print_plist_version {
 print_plist_version "Me2me host" "${ME2ME_HOST}"
 print_plist_version "Chrome Remote Desktop Host Uninstaller" "${UNINSTALLER_CHROME}"
 print_plist_version "Chromoting Host Uninstaller" "${UNINSTALLER_CHROMIUM}"
-print_plist_version "PreferencePane" "${PREFPANE}"
 print_plist_version "Keystone" "${KEYSTONE}"
