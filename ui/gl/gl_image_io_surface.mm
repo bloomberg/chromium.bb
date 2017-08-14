@@ -14,7 +14,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
-#include "ui/gfx/icc_profile.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/scoped_binders.h"
@@ -416,25 +415,6 @@ base::ScopedCFTypeRef<CVPixelBufferRef> GLImageIOSurface::cv_pixel_buffer() {
 
 GLImage::Type GLImageIOSurface::GetType() const {
   return Type::IOSURFACE;
-}
-
-void GLImageIOSurface::SetColorSpaceForScanout(
-    const gfx::ColorSpace& color_space) {
-  GLImage::SetColorSpaceForScanout(color_space);
-
-  // Retrieve the ICC profile data.
-  gfx::ICCProfile icc_profile;
-  if (!color_space.GetAsFullRangeRGB().GetICCProfile(&icc_profile)) {
-    LOG(ERROR) << "Failed to set color space for scanout: no ICC profile.";
-    return;
-  }
-
-  // Package it as a CFDataRef and send it to the IOSurface.
-  base::ScopedCFTypeRef<CFDataRef> cf_data_icc_profile(CFDataCreate(
-      nullptr, reinterpret_cast<const UInt8*>(icc_profile.GetData().data()),
-      icc_profile.GetData().size()));
-  IOSurfaceSetValue(io_surface_, CFSTR("IOSurfaceColorSpace"),
-                    cf_data_icc_profile);
 }
 
 // static

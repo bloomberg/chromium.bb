@@ -131,14 +131,13 @@ scoped_refptr<gl::GLImage>
 GpuMemoryBufferFactoryNativePixmap::CreateAnonymousImage(
     const gfx::Size& size,
     gfx::BufferFormat format,
-    gfx::BufferUsage usage,
     unsigned internalformat) {
   scoped_refptr<gfx::NativePixmap> pixmap;
 #if defined(USE_OZONE)
-  pixmap =
-      ui::OzonePlatform::GetInstance()
-          ->GetSurfaceFactoryOzone()
-          ->CreateNativePixmap(gpu::kNullSurfaceHandle, size, format, usage);
+  pixmap = ui::OzonePlatform::GetInstance()
+               ->GetSurfaceFactoryOzone()
+               ->CreateNativePixmap(gpu::kNullSurfaceHandle, size, format,
+                                    gfx::BufferUsage::SCANOUT);
 #else
   NOTIMPLEMENTED();
 #endif

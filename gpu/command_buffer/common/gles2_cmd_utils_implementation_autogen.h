@@ -772,12 +772,6 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x78FC, "GL_RGB_YCBCR_420V_CHROMIUM",
     },
     {
-        0x78FD, "GL_TEXTURE_BUFFER_USAGE_CHROMIUM",
-    },
-    {
-        0x78FE, "GL_TEXTURE_BUFFER_SCANOUT_CHROMIUM",
-    },
-    {
         0x8, "GL_CA_LAYER_EDGE_TOP_CHROMIUM",
     },
     {
@@ -5335,16 +5329,6 @@ std::string GLES2Util::GetStringTextureBindTarget(uint32_t value) {
       {GL_TEXTURE_CUBE_MAP, "GL_TEXTURE_CUBE_MAP"},
       {GL_TEXTURE_3D, "GL_TEXTURE_3D"},
       {GL_TEXTURE_2D_ARRAY, "GL_TEXTURE_2D_ARRAY"},
-  };
-  return GLES2Util::GetQualifiedEnumString(string_table,
-                                           arraysize(string_table), value);
-}
-
-std::string GLES2Util::GetStringTextureBufferUsage(uint32_t value) {
-  static const EnumToString string_table[] = {
-      {GL_NONE, "GL_NONE"},
-      {GL_TEXTURE_BUFFER_SCANOUT_CHROMIUM,
-       "GL_TEXTURE_BUFFER_SCANOUT_CHROMIUM"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);

@@ -137,7 +137,6 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
   IPC_STRUCT_TRAITS_MEMBER(use_dc_overlays_for_video)
   IPC_STRUCT_TRAITS_MEMBER(disable_non_empty_post_sub_buffers)
   IPC_STRUCT_TRAITS_MEMBER(avoid_stencil_buffers)
-  IPC_STRUCT_TRAITS_MEMBER(texture_buffer_chromium)
 
   IPC_STRUCT_TRAITS_MEMBER(major_version)
   IPC_STRUCT_TRAITS_MEMBER(minor_version)

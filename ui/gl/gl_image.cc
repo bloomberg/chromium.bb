@@ -19,8 +19,4 @@ GLImage::Type GLImage::GetType() const {
   return Type::NONE;
 }
 
-void GLImage::SetColorSpaceForScanout(const gfx::ColorSpace& color_space) {
-  color_space_ = color_space;
-}
-
 }  // namespace gl

@@ -382,7 +382,6 @@ ResourceProvider::Settings::Settings(
   use_texture_storage_ext = caps.texture_storage;
   use_texture_format_bgra = caps.texture_format_bgra8888;
   use_texture_usage_hint = caps.texture_usage;
-  use_texture_buffer_chromium = caps.texture_buffer_chromium;
   use_sync_query = caps.sync_query;
 
   if (caps.disable_one_component_textures) {
@@ -568,13 +567,11 @@ viz::ResourceId ResourceProvider::CreateResource(
   DCHECK(!size.IsEmpty());
   switch (settings_.default_resource_type) {
     case RESOURCE_TYPE_GPU_MEMORY_BUFFER:
-      // GPU memory buffers don't support LUMINANCE_F16 yet.
+      // GPU memory buffers don't support viz::LUMINANCE_F16 yet.
       if (format != viz::LUMINANCE_F16) {
-        TextureHint new_hint =
-            static_cast<TextureHint>(hint | TEXTURE_HINT_IMAGE);
-        return CreateGLTexture(size, new_hint, RESOURCE_TYPE_GL_TEXTURE, format,
-                               gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-                               color_space);
+        return CreateGLTexture(
+            size, hint, RESOURCE_TYPE_GPU_MEMORY_BUFFER, format,
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, color_space);
       }
     // Fall through and use a regular texture.
     case RESOURCE_TYPE_GL_TEXTURE:
@@ -627,10 +624,9 @@ viz::ResourceId ResourceProvider::CreateGLTexture(
   // TODO(crbug.com/590317): We should not assume that all resources created by
   // ResourceProvider are GPU_READ_CPU_READ_WRITE. We should determine this
   // based on the current RasterBufferProvider's needs.
-  GLenum target =
-      type == RESOURCE_TYPE_GPU_MEMORY_BUFFER || (hint & TEXTURE_HINT_IMAGE)
-          ? GetImageTextureTarget(usage, format)
-          : GL_TEXTURE_2D;
+  GLenum target = type == RESOURCE_TYPE_GPU_MEMORY_BUFFER
+                      ? GetImageTextureTarget(usage, format)
+                      : GL_TEXTURE_2D;
 
   viz::ResourceId id = next_id_++;
   Resource* resource =
@@ -1934,14 +1930,7 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
   gfx::Size& size = resource->size;
   viz::ResourceFormat format = resource->format;
   gl->BindTexture(resource->target, resource->gl_id);
-  bool can_use_texture_storage =
-      (settings_.use_texture_storage_ext &&
-       IsFormatSupportedForStorage(format, settings_.use_texture_format_bgra) &&
-       (resource->hint & TEXTURE_HINT_IMMUTABLE));
-  bool can_use_texture_buffer =
-      can_use_texture_storage && settings_.use_texture_buffer_chromium;
-  if (resource->type == RESOURCE_TYPE_GPU_MEMORY_BUFFER ||
-      ((resource->hint & TEXTURE_HINT_IMAGE) && !can_use_texture_buffer)) {
+  if (resource->type == RESOURCE_TYPE_GPU_MEMORY_BUFFER) {
     resource->gpu_memory_buffer =
         gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
             size, BufferFormat(format), resource->usage,
@@ -1960,23 +1949,13 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
     // Read lock fences are required to ensure that we're not trying to map a
     // buffer that is currently in-use by the GPU.
     resource->read_lock_fences_enabled = true;
-  } else if (can_use_texture_storage) {
+  } else if (settings_.use_texture_storage_ext &&
+             IsFormatSupportedForStorage(format,
+                                         settings_.use_texture_format_bgra) &&
+             (resource->hint & TEXTURE_HINT_IMMUTABLE)) {
     GLenum storage_format = TextureToStorageFormat(format);
-    if (resource->hint & TEXTURE_HINT_IMAGE) {
-      DCHECK(settings_.use_texture_buffer_chromium);
-      gl->TexParameteri(resource->target, GL_TEXTURE_BUFFER_USAGE_CHROMIUM,
-                        GL_TEXTURE_BUFFER_SCANOUT_CHROMIUM);
-      resource->is_overlay_candidate = true;
-    }
-
     gl->TexStorage2DEXT(resource->target, 1, storage_format, size.width(),
                         size.height());
-    if ((resource->hint & TEXTURE_HINT_IMAGE) &&
-        settings_.enable_color_correct_rasterization) {
-      gl->SetColorSpaceForScanoutCHROMIUM(
-          resource->gl_id,
-          reinterpret_cast<GLColorSpace>(&resource->color_space));
-    }
   } else {
     // viz::ETC1 does not support preallocation.
     if (format != viz::ETC1) {

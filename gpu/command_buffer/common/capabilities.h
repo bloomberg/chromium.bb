@@ -179,9 +179,6 @@ struct GPU_EXPORT Capabilities {
   // When true, non-empty post sub buffer calls are unsupported.
   bool disable_non_empty_post_sub_buffers = false;
 
-  // Use GL_CHROMIUM_texture_buffer extension if true.
-  bool texture_buffer_chromium = false;
-
   int major_version = 2;
   int minor_version = 0;
 };

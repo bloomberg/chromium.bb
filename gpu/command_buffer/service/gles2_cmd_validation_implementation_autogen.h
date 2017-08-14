@@ -971,16 +971,6 @@ static const GLenum valid_texture_bind_target_table_es3[] = {
     GL_TEXTURE_3D, GL_TEXTURE_2D_ARRAY,
 };
 
-bool Validators::TextureBufferUsageValidator::IsValid(
-    const GLenum value) const {
-  switch (value) {
-    case GL_NONE:
-    case GL_TEXTURE_BUFFER_SCANOUT_CHROMIUM:
-      return true;
-  }
-  return false;
-};
-
 bool Validators::TextureCompareFuncValidator::IsValid(
     const GLenum value) const {
   switch (value) {

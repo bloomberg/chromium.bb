@@ -6,10 +6,8 @@
 #include <GLES2/gl2ext.h>
 #include <stdint.h>
 
-#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
-#include "gpu/command_buffer/tests/texture_image_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,9 +18,7 @@ class TextureStorageTest : public testing::Test {
   static const GLsizei kResolution = 64;
   void SetUp() override {
     GLManager::Options options;
-    image_factory_.SetRequiredTextureType(GL_TEXTURE_2D);
     options.size = gfx::Size(kResolution, kResolution);
-    options.image_factory = &image_factory_;
     gl_.Initialize(options);
     gl_.MakeCurrent();
 
@@ -44,7 +40,6 @@ class TextureStorageTest : public testing::Test {
 
   void TearDown() override { gl_.Destroy(); }
 
-  TextureImageFactory image_factory_;
   GLManager gl_;
   GLuint tex_;
   GLuint fbo_;
@@ -164,30 +159,6 @@ TEST_F(TextureStorageTest, InternalFormatBleedingToTexImage) {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8_OES, 4, 4, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, nullptr);
   EXPECT_NE(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-}
-
-TEST_F(TextureStorageTest, CorrectImagePixels) {
-  if (!extension_available_)
-    return;
-  if (gl_.gpu_preferences().use_passthrough_cmd_decoder) {
-    // TODO(geofflang): crbug.com/754710
-    LOG(INFO) << "Passthrough command decoder unimplemented feature. Skipping "
-                 "test...";
-    return;
-  }
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BUFFER_USAGE_CHROMIUM,
-                  GL_TEXTURE_BUFFER_SCANOUT_CHROMIUM);
-
-  glTexStorage2DEXT(GL_TEXTURE_2D, 1, GL_RGBA8_OES, 2, 2);
-
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                         tex_, 0);
-
-  uint8_t source_pixels[16] = {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE,
-                  source_pixels);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 2, 2, 0, source_pixels, nullptr));
 }
 
 }  // namespace gpu
