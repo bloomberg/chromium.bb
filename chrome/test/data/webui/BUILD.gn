@@ -86,6 +86,7 @@ js2gtest("browser_tests_js_webui") {
     "settings/basic_a11y_test.js",
     "settings/basic_page_browsertest.js",
     "settings/cr_settings_browsertest.js",
+    "settings/edit_dictionary_a11y_test.js",
     "settings/help_page_browsertest.js",
     "settings/on_startup_browsertest.js",
     "settings/passwords_a11y_test.js",

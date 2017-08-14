@@ -41,4 +41,3 @@ SettingsAccessibilityTest.prototype = {
     settings.ensureLazyLoaded();
   },
 };
-
