@@ -1,6 +1,5 @@
 Tests that elements panel shows proper styles in the sidebar panel.
 
-Foo
 border-bottom-left-radius: 5px;
     5px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:7
 border-bottom-right-radius: 5px;
