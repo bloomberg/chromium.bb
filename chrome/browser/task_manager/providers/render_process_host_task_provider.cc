@@ -80,6 +80,7 @@ void RenderProcessHostTaskProvider::CreateTask(
 
   RenderProcessHost* host = RenderProcessHost::FromID(render_process_host_id);
 
+  // TODO(cburn): plumb out something from RPH so the title can be set here.
   // Create the task and notify the observer.
   ChildProcessData data(content::PROCESS_TYPE_RENDERER);
   data.handle = host->GetHandle();

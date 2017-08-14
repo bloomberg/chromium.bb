@@ -3679,6 +3679,7 @@ test("unit_tests") {
       "../browser/sync/sync_ui_util_unittest.cc",  # Sync setup uses native ui.
       "../browser/task_manager/providers/browser_process_task_unittest.cc",
       "../browser/task_manager/providers/child_process_task_unittest.cc",
+      "../browser/task_manager/providers/fallback_task_provider_unittest.cc",
       "../browser/task_manager/sampling/shared_sampler_win_unittest.cc",
       "../browser/task_manager/sampling/task_group_unittest.cc",
       "../browser/task_manager/sampling/task_manager_impl_unittest.cc",
