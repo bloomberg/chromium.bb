@@ -102,24 +102,10 @@ bool WebScrollbarThemeClientImpl::IsScrollableAreaActive() const {
 }
 
 IntPoint WebScrollbarThemeClientImpl::ConvertFromRootFrame(
-    const IntPoint&) const {
+    const IntPoint& point_in_root_frame) const {
   // Unused by Chromium scrollbar themes.
   NOTREACHED();
-  return IntPoint();
-}
-
-IntPoint WebScrollbarThemeClientImpl::ConvertFromRootFrameToParentView(
-    const IntPoint&) const {
-  // Unused by Chromium scrollbar themes.
-  NOTREACHED();
-  return IntPoint();
-}
-
-IntPoint WebScrollbarThemeClientImpl::ConvertFromParentView(
-    const IntPoint&) const {
-  // Unused by Chromium scrollbar themes.
-  NOTREACHED();
-  return IntPoint();
+  return point_in_root_frame;
 }
 
 bool WebScrollbarThemeClientImpl::IsCustomScrollbar() const {

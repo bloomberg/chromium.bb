@@ -380,7 +380,7 @@ bool EventHandler::ShouldShowIBeamForNode(const Node* node,
     PaintLayer* layer = layout_object->EnclosingLayer();
     if (layer->GetScrollableArea() &&
         layer->GetScrollableArea()->IsPointInResizeControl(
-            result.RoundedPointInContent(), kResizerForPointer)) {
+            result.RoundedPointInMainFrame(), kResizerForPointer)) {
       return false;
     }
 
@@ -1396,7 +1396,7 @@ bool EventHandler::BestClickableNodeForHitTestResult(
   }
 
   IntPoint touch_center =
-      frame_->View()->ContentsToRootFrame(result.RoundedPointInContent());
+      frame_->View()->ContentsToRootFrame(result.RoundedPointInMainFrame());
   IntRect touch_rect = frame_->View()->ContentsToRootFrame(
       result.GetHitTestLocation().BoundingBox());
 
@@ -1416,7 +1416,7 @@ bool EventHandler::BestContextMenuNodeForHitTestResult(
     Node*& target_node) {
   DCHECK(result.IsRectBasedTest());
   IntPoint touch_center =
-      frame_->View()->ContentsToRootFrame(result.RoundedPointInContent());
+      frame_->View()->ContentsToRootFrame(result.RoundedPointInMainFrame());
   IntRect touch_rect = frame_->View()->ContentsToRootFrame(
       result.GetHitTestLocation().BoundingBox());
   HeapVector<Member<Node>, 11> nodes;

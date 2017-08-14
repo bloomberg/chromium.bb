@@ -812,7 +812,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
             // Stash the position of the node that would've been used absent
             // disambiguation, for UMA purposes.
             last_tap_disambiguation_best_candidate_position_ =
-                targeted_event.GetHitTestResult().RoundedPointInContent() -
+                targeted_event.GetHitTestResult().RoundedPointInMainFrame() -
                 RoundedIntSize(targeted_event.GetHitTestResult().LocalPoint());
 
             EnableTapHighlights(highlight_nodes);
@@ -938,7 +938,7 @@ void WebViewImpl::ResolveTapDisambiguation(double timestamp_seconds,
         page_->DeprecatedLocalMainFrame()->GetEventHandler().TargetGestureEvent(
             scaled_event);
     WebPoint node_position =
-        targeted_event.GetHitTestResult().RoundedPointInContent() -
+        targeted_event.GetHitTestResult().RoundedPointInMainFrame() -
         RoundedIntSize(targeted_event.GetHitTestResult().LocalPoint());
     TapDisambiguationResult result =
         (node_position == last_tap_disambiguation_best_candidate_position_)
