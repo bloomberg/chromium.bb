@@ -57,6 +57,10 @@ class ASH_EXPORT ShelfLayoutManager
       public wm::WmSnapToPixelLayoutManager,
       public SessionObserver {
  public:
+  // The snapping threshold for dragging app list from shelf in tablet mode. App
+  // list should snap to fullscreen if the drag amount exceeds this value.
+  static constexpr int kAppListDragDistanceThreshold = 320;
+
   ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf);
   ~ShelfLayoutManager() override;
 

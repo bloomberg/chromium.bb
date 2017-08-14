@@ -75,9 +75,10 @@ constexpr int kNotificationBubbleGapHeight = 6;
 // the auto hidden shelf when the shelf is on the boundary between displays.
 constexpr int kMaxAutoHideShowShelfRegionSize = 10;
 
+// TODO(minch): Add unit tests for this value. http://crbug.com/755185.
 // The velocity the app list must be dragged in order to change the state of the
 // app list for fling event, measured in DIPs/event.
-constexpr int kAppListDragVelocityThreshold = 25;
+constexpr int kAppListDragVelocityThreshold = 100;
 
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
@@ -1224,9 +1225,9 @@ void ShelfLayoutManager::CompleteAppListDrag(
     // it.
     should_show_app_list = gesture_in_screen.details().velocity_y() < 0;
   } else {
-    // Show the app list if it is already at least one-third visible.
+    // Show the app list if the drag amount exceeds a constant threshold.
     should_show_app_list =
-        -gesture_drag_amount_ >= shelf_->GetUserWorkAreaBounds().height() / 3.0;
+        -gesture_drag_amount_ > kAppListDragDistanceThreshold;
   }
 
   if (should_show_app_list) {
