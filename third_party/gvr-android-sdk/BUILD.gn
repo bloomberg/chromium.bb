@@ -15,7 +15,6 @@ android_aar_prebuilt("controller_test_api_java") {
 android_aar_prebuilt("gvr_common_java") {
   aar_path = "common_library.aar"
   proguard_configs = [ "proguard-gvr-chromium.txt" ]
-  ignore_manifest = true  # Ignored because manifest merging is not supported (http://crbug.com/643967)
   ignore_native_libraries = true
 
   # Ignore unused auto generated classes. Proguard will not strip them automatically because they
