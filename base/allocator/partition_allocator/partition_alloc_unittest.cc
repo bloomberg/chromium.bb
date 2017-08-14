@@ -304,7 +304,60 @@ class MockPartitionStatsDumper : public PartitionStatsDumper {
   std::vector<PartitionBucketMemoryStats> bucket_stats;
 };
 
+// Any number of bytes that can be allocated with no trouble.
+const int kEasyAllocSize = 16 * 1024 * 1024;
+
 }  // anonymous namespace
+
+// Test that failed page allocations invoke the global base::OnAllocFailed().
+// We detect this by making a reservation and ensuring that after failure, the
+// reservation has been released, and we can set a new reservation.
+TEST(PageAllocatorTest, AllocFailure) {
+  // We can make a reservation.
+  EXPECT_TRUE(
+      base::ReserveAddressSpace(kEasyAllocSize, kPageAllocationGranularity));
+
+  // We can't make another reservation until we trigger an allocation failure.
+  EXPECT_FALSE(
+      base::ReserveAddressSpace(kEasyAllocSize, kPageAllocationGranularity));
+
+  // Start with an allocation that should succeed on all platforms, and grow it
+  // until we get a failure.
+  size_t size = kEasyAllocSize;
+  while (true) {
+    void* result = base::AllocPages(nullptr, size, kPageAllocationGranularity,
+                                    PageInaccessible);
+    if (result == nullptr) {
+      // We triggered allocation failure. Our reservation should have been
+      // released, and we should be able to make a new reservation.
+      EXPECT_TRUE(base::ReserveAddressSpace(kEasyAllocSize,
+                                            kPageAllocationGranularity));
+      // Now release it.
+      base::ReleaseReservation();
+      break;
+    }
+    base::FreePages(result, size);
+    size *= 2;
+  }
+}
+
+// Test that reserving address space can fail.
+TEST(PageAllocatorTest, ReserveAddressSpace) {
+  // Start with an allocation that should succeed on all platforms, and grow it
+  // until we get a failure.
+  size_t size = kEasyAllocSize;
+  while (true) {
+    bool success = base::ReserveAddressSpace(size, kPageAllocationGranularity);
+    if (!success) {
+      EXPECT_TRUE(base::ReserveAddressSpace(kEasyAllocSize,
+                                            kPageAllocationGranularity));
+      break;
+    }
+
+    ReleaseReservation();
+    size *= 2;
+  }
+}
 
 // Check that the most basic of allocate / free pairs work.
 TEST_F(PartitionAllocTest, Basic) {
