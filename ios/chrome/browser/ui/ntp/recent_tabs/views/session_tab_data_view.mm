@@ -93,7 +93,7 @@ const CGFloat kDesiredHeight = 48;
                 browserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(distantTab);
   DCHECK(browserState);
-  NSString* text = SysUTF16ToNSString(distantTab->title);
+  NSString* text = base::SysUTF16ToNSString(distantTab->title);
   GURL url = distantTab->virtual_url;
   [self setText:text url:url browserState:browserState];
 }

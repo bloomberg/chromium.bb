@@ -96,7 +96,7 @@ gfx::Rect WaylandWindow::GetBounds() {
 
 void WaylandWindow::SetTitle(const base::string16& title) {
   DCHECK(xdg_surface_);
-  xdg_surface_set_title(xdg_surface_.get(), UTF16ToUTF8(title).c_str());
+  xdg_surface_set_title(xdg_surface_.get(), base::UTF16ToUTF8(title).c_str());
   connection_->ScheduleFlush();
 }
 

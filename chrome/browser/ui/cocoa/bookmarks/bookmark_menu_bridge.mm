@@ -241,7 +241,7 @@ void BookmarkMenuBridge::AddNodeAsSubmenu(NSMenu* menu,
                                           const BookmarkNode* node,
                                           NSImage* image,
                                           bool add_extra_items) {
-  NSString* title = SysUTF16ToNSString(node->GetTitle());
+  NSString* title = base::SysUTF16ToNSString(node->GetTitle());
   NSMenuItem* items = [[[NSMenuItem alloc]
                             initWithTitle:title
                                    action:nil

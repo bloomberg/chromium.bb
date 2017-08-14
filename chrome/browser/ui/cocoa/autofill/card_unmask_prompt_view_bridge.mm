@@ -34,6 +34,8 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 
+using base::SysUTF16ToNSString;
+
 namespace {
 
 const CGFloat kButtonGap = 6.0f;

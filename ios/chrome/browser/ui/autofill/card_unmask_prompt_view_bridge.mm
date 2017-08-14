@@ -100,9 +100,9 @@ void CardUnmaskPromptViewBridge::GotVerificationResult(
   } else {
     if (allow_retry) {
       [view_controller_
-          showCVCInputFormWithError:SysUTF16ToNSString(error_message)];
+          showCVCInputFormWithError:base::SysUTF16ToNSString(error_message)];
     } else {
-      [view_controller_ showError:SysUTF16ToNSString(error_message)];
+      [view_controller_ showError:base::SysUTF16ToNSString(error_message)];
     }
   }
 }
@@ -151,7 +151,8 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
       [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     _bridge = bridge;
-    self.title = SysUTF16ToNSString(_bridge->GetController()->GetWindowTitle());
+    self.title =
+        base::SysUTF16ToNSString(_bridge->GetController()->GetWindowTitle());
   }
   return self;
 }
@@ -175,7 +176,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   self.navigationItem.leftBarButtonItem = _cancelButton;
 
   NSString* verifyButtonText =
-      SysUTF16ToNSString(_bridge->GetController()->GetOkButtonLabel());
+      base::SysUTF16ToNSString(_bridge->GetController()->GetOkButtonLabel());
   _verifyButton =
       [[UIBarButtonItem alloc] initWithTitle:verifyButtonText
                                        style:UIBarButtonItemStylePlain
@@ -215,7 +216,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 
   autofill::CardUnmaskPromptController* controller = _bridge->GetController();
   NSString* instructions =
-      SysUTF16ToNSString(controller->GetInstructionsMessage());
+      base::SysUTF16ToNSString(controller->GetInstructionsMessage());
   int CVCImageResourceID = controller->GetCvcImageRid();
   _CVCItem = [[CVCItem alloc] initWithType:ItemTypeCVC];
   _CVCItem.instructionsText = instructions;
@@ -473,8 +474,8 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 
 - (void)onNewCardLinkTapped:(UIButton*)button {
   _bridge->GetController()->NewCardLinkClicked();
-  _CVCItem.instructionsText =
-      SysUTF16ToNSString(_bridge->GetController()->GetInstructionsMessage());
+  _CVCItem.instructionsText = base::SysUTF16ToNSString(
+      _bridge->GetController()->GetInstructionsMessage());
   _CVCItem.monthText = @"";
   _CVCItem.yearText = @"";
   _CVCItem.CVCText = @"";

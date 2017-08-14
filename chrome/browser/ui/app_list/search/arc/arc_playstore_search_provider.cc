@@ -65,7 +65,7 @@ void ArcPlayStoreSearchProvider::Start(bool is_voice_query,
     return;
 
   app_instance->GetRecentAndSuggestedAppsFromPlayStore(
-      UTF16ToUTF8(query), max_results_,
+      base::UTF16ToUTF8(query), max_results_,
       base::Bind(&ArcPlayStoreSearchProvider::OnResults,
                  weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }

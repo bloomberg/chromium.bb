@@ -54,6 +54,8 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+using base::SysUTF16ToNSString;
+
 namespace {
 
 GURL g_open_shortcut_url = GURL::EmptyGURL();

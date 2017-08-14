@@ -118,12 +118,11 @@ NSTextField* AddTextField(
     const base::string16& message,
     const ui::ResourceBundle::FontStyle& font_style) {
   NSTextField* textField = constrained_window::CreateLabel();
-  [textField setAttributedStringValue:
-      constrained_window::GetAttributedLabelString(
-          SysUTF16ToNSString(message),
-          font_style,
-          NSNaturalTextAlignment,
-          NSLineBreakByWordWrapping)];
+  [textField
+      setAttributedStringValue:constrained_window::GetAttributedLabelString(
+                                   base::SysUTF16ToNSString(message),
+                                   font_style, NSNaturalTextAlignment,
+                                   NSLineBreakByWordWrapping)];
   [parent addSubview:textField];
   return textField;
 }

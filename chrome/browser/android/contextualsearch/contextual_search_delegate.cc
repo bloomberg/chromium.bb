@@ -343,7 +343,7 @@ std::string ContextualSearchDelegate::GetDiscourseContext(
   media->set_mime_type(context.GetBasePageEncoding());
 
   discourse_context::Selection* selection = display->mutable_selection();
-  selection->set_content(UTF16ToUTF8(context.GetSurroundingText()));
+  selection->set_content(base::UTF16ToUTF8(context.GetSurroundingText()));
   selection->set_start(context.GetStartOffset());
   selection->set_end(context.GetEndOffset());
   selection->set_is_uri_encoded(false);

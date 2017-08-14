@@ -147,7 +147,7 @@ CGFloat BuildPopUpMenuFromModel(NSPopUpButton* button,
     [button addItemWithTitle:itemTitle];
     [[button lastItem] setTag:i];
 
-    if (UTF16ToUTF8(model->GetLabelAt(i)) == title)
+    if (base::UTF16ToUTF8(model->GetLabelAt(i)) == title)
       [button selectItemWithTag:i];
 
     // Determine the largest possible size for this button.

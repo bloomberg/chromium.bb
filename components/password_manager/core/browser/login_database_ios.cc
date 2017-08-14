@@ -48,7 +48,7 @@ LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
   // item as long as it uniquely identifies it. We are arbitrarily choosing the
   // |kSecAttrAccount| attribute for this purpose.
   CFDictionarySetValue(attributes, kSecAttrAccount, item_ref);
-  std::string plain_text_utf8 = UTF16ToUTF8(plain_text);
+  std::string plain_text_utf8 = base::UTF16ToUTF8(plain_text);
   ScopedCFTypeRef<CFDataRef> data(
       CFDataCreate(NULL, reinterpret_cast<const UInt8*>(plain_text_utf8.data()),
                    plain_text_utf8.size()));

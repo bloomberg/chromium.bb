@@ -885,8 +885,9 @@ std::string SupervisedUserService::GetSupervisedUserName() const {
 #if defined(OS_CHROMEOS)
   // The active user can be NULL in unit tests.
   if (user_manager::UserManager::Get()->GetActiveUser()) {
-    return UTF16ToUTF8(user_manager::UserManager::Get()->GetUserDisplayName(
-        user_manager::UserManager::Get()->GetActiveUser()->GetAccountId()));
+    return base::UTF16ToUTF8(
+        user_manager::UserManager::Get()->GetUserDisplayName(
+            user_manager::UserManager::Get()->GetActiveUser()->GetAccountId()));
   }
   return std::string();
 #else

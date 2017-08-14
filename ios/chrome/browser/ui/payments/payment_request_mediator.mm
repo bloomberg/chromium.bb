@@ -110,7 +110,7 @@ using ::payment_request_util::GetShippingSectionTitle;
       self.paymentRequest->payment_details().total.label);
   payments::CurrencyFormatter* currencyFormatter =
       self.paymentRequest->GetOrCreateCurrencyFormatter();
-  item.price = SysUTF16ToNSString(l10n_util::GetStringFUTF16(
+  item.price = base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
       base::UTF8ToUTF16(currencyFormatter->formatted_currency_code()),
       currencyFormatter->Format(base::UTF16ToASCII(
@@ -144,7 +144,7 @@ using ::payment_request_util::GetShippingSectionTitle;
   }
 
   CollectionViewDetailItem* item = [[CollectionViewDetailItem alloc] init];
-  item.text = SysUTF16ToNSString(
+  item.text = base::SysUTF16ToNSString(
       GetShippingAddressSectionString(self.paymentRequest->shipping_type()));
   if (self.paymentRequest->shipping_profiles().empty()) {
     item.detailText = [l10n_util::GetNSString(IDS_ADD)
@@ -163,7 +163,7 @@ using ::payment_request_util::GetShippingSectionTitle;
     item.text = base::SysUTF16ToNSString(option->label);
     payments::CurrencyFormatter* currencyFormatter =
         self.paymentRequest->GetOrCreateCurrencyFormatter();
-    item.detailText = SysUTF16ToNSString(
+    item.detailText = base::SysUTF16ToNSString(
         currencyFormatter->Format(base::UTF16ToASCII(option->amount.value)));
     item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
     return item;

@@ -94,7 +94,7 @@ std::vector<ProfileInfo> GetLoggedInProfileInfoList() {
     ProfileInfo profile_info;
     profile_info.profile_id =
         multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();
-    profile_info.display_name = UTF16ToUTF8(user->GetDisplayName());
+    profile_info.display_name = base::UTF16ToUTF8(user->GetDisplayName());
     // TODO(hirono): Remove the property from the profile_info.
     profile_info.is_current_profile = true;
 
@@ -188,8 +188,8 @@ FileManagerPrivateGetPreferencesFunction::Run() {
     result.allow_redeem_offers = true;
   }
   result.timezone =
-      UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
-                      ->GetCurrentTimezoneID());
+      base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
+                            ->GetCurrentTimezoneID());
 
   drive::EventLogger* logger = file_manager::util::GetLogger(profile);
   if (logger)

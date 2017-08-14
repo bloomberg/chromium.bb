@@ -110,7 +110,7 @@ class ZoomLevelObserver {
     appMenuModel->UpdateZoomControls();
     const base::string16 level =
         appMenuModel->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY);
-    [[controller_ zoomDisplay] setTitle:SysUTF16ToNSString(level)];
+    [[controller_ zoomDisplay] setTitle:base::SysUTF16ToNSString(level)];
   }
 
   std::unique_ptr<content::HostZoomMap::Subscription> subscription_;

@@ -317,8 +317,8 @@ void ContextualSearchDelegate::SetDiscourseContextAndAddToHeader(
   media->set_mime_type(context.encoding);
 
   discourse_context::Selection* selection = display->mutable_selection();
-  selection->set_content(
-      net::EscapeQueryParamValue(UTF16ToUTF8(context.surrounding_text), true));
+  selection->set_content(net::EscapeQueryParamValue(
+      base::UTF16ToUTF8(context.surrounding_text), true));
   selection->set_start(context.start_offset);
   selection->set_end(context.end_offset);
 

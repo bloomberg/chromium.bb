@@ -38,6 +38,7 @@
 
 using autofill::AutofillPopupView;
 using autofill::AutofillPopupLayoutModel;
+using base::SysUTF16ToNSString;
 
 namespace {
 

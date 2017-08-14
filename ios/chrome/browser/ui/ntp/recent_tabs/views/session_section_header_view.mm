@@ -156,7 +156,7 @@ const int kRelativeTimeMaxHours = 4;
   if (last_used_delta.ToInternalValue() < base::Time::kMicrosecondsPerMinute)
     return l10n_util::GetNSString(IDS_IOS_OPEN_TABS_RECENTLY_SYNCED);
   if (last_used_delta.InHours() < kRelativeTimeMaxHours) {
-    return SysUTF16ToNSString(
+    return base::SysUTF16ToNSString(
         ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
                                ui::TimeFormat::LENGTH_SHORT, last_used_delta));
   }

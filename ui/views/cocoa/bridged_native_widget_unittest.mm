@@ -40,6 +40,7 @@ using base::ASCIIToUTF16;
 using base::SysNSStringToUTF8;
 using base::SysNSStringToUTF16;
 using base::SysUTF8ToNSString;
+using base::SysUTF16ToNSString;
 
 #define EXPECT_EQ_RANGE(a, b)        \
   EXPECT_EQ(a.location, b.location); \

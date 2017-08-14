@@ -27,6 +27,8 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/image/image.h"
 
+using base::SysUTF16ToNSString;
+
 namespace {
 
 const CGFloat kParagraphSpacing = 6;
