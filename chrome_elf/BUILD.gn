@@ -36,6 +36,10 @@ shared_library("chrome_elf") {
     "chrome_elf_main.cc",
     "chrome_elf_main.h",
   ]
+  if (target_cpu == "x64") {
+    sources += [ "chrome_elf_x64.def" ]
+  }
+
   deps = [
     ":blacklist",
     ":chrome_elf_manifest",

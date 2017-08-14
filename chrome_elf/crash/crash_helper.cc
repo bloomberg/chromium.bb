@@ -132,9 +132,10 @@ void DumpWithoutCrashing() {
 // NOTE: Since the returned pointer references read-only memory that will be
 // cleaned up when this DLL unloads, be careful not to reference the memory
 // beyond that point (e.g. during tests).
-extern "C" __declspec(dllexport) void GetCrashReportsImpl(
-    const crash_reporter::Report** reports,
-    size_t* report_count) {
+extern "C" {
+
+void GetCrashReportsImpl(const crash_reporter::Report** reports,
+                         size_t* report_count) {
   if (!g_crash_helper_enabled)
     return;
   crash_reporter::GetReports(g_crash_reports);
@@ -144,10 +145,11 @@ extern "C" __declspec(dllexport) void GetCrashReportsImpl(
 
 // This helper is invoked by debugging code in chrome to register the client
 // id.
-extern "C" __declspec(dllexport) void SetMetricsClientId(
-    const char* client_id) {
+void SetMetricsClientId(const char* client_id) {
   if (!g_crash_helper_enabled)
     return;
   if (client_id)
     crash_keys::SetMetricsClientIdFromGUID(client_id);
 }
+
+}  // extern "C"

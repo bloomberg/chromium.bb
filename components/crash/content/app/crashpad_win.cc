@@ -210,8 +210,7 @@ extern "C" {
 // NOTE: This function is used by SyzyASAN to invoke a crash. If you change the
 // the name or signature of this function you will break SyzyASAN instrumented
 // releases of Chrome. Please contact syzygy-team@chromium.org before doing so!
-int __declspec(dllexport) CrashForException(
-    EXCEPTION_POINTERS* info) {
+int CrashForException(EXCEPTION_POINTERS* info) {
   crash_reporter::GetCrashpadClient().DumpAndCrash(info);
   return EXCEPTION_CONTINUE_SEARCH;
 }
@@ -221,9 +220,8 @@ int __declspec(dllexport) CrashForException(
 // crash keys sent from the browser. Keys and values are separated by ':', and
 // key/value pairs are separated by ','. All keys should be previously
 // registered as crash keys. This method is used solely to classify hung input.
-HANDLE __declspec(dllexport) __cdecl InjectDumpForHungInput(
-    HANDLE process,
-    void* serialized_crash_keys) {
+HANDLE __cdecl InjectDumpForHungInput(HANDLE process,
+                                      void* serialized_crash_keys) {
   return CreateRemoteThread(
       process, nullptr, 0,
       crash_reporter::internal::DumpProcessForHungInputThread,
@@ -233,9 +231,7 @@ HANDLE __declspec(dllexport) __cdecl InjectDumpForHungInput(
 // Injects a thread into a remote process to dump state when there is no crash.
 // This method provides |reason| which will interpreted as an integer and logged
 // as a crash key.
-HANDLE __declspec(dllexport) __cdecl InjectDumpForHungInputNoCrashKeys(
-    HANDLE process,
-    int reason) {
+HANDLE __cdecl InjectDumpForHungInputNoCrashKeys(HANDLE process, int reason) {
   return CreateRemoteThread(
       process, nullptr, 0,
       crash_reporter::internal::DumpProcessForHungInputNoCrashKeysThread,
@@ -271,9 +267,8 @@ struct ExceptionHandlerRecord {
 };
 
 // These are GetProcAddress()d from V8 binding code.
-void __declspec(dllexport) __cdecl RegisterNonABICompliantCodeRange(
-    void* start,
-    size_t size_in_bytes) {
+void __cdecl RegisterNonABICompliantCodeRange(void* start,
+                                              size_t size_in_bytes) {
   ExceptionHandlerRecord* record =
       reinterpret_cast<ExceptionHandlerRecord*>(start);
 
@@ -316,8 +311,7 @@ void __declspec(dllexport) __cdecl RegisterNonABICompliantCodeRange(
       &record->runtime_function, 1, reinterpret_cast<DWORD64>(start)));
 }
 
-void __declspec(dllexport) __cdecl UnregisterNonABICompliantCodeRange(
-    void* start) {
+void __cdecl UnregisterNonABICompliantCodeRange(void* start) {
   ExceptionHandlerRecord* record =
       reinterpret_cast<ExceptionHandlerRecord*>(start);
 

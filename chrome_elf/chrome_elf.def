@@ -5,12 +5,32 @@
 LIBRARY  "chrome_elf.dll"
 
 EXPORTS
-  AddDllToBlacklist
-  GetBlacklistIndex
-  GetInstallDetailsPayload
+  ; From components/crash/content/app/crashpad.cc
+  ClearCrashKeyValueImpl
+  RequestSingleCrashUploadImpl
+  SetCrashKeyValueImpl
+  SetUploadConsentImpl
+
+  ; From components/crash/content/app/crashpad_win.cc
+  CrashForException
+  InjectDumpForHungInput
+  InjectDumpForHungInputNoCrashKeys
+
+  ; From chrome_elf/crash_helper.cc
+  GetCrashReportsImpl
+  SetMetricsClientId
+
+  ; From chrome_elf_main.cc
+  DumpProcessWithoutCrash
   GetUserDataDirectoryThunk
-  IsBlacklistInitialized
   SignalChromeElf
   SignalInitializeCrashReporting
+
+  ; From chrome/install_static
+  GetInstallDetailsPayload
+
+  ; From chrome_elf/blacklist.cc
+  AddDllToBlacklist
+  GetBlacklistIndex
+  IsBlacklistInitialized
   SuccessfullyBlocked
-  DumpProcessWithoutCrash
