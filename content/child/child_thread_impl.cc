@@ -260,6 +260,10 @@ InitializeMojoIPCChannel() {
         mojo::edk::NamedPlatformChannelPair::PassClientHandleFromParentProcess(
             *base::CommandLine::ForCurrentProcess());
   }
+#elif defined(OS_FUCHSIA)
+  platform_channel =
+      mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
+          *base::CommandLine::ForCurrentProcess());
 #elif defined(OS_POSIX)
   platform_channel.reset(mojo::edk::PlatformHandle(
       base::GlobalDescriptors::GetInstance()->Get(kMojoIPCChannel)));
