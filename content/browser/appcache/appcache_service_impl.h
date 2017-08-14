@@ -26,7 +26,6 @@
 
 namespace base {
 class FilePath;
-class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace net {
@@ -88,9 +87,7 @@ class CONTENT_EXPORT AppCacheServiceImpl
   explicit AppCacheServiceImpl(storage::QuotaManagerProxy* quota_manager_proxy);
   ~AppCacheServiceImpl() override;
 
-  void Initialize(
-      const base::FilePath& cache_directory,
-      const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread);
+  void Initialize(const base::FilePath& cache_directory);
 
   void AddObserver(Observer* observer) {
     observers_.AddObserver(observer);
@@ -215,7 +212,6 @@ class CONTENT_EXPORT AppCacheServiceImpl
 
   base::FilePath cache_directory_;
   scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
   AppCachePolicy* appcache_policy_;
   AppCacheQuotaClient* quota_client_;
   AppCacheExecutableHandlerFactory* handler_factory_;

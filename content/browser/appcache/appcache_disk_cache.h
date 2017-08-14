@@ -11,14 +11,11 @@
 #include <set>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/common/content_export.h"
 #include "net/disk_cache/disk_cache.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
 
 namespace content {
 
@@ -31,12 +28,11 @@ class CONTENT_EXPORT AppCacheDiskCache
   ~AppCacheDiskCache() override;
 
   // Initializes the object to use disk backed storage.
-  int InitWithDiskBackend(
-      const base::FilePath& disk_cache_directory,
-      int disk_cache_size,
-      bool force,
-      const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
-      const net::CompletionCallback& callback);
+  int InitWithDiskBackend(const base::FilePath& disk_cache_directory,
+                          int disk_cache_size,
+                          bool force,
+                          base::OnceClosure post_cleanup_callback,
+                          const net::CompletionCallback& callback);
 
   // Initializes the object to use memory only storage.
   // This is used for Chrome's incognito browsing.
@@ -107,7 +103,7 @@ class CONTENT_EXPORT AppCacheDiskCache
            const base::FilePath& directory,
            int cache_size,
            bool force,
-           const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
+           base::OnceClosure post_cleanup_callback,
            const net::CompletionCallback& callback);
   void OnCreateBackendComplete(int rv);
   void AddOpenEntry(EntryImpl* entry) { open_entries_.insert(entry); }

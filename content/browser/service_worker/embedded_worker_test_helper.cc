@@ -324,8 +324,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
       base::ThreadTaskRunnerHandle::Get();
   wrapper_->InitInternal(user_data_directory, std::move(database_task_runner),
-                         base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
-                         nullptr, nullptr);
+                         nullptr, nullptr, nullptr, nullptr);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id());
   wrapper_->process_manager()->SetNewProcessIdForTest(new_render_process_id());
 

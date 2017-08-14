@@ -419,7 +419,7 @@ class AppCacheStorageImplTest : public testing::Test {
   void SetUpTest() {
     DCHECK(io_thread->task_runner()->BelongsToCurrentThread());
     service_.reset(new AppCacheServiceImpl(nullptr));
-    service_->Initialize(base::FilePath(), background_thread->task_runner());
+    service_->Initialize(base::FilePath());
     mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
     delegate_.reset(new MockStorageDelegate(this));
@@ -1739,8 +1739,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // Recreate the service to point at the db and corruption on disk.
     service_.reset(new AppCacheServiceImpl(NULL));
     service_->set_request_context(io_thread->request_context());
-    service_->Initialize(temp_directory_.GetPath(),
-                         background_thread->task_runner());
+    service_->Initialize(temp_directory_.GetPath());
     mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
     delegate_.reset(new MockStorageDelegate(this));

@@ -27,10 +27,12 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_trial_policy.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "ipc/ipc_message.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/disk_cache/disk_cache.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/test/cert_test_util.h"
@@ -311,7 +313,8 @@ class ServiceWorkerStorageTest : public testing::Test {
 
   void TearDown() override {
     helper_.reset();
-    base::RunLoop().RunUntilIdle();
+    disk_cache::FlushCacheThreadForTesting();
+    content::RunAllBlockingPoolTasksUntilIdle();
   }
 
   bool InitUserDataDirectory() {

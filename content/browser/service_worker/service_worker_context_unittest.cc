@@ -699,7 +699,7 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
       MakeRegisteredCallback(&called, &registration_id));
 
   ASSERT_FALSE(called);
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_TRUE(called);
 
   context()->storage()->FindRegistrationForId(
@@ -709,7 +709,7 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
                  SERVICE_WORKER_OK,
                  false /* expect_waiting */,
                  true /* expect_active */));
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // Next handle ids should be 1 (the next call should return 2) because
   // registered worker should have taken ID 0.
@@ -724,7 +724,7 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
       registration_id, pattern.GetOrigin(),
       base::Bind(&ExpectRegisteredWorkers, SERVICE_WORKER_ERROR_ABORT,
                  false /* expect_waiting */, true /* expect_active */));
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // The context started over and the storage was re-initialized, so the
   // registration should not be found.
@@ -735,7 +735,7 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
                  SERVICE_WORKER_ERROR_NOT_FOUND,
                  false /* expect_waiting */,
                  true /* expect_active */));
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   called = false;
   context()->RegisterServiceWorker(
@@ -743,7 +743,7 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
       MakeRegisteredCallback(&called, &registration_id));
 
   ASSERT_FALSE(called);
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_TRUE(called);
 
   context()->storage()->FindRegistrationForId(
@@ -753,7 +753,7 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
                  SERVICE_WORKER_OK,
                  false /* expect_waiting */,
                  true /* expect_active */));
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // The new context should take over next handle ids. ID 2 should have been
   // taken by the running registration, so the following method calls return 3.
