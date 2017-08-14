@@ -102,6 +102,7 @@ bool GpuMemoryBufferImplSharedMemory::IsUsageSupported(gfx::BufferUsage usage) {
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
       return true;
     case gfx::BufferUsage::SCANOUT:
+    case gfx::BufferUsage::SCANOUT_VDA_WRITE:
       return false;
   }
   NOTREACHED();

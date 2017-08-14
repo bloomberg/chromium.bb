@@ -22,6 +22,7 @@ uint32_t LockFlags(gfx::BufferUsage usage) {
     case gfx::BufferUsage::GPU_READ:
     case gfx::BufferUsage::SCANOUT:
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
+    case gfx::BufferUsage::SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
       return 0;
   }
