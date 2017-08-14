@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 468 tests; 427 PASS, 41 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 589 tests; 539 PASS, 50 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver 
 PASS EventListener interface: existence and properties of interface object 
 PASS NodeList interface: existence and properties of interface object 
@@ -46,9 +46,17 @@ PASS HTMLAllCollection interface: existence and properties of interface object
 PASS HTMLFormControlsCollection interface: existence and properties of interface object 
 PASS RadioNodeList interface: existence and properties of interface object 
 PASS HTMLOptionsCollection interface: existence and properties of interface object 
-PASS DOMStringMap interface: existence and properties of interface object 
+PASS DOMStringList interface: existence and properties of interface object 
+PASS DOMStringList interface object length 
+PASS DOMStringList interface object name 
+PASS DOMStringList interface: existence and properties of interface prototype object 
+PASS DOMStringList interface: existence and properties of interface prototype object's "constructor" property 
+PASS DOMStringList interface: attribute length 
+PASS DOMStringList interface: operation item(unsigned long) 
+PASS DOMStringList interface: operation contains(DOMString) 
 PASS HTMLElement interface: existence and properties of interface object 
 PASS HTMLUnknownElement interface: existence and properties of interface object 
+PASS DOMStringMap interface: existence and properties of interface object 
 PASS HTMLHtmlElement interface: existence and properties of interface object 
 PASS HTMLHeadElement interface: existence and properties of interface object 
 PASS HTMLTitleElement interface: existence and properties of interface object 
@@ -64,6 +72,7 @@ PASS HTMLPreElement interface: existence and properties of interface object
 PASS HTMLQuoteElement interface: existence and properties of interface object 
 PASS HTMLOListElement interface: existence and properties of interface object 
 PASS HTMLUListElement interface: existence and properties of interface object 
+PASS HTMLMenuElement interface: existence and properties of interface object 
 PASS HTMLLIElement interface: existence and properties of interface object 
 PASS HTMLDListElement interface: existence and properties of interface object 
 PASS HTMLDivElement interface: existence and properties of interface object 
@@ -74,6 +83,7 @@ PASS HTMLSpanElement interface: existence and properties of interface object
 PASS HTMLBRElement interface: existence and properties of interface object 
 PASS HTMLModElement interface: existence and properties of interface object 
 PASS HTMLPictureElement interface: existence and properties of interface object 
+PASS HTMLSourceElement interface: existence and properties of interface object 
 PASS HTMLImageElement interface: existence and properties of interface object 
 PASS HTMLIFrameElement interface: existence and properties of interface object 
 PASS HTMLEmbedElement interface: existence and properties of interface object 
@@ -81,7 +91,6 @@ PASS HTMLObjectElement interface: existence and properties of interface object
 PASS HTMLParamElement interface: existence and properties of interface object 
 PASS HTMLVideoElement interface: existence and properties of interface object 
 PASS HTMLAudioElement interface: existence and properties of interface object 
-PASS HTMLSourceElement interface: existence and properties of interface object 
 PASS HTMLTrackElement interface: existence and properties of interface object 
 PASS HTMLMediaElement interface: existence and properties of interface object 
 PASS MediaError interface: existence and properties of interface object 
@@ -119,15 +128,24 @@ PASS HTMLFieldSetElement interface: existence and properties of interface object
 PASS HTMLLegendElement interface: existence and properties of interface object 
 PASS ValidityState interface: existence and properties of interface object 
 PASS HTMLDetailsElement interface: existence and properties of interface object 
-PASS HTMLMenuElement interface: existence and properties of interface object 
 PASS HTMLDialogElement interface: existence and properties of interface object 
 PASS HTMLScriptElement interface: existence and properties of interface object 
 PASS HTMLTemplateElement interface: existence and properties of interface object 
 PASS HTMLSlotElement interface: existence and properties of interface object 
 PASS HTMLCanvasElement interface: existence and properties of interface object 
 PASS CanvasRenderingContext2D interface: existence and properties of interface object 
-FAIL CanvasGradient interface: existence and properties of interface object assert_false: expected false got true
-FAIL CanvasPattern interface: existence and properties of interface object assert_false: expected false got true
+PASS CanvasGradient interface: existence and properties of interface object 
+PASS CanvasGradient interface object length 
+PASS CanvasGradient interface object name 
+PASS CanvasGradient interface: existence and properties of interface prototype object 
+PASS CanvasGradient interface: existence and properties of interface prototype object's "constructor" property 
+PASS CanvasGradient interface: operation addColorStop(double, DOMString) 
+PASS CanvasPattern interface: existence and properties of interface object 
+PASS CanvasPattern interface object length 
+PASS CanvasPattern interface object name 
+PASS CanvasPattern interface: existence and properties of interface prototype object 
+PASS CanvasPattern interface: existence and properties of interface prototype object's "constructor" property 
+FAIL CanvasPattern interface: operation setTransform(DOMMatrixInit) assert_own_property: interface prototype object missing non-static operation expected property "setTransform" missing
 PASS TextMetrics interface: existence and properties of interface object 
 PASS ImageData interface: existence and properties of interface object 
 PASS ImageData interface object length 
@@ -153,6 +171,91 @@ PASS Path2D interface: operation arcTo(unrestricted double, unrestricted double,
 PASS Path2D interface: operation rect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
 PASS Path2D interface: operation arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) 
 PASS Path2D interface: operation ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) 
+PASS ImageBitmapRenderingContext interface: existence and properties of interface object 
+PASS OffscreenCanvas interface: existence and properties of interface object 
+PASS OffscreenCanvas interface object length 
+PASS OffscreenCanvas interface object name 
+PASS OffscreenCanvas interface: existence and properties of interface prototype object 
+PASS OffscreenCanvas interface: existence and properties of interface prototype object's "constructor" property 
+PASS OffscreenCanvas interface: attribute width 
+PASS OffscreenCanvas interface: attribute height 
+PASS OffscreenCanvas interface: operation getContext(OffscreenRenderingContextType, any) 
+PASS OffscreenCanvas interface: operation transferToImageBitmap() 
+PASS OffscreenCanvas interface: operation convertToBlob(ImageEncodeOptions) 
+PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface object 
+PASS OffscreenCanvasRenderingContext2D interface object length 
+PASS OffscreenCanvasRenderingContext2D interface object name 
+PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface prototype object 
+PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface prototype object's "constructor" property 
+FAIL OffscreenCanvasRenderingContext2D interface: operation commit() assert_throws: calling operation with this = null didn't throw TypeError function "function () {
+            fn.apply(obj, args);
+        }" did not throw
+PASS OffscreenCanvasRenderingContext2D interface: attribute canvas 
+PASS OffscreenCanvasRenderingContext2D interface: operation save() 
+PASS OffscreenCanvasRenderingContext2D interface: operation restore() 
+PASS OffscreenCanvasRenderingContext2D interface: operation scale(unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation rotate(unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation translate(unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+FAIL OffscreenCanvasRenderingContext2D interface: operation getTransform() assert_own_property: interface prototype object missing non-static operation expected property "getTransform" missing
+FAIL OffscreenCanvasRenderingContext2D interface: operation setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) assert_equals: property has wrong .length expected 0 but got 6
+FAIL OffscreenCanvasRenderingContext2D interface: operation setTransform(DOMMatrixInit) assert_equals: property has wrong .length expected 0 but got 6
+PASS OffscreenCanvasRenderingContext2D interface: operation resetTransform() 
+PASS OffscreenCanvasRenderingContext2D interface: attribute globalAlpha 
+PASS OffscreenCanvasRenderingContext2D interface: attribute globalCompositeOperation 
+PASS OffscreenCanvasRenderingContext2D interface: attribute imageSmoothingEnabled 
+PASS OffscreenCanvasRenderingContext2D interface: attribute imageSmoothingQuality 
+PASS OffscreenCanvasRenderingContext2D interface: attribute strokeStyle 
+PASS OffscreenCanvasRenderingContext2D interface: attribute fillStyle 
+PASS OffscreenCanvasRenderingContext2D interface: operation createLinearGradient(double, double, double, double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation createRadialGradient(double, double, double, double, double, double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation createPattern(CanvasImageSource, DOMString) 
+PASS OffscreenCanvasRenderingContext2D interface: attribute shadowOffsetX 
+PASS OffscreenCanvasRenderingContext2D interface: attribute shadowOffsetY 
+PASS OffscreenCanvasRenderingContext2D interface: attribute shadowBlur 
+PASS OffscreenCanvasRenderingContext2D interface: attribute shadowColor 
+PASS OffscreenCanvasRenderingContext2D interface: attribute filter 
+PASS OffscreenCanvasRenderingContext2D interface: operation clearRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation fillRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation strokeRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation beginPath() 
+PASS OffscreenCanvasRenderingContext2D interface: operation fill(CanvasFillRule) 
+PASS OffscreenCanvasRenderingContext2D interface: operation fill(Path2D, CanvasFillRule) 
+PASS OffscreenCanvasRenderingContext2D interface: operation stroke() 
+PASS OffscreenCanvasRenderingContext2D interface: operation stroke(Path2D) 
+PASS OffscreenCanvasRenderingContext2D interface: operation clip(CanvasFillRule) 
+PASS OffscreenCanvasRenderingContext2D interface: operation clip(Path2D, CanvasFillRule) 
+FAIL OffscreenCanvasRenderingContext2D interface: operation resetClip() assert_own_property: interface prototype object missing non-static operation expected property "resetClip" missing
+PASS OffscreenCanvasRenderingContext2D interface: operation isPointInPath(unrestricted double, unrestricted double, CanvasFillRule) 
+PASS OffscreenCanvasRenderingContext2D interface: operation isPointInPath(Path2D, unrestricted double, unrestricted double, CanvasFillRule) 
+PASS OffscreenCanvasRenderingContext2D interface: operation isPointInStroke(unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation isPointInStroke(Path2D, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation createImageData(long, long) 
+PASS OffscreenCanvasRenderingContext2D interface: operation createImageData(ImageData) 
+PASS OffscreenCanvasRenderingContext2D interface: operation getImageData(long, long, long, long) 
+PASS OffscreenCanvasRenderingContext2D interface: operation putImageData(ImageData, long, long) 
+PASS OffscreenCanvasRenderingContext2D interface: operation putImageData(ImageData, long, long, long, long, long, long) 
+PASS OffscreenCanvasRenderingContext2D interface: attribute lineWidth 
+PASS OffscreenCanvasRenderingContext2D interface: attribute lineCap 
+PASS OffscreenCanvasRenderingContext2D interface: attribute lineJoin 
+PASS OffscreenCanvasRenderingContext2D interface: attribute miterLimit 
+PASS OffscreenCanvasRenderingContext2D interface: operation setLineDash([object Object]) 
+PASS OffscreenCanvasRenderingContext2D interface: operation getLineDash() 
+PASS OffscreenCanvasRenderingContext2D interface: attribute lineDashOffset 
+PASS OffscreenCanvasRenderingContext2D interface: operation closePath() 
+PASS OffscreenCanvasRenderingContext2D interface: operation moveTo(unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation lineTo(unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation quadraticCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation bezierCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation arcTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation arcTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation rect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) 
+PASS OffscreenCanvasRenderingContext2D interface: operation ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) 
+PASS CustomElementRegistry interface: existence and properties of interface object 
 PASS DataTransfer interface: existence and properties of interface object 
 PASS DataTransferItemList interface: existence and properties of interface object 
 PASS DataTransferItem interface: existence and properties of interface object 
@@ -176,12 +279,18 @@ FAIL ErrorEvent interface: attribute filename assert_own_property: self does not
 FAIL ErrorEvent interface: attribute lineno assert_own_property: self does not have own property "ErrorEvent" expected property "ErrorEvent" missing
 FAIL ErrorEvent interface: attribute colno assert_own_property: self does not have own property "ErrorEvent" expected property "ErrorEvent" missing
 FAIL ErrorEvent interface: attribute error assert_own_property: self does not have own property "ErrorEvent" expected property "ErrorEvent" missing
+PASS PromiseRejectionEvent interface: existence and properties of interface object 
+PASS PromiseRejectionEvent interface object length 
+PASS PromiseRejectionEvent interface object name 
+PASS PromiseRejectionEvent interface: existence and properties of interface prototype object 
+PASS PromiseRejectionEvent interface: existence and properties of interface prototype object's "constructor" property 
+FAIL PromiseRejectionEvent interface: attribute promise Illegal invocation
+PASS PromiseRejectionEvent interface: attribute reason 
 PASS Navigator interface: existence and properties of interface object 
 PASS PluginArray interface: existence and properties of interface object 
 PASS MimeTypeArray interface: existence and properties of interface object 
 PASS Plugin interface: existence and properties of interface object 
 PASS MimeType interface: existence and properties of interface object 
-PASS External interface: existence and properties of interface object 
 PASS ImageBitmap interface: existence and properties of interface object 
 PASS ImageBitmap interface object length 
 PASS ImageBitmap interface object name 
@@ -189,6 +298,7 @@ PASS ImageBitmap interface: existence and properties of interface prototype obje
 PASS ImageBitmap interface: existence and properties of interface prototype object's "constructor" property 
 PASS ImageBitmap interface: attribute width 
 PASS ImageBitmap interface: attribute height 
+PASS ImageBitmap interface: operation close() 
 PASS MessageEvent interface: existence and properties of interface object 
 PASS MessageEvent interface object length 
 PASS MessageEvent interface object name 
@@ -199,16 +309,16 @@ PASS MessageEvent interface: attribute origin
 PASS MessageEvent interface: attribute lastEventId 
 PASS MessageEvent interface: attribute source 
 PASS MessageEvent interface: attribute ports 
-FAIL MessageEvent interface: operation initMessageEvent(DOMString, boolean, boolean, any, DOMString, DOMString, [object Object],[object Object], [object Object]) assert_equals: property has wrong .length expected 1 but got 0
+FAIL MessageEvent interface: operation initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object]) assert_equals: property has wrong .length expected 1 but got 0
 PASS MessageEvent must be primary interface of new MessageEvent("message", { data: 5 }) 
 PASS Stringification of new MessageEvent("message", { data: 5 }) 
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "data" with the proper type 
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "origin" with the proper type 
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "lastEventId" with the proper type 
-PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "source" with the proper type 
+FAIL MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "source" with the proper type Unrecognized type WindowProxy
 FAIL MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "ports" with the proper type assert_true: Value should be array expected true got false
-PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "initMessageEvent(DOMString, boolean, boolean, any, DOMString, DOMString, [object Object],[object Object], [object Object])" with the proper type 
-FAIL MessageEvent interface: calling initMessageEvent(DOMString, boolean, boolean, any, DOMString, DOMString, [object Object],[object Object], [object Object]) on new MessageEvent("message", { data: 5 }) with too few arguments must throw TypeError assert_throws: Called with 0 arguments function "function () {
+PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object])" with the proper type 
+FAIL MessageEvent interface: calling initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object]) on new MessageEvent("message", { data: 5 }) with too few arguments must throw TypeError assert_throws: Called with 0 arguments function "function () {
             fn.apply(obj, args);
         }" did not throw
 PASS EventSource interface: existence and properties of interface object 
@@ -336,6 +446,8 @@ PASS WorkerGlobalScope interface: attribute onerror
 FAIL WorkerGlobalScope interface: attribute onlanguagechange assert_true: The prototype object must have a property "onlanguagechange" expected true got false
 FAIL WorkerGlobalScope interface: attribute onoffline assert_true: The prototype object must have a property "onoffline" expected true got false
 FAIL WorkerGlobalScope interface: attribute ononline assert_true: The prototype object must have a property "ononline" expected true got false
+PASS WorkerGlobalScope interface: attribute onrejectionhandled 
+PASS WorkerGlobalScope interface: attribute onunhandledrejection 
 PASS WorkerGlobalScope interface: attribute origin 
 PASS WorkerGlobalScope interface: operation btoa(DOMString) 
 PASS WorkerGlobalScope interface: operation atob(DOMString) 
@@ -356,6 +468,7 @@ PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of
 PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of interface prototype object - setting to its original value via __proto__ should not throw 
 PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of interface prototype object - setting to its original value via Reflect.setPrototypeOf should return true 
 PASS DedicatedWorkerGlobalScope interface: existence and properties of interface prototype object's "constructor" property 
+FAIL DedicatedWorkerGlobalScope interface: attribute name assert_own_property: The global object must have a property "name" expected property "name" missing
 PASS DedicatedWorkerGlobalScope interface: operation postMessage(any, [object Object]) 
 PASS DedicatedWorkerGlobalScope interface: operation close() 
 PASS DedicatedWorkerGlobalScope interface: attribute onmessage 
@@ -368,6 +481,7 @@ PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of
 PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of global platform object - setting to its original value via Reflect.setPrototypeOf should return true 
 PASS DedicatedWorkerGlobalScope must be primary interface of self 
 PASS Stringification of self 
+FAIL DedicatedWorkerGlobalScope interface: self must inherit property "name" with the proper type assert_own_property: expected property "name" missing
 PASS DedicatedWorkerGlobalScope interface: self must inherit property "postMessage(any, [object Object])" with the proper type 
 PASS DedicatedWorkerGlobalScope interface: calling postMessage(any, [object Object]) on self with too few arguments must throw TypeError 
 PASS DedicatedWorkerGlobalScope interface: self must inherit property "close()" with the proper type 
@@ -382,6 +496,8 @@ PASS WorkerGlobalScope interface: self must inherit property "onerror" with the 
 FAIL WorkerGlobalScope interface: self must inherit property "onlanguagechange" with the proper type assert_inherits: property "onlanguagechange" not found in prototype chain
 FAIL WorkerGlobalScope interface: self must inherit property "onoffline" with the proper type assert_inherits: property "onoffline" not found in prototype chain
 FAIL WorkerGlobalScope interface: self must inherit property "ononline" with the proper type assert_inherits: property "ononline" not found in prototype chain
+PASS WorkerGlobalScope interface: self must inherit property "onrejectionhandled" with the proper type 
+PASS WorkerGlobalScope interface: self must inherit property "onunhandledrejection" with the proper type 
 PASS WorkerGlobalScope interface: self must inherit property "origin" with the proper type 
 PASS WorkerGlobalScope interface: self must inherit property "btoa(DOMString)" with the proper type 
 PASS WorkerGlobalScope interface: calling btoa(DOMString) on self with too few arguments must throw TypeError 
@@ -408,6 +524,7 @@ FAIL Worker interface: existence and properties of interface prototype object's 
 FAIL Worker interface: operation terminate() assert_own_property: self does not have own property "Worker" expected property "Worker" missing
 FAIL Worker interface: operation postMessage(any, [object Object]) assert_own_property: self does not have own property "Worker" expected property "Worker" missing
 FAIL Worker interface: attribute onmessage assert_own_property: self does not have own property "Worker" expected property "Worker" missing
+FAIL Worker interface: attribute onmessageerror assert_own_property: self does not have own property "Worker" expected property "Worker" missing
 FAIL Worker interface: attribute onerror assert_own_property: self does not have own property "Worker" expected property "Worker" missing
 FAIL SharedWorker interface: existence and properties of interface object assert_own_property: self does not have own property "SharedWorker" expected property "SharedWorker" missing
 FAIL SharedWorker interface object length assert_own_property: self does not have own property "SharedWorker" expected property "SharedWorker" missing
@@ -430,9 +547,12 @@ PASS WorkerNavigator interface: member productSub
 PASS WorkerNavigator interface: attribute userAgent 
 PASS WorkerNavigator interface: member vendor 
 PASS WorkerNavigator interface: member vendorSub 
+PASS WorkerNavigator interface: member taintEnabled 
+PASS WorkerNavigator interface: member oscpu 
 FAIL WorkerNavigator interface: attribute language assert_true: The prototype object must have a property "language" expected true got false
 FAIL WorkerNavigator interface: attribute languages assert_true: The prototype object must have a property "languages" expected true got false
 PASS WorkerNavigator interface: attribute onLine 
+PASS WorkerNavigator interface: attribute hardwareConcurrency 
 PASS WorkerNavigator must be primary interface of self.navigator 
 PASS Stringification of self.navigator 
 PASS WorkerNavigator interface: self.navigator must inherit property "appCodeName" with the proper type 
@@ -444,9 +564,12 @@ PASS WorkerNavigatorinterface: self.navigatormust not have property "productSub"
 PASS WorkerNavigator interface: self.navigator must inherit property "userAgent" with the proper type 
 PASS WorkerNavigatorinterface: self.navigatormust not have property "vendor" 
 PASS WorkerNavigatorinterface: self.navigatormust not have property "vendorSub" 
+PASS WorkerNavigatorinterface: self.navigatormust not have property "taintEnabled" 
+PASS WorkerNavigatorinterface: self.navigatormust not have property "oscpu" 
 FAIL WorkerNavigator interface: self.navigator must inherit property "language" with the proper type assert_inherits: property "language" not found in prototype chain
 FAIL WorkerNavigator interface: self.navigator must inherit property "languages" with the proper type assert_inherits: property "languages" not found in prototype chain
 PASS WorkerNavigator interface: self.navigator must inherit property "onLine" with the proper type 
+PASS WorkerNavigator interface: self.navigator must inherit property "hardwareConcurrency" with the proper type 
 PASS WorkerLocation interface: existence and properties of interface object 
 PASS WorkerLocation interface object length 
 PASS WorkerLocation interface object name 
