@@ -9843,12 +9843,12 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 #else
     x->cfl_store_y = 1;
 #endif  // CONFIG_CB4X4
-
-    txfm_rd_in_plane(x, cpi, &this_rd_stats, INT64_MAX, AOM_PLANE_Y,
-                     mbmi->sb_type, mbmi->tx_size,
-                     cpi->sf.use_fast_coef_costing);
-
-    x->cfl_store_y = 0;
+    if (x->cfl_store_y) {
+      txfm_rd_in_plane(x, cpi, &this_rd_stats, INT64_MAX, AOM_PLANE_Y,
+                       mbmi->sb_type, mbmi->tx_size,
+                       cpi->sf.use_fast_coef_costing);
+      x->cfl_store_y = 0;
+    }
 #endif  // CONFIG_CFL
     max_uv_tx_size = uv_txsize_lookup[bsize][mbmi->tx_size][pd[1].subsampling_x]
                                      [pd[1].subsampling_y];

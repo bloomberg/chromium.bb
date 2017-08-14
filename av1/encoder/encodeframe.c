@@ -1380,10 +1380,6 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   mbmi->mi_row = mi_row;
   mbmi->mi_col = mi_col;
 #endif
-#if CONFIG_CFL
-  // Don't store luma during RDO. Only store luma when best luma is known
-  x->cfl_store_y = 0;
-#endif
 #if CONFIG_SUPERTX
   // We set tx_size here as skip blocks would otherwise not set it.
   // tx_size needs to be set at this point as supertx_enable in
@@ -4388,10 +4384,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   *rate_nocoef = best_rate_nocoef;
 #endif  // CONFIG_SUPERTX
 
-#if CONFIG_CFL
-  // Store the luma for the best mode
-  x->cfl_store_y = 1;
-#endif
   if (best_rdc.rate < INT_MAX && best_rdc.dist < INT64_MAX &&
       pc_tree->index != 3) {
     if (bsize == cm->sb_size) {
@@ -4405,9 +4397,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                 pc_tree, NULL);
     }
   }
-#if CONFIG_CFL
-  x->cfl_store_y = 0;
-#endif
 
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
   if (x->using_dist_8x8 && best_rdc.rate < INT_MAX &&
@@ -5957,17 +5946,20 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
   x->pvq_speed = 0;
   x->pvq_coded = (dry_run == OUTPUT_ENABLED) ? 1 : 0;
 #endif
-#if CONFIG_CFL
-  x->cfl_store_y = 1;
-#endif
 
   if (!is_inter) {
+#if CONFIG_CFL
+    x->cfl_store_y = 1;
+#endif  // CONFIG_CFL
     int plane;
     mbmi->skip = 1;
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       av1_encode_intra_block_plane((AV1_COMMON *)cm, x, block_size, plane, 1,
                                    mi_row, mi_col);
     }
+#if CONFIG_CFL
+    x->cfl_store_y = 0;
+#endif  // CONFIG_CFL
     if (!dry_run) {
       sum_intra_stats(td->counts, xd, mi, xd->above_mi, xd->left_mi,
                       frame_is_intra_only(cm), mi_row, mi_col);
