@@ -125,6 +125,9 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
       flags = GBM_BO_USE_LINEAR | GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
       break;
+    case gfx::BufferUsage::SCANOUT_VDA_WRITE:
+      flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
+      break;
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
       flags = GBM_BO_USE_LINEAR | GBM_BO_USE_TEXTURING;
@@ -141,11 +144,21 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
   if (window && window->GetController())
     modifiers = window->GetController()->GetFormatModifiers(fourcc_format);
 
-  if (modifiers.size() > 0 && !(flags & GBM_BO_USE_LINEAR))
-    *buffer = GbmBuffer::CreateBufferWithModifiers(gbm, fourcc_format, size,
-                                                   flags, modifiers);
-  else
-    *buffer = GbmBuffer::CreateBuffer(gbm, fourcc_format, size, flags);
+  // NOTE: BufferUsage::SCANOUT is used to create buffers that will be
+  // explicitly set via kms on a CRTC (e.g: BufferQueue buffers), therefore
+  // allocation should fail if it's not possible to allocate a BO_USE_SCANOUT
+  // buffer in that case.
+  bool retry_without_scanout = usage != gfx::BufferUsage::SCANOUT;
+  do {
+    if (modifiers.size() > 0 && !(flags & GBM_BO_USE_LINEAR))
+      *buffer = GbmBuffer::CreateBufferWithModifiers(gbm, fourcc_format, size,
+                                                     flags, modifiers);
+    else
+      *buffer = GbmBuffer::CreateBuffer(gbm, fourcc_format, size, flags);
+    retry_without_scanout =
+        retry_without_scanout && (flags & GBM_BO_USE_SCANOUT);
+    flags &= ~GBM_BO_USE_SCANOUT;
+  } while (retry_without_scanout);
 }
 
 void DrmThread::CreateBufferFromFds(
