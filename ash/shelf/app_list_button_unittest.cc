@@ -6,9 +6,12 @@
 
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/test/scoped_command_line.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/app_list/presenter/app_list.h"
@@ -40,8 +43,11 @@ class AppListButtonTest : public AshTestBase {
     app_list_button_->OnGestureEvent(event);
   }
 
+  const AppListButton* app_list_button() const { return app_list_button_; }
+
  private:
   AppListButton* app_list_button_;
+
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButtonTest);
@@ -84,6 +90,70 @@ TEST_F(VoiceInteractionAppListButtonTest,
   SendGestureEvent(&long_press);
   RunAllPendingInMessageLoop();
   EXPECT_EQ(1u, test_app_list_presenter.voice_session_count());
+}
+
+namespace {
+
+class BackButtonAppListButtonTest : public AppListButtonTest,
+                                    public testing::WithParamInterface<bool> {
+ public:
+  BackButtonAppListButtonTest() : is_rtl_(GetParam()) {}
+  ~BackButtonAppListButtonTest() override {}
+
+  void SetUp() override {
+    if (is_rtl_) {
+      original_locale_ = base::i18n::GetConfiguredLocale();
+      base::i18n::SetICUDefaultLocale("he");
+    }
+    AppListButtonTest::SetUp();
+    ASSERT_EQ(is_rtl_, base::i18n::IsRTL());
+  }
+
+  void TearDown() override {
+    if (is_rtl_)
+      base::i18n::SetICUDefaultLocale(original_locale_);
+    AppListButtonTest::TearDown();
+  }
+
+ private:
+  bool is_rtl_ = false;
+  std::string original_locale_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackButtonAppListButtonTest);
+};
+
+INSTANTIATE_TEST_CASE_P(
+    /* prefix intentionally left blank due to only one parameterization */,
+    BackButtonAppListButtonTest,
+    testing::Bool());
+
+}  // namespace
+
+// Verify the locations of the back button and app list button.
+TEST_P(BackButtonAppListButtonTest, BackButtonAppListButtonLocation) {
+  ShelfViewTestAPI test_api(GetPrimaryShelf()->GetShelfViewForTesting());
+
+  // Finish all setup tasks. In particular we want to finish the GetSwitchStates
+  // post task in (Fake)PowerManagerClient which is triggered by
+  // TabletModeController otherwise this will cause tablet mode to exit while we
+  // wait for animations in the test.
+  RunAllPendingInMessageLoop();
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  test_api.RunMessageLoopUntilAnimationsDone();
+
+  gfx::Point back_button_center = app_list_button()->GetBackButtonCenterPoint();
+  gfx::Point app_list_button_center =
+      app_list_button()->GetAppListButtonCenterPoint();
+
+  // Verify that in rtl, the app list button is left of the back button and vice
+  // versa.
+  if (base::i18n::IsRTL())
+    EXPECT_LT(app_list_button_center.x(), back_button_center.x());
+  else
+    EXPECT_GT(app_list_button_center.x(), back_button_center.x());
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
 }
 
 }  // namespace ash
