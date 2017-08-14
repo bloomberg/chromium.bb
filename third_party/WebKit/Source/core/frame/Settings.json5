@@ -859,13 +859,6 @@
       type: "PassiveListenerDefault",
     },
 
-    // Use default interpolation quality to scale bitmap images if quality is not determined
-    // in other ways. This can help us writing reftests containing scaled images.
-    {
-      name: "useDefaultImageInterpolationQuality",
-      initial: false,
-    },
-
     // Whether the CSSPreloadScanner is used for externally CSS preloads. NoPreload
     // indicates that the scanner will be used, but no preloads issued.
     {

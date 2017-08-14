@@ -49,10 +49,8 @@
         testRunner.dumpAsText();
     }
 
-    if (window.internals) {
-        internals.settings.setUseDefaultImageInterpolationQuality(true);
+    if (window.internals)
         internals.runtimeFlags.paintUnderInvalidationCheckingEnabled = true;
-    }
 
     function finish() {
         var layerTree = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
