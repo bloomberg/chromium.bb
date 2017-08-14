@@ -4424,14 +4424,18 @@ weston_head_from_resource(struct wl_resource *resource)
 /** Initialize a pre-allocated weston_head
  *
  * \param head The head to initialize.
+ * \param name The head name, e.g. the connector name or equivalent.
  *
  * The head will be safe to attach, detach and release.
+ *
+ * The name is used in logs, and can be used by compositors as a configuration
+ * identifier.
  *
  * \memberof weston_head
  * \internal
  */
 static void
-weston_head_init(struct weston_head *head)
+weston_head_init(struct weston_head *head, const char *name)
 {
 	/* Add some (in)sane defaults which can be used
 	 * for checking if an output was properly configured
@@ -4440,6 +4444,7 @@ weston_head_init(struct weston_head *head)
 
 	wl_list_init(&head->output_link);
 	wl_list_init(&head->resource_list);
+	head->name = strdup(name);
 }
 
 /** Attach a head to an inactive output
@@ -4515,6 +4520,7 @@ weston_head_release(struct weston_head *head)
 	free(head->make);
 	free(head->model);
 	free(head->serial_number);
+	free(head->name);
 }
 
 /** Store monitor make, model and serial number
@@ -5019,7 +5025,7 @@ weston_output_init(struct weston_output *output,
 
 	wl_list_init(&output->head_list);
 
-	weston_head_init(&output->head);
+	weston_head_init(&output->head, name);
 
 	/* Add some (in)sane defaults which can be used
 	 * for checking if an output was properly configured

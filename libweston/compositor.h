@@ -166,6 +166,8 @@ struct weston_head {
 	char *serial_number;		/**< monitor serial */
 	uint32_t subpixel;		/**< enum wl_output_subpixel */
 	bool connection_internal;	/**< embedded monitor (e.g. laptop) */
+
+	char *name;			/**< head name, e.g. connector name */
 };
 
 struct weston_output {
