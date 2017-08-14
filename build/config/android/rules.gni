@@ -197,7 +197,6 @@ if (enable_java_templates) {
         rebase_path(jni_output_dir, root_build_dir),
         "--includes",
         rebase_path(jni_generator_include, jni_output_dir),
-        "--native_exports_optional",
       ]
 
       if (enable_profiling) {
@@ -306,7 +305,6 @@ if (enable_java_templates) {
           rebase_path(jni_output_dir, root_build_dir),
           "--includes",
           rebase_path(jni_generator_include, jni_output_dir),
-          "--native_exports_optional",
         ]
 
         if (enable_profiling) {

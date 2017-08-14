@@ -17,29 +17,36 @@
 #include "base/android/jni_int_wrapper.h"
 
 // Step 1: forward declarations.
-namespace {
+JNI_REGISTRATION_EXPORT extern const char kClassPath_org_chromium_TestJni[];
 const char kClassPath_org_chromium_TestJni[] = "org/chromium/TestJni";
+
+JNI_REGISTRATION_EXPORT extern const char
+    kClassPath_org_chromium_TestJni_00024InfoBar[];
 const char kClassPath_org_chromium_TestJni_00024InfoBar[] =
     "org/chromium/TestJni$InfoBar";
-// Leaking this jclass as we cannot use LazyInstance from some threads.
-base::subtle::AtomicWord g_org_chromium_TestJni_clazz __attribute__((unused)) =
-    0;
 
+// Leaking this jclass as we cannot use LazyInstance from some threads.
+JNI_REGISTRATION_EXPORT base::subtle::AtomicWord g_org_chromium_TestJni_clazz =
+    0;
+#ifndef org_chromium_TestJni_clazz_defined
+#define org_chromium_TestJni_clazz_defined
 inline jclass org_chromium_TestJni_clazz(JNIEnv* env) {
   return base::android::LazyGetClass(env, kClassPath_org_chromium_TestJni,
       &g_org_chromium_TestJni_clazz);
 }
-// Leaking this jclass as we cannot use LazyInstance from some threads.
-base::subtle::AtomicWord g_org_chromium_TestJni_00024InfoBar_clazz
-    __attribute__((unused)) = 0;
+#endif
 
+// Leaking this jclass as we cannot use LazyInstance from some threads.
+JNI_REGISTRATION_EXPORT base::subtle::AtomicWord
+    g_org_chromium_TestJni_00024InfoBar_clazz = 0;
+#ifndef org_chromium_TestJni_00024InfoBar_clazz_defined
+#define org_chromium_TestJni_00024InfoBar_clazz_defined
 inline jclass org_chromium_TestJni_00024InfoBar_clazz(JNIEnv* env) {
   return base::android::LazyGetClass(env,
       kClassPath_org_chromium_TestJni_00024InfoBar,
       &g_org_chromium_TestJni_00024InfoBar_clazz);
 }
-
-}  // namespace
+#endif
 
 // Step 2: method stubs.
 
