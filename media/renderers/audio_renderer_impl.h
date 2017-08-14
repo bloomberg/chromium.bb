@@ -94,6 +94,7 @@ class MEDIA_EXPORT AudioRendererImpl
 
  private:
   friend class AudioRendererImplTest;
+  friend class PipelineIntegrationTestBase;  // For |first_packet_timestamp_|.
 
   // Important detail: being in kPlaying doesn't imply that audio is being
   // rendered. Rather, it means that the renderer is ready to go. The actual

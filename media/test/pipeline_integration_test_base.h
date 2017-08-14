@@ -21,6 +21,7 @@
 #include "media/base/text_track.h"
 #include "media/base/text_track_config.h"
 #include "media/base/video_frame.h"
+#include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/video_renderer_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -67,6 +68,9 @@ class PipelineTestRendererFactory {
 // than real-time.
 class PipelineIntegrationTestBase : public Pipeline::Client {
  public:
+  using CheckFirstAudioPacketTimestampCB =
+      base::RepeatingCallback<void(base::TimeDelta)>;
+
   PipelineIntegrationTestBase();
   virtual ~PipelineIntegrationTestBase();
 
@@ -138,6 +142,14 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
     encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
   }
 
+  void set_check_first_audio_packet_timestamp_cb(
+      CheckFirstAudioPacketTimestampCB check_first_audio_packet_timestamp_cb) {
+    check_first_audio_packet_timestamp_cb_ =
+        std::move(check_first_audio_packet_timestamp_cb);
+  }
+
+  void CheckFirstAudioPacketTimestamp(BufferingState state);
+
   std::unique_ptr<Renderer> CreateRenderer(
       CreateVideoDecodersCB prepend_video_decoders_cb,
       CreateAudioDecodersCB prepend_audio_decoders_cb);
@@ -164,6 +176,12 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   PipelineMetadata metadata_;
   scoped_refptr<VideoFrame> last_frame_;
   base::TimeDelta current_duration_;
+
+  // Pointer to the audio renderer from CreateRenderer(). It is used only during
+  // CheckFirstAudioPacketTimestamp().
+  AudioRendererImpl* audio_renderer_;
+  CheckFirstAudioPacketTimestampCB check_first_audio_packet_timestamp_cb_;
+
   std::unique_ptr<PipelineTestRendererFactory> renderer_factory_;
 
   PipelineStatus StartInternal(
