@@ -11,25 +11,12 @@ namespace safe_browsing {
 
 namespace V4FeatureList {
 
-bool IsV4OnlyEnabled() {
-  return base::FeatureList::IsEnabled(kV4OnlyEnabled);
-}
-
-bool IsLocalDatabaseManagerEnabled() {
-  return base::FeatureList::IsEnabled(kLocalDatabaseManagerEnabled) ||
-         IsV4OnlyEnabled();
-}
-
 V4UsageStatus GetV4UsageStatus() {
-  V4UsageStatus v4_usage_status;
-  if (safe_browsing::V4FeatureList::IsV4OnlyEnabled()) {
-    v4_usage_status = V4UsageStatus::V4_ONLY;
-  } else if (safe_browsing::V4FeatureList::IsLocalDatabaseManagerEnabled()) {
-    v4_usage_status = V4UsageStatus::V4_INSTANTIATED;
-  } else {
-    v4_usage_status = V4UsageStatus::V4_DISABLED;
-  }
-  return v4_usage_status;
+#if defined(SAFE_BROWSING_DB_LOCAL)
+  return V4UsageStatus::V4_ONLY;
+#else
+  return V4UsageStatus::V4_DISABLED;
+#endif
 }
 
 }  // namespace V4FeatureList
