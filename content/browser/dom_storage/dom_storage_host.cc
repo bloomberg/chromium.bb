@@ -16,9 +16,9 @@ DOMStorageHost::DOMStorageHost(DOMStorageContextImpl* context)
 }
 
 DOMStorageHost::~DOMStorageHost() {
-  for (const auto& it : connections_)
-    it.second.namespace_->CloseStorageArea(it.second.area_.get());
-  connections_.clear();  // Clear prior to releasing the context_
+  // Clear connections prior to releasing the context_.
+  while (!connections_.empty())
+    CloseStorageArea(connections_.begin()->first);
 }
 
 base::Optional<bad_message::BadMessageReason>
