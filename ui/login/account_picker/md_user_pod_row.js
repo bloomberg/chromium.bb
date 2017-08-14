@@ -3618,11 +3618,6 @@ cr.define('login', function() {
         // the virtual keyboard.
         this.parentNode.setPreferredSize(
             this.screenSize.width, this.screenSize.height);
-        // Normally, |WebUILoginView::OnKeyboardBoundsChanging| toggles the
-        // visibility of the login header bar based on virtual keyboard status
-        // at a later time. As a result the login header bar may be seen for a
-        // short moment before being hidden, so here we hide it up front.
-        Oobe.getInstance().headerHidden = true;
       } else {
         // Make sure not to block the header bar when virtual keyboard is absent.
         this.parentNode.setPreferredSize(
@@ -3671,30 +3666,24 @@ cr.define('login', function() {
     },
 
     /**
-     * Makes inner container unscrollable and hides the bottom empty area
-     * when virtual keyboard is shown.
+     * Makes the screen unscrollable and hides the empty area underneath when
+     * virtual keyboard is shown.
      * @private
      */
     hideEmptyArea_: function() {
-      var screen = document.querySelector('#scroll-container');
-      var clientArea = document.querySelector('#inner-container');
-      if (this.isScreenShrinked_()) {
-        // When virtual keyboard is shown, although the screen size
-        // is reduced properly, the size of the outer container remains the
-        // same because its min-height is applied. Users can scroll the screen
-        // upward and see empty areas beyond the pod row and the scroll bar,
-        // which should be avoided.
-        // This is a hacky solution: we can make the scroll container hide
-        // the overflow area and manully position the client area.
-        screen.style.overflowY = 'hidden';
-        clientArea.style.position = 'absolute';
-        clientArea.style.left = cr.ui.toCssPx(0);
-        clientArea.style.top = cr.ui.toCssPx(0);
-      } else {
-        // Sets the values to default when virtual keyboard is not shown.
-        screen.style.overflowY = 'auto';
-        clientArea.style.position = 'relative';
-      }
+      // When virtual keyboard is shown, although the screen size is reduced
+      // properly, the size of #outer-container remains the same in order to
+      // make other screens (e.g. Add person) scrollable, but this shouldn't
+      // apply to account picker.
+      // This is a hacky solution: we can make #scroll-container hide the
+      // overflow area and manully position #inner-container.
+      var isScreenShrinked = this.isScreenShrinked_();
+      $('scroll-container')
+          .classList.toggle('disable-scroll', isScreenShrinked);
+      $('inner-container').classList.toggle('disable-scroll', isScreenShrinked);
+      $('inner-container').style.top = isScreenShrinked ?
+          cr.ui.toCssPx($('scroll-container').scrollTop) :
+          'unset';
     },
 
     /**
@@ -4774,6 +4763,8 @@ cr.define('login', function() {
             event, this.listeners_[event][0], this.listeners_[event][1]);
       }
       $('login-header-bar').buttonsTabIndex = UserPodTabOrder.HEADER_BAR;
+      // Header bar should be hidden when virtual keyboard is shown.
+      Oobe.getInstance().headerHidden = this.isScreenShrinked_();
 
       if (this.podPlacementPostponed_) {
         this.podPlacementPostponed_ = false;

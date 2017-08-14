@@ -45,6 +45,10 @@
   top: 0;
 }
 
+#scroll-container.disable-scroll {
+  overflow-y: hidden;
+}
+
 #scroll-container::-webkit-scrollbar {
   display: none;
 }
@@ -61,6 +65,11 @@
 #inner-container.disabled {
   opacity: 0.4;
   pointer-events: none;
+}
+
+#inner-container.disable-scroll {
+  left: 0;
+  position: absolute;
 }
 
 #oobe[md-mode] #progress-dots {
