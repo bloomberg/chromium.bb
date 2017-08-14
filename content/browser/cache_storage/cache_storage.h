@@ -35,6 +35,7 @@ class BlobStorageContext;
 namespace content {
 class CacheStorageCacheHandle;
 class CacheStorageIndex;
+class CacheStorageManager;
 class CacheStorageScheduler;
 
 // TODO(jkarlin): Constrain the total bytes used per origin.
@@ -63,6 +64,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
+      CacheStorageManager* cache_storage_manager,
       const GURL& origin);
 
   // Any unfinished asynchronous operations may not complete or call their
@@ -117,6 +119,10 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // serially.
   void StartAsyncOperationForTesting();
   void CompleteAsyncOperationForTesting();
+
+  // Removes the manager reference. Called before this storage is deleted by the
+  // manager, since it is removed from manager's storage map before deleting.
+  void ResetManager();
 
   // CacheStorageCacheObserver:
   void CacheSizeUpdated(const CacheStorageCache* cache, int64_t size) override;
@@ -260,6 +266,10 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
 
   // The origin that this CacheStorage is associated with.
   GURL origin_;
+
+  // The manager that owns this cache storage. Only set to null by
+  // RemoveManager() when this cache storage is being deleted.
+  CacheStorageManager* cache_storage_manager_;
 
   base::CancelableClosure index_write_task_;
 

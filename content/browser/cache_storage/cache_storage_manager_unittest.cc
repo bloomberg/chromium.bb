@@ -27,6 +27,7 @@
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
+#include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_index.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -81,6 +82,23 @@ void CopyCacheStorageIndex(CacheStorageIndex* dest,
   for (const auto& cache_metadata : src.ordered_cache_metadata())
     dest->Insert(cache_metadata);
 }
+
+class TestCacheStorageObserver : public CacheStorageContextImpl::Observer {
+ public:
+  void OnCacheListChanged(const url::Origin& origin) override {
+    ++notify_list_changed_count;
+  }
+
+  // TODO(kristipark): Once CacheManager is modified to emit these
+  // notifications, add test expectations.
+  void OnCacheContentChanged(const url::Origin& origin,
+                             const std::string& cache_name) override {
+    ++notify_context_changed_count;
+  }
+
+  int notify_list_changed_count = 0;
+  int notify_context_changed_count = 0;
+};
 
 }  // anonymous namespace
 
@@ -1226,6 +1244,44 @@ TEST_P(CacheStorageManagerTestP, SizeThenCloseStorageAccessed) {
   // GetSizeThenCloseAllCaches is not part of the web API and should not notify
   // the quota manager of an access.
   EXPECT_EQ(0, quota_manager_proxy_->notify_storage_accessed_count());
+}
+
+TEST_P(CacheStorageManagerTestP, NotifyCacheListChanged_Created) {
+  TestCacheStorageObserver observer;
+  cache_manager_->AddObserver(&observer);
+
+  EXPECT_EQ(0, observer.notify_list_changed_count);
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_EQ(1, observer.notify_list_changed_count);
+  EXPECT_TRUE(CachePut(callback_cache_handle_->value(),
+                       GURL("http://example.com/foo")));
+  EXPECT_EQ(1, observer.notify_list_changed_count);
+}
+
+TEST_P(CacheStorageManagerTestP, NotifyCacheListChanged_Deleted) {
+  TestCacheStorageObserver observer;
+  cache_manager_->AddObserver(&observer);
+
+  EXPECT_EQ(0, observer.notify_list_changed_count);
+  EXPECT_FALSE(Delete(origin1_, "foo"));
+  EXPECT_EQ(0, observer.notify_list_changed_count);
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_EQ(1, observer.notify_list_changed_count);
+  EXPECT_TRUE(Delete(origin1_, "foo"));
+  EXPECT_EQ(2, observer.notify_list_changed_count);
+}
+
+TEST_P(CacheStorageManagerTestP, NotifyCacheListChanged_DeletedThenCreated) {
+  TestCacheStorageObserver observer;
+  cache_manager_->AddObserver(&observer);
+
+  EXPECT_EQ(0, observer.notify_list_changed_count);
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_EQ(1, observer.notify_list_changed_count);
+  EXPECT_TRUE(Delete(origin1_, "foo"));
+  EXPECT_EQ(2, observer.notify_list_changed_count);
+  EXPECT_TRUE(Open(origin2_, "foo2"));
+  EXPECT_EQ(3, observer.notify_list_changed_count);
 }
 
 TEST_P(CacheStorageManagerTestP, StorageMatch_IgnoreSearch) {

@@ -30,6 +30,7 @@
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_index.h"
+#include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/directory_lister.h"
@@ -503,6 +504,7 @@ CacheStorage::CacheStorage(
     scoped_refptr<net::URLRequestContextGetter> request_context,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context,
+    CacheStorageManager* cache_storage_manager,
     const GURL& origin)
     : initialized_(false),
       initializing_(false),
@@ -513,6 +515,7 @@ CacheStorage::CacheStorage(
       cache_task_runner_(cache_task_runner),
       quota_manager_proxy_(quota_manager_proxy),
       origin_(origin),
+      cache_storage_manager_(cache_storage_manager),
       weak_factory_(this) {
   if (memory_only)
     cache_loader_.reset(new MemoryLoader(
@@ -649,6 +652,10 @@ void CacheStorage::Size(CacheStorage::SizeCallback callback) {
   scheduler_->ScheduleOperation(
       base::BindOnce(&CacheStorage::SizeImpl, weak_factory_.GetWeakPtr(),
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+}
+
+void CacheStorage::ResetManager() {
+  cache_storage_manager_ = nullptr;
 }
 
 void CacheStorage::ScheduleWriteIndex() {
@@ -794,6 +801,8 @@ void CacheStorage::CreateCacheDidCreateCache(
                      base::Passed(CreateCacheHandle(cache_ptr))));
 
   cache_loader_->NotifyCacheCreated(cache_name, CreateCacheHandle(cache_ptr));
+  if (cache_storage_manager_)
+    cache_storage_manager_->NotifyCacheListChanged(origin_);
 }
 
 void CacheStorage::CreateCacheDidWriteIndex(
@@ -859,6 +868,8 @@ void CacheStorage::DeleteCacheDidWriteIndex(
   cache_map_.erase(map_iter);
 
   cache_loader_->NotifyCacheDoomed(std::move(cache_handle));
+  if (cache_storage_manager_)
+    cache_storage_manager_->NotifyCacheListChanged(origin_);
 
   std::move(callback).Run(true, CACHE_STORAGE_OK);
 }
