@@ -49,7 +49,7 @@ def _DumpFile(dry_run, name, description):
   print '-' * 80
 
 
-def MakeTargetImageName(common_prefix, output_directory, location):
+def _MakeTargetImageName(common_prefix, output_directory, location):
   """Generates the relative path name to be used in the file system image.
   common_prefix: a prefix of both output_directory and location that
                  be removed.
@@ -61,21 +61,23 @@ def MakeTargetImageName(common_prefix, output_directory, location):
 
   Examples:
 
-  >>> MakeTargetImageName(common_prefix='/work/cr/src/',
-  ...                     output_directory='/work/cr/src/out/fuch',
-  ...                     location='/work/cr/src/base/test/data/xyz.json')
+  >>> _MakeTargetImageName(common_prefix='/work/cr/src',
+  ...                      output_directory='/work/cr/src/out/fuch',
+  ...                      location='/work/cr/src/base/test/data/xyz.json')
   'base/test/data/xyz.json'
 
-  >>> MakeTargetImageName(common_prefix='/work/cr/src/',
-  ...                     output_directory='/work/cr/src/out/fuch',
-  ...                     location='/work/cr/src/out/fuch/icudtl.dat')
+  >>> _MakeTargetImageName(common_prefix='/work/cr/src',
+  ...                      output_directory='/work/cr/src/out/fuch',
+  ...                      location='/work/cr/src/out/fuch/icudtl.dat')
   'icudtl.dat'
 
-  >>> MakeTargetImageName(common_prefix='/work/cr/src/',
-  ...                     output_directory='/work/cr/src/out/fuch',
-  ...                     location='/work/cr/src/out/fuch/libbase.so')
+  >>> _MakeTargetImageName(common_prefix='/work/cr/src',
+  ...                      output_directory='/work/cr/src/out/fuch',
+  ...                      location='/work/cr/src/out/fuch/libbase.so')
   'lib/libbase.so'
   """
+  if not common_prefix.endswith(os.sep):
+    common_prefix += os.sep
   assert output_directory.startswith(common_prefix)
   output_dir_no_common_prefix = output_directory[len(common_prefix):]
   assert location.startswith(common_prefix)
@@ -109,10 +111,14 @@ def _AddToManifest(manifest_file, target_name, source, mapper):
     raise Exception('%s does not exist' % source)
 
 
-def ReadRuntimeDeps(deps_path, output_dir):
-  return [os.path.abspath(os.path.join(output_dir, x.strip()))
-          for x in open(deps_path)]
-
+def ReadRuntimeDeps(deps_path, output_directory):
+  result = []
+  for f in open(deps_path):
+    abs_path = os.path.abspath(os.path.join(output_directory, f.strip()));
+    target_path = \
+        _MakeTargetImageName(DIR_SOURCE_ROOT, output_directory, abs_path)
+    result.append((target_path, abs_path))
+  return result
 
 def _StripBinary(dry_run, bin_path):
   strip_path = bin_path + '_stripped';
@@ -123,24 +129,15 @@ def _StripBinary(dry_run, bin_path):
 
 def BuildBootfs(output_directory, runtime_deps, bin_name, child_args,
                 device, dry_run):
-  locations_to_add = [os.path.abspath(os.path.join(output_directory, x.strip()))
-                      for x in runtime_deps]
-
-  common_prefix = DIR_SOURCE_ROOT + '/'
-  assert os.path.isdir(common_prefix)
-
-  target_source_pairs = zip(
-      [MakeTargetImageName(common_prefix, output_directory, loc)
-       for loc in locations_to_add],
-      locations_to_add)
+  target_source_pairs = runtime_deps
 
   # Stage the stripped binary in the boot image, keeping the original binary's
   # name for symbolization purposes.
   bin_path = os.path.abspath(os.path.join(output_directory, bin_name))
   stripped_bin_path = _StripBinary(dry_run, bin_path)
   target_source_pairs.append(
-      [MakeTargetImageName(common_prefix, output_directory, bin_path),
-       stripped_bin_path])
+      (_MakeTargetImageName(DIR_SOURCE_ROOT, output_directory, bin_name),
+       stripped_bin_path))
 
   # Generate a script that runs the binaries and shuts down QEMU (if used).
   autorun_file = tempfile.NamedTemporaryFile()
@@ -171,8 +168,8 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args,
 
   for target, source in target_source_pairs:
     _AddToManifest(manifest_file.file, target, source,
-                   lambda x: MakeTargetImageName(
-                                 common_prefix, output_directory, x))
+                   lambda x: _MakeTargetImageName(
+                                 DIR_SOURCE_ROOT, output_directory, x))
 
   mkbootfs_path = os.path.join(SDK_ROOT, 'tools', 'mkbootfs')
 
@@ -239,11 +236,17 @@ def RunFuchsia(bootfs, exe_name, use_device, dry_run):
   qemu_command = [qemu_path,
       '-m', '2048',
       '-nographic',
-      '-net', 'none',
       '-smp', '4',
       '-machine', 'q35',
       '-kernel', kernel_path,
       '-initrd', bootfs,
+
+      # Configure virtual network. The guest will get 192.168.3.9 from
+      # DHCP, while the host will be accessible as 192.168.3.2 . The network
+      # is used in the tests to connect to testserver running on the host.
+      '-netdev', 'user,id=net0,net=192.168.3.0/24,dhcpstart=192.168.3.9,' +
+                 'host=192.168.3.2',
+      '-device', 'e1000,netdev=net0',
 
       # Use stdio for the guest OS only; don't attach the QEMU interactive
       # monitor.
