@@ -964,8 +964,7 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
     return;
   bool remove_badging = (storage.GetNumberOfProfiles() == 1u);
 
-  params.old_profile_name =
-      entry->GetShortcutName();
+  params.old_profile_name = entry->GetShortcutName();
 
   // Exit early if the mode is to update existing profile shortcuts only and
   // none were ever created for this profile, per the shortcut name not being
