@@ -56,6 +56,7 @@ class MouseEvent;
 class ResourceError;
 class ResourceResponse;
 class TouchEvent;
+class WebKeyboardEvent;
 class WebPlugin;
 class WheelEvent;
 struct WebPrintParams;
@@ -212,6 +213,7 @@ class CORE_EXPORT WebPluginContainerImpl final
   void HandleDragEvent(MouseEvent*);
   void HandleWheelEvent(WheelEvent*);
   void HandleKeyboardEvent(KeyboardEvent*);
+  bool HandleCutCopyPasteKeyboardEvent(const WebKeyboardEvent&);
   void HandleTouchEvent(TouchEvent*);
   void HandleGestureEvent(GestureEvent*);
 
