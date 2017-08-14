@@ -289,7 +289,14 @@ void ImageResource::DestroyDecodedDataIfPossible() {
 }
 
 void ImageResource::AllClientsAndObserversRemoved() {
-  CHECK(!GetContent()->HasImage() || !ErrorOccurred());
+  // After ErrorOccurred() is set true in Resource::FinishAsError() before
+  // the subsequent UpdateImage() in ImageResource::FinishAsError(),
+  // HasImage() is true and ErrorOccurred() is true.
+  // |is_during_finish_as_error_| is introduced to allow such cases.
+  // crbug.com/701723
+  // TODO(hiroshige): Make the CHECK condition cleaner.
+  CHECK(is_during_finish_as_error_ || !GetContent()->HasImage() ||
+        !ErrorOccurred());
   // If possible, delay the resetting until back at the event loop. Doing so
   // after a conservative GC prevents resetAnimation() from upsetting ongoing
   // animation updates (crbug.com/613709)
@@ -410,7 +417,9 @@ void ImageResource::FinishAsError(const ResourceError& error) {
   // TODO(hiroshige): Move setEncodedSize() call to Resource::error() if it
   // is really needed, or remove it otherwise.
   SetEncodedSize(0);
+  is_during_finish_as_error_ = true;
   Resource::FinishAsError(error);
+  is_during_finish_as_error_ = false;
   UpdateImage(nullptr, ImageResourceContent::kClearImageAndNotifyObservers,
               true);
 }
