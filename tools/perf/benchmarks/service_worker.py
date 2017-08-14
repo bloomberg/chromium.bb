@@ -202,5 +202,7 @@ class ServiceWorkerMicroBenchmarkPerfTest(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.DisableStory('http://localhost:8091/index.html',
+                          [story.expectations.ANDROID_WEBVIEW],
+                          'crbug.com/653924')
     return StoryExpectations()
