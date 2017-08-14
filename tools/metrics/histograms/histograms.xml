@@ -77872,7 +77872,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SubresourceFilter.PageLoad.FinalURLMatch" units="matches">
+<histogram name="SubresourceFilter.PageLoad.FinalURLMatch"
+    enum="BooleanMatched">
   <owner>melandory@chromium.org</owner>
   <summary>
     Records, for each main frame navigation, whether the last URL in the
