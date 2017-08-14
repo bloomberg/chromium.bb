@@ -7,25 +7,69 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <algorithm>
-
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
-#include "base/numerics/safe_math.h"
 #include "base/strings/string_util.h"
-#include "pdf/url_loader_wrapper.h"
+#include "net/http/http_util.h"
 #include "ppapi/c/pp_errors.h"
-#include "ui/gfx/range/range.h"
+#include "ppapi/cpp/url_loader.h"
+#include "ppapi/cpp/url_request_info.h"
+#include "ppapi/cpp/url_response_info.h"
 
 namespace chrome_pdf {
 
 namespace {
 
-// The distance from last received chunk, when we wait requesting data, using
-// current connection (like playing a cassette tape) and do not send new range
-// request (like rewind a cassette tape, and continue playing after).
-// Experimentally chosen value.
-const int kChunkCloseDistance = 10;
+// If the headers have a byte-range response, writes the start and end
+// positions and returns true if at least the start position was parsed.
+// The end position will be set to 0 if it was not found or parsed from the
+// response.
+// Returns false if not even a start position could be parsed.
+bool GetByteRange(const std::string& headers, uint32_t* start, uint32_t* end) {
+  net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n");
+  while (it.GetNext()) {
+    if (base::LowerCaseEqualsASCII(it.name(), "content-range")) {
+      std::string range = it.values().c_str();
+      if (base::StartsWith(range, "bytes",
+                           base::CompareCase::INSENSITIVE_ASCII)) {
+        range = range.substr(strlen("bytes"));
+        std::string::size_type pos = range.find('-');
+        std::string range_end;
+        if (pos != std::string::npos)
+          range_end = range.substr(pos + 1);
+        base::TrimWhitespaceASCII(range, base::TRIM_LEADING, &range);
+        base::TrimWhitespaceASCII(range_end, base::TRIM_LEADING, &range_end);
+        *start = atoi(range.c_str());
+        *end = atoi(range_end.c_str());
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// If the headers have a multi-part response, returns the boundary name.
+// Otherwise returns an empty string.
+std::string GetMultiPartBoundary(const std::string& headers) {
+  net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n");
+  while (it.GetNext()) {
+    if (!base::LowerCaseEqualsASCII(it.name(), "content-type"))
+      continue;
+
+    std::string type = base::ToLowerASCII(it.values());
+    if (!base::StartsWith(type, "multipart/", base::CompareCase::SENSITIVE))
+      continue;
+
+    static constexpr char kBoundary[] = "boundary=";
+    const char* boundary = strstr(type.c_str(), kBoundary);
+    if (!boundary) {
+      NOTREACHED();
+      return std::string();
+    }
+
+    return std::string(boundary + strlen(kBoundary));
+  }
+  return std::string();
+}
 
 // Return true if the HTTP response of |loader| is a successful one and loading
 // should continue. 4xx error indicate subsequent requests will fail too.
@@ -33,55 +77,81 @@ const int kChunkCloseDistance = 10;
 // indicates a redirect was returned which won't be successful because we
 // disable following redirects for PDF loading (we assume they are already
 // resolved by the browser.
-bool ResponseStatusSuccess(const URLLoaderWrapper* loader) {
-  int32_t http_code = loader->GetStatusCode();
+bool ResponseStatusSuccess(const pp::URLLoader& loader) {
+  int32_t http_code = loader.GetResponseInfo().GetStatusCode();
   return (http_code < 400 && http_code != 301) || http_code >= 500;
 }
 
 bool IsValidContentType(const std::string& type) {
-  return (
-      base::EndsWith(type, "/pdf", base::CompareCase::INSENSITIVE_ASCII) ||
-      base::EndsWith(type, ".pdf", base::CompareCase::INSENSITIVE_ASCII) ||
-      base::EndsWith(type, "/x-pdf", base::CompareCase::INSENSITIVE_ASCII) ||
-      base::EndsWith(type, "/*", base::CompareCase::INSENSITIVE_ASCII) ||
-      base::EndsWith(type, "/octet-stream",
-                     base::CompareCase::INSENSITIVE_ASCII) ||
-      base::EndsWith(type, "/acrobat", base::CompareCase::INSENSITIVE_ASCII) ||
-      base::EndsWith(type, "/unknown", base::CompareCase::INSENSITIVE_ASCII));
+  return base::EndsWith(type, "/pdf", base::CompareCase::INSENSITIVE_ASCII) ||
+         base::EndsWith(type, ".pdf", base::CompareCase::INSENSITIVE_ASCII) ||
+         base::EndsWith(type, "/x-pdf", base::CompareCase::INSENSITIVE_ASCII) ||
+         base::EndsWith(type, "/*", base::CompareCase::INSENSITIVE_ASCII) ||
+         base::EndsWith(type, "/acrobat",
+                        base::CompareCase::INSENSITIVE_ASCII) ||
+         base::EndsWith(type, "/unknown", base::CompareCase::INSENSITIVE_ASCII);
+}
+
+bool IsDoubleNewlines(const char* buffer, int index) {
+  DCHECK_GE(index, 2);
+  static constexpr char kLF2[] = "\n\n";
+  static constexpr char kCRLF2[] = "\r\n\r\n";
+  if (strncmp(&buffer[index - 2], kLF2, strlen(kLF2)) == 0)
+    return true;
+  return index >= 4 && strncmp(&buffer[index - 4], kCRLF2, strlen(kCRLF2)) == 0;
 }
 
 }  // namespace
 
 DocumentLoader::Client::~Client() {}
 
-DocumentLoader::Chunk::Chunk() {}
-
-DocumentLoader::Chunk::~Chunk() {}
-
-void DocumentLoader::Chunk::Clear() {
-  chunk_index = 0;
-  data_size = 0;
-  chunk_data.reset();
-}
-
 DocumentLoader::DocumentLoader(Client* client)
-    : client_(client), loader_factory_(this) {}
+    : client_(client),
+      partial_document_(false),
+      request_pending_(false),
+      current_pos_(0),
+      current_chunk_size_(0),
+      current_chunk_read_(0),
+      document_size_(0),
+      header_request_(true),
+      is_multipart_(false) {
+  loader_factory_.Initialize(this);
+}
 
 DocumentLoader::~DocumentLoader() {}
 
-bool DocumentLoader::Init(std::unique_ptr<URLLoaderWrapper> loader,
-                          const std::string& url) {
+bool DocumentLoader::Init(const pp::URLLoader& loader,
+                          const std::string& url,
+                          const std::string& headers) {
   DCHECK(url_.empty());
-  DCHECK(!loader_);
 
   // Check that the initial response status is a valid one.
-  if (!ResponseStatusSuccess(loader.get()))
+  if (!ResponseStatusSuccess(loader))
     return false;
 
-  std::string type = loader->GetContentType();
+  url_ = url;
+  loader_ = loader;
+
+  std::string response_headers;
+  if (!headers.empty()) {
+    response_headers = headers;
+  } else {
+    pp::URLResponseInfo response = loader_.GetResponseInfo();
+    pp::Var headers_var = response.GetHeaders();
+
+    if (headers_var.is_string()) {
+      response_headers = headers_var.AsString();
+    }
+  }
+
+  bool accept_ranges_bytes = false;
+  bool content_encoded = false;
+  uint32_t content_length = 0;
+  std::string type;
+  std::string disposition;
 
   // This happens for PDFs not loaded from http(s) sources.
-  if (type == "text/plain") {
+  if (response_headers == "Content-Type: text/plain") {
     if (!base::StartsWith(url, "http://",
                           base::CompareCase::INSENSITIVE_ASCII) &&
         !base::StartsWith(url, "https://",
@@ -89,85 +159,106 @@ bool DocumentLoader::Init(std::unique_ptr<URLLoaderWrapper> loader,
       type = "application/pdf";
     }
   }
+  if (type.empty() && !response_headers.empty()) {
+    net::HttpUtil::HeadersIterator it(response_headers.begin(),
+                                      response_headers.end(), "\n");
+    while (it.GetNext()) {
+      if (base::LowerCaseEqualsASCII(it.name(), "content-length")) {
+        content_length = atoi(it.values().c_str());
+      } else if (base::LowerCaseEqualsASCII(it.name(), "accept-ranges")) {
+        accept_ranges_bytes = base::LowerCaseEqualsASCII(it.values(), "bytes");
+      } else if (base::LowerCaseEqualsASCII(it.name(), "content-encoding")) {
+        content_encoded = true;
+      } else if (base::LowerCaseEqualsASCII(it.name(), "content-type")) {
+        type = it.values();
+        size_t semi_colon_pos = type.find(';');
+        if (semi_colon_pos != std::string::npos) {
+          type = type.substr(0, semi_colon_pos);
+        }
+        TrimWhitespaceASCII(type, base::TRIM_ALL, &type);
+      } else if (base::LowerCaseEqualsASCII(it.name(), "content-disposition")) {
+        disposition = it.values();
+      }
+    }
+  }
   if (!type.empty() && !IsValidContentType(type))
     return false;
-
-  if (base::StartsWith(loader->GetContentDisposition(), "attachment",
+  if (base::StartsWith(disposition, "attachment",
                        base::CompareCase::INSENSITIVE_ASCII))
     return false;
 
-  url_ = url;
-  loader_ = std::move(loader);
+  if (content_length > 0)
+    chunk_stream_.Preallocate(content_length);
 
-  if (!loader_->IsContentEncoded()) {
-    chunk_stream_.set_eof_pos(std::max(0, loader_->GetContentLength()));
+  document_size_ = content_length;
+  requests_count_ = 0;
+
+  // Enable partial loading only if file size is above the threshold.
+  // It will allow avoiding latency for multiple requests.
+  if (content_length > kMinFileSize && accept_ranges_bytes &&
+      !content_encoded) {
+    LoadPartialDocument();
+  } else {
+    LoadFullDocument();
   }
-  int64_t bytes_received = 0;
-  int64_t total_bytes_to_be_received = 0;
-  if (!chunk_stream_.eof_pos() &&
-      loader_->GetDownloadProgress(&bytes_received,
-                                   &total_bytes_to_be_received)) {
-    chunk_stream_.set_eof_pos(
-        std::max(0, static_cast<int>(total_bytes_to_be_received)));
-  }
-
-  SetPartialLoadingEnabled(
-      partial_loading_enabled_ &&
-      !base::StartsWith(url, "file://", base::CompareCase::INSENSITIVE_ASCII) &&
-      loader_->IsAcceptRangesBytes() && !loader_->IsContentEncoded() &&
-      GetDocumentSize());
-
-  ReadMore();
   return true;
 }
 
-bool DocumentLoader::IsDocumentComplete() const {
-  return chunk_stream_.IsComplete();
+void DocumentLoader::LoadPartialDocument() {
+  // The current request is a full request (not a range request) so it starts at
+  // 0 and ends at |document_size_|.
+  current_chunk_size_ = document_size_;
+  current_pos_ = 0;
+  current_request_offset_ = 0;
+  current_request_size_ = 0;
+  current_request_extended_size_ = document_size_;
+  request_pending_ = true;
+
+  partial_document_ = true;
+  header_request_ = true;
+  ReadMore();
 }
 
-uint32_t DocumentLoader::GetDocumentSize() const {
-  return chunk_stream_.eof_pos();
+void DocumentLoader::LoadFullDocument() {
+  partial_document_ = false;
+  chunk_buffer_.clear();
+  ReadMore();
+}
+
+bool DocumentLoader::IsDocumentComplete() const {
+  if (document_size_ == 0)  // Document size unknown.
+    return false;
+  return IsDataAvailable(0, document_size_);
+}
+
+uint32_t DocumentLoader::GetAvailableData() const {
+  if (document_size_ == 0)  // Document size unknown.
+    return current_pos_;
+
+  std::vector<std::pair<size_t, size_t>> ranges;
+  chunk_stream_.GetMissedRanges(0, document_size_, &ranges);
+  uint32_t available = document_size_;
+  for (const auto& range : ranges)
+    available -= range.second;
+  return available;
 }
 
 void DocumentLoader::ClearPendingRequests() {
-  pending_requests_.Clear();
+  pending_requests_.clear();
 }
 
 bool DocumentLoader::GetBlock(uint32_t position,
                               uint32_t size,
                               void* buf) const {
-  base::CheckedNumeric<uint32_t> addition_result = position;
-  addition_result += size;
-  if (!addition_result.IsValid())
-    return false;
-  return chunk_stream_.ReadData(
-      gfx::Range(position, addition_result.ValueOrDie()), buf);
+  return chunk_stream_.ReadData(position, size, buf);
 }
 
 bool DocumentLoader::IsDataAvailable(uint32_t position, uint32_t size) const {
-  base::CheckedNumeric<uint32_t> addition_result = position;
-  addition_result += size;
-  if (!addition_result.IsValid())
-    return false;
-  return chunk_stream_.IsRangeAvailable(
-      gfx::Range(position, addition_result.ValueOrDie()));
+  return chunk_stream_.IsRangeAvailable(position, size);
 }
 
 void DocumentLoader::RequestData(uint32_t position, uint32_t size) {
-  if (!size || IsDataAvailable(position, size)) {
-    return;
-  }
-  {
-    // Check integer overflow.
-    base::CheckedNumeric<uint32_t> addition_result = position;
-    addition_result += size;
-    if (!addition_result.IsValid())
-      return;
-  }
-
-  if (GetDocumentSize() && (position + size > GetDocumentSize())) {
-    return;
-  }
+  DCHECK(partial_document_);
 
   // We have some artefact request from
   // PDFiumEngine::OnDocumentComplete() -> FPDFAvail_IsPageAvail after
@@ -176,225 +267,304 @@ void DocumentLoader::RequestData(uint32_t position, uint32_t size) {
   // Bug: http://code.google.com/p/chromium/issues/detail?id=79996
   // Test url:
   // http://www.icann.org/en/correspondence/holtzman-to-jeffrey-02mar11-en.pdf
-  if (!loader_)
+  if (IsDocumentComplete())
     return;
 
-  RangeSet requested_chunks(chunk_stream_.GetChunksRange(position, size));
-  requested_chunks.Subtract(chunk_stream_.filled_chunks());
-  if (requested_chunks.IsEmpty()) {
-    NOTREACHED();
+  pending_requests_.push_back(std::pair<size_t, size_t>(position, size));
+  DownloadPendingRequests();
+}
+
+void DocumentLoader::RemoveCompletedRanges() {
+  // Split every request that has been partially downloaded already into smaller
+  // requests.
+  std::vector<std::pair<size_t, size_t>> ranges;
+  auto it = pending_requests_.begin();
+  while (it != pending_requests_.end()) {
+    chunk_stream_.GetMissedRanges(it->first, it->second, &ranges);
+    pending_requests_.insert(it, ranges.begin(), ranges.end());
+    ranges.clear();
+    pending_requests_.erase(it++);
+  }
+}
+
+void DocumentLoader::DownloadPendingRequests() {
+  if (request_pending_)
     return;
-  }
-  pending_requests_.Union(requested_chunks);
-}
 
-void DocumentLoader::SetPartialLoadingEnabled(bool enabled) {
-  partial_loading_enabled_ = enabled;
-  if (!enabled) {
-    is_partial_loader_active_ = false;
-  }
-}
+  uint32_t pos;
+  uint32_t size;
+  if (pending_requests_.empty()) {
+    // If the document is not complete and we have no outstanding requests,
+    // download what's left for as long as no other request gets added to
+    // |pending_requests_|.
+    pos = chunk_stream_.GetFirstMissingByte();
+    if (pos >= document_size_) {
+      // We're done downloading the document.
+      return;
+    }
+    // Start with size 0, we'll set |current_request_extended_size_| to > 0.
+    // This way this request will get cancelled as soon as the renderer wants
+    // another portion of the document.
+    size = 0;
+  } else {
+    RemoveCompletedRanges();
 
-bool DocumentLoader::ShouldCancelLoading() const {
-  if (!loader_)
-    return true;
-  if (!partial_loading_enabled_ || pending_requests_.IsEmpty())
-    return false;
-  const gfx::Range current_range(chunk_.chunk_index,
-                                 chunk_.chunk_index + kChunkCloseDistance);
-  return !pending_requests_.Intersects(current_range);
-}
-
-void DocumentLoader::ContinueDownload() {
-  if (!ShouldCancelLoading())
-    return ReadMore();
-  DCHECK(partial_loading_enabled_);
-  DCHECK(!IsDocumentComplete());
-  DCHECK(GetDocumentSize());
-
-  const uint32_t range_start =
-      pending_requests_.IsEmpty() ? 0 : pending_requests_.First().start();
-  RangeSet candidates_for_request(
-      gfx::Range(range_start, chunk_stream_.total_chunks_count()));
-  candidates_for_request.Subtract(chunk_stream_.filled_chunks());
-  DCHECK(!candidates_for_request.IsEmpty());
-  gfx::Range next_request = candidates_for_request.First();
-  if (candidates_for_request.Size() == 1 &&
-      next_request.length() < kChunkCloseDistance) {
-    // We have only request at the end, try to enlarge it to improve back order
-    // reading.
-    const int additional_chunks_count =
-        kChunkCloseDistance - next_request.length();
-    int new_start = std::max(
-        0, static_cast<int>(next_request.start()) - additional_chunks_count);
-    candidates_for_request =
-        RangeSet(gfx::Range(new_start, next_request.end()));
-    candidates_for_request.Subtract(chunk_stream_.filled_chunks());
-    next_request = candidates_for_request.Last();
+    pos = pending_requests_.front().first;
+    size = pending_requests_.front().second;
+    if (IsDataAvailable(pos, size)) {
+      ReadComplete();
+      return;
+    }
   }
 
-  loader_.reset();
-  chunk_.Clear();
-  if (!is_partial_loader_active_) {
-    client_->CancelBrowserDownload();
-    is_partial_loader_active_ = true;
+  size_t last_byte_before = chunk_stream_.GetFirstMissingByteInInterval(pos);
+  if (size < kDefaultRequestSize) {
+    // Try to extend before pos, up to size |kDefaultRequestSize|.
+    if (pos + size - last_byte_before > kDefaultRequestSize) {
+      pos += size - kDefaultRequestSize;
+      size = kDefaultRequestSize;
+    } else {
+      size += pos - last_byte_before;
+      pos = last_byte_before;
+    }
+  }
+  if (pos - last_byte_before < kDefaultRequestSize) {
+    // Don't leave a gap smaller than |kDefaultRequestSize|.
+    size += pos - last_byte_before;
+    pos = last_byte_before;
   }
 
-  const uint32_t start = next_request.start() * DataStream::kChunkSize;
-  const uint32_t length =
-      std::min(chunk_stream_.eof_pos() - start,
-               next_request.length() * DataStream::kChunkSize);
+  current_request_offset_ = pos;
+  current_request_size_ = size;
 
+  // Extend the request until the next downloaded byte or the end of the
+  // document.
+  size_t last_missing_byte =
+      chunk_stream_.GetLastMissingByteInInterval(pos + size - 1);
+  current_request_extended_size_ = last_missing_byte - pos + 1;
+
+  request_pending_ = true;
+
+  // Start downloading first pending request.
+  loader_.Close();
   loader_ = client_->CreateURLLoader();
-
-  loader_->OpenRange(
-      url_, url_, start, length,
-      loader_factory_.NewCallback(&DocumentLoader::DidOpenPartial));
+  pp::CompletionCallback callback =
+      loader_factory_.NewCallback(&DocumentLoader::DidOpen);
+  pp::URLRequestInfo request = GetRequest(pos, current_request_extended_size_);
+  requests_count_++;
+  int rv = loader_.Open(request, callback);
+  if (rv != PP_OK_COMPLETIONPENDING)
+    callback.Run(rv);
 }
 
-void DocumentLoader::DidOpenPartial(int32_t result) {
+pp::URLRequestInfo DocumentLoader::GetRequest(uint32_t position,
+                                              uint32_t size) const {
+  pp::URLRequestInfo request(client_->GetPluginInstance());
+  request.SetURL(url_);
+  request.SetMethod("GET");
+  request.SetFollowRedirects(false);
+  request.SetCustomReferrerURL(url_);
+
+  const size_t kBufSize = 100;
+  char buf[kBufSize];
+  // According to rfc2616, byte range specifies position of the first and last
+  // bytes in the requested range inclusively. Therefore we should subtract 1
+  // from the position + size, to get index of the last byte that needs to be
+  // downloaded.
+  base::snprintf(buf, kBufSize, "Range: bytes=%d-%d", position,
+                 position + size - 1);
+  pp::Var header(buf);
+  request.SetHeaders(header);
+
+  return request;
+}
+
+void DocumentLoader::DidOpen(int32_t result) {
   if (result != PP_OK) {
-    return ReadComplete();
+    NOTREACHED();
+    client_->OnDocumentFailed();
+    return;
   }
 
-  if (!ResponseStatusSuccess(loader_.get()))
-    return ReadComplete();
+  if (!ResponseStatusSuccess(loader_)) {
+    client_->OnDocumentFailed();
+    return;
+  }
 
-  // Leave position untouched for multiparted responce for now, when we read the
-  // data we'll get it.
-  if (!loader_->IsMultipart()) {
+  is_multipart_ = false;
+  current_chunk_size_ = 0;
+  current_chunk_read_ = 0;
+
+  pp::Var headers_var = loader_.GetResponseInfo().GetHeaders();
+  std::string headers;
+  if (headers_var.is_string())
+    headers = headers_var.AsString();
+
+  std::string boundary = GetMultiPartBoundary(headers);
+  if (!boundary.empty()) {
+    // Leave position untouched for now, when we read the data we'll get it.
+    is_multipart_ = true;
+    multipart_boundary_ = boundary;
+  } else {
     // Need to make sure that the server returned a byte-range, since it's
     // possible for a server to just ignore our byte-range request and just
     // return the entire document even if it supports byte-range requests.
     // i.e. sniff response to
     // http://www.act.org/compass/sample/pdf/geometry.pdf
-    int start_pos = 0;
-    int end_pos = 0;
-    if (loader_->GetByteRange(&start_pos, &end_pos)) {
-      if (start_pos % DataStream::kChunkSize != 0) {
-        return ReadComplete();
-      }
-      DCHECK(!chunk_.chunk_data);
-      chunk_.chunk_index = chunk_stream_.GetChunkIndex(start_pos);
+    current_pos_ = 0;
+    uint32_t start_pos;
+    uint32_t end_pos;
+    if (GetByteRange(headers, &start_pos, &end_pos)) {
+      current_pos_ = start_pos;
+      if (end_pos && end_pos > start_pos)
+        current_chunk_size_ = end_pos - start_pos + 1;
     } else {
-      SetPartialLoadingEnabled(false);
+      partial_document_ = false;
     }
-    return ContinueDownload();
   }
-  // Needs more data to calc chunk index.
-  return ReadMore();
+
+  ReadMore();
 }
 
 void DocumentLoader::ReadMore() {
-  loader_->ReadResponseBody(
-      buffer_, sizeof(buffer_),
-      loader_factory_.NewCallback(&DocumentLoader::DidRead));
+  pp::CompletionCallback callback =
+      loader_factory_.NewCallback(&DocumentLoader::DidRead);
+  int rv = loader_.ReadResponseBody(buffer_, sizeof(buffer_), callback);
+  if (rv != PP_OK_COMPLETIONPENDING)
+    callback.Run(rv);
 }
 
 void DocumentLoader::DidRead(int32_t result) {
-  if (result < 0) {
-    // An error occurred.
-    // The renderer will detect that we're missing data and will display a
-    // message.
-    return ReadComplete();
+  if (result <= 0) {
+    // If |result| == PP_OK, the document was loaded, otherwise an error was
+    // encountered. Either way we want to stop processing the response. In the
+    // case where an error occurred, the renderer will detect that we're missing
+    // data and will display a message.
+    ReadComplete();
+    return;
   }
-  if (result == 0) {
-    loader_.reset();
-    if (!is_partial_loader_active_)
-      return ReadComplete();
-    return ContinueDownload();
-  }
-  if (loader_->IsMultipart()) {
-    int start_pos = 0;
-    int end_pos = 0;
-    if (!loader_->GetByteRange(&start_pos, &end_pos)) {
-      return ReadComplete();
+
+  char* start = buffer_;
+  size_t length = result;
+  if (is_multipart_ && result > 2) {
+    for (int i = 2; i < result; ++i) {
+      if (IsDoubleNewlines(buffer_, i)) {
+        uint32_t start_pos;
+        uint32_t end_pos;
+        if (GetByteRange(std::string(buffer_, i), &start_pos, &end_pos)) {
+          current_pos_ = start_pos;
+          start += i;
+          length -= i;
+          if (end_pos && end_pos > start_pos)
+            current_chunk_size_ = end_pos - start_pos + 1;
+        }
+        break;
+      }
     }
-    DCHECK(!chunk_.chunk_data);
-    chunk_.chunk_index = chunk_stream_.GetChunkIndex(start_pos);
+
+    // Reset this flag so we don't look inside the buffer in future calls of
+    // DidRead for this response.  Note that this code DOES NOT handle multi-
+    // part responses with more than one part (we don't issue them at the
+    // moment, so they shouldn't arrive).
+    is_multipart_ = false;
   }
-  if (!SaveChunkData(buffer_, result)) {
-    return ReadMore();
+
+  if (current_chunk_size_ && current_chunk_read_ + length > current_chunk_size_)
+    length = current_chunk_size_ - current_chunk_read_;
+
+  if (length) {
+    if (document_size_ > 0) {
+      chunk_stream_.WriteData(current_pos_, start, length);
+    } else {
+      // If we did not get content-length in the response, we can't
+      // preallocate buffer for the entire document. Resizing array causing
+      // memory fragmentation issues on the large files and OOM exceptions.
+      // To fix this, we collect all chunks of the file to the list and
+      // concatenate them together after request is complete.
+      std::vector<unsigned char> buf(length);
+      memcpy(buf.data(), start, length);
+      chunk_buffer_.push_back(std::move(buf));
+    }
+    current_pos_ += length;
+    current_chunk_read_ += length;
+    client_->OnNewDataAvailable();
   }
-  if (IsDocumentComplete()) {
-    return ReadComplete();
+
+  // Only call the renderer if we allow partial loading.
+  if (!partial_document_) {
+    ReadMore();
+    return;
   }
-  return ContinueDownload();
+
+  UpdateRendering();
+  RemoveCompletedRanges();
+
+  if (!pending_requests_.empty()) {
+    // If there are pending requests and the current content we're downloading
+    // doesn't satisfy any of these requests, cancel the current request to
+    // fullfill those more important requests.
+    bool satisfying_pending_request =
+        SatisfyingRequest(current_request_offset_, current_request_size_);
+    for (const auto& pending_request : pending_requests_) {
+      if (SatisfyingRequest(pending_request.first, pending_request.second)) {
+        satisfying_pending_request = true;
+        break;
+      }
+    }
+    // Cancel the request as it's not satisfying any request from the
+    // renderer, unless the current request is finished in which case we let
+    // it finish cleanly.
+    if (!satisfying_pending_request &&
+        current_pos_ <
+            current_request_offset_ + current_request_extended_size_) {
+      loader_.Close();
+    }
+  }
+
+  ReadMore();
 }
 
-bool DocumentLoader::SaveChunkData(char* input, uint32_t input_size) {
-  count_of_bytes_received_ += input_size;
-  bool chunk_saved = false;
-  bool loading_pending_request = pending_requests_.Contains(chunk_.chunk_index);
-  while (input_size > 0) {
-    if (chunk_.data_size == 0) {
-      chunk_.chunk_data = base::MakeUnique<DataStream::ChunkData>();
-    }
-    const uint32_t new_chunk_data_len =
-        std::min(DataStream::kChunkSize - chunk_.data_size, input_size);
-    memcpy(chunk_.chunk_data->data() + chunk_.data_size, input,
-           new_chunk_data_len);
-    chunk_.data_size += new_chunk_data_len;
-    if (chunk_.data_size == DataStream::kChunkSize ||
-        chunk_stream_.eof_pos() ==
-            chunk_.chunk_index * DataStream::kChunkSize + chunk_.data_size) {
-      chunk_stream_.SetChunkData(chunk_.chunk_index,
-                                 std::move(chunk_.chunk_data));
-      pending_requests_.Subtract(
-          gfx::Range(chunk_.chunk_index, chunk_.chunk_index + 1));
-      chunk_.data_size = 0;
-      ++(chunk_.chunk_index);
-      chunk_saved = true;
-    }
-
-    input += new_chunk_data_len;
-    input_size -= new_chunk_data_len;
-  }
-
-  if (IsDocumentComplete())
-    return true;
-
-  if (!chunk_saved)
-    return false;
-
-  if (loading_pending_request &&
-      !pending_requests_.Contains(chunk_.chunk_index)) {
-    client_->OnPendingRequestComplete();
-  }
-  client_->OnNewDataAvailable();
-  return true;
+bool DocumentLoader::SatisfyingRequest(size_t offset, size_t size) const {
+  return offset <= current_pos_ + kDefaultRequestSize &&
+         current_pos_ < offset + size;
 }
 
 void DocumentLoader::ReadComplete() {
-  if (!GetDocumentSize()) {
-    uint32_t eof =
-        chunk_.chunk_index * DataStream::kChunkSize + chunk_.data_size;
-    if (!chunk_stream_.filled_chunks().IsEmpty()) {
-      eof = std::max(
-          chunk_stream_.filled_chunks().Last().end() * DataStream::kChunkSize,
-          eof);
+  if (!partial_document_) {
+    if (document_size_ == 0) {
+      // For the document with no 'content-length" specified we've collected all
+      // the chunks already. Let's allocate final document buffer and copy them
+      // over.
+      chunk_stream_.Preallocate(current_pos_);
+      uint32_t pos = 0;
+      for (auto& chunk : chunk_buffer_) {
+        chunk_stream_.WriteData(pos, chunk.data(), chunk.size());
+        pos += chunk.size();
+      }
+      chunk_buffer_.clear();
     }
-    chunk_stream_.set_eof_pos(eof);
-    if (eof == chunk_.chunk_index * DataStream::kChunkSize + chunk_.data_size) {
-      chunk_stream_.SetChunkData(chunk_.chunk_index,
-                                 std::move(chunk_.chunk_data));
-    }
+    document_size_ = current_pos_;
+    client_->OnDocumentComplete();
+    return;
   }
-  loader_.reset();
+
+  request_pending_ = false;
+
   if (IsDocumentComplete()) {
     client_->OnDocumentComplete();
-  } else {
-    client_->OnDocumentCanceled();
+    return;
   }
+
+  UpdateRendering();
+  DownloadPendingRequests();
 }
 
-float DocumentLoader::GetProgress() const {
-  if (!GetDocumentSize())
-    return -1;
-  if (IsDocumentComplete())
-    return 1;
-  return static_cast<float>(chunk_stream_.filled_chunks_count()) /
-         chunk_stream_.total_chunks_count();
+void DocumentLoader::UpdateRendering() {
+  if (header_request_)
+    client_->OnPartialDocumentLoaded();
+  else
+    client_->OnPendingRequestComplete();
+  header_request_ = false;
 }
 
 }  // namespace chrome_pdf
