@@ -528,37 +528,48 @@ void PersistentHistogramAllocator::ClearLastCreatedReferenceForTesting() {
 // static
 HistogramBase*
 PersistentHistogramAllocator::GetCreateHistogramResultHistogram() {
-  // Get the histogram in which create-results are stored. This is copied
-  // almost exactly from the STATIC_HISTOGRAM_POINTER_BLOCK macro but with
-  // added code to prevent recursion (a likely occurance because the creation
-  // of a new a histogram can end up calling this.)
-  static base::subtle::AtomicWord atomic_histogram_pointer = 0;
-  HistogramBase* histogram_pointer =
-      reinterpret_cast<HistogramBase*>(
-          base::subtle::Acquire_Load(&atomic_histogram_pointer));
-  if (!histogram_pointer) {
-    // It's possible for multiple threads to make it here in parallel but
-    // they'll always return the same result as there is a mutex in the Get.
-    // The purpose of the "initialized" variable is just to ensure that
-    // the same thread doesn't recurse which is also why it doesn't have
-    // to be atomic.
-    static bool initialized = false;
-    if (!initialized) {
-      initialized = true;
-      if (GlobalHistogramAllocator::Get()) {
-        DVLOG(1) << "Creating the results-histogram inside persistent"
-                 << " memory can cause future allocations to crash if"
-                 << " that memory is ever released (for testing).";
-      }
+  // A value that can be stored in an AtomicWord as a flag. It must not be zero
+  // or a valid address.
+  constexpr subtle::AtomicWord kHistogramUnderConstruction = 1;
 
-      histogram_pointer = LinearHistogram::FactoryGet(
-          kResultHistogram, 1, CREATE_HISTOGRAM_MAX, CREATE_HISTOGRAM_MAX + 1,
-          HistogramBase::kUmaTargetedHistogramFlag);
-      base::subtle::Release_Store(
-          &atomic_histogram_pointer,
-          reinterpret_cast<base::subtle::AtomicWord>(histogram_pointer));
-    }
+  // This is a similar to LazyInstance but with return-if-under-construction
+  // rather than yielding the CPU until construction completes. This is
+  // necessary because the FactoryGet() below creates a histogram and thus
+  // recursively calls this method to try to store the result.
+
+  // Get the existing pointer. If the "under construction" flag is present,
+  // abort now. It's okay to return null from this method.
+  static subtle::AtomicWord atomic_histogram_pointer = 0;
+  subtle::AtomicWord histogram_value =
+      subtle::Acquire_Load(&atomic_histogram_pointer);
+  if (histogram_value == kHistogramUnderConstruction)
+    return nullptr;
+
+  // If a valid histogram pointer already exists, return it.
+  if (histogram_value)
+    return reinterpret_cast<HistogramBase*>(histogram_value);
+
+  // Set the "under construction" flag; abort if something has changed.
+  if (subtle::NoBarrier_CompareAndSwap(&atomic_histogram_pointer, 0,
+                                       kHistogramUnderConstruction) != 0) {
+    return nullptr;
   }
+
+  // Only one thread can be here. Even recursion will be thwarted above.
+
+  if (GlobalHistogramAllocator::Get()) {
+    DVLOG(1) << "Creating the results-histogram inside persistent"
+             << " memory can cause future allocations to crash if"
+             << " that memory is ever released (for testing).";
+  }
+
+  HistogramBase* histogram_pointer = LinearHistogram::FactoryGet(
+      kResultHistogram, 1, CREATE_HISTOGRAM_MAX, CREATE_HISTOGRAM_MAX + 1,
+      HistogramBase::kUmaTargetedHistogramFlag);
+  subtle::Release_Store(
+      &atomic_histogram_pointer,
+      reinterpret_cast<subtle::AtomicWord>(histogram_pointer));
+
   return histogram_pointer;
 }
 
