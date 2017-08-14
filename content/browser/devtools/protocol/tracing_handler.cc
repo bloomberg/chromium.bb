@@ -150,19 +150,85 @@ Response TracingHandler::Disable() {
 }
 
 void TracingHandler::OnTraceDataCollected(const std::string& trace_fragment) {
+  const std::string valid_trace_fragment =
+      UpdateTraceDataBuffer(trace_fragment);
+  if (valid_trace_fragment.empty())
+    return;
+
   // Hand-craft protocol notification message so we can substitute JSON
   // that we already got as string as a bare object, not a quoted string.
   std::string message(
       "{ \"method\": \"Tracing.dataCollected\", \"params\": { \"value\": [");
   const size_t messageSuffixSize = 10;
-  message.reserve(message.size() + trace_fragment.size() + messageSuffixSize);
-  message += trace_fragment;
+  message.reserve(message.size() + valid_trace_fragment.size() +
+                  messageSuffixSize);
+  message += valid_trace_fragment;
   message += "] } }";
   frontend_->sendRawNotification(message);
 }
 
 void TracingHandler::OnTraceComplete() {
+  if (!trace_data_buffer_state_.data.empty())
+    OnTraceDataCollected("");
+
+  DCHECK(trace_data_buffer_state_.data.empty());
+  DCHECK_EQ(0u, trace_data_buffer_state_.pos);
+  DCHECK_EQ(0, trace_data_buffer_state_.open_braces);
+  DCHECK(!trace_data_buffer_state_.in_string);
+  DCHECK(!trace_data_buffer_state_.slashed);
+
   frontend_->TracingComplete();
+}
+
+std::string TracingHandler::UpdateTraceDataBuffer(
+    const std::string& trace_fragment) {
+  size_t end = 0;
+  TraceDataBufferState& state = trace_data_buffer_state_;
+  for (; state.pos < trace_fragment.size(); ++state.pos) {
+    char c = trace_fragment[state.pos];
+    switch (c) {
+      case '{':
+        if (!state.in_string && !state.slashed)
+          state.open_braces++;
+        break;
+      case '}':
+        if (!state.in_string && !state.slashed) {
+          DCHECK_GT(state.open_braces, 0);
+          state.open_braces--;
+          if (state.open_braces == 0)
+            end = state.data.size() + state.pos + 1;
+        }
+        break;
+      case '"':
+        if (!state.slashed)
+          state.in_string = !state.in_string;
+        break;
+      case 'u':
+        if (state.slashed)
+          state.pos += 4;
+        break;
+    }
+
+    if (state.in_string && c == '\\') {
+      state.slashed = !state.slashed;
+    } else {
+      state.slashed = false;
+    }
+  }
+
+  // Next starting position is usually 0 except when we are in the middle of
+  // processing a unicode character, i.e. \uxxxx.
+  state.pos -= trace_fragment.size();
+  std::string complete_str = state.data + trace_fragment;
+
+  // Skip over commas between objects so that the next valid prefix does not
+  // start with a comma.
+  size_t next_start = complete_str.find('{', end);
+  state.data =
+      next_start == std::string::npos ? "" : complete_str.substr(next_start);
+
+  complete_str.resize(end);
+  return complete_str;
 }
 
 void TracingHandler::OnTraceToStreamComplete(const std::string& stream_handle) {
@@ -239,6 +305,8 @@ void TracingHandler::End(std::unique_ptr<EndCallback> callback) {
     sink = TracingControllerImpl::CreateJSONSink(new DevToolsStreamEndpoint(
         weak_factory_.GetWeakPtr(), io_context_->CreateTempFileBackedStream()));
   } else {
+    // Reset the trace data buffer state.
+    trace_data_buffer_state_ = TracingHandler::TraceDataBufferState();
     sink = new DevToolsTraceSinkProxy(weak_factory_.GetWeakPtr());
   }
   StopTracing(sink);
