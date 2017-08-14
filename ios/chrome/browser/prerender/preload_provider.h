@@ -36,12 +36,6 @@ struct Referrer;
 // Cancels any outstanding prerender requests and destroys any prerendered Tabs.
 - (void)cancelPrerender;
 
-// Prefetches the |url|.
-- (void)prefetchURL:(const GURL&)url transition:(ui::PageTransition)transition;
-
-// Cancels any outstanding prefetch requests.
-- (void)cancelPrefetch;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_PRERENDER_PRELOAD_PROVIDER_H_

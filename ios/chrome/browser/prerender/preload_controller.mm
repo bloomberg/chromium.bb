@@ -24,22 +24,17 @@
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "net/base/mac/url_conversions.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "ui/base/page_transition_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-// ID of the URLFetcher responsible for prefetches.
-const int kPreloadControllerURLFetcherID = 1;
-
 namespace {
 // Delay before starting to prerender a URL.
 const NSTimeInterval kPrerenderDelay = 0.5;
 
-// The finch experiment to turn off prefetching as a field trial.
+// The finch experiment to turn off prerendering as a field trial.
 const char kTabEvictionFieldTrialName[] = "TabEviction";
 // The associated group.
 const char kPrerenderTabEvictionTrialGroup[] = "NoPrerendering";
@@ -64,10 +59,7 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 // Returns YES if prerendering is enabled.
 - (BOOL)isPrerenderingEnabled;
 
-// Returns YES if prefetching is enabled.
-- (BOOL)isPrefetchingEnabled;
-
-// Returns YES if the |url| is valid for prerendering and prefetching.
+// Returns YES if the |url| is valid for prerendering.
 - (BOOL)shouldPreloadURL:(const GURL&)url;
 
 // Called to start any scheduled prerendering requests.
@@ -84,29 +76,7 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 // empty URL.
 - (void)removeScheduledPrerenderRequests;
 
-// Starts the scheduled prefetch request.
-- (void)startPrefetch;
-
-// Cancels the scheduled prefetch request.
-- (void)cancelPrefetch;
-
-// Completes the current prefetch request. Called by the URLFetcher's delegate
-// when the URLFetcher has compleeted fetching the |prefetchedURL|.
-- (void)prefetchDidComplete:(const net::URLFetcher*)source;
-
 @end
-
-// Delegate to handle completion of URLFetcher operations.
-class PrefetchDelegate : public net::URLFetcherDelegate {
- public:
-  explicit PrefetchDelegate(PreloadController* owner) : owner_(owner) {}
-  void OnURLFetchComplete(const net::URLFetcher* source) override {
-    [owner_ prefetchDidComplete:source];
-  }
-
- private:
-  __weak PreloadController* owner_;
-};
 
 @implementation PreloadController {
   ios::ChromeBrowserState* browserState_;  // Weak.
@@ -132,15 +102,6 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
   ui::PageTransition scheduledTransition_;
   web::Referrer scheduledReferrer_;
 
-  // The most-recently prefetched URL, or nil if there have been no prefetched
-  // URLs.
-  GURL prefetchedURL_;
-
-  // The URLFetcher and associated delegate used to prefetch URLs. The delegate
-  // simply forwards callbacks from URLFetcher back to the PrerenderController.
-  std::unique_ptr<PrefetchDelegate> prefetcherDelegate_;
-  std::unique_ptr<net::URLFetcher> prefetcher_;
-
   // Bridge to listen to pref changes.
   std::unique_ptr<PrefObserverBridge> observerBridge_;
   // Registrar for pref changes notifications.
@@ -162,7 +123,6 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
 }
 
 @synthesize prerenderedURL = prerenderedURL_;
-@synthesize prefetchedURL = prefetchedURL_;
 @synthesize delegate = delegate_;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
@@ -234,33 +194,6 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
   [self performSelector:@selector(startPrerender)
              withObject:nil
              afterDelay:delay];
-}
-
-- (void)prefetchURL:(const GURL&)url transition:(ui::PageTransition)transition {
-  if (![self isPrefetchingEnabled] || ![self shouldPreloadURL:url]) {
-    return;
-  }
-
-  // Ignore this request if the the currently prefetched page matches this URL.
-  if ([self hasPrefetchedURL:url]) {
-    return;
-  }
-
-  // Cancel any in-fight prefetches before starting a new one.
-  [self cancelPrefetch];
-
-  DCHECK(url.is_valid());
-  if (!url.is_valid()) {
-    return;
-  }
-
-  prefetchedURL_ = [self urlToPrefetchURL:url];
-  prefetcherDelegate_.reset(new PrefetchDelegate(self));
-  prefetcher_ =
-      net::URLFetcher::Create(kPreloadControllerURLFetcherID, prefetchedURL_,
-                              net::URLFetcher::GET, prefetcherDelegate_.get());
-  prefetcher_->SetRequestContext(browserState_->GetRequestContext());
-  prefetcher_->Start();
 }
 
 - (void)cancelPrerender {
@@ -366,13 +299,6 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
          ios::device_util::RamIsAtLeast512Mb() && (!wifiOnly_ || !usingWWAN_);
 }
 
-- (BOOL)isPrefetchingEnabled {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  // TODO(crbug.com/754284): Prefetching does not help WKWebView loads.  Delete
-  // all of the prefetching code from this file and the rest of the app.
-  return NO;
-}
-
 - (BOOL)shouldPreloadURL:(const GURL&)url {
   return url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme);
 }
@@ -413,37 +339,6 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
   // Trigger the page to start loading.
   // TODO(crbug.com/705819): Remove this call.
   [tab view];
-}
-
-- (const GURL)urlToPrefetchURL:(const GURL&)url {
-  GURL::Replacements replacements;
-
-  // Add prefetch indicator to query params.
-  std::string query = url.query();
-  if (!query.empty()) {
-    query.append("&");
-  }
-  query.append("pf=i");
-  replacements.SetQueryStr(query);
-
-  return url.ReplaceComponents(replacements);
-}
-
-- (BOOL)hasPrefetchedURL:(const GURL&)url {
-  return prefetchedURL_ == [self urlToPrefetchURL:url];
-}
-
-- (void)cancelPrefetch {
-  prefetcher_.reset();
-  prefetchedURL_ = GURL();
-}
-
-- (void)prefetchDidComplete:(const net::URLFetcher*)source {
-  if (source) {
-    DLOG_IF(WARNING, source->GetResponseCode() != 200)
-        << "Prefetching URL got response code " << source->GetResponseCode();
-  }
-  prefetcher_.reset();
 }
 
 - (void)destroyPreviewContents {

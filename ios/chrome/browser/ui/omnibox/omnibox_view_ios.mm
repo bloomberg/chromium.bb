@@ -396,7 +396,6 @@ void OmniboxViewIOS::OnDidEndEditing() {
 
   // Cancel any outstanding preload requests.
   [preloader_ cancelPrerender];
-  [preloader_ cancelPrefetch];
 
   // Blow away any in-progress edits.
   RevertAll();
@@ -854,16 +853,6 @@ void OmniboxViewIOS::OnResultsChanged(const AutocompleteResult& result) {
                    immediately:is_inline_autocomplete];
     } else {
       [preloader_ cancelPrerender];
-    }
-
-    // If the first autocomplete result is a search suggestion, prefetch the
-    // corresponding search result page.
-    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST) {
-      ui::PageTransition transition = ui::PageTransitionFromInt(
-          match.transition | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-      [preloader_ prefetchURL:match.destination_url transition:transition];
-    } else {
-      [preloader_ cancelPrefetch];
     }
   }
 }

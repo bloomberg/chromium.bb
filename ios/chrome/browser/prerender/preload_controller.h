@@ -30,16 +30,9 @@ namespace web {
 class WebState;
 }
 
-// ID of the URLFetcher responsible for prefetches.
-extern const int kPreloadControllerURLFetcherID;
-
 // PreloadController owns and manages a Tab that contains a prerendered
 // webpage.  This class contains methods to queue and cancel prerendering for a
 // given URL as well as a method to return the prerendered Tab.
-//
-// This class also handles queuing and canceling prefetch requests for a given
-// URL. The prefetched content is stored in the network layer cache so there is
-// no API to expose that content to users of this class.
 @interface PreloadController : NSObject<CRWNativeContentProvider,
                                         PrefObserverDelegate,
                                         PreloadProvider,
@@ -48,9 +41,6 @@ extern const int kPreloadControllerURLFetcherID;
 // The URL of the currently prerendered Tab.  Empty if there is no prerendered
 // Tab.
 @property(nonatomic, readonly, assign) GURL prerenderedURL;
-// The URL of the currently prefetched content.  Empty if there is no prefetched
-// content.
-@property(nonatomic, readonly, assign) GURL prefetchedURL;
 @property(nonatomic, weak) id<PreloadControllerDelegate> delegate;
 
 // Designated initializer.
@@ -65,8 +55,6 @@ extern const int kPreloadControllerURLFetcherID;
 // state.
 - (std::unique_ptr<web::WebState>)releasePrerenderContents;
 
-// Returns true if the content of |url| has been prefetched.
-- (BOOL)hasPrefetchedURL:(const GURL&)url;
 @end
 
 #endif  // IOS_CHROME_BROWSER_PRERENDER_PRELOAD_CONTROLLER_H_
