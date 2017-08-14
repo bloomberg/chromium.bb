@@ -76,6 +76,12 @@ const char kUsageMessage[] =
     "Remote Desktop, please install the app from the Chrome Web Store:\n"
     "https://chrome.google.com/remotedesktop\n";
 
+// A list of variable to pass through to the child environment.
+const char* const kPassthroughVariables[] = {
+    "GOOGLE_CLIENT_ID_REMOTING", "GOOGLE_CLIENT_ID_REMOTING_HOST",
+    "GOOGLE_CLIENT_SECRET_REMOTING", "GOOGLE_CLIENT_SECRET_REMOTING_HOST",
+    "CHROME_REMOTE_DESKTOP_HOST_EXTRA_PARAMS"};
+
 // Holds the null-terminated path to this executable. This is obtained at
 // startup, since it may be harder to obtain later. (E.g., Linux will append
 // " (deleted)" if the file has been replaced by an update.)
@@ -300,6 +306,13 @@ void ExecMe2MeScript(base::EnvironmentMap environment,
   environment["SHELL"] = pwinfo->pw_shell;
   if (!environment.count("PATH")) {
     environment["PATH"] = "/bin:/usr/bin";
+  }
+
+  for (const char* variable : kPassthroughVariables) {
+    char* value = std::getenv(variable);
+    if (value != nullptr) {
+      environment[variable] = value;
+    }
   }
 
   std::vector<std::string> env_strings;
