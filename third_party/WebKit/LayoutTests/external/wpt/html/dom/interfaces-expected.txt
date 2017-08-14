@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5193 tests; 5005 PASS, 188 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5323 tests; 5124 PASS, 199 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver 
 PASS Document interface: attribute domain 
 PASS Document interface: attribute referrer 
@@ -96,6 +96,7 @@ PASS Document interface: attribute onratechange
 PASS Document interface: attribute onreset 
 PASS Document interface: attribute onresize 
 PASS Document interface: attribute onscroll 
+PASS Document interface: attribute onsecuritypolicyviolation 
 PASS Document interface: attribute onseeked 
 PASS Document interface: attribute onseeking 
 PASS Document interface: attribute onselect 
@@ -137,7 +138,7 @@ PASS Document interface: iframe.contentDocument must inherit property "write(DOM
 PASS Document interface: calling write(DOMString) on iframe.contentDocument with too few arguments must throw TypeError 
 PASS Document interface: iframe.contentDocument must inherit property "writeln(DOMString)" with the proper type 
 PASS Document interface: calling writeln(DOMString) on iframe.contentDocument with too few arguments must throw TypeError 
-PASS Document interface: iframe.contentDocument must inherit property "defaultView" with the proper type 
+FAIL Document interface: iframe.contentDocument must inherit property "defaultView" with the proper type Unrecognized type WindowProxy
 PASS Document interface: iframe.contentDocument must inherit property "activeElement" with the proper type 
 PASS Document interface: iframe.contentDocument must inherit property "hasFocus()" with the proper type 
 PASS Document interface: iframe.contentDocument must inherit property "designMode" with the proper type 
@@ -216,6 +217,7 @@ PASS Document interface: iframe.contentDocument must inherit property "onratecha
 PASS Document interface: iframe.contentDocument must inherit property "onreset" with the proper type 
 PASS Document interface: iframe.contentDocument must inherit property "onresize" with the proper type 
 PASS Document interface: iframe.contentDocument must inherit property "onscroll" with the proper type 
+PASS Document interface: iframe.contentDocument must inherit property "onsecuritypolicyviolation" with the proper type 
 PASS Document interface: iframe.contentDocument must inherit property "onseeked" with the proper type 
 PASS Document interface: iframe.contentDocument must inherit property "onseeking" with the proper type 
 PASS Document interface: iframe.contentDocument must inherit property "onselect" with the proper type 
@@ -336,6 +338,7 @@ PASS Document interface: new Document() must inherit property "onratechange" wit
 PASS Document interface: new Document() must inherit property "onreset" with the proper type 
 PASS Document interface: new Document() must inherit property "onresize" with the proper type 
 PASS Document interface: new Document() must inherit property "onscroll" with the proper type 
+PASS Document interface: new Document() must inherit property "onsecuritypolicyviolation" with the proper type 
 PASS Document interface: new Document() must inherit property "onseeked" with the proper type 
 PASS Document interface: new Document() must inherit property "onseeking" with the proper type 
 PASS Document interface: new Document() must inherit property "onselect" with the proper type 
@@ -456,6 +459,7 @@ PASS Document interface: document.implementation.createDocument(null, "", null) 
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onreset" with the proper type 
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onresize" with the proper type 
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onscroll" with the proper type 
+PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onsecuritypolicyviolation" with the proper type 
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onseeked" with the proper type 
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onseeking" with the proper type 
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onselect" with the proper type 
@@ -469,26 +473,21 @@ PASS Document interface: document.implementation.createDocument(null, "", null) 
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "oncopy" with the proper type 
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "oncut" with the proper type 
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onpaste" with the proper type 
-PASS Touch interface: attribute region 
-PASS MouseEvent interface: attribute region 
 PASS HTMLAllCollection interface: existence and properties of interface object 
 PASS HTMLAllCollection interface object length 
 PASS HTMLAllCollection interface object name 
 PASS HTMLAllCollection interface: existence and properties of interface prototype object 
 PASS HTMLAllCollection interface: existence and properties of interface prototype object's "constructor" property 
 PASS HTMLAllCollection interface: attribute length 
-FAIL HTMLAllCollection interface: operation item(unsigned long) assert_equals: property has wrong .length expected 1 but got 0
-FAIL HTMLAllCollection interface: operation item(DOMString) assert_equals: property has wrong .length expected 1 but got 0
 PASS HTMLAllCollection interface: operation namedItem(DOMString) 
+PASS HTMLAllCollection interface: operation item(DOMString) 
 FAIL HTMLAllCollection must be primary interface of document.all assert_equals: wrong typeof object expected "function" but got "undefined"
 FAIL Stringification of document.all assert_equals: wrong typeof object expected "function" but got "undefined"
 FAIL HTMLAllCollection interface: document.all must inherit property "length" with the proper type assert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL HTMLAllCollection interface: document.all must inherit property "item(unsigned long)" with the proper type assert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL HTMLAllCollection interface: calling item(unsigned long) on document.all with too few arguments must throw TypeError assert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL HTMLAllCollection interface: document.all must inherit property "item(DOMString)" with the proper type assert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL HTMLAllCollection interface: calling item(DOMString) on document.all with too few arguments must throw TypeError assert_equals: wrong typeof object expected "function" but got "undefined"
 FAIL HTMLAllCollection interface: document.all must inherit property "namedItem(DOMString)" with the proper type assert_equals: wrong typeof object expected "function" but got "undefined"
 FAIL HTMLAllCollection interface: calling namedItem(DOMString) on document.all with too few arguments must throw TypeError assert_equals: wrong typeof object expected "function" but got "undefined"
+FAIL HTMLAllCollection interface: document.all must inherit property "item(DOMString)" with the proper type assert_equals: wrong typeof object expected "function" but got "undefined"
+FAIL HTMLAllCollection interface: calling item(DOMString) on document.all with too few arguments must throw TypeError assert_equals: wrong typeof object expected "function" but got "undefined"
 PASS HTMLFormControlsCollection interface: existence and properties of interface object 
 PASS HTMLFormControlsCollection interface object length 
 PASS HTMLFormControlsCollection interface object name 
@@ -522,13 +521,14 @@ PASS HTMLOptionsCollection interface: calling add([object Object],[object Object
 PASS HTMLOptionsCollection interface: document.createElement("select").options must inherit property "remove(long)" with the proper type 
 PASS HTMLOptionsCollection interface: calling remove(long) on document.createElement("select").options with too few arguments must throw TypeError 
 PASS HTMLOptionsCollection interface: document.createElement("select").options must inherit property "selectedIndex" with the proper type 
-PASS DOMStringMap interface: existence and properties of interface object 
-PASS DOMStringMap interface object length 
-PASS DOMStringMap interface object name 
-PASS DOMStringMap interface: existence and properties of interface prototype object 
-PASS DOMStringMap interface: existence and properties of interface prototype object's "constructor" property 
-PASS DOMStringMap must be primary interface of document.head.dataset 
-PASS Stringification of document.head.dataset 
+PASS DOMStringList interface: existence and properties of interface object 
+PASS DOMStringList interface object length 
+PASS DOMStringList interface object name 
+PASS DOMStringList interface: existence and properties of interface prototype object 
+PASS DOMStringList interface: existence and properties of interface prototype object's "constructor" property 
+PASS DOMStringList interface: attribute length 
+PASS DOMStringList interface: operation item(unsigned long) 
+PASS DOMStringList interface: operation contains(DOMString) 
 PASS HTMLElement interface: existence and properties of interface object 
 PASS HTMLElement interface object length 
 PASS HTMLElement interface object name 
@@ -548,7 +548,6 @@ PASS HTMLElement interface: attribute accessKey
 FAIL HTMLElement interface: attribute accessKeyLabel assert_true: The prototype object must have a property "accessKeyLabel" expected true got false
 PASS HTMLElement interface: attribute draggable 
 PASS HTMLElement interface: attribute spellcheck 
-FAIL HTMLElement interface: operation forceSpellCheck() assert_own_property: interface prototype object missing non-static operation expected property "forceSpellCheck" missing
 PASS HTMLElement interface: attribute innerText 
 PASS HTMLElement interface: attribute onabort 
 PASS HTMLElement interface: attribute onauxclick 
@@ -601,6 +600,7 @@ PASS HTMLElement interface: attribute onratechange
 PASS HTMLElement interface: attribute onreset 
 PASS HTMLElement interface: attribute onresize 
 PASS HTMLElement interface: attribute onscroll 
+FAIL HTMLElement interface: attribute onsecuritypolicyviolation assert_true: The prototype object must have a property "onsecuritypolicyviolation" expected true got false
 PASS HTMLElement interface: attribute onseeked 
 PASS HTMLElement interface: attribute onseeking 
 PASS HTMLElement interface: attribute onselect 
@@ -632,7 +632,6 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 FAIL HTMLElement interface: document.createElement("noscript") must inherit property "accessKeyLabel" with the proper type assert_inherits: property "accessKeyLabel" not found in prototype chain
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "draggable" with the proper type 
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "spellcheck" with the proper type 
-FAIL HTMLElement interface: document.createElement("noscript") must inherit property "forceSpellCheck()" with the proper type assert_inherits: property "forceSpellCheck" not found in prototype chain
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "innerText" with the proper type 
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onabort" with the proper type 
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onauxclick" with the proper type 
@@ -685,6 +684,7 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onreset" with the proper type 
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onresize" with the proper type 
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onscroll" with the proper type 
+FAIL HTMLElement interface: document.createElement("noscript") must inherit property "onsecuritypolicyviolation" with the proper type assert_inherits: property "onsecuritypolicyviolation" not found in prototype chain
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onseeked" with the proper type 
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onseeking" with the proper type 
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onselect" with the proper type 
@@ -707,6 +707,13 @@ PASS HTMLUnknownElement interface: existence and properties of interface prototy
 PASS HTMLUnknownElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS HTMLUnknownElement must be primary interface of document.createElement("bgsound") 
 PASS Stringification of document.createElement("bgsound") 
+PASS DOMStringMap interface: existence and properties of interface object 
+PASS DOMStringMap interface object length 
+PASS DOMStringMap interface object name 
+PASS DOMStringMap interface: existence and properties of interface prototype object 
+PASS DOMStringMap interface: existence and properties of interface prototype object's "constructor" property 
+PASS DOMStringMap must be primary interface of document.head.dataset 
+PASS Stringification of document.head.dataset 
 PASS HTMLHtmlElement interface: existence and properties of interface object 
 PASS HTMLHtmlElement interface object length 
 PASS HTMLHtmlElement interface object name 
@@ -760,6 +767,9 @@ PASS HTMLLinkElement interface: attribute hreflang
 PASS HTMLLinkElement interface: attribute type 
 PASS HTMLLinkElement interface: attribute sizes 
 PASS HTMLLinkElement interface: attribute referrerPolicy 
+PASS HTMLLinkElement interface: attribute scope 
+FAIL HTMLLinkElement interface: attribute workerType assert_true: The prototype object must have a property "workerType" expected true got false
+FAIL HTMLLinkElement interface: attribute updateViaCache assert_true: The prototype object must have a property "updateViaCache" expected true got false
 PASS HTMLLinkElement interface: attribute charset 
 PASS HTMLLinkElement interface: attribute rev 
 PASS HTMLLinkElement interface: attribute target 
@@ -777,6 +787,9 @@ PASS HTMLLinkElement interface: document.createElement("link") must inherit prop
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "type" with the proper type 
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "sizes" with the proper type 
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "referrerPolicy" with the proper type 
+PASS HTMLLinkElement interface: document.createElement("link") must inherit property "scope" with the proper type 
+FAIL HTMLLinkElement interface: document.createElement("link") must inherit property "workerType" with the proper type assert_inherits: property "workerType" not found in prototype chain
+FAIL HTMLLinkElement interface: document.createElement("link") must inherit property "updateViaCache" with the proper type assert_inherits: property "updateViaCache" not found in prototype chain
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "charset" with the proper type 
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "rev" with the proper type 
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "target" with the proper type 
@@ -937,6 +950,15 @@ PASS HTMLUListElement interface: existence and properties of interface prototype
 PASS HTMLUListElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS HTMLUListElement interface: attribute compact 
 PASS HTMLUListElement interface: attribute type 
+PASS HTMLMenuElement interface: existence and properties of interface object 
+PASS HTMLMenuElement interface object length 
+PASS HTMLMenuElement interface object name 
+PASS HTMLMenuElement interface: existence and properties of interface prototype object 
+PASS HTMLMenuElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS HTMLMenuElement interface: attribute compact 
+PASS HTMLMenuElement must be primary interface of document.createElement("menu") 
+PASS Stringification of document.createElement("menu") 
+PASS HTMLMenuElement interface: document.createElement("menu") must inherit property "compact" with the proper type 
 PASS HTMLLIElement interface: existence and properties of interface object 
 PASS HTMLLIElement interface object length 
 PASS HTMLLIElement interface object name 
@@ -1077,6 +1099,23 @@ PASS HTMLPictureElement interface: existence and properties of interface prototy
 PASS HTMLPictureElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS HTMLPictureElement must be primary interface of document.createElement("picture") 
 PASS Stringification of document.createElement("picture") 
+PASS HTMLSourceElement interface: existence and properties of interface object 
+PASS HTMLSourceElement interface object length 
+PASS HTMLSourceElement interface object name 
+PASS HTMLSourceElement interface: existence and properties of interface prototype object 
+PASS HTMLSourceElement interface: existence and properties of interface prototype object's "constructor" property 
+PASS HTMLSourceElement interface: attribute src 
+PASS HTMLSourceElement interface: attribute type 
+PASS HTMLSourceElement interface: attribute srcset 
+PASS HTMLSourceElement interface: attribute sizes 
+PASS HTMLSourceElement interface: attribute media 
+PASS HTMLSourceElement must be primary interface of document.createElement("source") 
+PASS Stringification of document.createElement("source") 
+PASS HTMLSourceElement interface: document.createElement("source") must inherit property "src" with the proper type 
+PASS HTMLSourceElement interface: document.createElement("source") must inherit property "type" with the proper type 
+PASS HTMLSourceElement interface: document.createElement("source") must inherit property "srcset" with the proper type 
+PASS HTMLSourceElement interface: document.createElement("source") must inherit property "sizes" with the proper type 
+PASS HTMLSourceElement interface: document.createElement("source") must inherit property "media" with the proper type 
 PASS HTMLImageElement interface: existence and properties of interface object 
 PASS HTMLImageElement interface object length 
 PASS HTMLImageElement interface object name 
@@ -1096,6 +1135,7 @@ PASS HTMLImageElement interface: attribute naturalHeight
 PASS HTMLImageElement interface: attribute complete 
 PASS HTMLImageElement interface: attribute currentSrc 
 PASS HTMLImageElement interface: attribute referrerPolicy 
+PASS HTMLImageElement interface: operation decode() 
 PASS HTMLImageElement interface: attribute name 
 PASS HTMLImageElement interface: attribute lowsrc 
 PASS HTMLImageElement interface: attribute align 
@@ -1119,6 +1159,7 @@ PASS HTMLImageElement interface: document.createElement("img") must inherit prop
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "complete" with the proper type 
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "currentSrc" with the proper type 
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "referrerPolicy" with the proper type 
+PASS HTMLImageElement interface: document.createElement("img") must inherit property "decode()" with the proper type 
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "name" with the proper type 
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "lowsrc" with the proper type 
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "align" with the proper type 
@@ -1142,6 +1183,7 @@ PASS HTMLImageElement interface: new Image() must inherit property "naturalHeigh
 PASS HTMLImageElement interface: new Image() must inherit property "complete" with the proper type 
 PASS HTMLImageElement interface: new Image() must inherit property "currentSrc" with the proper type 
 PASS HTMLImageElement interface: new Image() must inherit property "referrerPolicy" with the proper type 
+PASS HTMLImageElement interface: new Image() must inherit property "decode()" with the proper type 
 PASS HTMLImageElement interface: new Image() must inherit property "name" with the proper type 
 PASS HTMLImageElement interface: new Image() must inherit property "lowsrc" with the proper type 
 PASS HTMLImageElement interface: new Image() must inherit property "align" with the proper type 
@@ -1159,8 +1201,8 @@ PASS HTMLIFrameElement interface: attribute srcdoc
 PASS HTMLIFrameElement interface: attribute name 
 PASS HTMLIFrameElement interface: attribute sandbox 
 PASS HTMLIFrameElement interface: attribute allowFullscreen 
-FAIL HTMLIFrameElement interface: attribute allowUserMedia assert_true: The prototype object must have a property "allowUserMedia" expected true got false
 PASS HTMLIFrameElement interface: attribute allowPaymentRequest 
+FAIL HTMLIFrameElement interface: attribute allowUserMedia assert_true: The prototype object must have a property "allowUserMedia" expected true got false
 PASS HTMLIFrameElement interface: attribute width 
 PASS HTMLIFrameElement interface: attribute height 
 PASS HTMLIFrameElement interface: attribute referrerPolicy 
@@ -1209,6 +1251,7 @@ PASS HTMLObjectElement interface: attribute width
 PASS HTMLObjectElement interface: attribute height 
 PASS HTMLObjectElement interface: attribute contentDocument 
 PASS HTMLObjectElement interface: attribute contentWindow 
+PASS HTMLObjectElement interface: operation getSVGDocument() 
 PASS HTMLObjectElement interface: attribute willValidate 
 PASS HTMLObjectElement interface: attribute validity 
 PASS HTMLObjectElement interface: attribute validationMessage 
@@ -1237,6 +1280,7 @@ PASS HTMLObjectElement interface: document.createElement("object") must inherit 
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "height" with the proper type 
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "contentDocument" with the proper type 
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "contentWindow" with the proper type 
+PASS HTMLObjectElement interface: document.createElement("object") must inherit property "getSVGDocument()" with the proper type 
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "willValidate" with the proper type 
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "validity" with the proper type 
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "validationMessage" with the proper type 
@@ -1279,6 +1323,7 @@ PASS HTMLVideoElement interface: attribute height
 PASS HTMLVideoElement interface: attribute videoWidth 
 PASS HTMLVideoElement interface: attribute videoHeight 
 PASS HTMLVideoElement interface: attribute poster 
+FAIL HTMLVideoElement interface: attribute playsInline assert_true: The prototype object must have a property "playsInline" expected true got false
 PASS HTMLVideoElement must be primary interface of document.createElement("video") 
 PASS Stringification of document.createElement("video") 
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "width" with the proper type 
@@ -1286,8 +1331,10 @@ PASS HTMLVideoElement interface: document.createElement("video") must inherit pr
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "videoWidth" with the proper type 
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "videoHeight" with the proper type 
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "poster" with the proper type 
+FAIL HTMLVideoElement interface: document.createElement("video") must inherit property "playsInline" with the proper type assert_inherits: property "playsInline" not found in prototype chain
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "error" with the proper type 
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "src" with the proper type 
+FAIL HTMLMediaElement interface: document.createElement("video") must inherit property "srcObject" with the proper type Unrecognized type MediaStream
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "currentSrc" with the proper type 
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "crossOrigin" with the proper type 
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "NETWORK_EMPTY" with the proper type 
@@ -1340,6 +1387,7 @@ PASS HTMLAudioElement must be primary interface of document.createElement("audio
 PASS Stringification of document.createElement("audio") 
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "error" with the proper type 
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "src" with the proper type 
+FAIL HTMLMediaElement interface: document.createElement("audio") must inherit property "srcObject" with the proper type Unrecognized type MediaStream
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "currentSrc" with the proper type 
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "crossOrigin" with the proper type 
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "NETWORK_EMPTY" with the proper type 
@@ -1387,6 +1435,7 @@ PASS HTMLAudioElement must be primary interface of new Audio()
 PASS Stringification of new Audio() 
 PASS HTMLMediaElement interface: new Audio() must inherit property "error" with the proper type 
 PASS HTMLMediaElement interface: new Audio() must inherit property "src" with the proper type 
+FAIL HTMLMediaElement interface: new Audio() must inherit property "srcObject" with the proper type Unrecognized type MediaStream
 PASS HTMLMediaElement interface: new Audio() must inherit property "currentSrc" with the proper type 
 PASS HTMLMediaElement interface: new Audio() must inherit property "crossOrigin" with the proper type 
 PASS HTMLMediaElement interface: new Audio() must inherit property "NETWORK_EMPTY" with the proper type 
@@ -1430,23 +1479,6 @@ PASS HTMLMediaElement interface: new Audio() must inherit property "videoTracks"
 PASS HTMLMediaElement interface: new Audio() must inherit property "textTracks" with the proper type 
 PASS HTMLMediaElement interface: new Audio() must inherit property "addTextTrack(TextTrackKind, DOMString, DOMString)" with the proper type 
 PASS HTMLMediaElement interface: calling addTextTrack(TextTrackKind, DOMString, DOMString) on new Audio() with too few arguments must throw TypeError 
-PASS HTMLSourceElement interface: existence and properties of interface object 
-PASS HTMLSourceElement interface object length 
-PASS HTMLSourceElement interface object name 
-PASS HTMLSourceElement interface: existence and properties of interface prototype object 
-PASS HTMLSourceElement interface: existence and properties of interface prototype object's "constructor" property 
-PASS HTMLSourceElement interface: attribute src 
-PASS HTMLSourceElement interface: attribute type 
-PASS HTMLSourceElement interface: attribute srcset 
-PASS HTMLSourceElement interface: attribute sizes 
-PASS HTMLSourceElement interface: attribute media 
-PASS HTMLSourceElement must be primary interface of document.createElement("source") 
-PASS Stringification of document.createElement("source") 
-PASS HTMLSourceElement interface: document.createElement("source") must inherit property "src" with the proper type 
-PASS HTMLSourceElement interface: document.createElement("source") must inherit property "type" with the proper type 
-PASS HTMLSourceElement interface: document.createElement("source") must inherit property "srcset" with the proper type 
-PASS HTMLSourceElement interface: document.createElement("source") must inherit property "sizes" with the proper type 
-PASS HTMLSourceElement interface: document.createElement("source") must inherit property "media" with the proper type 
 PASS HTMLTrackElement interface: existence and properties of interface object 
 PASS HTMLTrackElement interface object length 
 PASS HTMLTrackElement interface object name 
@@ -1487,6 +1519,7 @@ PASS HTMLMediaElement interface: existence and properties of interface prototype
 PASS HTMLMediaElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS HTMLMediaElement interface: attribute error 
 PASS HTMLMediaElement interface: attribute src 
+PASS HTMLMediaElement interface: attribute srcObject 
 PASS HTMLMediaElement interface: attribute currentSrc 
 PASS HTMLMediaElement interface: attribute crossOrigin 
 PASS HTMLMediaElement interface: constant NETWORK_EMPTY on interface object 
@@ -2041,7 +2074,7 @@ PASS HTMLInputElement interface: attribute checked
 PASS HTMLInputElement interface: attribute dirName 
 PASS HTMLInputElement interface: attribute disabled 
 PASS HTMLInputElement interface: attribute form 
-FAIL HTMLInputElement interface: attribute files assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function () { [native code] }"
+PASS HTMLInputElement interface: attribute files 
 PASS HTMLInputElement interface: attribute formAction 
 PASS HTMLInputElement interface: attribute formEnctype 
 PASS HTMLInputElement interface: attribute formMethod 
@@ -3933,15 +3966,6 @@ PASS HTMLDetailsElement interface: attribute open
 PASS HTMLDetailsElement must be primary interface of document.createElement("details") 
 PASS Stringification of document.createElement("details") 
 PASS HTMLDetailsElement interface: document.createElement("details") must inherit property "open" with the proper type 
-PASS HTMLMenuElement interface: existence and properties of interface object 
-PASS HTMLMenuElement interface object length 
-PASS HTMLMenuElement interface object name 
-PASS HTMLMenuElement interface: existence and properties of interface prototype object 
-PASS HTMLMenuElement interface: existence and properties of interface prototype object's "constructor" property 
-PASS HTMLMenuElement interface: attribute compact 
-PASS HTMLMenuElement must be primary interface of document.createElement("menu") 
-PASS Stringification of document.createElement("menu") 
-PASS HTMLMenuElement interface: document.createElement("menu") must inherit property "compact" with the proper type 
 PASS HTMLDialogElement interface: existence and properties of interface object 
 PASS HTMLDialogElement interface object length 
 PASS HTMLDialogElement interface object name 
@@ -4014,6 +4038,7 @@ PASS HTMLCanvasElement interface: attribute height
 PASS HTMLCanvasElement interface: operation getContext(DOMString, any) 
 PASS HTMLCanvasElement interface: operation toDataURL(DOMString, any) 
 PASS HTMLCanvasElement interface: operation toBlob(BlobCallback, DOMString, any) 
+PASS HTMLCanvasElement interface: operation transferControlToOffscreen() 
 PASS HTMLCanvasElement must be primary interface of document.createElement("canvas") 
 PASS Stringification of document.createElement("canvas") 
 PASS HTMLCanvasElement interface: document.createElement("canvas") must inherit property "width" with the proper type 
@@ -4024,6 +4049,7 @@ PASS HTMLCanvasElement interface: document.createElement("canvas") must inherit 
 PASS HTMLCanvasElement interface: calling toDataURL(DOMString, any) on document.createElement("canvas") with too few arguments must throw TypeError 
 PASS HTMLCanvasElement interface: document.createElement("canvas") must inherit property "toBlob(BlobCallback, DOMString, any)" with the proper type 
 PASS HTMLCanvasElement interface: calling toBlob(BlobCallback, DOMString, any) on document.createElement("canvas") with too few arguments must throw TypeError 
+PASS HTMLCanvasElement interface: document.createElement("canvas") must inherit property "transferControlToOffscreen()" with the proper type 
 PASS CanvasRenderingContext2D interface: existence and properties of interface object 
 PASS CanvasRenderingContext2D interface object length 
 PASS CanvasRenderingContext2D interface object name 
@@ -4079,14 +4105,11 @@ PASS CanvasRenderingContext2D interface: operation measureText(DOMString)
 PASS CanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double) 
 PASS CanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
 PASS CanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
-PASS CanvasRenderingContext2D interface: operation addHitRegion(HitRegionOptions) 
-PASS CanvasRenderingContext2D interface: operation removeHitRegion(DOMString) 
-PASS CanvasRenderingContext2D interface: operation clearHitRegions() 
-PASS CanvasRenderingContext2D interface: operation createImageData(double, double) 
+PASS CanvasRenderingContext2D interface: operation createImageData(long, long) 
 PASS CanvasRenderingContext2D interface: operation createImageData(ImageData) 
-PASS CanvasRenderingContext2D interface: operation getImageData(double, double, double, double) 
-PASS CanvasRenderingContext2D interface: operation putImageData(ImageData, double, double) 
-PASS CanvasRenderingContext2D interface: operation putImageData(ImageData, double, double, double, double, double, double) 
+PASS CanvasRenderingContext2D interface: operation getImageData(long, long, long, long) 
+PASS CanvasRenderingContext2D interface: operation putImageData(ImageData, long, long) 
+PASS CanvasRenderingContext2D interface: operation putImageData(ImageData, long, long, long, long, long, long) 
 PASS CanvasRenderingContext2D interface: attribute lineWidth 
 PASS CanvasRenderingContext2D interface: attribute lineCap 
 PASS CanvasRenderingContext2D interface: attribute lineJoin 
@@ -4190,21 +4213,16 @@ PASS CanvasRenderingContext2D interface: document.createElement("canvas").getCon
 PASS CanvasRenderingContext2D interface: calling drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError 
 PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)" with the proper type 
 PASS CanvasRenderingContext2D interface: calling drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError 
-PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "addHitRegion(HitRegionOptions)" with the proper type 
-PASS CanvasRenderingContext2D interface: calling addHitRegion(HitRegionOptions) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError 
-PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "removeHitRegion(DOMString)" with the proper type 
-PASS CanvasRenderingContext2D interface: calling removeHitRegion(DOMString) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError 
-PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "clearHitRegions()" with the proper type 
-PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "createImageData(double, double)" with the proper type 
-PASS CanvasRenderingContext2D interface: calling createImageData(double, double) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError 
+PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "createImageData(long, long)" with the proper type 
+PASS CanvasRenderingContext2D interface: calling createImageData(long, long) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError 
 PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "createImageData(ImageData)" with the proper type 
 PASS CanvasRenderingContext2D interface: calling createImageData(ImageData) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError 
-PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "getImageData(double, double, double, double)" with the proper type 
-PASS CanvasRenderingContext2D interface: calling getImageData(double, double, double, double) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError 
-PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "putImageData(ImageData, double, double)" with the proper type 
-PASS CanvasRenderingContext2D interface: calling putImageData(ImageData, double, double) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError 
-PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "putImageData(ImageData, double, double, double, double, double, double)" with the proper type 
-PASS CanvasRenderingContext2D interface: calling putImageData(ImageData, double, double, double, double, double, double) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError 
+PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "getImageData(long, long, long, long)" with the proper type 
+PASS CanvasRenderingContext2D interface: calling getImageData(long, long, long, long) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError 
+PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "putImageData(ImageData, long, long)" with the proper type 
+PASS CanvasRenderingContext2D interface: calling putImageData(ImageData, long, long) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError 
+PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "putImageData(ImageData, long, long, long, long, long, long)" with the proper type 
+PASS CanvasRenderingContext2D interface: calling putImageData(ImageData, long, long, long, long, long, long) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError 
 PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "lineWidth" with the proper type 
 PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "lineCap" with the proper type 
 PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "lineJoin" with the proper type 
@@ -4289,7 +4307,105 @@ PASS Path2D interface: operation arcTo(unrestricted double, unrestricted double,
 PASS Path2D interface: operation rect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
 PASS Path2D interface: operation arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) 
 PASS Path2D interface: operation ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) 
-FAIL DataTransfer interface: existence and properties of interface object assert_throws: interface object didn't throw TypeError when called as a constructor function "function () { [native code] }" did not throw
+PASS ImageBitmapRenderingContext interface: existence and properties of interface object 
+PASS ImageBitmapRenderingContext interface object length 
+PASS ImageBitmapRenderingContext interface object name 
+PASS ImageBitmapRenderingContext interface: existence and properties of interface prototype object 
+PASS ImageBitmapRenderingContext interface: existence and properties of interface prototype object's "constructor" property 
+PASS ImageBitmapRenderingContext interface: attribute canvas 
+PASS ImageBitmapRenderingContext interface: operation transferFromImageBitmap(ImageBitmap) 
+PASS OffscreenCanvas interface: existence and properties of interface object 
+PASS OffscreenCanvas interface object length 
+PASS OffscreenCanvas interface object name 
+PASS OffscreenCanvas interface: existence and properties of interface prototype object 
+PASS OffscreenCanvas interface: existence and properties of interface prototype object's "constructor" property 
+PASS OffscreenCanvas interface: attribute width 
+PASS OffscreenCanvas interface: attribute height 
+PASS OffscreenCanvas interface: operation getContext(OffscreenRenderingContextType, any) 
+PASS OffscreenCanvas interface: operation transferToImageBitmap() 
+PASS OffscreenCanvas interface: operation convertToBlob(ImageEncodeOptions) 
+PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface object 
+PASS OffscreenCanvasRenderingContext2D interface object length 
+PASS OffscreenCanvasRenderingContext2D interface object name 
+PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface prototype object 
+PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface prototype object's "constructor" property 
+FAIL OffscreenCanvasRenderingContext2D interface: operation commit() assert_throws: calling operation with this = null didn't throw TypeError function "function () {
+            fn.apply(obj, args);
+        }" did not throw
+PASS OffscreenCanvasRenderingContext2D interface: attribute canvas 
+PASS OffscreenCanvasRenderingContext2D interface: operation save() 
+PASS OffscreenCanvasRenderingContext2D interface: operation restore() 
+PASS OffscreenCanvasRenderingContext2D interface: operation scale(unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation rotate(unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation translate(unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+FAIL OffscreenCanvasRenderingContext2D interface: operation getTransform() assert_own_property: interface prototype object missing non-static operation expected property "getTransform" missing
+FAIL OffscreenCanvasRenderingContext2D interface: operation setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) assert_equals: property has wrong .length expected 0 but got 6
+FAIL OffscreenCanvasRenderingContext2D interface: operation setTransform(DOMMatrixInit) assert_equals: property has wrong .length expected 0 but got 6
+PASS OffscreenCanvasRenderingContext2D interface: operation resetTransform() 
+PASS OffscreenCanvasRenderingContext2D interface: attribute globalAlpha 
+PASS OffscreenCanvasRenderingContext2D interface: attribute globalCompositeOperation 
+PASS OffscreenCanvasRenderingContext2D interface: attribute imageSmoothingEnabled 
+PASS OffscreenCanvasRenderingContext2D interface: attribute imageSmoothingQuality 
+PASS OffscreenCanvasRenderingContext2D interface: attribute strokeStyle 
+PASS OffscreenCanvasRenderingContext2D interface: attribute fillStyle 
+PASS OffscreenCanvasRenderingContext2D interface: operation createLinearGradient(double, double, double, double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation createRadialGradient(double, double, double, double, double, double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation createPattern(CanvasImageSource, DOMString) 
+PASS OffscreenCanvasRenderingContext2D interface: attribute shadowOffsetX 
+PASS OffscreenCanvasRenderingContext2D interface: attribute shadowOffsetY 
+PASS OffscreenCanvasRenderingContext2D interface: attribute shadowBlur 
+PASS OffscreenCanvasRenderingContext2D interface: attribute shadowColor 
+PASS OffscreenCanvasRenderingContext2D interface: attribute filter 
+PASS OffscreenCanvasRenderingContext2D interface: operation clearRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation fillRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation strokeRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation beginPath() 
+PASS OffscreenCanvasRenderingContext2D interface: operation fill(CanvasFillRule) 
+PASS OffscreenCanvasRenderingContext2D interface: operation fill(Path2D, CanvasFillRule) 
+PASS OffscreenCanvasRenderingContext2D interface: operation stroke() 
+PASS OffscreenCanvasRenderingContext2D interface: operation stroke(Path2D) 
+PASS OffscreenCanvasRenderingContext2D interface: operation clip(CanvasFillRule) 
+PASS OffscreenCanvasRenderingContext2D interface: operation clip(Path2D, CanvasFillRule) 
+FAIL OffscreenCanvasRenderingContext2D interface: operation resetClip() assert_own_property: interface prototype object missing non-static operation expected property "resetClip" missing
+PASS OffscreenCanvasRenderingContext2D interface: operation isPointInPath(unrestricted double, unrestricted double, CanvasFillRule) 
+PASS OffscreenCanvasRenderingContext2D interface: operation isPointInPath(Path2D, unrestricted double, unrestricted double, CanvasFillRule) 
+PASS OffscreenCanvasRenderingContext2D interface: operation isPointInStroke(unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation isPointInStroke(Path2D, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation createImageData(long, long) 
+PASS OffscreenCanvasRenderingContext2D interface: operation createImageData(ImageData) 
+PASS OffscreenCanvasRenderingContext2D interface: operation getImageData(long, long, long, long) 
+PASS OffscreenCanvasRenderingContext2D interface: operation putImageData(ImageData, long, long) 
+PASS OffscreenCanvasRenderingContext2D interface: operation putImageData(ImageData, long, long, long, long, long, long) 
+PASS OffscreenCanvasRenderingContext2D interface: attribute lineWidth 
+PASS OffscreenCanvasRenderingContext2D interface: attribute lineCap 
+PASS OffscreenCanvasRenderingContext2D interface: attribute lineJoin 
+PASS OffscreenCanvasRenderingContext2D interface: attribute miterLimit 
+PASS OffscreenCanvasRenderingContext2D interface: operation setLineDash([object Object]) 
+PASS OffscreenCanvasRenderingContext2D interface: operation getLineDash() 
+PASS OffscreenCanvasRenderingContext2D interface: attribute lineDashOffset 
+PASS OffscreenCanvasRenderingContext2D interface: operation closePath() 
+PASS OffscreenCanvasRenderingContext2D interface: operation moveTo(unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation lineTo(unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation quadraticCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation bezierCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation arcTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation arcTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation rect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS OffscreenCanvasRenderingContext2D interface: operation arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) 
+PASS OffscreenCanvasRenderingContext2D interface: operation ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) 
+PASS CustomElementRegistry interface: existence and properties of interface object 
+PASS CustomElementRegistry interface object length 
+PASS CustomElementRegistry interface object name 
+PASS CustomElementRegistry interface: existence and properties of interface prototype object 
+PASS CustomElementRegistry interface: existence and properties of interface prototype object's "constructor" property 
+PASS CustomElementRegistry interface: operation define(DOMString, Function, ElementDefinitionOptions) 
+PASS CustomElementRegistry interface: operation get(DOMString) 
+PASS CustomElementRegistry interface: operation whenDefined(DOMString) 
+PASS DataTransfer interface: existence and properties of interface object 
 PASS DataTransfer interface object length 
 PASS DataTransfer interface object name 
 PASS DataTransfer interface: existence and properties of interface prototype object 
@@ -4342,6 +4458,7 @@ PASS Window interface: existence and properties of interface prototype object's 
 FAIL Window interface: attribute self assert_equals: "self" must have a getter expected "function" but got "undefined"
 PASS Window interface: attribute name 
 PASS Window interface: attribute history 
+PASS Window interface: attribute customElements 
 PASS Window interface: attribute locationbar 
 PASS Window interface: attribute menubar 
 PASS Window interface: attribute personalbar 
@@ -4359,17 +4476,20 @@ FAIL Window interface: attribute length assert_equals: "length" must have a gett
 FAIL Window interface: attribute opener assert_equals: "opener" must have a getter expected "function" but got "undefined"
 FAIL Window interface: attribute parent assert_equals: "parent" must have a getter expected "function" but got "undefined"
 PASS Window interface: attribute frameElement 
-FAIL Window interface: operation open(DOMString, DOMString, DOMString, boolean) assert_equals: property has wrong .length expected 0 but got 2
+FAIL Window interface: operation open(USVString, DOMString, DOMString) assert_equals: property has wrong .length expected 0 but got 2
 PASS Window interface: attribute navigator 
-PASS Window interface: attribute external 
 PASS Window interface: attribute applicationCache 
 PASS Window interface: operation alert() 
+PASS Window interface: operation alert(DOMString) 
 PASS Window interface: operation confirm(DOMString) 
 PASS Window interface: operation prompt(DOMString, DOMString) 
 PASS Window interface: operation print() 
-PASS Window interface: operation postMessage(any, DOMString, [object Object]) 
+PASS Window interface: operation requestAnimationFrame(FrameRequestCallback) 
+PASS Window interface: operation cancelAnimationFrame(unsigned long) 
+PASS Window interface: operation postMessage(any, USVString, [object Object]) 
 PASS Window interface: operation captureEvents() 
 PASS Window interface: operation releaseEvents() 
+PASS Window interface: attribute external 
 PASS Window interface: attribute onabort 
 PASS Window interface: attribute onauxclick 
 PASS Window interface: attribute onblur 
@@ -4421,6 +4541,7 @@ PASS Window interface: attribute onratechange
 PASS Window interface: attribute onreset 
 PASS Window interface: attribute onresize 
 PASS Window interface: attribute onscroll 
+FAIL Window interface: attribute onsecuritypolicyviolation assert_own_property: The global object must have a property "onsecuritypolicyviolation" expected property "onsecuritypolicyviolation" missing
 PASS Window interface: attribute onseeked 
 PASS Window interface: attribute onseeking 
 PASS Window interface: attribute onselect 
@@ -4467,11 +4588,12 @@ PASS Window interface: internal [[SetPrototypeOf]] method of global platform obj
 PASS Window must be primary interface of window 
 PASS Stringification of window 
 FAIL Window interface: window must have own property "window" assert_false: property descriptor should not have a "value" field expected false got true
-PASS Window interface: window must inherit property "self" with the proper type 
+FAIL Window interface: window must inherit property "self" with the proper type Unrecognized type WindowProxy
 PASS Window interface: window must have own property "document" 
 PASS Window interface: window must inherit property "name" with the proper type 
 FAIL Window interface: window must have own property "location" assert_false: property descriptor should not have a "value" field expected false got true
 PASS Window interface: window must inherit property "history" with the proper type 
+PASS Window interface: window must inherit property "customElements" with the proper type 
 PASS Window interface: window must inherit property "locationbar" with the proper type 
 PASS Window interface: window must inherit property "menubar" with the proper type 
 PASS Window interface: window must inherit property "personalbar" with the proper type 
@@ -4484,27 +4606,33 @@ PASS Window interface: window must inherit property "closed" with the proper typ
 PASS Window interface: window must inherit property "stop()" with the proper type 
 PASS Window interface: window must inherit property "focus()" with the proper type 
 PASS Window interface: window must inherit property "blur()" with the proper type 
-PASS Window interface: window must inherit property "frames" with the proper type 
+FAIL Window interface: window must inherit property "frames" with the proper type Unrecognized type WindowProxy
 PASS Window interface: window must inherit property "length" with the proper type 
 FAIL Window interface: window must have own property "top" assert_false: property descriptor should not have a "value" field expected false got true
 PASS Window interface: window must inherit property "opener" with the proper type 
-PASS Window interface: window must inherit property "parent" with the proper type 
+FAIL Window interface: window must inherit property "parent" with the proper type Unrecognized type WindowProxy
 PASS Window interface: window must inherit property "frameElement" with the proper type 
-PASS Window interface: window must inherit property "open(DOMString, DOMString, DOMString, boolean)" with the proper type 
-PASS Window interface: calling open(DOMString, DOMString, DOMString, boolean) on window with too few arguments must throw TypeError 
+PASS Window interface: window must inherit property "open(USVString, DOMString, DOMString)" with the proper type 
+PASS Window interface: calling open(USVString, DOMString, DOMString) on window with too few arguments must throw TypeError 
 PASS Window interface: window must inherit property "navigator" with the proper type 
-PASS Window interface: window must inherit property "external" with the proper type 
 PASS Window interface: window must inherit property "applicationCache" with the proper type 
 PASS Window interface: window must inherit property "alert()" with the proper type 
+PASS Window interface: window must inherit property "alert(DOMString)" with the proper type 
+PASS Window interface: calling alert(DOMString) on window with too few arguments must throw TypeError 
 PASS Window interface: window must inherit property "confirm(DOMString)" with the proper type 
 PASS Window interface: calling confirm(DOMString) on window with too few arguments must throw TypeError 
 PASS Window interface: window must inherit property "prompt(DOMString, DOMString)" with the proper type 
 PASS Window interface: calling prompt(DOMString, DOMString) on window with too few arguments must throw TypeError 
 PASS Window interface: window must inherit property "print()" with the proper type 
-PASS Window interface: window must inherit property "postMessage(any, DOMString, [object Object])" with the proper type 
-PASS Window interface: calling postMessage(any, DOMString, [object Object]) on window with too few arguments must throw TypeError 
+PASS Window interface: window must inherit property "requestAnimationFrame(FrameRequestCallback)" with the proper type 
+PASS Window interface: calling requestAnimationFrame(FrameRequestCallback) on window with too few arguments must throw TypeError 
+PASS Window interface: window must inherit property "cancelAnimationFrame(unsigned long)" with the proper type 
+PASS Window interface: calling cancelAnimationFrame(unsigned long) on window with too few arguments must throw TypeError 
+PASS Window interface: window must inherit property "postMessage(any, USVString, [object Object])" with the proper type 
+PASS Window interface: calling postMessage(any, USVString, [object Object]) on window with too few arguments must throw TypeError 
 PASS Window interface: window must inherit property "captureEvents()" with the proper type 
 PASS Window interface: window must inherit property "releaseEvents()" with the proper type 
+PASS Window interface: window must inherit property "external" with the proper type 
 PASS Window interface: window must inherit property "onabort" with the proper type 
 PASS Window interface: window must inherit property "onauxclick" with the proper type 
 PASS Window interface: window must inherit property "onblur" with the proper type 
@@ -4556,6 +4684,7 @@ PASS Window interface: window must inherit property "onratechange" with the prop
 PASS Window interface: window must inherit property "onreset" with the proper type 
 PASS Window interface: window must inherit property "onresize" with the proper type 
 PASS Window interface: window must inherit property "onscroll" with the proper type 
+FAIL Window interface: window must inherit property "onsecuritypolicyviolation" with the proper type assert_own_property: expected property "onsecuritypolicyviolation" missing
 PASS Window interface: window must inherit property "onseeked" with the proper type 
 PASS Window interface: window must inherit property "onseeking" with the proper type 
 PASS Window interface: window must inherit property "onselect" with the proper type 
@@ -4618,8 +4747,8 @@ PASS History interface: attribute state
 PASS History interface: operation go(long) 
 PASS History interface: operation back() 
 PASS History interface: operation forward() 
-PASS History interface: operation pushState(any, DOMString, DOMString) 
-PASS History interface: operation replaceState(any, DOMString, DOMString) 
+PASS History interface: operation pushState(any, DOMString, USVString) 
+PASS History interface: operation replaceState(any, DOMString, USVString) 
 PASS History must be primary interface of window.history 
 PASS Stringification of window.history 
 PASS History interface: window.history must inherit property "length" with the proper type 
@@ -4629,10 +4758,10 @@ PASS History interface: window.history must inherit property "go(long)" with the
 PASS History interface: calling go(long) on window.history with too few arguments must throw TypeError 
 PASS History interface: window.history must inherit property "back()" with the proper type 
 PASS History interface: window.history must inherit property "forward()" with the proper type 
-PASS History interface: window.history must inherit property "pushState(any, DOMString, DOMString)" with the proper type 
-PASS History interface: calling pushState(any, DOMString, DOMString) on window.history with too few arguments must throw TypeError 
-PASS History interface: window.history must inherit property "replaceState(any, DOMString, DOMString)" with the proper type 
-PASS History interface: calling replaceState(any, DOMString, DOMString) on window.history with too few arguments must throw TypeError 
+PASS History interface: window.history must inherit property "pushState(any, DOMString, USVString)" with the proper type 
+PASS History interface: calling pushState(any, DOMString, USVString) on window.history with too few arguments must throw TypeError 
+PASS History interface: window.history must inherit property "replaceState(any, DOMString, USVString)" with the proper type 
+PASS History interface: calling replaceState(any, DOMString, USVString) on window.history with too few arguments must throw TypeError 
 PASS Location interface: existence and properties of interface object 
 PASS Location interface object length 
 PASS Location interface object name 
@@ -4743,6 +4872,13 @@ PASS ErrorEvent interface: attribute filename
 PASS ErrorEvent interface: attribute lineno 
 PASS ErrorEvent interface: attribute colno 
 PASS ErrorEvent interface: attribute error 
+PASS PromiseRejectionEvent interface: existence and properties of interface object 
+PASS PromiseRejectionEvent interface object length 
+PASS PromiseRejectionEvent interface object name 
+PASS PromiseRejectionEvent interface: existence and properties of interface prototype object 
+PASS PromiseRejectionEvent interface: existence and properties of interface prototype object's "constructor" property 
+FAIL PromiseRejectionEvent interface: attribute promise Illegal invocation
+PASS PromiseRejectionEvent interface: attribute reason 
 PASS Navigator interface: existence and properties of interface object 
 PASS Navigator interface object length 
 PASS Navigator interface object name 
@@ -4757,6 +4893,8 @@ PASS Navigator interface: attribute productSub
 PASS Navigator interface: attribute userAgent 
 PASS Navigator interface: attribute vendor 
 PASS Navigator interface: attribute vendorSub 
+FAIL Navigator interface: operation taintEnabled() assert_own_property: interface prototype object missing non-static operation expected property "taintEnabled" missing
+FAIL Navigator interface: attribute oscpu assert_true: The prototype object must have a property "oscpu" expected true got false
 PASS Navigator interface: attribute language 
 PASS Navigator interface: attribute languages 
 PASS Navigator interface: attribute onLine 
@@ -4782,6 +4920,8 @@ PASS Navigator interface: window.navigator must inherit property "productSub" wi
 PASS Navigator interface: window.navigator must inherit property "userAgent" with the proper type 
 PASS Navigator interface: window.navigator must inherit property "vendor" with the proper type 
 PASS Navigator interface: window.navigator must inherit property "vendorSub" with the proper type 
+FAIL Navigator interface: window.navigator must inherit property "taintEnabled()" with the proper type assert_inherits: property "taintEnabled" not found in prototype chain
+FAIL Navigator interface: window.navigator must inherit property "oscpu" with the proper type assert_inherits: property "oscpu" not found in prototype chain
 PASS Navigator interface: window.navigator must inherit property "language" with the proper type 
 PASS Navigator interface: window.navigator must inherit property "languages" with the proper type 
 PASS Navigator interface: window.navigator must inherit property "onLine" with the proper type 
@@ -4839,23 +4979,6 @@ PASS MimeType interface: attribute type
 PASS MimeType interface: attribute description 
 PASS MimeType interface: attribute suffixes 
 PASS MimeType interface: attribute enabledPlugin 
-FAIL External interface: existence and properties of interface object assert_own_property: self does not have own property "External" expected property "External" missing
-FAIL External interface object length assert_own_property: self does not have own property "External" expected property "External" missing
-FAIL External interface object name assert_own_property: self does not have own property "External" expected property "External" missing
-FAIL External interface: existence and properties of interface prototype object assert_own_property: self does not have own property "External" expected property "External" missing
-FAIL External interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "External" expected property "External" missing
-FAIL External interface: operation AddSearchProvider(DOMString) assert_own_property: self does not have own property "External" expected property "External" missing
-FAIL External interface: operation IsSearchProviderInstalled(DOMString) assert_own_property: self does not have own property "External" expected property "External" missing
-FAIL External must be primary interface of window.external assert_own_property: self does not have own property "External" expected property "External" missing
-PASS Stringification of window.external 
-PASS External interface: window.external must inherit property "AddSearchProvider(DOMString)" with the proper type 
-FAIL External interface: calling AddSearchProvider(DOMString) on window.external with too few arguments must throw TypeError assert_throws: Called with 0 arguments function "function () {
-            fn.apply(obj, args);
-        }" did not throw
-PASS External interface: window.external must inherit property "IsSearchProviderInstalled(DOMString)" with the proper type 
-FAIL External interface: calling IsSearchProviderInstalled(DOMString) on window.external with too few arguments must throw TypeError assert_throws: Called with 0 arguments function "function () {
-            fn.apply(obj, args);
-        }" did not throw
 PASS ImageBitmap interface: existence and properties of interface object 
 PASS ImageBitmap interface object length 
 PASS ImageBitmap interface object name 
@@ -4863,6 +4986,7 @@ PASS ImageBitmap interface: existence and properties of interface prototype obje
 PASS ImageBitmap interface: existence and properties of interface prototype object's "constructor" property 
 PASS ImageBitmap interface: attribute width 
 PASS ImageBitmap interface: attribute height 
+PASS ImageBitmap interface: operation close() 
 PASS MessageEvent interface: existence and properties of interface object 
 PASS MessageEvent interface object length 
 PASS MessageEvent interface object name 
@@ -4873,16 +4997,16 @@ PASS MessageEvent interface: attribute origin
 PASS MessageEvent interface: attribute lastEventId 
 PASS MessageEvent interface: attribute source 
 PASS MessageEvent interface: attribute ports 
-FAIL MessageEvent interface: operation initMessageEvent(DOMString, boolean, boolean, any, DOMString, DOMString, [object Object],[object Object], [object Object]) assert_equals: property has wrong .length expected 1 but got 0
+FAIL MessageEvent interface: operation initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object]) assert_equals: property has wrong .length expected 1 but got 0
 PASS MessageEvent must be primary interface of new MessageEvent("message", { data: 5 }) 
 PASS Stringification of new MessageEvent("message", { data: 5 }) 
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "data" with the proper type 
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "origin" with the proper type 
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "lastEventId" with the proper type 
-PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "source" with the proper type 
+FAIL MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "source" with the proper type Unrecognized type WindowProxy
 FAIL MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "ports" with the proper type assert_true: Value should be array expected true got false
-PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "initMessageEvent(DOMString, boolean, boolean, any, DOMString, DOMString, [object Object],[object Object], [object Object])" with the proper type 
-FAIL MessageEvent interface: calling initMessageEvent(DOMString, boolean, boolean, any, DOMString, DOMString, [object Object],[object Object], [object Object]) on new MessageEvent("message", { data: 5 }) with too few arguments must throw TypeError assert_throws: Called with 0 arguments function "function () {
+PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object])" with the proper type 
+FAIL MessageEvent interface: calling initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object]) on new MessageEvent("message", { data: 5 }) with too few arguments must throw TypeError assert_throws: Called with 0 arguments function "function () {
             fn.apply(obj, args);
         }" did not throw
 PASS EventSource interface: existence and properties of interface object 
@@ -5008,6 +5132,7 @@ PASS Worker interface: existence and properties of interface prototype object's 
 PASS Worker interface: operation terminate() 
 PASS Worker interface: operation postMessage(any, [object Object]) 
 PASS Worker interface: attribute onmessage 
+FAIL Worker interface: attribute onmessageerror assert_true: The prototype object must have a property "onmessageerror" expected true got false
 PASS Worker interface: attribute onerror 
 PASS SharedWorker interface: existence and properties of interface object 
 PASS SharedWorker interface object length 
@@ -5199,5 +5324,8 @@ PASS Stringification of document.createElement("font")
 PASS HTMLFontElement interface: document.createElement("font") must inherit property "color" with the proper type 
 PASS HTMLFontElement interface: document.createElement("font") must inherit property "face" with the proper type 
 PASS HTMLFontElement interface: document.createElement("font") must inherit property "size" with the proper type 
+PASS Stringification of window.external 
+PASS External interface: window.external must inherit property "AddSearchProvider()" with the proper type 
+PASS External interface: window.external must inherit property "IsSearchProviderInstalled()" with the proper type 
 Harness: the test ran to completion.
 
