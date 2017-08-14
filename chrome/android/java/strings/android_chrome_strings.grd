@@ -500,6 +500,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_NOTIFICATIONS_FROM_WEBSITES_TITLE" desc="Summary for the preference to link to the per-website notification settings.">
         From websites
       </message>
+      <message name="IDS_NOTIFICATIONS_CONTENT_SUGGESTIONS_SUMMARY_DISABLED" desc="Summary for the disabled preference to turn on/off content suggestions notifications when search and site suggestions are disabled.">
+        Search and site suggestions disabled
+      </message>
 
       <!-- Privacy preferences -->
       <message name="IDS_PREFS_PRIVACY" desc="Title for the Privacy preferences. [CHAR-LIMIT=32]">
