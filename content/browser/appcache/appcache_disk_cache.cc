@@ -220,20 +220,16 @@ int AppCacheDiskCache::InitWithDiskBackend(
     const base::FilePath& disk_cache_directory,
     int disk_cache_size,
     bool force,
-    const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
+    base::OnceClosure post_cleanup_callback,
     const net::CompletionCallback& callback) {
-  return Init(net::APP_CACHE,
-              disk_cache_directory,
-              disk_cache_size,
-              force,
-              cache_thread,
-              callback);
+  return Init(net::APP_CACHE, disk_cache_directory, disk_cache_size, force,
+              std::move(post_cleanup_callback), callback);
 }
 
 int AppCacheDiskCache::InitWithMemBackend(
     int mem_cache_size, const net::CompletionCallback& callback) {
-  return Init(net::MEMORY_CACHE, base::FilePath(), mem_cache_size, false, NULL,
-              callback);
+  return Init(net::MEMORY_CACHE, base::FilePath(), mem_cache_size, false,
+              base::OnceClosure(), callback);
 }
 
 void AppCacheDiskCache::Disable() {
@@ -340,13 +336,12 @@ AppCacheDiskCache::PendingCall::PendingCall(const PendingCall& other) = default;
 
 AppCacheDiskCache::PendingCall::~PendingCall() {}
 
-int AppCacheDiskCache::Init(
-    net::CacheType cache_type,
-    const base::FilePath& cache_directory,
-    int cache_size,
-    bool force,
-    const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
-    const net::CompletionCallback& callback) {
+int AppCacheDiskCache::Init(net::CacheType cache_type,
+                            const base::FilePath& cache_directory,
+                            int cache_size,
+                            bool force,
+                            base::OnceClosure post_cleanup_callback,
+                            const net::CompletionCallback& callback) {
   DCHECK(!is_initializing_or_waiting_to_initialize() && !disk_cache_.get());
   is_disabled_ = false;
   create_backend_callback_ = new CreateBackendCallbackShim(this);
@@ -355,12 +350,9 @@ int AppCacheDiskCache::Init(
       cache_type,
       use_simple_cache_ ? net::CACHE_BACKEND_SIMPLE
                         : net::CACHE_BACKEND_DEFAULT,
-      cache_directory,
-      cache_size,
-      force,
-      cache_thread,
-      NULL,
+      cache_directory, cache_size, force, NULL,
       &(create_backend_callback_->backend_ptr_),
+      std::move(post_cleanup_callback),
       base::Bind(&CreateBackendCallbackShim::Callback,
                  create_backend_callback_));
   if (rv == net::ERR_IO_PENDING)

@@ -23,7 +23,6 @@
 
 namespace base {
 class FilePath;
-class SingleThreadTaskRunner;
 }
 
 namespace storage {
@@ -277,7 +276,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void InitInternal(
       const base::FilePath& user_data_directory,
       scoped_refptr<base::SequencedTaskRunner> database_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> disk_cache_thread,
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy,
       ChromeBlobStorageContext* blob_context,

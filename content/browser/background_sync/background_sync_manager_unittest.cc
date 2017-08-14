@@ -36,6 +36,7 @@
 #include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/mock_background_sync_controller.h"
 #include "content/test/mock_permission_manager.h"
 #include "content/test/test_background_sync_manager.h"
@@ -406,7 +407,7 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   void DeleteServiceWorkerAndStartOver() {
     helper_->context()->ScheduleDeleteAndStartOver();
-    base::RunLoop().RunUntilIdle();
+    content::RunAllBlockingPoolTasksUntilIdle();
   }
 
   int MaxTagLength() const { return BackgroundSyncManager::kMaxTagLength; }
