@@ -19,6 +19,7 @@ void InitializeColorSchemes() {
 
   ColorScheme& normal_scheme = kColorSchemes[ColorScheme::kModeNormal];
   normal_scheme.world_background = 0xFF999999;
+  normal_scheme.world_background_text = 0xFF363636;
   normal_scheme.floor = 0xFF8C8C8C;
   normal_scheme.ceiling = normal_scheme.floor;
   normal_scheme.floor_grid = 0x26FFFFFF;
@@ -91,6 +92,7 @@ void InitializeColorSchemes() {
       kColorSchemes[ColorScheme::kModeNormal];
   ColorScheme& incognito_scheme = kColorSchemes[ColorScheme::kModeIncognito];
   incognito_scheme.world_background = 0xFF2E2E2E;
+  incognito_scheme.world_background_text = 0xFF878787;
   incognito_scheme.floor = 0xFF282828;
   incognito_scheme.ceiling = 0xFF2F2F2F;
   incognito_scheme.floor_grid = 0xCC595959;
