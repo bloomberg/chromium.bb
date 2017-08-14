@@ -1040,6 +1040,7 @@ void FeatureInfo::InitializeFeatures() {
   // they should use ordinary non-power-of-two textures. However, for unit
   // testing purposes we expose it on all supported platforms.
   if (extensions.Contains("GL_ARB_texture_rectangle") ||
+      extensions.Contains("GL_ANGLE_texture_rectangle") ||
       gl_version_info_->is_desktop_core_profile) {
     AddExtensionString("GL_ARB_texture_rectangle");
     feature_flags_.arb_texture_rectangle = true;
