@@ -39,6 +39,7 @@
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_window_state_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -146,6 +147,16 @@ int FindPublicSession(const user_manager::UserList& users) {
   }
 
   return index;
+}
+
+// Returns true if |users| contains users other than device local account users.
+bool HasNonDeviceLocalAccounts(const user_manager::UserList& users) {
+  for (const auto* user : users) {
+    if (!policy::IsDeviceLocalAccountUser(user->GetAccountId().GetUserEmail(),
+                                          nullptr))
+      return true;
+  }
+  return false;
 }
 
 // This has once been copied from
@@ -1133,7 +1144,8 @@ void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
   const user_manager::UserList& users =
       user_manager::UserManager::Get()->GetUsers();
   int public_session_user_index = FindPublicSession(users);
-  if ((!show_users && public_session_user_index == -1) || users.empty()) {
+  if ((!show_users && public_session_user_index == -1) ||
+      !HasNonDeviceLocalAccounts(users)) {
     // Boot into sign in form, preload default wallpaper.
     if (!SetDeviceWallpaperIfApplicable(user_manager::SignInAccountId()))
       SetDefaultWallpaperDelayed(user_manager::SignInAccountId());
