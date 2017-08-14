@@ -454,6 +454,22 @@
             ]
         }
     ],
+    "ClearOldOnDemandFavicons": [
+        {
+            "platforms": [
+                "android",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ClearOldOnDemandFavicons"
+                    ]
+                }
+            ]
+        }
+    ],
     "ClientSidePreviews": [
         {
             "platforms": [
