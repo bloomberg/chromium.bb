@@ -109,6 +109,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
         'override_compile_targets': ['telemetry_perf_tests'],
         'args': ['speedometer', '-v', '--upload-results',
                  '--output-format=chartjson', '--browser=reference',
+                 '--max-failures=5',
                  '--output-trace-tag=_ref'],
         'swarming': {
           'ignore_task_failure': True,
