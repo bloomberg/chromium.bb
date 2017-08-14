@@ -1381,8 +1381,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
   HostContentSettingsMap* content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(
           current_browser()->profile());
-  content_settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                                 CONTENT_SETTING_ALLOW);
+  GURL server_root = embedded_test_server()->GetURL("/");
+  content_settings_map->SetContentSettingDefaultScope(
+      server_root, server_root, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+      CONTENT_SETTING_ALLOW);
 
   PrerenderTestURL("/prerender/prerender_plugin_delay_load.html",
                    FINAL_STATUS_USED, 1);
@@ -1403,8 +1405,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPluginPowerSaver) {
   HostContentSettingsMap* content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(
           current_browser()->profile());
-  content_settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                                 CONTENT_SETTING_ALLOW);
+  GURL server_root = embedded_test_server()->GetURL("/");
+  content_settings_map->SetContentSettingDefaultScope(
+      server_root, server_root, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+      CONTENT_SETTING_ALLOW);
 
   PrerenderTestURL("/prerender/prerender_plugin_power_saver.html",
                    FINAL_STATUS_USED, 1);
@@ -1470,8 +1474,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   HostContentSettingsMap* content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(
           current_browser()->profile());
-  content_settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                                 CONTENT_SETTING_ALLOW);
+  GURL server_root = embedded_test_server()->GetURL("/");
+  content_settings_map->SetContentSettingDefaultScope(
+      server_root, server_root, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+      CONTENT_SETTING_ALLOW);
 
   PrerenderTestURL("/prerender/prerender_iframe_plugin_delay_load.html",
                    FINAL_STATUS_USED, 1);
