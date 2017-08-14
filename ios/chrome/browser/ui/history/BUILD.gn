@@ -207,6 +207,7 @@ source_set("eg_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/ui:ui",
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/browser/ui/util",
