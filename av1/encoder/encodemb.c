@@ -572,27 +572,34 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
 #if CONFIG_PVQ || CONFIG_DIST_8X8 || CONFIG_LGT || CONFIG_MRC_TX
   dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
+#endif  // CONFIG_PVQ || CONFIG_DIST_8X8 || CONFIG_LGT || CONFIG_MRC_TX
+
 #if CONFIG_PVQ || CONFIG_DIST_8X8
-  pred = &pd->pred[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
+  if (CONFIG_PVQ
+#if CONFIG_DIST_8X8
+      || x->using_dist_8x8
+#endif  // CONFIG_DIST_8X8
+      ) {
+    pred = &pd->pred[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
 
 // copy uint8 orig and predicted block to int16 buffer
 // in order to use existing VP10 transform functions
 #if CONFIG_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    for (j = 0; j < txh; j++)
-      for (i = 0; i < txw; i++)
-        pred[diff_stride * j + i] =
-            CONVERT_TO_SHORTPTR(dst)[dst_stride * j + i];
-  } else {
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      for (j = 0; j < txh; j++)
+        for (i = 0; i < txw; i++)
+          pred[diff_stride * j + i] =
+              CONVERT_TO_SHORTPTR(dst)[dst_stride * j + i];
+    } else {
 #endif  // CONFIG_HIGHBITDEPTH
-    for (j = 0; j < txh; j++)
-      for (i = 0; i < txw; i++)
-        pred[diff_stride * j + i] = dst[dst_stride * j + i];
+      for (j = 0; j < txh; j++)
+        for (i = 0; i < txw; i++)
+          pred[diff_stride * j + i] = dst[dst_stride * j + i];
 #if CONFIG_HIGHBITDEPTH
-  }
+    }
 #endif  // CONFIG_HIGHBITDEPTH
+  }
 #endif  // CONFIG_PVQ || CONFIG_DIST_8X8
-#endif  // CONFIG_PVQ || CONFIG_DIST_8X8 || CONFIG_LGT || CONFIG_MRC_TX
 
   (void)ctx;
 

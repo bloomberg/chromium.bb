@@ -18,6 +18,9 @@
 #include "av1/encoder/encint.h"
 #endif
 #include "av1/common/mvref_common.h"
+#if CONFIG_DIST_8X8
+#include "aom/aomcx.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -275,6 +278,8 @@ struct macroblock {
   int pvq_coded;  // Indicates whether pvq_info needs be stored to tokenize
 #endif
 #if CONFIG_DIST_8X8
+  int using_dist_8x8;
+  aom_tune_metric tune_metric;
 #if CONFIG_CB4X4
 #if CONFIG_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint16_t, decoded_8x8[8 * 8]);

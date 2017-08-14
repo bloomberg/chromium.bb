@@ -61,7 +61,7 @@
 #endif  // CONFIG_PVQ
 #if CONFIG_PVQ || CONFIG_DAALA_DIST
 #include "av1/common/pvq.h"
-#endif  // CONFIG_PVQ || CONFIG_DIST_8X8
+#endif  // CONFIG_PVQ
 #if CONFIG_DUAL_FILTER
 #define DUAL_FILTER_SET_SIZE (SWITCHABLE_FILTERS * SWITCHABLE_FILTERS)
 #if USE_EXTRA_FILTER
@@ -1801,7 +1801,7 @@ static unsigned pixel_dist(const AV1_COMP *const cpi, const MACROBLOCK *x,
   assert(visible_cols > 0);
 
 #if CONFIG_DIST_8X8
-  if (plane == 0 && txb_cols >= 8 && txb_rows >= 8)
+  if (x->using_dist_8x8 && plane == 0 && txb_cols >= 8 && txb_rows >= 8)
     return av1_dist_8x8(cpi, xd, src, src_stride, dst, dst_stride, tx_bsize,
                         txb_cols, txb_rows, visible_cols, visible_rows,
                         x->qindex);
@@ -1850,7 +1850,7 @@ static int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
                      NULL, &visible_cols, &visible_rows);
 
 #if CONFIG_DIST_8X8
-  if (plane == 0 && txb_width >= 8 && txb_height >= 8)
+  if (x->using_dist_8x8 && plane == 0 && txb_width >= 8 && txb_height >= 8)
     return av1_dist_8x8_diff(xd, src, src_stride, diff, diff_stride, txb_width,
                              txb_height, visible_cols, visible_rows, x->qindex);
   else
@@ -1906,7 +1906,11 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   const struct macroblockd_plane *const pd = &xd->plane[plane];
 #endif  // CONFIG_DIST_8X8
 
-  if (cpi->sf.use_transform_domain_distortion && !CONFIG_DIST_8X8) {
+  if (cpi->sf.use_transform_domain_distortion
+#if CONFIG_DIST_8X8
+      && !x->using_dist_8x8
+#endif
+      ) {
     // Transform domain distortion computation is more efficient as it does
     // not involve an inverse transform, but it is less accurate.
     const int buffer_length = tx_size_2d[tx_size];
@@ -2017,7 +2021,7 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                                     tx_type, tx_size, recon, MAX_TX_SIZE, eob);
 
 #if CONFIG_DIST_8X8
-        if (plane == 0 && (bsw < 8 || bsh < 8)) {
+        if (x->using_dist_8x8 && plane == 0 && (bsw < 8 || bsh < 8)) {
           // Save decoded pixels for inter block in pd->pred to avoid
           // block_8x8_rd_txfm_daala_dist() need to produce them
           // by calling av1_inverse_transform_block() again.
@@ -2133,7 +2137,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 
   if (
 #if CONFIG_DIST_8X8
-      sub8x8tx_in_gte8x8blk_in_plane0 ||
+      (x->using_dist_8x8 && sub8x8tx_in_gte8x8blk_in_plane0) ||
 #endif
       RDCOST(x->rdmult, 0, tmp_dist) + args->this_rd < args->best_rd) {
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
@@ -2223,7 +2227,7 @@ CALCULATE_RD : {}
   args->this_rd += rd;
 
 #if CONFIG_DIST_8X8
-  if (!sub8x8tx_in_gte8x8blk_in_plane0) {
+  if (!x->using_dist_8x8 || !sub8x8tx_in_gte8x8blk_in_plane0) {
 #endif
     if (args->this_rd > args->best_rd) {
       args->exit_early = 1;
@@ -2330,7 +2334,8 @@ static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
   av1_foreach_transformed_block_in_plane(xd, bsize, plane, block_rd_txfm,
                                          &args);
 #if CONFIG_DIST_8X8
-  if (!args.exit_early && plane == 0 && bsize >= BLOCK_8X8 &&
+  if (x->using_dist_8x8 && !args.exit_early && plane == 0 &&
+      bsize >= BLOCK_8X8 &&
       (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4))
     dist_8x8_sub8x8_txfm_rd(cpi, x, bsize, &args);
 #endif
@@ -3803,9 +3808,11 @@ static int64_t rd_pick_intra_sub_8x8_y_mode(const AV1_COMP *const cpi,
           cpi, mb, idy, idx, &best_mode, bmode_costs,
           xd->plane[0].above_context + idx, xd->plane[0].left_context + idy, &r,
           &ry, &d, bsize, tx_size, y_skip, best_rd - total_rd);
-#if !CONFIG_DIST_8X8
-      if (this_rd >= best_rd - total_rd) return INT64_MAX;
-#endif  // !CONFIG_DIST_8X8
+#if CONFIG_DIST_8X8
+      if (!cpi->oxcf.using_dist_8x8)
+#endif
+        if (this_rd >= best_rd - total_rd) return INT64_MAX;
+
       total_rd += this_rd;
       cost += r;
       total_distortion += d;
@@ -3823,7 +3830,7 @@ static int64_t rd_pick_intra_sub_8x8_y_mode(const AV1_COMP *const cpi,
   mbmi->mode = mic->bmi[3].as_mode;
 
 #if CONFIG_DIST_8X8
-  {
+  if (cpi->oxcf.using_dist_8x8) {
     const struct macroblock_plane *p = &mb->plane[0];
     const struct macroblockd_plane *pd = &xd->plane[0];
     const int src_stride = p->src.stride;
@@ -4620,7 +4627,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 #endif  // CONFIG_MRC_TX
   if (
 #if CONFIG_DIST_8X8
-      sub8x8tx_in_gte8x8blk_in_plane0 ||
+      (x->using_dist_8x8 && sub8x8tx_in_gte8x8blk_in_plane0) ||
 #endif
       RDCOST(x->rdmult, 0, tmp_dist) < rd_stats->ref_rdcost) {
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
@@ -4647,7 +4654,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 #endif
   if (eob > 0) {
 #if CONFIG_DIST_8X8
-    if (plane == 0 && (bw < 8 && bh < 8)) {
+    if (x->using_dist_8x8 && plane == 0 && (bw < 8 && bh < 8)) {
       // Save sub8x8 luma decoded pixels
       // since 8x8 luma decoded pixels are not available for daala-dist
       // after recursive split of BLOCK_8x8 is done.
@@ -4967,20 +4974,22 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
                       &this_rd_stats, ref_best_rd - tmp_rd, &this_cost_valid,
                       rd_stats_stack);
 #if CONFIG_DIST_8X8
-      if (plane == 0 && tx_size == TX_8X8) {
+      if (x->using_dist_8x8 && plane == 0 && tx_size == TX_8X8) {
         sub8x8_eob[i] = p->eobs[block];
       }
 #endif  // CONFIG_DIST_8X8
       av1_merge_rd_stats(&sum_rd_stats, &this_rd_stats);
 
       tmp_rd = RDCOST(x->rdmult, sum_rd_stats.rate, sum_rd_stats.dist);
-#if !CONFIG_DIST_8X8
-      if (this_rd < tmp_rd) break;
+#if CONFIG_DIST_8X8
+      if (!x->using_dist_8x8)
 #endif
+        if (this_rd < tmp_rd) break;
       block += sub_step;
     }
 #if CONFIG_DIST_8X8
-    if (this_cost_valid && plane == 0 && tx_size == TX_8X8) {
+    if (x->using_dist_8x8 && this_cost_valid && plane == 0 &&
+        tx_size == TX_8X8) {
       const int src_stride = p->src.stride;
       const int dst_stride = pd->dst.stride;
 
@@ -9956,7 +9965,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     }
     rd_cost->rdcost = RDCOST(x->rdmult, rd_cost->rate, rd_cost->dist);
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
-    rd_cost->dist_y = dist_y;
+    if (x->using_dist_8x8) rd_cost->dist_y = dist_y;
 #endif
   } else {
     rd_cost->rate = INT_MAX;
@@ -11073,7 +11082,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         rate2 += intra_cost_penalty;
       distortion2 = distortion_y + distortion_uv;
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
-      if (bsize < BLOCK_8X8) distortion2_y = distortion_y;
+      if (x->using_dist_8x8 && bsize < BLOCK_8X8) distortion2_y = distortion_y;
 #endif
     } else {
       int_mv backup_ref_mv[2];
@@ -11182,7 +11191,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         // combined luma and chroma dist and sse.
         // This can be seen inside motion_mode_rd(), which is called by
         // handle_inter_mode().
-        if (bsize < BLOCK_8X8) av1_init_rd_stats(&rd_stats_y);
+        if (x->using_dist_8x8 && bsize < BLOCK_8X8)
+          av1_init_rd_stats(&rd_stats_y);
 #endif
         rd_stats.rate = rate2;
 
@@ -11206,7 +11216,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         rate_y = rd_stats_y.rate;
         rate_uv = rd_stats_uv.rate;
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
-        if (bsize < BLOCK_8X8) {
+        if (x->using_dist_8x8 && bsize < BLOCK_8X8) {
           if (rd_stats_y.rate != INT_MAX) {
             assert(rd_stats_y.sse < INT64_MAX);
             assert(rd_stats_y.dist < INT64_MAX);
@@ -11394,7 +11404,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             // tmp_rd_stats.skip = 1 and tmp_rd_stats.dist and .sse
             // represent combined luma and chroma .dist and .sse,
             // we should initialized tmp_rd_stats_y.
-            if (bsize < BLOCK_8X8) av1_init_rd_stats(&tmp_rd_stats_y);
+            if (x->using_dist_8x8 && bsize < BLOCK_8X8)
+              av1_init_rd_stats(&tmp_rd_stats_y);
 #endif
             // Point to variables that are not maintained between iterations
             args.single_newmv = dummy_single_newmv;
@@ -11470,7 +11481,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             backup_mbmi = *mbmi;
             backup_skip = x->skip;
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
-            if (bsize < BLOCK_8X8) {
+            if (x->using_dist_8x8 && bsize < BLOCK_8X8) {
               if (tmp_rd_stats_y.rate != INT_MAX) {
                 assert(tmp_rd_stats_y.sse < INT64_MAX);
                 assert(tmp_rd_stats_y.dist < INT64_MAX);
@@ -11566,7 +11577,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           rate_y = 0;
           rate_uv = 0;
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
-          if (bsize < BLOCK_8X8) {
+          if (x->using_dist_8x8 && bsize < BLOCK_8X8) {
             assert(total_sse_y < INT64_MAX);
             distortion2_y = total_sse_y;
           }
@@ -11591,9 +11602,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
-    if ((bsize < BLOCK_8X8) && (rate2 != INT_MAX)) {
+    if (x->using_dist_8x8 && bsize < BLOCK_8X8 && rate2 != INT_MAX)
       assert(distortion2_y < INT64_MAX);
-    }
 #endif
 
     if (ref_frame == INTRA_FRAME) {
@@ -11672,7 +11682,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                                             this_skip2 || skippable);
         best_rate_uv = rate_uv;
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
-        if (bsize < BLOCK_8X8) {
+        if (x->using_dist_8x8 && bsize < BLOCK_8X8) {
           assert(distortion2_y < INT64_MAX);
           rd_cost->dist_y = distortion2_y;
         }
@@ -11685,9 +11695,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
     }
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
-    if ((bsize < BLOCK_8X8) && (rd_cost->rate != INT_MAX)) {
+    if (x->using_dist_8x8 && bsize < BLOCK_8X8 && rd_cost->rate != INT_MAX)
       assert(rd_cost->dist_y < INT64_MAX);
-    }
 #endif
     /* keep record of best compound/single-only prediction */
     if (!disable_skip && ref_frame != INTRA_FRAME) {
@@ -11820,7 +11829,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       rd_cost->rdcost = RDCOST(x->rdmult, rd_cost->rate, rd_cost->dist);
       best_skip2 = skip_blk;
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
-      if (bsize < BLOCK_8X8) {
+      if (x->using_dist_8x8 && bsize < BLOCK_8X8) {
         assert(rd_cost->rate != INT_MAX);
         assert(rd_cost->dist_y < INT64_MAX);
         rd_cost->dist_y = rd_stats_y.dist;
@@ -11830,9 +11839,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   }
 
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
-  if ((bsize < BLOCK_8X8) && (rd_cost->rate != INT_MAX)) {
+  if (x->using_dist_8x8 && bsize < BLOCK_8X8 && rd_cost->rate != INT_MAX)
     assert(rd_cost->dist_y < INT64_MAX);
-  }
 #endif
 
   // Only try palette mode when the best mode so far is an intra mode.
@@ -12366,7 +12374,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   rd_cost->dist = distortion2;
   rd_cost->rdcost = this_rd;
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
-  if (bsize < BLOCK_8X8) rd_cost->dist_y = distortion2;
+  if (x->using_dist_8x8 && bsize < BLOCK_8X8) rd_cost->dist_y = distortion2;
 #endif
   if (this_rd >= best_rd_so_far) {
     rd_cost->rate = INT_MAX;
