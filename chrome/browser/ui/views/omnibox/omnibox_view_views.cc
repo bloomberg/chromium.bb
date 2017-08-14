@@ -125,7 +125,9 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       location_bar_view_(location_bar),
       ime_candidate_window_open_(false),
       select_all_on_mouse_release_(false),
-      select_all_on_gesture_tap_(false) {
+      select_all_on_gesture_tap_(false),
+      latency_histogram_state_(NOT_ACTIVE),
+      scoped_observer_(this) {
   set_id(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
 }
@@ -302,10 +304,11 @@ void OmniboxViewViews::OnPaint(gfx::Canvas* canvas) {
     SCOPED_UMA_HISTOGRAM_TIMER("Omnibox.PaintTime");
     Textfield::OnPaint(canvas);
   }
-  if (!insert_char_time_.is_null()) {
+  if (latency_histogram_state_ == CHAR_TYPED) {
+    DCHECK(!insert_char_time_.is_null());
     UMA_HISTOGRAM_TIMES("Omnibox.CharTypedToRepaintLatency",
                         base::TimeTicks::Now() - insert_char_time_);
-    insert_char_time_ = base::TimeTicks();
+    latency_histogram_state_ = ON_PAINT_CALLED;
   }
 }
 
@@ -360,6 +363,15 @@ ui::TextInputType OmniboxViewViews::GetTextInputType() const {
   return input_type;
 }
 
+void OmniboxViewViews::AddedToWidget() {
+  views::Textfield::AddedToWidget();
+  scoped_observer_.Add(GetWidget()->GetCompositor());
+}
+
+void OmniboxViewViews::RemovedFromWidget() {
+  views::Textfield::RemovedFromWidget();
+  scoped_observer_.RemoveAll();
+}
 
 void OmniboxViewViews::SetTextAndSelectedRange(const base::string16& text,
                                                const gfx::Range& range) {
@@ -850,8 +862,11 @@ base::string16 OmniboxViewViews::GetSelectionClipboardText() const {
 void OmniboxViewViews::DoInsertChar(base::char16 ch) {
   // If |insert_char_time_| is not null, there's a pending insert char operation
   // that hasn't been painted yet. Keep the earlier time.
-  if (insert_char_time_.is_null())
+  if (insert_char_time_.is_null()) {
+    DCHECK_EQ(latency_histogram_state_, NOT_ACTIVE);
+    latency_histogram_state_ = CHAR_TYPED;
     insert_char_time_ = base::TimeTicks::Now();
+  }
   Textfield::DoInsertChar(ch);
 }
 
@@ -1102,4 +1117,43 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   // on IDC_ for now.
   menu_contents->AddItemWithStringId(IDC_EDIT_SEARCH_ENGINES,
       IDS_EDIT_SEARCH_ENGINES);
+}
+
+void OmniboxViewViews::OnCompositingDidCommit(ui::Compositor* compositor) {
+  if (latency_histogram_state_ == ON_PAINT_CALLED) {
+    // Advance the state machine.
+    latency_histogram_state_ = COMPOSITING_COMMIT;
+  } else if (latency_histogram_state_ == COMPOSITING_COMMIT) {
+    // If we get two commits in a row (without compositing end in-between), it
+    // means compositing wasn't done for the previous commit, which can happen
+    // due to occlusion. In such a case, reset the state to inactive and don't
+    // log the metric.
+    insert_char_time_ = base::TimeTicks();
+    latency_histogram_state_ = NOT_ACTIVE;
+  }
+}
+
+void OmniboxViewViews::OnCompositingStarted(ui::Compositor* compositor,
+                                            base::TimeTicks start_time) {
+  // Track the commit to completion. This state is necessary to ensure the ended
+  // event we get is the one we're waiting for (and not for a previous paint).
+  if (latency_histogram_state_ == COMPOSITING_COMMIT)
+    latency_histogram_state_ = COMPOSITING_STARTED;
+}
+
+void OmniboxViewViews::OnCompositingEnded(ui::Compositor* compositor) {
+  if (latency_histogram_state_ == COMPOSITING_STARTED) {
+    DCHECK(!insert_char_time_.is_null());
+    UMA_HISTOGRAM_TIMES("Omnibox.CharTypedToRepaintLatency.Composited",
+                        base::TimeTicks::Now() - insert_char_time_);
+    insert_char_time_ = base::TimeTicks();
+    latency_histogram_state_ = NOT_ACTIVE;
+  }
+}
+
+void OmniboxViewViews::OnCompositingLockStateChanged(
+    ui::Compositor* compositor) {}
+
+void OmniboxViewViews::OnCompositingShuttingDown(ui::Compositor* compositor) {
+  scoped_observer_.RemoveAll();
 }

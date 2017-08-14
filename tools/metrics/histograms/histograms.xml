@@ -49952,6 +49952,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.CharTypedToRepaintLatency.Composited" units="ms">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    A refinement of the Omnibox.CharTypedToRepaintLatency metric that attempts
+    to more accurately track the latency by measuring until the point when the
+    compositor has actually put pixels on the screen. In particular, this will
+    capture the time used to also paint the Omnibox result views as a result of
+    the character insertion, which is not covered by
+    Omnibox.CharTypedToRepaintLatency. If there are multiple keystrokes before a
+    paint, logs the time since the earliest one.
+
+    TODO(asvitkine): This is currently implemented only on Views platforms
+    (Win/Linux/CrOS) and the intention is to replace the implementation of
+    Omnibox.CharTypedToRepaintLatency by this one once we vet that it's working
+    as expected.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.ClipboardSuggestionShownAge" units="ms">
   <owner>mpearson@chromium.org</owner>
   <summary>
