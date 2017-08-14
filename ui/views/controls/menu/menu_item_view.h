@@ -536,6 +536,12 @@ class VIEWS_EXPORT MenuItemView : public View {
   // containing other elements.
   bool use_right_margin_;
 
+  // Contains an image for the checkbox or radio icon.
+  ImageView* radio_check_image_view_;
+
+  // The submenu indicator arrow icon in case the menu item has a Submenu.
+  ImageView* submenu_arrow_image_view_;
+
   DISALLOW_COPY_AND_ASSIGN(MenuItemView);
 };
 
