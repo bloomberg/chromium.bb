@@ -94,6 +94,16 @@
                 ],
                 "description": "Retrieve current values of run-time metrics."
             }
+        ],
+        "events": [
+            {
+                "name": "metrics",
+                "description": "Current values of the metrics.",
+                "parameters": [
+                    { "name": "metrics", "type": "array", "items": { "$ref": "Metric" }, "description": "Current values of the metrics." },
+                    { "name": "title", "type": "string", "description": "Timestamp title." }
+                ]
+            }
         ]
     },
     {

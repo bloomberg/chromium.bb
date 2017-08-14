@@ -24,6 +24,7 @@
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/V8InspectorString.h"
+#include "core/probe/CoreProbes.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"
@@ -131,8 +132,7 @@ void ThreadDebugger::PromiseRejectionRevoked(v8::Local<v8::Context> context,
 }
 
 void ThreadDebugger::beginUserGesture() {
-  v8::Local<v8::Context> context = isolate_->GetCurrentContext();
-  ExecutionContext* ec = ToExecutionContext(context);
+  ExecutionContext* ec = CurrentExecutionContext(isolate_);
   Document* document = ec && ec->IsDocument() ? ToDocument(ec) : nullptr;
   user_gesture_indicator_ = WTF::WrapUnique(
       new UserGestureIndicator(UserGestureToken::Create(document)));
@@ -446,13 +446,13 @@ void ThreadDebugger::consoleTimeEnd(const v8_inspector::StringView& title) {
 }
 
 void ThreadDebugger::consoleTimeStamp(const v8_inspector::StringView& title) {
-  v8::Isolate* isolate = isolate_;
+  ExecutionContext* ec = CurrentExecutionContext(isolate_);
   // TODO(dgozman): we can save on a copy here if TracedValue would take a
   // StringView.
-  TRACE_EVENT_INSTANT1(
-      "devtools.timeline", "TimeStamp", TRACE_EVENT_SCOPE_THREAD, "data",
-      InspectorTimeStampEvent::Data(CurrentExecutionContext(isolate),
-                                    ToCoreString(title)));
+  TRACE_EVENT_INSTANT1("devtools.timeline", "TimeStamp",
+                       TRACE_EVENT_SCOPE_THREAD, "data",
+                       InspectorTimeStampEvent::Data(ec, ToCoreString(title)));
+  probe::consoleTimeStamp(ec, ToCoreString(title));
 }
 
 void ThreadDebugger::startRepeatingTimer(

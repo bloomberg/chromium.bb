@@ -156,6 +156,12 @@
         "V8Compile",
       ]
     },
+    PerformanceMetrics: {
+      class: "InspectorPerformanceAgent",
+      probes: [
+        "consoleTimeStamp"
+      ]
+    },
     TraceEvents: {
       class: "InspectorTraceEvents",
       probes: [
