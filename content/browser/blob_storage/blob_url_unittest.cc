@@ -90,7 +90,7 @@ std::unique_ptr<disk_cache::Backend> CreateInMemoryDiskCache() {
   net::TestCompletionCallback callback;
   int rv = disk_cache::CreateCacheBackend(
       net::MEMORY_CACHE, net::CACHE_BACKEND_DEFAULT, base::FilePath(), 0, false,
-      nullptr, nullptr, &cache, callback.callback());
+      nullptr, &cache, callback.callback());
   EXPECT_EQ(net::OK, callback.GetResult(rv));
 
   return cache;

@@ -160,13 +160,12 @@ class DelayedReadEntry : public disk_cache::Entry {
   std::vector<base::Callback<void(void)>> pending_read_callbacks_;
 };
 
-std::unique_ptr<disk_cache::Backend> CreateInMemoryDiskCache(
-    const scoped_refptr<base::SingleThreadTaskRunner>& thread) {
+std::unique_ptr<disk_cache::Backend> CreateInMemoryDiskCache() {
   std::unique_ptr<disk_cache::Backend> cache;
   net::TestCompletionCallback callback;
   int rv = disk_cache::CreateCacheBackend(
       net::MEMORY_CACHE, net::CACHE_BACKEND_DEFAULT, FilePath(), 0, false,
-      thread, nullptr, &cache, callback.callback());
+      nullptr, &cache, callback.callback());
   EXPECT_EQ(net::OK, callback.GetResult(rv));
 
   return cache;
@@ -516,8 +515,7 @@ TEST_F(BlobReaderTest, BasicFileSystem) {
 }
 
 TEST_F(BlobReaderTest, BasicDiskCache) {
-  std::unique_ptr<disk_cache::Backend> cache =
-      CreateInMemoryDiskCache(base::ThreadTaskRunnerHandle::Get());
+  std::unique_ptr<disk_cache::Backend> cache = CreateInMemoryDiskCache();
   ASSERT_TRUE(cache);
 
   BlobDataBuilder b("uuid");
@@ -551,8 +549,7 @@ TEST_F(BlobReaderTest, BasicDiskCache) {
 }
 
 TEST_F(BlobReaderTest, DiskCacheWithSideData) {
-  std::unique_ptr<disk_cache::Backend> cache =
-      CreateInMemoryDiskCache(base::ThreadTaskRunnerHandle::Get());
+  std::unique_ptr<disk_cache::Backend> cache = CreateInMemoryDiskCache();
   ASSERT_TRUE(cache);
 
   BlobDataBuilder b("uuid");
@@ -790,8 +787,7 @@ TEST_F(BlobReaderTest, FileSystemAsync) {
 }
 
 TEST_F(BlobReaderTest, DiskCacheAsync) {
-  std::unique_ptr<disk_cache::Backend> cache =
-      CreateInMemoryDiskCache(base::ThreadTaskRunnerHandle::Get());
+  std::unique_ptr<disk_cache::Backend> cache = CreateInMemoryDiskCache();
   ASSERT_TRUE(cache);
 
   BlobDataBuilder b("uuid");
@@ -868,8 +864,7 @@ TEST_F(BlobReaderTest, FileRange) {
 }
 
 TEST_F(BlobReaderTest, DiskCacheRange) {
-  std::unique_ptr<disk_cache::Backend> cache =
-      CreateInMemoryDiskCache(base::ThreadTaskRunnerHandle::Get());
+  std::unique_ptr<disk_cache::Backend> cache = CreateInMemoryDiskCache();
   ASSERT_TRUE(cache);
 
   BlobDataBuilder b("uuid");
@@ -977,8 +972,7 @@ TEST_F(BlobReaderTest, FileSomeAsyncSegmentedOffsetsUnknownSizes) {
 
 TEST_F(BlobReaderTest, MixedContent) {
   // Includes data, a file, and a disk cache entry.
-  std::unique_ptr<disk_cache::Backend> cache =
-      CreateInMemoryDiskCache(base::ThreadTaskRunnerHandle::Get());
+  std::unique_ptr<disk_cache::Backend> cache = CreateInMemoryDiskCache();
   ASSERT_TRUE(cache);
 
   BlobDataBuilder b("uuid");
