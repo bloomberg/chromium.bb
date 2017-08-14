@@ -1188,6 +1188,9 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     // TODO(ltrudeau) support PALETTE
     if (mbmi->uv_mode == UV_CFL_PRED) {
       mbmi->cfl_alpha_idx = read_cfl_alphas(ec_ctx, r, &mbmi->cfl_alpha_signs);
+      xd->cfl->store_y = 1;
+    } else {
+      xd->cfl->store_y = 0;
     }
 #endif  // CONFIG_CFL
 
@@ -1793,6 +1796,9 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
     if (mbmi->uv_mode == UV_CFL_PRED) {
       mbmi->cfl_alpha_idx =
           read_cfl_alphas(xd->tile_ctx, r, &mbmi->cfl_alpha_signs);
+      xd->cfl->store_y = 1;
+    } else {
+      xd->cfl->store_y = 0;
     }
 #endif  // CONFIG_CFL
 

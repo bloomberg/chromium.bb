@@ -518,7 +518,7 @@ static void predict_and_reconstruct_intra_block(
 #endif  // !CONFIG_PVQ
   }
 #if CONFIG_CFL
-  if (plane == AOM_PLANE_Y) {
+  if (plane == AOM_PLANE_Y && xd->cfl->store_y) {
     struct macroblockd_plane *const pd = &xd->plane[plane];
 #if CONFIG_CHROMA_SUB8X8
     const BLOCK_SIZE plane_bsize =
