@@ -9,10 +9,8 @@ var testSizes = [
 var sizeIndex = 0;
 var repaintRects = "";
 
-if (window.internals) {
-    internals.settings.setUseDefaultImageInterpolationQuality(true);
+if (window.internals)
     internals.runtimeFlags.paintUnderInvalidationCheckingEnabled = true;
-}
 
 function doTest() {
     if (sizeIndex) {

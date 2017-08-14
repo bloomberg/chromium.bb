@@ -7,10 +7,8 @@ window.outputRepaintRects = true;
 if (window.testRunner)
     testRunner.waitUntilDone();
 
-if (window.internals) {
-    internals.settings.setUseDefaultImageInterpolationQuality(true);
+if (window.internals)
     internals.runtimeFlags.paintUnderInvalidationCheckingEnabled = true;
-}
 
 // Add string names of objects that should be invalidated here. If you use this feature,
 // you must also include testharness.js.

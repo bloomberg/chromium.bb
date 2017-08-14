@@ -8,8 +8,6 @@ Tests subpixel resize of SVG image. Passes if the resized image fully covers the
 </div>
 <script src="../../../resources/run-after-layout-and-paint.js"></script>
 <script>
-if (window.internals)
-  internals.settings.setUseDefaultImageInterpolationQuality(true);
 runAfterLayoutAndPaint(function() {
   target.style.width = '8.8px';
 }, true);
