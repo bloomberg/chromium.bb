@@ -142,6 +142,8 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args,
   # Generate a script that runs the binaries and shuts down QEMU (if used).
   autorun_file = tempfile.NamedTemporaryFile()
   autorun_file.write('#!/bin/sh\n')
+  if int(os.environ.get('CHROME_HEADLESS', 0)) != 0:
+    autorun_file.write('export CHROME_HEADLESS=1\n')
   autorun_file.write('echo Executing ' + os.path.basename(bin_name) + ' ' +
                      ' '.join(child_args) + '\n')
   autorun_file.write('/system/' + os.path.basename(bin_name))
