@@ -11,6 +11,7 @@
 #include "remoting/codec/audio_encoder.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/host/audio_capturer.h"
+#include "remoting/host/file_proxy_wrapper.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/proto/video.pb.h"
@@ -44,6 +45,11 @@ MockDesktopEnvironment::CreateVideoCapturer() {
 std::unique_ptr<webrtc::MouseCursorMonitor>
 MockDesktopEnvironment::CreateMouseCursorMonitor() {
   return base::WrapUnique(CreateMouseCursorMonitorPtr());
+}
+
+std::unique_ptr<FileProxyWrapper>
+MockDesktopEnvironment::CreateFileProxyWrapper() {
+  return base::WrapUnique(CreateFileProxyWrapperPtr());
 }
 
 MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory() {}

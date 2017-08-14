@@ -10,7 +10,8 @@ namespace remoting {
 
 FileTransferMessageHandler::FileTransferMessageHandler(
     const std::string& name,
-    std::unique_ptr<protocol::MessagePipe> pipe)
+    std::unique_ptr<protocol::MessagePipe> pipe,
+    std::unique_ptr<FileProxyWrapper> file_proxy)
     : protocol::NamedMessagePipeHandler(name, std::move(pipe)) {}
 
 FileTransferMessageHandler::~FileTransferMessageHandler() = default;
