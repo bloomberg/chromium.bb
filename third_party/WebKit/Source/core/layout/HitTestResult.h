@@ -105,12 +105,12 @@ class CORE_EXPORT HitTestResult {
   // Forwarded from HitTestLocation
   bool IsRectBasedTest() const { return hit_test_location_.IsRectBasedTest(); }
 
-  // The hit-tested point in the coordinates of the main frame.
-  const LayoutPoint& PointInMainFrame() const {
+  // The hit-tested point in the coordinates of Document.
+  const LayoutPoint& PointInContent() const {
     return hit_test_location_.Point();
   }
-  IntPoint RoundedPointInMainFrame() const {
-    return RoundedIntPoint(PointInMainFrame());
+  IntPoint RoundedPointInContent() const {
+    return RoundedIntPoint(PointInContent());
   }
 
   // The hit-tested point in the coordinates of the innerNode frame, the frame

@@ -216,13 +216,14 @@ void ScrollbarThemeOverlay::PaintThumb(GraphicsContext& context,
     canvas->restore();
 }
 
-ScrollbarPart ScrollbarThemeOverlay::HitTest(
+ScrollbarPart ScrollbarThemeOverlay::HitTestWithParentPoint(
     const ScrollbarThemeClient& scrollbar,
     const IntPoint& position) {
   if (allow_hit_test_ == kDisallowHitTest)
     return kNoPart;
 
-  ScrollbarPart part = ScrollbarTheme::HitTest(scrollbar, position);
+  ScrollbarPart part =
+      ScrollbarTheme::HitTestWithParentPoint(scrollbar, position);
   if (part != kThumbPart)
     return kNoPart;
 
@@ -290,6 +291,10 @@ int ScrollbarThemeOverlay::MinimumThumbLength(
       ->ThemeEngine()
       ->GetSize(WebThemeEngine::kPartScrollbarHorizontalThumb)
       .width;
+}
+
+void ScrollbarThemeOverlay::SetHitTestEnabledForTesting(bool enable) {
+  allow_hit_test_ = enable ? kAllowHitTest : kDisallowHitTest;
 }
 
 }  // namespace blink
