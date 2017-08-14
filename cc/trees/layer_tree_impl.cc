@@ -21,7 +21,6 @@
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
 #include "cc/base/synced_property.h"
-#include "cc/debug/traced_value.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/layers/effect_tree_layer_list_iterator.h"
@@ -43,6 +42,7 @@
 #include "cc/trees/property_tree_builder.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
+#include "components/viz/common/traced_value.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -1434,14 +1434,15 @@ void LayerTreeImpl::GetAllPrioritizedTilesForTracing(
 }
 
 void LayerTreeImpl::AsValueInto(base::trace_event::TracedValue* state) const {
-  TracedValue::MakeDictIntoImplicitSnapshot(state, "cc::LayerTreeImpl", this);
+  viz::TracedValue::MakeDictIntoImplicitSnapshot(state, "cc::LayerTreeImpl",
+                                                 this);
   state->SetInteger("source_frame_number", source_frame_number_);
 
   state->BeginArray("render_surface_layer_list");
   for (auto it = layer_list_.rbegin(); it != layer_list_.rend(); ++it) {
     if (!(*it)->contributes_to_drawn_render_surface())
       continue;
-    TracedValue::AppendIDRef(*it, state);
+    viz::TracedValue::AppendIDRef(*it, state);
   }
   state->EndArray();
 

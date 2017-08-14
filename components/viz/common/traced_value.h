@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_DEBUG_TRACED_VALUE_H_
-#define CC_DEBUG_TRACED_VALUE_H_
+#ifndef COMPONENTS_VIZ_COMMON_TRACED_VALUE_H_
+#define COMPONENTS_VIZ_COMMON_TRACED_VALUE_H_
 
-#include "cc/debug/debug_export.h"
+#include "components/viz/common/viz_common_export.h"
 
 namespace base {
 namespace trace_event {
 class TracedValue;
 }
-}
+}  // namespace base
 
-namespace cc {
+namespace viz {
 
-class CC_DEBUG_EXPORT TracedValue {
+class VIZ_COMMON_EXPORT TracedValue {
  public:
   static void AppendIDRef(const void* id,
                           base::trace_event::TracedValue* array);
@@ -38,6 +38,6 @@ class CC_DEBUG_EXPORT TracedValue {
       const void* id);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_DEBUG_TRACED_VALUE_H_
+#endif  // COMPONENTS_VIZ_COMMON_TRACED_VALUE_H_

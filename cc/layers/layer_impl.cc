@@ -21,7 +21,6 @@
 #include "cc/benchmarks/micro_benchmark_impl.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/debug/layer_tree_debug_state.h"
-#include "cc/debug/traced_value.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scroll_state.h"
 #include "cc/layers/layer.h"
@@ -40,6 +39,7 @@
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/traced_value.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -761,12 +761,9 @@ void LayerImpl::GetAllPrioritizedTilesForTracing(
 }
 
 void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
-  TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-      state,
-      "cc::LayerImpl",
-      LayerTypeAsString(),
-      this);
+  viz::TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug"), state, "cc::LayerImpl",
+      LayerTypeAsString(), this);
   state->SetInteger("layer_id", id());
   MathUtil::AddToTracedValue("bounds", bounds_, state);
 

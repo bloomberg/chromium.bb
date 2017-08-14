@@ -8,7 +8,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
-#include "cc/debug/traced_value.h"
+#include "components/viz/common/traced_value.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace cc {
@@ -57,10 +57,8 @@ void SharedQuadState::AsValueInto(base::trace_event::TracedValue* value) const {
 
   value->SetDouble("opacity", opacity);
   value->SetString("blend_mode", SkBlendMode_Name(blend_mode));
-  TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"),
-      value,
-      "cc::SharedQuadState",
+  viz::TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"), value, "cc::SharedQuadState",
       this);
 }
 

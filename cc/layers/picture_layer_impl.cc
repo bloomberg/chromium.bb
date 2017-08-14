@@ -18,7 +18,6 @@
 #include "cc/base/math_util.h"
 #include "cc/benchmarks/micro_benchmark_impl.h"
 #include "cc/debug/debug_colors.h"
-#include "cc/debug/traced_value.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/solid_color_layer_impl.h"
 #include "cc/quads/debug_border_draw_quad.h"
@@ -30,6 +29,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/traced_value.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -1412,7 +1412,7 @@ void PictureLayerImpl::AsValueInto(
     MathUtil::AddToTracedValue("geometry_rect", iter.geometry_rect(), state);
 
     if (*iter)
-      TracedValue::SetIDRef(*iter, state, "tile");
+      viz::TracedValue::SetIDRef(*iter, state, "tile");
 
     state->EndDictionary();
   }

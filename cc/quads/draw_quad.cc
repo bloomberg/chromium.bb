@@ -10,7 +10,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
-#include "cc/debug/traced_value.h"
+#include "components/viz/common/traced_value.h"
 #include "ui/gfx/geometry/quad_f.h"
 
 namespace cc {
@@ -50,7 +50,7 @@ DrawQuad::~DrawQuad() {
 
 void DrawQuad::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("material", material);
-  TracedValue::SetIDRef(shared_quad_state, value, "shared_state");
+  viz::TracedValue::SetIDRef(shared_quad_state, value, "shared_state");
 
   MathUtil::AddToTracedValue("content_space_rect", rect, value);
 
