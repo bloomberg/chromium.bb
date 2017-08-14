@@ -759,21 +759,6 @@
             ]
         }
     ],
-    "DirectCompositionOverlays": [
-        {
-            "platforms": [
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DirectCompositionOverlays"
-                    ]
-                }
-            ]
-        }
-    ],
     "DisallowFetchForDocWrittenScriptsInMainFrame": [
         {
             "platforms": [
