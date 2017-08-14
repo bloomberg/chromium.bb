@@ -35,9 +35,21 @@ namespace test {
 
 namespace {
 
+constexpr char kQueryBase[] = "http://beasts.org/search";
+constexpr char kSomeParam[] = "&some_param=some_value";
+constexpr char kCatQuery[] = "cat";
+constexpr char kDogQuery[] = "dog";
 constexpr char kCatCardId[] =
     "https://www.google.com/search?q=cat&sourceid=chrome&ie=UTF-8";
+constexpr char kDogCardId[] =
+    "https://www.google.com/search?q=dog&sourceid=chrome&ie=UTF-8";
 constexpr char kCatCardTitle[] = "Cat is a furry beast.";
+constexpr char kDogCardTitle[] = "Dog is a friendly beast.";
+
+GURL GetSearchUrl(const std::string& query) {
+  return GURL(
+      base::StringPrintf("%s?q=%s%s", kQueryBase, query.c_str(), kSomeParam));
+}
 
 class MockAnswerCardContents : public AnswerCardContents {
  public:
@@ -73,12 +85,11 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
                                const std::string& title,
                                const std::string& issued_query,
                                std::size_t expected_result_count) {
-    EXPECT_CALL(*contents(), LoadURL(GURL("http://beasts.org/search?q=cat")));
-    provider()->Start(false, base::UTF8ToUTF16("cat"));
+    EXPECT_CALL(*contents(), LoadURL(GetSearchUrl(kCatQuery)));
+    provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
 
-    provider()->DidFinishNavigation(GURL("http://beasts.org/search?q=cat"),
-                                    has_error, has_answer_card, title,
-                                    issued_query);
+    provider()->DidFinishNavigation(GetSearchUrl(kCatQuery), has_error,
+                                    has_answer_card, title, issued_query);
 
     provider()->DidStopLoading();
     provider()->UpdatePreferredSize(GetMaxValidCardSize());
@@ -109,7 +120,8 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
 
     // Set up card server URL.
     std::map<std::string, std::string> params;
-    params["ServerUrl"] = "http://beasts.org/search";
+    params["ServerUrl"] = kQueryBase;
+    params["QuerySuffix"] = kSomeParam;
     base::AssociateFieldTrialParams("TestTrial", "TestGroup", params);
     scoped_refptr<base::FieldTrial> trial =
         base::FieldTrialList::CreateFieldTrial("TestTrial", "TestGroup");
@@ -145,10 +157,10 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
 
 // Basic event sequence.
 TEST_F(AnswerCardSearchProviderTest, Basic) {
-  EXPECT_CALL(*contents(), LoadURL(GURL("http://beasts.org/search?q=cat")));
-  provider()->Start(false, base::UTF8ToUTF16("cat"));
-  provider()->DidFinishNavigation(GURL("http://beasts.org/search?q=cat"), false,
-                                  true, kCatCardTitle, "cat");
+  EXPECT_CALL(*contents(), LoadURL(GetSearchUrl(kCatQuery)));
+  provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
+  provider()->DidFinishNavigation(GetSearchUrl(kCatQuery), false, true,
+                                  kCatCardTitle, kCatQuery);
   provider()->DidStopLoading();
   provider()->UpdatePreferredSize(GetMaxValidCardSize());
 
@@ -164,14 +176,14 @@ TEST_F(AnswerCardSearchProviderTest, Basic) {
 // Voice queries are ignored.
 TEST_F(AnswerCardSearchProviderTest, VoiceQuery) {
   EXPECT_CALL(*contents(), LoadURL(_)).Times(0);
-  provider()->Start(true, base::UTF8ToUTF16("cat"));
+  provider()->Start(true, base::UTF8ToUTF16(kCatQuery));
 }
 
 // Queries to non-Google search engines are ignored.
 TEST_F(AnswerCardSearchProviderTest, NotGoogle) {
   model()->SetSearchEngineIsGoogle(false);
   EXPECT_CALL(*contents(), LoadURL(_)).Times(0);
-  provider()->Start(false, base::UTF8ToUTF16("cat"));
+  provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
 }
 
 // Zero-query is ignored.
@@ -184,10 +196,10 @@ TEST_F(AnswerCardSearchProviderTest, EmptyQuery) {
 // UpdatePreferredSize() doesn't come. The second query should still produce a
 // result.
 TEST_F(AnswerCardSearchProviderTest, TwoResultsSameSize) {
-  EXPECT_CALL(*contents(), LoadURL(GURL("http://beasts.org/search?q=cat")));
-  provider()->Start(false, base::UTF8ToUTF16("cat"));
-  provider()->DidFinishNavigation(GURL("http://beasts.org/search?q=cat"), false,
-                                  true, kCatCardTitle, "cat");
+  EXPECT_CALL(*contents(), LoadURL(GetSearchUrl(kCatQuery)));
+  provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
+  provider()->DidFinishNavigation(GetSearchUrl(kCatQuery), false, true,
+                                  kCatCardTitle, kCatQuery);
   provider()->DidStopLoading();
   provider()->UpdatePreferredSize(GetMaxValidCardSize());
 
@@ -199,54 +211,53 @@ TEST_F(AnswerCardSearchProviderTest, TwoResultsSameSize) {
   EXPECT_EQ(view(), result->view());
   EXPECT_EQ(base::UTF8ToUTF16(kCatCardTitle), result->title());
 
-  EXPECT_CALL(*contents(), LoadURL(GURL("http://beasts.org/search?q=dog")));
-  provider()->Start(false, base::UTF8ToUTF16("dog"));
+  EXPECT_CALL(*contents(), LoadURL(GetSearchUrl(kDogQuery)));
+  provider()->Start(false, base::UTF8ToUTF16(kDogQuery));
   EXPECT_EQ(0UL, results().size());
 
-  provider()->DidFinishNavigation(GURL("http://beasts.org/search?q=dog"), false,
-                                  true, "Dog is a friendly beast.", "dog");
+  provider()->DidFinishNavigation(GetSearchUrl(kDogQuery), false, true,
+                                  kDogCardTitle, kDogQuery);
   provider()->DidStopLoading();
   // No UpdatePreferredSize().
 
   EXPECT_EQ(1UL, results().size());
   result = results()[0].get();
   EXPECT_EQ(SearchResult::DISPLAY_CARD, result->display_type());
-  EXPECT_EQ("https://www.google.com/search?q=dog&sourceid=chrome&ie=UTF-8",
-            result->id());
+  EXPECT_EQ(kDogCardId, result->id());
   EXPECT_EQ(1, result->relevance());
   EXPECT_EQ(view(), result->view());
-  EXPECT_EQ(base::UTF8ToUTF16("Dog is a friendly beast."), result->title());
+  EXPECT_EQ(base::UTF8ToUTF16(kDogCardTitle), result->title());
 }
 
 // User enters a query character by character, so that each next query generates
 // a web request while the previous one is still in progress. Only the last
 // query should produce a result.
 TEST_F(AnswerCardSearchProviderTest, InterruptedRequest) {
-  EXPECT_CALL(*contents(), LoadURL(GURL("http://beasts.org/search?q=c")));
+  EXPECT_CALL(*contents(), LoadURL(GetSearchUrl("c")));
   provider()->Start(false, base::UTF8ToUTF16("c"));
   EXPECT_EQ(0UL, results().size());
 
-  EXPECT_CALL(*contents(), LoadURL(GURL("http://beasts.org/search?q=ca")));
+  EXPECT_CALL(*contents(), LoadURL(GetSearchUrl("ca")));
   provider()->Start(false, base::UTF8ToUTF16("ca"));
   EXPECT_EQ(0UL, results().size());
 
-  EXPECT_CALL(*contents(), LoadURL(GURL("http://beasts.org/search?q=cat")));
-  provider()->Start(false, base::UTF8ToUTF16("cat"));
+  EXPECT_CALL(*contents(), LoadURL(GetSearchUrl(kCatQuery)));
+  provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
   EXPECT_EQ(0UL, results().size());
 
-  provider()->DidFinishNavigation(GURL("http://beasts.org/search?q=c"), false,
-                                  true, "Title c", "c");
+  provider()->DidFinishNavigation(GetSearchUrl("c"), false, true, "Title c",
+                                  "c");
   provider()->DidStopLoading();
   EXPECT_EQ(0UL, results().size());
 
-  provider()->DidFinishNavigation(GURL("http://beasts.org/search?q=ca"), false,
-                                  true, "Title ca", "ca");
+  provider()->DidFinishNavigation(GetSearchUrl("ca"), false, true, "Title ca",
+                                  "ca");
   provider()->DidStopLoading();
   provider()->UpdatePreferredSize(gfx::Size(1, 1));
   EXPECT_EQ(0UL, results().size());
 
-  provider()->DidFinishNavigation(GURL("http://beasts.org/search?q=cat"), false,
-                                  true, kCatCardTitle, "cat");
+  provider()->DidFinishNavigation(GetSearchUrl(kCatQuery), false, true,
+                                  kCatCardTitle, kCatQuery);
   provider()->DidStopLoading();
   provider()->UpdatePreferredSize(GetMaxValidCardSize());
   EXPECT_EQ(1UL, results().size());
@@ -261,10 +272,10 @@ TEST_F(AnswerCardSearchProviderTest, InterruptedRequest) {
 // loading. We should hide the result while its size if larger than the allowed
 // maximum.
 TEST_F(AnswerCardSearchProviderTest, ChangingSize) {
-  EXPECT_CALL(*contents(), LoadURL(GURL("http://beasts.org/search?q=cat")));
-  provider()->Start(false, base::UTF8ToUTF16("cat"));
-  provider()->DidFinishNavigation(GURL("http://beasts.org/search?q=cat"), false,
-                                  true, kCatCardTitle, "cat");
+  EXPECT_CALL(*contents(), LoadURL(GetSearchUrl(kCatQuery)));
+  provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
+  provider()->DidFinishNavigation(GetSearchUrl(kCatQuery), false, true,
+                                  kCatCardTitle, kCatQuery);
   provider()->UpdatePreferredSize(gfx::Size(features::AnswerCardMaxWidth() + 1,
                                             features::AnswerCardMaxHeight()));
   provider()->DidStopLoading();
@@ -283,15 +294,14 @@ TEST_F(AnswerCardSearchProviderTest, ChangingSize) {
 
 // Various values for DidFinishNavigation params.
 TEST_F(AnswerCardSearchProviderTest, DidFinishNavigation) {
-  TestDidFinishNavigation(false, true, kCatCardTitle, "cat", 1UL);
-  TestDidFinishNavigation(true, true, kCatCardTitle, "cat", 0UL);
+  TestDidFinishNavigation(false, true, kCatCardTitle, kCatQuery, 1UL);
+  TestDidFinishNavigation(true, true, kCatCardTitle, kCatQuery, 0UL);
   TestDidFinishNavigation(false, false, kCatCardTitle, "", 0UL);
 }
 
 // Escaping a query with a special character.
 TEST_F(AnswerCardSearchProviderTest, QueryEscaping) {
-  EXPECT_CALL(*contents(),
-              LoadURL(GURL("http://beasts.org/search?q=cat%26dog")));
+  EXPECT_CALL(*contents(), LoadURL(GetSearchUrl("cat%26dog")));
   provider()->Start(false, base::UTF8ToUTF16("cat&dog"));
 }
 
