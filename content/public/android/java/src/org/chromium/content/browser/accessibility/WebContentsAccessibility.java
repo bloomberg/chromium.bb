@@ -249,7 +249,7 @@ public class WebContentsAccessibility {
                         AccessibilityNodeInfo.ACTION_ARGUMENT_HTML_ELEMENT_STRING);
                 if (elementType == null) return false;
                 elementType = elementType.toUpperCase(Locale.US);
-                return jumpToElementType(elementType, true);
+                return jumpToElementType(virtualViewId, elementType, true);
             }
             case AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT: {
                 if (arguments == null) return false;
@@ -257,7 +257,7 @@ public class WebContentsAccessibility {
                         AccessibilityNodeInfo.ACTION_ARGUMENT_HTML_ELEMENT_STRING);
                 if (elementType == null) return false;
                 elementType = elementType.toUpperCase(Locale.US);
-                return jumpToElementType(elementType, false);
+                return jumpToElementType(virtualViewId, elementType, false);
             }
             case ACTION_SET_TEXT: {
                 if (!nativeIsEditableText(mNativeObj, virtualViewId)) return false;
@@ -422,8 +422,8 @@ public class WebContentsAccessibility {
         }
     }
 
-    private boolean jumpToElementType(String elementType, boolean forwards) {
-        int id = nativeFindElementType(mNativeObj, mAccessibilityFocusId, elementType, forwards);
+    private boolean jumpToElementType(int virtualViewId, String elementType, boolean forwards) {
+        int id = nativeFindElementType(mNativeObj, virtualViewId, elementType, forwards);
         if (id == 0) return false;
 
         moveAccessibilityFocusToId(id);
