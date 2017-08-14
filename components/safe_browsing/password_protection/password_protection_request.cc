@@ -157,6 +157,12 @@ void PasswordProtectionRequest::FillRequestProto() {
             LoginReputationClientRequest::PasswordReuseEvent::
                     SyncAccountType_MAX +
                 1);
+      } else {
+        // TODO(nparker): Add all matching domains rather than just the first.
+        // TODO(nparker): Add domains even for is_chrome_signin_password.
+        if (password_protection_service_->IsExtendedReporting()) {
+          reuse_event->add_password_reused_original_origins(saved_domain_);
+        }
       }
       break;
     }
