@@ -832,6 +832,7 @@ Bug(none) inspector-protocol/heap-profiler/heap-snapshot-with-active-dom-object.
 Bug(none) inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.js [ Failure ]
 Bug(none) inspector-protocol/heap-profiler/heap-snapshot-with-event-listener.js [ Failure ]
 Bug(none) inspector-protocol/network/websocket-initiator.js [ Timeout ]
+Bug(none) inspector-protocol/performance/perf-push-metrics.js [ Failure ]
 Bug(none) inspector-protocol/worker/exception-from-worker-contains-stack.js [ Timeout ]
 Bug(none) inspector-protocol/worker/worker-console.js [ Crash Timeout ]
 Bug(none) inspector/animation/animation-transition-setTiming-crash.html [ Timeout ]
