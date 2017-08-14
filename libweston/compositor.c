@@ -4607,6 +4607,48 @@ weston_head_set_internal(struct weston_head *head)
 	head->connection_internal = true;
 }
 
+/** Store connector status
+ *
+ * \param head The head to modify.
+ * \param connected Whether the head is connected.
+ *
+ * Connectors are created as disconnected. This function can be used to
+ * set the connector status.
+ *
+ * The status should be set to true when a physical connector is connected to
+ * a video sink device like a monitor and to false when the connector is
+ * disconnected. For nested backends, the connection status should reflect the
+ * connection to the parent display server.
+ *
+ * \memberof weston_head
+ * \internal
+ */
+WL_EXPORT void
+weston_head_set_connection_status(struct weston_head *head, bool connected)
+{
+	head->connected = connected;
+}
+
+/** Is the head currently connected?
+ *
+ * \param head The head to query.
+ * \return Connection status.
+ *
+ * Returns true if the head is physically connected to a monitor, or in
+ * case of a nested backend returns true when there is a connection to the
+ * parent display server.
+ *
+ * This is independent from the head being enabled.
+ *
+ * \sa weston_head_is_enabled
+ * \memberof weston_head
+ */
+WL_EXPORT bool
+weston_head_is_connected(struct weston_head *head)
+{
+	return head->connected;
+}
+
 /* Move other outputs when one is resized so the space remains contiguous. */
 static void
 weston_compositor_reflow_outputs(struct weston_compositor *compositor,
@@ -5026,6 +5068,7 @@ weston_output_init(struct weston_output *output,
 	wl_list_init(&output->head_list);
 
 	weston_head_init(&output->head, name);
+	weston_head_set_connection_status(&output->head, true);
 
 	/* Add some (in)sane defaults which can be used
 	 * for checking if an output was properly configured

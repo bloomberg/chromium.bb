@@ -168,6 +168,7 @@ struct weston_head {
 	bool connection_internal;	/**< embedded monitor (e.g. laptop) */
 
 	char *name;			/**< head name, e.g. connector name */
+	bool connected;			/**< is physically connected */
 };
 
 struct weston_output {
@@ -1971,7 +1972,13 @@ weston_head_set_subpixel(struct weston_head *head,
 			 enum wl_output_subpixel sp);
 
 void
+weston_head_set_connection_status(struct weston_head *head, bool connected);
+
+void
 weston_head_set_internal(struct weston_head *head);
+
+bool
+weston_head_is_connected(struct weston_head *head);
 
 void
 weston_output_set_scale(struct weston_output *output,
