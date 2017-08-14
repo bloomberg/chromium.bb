@@ -204,7 +204,7 @@ const char kNoShippingPage[] =
 
   // Type in the CVC.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"CVC_textField")]
-      performAction:grey_typeText(@"111")];
+      performAction:grey_replaceText(@"111")];
 
   // Tap the Confirm button.
   [[EarlGrey
