@@ -14,10 +14,7 @@
 #include "gin/function_template.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/web/WebKit.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
-
-using blink::WebLocalFrame;
 
 namespace dom_distiller {
 
