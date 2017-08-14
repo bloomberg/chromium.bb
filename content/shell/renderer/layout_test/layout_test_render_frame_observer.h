@@ -10,6 +10,10 @@
 #include "content/shell/common/layout_test.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
+namespace test_runner {
+class WebTestRunner;
+}
+
 namespace content {
 
 class LayoutTestRenderFrameObserver : public RenderFrameObserver,
@@ -28,6 +32,10 @@ class LayoutTestRenderFrameObserver : public RenderFrameObserver,
       mojom::ShellTestConfigurationPtr config) override;
   void SetupSecondaryRenderer() override;
   void BindRequest(mojom::LayoutTestControlAssociatedRequest request);
+
+  // Set up binders that bind some Mojo interface requests originating from this
+  // frame to fake implementations.
+  void SetupBinders(test_runner::WebTestRunner* test_runner);
 
   mojo::AssociatedBinding<mojom::LayoutTestControl> binding_;
   DISALLOW_COPY_AND_ASSIGN(LayoutTestRenderFrameObserver);

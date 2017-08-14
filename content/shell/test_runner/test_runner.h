@@ -45,6 +45,7 @@ class Arguments;
 
 namespace test_runner {
 
+class MockAuthenticator;
 class MockContentSettingsClient;
 class MockCredentialManagerClient;
 class MockScreenOrientationClient;
@@ -103,6 +104,7 @@ class TestRunner : public WebTestRunner {
   blink::WebTextCheckClient* GetWebTextCheckClient() const override;
   void InitializeWebViewWithMocks(blink::WebView* web_view) override;
   void SetFocus(blink::WebView* web_view, bool focus) override;
+  MockAuthenticator* GetMockAuthenticator() override;
 
   // Methods used by WebViewTestClient and WebFrameTestClient.
   void OnNavigationBegin(blink::WebFrame* frame);
@@ -552,7 +554,20 @@ class TestRunner : public WebTestRunner {
                                         const std::string& avatar,
                                         const std::string& password);
   void ClearMockCredentialManagerResponse();
+
   void SetMockCredentialManagerError(const std::string& error);
+
+  // Can set nullable values by passing in "new Uint8Array(0)".
+  void SetMockAuthenticatorResponse(
+      const std::string& id,
+      const gin::ArrayBufferView& raw_id,
+      const gin::ArrayBufferView& client_data_json,
+      const gin::ArrayBufferView& attestation_object /*nullable*/,
+      const gin::ArrayBufferView& authenticator_data /*nullable*/,
+      const gin::ArrayBufferView& signature /*nullable*/);
+  void ClearMockAuthenticatorResponse();
+
+  void SetMockAuthenticatorError(const std::string& error);
 
   // Takes care of notifying the delegate after a change to layout test runtime
   // flags.
@@ -632,6 +647,7 @@ class TestRunner : public WebTestRunner {
   // two events.
   bool will_navigate_;
 
+  std::unique_ptr<MockAuthenticator> authenticator_;
   std::unique_ptr<MockCredentialManagerClient> credential_manager_client_;
   std::unique_ptr<MockScreenOrientationClient> mock_screen_orientation_client_;
   std::unique_ptr<MockWebSpeechRecognizer> speech_recognizer_;

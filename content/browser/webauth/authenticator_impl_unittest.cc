@@ -34,6 +34,44 @@ using webauth::mojom::PublicKeyCredentialParametersPtr;
 
 const char* kOrigin1 = "https://google.com";
 
+namespace {
+
+PublicKeyCredentialEntityPtr GetTestPublicKeyCredentialRPEntity() {
+  auto entity = PublicKeyCredentialEntity::New();
+  entity->id = std::string("localhost");
+  entity->name = std::string("TestRP@example.com");
+  return entity;
+}
+
+PublicKeyCredentialEntityPtr GetTestPublicKeyCredentialUserEntity() {
+  auto entity = PublicKeyCredentialEntity::New();
+  entity->display_name = std::string("User A. Name");
+  entity->id = std::string("1098237235409872");
+  entity->name = std::string("username@example.com");
+  entity->icon = GURL("fakeurl2.png");
+  return entity;
+}
+
+std::vector<PublicKeyCredentialParametersPtr>
+GetTestPublicKeyCredentialParameters() {
+  std::vector<PublicKeyCredentialParametersPtr> parameters;
+  auto fake_parameter = PublicKeyCredentialParameters::New();
+  fake_parameter->type = webauth::mojom::PublicKeyCredentialType::PUBLIC_KEY;
+  parameters.push_back(std::move(fake_parameter));
+  return parameters;
+}
+
+MakeCredentialOptionsPtr GetTestMakeCredentialOptions() {
+  auto opts = MakeCredentialOptions::New();
+  std::vector<uint8_t> buffer(32, 0x0A);
+  opts->relying_party = GetTestPublicKeyCredentialRPEntity();
+  opts->user = GetTestPublicKeyCredentialUserEntity();
+  opts->crypto_parameters = GetTestPublicKeyCredentialParameters();
+  opts->challenge = std::move(buffer);
+  opts->adjusted_timeout = base::TimeDelta::FromMinutes(1);
+  return opts;
+}
+
 class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
  public:
   AuthenticatorImplTest() {}
@@ -89,41 +127,7 @@ class TestMakeCredentialCallback {
   base::RunLoop run_loop_;
 };
 
-PublicKeyCredentialEntityPtr GetTestPublicKeyCredentialRPEntity() {
-  auto entity = PublicKeyCredentialEntity::New();
-  entity->id = std::string("localhost");
-  entity->name = std::string("TestRP@example.com");
-  return entity;
-}
-
-PublicKeyCredentialEntityPtr GetTestPublicKeyCredentialUserEntity() {
-  auto entity = PublicKeyCredentialEntity::New();
-  entity->display_name = std::string("User A. Name");
-  entity->id = std::string("1098237235409872");
-  entity->name = std::string("TestRP@example.com");
-  entity->icon = GURL("fakeurl2.png");
-  return entity;
-}
-
-std::vector<PublicKeyCredentialParametersPtr>
-GetTestPublicKeyCredentialParameters() {
-  std::vector<PublicKeyCredentialParametersPtr> parameters;
-  auto fake_parameter = PublicKeyCredentialParameters::New();
-  fake_parameter->type = webauth::mojom::PublicKeyCredentialType::PUBLIC_KEY;
-  parameters.push_back(std::move(fake_parameter));
-  return parameters;
-}
-
-MakeCredentialOptionsPtr GetTestMakeCredentialOptions() {
-  auto opts = MakeCredentialOptions::New();
-  std::vector<uint8_t> buffer(32, 0x0A);
-  opts->relying_party = GetTestPublicKeyCredentialRPEntity();
-  opts->user = GetTestPublicKeyCredentialUserEntity();
-  opts->crypto_parameters = GetTestPublicKeyCredentialParameters();
-  opts->challenge = std::move(buffer);
-  opts->adjusted_timeout = base::TimeDelta::FromMinutes(1);
-  return opts;
-}
+}  // namespace
 
 // Test that service returns NOT_IMPLEMENTED on a call to MakeCredential.
 TEST_F(AuthenticatorImplTest, MakeCredentialNotImplemented) {
