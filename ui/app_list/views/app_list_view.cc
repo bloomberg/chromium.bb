@@ -191,6 +191,7 @@ AppListView::~AppListView() {
   delegate_->GetSpeechUI()->RemoveObserver(this);
   if (is_fullscreen_app_list_enabled_)
     delegate_->RemoveObserver(this);
+
   animation_observer_.reset();
   // Remove child views first to ensure no remaining dependencies on delegate_.
   RemoveAllChildViews(true);
@@ -328,6 +329,27 @@ bool AppListView::ShouldDescendIntoChildForEventHandling(
       ShouldDescendIntoChildForEventHandling(child, location);
 }
 
+class AppListView::FullscreenWidgetObserver : views::WidgetObserver {
+ public:
+  explicit FullscreenWidgetObserver(app_list::AppListView* view)
+      : widget_observer_(this) {
+    view_ = view;
+    widget_observer_.Add(view_->GetWidget());
+  }
+  ~FullscreenWidgetObserver() override {}
+
+  // Overridden from WidgetObserver:
+  void OnWidgetClosing(views::Widget* widget) override {
+    view_->SetState(AppListView::CLOSED);
+    widget_observer_.Remove(view_->GetWidget());
+  }
+
+ private:
+  app_list::AppListView* view_;
+  ScopedObserver<views::Widget, WidgetObserver> widget_observer_;
+  DISALLOW_COPY_AND_ASSIGN(FullscreenWidgetObserver);
+};
+
 void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/440224 and
   // crbug.com/441028 are fixed.
@@ -454,6 +476,8 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent,
   overlay_view_ = new AppListOverlayView(0 /* no corners */);
 
   work_area_bottom_ = fullscreen_widget_->GetWorkAreaBoundsInScreen().bottom();
+  widget_observer_ = std::unique_ptr<FullscreenWidgetObserver>(
+      new FullscreenWidgetObserver(this));
 }
 
 void AppListView::InitializeBubble(gfx::NativeView parent,
@@ -928,8 +952,8 @@ void AppListView::SetState(AppListState new_state) {
     case FULLSCREEN_SEARCH:
       break;
     case CLOSED:
-      app_list_main_view_->Close();
       delegate_->Dismiss();
+      app_list_main_view_->Close();
       break;
   }
   StartAnimationForState(new_state_override);

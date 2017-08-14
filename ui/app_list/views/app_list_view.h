@@ -186,6 +186,11 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   int work_area_bottom() const { return work_area_bottom_; }
 
  private:
+  // A widget observer that is responsible for keeping the AppListView state up
+  // to date on closing.
+  // TODO(newcomer): Merge this class into AppListView once the old app list
+  // view code is removed.
+  class FullscreenWidgetObserver;
   friend class test::AppListViewTestApi;
 
   void InitContents(gfx::NativeView parent, int initial_apps_page);
@@ -299,6 +304,10 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   AppListState app_list_state_ = PEEKING;
   // An observer that notifies AppListView when the display has changed.
   ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
+
+  // A widget observer that sets the AppListView state when the widget is
+  // closed.
+  std::unique_ptr<FullscreenWidgetObserver> widget_observer_;
 
   // A semi-transparent white overlay that covers the app list while dialogs
   // are open.
