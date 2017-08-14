@@ -4,13 +4,20 @@
 
 #include "ash/wm/splitview/split_view_controller.h"
 
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/splitview/split_view_divider.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/command_line.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -19,9 +26,24 @@ class SplitViewControllerTest : public AshTestBase {
   SplitViewControllerTest() {}
   ~SplitViewControllerTest() override {}
 
+  // test::AshTestBase:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kAshEnableTabletSplitView);
+    AshTestBase::SetUp();
+    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  }
+
   aura::Window* CreateWindow(const gfx::Rect& bounds) {
     aura::Window* window =
         CreateTestWindowInShellWithDelegate(&delegate_, -1, bounds);
+    return window;
+  }
+
+  aura::Window* CreateNonSnappableWindow(const gfx::Rect& bounds) {
+    aura::Window* window = CreateWindow(bounds);
+    window->SetProperty(aura::client::kResizeBehaviorKey,
+                        ui::mojom::kResizeBehaviorCanResize);
     return window;
   }
 
@@ -39,6 +61,10 @@ class SplitViewControllerTest : public AshTestBase {
 
   SplitViewController* split_view_controller() {
     return Shell::Get()->split_view_controller();
+  }
+
+  SplitViewDivider* split_view_divider() {
+    return split_view_controller()->split_view_divider();
   }
 
  private:
@@ -221,6 +247,32 @@ TEST_F(SplitViewControllerTest, EnterOverviewTest) {
 
   // End overview mode before test shutdown to avoid use after free.
   ToggleOverview();
+}
+
+// Tests that the split divider was created when the split view mode is active
+// and destroyed when the split view mode is ended. The split divider should be
+// always above the two snapped windows.
+TEST_F(SplitViewControllerTest, SplitDividerBasicTest) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  EXPECT_TRUE(!split_view_divider());
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(split_view_divider());
+  EXPECT_TRUE(split_view_divider()->divider_widget()->IsAlwaysOnTop());
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_TRUE(split_view_divider());
+  EXPECT_TRUE(split_view_divider()->divider_widget()->IsAlwaysOnTop());
+
+  std::unique_ptr<aura::Window> window3(CreateNonSnappableWindow(bounds));
+  wm::ActivateWindow(window3.get());
+  EXPECT_TRUE(split_view_divider());
+  EXPECT_FALSE(split_view_divider()->divider_widget()->IsAlwaysOnTop());
+
+  EndSplitView();
+  EXPECT_TRUE(!split_view_divider());
 }
 
 }  // namespace ash
