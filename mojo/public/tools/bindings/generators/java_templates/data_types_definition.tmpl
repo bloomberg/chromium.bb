@@ -167,9 +167,9 @@ if ({{variable}} != null) {
         super(STRUCT_SIZE, version);
 {%- for field in struct.fields %}
 {%-   if field.default %}
-        {{field|name}} = {{field|default_value}};
+        this.{{field|name}} = {{field|default_value}};
 {%-   elif field.kind|is_any_handle_kind %}
-        {{field|name}} = org.chromium.mojo.system.InvalidHandle.INSTANCE;
+        this.{{field|name}} = org.chromium.mojo.system.InvalidHandle.INSTANCE;
 {%-   endif %}
 {%- endfor %}
     }
@@ -228,7 +228,7 @@ if ({{variable}} != null) {
 {%- endif %}
 {%- for byte in struct.bytes %}
 {%-   for packed_field in byte.packed_fields %}
-        {{encode(packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(8)}}
+        {{encode('this.' ~ packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(8)}}
 {%-   endfor %}
 {%- endfor %}
     }
@@ -262,7 +262,7 @@ if ({{variable}} != null) {
         final int prime = 31;
         int result = prime + getClass().hashCode();
 {%- for field in struct.fields %}
-        result = prime * result + {{hash(field.kind, field|name)}};
+        result = prime * result + {{hash(field.kind, 'this.'~field|name)}};
 {%- endfor %}
         return result;
     }
@@ -297,16 +297,16 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
     // See http://crbug.com/570386.
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public void set{{field|ucc}}({{field.kind|java_type}} {{field|name}}) {
-        mTag_ = Tag.{{field|ucc}};
-        m{{field|ucc}} = {{field|name}};
+        this.mTag_ = Tag.{{field|ucc}};
+        this.m{{field|ucc}} = {{field|name}};
     }
 
     // TODO(rockot): Fix the findbugs error and remove this suppression.
     // See http://crbug.com/570386.
     @SuppressFBWarnings("EI_EXPOSE_REP")
     public {{field.kind|java_type}} get{{field|ucc}}() {
-        assert mTag_ == Tag.{{field|ucc}};
-        return m{{field|ucc}};
+        assert this.mTag_ == Tag.{{field|ucc}};
+        return this.m{{field|ucc}};
     }
 {%-   endfor %}
 
@@ -314,19 +314,19 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
     @Override
     protected final void encode(org.chromium.mojo.bindings.Encoder encoder0, int offset) {
         encoder0.encode(org.chromium.mojo.bindings.BindingsHelper.UNION_SIZE, offset);
-        encoder0.encode(mTag_, offset + 4);
+        encoder0.encode(this.mTag_, offset + 4);
         switch (mTag_) {
 {%-   for field in union.fields %}
             case Tag.{{field|ucc}}: {
 {%-     if field.kind|is_union_kind %}
-                if (m{{field|ucc}} == null) {
+                if (this.m{{field|ucc}} == null) {
                     encoder0.encodeNullPointer(offset + 8, {{field.kind|is_nullable_kind|java_true_false}});
                 } else {
                     encoder0.encoderForUnionPointer(offset + 8).encode(
-                        m{{field|ucc}}, 0, {{field.kind|is_nullable_kind|java_true_false}});
+                        this.m{{field|ucc}}, 0, {{field.kind|is_nullable_kind|java_true_false}});
                 }
 {%-     else %}
-                {{encode('m' ~ field|ucc, field.kind, 'offset + 8', 0)|indent(16)}}
+                {{encode('this.m' ~ field|ucc, field.kind, 'offset + 8', 0)|indent(16)}}
 {%-     endif %}
                 break;
             }
@@ -381,12 +381,12 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
         if (getClass() != object.getClass())
             return false;
         {{union|name}} other = ({{union|name}}) object;
-        if (mTag_ != other.mTag_)
+        if (this.mTag_ != other.mTag_)
             return false;
-        switch (mTag_) {
+        switch (this.mTag_) {
 {%-   for field in union.fields %}
             case Tag.{{field|ucc}}:
-                return {{equality(field.kind, 'm'~field|ucc, 'other.m'~field|ucc)}};
+                return {{equality(field.kind, 'this.m'~field|ucc, 'other.m'~field|ucc)}};
 {%-   endfor %}
             default:
                 break;
@@ -402,10 +402,10 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
         final int prime = 31;
         int result = prime + getClass().hashCode();
         result = prime * result + org.chromium.mojo.bindings.BindingsHelper.hashCode(mTag_);
-        switch (mTag_) {
+        switch (this.mTag_) {
 {%-   for field in union.fields %}
             case Tag.{{field|ucc}}: {
-                result = prime * result + {{hash(field.kind, 'm'~field|ucc)}};
+                result = prime * result + {{hash(field.kind, 'this.m'~field|ucc)}};
                 break;
             }
 {%-   endfor %}
