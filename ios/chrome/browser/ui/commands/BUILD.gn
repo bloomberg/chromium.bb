@@ -7,6 +7,7 @@ source_set("commands") {
   sources = [
     "UIKit+ChromeExecuteCommand.h",
     "UIKit+ChromeExecuteCommand.mm",
+    "activity_service_commands.h",
     "application_commands.h",
     "browser_commands.h",
     "clear_browsing_data_command.h",

@@ -75,7 +75,7 @@ using web::WebStateImpl;
 
 // Private methods in BrowserViewController to test.
 @interface BrowserViewController (
-    Testing)<CRWNativeContentProvider, PassKitDialogProvider, ShareToDelegate>
+    Testing)<CRWNativeContentProvider, PassKitDialogProvider>
 - (void)pageLoadStarted:(NSNotification*)notification;
 - (void)pageLoadComplete:(NSNotification*)notification;
 - (void)tabSelected:(Tab*)tab;
@@ -212,11 +212,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [currentTab setWebState:webStateImpl_.get()];
     webStateImpl_->SetWebController(webControllerMock);
 
-    // Set up mock ShareController.
-    id shareController =
-        [OCMockObject niceMockForProtocol:@protocol(ShareProtocol)];
-    shareController_ = shareController;
-
     id passKitController =
         [OCMockObject niceMockForClass:[PKAddPassesViewController class]];
     passKitViewController_ = passKitController;
@@ -239,7 +234,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
                                   urlLoader:[OCMArg any]
                             preloadProvider:[OCMArg any]
                                  dispatcher:[OCMArg any]];
-    [[[factory stub] andReturn:shareController_] shareControllerInstance];
     [[[factory stub] andReturn:passKitViewController_]
         newPassKitViewControllerForPass:nil];
     [[[factory stub] andReturn:nil] showPassKitErrorInfoBarForManager:nil];
@@ -287,7 +281,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   Tab* tab_;
   TabModel* tabModel_;
   ToolbarModelIOS* toolbarModelIOS_;
-  id<ShareProtocol> shareController_;
   PKAddPassesViewController* passKitViewController_;
   OCMockObject* dependencyFactory_;
   BrowserViewController* bvc_;
@@ -430,127 +423,6 @@ TEST_F(BrowserViewControllerTest,
   EXPECT_OCMOCK_VERIFY(tabMock);
 }
 
-// Verifies that BVC invokes -shareURL on ShareController with the correct
-// parameters in response to the -sharePage command.
-TEST_F(BrowserViewControllerTest, TestSharePageCommandHandling) {
-  GURL expectedUrl("http://www.testurl.net");
-  NSString* expectedTitle = @"title";
-  static_cast<BVCTestTabMock*>(tab_).lastCommittedURL = expectedUrl;
-  static_cast<BVCTestTabMock*>(tab_).visibleURL = expectedUrl;
-  OCMockObject* tabMock = static_cast<OCMockObject*>(tab_);
-  ios::ChromeBrowserState* ptr = chrome_browser_state_.get();
-  [[[tabMock stub] andReturnValue:OCMOCK_VALUE(ptr)] browserState];
-  [[[tabMock stub] andReturn:expectedTitle] title];
-  [[[tabMock stub] andReturn:expectedTitle] originalTitle];
-
-  UIImage* tabSnapshot = ui::test::uiimage_utils::UIImageWithSizeAndSolidColor(
-      CGSizeMake(300, 400), [UIColor blueColor]);
-  [[[tabMock stub] andReturn:tabSnapshot] generateSnapshotWithOverlay:NO
-                                                     visibleFrameOnly:YES];
-  OCMockObject* shareControllerMock =
-      static_cast<OCMockObject*>(shareController_);
-  // Passing non zero/nil |fromRect| and |inView| parameters to satisfy protocol
-  // requirements.
-  BOOL (^shareDataChecker)
-  (id value) = ^BOOL(id value) {
-    if (![value isMemberOfClass:ShareToData.class])
-      return NO;
-    ShareToData* shareToData = static_cast<ShareToData*>(value);
-    CGSize size = CGSizeMake(40, 40);
-    BOOL thumbnailDataIsEqual = ui::test::uiimage_utils::UIImagesAreEqual(
-        shareToData.thumbnailGenerator(size),
-        ui::test::uiimage_utils::UIImageWithSizeAndSolidColor(
-            size, [UIColor blueColor]));
-    return shareToData.url == expectedUrl &&
-           [shareToData.title isEqual:expectedTitle] &&
-           shareToData.isOriginalTitle == YES &&
-           shareToData.isPagePrintable == NO && thumbnailDataIsEqual;
-  };
-
-  [[shareControllerMock expect]
-        shareWithData:[OCMArg checkWithBlock:shareDataChecker]
-           controller:bvc_
-         browserState:chrome_browser_state_.get()
-           dispatcher:bvc_.dispatcher
-      shareToDelegate:bvc_
-             fromRect:[bvc_ testing_shareButtonAnchorRect]
-               inView:[OCMArg any]];
-  [bvc_.dispatcher sharePage];
-  EXPECT_OCMOCK_VERIFY(shareControllerMock);
-}
-
-// Verifies that BVC does not invoke -shareURL on ShareController in response
-// to the |-sharePage| command if tab is in the process of being closed.
-TEST_F(BrowserViewControllerTest, TestSharePageWhenClosing) {
-  GURL expectedUrl("http://www.testurl.net");
-  NSString* expectedTitle = @"title";
-  // Sets WebState to nil because [tab close] clears the WebState.
-  static_cast<BVCTestTabMock*>(tab_).webState = nil;
-  static_cast<BVCTestTabMock*>(tab_).lastCommittedURL = expectedUrl;
-  static_cast<BVCTestTabMock*>(tab_).visibleURL = expectedUrl;
-  OCMockObject* tabMock = static_cast<OCMockObject*>(tab_);
-  [[[tabMock stub] andReturn:expectedTitle] title];
-  [[[tabMock stub] andReturn:expectedTitle] originalTitle];
-  // Explicitly disallow the execution of the ShareController.
-  OCMockObject* shareControllerMock =
-      static_cast<OCMockObject*>(shareController_);
-  [[shareControllerMock reject]
-        shareWithData:[OCMArg any]
-           controller:bvc_
-         browserState:chrome_browser_state_.get()
-           dispatcher:bvc_.dispatcher
-      shareToDelegate:bvc_
-             fromRect:[bvc_ testing_shareButtonAnchorRect]
-               inView:[OCMArg any]];
-  [bvc_.dispatcher sharePage];
-  EXPECT_OCMOCK_VERIFY(shareControllerMock);
-}
-
-// Verifies that BVC instantiates a bubble to show the given success message on
-// receiving a -shareDidComplete callback for a successful share.
-TEST_F(BrowserViewControllerTest, TestShareDidCompleteWithSuccess) {
-  NSString* completionMessage = @"Completion!";
-  [[dependencyFactory_ expect] showSnackbarWithMessage:completionMessage];
-
-  [bvc_ shareDidComplete:ShareTo::SHARE_SUCCESS
-       completionMessage:completionMessage];
-  EXPECT_OCMOCK_VERIFY(dependencyFactory_);
-}
-
-// Verifies that BVC shows an alert with the proper error message on
-// receiving a -shareDidComplete callback for a failed share.
-TEST_F(BrowserViewControllerTest, TestShareDidCompleteWithError) {
-  [[dependencyFactory_ reject] showSnackbarWithMessage:OCMOCK_ANY];
-  OCMockObject* mockCoordinator =
-      [OCMockObject niceMockForClass:[AlertCoordinator class]];
-  AlertCoordinator* alertCoordinator =
-      static_cast<AlertCoordinator*>(mockCoordinator);
-  NSString* errorTitle =
-      l10n_util::GetNSString(IDS_IOS_SHARE_TO_ERROR_ALERT_TITLE);
-  NSString* errorMessage = l10n_util::GetNSString(IDS_IOS_SHARE_TO_ERROR_ALERT);
-  [[[dependencyFactory_ expect] andReturn:alertCoordinator]
-      alertCoordinatorWithTitle:errorTitle
-                        message:errorMessage
-                 viewController:OCMOCK_ANY];
-  [static_cast<AlertCoordinator*>([mockCoordinator expect]) start];
-
-  [bvc_ shareDidComplete:ShareTo::SHARE_ERROR completionMessage:@"dummy"];
-  EXPECT_OCMOCK_VERIFY(dependencyFactory_);
-  EXPECT_OCMOCK_VERIFY(mockCoordinator);
-}
-
-// Verifies that BVC does not show a success bubble or error alert on receiving
-// a -shareDidComplete callback for a cancelled share.
-TEST_F(BrowserViewControllerTest, TestShareDidCompleteWithCancellation) {
-  [[dependencyFactory_ reject] showSnackbarWithMessage:OCMOCK_ANY];
-  [[dependencyFactory_ reject] alertCoordinatorWithTitle:OCMOCK_ANY
-                                                 message:OCMOCK_ANY
-                                          viewController:OCMOCK_ANY];
-
-  [bvc_ shareDidComplete:ShareTo::SHARE_CANCEL completionMessage:@"dummy"];
-  EXPECT_OCMOCK_VERIFY(dependencyFactory_);
-}
-
 TEST_F(BrowserViewControllerTest, TestPassKitDialogDisplayed) {
   // Create a good Pass and make sure the controller is displayed.
   base::FilePath pass_path;
@@ -578,14 +450,10 @@ TEST_F(BrowserViewControllerTest, TestPassKitErrorInfoBarDisplayed) {
 }
 
 TEST_F(BrowserViewControllerTest, TestClearPresentedState) {
-  OCMockObject* shareControllerMock =
-      static_cast<OCMockObject*>(shareController_);
-  [[shareControllerMock expect] cancelShareAnimated:NO];
   EXPECT_CALL(*this, OnCompletionCalled());
   [bvc_ clearPresentedStateWithCompletion:^{
     this->OnCompletionCalled();
   }];
-  EXPECT_OCMOCK_VERIFY(shareControllerMock);
 }
 
 }  // namespace
