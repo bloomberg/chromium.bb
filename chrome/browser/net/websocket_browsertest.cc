@@ -31,7 +31,6 @@ class WebSocketBrowserTest : public InProcessBrowserTest {
  public:
   WebSocketBrowserTest()
       : ws_server_(net::SpawnedTestServer::TYPE_WS,
-                   net::SpawnedTestServer::kLocalhost,
                    net::GetWebSocketTestDataDirectory()),
         wss_server_(net::SpawnedTestServer::TYPE_WSS,
                     SSLOptions(SSLOptions::CERT_OK),

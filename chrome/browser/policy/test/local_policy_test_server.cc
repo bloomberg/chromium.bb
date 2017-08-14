@@ -61,24 +61,18 @@ bool IsUnsafeCharacter(char c) {
 }  // namespace
 
 LocalPolicyTestServer::LocalPolicyTestServer()
-    : net::LocalTestServer(net::BaseTestServer::TYPE_HTTP,
-                           net::BaseTestServer::kLocalhost,
-                           base::FilePath()) {
+    : net::LocalTestServer(net::BaseTestServer::TYPE_HTTP, base::FilePath()) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   CHECK(server_data_dir_.CreateUniqueTempDir());
   config_file_ = server_data_dir_.GetPath().Append(kPolicyFileName);
 }
 
 LocalPolicyTestServer::LocalPolicyTestServer(const base::FilePath& config_file)
-    : net::LocalTestServer(net::BaseTestServer::TYPE_HTTP,
-                           net::BaseTestServer::kLocalhost,
-                           base::FilePath()),
+    : net::LocalTestServer(net::BaseTestServer::TYPE_HTTP, base::FilePath()),
       config_file_(config_file) {}
 
 LocalPolicyTestServer::LocalPolicyTestServer(const std::string& test_name)
-    : net::LocalTestServer(net::BaseTestServer::TYPE_HTTP,
-                           net::BaseTestServer::kLocalhost,
-                           base::FilePath()) {
+    : net::LocalTestServer(net::BaseTestServer::TYPE_HTTP, base::FilePath()) {
   // Read configuration from a file in chrome/test/data/policy.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::FilePath source_root;

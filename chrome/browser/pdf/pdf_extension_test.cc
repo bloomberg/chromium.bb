@@ -809,7 +809,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, NavigationOnCorrectTab) {
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenFromFTP) {
   net::SpawnedTestServer ftp_server(
-      net::SpawnedTestServer::TYPE_FTP, net::SpawnedTestServer::kLocalhost,
+      net::SpawnedTestServer::TYPE_FTP,
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data/pdf")));
   ASSERT_TRUE(ftp_server.Start());
 

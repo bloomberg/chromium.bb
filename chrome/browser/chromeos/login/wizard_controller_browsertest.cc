@@ -1063,9 +1063,7 @@ class WizardControllerProxyAuthOnSigninTest : public WizardControllerTest {
  protected:
   WizardControllerProxyAuthOnSigninTest()
       : proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
-                      net::SpawnedTestServer::kLocalhost,
-                      base::FilePath()) {
-  }
+                      base::FilePath()) {}
   ~WizardControllerProxyAuthOnSigninTest() override {}
 
   // Overridden from WizardControllerTest:

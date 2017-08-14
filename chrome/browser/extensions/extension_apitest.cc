@@ -426,9 +426,7 @@ bool ExtensionApiTest::StartWebSocketServer(
     const base::FilePath& root_directory,
     bool enable_basic_auth) {
   websocket_server_.reset(new net::SpawnedTestServer(
-      net::SpawnedTestServer::TYPE_WS,
-      net::SpawnedTestServer::kLocalhost,
-      root_directory));
+      net::SpawnedTestServer::TYPE_WS, root_directory));
   websocket_server_->set_websocket_basic_auth(enable_basic_auth);
 
   if (!websocket_server_->Start())
@@ -441,10 +439,8 @@ bool ExtensionApiTest::StartWebSocketServer(
 }
 
 bool ExtensionApiTest::StartFTPServer(const base::FilePath& root_directory) {
-  ftp_server_.reset(new net::SpawnedTestServer(
-      net::SpawnedTestServer::TYPE_FTP,
-      net::SpawnedTestServer::kLocalhost,
-      root_directory));
+  ftp_server_.reset(new net::SpawnedTestServer(net::SpawnedTestServer::TYPE_FTP,
+                                               root_directory));
 
   if (!ftp_server_->Start())
     return false;

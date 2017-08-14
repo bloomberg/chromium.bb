@@ -89,7 +89,6 @@ class ProxyBrowserTest : public InProcessBrowserTest {
  public:
   ProxyBrowserTest()
       : proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
-                      net::SpawnedTestServer::kLocalhost,
                       base::FilePath()) {
   }
 
@@ -122,7 +121,6 @@ class ProxyBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
   // Launch WebSocket server.
   net::SpawnedTestServer ws_server(net::SpawnedTestServer::TYPE_WS,
-                                   net::SpawnedTestServer::kLocalhost,
                                    net::GetWebSocketTestDataDirectory());
   ASSERT_TRUE(ws_server.Start());
 
@@ -207,9 +205,7 @@ class FtpProxyScriptBrowserTest : public InProcessBrowserTest {
  public:
   FtpProxyScriptBrowserTest()
       : ftp_server_(net::SpawnedTestServer::TYPE_FTP,
-                    net::SpawnedTestServer::kLocalhost,
-                    base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
-  }
+                    base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {}
   ~FtpProxyScriptBrowserTest() override {}
 
   void SetUp() override {

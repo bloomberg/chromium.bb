@@ -20,7 +20,6 @@ class FtpBrowserTest : public InProcessBrowserTest {
  public:
   FtpBrowserTest()
       : ftp_server_(net::SpawnedTestServer::TYPE_FTP,
-                    net::SpawnedTestServer::kLocalhost,
                     base::FilePath(FILE_PATH_LITERAL("chrome/test/data/ftp"))) {
   }
 

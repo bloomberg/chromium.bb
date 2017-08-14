@@ -1508,7 +1508,6 @@ class DevtoolsInterceptionWithAuthProxyTest
  public:
   DevtoolsInterceptionWithAuthProxyTest()
       : proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
-                      net::SpawnedTestServer::kLocalhost,
                       base::FilePath(FILE_PATH_LITERAL("headless/test/data"))) {
   }
 

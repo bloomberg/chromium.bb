@@ -3866,9 +3866,7 @@ TEST_F(TokenBindingURLRequestTest, ForwardTokenBinding) {
 // EmbeddedTestServer once crbug.com/599187 is resolved.
 #if !defined(OS_ANDROID)
 TEST_F(TokenBindingURLRequestTest, DontForwardHeaderFromHttp) {
-  SpawnedTestServer http_server(SpawnedTestServer::TYPE_HTTP,
-                                SpawnedTestServer::kLocalhost,
-                                base::FilePath());
+  SpawnedTestServer http_server(SpawnedTestServer::TYPE_HTTP, base::FilePath());
   ASSERT_TRUE(http_server.Start());
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.supported_token_binding_params.push_back(TB_PARAM_ECDSAP256);
@@ -5014,7 +5012,6 @@ TEST_F(URLRequestTestHTTP, GetTestLoadTiming) {
 #if !defined(OS_IOS)
 TEST_F(URLRequestTestHTTP, GetZippedTest) {
   SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTP,
-                                SpawnedTestServer::kLocalhost,
                                 base::FilePath(kTestFilePath));
 
   ASSERT_TRUE(test_server.Start());
@@ -5656,7 +5653,6 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoAuth) {
 // Tests handling of delegate info from a URLRequest::Delegate.
 TEST_F(URLRequestTestHTTP, URLRequestDelegateInfo) {
   SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTP,
-                                SpawnedTestServer::kLocalhost,
                                 base::FilePath(kTestFilePath));
 
   ASSERT_TRUE(test_server.Start());
@@ -11345,7 +11341,6 @@ class URLRequestTestFTP : public URLRequestTest {
  public:
   URLRequestTestFTP()
       : ftp_test_server_(SpawnedTestServer::TYPE_FTP,
-                         SpawnedTestServer::kLocalhost,
                          base::FilePath(kTestFilePath)) {
     // Can't use |default_context_|'s HostResolver to set up the
     // FTPTransactionFactory because it hasn't been created yet.

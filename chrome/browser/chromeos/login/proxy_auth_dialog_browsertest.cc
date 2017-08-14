@@ -63,9 +63,7 @@ class ProxyAuthOnUserBoardScreenTest : public LoginManagerTest {
   ProxyAuthOnUserBoardScreenTest()
       : LoginManagerTest(true /* should_launch_browser */),
         proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
-                      net::SpawnedTestServer::kLocalhost,
-                      base::FilePath()) {
-  }
+                      base::FilePath()) {}
 
   ~ProxyAuthOnUserBoardScreenTest() override {}
 

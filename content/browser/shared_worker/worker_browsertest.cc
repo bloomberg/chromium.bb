@@ -247,7 +247,6 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WebSocketSharedWorker) {
 
   // Launch WebSocket server.
   net::SpawnedTestServer ws_server(net::SpawnedTestServer::TYPE_WS,
-                                   net::SpawnedTestServer::kLocalhost,
                                    net::GetWebSocketTestDataDirectory());
   ASSERT_TRUE(ws_server.Start());
 

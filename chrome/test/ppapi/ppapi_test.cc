@@ -209,7 +209,6 @@ void PPAPITestBase::RunTestWithWebSocketServer(const std::string& test_case) {
   net::EmbeddedTestServer http_server;
   http_server.AddDefaultHandlers(http_document_root);
   net::SpawnedTestServer ws_server(net::SpawnedTestServer::TYPE_WS,
-                                   net::SpawnedTestServer::kLocalhost,
                                    net::GetWebSocketTestDataDirectory());
   ASSERT_TRUE(http_server.Start());
   ASSERT_TRUE(ws_server.Start());

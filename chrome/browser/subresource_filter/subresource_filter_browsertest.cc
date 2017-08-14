@@ -463,8 +463,7 @@ class SubresourceFilterWebSocketBrowserTest
   void SetUpOnMainThread() override {
     SubresourceFilterBrowserTest::SetUpOnMainThread();
     websocket_test_server_ = base::MakeUnique<net::SpawnedTestServer>(
-        net::SpawnedTestServer::TYPE_WS, net::SpawnedTestServer::kLocalhost,
-        net::GetWebSocketTestDataDirectory());
+        net::SpawnedTestServer::TYPE_WS, net::GetWebSocketTestDataDirectory());
     ASSERT_TRUE(websocket_test_server_->Start());
   }
 
