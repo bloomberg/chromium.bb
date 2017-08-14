@@ -126,9 +126,9 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args,
   locations_to_add = [os.path.abspath(os.path.join(output_directory, x.strip()))
                       for x in runtime_deps]
 
-  common_prefix = '/'
-  if len(locations_to_add) > 1:
-    common_prefix = os.path.commonprefix(locations_to_add)
+  common_prefix = DIR_SOURCE_ROOT + '/'
+  assert os.path.isdir(common_prefix)
+
   target_source_pairs = zip(
       [MakeTargetImageName(common_prefix, output_directory, loc)
        for loc in locations_to_add],
