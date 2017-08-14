@@ -628,14 +628,14 @@ void ServiceWorkerGlobalScopeProxy::WillEvaluateWorkerScript(
     size_t script_size,
     size_t cached_metadata_size) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
-  WorkerGlobalScope()->CountScript(script_size, cached_metadata_size);
+  worker_global_scope_->CountWorkerScript(script_size, cached_metadata_size);
 }
 
 void ServiceWorkerGlobalScopeProxy::WillEvaluateImportedScript(
     size_t script_size,
     size_t cached_metadata_size) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
-  WorkerGlobalScope()->CountScript(script_size, cached_metadata_size);
+  worker_global_scope_->CountImportedScript(script_size, cached_metadata_size);
 }
 
 void ServiceWorkerGlobalScopeProxy::DidEvaluateWorkerScript(bool success) {
