@@ -591,7 +591,7 @@ bool IsVoiceInteractionEnabled() {
   // Disable voice interaction for non-supported locales.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   std::string locale = icu::Locale::getDefault().getName();
-  if (locale != ULOC_US &&
+  if (locale != ULOC_US && locale != ULOC_UK && locale != ULOC_CANADA &&
       command_line
               ->GetSwitchValueASCII(
                   chromeos::switches::kVoiceInteractionLocales)
