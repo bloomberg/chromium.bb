@@ -625,6 +625,16 @@ std::string WideStringToString(FPDF_WIDESTRING wide_string) {
   return base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(wide_string));
 }
 
+// Returns true if the given |area| and |form_type| combination from
+// PDFiumEngine::GetCharIndex() indicates it is a form text area.
+bool IsFormTextArea(PDFiumPage::Area area, int form_type) {
+  if (form_type == FPDF_FORMFIELD_UNKNOWN)
+    return false;
+
+  DCHECK_EQ(area, PDFiumPage::FormTypeToArea(form_type));
+  return area == PDFiumPage::FORM_TEXT_AREA;
+}
+
 // Checks whether or not focus is in an editable form text area given the
 // form field annotation flags and form type.
 bool CheckIfEditableFormTextArea(int flags, int form_type) {
@@ -1812,24 +1822,11 @@ bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
     double page_y;
     DeviceToPage(page_index, point.x(), point.y(), &page_x, &page_y);
 
-    bool is_form_text_area = false;
-    if (form_type != FPDF_FORMFIELD_UNKNOWN) {
-      DCHECK_EQ(area, PDFiumPage::FormTypeToArea(form_type));
-      is_form_text_area = area == PDFiumPage::FORM_TEXT_AREA;
-    }
-
+    bool is_form_text_area = IsFormTextArea(area, form_type);
     FPDF_PAGE page = pages_[page_index]->GetPage();
-    bool is_editable_form_text_area = false;
-    if (is_form_text_area) {
-      FPDF_ANNOTATION annot =
-          FPDFAnnot_GetFormFieldAtPoint(form_, page, page_x, page_y);
-      DCHECK(annot);
-
-      int flags = FPDFAnnot_GetFormFieldFlags(page, annot);
-      is_editable_form_text_area =
-          CheckIfEditableFormTextArea(flags, form_type);
-      FPDFPage_CloseAnnot(annot);
-    }
+    bool is_editable_form_text_area =
+        is_form_text_area &&
+        IsPointInEditableFormTextArea(page, page_x, page_y, form_type);
 
     FORM_OnLButtonDown(form_, page, 0, page_x, page_y);
     if (form_type != FPDF_FORMFIELD_UNKNOWN) {
@@ -1887,13 +1884,69 @@ bool PDFiumEngine::OnMiddleMouseDown(const pp::MouseInputEvent& event) {
 bool PDFiumEngine::OnRightMouseDown(const pp::MouseInputEvent& event) {
   DCHECK_EQ(PP_INPUTEVENT_MOUSEBUTTON_RIGHT, event.GetButton());
 
+  pp::Point point = event.GetPosition();
+  int page_index = -1;
+  int char_index = -1;
+  int form_type = FPDF_FORMFIELD_UNKNOWN;
+  PDFiumPage::LinkTarget target;
+  PDFiumPage::Area area =
+      GetCharIndex(point, &page_index, &char_index, &form_type, &target);
+  DCHECK_GE(form_type, FPDF_FORMFIELD_UNKNOWN);
+
+  bool is_form_text_area = IsFormTextArea(area, form_type);
+  bool is_editable_form_text_area = false;
+  if (is_form_text_area) {
+    DCHECK_NE(page_index, -1);
+
+    double page_x;
+    double page_y;
+    DeviceToPage(page_index, point.x(), point.y(), &page_x, &page_y);
+
+    FPDF_PAGE page = pages_[page_index]->GetPage();
+    is_editable_form_text_area =
+        IsPointInEditableFormTextArea(page, page_x, page_y, form_type);
+  }
+
+  // Handle the case when focus starts inside a form text area.
+  if (in_form_text_area_) {
+    if (is_form_text_area) {
+      // TODO(bug_754594): Right now this is a no-op, but what needs to happen
+      // here is a check to see if this right click occurred in the same text
+      // area as the currently focused text area. If they are not the same,
+      // refocus. This requires more state tracking, and a new PDFium API to
+      // set focus.
+      return true;
+    }
+
+    // Transition out of a form text area.
+    FORM_ForceToKillFocus(form_);
+    SetInFormTextArea(false);
+    return true;
+  }
+
+  // Handle the case when focus starts outside a form text area and transitions
+  // into a form text area.
+  if (is_form_text_area) {
+    {
+      SelectionChangeInvalidator selection_invalidator(this);
+      selection_.clear();
+    }
+
+    // TODO(bug_754594): This does not actually set focus inside the form area.
+    // To do so requires a new PDFium API.
+    SetInFormTextArea(true);
+    editable_form_text_area_ = is_editable_form_text_area;
+    return true;
+  }
+
+  // Handle the case when focus starts outside a form text area and stays
+  // outside.
   if (selection_.empty())
     return false;
 
   std::vector<pp::Rect> selection_rect_vector;
   GetAllScreenRectsUnion(&selection_, GetVisibleRect().point(),
                          &selection_rect_vector);
-  pp::Point point = event.GetPosition();
   for (const auto& rect : selection_rect_vector) {
     if (rect.Contains(point.x(), point.y()))
       return false;
@@ -3799,6 +3852,21 @@ void PDFiumEngine::SetInFormTextArea(bool in_form_text_area) {
 
 void PDFiumEngine::SetMouseLeftButtonDown(bool is_mouse_left_button_down) {
   mouse_left_button_down_ = is_mouse_left_button_down;
+}
+
+bool PDFiumEngine::IsPointInEditableFormTextArea(FPDF_PAGE page,
+                                                 double page_x,
+                                                 double page_y,
+                                                 int form_type) {
+  FPDF_ANNOTATION annot =
+      FPDFAnnot_GetFormFieldAtPoint(form_, page, page_x, page_y);
+  DCHECK(annot);
+
+  int flags = FPDFAnnot_GetFormFieldFlags(page, annot);
+  bool is_editable_form_text_area =
+      CheckIfEditableFormTextArea(flags, form_type);
+  FPDFPage_CloseAnnot(annot);
+  return is_editable_form_text_area;
 }
 
 void PDFiumEngine::ScheduleTouchTimer(const pp::TouchInputEvent& evt) {

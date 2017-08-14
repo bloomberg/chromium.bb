@@ -467,6 +467,13 @@ class PDFiumEngine : public PDFEngine,
   // Sets whether or not left mouse button is currently being held down.
   void SetMouseLeftButtonDown(bool is_mouse_left_button_down);
 
+  // Given coordinates on |page| has a form of |form_type| which is known to be
+  // a form text area, check if it is an editable form text area.
+  bool IsPointInEditableFormTextArea(FPDF_PAGE page,
+                                     double page_x,
+                                     double page_y,
+                                     int form_type);
+
   bool PageIndexInBounds(int index) const;
 
   void ScheduleTouchTimer(const pp::TouchInputEvent& event);
