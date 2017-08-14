@@ -14,11 +14,34 @@ Polymer({
     SetManufacturerModelBehavior,
   ],
 
+  properties: {
+    /**
+     * If the printer needs to be re-configured.
+     * @private {boolean}
+     */
+    needsReconfigured_: Boolean,
+  },
+
+  observers: [
+    'printerInfoChanged_(activePrinter.*)',
+  ],
+
   /** @override */
   ready: function() {
     settings.CupsPrintersBrowserProxyImpl.getInstance()
         .getPrinterPpdManufacturerAndModel(this.activePrinter.printerId)
-        .then(this.onGetPrinterPpdManufacturerAndModel_.bind(this));
+        .then(
+            this.onGetPrinterPpdManufacturerAndModel_.bind(this),
+            this.onGetPrinterPpdManufacturerAndModelFailed_.bind(this));
+  },
+
+  /**
+   * @param {!{path: string, value: string}} change
+   * @private
+   */
+  printerInfoChanged_: function(change) {
+    if (change.path != 'activePrinter.printerName')
+      this.needsReconfigured_ = true;
   },
 
   /**
@@ -36,8 +59,13 @@ Polymer({
 
   /** @private */
   onSaveTap_: function() {
-    settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
-        SetupMethod.MANUAL, this.activePrinter);
+    if (this.needsReconfigured_) {
+      settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
+          SetupMethod.MANUAL, this.activePrinter);
+    } else {
+      settings.CupsPrintersBrowserProxyImpl.getInstance().updateCupsPrinter(
+          this.activePrinter.printerId, this.activePrinter.printerName);
+    }
     this.$$('add-printer-dialog').close();
   },
 
@@ -69,5 +97,17 @@ Polymer({
   onGetPrinterPpdManufacturerAndModel_: function(info) {
     this.set('activePrinter.ppdManufacturer', info.ppdManufacturer);
     this.set('activePrinter.ppdModel', info.ppdModel);
+
+    // |needsReconfigured_| needs to reset to false after |ppdManufacturer| and
+    // |ppdModel| are initialized to their correct values.
+    this.needsReconfigured_ = false;
+  },
+
+  /**
+   * Handler for getPrinterPpdManufacturerAndModel() failure case.
+   * @private
+   */
+  onGetPrinterPpdManufacturerAndModelFailed_: function() {
+    this.needsReconfigured_ = false;
   },
 });
