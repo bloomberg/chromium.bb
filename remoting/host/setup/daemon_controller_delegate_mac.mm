@@ -12,6 +12,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/mac/authorization_util.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/launchd.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_authorizationref.h"
@@ -19,8 +20,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/values.h"
+#include "remoting/base/string_resources.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/mac/constants_mac.h"
+#include "remoting/host/resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 namespace remoting {
 
@@ -72,8 +77,11 @@ class ScopedWaitpid {
 // input. Returns true if successful.
 bool RunHelperAsRoot(const std::string& command,
                      const std::string& input_data) {
+  NSString* prompt = l10n_util::GetNSStringFWithFixup(
+      IDS_HOST_AUTHENTICATION_PROMPT,
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   base::mac::ScopedAuthorizationRef authorization(
-      base::mac::AuthorizationCreateToRunAsRoot(nullptr));
+      base::mac::AuthorizationCreateToRunAsRoot(base::mac::NSToCFCast(prompt)));
   if (!authorization.get()) {
     LOG(ERROR) << "Failed to obtain authorizationRef";
     return false;
@@ -195,9 +203,11 @@ void ElevateAndStopHost(const DaemonController::CompletionCallback& done) {
 }  // namespace
 
 DaemonControllerDelegateMac::DaemonControllerDelegateMac() {
+  LoadResources(std::string());
 }
 
 DaemonControllerDelegateMac::~DaemonControllerDelegateMac() {
+  UnloadResources();
 }
 
 DaemonController::State DaemonControllerDelegateMac::GetState() {
