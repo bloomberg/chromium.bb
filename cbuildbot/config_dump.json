@@ -19588,7 +19588,11 @@
         "boards": [
             "poppy"
         ],
-        "manifest": "official.xml"
+        "manifest": "official.xml",
+        "sign_types": [
+            "firmware",
+            "accessory_rwsig"
+        ]
     },
     "poppy-full": {
         "_template": "full",

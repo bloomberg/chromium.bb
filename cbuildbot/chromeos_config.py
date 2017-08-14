@@ -3495,6 +3495,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'tricky-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
+
+      'poppy-firmware': {
+          'sign_types': ['firmware', 'accessory_rwsig'],
+      },
   }
 
   for config_name, overrides  in overwritten_configs.iteritems():
