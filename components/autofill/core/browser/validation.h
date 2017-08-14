@@ -69,6 +69,11 @@ CreditCardCompletionStatus GetCompletionStatusForCard(
 // missing, the message will be a generic "more information required".
 base::string16 GetCompletionMessageForCard(CreditCardCompletionStatus status);
 
+// Returns the title string for a card edit dialog. The title string will
+// mention what needs to be added/fixed to make the card valid if it is not
+// valid. Otherwise, it will be "Edit card".
+base::string16 GetEditDialogTitleForCard(CreditCardCompletionStatus status);
+
 // Returns true if |text| looks like a valid e-mail address.
 bool IsValidEmailAddress(const base::string16& text);
 

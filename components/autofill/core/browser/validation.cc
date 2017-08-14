@@ -48,7 +48,7 @@ bool IsValidCreditCardNumber(const base::string16& text) {
 
   // Credit card numbers are at most 19 digits in length, 12 digits seems to
   // be a fairly safe lower-bound [1].  Specific card issuers have more rigidly
-  // defined sizes. 
+  // defined sizes.
   // (Last updated: May 29, 2017)
   // [1] https://en.wikipedia.org/wiki/Payment_card_number.
   // CardEditor.isCardNumberLengthMaxium() needs to be kept in sync.
@@ -173,6 +173,23 @@ base::string16 GetCompletionMessageForCard(CreditCardCompletionStatus status) {
     default:
       // Multiple things are missing
       return l10n_util::GetStringUTF16(IDS_PAYMENTS_MORE_INFORMATION_REQUIRED);
+  }
+}
+
+base::string16 GetEditDialogTitleForCard(CreditCardCompletionStatus status) {
+  switch (status) {
+    case CREDIT_CARD_COMPLETE:
+    case CREDIT_CARD_EXPIRED:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_EDIT_CARD);
+    case CREDIT_CARD_NO_CARDHOLDER:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_NAME_ON_CARD);
+    case CREDIT_CARD_NO_NUMBER:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_VALID_CARD_NUMBER);
+    case CREDIT_CARD_NO_BILLING_ADDRESS:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_BILLING_ADDRESS);
+    default:
+      // Multiple things are missing
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_MORE_INFORMATION);
   }
 }
 

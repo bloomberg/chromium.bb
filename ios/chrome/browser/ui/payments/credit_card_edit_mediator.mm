@@ -9,6 +9,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/validation.h"
 #import "components/autofill/ios/browser/credit_card_util.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/strings_util.h"
@@ -104,9 +105,14 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
 #pragma mark - PaymentRequestEditViewControllerDataSource
 
 - (NSString*)title {
-  // TODO(crbug.com/602666): Title varies depending on the missing fields.
-  return _creditCard ? l10n_util::GetNSString(IDS_PAYMENTS_EDIT_CARD)
-                     : l10n_util::GetNSString(IDS_PAYMENTS_ADD_CARD_LABEL);
+  if (!self.creditCard)
+    return l10n_util::GetNSString(IDS_PAYMENTS_ADD_CARD_LABEL);
+
+  const autofill::CreditCardCompletionStatus status =
+      autofill::GetCompletionStatusForCard(
+          *self.creditCard, self.paymentRequest->GetApplicationLocale(),
+          self.paymentRequest->billing_profiles());
+  return base::SysUTF16ToNSString(autofill::GetEditDialogTitleForCard(status));
 }
 
 - (CollectionViewItem*)headerItem {
