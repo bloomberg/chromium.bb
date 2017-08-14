@@ -253,7 +253,6 @@ external/wpt/assumptions [ WontFix ]
 external/wpt/css/css-transforms-2 [ WontFix ]
 external/wpt/css-values [ WontFix ]
 external/wpt/gyroscope [ WontFix ]
-external/wpt/longtask-timing [ WontFix ]
 external/wpt/magnetometer [ WontFix ]
 external/wpt/upgrade-insecure-requests [ WontFix ]
 
