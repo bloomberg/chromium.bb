@@ -18,7 +18,6 @@
 namespace net {
 
 struct DnsConfig;
-class HistogramWatcher;
 class NetworkChangeNotifierFactory;
 struct NetworkInterface;
 typedef std::vector<NetworkInterface> NetworkInterfaceList;
@@ -560,6 +559,7 @@ class NET_EXPORT NetworkChangeNotifier {
   friend class NetworkChangeNotifierLinuxTest;
   friend class NetworkChangeNotifierWinTest;
 
+  class HistogramWatcher;
   class NetworkState;
   class NetworkChangeCalculator;
 
