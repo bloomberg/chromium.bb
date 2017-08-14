@@ -4442,9 +4442,77 @@ weston_head_init(struct weston_head *head, const char *name)
 	 */
 	memset(head, 0, sizeof *head);
 
+	wl_list_init(&head->compositor_link);
 	wl_list_init(&head->output_link);
 	wl_list_init(&head->resource_list);
 	head->name = strdup(name);
+}
+
+/** Register a new head
+ *
+ * \param compositor The compositor.
+ * \param head The head to register, must not be already registered.
+ *
+ * This signals the core that a new head has become available.
+ *
+ * \memberof weston_compositor
+ * \internal
+ */
+static void
+weston_compositor_add_head(struct weston_compositor *compositor,
+			   struct weston_head *head)
+{
+	assert(wl_list_empty(&head->compositor_link));
+	assert(head->name);
+
+	wl_list_insert(compositor->head_list.prev, &head->compositor_link);
+	head->compositor = compositor;
+}
+
+/** Iterate over available heads
+ *
+ * \param compositor The compositor.
+ * \param item The iterator, or NULL for start.
+ * \return The next available head in the list.
+ *
+ * Returns all available heads, regardless of being connected or enabled.
+ *
+ * You can iterate over all heads as follows:
+ * \code
+ * struct weston_head *head = NULL;
+ *
+ * while ((head = weston_compositor_iterate_heads(compositor, head))) {
+ * 	...
+ * }
+ * \endcode
+ *
+ *  If you cause \c iter to be removed from the list, you cannot use it to
+ * continue iterating. Removing any other item is safe.
+ *
+ * \memberof weston_compositor
+ */
+WL_EXPORT struct weston_head *
+weston_compositor_iterate_heads(struct weston_compositor *compositor,
+				struct weston_head *iter)
+{
+	struct wl_list *list = &compositor->head_list;
+	struct wl_list *node;
+
+	assert(compositor);
+	assert(!iter || iter->compositor == compositor);
+
+	if (iter)
+		node = iter->compositor_link.next;
+	else
+		node = list->next;
+
+	assert(node);
+	assert(!iter || node != &iter->compositor_link);
+
+	if (node == list)
+		return NULL;
+
+	return container_of(node, struct weston_head, compositor_link);
 }
 
 /** Attach a head to an inactive output
@@ -4521,6 +4589,8 @@ weston_head_release(struct weston_head *head)
 	free(head->model);
 	free(head->serial_number);
 	free(head->name);
+
+	wl_list_remove(&head->compositor_link);
 }
 
 /** Store monitor make, model and serial number
@@ -5090,6 +5160,7 @@ weston_output_init(struct weston_output *output,
 
 	weston_head_init(&output->head, name);
 	weston_head_set_connection_status(&output->head, true);
+	weston_compositor_add_head(compositor, &output->head);
 
 	/* Add some (in)sane defaults which can be used
 	 * for checking if an output was properly configured
@@ -5713,6 +5784,7 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 	wl_list_init(&ec->seat_list);
 	wl_list_init(&ec->pending_output_list);
 	wl_list_init(&ec->output_list);
+	wl_list_init(&ec->head_list);
 	wl_list_init(&ec->key_binding_list);
 	wl_list_init(&ec->modifier_binding_list);
 	wl_list_init(&ec->button_binding_list);
@@ -5987,6 +6059,9 @@ weston_compositor_destroy(struct weston_compositor *compositor)
 
 	if (compositor->backend)
 		compositor->backend->destroy(compositor);
+
+	/* The backend is responsible for destroying the heads. */
+	assert(wl_list_empty(&compositor->head_list));
 
 	weston_plugin_api_destroy_list(compositor);
 

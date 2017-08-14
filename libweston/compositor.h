@@ -153,6 +153,9 @@ enum dpms_enum {
  * (windowed nested backends).
  */
 struct weston_head {
+	struct weston_compositor *compositor;	/**< owning compositor */
+	struct wl_list compositor_link;	/**< in weston_compositor::head_list */
+
 	struct weston_output *output;	/**< the output driving this head */
 	struct wl_list output_link;	/**< in weston_output::head_list */
 
@@ -920,6 +923,7 @@ struct weston_compositor {
 
 	struct wl_list pending_output_list;
 	struct wl_list output_list;
+	struct wl_list head_list;	/* struct weston_head::compositor_link */
 	struct wl_list seat_list;
 	struct wl_list layer_list;	/* struct weston_layer::link */
 	struct wl_list view_list;	/* struct weston_view::link */
@@ -1982,6 +1986,10 @@ weston_head_is_connected(struct weston_head *head);
 
 bool
 weston_head_is_enabled(struct weston_head *head);
+
+struct weston_head *
+weston_compositor_iterate_heads(struct weston_compositor *compositor,
+				struct weston_head *iter);
 
 void
 weston_output_set_scale(struct weston_output *output,
