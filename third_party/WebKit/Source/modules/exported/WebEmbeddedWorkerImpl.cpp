@@ -53,7 +53,6 @@
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeProxy.h"
 #include "modules/serviceworkers/ServiceWorkerInstalledScriptsManager.h"
 #include "modules/serviceworkers/ServiceWorkerThread.h"
-#include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
@@ -339,17 +338,6 @@ void WebEmbeddedWorkerImpl::OnScriptLoaderFinished() {
     return;
   }
   worker_context_client_->WorkerScriptLoaded();
-
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, script_size_histogram,
-                      ("ServiceWorker.ScriptSize", 1000, 5000000, 50));
-  script_size_histogram.Count(main_script_loader_->SourceText().length());
-  if (main_script_loader_->CachedMetadata()) {
-    DEFINE_STATIC_LOCAL(
-        CustomCountHistogram, script_cached_metadata_size_histogram,
-        ("ServiceWorker.ScriptCachedMetadataSize", 1000, 50000000, 50));
-    script_cached_metadata_size_histogram.Count(
-        main_script_loader_->CachedMetadata()->size());
-  }
 
   if (pause_after_download_state_ == kDoPauseAfterDownload) {
     pause_after_download_state_ = kIsPausedAfterDownload;

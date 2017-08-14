@@ -120,8 +120,31 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
 
 ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope() {}
 
-void ServiceWorkerGlobalScope::CountScript(size_t script_size,
-                                           size_t cached_metadata_size) {
+void ServiceWorkerGlobalScope::CountWorkerScript(size_t script_size,
+                                                 size_t cached_metadata_size) {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, script_size_histogram,
+      ("ServiceWorker.ScriptSize", 1000, 5000000, 50));
+  script_size_histogram.Count(script_size);
+
+  if (cached_metadata_size) {
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        CustomCountHistogram, script_cached_metadata_size_histogram,
+        ("ServiceWorker.ScriptCachedMetadataSize", 1000, 50000000, 50));
+    script_cached_metadata_size_histogram.Count(cached_metadata_size);
+  }
+
+  RecordScriptSize(script_size, cached_metadata_size);
+}
+
+void ServiceWorkerGlobalScope::CountImportedScript(
+    size_t script_size,
+    size_t cached_metadata_size) {
+  RecordScriptSize(script_size, cached_metadata_size);
+}
+
+void ServiceWorkerGlobalScope::RecordScriptSize(size_t script_size,
+                                                size_t cached_metadata_size) {
   ++script_count_;
   script_total_size_ += script_size;
   script_cached_metadata_total_size_ += cached_metadata_size;
