@@ -2430,11 +2430,11 @@ TEST_F(TextfieldTest, TextCursorPositionInRTLTest) {
 
   InitTextfield();
   // LTR-RTL string in RTL context.
-  int text_cursor_position_prev = test_api_->GetCursorViewOrigin().x();
+  int text_cursor_position_prev = test_api_->GetCursorViewRect().x();
   SendKeyEvent('a');
   SendKeyEvent('b');
   EXPECT_STR_EQ("ab", textfield_->text());
-  int text_cursor_position_new = test_api_->GetCursorViewOrigin().x();
+  int text_cursor_position_new = test_api_->GetCursorViewRect().x();
   // Text cursor stays at same place after inserting new charactors in RTL mode.
   EXPECT_EQ(text_cursor_position_prev, text_cursor_position_new);
 
@@ -2446,11 +2446,11 @@ TEST_F(TextfieldTest, TextCursorPositionInLTRTest) {
   InitTextfield();
 
   // LTR-RTL string in LTR context.
-  int text_cursor_position_prev = test_api_->GetCursorViewOrigin().x();
+  int text_cursor_position_prev = test_api_->GetCursorViewRect().x();
   SendKeyEvent('a');
   SendKeyEvent('b');
   EXPECT_STR_EQ("ab", textfield_->text());
-  int text_cursor_position_new = test_api_->GetCursorViewOrigin().x();
+  int text_cursor_position_new = test_api_->GetCursorViewRect().x();
   // Text cursor moves to right after inserting new charactors in LTR mode.
   EXPECT_LT(text_cursor_position_prev, text_cursor_position_new);
 }
@@ -3189,6 +3189,30 @@ TEST_F(TextfieldTest, CursorVisibility) {
 
   textfield_->SetCursorEnabled(true);
   EXPECT_TRUE(test_api_->IsCursorVisible());
+}
+
+// Verify that cursor view height does not exceed the textfield height.
+TEST_F(TextfieldTest, CursorViewHeight) {
+  InitTextfield();
+  textfield_->SetBounds(0, 0, 100, 100);
+  textfield_->SetCursorEnabled(true);
+  SendKeyEvent('a');
+  EXPECT_TRUE(test_api_->IsCursorVisible());
+  EXPECT_GT(textfield_->GetVisibleBounds().height(),
+            test_api_->GetCursorViewRect().height());
+  EXPECT_LE(test_api_->GetCursorViewRect().height(),
+            GetCursorBounds().height());
+
+  // set the cursor height to be higher than the textfield height, verify that
+  // UpdateCursorViewPosition update cursor view height currectly.
+  gfx::Rect cursor_bound(test_api_->GetCursorViewRect());
+  cursor_bound.set_height(150);
+  test_api_->SetCursorViewRect(cursor_bound);
+  SendKeyEvent('b');
+  EXPECT_GT(textfield_->GetVisibleBounds().height(),
+            test_api_->GetCursorViewRect().height());
+  EXPECT_LE(test_api_->GetCursorViewRect().height(),
+            GetCursorBounds().height());
 }
 
 // Check if the text cursor is always at the end of the textfield after the

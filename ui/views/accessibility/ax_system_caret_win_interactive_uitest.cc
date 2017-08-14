@@ -88,7 +88,7 @@ TEST_F(AXSystemCaretWinTest, DISABLED_TestOnCaretBoundsChangeInTextField) {
 
   textfield_test_api.ExecuteTextEditCommand(
       ui::TextEditCommand::MOVE_TO_BEGINNING_OF_DOCUMENT);
-  gfx::Point caret_position = textfield_test_api.GetCursorViewOrigin();
+  gfx::Point caret_position = textfield_test_api.GetCursorViewRect().origin();
   LONG x, y, width, height;
   EXPECT_EQ(S_OK,
             caret_accessible->accLocation(&x, &y, &width, &height, self_));
@@ -98,7 +98,7 @@ TEST_F(AXSystemCaretWinTest, DISABLED_TestOnCaretBoundsChangeInTextField) {
 
   textfield_test_api.ExecuteTextEditCommand(
       ui::TextEditCommand::MOVE_TO_END_OF_DOCUMENT);
-  gfx::Point caret_position2 = textfield_test_api.GetCursorViewOrigin();
+  gfx::Point caret_position2 = textfield_test_api.GetCursorViewRect().origin();
   EXPECT_NE(caret_position, caret_position2);
   EXPECT_EQ(S_OK,
             caret_accessible->accLocation(&x, &y, &width, &height, self_));

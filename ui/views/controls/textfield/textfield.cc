@@ -1982,6 +1982,9 @@ void Textfield::UpdateCursorVisibility() {
 void Textfield::UpdateCursorViewPosition() {
   gfx::Rect location(GetRenderText()->GetUpdatedCursorBounds());
   location.set_x(GetMirroredXForRect(location));
+  location.set_height(
+      std::min(location.height(),
+               GetVisibleBounds().height() - location.y() - location.y()));
   cursor_view_.SetBoundsRect(location);
 }
 
