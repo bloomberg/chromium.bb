@@ -300,6 +300,12 @@ void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
   printer.set_display_name(printer_name);
   SyncedPrintersManagerFactory::GetForBrowserContext(profile_)
       ->UpdateConfiguredPrinter(printer);
+
+  // TODO(xdai): Replace "on-add-cups-printer" callback with Promise resolve
+  // function.
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::Value("on-add-cups-printer"), base::Value(true),
+                         base::Value(printer_name));
 }
 
 void CupsPrintersHandler::HandleRemoveCupsPrinter(const base::ListValue* args) {
