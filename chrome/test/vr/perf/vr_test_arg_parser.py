@@ -38,6 +38,10 @@ class VrTestArgParser(argparse.ArgumentParser):
                       type=os.path.realpath,
                       help='Path to a JSON file where the perf dashboard '
                            'chart data will be output.')
+    self.add_argument('--isolated-script-test-perf-output',
+                      type=os.path.realpath,
+                      help='Path to a JSON file where the perf dashboard '
+                           'chart data will be output.')
     self.add_argument('--isolated-script-test-output',
                       type=os.path.realpath,
                       help='Path to a JSON file where failures and the '
