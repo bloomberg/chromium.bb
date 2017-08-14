@@ -28,10 +28,10 @@ Channel::MessagePtr WaitForBrokerMessage(
     BrokerMessageType expected_type,
     size_t expected_num_handles,
     size_t expected_data_size,
-    std::deque<PlatformHandle>* incoming_handles) {
+    base::circular_deque<PlatformHandle>* incoming_handles) {
   Channel::MessagePtr message(new Channel::Message(
       sizeof(BrokerMessageHeader) + expected_data_size, expected_num_handles));
-  std::deque<PlatformHandle> incoming_platform_handles;
+  base::circular_deque<PlatformHandle> incoming_platform_handles;
   ssize_t read_result = PlatformChannelRecvmsg(
       platform_handle, const_cast<void*>(message->data()),
       message->data_num_bytes(), &incoming_platform_handles, true /* block */);
@@ -81,7 +81,7 @@ Broker::Broker(ScopedPlatformHandle platform_handle)
   PCHECK(flags != -1);
 
   // Wait for the first message, which should contain a handle.
-  std::deque<PlatformHandle> incoming_platform_handles;
+  base::circular_deque<PlatformHandle> incoming_platform_handles;
   if (WaitForBrokerMessage(sync_channel_.get(), BrokerMessageType::INIT, 1, 0,
                            &incoming_platform_handles)) {
     parent_channel_ = ScopedPlatformHandle(incoming_platform_handles.front());
@@ -112,7 +112,7 @@ scoped_refptr<PlatformSharedBuffer> Broker::GetSharedBuffer(size_t num_bytes) {
     return nullptr;
   }
 
-  std::deque<PlatformHandle> incoming_platform_handles;
+  base::circular_deque<PlatformHandle> incoming_platform_handles;
   Channel::MessagePtr message = WaitForBrokerMessage(
       sync_channel_.get(), BrokerMessageType::BUFFER_RESPONSE, 2,
       sizeof(BufferResponseData), &incoming_platform_handles);

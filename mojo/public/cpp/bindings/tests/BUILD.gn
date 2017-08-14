@@ -19,7 +19,6 @@ source_set("tests") {
     "container_test_util.cc",
     "container_test_util.h",
     "data_view_unittest.cc",
-    "deque_unittest.cc",
     "equals_unittest.cc",
     "handle_passing_unittest.cc",
     "hash_unittest.cc",

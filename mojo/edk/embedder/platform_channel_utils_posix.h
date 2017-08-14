@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <sys/types.h>  // For |ssize_t|.
 
-#include <deque>
 #include <memory>
 
+#include "base/containers/queue.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 
@@ -68,7 +68,7 @@ MOJO_SYSTEM_IMPL_EXPORT ssize_t
 PlatformChannelRecvmsg(PlatformHandle h,
                        void* buf,
                        size_t num_bytes,
-                       std::deque<PlatformHandle>* platform_handles,
+                       base::circular_deque<PlatformHandle>* platform_handles,
                        bool block = false);
 
 // Returns false if |server_handle| encounters an unrecoverable error.

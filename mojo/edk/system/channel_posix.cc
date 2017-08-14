@@ -8,11 +8,11 @@
 #include <sys/socket.h>
 
 #include <algorithm>
-#include <deque>
 #include <limits>
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -440,7 +440,7 @@ class ChannelPosix : public Channel,
   }
 
   bool FlushOutgoingMessagesNoLock() {
-    std::deque<MessageView> messages;
+    base::circular_deque<MessageView> messages;
     std::swap(outgoing_messages_, messages);
 
     while (!messages.empty()) {
@@ -543,13 +543,13 @@ class ChannelPosix : public Channel,
   std::unique_ptr<base::MessageLoopForIO::FileDescriptorWatcher> read_watcher_;
   std::unique_ptr<base::MessageLoopForIO::FileDescriptorWatcher> write_watcher_;
 
-  std::deque<PlatformHandle> incoming_platform_handles_;
+  base::circular_deque<PlatformHandle> incoming_platform_handles_;
 
   // Protects |pending_write_| and |outgoing_messages_|.
   base::Lock write_lock_;
   bool pending_write_ = false;
   bool reject_writes_ = false;
-  std::deque<MessageView> outgoing_messages_;
+  base::circular_deque<MessageView> outgoing_messages_;
 
   bool leak_handle_ = false;
 
