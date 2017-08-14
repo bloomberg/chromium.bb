@@ -151,10 +151,17 @@ HttpHandler::HttpHandler(
                      WrapToCommand("GoBack", base::Bind(&ExecuteGoBack))),
       CommandMapping(kPost, "session/:sessionId/refresh",
                      WrapToCommand("Refresh", base::Bind(&ExecuteRefresh))),
+      // still support old endpoints for executing scripts
       CommandMapping(
           kPost, "session/:sessionId/execute",
           WrapToCommand("ExecuteScript", base::Bind(&ExecuteExecuteScript))),
       CommandMapping(kPost, "session/:sessionId/execute_async",
+                     WrapToCommand("ExecuteAsyncScript",
+                                   base::Bind(&ExecuteExecuteAsyncScript))),
+      CommandMapping(
+          kPost, "session/:sessionId/execute/sync",
+          WrapToCommand("ExecuteScript", base::Bind(&ExecuteExecuteScript))),
+      CommandMapping(kPost, "session/:sessionId/execute/async",
                      WrapToCommand("ExecuteAsyncScript",
                                    base::Bind(&ExecuteExecuteAsyncScript))),
       CommandMapping(
