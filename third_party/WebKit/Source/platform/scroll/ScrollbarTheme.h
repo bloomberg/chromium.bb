@@ -56,7 +56,10 @@ class PLATFORM_EXPORT ScrollbarTheme {
 
   virtual bool Paint(const Scrollbar&, GraphicsContext&, const CullRect&);
 
-  virtual ScrollbarPart HitTest(const ScrollbarThemeClient&, const IntPoint&);
+  virtual ScrollbarPart HitTestWithParentPoint(const ScrollbarThemeClient&,
+                                               const IntPoint&);
+  ScrollbarPart HitTestWithRootFramePoint(const ScrollbarThemeClient&,
+                                          const IntPoint&);
 
   // This returns a fixed value regardless of device-scale-factor.
   // This returns thickness when scrollbar is painted.  i.e. It's not 0 even in

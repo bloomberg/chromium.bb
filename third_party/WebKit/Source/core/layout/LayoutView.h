@@ -67,6 +67,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   bool HitTest(HitTestResult&);
   bool HitTestNoLifecycleUpdate(HitTestResult&);
 
+  void AdjustHitTestResultForFrameScrollbar(HitTestResult&, Scrollbar&);
+
   // Returns the total count of calls to HitTest, for testing.
   unsigned HitTestCount() const { return hit_test_count_; }
   unsigned HitTestCacheHits() const { return hit_test_cache_hits_; }
