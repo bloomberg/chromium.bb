@@ -14,7 +14,9 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_service.mojom.h"
@@ -55,6 +57,10 @@ class RenderProcessHostTest : public ContentBrowserTest,
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kIgnoreAutoplayRestrictionsForTests);
+    // These flags are necessary to emulate camera input for getUserMedia()
+    // tests.
+    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
+    command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
   }
 
  protected:
@@ -474,7 +480,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
     run_loop.Run();
 
     // No point in running the rest of the test if this is wrong.
-    ASSERT_EQ(1, rph->get_audio_stream_count_for_testing());
+    ASSERT_EQ(1, rph->get_media_stream_count_for_testing());
   }
 
   host_destructions_ = 0;
@@ -505,7 +511,94 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
   }
 
   // Verify shutdown went as expected.
-  EXPECT_EQ(0, rph->get_audio_stream_count_for_testing());
+  EXPECT_EQ(0, rph->get_media_stream_count_for_testing());
+  EXPECT_EQ(1, process_exits_);
+  EXPECT_EQ(0, host_destructions_);
+  if (!host_destructions_)
+    rph->RemoveObserver(this);
+}
+
+// These tests contain WebRTC calls and cannot be run when it isn't enabled.
+#if !BUILDFLAG(ENABLE_WEBRTC)
+#define GetUserMediaIncrementsVideoCaptureStreams \
+  DISABLED_GetUserMediaIncrementsVideoCaptureStreams
+#define StopResetsVideoCaptureStreams DISABLED_StopResetsVideoCaptureStreams
+#define KillProcessZerosVideoCaptureStreams \
+  DISABLED_KillProcessZerosVideoCaptureStreams
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
+
+// Tests that video capture stream count increments when getUserMedia() is
+// called.
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
+                       GetUserMediaIncrementsVideoCaptureStreams) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("/media/getusermedia.html"));
+  RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
+      shell()->web_contents()->GetMainFrame()->GetProcess());
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell(), "getUserMediaAndExpectSuccess({video: true});", &result))
+      << "Failed to execute javascript.";
+  EXPECT_EQ(1, rph->get_media_stream_count_for_testing());
+}
+
+// Tests that video capture stream count resets when getUserMedia() is called
+// and stopped.
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, StopResetsVideoCaptureStreams) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("/media/getusermedia.html"));
+  RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
+      shell()->web_contents()->GetMainFrame()->GetProcess());
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell(), "getUserMediaAndStop({video: true});", &result))
+      << "Failed to execute javascript.";
+  EXPECT_EQ(0, rph->get_media_stream_count_for_testing());
+}
+
+// Tests that video capture stream counts (used for process priority
+// calculations) are properly set and cleared during media playback and renderer
+// terminations.
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
+                       KillProcessZerosVideoCaptureStreams) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("/media/getusermedia.html"));
+  RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
+      shell()->web_contents()->GetMainFrame()->GetProcess());
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell(), "getUserMediaAndExpectSuccess({video: true});", &result))
+      << "Failed to execute javascript.";
+  EXPECT_EQ(1, rph->get_media_stream_count_for_testing());
+
+  host_destructions_ = 0;
+  process_exits_ = 0;
+  rph->AddObserver(this);
+
+  mojom::TestServicePtr service;
+  BindInterface(rph, &service);
+
+  {
+    // Force a bad message event to occur which will terminate the renderer.
+    base::RunLoop run_loop;
+    set_process_exit_callback(media::BindToCurrentLoop(run_loop.QuitClosure()));
+    service->DoSomething(base::Bind(&base::DoNothing));
+    run_loop.Run();
+  }
+
+  {
+    // Cycle UI and IO loop once to ensure OnChannelClosing() has been delivered
+    // to audio stream owners and they get a chance to notify of stream closure.
+    base::RunLoop run_loop;
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            media::BindToCurrentLoop(run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(0, rph->get_media_stream_count_for_testing());
   EXPECT_EQ(1, process_exits_);
   EXPECT_EQ(0, host_destructions_);
   if (!host_destructions_)

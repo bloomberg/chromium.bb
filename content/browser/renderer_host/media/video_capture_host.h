@@ -28,9 +28,11 @@ class CONTENT_EXPORT VideoCaptureHost
     : public VideoCaptureControllerEventHandler,
       public mojom::VideoCaptureHost {
  public:
-  explicit VideoCaptureHost(MediaStreamManager* media_stream_manager);
+  VideoCaptureHost(int render_process_id,
+                   MediaStreamManager* media_stream_manager);
 
-  static void Create(MediaStreamManager* media_stream_manager,
+  static void Create(int render_process_id,
+                     MediaStreamManager* media_stream_manager,
                      mojom::VideoCaptureHostRequest request);
 
   ~VideoCaptureHost() override;
@@ -89,6 +91,9 @@ class CONTENT_EXPORT VideoCaptureHost
   // VideoCaptureControllerEventHandler::OnError.
   void DeleteVideoCaptureController(VideoCaptureControllerID controller_id,
                                     bool on_error);
+
+  class RenderProcessHostDelegate;
+  std::unique_ptr<RenderProcessHostDelegate> render_process_host_delegate_;
 
   MediaStreamManager* const media_stream_manager_;
 

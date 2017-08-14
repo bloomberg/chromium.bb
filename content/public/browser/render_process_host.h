@@ -130,10 +130,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual RendererAudioOutputStreamFactoryContext*
   GetRendererAudioOutputStreamFactoryContext() = 0;
 
-  // Called when an audio stream is added or removed and used to determine if
-  // the process should be backgrounded or not.
-  virtual void OnAudioStreamAdded() = 0;
-  virtual void OnAudioStreamRemoved() = 0;
+  // Called when a video capture stream or an audio stream is added or removed
+  // and used to determine if the process should be backgrounded or not.
+  virtual void OnMediaStreamAdded() = 0;
+  virtual void OnMediaStreamRemoved() = 0;
 
   // Indicates whether the current RenderProcessHost is exclusively hosting
   // guest RenderFrames. Not all guest RenderFrames are created equal.  A guest,
