@@ -101,7 +101,6 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   bool AllowPaymentRequest() const override { return false; }
   bool IsDisplayNone() const override { return !embedded_content_view_; }
   AtomicString Csp() const override { return g_null_atom; }
-  const WebVector<WebFeaturePolicyFeature>& AllowedFeatures() const override;
   const WebParsedFeaturePolicy& ContainerPolicy() const override;
 
   // For unit tests, manually trigger the UpdateContainerPolicy method.

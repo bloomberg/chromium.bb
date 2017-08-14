@@ -52,9 +52,6 @@ class CORE_EXPORT RemoteFrameOwner final
   bool AllowPaymentRequest() const override { return allow_payment_request_; }
   bool IsDisplayNone() const override { return is_display_none_; }
   AtomicString Csp() const override { return csp_; }
-  const WebVector<WebFeaturePolicyFeature>& AllowedFeatures() const override {
-    return allowed_features_;
-  }
   const WebParsedFeaturePolicy& ContainerPolicy() const override {
     return container_policy_;
   }
@@ -75,10 +72,6 @@ class CORE_EXPORT RemoteFrameOwner final
     is_display_none_ = is_display_none;
   }
   void SetCsp(const WebString& csp) { csp_ = csp; }
-  void SetAllowedFeatures(
-      const WebVector<WebFeaturePolicyFeature>& allowed_features) {
-    allowed_features_ = allowed_features;
-  }
   void SetContainerPolicy(const WebParsedFeaturePolicy& container_policy) {
     container_policy_ = container_policy;
   }
@@ -105,7 +98,6 @@ class CORE_EXPORT RemoteFrameOwner final
   bool allow_payment_request_;
   bool is_display_none_;
   WebString csp_;
-  WebVector<WebFeaturePolicyFeature> allowed_features_;
   WebParsedFeaturePolicy container_policy_;
 };
 

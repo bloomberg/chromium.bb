@@ -189,7 +189,6 @@ void HTMLIFrameElement::ParseAttribute(
           kOtherMessageSource, kErrorMessageLevel,
           "Error while parsing the 'allow' attribute: " + invalid_tokens));
     }
-    FrameOwnerPropertiesChanged();
     UpdateContainerPolicy();
     UseCounter::Count(GetDocument(), WebFeature::kFeaturePolicyAllowAttribute);
   } else {
@@ -205,7 +204,7 @@ HTMLIFrameElement::ConstructContainerPolicy() const {
   Vector<WebParsedFeaturePolicyDeclaration> container_policy;
 
   // Populate the initial container policy from the allow attribute.
-  for (const WebFeaturePolicyFeature feature : AllowedFeatures()) {
+  for (const WebFeaturePolicyFeature feature : allowed_features_) {
     WebParsedFeaturePolicyDeclaration whitelist;
     whitelist.feature = feature;
     whitelist.origins = Vector<WebSecurityOrigin>(1UL, {origin});

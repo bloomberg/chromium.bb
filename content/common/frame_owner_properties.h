@@ -40,8 +40,6 @@ struct CONTENT_EXPORT FrameOwnerProperties {
   // for a frame. See https://crbug.com/647588 and
   // https://www.w3.org/TR/csp-embedded-enforcement/#required-csp
   std::string required_csp;
-
-  std::vector<blink::WebFeaturePolicyFeature> allowed_features;
 };
 
 }  // namespace content

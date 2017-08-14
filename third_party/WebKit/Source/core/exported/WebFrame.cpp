@@ -180,7 +180,6 @@ void WebFrame::SetFrameOwnerProperties(
   owner->SetAllowPaymentRequest(properties.allow_payment_request);
   owner->SetIsDisplayNone(properties.is_display_none);
   owner->SetCsp(properties.required_csp);
-  owner->SetAllowedFeatures(properties.allowed_features);
 }
 
 void WebFrame::Collapse(bool collapsed) {

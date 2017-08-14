@@ -26,8 +26,7 @@ bool FrameOwnerProperties::operator==(const FrameOwnerProperties& other) const {
          allow_fullscreen == other.allow_fullscreen &&
          allow_payment_request == other.allow_payment_request &&
          is_display_none == other.is_display_none &&
-         required_csp == other.required_csp &&
-         allowed_features == other.allowed_features;
+         required_csp == other.required_csp;
 }
 
 }  // namespace content
