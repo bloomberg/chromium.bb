@@ -138,6 +138,7 @@ int LayoutTestBrowserMain(
     return exit_code;
 
 #if defined(OS_ANDROID)
+  main_runner->SynchronouslyFlushStartupTasks();
   android_configuration.RedirectStreams();
 #endif
 

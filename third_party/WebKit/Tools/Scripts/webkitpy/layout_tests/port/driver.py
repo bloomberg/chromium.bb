@@ -338,8 +338,11 @@ class Driver(object):
             line = server_process.read_stdout_line(deadline)
             output += server_process.pop_all_buffered_stderr()
 
-        if server_process.timed_out or server_process.has_crashed():
-            _log.error('Failed to start the %s process: \n%s', server_process.name(), output)
+        if server_process.timed_out:
+            _log.error('Timed out while waiting for the %s process: \n"%s"', server_process.name(), output)
+            return False
+        if server_process.has_crashed():
+            _log.error('The %s process crashed while starting: \n"%s"', server_process.name(), output)
             return False
 
         return True
