@@ -187,12 +187,6 @@ void HTMLFrameOwnerElement::DispatchLoad() {
   DispatchScopedEvent(Event::Create(EventTypeNames::load));
 }
 
-const WebVector<WebFeaturePolicyFeature>&
-HTMLFrameOwnerElement::AllowedFeatures() const {
-  DEFINE_STATIC_LOCAL(WebVector<WebFeaturePolicyFeature>, features, ());
-  return features;
-}
-
 const WebParsedFeaturePolicy& HTMLFrameOwnerElement::ContainerPolicy() const {
   return container_policy_;
 }

@@ -81,9 +81,6 @@ class CORE_EXPORT HTMLIFrameElement final
   bool AllowFullscreen() const override { return allow_fullscreen_; }
   bool AllowPaymentRequest() const override { return allow_payment_request_; }
   AtomicString Csp() const override { return csp_; }
-  const WebVector<WebFeaturePolicyFeature>& AllowedFeatures() const override {
-    return allowed_features_;
-  }
 
   AtomicString name_;
   AtomicString csp_;
