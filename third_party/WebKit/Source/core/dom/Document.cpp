@@ -637,8 +637,7 @@ Document::Document(const DocumentInit& initializer,
   InitDNSPrefetch();
 
   InstanceCounters::IncrementCounter(InstanceCounters::kDocumentCounter);
-  PerformanceMonitor::IncrementCounter(frame_,
-                                       PerformanceMonitor::kDocumentCount);
+  PerformanceMonitor::IncrementCounter(this, PerformanceMonitor::kPageDocument);
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kInactive);
 
@@ -2685,8 +2684,7 @@ void Document::Shutdown() {
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!View()->IsAttached());
 
-  PerformanceMonitor::DecrementCounter(frame_,
-                                       PerformanceMonitor::kDocumentCount);
+  PerformanceMonitor::DecrementCounter(this, PerformanceMonitor::kPageDocument);
 
   // This is required, as our LocalFrame might delete itself as soon as it
   // detaches us. However, this violates Node::detachLayoutTree() semantics, as

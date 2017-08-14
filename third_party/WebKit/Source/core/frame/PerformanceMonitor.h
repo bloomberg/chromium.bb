@@ -6,6 +6,7 @@
 #define PerformanceMonitor_h
 
 #include "core/CoreExport.h"
+#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/heap/Handle.h"
 #include "platform/scheduler/base/task_time_observer.h"
@@ -30,10 +31,7 @@ class ExecutionContext;
 class Performance;
 class SourceLocation;
 
-#define PERF_METRICS_LIST(V) \
-  V(DocumentCount)           \
-  V(JSEventListenerCount)    \
-  V(NodeCount)
+#define PERF_METRICS_LIST(V) V(PageDocument)
 
 // Performance monitor for Web Performance APIs and logging.
 // The monitor is maintained per local root.
@@ -105,12 +103,14 @@ class CORE_EXPORT PerformanceMonitor final
 
   void DocumentWriteFetchScript(Document*);
 
-  static inline void IncrementCounter(LocalFrame* frame, MetricsType type) {
+  static inline void IncrementCounter(Document* document, MetricsType type) {
+    LocalFrame* frame = document->GetFrame();
     if (frame)
       ++frame->GetPerformanceMonitor()->metric_values_[type];
   }
 
-  static inline void DecrementCounter(LocalFrame* frame, MetricsType type) {
+  static inline void DecrementCounter(Document* document, MetricsType type) {
+    LocalFrame* frame = document->GetFrame();
     if (frame)
       --frame->GetPerformanceMonitor()->metric_values_[type];
   }

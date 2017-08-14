@@ -1,6 +1,0 @@
-Test that page performance metrics are retrieved.
-[]
-["DocumentCount","JSEventListenerCount","NodeCount"]
-["DocumentCount","JSEventListenerCount","NodeCount"]
-[]
-
