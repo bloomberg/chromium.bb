@@ -52,6 +52,10 @@ class SyncInternalsMessageHandler : public web::WebUIIOSMessageHandler,
   // Handler for getAllNodes message.  Needs a |request_id| argument.
   void HandleGetAllNodes(const base::ListValue* args);
 
+  // Handler for setting internal state of if specifics should be included in
+  // protocol events when sent to be displayed.
+  void HandleSetIncludeSpecifics(const base::ListValue* args);
+
   // syncer::JsEventHandler implementation.
   void HandleJsEvent(const std::string& name,
                      const syncer::JsEventDetails& details) override;
@@ -98,6 +102,10 @@ class SyncInternalsMessageHandler : public web::WebUIIOSMessageHandler,
   // A flag used to prevent double-registration as TypeDebugInfoObserver with
   // ProfileSyncService.
   bool is_registered_for_counters_;
+
+  // Whether specifics should be included when converting protocol events to a
+  // human readable format.
+  bool include_specifics_ = false;
 
   base::WeakPtrFactory<SyncInternalsMessageHandler> weak_ptr_factory_;
 

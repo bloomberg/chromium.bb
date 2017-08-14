@@ -75,6 +75,11 @@ void SyncInternalsMessageHandler::RegisterMessages() {
       syncer::sync_ui_util::kGetAllNodes,
       base::Bind(&SyncInternalsMessageHandler::HandleGetAllNodes,
                  base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      syncer::sync_ui_util::kSetIncludeSpecifics,
+      base::Bind(&SyncInternalsMessageHandler::HandleSetIncludeSpecifics,
+                 base::Unretained(this)));
 }
 
 void SyncInternalsMessageHandler::HandleRegisterForEvents(
@@ -147,6 +152,12 @@ void SyncInternalsMessageHandler::HandleGetAllNodes(
   }
 }
 
+void SyncInternalsMessageHandler::HandleSetIncludeSpecifics(
+    const base::ListValue* args) {
+  DCHECK_EQ(1U, args->GetSize());
+  include_specifics_ = args->GetList()[0].GetBool();
+}
+
 void SyncInternalsMessageHandler::OnReceivedAllNodes(
     int request_id,
     std::unique_ptr<base::ListValue> nodes) {
@@ -162,7 +173,7 @@ void SyncInternalsMessageHandler::OnStateChanged(syncer::SyncService* sync) {
 void SyncInternalsMessageHandler::OnProtocolEvent(
     const syncer::ProtocolEvent& event) {
   std::unique_ptr<base::DictionaryValue> value(
-      syncer::ProtocolEvent::ToValue(event, false));
+      syncer::ProtocolEvent::ToValue(event, include_specifics_));
   web_ui()->CallJavascriptFunction(
       syncer::sync_ui_util::kDispatchEvent,
       base::Value(syncer::sync_ui_util::kOnProtocolEvent), *value);
