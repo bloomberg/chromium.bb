@@ -278,6 +278,19 @@ const extensions::Extension* GetExtensionForOrigin(
 #endif
 }
 
+// Stores a pointer to the Browser in the WebContents.
+struct BrowserLink : public base::SupportsUserData::Data {
+  static const char kKey[];
+
+  explicit BrowserLink(Browser* browser) : browser(browser) {}
+  ~BrowserLink() override = default;
+
+  Browser* browser;
+};
+
+// static
+const char BrowserLink::kKey[] = "BrowserLink";
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -564,6 +577,13 @@ Browser::~Browser() {
   // away so they don't try and call back to us.
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
+}
+
+// static
+Browser* Browser::FromWebContents(content::WebContents* web_contents) {
+  const BrowserLink* link =
+      static_cast<BrowserLink*>(web_contents->GetUserData(&BrowserLink::kKey));
+  return link ? link->browser : nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2357,7 +2377,8 @@ bool Browser::CanCloseWithInProgressDownloads() {
 // Browser, Assorted utility functions (private):
 
 void Browser::SetAsDelegate(WebContents* web_contents, bool set_delegate) {
-  Browser* delegate = set_delegate ? this : NULL;
+  Browser* delegate = set_delegate ? this : nullptr;
+
   // WebContents...
   web_contents->SetDelegate(delegate);
 
@@ -2374,6 +2395,14 @@ void Browser::SetAsDelegate(WebContents* web_contents, bool set_delegate) {
   } else {
     zoom::ZoomController::FromWebContents(web_contents)->RemoveObserver(this);
     content_translate_driver.RemoveObserver(this);
+  }
+
+  // Update the back-link from the WebContents to Browser.
+  if (set_delegate) {
+    web_contents->SetUserData(BrowserLink::kKey,
+                              base::MakeUnique<BrowserLink>(this));
+  } else {
+    web_contents->RemoveUserData(BrowserLink::kKey);
   }
 }
 

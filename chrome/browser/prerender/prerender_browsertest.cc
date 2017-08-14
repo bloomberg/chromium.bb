@@ -472,7 +472,7 @@ class NewTabNavigationOrSwapObserver {
     WebContents* new_tab = content::Details<WebContents>(details).ptr();
     // Get the TabStripModel. Assume this is attached to a Browser.
     TabStripModel* tab_strip_model =
-        static_cast<Browser*>(new_tab->GetDelegate())->tab_strip_model();
+        Browser::FromWebContents(new_tab)->tab_strip_model();
     swap_observer_.reset(new NavigationOrSwapObserver(tab_strip_model,
                                                       new_tab));
     swap_observer_->set_did_start_loading();
