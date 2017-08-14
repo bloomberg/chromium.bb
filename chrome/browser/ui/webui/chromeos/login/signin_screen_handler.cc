@@ -37,6 +37,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
@@ -144,12 +145,6 @@ const char kRequestShutdownFromLockScreenAppUnlockUi[] =
     "LOCK_SCREEN_APPS_UNLOCK_ACTION.SHUTDOWN";
 const char kRequestSignoutFromLockScreenAppUnlockUi[] =
     "LOCK_SCREEN_APPS_UNLOCK_ACTION.SIGN_OUT";
-
-ash::WallpaperController* GetWallpaperController() {
-  if (!ash::Shell::HasInstance())
-    return nullptr;
-  return ash::Shell::Get()->wallpaper_controller();
-}
 
 class CallOnReturn {
  public:
@@ -303,9 +298,9 @@ SigninScreenHandler::SigninScreenHandler(
   touch_view_manager_ptr_->AddObserver(std::move(observer));
   if (lock_screen_apps::StateController::IsEnabled())
     lock_screen_apps_observer_.Add(lock_screen_apps::StateController::Get());
-  ash::WallpaperController* wallpaper_controller = GetWallpaperController();
-  DCHECK(wallpaper_controller);
-  wallpaper_controller->AddObserver(this);
+  // TODO(wzang): Make this work under mash.
+  if (GetAshConfig() != ash::Config::MASH)
+    ash::Shell::Get()->wallpaper_controller()->AddObserver(this);
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
@@ -325,9 +320,10 @@ SigninScreenHandler::~SigninScreenHandler() {
   network_state_informer_->RemoveObserver(this);
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
   proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(EmptyAccountId());
-  ash::WallpaperController* wallpaper_controller = GetWallpaperController();
-  if (wallpaper_controller)
-    wallpaper_controller->RemoveObserver(this);
+
+  // TODO(wzang): Make this work under mash.
+  if (GetAshConfig() != ash::Config::MASH)
+    ash::Shell::Get()->wallpaper_controller()->RemoveObserver(this);
 }
 
 void SigninScreenHandler::DeclareLocalizedValues(
@@ -893,11 +889,13 @@ void SigninScreenHandler::ReloadGaia(bool force_reload) {
 void SigninScreenHandler::UpdateAccountPickerColors() {
   color_utils::ColorProfile color_profile(color_utils::LumaRange::DARK,
                                           color_utils::SaturationRange::MUTED);
-  ash::WallpaperController* wallpaper_controller = GetWallpaperController();
-  SkColor dark_muted_color =
-      wallpaper_controller
-          ? wallpaper_controller->GetProminentColor(color_profile)
-          : ash::login_constants::kDefaultBaseColor;
+  SkColor dark_muted_color = ash::login_constants::kDefaultBaseColor;
+  // TODO(wzang): Make this work under mash.
+  if (GetAshConfig() != ash::Config::MASH) {
+    dark_muted_color =
+        ash::Shell::Get()->wallpaper_controller()->GetProminentColor(
+            color_profile);
+  }
   if (dark_muted_color == ash::WallpaperController::kInvalidColor)
     dark_muted_color = ash::login_constants::kDefaultBaseColor;
 
