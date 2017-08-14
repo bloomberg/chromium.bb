@@ -24,24 +24,24 @@ PASS MediaRecorder interface: operation requestData()
 PASS MediaRecorder interface: operation isTypeSupported(DOMString) 
 PASS MediaRecorder must be primary interface of [object MediaRecorder] 
 PASS Stringification of [object MediaRecorder] 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "stream" with the proper type (0) 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "mimeType" with the proper type (1) 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "state" with the proper type (2) 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "onstart" with the proper type (3) 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "onstop" with the proper type (4) 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "ondataavailable" with the proper type (5) 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "onpause" with the proper type (6) 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "onresume" with the proper type (7) 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "onerror" with the proper type (8) 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "videoBitsPerSecond" with the proper type (9) 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "audioBitsPerSecond" with the proper type (10) 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "start" with the proper type (11) 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "stream" with the proper type 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "mimeType" with the proper type 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "state" with the proper type 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "onstart" with the proper type 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "onstop" with the proper type 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "ondataavailable" with the proper type 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "onpause" with the proper type 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "onresume" with the proper type 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "onerror" with the proper type 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "videoBitsPerSecond" with the proper type 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "audioBitsPerSecond" with the proper type 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "start(long)" with the proper type 
 PASS MediaRecorder interface: calling start(long) on [object MediaRecorder] with too few arguments must throw TypeError 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "stop" with the proper type (12) 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "pause" with the proper type (13) 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "resume" with the proper type (14) 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "requestData" with the proper type (15) 
-PASS MediaRecorder interface: [object MediaRecorder] must inherit property "isTypeSupported" with the proper type (16) 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "stop()" with the proper type 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "pause()" with the proper type 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "resume()" with the proper type 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "requestData()" with the proper type 
+PASS MediaRecorder interface: [object MediaRecorder] must inherit property "isTypeSupported(DOMString)" with the proper type 
 PASS MediaRecorder interface: calling isTypeSupported(DOMString) on [object MediaRecorder] with too few arguments must throw TypeError 
 PASS BlobEvent interface: existence and properties of interface object 
 PASS BlobEvent interface object length 

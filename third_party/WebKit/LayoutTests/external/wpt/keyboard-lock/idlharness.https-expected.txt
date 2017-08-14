@@ -3,8 +3,8 @@ FAIL Navigator interface: operation requestKeyboardLock(sequence) assert_throws:
             fn.apply(obj, args);
         }" did not throw
 PASS Navigator interface: operation cancelKeyboardLock() 
-PASS Navigator interface: navigator must inherit property "requestKeyboardLock" with the proper type (0) 
+PASS Navigator interface: navigator must inherit property "requestKeyboardLock(sequence)" with the proper type 
 PASS Navigator interface: calling requestKeyboardLock(sequence) on navigator with too few arguments must throw TypeError 
-PASS Navigator interface: navigator must inherit property "cancelKeyboardLock" with the proper type (1) 
+PASS Navigator interface: navigator must inherit property "cancelKeyboardLock()" with the proper type 
 Harness: the test ran to completion.
 

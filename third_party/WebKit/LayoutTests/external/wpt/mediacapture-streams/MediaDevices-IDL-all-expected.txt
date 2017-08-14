@@ -2,10 +2,10 @@ This is a testharness.js-based test.
 Found 86 tests; 71 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver 
 PASS Navigator interface: attribute mediaDevices 
-PASS Navigator interface: operation getUserMedia(MediaStreamConstraints,NavigatorUserMediaSuccessCallback,NavigatorUserMediaErrorCallback) 
-PASS Navigator interface: navigator must inherit property "mediaDevices" with the proper type (0) 
-PASS Navigator interface: navigator must inherit property "getUserMedia" with the proper type (1) 
-PASS Navigator interface: calling getUserMedia(MediaStreamConstraints,NavigatorUserMediaSuccessCallback,NavigatorUserMediaErrorCallback) on navigator with too few arguments must throw TypeError 
+PASS Navigator interface: operation getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback) 
+PASS Navigator interface: navigator must inherit property "mediaDevices" with the proper type 
+PASS Navigator interface: navigator must inherit property "getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback)" with the proper type 
+PASS Navigator interface: calling getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback) on navigator with too few arguments must throw TypeError 
 PASS MediaStream interface: existence and properties of interface object 
 PASS MediaStream interface object length 
 PASS MediaStream interface object name 
@@ -66,10 +66,10 @@ PASS MediaDevices interface: operation getSupportedConstraints()
 PASS MediaDevices interface: operation getUserMedia(MediaStreamConstraints) 
 PASS MediaDevices must be primary interface of navigator.mediaDevices 
 PASS Stringification of navigator.mediaDevices 
-PASS MediaDevices interface: navigator.mediaDevices must inherit property "ondevicechange" with the proper type (0) 
-PASS MediaDevices interface: navigator.mediaDevices must inherit property "enumerateDevices" with the proper type (1) 
-PASS MediaDevices interface: navigator.mediaDevices must inherit property "getSupportedConstraints" with the proper type (2) 
-PASS MediaDevices interface: navigator.mediaDevices must inherit property "getUserMedia" with the proper type (3) 
+PASS MediaDevices interface: navigator.mediaDevices must inherit property "ondevicechange" with the proper type 
+PASS MediaDevices interface: navigator.mediaDevices must inherit property "enumerateDevices()" with the proper type 
+PASS MediaDevices interface: navigator.mediaDevices must inherit property "getSupportedConstraints()" with the proper type 
+PASS MediaDevices interface: navigator.mediaDevices must inherit property "getUserMedia(MediaStreamConstraints)" with the proper type 
 PASS MediaDevices interface: calling getUserMedia(MediaStreamConstraints) on navigator.mediaDevices with too few arguments must throw TypeError 
 PASS MediaDeviceInfo interface: existence and properties of interface object 
 PASS MediaDeviceInfo interface object length 

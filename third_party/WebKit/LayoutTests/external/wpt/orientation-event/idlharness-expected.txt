@@ -12,10 +12,10 @@ PASS DeviceOrientationEvent interface: attribute gamma
 PASS DeviceOrientationEvent interface: attribute absolute 
 PASS DeviceOrientationEvent must be primary interface of new DeviceOrientationEvent("foo") 
 PASS Stringification of new DeviceOrientationEvent("foo") 
-PASS DeviceOrientationEvent interface: new DeviceOrientationEvent("foo") must inherit property "alpha" with the proper type (0) 
-PASS DeviceOrientationEvent interface: new DeviceOrientationEvent("foo") must inherit property "beta" with the proper type (1) 
-PASS DeviceOrientationEvent interface: new DeviceOrientationEvent("foo") must inherit property "gamma" with the proper type (2) 
-PASS DeviceOrientationEvent interface: new DeviceOrientationEvent("foo") must inherit property "absolute" with the proper type (3) 
+PASS DeviceOrientationEvent interface: new DeviceOrientationEvent("foo") must inherit property "alpha" with the proper type 
+PASS DeviceOrientationEvent interface: new DeviceOrientationEvent("foo") must inherit property "beta" with the proper type 
+PASS DeviceOrientationEvent interface: new DeviceOrientationEvent("foo") must inherit property "gamma" with the proper type 
+PASS DeviceOrientationEvent interface: new DeviceOrientationEvent("foo") must inherit property "absolute" with the proper type 
 PASS DeviceMotionEvent interface: existence and properties of interface object 
 PASS DeviceMotionEvent interface object length 
 PASS DeviceMotionEvent interface object name 
@@ -27,9 +27,9 @@ PASS DeviceMotionEvent interface: attribute rotationRate
 PASS DeviceMotionEvent interface: attribute interval 
 PASS DeviceMotionEvent must be primary interface of new DeviceMotionEvent("foo") 
 PASS Stringification of new DeviceMotionEvent("foo") 
-PASS DeviceMotionEvent interface: new DeviceMotionEvent("foo") must inherit property "acceleration" with the proper type (0) 
-PASS DeviceMotionEvent interface: new DeviceMotionEvent("foo") must inherit property "accelerationIncludingGravity" with the proper type (1) 
-PASS DeviceMotionEvent interface: new DeviceMotionEvent("foo") must inherit property "rotationRate" with the proper type (2) 
-PASS DeviceMotionEvent interface: new DeviceMotionEvent("foo") must inherit property "interval" with the proper type (3) 
+PASS DeviceMotionEvent interface: new DeviceMotionEvent("foo") must inherit property "acceleration" with the proper type 
+PASS DeviceMotionEvent interface: new DeviceMotionEvent("foo") must inherit property "accelerationIncludingGravity" with the proper type 
+PASS DeviceMotionEvent interface: new DeviceMotionEvent("foo") must inherit property "rotationRate" with the proper type 
+PASS DeviceMotionEvent interface: new DeviceMotionEvent("foo") must inherit property "interval" with the proper type 
 Harness: the test ran to completion.
 
