@@ -23,9 +23,6 @@
 @interface PreloadController (ExposedForTesting)
 - (BOOL)shouldPreloadURL:(const GURL&)url;
 - (BOOL)isPrerenderingEnabled;
-- (BOOL)isPrefetchingEnabled;
-- (const GURL)urlToPrefetchURL:(const GURL&)url;
-- (BOOL)hasPrefetchedURL:(const GURL&)url;
 @end
 
 namespace {
@@ -163,65 +160,6 @@ TEST_F(PreloadControllerTest, TestIsPrerenderingEnabled_preloadNever) {
 
   SimulateCellularConnection();
   EXPECT_FALSE([controller_ isPrerenderingEnabled]);
-}
-
-TEST_F(PreloadControllerTest, TestIsPrefetchingEnabled_preloadAlways) {
-  // Prefetching is never enabled.
-  PreloadWebpagesAlways();
-
-  SimulateWiFiConnection();
-  EXPECT_FALSE([controller_ isPrefetchingEnabled]);
-
-  SimulateCellularConnection();
-  EXPECT_FALSE([controller_ isPrefetchingEnabled]);
-}
-
-TEST_F(PreloadControllerTest, TestIsPrefetchingEnabled_preloadWiFiOnly) {
-  // Prefetching is never enabled.
-  PreloadWebpagesWiFiOnly();
-
-  SimulateWiFiConnection();
-  EXPECT_FALSE([controller_ isPrefetchingEnabled]);
-
-  SimulateCellularConnection();
-  EXPECT_FALSE([controller_ isPrefetchingEnabled]);
-}
-
-TEST_F(PreloadControllerTest, TestIsPrefetchingEnabled_preloadNever) {
-  // Prefetching is never enabled.
-  PreloadWebpagesNever();
-
-  SimulateWiFiConnection();
-  EXPECT_FALSE([controller_ isPrefetchingEnabled]);
-
-  SimulateCellularConnection();
-  EXPECT_FALSE([controller_ isPrefetchingEnabled]);
-}
-
-TEST_F(PreloadControllerTest, NoPrefetching) {
-  PreloadWebpagesAlways();
-
-  GURL first("http://www.google.com/search?q=first");
-  GURL second("http://www.google.com/search?q=second");
-  GURL bogus("http://www.google.com/search?q=bogus");
-
-  EXPECT_FALSE([controller_ hasPrefetchedURL:first]);
-  EXPECT_FALSE([controller_ hasPrefetchedURL:second]);
-  EXPECT_FALSE([controller_ hasPrefetchedURL:bogus]);
-
-  // Try to prefetch |first| and verify that prefetching is disabled.
-  [controller_ prefetchURL:first
-                transition:ui::PAGE_TRANSITION_FROM_ADDRESS_BAR];
-  EXPECT_FALSE([controller_ hasPrefetchedURL:first]);
-  EXPECT_FALSE([controller_ hasPrefetchedURL:second]);
-  EXPECT_FALSE([controller_ hasPrefetchedURL:bogus]);
-
-  // Try to prefetch |second| and verify that prefetching is disabled.
-  [controller_ prefetchURL:second
-                transition:ui::PAGE_TRANSITION_FROM_ADDRESS_BAR];
-  EXPECT_FALSE([controller_ hasPrefetchedURL:first]);
-  EXPECT_FALSE([controller_ hasPrefetchedURL:second]);
-  EXPECT_FALSE([controller_ hasPrefetchedURL:bogus]);
 }
 
 }  // anonymous namespace
