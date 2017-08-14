@@ -285,7 +285,6 @@ EXPERIMENT_LIST="
     bitstream_debug
     inter_stats_only
     alt_intra
-    palette
     palette_delta_encoding
     rawbits
     ec_smallmul
@@ -543,7 +542,6 @@ post_process_cmdline() {
     enabled pvq && disable_feature highbitdepth
     enabled pvq && disable_feature lgt
     enabled pvq && disable_feature mrc_tx
-    enabled pvq && disable_feature palette
     enabled pvq && disable_feature palette_throughput
     enabled mrc_tx && enable_feature ext_tx
     enabled ext_delta_q && soft_enable delta_q
