@@ -6,21 +6,13 @@
 #define NGSpaceUtils_h
 
 #include "core/CoreExport.h"
-#include "core/style/ComputedStyleConstants.h"
 #include "platform/LayoutUnit.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {
 
 class ComputedStyle;
-struct NGExclusions;
 struct NGLogicalOffset;
-
-// Gets the clearance offset based on the provided {@code clear_type} and list
-// of exclusions that represent left/right float.
-CORE_EXPORT LayoutUnit
-GetClearanceOffset(const std::shared_ptr<NGExclusions>& exclusions,
-                   EClear clear_type);
 
 // Whether child's constraint space should shrink to its intrinsic width.
 // This is needed for buttons, select, input, floats and orthogonal children.

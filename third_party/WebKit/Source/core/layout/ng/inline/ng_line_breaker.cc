@@ -13,7 +13,6 @@
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_space_utils.h"
 #include "core/style/ComputedStyle.h"
@@ -216,10 +215,11 @@ bool NGLineBreaker::HasFloatsAffectingCurrentLine() const {
 // content_offset.
 void NGLineBreaker::FindNextLayoutOpportunity() {
   const NGLogicalOffset& bfc_offset = container_builder_->BfcOffset().value();
-  NGLayoutOpportunityIterator iter(constraint_space_->Exclusions().get(),
-                                   constraint_space_->AvailableSize(),
-                                   bfc_offset + content_offset_);
-  line_.opportunity = iter.Next();
+
+  line_.opportunity =
+      constraint_space_->ExclusionSpace()->FindLayoutOpportunity(
+          bfc_offset + content_offset_, constraint_space_->AvailableSize(),
+          /* minimum_size */ NGLogicalSize());
 
   // When floats/exclusions occupies the entire line (e.g., float: left; width:
   // 100%), zero-inline-size opportunities are not included in the iterator.
@@ -238,19 +238,15 @@ void NGLineBreaker::FindNextLayoutOpportunity() {
 void NGLineBreaker::FindNextLayoutOpportunityWithMinimumInlineSize(
     LayoutUnit min_inline_size) {
   const NGLogicalOffset& bfc_offset = container_builder_->BfcOffset().value();
-  NGLayoutOpportunityIterator iter(constraint_space_->Exclusions().get(),
-                                   constraint_space_->AvailableSize(),
-                                   bfc_offset + content_offset_);
-  while (true) {
-    line_.opportunity = iter.Next();
-    if (iter.IsAtEnd() ||
-        line_.opportunity.value().InlineSize() >= min_inline_size) {
-      content_offset_.block_offset =
-          line_.opportunity.value().BlockStartOffset() -
-          bfc_offset.block_offset;
-      return;
-    }
-  }
+
+  NGLogicalSize minimum_size(min_inline_size, LayoutUnit());
+  line_.opportunity =
+      constraint_space_->ExclusionSpace()->FindLayoutOpportunity(
+          bfc_offset + content_offset_, constraint_space_->AvailableSize(),
+          minimum_size);
+
+  content_offset_.block_offset =
+      line_.opportunity.value().BlockStartOffset() - bfc_offset.block_offset;
 }
 
 void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {

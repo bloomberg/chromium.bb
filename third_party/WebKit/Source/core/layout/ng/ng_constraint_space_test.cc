@@ -38,7 +38,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesNoExclusions) {
       kHorizontalTopBottom, TextDirection::kLtr, size);
 
   NGLayoutOpportunityIterator iterator(
-      space->Exclusions().get(), space->AvailableSize(), NGLogicalOffset());
+      space->ExclusionSpace().get(), space->AvailableSize(), NGLogicalOffset());
   // 600x400 at (0,0)
   NGLayoutOpportunity opp1 = {{}, {LayoutUnit(600), LayoutUnit(400)}};
   EXPECT_EQ(opp1, iterator.Next());
@@ -59,7 +59,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopRightExclusion) {
   space->AddExclusion(exclusion);
 
   NGLayoutOpportunityIterator iterator(
-      space->Exclusions().get(), space->AvailableSize(), NGLogicalOffset());
+      space->ExclusionSpace().get(), space->AvailableSize(), NGLogicalOffset());
 
   // First opportunity should be to the left of the exclusion: 500x400 at (0,0)
   NGLayoutOpportunity opp1 = {{}, {LayoutUnit(500), LayoutUnit(400)}};
@@ -85,7 +85,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopLeftExclusion) {
   space->AddExclusion(exclusion);
 
   NGLayoutOpportunityIterator iterator(
-      space->Exclusions().get(), space->AvailableSize(), NGLogicalOffset());
+      space->ExclusionSpace().get(), space->AvailableSize(), NGLogicalOffset());
   // First opportunity should be to the right of the exclusion:
   // 500x400 at (100, 0)
   NGLayoutOpportunity opp1 = {{LayoutUnit(100), LayoutUnit()},
@@ -140,7 +140,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddle) {
   space->AddExclusion(exclusion2);
 
   NGLayoutOpportunityIterator iterator(
-      space->Exclusions().get(), space->AvailableSize(), NGLogicalOffset());
+      space->ExclusionSpace().get(), space->AvailableSize(), NGLogicalOffset());
   NGLogicalOffset start_point1;
   // 600x200 at (0,0)
   NGLayoutOpportunity opp1 = {start_point1, {LayoutUnit(600), LayoutUnit(200)}};
@@ -198,7 +198,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesWithOutOfBoundsExclusions) {
   space->AddExclusion(exclusion);
 
   NGLayoutOpportunityIterator iterator(
-      space->Exclusions().get(), space->AvailableSize(), NGLogicalOffset());
+      space->ExclusionSpace().get(), space->AvailableSize(), NGLogicalOffset());
   // 600x100 at (0,0)
   NGLayoutOpportunity opp = {{}, size};
   EXPECT_EQ(opp, iterator.Next());
@@ -226,7 +226,7 @@ TEST(NGConstraintSpaceTest, TwoLeftExclusionsShadowEachOther) {
   big_left.type = NGExclusion::kFloatLeft;
   space->AddExclusion(big_left);
 
-  NGLayoutOpportunityIterator iterator(space->Exclusions().get(),
+  NGLayoutOpportunityIterator iterator(space->ExclusionSpace().get(),
                                        space->AvailableSize(), bfc_offset);
 
   NGLogicalOffset start_point1 = bfc_offset;
@@ -272,7 +272,7 @@ TEST(NGConstraintSpaceTest, TwoRightExclusionsShadowEachOther) {
   big_right.type = NGExclusion::kFloatRight;
   space->AddExclusion(big_right);
 
-  NGLayoutOpportunityIterator iterator(space->Exclusions().get(),
+  NGLayoutOpportunityIterator iterator(space->ExclusionSpace().get(),
                                        space->AvailableSize(), bfc_offset);
 
   NGLogicalOffset start_point1 = bfc_offset;

@@ -31,15 +31,15 @@ bool ClearanceMayAffectLayout(
     const NGConstraintSpace& space,
     const Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
     const ComputedStyle& child_style) {
-  const NGExclusions& exclusions = *space.Exclusions();
+  const NGExclusionSpace& exclusion_space = *space.ExclusionSpace();
   EClear clear = child_style.Clear();
   bool should_clear_left = (clear == EClear::kBoth || clear == EClear::kLeft);
   bool should_clear_right = (clear == EClear::kBoth || clear == EClear::kRight);
 
-  if (exclusions.float_left_clear_offset && should_clear_left)
+  if (exclusion_space.HasLeftFloat() && should_clear_left)
     return true;
 
-  if (exclusions.float_right_clear_offset && should_clear_right)
+  if (exclusion_space.HasRightFloat() && should_clear_right)
     return true;
 
   auto should_clear_pred =
@@ -337,7 +337,7 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     DCHECK_EQ(container_builder_.BfcOffset().value(), NGLogicalOffset());
 
     WTF::Optional<LayoutUnit> float_end_offset =
-        GetClearanceOffset(ConstraintSpace().Exclusions(), EClear::kBoth);
+        ConstraintSpace().ExclusionSpace()->ClearanceOffset(EClear::kBoth);
     if (float_end_offset)
       content_size_ = std::max(content_size_, float_end_offset.value());
   }
@@ -781,13 +781,18 @@ bool NGBlockLayoutAlgorithm::PositionNewFc(
                                        border_scrollbar_padding_.inline_start,
                                    child_bfc_offset_estimate};
   AdjustToClearance(
-      GetClearanceOffset(ConstraintSpace().Exclusions(), child_style.Clear()),
+      ConstraintSpace().ExclusionSpace()->ClearanceOffset(child_style.Clear()),
       &origin_offset);
 
   // 2. Find an estimated layout opportunity for our fragment.
-  NGLayoutOpportunity opportunity = FindLayoutOpportunityForFragment(
-      tmp_space->Exclusions().get(), child_space.AvailableSize(), origin_offset,
-      child_data.margins, fragment.Size());
+  // TODO(ikilpatrick): Should fragment_margin_size be including the block
+  // margins here?
+  NGLogicalSize fragment_margin_size(
+      fragment.InlineSize() + child_data.margins.InlineSum(),
+      fragment.BlockSize() + child_data.margins.BlockSum());
+  NGLayoutOpportunity opportunity =
+      tmp_space->ExclusionSpace()->FindLayoutOpportunity(
+          origin_offset, child_space.AvailableSize(), fragment_margin_size);
 
   NGMarginStrut margin_strut = previous_inflow_position.margin_strut;
 
@@ -813,14 +818,14 @@ bool NGBlockLayoutAlgorithm::PositionNewFc(
                        border_scrollbar_padding_.inline_start,
                    child_bfc_offset_estimate};
   AdjustToClearance(
-      GetClearanceOffset(ConstraintSpace().Exclusions(), child_style.Clear()),
+      ConstraintSpace().ExclusionSpace()->ClearanceOffset(child_style.Clear()),
       &origin_offset);
 
   // 5. Find the final layout opportunity for the fragment after all pending
   // floats are positioned at the correct BFC block's offset.
-  opportunity = FindLayoutOpportunityForFragment(
-      MutableConstraintSpace()->Exclusions().get(), child_space.AvailableSize(),
-      origin_offset, child_data.margins, fragment.Size());
+  opportunity =
+      MutableConstraintSpace()->ExclusionSpace()->FindLayoutOpportunity(
+          origin_offset, child_space.AvailableSize(), fragment_margin_size);
 
   *child_bfc_offset = opportunity.offset;
   return true;
@@ -973,8 +978,8 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
 
   const ComputedStyle& child_style = child.Style();
   space_builder
-      .SetClearanceOffset(GetClearanceOffset(constraint_space_->Exclusions(),
-                                             child_style.Clear()))
+      .SetClearanceOffset(constraint_space_->ExclusionSpace()->ClearanceOffset(
+          child_style.Clear()))
       .SetIsShrinkToFit(ShouldShrinkToFit(Style(), child_style))
       .SetTextDirection(child_style.Direction());
 

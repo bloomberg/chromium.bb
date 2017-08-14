@@ -7,8 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_logical_rect.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 
@@ -55,25 +53,6 @@ struct CORE_EXPORT NGExclusion {
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGExclusion&);
-
-struct CORE_EXPORT NGExclusions {
-  Vector<NGExclusion> storage;
-
-  // This member is used for implementing the "top edge alignment rule" for
-  // floats. Floats can be positioned at negative offsets, hence is initialized
-  // the minimum value.
-  LayoutUnit last_float_block_start = LayoutUnit::Min();
-
-  // These members are used for keeping track of the "lowest" offset for each
-  // type of float. This is used for implementing float clearance.
-  Optional<LayoutUnit> float_left_clear_offset;
-  Optional<LayoutUnit> float_right_clear_offset;
-
-  bool operator==(const NGExclusions& other) const;
-  bool operator!=(const NGExclusions& other) const { return !(*this == other); }
-
-  void Add(const NGExclusion& exclusion);
-};
 
 }  // namespace blink
 

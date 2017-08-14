@@ -13,29 +13,6 @@
 
 namespace blink {
 
-LayoutUnit GetClearanceOffset(const std::shared_ptr<NGExclusions>& exclusions,
-                              EClear clear_type) {
-  LayoutUnit float_left_clear_offset =
-      exclusions->float_left_clear_offset.value_or(LayoutUnit::Min());
-  LayoutUnit float_right_clear_offset =
-      exclusions->float_right_clear_offset.value_or(LayoutUnit::Min());
-
-  switch (clear_type) {
-    case EClear::kNone:
-      return LayoutUnit::Min();  // nothing to do here.
-    case EClear::kLeft:
-      return float_left_clear_offset;
-    case EClear::kRight:
-      return float_right_clear_offset;
-    case EClear::kBoth:
-      return std::max(float_left_clear_offset, float_right_clear_offset);
-    default:
-      NOTREACHED();
-  }
-
-  return LayoutUnit::Min();
-}
-
 bool ShouldShrinkToFit(const ComputedStyle& parent_style,
                        const ComputedStyle& style) {
   // Whether the child and the containing block are parallel to each other.

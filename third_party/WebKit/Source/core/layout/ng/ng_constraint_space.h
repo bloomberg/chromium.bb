@@ -11,7 +11,7 @@
 #include "core/layout/ng/geometry/ng_margin_strut.h"
 #include "core/layout/ng/geometry/ng_physical_size.h"
 #include "core/layout/ng/inline/ng_baseline.h"
-#include "core/layout/ng/ng_exclusion.h"
+#include "core/layout/ng/ng_exclusion_space.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/heap/Handle.h"
@@ -23,6 +23,7 @@
 namespace blink {
 
 class LayoutBox;
+struct NGExclusion;
 
 enum NGFragmentationType {
   kFragmentNone,
@@ -46,8 +47,8 @@ class CORE_EXPORT NGConstraintSpace final
       Optional<LayoutUnit> override_logical_width = WTF::nullopt,
       Optional<LayoutUnit> override_logical_height = WTF::nullopt);
 
-  const std::shared_ptr<NGExclusions>& Exclusions() const {
-    return exclusions_;
+  const std::shared_ptr<NGExclusionSpace>& ExclusionSpace() const {
+    return exclusion_space_;
   }
 
   TextDirection Direction() const {
@@ -197,7 +198,7 @@ class CORE_EXPORT NGConstraintSpace final
       const NGMarginStrut& margin_strut,
       const NGLogicalOffset& bfc_offset,
       const WTF::Optional<NGLogicalOffset>& floats_bfc_offset,
-      const std::shared_ptr<NGExclusions>& exclusions,
+      const std::shared_ptr<NGExclusionSpace>& exclusion_space,
       Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
       const WTF::Optional<LayoutUnit>& clearance_offset,
       Vector<NGBaselineRequest>& baseline_requests);
@@ -236,7 +237,7 @@ class CORE_EXPORT NGConstraintSpace final
   NGLogicalOffset bfc_offset_;
   WTF::Optional<NGLogicalOffset> floats_bfc_offset_;
 
-  const std::shared_ptr<NGExclusions> exclusions_;
+  const std::shared_ptr<NGExclusionSpace> exclusion_space_;
   WTF::Optional<LayoutUnit> clearance_offset_;
   Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
 

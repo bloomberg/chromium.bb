@@ -49,30 +49,4 @@ std::ostream& operator<<(std::ostream& stream, const NGExclusion& value) {
   return stream << value.ToString();
 }
 
-void NGExclusions::Add(const NGExclusion& exclusion) {
-  storage.push_back(exclusion);
-  last_float_block_start =
-      std::max(last_float_block_start, exclusion.rect.BlockStartOffset());
-
-  if (exclusion.type == NGExclusion::kFloatLeft) {
-    float_left_clear_offset =
-        std::max(float_left_clear_offset.value_or(LayoutUnit::Min()),
-                 exclusion.rect.BlockEndOffset());
-  } else if (exclusion.type == NGExclusion::kFloatRight) {
-    float_right_clear_offset =
-        std::max(float_right_clear_offset.value_or(LayoutUnit::Min()),
-                 exclusion.rect.BlockEndOffset());
-  }
-}
-
-bool NGExclusions::operator==(const NGExclusions& other) const {
-  if (storage.size() != other.storage.size())
-    return false;
-  for (size_t i = 0; i < storage.size(); ++i) {
-    if (storage[i] != other.storage[i])
-      return false;
-  }
-  return true;
-}
-
 }  // namespace blink
