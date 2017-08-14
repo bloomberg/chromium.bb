@@ -43,6 +43,7 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   MOCK_METHOD0(CreateScreenControlsPtr, ScreenControls*());
   MOCK_METHOD0(CreateVideoCapturerPtr, webrtc::DesktopCapturer*());
   MOCK_METHOD0(CreateMouseCursorMonitorPtr, webrtc::MouseCursorMonitor*());
+  MOCK_METHOD0(CreateFileProxyWrapperPtr, FileProxyWrapper*());
   MOCK_CONST_METHOD0(GetCapabilities, std::string());
   MOCK_METHOD1(SetCapabilities, void(const std::string&));
   MOCK_CONST_METHOD0(GetDesktopSessionId, uint32_t());
@@ -54,6 +55,7 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   std::unique_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
   std::unique_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
       override;
+  std::unique_ptr<FileProxyWrapper> CreateFileProxyWrapper() override;
 };
 
 class MockClientSessionControl : public ClientSessionControl {

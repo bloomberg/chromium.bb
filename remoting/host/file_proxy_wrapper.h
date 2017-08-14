@@ -22,6 +22,9 @@ class FileProxyWrapper {
       ErrorCallback;
   typedef base::Callback<void()> SuccessCallback;
 
+  // Creates a platforms-specific FileProxyWrapper.
+  static std::unique_ptr<FileProxyWrapper> Create();
+
   FileProxyWrapper();
   virtual ~FileProxyWrapper();
 

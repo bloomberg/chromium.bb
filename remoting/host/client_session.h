@@ -19,7 +19,6 @@
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/client_session_details.h"
 #include "remoting/host/desktop_environment_options.h"
-#include "remoting/host/file_transfer_message_handler_factory.h"
 #include "remoting/host/host_experiment_session_plugin.h"
 #include "remoting/host/host_extension_session_manager.h"
 #include "remoting/host/remote_input_filter.h"
@@ -162,6 +161,10 @@ class ClientSession : public protocol::HostStub,
                           const webrtc::DesktopSize& size,
                           const webrtc::DesktopVector& dpi) override;
 
+  void CreateFileTransferMessageHandler(
+      const std::string& channel_name,
+      std::unique_ptr<protocol::MessagePipe> pipe);
+
   EventHandler* event_handler_;
 
   // The connection to the client.
@@ -240,9 +243,6 @@ class ClientSession : public protocol::HostStub,
 
   // Used to dispatch new data channels to factory methods.
   protocol::DataChannelManager data_channel_manager_;
-
-  // Used to handle file transfer data channels.
-  FileTransferMessageHandlerFactory file_transfer_message_handler_factory_;
 
   // Set to true if the client was authenticated successfully.
   bool is_authenticated_ = false;
