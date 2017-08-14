@@ -338,6 +338,9 @@ std::unique_ptr<QuicChromiumClientStream::Handle>
 QuicChromiumClientSession::Handle::ReleaseStream() {
   DCHECK(stream_request_);
 
+  if (!session_)
+    return nullptr;
+
   auto handle = stream_request_->ReleaseStream();
   stream_request_.reset();
   return handle;

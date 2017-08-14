@@ -100,7 +100,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     int RequestStream(bool requires_confirmation,
                       const CompletionCallback& callback);
 
-    // Releases |stream_| to the caller.
+    // Releases |stream_| to the caller. Returns nullptr if the underlying
+    // QuicChromiumClientSession is closed.
     std::unique_ptr<QuicChromiumClientStream::Handle> ReleaseStream();
 
     // Releases |push_stream_| to the caller.

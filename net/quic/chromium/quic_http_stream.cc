@@ -523,6 +523,11 @@ int QuicHttpStream::DoRequestStreamComplete(int rv) {
   }
 
   stream_ = quic_session()->ReleaseStream();
+  if (!stream_) {
+    session_error_ = ERR_CONNECTION_CLOSED;
+    return GetResponseStatus();
+  }
+
   if (request_info_->load_flags & LOAD_DISABLE_CONNECTION_MIGRATION) {
     stream_->DisableConnectionMigration();
   }
