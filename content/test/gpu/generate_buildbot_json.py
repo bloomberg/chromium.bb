@@ -1747,6 +1747,17 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       },
     ],
     'asan_args': ['--is-asan'],
+    'android_swarming': {
+      # On desktop platforms these don't take very long (~7 minutes),
+      # but on Android they take ~30 minutes and we want to shard them
+      # when sharding is available -- specifically on the Nexus 5X
+      # bots, which are currently the only Android configuration on
+      # the waterfalls where these tests are swarmed. If we had to
+      # restrict the sharding to certain Android devices, then we'd
+      # need some way to apply these Swarming parameters only to a
+      # subset of machines, like the way the tester_configs work.
+      'shards': 6,
+    },
   },
   'webgl_conformance_d3d9_tests': {
     'tester_configs': [
@@ -2282,6 +2293,8 @@ def generate_isolated_test(tester_name, tester_config, test, test_config,
   }
   if 'swarming' in test_config:
     swarming.update(test_config['swarming'])
+  if 'android_swarming' in test_config and is_android(tester_config):
+    swarming.update(test_config['android_swarming'])
   result = {
     'args': prefix_args + test_args,
     'isolate_name': isolate_name,
