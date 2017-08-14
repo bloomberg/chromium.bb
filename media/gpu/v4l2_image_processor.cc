@@ -365,14 +365,25 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
   DCHECK(gfx::Rect(input_allocated_size_)
              .Contains(gfx::Rect(input_visible_size_)));
 
-  struct v4l2_crop crop;
-  memset(&crop, 0, sizeof(crop));
-  crop.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  crop.c.left = 0;
-  crop.c.top = 0;
-  crop.c.width = base::checked_cast<__u32>(input_visible_size_.width());
-  crop.c.height = base::checked_cast<__u32>(input_visible_size_.height());
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_CROP, &crop);
+  struct v4l2_rect visible_rect;
+  visible_rect.left = 0;
+  visible_rect.top = 0;
+  visible_rect.width = base::checked_cast<__u32>(input_visible_size_.width());
+  visible_rect.height = base::checked_cast<__u32>(input_visible_size_.height());
+
+  struct v4l2_selection selection_arg;
+  memset(&selection_arg, 0, sizeof(selection_arg));
+  selection_arg.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+  selection_arg.target = V4L2_SEL_TGT_CROP;
+  selection_arg.r = visible_rect;
+  if (device_->Ioctl(VIDIOC_S_SELECTION, &selection_arg) != 0) {
+    DVLOG(2) << "Fallback to VIDIOC_S_CROP for input buffers.";
+    struct v4l2_crop crop;
+    memset(&crop, 0, sizeof(crop));
+    crop.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+    crop.c = visible_rect;
+    IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_CROP, &crop);
+  }
 
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
@@ -416,14 +427,26 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
              .Contains(gfx::Rect(output_allocated_size_)));
   output_allocated_size_ = adjusted_allocated_size;
 
-  struct v4l2_crop crop;
-  memset(&crop, 0, sizeof(crop));
-  crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  crop.c.left = 0;
-  crop.c.top = 0;
-  crop.c.width = base::checked_cast<__u32>(output_visible_size_.width());
-  crop.c.height = base::checked_cast<__u32>(output_visible_size_.height());
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_CROP, &crop);
+  struct v4l2_rect visible_rect;
+  visible_rect.left = 0;
+  visible_rect.top = 0;
+  visible_rect.width = base::checked_cast<__u32>(output_visible_size_.width());
+  visible_rect.height =
+    base::checked_cast<__u32>(output_visible_size_.height());
+
+  struct v4l2_selection selection_arg;
+  memset(&selection_arg, 0, sizeof(selection_arg));
+  selection_arg.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  selection_arg.target = V4L2_SEL_TGT_COMPOSE;
+  selection_arg.r = visible_rect;
+  if (device_->Ioctl(VIDIOC_S_SELECTION, &selection_arg) != 0) {
+    DVLOG(2) << "Fallback to VIDIOC_S_CROP for output buffers.";
+    struct v4l2_crop crop;
+    memset(&crop, 0, sizeof(crop));
+    crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+    crop.c = visible_rect;
+    IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_CROP, &crop);
+  }
 
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
