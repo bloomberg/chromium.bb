@@ -148,6 +148,14 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
   MojoResult ExtractSerializedHandles(ExtractBadHandlePolicy bad_handle_policy,
                                       MojoHandle* handles);
 
+  // Forces all handle serialization to fail. Serialization can fail in
+  // production for a few different reasons (e.g. file descriptor exhaustion
+  // when duping data pipe buffer handles) which may be difficult to control in
+  // testing environments. This forces the common serialization code path to
+  // always behave as if the underlying implementation signaled failure,
+  // allowing tests to exercise those cases.
+  static void FailHandleSerializationForTesting(bool fail);
+
  private:
   // Creates an unserialized UserMessageImpl with an associated |context| and
   // |thunks|. If the message is ever going to be routed to another node (see
