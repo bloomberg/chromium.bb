@@ -15114,6 +15114,8 @@ class FakeStream : public HttpStream,
 
   HttpStream* RenewStreamForAuth() override { return NULL; }
 
+  void SetRequestHeadersCallback(RequestHeadersCallback callback) override {}
+
  private:
   RequestPriority priority_;
 

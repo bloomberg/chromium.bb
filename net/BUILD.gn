@@ -273,6 +273,8 @@ component("net") {
     "http/http_byte_range.h",
     "http/http_log_util.cc",
     "http/http_log_util.h",
+    "http/http_raw_request_headers.cc",
+    "http/http_raw_request_headers.h",
     "http/http_request_headers.cc",
     "http/http_request_headers.h",
     "http/http_response_headers.cc",

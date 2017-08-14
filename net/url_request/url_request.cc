@@ -637,6 +637,7 @@ void URLRequest::StartJob(URLRequestJob* job) {
   job_.reset(job);
   job_->SetExtraRequestHeaders(extra_request_headers_);
   job_->SetPriority(priority_);
+  job_->SetRequestHeadersCallback(request_headers_callback_);
 
   if (upload_data_stream_.get())
     job_->SetUpload(upload_data_stream_.get());
@@ -1196,6 +1197,12 @@ void URLRequest::GetConnectionAttempts(ConnectionAttempts* out) const {
     job_->GetConnectionAttempts(out);
   else
     out->clear();
+}
+
+void URLRequest::SetRequestHeadersCallback(RequestHeadersCallback callback) {
+  DCHECK(!job_.get());
+  DCHECK(request_headers_callback_.is_null());
+  request_headers_callback_ = std::move(callback);
 }
 
 void URLRequest::set_status(URLRequestStatus status) {
