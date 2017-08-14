@@ -392,8 +392,8 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
   if (layout_object && layout_object->IsBR()) {
     NGLogicalOffset bfc_offset =
         ContainerBfcOffset() + NGLogicalOffset(LayoutUnit(), content_size);
-    AdjustToClearance(GetClearanceOffset(ConstraintSpace().Exclusions(),
-                                         item.Style()->Clear()),
+    AdjustToClearance(ConstraintSpace().ExclusionSpace()->ClearanceOffset(
+                          item.Style()->Clear()),
                       &bfc_offset);
     content_size = bfc_offset.block_offset - ContainerBfcOffset().block_offset;
   }

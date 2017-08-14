@@ -22,8 +22,9 @@ namespace {
 NGLogicalOffset AdjustToTopEdgeAlignmentRule(const NGConstraintSpace& space,
                                              const NGLogicalOffset& offset) {
   NGLogicalOffset adjusted_offset = offset;
-  adjusted_offset.block_offset = std::max(
-      adjusted_offset.block_offset, space.Exclusions()->last_float_block_start);
+  adjusted_offset.block_offset =
+      std::max(adjusted_offset.block_offset,
+               space.ExclusionSpace()->LastFloatBlockStart());
 
   return adjusted_offset;
 }
@@ -36,16 +37,16 @@ NGLayoutOpportunity FindLayoutOpportunityForFloat(
   NGLogicalOffset adjusted_origin_point =
       AdjustToTopEdgeAlignmentRule(space, origin_offset);
   WTF::Optional<LayoutUnit> clearance_offset =
-      GetClearanceOffset(space.Exclusions(), unpositioned_float.ClearType());
+      space.ExclusionSpace()->ClearanceOffset(unpositioned_float.ClearType());
 
   AdjustToClearance(clearance_offset, &adjusted_origin_point);
 
+  NGLogicalSize float_size(inline_size + unpositioned_float.margins.InlineSum(),
+                           LayoutUnit());
   // TODO(ikilpatrick): Don't include the block-start margin of a float which
   // has fragmented.
-  return FindLayoutOpportunityForFragment(
-      space.Exclusions().get(), unpositioned_float.available_size,
-      adjusted_origin_point, unpositioned_float.margins,
-      {inline_size, LayoutUnit()});
+  return space.ExclusionSpace()->FindLayoutOpportunity(
+      adjusted_origin_point, unpositioned_float.available_size, float_size);
 }
 
 // Calculates the logical offset for opportunity.

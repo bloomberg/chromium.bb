@@ -390,6 +390,8 @@ blink_core_sources("layout") {
     "ng/ng_constraint_space_builder.h",
     "ng/ng_exclusion.cc",
     "ng/ng_exclusion.h",
+    "ng/ng_exclusion_space.cc",
+    "ng/ng_exclusion_space.h",
     "ng/ng_floats_utils.cc",
     "ng/ng_floats_utils.h",
     "ng/ng_fragment.cc",

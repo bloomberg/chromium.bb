@@ -5,6 +5,7 @@
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_exclusion.h"
+#include "core/layout/ng/ng_exclusion_space.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "platform/wtf/NonCopyingSort.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -259,35 +260,14 @@ bool CompareNGLayoutOpportunitesByStartPoint(const NGLayoutOpportunity& lhs,
 }
 }  // namespace
 
-NGLayoutOpportunity FindLayoutOpportunityForFragment(
-    const NGExclusions* exclusions,
-    const NGLogicalSize& available_size,
-    const NGLogicalOffset& origin_point,
-    const NGBoxStrut& margins,
-    const NGLogicalSize& fragment_size) {
-  NGLayoutOpportunityIterator opportunity_iter(exclusions, available_size,
-                                               origin_point);
-  NGLayoutOpportunity opportunity;
-  NGLayoutOpportunity opportunity_candidate = opportunity_iter.Next();
-  while (!opportunity_candidate.IsEmpty()) {
-    opportunity = opportunity_candidate;
-    auto fragment_inline_size = fragment_size.inline_size + margins.InlineSum();
-    auto fragment_block_size = fragment_size.block_size + margins.BlockSum();
-    if (opportunity.size.inline_size >= fragment_inline_size &&
-        opportunity.size.block_size >= fragment_block_size)
-      break;
-    opportunity_candidate = opportunity_iter.Next();
-  }
-  return opportunity;
-}
-
 NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
-    const NGExclusions* exclusions,
+    const NGExclusionSpace* exclusion_space,
     const NGLogicalSize& available_size,
     const NGLogicalOffset& offset)
     : offset_(offset) {
-  DCHECK(exclusions);
-  DCHECK(std::is_sorted(exclusions->storage.begin(), exclusions->storage.end(),
+  DCHECK(exclusion_space);
+  DCHECK(std::is_sorted(exclusion_space->storage_.begin(),
+                        exclusion_space->storage_.end(),
                         &CompareNGExclusionsByTopAsc))
       << "Exclusions are expected to be sorted by TOP";
 
@@ -295,7 +275,7 @@ NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
       CreateInitialOpportunity(available_size, Offset());
 
   NGLayoutOpportunityTreeNode tree(initial_opportunity);
-  for (const auto& exclusion : exclusions->storage) {
+  for (const auto& exclusion : exclusion_space->storage_) {
     InsertExclusion(&tree, &exclusion, opportunities_);
   }
   CollectAllOpportunities(&tree, opportunities_);

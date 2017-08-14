@@ -30,7 +30,7 @@ NGConstraintSpace::NGConstraintSpace(
     const NGMarginStrut& margin_strut,
     const NGLogicalOffset& bfc_offset,
     const WTF::Optional<NGLogicalOffset>& floats_bfc_offset,
-    const std::shared_ptr<NGExclusions>& exclusions,
+    const std::shared_ptr<NGExclusionSpace>& exclusion_space,
     Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
     const WTF::Optional<LayoutUnit>& clearance_offset,
     Vector<NGBaselineRequest>& baseline_requests)
@@ -55,7 +55,7 @@ NGConstraintSpace::NGConstraintSpace(
       margin_strut_(margin_strut),
       bfc_offset_(bfc_offset),
       floats_bfc_offset_(floats_bfc_offset),
-      exclusions_(exclusions),
+      exclusion_space_(exclusion_space),
       clearance_offset_(clearance_offset) {
   unpositioned_floats_.swap(unpositioned_floats);
   baseline_requests_.swap(baseline_requests);
@@ -162,7 +162,7 @@ Optional<LayoutUnit> NGConstraintSpace::ParentPercentageResolutionInlineSize()
 }
 
 void NGConstraintSpace::AddExclusion(const NGExclusion& exclusion) {
-  exclusions_->Add(exclusion);
+  exclusion_space_->Add(exclusion);
 }
 
 NGFragmentationType NGConstraintSpace::BlockFragmentationType() const {
@@ -176,7 +176,8 @@ bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
   if (unpositioned_floats_.size() || other.unpositioned_floats_.size())
     return false;
 
-  if (exclusions_ && other.exclusions_ && *exclusions_ != *other.exclusions_)
+  if (exclusion_space_ && other.exclusion_space_ &&
+      *exclusion_space_ != *other.exclusion_space_)
     return false;
 
   return available_size_ == other.available_size_ &&

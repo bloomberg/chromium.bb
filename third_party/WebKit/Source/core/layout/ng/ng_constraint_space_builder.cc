@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/ng_constraint_space_builder.h"
 
+#include "core/layout/ng/ng_exclusion_space.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
 
@@ -29,7 +30,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
       is_anonymous_(false),
       text_direction_(static_cast<unsigned>(parent_space->Direction())),
       bfc_offset_(parent_space->bfc_offset_),
-      exclusions_(parent_space->Exclusions()) {}
+      exclusion_space_(parent_space->ExclusionSpace()) {}
 
 NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode)
     : initial_containing_block_size_{NGSizeIndefinite, NGSizeIndefinite},
@@ -44,7 +45,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode)
       is_new_fc_(false),
       is_anonymous_(false),
       text_direction_(static_cast<unsigned>(TextDirection::kLtr)),
-      exclusions_(new NGExclusions()) {}
+      exclusion_space_(new NGExclusionSpace()) {}
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetAvailableSize(
     NGLogicalSize available_size) {
@@ -214,8 +215,8 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
           : Optional<LayoutUnit>();
 
   // Reset things that do not pass the Formatting Context boundary.
-  std::shared_ptr<NGExclusions> exclusions(
-      is_new_fc_ ? std::make_shared<NGExclusions>() : exclusions_);
+  std::shared_ptr<NGExclusionSpace> exclusion_space(
+      is_new_fc_ ? std::make_shared<NGExclusionSpace>() : exclusion_space_);
   if (is_new_fc_)
     DCHECK(unpositioned_floats_.IsEmpty());
   NGLogicalOffset bfc_offset = is_new_fc_ ? NGLogicalOffset() : bfc_offset_;
@@ -240,8 +241,9 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
         is_inline_direction_triggers_scrollbar_,
         is_block_direction_triggers_scrollbar_,
         static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-        is_anonymous_, margin_strut, bfc_offset, floats_bfc_offset, exclusions,
-        unpositioned_floats_, clearance_offset, baseline_requests_));
+        is_anonymous_, margin_strut, bfc_offset, floats_bfc_offset,
+        exclusion_space, unpositioned_floats_, clearance_offset,
+        baseline_requests_));
   }
   return AdoptRef(new NGConstraintSpace(
       out_writing_mode, static_cast<TextDirection>(text_direction_),
@@ -252,8 +254,9 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
       is_block_direction_triggers_scrollbar_,
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-      is_anonymous_, margin_strut, bfc_offset, floats_bfc_offset, exclusions,
-      unpositioned_floats_, clearance_offset, baseline_requests_));
+      is_anonymous_, margin_strut, bfc_offset, floats_bfc_offset,
+      exclusion_space, unpositioned_floats_, clearance_offset,
+      baseline_requests_));
 }
 
 }  // namespace blink

@@ -6,7 +6,6 @@
 #define NGLayoutOpportunityIterator_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_exclusion.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_layout_opportunity_tree_node.h"
 #include "platform/wtf/Vector.h"
@@ -16,13 +15,7 @@ namespace blink {
 
 typedef NGLogicalRect NGLayoutOpportunity;
 typedef Vector<NGLayoutOpportunity> NGLayoutOpportunities;
-
-NGLayoutOpportunity FindLayoutOpportunityForFragment(
-    const NGExclusions* exclusions,
-    const NGLogicalSize& available_size,
-    const NGLogicalOffset& origin_point,
-    const NGBoxStrut& margins,
-    const NGLogicalSize& size);
+class NGExclusionSpace;
 
 class CORE_EXPORT NGLayoutOpportunityIterator final {
   STACK_ALLOCATED();
@@ -36,7 +29,7 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
   //                       iterator searches layout opportunities.
   // @param offset Offset used as a default starting point for layout
   //               opportunities.
-  NGLayoutOpportunityIterator(const NGExclusions* exclusions,
+  NGLayoutOpportunityIterator(const NGExclusionSpace* exclusions,
                               const NGLogicalSize& available_size,
                               const NGLogicalOffset& offset);
 
