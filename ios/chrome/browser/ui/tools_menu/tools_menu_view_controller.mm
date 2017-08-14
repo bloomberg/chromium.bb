@@ -315,8 +315,8 @@ NS_INLINE void AnimateInViews(NSArray* views,
 - (ToolsMenuViewItem*)createViewSourceItem {
   return [ToolsMenuViewItem menuItemWithTitle:@"View Source"
                       accessibilityIdentifier:@"View Source"
-                                     selector:nullptr
-                                      command:IDC_VIEW_SOURCE];
+                                     selector:@selector(viewSource)
+                                      command:TOOLS_VIEW_SOURCE];
 }
 #endif  // !defined(NDEBUG)
 

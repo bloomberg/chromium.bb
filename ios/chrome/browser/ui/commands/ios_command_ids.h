@@ -13,7 +13,6 @@
 // also need to be updated.
 
 // clang-format off
-#define IDC_VIEW_SOURCE                                35002
 #define IDC_FIND                                       37000
 #define IDC_FIND_NEXT                                  37001
 #define IDC_FIND_PREVIOUS                              37002

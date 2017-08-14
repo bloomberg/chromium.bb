@@ -658,10 +658,6 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 - (void)showRateThisAppDialog;
 // Dismisses the "rate this app" dialog.
 - (void)dismissRateThisAppDialog;
-#if !defined(NDEBUG)
-// Shows the source of the current page.
-- (void)viewSource;
-#endif
 // Whether the given tab's URL is an application specific URL.
 - (BOOL)isTabNativePage:(Tab*)tab;
 // Returns the view to use when animating a page in or out, positioning it to
@@ -4281,6 +4277,40 @@ bubblePresenterForFeature:(const base::Feature&)feature
   _voiceSearchController->PrepareToAppear();
 }
 
+#if !defined(NDEBUG)
+- (void)viewSource {
+  Tab* tab = [_model currentTab];
+  DCHECK(tab);
+  CRWWebController* webController = tab.webController;
+  NSString* script = @"document.documentElement.outerHTML;";
+  __weak Tab* weakTab = tab;
+  __weak BrowserViewController* weakSelf = self;
+  web::JavaScriptResultBlock completionHandlerBlock = ^(id result, NSError*) {
+    Tab* strongTab = weakTab;
+    if (!strongTab)
+      return;
+    if (![result isKindOfClass:[NSString class]])
+      result = @"Not an HTML page";
+    std::string base64HTML;
+    base::Base64Encode(base::SysNSStringToUTF8(result), &base64HTML);
+    GURL URL(std::string("data:text/plain;charset=utf-8;base64,") + base64HTML);
+    web::Referrer referrer([strongTab lastCommittedURL],
+                           web::ReferrerPolicyDefault);
+
+    [[weakSelf tabModel]
+        insertTabWithURL:URL
+                referrer:referrer
+              transition:ui::PAGE_TRANSITION_LINK
+                  opener:strongTab
+             openedByDOM:YES
+                 atIndex:TabModelConstants::kTabPositionAutomatically
+            inBackground:NO];
+  };
+  [webController executeJavaScript:script
+                 completionHandler:completionHandlerBlock];
+}
+#endif  // !defined(NDEBUG)
+
 #pragma mark - Command Handling
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -4353,11 +4383,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
       }
       break;
     }
-#if !defined(NDEBUG)
-    case IDC_VIEW_SOURCE:
-      [self viewSource];
-      break;
-#endif
     case IDC_SHOW_PAGE_INFO:
       DCHECK([sender isKindOfClass:[UIButton class]]);
       [self showPageInfoPopupForView:sender];
@@ -4627,40 +4652,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
     _rateThisAppDialog = nil;
   }
 }
-
-#if !defined(NDEBUG)
-- (void)viewSource {
-  Tab* tab = [_model currentTab];
-  DCHECK(tab);
-  CRWWebController* webController = tab.webController;
-  NSString* script = @"document.documentElement.outerHTML;";
-  __weak Tab* weakTab = tab;
-  __weak BrowserViewController* weakSelf = self;
-  web::JavaScriptResultBlock completionHandlerBlock = ^(id result, NSError*) {
-    Tab* strongTab = weakTab;
-    if (!strongTab)
-      return;
-    if (![result isKindOfClass:[NSString class]])
-      result = @"Not an HTML page";
-    std::string base64HTML;
-    base::Base64Encode(base::SysNSStringToUTF8(result), &base64HTML);
-    GURL URL(std::string("data:text/plain;charset=utf-8;base64,") + base64HTML);
-    web::Referrer referrer([strongTab lastCommittedURL],
-                           web::ReferrerPolicyDefault);
-
-    [[weakSelf tabModel]
-        insertTabWithURL:URL
-                referrer:referrer
-              transition:ui::PAGE_TRANSITION_LINK
-                  opener:strongTab
-             openedByDOM:YES
-                 atIndex:TabModelConstants::kTabPositionAutomatically
-            inBackground:NO];
-  };
-  [webController executeJavaScript:script
-                 completionHandler:completionHandlerBlock];
-}
-#endif  // !defined(NDEBUG)
 
 - (void)startVoiceSearchWithOriginView:(UIView*)originView {
   _voiceSearchButton = originView;

@@ -67,6 +67,11 @@
 // Closes all incognito tabs.
 - (void)closeAllIncognitoTabs;
 
+#if !defined(NDEBUG)
+// Shows the source of the current page.
+- (void)viewSource;
+#endif
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_
