@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.24",
+  "version": "10.25",
   "entries": [
     {
       "id": 1,
@@ -2585,6 +2585,22 @@
       "multi_gpu_category": "any",
       "features": [
         "msaa_is_slow"
+      ]
+    },
+    {
+      "id": 239,
+      "description": "Reset TexImage2D base level to 0 on Intel Mac 10.12.4",
+      "cr_bugs": [705865],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": ">=",
+          "value": "10.12.4"
+        }
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "reset_teximage2d_base_level"
       ]
     }
   ],

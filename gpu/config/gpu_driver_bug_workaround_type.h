@@ -171,6 +171,8 @@
          remove_pow_with_constant_exponent)                  \
   GPU_OP(RESET_BASE_MIPMAP_LEVEL_BEFORE_TEXSTORAGE,          \
          reset_base_mipmap_level_before_texstorage)          \
+  GPU_OP(RESET_TEXIMAGE2D_BASE_LEVEL,                        \
+         reset_teximage2d_base_level)                        \
   GPU_OP(RESTORE_SCISSOR_ON_FBO_CHANGE,                      \
          restore_scissor_on_fbo_change)                      \
   GPU_OP(REVERSE_POINT_SPRITE_COORD_ORIGIN,                  \
