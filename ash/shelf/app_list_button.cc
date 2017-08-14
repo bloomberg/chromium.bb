@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
 #include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
@@ -24,6 +25,9 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/timer/timer.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/presenter/app_list.h"
@@ -71,6 +75,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   DCHECK(shelf_view_);
   DCHECK(shelf_);
   Shell::Get()->AddShellObserver(this);
+  Shell::Get()->session_controller()->AddObserver(this);
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   set_ink_drop_base_color(kShelfInkDropBaseColor);
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
@@ -80,17 +85,6 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
   set_notify_action(CustomButton::NOTIFY_ON_PRESS);
 
-  if (chromeos::switches::IsVoiceInteractionEnabled()) {
-    voice_interaction_overlay_ = new VoiceInteractionOverlay(this);
-    AddChildView(voice_interaction_overlay_);
-    voice_interaction_overlay_->SetVisible(false);
-    voice_interaction_animation_delay_timer_.reset(new base::OneShotTimer());
-    voice_interaction_animation_hide_delay_timer_.reset(
-        new base::OneShotTimer());
-  } else {
-    voice_interaction_overlay_ = nullptr;
-  }
-
   // Disable canvas flipping for this view, otherwise there will be a lot of
   // edge cases with ink drops, events, etc. in tablet mode where we have two
   // buttons in one.
@@ -99,6 +93,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
 
 AppListButton::~AppListButton() {
   Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
 void AppListButton::OnAppListShown() {
@@ -161,14 +156,14 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       return;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_TAP_CANCEL:
-      if (voice_interaction_overlay_) {
+      if (is_primary_user_active_ && voice_interaction_overlay_) {
         voice_interaction_overlay_->EndAnimation();
         voice_interaction_animation_delay_timer_->Stop();
       }
       ImageButton::OnGestureEvent(event);
       return;
     case ui::ET_GESTURE_TAP_DOWN:
-      if (voice_interaction_overlay_) {
+      if (is_primary_user_active_ && voice_interaction_overlay_) {
         voice_interaction_animation_delay_timer_->Start(
             FROM_HERE,
             base::TimeDelta::FromMilliseconds(
@@ -181,7 +176,8 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       ImageButton::OnGestureEvent(event);
       return;
     case ui::ET_GESTURE_LONG_PRESS:
-      if (chromeos::switches::IsVoiceInteractionEnabled()) {
+      if (chromeos::switches::IsVoiceInteractionEnabled() &&
+          is_primary_user_active_) {
         base::RecordAction(base::UserMetricsAction(
             "VoiceInteraction.Started.AppListButtonLongPress"));
         Shell::Get()->app_list()->StartVoiceInteractionSession();
@@ -193,7 +189,8 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       }
       return;
     case ui::ET_GESTURE_LONG_TAP:
-      if (chromeos::switches::IsVoiceInteractionEnabled()) {
+      if (chromeos::switches::IsVoiceInteractionEnabled() &&
+          is_primary_user_active_) {
         // Also consume the long tap event. This happens after the user long
         // presses and lifts the finger. We already handled the long press
         // ignore the long tap to avoid bringing up the context menu again.
@@ -505,6 +502,31 @@ void AppListButton::OnVoiceInteractionStatusChanged(
                        base::Unretained(voice_interaction_overlay_)));
       }
       break;
+  }
+}
+
+void AppListButton::OnActiveUserSessionChanged(const AccountId& account_id) {
+  // If the active user is not the primary user, app list button animation will
+  // be disabled.
+  if (!user_manager::UserManager::IsInitialized() ||
+      account_id !=
+          user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId()) {
+    is_primary_user_active_ = false;
+    return;
+  }
+
+  is_primary_user_active_ = true;
+  // Initialize voice interaction overlay when primary user session becomes
+  // active.
+  if (!voice_interaction_overlay_ &&
+      chromeos::switches::IsVoiceInteractionEnabled()) {
+    voice_interaction_overlay_ = new VoiceInteractionOverlay(this);
+    AddChildView(voice_interaction_overlay_);
+    voice_interaction_overlay_->SetVisible(false);
+    voice_interaction_animation_delay_timer_ =
+        base::MakeUnique<base::OneShotTimer>();
+    voice_interaction_animation_hide_delay_timer_ =
+        base::MakeUnique<base::OneShotTimer>();
   }
 }
 
