@@ -15,6 +15,7 @@ source_set("declarative_net_request") {
 
   deps = [
     "//base",
+    "//extensions/browser/api/declarative_net_request/flat:extension_ruleset",
     "//extensions/common",
     "//extensions/common/api",
     "//url",

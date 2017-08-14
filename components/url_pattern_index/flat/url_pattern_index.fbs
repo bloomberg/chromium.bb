@@ -87,6 +87,13 @@ table UrlRule {
 
   // A URL pattern in the format defined by |url_pattern_type|.
   url_pattern : string;
+
+  // An id which uniquely identifies the rule. Clients must ensure uniqueness if
+  // they use this field.
+  id : uint;
+
+  // Priority of the rule. Larger the value, greater the priority.
+  priority : uint;
 }
 
 // Contains an N-gram (acting as a key in a hash table) and a list of URL rules
