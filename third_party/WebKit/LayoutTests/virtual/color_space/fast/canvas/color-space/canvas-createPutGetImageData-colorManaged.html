@@ -8,16 +8,11 @@ var xWidth = xHeight = 10;
 
 function checkImageData(canvasColorSettings, imageData) {
   var imageDataColorSettings = imageData.getColorSettings();
-  //console.log(canvasColorSettings);
-  console.log(imageDataColorSettings);
-
   assert_equals(canvasColorSettings.colorSpace, imageDataColorSettings.colorSpace);
   if (canvasColorSettings.pixelFormat == "8-8-8-8") {
-    //console.log("8-8-8-8 -> ");
     assert_equals("uint8", imageDataColorSettings.storageFormat);
     assert_equals(imageData.data.length, 4 * xWidth * xHeight);
   } else {
-    //console.log("float16 -> ");
     assert_equals("float32", imageDataColorSettings.storageFormat);
     assert_equals(imageData.dataUnion.length, 4 * xWidth * xHeight);
   }
@@ -44,7 +39,7 @@ var testScenariosCreateImageData = [
   ["Test color managed cretateImageData: {p3, float16} -> {p3, float32}", {colorSpace: "p3", pixelFormat: "float16"}],
 ];
 
-//generate_tests(runTestCreateImageData, testScenariosCreateImageData);
+generate_tests(runTestCreateImageData, testScenariosCreateImageData);
 
 // Test getImageData when the canvas is color managed
 function runTestGetImageData(canvasColorSettings) {
@@ -57,10 +52,10 @@ function runTestGetImageData(canvasColorSettings) {
 }
 
 var testScenariosGetImageData = [
-//  ["Test color managed getImageData: {srgb, 8-8-8-8} -> {srgb, uint8}", {colorSpace: "srgb", pixelFormat: "8-8-8-8"}],
-  ["Test color managed getImageData: {srgb, float16} -> {srgb, float32}", {colorSpace: "srgb", pixelFormat: "float16"}], 
-//  ["Test color managed getImageData: {rec2020, float16} -> {rec2020, float32}", {colorSpace: "rec2020", pixelFormat: "float16"}],
-//  ["Test color managed getImageData: {p3, float16} -> {p3, float32}", {colorSpace: "p3", pixelFormat: "float16"}],
+  ["Test color managed getImageData: {srgb, 8-8-8-8} -> {srgb, uint8}", {colorSpace: "srgb", pixelFormat: "8-8-8-8"}],
+  ["Test color managed getImageData: {srgb, float16} -> {srgb, float32}", {colorSpace: "srgb", pixelFormat: "float16"}],
+  ["Test color managed getImageData: {rec2020, float16} -> {rec2020, float32}", {colorSpace: "rec2020", pixelFormat: "float16"}],
+  ["Test color managed getImageData: {p3, float16} -> {p3, float32}", {colorSpace: "p3", pixelFormat: "float16"}],
 ];
 
 generate_tests(runTestGetImageData, testScenariosGetImageData);
@@ -123,7 +118,7 @@ function runTestPutImageData(imageDataColorSettings, canvasColorSettings) {
 
 prepareDataArrays();
 prepareTestScenariosPutImageData();
-//generate_tests(runTestPutImageData, testScenariosPutImageData);
+generate_tests(runTestPutImageData, testScenariosPutImageData);
 
 </script>
 </body>

@@ -39,27 +39,24 @@ CanvasRenderingContext::CanvasRenderingContext(
     : host_(host),
       color_params_(kLegacyCanvasColorSpace, kRGBA8CanvasPixelFormat),
       creation_attributes_(attrs) {
-  if (RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled()) {
-    // Set the default color space to SRGB and continue
-    CanvasColorSpace color_space = kSRGBCanvasColorSpace;
-    if (creation_attributes_.colorSpace() == kRec2020CanvasColorSpaceName)
-      color_space = kRec2020CanvasColorSpace;
-    else if (creation_attributes_.colorSpace() == kP3CanvasColorSpaceName)
-      color_space = kP3CanvasColorSpace;
+  if (CanvasColorParams::ColorCorrectRenderingEnabled()) {
+    color_params_.SetCanvasColorSpace(kSRGBCanvasColorSpace);
+    if (CanvasColorParams::ColorCorrectRenderingInAnyColorSpace()) {
+      if (creation_attributes_.colorSpace() == kRec2020CanvasColorSpaceName)
+        color_params_.SetCanvasColorSpace(kRec2020CanvasColorSpace);
+      else if (creation_attributes_.colorSpace() == kP3CanvasColorSpaceName)
+        color_params_.SetCanvasColorSpace(kP3CanvasColorSpace);
 
-    // For now, we only support RGBA8 (for SRGB) and F16 (for all). Everything
-    // else falls back to SRGB + RGBA8.
-    CanvasPixelFormat pixel_format = kRGBA8CanvasPixelFormat;
-    if (creation_attributes_.pixelFormat() == kF16CanvasPixelFormatName) {
-      pixel_format = kF16CanvasPixelFormat;
-    } else {
-      color_space = kSRGBCanvasColorSpace;
-      pixel_format = kRGBA8CanvasPixelFormat;
+      // For now, we only support RGBA8 (for SRGB) and F16 (for all). Everything
+      // else falls back to SRGB + RGBA8.
+      if (creation_attributes_.pixelFormat() == kF16CanvasPixelFormatName) {
+        color_params_.SetCanvasPixelFormat(kF16CanvasPixelFormat);
+      } else {
+        color_params_.SetCanvasColorSpace(kSRGBCanvasColorSpace);
+        color_params_.SetCanvasPixelFormat(kRGBA8CanvasPixelFormat);
+      }
     }
-
-    color_params_ = CanvasColorParams(color_space, pixel_format);
   }
-
   // Make m_creationAttributes reflect the effective colorSpace, pixelFormat and
   // linearPixelMath rather than the requested one.
   creation_attributes_.setColorSpace(ColorSpaceAsString());
