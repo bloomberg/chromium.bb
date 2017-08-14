@@ -106,6 +106,24 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
 
   void ConfigureForTesting();
 
+ protected:
+  // Helper code executed when the frame is available; if it is the first frame,
+  // setup time fluctuation control and process any pending photo requests.
+  void ProcessFirstFrameAvailable(base::TimeTicks current_time);
+
+  // Checks if there is a client and if the |state_| is kConfigured.
+  bool IsClientConfigured();
+
+  // Checks if the incoming frame arrived too early so that is needs to be
+  // dropped. If not, advance the next frame expectation time and return false;
+  bool ThrottleFrame(base::TimeTicks current_time);
+
+  void SendIncomingDataToClient(const uint8_t* data,
+                                int length,
+                                int rotation,
+                                base::TimeTicks reference_time,
+                                base::TimeDelta timestamp);
+
  private:
   enum InternalState {
     kIdle,        // The device is opened but not in use.
@@ -128,11 +146,11 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   // |lock_| protects |state_|, |client_|, |got_first_frame_| and
   // |photo_requests_queue_| from concurrent access.
   base::Lock lock_;
-  InternalState state_;
+  InternalState state_ = kIdle;
   std::unique_ptr<VideoCaptureDevice::Client> client_;
-  bool got_first_frame_;
+  bool got_first_frame_ = false;
   // Photo-related requests waiting for |got_first_frame_| to be served. Android
-  // APIs need the device capturing or nearly-capturing to be fully oeprational.
+  // APIs need the device capturing or nearly-capturing to be fully operational.
   std::list<base::Closure> photo_requests_queue_;
 
   base::TimeTicks expected_next_frame_time_;
