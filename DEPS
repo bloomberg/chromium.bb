@@ -56,7 +56,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': 'f4bcb07d88cdb7d748813c3d150e08bf88435fb9',
+  'buildtools_revision': 'ceb050498e43dd0a1c8489022bf21fe687394366',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
