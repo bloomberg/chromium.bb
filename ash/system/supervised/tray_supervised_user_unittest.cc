@@ -20,6 +20,7 @@
 #include "ui/message_center/notification_types.h"
 #include "ui/views/view.h"
 
+using base::UTF16ToUTF8;
 using message_center::NotificationList;
 
 namespace ash {

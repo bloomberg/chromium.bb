@@ -493,7 +493,7 @@ void OmniboxViewIOS::OnDidChange(bool processing_user_event) {
     base::string16 pastedText = base::SysNSStringToUTF16([field_ text]);
     base::string16 newText = OmniboxView::SanitizeTextForPaste(pastedText);
     if (pastedText != newText) {
-      [field_ setText:SysUTF16ToNSString(newText)];
+      [field_ setText:base::SysUTF16ToNSString(newText)];
     }
   }
 

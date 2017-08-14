@@ -49,7 +49,7 @@
       base::SysUTF16ToNSString(_paymentRequest->payment_details().total.label);
   payments::CurrencyFormatter* currencyFormatter =
       _paymentRequest->GetOrCreateCurrencyFormatter();
-  totalItem.price = SysUTF16ToNSString(l10n_util::GetStringFUTF16(
+  totalItem.price = base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
       base::UTF8ToUTF16(currencyFormatter->formatted_currency_code()),
       currencyFormatter->Format(base::UTF16ToASCII(
@@ -68,7 +68,7 @@
     item.item = base::SysUTF16ToNSString(paymentItem.label);
     payments::CurrencyFormatter* currencyFormatter =
         _paymentRequest->GetOrCreateCurrencyFormatter();
-    item.price = SysUTF16ToNSString(currencyFormatter->Format(
+    item.price = base::SysUTF16ToNSString(currencyFormatter->Format(
         base::UTF16ToASCII(paymentItem.amount.value)));
 
     [lineItems addObject:item];

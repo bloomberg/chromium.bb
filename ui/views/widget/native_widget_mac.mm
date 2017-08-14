@@ -268,7 +268,7 @@ void NativeWidgetMac::GetWindowPlacement(
 bool NativeWidgetMac::SetWindowTitle(const base::string16& title) {
   NSWindow* window = GetNativeWindow();
   NSString* current_title = [window title];
-  NSString* new_title = SysUTF16ToNSString(title);
+  NSString* new_title = base::SysUTF16ToNSString(title);
   if ([current_title isEqualToString:new_title])
     return false;
 

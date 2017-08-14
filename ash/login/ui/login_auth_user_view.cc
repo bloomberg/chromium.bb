@@ -140,7 +140,7 @@ gfx::Size LoginAuthUserView::CalculatePreferredSize() const {
 void LoginAuthUserView::OnAuthSubmit(bool is_pin,
                                      const base::string16& password) {
   Shell::Get()->lock_screen_controller()->AuthenticateUser(
-      current_user_, UTF16ToUTF8(password), is_pin,
+      current_user_, base::UTF16ToUTF8(password), is_pin,
       base::BindOnce([](OnAuthCallback on_auth,
                         bool auth_success) { on_auth.Run(auth_success); },
                      on_auth_));

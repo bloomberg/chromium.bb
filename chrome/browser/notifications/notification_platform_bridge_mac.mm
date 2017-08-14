@@ -251,10 +251,10 @@ void NotificationPlatformBridgeMac::Display(
   std::vector<message_center::ButtonInfo> buttons = notification.buttons();
   if (!buttons.empty()) {
     DCHECK_LE(buttons.size(), blink::kWebNotificationMaxActions);
-    NSString* buttonOne = SysUTF16ToNSString(buttons[0].title);
+    NSString* buttonOne = base::SysUTF16ToNSString(buttons[0].title);
     NSString* buttonTwo = nullptr;
     if (buttons.size() > 1)
-      buttonTwo = SysUTF16ToNSString(buttons[1].title);
+      buttonTwo = base::SysUTF16ToNSString(buttons[1].title);
     [builder setButtons:buttonOne secondaryButton:buttonTwo];
   }
 

@@ -2449,6 +2449,7 @@ if (enable_nocompile_tests) {
       "memory/ref_counted_unittest.nc",
       "memory/weak_ptr_unittest.nc",
       "metrics/histogram_unittest.nc",
+      "strings/string16_unittest.nc",
       "task_scheduler/task_traits_unittest.nc",
     ]
 

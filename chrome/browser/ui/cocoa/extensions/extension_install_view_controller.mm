@@ -31,6 +31,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 
+using base::SysUTF16ToNSString;
 using content::OpenURLParams;
 using content::Referrer;
 

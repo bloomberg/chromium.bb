@@ -244,7 +244,7 @@ void FillVectorWithHashesUsingDistantSession(
         << " _distantSession->tabs.size() == " << distantSessionTabCount;
     synced_sessions::DistantTab* tab = _distantSession->tabs[tabIndex].get();
     CHECK(tab);
-    [panelCell setTitle:SysUTF16ToNSString(tab->title)];
+    [panelCell setTitle:base::SysUTF16ToNSString(tab->title)];
     [panelCell setSessionGURL:tab->virtual_url
              withBrowserState:[_model browserState]];
     [panelCell setDelegate:self];

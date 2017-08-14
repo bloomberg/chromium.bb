@@ -17,6 +17,7 @@
 #include "testing/platform_test.h"
 
 using base::ScopedCFTypeRef;
+using base::UTF16ToUTF8;
 using autofill::PasswordForm;
 
 namespace password_manager {

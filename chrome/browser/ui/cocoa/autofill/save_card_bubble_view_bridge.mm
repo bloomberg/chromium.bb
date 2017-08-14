@@ -20,6 +20,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using base::SysUTF16ToNSString;
+
 namespace {
 
 const CGFloat kDesiredBubbleWidth = 370;

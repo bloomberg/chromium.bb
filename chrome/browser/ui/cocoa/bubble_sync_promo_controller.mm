@@ -86,8 +86,8 @@ const int kFontSize = 11;
   const base::string16 linkText = l10n_util::GetStringUTF16(linkStringId_);
   const base::string16 promoText =
       l10n_util::GetStringFUTF16(promoStringId_, linkText, &offset);
-  NSString* nsPromoText = SysUTF16ToNSString(promoText);
-  NSString* nsLinkText = SysUTF16ToNSString(linkText);
+  NSString* nsPromoText = base::SysUTF16ToNSString(promoText);
+  NSString* nsLinkText = base::SysUTF16ToNSString(linkText);
   NSFont* font = [NSFont labelFontOfSize:kFontSize];
   NSColor* linkColor = skia::SkColorToCalibratedNSColor(
       chrome_style::GetLinkColor());

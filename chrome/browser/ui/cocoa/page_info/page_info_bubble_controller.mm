@@ -830,10 +830,10 @@ bool IsInternalURL(const GURL& url) {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
       identityInfo.GetSecurityDescription();
   [securitySummaryField_
-      setStringValue:SysUTF16ToNSString(security_description->summary)];
+      setStringValue:base::SysUTF16ToNSString(security_description->summary)];
 
   [securityDetailsField_
-      setStringValue:SysUTF16ToNSString(security_description->details)];
+      setStringValue:base::SysUTF16ToNSString(security_description->details)];
 
   certificate_ = identityInfo.certificate;
 
