@@ -42,8 +42,8 @@ class MemoryDumpSchedulerTest : public testing::Test {
  protected:
   MemoryDumpScheduler scheduler_;
   WaitableEvent evt_;
-  Thread bg_thread_;
   CallbackWrapper on_tick_;
+  Thread bg_thread_;
 };
 
 TEST_F(MemoryDumpSchedulerTest, SingleTrigger) {
