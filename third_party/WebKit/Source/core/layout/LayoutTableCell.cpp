@@ -59,7 +59,7 @@ static_assert(sizeof(CollapsedBorderValue) == 8,
 LayoutTableCell::LayoutTableCell(Element* element)
     : LayoutBlockFlow(element),
       absolute_column_index_(kUnsetColumnIndex),
-      cell_width_changed_(false),
+      cell_children_need_layout_(false),
       is_spanning_collapsed_row_(false),
       collapsed_border_values_valid_(false),
       intrinsic_padding_before_(0),
@@ -288,7 +288,7 @@ void LayoutTableCell::SetCellLogicalWidth(int table_layout_logical_width,
   layouter.SetNeedsLayout(this, LayoutInvalidationReason::kSizeChanged);
 
   SetLogicalWidth(LayoutUnit(table_layout_logical_width));
-  SetCellWidthChanged(true);
+  SetCellChildrenNeedLayout(true);
 }
 
 void LayoutTableCell::UpdateLayout() {
@@ -296,7 +296,7 @@ void LayoutTableCell::UpdateLayout() {
   LayoutAnalyzer::Scope analyzer(*this);
 
   LayoutUnit old_cell_baseline = CellBaselinePosition();
-  UpdateBlockLayout(CellWidthChanged());
+  UpdateBlockLayout(CellChildrenNeedLayout());
 
   // If we have replaced content, the intrinsic height of our content may have
   // changed since the last time we laid out. If that's the case the intrinsic
@@ -318,14 +318,14 @@ void LayoutTableCell::UpdateLayout() {
     SetIntrinsicPaddingBefore(new_intrinsic_padding_before.Round());
     SubtreeLayoutScope layouter(*this);
     layouter.SetNeedsLayout(this, LayoutInvalidationReason::kTableChanged);
-    UpdateBlockLayout(CellWidthChanged());
+    UpdateBlockLayout(CellChildrenNeedLayout());
   }
 
   // FIXME: This value isn't the intrinsic content logical height, but we need
   // to update the value as its used by flexbox layout. crbug.com/367324
   SetIntrinsicContentLogicalHeight(ContentLogicalHeight());
 
-  SetCellWidthChanged(false);
+  SetCellChildrenNeedLayout(false);
 }
 
 LayoutUnit LayoutTableCell::PaddingTop() const {
