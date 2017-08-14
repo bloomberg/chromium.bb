@@ -156,8 +156,23 @@ public class WebappActivity extends SingleTabActivity {
     public void preInflationStartup() {
         Intent intent = getIntent();
         WebappInfo info = popWebappInfo(WebappInfo.idFromIntent(intent));
+        // When WebappActivity is killed by the Android OS, and an entry stays in "Android Recents"
+        // (The user does not swipe it away), when WebappActivity is relaunched it is relaunched
+        // with the intent stored in WebappActivity#getIntent() at the time that the WebappActivity
+        // was killed. WebappActivity may be relaunched from:
+
+        // (A) An intent from WebappLauncherActivity (e.g. as a result of a notification or a deep
+        // link). Android drops the intent from WebappLauncherActivity in favor of
+        // WebappActivity#getIntent() at the time that the WebappActivity was killed.
+
+        // (B) The user selecting the WebappActivity in recents. In case (A) we want to use the
+        // intent sent to WebappLauncherActivity and ignore WebappActivity#getSavedInstanceState().
+        // In case (B) we want to restore to saved tab state.
         if (info == null) {
             info = createWebappInfo(intent);
+        } else if (info.shouldForceNavigation()) {
+            // Don't restore to previous page, navigate using WebappInfo retrieved from cache.
+            resetSavedInstanceState();
         }
 
         mWebappInfo = info;
