@@ -130,7 +130,7 @@ class PreviewEliderLabel : public views::Label {
   DISALLOW_COPY_AND_ASSIGN(PreviewEliderLabel);
 };
 
-std::unique_ptr<views::Button> CreatePaymentSheetRow(
+std::unique_ptr<PaymentRequestRowView> CreatePaymentSheetRow(
     views::ButtonListener* listener,
     const base::string16& section_name,
     const base::string16& accessible_content,
@@ -201,7 +201,7 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
       l10n_util::GetStringFUTF16(IDS_PAYMENTS_ROW_ACCESSIBLE_NAME_FORMAT,
                                  section_name, accessible_content));
 
-  return std::move(row);
+  return row;
 }
 
 std::unique_ptr<views::View> CreateInlineCurrencyAmountItem(
@@ -279,7 +279,7 @@ class PaymentSheetRowBuilder {
   // +----------------------------+
   // | Name | Content | Extra | > |
   // +~~~~~~~~~~~~~~~~~~~~~~~~~~~~+ <-- ruler
-  std::unique_ptr<views::Button> CreateWithChevron(
+  std::unique_ptr<PaymentRequestRowView> CreateWithChevron(
       std::unique_ptr<views::View> content_view,
       std::unique_ptr<views::View> extra_content_view) {
     std::unique_ptr<views::ImageView> chevron =
@@ -290,7 +290,7 @@ class PaymentSheetRowBuilder {
     chevron->SetImage(gfx::CreateVectorIcon(
         views::kSubmenuArrowIcon,
         color_utils::DeriveDefaultIconColor(label->enabled_color())));
-    std::unique_ptr<views::Button> section = CreatePaymentSheetRow(
+    std::unique_ptr<PaymentRequestRowView> section = CreatePaymentSheetRow(
         listener_, section_name_, accessible_content_, std::move(content_view),
         std::move(extra_content_view), std::move(chevron),
         /*clickable=*/true, /*extra_trailing_inset=*/true);
@@ -304,7 +304,7 @@ class PaymentSheetRowBuilder {
   // +------------------------------------------+
   // | Name | truncated_content | button_string |
   // +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
-  std::unique_ptr<views::Button> CreateWithButton(
+  std::unique_ptr<PaymentRequestRowView> CreateWithButton(
       const base::string16& truncated_content,
       const base::string16& button_string,
       bool button_enabled) {
@@ -319,7 +319,7 @@ class PaymentSheetRowBuilder {
   // +----------------------------------------------+
   // | Name | preview... and N more | button_string |
   // +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
-  std::unique_ptr<views::Button> CreateWithButton(
+  std::unique_ptr<PaymentRequestRowView> CreateWithButton(
       const base::string16& preview_text,
       const base::string16& format_string,
       int n,
@@ -339,7 +339,7 @@ class PaymentSheetRowBuilder {
   // +------------------------------------------+
   // | Name | content_view      | button_string |
   // +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
-  std::unique_ptr<views::Button> CreateWithButton(
+  std::unique_ptr<PaymentRequestRowView> CreateWithButton(
       std::unique_ptr<views::View> content_view,
       const base::string16& button_string,
       bool button_enabled) {
@@ -420,27 +420,44 @@ void PaymentSheetViewController::FillContentView(views::View* content_view) {
                      views::GridLayout::USE_PREF, 0, 0);
 
   // The shipping address and contact info rows are optional.
+  std::unique_ptr<PaymentRequestRowView> summary_row =
+      CreatePaymentSheetSummaryRow();
+  PaymentRequestRowView* previous_row = summary_row.get();
   layout->StartRow(0, 0);
-  layout->AddView(CreatePaymentSheetSummaryRow().release());
+  layout->AddView(summary_row.release());
 
   if (spec()->request_shipping()) {
+    std::unique_ptr<PaymentRequestRowView> shipping_row = CreateShippingRow();
+    shipping_row->set_previous_row(previous_row);
+    previous_row = shipping_row.get();
     layout->StartRow(0, 0);
-    layout->AddView(CreateShippingRow().release());
+    layout->AddView(shipping_row.release());
     // It's possible for requestShipping to be true and for there to be no
     // shipping options yet (they will come in updateWith).
     // TODO(crbug.com/707353): Put a better placeholder row, instead of no row.
-    std::unique_ptr<views::Button> shipping_row = CreateShippingOptionRow();
-    if (shipping_row) {
+    std::unique_ptr<PaymentRequestRowView> shipping_option_row =
+        CreateShippingOptionRow();
+    if (shipping_option_row) {
+      shipping_option_row->set_previous_row(previous_row);
+      previous_row = shipping_option_row.get();
       layout->StartRow(0, 0);
-      layout->AddView(shipping_row.release());
+      layout->AddView(shipping_option_row.release());
     }
   }
+  std::unique_ptr<PaymentRequestRowView> payment_method_row =
+      CreatePaymentMethodRow();
+  payment_method_row->set_previous_row(previous_row);
+  previous_row = payment_method_row.get();
   layout->StartRow(0, 0);
-  layout->AddView(CreatePaymentMethodRow().release());
+  layout->AddView(payment_method_row.release());
   if (spec()->request_payer_name() || spec()->request_payer_email() ||
       spec()->request_payer_phone()) {
+    std::unique_ptr<PaymentRequestRowView> contact_info_row =
+        CreateContactInfoRow();
+    contact_info_row->set_previous_row(previous_row);
+    previous_row = contact_info_row.get();
     layout->StartRow(0, 0);
-    layout->AddView(CreateContactInfoRow().release());
+    layout->AddView(contact_info_row.release());
   }
   layout->StartRow(0, 0);
   layout->AddView(CreateDataSourceRow().release());
@@ -543,7 +560,7 @@ void PaymentSheetViewController::UpdatePayButtonState(bool enabled) {
 // |                 2 more items...              |
 // |                 Total         USD $12.34     |
 // +----------------------------------------------+
-std::unique_ptr<views::Button>
+std::unique_ptr<PaymentRequestRowView>
 PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   std::unique_ptr<views::View> inline_summary = base::MakeUnique<views::View>();
   std::unique_ptr<views::GridLayout> layout =
@@ -650,7 +667,8 @@ PaymentSheetViewController::CreateShippingSectionContent(
 // |                    1600 Pennsylvania Ave.  > |
 // |                    1800MYPOTUS               |
 // +----------------------------------------------+
-std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
+std::unique_ptr<PaymentRequestRowView>
+PaymentSheetViewController::CreateShippingRow() {
   std::unique_ptr<views::Button> section;
   PaymentSheetRowBuilder builder(
       this, GetShippingAddressSectionString(spec()->shipping_type()));
@@ -702,7 +720,7 @@ std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
 // |                 John Smith        | VISA | > |
 // |                                              |
 // +----------------------------------------------+
-std::unique_ptr<views::Button>
+std::unique_ptr<PaymentRequestRowView>
 PaymentSheetViewController::CreatePaymentMethodRow() {
   PaymentInstrument* selected_instrument = state()->selected_instrument();
 
@@ -785,7 +803,7 @@ PaymentSheetViewController::CreateContactInfoSectionContent(
 // |                    1800MYPOTUS             > |
 // |                    potus@whitehouse.gov      |
 // +----------------------------------------------+
-std::unique_ptr<views::Button>
+std::unique_ptr<PaymentRequestRowView>
 PaymentSheetViewController::CreateContactInfoRow() {
   PaymentSheetRowBuilder builder(
       this,
@@ -832,7 +850,7 @@ PaymentSheetViewController::CreateContactInfoRow() {
   }
 }
 
-std::unique_ptr<views::Button>
+std::unique_ptr<PaymentRequestRowView>
 PaymentSheetViewController::CreateShippingOptionRow() {
   // The Shipping Options row has many different ways of being displayed
   // depending on the state of the dialog and Payment Request.

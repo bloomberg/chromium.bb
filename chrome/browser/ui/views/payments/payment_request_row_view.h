@@ -21,6 +21,10 @@ class PaymentRequestRowView : public views::CustomButton {
                         const gfx::Insets& insets);
   ~PaymentRequestRowView() override;
 
+  void set_previous_row(PaymentRequestRowView* previous_row) {
+    previous_row_ = previous_row;
+  }
+
  protected:
   bool clickable() { return clickable_; }
 
@@ -48,6 +52,10 @@ class PaymentRequestRowView : public views::CustomButton {
 
   bool clickable_;
   gfx::Insets insets_;
+
+  // A non-owned pointer to the previous row object in the UI. Used to hide the
+  // bottom border of the previous row when highlighting this one. May be null.
+  PaymentRequestRowView* previous_row_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestRowView);
 };
