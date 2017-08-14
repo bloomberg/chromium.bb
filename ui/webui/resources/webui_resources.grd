@@ -508,11 +508,9 @@ without changes to the corresponding grd file. -->
                    type="chrome_html" />
       </if>
       <if expr="not is_android">
+        <part file="cr_components_resources.grdp" />
         <part file="cr_elements_resources.grdp" />
         <part file="polymer_resources.grdp" />
-      </if>
-      <if expr="chromeos">
-        <part file="chromeos_elements_resources.grdp" />
       </if>
     </structures>
   </release>

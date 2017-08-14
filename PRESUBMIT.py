@@ -2041,9 +2041,10 @@ def _CheckForRiskyJsConstLet(input_api, line_number, line):
 
 def _CheckForRiskyJsFeatures(input_api, output_api):
   maybe_ios_js = (r"^(ios|components|ui\/webui\/resources)\/.+\.js$", )
-  chromeos_filter = (r".*chromeos.*", )
+  # 'ui/webui/resources/cr_components are not allowed on ios'
+  not_ios_filter = (r".*ui\/webui\/resources\/cr_components.*", )
   file_filter = lambda f: input_api.FilterSourceFile(f, white_list=maybe_ios_js,
-                                                     black_list=chromeos_filter)
+                                                     black_list=not_ios_filter)
   results = []
   for f in input_api.AffectedFiles(file_filter=file_filter):
     arrow_error_lines = []

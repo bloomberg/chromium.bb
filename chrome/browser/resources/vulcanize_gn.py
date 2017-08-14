@@ -29,7 +29,7 @@ _RESOURCES_PATH = os.path.join(_SRC_PATH, 'ui', 'webui', 'resources')
 _CR_ELEMENTS_PATH = os.path.join(_RESOURCES_PATH, 'cr_elements')
 
 
-_CHROMEOS_PATH = os.path.join(_RESOURCES_PATH, 'chromeos')
+_CR_COMPONENTS_PATH = os.path.join(_RESOURCES_PATH, 'cr_components')
 
 
 _CSS_RESOURCES_PATH = os.path.join(_RESOURCES_PATH, 'css')
@@ -67,7 +67,7 @@ _VULCANIZE_BASE_ARGS = [
 
 
 _URL_MAPPINGS = [
-    ('chrome://resources/chromeos/', _CHROMEOS_PATH),
+    ('chrome://resources/cr_components/', _CR_COMPONENTS_PATH),
     ('chrome://resources/cr_elements/', _CR_ELEMENTS_PATH),
     ('chrome://resources/css/', _CSS_RESOURCES_PATH),
     ('chrome://resources/html/', _HTML_RESOURCES_PATH),
