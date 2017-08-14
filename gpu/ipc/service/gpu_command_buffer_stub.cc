@@ -576,6 +576,9 @@ void GpuCommandBufferStub::SetContextGpuFeatureInfo(
   if (workarounds.clear_to_zero_or_one_broken) {
     gl_workarounds.clear_to_zero_or_one_broken = true;
   }
+  if (workarounds.reset_teximage2d_base_level) {
+    gl_workarounds.reset_teximage2d_base_level = true;
+  }
   context->SetGLWorkarounds(gl_workarounds);
   context->SetDisabledGLExtensions(gpu_feature_info.disabled_extensions);
 }

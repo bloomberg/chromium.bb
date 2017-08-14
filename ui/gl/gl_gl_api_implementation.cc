@@ -332,6 +332,21 @@ void RealGLApi::glTexImage2DFn(GLenum target,
       GetTexInternalFormat(version_.get(), internalformat, format, type);
   GLenum gl_format = GetTexFormat(version_.get(), format);
   GLenum gl_type = GetTexType(version_.get(), type);
+
+  // TODO(yizhou): Check if cubemap, 3d texture or texture2d array has the same
+  // bug on intel mac.
+  if (gl_workarounds_.reset_teximage2d_base_level && target == GL_TEXTURE_2D) {
+    GLint base_level = 0;
+    GLApiBase::glGetTexParameterivFn(target, GL_TEXTURE_BASE_LEVEL,
+                                     &base_level);
+    if (base_level) {
+      GLApiBase::glTexParameteriFn(target, GL_TEXTURE_BASE_LEVEL, 0);
+      GLApiBase::glTexImage2DFn(target, level, gl_internal_format, width,
+                                height, border, gl_format, gl_type, pixels);
+      GLApiBase::glTexParameteriFn(target, GL_TEXTURE_BASE_LEVEL, base_level);
+      return;
+    }
+  }
   GLApiBase::glTexImage2DFn(target, level, gl_internal_format, width, height,
                             border, gl_format, gl_type, pixels);
 }
