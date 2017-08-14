@@ -2989,11 +2989,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
         base::Bind(&AuthenticatorImpl::Create, base::Unretained(this)));
   }
 
-  if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
-    registry_->AddInterface(
-        base::Bind(&ForwardRequest<device::mojom::SensorProvider>,
-                   device::mojom::kServiceName));
-  }
+  registry_->AddInterface(
+      base::Bind(&ForwardRequest<device::mojom::SensorProvider>,
+                 device::mojom::kServiceName));
 
   registry_->AddInterface(
       base::Bind(&ForwardRequest<device::mojom::VibrationManager>,
