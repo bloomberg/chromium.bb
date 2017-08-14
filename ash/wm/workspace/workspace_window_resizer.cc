@@ -51,7 +51,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
     return nullptr;
   }
 
-  if (window_component == HTCAPTION && !window_state->can_be_dragged())
+  if (!window_state->can_be_dragged())
     return nullptr;
 
   // TODO(varkha): The chaining of window resizers causes some of the logic

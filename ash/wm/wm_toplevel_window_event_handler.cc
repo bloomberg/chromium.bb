@@ -63,6 +63,9 @@ void ShowResizeShadow(aura::Window* window, int component) {
     // TODO: http://crbug.com/640773.
     return;
   }
+  if (!wm::GetWindowState(window)->can_be_dragged())
+    return;
+
   ResizeShadowController* resize_shadow_controller =
       Shell::Get()->resize_shadow_controller();
   if (resize_shadow_controller)
@@ -74,6 +77,9 @@ void HideResizeShadow(aura::Window* window) {
     // TODO: http://crbug.com/640773.
     return;
   }
+  if (!wm::GetWindowState(window)->can_be_dragged())
+    return;
+
   ResizeShadowController* resize_shadow_controller =
       Shell::Get()->resize_shadow_controller();
   if (resize_shadow_controller)
