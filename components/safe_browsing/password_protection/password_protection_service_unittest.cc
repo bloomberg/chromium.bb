@@ -895,7 +895,8 @@ TEST_F(PasswordProtectionServiceTest, VerifyPasswordOnFocusRequestProto) {
   EXPECT_EQ(kFormActionUrl, actual_request->frames(1).forms(0).action_url());
 }
 
-TEST_F(PasswordProtectionServiceTest, VerifyPasswordProtectionRequestProto) {
+TEST_F(PasswordProtectionServiceTest,
+       VerifySyncPasswordProtectionRequestProto) {
   // Set up valid response.
   net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
   fetcher.set_status(
@@ -904,6 +905,7 @@ TEST_F(PasswordProtectionServiceTest, VerifyPasswordProtectionRequestProto) {
   LoginReputationClientResponse expected_response = CreateVerdictProto(
       LoginReputationClientResponse::PHISHING, 600, GURL(kTargetUrl).host());
   fetcher.SetResponseString(expected_response.SerializeAsString());
+
   // Initialize request triggered by chrome sync password reuse.
   InitializeAndStartPasswordEntryRequest(
       std::string(password_manager::kSyncPasswordDomain),
@@ -921,8 +923,21 @@ TEST_F(PasswordProtectionServiceTest, VerifyPasswordProtectionRequestProto) {
   EXPECT_EQ(kTargetUrl, actual_request->frames(0).url());
   EXPECT_TRUE(actual_request->frames(0).has_password_field());
   ASSERT_TRUE(actual_request->has_password_reuse_event());
-  ASSERT_TRUE(
-      actual_request->password_reuse_event().is_chrome_signin_password());
+  const auto& reuse_event = actual_request->password_reuse_event();
+  EXPECT_TRUE(reuse_event.is_chrome_signin_password());
+  ASSERT_EQ(0, reuse_event.password_reused_original_origins_size());
+}
+
+TEST_F(PasswordProtectionServiceTest,
+       VerifyNonSyncPasswordProtectionRequestProto) {
+  // Set up valid response.
+  net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
+  fetcher.set_status(
+      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
+  fetcher.set_response_code(200);
+  LoginReputationClientResponse expected_response = CreateVerdictProto(
+      LoginReputationClientResponse::PHISHING, 600, GURL(kTargetUrl).host());
+  fetcher.SetResponseString(expected_response.SerializeAsString());
 
   // Initialize request triggered by saved password reuse.
   InitializeAndStartPasswordEntryRequest(std::string(kSavedDomain),
@@ -932,10 +947,13 @@ TEST_F(PasswordProtectionServiceTest, VerifyPasswordProtectionRequestProto) {
   request_->OnURLFetchComplete(&fetcher);
   base::RunLoop().RunUntilIdle();
 
-  actual_request = password_protection_service_->GetLatestRequestProto();
+  const LoginReputationClientRequest* actual_request =
+      password_protection_service_->GetLatestRequestProto();
   ASSERT_TRUE(actual_request->has_password_reuse_event());
-  ASSERT_FALSE(
-      actual_request->password_reuse_event().is_chrome_signin_password());
+  const auto& reuse_event = actual_request->password_reuse_event();
+  EXPECT_FALSE(reuse_event.is_chrome_signin_password());
+  ASSERT_EQ(1, reuse_event.password_reused_original_origins_size());
+  EXPECT_EQ(kSavedDomain, reuse_event.password_reused_original_origins(0));
 }
 
 TEST_F(PasswordProtectionServiceTest, VerifyCanSendPing) {
