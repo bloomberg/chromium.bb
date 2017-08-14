@@ -10,7 +10,6 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Region;
@@ -25,9 +24,10 @@ import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
+import android.widget.PopupWindow.OnDismissListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ContextUtils;
+import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -38,11 +38,13 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -56,6 +58,9 @@ import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
+import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -93,9 +98,6 @@ public class BottomSheet
     public static final int SHEET_STATE_HALF = 1;
     public static final int SHEET_STATE_FULL = 2;
     public static final int SHEET_STATE_SCROLLING = 3;
-
-    /** Shared preference key for tracking whether the help bubble has been shown. */
-    private static final String BOTTOM_SHEET_HELP_BUBBLE_SHOWN = "bottom_sheet_help_bubble_shown";
 
     /**
      * The base duration of the settling animation of the sheet. 218 ms is a spec for material
@@ -239,9 +241,6 @@ public class BottomSheet
 
     /** The {@link LayoutManagerChrome} used to show and hide overview mode. **/
     private LayoutManagerChrome mLayoutManager;
-
-    /** Whether the help bubble has been shown. **/
-    private boolean mHasShownTextBubble;
 
     /** Whether or not the back button was used to enter the tab switcher. */
     private boolean mBackButtonDismissesChrome;
@@ -560,6 +559,9 @@ public class BottomSheet
     public void onExpandButtonPressed() {
         mMetrics.recordSheetOpenReason(BottomSheetMetrics.OPENED_BY_EXPAND_BUTTON);
         setSheetState(BottomSheet.SHEET_STATE_HALF, true);
+
+        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+        tracker.notifyEvent(EventConstants.BOTTOM_SHEET_EXPANDED);
     }
 
     /** Immediately end all animations and null the animators. */
@@ -1556,35 +1558,48 @@ public class BottomSheet
         // help bubble should not be shown. Also skip showing if the bottom sheet is already open,
         // the UI has not been initialized (indicated by mLayoutManager == null), or the tab
         // switcher is showing.
-        if (mHasShownTextBubble || isSheetOpen() || mLayoutManager == null
-                || mLayoutManager.overviewVisible() || !FirstRunStatus.getFirstRunFlowComplete()) {
+        if (isSheetOpen() || mLayoutManager == null || mLayoutManager.overviewVisible()
+                || !FirstRunStatus.getFirstRunFlowComplete()) {
             return;
         }
 
-        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-        if (preferences.getBoolean(BOTTOM_SHEET_HELP_BUBBLE_SHOWN, false)) {
-            mHasShownTextBubble = true;
-            return;
-        }
+        final Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+        tracker.addOnInitializedCallback(new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean success) {
+                if (!success) return;
+                if (!tracker.shouldTriggerHelpUI(FeatureConstants.CHROME_HOME_EXPAND_FEATURE)) {
+                    return;
+                }
 
-        boolean showExpandButtonHelpBubble =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_EXPAND_BUTTON);
+                boolean showExpandButtonHelpBubble =
+                        ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_EXPAND_BUTTON);
 
-        ViewAnchoredTextBubble helpBubble = new ViewAnchoredTextBubble(getContext(),
-                showExpandButtonHelpBubble
+                View anchorView = showExpandButtonHelpBubble
                         ? mControlContainer.findViewById(R.id.expand_sheet_button)
-                        : mControlContainer,
-                showExpandButtonHelpBubble ? R.string.bottom_sheet_expand_button_help_bubble_message
-                                           : R.string.bottom_sheet_help_bubble_message,
-                showExpandButtonHelpBubble
+                        : mControlContainer;
+                int stringId = showExpandButtonHelpBubble
+                        ? R.string.bottom_sheet_expand_button_help_bubble_message
+                        : R.string.bottom_sheet_help_bubble_message;
+                int accessibilityStringId = showExpandButtonHelpBubble
                         ? R.string.bottom_sheet_accessibility_expand_button_help_bubble_message
-                        : R.string.bottom_sheet_accessibility_help_bubble_message);
-        int inset = getContext().getResources().getDimensionPixelSize(
-                R.dimen.bottom_sheet_help_bubble_inset);
-        helpBubble.setInsetPx(0, inset, 0, inset);
-        helpBubble.setDismissOnTouchInteraction(true);
-        helpBubble.show();
-        mHasShownTextBubble = true;
-        preferences.edit().putBoolean(BOTTOM_SHEET_HELP_BUBBLE_SHOWN, true).apply();
+                        : R.string.bottom_sheet_accessibility_help_bubble_message;
+
+                ViewAnchoredTextBubble helpBubble = new ViewAnchoredTextBubble(
+                        getContext(), anchorView, stringId, accessibilityStringId);
+                helpBubble.setDismissOnTouchInteraction(true);
+                helpBubble.addOnDismissListener(new OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        tracker.dismissed(FeatureConstants.CHROME_HOME_EXPAND_FEATURE);
+                    }
+                });
+
+                int inset = getContext().getResources().getDimensionPixelSize(
+                        R.dimen.bottom_sheet_help_bubble_inset);
+                helpBubble.setInsetPx(0, inset, 0, inset);
+                helpBubble.show();
+            }
+        });
     }
 }
