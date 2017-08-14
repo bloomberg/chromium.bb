@@ -107,6 +107,12 @@ class WebPluginContainerTest : public ::testing::Test {
 
 namespace {
 
+#if defined(OS_MACOSX)
+const WebInputEvent::Modifiers kEditingModifier = WebInputEvent::kMetaKey;
+#else
+const WebInputEvent::Modifiers kEditingModifier = WebInputEvent::kControlKey;
+#endif
+
 template <typename T>
 class CustomPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
@@ -142,6 +148,12 @@ class TestPlugin : public FakeWebPlugin {
 // and CanEditText() return true by default.
 class TestPluginWithEditableText : public FakeWebPlugin {
  public:
+  static TestPluginWithEditableText* FromContainer(WebElement* element) {
+    WebPlugin* plugin =
+        ToWebPluginContainerImpl(element->PluginContainer())->Plugin();
+    return static_cast<TestPluginWithEditableText*>(plugin);
+  }
+
   explicit TestPluginWithEditableText(const WebPluginParams& params)
       : FakeWebPlugin(params), cut_called_(false), paste_called_(false) {}
 
@@ -233,10 +245,14 @@ WebPluginContainer* GetWebPluginContainer(WebViewImpl* web_view,
   return element.PluginContainer();
 }
 
+WebString ReadClipboard() {
+  return Platform::Current()->Clipboard()->ReadPlainText(
+      WebClipboard::Buffer());
+}
+
 void ClearClipboardBuffer() {
   Platform::Current()->Clipboard()->WritePlainText(WebString());
-  EXPECT_EQ(WebString(), Platform::Current()->Clipboard()->ReadPlainText(
-                             WebClipboard::Buffer()));
+  EXPECT_EQ(WebString(), ReadClipboard());
 }
 
 void CreateAndHandleKeyboardEvent(WebElement* plugin_container_one_element,
@@ -437,9 +453,7 @@ TEST_F(WebPluginContainerTest, Copy) {
       ->getElementById("translated-plugin")
       ->focus();
   EXPECT_TRUE(web_view->MainFrame()->ToWebLocalFrame()->ExecuteCommand("Copy"));
-  EXPECT_EQ(WebString("x"), Platform::Current()->Clipboard()->ReadPlainText(
-                                WebClipboard::Buffer()));
-
+  EXPECT_EQ(WebString("x"), ReadClipboard());
   ClearClipboardBuffer();
 }
 
@@ -454,8 +468,7 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
 
   // Make sure the right-click + command works in common scenario.
   ExecuteContextMenuCommand(web_view, "Copy");
-  EXPECT_EQ(WebString("x"), Platform::Current()->Clipboard()->ReadPlainText(
-                                WebClipboard::Buffer()));
+  EXPECT_EQ(WebString("x"), ReadClipboard());
   ClearClipboardBuffer();
 
   auto event = FrameTestHelpers::CreateMouseEvent(WebMouseEvent::kMouseDown,
@@ -471,9 +484,7 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
   // 3) Copy should still operate on the context node, even though the focus had
   //    shifted.
   EXPECT_TRUE(web_view->MainFrameImpl()->ExecuteCommand("Copy"));
-  EXPECT_EQ(WebString("x"), Platform::Current()->Clipboard()->ReadPlainText(
-                                WebClipboard::Buffer()));
-
+  EXPECT_EQ(WebString("x"), ReadClipboard());
   ClearClipboardBuffer();
 }
 
@@ -492,25 +503,15 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest) {
       web_view->MainFrameImpl()->GetDocument().GetElementById(
           WebString::FromUTF8("translated-plugin"));
   WebInputEvent::Modifiers modifier_key = static_cast<WebInputEvent::Modifiers>(
-      WebInputEvent::kControlKey | WebInputEvent::kNumLockOn |
-      WebInputEvent::kIsLeft);
-#if defined(OS_MACOSX)
-  modifier_key = static_cast<WebInputEvent::Modifiers>(
-      WebInputEvent::kMetaKey | WebInputEvent::kNumLockOn |
-      WebInputEvent::kIsLeft);
-#endif
+      kEditingModifier | WebInputEvent::kNumLockOn | WebInputEvent::kIsLeft);
   CreateAndHandleKeyboardEvent(&plugin_container_one_element, modifier_key,
                                VKEY_C);
-  EXPECT_EQ(WebString("x"), Platform::Current()->Clipboard()->ReadPlainText(
-                                WebClipboard::Buffer()));
-
+  EXPECT_EQ(WebString("x"), ReadClipboard());
   ClearClipboardBuffer();
 
   CreateAndHandleKeyboardEvent(&plugin_container_one_element, modifier_key,
                                VKEY_INSERT);
-  EXPECT_EQ(WebString("x"), Platform::Current()->Clipboard()->ReadPlainText(
-                                WebClipboard::Buffer()));
-
+  EXPECT_EQ(WebString("x"), ReadClipboard());
   ClearClipboardBuffer();
 }
 
@@ -533,24 +534,14 @@ TEST_F(WebPluginContainerTest, CutDeleteKeyboardEventsTest) {
       web_view->MainFrameImpl()->GetDocument().GetElementById(
           WebString::FromUTF8("translated-plugin"));
 
-  WebPlugin* plugin =
-      ToWebPluginContainerImpl(plugin_container_one_element.PluginContainer())
-          ->Plugin();
-  TestPluginWithEditableText* test_plugin =
-      static_cast<TestPluginWithEditableText*>(plugin);
-
   WebInputEvent::Modifiers modifier_key = static_cast<WebInputEvent::Modifiers>(
-      WebInputEvent::kControlKey | WebInputEvent::kNumLockOn |
-      WebInputEvent::kIsLeft);
-#if defined(OS_MACOSX)
-  modifier_key = static_cast<WebInputEvent::Modifiers>(
-      WebInputEvent::kMetaKey | WebInputEvent::kNumLockOn |
-      WebInputEvent::kIsLeft);
-#endif
+      kEditingModifier | WebInputEvent::kNumLockOn | WebInputEvent::kIsLeft);
   CreateAndHandleKeyboardEvent(&plugin_container_one_element, modifier_key,
                                VKEY_X);
 
   // Check that "Cut" command is invoked.
+  auto* test_plugin =
+      TestPluginWithEditableText::FromContainer(&plugin_container_one_element);
   EXPECT_TRUE(test_plugin->IsCutCalled());
 
   // Reset Cut status for next time.
@@ -586,24 +577,14 @@ TEST_F(WebPluginContainerTest, PasteInsertKeyboardEventsTest) {
       web_view->MainFrameImpl()->GetDocument().GetElementById(
           WebString::FromUTF8("translated-plugin"));
 
-  WebPlugin* plugin =
-      ToWebPluginContainerImpl(plugin_container_one_element.PluginContainer())
-          ->Plugin();
-  TestPluginWithEditableText* test_plugin =
-      static_cast<TestPluginWithEditableText*>(plugin);
-
   WebInputEvent::Modifiers modifier_key = static_cast<WebInputEvent::Modifiers>(
-      WebInputEvent::kControlKey | WebInputEvent::kNumLockOn |
-      WebInputEvent::kIsLeft);
-#if defined(OS_MACOSX)
-  modifier_key = static_cast<WebInputEvent::Modifiers>(
-      WebInputEvent::kMetaKey | WebInputEvent::kNumLockOn |
-      WebInputEvent::kIsLeft);
-#endif
+      kEditingModifier | WebInputEvent::kNumLockOn | WebInputEvent::kIsLeft);
   CreateAndHandleKeyboardEvent(&plugin_container_one_element, modifier_key,
                                VKEY_V);
 
   // Check that "Paste" command is invoked.
+  auto* test_plugin =
+      TestPluginWithEditableText::FromContainer(&plugin_container_one_element);
   EXPECT_TRUE(test_plugin->IsPasteCalled());
 
   // Reset Paste status for next time.
@@ -639,24 +620,15 @@ TEST_F(WebPluginContainerTest, PasteAndMatchStyleKeyboardEventsTest) {
       web_view->MainFrameImpl()->GetDocument().GetElementById(
           WebString::FromUTF8("translated-plugin"));
 
-  WebPlugin* plugin =
-      ToWebPluginContainerImpl(plugin_container_one_element.PluginContainer())
-          ->Plugin();
-  TestPluginWithEditableText* test_plugin =
-      static_cast<TestPluginWithEditableText*>(plugin);
-
   WebInputEvent::Modifiers modifier_key = static_cast<WebInputEvent::Modifiers>(
-      WebInputEvent::kControlKey | WebInputEvent::kShiftKey |
-      WebInputEvent::kNumLockOn | WebInputEvent::kIsLeft);
-#if defined(OS_MACOSX)
-  modifier_key = static_cast<WebInputEvent::Modifiers>(
-      WebInputEvent::kMetaKey | WebInputEvent::kShiftKey |
-      WebInputEvent::kNumLockOn | WebInputEvent::kIsLeft);
-#endif
+      kEditingModifier | WebInputEvent::kShiftKey | WebInputEvent::kNumLockOn |
+      WebInputEvent::kIsLeft);
   CreateAndHandleKeyboardEvent(&plugin_container_one_element, modifier_key,
                                VKEY_V);
 
   // Check that "PasteAndMatchStyle" command is invoked.
+  auto* test_plugin =
+      TestPluginWithEditableText::FromContainer(&plugin_container_one_element);
   EXPECT_TRUE(test_plugin->IsPasteCalled());
 }
 
@@ -677,13 +649,9 @@ TEST_F(WebPluginContainerTest, CutFromContextMenu) {
       web_view->MainFrameImpl()->GetDocument().GetElementById(
           WebString::FromUTF8("translated-plugin"));
 
-  WebPlugin* plugin =
-      ToWebPluginContainerImpl(plugin_container_one_element.PluginContainer())
-          ->Plugin();
-  TestPluginWithEditableText* test_plugin =
-      static_cast<TestPluginWithEditableText*>(plugin);
-
   ExecuteContextMenuCommand(web_view, "Cut");
+  auto* test_plugin =
+      TestPluginWithEditableText::FromContainer(&plugin_container_one_element);
   EXPECT_TRUE(test_plugin->IsCutCalled());
 }
 
@@ -704,13 +672,9 @@ TEST_F(WebPluginContainerTest, PasteFromContextMenu) {
       web_view->MainFrameImpl()->GetDocument().GetElementById(
           WebString::FromUTF8("translated-plugin"));
 
-  WebPlugin* plugin =
-      ToWebPluginContainerImpl(plugin_container_one_element.PluginContainer())
-          ->Plugin();
-  TestPluginWithEditableText* test_plugin =
-      static_cast<TestPluginWithEditableText*>(plugin);
-
   ExecuteContextMenuCommand(web_view, "Paste");
+  auto* test_plugin =
+      TestPluginWithEditableText::FromContainer(&plugin_container_one_element);
   EXPECT_TRUE(test_plugin->IsPasteCalled());
 }
 
@@ -731,13 +695,9 @@ TEST_F(WebPluginContainerTest, PasteAndMatchStyleFromContextMenu) {
       web_view->MainFrameImpl()->GetDocument().GetElementById(
           WebString::FromUTF8("translated-plugin"));
 
-  WebPlugin* plugin =
-      ToWebPluginContainerImpl(plugin_container_one_element.PluginContainer())
-          ->Plugin();
-  TestPluginWithEditableText* test_plugin =
-      static_cast<TestPluginWithEditableText*>(plugin);
-
   ExecuteContextMenuCommand(web_view, "PasteAndMatchStyle");
+  auto* test_plugin =
+      TestPluginWithEditableText::FromContainer(&plugin_container_one_element);
   EXPECT_TRUE(test_plugin->IsPasteCalled());
 }
 
