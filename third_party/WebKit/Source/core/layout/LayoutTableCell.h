@@ -231,8 +231,10 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
                          bool vertical_scrollbar_changed,
                          ScrollbarChangeContext = kLayout) override;
 
-  bool CellWidthChanged() const { return cell_width_changed_; }
-  void SetCellWidthChanged(bool b = true) { cell_width_changed_ = b; }
+  bool CellChildrenNeedLayout() const { return cell_children_need_layout_; }
+  void SetCellChildrenNeedLayout(bool b = true) {
+    cell_children_need_layout_ = b;
+  }
 
   static LayoutTableCell* CreateAnonymous(Document*);
   static LayoutTableCell* CreateAnonymousWithParent(const LayoutObject*);
@@ -479,7 +481,7 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   // BITS_OF_ABSOLUTE_COLUMN_INDEX to use remaining bits of a 32-bit word.
   // Note MSVC will only pack members if they have identical types, hence we use
   // unsigned instead of bool here.
-  unsigned cell_width_changed_ : 1;
+  unsigned cell_children_need_layout_ : 1;
   unsigned has_col_span_ : 1;
   unsigned has_row_span_ : 1;
   unsigned is_spanning_collapsed_row_ : 1;
