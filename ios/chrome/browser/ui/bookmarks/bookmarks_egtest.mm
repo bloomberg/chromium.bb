@@ -636,28 +636,12 @@ id<GREYMatcher> ActionSheet(Action action) {
   // Tap the edit action.
   [[EarlGrey selectElementWithMatcher:ActionSheet(ActionEdit)]
       performAction:grey_tap()];
-
-  // Replace the title field with new text.
-  // TODO(crbug.com/644730): Use grey_replaceText instead of
-  // grey_clearText/grey_typeText when EarlGrey's issue is fixed:
-  // https://github.com/google/EarlGrey/issues/253
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"Title Field_textField")]
-      performAction:grey_clearText()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Title Field_textField")]
-      performAction:grey_typeText(@"n5")];
-
-  // Replace the url field with new text.
-  // TODO(crbug.com/644730): Use grey_replaceText instead of
-  // grey_clearText/grey_typeText when EarlGrey's issue is fixed:
-  // https://github.com/google/EarlGrey/issues/253
+      performAction:grey_replaceText(@"n5")];
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"URL Field_textField")]
-      performAction:grey_clearText()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"URL Field_textField")]
-      performAction:grey_typeText(@"www.a.fr")];
+      performAction:grey_replaceText(@"www.a.fr")];
 
   // Dismiss editor.
   [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
@@ -686,28 +670,12 @@ id<GREYMatcher> ActionSheet(Action action) {
   // Tap the edit action.
   [[EarlGrey selectElementWithMatcher:ActionSheet(ActionEdit)]
       performAction:grey_tap()];
-
-  // Replace the title field with new text.
-  // TODO(crbug.com/644730): Use grey_replaceText instead of
-  // grey_clearText/grey_typeText when EarlGrey's issue is fixed:
-  // https://github.com/google/EarlGrey/issues/253
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"Title Field_textField")]
-      performAction:grey_clearText()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Title Field_textField")]
-      performAction:grey_typeText(@"n5")];
-
-  // Replace the url field with new text.
-  // TODO(crbug.com/644730): Use grey_replaceText instead of
-  // grey_clearText/grey_typeText when EarlGrey's issue is fixed:
-  // https://github.com/google/EarlGrey/issues/253
+      performAction:grey_replaceText(@"n5")];
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"URL Field_textField")]
-      performAction:grey_clearText()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"URL Field_textField")]
-      performAction:grey_typeText(@"www.a.fr")];
+      performAction:grey_replaceText(@"www.a.fr")];
 
   // Dismiss editor with Cancel button.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Cancel")]
@@ -762,15 +730,8 @@ id<GREYMatcher> ActionSheet(Action action) {
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"Edit_navigation_bar")]
       performAction:grey_tap()];
-
-  // Change the title.
-  // TODO(crbug.com/644730): Use grey_replaceText instead of
-  // grey_clearText/grey_typeText when EarlGrey's issue is fixed:
-  // https://github.com/google/EarlGrey/issues/253
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Title_textField")]
-      performAction:grey_clearText()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Title_textField")]
-      performAction:grey_typeText(@"Renamed Folder")];
+      performAction:grey_replaceText(@"Renamed Folder")];
 
   // Cancel without saving.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Cancel")]
@@ -784,15 +745,8 @@ id<GREYMatcher> ActionSheet(Action action) {
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"Edit_navigation_bar")]
       performAction:grey_tap()];
-
-  // Change the title.
-  // TODO(crbug.com/644730): Use grey_replaceText instead of
-  // grey_clearText/grey_typeText when EarlGrey's issue is fixed:
-  // https://github.com/google/EarlGrey/issues/253
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Title_textField")]
-      performAction:grey_clearText()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Title_textField")]
-      performAction:grey_typeText(@"Renamed Folder")];
+      performAction:grey_replaceText(@"Renamed Folder")];
 
   // Save.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Save")]
@@ -1344,25 +1298,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Rename folder title to |folderTitle|. Must be in edit folder UI.
 + (void)renameBookmarkFolderWithFolderTitle:(NSString*)folderTitle {
   NSString* titleIdentifier = @"Title_textField";
-
-  // Edit the title field.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(titleIdentifier)]
-      performAction:grey_tap()];
-  // TODO(crbug.com/748748): Getting the clear button from the text field since
-  // the clear button has no accessibility label on iOS11/XCode9 betas thus we
-  // can't access it directly. EarlGray team believes that this could be a bug
-  // and might be fixed later on.
-  id<GREYMatcher> clearTextButton =
-      grey_allOf(grey_ancestor(grey_accessibilityID(titleIdentifier)),
-                 grey_kindOfClass([UIButton class]), nil);
-  [[EarlGrey selectElementWithMatcher:clearTextButton]
-      performAction:grey_tap()];
-
-  // Type in the new title and use '\n' to dismiss the keyboard.
-  NSString* folderTitleWithNewLine =
-      [NSString stringWithFormat:@"%@\n", folderTitle];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(titleIdentifier)]
-      performAction:grey_typeText(folderTitleWithNewLine)];
+      performAction:grey_replaceText(folderTitle)];
 }
 
 // Tap on the star to bookmark a page, then edit the bookmark to change the
@@ -1377,21 +1314,7 @@ id<GREYMatcher> ActionSheet(Action action) {
       performAction:grey_tap()];
   NSString* titleIdentifier = @"Title Field_textField";
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(titleIdentifier)]
-      performAction:grey_tap()];
-  // TODO(crbug.com/748748): Getting the clear button from the text field since
-  // the clear button has no accessibility label on iOS11/XCode9 betas thus we
-  // can't access it directly. EarlGray team believes that this could be a bug
-  // and might be fixed later on.
-  id<GREYMatcher> clearTextButton =
-      grey_allOf(grey_ancestor(grey_accessibilityID(titleIdentifier)),
-                 grey_kindOfClass([UIButton class]), nil);
-  [[EarlGrey selectElementWithMatcher:clearTextButton]
-      performAction:grey_tap()];
-
-  // Use '\n' to tap Done and dismiss the keyboard.
-  NSString* bookmarkTitle = [NSString stringWithFormat:@"%@\n", title];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(titleIdentifier)]
-      performAction:grey_typeText(bookmarkTitle)];
+      performAction:grey_replaceText(title)];
 
   // Dismiss the window.
   [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
@@ -1518,15 +1441,9 @@ id<GREYMatcher> ActionSheet(Action action) {
 
   // Change the name of the folder.
   if (name.length > 0) {
-    // TODO(crbug.com/644730): Use grey_replaceText instead of
-    // grey_clearText/grey_typeText when EarlGrey's issue is fixed:
-    // https://github.com/google/EarlGrey/issues/253
     [[EarlGrey
         selectElementWithMatcher:grey_accessibilityID(@"Title_textField")]
-        performAction:grey_clearText()];
-    [[EarlGrey
-        selectElementWithMatcher:grey_accessibilityID(@"Title_textField")]
-        performAction:grey_typeText(name)];
+        performAction:grey_replaceText(name)];
   }
 
   // Tap the Save button.
