@@ -132,7 +132,7 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/mcomp.c"
     "${AOM_ROOT}/av1/encoder/mcomp.h"
     "${AOM_ROOT}/av1/encoder/palette.c"
-    "${AOM_ROOT}/av1/encoder/palette.h")
+    "${AOM_ROOT}/av1/encoder/palette.h"
     "${AOM_ROOT}/av1/encoder/picklpf.c"
     "${AOM_ROOT}/av1/encoder/picklpf.h"
     "${AOM_ROOT}/av1/encoder/ratectrl.c"
