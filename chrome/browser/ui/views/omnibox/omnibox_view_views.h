@@ -13,10 +13,13 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/security_state/core/security_state.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor_observer.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -43,14 +46,14 @@ class OSExchangeData;
 }  // namespace ui
 
 // Views-implementation of OmniboxView.
-class OmniboxViewViews
-    : public OmniboxView,
-      public views::Textfield,
+class OmniboxViewViews : public OmniboxView,
+                         public views::Textfield,
 #if defined(OS_CHROMEOS)
-      public
-          chromeos::input_method::InputMethodManager::CandidateWindowObserver,
+                         public chromeos::input_method::InputMethodManager::
+                             CandidateWindowObserver,
 #endif
-      public views::TextfieldController {
+                         public views::TextfieldController,
+                         public ui::CompositorObserver {
  public:
   // The internal view class name.
   static const char kViewClassName[];
@@ -104,6 +107,8 @@ class OmniboxViewViews
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void ExecuteCommand(int command_id, int event_flags) override;
   ui::TextInputType GetTextInputType() const override;
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag);
@@ -204,6 +209,14 @@ class OmniboxViewViews
   int OnDrop(const ui::OSExchangeData& data) override;
   void UpdateContextMenu(ui::SimpleMenuModel* menu_contents) override;
 
+  // ui::CompositorObserver:
+  void OnCompositingDidCommit(ui::Compositor* compositor) override;
+  void OnCompositingStarted(ui::Compositor* compositor,
+                            base::TimeTicks start_time) override;
+  void OnCompositingEnded(ui::Compositor* compositor) override;
+  void OnCompositingLockStateChanged(ui::Compositor* compositor) override;
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
+
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (smaller font size). This is used for popups.
   bool popup_window_mode_;
@@ -248,6 +261,18 @@ class OmniboxViewViews
   // The time of the first character insert operation that has not yet been
   // painted. Used to measure omnibox responsiveness with a histogram.
   base::TimeTicks insert_char_time_;
+
+  // The state machine for logging the Omnibox.CharTypedToRepaintLatency
+  // histogram.
+  enum {
+    NOT_ACTIVE,           // Not currently tracking a char typed event.
+    CHAR_TYPED,           // Character was typed.
+    ON_PAINT_CALLED,      // Character was typed and OnPaint() called.
+    COMPOSITING_COMMIT,   // Compositing was committed after OnPaint().
+    COMPOSITING_STARTED,  // Compositing was started.
+  } latency_histogram_state_;
+
+  ScopedObserver<ui::Compositor, ui::CompositorObserver> scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };
