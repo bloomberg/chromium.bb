@@ -153,20 +153,39 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
 };
 
-TEST_F(SafeBrowsingUIManagerTest, Whitelist) {
+// Leaks memory. https://crbug.com/755118
+#if defined(LEAK_SANITIZER)
+#define MAYBE_Whitelist DISABLED_Whitelist
+#else
+#define MAYBE_Whitelist Whitelist
+#endif
+TEST_F(SafeBrowsingUIManagerTest, MAYBE_Whitelist) {
   security_interstitials::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kBadURL);
   AddToWhitelist(resource);
   EXPECT_TRUE(IsWhitelisted(resource));
 }
 
-TEST_F(SafeBrowsingUIManagerTest, WhitelistIgnoresSitesNotAdded) {
+// Leaks memory. https://crbug.com/755118
+#if defined(LEAK_SANITIZER)
+#define MAYBE_WhitelistIgnoresSitesNotAdded \
+  DISABLED_WhitelistIgnoresSitesNotAdded
+#else
+#define MAYBE_WhitelistIgnoresSitesNotAdded WhitelistIgnoresSitesNotAdded
+#endif
+TEST_F(SafeBrowsingUIManagerTest, MAYBE_WhitelistIgnoresSitesNotAdded) {
   security_interstitials::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kGoodURL);
   EXPECT_FALSE(IsWhitelisted(resource));
 }
 
-TEST_F(SafeBrowsingUIManagerTest, WhitelistRemembersThreatType) {
+// Leaks memory. https://crbug.com/755118
+#if defined(LEAK_SANITIZER)
+#define MAYBE_WhitelistRemembersThreatType DISABLED_WhitelistRemembersThreatType
+#else
+#define MAYBE_WhitelistRemembersThreatType WhitelistRemembersThreatType
+#endif
+TEST_F(SafeBrowsingUIManagerTest, MAYBE_WhitelistRemembersThreatType) {
   security_interstitials::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kBadURL);
   AddToWhitelist(resource);
@@ -181,7 +200,13 @@ TEST_F(SafeBrowsingUIManagerTest, WhitelistRemembersThreatType) {
   EXPECT_EQ(resource.threat_type, threat_type);
 }
 
-TEST_F(SafeBrowsingUIManagerTest, WhitelistIgnoresPath) {
+// Leaks memory. https://crbug.com/755118
+#if defined(LEAK_SANITIZER)
+#define MAYBE_WhitelistIgnoresPath DISABLED_WhitelistIgnoresPath
+#else
+#define MAYBE_WhitelistIgnoresPath WhitelistIgnoresPath
+#endif
+TEST_F(SafeBrowsingUIManagerTest, MAYBE_WhitelistIgnoresPath) {
   security_interstitials::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kBadURL);
   AddToWhitelist(resource);
@@ -194,7 +219,13 @@ TEST_F(SafeBrowsingUIManagerTest, WhitelistIgnoresPath) {
   EXPECT_TRUE(IsWhitelisted(resource_path));
 }
 
-TEST_F(SafeBrowsingUIManagerTest, WhitelistIgnoresThreatType) {
+// Leaks memory. https://crbug.com/755118
+#if defined(LEAK_SANITIZER)
+#define MAYBE_WhitelistIgnoresThreatType DISABLED_WhitelistIgnoresThreatType
+#else
+#define MAYBE_WhitelistIgnoresThreatType WhitelistIgnoresThreatType
+#endif
+TEST_F(SafeBrowsingUIManagerTest, MAYBE_WhitelistIgnoresThreatType) {
   security_interstitials::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kBadURL);
   AddToWhitelist(resource);
@@ -206,7 +237,15 @@ TEST_F(SafeBrowsingUIManagerTest, WhitelistIgnoresThreatType) {
   EXPECT_TRUE(IsWhitelisted(resource_phishing));
 }
 
-TEST_F(SafeBrowsingUIManagerTest, WhitelistWithUnrelatedPendingLoad) {
+// Leaks memory. https://crbug.com/755118
+#if defined(LEAK_SANITIZER)
+#define MAYBE_WhitelistWithUnrelatedPendingLoad \
+  DISABLED_WhitelistWithUnrelatedPendingLoad
+#else
+#define MAYBE_WhitelistWithUnrelatedPendingLoad \
+  WhitelistWithUnrelatedPendingLoad
+#endif
+TEST_F(SafeBrowsingUIManagerTest, MAYBE_WhitelistWithUnrelatedPendingLoad) {
   // Commit load of landing page.
   NavigateAndCommit(GURL(kLandingURL));
   {
