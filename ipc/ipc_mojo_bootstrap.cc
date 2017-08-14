@@ -830,8 +830,6 @@ class ChannelAssociatedGroupController
       const base::Optional<mojo::DisconnectReason>& reason) override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
-    DCHECK(!mojo::IsMasterInterfaceId(id) || reason);
-
     scoped_refptr<ChannelAssociatedGroupController> keepalive(this);
     base::AutoLock locker(lock_);
     scoped_refptr<Endpoint> endpoint = FindOrInsertEndpoint(id, nullptr);

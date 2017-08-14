@@ -242,8 +242,6 @@
 
   Router.prototype.onPeerAssociatedEndpointClosed = function(interfaceId,
       reason) {
-    check(!internal.isMasterInterfaceId(interfaceId) || reason);
-
     var endpoint = this.endpoints_.get(interfaceId);
     if (!endpoint) {
       endpoint = new InterfaceEndpoint(this, interfaceId);
