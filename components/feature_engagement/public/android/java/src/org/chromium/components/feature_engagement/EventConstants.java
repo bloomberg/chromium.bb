@@ -29,6 +29,11 @@ public final class EventConstants {
     public static final String DOWNLOAD_HOME_OPENED = "download_home_opened";
 
     /**
+     * The bottom sheet was expanded by the user.
+     */
+    public static final String BOTTOM_SHEET_EXPANDED = "bottom_sheet_expanded";
+
+    /**
      * Screenshot is taken with Chrome in the foreground.
      */
     public static final String SCREENSHOT_TAKEN_CHROME_IN_FOREGROUND =
