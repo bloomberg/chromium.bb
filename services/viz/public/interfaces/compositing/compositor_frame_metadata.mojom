@@ -5,8 +5,8 @@
 module viz.mojom;
 
 import "cc/ipc/begin_frame_args.mojom";
-import "cc/ipc/selection.mojom";
 import "cc/ipc/surface_id.mojom";
+import "services/viz/public/interfaces/compositing/selection.mojom";
 import "ui/latency/mojo/latency_info.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -28,7 +28,7 @@ struct CompositorFrameMetadata {
   float bottom_controls_height;
   float bottom_controls_shown_ratio;
   uint32 root_background_color;
-  cc.mojom.Selection selection;
+  Selection selection;
   array<ui.mojom.LatencyInfo> latency_info;
   array<cc.mojom.SurfaceId> referenced_surfaces;
   array<cc.mojom.SurfaceId> activation_dependencies;

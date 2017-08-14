@@ -3,8 +3,6 @@ include_rules = [
   "+gpu/ipc",
   "+gpu/ipc/common",
   "+skia/public/interfaces",
-  "+ui/gfx/ipc",
-  "+ui/gfx/mojo",
-  "+ui/gfx/geometry/mojo",
+  "+ui/gfx",
   "+ui/latency/mojo",
 ]

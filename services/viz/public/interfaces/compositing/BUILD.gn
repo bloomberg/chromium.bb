@@ -12,6 +12,7 @@ mojom("compositing") {
     "render_pass.mojom",
     "resource_settings.mojom",
     "returned_resource.mojom",
+    "selection.mojom",
     "shared_bitmap_allocation_notifier.mojom",
     "surface_info.mojom",
     "surface_sequence.mojom",

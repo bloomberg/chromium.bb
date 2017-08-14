@@ -13,7 +13,6 @@
 #include "cc/ipc/frame_sink_id_struct_traits.h"
 #include "cc/ipc/local_surface_id_struct_traits.h"
 #include "cc/ipc/quads_struct_traits.h"
-#include "cc/ipc/selection_struct_traits.h"
 #include "cc/ipc/shared_quad_state_struct_traits.h"
 #include "cc/ipc/surface_id_struct_traits.h"
 #include "cc/ipc/texture_mailbox_struct_traits.h"
@@ -40,6 +39,7 @@
 #include "services/viz/public/cpp/compositing/render_pass_struct_traits.h"
 #include "services/viz/public/cpp/compositing/resource_settings_struct_traits.h"
 #include "services/viz/public/cpp/compositing/returned_resource_struct_traits.h"
+#include "services/viz/public/cpp/compositing/selection_struct_traits.h"
 #include "services/viz/public/cpp/compositing/surface_info_struct_traits.h"
 #include "services/viz/public/cpp/compositing/surface_sequence_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame.mojom.h"
@@ -97,6 +97,24 @@ TEST_F(StructTraitsTest, ResourceSettings) {
             output.use_gpu_memory_buffer_resources);
   EXPECT_EQ(input.buffer_to_texture_target_map,
             output.buffer_to_texture_target_map);
+}
+
+TEST_F(StructTraitsTest, Selection) {
+  gfx::SelectionBound start;
+  start.SetEdge(gfx::PointF(1234.5f, 67891.f), gfx::PointF(5432.1f, 1987.6f));
+  start.set_visible(true);
+  start.set_type(gfx::SelectionBound::CENTER);
+  gfx::SelectionBound end;
+  end.SetEdge(gfx::PointF(1337.5f, 52124.f), gfx::PointF(1234.3f, 8765.6f));
+  end.set_visible(false);
+  end.set_type(gfx::SelectionBound::RIGHT);
+  cc::Selection<gfx::SelectionBound> input;
+  input.start = start;
+  input.end = end;
+  cc::Selection<gfx::SelectionBound> output;
+  SerializeAndDeserialize<mojom::Selection>(input, &output);
+  EXPECT_EQ(start, output.start);
+  EXPECT_EQ(end, output.end);
 }
 
 TEST_F(StructTraitsTest, SurfaceSequence) {
