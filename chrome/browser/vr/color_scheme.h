@@ -22,6 +22,7 @@ struct ColorScheme {
   // These colors should be named generically, if possible, so that they can be
   // meaningfully reused by multiple elements.
   SkColor world_background;
+  SkColor world_background_text;
   SkColor floor;
   SkColor ceiling;
   SkColor floor_grid;
