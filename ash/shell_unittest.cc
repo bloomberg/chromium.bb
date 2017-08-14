@@ -100,6 +100,10 @@ void ExpectAllContainers() {
                                   kShellWindowId_ImeWindowParentContainer));
   EXPECT_TRUE(
       Shell::GetContainer(root_window, kShellWindowId_MouseCursorContainer));
+
+  // Phantom window is not a container.
+  EXPECT_EQ(0u, container_ids.count(kShellWindowId_PhantomWindow));
+  EXPECT_FALSE(Shell::GetContainer(root_window, kShellWindowId_PhantomWindow));
 }
 
 class ModalWindow : public views::WidgetDelegateView {
