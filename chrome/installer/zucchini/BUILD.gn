@@ -48,6 +48,7 @@ static_library("zucchini_lib") {
     "zucchini.h",
     "zucchini_apply.cc",
     "zucchini_gen.cc",
+    "zucchini_gen.h",
   ]
 
   deps = [
