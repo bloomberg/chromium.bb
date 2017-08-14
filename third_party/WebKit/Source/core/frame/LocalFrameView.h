@@ -659,9 +659,8 @@ class CORE_EXPORT LocalFrameView final
   bool ScrollbarCornerPresent() const;
   IntRect ScrollCornerRect() const override;
 
-  IntPoint ConvertFromContainingEmbeddedContentViewToScrollbar(
-      const Scrollbar&,
-      const IntPoint&) const override;
+  IntPoint ConvertFromParentViewToScrollbar(const Scrollbar&,
+                                            const IntPoint&) const override;
 
   bool IsLocalFrameView() const override { return true; }
 
@@ -951,10 +950,10 @@ class CORE_EXPORT LocalFrameView final
 
   // Methods to do point conversion via layoutObjects, in order to take
   // transforms into account.
-  IntRect ConvertToContainingEmbeddedContentView(const IntRect&) const;
-  IntPoint ConvertToContainingEmbeddedContentView(const IntPoint&) const;
-  IntRect ConvertFromContainingEmbeddedContentView(const IntRect&) const;
-  IntPoint ConvertFromContainingEmbeddedContentView(const IntPoint&) const;
+  IntRect ConvertToParentView(const IntRect&) const;
+  IntPoint ConvertToParentView(const IntPoint&) const;
+  IntRect ConvertFromParentView(const IntRect&) const;
+  IntPoint ConvertFromParentView(const IntPoint&) const;
 
   void DidChangeGlobalRootScroller() override;
 

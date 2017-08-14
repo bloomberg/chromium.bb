@@ -49,7 +49,6 @@ inline ScrollOffset ToScrollOffset(const FloatPoint& p) {
 enum OverlayScrollbarClipBehavior {
   kIgnorePlatformOverlayScrollbarSize,
   kIgnorePlatformAndCSSOverlayScrollbarSize,
-  kExcludeOverlayScrollbarSizeForHitTesting
 };
 
 enum ScrollDirection {
