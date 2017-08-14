@@ -140,6 +140,12 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     return -1;
   }
 
+#if defined(OS_ANDROID)
+  void SynchronouslyFlushStartupTasks() override {
+    main_loop_->SynchronouslyFlushStartupTasks();
+  }
+#endif
+
   int Run() override {
     DCHECK(initialization_started_);
     DCHECK(!is_shutdown_);
