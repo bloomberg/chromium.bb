@@ -188,7 +188,6 @@ void AutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation,
     OnSameDocumentNavigationCompleted();
   } else {
     // Navigation to a new page or a page refresh.
-    element_.Reset();
     form_cache_.Reset();
     submitted_forms_.clear();
     last_interacted_form_.Reset();
