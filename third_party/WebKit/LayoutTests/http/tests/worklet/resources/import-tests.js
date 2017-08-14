@@ -53,5 +53,37 @@ function runImportTests(worklet, opt_path) {
         }).catch(function(error) {
             assert_equals(error.name, 'SyntaxError', 'error should be a SyntaxError.');
         });
-    }, 'Attempting to resolve an invalid URL should reject the given promise with a SyntaxError.');
+    }, 'Importing an invalid URL should reject the given promise with a SyntaxError.');
+
+    promise_test(() => {
+        const kBlob = new Blob([""], {type: 'text/javascript'});
+        const kBlobURL = URL.createObjectURL(kBlob);
+        return worklet.addModule(kBlobURL).then(undefined_arg => {
+            assert_equals(undefined_arg, undefined);
+        });
+    }, 'Importing a blob URL should resolve the given promise.');
+
+    promise_test(() => {
+        const kFileURL = 'file:///empty-worklet-script.js';
+        return worklet.addModule(kFileURL).then(undefined_arg => {
+            assert_unreached('addModule should fail.');
+        }).catch(function(error) {
+            assert_equals(error.name, 'AbortError');
+        });
+    }, 'Importing a file:// URL should reject the given promise.');
+
+    promise_test(() => {
+        const kDataURL = 'data:text/javascript, // Do nothing.';
+        return worklet.addModule(kDataURL).then(undefined_arg => {
+            assert_equals(undefined_arg, undefined);
+        });
+    }, 'Importing a data URL should resolve the given promise.');
+
+    promise_test(() => {
+        return worklet.addModule('about:blank').then(undefined_arg => {
+            assert_unreached('addModule should fail.');
+        }).catch(function(error) {
+            assert_equals(error.name, 'AbortError');
+        });
+    }, 'Importing about:blank should reject the given promise.');
 }
