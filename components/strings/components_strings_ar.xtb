@@ -105,7 +105,7 @@
 <translation id="1753706481035618306">رقم الصفحة</translation>
 <translation id="1763864636252898013">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثوقة من خلال نظام تشغيل جهازك. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="1768211456781949159">‏<ph name="BEGIN_LINK" />تجربة تشغيل بيانات التشخيص لشبكة Windows<ph name="END_LINK" />.</translation>
-<translation id="1783075131180517613">الرجاء تحديث عبارة مرور المزامنة.</translation>
+<translation id="1783075131180517613">يُرجى تحديث عبارة مرور المزامنة.</translation>
 <translation id="1787142507584202372">تظهر علامات التبويب المفتوحة هنا</translation>
 <translation id="1789575671122666129">النوافذ المنبثقة</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
@@ -130,7 +130,6 @@
 <translation id="1973335181906896915">خطأ أثناء التسلسل</translation>
 <translation id="1974060860693918893">إعدادات متقدمة</translation>
 <translation id="1978555033938440688">إصدار البرامج الثابتة</translation>
-<translation id="1995859865337580572">‏يُرجى التحقق من رمز التحقق من البطاقة (CVC)</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{وتطبيق آخر}zero{و# تطبيق آخر}two{وتطبيقان (#) آخران}few{و# تطبيقات أخرى}many{و# تطبيقًا آخر}other{و# تطبيق آخر}}</translation>
 <translation id="2025186561304664664">تم تعيين الخادم الوكيل على التهيئة التلقائية.</translation>
 <translation id="2030481566774242610">هل تقصد <ph name="LINK" />؟</translation>
@@ -202,7 +201,7 @@
 <translation id="2556876185419854533">تراجع عن ا&amp;لتحرير</translation>
 <translation id="2587730715158995865">من <ph name="ARTICLE_PUBLISHER" />. يمكنك قراءة هذه المقالة و<ph name="OTHER_ARTICLE_COUNT" /> قصص أخرى.</translation>
 <translation id="2587841377698384444">رقم تعريف واجهة برمجة التطبيقات الدليل:</translation>
-<translation id="2597378329261239068">هذا المستند محمي بكلمة المرور.  الرجاء إدخال كلمة مرور.</translation>
+<translation id="2597378329261239068">هذا المستند محمي بكلمة المرور.  يُرجى إدخال كلمة مرور.</translation>
 <translation id="2609632851001447353">الاختلافات</translation>
 <translation id="262424810616849754">{COUNT,plural, =0{بدون}=1{تطبيق واحد ($1)}=2{تطبيقان (2) ($1، $2)}few{# تطبيقات ($1، $2، $3)}many{# تطبيقًا ($1، $2، $3)}other{# تطبيق ($1، $2، $3)}}</translation>
 <translation id="2625385379895617796">توقيت ساعتك متقدم عن الوقت الحالي</translation>
@@ -357,7 +356,7 @@
 <translation id="3623476034248543066">عرض القيمة</translation>
 <translation id="3630155396527302611">إذا تم بالفعل إدراج صفحة الويب كبرنامج مسموح له بالدخول إلى الشبكة، فجرّب
         إزالتها من القائمة وإضافتها مرةً أخرى.</translation>
-<translation id="3648607100222897006">ربما تتغير أو تتعطل أو تختفي هذه الميزات التجريبية في أي وقت. ولا نعطي أي ضمانات حيال ما يمكن حدوثه إذا شغلت إحدى هذه الميزات التجريبية، وقد يتعطل المتصفح بشكل مفاجئ. وبشكل جدي، قد يحذف المتصفح جميع بياناتك، أو قد تتعرض خصوصيتك وأمانك للاختراق بطرق غير متوقعة. أي ميزات تجريبية تمكّنها سيتم تمكينها لجميع مستخدمي هذا المتصفح. الرجاء المتابعة بحذر.</translation>
+<translation id="3648607100222897006">ربما تتغير أو تتعطل أو تختفي هذه الميزات التجريبية في أي وقت. ولا نعطي أي ضمانات حيال ما يمكن حدوثه إذا شغلت إحدى هذه الميزات التجريبية، وقد يتعطل المتصفح بشكل مفاجئ. وبشكل جدي، قد يحذف المتصفح جميع بياناتك، أو قد تتعرض خصوصيتك وأمانك للاختراق بطرق غير متوقعة. أي ميزات تجريبية تمكّنها سيتم تمكينها لجميع مستخدمي هذا المتصفح. يُرجى المتابعة بحذر.</translation>
 <translation id="3650584904733503804">تم التحقق بنجاح</translation>
 <translation id="3655670868607891010">إذا كنت تشاهد هذا بكثرة، فجرّب <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">التعديل</translation>
@@ -463,6 +462,7 @@
 <translation id="4552089082226364758">الفلاش</translation>
 <translation id="4558551763791394412">جرّب تعطيل الإضافات.</translation>
 <translation id="457875822857220463">التسليم</translation>
+<translation id="4582800630050655161">‏من الممكن أن تفقد إمكانية الوصول إلى حسابك في Google أو تتعرض لسرقة هويتك. لذا يوصي Chromium بتغيير كلمة مرورك الآن.</translation>
 <translation id="4587425331216688090">‏هل تريد إزالة العنوان من Chrome؟</translation>
 <translation id="4592951414987517459">يتم ترميز اتصالك بالنطاق <ph name="DOMAIN" /> باستخدام مجموعة تشفير حديثة.</translation>
 <translation id="4594403342090139922">تراجع عن الحذ&amp;ف</translation>
@@ -471,6 +471,7 @@
 <translation id="4668929960204016307">،</translation>
 <translation id="467662567472608290">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان تحتوي على أخطاء. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
 <translation id="4690462567478992370">التوقف عن استخدام شهادة غير صالحة</translation>
+<translation id="4690954380545377795">‏من الممكن أن تفقد إمكانية الوصول إلى حسابك في Google أو تتعرض لسرقة هويتك. لذا يوصي Chrome بتغيير كلمة مرورك الآن.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" />‏ <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">تم قطع اتصالك</translation>
 <translation id="471880041731876836">ليس لديك إذن لزيارة هذا الموقع</translation>
@@ -536,6 +537,7 @@
 <translation id="5199729219167945352">التجارب</translation>
 <translation id="5205222826937269299">الاسم مطلوب</translation>
 <translation id="5222812217790122047">البريد الإلكتروني مطلوب</translation>
+<translation id="522700295135997067">من المحتمل أن يكون موقع الويب هذا قد سرق كلمة مرورك للتو</translation>
 <translation id="5251803541071282808">السحاب</translation>
 <translation id="5277279256032773186">‏هل تستخدم Chrome في العمل؟ يمكن للأنشطة التجارية إدارة إعدادات Chrome لموظفيها. تعرَّف على المزيد</translation>
 <translation id="5281113152797308730">‏<ph name="BEGIN_PARAGRAPH" />اتبع هذه الخطوات لتعطيل البرامج مؤقتًا حتى يتسنى لك الوصول إلى الويب. سيلزمك الحصول على امتيازات المشرف.<ph name="END_PARAGRAPH" />
@@ -815,7 +817,7 @@
 <translation id="7600965453749440009">عدم الترجمة مطلقًا من اللغة <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">القيمة خارج النطاق <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">تاريخ انتهاء الصلاحية: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
-<translation id="7615602087246926389">‏لديك فعلاً بيانات تم تشفيرها باستخدام نسخة أخرى من كلمة مرور حسابك في Google. الرجاء إدخالها أدناه.</translation>
+<translation id="7615602087246926389">‏لديك فعلاً بيانات تم تشفيرها باستخدام نسخة أخرى من كلمة مرور حسابك في Google. يُرجى إدخالها أدناه.</translation>
 <translation id="7637571805876720304">‏هل تريد إزالة بطاقة الائتمان من Chromium؟</translation>
 <translation id="765676359832457558">إخفاء الإعدادات المتقدمة...</translation>
 <translation id="7658239707568436148">إلغاء</translation>
@@ -825,6 +827,7 @@
 <translation id="7669271284792375604">قد يحاول المهاجمون في هذا الموقع خداعك من خلال تثبيت برامج تضر بتجربة التصفح (على سبيل المثال، من خلال تغيير صفحتك الرئيسية أو عرض إعلانات إضافية على المواقع التي تزورها).</translation>
 <translation id="7674629440242451245">‏إذا كنت مهتمًا بميزات Google الجديدة والرائعة، فيُمكنك تجربة قناة مطوري البرامج على chrome.com/dev.</translation>
 <translation id="7682287625158474539">الشحن</translation>
+<translation id="7699293099605015246">المقالات غير متاحة الآن</translation>
 <translation id="7701040980221191251">بلا</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />متابعة إلى <ph name="SITE" /> (غير آمن)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">شهادة</translation>
@@ -834,6 +837,7 @@
 <translation id="7752995774971033316">غير مُدار</translation>
 <translation id="7755287808199759310">قد يلغي والداك الحظر لك</translation>
 <translation id="7758069387465995638">ربما حظر الجدار الناري أو برامج مكافحة الفيروسات الاتصال.</translation>
+<translation id="7759163816903619567">نطاق العرض:</translation>
 <translation id="7761701407923456692">‏لا تتطابق شهادة الخادم مع عنوان URL.</translation>
 <translation id="7763386264682878361">المحلل اللغوي لبيان الدفع</translation>
 <translation id="7764225426217299476">إضافة عنوان</translation>
@@ -841,6 +845,7 @@
 <translation id="7791543448312431591">إضافة</translation>
 <translation id="7793809570500803535">قد تكون صفحة الويب على العنوان <ph name="SITE" /> غير متاحة مؤقتًا أو تم نقلها نهائيًا إلى عنوان ويب جديد.</translation>
 <translation id="7800304661137206267">تم تشفير الاتصال باستخدام <ph name="CIPHER" />، مع <ph name="MAC" /> لمصادقة الرسالة و<ph name="KX" /> كآلية التبادل الرئيسية.</translation>
+<translation id="7802523362929240268">موقع الويب مشروع</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7805768142964895445">الحالة</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -850,6 +855,7 @@
 <translation id="785549533363645510">ومع ذلك، أنت غير مرئي. لا يخفي الانتقال إلى وضع التخفي التصفح من صاحب العمل أو مزود خدمة الإنترنت أو المواقع التي تزورها.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">يتم قبول بطاقات السحب الآلي وبطاقات الدفع المسبق.</translation>
+<translation id="7878562273885520351">من المحتمل أنه تم اختراق كلمة مرورك</translation>
 <translation id="7887683347370398519">‏تحقق من رمز التحقق من البطاقة (CVC) ثم أعد المحاولة.</translation>
 <translation id="79338296614623784">أدخِل رقم هاتف صحيحًا</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -978,6 +984,7 @@
 <translation id="9076283476770535406">قد يتضمن محتوى للبالغين</translation>
 <translation id="9078964945751709336">مطلوب مزيد من المعلومات</translation>
 <translation id="9103872766612412690">‏يستخدم <ph name="SITE" /> التشفير عادة لحماية معلوماتك. عندما حاول Chromium الاتصال بموقع <ph name="SITE" /> هذه المرة، أرجَع موقع الويب بيانات اعتماد غير عادية وغير صحيحة. وقد يحدث هذا عندما يحاول أحد المهاجمين التظاهر بأنه موقع <ph name="SITE" />، أو إذا قاطعت شاشة تسجيل دخول Wi-Fi الاتصال. ولكن لا تزال معلوماتك آمنة نظرًا لأن Chromium أوقَفَ الاتصال قبل تبادل أي بيانات.</translation>
+<translation id="910908805481542201">ساعدني لإصلاح ذلك</translation>
 <translation id="9128870381267983090">الاتصال بالشبكة</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
 <translation id="9137248913990643158">‏يُرجى البدء وتسجيل الدخول إلى Chrome قبل استخدام هذا التطبيق.</translation>

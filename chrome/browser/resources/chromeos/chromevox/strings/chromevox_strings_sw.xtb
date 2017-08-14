@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Mstari Unaofuata</translation>
 <translation id="3153024374267644603">Kipengele cha kuzungumza kimewashwa</translation>
+<translation id="3153928844647607688">Jedwali la <ph name="TABLENAME" />, <ph name="TABLEROWS" /> kwa <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Hakuna kitufe kilichotangulia.</translation>
 <translation id="3163593631834463955">Kichwa kitupu cha safu wima</translation>
 <translation id="316542773973815724">Kudurusu</translation>
@@ -404,6 +405,7 @@
 <translation id="4597532268155981612">fomu</translation>
 <translation id="4597896406374528575">Aprili</translation>
 <translation id="460018603901637538">Badilisha mtindo wa onyesho uwe upande kwa upande.</translation>
+<translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Inapuuza kubonyeza kwa kitufe kunakofuata</translation>
 <translation id="461613135510474570">Sentensi</translation>
 <translation id="4647836961514597010">Kiteua rangi</translation>
@@ -781,6 +783,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="820417203470636242">Kisanduku kitupu.</translation>
 <translation id="8215202828671303819">Chaguo nyingi</translation>
 <translation id="8224171046658870249">Inatumia ChromeVox Next</translation>
+<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">Ruka hadi kipengee kinachoweza kulengwa kilichotangulia</translation>
 <translation id="8278417001922463147">Hakuna makala yaliyotangulia.</translation>
 <translation id="8283603667300770666">Sehemu ya fomu inayofuata</translation>

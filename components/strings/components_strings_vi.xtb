@@ -130,7 +130,6 @@
 <translation id="1973335181906896915">Lỗi nối tiếp hóa</translation>
 <translation id="1974060860693918893">Nâng cao</translation>
 <translation id="1978555033938440688">Phiên bản chương trình cơ sở</translation>
-<translation id="1995859865337580572">Vui lòng xác minh CVC của bạn</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{và 1 ứng dụng khác}other{và # ứng dụng khác}}</translation>
 <translation id="2025186561304664664">Proxy được đặt thành định cấu hình tự động.</translation>
 <translation id="2030481566774242610">Ý của bạn là <ph name="LINK" />?</translation>
@@ -409,7 +408,7 @@
 <translation id="4072486802667267160">Đã xảy ra lỗi khi xử lý đơn đặt hàng của bạn. Vui lòng thử lại.</translation>
 <translation id="4075732493274867456">Ứng dụng và máy chủ không hỗ trợ bộ mã hóa hoặc phiên bản giao thức SSL thông thường.</translation>
 <translation id="4079302484614802869">Cấu hình proxy được đặt để sử dụng URL tập lệnh .pac chứ không phải máy chủ proxy cố định.</translation>
-<translation id="4098354747657067197">Trang web lừa đảo phía trước</translation>
+<translation id="4098354747657067197">Bạn sắp truy cập trang web lừa đảo</translation>
 <translation id="4103249731201008433">Số sê-ri thiết bị không hợp lệ</translation>
 <translation id="410351446219883937">Tự động phát</translation>
 <translation id="4103763322291513355">Truy cập &lt;strong&gt;chrome://policy&lt;/strong&gt; để xem danh sách các URL bị chặn quyền truy cập và các chính sách khác bị quản trị viên hệ thống buộc phải thực thi.</translation>
@@ -834,6 +833,7 @@
 <translation id="7752995774971033316">Không được quản lý</translation>
 <translation id="7755287808199759310">Cha mẹ của bạn có thể bỏ chặn trang web cho bạn</translation>
 <translation id="7758069387465995638">Tường lửa hoặc phần mềm diệt vi-rút có thể đã chặn kết nối.</translation>
+<translation id="7759163816903619567">Miền hiển thị:</translation>
 <translation id="7761701407923456692">Chứng chỉ của máy chủ không phù hợp với URL.</translation>
 <translation id="7763386264682878361">Trình phân tích cú pháp tệp kê khai thanh toán</translation>
 <translation id="7764225426217299476">Thêm địa chỉ</translation>

@@ -219,6 +219,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">ቀጣይ መስመር</translation>
 <translation id="3153024374267644603">ንግግር አብራ</translation>
+<translation id="3153928844647607688">ሠንጠረዥ <ph name="TABLENAME" />፣ <ph name="TABLEROWS" /> በ<ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">ምንም ቀዳሚ አዝራር የለም።</translation>
 <translation id="3163593631834463955">ባዶ የአምድ ራስጌ</translation>
 <translation id="316542773973815724">አሰሳ</translation>
@@ -404,6 +405,7 @@
 <translation id="4597532268155981612">ቅጽ</translation>
 <translation id="4597896406374528575">ኤፕሪል</translation>
 <translation id="460018603901637538">የማሳያ ቅጥ ውደ ጎን ለጎን ቀይር።</translation>
+<translation id="4601367666219428522">ሠንጠረዥ <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">ቀጣይ ቁልፍ መጫንን ችላ ብሎ በመተው ላይ</translation>
 <translation id="461613135510474570">አረፍተ ነገር</translation>
 <translation id="4647836961514597010">ቀለም መምረጫ</translation>
@@ -781,6 +783,7 @@
 <translation id="820417203470636242">ባዶ ሕዋስ።</translation>
 <translation id="8215202828671303819">ብዙ ምርጫ</translation>
 <translation id="8224171046658870249">ወደ ChromeVox Next ተቀይሯል</translation>
+<translation id="826991282343985864">ረ$1አ$2</translation>
 <translation id="8276439074553447000">ሊተኮርበት ወደሚችል ቀዳሚ ንጥል ይዝለሉ</translation>
 <translation id="8278417001922463147">ምንም ቀዳሚ ጽሑፍ የለም።</translation>
 <translation id="8283603667300770666">ቀጣይ የቅጽ መስክ</translation>

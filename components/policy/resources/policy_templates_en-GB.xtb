@@ -31,6 +31,7 @@
           If this setting is disabled or not configured, the remote assistance host will run in the user's context and remote users cannot interact with elevated windows on the desktop.</translation>
 <translation id="1096105751829466145">Default search provider</translation>
 <translation id="1117535567637097036">The protocol handlers set via this policy are not used when handling Android intents.</translation>
+<translation id="1122282995569868661">Shows the <ph name="PRODUCT_NAME" /> toolbar icon</translation>
 <translation id="1128903365609589950">Configures the directory that <ph name="PRODUCT_NAME" /> will use for storing cached files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided directory regardless of whether the user has specified the '--disk-cache-dir' flag or not. To avoid data loss or other unexpected errors this policy should not be set to a volume's root directory or to a directory used for other purposes, because <ph name="PRODUCT_NAME" /> manages its contents.
@@ -53,6 +54,7 @@
       If this policy is unset, the default frequency is 3 hours. The minimum
       allowed frequency is 60 seconds.</translation>
 <translation id="1221359380862872747">Load specified URLs on demo login</translation>
+<translation id="123081309365616809">Enable casting content to the device</translation>
 <translation id="1265053460044691532">Limit the time for which a user authenticated via SAML can log in offline</translation>
 <translation id="1291880496936992484">Warning: RC4 will be completely removed from <ph name="PRODUCT_NAME" /> after version 52 (around September 2016) and this policy will stop working then.
 
@@ -269,6 +271,7 @@
       If the policy is not set, the default value is 0 degrees and the user is
       free to change it. In this case, the default value is not reapplied at
       restart.</translation>
+<translation id="2156132677421487971">Configure policies for <ph name="PRODUCT_NAME" />, a feature that allows users to send the contents of tabs, sites or the desktop from the browser to remote displays and sound systems.</translation>
 <translation id="2168397434410358693">Idle delay when running on AC power</translation>
 <translation id="2170233653554726857">Enable WPAD optimisation</translation>
 <translation id="2176565653304920879">When this policy is set, automatic time zone detection flow will be in one of the following ways depending on the value of the setting:
@@ -581,6 +584,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Independent of whether or how this policy is set, the WPAD optimisation setting cannot be changed by users.</translation>
 <translation id="3072045631333522102">Screen saver to be used on the sign-in screen in retail mode</translation>
 <translation id="3072847235228302527">Set the Terms of Service for a device-local account</translation>
+<translation id="3086995894968271156">Configure the cast receiver in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3096595567015595053">List of enabled plug-ins</translation>
 <translation id="3101501961102569744">Choose how to specify proxy server settings</translation>
 <translation id="3117676313396757089">Warning: DHE will be completely removed from <ph name="PRODUCT_NAME" /> after version 57 (around March 2017) and this policy will stop working then.
@@ -974,6 +978,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If the value of this policy is 0, the default cache size will be used but the user will not be able to change it.
 
       If this policy is not set, the default size will be used and the user will be able to override it with the --media-cache-size flag.</translation>
+<translation id="4508686775017063528">If this policy is set to true or is not set, <ph name="PRODUCT_NAME" /> will be enabled, and users will be able to launch it from the app menu, page context menus, media controls on Cast-enabled websites and (if shown), the cast toolbar icon.
+
+          If this policy set to false, <ph name="PRODUCT_NAME" /> will be disabled.</translation>
 <translation id="4518251772179446575">Ask whenever a site wants to track the users' physical location</translation>
 <translation id="4519046672992331730">Enables search suggestions in <ph name="PRODUCT_NAME" />'s omnibox and prevents users from changing this setting.
 
@@ -1080,6 +1087,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="489803897780524242">Parameter controlling search term placement for the default search provider</translation>
 <translation id="4899708173828500852">Enable Safe Browsing</translation>
 <translation id="4906194810004762807">Refresh rate for Device Policy</translation>
+<translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">If this policy is set to true or not configured, <ph name="PRODUCT_NAME" /> will allow Add Person from the user manager.
 
       If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow creation of new profiles from the user manager.</translation>
@@ -1403,6 +1411,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6155936611791017817">Set default state of the large cursor on the login screen</translation>
 <translation id="6157537876488211233">Comma-separated list of proxy bypass rules</translation>
 <translation id="6158324314836466367">Enterprise web store name (deprecated)</translation>
+<translation id="6161405879872578475">Enables <ph name="PRODUCT_NAME" /></translation>
 <translation id="6167074305866468481">Warning: SSLv3 support will be entirely removed from <ph name="PRODUCT_NAME" /> after version 43 (around July 2015) and this policy will be removed at the same time.
 
       If this policy is not configured then <ph name="PRODUCT_NAME" /> uses a default minimum version which is SSLv3 in <ph name="PRODUCT_NAME" /> 39 and TLS 1.0 in later versions.
@@ -1899,6 +1908,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this setting is enabled, then this machine can discover and connect to remote host machines even if they are separated by a firewall.
 
           If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine can only connect to host machines within the local network.</translation>
+<translation id="7976157349247117979">Name of the <ph name="PRODUCT_NAME" /> destination</translation>
 <translation id="7980227303582973781">No special restrictions</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotate screen by 0 degrees</translation>

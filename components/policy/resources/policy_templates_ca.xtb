@@ -863,13 +863,13 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4298509794364745131">Indica una llista d'aplicacions que es poden activar com a aplicacions per prendre notes a la pantalla de bloqueig de <ph name="PRODUCT_OS_NAME" />.
 
       Si l'aplicació preferida per prendre notes està activada a la pantalla de bloqueig, en aquesta pantalla s'hi mostrarà un element d'IU per iniciar-la.
-      Quan s'hagi iniciat, l'aplicació podrà crear una finestra d'aplicació a la part superior de la pantalla de bloqueig i crear elements de dades (notes) en el context de la pantalla de bloqueig. L'aplicació podrà importar notes creades a la sessió principal de l'usuari quan la sessió estigui desbloquejada. En aquests moments, a la pantalla de bloqueig només s'hi admeten aplicacions de Chrome per prendre notes.
+      Quan s'hagi iniciat, l'aplicació podrà crear una finestra d'aplicació a la part superior de la pantalla de bloqueig i crear elements de dades (notes) a l'entorn de la pantalla de bloqueig. L'aplicació podrà importar notes creades a la sessió principal de l'usuari quan la sessió estigui desbloquejada. En aquests moments, a la pantalla de bloqueig només s'hi admeten aplicacions de Chrome per prendre notes.
 
-      Si la política es defineix, l'usuari podrà activar una aplicació a la pantalla de bloqueig només si el valor de llista de la política conté l'identificador d'extensió de l'aplicació.
+      Si la política es defineix, l'usuari podrà activar una aplicació a la pantalla de bloqueig només si el valor de la llista de polítiques conté l'identificador d'extensió de l'aplicació.
       Per tant, si aquesta política es defineix en una llista buida, no es permetrà en cap cas prendre notes des de la pantalla de bloqueig.
       Tingues en compte que el fet que la política contingui un identificador d'aplicació no vol dir necessàriament que l'usuari pugui activar l'aplicació com a aplicació per prendre notes a la pantalla de bloqueig. Per exemple, a Chrome 61, la plataforma també restringeix el conjunt d'aplicacions disponibles.
 
-      Si la política no es defineix, no hi haurà restriccions imposades per la política respecte del conjunt d'aplicacions que l'usuari pot activar a la pantalla de bloqueig.</translation>
+      Si la política no es defineix, no imposarà cap restricció al conjunt d'aplicacions que l'usuari pot activar a la pantalla de bloqueig.</translation>
 <translation id="4309640770189628899">Si els sistemes de xifratge DHE de TLS estan activats</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o una versió posterior</translation>
 <translation id="4322842393287974810">Permet que l'aplicació de quiosc d'inici automàtic sense retards controli la versió de <ph name="PRODUCT_OS_NAME" /></translation>

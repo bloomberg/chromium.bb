@@ -35,7 +35,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="1326317727527857210">Upang makuha ang iyong mga tab mula sa iba mo pang mga device, mag-sign in sa Chrome.</translation>
 <translation id="132830257261478853">Address bar. Hilahin pababa upang isara ang panel ng navigation.</translation>
 <translation id="1332501820983677155">Mga shortcut ng feature ng Google Chrome</translation>
-<translation id="1339917386316755344">Nagsa-sign out sa iyo sa karamihan ng site. Hindi ka masa-sign out sa iyong Google Account.</translation>
 <translation id="1369915414381695676">Nadagdag na ang site ng <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Hindi sapat ang memory upang ma-download ang napiling content.</translation>
 <translation id="1376578503827013741">Kino-compute…</translation>
@@ -105,15 +104,14 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="1984937141057606926">Pinapayagan, maliban ang third-party</translation>
 <translation id="1993768208584545658">Gustong makipagpares ng <ph name="SITE" /></translation>
 <translation id="1994173015038366702">URL ng site</translation>
-<translation id="2000271276660256125">Para sa seguridad, kailangan mong kumpirmahin ang iyong lock ng screen upang ma-access ang password mo.</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB na iba pang mga app</translation>
 <translation id="2011013297378343166">Sa pamamagitan ng paggamit ng application na ito, sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />Notification ng Privacy<ph name="END_LINK2" /> ng Chrome, at <ph name="BEGIN_LINK3" />Notification sa Privacy para sa Mga Google Account na Ginawa sa Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2017836877785168846">Kini-clear ang history at mga awtomatikong pagkumpleto sa address bar.</translation>
-<translation id="2020525020270327736">Kopyahin ang site</translation>
 <translation id="2038563949887743358">I-on ang Hilingin ang site sa desktop</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB na iba pang mga app</translation>
 <translation id="2079545284768500474">I-undo</translation>
 <translation id="2082238445998314030">Resulta <ph name="RESULT_NUMBER" /> sa <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2086652334978798447">Upang makakuha ng naka-personalize na content na iminumungkahi ng Google, mag-sign in sa Chrome.</translation>
 <translation id="2095887075102408547">Kapag naka-on ang feature na ito, gagamitin ng Chrome ang mga server ng Google upang i-compress ang mga page na bibisitahin mo bago i-download ang mga ito. Ang mga page na ina-access gamit ang mga pribadong koneksyon (HTTPS) o sa mga tab na Incognito ay hindi mao-optimize o makikita ng Google.</translation>
 <translation id="2096396629993765042">Hindi ka masa-sign out para sa iyong Google account. Maaaring mayroong ibang mga uri ng history ang iyong Google account sa <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Awtomatikong Mag-sign in</translation>
@@ -168,7 +166,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2625189173221582860">Nakopya ang password</translation>
 <translation id="2631006050119455616">Na-save</translation>
 <translation id="2653659639078652383">Isumite</translation>
-<translation id="266290525248308397">Kumpirmahin ang iyong lock ng screen</translation>
 <translation id="2677748264148917807">Umalis</translation>
 <translation id="2704606927547763573">Kinopya</translation>
 <translation id="2707726405694321444">I-refresh ang page</translation>
@@ -320,6 +317,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4195643157523330669">Buksan sa bagong tab</translation>
 <translation id="4226663524361240545">Maaaring mag-vibrate ang device dahil sa mga notification</translation>
 <translation id="4242533952199664413">Buksan ang mga setting</translation>
+<translation id="4248297594476034182">Upang mailagay ang iyong mga tab sa lahat ng iyong device, mag-sign in sa Chrome.</translation>
 <translation id="424864128008805179">Mag-sign out sa Chrome?</translation>
 <translation id="4254813446494774748">Wika ng Pagsasalin:</translation>
 <translation id="4256782883801055595">Mga lisensya ng open source</translation>
@@ -328,7 +326,6 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Pinapayagan</translation>
 <translation id="42981349822642051">Palawakin</translation>
-<translation id="4300272766492248925">Buksan ang app</translation>
 <translation id="4307992518367153382">Mga Pangunahing Kaalaman</translation>
 <translation id="4334425495413014985">Upang magamit ang <ph name="APP_NAME" /> sa unang pagkakataon, kumonekta sa Internet</translation>
 <translation id="4351244548802238354">Isara ang dialog</translation>
@@ -530,7 +527,6 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 
 Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan ng pagpapakita sa iyo ng mga ad na hindi ibinatay sa iba pang mga nabisita mo nang website. Kokolektahin at gagamitin pa rin ng maraming website ang iyong data mula sa pagba-browse - halimbawa, upang mapahusay ang seguridad, makapagpakita ng content, mga ad at rekomendasyon, at makabuo ng mga istatistika sa pag-uulat.</translation>
 <translation id="6277522088822131679">Nagkaproblema sa pag-print sa pahina. Pakisubukang muli.</translation>
-<translation id="6290548061331241837">Hindi available ang pagtingin at pagkopya ng password sa iyong bersyon ng Android.</translation>
 <translation id="6295158916970320988">Lahat ng site</translation>
 <translation id="6320088164292336938">Mag-vibrate</translation>
 <translation id="6324034347079777476">Naka-disable ang pag-sync ng Android system</translation>
@@ -560,7 +556,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6527303717912515753">Ibahagi</translation>
 <translation id="6534565668554028783">Masyadong matagal bago nakatugon ang Google</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB ang na-download</translation>
-<translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Pumili ng tab upang mag-beam</translation>
 <translation id="6545017243486555795">I-clear ang Lahat ng Data</translation>
 <translation id="6550675742724504774">Mga Pagpipilian</translation>
@@ -826,7 +821,6 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Ipakita ang orihinal</translation>
 <translation id="9139068048179869749">Magtanong bago payagan ang mga site na magpadala ng mga notification (inirerekomenda)</translation>
-<translation id="9187199695613236444">View na pang-mobile</translation>
 <translation id="9188680907066685419">Mag-sign out sa pinamamahalaang account</translation>
 <translation id="9204836675896933765">1 file ang natitira</translation>
 <translation id="9206873250291191720">A</translation>

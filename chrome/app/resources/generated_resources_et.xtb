@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">Riiuliüksus 5</translation>
 <translation id="1225404570112441414">Lisage sait riiulisse, et see oleks alati käepärast.</translation>
 <translation id="1227507814927581609">Autentimine ebaõnnestus seadmega „<ph name="DEVICE_NAME" />” ühenduse loomisel.</translation>
+<translation id="1230807973377071856">süsteemimenüü</translation>
 <translation id="1232569758102978740">Pealkirjata</translation>
 <translation id="1233721473400465416">Lokaat</translation>
 <translation id="1234808891666923653">Service Workers</translation>
@@ -1082,7 +1083,6 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="2581475589551312226">Play rakenduse andmed varundatakse automaatselt Google Drive'i ja taastatakse sealt. <ph name="BEGIN_LINK1" />Lisateave<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">Kausta ümbernimetamine</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (platvorm <ph name="PLATFORM_VERSION" />), <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">See laiendus võidi lisada teie teadmata.</translation>
 <translation id="2585300050980572691">Otsingu vaikeseaded</translation>
 <translation id="2587203970400270934">Operaatori kood:</translation>
 <translation id="2587922270115112871">Jälgitava kasutaja loomine ei loo Google'i kontot ning kasutaja seaded ja andmed
@@ -1543,6 +1543,7 @@ Nende ja edasiste juhiste nägemiseks vaadake meile aadressil <ph name="ACCOUNT_
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="32279126412636473">Laadi uuesti (⌘R)</translation>
 <translation id="3228679360002431295">Ühendamine ja kontrollimine <ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">esitamine/peatamine</translation>
 <translation id="3232318083971127729">Väärtus:</translation>
 <translation id="3236289833370040187">Omandiline kuuluvus kantakse üle domeenile <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3237784613213365159">Kasutaja <ph name="NEW_PROFILE_NAME" /> on nüüd jälgitav kasutaja</translation>
@@ -1856,6 +1857,7 @@ Asukohast <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="367645871420407123">jätke tühjaks, kui soovite määrata testkujutise vaikeväärtusele juurparooli</translation>
 <translation id="3678156199662914018">Laiend: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Täname teid tagasiside eest. Te pole praegu võrguga ühendatud ja aruanne saadetakse hiljem.</translation>
+<translation id="3683023058278427253">Tuvastasime teie domeeni puhul mitu litsentsitüüpi. Jätkamiseks valige üks.</translation>
 <translation id="3683524264665795342">Rakenduse <ph name="APP_NAME" /> ekraani jagamise taotlus</translation>
 <translation id="3685122418104378273">Google Drive'i sünkroonimine on mobiilse andmeside kasutamisel vaikimisi keelatud.</translation>
 <translation id="368789413795732264">Ilmnes viga, kui proovisite kirjutada faili: <ph name="ERROR_TEXT" /></translation>
@@ -2092,6 +2094,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4012550234655138030">Seadistage või hallake printereid teenuses <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="4014432863917027322">Kas parandada laiendust <ph name="EXTENSION_NAME" />?</translation>
 <translation id="4018133169783460046">Kuva <ph name="PRODUCT_NAME" /> selles keeles</translation>
+<translation id="4020106588733303597">Vabandust! Süsteemil ei õnnestunud saadaolevaid litsentse laadida.</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">&amp;Lisa sõnaraamatule</translation>
 <translation id="4023146161712577481">Seadme konfiguratsiooni määramine.</translation>
@@ -2315,6 +2318,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4389091756366370506">Kasutaja <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">Keela</translation>
 <translation id="4400367121200150367">Siin kuvatakse saidid, millel paroole kunagi ei salvestata</translation>
+<translation id="4400632832271803360">Ülemise rea klahvide toimingu vahetamiseks hoidke all käivitajaklahvi</translation>
 <translation id="4408599188496843485">A&amp;bi</translation>
 <translation id="4409697491990005945">Veerised</translation>
 <translation id="4411578466613447185">Koodi allkirjastaja</translation>
@@ -2675,6 +2679,7 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="494660967831069720">Osalised andmed</translation>
 <translation id="4950138595962845479">Valikud...</translation>
 <translation id="4953808748584563296">Oranž vaikeavatar</translation>
+<translation id="4955814292505481804">Aastane</translation>
 <translation id="495931528404527476">Chrome'is</translation>
 <translation id="496226124210045887">Valitud kaust sisaldab tundlikke faile. Kas soovite kindlasti anda kasutajale „$1” püsiva juurdepääsu selle kausta lugemiseks?</translation>
 <translation id="4964455510556214366">Asetus</translation>
@@ -3157,6 +3162,7 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="5658415415603568799">Turvalisuse suurendamiseks palub Smart Lock teil 20 tunni möödudes sisestada parooli.</translation>
 <translation id="5659593005791499971">Meil</translation>
 <translation id="5661272705528507004">SIM-kaart on keelatud ja seda ei saa kasutada. Võtke kaardi asendamiseks ühendust teenusepakkujaga.</translation>
+<translation id="5662477687021125631">Jätkuv</translation>
 <translation id="5669267381087807207">Aktiveerimine</translation>
 <translation id="5669691691057771421">Sisestage uus PIN-kood</translation>
 <translation id="5677503058916217575">Lehe keel:</translation>
@@ -3883,6 +3889,7 @@ Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="6746392203843147041">heli valjemaks</translation>
 <translation id="6748140994595080445">Muutke, kuidas <ph name="APP_NAME" /> keeli käsitleb ja kuvab.</translation>
 <translation id="6748465660675848252">Võite jätkata, kuid taastatakse ainult teie sünkroonitud andmed ja seaded. Kõik kohalikud andmed lähevad kaotsi.</translation>
+<translation id="6748775883310276718">Ühe rakenduse kiosk</translation>
 <translation id="6751256176799620176">Valitud on üks kaust</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Inkognito)</translation>
 <translation id="6757101664402245801">URL on kopeeritud</translation>
@@ -4708,6 +4715,7 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="8025789898011765392">Toimingud</translation>
 <translation id="8026334261755873520">Sirvimisandmete kustutamine</translation>
 <translation id="8028060951694135607">Microsofti võtme taastamine</translation>
+<translation id="8028134359912645720">Hoidke all juhtklahvi, klahvi Alt, tõstuklahvi või käivitajaklahvi, et näha nende muuteklahvide klaviatuuri otseteid.</translation>
 <translation id="8028993641010258682">Suurus</translation>
 <translation id="8030169304546394654">Ühendus katkestatud</translation>
 <translation id="8030656706657716245">Lisa printer</translation>
@@ -4762,6 +4770,7 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="8107015733319732394">Google Play pood installitakse teie seadmesse <ph name="DEVICE_TYPE" />. See võib võtta mõne minuti.</translation>
 <translation id="8109930990200908494">Kasutaja sertifikaadi jaoks on vaja sisselogimist.</translation>
 <translation id="8111155949205007504">Jagage seda parooli oma iPhone'iga</translation>
+<translation id="8113043281354018522">Valige litsentsi tüüp</translation>
 <translation id="8116190140324504026">Rohkem teavet ...</translation>
 <translation id="8116483400482790018">Õigekirjakontrolli kohandatud sõnastik</translation>
 <translation id="8116972784401310538">&amp;Järjehoidjate haldur</translation>
@@ -4909,6 +4918,7 @@ Täislaadimiseks kuluva aja arvutamine</translation>
 <translation id="8339059274628563283">Saidi <ph name="SITE" /> kohalikult salvestatud andmed</translation>
 <translation id="834205140959175756">Olekusalves on võimalik hallata ühendusi, värskendusi ja seadeid.</translation>
 <translation id="8342318071240498787">Sama nimega fail või kataloog on juba olemas.</translation>
+<translation id="8349826889576450703">käivitaja</translation>
 <translation id="8351419472474436977">Laiendus on hõivanud puhverserveri seaded, mis tähendab, et see saab muuta, lõhkuda või kuulata pealt kogu teie veebitegevust. Kui te pole kindel, miks see muudatus toimus, siis te tõenäoliselt ei taha seda.</translation>
 <translation id="8352772353338965963">Lisage mitmele kontole sisselogimiseks konto. Kõigile kontodele, kuhu on sisse logitud, pääseb juurde ilma paroolita, seega soovitame seda funktsiooni kasutada vaid usaldusväärsete kontodega.</translation>
 <translation id="8353683614194668312">Rakendus saab teha järgmist.</translation>
@@ -4967,6 +4977,7 @@ Täislaadimiseks kuluva aja arvutamine</translation>
 <translation id="8446884382197647889">Lisateave</translation>
 <translation id="8449008133205184768">Kleebi ja ühita laad</translation>
 <translation id="8449036207308062757">Halda salvestusruumi</translation>
+<translation id="8451512073679317615">assistent</translation>
 <translation id="8452135315243592079">SIM-kaart puudub</translation>
 <translation id="8453482423012550001">$1 üksuse kopeerimine ...</translation>
 <translation id="8454288007744638700">Või valige uus võrk:</translation>
@@ -5425,6 +5436,7 @@ Järgmised märguanded, aknad ja dialoogid võivad jaguneda eri töölaudade vah
 <translation id="9123413579398459698">FTP-puhverserver</translation>
 <translation id="9124003689441359348">Salvestatud paroolid kuvatakse siin</translation>
 <translation id="912419004897138677">Kodek</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> on alles)</translation>
 <translation id="9127762771585363996">Pööra kaamera pilti horisontaalselt</translation>
 <translation id="9128870381267983090">Ühendumine Internetiga</translation>
 <translation id="9130015405878219958">Sisestati vale režiim.</translation>

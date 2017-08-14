@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">栏中第 5 项</translation>
 <translation id="1225404570112441414">将此网站添加到任务栏，以便随时使用。</translation>
 <translation id="1227507814927581609">连接到“<ph name="DEVICE_NAME" />”时身份验证失败。</translation>
+<translation id="1230807973377071856">系统菜单</translation>
 <translation id="1232569758102978740">无标题</translation>
 <translation id="1233721473400465416">语言区域</translation>
 <translation id="1234808891666923653">Service Workers</translation>
@@ -1078,7 +1079,6 @@
 <translation id="2581475589551312226">自动将 Play 应用数据备份到 Google 云端硬盘，并从 Google 云端硬盘自动恢复 Play 应用数据。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">重命名文件夹</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" />（平台：<ph name="PLATFORM_VERSION" />）<ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">该扩展程序可能是在您不知情的情况下添加的。</translation>
 <translation id="2585300050980572691">默认搜索设置</translation>
 <translation id="2587203970400270934">运算符代码：</translation>
 <translation id="2587922270115112871">创建受监管用户不会随之创建 Google 帐号，因此这些受监管用户无法借助 Chrome 同步功能将其设置和数据同步到其他设备。受监管用户的设置只能应用于此设备。</translation>
@@ -1538,6 +1538,7 @@
 <translation id="3227137524299004712">麦克风</translation>
 <translation id="32279126412636473">重新加载 (⌘R)</translation>
 <translation id="3228679360002431295">正在连接并验证<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">播放/暂停</translation>
 <translation id="3232318083971127729">值：</translation>
 <translation id="3236289833370040187">所有权将被转移到 <ph name="DESTINATION_DOMAIN" />。</translation>
 <translation id="3237784613213365159">“<ph name="NEW_PROFILE_NAME" />”现已成为受监管用户</translation>
@@ -1849,6 +1850,7 @@
 <translation id="367645871420407123">如果您要将根密码设为默认的测试图片值，则将此字段留空</translation>
 <translation id="3678156199662914018">扩展程序：<ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">感谢您提交反馈。您目前处于离线状态，系统将在您上线后提交您的反馈报告。</translation>
+<translation id="3683023058278427253">我们检测到您的网域有多种许可类型。请选择一种许可类型以继续操作。</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> 屏幕共享请求</translation>
 <translation id="3685122418104378273">当您使用移动数据网络时，Google 云端硬盘同步功能默认情况下处于停用状态。</translation>
 <translation id="368789413795732264">尝试写入文件时发生错误：<ph name="ERROR_TEXT" />。</translation>
@@ -2084,6 +2086,7 @@
 <translation id="4012550234655138030">设置或管理“<ph name="CLOUD_PRINT_NAME" />”中的打印机。</translation>
 <translation id="4014432863917027322">要修复“<ph name="EXTENSION_NAME" />”吗？</translation>
 <translation id="4018133169783460046">以这种语言显示 <ph name="PRODUCT_NAME" /></translation>
+<translation id="4020106588733303597">糟糕！系统未能成功加载可用的许可。</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">添加到字典中(&amp;A)</translation>
 <translation id="4023146161712577481">正在确定设备配置。</translation>
@@ -2308,6 +2311,7 @@
 <translation id="4389091756366370506">用户 <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">停用</translation>
 <translation id="4400367121200150367">一律不保存密码的网站将显示在这里</translation>
+<translation id="4400632832271803360">按住启动器键可切换顶行键的行为</translation>
 <translation id="4408599188496843485">帮助(&amp;E)</translation>
 <translation id="4409697491990005945">边距</translation>
 <translation id="4411578466613447185">代码签名人</translation>
@@ -2665,6 +2669,7 @@
 <translation id="494660967831069720">部分数据</translation>
 <translation id="4950138595962845479">选项...</translation>
 <translation id="4953808748584563296">默认的橙色头像</translation>
+<translation id="4955814292505481804">年度</translation>
 <translation id="495931528404527476">在 Chrome 中</translation>
 <translation id="496226124210045887">您选择的文件夹中包含敏感文件。确定要授予“$1”对此文件夹的永久读取权限吗？</translation>
 <translation id="4964455510556214366">排列方式</translation>
@@ -3139,6 +3144,7 @@
 <translation id="5658415415603568799">为了提升安全性，Smart Lock 会在 20 小时后要求您输入您的密码。</translation>
 <translation id="5659593005791499971">电子邮件</translation>
 <translation id="5661272705528507004">此 SIM 卡已停用，无法继续使用。请与您的服务提供商联系，以进行更换。</translation>
+<translation id="5662477687021125631">永久</translation>
 <translation id="5669267381087807207">正在激活</translation>
 <translation id="5669691691057771421">请输入新的 PIN 码</translation>
 <translation id="5677503058916217575">网页语言：</translation>
@@ -3864,6 +3870,7 @@
 <translation id="6746392203843147041">调高音量</translation>
 <translation id="6748140994595080445">更改<ph name="APP_NAME" />处理和显示语言的方式。</translation>
 <translation id="6748465660675848252">您可以继续，但系统将只恢复已同步的数据和设置。所有本地数据都将会丢失。</translation>
+<translation id="6748775883310276718">单个应用自助服务终端</translation>
 <translation id="6751256176799620176">已选择 1 个文件夹</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" />（隐身）</translation>
 <translation id="6757101664402245801">网址已复制</translation>
@@ -4681,6 +4688,7 @@
 <translation id="8025789898011765392">任务</translation>
 <translation id="8026334261755873520">清除浏览数据</translation>
 <translation id="8028060951694135607">Microsoft 密钥恢复</translation>
+<translation id="8028134359912645720">按住 Ctrl、Alt、Shift 或启动器键，即可查看这些辅助键的键盘快捷键。</translation>
 <translation id="8028993641010258682">大小</translation>
 <translation id="8030169304546394654">连接已断开</translation>
 <translation id="8030656706657716245">添加打印机</translation>
@@ -4735,6 +4743,7 @@
 <translation id="8107015733319732394">正在在您的 <ph name="DEVICE_TYPE" /> 上安装 Google Play 商店。这可能需要几分钟的时间。</translation>
 <translation id="8109930990200908494">需提供用户证书才能登录。</translation>
 <translation id="8111155949205007504">将此密码发送到您的 iPhone</translation>
+<translation id="8113043281354018522">选择许可类型</translation>
 <translation id="8116190140324504026">详情...</translation>
 <translation id="8116483400482790018">自定义拼写检查字典</translation>
 <translation id="8116972784401310538">书签管理器(&amp;B)</translation>
@@ -4881,6 +4890,7 @@
 <translation id="8339059274628563283"><ph name="SITE" /> 本地存储的数据</translation>
 <translation id="834205140959175756">使用状态栏管理连接、更新和设置。</translation>
 <translation id="8342318071240498787">已存在具有相同名称的文件或目录。</translation>
+<translation id="8349826889576450703">启动器</translation>
 <translation id="8351419472474436977">此扩展程序控制了您的代理设置，也就是说，它可以更改、破坏或窃听您在网上执行的任何操作。如果您不确定出现这种变化的原因，那么这种变化可能并不是您所希望的。</translation>
 <translation id="8352772353338965963">为多帐号登录添加帐号。用户无需使用密码即可访问所有已登录的帐号，因此您应仅通过受信任的帐号使用此功能。</translation>
 <translation id="8353683614194668312">该程序可以：</translation>
@@ -4939,6 +4949,7 @@
 <translation id="8446884382197647889">了解详情</translation>
 <translation id="8449008133205184768">粘贴并匹配样式</translation>
 <translation id="8449036207308062757">管理存储空间</translation>
+<translation id="8451512073679317615">智能助理</translation>
 <translation id="8452135315243592079">缺少 SIM 卡</translation>
 <translation id="8453482423012550001">正在复制$1项内容…</translation>
 <translation id="8454288007744638700">或者，选择一个新网络：</translation>
@@ -5396,6 +5407,7 @@
 <translation id="9123413579398459698">FTP 代理</translation>
 <translation id="9124003689441359348">已保存的密码将显示在这里</translation>
 <translation id="912419004897138677">编解码器</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" />（剩余 <ph name="LICENSE_COUNT" /> 项）</translation>
 <translation id="9127762771585363996">水平翻转相机图片</translation>
 <translation id="9128870381267983090">连接到网络</translation>
 <translation id="9130015405878219958">输入的模式无效。</translation>

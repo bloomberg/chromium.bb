@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">Elemento 5 de la biblioteca</translation>
 <translation id="1225404570112441414">Permite agregar el sitio a tu biblioteca para usarlo en cualquier momento.</translation>
 <translation id="1227507814927581609">Error de autenticación al establecer la conexión con "<ph name="DEVICE_NAME" />".</translation>
+<translation id="1230807973377071856">menú del sistema</translation>
 <translation id="1232569758102978740">Sin título</translation>
 <translation id="1233721473400465416">Configuración regional</translation>
 <translation id="1234808891666923653">Trabajadores de servicios</translation>
@@ -1078,7 +1079,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2581475589551312226">Realiza copias de seguridad y restaura automáticamente los datos de la app de Play en Google Drive. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">Cambiar el nombre de la carpeta</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">Es posible que esta extensión se haya agregado sin tu conocimiento.</translation>
 <translation id="2585300050980572691">Configuración de búsqueda predeterminada</translation>
 <translation id="2587203970400270934">Código del operador:</translation>
 <translation id="2587922270115112871">Al crear un usuario supervisado, no se crea una cuenta de Google,
@@ -1539,6 +1539,7 @@ Revisa tu correo electrónico <ph name="ACCOUNT_EMAIL" /> para consultar estas y
 <translation id="3227137524299004712">Micrófono</translation>
 <translation id="32279126412636473">Volver a cargar (⌘R)</translation>
 <translation id="3228679360002431295">Conectando y verificando<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">reproducir/pausar</translation>
 <translation id="3232318083971127729">Valor:</translation>
 <translation id="3236289833370040187">La propiedad se transferirá al dominio <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> ahora es un usuario supervisado</translation>
@@ -1852,6 +1853,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="367645871420407123">dejar en blanco si quieres configurar la contraseña de raíz en el valor de la imagen de prueba predeterminada</translation>
 <translation id="3678156199662914018">Extensión: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Gracias por tus comentarios. Tu informe se enviará cuando tengas conexión.</translation>
+<translation id="3683023058278427253">Detectamos varios tipos de licencia para tu dominio. Selecciona uno para continuar.</translation>
 <translation id="3683524264665795342">Solicitud para compartir la pantalla de parte de <ph name="APP_NAME" /></translation>
 <translation id="3685122418104378273">La sincronización con Google Drive está inhabilitada de manera predeterminada cuando se usan los datos móviles.</translation>
 <translation id="368789413795732264">Se produjo un error al intentar escribir el archivo: <ph name="ERROR_TEXT" />.</translation>
@@ -2088,6 +2090,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4012550234655138030">Configurar o administrar impresoras en <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="4014432863917027322">¿Reparar "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="4018133169783460046">Mostrar <ph name="PRODUCT_NAME" /> en este idioma</translation>
+<translation id="4020106588733303597">El sistema no puede cargar las licencias disponibles.</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">&amp;Agregar a diccionario</translation>
 <translation id="4023146161712577481">Determinando configuración del dispositivo</translation>
@@ -2312,6 +2315,7 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4389091756366370506">Usuario <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">Inhabilitar</translation>
 <translation id="4400367121200150367">Aquí aparecerán los sitios que nunca guardan las contraseñas</translation>
+<translation id="4400632832271803360">Mantén presionada la tecla de Launcher para cambiar el comportamiento de las teclas en la fila superior</translation>
 <translation id="4408599188496843485">A&amp;yuda</translation>
 <translation id="4409697491990005945">Márgenes</translation>
 <translation id="4411578466613447185">Firmante del código</translation>
@@ -2672,6 +2676,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="494660967831069720">Datos parciales</translation>
 <translation id="4950138595962845479">Opciones...</translation>
 <translation id="4953808748584563296">Avatar naranja predeterminado</translation>
+<translation id="4955814292505481804">Anual</translation>
 <translation id="495931528404527476">En Chrome</translation>
 <translation id="496226124210045887">La carpeta seleccionada contiene archivos confidenciales. ¿Confirmas que deseas otorgar a "$1" acceso de lectura permanente a esta carpeta?</translation>
 <translation id="4964455510556214366">Disposición</translation>
@@ -3154,6 +3159,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5658415415603568799">Para mejorar la seguridad, Smart Lock te pedirá que ingreses tu contraseña después de 20 horas.</translation>
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5661272705528507004">Esta tarjeta SIM está inhabilitada y no se puede usar. Comunícate con tu proveedor de servicios para reemplazarla.</translation>
+<translation id="5662477687021125631">Perpetua</translation>
 <translation id="5669267381087807207">Activando</translation>
 <translation id="5669691691057771421">Ingresa el PIN nuevo</translation>
 <translation id="5677503058916217575">Idioma de la página:</translation>
@@ -3880,6 +3886,7 @@ Usa esta función solo con cuentas de confianza.</translation>
 <translation id="6746392203843147041">subir volumen</translation>
 <translation id="6748140994595080445">Cambiar cómo administra y muestra <ph name="APP_NAME" /> los idiomas</translation>
 <translation id="6748465660675848252">Puedes continuar, pero se restaurarán únicamente la configuración y los datos sincronizados. Se perderán todos los datos locales.</translation>
+<translation id="6748775883310276718">Kiosco de una sola app</translation>
 <translation id="6751256176799620176">1 carpeta seleccionada</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Incógnito)</translation>
 <translation id="6757101664402245801">URL copiada</translation>
@@ -4705,6 +4712,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8025789898011765392">Tareas</translation>
 <translation id="8026334261755873520">Eliminar datos de navegación</translation>
 <translation id="8028060951694135607">Recuperación de claves de Microsoft</translation>
+<translation id="8028134359912645720">Mantén presionadas las teclas Ctrl, Alt, mayúscula o de Launcher para ver las combinaciones de teclas que permiten acceder de manera directa a esos modificadores.</translation>
 <translation id="8028993641010258682">Tamaño</translation>
 <translation id="8030169304546394654">Desconectado</translation>
 <translation id="8030656706657716245">Agregar impresora</translation>
@@ -4759,6 +4767,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8107015733319732394">Se está instalando Google Play Store en tu <ph name="DEVICE_TYPE" />. Esta acción puede tardar unos minutos.</translation>
 <translation id="8109930990200908494">Se requiere el acceso para el certificado de usuario.</translation>
 <translation id="8111155949205007504">Compartir esta contraseña con tu iPhone</translation>
+<translation id="8113043281354018522">Elige un tipo de licencia</translation>
 <translation id="8116190140324504026">Más información...</translation>
 <translation id="8116483400482790018">Diccionario ortográfico personalizado</translation>
 <translation id="8116972784401310538">&amp;Administrador de favoritos</translation>
@@ -4905,6 +4914,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8339059274628563283">El sitio <ph name="SITE" /> almacenó datos de forma local</translation>
 <translation id="834205140959175756">Administra las conexiones, actualizaciones y configuración con la bandeja de estado.</translation>
 <translation id="8342318071240498787">Ya existe un archivo o un directorio con el mismo nombre.</translation>
+<translation id="8349826889576450703">launcher</translation>
 <translation id="8351419472474436977">Esta extensión tomó control de tu configuración de proxy, lo que significa que puede cambiar, dañar o espiar cualquier actividad que realices en línea. Si sabes con certeza por qué se produjo este cambio, probablemente no lo desees.</translation>
 <translation id="8352772353338965963">Agrega una cuenta para el acceso múltiple. Puedes acceder a todas las cuentas abiertas sin una contraseña, por lo que esta función solo debe utilizarse con cuentas de confianza.</translation>
 <translation id="8353683614194668312">Puede:</translation>
@@ -4963,6 +4973,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8446884382197647889">Más información</translation>
 <translation id="8449008133205184768">Pegar con el mismo estilo</translation>
 <translation id="8449036207308062757">Administrar almacenamiento</translation>
+<translation id="8451512073679317615">asistente</translation>
 <translation id="8452135315243592079">Falta la tarjeta SIM</translation>
 <translation id="8453482423012550001">Copiando $1 elementos…</translation>
 <translation id="8454288007744638700">O bien, selecciona una nueva red:</translation>
@@ -5420,6 +5431,7 @@ Es posible que las notificaciones, las ventanas y los diálogos posteriores se d
 <translation id="9123413579398459698">Proxy FTP</translation>
 <translation id="9124003689441359348">Las contraseñas guardadas aparecerán aquí</translation>
 <translation id="912419004897138677">Códec</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (quedan <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9127762771585363996">Voltear imagen de cámara horizontalmente</translation>
 <translation id="9128870381267983090">Conectarse a una red</translation>
 <translation id="9130015405878219958">Se ingresó un modo no válido.</translation>

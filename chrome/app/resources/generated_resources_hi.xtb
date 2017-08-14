@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">अलमारी आइटम 5</translation>
 <translation id="1225404570112441414">इस साइट को अपनी अलमारी में जोड़ें ताकि किसी भी समय इसका उपयोग कर सकें.</translation>
 <translation id="1227507814927581609">"<ph name="DEVICE_NAME" />" से कनेक्ट होते समय प्रमाणीकरण विफल रहा.</translation>
+<translation id="1230807973377071856">सिस्टम मेनू</translation>
 <translation id="1232569758102978740">शीर्षक रहित</translation>
 <translation id="1233721473400465416">स्थान</translation>
 <translation id="1234808891666923653">सेवा कार्यकर्ता</translation>
@@ -1081,7 +1082,6 @@
 <translation id="2581475589551312226">Play ऐप्लिकेशन डेटा का Google डिस्क में अपने आप बैक अप लें और पुन: स्थापित करें. <ph name="BEGIN_LINK1" />अधिक जानें<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">फ़ोल्डर का नाम बदलें</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (प्‍लेटफ़ॉर्म <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">यह एक्सटेंशन आपकी जानकारी के बिना जोड़ा गया हो सकता है.</translation>
 <translation id="2585300050980572691">डिफ़ॉल्ट खोज सेटिंग</translation>
 <translation id="2587203970400270934">ऑपरेटर कोड:</translation>
 <translation id="2587922270115112871">निगरानी में रखा गया उपयोगकर्ता बनाने से Google खाता नहीं बनता, और उसकी सेटिंग और डेटा
@@ -1542,6 +1542,7 @@
 <translation id="3227137524299004712">माइक्रोफ़ोन</translation>
 <translation id="32279126412636473">पुन: लोड करें (⌘R)</translation>
 <translation id="3228679360002431295">कनेक्ट कर रहा है और पुष्टि कर रहा है<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">चलाएं / रोकें</translation>
 <translation id="3232318083971127729">मान:</translation>
 <translation id="3236289833370040187">स्वामित्व <ph name="DESTINATION_DOMAIN" /> को स्थानांतरित कर दिया जाएगा.</translation>
 <translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> अब एक निगरानी में रखा गया उपयोगकर्ता है</translation>
@@ -1855,6 +1856,7 @@
 <translation id="367645871420407123">यदि आप रूट पासवर्ड को डिफ़ॉल्‍ट परीक्षण चित्र मान पर सेट करना चाहते हैं तो खाली छोड़ दें</translation>
 <translation id="3678156199662914018">एक्‍सटेंशन: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">आपके फ़ीडबैक के लिए धन्यवाद. आप अब ऑफ़लाइन हैं और आपकी रिपोर्ट बाद में भेज दी जाएगी.</translation>
+<translation id="3683023058278427253">हमें आपके डोमेन के लिए एक से अधिक प्रकार के लाइसेंस मिले हैं. कृपया जारी रखने के लिए एक को चुनें.</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> स्क्रीन साझाकरण अनुरोध</translation>
 <translation id="3685122418104378273">मोबाइल डेटा का उपयोग करते समय, Google डिस्‍क समन्‍वयन डिफ़ॉल्‍ट रूप से अक्षम रहता है.</translation>
 <translation id="368789413795732264">फ़ाइल में लिखने का प्रयास करते समय कोई गड़बड़ी आई: <ph name="ERROR_TEXT" />.</translation>
@@ -2090,6 +2092,7 @@
 <translation id="4012550234655138030">Set up or manage printers in <ph name="CLOUD_PRINT_NAME" /> में प्रिंटर सेट अप करें या प्रबंधित करें.</translation>
 <translation id="4014432863917027322">"<ph name="EXTENSION_NAME" />" को ठीक करें?</translation>
 <translation id="4018133169783460046"><ph name="PRODUCT_NAME" /> को इस भाषा में दिखाएं</translation>
+<translation id="4020106588733303597">ओह!  सिस्टम उपलब्ध लाइसेंस लोड नहीं कर सका.</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">शब्दकोश में &amp;जोड़ें</translation>
 <translation id="4023146161712577481">डिवाइस कॉन्फ़िगरेशन निर्धारित करना.</translation>
@@ -2314,6 +2317,7 @@
 <translation id="4389091756366370506">उपयोगकर्ता <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">अक्षम करें</translation>
 <translation id="4400367121200150367">वे साइटें जो कभी पासवर्ड नहीं सहेजती हैं, यहां दिखाई देंगी</translation>
+<translation id="4400632832271803360">शीर्ष-पंक्ति वाली कुंजियों का व्यवहार स्विच करने के लिए Launcher कुंजी दबाए रखें</translation>
 <translation id="4408599188496843485">स&amp;हायता</translation>
 <translation id="4409697491990005945">मार्जिन</translation>
 <translation id="4411578466613447185">कोड हस्ताक्षरकर्ता</translation>
@@ -2674,6 +2678,7 @@
 <translation id="494660967831069720">आंशिक डेटा</translation>
 <translation id="4950138595962845479">विकल्प...</translation>
 <translation id="4953808748584563296">डिफ़ॉल्ट नारंगी अवतार</translation>
+<translation id="4955814292505481804">वार्षिक</translation>
 <translation id="495931528404527476">Chrome में</translation>
 <translation id="496226124210045887">आपके द्वारा चुने गए फ़ोल्डर में संवेदनशील फ़ाइलें हैं. क्या आप वाकई इस फ़ोल्डर को "$1" स्थायी पढ़ने की एक्सेस देना चाहते हैं?</translation>
 <translation id="4964455510556214366">व्यवस्था</translation>
@@ -3156,6 +3161,7 @@
 <translation id="5658415415603568799">अतिरिक्त सुरक्षा के लिए, Smart Lock आपसे 20 घंटों के बाद अपना पासवर्ड डालने के लिए कहेगा.</translation>
 <translation id="5659593005791499971">ईमेल</translation>
 <translation id="5661272705528507004">यह सिम कार्ड अक्षम है और इसका उपयोग नहीं किया जा सकता. इसे बदलने के लिए कृपया अपने सेवा प्रदाता से संपर्क करें.</translation>
+<translation id="5662477687021125631">लगातार</translation>
 <translation id="5669267381087807207">सक्रिय कर रहा है</translation>
 <translation id="5669691691057771421">नया पिन डालें</translation>
 <translation id="5677503058916217575">पेज की भाषा:</translation>
@@ -3882,6 +3888,7 @@
 <translation id="6746392203843147041">वॉल्‍यूम बढ़ाएं</translation>
 <translation id="6748140994595080445"><ph name="APP_NAME" /> द्वारा भाषाओं को प्रबंधित करने और दिखाने का तरीका बदलें.</translation>
 <translation id="6748465660675848252">आप आगे बढ़ सकते हैं, लेकिन केवल आपके समन्वयित डेटा और सेटिंग को पुनर्स्थापित किया जाएगा. सभी स्थानीय डेटा खो जाएगा.</translation>
+<translation id="6748775883310276718">सिंगल ऐप किओस्क</translation>
 <translation id="6751256176799620176">1 फ़ोल्डर चयनित</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (गुप्त)</translation>
 <translation id="6757101664402245801">URL कॉपी किया गया</translation>
@@ -4708,6 +4715,7 @@
 <translation id="8025789898011765392">कार्य</translation>
 <translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
+<translation id="8028134359912645720">उन बदलने के साधनों के कीबोर्ड शॉर्टकट देखने के लिए Control, Alt, Shift या Launcher को दबाए रखें.</translation>
 <translation id="8028993641010258682">आकार</translation>
 <translation id="8030169304546394654">डिसकनेक्ट किया गया</translation>
 <translation id="8030656706657716245">प्रिंटर जोड़ें</translation>
@@ -4762,6 +4770,7 @@
 <translation id="8107015733319732394">आपके <ph name="DEVICE_TYPE" /> पर Google Play स्टोर इंस्टॉल हो रहा है. इसमें कुछ मिनट लग सकते हैं.</translation>
 <translation id="8109930990200908494">उपयोगकर्ता प्रमाणपत्र के लिए प्रवेश करना आवश्यक है.</translation>
 <translation id="8111155949205007504">इस पासवर्ड को अपने iPhone से साझा करें</translation>
+<translation id="8113043281354018522">लाइसेंस का प्रकार चुनें</translation>
 <translation id="8116190140324504026">अधिक जानकारी...</translation>
 <translation id="8116483400482790018">कस्टम वर्तनी शब्दकोश</translation>
 <translation id="8116972784401310538">&amp;बुकमार्क प्रबंधक</translation>
@@ -4908,6 +4917,7 @@
 <translation id="8339059274628563283"><ph name="SITE" /> स्थानीय रूप से संग्रहित डेटा</translation>
 <translation id="834205140959175756">स्थिति ट्रे के ज़रिए कनेक्शन, अपडेट और सेटिंग प्रबंधित करें.</translation>
 <translation id="8342318071240498787">समान नाम वाली फ़ाइल या निर्देशिका पहले से ही मौजूद है.</translation>
+<translation id="8349826889576450703">लॉन्चर</translation>
 <translation id="8351419472474436977">इस एक्सटेंशन ने आपकी प्रॉक्सी सेटिंग पर नियंत्रण कर लिया है, जिसका अर्थ है कि यह आपके द्वारा ऑनलाइन किए जाने वाले कार्यों को बदल सकता है, खंडित कर सकता है या उसे छिप कर सुन सकता है. यदि आप सुनिश्चित नहीं हैं कि यह बदलाव क्यों हुआ है, तो संभवत: आप उसे नहीं चाहते हैं.</translation>
 <translation id="8352772353338965963">एकाधिक प्रवेश के लिए कोई खाता जोड़ें. सभी प्रवेश किए गए खातों को पासवर्ड के बिना एक्सेस किया जा सकता है, इसलिए इस सुविधा का उपयोग केवल विश्वसनीय खातों के साथ किया जाना चाहिए.</translation>
 <translation id="8353683614194668312">यह निम्न कर सकता है:</translation>
@@ -4966,6 +4976,7 @@
 <translation id="8446884382197647889">अधिक जानें</translation>
 <translation id="8449008133205184768">चिपकाएं और शैली का मिलान करें</translation>
 <translation id="8449036207308062757">जगह प्रबंधित करें</translation>
+<translation id="8451512073679317615">assistant</translation>
 <translation id="8452135315243592079">अनुपलब्ध SIM कार्ड</translation>
 <translation id="8453482423012550001">$1 आइटम को कॉपी किया जा रहा है...</translation>
 <translation id="8454288007744638700">या, कोई नया नेटवर्क चुनें:</translation>
@@ -5423,6 +5434,7 @@
 <translation id="9123413579398459698">FTP प्रॉक्सी</translation>
 <translation id="9124003689441359348">सहेजे गए पासवर्ड यहां दिखाई देंगे</translation>
 <translation id="912419004897138677">कोडेक</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> rem.)</translation>
 <translation id="9127762771585363996">कैमरा चित्र को क्षैतिज रूप से फ़्लिप करें</translation>
 <translation id="9128870381267983090">नेटवर्क से कनेक्ट करें</translation>
 <translation id="9130015405878219958">अमान्य मोड दर्ज किया गया.</translation>

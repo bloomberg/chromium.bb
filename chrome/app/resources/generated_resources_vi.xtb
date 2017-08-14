@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">Mục giá 5</translation>
 <translation id="1225404570112441414">Thêm trang web này vào giá của bạn để sử dụng bất cứ lúc nào.</translation>
 <translation id="1227507814927581609">Xác thực không thành công trong khi kết nối với "<ph name="DEVICE_NAME" />".</translation>
+<translation id="1230807973377071856">menu hệ thống</translation>
 <translation id="1232569758102978740">Không tên</translation>
 <translation id="1233721473400465416">Ngôn ngữ</translation>
 <translation id="1234808891666923653">Service Workers</translation>
@@ -1083,7 +1084,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2581475589551312226">Tự động sao lưu và khôi phục dữ liệu ứng dụng vào Google Drive. <ph name="BEGIN_LINK1" />Tìm hiểu thêm<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">Đổi tên thư mục</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Nền tảng <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">Tiện ích này có thể đã được thêm mà bạn không biết.</translation>
 <translation id="2585300050980572691">Cài đặt tìm kiếm mặc định</translation>
 <translation id="2587203970400270934">Mã nhà cung cấp:</translation>
 <translation id="2587922270115112871">Việc tạo người dùng được giám sát không tạo tài khoản Google cũng như các cài đặt
@@ -1544,6 +1544,7 @@ Vui lòng kiểm tra email của bạn tại <ph name="ACCOUNT_EMAIL" /> để b
 <translation id="3227137524299004712">Micrô</translation>
 <translation id="32279126412636473">Tải lại (⌘R)</translation>
 <translation id="3228679360002431295">Đang kết nối và xác minh<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">phát / tạm dừng</translation>
 <translation id="3232318083971127729">Giá trị:</translation>
 <translation id="3236289833370040187">Sẽ chuyển quyền sở hữu sang <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> hiện là người dùng được giám sát</translation>
@@ -1857,6 +1858,7 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="367645871420407123">bỏ trống nếu bạn muốn đặt mật khẩu gốc về giá trị hình ảnh kiểm tra mặc định</translation>
 <translation id="3678156199662914018">Tiện ích: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Cảm ơn bạn đã phản hồi. Bạn hiện đang ngoại tuyến và báo cáo của bạn sẽ được gửi sau.</translation>
+<translation id="3683023058278427253">Chúng tôi đã phát hiện nhiều loại giấy phép cho miền của bạn. Vui lòng chọn một giấy phép để tiếp tục.</translation>
 <translation id="3683524264665795342">Yêu cầu chia sẻ màn hình <ph name="APP_NAME" /></translation>
 <translation id="3685122418104378273">Tính năng đồng bộ hóa Google Drive được tắt theo mặc định khi sử dụng dữ liệu di động.</translation>
 <translation id="368789413795732264">Đã có lỗi khi cố gắng ghi tệp: <ph name="ERROR_TEXT" />.</translation>
@@ -2093,6 +2095,7 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4012550234655138030">Thiết lập hoặc quản lý máy in trong <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="4014432863917027322">Bạn muốn sửa "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="4018133169783460046">Hiển thị <ph name="PRODUCT_NAME" /> bằng ngôn ngữ này</translation>
+<translation id="4020106588733303597">Rất tiếc!  Hệ thống không tải được giấy phép hiện có.</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">&amp;Thêm vào Từ điển</translation>
 <translation id="4023146161712577481">Cấu hình thiết bị đang chờ xác định.</translation>
@@ -2317,6 +2320,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4389091756366370506">Người dùng <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">Vô hiệu hóa</translation>
 <translation id="4400367121200150367">Trang web không bao giờ lưu mật khẩu sẽ xuất hiện tại đây</translation>
+<translation id="4400632832271803360">Giữ phím Trình khởi chạy để chuyển đổi chức năng của các phím hàng trên cùng</translation>
 <translation id="4408599188496843485">T&amp;rợ giúp</translation>
 <translation id="4409697491990005945">Lề</translation>
 <translation id="4411578466613447185">Trình ký mã</translation>
@@ -2677,6 +2681,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="494660967831069720">Một phần dữ liệu</translation>
 <translation id="4950138595962845479">Tùy chọn...</translation>
 <translation id="4953808748584563296">Hình đại diện màu cam mặc định</translation>
+<translation id="4955814292505481804">Hàng năm</translation>
 <translation id="495931528404527476">Trong Chrome</translation>
 <translation id="496226124210045887">Thư mục bạn đã chọn chứa các tệp nhạy cảm. Bạn có chắc chắn muốn cấp quyền truy cập đọc vĩnh viễn "$1" cho thư mục này không?</translation>
 <translation id="4964455510556214366">Sắp xếp</translation>
@@ -3159,6 +3164,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5658415415603568799">Để tăng cường bảo mật, Smart Lock sẽ yêu cầu bạn nhập mật khẩu sau 20 giờ.</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5661272705528507004">Thẻ SIM này bị vô hiệu hóa và không thể sử dụng. Vui lòng liên hệ nhà cung cấp dịch vụ của bạn để lấy thẻ SIM thay thế.</translation>
+<translation id="5662477687021125631">Vĩnh viễn</translation>
 <translation id="5669267381087807207">Đang kích hoạt</translation>
 <translation id="5669691691057771421">Nhập mã PIN mới</translation>
 <translation id="5677503058916217575">Ngôn ngữ trang:</translation>
@@ -3833,7 +3839,7 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="667517062706956822">Bạn có muốn Google dịch trang này từ <ph name="SOURCE_LANGUAGE" /> sang <ph name="TARGET_LANGUAGE" /> không?</translation>
 <translation id="6675665718701918026">Đã kết nối thiết bị trỏ</translation>
 <translation id="6677037229676347494">ID mong muốn "<ph name="EXPECTED_ID" />", nhưng ID là "<ph name="NEW_ID" />".</translation>
-<translation id="6678312694238602710">Đã xóa tính năng tìm kiếm bằng giọng nói "Ok Google" khỏi Chrome OS</translation>
+<translation id="6678312694238602710">Tính năng tìm kiếm bằng giọng nói "Ok Google" đã bị xóa khỏi Chrome OS</translation>
 <translation id="6678717876183468697">URL truy vấn</translation>
 <translation id="6680028776254050810">Chuyển người dùng</translation>
 <translation id="6680442031740878064">Còn trống: <ph name="AVAILABLE_SPACE" /></translation>
@@ -3885,6 +3891,7 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="6746392203843147041">tăng âm</translation>
 <translation id="6748140994595080445">Thay đổi cách <ph name="APP_NAME" /> xử lý và hiển thị ngôn ngữ.</translation>
 <translation id="6748465660675848252">Bạn có thể tiến hành nhưng chỉ các cài đặt và dữ liệu đã đồng bộ hóa của bạn mới được lưu trữ. Tất cả dữ liệu cục bộ sẽ mất.</translation>
+<translation id="6748775883310276718">Kiosk ứng dụng đơn</translation>
 <translation id="6751256176799620176">Đã chọn 1 thư mục</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Ẩn danh)</translation>
 <translation id="6757101664402245801">Đã sao chép URL</translation>
@@ -4712,6 +4719,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8025789898011765392">Tác vụ</translation>
 <translation id="8026334261755873520">Xóa dữ liệu duyệt web</translation>
 <translation id="8028060951694135607">Khôi phục Khoá Microsoft</translation>
+<translation id="8028134359912645720">Giữ Control, Alt, Shift hoặc Trình khởi chạy để xem phím tắt dành cho các phím bổ trợ đó.</translation>
 <translation id="8028993641010258682">Kích thước</translation>
 <translation id="8030169304546394654">Đã ngắt kết nối</translation>
 <translation id="8030656706657716245">Thêm máy in</translation>
@@ -4766,6 +4774,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8107015733319732394">Đang cài đặt Cửa hàng Google Play trên <ph name="DEVICE_TYPE" /> của bạn. Quá trình này có thể mất vài phút.</translation>
 <translation id="8109930990200908494">Yêu cầu đăng nhập đối với chứng nhận người dùng.</translation>
 <translation id="8111155949205007504">Chia sẻ mật khẩu này với iPhone của bạn</translation>
+<translation id="8113043281354018522">Chọn loại giấy phép</translation>
 <translation id="8116190140324504026">Thông tin khác...</translation>
 <translation id="8116483400482790018">Từ điển chính tả tùy chỉnh</translation>
 <translation id="8116972784401310538">&amp;Trình quản lý dấu trang</translation>
@@ -4912,6 +4921,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8339059274628563283"><ph name="SITE" /> đã lưu trữ dữ liệu cục bộ</translation>
 <translation id="834205140959175756">Quản lý kết nối, nội dung cập nhật và cài đặt bằng khay trạng thái.</translation>
 <translation id="8342318071240498787">Tệp hoặc thư mục có cùng tên đã tồn tại.</translation>
+<translation id="8349826889576450703">trình khởi chạy</translation>
 <translation id="8351419472474436977">Tiện ích này đã chiếm quyền kiểm soát cài đặt proxy của bạn, điều đó có nghĩa là tiện ích này có thể thay đổi, làm gián đoạn hoặc nghe trộm bất kỳ điều gì bạn thực hiện trực tuyến. Nếu bạn không chắc chắn về lý do thay đổi này diễn ra, bạn có thể không cần tiện ích này.</translation>
 <translation id="8352772353338965963">Thêm một tài khoản để đăng nhập nhiều lần. Tất cả các tài khoản đã đăng nhập đều có thể truy cập được mà không cần mật khẩu, do đó bạn chỉ nên sử dụng tính năng này với các tài khoản đáng tin cậy.</translation>
 <translation id="8353683614194668312">Tiện ích/ứng dụng có thể:</translation>
@@ -4970,6 +4980,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8446884382197647889">Tìm hiểu thêm</translation>
 <translation id="8449008133205184768">Dán và Khớp Kiểu</translation>
 <translation id="8449036207308062757">Quản lý bộ nhớ</translation>
+<translation id="8451512073679317615">trợ lý</translation>
 <translation id="8452135315243592079">Thiếu thẻ SIM</translation>
 <translation id="8453482423012550001">Đang sao chép $1 mục...</translation>
 <translation id="8454288007744638700">Hoặc chọn một mạng mới:</translation>
@@ -5428,6 +5439,7 @@ Các thông báo, cửa sổ và hộp thoại tiếp theo có thể bị phân 
 <translation id="9123413579398459698">Proxy FTP</translation>
 <translation id="9124003689441359348">Mật khẩu đã lưu của bạn sẽ xuất hiện ở đây</translation>
 <translation id="912419004897138677">Codec</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> giấy phép còn lại)</translation>
 <translation id="9127762771585363996">Lật hình trong máy ảnh theo chiều ngang</translation>
 <translation id="9128870381267983090">Kết nối đến mạng</translation>
 <translation id="9130015405878219958">Chế độ không hợp lệ được nhập.</translation>

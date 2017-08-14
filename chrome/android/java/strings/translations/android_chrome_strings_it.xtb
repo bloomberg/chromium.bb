@@ -35,7 +35,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1326317727527857210">Accedi a Chrome per trovare le tue schede degli altri dispositivi.</translation>
 <translation id="132830257261478853">Barra degli indirizzi. Trascina verso il basso per chiudere il riquadro di navigazione.</translation>
 <translation id="1332501820983677155">Scorciatoie delle funzioni di Google Chrome</translation>
-<translation id="1339917386316755344">Vieni scollegato dalla maggior parte dei siti. Non uscirai dal tuo account Google.</translation>
 <translation id="1369915414381695676">Sito <ph name="SITE_NAME" /> aggiunto</translation>
 <translation id="1373696734384179344">Memoria non sufficiente per scaricare i contenuti selezionati.</translation>
 <translation id="1376578503827013741">Elaborazione...</translation>
@@ -105,15 +104,14 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1984937141057606926">Consentiti, tranne i cookie di terze parti</translation>
 <translation id="1993768208584545658">Il sito <ph name="SITE" /> desidera accoppiarsi</translation>
 <translation id="1994173015038366702">URL sito</translation>
-<translation id="2000271276660256125">Per motivi di sicurezza, devi confermare il blocco schermo per poter accedere alla tua password.</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kB per altre app</translation>
 <translation id="2011013297378343166">Se usi questa applicazione, accetti i <ph name="BEGIN_LINK1" />Termini di servizio<ph name="END_LINK1" /> e l'<ph name="BEGIN_LINK2" />Informativa sulla privacy<ph name="END_LINK2" /> di Chrome, oltre all'<ph name="BEGIN_LINK3" />Informativa sulla privacy per gli account Google creati in Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2017836877785168846">Consente di cancellare la cronologia e i completamenti automatici nella barra degli indirizzi.</translation>
-<translation id="2020525020270327736">Copia sito</translation>
 <translation id="2038563949887743358">Attiva Richiedi sito desktop</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB per altre app</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="2082238445998314030">Risultato <ph name="RESULT_NUMBER" /> di <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2086652334978798447">Per ricevere contenuti suggeriti appositamente per te da Google, accedi a Chrome.</translation>
 <translation id="2095887075102408547">Quando questa funzione è attiva, Chrome utilizza i server di Google per comprimere le pagine che visiti prima di scaricarle. Le pagine visitate utilizzando connessioni private (HTTPS) o in schede di navigazione in incognito non vengono ottimizzate o viste da Google.</translation>
 <translation id="2096396629993765042">Non verrai scollegato dal tuo account Google. Il tuo account Google potrebbe avere altre forme di cronologia di navigazione alla pagina <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Accesso automatico</translation>
@@ -168,7 +166,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="2625189173221582860">Password copiata</translation>
 <translation id="2631006050119455616">Risparmiati</translation>
 <translation id="2653659639078652383">Invia</translation>
-<translation id="266290525248308397">Conferma il blocco schermo</translation>
 <translation id="2677748264148917807">Esci</translation>
 <translation id="2704606927547763573">Copiata</translation>
 <translation id="2707726405694321444">Aggiorna la pagina</translation>
@@ -320,6 +317,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4195643157523330669">Apri in un'altra scheda</translation>
 <translation id="4226663524361240545">Le notifiche possono far vibrare il dispositivo</translation>
 <translation id="4242533952199664413">Apri le impostazioni</translation>
+<translation id="4248297594476034182">Accedi a Chrome per trovare le tue schede su tutti i dispositivi.</translation>
 <translation id="424864128008805179">Uscire da Chrome?</translation>
 <translation id="4254813446494774748">Lingua della traduzione:</translation>
 <translation id="4256782883801055595">Licenze open source</translation>
@@ -328,7 +326,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4275663329226226506">Multimediali</translation>
 <translation id="4278390842282768270">Consentiti</translation>
 <translation id="42981349822642051">Espandi</translation>
-<translation id="4300272766492248925">Apri app</translation>
 <translation id="4307992518367153382">Impostazioni di base</translation>
 <translation id="4334425495413014985">Connettiti a Internet per usare <ph name="APP_NAME" /> per la prima volta</translation>
 <translation id="4351244548802238354">Chiudi finestra di dialogo</translation>
@@ -530,7 +527,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 
 Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annunci non basati su altri siti web visitati. Molti siti web continueranno tuttavia a raccogliere e a utilizzare i dati di navigazione, ad esempio per aumentare la sicurezza, fornire contenuti, annunci e consigli, nonché per generare statistiche sui rapporti.</translation>
 <translation id="6277522088822131679">Si è verificato un problema durante la stampa della pagina. Riprova.</translation>
-<translation id="6290548061331241837">La visualizzazione e la copia delle password non sono disponibili nella tua versione di Android.</translation>
 <translation id="6295158916970320988">Tutti i siti</translation>
 <translation id="6320088164292336938">Vibrazione</translation>
 <translation id="6324034347079777476">Sincronizzazione del sistema Android non attiva</translation>
@@ -560,7 +556,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6527303717912515753">Condividi</translation>
 <translation id="6534565668554028783">Google ha impiegato troppo tempo a rispondere</translation>
 <translation id="6538442820324228105">Sono stati scaricati <ph name="GBS" /> GB</translation>
-<translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Seleziona una scheda da trasmettere</translation>
 <translation id="6545017243486555795">Cancella tutti i dati</translation>
 <translation id="6550675742724504774">Opzioni</translation>
@@ -826,7 +821,6 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostra originale</translation>
 <translation id="9139068048179869749">Chiedi conferma prima di consentire ai siti di inviare notifiche (opzione consigliata)</translation>
-<translation id="9187199695613236444">Visualizzazione ottimizzata per dispositivi mobili</translation>
 <translation id="9188680907066685419">Esci dall'account gestito</translation>
 <translation id="9204836675896933765">1 file rimanente</translation>
 <translation id="9206873250291191720">A</translation>

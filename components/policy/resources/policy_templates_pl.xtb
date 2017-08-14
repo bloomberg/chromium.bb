@@ -29,6 +29,7 @@
           Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, host pomocy zdalnej będzie uruchamiany w kontekście użytkownika, a użytkownicy zdalni nie będą mieć dostępu do okien z podwyższonym poziomem uprawnień na komputerze.</translation>
 <translation id="1096105751829466145">Domyślny dostawca wyszukiwania</translation>
 <translation id="1117535567637097036">Moduły obsługi protokołów ustawiane przez tę zasadę nie są używane podczas obsługi intencji Androida.</translation>
+<translation id="1122282995569868661">Pokazuje ikonę paska narzędzi usługi <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Pozwala skonfigurować katalog, w którym przeglądarka <ph name="PRODUCT_NAME" /> będzie przechowywać na dysku urządzenia pliki z pamięci podręcznej.
 
       Jeśli włączysz tę zasadę, przeglądarka <ph name="PRODUCT_NAME" /> będzie używać wybranego katalogu bez względu na to, czy użytkownik określi parametr „--disk-cache-dir”. Aby uniknąć utraty danych i innych nieoczekiwanych błędów, nie należy podawać w tej zasadzie głównego katalogu woluminu ani katalogu używanego do innych celów, ponieważ zawartością zarządza przeglądarka <ph name="PRODUCT_NAME" />.
@@ -51,6 +52,7 @@
       Jeśli ta zasada nie jest skonfigurowana, domyślna częstotliwość wynosi trzy
       godziny. Minimalna dopuszczalna częstotliwość to 60 sekund.</translation>
 <translation id="1221359380862872747">Załaduj podane URL-e przy logowaniu demonstracyjnym</translation>
+<translation id="123081309365616809">Włącz przesyłanie treści na urządzenie</translation>
 <translation id="1265053460044691532">Ograniczenie czasu, przez który użytkownik uwierzytelniony za pomocą SAML może logować się offline</translation>
 <translation id="1291880496936992484">Ostrzeżenie: RC4 zostanie całkowicie usunięty z <ph name="PRODUCT_NAME" /> po wersji 52 (około września 2016 r.) i wtedy ta zasada przestanie działać.
 
@@ -260,6 +262,7 @@
       Kiedy ta zasada nie jest skonfigurowana, domyślna wartość to 0 stopni,
       a użytkownik może ją zmienić. Jeśli tak zrobi, zmieniona wartość nie zostanie ponownie
       zastosowana po ponownym uruchomieniu urządzenia.</translation>
+<translation id="2156132677421487971">Pozwala skonfigurować zasady dotyczące <ph name="PRODUCT_NAME" /> – funkcji, która umożliwia użytkownikom przesyłanie zawartości kart, stron i pulpitu z przeglądarki do zdalnych wyświetlaczy i systemów audio.</translation>
 <translation id="2168397434410358693">Opóźnienie bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2170233653554726857">Włącz optymalizację WPAD</translation>
 <translation id="2176565653304920879">Gdy zasada jest ustawiona, proces automatycznego wykrywania strefy czasowej przebiega na jeden z tych sposobów, zależnie od ustawionej wartości:
@@ -552,6 +555,7 @@
       Bez względu na to, czy i jak ta zasada jest skonfigurowana, użytkownicy nie mogą jej zmienić.</translation>
 <translation id="3072045631333522102">Wygaszacz ekranu używany na ekranie logowania w trybie sklepu</translation>
 <translation id="3072847235228302527">Określ Warunki korzystania z usługi dla lokalnego konta na urządzeniu</translation>
+<translation id="3086995894968271156">Skonfiguruj odbiornik Cast (<ph name="PRODUCT_NAME" />).</translation>
 <translation id="3096595567015595053">Lista włączonych wtyczek</translation>
 <translation id="3101501961102569744">Wybierz sposób określenia ustawień serwera proxy</translation>
 <translation id="3117676313396757089">Ostrzeżenie: DHE zostanie całkowicie usunięty z <ph name="PRODUCT_NAME" /> po wersji 57 (około marca 2017 r.) i wtedy ta zasada przestanie działać.
@@ -916,6 +920,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli wartość w tej zasadzie jest ustawiona na 0, zostanie użyty domyślny rozmiar pamięci podręcznej i użytkownik nie będzie mógł go zmienić.
 
       Jeśli zasada nie jest ustawiona, zostanie użyty domyślny rozmiar pamięci, a użytkownik będzie mógł go zastąpić flagą --disk-cache-size.</translation>
+<translation id="4508686775017063528">Jeśli ta zasada jest ustawiona na wartość prawda lub nie jest ustawiona, usługa <ph name="PRODUCT_NAME" /> jest włączona, a użytkownicy mogą ją uruchomić z menu aplikacji, menu kontekstowych strony, elementów sterowania multimediami na stronach internetowych obsługujących Cast oraz na ikonie paska narzędzi Cast (jeśli jest widoczna).
+ 
+          Jeśli ta zasada jest ustawiona na fałsz, usługa <ph name="PRODUCT_NAME" /> jest wyłączona.</translation>
 <translation id="4518251772179446575">Pytaj, gdy witryna chce śledzić fizyczną lokalizację użytkownika</translation>
 <translation id="4519046672992331730">Włącza propozycje wyszukiwania w omniboksie w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
 
@@ -1016,6 +1023,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="489803897780524242">Parametr sterujący zamianą wyszukiwanego hasła dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="4899708173828500852">Włącz Bezpieczne przeglądanie</translation>
 <translation id="4906194810004762807">Częstotliwość odświeżania zasad dotyczących urządzeń</translation>
+<translation id="494613465159630803">Odbiornik Cast</translation>
 <translation id="4962262530309732070">Jeśli ta zasada jest włączona lub nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> zezwala na dodawanie osób z poziomu menedżera użytkowników.
 
       Jeśli ta zasada jest wyłączona, <ph name="PRODUCT_NAME" /> nie zezwala na tworzenie nowych profili z poziomu menedżera użytkowników.</translation>
@@ -1303,6 +1311,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6155936611791017817">Ustaw domyślny stan dużego kursora na ekranie logowania</translation>
 <translation id="6157537876488211233">Lista rozdzielonych przecinkami reguł omijania serwera proxy</translation>
 <translation id="6158324314836466367">Nazwa firmowego sklepu internetowego (wycofana)</translation>
+<translation id="6161405879872578475">Włącza usługę <ph name="PRODUCT_NAME" /></translation>
 <translation id="6167074305866468481">Ostrzeżenie: obsługa protokołu SSLv3 zostanie całkowicie wycofana z <ph name="PRODUCT_NAME" /> po wprowadzeniu wersji 43 (w okolicach lipca 2015 roku). Wtedy też usunięta zostanie ta zasada.
 
       Jeśli ta zasada nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> użyje najniższej domyślnej wersji protokołu, czyli SSLv3 w <ph name="PRODUCT_NAME" /> 39 lub TLS 1.0 w nowszych wersjach.
@@ -1752,6 +1761,7 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="7953256619080733119">Zarządzane hosty umieszczone przez użytkownika na liście wyjątków</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ta zasada nie jest już obsługiwana. Umożliwia stosowanie protokołu STUN i serwerów przekazywania podczas łączenia się z klientem zdalnym. Jeśli ustawienie jest włączone, ten komputer może wykrywać hosty zdalne i łączyć się z nimi nawet wówczas, gdy są oddzielone zaporą sieciową. Jeśli ustawienie jest wyłączone, a wychodzące połączenia UDP są filtrowane przez zaporę sieciową, komputer może łączyć się tylko z hostami w sieci lokalnej.</translation>
+<translation id="7976157349247117979">Nazwa miejsca docelowego <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Brak ograniczeń specjalnych</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Obróć ekran o 0 stopni</translation>

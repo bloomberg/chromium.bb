@@ -7,9 +7,9 @@
 <translation id="1088300314857992706">‏كان <ph name="USER_EMAIL_ADDRESS" /> يستخدم Chrome سابقًا</translation>
 <translation id="1104959162601287462">‏حول &amp;نظام التشغيل Google Chrome</translation>
 <translation id="110877069173485804">‏هذا Chrome الخاص بك</translation>
-<translation id="123620459398936149">‏تعذر على نظام التشغيل Chrome مزامنة البيانات. الرجاء تحديث عبارة مرور المزامنة.</translation>
+<translation id="123620459398936149">‏تعذر على نظام التشغيل Chrome مزامنة البيانات. يُرجى تحديث عبارة مرور المزامنة.</translation>
 <translation id="127345590676626841">‏يجري تحديث Chrome تلقائيًا بحيث يكون لديك أحدث إصدار. عند اكتمال هذا التحميل، ستتم إعادة تشغيل Chrome وستبدأ العمل.</translation>
-<translation id="1302523850133262269">‏الرجاء الانتظار لحين تثبيت Chrome لآخر تحديثات النظام.</translation>
+<translation id="1302523850133262269">‏يُرجى الانتظار لحين تثبيت Chrome لآخر تحديثات النظام.</translation>
 <translation id="1350930993895295930">‏لقد اكتشف Chrome سلوكًا غير معتاد</translation>
 <translation id="137466361146087520">‏الإصدار التجريبي من Google Chrome</translation>
 <translation id="1393853151966637042">‏الحصول على مساعدة بشأن استخدام Chrome</translation>
@@ -60,7 +60,7 @@
 <translation id="2429317896000329049">‏تعذر على Google Chrome مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>
 <translation id="2446511512801740068">‏Chrome غير محدّث لأنه لم تتم إعادة تشغيله منذ فترة. هناك تحديث متوفر وسيتم تطبيقه بمجرد إعادة تشغيله.</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
-<translation id="2580411288591421699">‏لا يمكن تثبيت نفس الإصدار المثبت من Google Chrome والذي يتم تشغيله حاليًا. الرجاء إغلاق Google Chrome وإعادة المحاولة.</translation>
+<translation id="2580411288591421699">‏لا يمكن تثبيت نفس الإصدار المثبت من Google Chrome والذي يتم تشغيله حاليًا. يُرجى إغلاق Google Chrome وإعادة المحاولة.</translation>
 <translation id="2582790009689336987">‏سيتوقف هذا الكمبيوتر قريبًا عن تلقي تحديثات Google Chrome نظرًا لأن نظام Linux هذا لم يعد مدعومًا.</translation>
 <translation id="2586406160782125153">‏سيؤدي هذا إلى حذف بيانات التصفح من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chrome كـ <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">‏شعار Chrome</translation>
@@ -87,7 +87,7 @@
 
 يُرجى التحقق من بريدك الإلكتروني على <ph name="ACCOUNT_EMAIL" /> للحصول على مزيد من التعليمات.</translation>
 <translation id="3282568296779691940">‏تسجيل الدخول إلى Chrome</translation>
-<translation id="3311976847535831054">‏لن يتلقى هذا الكمبيوتر تحديثات Google Chrome إصدار 32 بت بعد الآن. الرجاء الترقية إلى Google Chrome إصدار 64 بت.</translation>
+<translation id="3311976847535831054">‏لن يتلقى هذا الكمبيوتر تحديثات Google Chrome إصدار 32 بت بعد الآن. يُرجى الترقية إلى Google Chrome إصدار 64 بت.</translation>
 <translation id="3360895254066713204">‏مساعد Chrome</translation>
 <translation id="3395323229510056640">‏الحصول على مساعدة في نظام التشغيل Chrome</translation>
 <translation id="3396977131400919238">‏حدث خطأ في نظام التشغيل أثناء عملية التثبيت. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
@@ -102,7 +102,7 @@
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">‏إزالة من Chrome</translation>
 <translation id="3847841918622877581">‏قد يستخدم Google Chrome خدمات الويب لتحسين تجربة التصفح لديك.</translation>
-<translation id="386202838227397562">‏الرجاء إغلاق كل نوافذ Google Chrome وإعادة المحاولة.</translation>
+<translation id="386202838227397562">‏يُرجى إغلاق كل نوافذ Google Chrome وإعادة المحاولة.</translation>
 <translation id="3870154837782082782">Google Inc‎.‎</translation>
 <translation id="3889417619312448367">‏إزالة Google Chrome</translation>
 <translation id="4028693306634653894">‏الوصول إلى Chrome بشكلٍ أسرع</translation>
@@ -118,7 +118,7 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="437002079035561265">‏لم يعد يتلقى جهاز الكمبيوتر هذا تحديثات Google Chrome؛ لأن نظام Linux هذا لم يعد مدعومًا.</translation>
 <translation id="4407807842708586359">‏نظام تشغيل Google Chrome</translation>
-<translation id="4458285410772214805">الرجاء الخروج ثم تسجيل الدخول حتى يسري هذا التغيير.</translation>
+<translation id="4458285410772214805">يُرجى الخروج ثم تسجيل الدخول حتى يسري هذا التغيير.</translation>
 <translation id="4458462641685292929">‏عملية أخرى على Google Chrome قيد التقدم. يُرجى المحاولة مرة أخرى لاحقًا.</translation>
 <translation id="4480040274068703980">‏تعذر على نظام التشغيل Chrome مزامنة البيانات نظرًا لوجود خطأ في تسجيل الدخول.</translation>
 <translation id="4561051373932531560">‏يتيح لك Google Chrome النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
@@ -130,7 +130,7 @@
 <translation id="4728575227883772061">‏فشلت عملية التثبيت بسبب خطأ غير محدد. إذا كان Google Chrome في حالة التشغيل حاليًا، يُرجى إغلاقه وإعادة المحاولة.</translation>
 <translation id="4743926867934016338">موافقة وبحث</translation>
 <translation id="4750550185319565338">‏إعادة تشغيل Chrome لتمكين <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">‏سيتوقف هذا الكمبيوتر قريبًا عن تلقِّي تحديثات Google Chrome إصدار 32 بت. الرجاء الترقية إلى Google Chrome إصدار 64 بت.</translation>
+<translation id="4751441238232965030">‏سيتوقف هذا الكمبيوتر قريبًا عن تلقِّي تحديثات Google Chrome إصدار 32 بت. يُرجى الترقية إلى Google Chrome إصدار 64 بت.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">‏قد يكون هذا الملف ضارًا، لذلك فقد حظره Chrome.</translation>
 <translation id="4794050651896644714">‏حفظ التفاصيل في Chrome</translation>
@@ -139,15 +139,14 @@
 <translation id="4953650215774548573">‏تعيين Google Chrome المتصفح الافتراضي</translation>
 <translation id="495931528404527476">‏في Chrome</translation>
 <translation id="4965682129423310439">‏عثر Chrome على برنامج ضار على الكمبيوتر. يمكن لمتصفح Chrome إزالته، واستعادة إعداداتك لجعل متصفحك يعمل بشكلٍ طبيعي مرة أخرى.</translation>
-<translation id="4987308747895123092">‏الرجاء إغلاق جميع نوافذ Google Chrome (بما في ذلك تلك المفتوحة في وضع Windows 8) ثم إعادة المحاولة.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="5028489144783860647">‏تعذر على Google Chrome مزامنة البيانات. الرجاء تحديث عبارة مرور المزامنة.</translation>
-<translation id="5037239767309817516">‏الرجاء إغلاق جميع نوافذ Google Chrome وإعادة تشغيله حتى يسري هذا التغيير.</translation>
+<translation id="5028489144783860647">‏تعذر على Google Chrome مزامنة البيانات. يُرجى تحديث عبارة مرور المزامنة.</translation>
+<translation id="5037239767309817516">‏يُرجى إغلاق جميع نوافذ Google Chrome وإعادة تشغيله حتى يسري هذا التغيير.</translation>
 <translation id="5132929315877954718">‏يمكنك اكتشاف تطبيقات، وألعاب، وإضافات، ومظاهر رائعة لمتصفح Google Chrome.</translation>
 <translation id="5166975452760862670">‏يتم عرض Google Chrome بهذه اللغة</translation>
 <translation id="5170938038195470297">‏لا يمكن استخدام ملفك الشخصي نظرًا لأنه من إصدار أحدث من Google Chrome.
 
-قد تكون بعض الميزات غير متاحة. الرجاء تحديد دليل ملف شخصي مختلف أو استخدام إصدار أحدث من Chrome.</translation>
+قد تكون بعض الميزات غير متاحة. يُرجى تحديد دليل ملف شخصي مختلف أو استخدام إصدار أحدث من Chrome.</translation>
 <translation id="5193136243808726294">‏يتعذر على نظام التشغيل Google Chrome فتح هذه الصفحة.</translation>
 <translation id="5204098752394657250">‏<ph name="TERMS_OF_SERVICE_LINK" />بنود خدمة<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
 <translation id="5243785881901838525">‏Google Payments (تم النسخ إلى Chrome)</translation>
@@ -220,7 +219,7 @@
 <translation id="7330164299247909639">‏أخفقت شهادة المصادقة. يُرجى تسجيل الدخول إلى Google Chrome مرة أخرى بصفتك <ph name="USER_NAME" /> أو الاتصال بمشرفك لمزيد من المعلومات. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">نافذة جديدة</translation>
 <translation id="7369650938475876456">‏استخدام كلمة مرور قوية تم إنشاؤها بواسطة Chrome</translation>
-<translation id="7398801000654795464">‏تم تسجيل دخولك إلى Chrome باعتبارك <ph name="USER_EMAIL_ADDRESS" />. الرجاء استخدام الحساب نفسه لتسجيل الدخول مرة أخرى.</translation>
+<translation id="7398801000654795464">‏تم تسجيل دخولك إلى Chrome باعتبارك <ph name="USER_EMAIL_ADDRESS" />. يُرجى استخدام الحساب نفسه لتسجيل الدخول مرة أخرى.</translation>
 <translation id="7400722733683201933">‏معلومات عن Google Chrome</translation>
 <translation id="7408085963519505752">‏بنود نظام التشغيل Chrome</translation>
 <translation id="7419046106786626209">‏تعذر على نظام التشغيل Chrome مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>
@@ -239,7 +238,7 @@
 <translation id="7781002470561365167">‏يتوفر إصدار جديد من متصفح Google Chrome.</translation>
 <translation id="7787950393032327779">‏يبدو أن الملف الشخصي قيد الاستخدام بواسطة عملية أخرى في Google Chrome (<ph name="PROCESS_ID" />) على جهاز كمبيوتر آخر (<ph name="HOST_NAME" />). وقد تمّ قفل الملف الشخصي من جانب Chrome لضمان عدم تعرضه للتلف. فإذا كنت واثقًا من عدم وجود عمليات أخرى قيد التشغيل على جهاز الكمبيوتر، فيُمكنك إلغاء قفل الملف الشخصي وإعادة تشغيل Chrome مجددًا.</translation>
 <translation id="7808348361785373670">‏جارٍ الإزالة من Chrome...</translation>
-<translation id="7825851276765848807">‏فشل التثبيت نظرًا لحدوث خطأ غير محدد. الرجاء تنزيل Google Chrome مرة أخرى.</translation>
+<translation id="7825851276765848807">‏فشل التثبيت نظرًا لحدوث خطأ غير محدد. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="7855730255114109580">‏Google Chrome محدّث</translation>
 <translation id="7888186132678118370">‏تثبيت Chrome على شريط المهام</translation>
 <translation id="7890208801193284374">‏إذا كنت تشارك الكمبيوتر مع أصدقائك وعائلتك، فبإمكانهم التصفح على حدة وإعداد Chrome على النحو الذي يريدونه.</translation>

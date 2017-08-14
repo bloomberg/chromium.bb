@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">서가 항목 5</translation>
 <translation id="1225404570112441414">이 사이트를 언제든지 사용할 수 있도록 실행기에 추가합니다.</translation>
 <translation id="1227507814927581609">'<ph name="DEVICE_NAME" />'에 연결하는 동안 인증에 실패했습니다.</translation>
+<translation id="1230807973377071856">시스템 메뉴</translation>
 <translation id="1232569758102978740">제목 없음</translation>
 <translation id="1233721473400465416">언어</translation>
 <translation id="1234808891666923653">서비스 작업자</translation>
@@ -1083,7 +1084,6 @@
 <translation id="2581475589551312226">Google 드라이브에 자동으로 백업하고 Play 앱 데이터를 복원합니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">폴더 이름 바꾸기</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" />(플랫폼 <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">이 확장 프로그램은 사용자 모르게 추가되었을 수 있습니다.</translation>
 <translation id="2585300050980572691">기본 검색 설정</translation>
 <translation id="2587203970400270934">운영자 코드:</translation>
 <translation id="2587922270115112871">관리 대상 사용자를 생성해도 Google 계정이 생성되지 않으며, 해당 사용자의 설정
@@ -1544,6 +1544,7 @@
 <translation id="3227137524299004712">마이크</translation>
 <translation id="32279126412636473">새로고침(⌘R)</translation>
 <translation id="3228679360002431295">연결 및 확인 중<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">재생/일시중지</translation>
 <translation id="3232318083971127729">값:</translation>
 <translation id="3236289833370040187">소유권이 <ph name="DESTINATION_DOMAIN" />(으)로 이전됩니다.</translation>
 <translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" />님이 관리 대상 사용자가 되었습니다.</translation>
@@ -1857,6 +1858,7 @@
 <translation id="367645871420407123">루트 비밀번호를 기본 테스트 이미지 값으로 설정하려면 비워두세요.</translation>
 <translation id="3678156199662914018">확장 프로그램: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">의견을 보내주셔서 감사합니다. 현재 오프라인 상태이므로 보고서는 나중에 전송됩니다.</translation>
+<translation id="3683023058278427253">도메인에서 여러 개의 라이선스 유형이 감지되었습니다. 계속하려면 하나의 유형을 선택하세요.</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> 화면 공유 요청</translation>
 <translation id="3685122418104378273">모바일 데이터를 사용할 때는 Google 드라이브 동기화가 기본적으로 사용 중지됩니다.</translation>
 <translation id="368789413795732264">파일 쓰기를 시도하는 동안 다음 오류가 발생했습니다. <ph name="ERROR_TEXT" /></translation>
@@ -2094,6 +2096,7 @@
 <translation id="4012550234655138030"><ph name="CLOUD_PRINT_NAME" />에서 프린터 설정 또는 관리</translation>
 <translation id="4014432863917027322">'<ph name="EXTENSION_NAME" />'을(를) 복구하시겠습니까?</translation>
 <translation id="4018133169783460046">이 언어로 <ph name="PRODUCT_NAME" /> 사용하기</translation>
+<translation id="4020106588733303597">죄송합니다. 시스템에서 사용 가능한 라이선스를 로드하지 못했습니다.</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">사전에 추가(&amp;A)</translation>
 <translation id="4023146161712577481">기기 설정을 확인합니다.</translation>
@@ -2316,6 +2319,7 @@
 <translation id="4389091756366370506">사용자 <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">사용 중지</translation>
 <translation id="4400367121200150367">비밀번호를 저장하지 않는 사이트가 표시됩니다.</translation>
+<translation id="4400632832271803360">맨 윗 줄 키의 동작을 전환하려면 런처 키를 길게 누르세요.</translation>
 <translation id="4408599188496843485">도움말(&amp;E)</translation>
 <translation id="4409697491990005945">여백</translation>
 <translation id="4411578466613447185">코드 서명자</translation>
@@ -2676,6 +2680,7 @@
 <translation id="494660967831069720">일부 데이터</translation>
 <translation id="4950138595962845479">옵션...</translation>
 <translation id="4953808748584563296">기본 주황색 아바타</translation>
+<translation id="4955814292505481804">연간</translation>
 <translation id="495931528404527476">Chrome</translation>
 <translation id="496226124210045887">선택한 폴더에 민감한 파일이 포함되어 있습니다. 이 폴더에 '$1' 영구 읽기 액세스를 승인하시겠습니까?</translation>
 <translation id="4964455510556214366">배열</translation>
@@ -3158,6 +3163,7 @@
 <translation id="5658415415603568799">보안을 강화하기 위해 Smart Lock에서 20시간 후에 비밀번호를 입력하라는 메시지를 표시합니다.</translation>
 <translation id="5659593005791499971">이메일</translation>
 <translation id="5661272705528507004">이 SIM 카드는 사용할 수 없습니다. 서비스 제공업체에 문의하여 교체하세요.</translation>
+<translation id="5662477687021125631">영구</translation>
 <translation id="5669267381087807207">활성화 중</translation>
 <translation id="5669691691057771421">새 PIN 입력</translation>
 <translation id="5677503058916217575">페이지 언어:</translation>
@@ -3884,6 +3890,7 @@
 <translation id="6746392203843147041">볼륨 크게</translation>
 <translation id="6748140994595080445"><ph name="APP_NAME" />에서 언어를 처리하고 표시하는 방법 변경</translation>
 <translation id="6748465660675848252">계속 진행할 수 있지만 동기화된 데이터와 설정만 복원됩니다. 모든 로컬 데이터가 손실됩니다.</translation>
+<translation id="6748775883310276718">단일 앱 키오스크</translation>
 <translation id="6751256176799620176">폴더 1개 선택됨</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (시크릿 모드)</translation>
 <translation id="6757101664402245801">URL을 복사했습니다</translation>
@@ -4709,6 +4716,7 @@
 <translation id="8025789898011765392">작업</translation>
 <translation id="8026334261755873520">인터넷 사용 기록 삭제</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
+<translation id="8028134359912645720">Ctrl, Alt, Shift 또는 런처 키를 길게 누르면 각 키로 사용할 수 있는 단축키를 확인할 수 있습니다.</translation>
 <translation id="8028993641010258682">크기</translation>
 <translation id="8030169304546394654">연결 끊김</translation>
 <translation id="8030656706657716245">프린터 추가</translation>
@@ -4763,6 +4771,7 @@
 <translation id="8107015733319732394"><ph name="DEVICE_TYPE" />에 Google Play 스토어를 설치합니다. 설치하는 데 몇 분 정도 걸릴 수 있습니다.</translation>
 <translation id="8109930990200908494">사용자 인증을 받으려면 로그인해야 합니다.</translation>
 <translation id="8111155949205007504">이 비밀번호를 iPhone과 공유하기</translation>
+<translation id="8113043281354018522">라이선스 유형 선택</translation>
 <translation id="8116190140324504026">추가 정보...</translation>
 <translation id="8116483400482790018">사용자정의 맞춤법 사전</translation>
 <translation id="8116972784401310538">북마크 관리자(&amp;B)</translation>
@@ -4911,6 +4920,7 @@
 <translation id="8339059274628563283"><ph name="SITE" />에 로컬 저장된 데이터</translation>
 <translation id="834205140959175756">상태 표시줄에서 연결, 업데이트, 설정을 관리하세요.</translation>
 <translation id="8342318071240498787">같은 이름을 가진 파일 또는 디렉토리가 이미 존재합니다.</translation>
+<translation id="8349826889576450703">런처</translation>
 <translation id="8351419472474436977">이 확장 프로그램이 프록시 설정을 제어할 수 있게 되었으며, 따라서 사용자가 온라인에서 수행하는 모든 작업을 변경 및 중단하고 엿볼 수 있게 되었음을 의미합니다. 이와 같이 변경된 이유가 확실하지 않다면 이 설정을 사용하지 않는 것이 좋습니다.</translation>
 <translation id="8352772353338965963">멀티 로그인에 계정을 추가하세요. 비밀번호를 입력하지 않고 모든 로그인 계정에 액세스할 수 있으므로 이 기능은 신뢰할 수 있는 계정에만 사용해야 합니다.</translation>
 <translation id="8353683614194668312">앱의 권한:</translation>
@@ -4969,6 +4979,7 @@
 <translation id="8446884382197647889">자세히 알아보기</translation>
 <translation id="8449008133205184768">붙여넣고 스타일 일치시킴</translation>
 <translation id="8449036207308062757">저장용량 관리</translation>
+<translation id="8451512073679317615">어시스턴트</translation>
 <translation id="8452135315243592079">SIM 카드 없음</translation>
 <translation id="8453482423012550001">$1개 항목 복사 중...</translation>
 <translation id="8454288007744638700">또는 새로운 네트워크 선택</translation>
@@ -5427,6 +5438,7 @@
 <translation id="9123413579398459698">FTP 프록시</translation>
 <translation id="9124003689441359348">저장한 비밀번호가 여기에 표시됩니다.</translation>
 <translation id="912419004897138677">코덱</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" />(<ph name="LICENSE_COUNT" />개 남음)</translation>
 <translation id="9127762771585363996">카메라 이미지를 수평으로 대칭 이동</translation>
 <translation id="9128870381267983090">네트워크에 연결</translation>
 <translation id="9130015405878219958">잘못된 모드를 입력했습니다.</translation>

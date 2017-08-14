@@ -130,7 +130,6 @@
 <translation id="1973335181906896915">Erreur de sérialisation.</translation>
 <translation id="1974060860693918893">Paramètres avancés</translation>
 <translation id="1978555033938440688">Version du micrologiciel</translation>
-<translation id="1995859865337580572">Veuillez confirmer votre code CVC</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{et 1 autre}one{et # autre}other{et # autres}}</translation>
 <translation id="2025186561304664664">Le proxy est défini sur la configuration automatique.</translation>
 <translation id="2030481566774242610">Essayez avec <ph name="LINK" /></translation>
@@ -834,6 +833,7 @@
 <translation id="7752995774971033316">Non géré</translation>
 <translation id="7755287808199759310">Ton parent peut te le débloquer</translation>
 <translation id="7758069387465995638">Il est possible qu'un pare-feu ou un logiciel antivirus ait bloqué la connexion.</translation>
+<translation id="7759163816903619567">Domaine d'affichage :</translation>
 <translation id="7761701407923456692">Le certificat du serveur ne correspond pas à l'URL.</translation>
 <translation id="7763386264682878361">Analyseur du fichier manifeste du paiement</translation>
 <translation id="7764225426217299476">Ajouter une adresse</translation>

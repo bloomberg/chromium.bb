@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">Stavka police 5</translation>
 <translation id="1225404570112441414">Dodajte tu web-lokaciju na svoju policu da biste je koristili kad to želite.</translation>
 <translation id="1227507814927581609">Autentifikacija nije uspjela prilikom povezivanja s uređajem "<ph name="DEVICE_NAME" />".</translation>
+<translation id="1230807973377071856">Izbornik sustava</translation>
 <translation id="1232569758102978740">Neimenovano</translation>
 <translation id="1233721473400465416">Oznaka zemlje/jezika</translation>
 <translation id="1234808891666923653">Service Workers</translation>
@@ -1081,7 +1082,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="2581475589551312226">Automatski sigurnosno kopirajte podatke aplikacije Play na Google disk i vratite ih. <ph name="BEGIN_LINK1" />Saznajte više<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">Preimenovanje mape</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Platforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">To je proširenje možda dodano bez vašeg znanja.</translation>
 <translation id="2585300050980572691">Zadane postavke za pretraživanje</translation>
 <translation id="2587203970400270934">Kôd operatora:</translation>
 <translation id="2587922270115112871">Izradom nadziranog korisnika ne izrađuje se Google račun. Njegove postavke
@@ -1542,6 +1542,7 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="32279126412636473">Ponovno učitavanje (⌘R)</translation>
 <translation id="3228679360002431295">Povezivanje i potvrđivanje<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">Reprodukcija/pauza</translation>
 <translation id="3232318083971127729">Vrijednost:</translation>
 <translation id="3236289833370040187">Vlasništvo će se prenijeti na domenu <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> sada je nadzirani korisnik</translation>
@@ -1855,6 +1856,7 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="367645871420407123">ostavite prazno ako želite postaviti korijensku zaporku na zadanu vrijednost testne slike</translation>
 <translation id="3678156199662914018">Proširenje: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Zahvaljujemo vam na povratnim informacijama. Trenutačno ste offline, pa će se izvješće poslati kasnije.</translation>
+<translation id="3683023058278427253">Otkrili smo više vrsta licenci za vašu domenu. Odaberite jednu za nastavak.</translation>
 <translation id="3683524264665795342">Zahtjev aplikacije <ph name="APP_NAME" /> za dijeljenje zaslona</translation>
 <translation id="3685122418104378273">Sinkronizacija Google diska onemogućena je prema zadanim postavkama kada se upotrebljavaju mobilni podaci.</translation>
 <translation id="368789413795732264">Došlo je do pogreške pri pokušaju pisanja datoteke: <ph name="ERROR_TEXT" />.</translation>
@@ -2091,6 +2093,7 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4012550234655138030">Postavite pisače u oblaku <ph name="CLOUD_PRINT_NAME" /> ili upravljajte njima.</translation>
 <translation id="4014432863917027322">Popraviti "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="4018133169783460046">Prikaz proizvoda <ph name="PRODUCT_NAME" /> na ovom jeziku</translation>
+<translation id="4020106588733303597">Ajoj! Sustav nije uspio učitati dostupne licence.</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">&amp;Dodaj u rječnik</translation>
 <translation id="4023146161712577481">Određivanje konfiguracije uređaja.</translation>
@@ -2315,6 +2318,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="4389091756366370506">Korisnik <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">Onemogući</translation>
 <translation id="4400367121200150367">Ovdje će se pojaviti web-lokacije koje nikad ne spremaju zaporke</translation>
+<translation id="4400632832271803360">Držite tipku Pokretač da biste izmjenjivali ponašanje tipki u najvišem retku</translation>
 <translation id="4408599188496843485">P&amp;omoć</translation>
 <translation id="4409697491990005945">Margine</translation>
 <translation id="4411578466613447185">Potpisnik koda</translation>
@@ -2675,6 +2679,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="494660967831069720">Djelomični podaci</translation>
 <translation id="4950138595962845479">Opcije...</translation>
 <translation id="4953808748584563296">Zadani narančasti avatar</translation>
+<translation id="4955814292505481804">Godišnji</translation>
 <translation id="495931528404527476">U Chromeu</translation>
 <translation id="496226124210045887">Mapa koju ste odabrali sadrži osjetljive datoteke. Jeste li sigurni da želite dodijeliti aplikaciji "$1" trajni pristup za čitanje za tu mapu?</translation>
 <translation id="4964455510556214366">Poredak</translation>
@@ -3157,6 +3162,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5658415415603568799">Za dodatnu sigurnost Smart Lock će tražiti da unesete zaporku nakon 20 sati.</translation>
 <translation id="5659593005791499971">E-pošta</translation>
 <translation id="5661272705528507004">SIM kartica je onemogućena i ne može se upotrebljavati. Kontaktirajte sa svojim davateljem usluge radi zamjene.</translation>
+<translation id="5662477687021125631">Trajni</translation>
 <translation id="5669267381087807207">Aktivacija</translation>
 <translation id="5669691691057771421">Unesite novi PIN</translation>
 <translation id="5677503058916217575">Jezik stranice:</translation>
@@ -3883,6 +3889,7 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="6746392203843147041">pojačavanje glasnoće</translation>
 <translation id="6748140994595080445">Promijenite kako aplikacija <ph name="APP_NAME" /> obrađuje i prikazuje jezike.</translation>
 <translation id="6748465660675848252">Možete nastaviti, no vratit će se samo sinkronizirani podaci i postavke. Izgubit će se svi lokalni podaci.</translation>
+<translation id="6748775883310276718">Kiosk jedne aplikacije</translation>
 <translation id="6751256176799620176">Odabrana je 1 mapa</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Anonimno)</translation>
 <translation id="6757101664402245801">URL kopiran</translation>
@@ -4707,6 +4714,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8025789898011765392">Zadaci</translation>
 <translation id="8026334261755873520">Brisanje podataka o pregledavanju</translation>
 <translation id="8028060951694135607">Oporavak Microsoftovog ključa</translation>
+<translation id="8028134359912645720">Pritisnite Control, Alt, Shift ili Pokretač za prikaz tipkovničkih prečaca za te modifikatore.</translation>
 <translation id="8028993641010258682">Veličina</translation>
 <translation id="8030169304546394654">Prekinuta veza</translation>
 <translation id="8030656706657716245">Dodajte pisač</translation>
@@ -4761,6 +4769,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8107015733319732394">Trgovina Google Play instalira se na vašem uređaju <ph name="DEVICE_TYPE" />. To bi moglo potrajati nekoliko minuta.</translation>
 <translation id="8109930990200908494">Potrebna je prijava za korisnički certifikat.</translation>
 <translation id="8111155949205007504">Dijelite ovu zaporku sa svojim iPhoneom</translation>
+<translation id="8113043281354018522">Odaberite vrstu licence</translation>
 <translation id="8116190140324504026">Više informacija...</translation>
 <translation id="8116483400482790018">Prilagođeni rječnik za provjeru pravopisa</translation>
 <translation id="8116972784401310538">&amp;Upravitelj oznaka</translation>
@@ -4907,6 +4916,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8339059274628563283">Lokalno pohranjeni podaci web-lokacije <ph name="SITE" /></translation>
 <translation id="834205140959175756">Upravljajte vezama, ažuriranjima i postavkama pomoću ladice statusa.</translation>
 <translation id="8342318071240498787">Datoteka ili direktorij s istim imenom već postoje.</translation>
+<translation id="8349826889576450703">pokretač</translation>
 <translation id="8351419472474436977">To proširenje preuzelo je kontrolu nad vašim postavkama proxyja, a to znači da može promijeniti, prekinuti ili prisluškivati sve što radite na mreži. Ako niste sigurni kako je došlo do te promjene, vjerojatno je ne želite.</translation>
 <translation id="8352772353338965963">Dodajte račun na višestruku prijavu. Svim računima na koje ste prijavljeni može se pristupiti bez zaporke, pa bi se ta značajka trebala upotrebljavati samo s pouzdanim računima.</translation>
 <translation id="8353683614194668312">Proširenje ili aplikacija može:</translation>
@@ -4965,6 +4975,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8446884382197647889">Saznajte više</translation>
 <translation id="8449008133205184768">Zalijepi i podesi stil</translation>
 <translation id="8449036207308062757">Upravljanje pohranom</translation>
+<translation id="8451512073679317615">asistent</translation>
 <translation id="8452135315243592079">Nedostaje SIM kartica</translation>
 <translation id="8453482423012550001">Kopiranje stavki ($1)...</translation>
 <translation id="8454288007744638700">Možete i odabrati novu mrežu:</translation>
@@ -5422,6 +5433,7 @@ Naknadne obavijesti, prozori i dijaloški okviri mogu biti podijeljeni između r
 <translation id="9123413579398459698">FTP proxy</translation>
 <translation id="9124003689441359348">Ovdje će se pojaviti spremljene zaporke</translation>
 <translation id="912419004897138677">Kodek</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> rem.)</translation>
 <translation id="9127762771585363996">Okreni sliku horizontalno</translation>
 <translation id="9128870381267983090">Povezivanje s mrežom</translation>
 <translation id="9130015405878219958">Unesen je nevažeći način.</translation>

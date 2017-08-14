@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">అర అంశం 5</translation>
 <translation id="1225404570112441414">ఈ సైట్‌ని ఎప్పుడైనా ఉపయోగించడానికి దీన్ని మీ అరకు జోడించండి.</translation>
 <translation id="1227507814927581609">"<ph name="DEVICE_NAME" />"కు కనెక్ట్ చేస్తున్నప్పుడు ప్రామాణీకరణ విఫలమైంది.</translation>
+<translation id="1230807973377071856">సిస్టమ్ మెను</translation>
 <translation id="1232569758102978740">శీర్షికలేనిది</translation>
 <translation id="1233721473400465416">లొకేల్</translation>
 <translation id="1234808891666923653">సర్వీస్ వర్కర్‌లు</translation>
@@ -1081,7 +1082,6 @@
 <translation id="2581475589551312226">Play అనువర్తన డేటాను స్వయంచాలకంగా Google డిస్క్‌కి బ్యాకప్ చేస్తుంది మరియు పునరుద్ధరిస్తుంది. <ph name="BEGIN_LINK1" />మరింత తెలుసుకోండి<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">ఫోల్డర్‌ పేరు మార్చండి</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (ప్లాట్‌ఫారమ్ <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">ఈ పొడిగింపు మీకు తెలియకుండానే జోడించబడి ఉండవచ్చు.</translation>
 <translation id="2585300050980572691">డిఫాల్ట్ శోధన సెట్టింగ్‌లు</translation>
 <translation id="2587203970400270934">ఆపరేషన్ కోడ్:</translation>
 <translation id="2587922270115112871">పర్యవేక్షించబడే వినియోగదారుని సృష్టించడం వలన Google ఖాతా సృష్టించబడదు మరియు వాటి సెట్టింగ్‌లు
@@ -1542,6 +1542,7 @@
 <translation id="3227137524299004712">మైక్రోఫోన్</translation>
 <translation id="32279126412636473">మళ్లీ లోడ్ చేయి (⌘R)</translation>
 <translation id="3228679360002431295">కనెక్ట్ చేస్తోంది మరియు ధృవీకరిస్తోంది<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">ప్లే / పాజ్ చేయి</translation>
 <translation id="3232318083971127729">విలువ:</translation>
 <translation id="3236289833370040187">యాజమాన్యం <ph name="DESTINATION_DOMAIN" />కి బదిలీ చేయబడుతుంది.</translation>
 <translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> ఇప్పుడు పర్యవేక్షించబడే వినియోగదారు</translation>
@@ -1855,6 +1856,7 @@
 <translation id="367645871420407123">మీరు రూట్ పాస్‌వర్డ్‌ను డిఫాల్ట్ పరీక్ష చిత్ర విలువకు సెట్ చేయాలనుకుంటే ఖాళీగా వదిలిపెట్టండి</translation>
 <translation id="3678156199662914018">పొడిగింపు: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">మీ అభిప్రాయం తెలియజేసినందుకు ధన్యవాదాలు. మీరు ప్రస్తుతం ఆఫ్‌లైన్‌లో ఉన్నారు, మీ నివేదిక తర్వాత పంపబడుతుంది.</translation>
+<translation id="3683023058278427253">మేము మీ డొమైన్ కోసం బహుళ లైసెన్స్ రకాలను కనుగొన్నాము. దయచేసి కొనసాగడానికి ఒకదాన్ని ఎంచుకోండి.</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> స్క్రీన్ భాగస్వామ్య అభ్యర్థన</translation>
 <translation id="3685122418104378273">మొబైల్ డేటాను ఉపయోగిస్తున్నప్పుడు Google డిస్క్ సమకాలీకరణ డిఫాల్ట్‌గా నిలిపివేయబడుతుంది.</translation>
 <translation id="368789413795732264">ఫైల్‌ను వ్రాయడానికి ప్రయత్నించడంలో లోపం జరిగింది: <ph name="ERROR_TEXT" />.</translation>
@@ -2091,6 +2093,7 @@
 <translation id="4012550234655138030"><ph name="CLOUD_PRINT_NAME" />లో ప్రింటర్‌లను సెటప్ చేయండి లేదా నిర్వహించండి.</translation>
 <translation id="4014432863917027322">"<ph name="EXTENSION_NAME" />"ని సరి చేయాలా?</translation>
 <translation id="4018133169783460046">ఈ భాషలో <ph name="PRODUCT_NAME" />ను ప్రదర్శించు</translation>
+<translation id="4020106588733303597">అయ్యో! అందుబాటులో ఉన్న లైసెన్స్‌లను లోడ్ చేయడంలో సిస్టమ్ విఫలమైంది.</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">నిఘంటువుకు &amp;జోడించు</translation>
 <translation id="4023146161712577481">పరికర కాన్ఫిగరేషన్‌ను గుర్తిస్తోంది.</translation>
@@ -2315,6 +2318,7 @@
 <translation id="4389091756366370506">వినియోగదారు <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">ఆపివెయ్యి</translation>
 <translation id="4400367121200150367">పాస్‌వర్డ్‌లను ఎప్పుడూ సేవ్ చేయని సైట్‌లు ఇక్కడ కనిపిస్తాయి</translation>
+<translation id="4400632832271803360">ఎగువ-అడ్డు వరుసలోని కీల ప్రవర్తనను మార్చడానికి లాంచర్ కీని నొక్కి ఉంచండి</translation>
 <translation id="4408599188496843485">స&amp;హాయం</translation>
 <translation id="4409697491990005945">సరిహద్దులు</translation>
 <translation id="4411578466613447185">కోడ్ సైనర్</translation>
@@ -2675,6 +2679,7 @@
 <translation id="494660967831069720">డేటా పాక్షికంగా సంగ్రహించబడింది</translation>
 <translation id="4950138595962845479">ఎంపికలు...</translation>
 <translation id="4953808748584563296">డిఫాల్ట్ నారింజ రంగు అవతార్</translation>
+<translation id="4955814292505481804">వార్షికం</translation>
 <translation id="495931528404527476">Chromeలో</translation>
 <translation id="496226124210045887">మీరు ఎంచుకున్న ఫోల్డర్‌లో ముఖ్యమైన ఫైల్‌లు ఉన్నాయి. మీరు ఖచ్చితంగా ఈ ఫోల్డర్ కోసం "$1"కు శాశ్వతంగా చదవగల ప్రాప్యతను మంజూరు చేయాలనుకుంటున్నారా?</translation>
 <translation id="4964455510556214366">అమరిక</translation>
@@ -3157,6 +3162,7 @@
 <translation id="5658415415603568799">అదనపు భద్రత కోసం, 20 గంటల తర్వాత మీ పాస్‌వర్డ్‌‌ను నమోదు చేయమని మీ Smart Lock అడుగుతుంది.</translation>
 <translation id="5659593005791499971">ఇమెయిల్</translation>
 <translation id="5661272705528507004">ఈ SIM కార్డ్ నిలిపివెయ్యబడింది మరియు ఉపయోగించకూడనిది. దయచేసి తిరిగి భర్తీ చెయ్యడం కోసం మీ సేవ ప్రొవైడర్‌ను సంప్రదించండి.</translation>
+<translation id="5662477687021125631">శాశ్వతం</translation>
 <translation id="5669267381087807207">సక్రియం చేస్తోంది</translation>
 <translation id="5669691691057771421">కొత్త PINని నమోదు చేయండి</translation>
 <translation id="5677503058916217575">పేజీ భాష:</translation>
@@ -3883,6 +3889,7 @@
 <translation id="6746392203843147041">వాల్యూ. పెంచు</translation>
 <translation id="6748140994595080445"><ph name="APP_NAME" /> భాషలను ఎలా నిర్వహిస్తుంది మరియు ప్రదర్శిస్తుంది అనేదాన్ని మార్చండి.</translation>
 <translation id="6748465660675848252">మీరు కొనసాగించవచ్చు, కానీ మీ సమకాలీకరించిన డేటా మరియు సెట్టింగ్‌లు మాత్రమే పునరుద్ధరించబడతాయి. మొత్తం స్థానిక డేటాని కోల్పోవడం జరుగుతుంది.</translation>
+<translation id="6748775883310276718">ఒకే యాప్ కియోస్క్</translation>
 <translation id="6751256176799620176">1 ఫోల్డర్ ఎంచుకోబడింది</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (అజ్ఞాతంగా)</translation>
 <translation id="6757101664402245801">URL కాపీ చేయబడింది</translation>
@@ -4705,6 +4712,7 @@
 <translation id="8025789898011765392">విధులు</translation>
 <translation id="8026334261755873520">బ్రౌజింగ్ డేటాను క్లియర్ చెయ్యి</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
+<translation id="8028134359912645720">ఇటువంటి మోడిఫైయర్‌ల కోసం కీబోర్డ్ సత్వరమార్గాలను చూడటానికి Control, Alt, Shift లేదా లాంచర్‌ని పట్టుకోండి.</translation>
 <translation id="8028993641010258682">పరిమాణం</translation>
 <translation id="8030169304546394654">డిస్‌కనెక్ట్ చెయ్యబడింది</translation>
 <translation id="8030656706657716245">ప్రింటర్‌ను జోడించండి</translation>
@@ -4759,6 +4767,7 @@
 <translation id="8107015733319732394">మీ <ph name="DEVICE_TYPE" />లో Google Play స్టోర్‌ని ఇన్‌స్టాల్ చేస్తోంది. ఇందుకు కొన్ని నిమిషాలు పట్టవచ్చు.</translation>
 <translation id="8109930990200908494">వినియోగదారు ప్రమాణపత్రం కోసం సైన్-ఇన్ చేయడం అవసరం.</translation>
 <translation id="8111155949205007504">మీ iPhoneతో ఈ పాస్‌వర్డ్‌ను భాగస్వామ్యం చేయండి</translation>
+<translation id="8113043281354018522">లైసెన్స్ రకాన్ని ఎంచుకోండి</translation>
 <translation id="8116190140324504026">మరింత సమాచారం...</translation>
 <translation id="8116483400482790018">అనుకూల అక్షరక్రమ నిఘంటువు</translation>
 <translation id="8116972784401310538">&amp;బుక్‌మార్క్ నిర్వాహకుడు</translation>
@@ -4905,6 +4914,7 @@
 <translation id="8339059274628563283"><ph name="SITE" /> స్థానికంగా నిల్వ చేసిన డేటా</translation>
 <translation id="834205140959175756">స్థితి ట్రేతో కనెక్షన్‌లు, అప్‌డేట్‌లు మరియు సెట్టింగ్‌లను నిర్వహించండి.</translation>
 <translation id="8342318071240498787">ఫైల్ లేదా డైరెక్టరీ అదే పేరుతో ఇప్పటికే ఉనికిలో ఉంది.</translation>
+<translation id="8349826889576450703">లాంచర్</translation>
 <translation id="8351419472474436977">ఈ పొడిగింపు మీ ప్రాక్సీ సెట్టింగ్‌లను దాని నియంత్రణలోకి తీసుకుంది, అది మీరు ఆన్‌లైన్‌లో ఏదైనా చేస్తుంటే దాన్ని మార్చడం, అంతరాయం కలిగించడం లేదా రహస్యంగా గమనించడం వంటివి చేయగలదని దీనర్థం. ఈ మార్పు ఎందుకు సంభవించిందో మీకు ఖచ్చితంగా తెలియలేదంటే బహుశా మీరు దాన్ని కోరుకొని ఉండకపోవచ్చు.</translation>
 <translation id="8352772353338965963">బహుళ సైన్ ఇన్ కోసం ఖాతాను జోడించండి. అన్ని సైన్ ఇన్ చేసిన ఖాతాలను పాస్‌వర్డ్ లేకుండానే ప్రాప్యత చేయవచ్చు, కనుక ఈ లక్షణాన్ని విశ్వసనీయ ఖాతాలతో మాత్రమే ఉపయోగించాలి.</translation>
 <translation id="8353683614194668312">ఇది వీటిని చేయగలదు:</translation>
@@ -4963,6 +4973,7 @@
 <translation id="8446884382197647889">మరింత తెలుసుకోండి</translation>
 <translation id="8449008133205184768">శైలిని పేస్ట్ చేసి, సరిపోల్చు</translation>
 <translation id="8449036207308062757">నిల్వను నిర్వహించు</translation>
+<translation id="8451512073679317615">సహాయకం</translation>
 <translation id="8452135315243592079">SIM కార్డ్ లేదు</translation>
 <translation id="8453482423012550001">$1 అంశాలను కాపీ చేస్తోంది...</translation>
 <translation id="8454288007744638700">లేదా, కొత్త నెట్‌వర్క్‌ను ఎంచుకోండి:</translation>
@@ -5420,6 +5431,7 @@
 <translation id="9123413579398459698">FTP ప్రాక్సీ</translation>
 <translation id="9124003689441359348">సేవ్ చేసిన పాస్‌వర్డ్‌లు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="912419004897138677">కోడెక్</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> ఉన్నాయి)</translation>
 <translation id="9127762771585363996">కెమెరా చిత్రాన్ని క్షితిజ సమతలంగా తిప్పు</translation>
 <translation id="9128870381267983090">నెట్‌వర్క్‌కి కనెక్ట్ చెయ్యి</translation>
 <translation id="9130015405878219958">చెల్లని మోడ్ ఎంటర్ చెయ్యబడింది.</translation>

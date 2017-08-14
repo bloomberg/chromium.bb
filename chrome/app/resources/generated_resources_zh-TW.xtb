@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">檔案櫃項目 5</translation>
 <translation id="1225404570112441414">將這個網站加入檔案櫃以便日後隨時使用。</translation>
 <translation id="1227507814927581609">驗證在連線至「<ph name="DEVICE_NAME" />」時失敗。</translation>
+<translation id="1230807973377071856">系統選單</translation>
 <translation id="1232569758102978740">未命名</translation>
 <translation id="1233721473400465416">語言代碼</translation>
 <translation id="1234808891666923653">Service Workers</translation>
@@ -1081,7 +1082,6 @@
 <translation id="2581475589551312226">自動使用 Google 雲端硬碟備份及還原 Play 應用程式資料。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">重新命名資料夾</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (平台：<ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">這個擴充功能可能在你不知情的情況下加入瀏覽器。</translation>
 <translation id="2585300050980572691">預設搜尋設定</translation>
 <translation id="2587203970400270934">行動電話網路業者代碼：</translation>
 <translation id="2587922270115112871">建立受監管的使用者時並不會建立 Google 帳戶，且該使用者的設定
@@ -1542,6 +1542,7 @@
 <translation id="3227137524299004712">麥克風</translation>
 <translation id="32279126412636473">重新載入 (⌘R)</translation>
 <translation id="3228679360002431295">正在連線及驗證<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">播放/暫停</translation>
 <translation id="3232318083971127729">值：</translation>
 <translation id="3236289833370040187">擁有權將轉移至 <ph name="DESTINATION_DOMAIN" />。</translation>
 <translation id="3237784613213365159">「<ph name="NEW_PROFILE_NAME" />」現已成為受監管的使用者</translation>
@@ -1855,6 +1856,7 @@
 <translation id="367645871420407123">如果您要將 Root 密碼設為測試映像檔的預設值，請保留空白</translation>
 <translation id="3678156199662914018">擴充功能：<ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">感謝你提供意見！你目前處於離線狀態，重新上線後系統就會傳送你的意見回饋報告。</translation>
+<translation id="3683023058278427253">我們偵測到你的網域有多種授權類型。如要繼續操作，請選取一種類型。</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> 要求共用畫面</translation>
 <translation id="3685122418104378273">使用行動數據時，Google 雲端硬碟同步功能預設為停用。</translation>
 <translation id="368789413795732264">嘗試寫入檔案時發生錯誤：<ph name="ERROR_TEXT" />。</translation>
@@ -2090,6 +2092,7 @@
 <translation id="4012550234655138030">設定或管理 <ph name="CLOUD_PRINT_NAME" />中的印表機。</translation>
 <translation id="4014432863917027322">修復「<ph name="EXTENSION_NAME" />」？</translation>
 <translation id="4018133169783460046">將 <ph name="PRODUCT_NAME" /> 介面設為這個語言</translation>
+<translation id="4020106588733303597">糟糕！系統無法載入可用的授權。</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">新增到字典(&amp;A)</translation>
 <translation id="4023146161712577481">正在確定裝置設定。</translation>
@@ -2314,6 +2317,7 @@
 <translation id="4389091756366370506">使用者 <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">停用</translation>
 <translation id="4400367121200150367">一律不儲存密碼的網站會顯示在這裡</translation>
+<translation id="4400632832271803360">按住啟動器鍵即可切換最上排按鍵的行為</translation>
 <translation id="4408599188496843485">說明(&amp;E)</translation>
 <translation id="4409697491990005945">邊界</translation>
 <translation id="4411578466613447185">程式碼簽署者</translation>
@@ -2672,6 +2676,7 @@
 <translation id="494660967831069720">資料不全</translation>
 <translation id="4950138595962845479">選項...</translation>
 <translation id="4953808748584563296">預設的橘色顯示圖片</translation>
+<translation id="4955814292505481804">年約</translation>
 <translation id="495931528404527476">在 Chrome 中</translation>
 <translation id="496226124210045887">你選取的資料夾包含敏感檔案。你確定要將這個資料夾的讀取權限永久授予「$1」嗎？</translation>
 <translation id="4964455510556214366">排列</translation>
@@ -3152,6 +3157,7 @@
 <translation id="5658415415603568799">為了提升安全性，Smart Lock 會在經過 20 小時後要求您輸入密碼。</translation>
 <translation id="5659593005791499971">電子郵件</translation>
 <translation id="5661272705528507004">這個 SIM 卡已停用，因此無法使用。請與你的服務供應商聯絡，要求更換 SIM 卡。</translation>
+<translation id="5662477687021125631">永久</translation>
 <translation id="5669267381087807207">啟用中</translation>
 <translation id="5669691691057771421">輸入新的 PIN 碼</translation>
 <translation id="5677503058916217575">網頁語言：</translation>
@@ -3877,6 +3883,7 @@
 <translation id="6746392203843147041">調高音量鍵</translation>
 <translation id="6748140994595080445">變更 <ph name="APP_NAME" /> 處理及顯示各種語言的方式。</translation>
 <translation id="6748465660675848252">您可以繼續操作，但系統只會還原您已同步處理的資料和設定。所有本機資料都會遺失。</translation>
+<translation id="6748775883310276718">單一應用程式資訊站</translation>
 <translation id="6751256176799620176">已選取 1 個資料夾</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (無痕模式)</translation>
 <translation id="6757101664402245801">已複製網址</translation>
@@ -4700,6 +4707,7 @@
 <translation id="8025789898011765392">工作</translation>
 <translation id="8026334261755873520">清除瀏覽資料</translation>
 <translation id="8028060951694135607">Microsoft 金鑰修復</translation>
+<translation id="8028134359912645720">按住 Ctrl、Alt、Shift 鍵或啟動器鍵，即可查看這些輔助鍵的鍵盤快速鍵。</translation>
 <translation id="8028993641010258682">大小</translation>
 <translation id="8030169304546394654">已中斷連線</translation>
 <translation id="8030656706657716245">新增印表機</translation>
@@ -4754,6 +4762,7 @@
 <translation id="8107015733319732394">正在為 <ph name="DEVICE_TYPE" /> 安裝 Google Play 商店。這可能需要幾分鐘時間。</translation>
 <translation id="8109930990200908494">需要使用者憑證才能登入。</translation>
 <translation id="8111155949205007504">透過 iPhone 分享這個密碼</translation>
+<translation id="8113043281354018522">選擇授權類型</translation>
 <translation id="8116190140324504026">更多資訊...</translation>
 <translation id="8116483400482790018">自訂拼字字典</translation>
 <translation id="8116972784401310538">書籤管理員(&amp;B)</translation>
@@ -4900,6 +4909,7 @@
 <translation id="8339059274628563283"><ph name="SITE" /> 儲存在本機的資料</translation>
 <translation id="834205140959175756">透過狀態匣管理連線、更新和設定。</translation>
 <translation id="8342318071240498787">已存在名稱相同的檔案或目錄。</translation>
+<translation id="8349826889576450703">啟動器</translation>
 <translation id="8351419472474436977">你的 Proxy 設定已受到這個擴充功能控制，該擴充功能可變更、中斷、或監視你在網路上的行為。如果你不確定這項變更的發生原因，建議你停用該擴充功能。</translation>
 <translation id="8352772353338965963">新增可多重登入的帳戶。這些帳戶的使用者不需提供密碼即可存取所有已登入的帳戶。因此，建議你只讓信任的帳戶使用這項功能。</translation>
 <translation id="8353683614194668312">可用權限：</translation>
@@ -4958,6 +4968,7 @@
 <translation id="8446884382197647889">瞭解詳情</translation>
 <translation id="8449008133205184768">貼上並符合樣式</translation>
 <translation id="8449036207308062757">管理儲存空間</translation>
+<translation id="8451512073679317615">小幫手</translation>
 <translation id="8452135315243592079">找不到 SIM 卡</translation>
 <translation id="8453482423012550001">正在複製 $1 個項目...</translation>
 <translation id="8454288007744638700">或選取新的網路：</translation>
@@ -5415,6 +5426,7 @@
 <translation id="9123413579398459698">FTP Proxy</translation>
 <translation id="9124003689441359348">你所儲存的密碼會顯示在這裡</translation>
 <translation id="912419004897138677">轉碼器</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (還剩 <ph name="LICENSE_COUNT" /> 個)</translation>
 <translation id="9127762771585363996">水平翻轉相機圖片</translation>
 <translation id="9128870381267983090">連線至網路</translation>
 <translation id="9130015405878219958">輸入的模式無效。</translation>

@@ -130,7 +130,6 @@
 <translation id="1973335181906896915">Не удалось выполнить сериализацию</translation>
 <translation id="1974060860693918893">Дополнительные</translation>
 <translation id="1978555033938440688">Версия ПО</translation>
-<translation id="1995859865337580572">Подтвердите CVC-код</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{и ещё 1}one{и ещё #}few{и ещё #}many{и ещё #}other{и ещё #}}</translation>
 <translation id="2025186561304664664">Прокси-сервер настраивается автоматически.</translation>
 <translation id="2030481566774242610">Возможно, вы имели в виду <ph name="LINK" />.</translation>
@@ -420,7 +419,7 @@
 <translation id="413544239732274901">Подробнее...</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Использовать глобальный параметр по умолчанию (находить)</translation>
-<translation id="4165986682804962316">Настройки сайта</translation>
+<translation id="4165986682804962316">Настройки сайтов</translation>
 <translation id="4169947484918424451">Сохранить эту карту в Chromium?</translation>
 <translation id="4171400957073367226">Подтверждающая подпись недействительна</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Ещё <ph name="ITEM_COUNT" /> товар}one{Ещё <ph name="ITEM_COUNT" /> товар}few{Ещё <ph name="ITEM_COUNT" /> товара}many{Ещё <ph name="ITEM_COUNT" /> товаров}other{Ещё <ph name="ITEM_COUNT" /> товара}}</translation>
@@ -833,6 +832,7 @@
 <translation id="7752995774971033316">Не управляется</translation>
 <translation id="7755287808199759310">Для разблокировки обратитесь к родителю.</translation>
 <translation id="7758069387465995638">Возможно, подключение заблокировано брандмауэром или антивирусным ПО.</translation>
+<translation id="7759163816903619567">Показывать домен:</translation>
 <translation id="7761701407923456692">Сертификат сервера не соответствует URL.</translation>
 <translation id="7763386264682878361">Синтаксический анализатор манифестов</translation>
 <translation id="7764225426217299476">Добавить адрес</translation>

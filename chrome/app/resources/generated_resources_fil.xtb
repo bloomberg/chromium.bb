@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">Item 5 sa shelf</translation>
 <translation id="1225404570112441414">Idagdag ang site na ito sa iyong shelf upang magamit ito anumang oras.</translation>
 <translation id="1227507814927581609">Nabigo ang pagpapatunay habang kumokonekta sa "<ph name="DEVICE_NAME" />".</translation>
+<translation id="1230807973377071856">menu ng system</translation>
 <translation id="1232569758102978740">Walang pamagat</translation>
 <translation id="1233721473400465416">Lokal</translation>
 <translation id="1234808891666923653">Mga Service Worker</translation>
@@ -1083,7 +1084,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="2581475589551312226">Awtomatikong i-back up at i-restore ang data ng Play app sa Google Drive. <ph name="BEGIN_LINK1" />Matuto nang Higit Pa<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">Palitan ang Pangalan ng Folder</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Platform <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">Maaaring idinagdag ang extension na ito nang hindi mo nalalaman.</translation>
 <translation id="2585300050980572691">Default na mga setting ng paghahanap</translation>
 <translation id="2587203970400270934">Operator code:</translation>
 <translation id="2587922270115112871">Hindi gumagawa ng isang Google Account ang paggawa ng isang pinangangasiwaang user, at hindi susunod sa mga ito ang mga setting
@@ -1544,6 +1544,7 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga ito at hi
 <translation id="3227137524299004712">Mikropono</translation>
 <translation id="32279126412636473">I-reload (⌘R)</translation>
 <translation id="3228679360002431295">Kumokonekta at nagbe-verify<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">i-play / i-pause</translation>
 <translation id="3232318083971127729">Halaga:</translation>
 <translation id="3236289833370040187">Ililipat ang pagmamay-ari sa <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3237784613213365159">Si <ph name="NEW_PROFILE_NAME" /> ay isa na ngayong pinangangasiwaang user</translation>
@@ -1857,6 +1858,7 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="367645871420407123">iwanang blangko kung gusto mong itakda ang root password sa default na value ng pansubok na larawan</translation>
 <translation id="3678156199662914018">Extension: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Salamat sa iyong feedback. Offline ka na ngayon, at ipapadala ang iyong ulat sa ibang pagkakataon.</translation>
+<translation id="3683023058278427253">May natukoy kaming maraming uri ng lisensya para sa iyong domain. Pumili ng isa upang magpatuloy.</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> Kahilingan sa Pagbabahagi ng Screen</translation>
 <translation id="3685122418104378273">Naka-disable ang Google Drive bilang default, kapag gumagamit ng mobile data.</translation>
 <translation id="368789413795732264">Nagkaroon ng error habang sinusubukang isulat ang file: <ph name="ERROR_TEXT" />.</translation>
@@ -2094,6 +2096,7 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4012550234655138030">I-set up o pamahalaan ang mga printer sa <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="4014432863917027322">Ayusin ang "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="4018133169783460046">Ipakita ang <ph name="PRODUCT_NAME" /> sa wikang ito</translation>
+<translation id="4020106588733303597">Oops!  Hindi na-load ng system ang mga available na lisensya.</translation>
 <translation id="4021279097213088397">-</translation>
 <translation id="4022426551683927403">&amp;Idagdag sa Diksyunaryo</translation>
 <translation id="4023146161712577481">Tinutukoy ang configuration ng device.</translation>
@@ -2318,6 +2321,7 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="4389091756366370506">User <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">Huwag paganahin</translation>
 <translation id="4400367121200150367">Lalabas dito ang mga site na hindi kailanman nagse-save ng mga password</translation>
+<translation id="4400632832271803360">Pindutin nang matagal ang key ng Launcher upang mapalitan ang gawi ng mga key sa itaas na row</translation>
 <translation id="4408599188496843485">T&amp;ulong</translation>
 <translation id="4409697491990005945">Mga Margin</translation>
 <translation id="4411578466613447185">Code Signer</translation>
@@ -2678,6 +2682,7 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="494660967831069720">Hindi kumpletong data</translation>
 <translation id="4950138595962845479">Mga Pagpipilian...</translation>
 <translation id="4953808748584563296">Default na orange na avatar</translation>
+<translation id="4955814292505481804">Taunan</translation>
 <translation id="495931528404527476">Sa Chrome</translation>
 <translation id="496226124210045887">Naglalaman ng mga sensitibong file ang folder na iyong pinili. Sigurado ka bang gusto mong magbigay ng "PhP50" na permanenteng read access sa folder na ito?</translation>
 <translation id="4964455510556214366">Kaayusan</translation>
@@ -3160,6 +3165,7 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="5658415415603568799">Para sa karagdagang seguridad, hihilingin sa iyo ng Smart Lock na ilagay ang iyong password pagkatapos ng 20 oras.</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5661272705528507004">Hindi gumagana at hindi maaaring gamitin ang SIM card na ito. Mangyaring makipag-ugnayan sa iyong service provider para sa isang kapalit.</translation>
+<translation id="5662477687021125631">Perpetual</translation>
 <translation id="5669267381087807207">Ina-activate</translation>
 <translation id="5669691691057771421">Ilagay ang bagong PIN</translation>
 <translation id="5677503058916217575">Wika ng page:</translation>
@@ -3886,6 +3892,7 @@ Gamitin lang ang feature na ito sa mga account na iyong pinagkakatiwalaan.</tran
 <translation id="6746392203843147041">lakasan ang volume</translation>
 <translation id="6748140994595080445">Baguhin kung paano namamahala at nagpapakita ang <ph name="APP_NAME" /> ng mga wika.</translation>
 <translation id="6748465660675848252">Maaari kang magpatuloy ngunit ang iyong naka-sync na data at mga setting lang ang maibabalik. Mawawala ang lahat ng iyong lokal na data.</translation>
+<translation id="6748775883310276718">Kiosk na Pang-isang App</translation>
 <translation id="6751256176799620176">1 folder ang napili</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Incognito)</translation>
 <translation id="6757101664402245801">Nakopya ang URL</translation>
@@ -4713,6 +4720,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8025789898011765392">Mga Gawain</translation>
 <translation id="8026334261755873520">I-clear ang data ng pagba-browse</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
+<translation id="8028134359912645720">Pindutin nang matagal ang Control, Alt, Shift, o Launcher upang makita ang mga keyboard shortcut para sa mga modifier na iyon.</translation>
 <translation id="8028993641010258682">Laki</translation>
 <translation id="8030169304546394654">Naalis sa pagkakakonekta</translation>
 <translation id="8030656706657716245">Magdagdag ng Printer</translation>
@@ -4767,6 +4775,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8107015733319732394">Ini-install ang Google Play Store sa iyong <ph name="DEVICE_TYPE" />. Maaaring abutin ito nang ilang minuto.</translation>
 <translation id="8109930990200908494">Kinakailangan ang pag-sign in para sa certificate ng user.</translation>
 <translation id="8111155949205007504">Ibahagi ang password na ito sa iyong iPhone</translation>
+<translation id="8113043281354018522">Pumili ng uri ng lisensya</translation>
 <translation id="8116190140324504026">Higit pang impormasyon...</translation>
 <translation id="8116483400482790018">Custom na diksyunaryo ng spelling</translation>
 <translation id="8116972784401310538">&amp;Tagapangasiwa ng bookmark</translation>
@@ -4915,6 +4924,7 @@ Kinakalkula ang oras hanggang sa mapuno</translation>
 <translation id="8339059274628563283">Lokal na nakaimbak na data ng <ph name="SITE" /></translation>
 <translation id="834205140959175756">Pamahalaan ang mga koneksyon, update, at setting gamit ang status tray.</translation>
 <translation id="8342318071240498787">Umiiral na ang isang file o direktoryong may parehong pangalan.</translation>
+<translation id="8349826889576450703">launcher</translation>
 <translation id="8351419472474436977">Kinokontrol na ng extension na ito ang iyong mga setting ng proxy, na nangangahulugang maaari nitong baguhin, sirain o alamin ang anumang bagay na gagawin mo online. Kung hindi ka sigurado kung bakit naganap ang pagbabagong ito, malamang na hindi mo ito ginustong mangyari.</translation>
 <translation id="8352772353338965963">Magdagdag ng account sa multiple na pag-sign in. Maa-access ang lahat ng naka-sign in na account nang walang password, kaya dapat na gamitin lang ang feature na ito sa mga pinagkakatiwalaang account.</translation>
 <translation id="8353683614194668312">Maaari itong:</translation>
@@ -4975,6 +4985,7 @@ Kinakalkula ang oras hanggang sa mapuno</translation>
 <translation id="8446884382197647889">Matuto nang Higit Pa</translation>
 <translation id="8449008133205184768">I-paste at Itugma ang Estilo</translation>
 <translation id="8449036207308062757">Pamahalaan ang storage</translation>
+<translation id="8451512073679317615">assistant</translation>
 <translation id="8452135315243592079">Walang nakalagay na SIM card</translation>
 <translation id="8453482423012550001">Kumokopya ng $1 item...</translation>
 <translation id="8454288007744638700">O kaya, pumili ng bagong network:</translation>
@@ -5434,6 +5445,7 @@ Maaaring hatiin ang mga kasunod na notification, window at dialog sa pagitan ng 
 <translation id="9123413579398459698">FTP proxy</translation>
 <translation id="9124003689441359348">Lalabas dito ang mga na-save na password</translation>
 <translation id="912419004897138677">Codec</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> ang natitira)</translation>
 <translation id="9127762771585363996">I-flip nang pa-horizontal ang larawan ng camera</translation>
 <translation id="9128870381267983090">Kumonekta sa network</translation>
 <translation id="9130015405878219958">Di-wastong mode ang ipinasok.</translation>

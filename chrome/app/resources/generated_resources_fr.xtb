@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">Élément d'étagère 5</translation>
 <translation id="1225404570112441414">Ajoutez ce site à votre étagère pour l'utiliser à tout moment.</translation>
 <translation id="1227507814927581609">Échec de l'authentification lors de la connexion à l'appareil "<ph name="DEVICE_NAME" />".</translation>
+<translation id="1230807973377071856">menu système</translation>
 <translation id="1232569758102978740">Sans titre</translation>
 <translation id="1233721473400465416">Paramètres régionaux</translation>
 <translation id="1234808891666923653">Service Workers</translation>
@@ -906,7 +907,7 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="2327492829706409234">Activer l'application</translation>
 <translation id="2329597144923131178">Connectez-vous pour synchroniser favoris, historique, mots de passe et autres sur vos appareils. </translation>
 <translation id="2332131598580221120">Afficher dans la boutique</translation>
-<translation id="2332742915001411729">Rétablir le niveau de zoom par défaut</translation>
+<translation id="2332742915001411729">Rétablir le thème par défaut</translation>
 <translation id="2335122562899522968">Cette page place des cookies.</translation>
 <translation id="2336228925368920074">Ajouter tous les onglets aux favoris...</translation>
 <translation id="2336381494582898602">Powerwash</translation>
@@ -1081,7 +1082,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2581475589551312226">Sauvegardez et restaurez automatiquement les données des applications Google Play via Google Drive. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">Renommer le dossier</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Plate-forme <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">Cette extension a peut-être été ajoutée à votre insu.</translation>
 <translation id="2585300050980572691">Paramètres de recherche par défaut</translation>
 <translation id="2587203970400270934">Code opérateur :</translation>
 <translation id="2587922270115112871">La création d'un utilisateur supervisé n'entraîne pas la création d'un compte Google, et ses paramètres
@@ -1542,6 +1542,7 @@ Pour vérifier ce point et en savoir plus, veuillez consulter votre compte de me
 <translation id="3227137524299004712">Micro</translation>
 <translation id="32279126412636473">Actualiser (⌘ R)</translation>
 <translation id="3228679360002431295">Connexion et validation en cours<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">lecture/pause</translation>
 <translation id="3232318083971127729">Valeur :</translation>
 <translation id="3236289833370040187">La propriété sera transférée à <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> est maintenant un utilisateur supervisé</translation>
@@ -1855,6 +1856,7 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="367645871420407123">N'indiquez rien si vous voulez définir le mot de passe racine sur la valeur d'image test par défaut.</translation>
 <translation id="3678156199662914018">Extension : <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Merci de vos commentaires. Vous êtes hors connexion pour le moment, et votre rapport sera envoyé plus tard.</translation>
+<translation id="3683023058278427253">Nous avons détecté plusieurs types de licences pour votre domaine. Veuillez en sélectionner un pour continuer.</translation>
 <translation id="3683524264665795342">Partage de l'écran demandé par <ph name="APP_NAME" /></translation>
 <translation id="3685122418104378273">Par défaut, la synchronisation Google Drive est désactivée lors de l'utilisation des données mobiles.</translation>
 <translation id="368789413795732264">Une erreur s'est produite lors de la tentative d'écriture du fichier : <ph name="ERROR_TEXT" />.</translation>
@@ -2091,6 +2093,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4012550234655138030">Configurer ou gérer les imprimantes sur <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="4014432863917027322">Réparer "<ph name="EXTENSION_NAME" />" ?</translation>
 <translation id="4018133169783460046">Afficher <ph name="PRODUCT_NAME" /> dans cette langue</translation>
+<translation id="4020106588733303597">Petit problème… Échec du chargement des licences disponibles par le système.</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">&amp;Ajouter au dictionnaire</translation>
 <translation id="4023146161712577481">Détermination de la configuration de l'appareil en cours…</translation>
@@ -2315,6 +2318,7 @@ Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</tr
 <translation id="4389091756366370506">Utilisateur <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">Désactiver</translation>
 <translation id="4400367121200150367">Les sites pour lesquels vos mots de passe ne seront jamais enregistrés s'afficheront ici</translation>
+<translation id="4400632832271803360">Maintenir la touche du lanceur d'applications enfoncée pour modifier la fonction des touches de la rangée supérieure</translation>
 <translation id="4408599188496843485">&amp;Aide</translation>
 <translation id="4409697491990005945">Marges</translation>
 <translation id="4411578466613447185">Signataire de code</translation>
@@ -2674,6 +2678,7 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="494660967831069720">Données partielles</translation>
 <translation id="4950138595962845479">Options...</translation>
 <translation id="4953808748584563296">Avatar orange par défaut</translation>
+<translation id="4955814292505481804">Annuelle</translation>
 <translation id="495931528404527476">Dans Chrome</translation>
 <translation id="496226124210045887">Le dossier que vous avez sélectionné contient des fichiers sensibles. Voulez-vous vraiment accorder à "$1" un accès en lecture permanent à ce dossier ?</translation>
 <translation id="4964455510556214366">Organisation</translation>
@@ -3157,6 +3162,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5658415415603568799">Pour plus de sécurité, Smart Lock vous invitera à saisir votre mot de passe 20 heures après.</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5661272705528507004">Cette carte SIM est désactivée et ne peut être utilisée. Veuillez demander à votre fournisseur de services de la remplacer.</translation>
+<translation id="5662477687021125631">Perpétuelle</translation>
 <translation id="5669267381087807207">Activation</translation>
 <translation id="5669691691057771421">Saisir le nouveau code</translation>
 <translation id="5677503058916217575">Langue de la page :</translation>
@@ -3883,6 +3889,7 @@ N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="6746392203843147041">augmenter le volume</translation>
 <translation id="6748140994595080445">Modifier la gestion et l'affichage des langues dans <ph name="APP_NAME" /></translation>
 <translation id="6748465660675848252">Vous pouvez continuer, mais seules les données que vous avez synchronisées seront restaurées (de même que vos paramètres). Toutes les données stockées en local seront perdues.</translation>
+<translation id="6748775883310276718">Application kiosque unique</translation>
 <translation id="6751256176799620176">1 dossier sélectionné</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Navigation privée)</translation>
 <translation id="6757101664402245801">URL copiée</translation>
@@ -4708,6 +4715,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8025789898011765392">Tâches</translation>
 <translation id="8026334261755873520">Effacer les données de navigation</translation>
 <translation id="8028060951694135607">Récupération de clé Microsoft</translation>
+<translation id="8028134359912645720">Maintenez la touche Ctrl, Alt, Maj ou Lanceur d'applications enfoncée pour afficher le raccourci clavier qui lui est associé.</translation>
 <translation id="8028993641010258682">Taille</translation>
 <translation id="8030169304546394654">Déconnecté</translation>
 <translation id="8030656706657716245">Ajouter une imprimante</translation>
@@ -4762,6 +4770,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8107015733319732394">Installation du Google Play Store sur votre <ph name="DEVICE_TYPE" />. Cette opération peut prendre quelques minutes.</translation>
 <translation id="8109930990200908494">Connexion obligatoire pour l'identifiant utilisateur.</translation>
 <translation id="8111155949205007504">Partagez ce mot de passe avec votre iPhone</translation>
+<translation id="8113043281354018522">Sélectionner un type de licence</translation>
 <translation id="8116190140324504026">Plus d'informations...</translation>
 <translation id="8116483400482790018">Dictionnaire orthographique personnalisé</translation>
 <translation id="8116972784401310538">&amp;Gestionnaire de favoris</translation>
@@ -4909,6 +4918,7 @@ Calcul de la durée restante</translation>
 <translation id="8339059274628563283">Données stockées en local pour <ph name="SITE" /></translation>
 <translation id="834205140959175756">Gérez les connexions, les mises à jour et les paramètres depuis la barre d'état.</translation>
 <translation id="8342318071240498787">Un fichier ou un répertoire du même nom existe déjà.</translation>
+<translation id="8349826889576450703">lanceur d'applications</translation>
 <translation id="8351419472474436977">Cette extension a pris le contrôle de vos paramètres de proxy, ce qui signifie que toutes vos activités en ligne peuvent être modifiées, interrompues ou espionnées. Si vous ne savez pas pourquoi cette modification s'est produite, c'est qu'elle est probablement indésirable.</translation>
 <translation id="8352772353338965963">Ajoutez un compte à la connexion multicompte. Tous les comptes connectés sont accessibles sans mot de passe. Nous vous recommandons donc de n'utiliser cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="8353683614194668312">Cette extension Chrome peut :</translation>
@@ -4967,6 +4977,7 @@ Calcul de la durée restante</translation>
 <translation id="8446884382197647889">En savoir plus</translation>
 <translation id="8449008133205184768">Coller en adaptant le style</translation>
 <translation id="8449036207308062757">Gérer l'espace de stockage</translation>
+<translation id="8451512073679317615">assistant</translation>
 <translation id="8452135315243592079">Carte SIM manquante</translation>
 <translation id="8453482423012550001">Copie de $1 éléments en cours…</translation>
 <translation id="8454288007744638700">Ou sélectionnez un nouveau réseau :</translation>
@@ -5425,6 +5436,7 @@ Suite à cette opération, les notifications, les fenêtres et les boîtes de di
 <translation id="9123413579398459698">Proxy FTP</translation>
 <translation id="9124003689441359348">Les mots de passe enregistrés s'afficheront ici</translation>
 <translation id="912419004897138677">Codec</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> restante(s))</translation>
 <translation id="9127762771585363996">Faire pivoter l'image de l'appareil photo à l'horizontale</translation>
 <translation id="9128870381267983090">Connexion au réseau</translation>
 <translation id="9130015405878219958">Le mode indiqué est incorrect.</translation>

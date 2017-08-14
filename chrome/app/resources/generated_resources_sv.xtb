@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">Hyllobjekt 5</translation>
 <translation id="1225404570112441414">Lägg till den här webbplatsen på hyllan och använd den när som helst.</translation>
 <translation id="1227507814927581609">Autentiseringen misslyckades vid anslutning till <ph name="DEVICE_NAME" />.</translation>
+<translation id="1230807973377071856">systemmeny</translation>
 <translation id="1232569758102978740">Namnlös</translation>
 <translation id="1233721473400465416">Språkkod</translation>
 <translation id="1234808891666923653">ServiceWorker-funktioner</translation>
@@ -1081,7 +1082,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2581475589551312226">Säkerhetskopiera och återställ data i appar från Play på Google Drive. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">Byt namn på mapp</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Plattform <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">Det här tillägget kan ha lagts till utan att du vet om det.</translation>
 <translation id="2585300050980572691">Standardinställningar för sökning</translation>
 <translation id="2587203970400270934">Operatörskod:</translation>
 <translation id="2587922270115112871">Inget Google-konto skapas när en övervakad användare skapas och användarens inställningar
@@ -1542,6 +1542,7 @@ Läs din e-post på <ph name="ACCOUNT_EMAIL" />. Där finns dessa och andra anvi
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="32279126412636473">Läs in igen (⌘R)</translation>
 <translation id="3228679360002431295">Ansluter och verifierar<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">spela upp/pausa</translation>
 <translation id="3232318083971127729">Värde:</translation>
 <translation id="3236289833370040187"><ph name="DESTINATION_DOMAIN" /> blir den nya ägaren efter överföringen.</translation>
 <translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> är nu en kontrollerad användare</translation>
@@ -1855,6 +1856,7 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="367645871420407123">lämna tomt om du vill ange rotlösenordet som värde för standardtestbilden</translation>
 <translation id="3678156199662914018">Tillägg: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Tack för din feedback. Just nu är du offline, så rapporten skickas senare.</translation>
+<translation id="3683023058278427253">Vi har hittat flera licenstyper för din domän. Välj en innan du fortsätter.</translation>
 <translation id="3683524264665795342">Förfrågan från <ph name="APP_NAME" /> om skärmdelning</translation>
 <translation id="3685122418104378273">Google Drive-synkronisering inaktiveras som standard när mobildata används.</translation>
 <translation id="368789413795732264">Ett fel uppstod när följande fil skulle skrivas: <ph name="ERROR_TEXT" />.</translation>
@@ -2091,6 +2093,7 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4012550234655138030">Konfigurera eller hantera skrivare i <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="4014432863917027322">Vill du reparera <ph name="EXTENSION_NAME" />?</translation>
 <translation id="4018133169783460046">Visa <ph name="PRODUCT_NAME" /> på det här språket</translation>
+<translation id="4020106588733303597">Hoppsan! Det gick inte att läsa in de tillgängliga licenserna.</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">&amp;Lägg till i ordlistan</translation>
 <translation id="4023146161712577481">Kontrollerar enhetskonfiguration.</translation>
@@ -2315,6 +2318,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4389091756366370506">Användare <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">Inaktivera</translation>
 <translation id="4400367121200150367">Webbplatser som aldrig sparar lösenord visas här</translation>
+<translation id="4400632832271803360">Håll ned starttangenten om du vill ändra hur tangenterna på översta raden fungerar</translation>
 <translation id="4408599188496843485">H&amp;jälp</translation>
 <translation id="4409697491990005945">Marginaler</translation>
 <translation id="4411578466613447185">Kodsigneringscertifikat</translation>
@@ -2675,6 +2679,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="494660967831069720">Ofullständig data</translation>
 <translation id="4950138595962845479">Alternativ...</translation>
 <translation id="4953808748584563296">Orange standardavatar</translation>
+<translation id="4955814292505481804">Årslicens</translation>
 <translation id="495931528404527476">I Chrome</translation>
 <translation id="496226124210045887">Mappen som du valde innehåller känsliga filer. Är du säker på att du vill bevilja $1 permanent läsåtkomst till mappen?</translation>
 <translation id="4964455510556214366">Ordning</translation>
@@ -3157,6 +3162,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5658415415603568799">Av säkerhetsskäl blir du ombedd att ange lösenordet efter 20 timmar med Smart Lock.</translation>
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5661272705528507004">SIM-kortet är inaktiverat och kan inte användas. Kontakta tjänsteleverantören för ett nytt kort.</translation>
+<translation id="5662477687021125631">Permanent licens</translation>
 <translation id="5669267381087807207">Aktiverar</translation>
 <translation id="5669691691057771421">Ange en ny pinkod</translation>
 <translation id="5677503058916217575">Sidans språk:</translation>
@@ -3883,6 +3889,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="6746392203843147041">volym upp</translation>
 <translation id="6748140994595080445">Ändra hur <ph name="APP_NAME" /> hanterar och visar språk</translation>
 <translation id="6748465660675848252">Du kan fortsätta, men endast synkroniserade uppgifter och inställningar återställs. All lokal data kommer att gå förlorad.</translation>
+<translation id="6748775883310276718">Licens för ensam kioskapp</translation>
 <translation id="6751256176799620176">1 mapp har valts</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Inkognito)</translation>
 <translation id="6757101664402245801">Webbadressen har kopierats</translation>
@@ -4707,6 +4714,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8025789898011765392">Uppgifter</translation>
 <translation id="8026334261755873520">Rensa webbinformation</translation>
 <translation id="8028060951694135607">Microsofts nyckelåterställning</translation>
+<translation id="8028134359912645720">Om du håller ned Ctrl, Alt, Skift eller starttangenten visas kortkommandon som använder de specialtangenterna.</translation>
 <translation id="8028993641010258682">Storlek</translation>
 <translation id="8030169304546394654">Frånkopplad</translation>
 <translation id="8030656706657716245">Lägg till skrivare</translation>
@@ -4761,6 +4769,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8107015733319732394">Google Play Butik installeras på din <ph name="DEVICE_TYPE" />. Det kan ta några minuter.</translation>
 <translation id="8109930990200908494">Inloggning krävs för användarcertifikat.</translation>
 <translation id="8111155949205007504">Dela det här lösenordet med din iPhone</translation>
+<translation id="8113043281354018522">Välj licenstyp</translation>
 <translation id="8116190140324504026">Mer information...</translation>
 <translation id="8116483400482790018">Anpassad stavningsordlista</translation>
 <translation id="8116972784401310538">&amp;Bokmärkshanteraren</translation>
@@ -4907,6 +4916,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8339059274628563283">Lokalt lagrad data för <ph name="SITE" /></translation>
 <translation id="834205140959175756">Hantera anslutningar, uppdateringar och inställningar i statusfältet.</translation>
 <translation id="8342318071240498787">Det finns redan en fil eller en katalog med samma namn.</translation>
+<translation id="8349826889576450703">start</translation>
 <translation id="8351419472474436977">Detta tillägg har tagit kontroll över dina proxyinställningar, vilket innebär att det kan ändra, knäcka eller tjuvlyssna på allt du gör på webben. Om du inte vet varför den här ändringen inträffade är den troligen inte önskvärd.</translation>
 <translation id="8352772353338965963">Lägg till ett konto för multiinloggning. Alla inloggade konton kan öppnas utan lösenord, så använd bara den här funktionen med konton du litar på.</translation>
 <translation id="8353683614194668312">Appen eller tillägget kan:</translation>
@@ -4965,6 +4975,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8446884382197647889">Läs mer</translation>
 <translation id="8449008133205184768">Klistra in och matcha stilen</translation>
 <translation id="8449036207308062757">Hantera lagringsutrymme</translation>
+<translation id="8451512073679317615">assistent</translation>
 <translation id="8452135315243592079">SIM-kort saknas</translation>
 <translation id="8453482423012550001">$1 objekt kopieras ...</translation>
 <translation id="8454288007744638700">Du kan även välja ett nytt nätverk:</translation>
@@ -5423,6 +5434,7 @@ Efterföljande meddelanden, fönster och dialogrutor kan delas upp mellan skrivb
 <translation id="9123413579398459698">FTP-proxy</translation>
 <translation id="9124003689441359348">Sparade lösenord visas här</translation>
 <translation id="912419004897138677">Kodek</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> återstår)</translation>
 <translation id="9127762771585363996">Spegelvänd kamerabilden</translation>
 <translation id="9128870381267983090">Anslut till ett nätverk</translation>
 <translation id="9130015405878219958">Du har angett ett ogiltigt läge.</translation>

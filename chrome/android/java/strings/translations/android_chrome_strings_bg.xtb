@@ -35,7 +35,6 @@
 <translation id="1326317727527857210">Влезте в Chrome, за да получите разделите си от другите си устройства.</translation>
 <translation id="132830257261478853">Адресна лента. Дръпнете надолу, за да затворите навигационния панел.</translation>
 <translation id="1332501820983677155">Комбинации за функции на Google Chrome</translation>
-<translation id="1339917386316755344">Ще излезете от повечето сайтове, но не и от профила си в Google.</translation>
 <translation id="1369915414381695676">Сайтът <ph name="SITE_NAME" /> е добавен</translation>
 <translation id="1373696734384179344">Недостатъчно памет за изтегляне на избраното съдържание.</translation>
 <translation id="1376578503827013741">Изчислява се…</translation>
@@ -105,15 +104,14 @@
 <translation id="1984937141057606926">Разрешено, но не и за трети страни</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> иска да се сдвои</translation>
 <translation id="1994173015038366702">URL адрес на сайт</translation>
-<translation id="2000271276660256125">От съображения за сигурност трябва да потвърдите опцията си за заключване на екрана, за да осъществите достъп до паролата си.</translation>
 <translation id="200815880754187296">Други приложения: <ph name="KILOBYTES" /> КБ</translation>
 <translation id="2011013297378343166">С използването на това приложение приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome, както и <ph name="BEGIN_LINK3" />Съобщението за поверителност за профили в Google, създадени във Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2017836877785168846">Изчиства историята и автоматичните довършвания в адресната лента.</translation>
-<translation id="2020525020270327736">Копиране на сайта</translation>
 <translation id="2038563949887743358">Включване на функцията за заявяване на настолни сайтове</translation>
 <translation id="2045104531052923016">Други приложения: <ph name="GIGABYTES" /> ГБ</translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="2082238445998314030">Резултат <ph name="RESULT_NUMBER" /> от <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2086652334978798447">За да получавате персонализирано съдържание, предлагано от Google, влезте в Chrome.</translation>
 <translation id="2095887075102408547">Когато тази функция е включена, Chrome ще използва сървърите на Google, за да компресира посещаваните от вас страници преди изтеглянето им. Няма да оптимизираме, нито ще виждаме страниците, отваряни през частни връзки (HTTPS) или в раздели в режим „инкогнито“.</translation>
 <translation id="2096396629993765042">Няма да излезете от профила си в Google. Възможно е в него да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Автоматичен вход</translation>
@@ -168,7 +166,6 @@
 <translation id="2625189173221582860">Паролата е копирана</translation>
 <translation id="2631006050119455616">Спестени</translation>
 <translation id="2653659639078652383">Изпращане</translation>
-<translation id="266290525248308397">Потвърдете опцията си за заключване на екрана</translation>
 <translation id="2677748264148917807">Излизане</translation>
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="2707726405694321444">Опресняване на страницата</translation>
@@ -320,6 +317,7 @@
 <translation id="4195643157523330669">Отваряне в нов раздел</translation>
 <translation id="4226663524361240545">Възможно е устройството да вибрира при известия</translation>
 <translation id="4242533952199664413">Отваряне на настройките</translation>
+<translation id="4248297594476034182">Влезте в Chrome, за да получите разделите си на всичките си устройства.</translation>
 <translation id="424864128008805179">Искате ли да излезете от Chrome?</translation>
 <translation id="4254813446494774748">Език за превод:</translation>
 <translation id="4256782883801055595">Лицензи за отворен код</translation>
@@ -328,7 +326,6 @@
 <translation id="4275663329226226506">Медия</translation>
 <translation id="4278390842282768270">Разрешено</translation>
 <translation id="42981349822642051">Разгъване</translation>
-<translation id="4300272766492248925">Отв. на приложението</translation>
 <translation id="4307992518367153382">Основни положения</translation>
 <translation id="4334425495413014985">За да използвате <ph name="APP_NAME" /> за първи път, моля, свържете се с интернет</translation>
 <translation id="4351244548802238354">Затваряне на диалоговия прозорец</translation>
@@ -530,7 +527,6 @@
 
 Някои уебсайтове например може да отговорят на тази заявка, като ви покажат реклами, които не се базират на други посетени от вас сайтове. Много уебсайтове ще продължат да събират и използват данните ви за сърфиране – например с цел подобряване на сигурността, предоставяне на съдържание, реклами и препоръки и генериране на статистически данни за отчитане.</translation>
 <translation id="6277522088822131679">При отпечатването на страницата възникна проблем. Моля, опитайте отново.</translation>
-<translation id="6290548061331241837">Функцията за преглед и копиране на пароли не е налице за използваната от вас версия на Android.</translation>
 <translation id="6295158916970320988">Всички сайтове</translation>
 <translation id="6320088164292336938">Вибриране</translation>
 <translation id="6324034347079777476">Системното синхронизиране под Android е деактивирано</translation>
@@ -560,7 +556,6 @@
 <translation id="6527303717912515753">Споделяне</translation>
 <translation id="6534565668554028783">Google не отговаря твърде дълго време</translation>
 <translation id="6538442820324228105">Изтеглено: <ph name="GBS" /> ГБ</translation>
-<translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Изберете раздел за излъчване</translation>
 <translation id="6545017243486555795">Изчистване на всички данни</translation>
 <translation id="6550675742724504774">Опции</translation>
@@ -826,7 +821,6 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показване на оригинала</translation>
 <translation id="9139068048179869749">Извеждане на запитване, преди да се разреши на сайтовете да изпращат известия (препоръчително)</translation>
-<translation id="9187199695613236444">Изглед, удобен за мобилни устройства</translation>
 <translation id="9188680907066685419">Излизане от управляван профил</translation>
 <translation id="9204836675896933765">Остава 1 файл</translation>
 <translation id="9206873250291191720">А</translation>

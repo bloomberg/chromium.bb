@@ -130,7 +130,6 @@
 <translation id="1973335181906896915">Serialisatiefout</translation>
 <translation id="1974060860693918893">Geavanceerd</translation>
 <translation id="1978555033938440688">Firmwareversie</translation>
-<translation id="1995859865337580572">Verifieer je CVC</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{en 1 andere}other{en # andere}}</translation>
 <translation id="2025186561304664664">Proxy is ingesteld op automatische configuratie.</translation>
 <translation id="2030481566774242610">Bedoelde je <ph name="LINK" />?</translation>
@@ -829,6 +828,7 @@
 <translation id="7752995774971033316">Niet-beheerd</translation>
 <translation id="7755287808199759310">Je ouder of voogd kan de blokkering van deze site opheffen</translation>
 <translation id="7758069387465995638">De verbinding is mogelijk geblokkeerd door de firewall of antivirussoftware.</translation>
+<translation id="7759163816903619567">Weergavedomein:</translation>
 <translation id="7761701407923456692">Het servercertificaat komt niet overeen met de URL.</translation>
 <translation id="7763386264682878361">Payment Manifest Parser</translation>
 <translation id="7764225426217299476">Adres toevoegen</translation>

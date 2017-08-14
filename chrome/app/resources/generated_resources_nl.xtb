@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">Plankartikel 5</translation>
 <translation id="1225404570112441414">Voeg deze site aan je plank toe om hem altijd te kunnen gebruiken.</translation>
 <translation id="1227507814927581609">Verificatie mislukt tijdens verbinden met '<ph name="DEVICE_NAME" />'.</translation>
+<translation id="1230807973377071856">systeemmenu</translation>
 <translation id="1232569758102978740">Naamloos</translation>
 <translation id="1233721473400465416">Landinstelling</translation>
 <translation id="1234808891666923653">Service Workers</translation>
@@ -1082,7 +1083,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2581475589551312226">Automatisch een back-up van app-gegevens van Google Play maken in en terugzetten vanuit Google Drive. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">Naam van map wijzigen</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Platform <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">Deze extensie is mogelijk zonder je medeweten toegevoegd.</translation>
 <translation id="2585300050980572691">Standaard zoekinstellingen</translation>
 <translation id="2587203970400270934">Operatorcode:</translation>
 <translation id="2587922270115112871">Als je een gebruiker met beperkte rechten maakt, maak je geen Google-account. De instellingen
@@ -1543,6 +1543,7 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor deze en verdere instruc
 <translation id="3227137524299004712">Microfoon</translation>
 <translation id="32279126412636473">Opnieuw laden (⌘R)</translation>
 <translation id="3228679360002431295">Verbinden en verifiëren<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">afspelen/onderbreken</translation>
 <translation id="3232318083971127729">Waarde:</translation>
 <translation id="3236289833370040187">Eigendom wordt overgedragen aan <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> is nu een gebruiker met beperkte rechten</translation>
@@ -1856,6 +1857,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="367645871420407123">laat dit leeg als je het rootwachtwoord wilt instellen op de waarde van de standaard testimage</translation>
 <translation id="3678156199662914018">Extensie: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Bedankt voor je feedback. Je bent nu offline en je rapport wordt later verzonden.</translation>
+<translation id="3683023058278427253">We hebben meerdere licentietypen gedetecteerd voor je domein. Kies er een om door te gaan.</translation>
 <translation id="3683524264665795342">Verzoek voor scherm delen van <ph name="APP_NAME" /></translation>
 <translation id="3685122418104378273">De synchronisatie van Google Drive is bij het gebruik van mobiele gegevens standaard uitgeschakeld.</translation>
 <translation id="368789413795732264">Er is een fout opgetreden bij het genereren van het bestand: <ph name="ERROR_TEXT" />.</translation>
@@ -2092,6 +2094,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4012550234655138030">Printers instellen of beheren in <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="4014432863917027322">"<ph name="EXTENSION_NAME" />" repareren?</translation>
 <translation id="4018133169783460046"><ph name="PRODUCT_NAME" /> in deze taal weergeven</translation>
+<translation id="4020106588733303597">Het systeem kan de beschikbare licenties niet laden.</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">Toevoegen &amp;aan woordenboek</translation>
 <translation id="4023146161712577481">Apparaatconfiguratie bepalen.</translation>
@@ -2316,6 +2319,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4389091756366370506">Gebruiker <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">Uitschakelen</translation>
 <translation id="4400367121200150367">Sites die nooit wachtwoorden opslaan, worden hier weergegeven</translation>
+<translation id="4400632832271803360">Houd de Launcher-toets ingedrukt om het gedrag van de toetsen in de bovenste rij om te schakelen</translation>
 <translation id="4408599188496843485">H&amp;elp</translation>
 <translation id="4409697491990005945">Marges</translation>
 <translation id="4411578466613447185">Ondertekening van code</translation>
@@ -2676,6 +2680,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="494660967831069720">Gedeeltelijke gegevens</translation>
 <translation id="4950138595962845479">Opties...</translation>
 <translation id="4953808748584563296">Standaard oranje avatar</translation>
+<translation id="4955814292505481804">Jaarlijks</translation>
 <translation id="495931528404527476">In Chrome</translation>
 <translation id="496226124210045887">De map die je hebt geselecteerd, bevat gevoelige bestanden. Weet je zeker dat je '$1' permanente leestoegang wilt geven tot deze map?</translation>
 <translation id="4964455510556214366">Indeling</translation>
@@ -2834,7 +2839,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5209320130288484488">Geen apparaten gevonden</translation>
 <translation id="5209518306177824490">SHA-1-vingerafdruk</translation>
 <translation id="5210365745912300556">Tabblad sluiten</translation>
-<translation id="5211866059911729164">De Assistent de content van je scherm laten gebruiken</translation>
+<translation id="5211866059911729164">De Assistent gebruik laten maken van de content op je scherm</translation>
 <translation id="5212461935944305924">Uitzonderingen voor cookies en sitegegevens</translation>
 <translation id="5213891612754844763">Proxyinstellingen weergeven</translation>
 <translation id="521582610500777512">Foto is geannuleerd</translation>
@@ -3157,6 +3162,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5658415415603568799">Voor extra beveiliging vraagt Smart Lock je na 20 uur je wachtwoord op te geven.</translation>
 <translation id="5659593005791499971">E-mailadres</translation>
 <translation id="5661272705528507004">Deze simkaart is uitgeschakeld en kan niet worden gebruikt. Neem contact op met je serviceprovider voor een vervangend exemplaar.</translation>
+<translation id="5662477687021125631">Oneindig</translation>
 <translation id="5669267381087807207">Wordt geactiveerd</translation>
 <translation id="5669691691057771421">Nieuwe pincode opgeven</translation>
 <translation id="5677503058916217575">Brontaal:</translation>
@@ -3883,6 +3889,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="6746392203843147041">volume omhoog</translation>
 <translation id="6748140994595080445">Wijzigen hoe <ph name="APP_NAME" /> talen verwerkt en weergeeft.</translation>
 <translation id="6748465660675848252">Je kunt doorgaan, maar alleen je gesynchroniseerde gegevens en instellingen worden hersteld. Alle lokale gegevens gaan verloren.</translation>
+<translation id="6748775883310276718">Kiosk van enkele app</translation>
 <translation id="6751256176799620176">1 map geselecteerd</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Incognito)</translation>
 <translation id="6757101664402245801">URL gekopieerd</translation>
@@ -4527,7 +4534,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7771452384635174008">Opmaak</translation>
 <translation id="7772032839648071052">Bevestig de wachtwoordzin</translation>
 <translation id="7772127298218883077">Over <ph name="PRODUCT_NAME" /></translation>
-<translation id="7772773261844472235">De Chromebook-status controleren</translation>
+<translation id="7772773261844472235">Je Chromebook-status controleren</translation>
 <translation id="7773726648746946405">Sessie-opslag</translation>
 <translation id="7781335840981796660">Alle gebruikersaccounts en lokale gegevens worden verwijderd.</translation>
 <translation id="7782102568078991263">Geen verdere suggesties van Google</translation>
@@ -4708,6 +4715,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8025789898011765392">Taken</translation>
 <translation id="8026334261755873520">Browsegegevens wissen</translation>
 <translation id="8028060951694135607">Microsoft-sleutelherstel</translation>
+<translation id="8028134359912645720">Houd Ctrl, Alt, Shift of de Launcher-toets ingedrukt om sneltoetsen voor die functietoetsen te bekijken.</translation>
 <translation id="8028993641010258682">Grootte</translation>
 <translation id="8030169304546394654">Verbinding verbroken</translation>
 <translation id="8030656706657716245">Printer toevoegen</translation>
@@ -4762,6 +4770,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8107015733319732394">De Google Play Store wordt geïnstalleerd op je <ph name="DEVICE_TYPE" />. Dit kan enkele minuten duren.</translation>
 <translation id="8109930990200908494">Inloggen vereist voor gebruikerscertificaat.</translation>
 <translation id="8111155949205007504">Dit wachtwoord delen met je iPhone</translation>
+<translation id="8113043281354018522">Licentietype kiezen</translation>
 <translation id="8116190140324504026">Meer informatie...</translation>
 <translation id="8116483400482790018">Aangepast spellingwoordenboek</translation>
 <translation id="8116972784401310538">&amp;Bladwijzerbeheer</translation>
@@ -4910,6 +4919,7 @@ Tijd berekenen tot vol</translation>
 <translation id="8339059274628563283">Lokaal opgeslagen gegevens voor <ph name="SITE" /></translation>
 <translation id="834205140959175756">Beheer verbindingen, updates en instellingen via het statusvak.</translation>
 <translation id="8342318071240498787">Er bestaat al een bestand of map met dezelfde naam.</translation>
+<translation id="8349826889576450703">launcher</translation>
 <translation id="8351419472474436977">Deze extensie heeft het beheer van je proxyinstellingen overgenomen. Dit betekent dat de extensie alles wat je online doet, kan wijzigen, beschadigen of bekijken. Als je niet zeker weet waarom deze wijziging heeft plaatsgevonden, is het waarschijnlijk een ongewenste wijziging.</translation>
 <translation id="8352772353338965963">Een account toevoegen aan Toegang tot meerdere accounts. Alle ingelogde accounts zijn toegankelijk zonder wachtwoord, dus deze functie moet alleen worden gebruikt voor vertrouwde accounts.</translation>
 <translation id="8353683614194668312">De app/extensie kan het volgende doen:</translation>
@@ -4968,6 +4978,7 @@ Tijd berekenen tot vol</translation>
 <translation id="8446884382197647889">Meer informatie</translation>
 <translation id="8449008133205184768">Plakken en stijl aanpassen</translation>
 <translation id="8449036207308062757">Opslag beheren</translation>
+<translation id="8451512073679317615">assistent</translation>
 <translation id="8452135315243592079">Simkaart ontbreekt</translation>
 <translation id="8453482423012550001">$1 items kopiëren...</translation>
 <translation id="8454288007744638700">Of selecteer een nieuw netwerk:</translation>
@@ -5427,6 +5438,7 @@ Verdere meldingen, vensters en dialoogvensters worden mogelijk verdeeld over de 
 <translation id="9123413579398459698">FTP-proxy</translation>
 <translation id="9124003689441359348">Opgeslagen wachtwoorden worden hier weergegeven</translation>
 <translation id="912419004897138677">Codec</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (nog <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9127762771585363996">Camera-afbeelding horizontaal omdraaien</translation>
 <translation id="9128870381267983090">Verbinding maken met netwerk</translation>
 <translation id="9130015405878219958">Ongeldige modus opgegeven.</translation>

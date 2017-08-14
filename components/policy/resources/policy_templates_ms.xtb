@@ -31,6 +31,7 @@
           Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, hos bantuan jauh akan dijalankan dalam konteks pengguna dan pengguna jauh tidak boleh berinteraksi dengan tetingkap ternaik pada desktop.</translation>
 <translation id="1096105751829466145">Pembekal carian lalai</translation>
 <translation id="1117535567637097036">Pengendali protokol yang ditetapkan melalui dasar ini tidak digunakan semasa mengendalikan niat Android.</translation>
+<translation id="1122282995569868661">Menunjukkan ikon bar alat <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Mengkonfigurasi direktori yang akan digunakan oleh <ph name="PRODUCT_NAME" /> untuk menyimpan fail cache pada cakera.
 
       Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang diberikan tanpa mengambil kira sama ada pengguna telah menentukan bendera '--disk-cache-dir' atau tidak. Untuk mengelakkan kehilangan data atau ralat lain yang tidak dijangka, dasar ini tidak seharusnya ditetapkan pada direktori akar volum atau pada direkori yang digunakan untuk tujuan lain kerana <ph name="PRODUCT_NAME" /> mengurus kandungannya.
@@ -53,6 +54,7 @@
       Jika dasar ini tidak ditetapkan, kekerapan lalai ialah 3 jam. Kekerapan
       minimum yang dibenarkan ialah 60 saat.</translation>
 <translation id="1221359380862872747">Memuatkan url tertentu pada log masuk tunjuk cara</translation>
+<translation id="123081309365616809">Dayakan penghantaran kandungan ke peranti</translation>
 <translation id="1265053460044691532">Hadkan masa untuk pengguna yang membuat pengesahan melalui SAML boleh melog masuk dalam talian.</translation>
 <translation id="1291880496936992484">Amaran: RC4 akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> selepas versi 52 (sekitar September 2016) dan dasar ini akan berhenti berfungsi selepas itu.
 
@@ -269,6 +271,7 @@
       Jika dasar ini tidak ditetapkan, nilai lalai ialah 0 darjah dan pengguna bebas
       untuk mengubahnya. Dalam keadaan ini, nilai lalai tidak digunakan semula
       pada mula semula.</translation>
+<translation id="2156132677421487971">Konfigurasikan dasar untuk <ph name="PRODUCT_NAME" />, ciri yang membolehkan pengguna menghantar kandungan tab, tapak atau desktop daripada penyemak imbas ke paparan dan sistem bunyi jauh.</translation>
 <translation id="2168397434410358693">Kelewatan melahu apabila dijalankan dengan kuasa AC</translation>
 <translation id="2170233653554726857">Dayakan pengoptimuman WPAD</translation>
 <translation id="2176565653304920879">Apabila dasar ini ditetapkan, aliran pengesanan zon waktu automatik akan menjadi satu daripada cara berikut bergantung pada nilai tetapan:
@@ -579,6 +582,7 @@
       Bergantung kepada sama ada atau cara dasar ini ditetapkan, tetapan pengoptimuman WPAD tidak boleh diubah oleh pengguna.</translation>
 <translation id="3072045631333522102">Penyelamat skrin untuk digunakan pada skrin log masuk dalam mod runcit</translation>
 <translation id="3072847235228302527">Tetapkan Syarat Perkhidmatan untuk akaun setempat peranti</translation>
+<translation id="3086995894968271156">Konfigurasikan Penerima Cast dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3096595567015595053">Senarai pemalam yang didayakan</translation>
 <translation id="3101501961102569744">Pilih cara untuk menentukan tetapan pelayan proksi</translation>
 <translation id="3117676313396757089">Amaran: DHE akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> selepas versi 57 (sekitar Mac 2017) dan dasar ini akan berhenti berfungsi selepas itu.
@@ -971,6 +975,9 @@
       Jika nilai dasar ini adalah 0, saiz cache lalai akan digunakan tetapi pengguna tidak akan dapat menukar saiz itu.
 
       Jika dasar ini tidak ditetapkan saiz lalai akan digunakan dan pengguna akan dapat mengatasi saiz itu dengan bendera --saiz-cache-media.</translation>
+<translation id="4508686775017063528">Jika dasar ini ditetapkan kepada benar atau tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan didayakan dan pengguna akan dapat melancarkan produk ini daripada menu apl, menu konteks halaman, kawalan media di tapak web berdaya Cast dan (jika ditunjukkan) ikon bar alat Cast.
+
+          Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> akan dilumpuhkan.</translation>
 <translation id="4518251772179446575">Tanya sama ada tapak mahu menjejak lokasi fizikal pengguna</translation>
 <translation id="4519046672992331730">Mendayakan cadangan carian dalam Kotak Omni <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
 
@@ -1077,6 +1084,7 @@
 <translation id="489803897780524242">Parameter yang mengawal kedudukan istilah carian untuk penyedia carian lalai</translation>
 <translation id="4899708173828500852">Dayakan Penyemakan Imbas Selamat</translation>
 <translation id="4906194810004762807">Segar semula kadar untuk Dasar Peranti</translation>
+<translation id="494613465159630803">Penerima Cast</translation>
 <translation id="4962262530309732070">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan membenarkan ciri Tambah Orang daripada pengurus pengguna.
 
       Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> tidak akan membenarkan profil baharu dibuat daripada pengurus pengguna.</translation>
@@ -1396,6 +1404,7 @@
 <translation id="6155936611791017817">Tetapkan keadaan lalai kursor besar pada skrin log masuk</translation>
 <translation id="6157537876488211233">Senarai diasingkan koma bagi peraturan memintas proksi</translation>
 <translation id="6158324314836466367">Nama kedai web perusahaan (tidak akan digunakan lagi)</translation>
+<translation id="6161405879872578475">Mendayakan <ph name="PRODUCT_NAME" /></translation>
 <translation id="6167074305866468481">Amaran: Sokongan SSLv3 akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> selepas versi 43 (sekitar Julai 2015) dan dasar ini akan dialih keluar pada masa yang sama.
 
       Jika dasar ini tidak dikonfigurasi, maka <ph name="PRODUCT_NAME" /> akan menggunakan versi minimum lalai iaitu SSLv3 dalam <ph name="PRODUCT_NAME" /> 39 dan TLS 1.0 dalam versi yang lebih baharu.
@@ -1895,6 +1904,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Jika tetapan ini didayakan, maka mesin ini boleh menjumpai dan bersambung dengan mesin hos jauh walaupun ia dipisahkan oleh firewall.
 
           Jika tetapan ini dilumpuhkan dan sambungan UDP keluar ditapis oleh firewall, maka mesin ini hanya boleh bersambung dengan mesin hos di dalam rangkaian setempat sahaja.</translation>
+<translation id="7976157349247117979">Nama destinasi <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Tiada sekatan khas</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Putar skrin 0 darjah</translation>

@@ -10,7 +10,7 @@
 <translation id="3713769522066937702">Формат поштового індексу не розпізнано. Приклад дійсного поштового індексу: <ph name="EXAMPLE" />. Не знаєте свій поштовий індекс? Знайдіть його <ph name="BEGIN_LINK" />тут<ph name="END_LINK" />.</translation>
 <translation id="3882422586004212847">Формат поштового індексу не розпізнано. Приклад дійсного поштового індексу: <ph name="EXAMPLE" />.</translation>
 <translation id="3885155851504623709">Община</translation>
-<translation id="43113324827158664">Це поле не може бути порожнім.</translation>
+<translation id="43113324827158664">Це поле потрібно заповнити.</translation>
 <translation id="4376888869070172068">Формат поштового індексу не розпізнано.</translation>
 <translation id="4518701284698680367">Потрібно вказати поштовий індекс, наприклад, <ph name="EXAMPLE" />. Не знаєте свій поштовий індекс? Знайдіть його <ph name="BEGIN_LINK" />тут<ph name="END_LINK" />.</translation>
 <translation id="5089810972385038852">Штат</translation>
@@ -32,7 +32,7 @@
 <translation id="6970216967273061347">Район або округ</translation>
 <translation id="7087282848513945231">Округ або графство</translation>
 <translation id="7139724024395191329">Емірат</translation>
-<translation id="7393381084163773901">Адреса (вулиця)</translation>
+<translation id="7393381084163773901">Адреса</translation>
 <translation id="7602447984296396718">Схоже, поштовий індекс не відповідає іншим частинам адреси.</translation>
 <translation id="7738983109397305830">Схоже, поштовий індекс не відповідає решті адреси. Не знаєте свій поштовий індекс? Знайдіть його <ph name="BEGIN_LINK" />тут<ph name="END_LINK" />.</translation>
 <translation id="777702478322588152">Префектура</translation>

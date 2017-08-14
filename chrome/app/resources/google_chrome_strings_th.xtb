@@ -138,7 +138,6 @@
 <translation id="4953650215774548573">ตั้ง Google Chrome เป็นเบราว์เซอร์เริ่มต้นของคุณ</translation>
 <translation id="495931528404527476">ใน Chrome</translation>
 <translation id="4965682129423310439">Chrome พบซอฟต์แวร์อันตรายในคอมพิวเตอร์ของคุณ Chrome สามารถนำซอฟต์แวร์ดังกล่าวออกและคืนการตั้งค่าเดิมเพื่อให้เบราว์เซอร์ทำงานเป็นปกติอีกครั้ง</translation>
-<translation id="4987308747895123092">โปรดปิดหน้าต่าง Google Chrome ทั้งหมด (รวมทั้งในโหมด Windows 8 ด้วย) และลองอีกครั้ง</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณ โปรดอัปเดตข้อความรหัสผ่านการซิงค์</translation>
 <translation id="5037239767309817516">โปรดปิดหน้าต่าง Google Chrome ทั้งหมด แล้วเปิดใหม่อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
@@ -214,7 +213,7 @@
 <translation id="7196020411877309443">เพราะเหตุใดฉันจึงเห็นป๊อปอัปนี้</translation>
 <translation id="7242029209006116544">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่จัดการ และให้การควบคุมระดับผู้ดูแลระบบของบัญชีดังกล่าวเหนือโปรไฟล์ Google Chrome ของคุณ ข้อมูล Chrome เช่น แอป บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะเชื่อมโยงอย่างถาวรกับ <ph name="USER_NAME" /> คุณจะสามารถลบข้อมูลนี้ผ่านทางแผงควบคุมบัญชี Google แต่คุณจะไม่สามารถเชื่อมโยงข้อมูลนี้กับบัญชีอื่น คุณสามารถเลือกที่จะสร้างโปรไฟล์ใหม่เพื่อแยกเก็บข้อมูล Chrome ที่มีอยู่ของคุณ <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">คอมพิวเตอร์เครื่องนี้จะหยุดรับการอัปเดต Google Chrome ในอีกไม่ช้าเพราะระบบจะไม่รองรับ Windows XP และ Windows Vista อีกต่อไป</translation>
-<translation id="7330164299247909639">การรับรองการตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Google Chrome อีกครั้งในฐานะ <ph name="USER_NAME" /> หรือสอบถามข้อมูลเพิ่มเติมจากผู้ดูแลระบบ <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7330164299247909639">การรับรองการตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Google Chrome อีกครั้งด้วย <ph name="USER_NAME" /> หรือสอบถามข้อมูลเพิ่มเติมจากผู้ดูแลระบบ <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">หน้าต่างใหม่</translation>
 <translation id="7369650938475876456">ใช้รหัสผ่านที่รัดกุมที่ Chrome สร้างขึ้น</translation>
 <translation id="7398801000654795464">คุณเคยลงชื่อเข้าใช้ Chrome ในชื่อ <ph name="USER_EMAIL_ADDRESS" /> โปรดใช้บัญชีเดิมเพื่อลงชื่อเข้าใช้อีกครั้ง</translation>
@@ -278,7 +277,7 @@
 <translation id="8914504000324227558">เปิด Chrome ขึ้นใหม่</translation>
 <translation id="9026991721384951619">Chrome OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากรายละเอียดการลงชื่อเข้าใช้บัญชีของคุณล้าสมัย</translation>
 <translation id="9067395829937117663">Google Chrome ต้องใช้ Windows 7 ขึ้นไป</translation>
-<translation id="9084668267983921457">การรับรองการตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Google Chrome อีกครั้งหรือสอบถามข้อมูลเพิ่มเติมจากผู้ดูแลระบบ <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="9084668267983921457">การรับรองการตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Google Chrome อีกครั้ง หรือสอบถามข้อมูลเพิ่มเติมจากผู้ดูแลระบบ <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />คำเตือน:<ph name="END_BOLD" /> Google Chrome ไม่สามารถป้องกันส่วนขยายจากการบันทึกประวัติการเรียกดู หากต้องการปิดใช้งานส่วนขยายนี้ในโหมดไม่ระบุตัวตน ให้ยกเลิกการเลือกตัวเลือกนี้</translation>
 <translation id="911206726377975832">ลบข้อมูลการท่องเว็บด้วยหรือไม่</translation>
 <translation id="919706545465235479">อัปเดต Chrome เพื่อเริ่มการซิงค์</translation>

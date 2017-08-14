@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">Raf öğesi 5</translation>
 <translation id="1225404570112441414">Bu siteyi istediğiniz zaman kullanmak üzere rafınıza ekleyin.</translation>
 <translation id="1227507814927581609">"<ph name="DEVICE_NAME" />" cihazına bağlanırken kimlik doğrulaması başarısız oldu.</translation>
+<translation id="1230807973377071856">sistem menüsü</translation>
 <translation id="1232569758102978740">Adsız</translation>
 <translation id="1233721473400465416">Yerel ayar</translation>
 <translation id="1234808891666923653">Hizmet Çalışanları</translation>
@@ -1082,7 +1083,6 @@ Bu sitenin engellenmesi gerektiğini düşünmüyorum!</translation>
 <translation id="2581475589551312226">Play uygulama verilerini otomatik olarak Google Drive'a yedekleyin ve geri yükleyin. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi Edinin<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">Klasörü Yeniden Adlandırın</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Platform: <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">Bu uzantı bilginiz olmadan eklenmiş olabilir.</translation>
 <translation id="2585300050980572691">Varsayılan arama ayarları</translation>
 <translation id="2587203970400270934">Operatör kodu:</translation>
 <translation id="2587922270115112871">Denetlenen bir kullanıcı oluşturulduğunda bir Google Hesabı oluşturulmaz. Yeni kullanıcının
@@ -1543,6 +1543,7 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="32279126412636473">Yeniden yükle (⌘R)</translation>
 <translation id="3228679360002431295">Bağlanıyor ve doğrulanıyor<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">oynat / duraklat</translation>
 <translation id="3232318083971127729">Değer:</translation>
 <translation id="3236289833370040187">Sahiplik <ph name="DESTINATION_DOMAIN" /> alanına aktarılacak.</translation>
 <translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> denetlenen kullanıcı olarak oluşturuldu</translation>
@@ -1856,6 +1857,7 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="367645871420407123">kök şifrenin varsayılan test görüntüsü değerine ayarlanmasını istiyorsanız boş bırakın</translation>
 <translation id="3678156199662914018">Uzantı: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Geri bildiriminiz için teşekkürler. Şu anda çevrimdışısınız ve raporunuz daha sonra gönderilecek.</translation>
+<translation id="3683023058278427253">Alanınız için birden fazla lisans türü belirledik. Devam etmek için lütfen birini seçin.</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> Ekran Paylaşım Talebi</translation>
 <translation id="3685122418104378273">Mobil veriler kullanılırken Google Drive senkronizasyonu varsayılan olarak devre dışıdır.</translation>
 <translation id="368789413795732264">Dosya yazılmaya çalışılırken bir hata oluştu: <ph name="ERROR_TEXT" />.</translation>
@@ -2092,6 +2094,7 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="4012550234655138030"><ph name="CLOUD_PRINT_NAME" /> içinde yazıcılar kurun ve yönetin.</translation>
 <translation id="4014432863917027322">"<ph name="EXTENSION_NAME" />" onarılsın mı?</translation>
 <translation id="4018133169783460046"><ph name="PRODUCT_NAME" /> için bu dili kullan</translation>
+<translation id="4020106588733303597">Tüh! Sistem kullanılabilir lisansları yükleyemedi.</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">Sözlüğe &amp;Ekle</translation>
 <translation id="4023146161712577481">Cihaz yapılandırması belirleniyor.</translation>
@@ -2316,6 +2319,7 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="4389091756366370506">Kullanıcı <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">Devre dışı bırak</translation>
 <translation id="4400367121200150367">Şifreleri hiçbir zaman kaydedilmeyecek siteler burada görünür</translation>
+<translation id="4400632832271803360">Üst satırdaki tuşların davranışını değiştirmek için Başlatıcı tuşunu basılı tutun</translation>
 <translation id="4408599188496843485">Yar&amp;dım</translation>
 <translation id="4409697491990005945">Kenar Boşlukları</translation>
 <translation id="4411578466613447185">Kod İmza Sahibi</translation>
@@ -2676,6 +2680,7 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="494660967831069720">Kısmi veri</translation>
 <translation id="4950138595962845479">Seçenekler...</translation>
 <translation id="4953808748584563296">Varsayılan turuncu avatar</translation>
+<translation id="4955814292505481804">Yıllık</translation>
 <translation id="495931528404527476">Chrome'da</translation>
 <translation id="496226124210045887">Seçtiğiniz klasör hassas dosyalar içeriyor. "$1" için bu klasöre kalıcı okuma erişimi vermek istediğinizden emin misiniz?</translation>
 <translation id="4964455510556214366">Düzenleme</translation>
@@ -3159,6 +3164,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5658415415603568799">Daha fazla güvenlik için Smart Lock 20 saat sonra şifrenizi girmenizi isteyecektir.</translation>
 <translation id="5659593005791499971">E-posta</translation>
 <translation id="5661272705528507004">Bu SIM kartı devre dışı durumda ve kullanılamaz. Değiştirilmesi için lütfen servis sağlayıcınızla iletişim kurun.</translation>
+<translation id="5662477687021125631">Kalıcı</translation>
 <translation id="5669267381087807207">Etkinleştiriliyor</translation>
 <translation id="5669691691057771421">Yeni PIN'i girin</translation>
 <translation id="5677503058916217575">Sayfanın dili:</translation>
@@ -3885,6 +3891,7 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="6746392203843147041">sesi aç</translation>
 <translation id="6748140994595080445"><ph name="APP_NAME" /> uygulamasının dilleri işleme ve görüntüleme biçimini değiştir.</translation>
 <translation id="6748465660675848252">Devam edebilirsiniz, ancak yalnızca senkronize edilen verileriniz ve ayarlarınız geri yüklenecek. Tüm yerel verileri kaybedeceksiniz.</translation>
+<translation id="6748775883310276718">Tek Uygulama Kiosk'u</translation>
 <translation id="6751256176799620176">1 klasör seçildi</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Gizli mod)</translation>
 <translation id="6757101664402245801">URL kopyalandı</translation>
@@ -4710,6 +4717,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8025789898011765392">Görevler</translation>
 <translation id="8026334261755873520">Tarama verilerini temizle</translation>
 <translation id="8028060951694135607">Microsoft Anahtar Kurtarma</translation>
+<translation id="8028134359912645720">Bu değiştiricilere ait klavye kısayollarını görmek için Ctrl, Alt, Üst Karakter veya Başlatıcı tuşunu basılı tutun.</translation>
 <translation id="8028993641010258682">Boyut</translation>
 <translation id="8030169304546394654">Bağlı değil</translation>
 <translation id="8030656706657716245">Yazıcı Ekle</translation>
@@ -4764,6 +4772,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8107015733319732394">Google Play Store <ph name="DEVICE_TYPE" /> cihazınıza yükleniyor. Bu işlem birkaç dakika sürebilir.</translation>
 <translation id="8109930990200908494">Kullanıcı sertifikası için oturum açılması gerekir.</translation>
 <translation id="8111155949205007504">Bu şifreyi iPhone'unuz ile paylaşın</translation>
+<translation id="8113043281354018522">Lisans türünü seçin</translation>
 <translation id="8116190140324504026">Daha fazla bilgi...</translation>
 <translation id="8116483400482790018">Özel yazım sözlüğü</translation>
 <translation id="8116972784401310538">&amp;Yer imi yöneticisi</translation>
@@ -4912,6 +4921,7 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="8339059274628563283">Yerel olarak depolanan <ph name="SITE" /> verileri</translation>
 <translation id="834205140959175756">Durum tepsisi ile bağlantıları, güncellemeleri ve ayarları yönetin.</translation>
 <translation id="8342318071240498787">Aynı adda bir dosya veya dizin zaten var.</translation>
+<translation id="8349826889576450703">başlatıcı</translation>
 <translation id="8351419472474436977">Bu uzantı proxy ayarlarınızın denetimini ele geçirdi. Bu, uzantının çevrimiçinde yaptıklarınızı değiştirebileceği, kesebileceği veya dinleyebileceği anlamına gelir. Bu değişikliğin neden olduğundan emin değilseniz muhtemelen bu değişikliği yapmayı istememişsinizdir.</translation>
 <translation id="8352772353338965963">Çoklu oturum açmaya bir hesap ekleyin. Oturum açılmış tüm hesaplara şifresiz erişilebileceği için bu özellik sadece güvenilir hesaplarla kullanılmalıdır.</translation>
 <translation id="8353683614194668312">Şunları yapabilir:</translation>
@@ -4970,6 +4980,7 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="8446884382197647889">Daha Fazla Bilgi Edinin</translation>
 <translation id="8449008133205184768">Stili Yapıştır ve Eşleştir</translation>
 <translation id="8449036207308062757">Depolama alanını yönet</translation>
+<translation id="8451512073679317615">asistan</translation>
 <translation id="8452135315243592079">SIM kart yok</translation>
 <translation id="8453482423012550001">$1 öğe kopyalanıyor...</translation>
 <translation id="8454288007744638700">Veya yeni bir ağ seçin:</translation>
@@ -5428,6 +5439,7 @@ Pencereler taşındıktan sonra gelen bildirimler, pencereler ve iletişim kutul
 <translation id="9123413579398459698">FTP proxy'si</translation>
 <translation id="9124003689441359348">Kayıtlı şifreleriniz burada görünür</translation>
 <translation id="912419004897138677">Codec</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> tane kaldı)</translation>
 <translation id="9127762771585363996">Kamera resmini yatay çevir</translation>
 <translation id="9128870381267983090">Ağa bağlan</translation>
 <translation id="9130015405878219958">Geçersiz mod girildi</translation>

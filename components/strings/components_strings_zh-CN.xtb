@@ -130,7 +130,6 @@
 <translation id="1973335181906896915">序列化错误</translation>
 <translation id="1974060860693918893">高级</translation>
 <translation id="1978555033938440688">固件版本</translation>
-<translation id="1995859865337580572">请验证您的银行卡验证码 (CVC)</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{以及另外 1 个应用}other{以及另外 # 个应用}}</translation>
 <translation id="2025186561304664664">代理已设为自动配置。</translation>
 <translation id="2030481566774242610">您是想访问<ph name="LINK" />吗？</translation>
@@ -830,6 +829,7 @@
 <translation id="7752995774971033316">非托管</translation>
 <translation id="7755287808199759310">您的父亲/母亲可为您取消屏蔽此网站</translation>
 <translation id="7758069387465995638">防火墙或防病毒软件可能已阻止您连接到网络。</translation>
+<translation id="7759163816903619567">显示网域：</translation>
 <translation id="7761701407923456692">服务器的证书与网址不相符。</translation>
 <translation id="7763386264682878361">付款清单解析器</translation>
 <translation id="7764225426217299476">添加地址</translation>

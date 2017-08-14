@@ -166,7 +166,7 @@
 <translation id="4038354071007134711">لا يمكن فتح هذا الملف بأي تطبيق موجود على هذا الجهاز.</translation>
 <translation id="4049507953662678203">تأكد من اتصالك بالشبكة، وأعد المحاولة.</translation>
 <translation id="411254640334432676">فشلت عملية التنزيل</translation>
-<translation id="4121993058175073134">لإرسال بيانات تصدير الشبكة، الرجاء تهيئة حساب بريدك الإلكتروني في التطبيق "الإعدادات".</translation>
+<translation id="4121993058175073134">لإرسال بيانات تصدير الشبكة، يُرجى تهيئة حساب بريدك الإلكتروني في التطبيق "الإعدادات".</translation>
 <translation id="4124987746317609294">النطاق الزمني</translation>
 <translation id="4172051516777682613">الإظهار دائمًا</translation>
 <translation id="418156467088430727">عرض إصدار بلا إنترنت في علامة تبويب جديدة</translation>
@@ -260,6 +260,7 @@
 <translation id="6149061208933997199">استخدام كلمة المرور</translation>
 <translation id="6158823227857319455">علامة تبويب جديدة</translation>
 <translation id="616831107264507309">القراءة لاحقًا</translation>
+<translation id="6168647875670665004">اقتراحات المقالات</translation>
 <translation id="6184086493125982861">إظهار علامات التبويب</translation>
 <translation id="6187302354554850004">تاريخ آخر مزامنة: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">غير مقروءة</translation>

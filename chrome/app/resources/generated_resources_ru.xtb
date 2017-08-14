@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">5-й объект на панели запуска</translation>
 <translation id="1225404570112441414">Добавьте этот сайт на панель запуска, чтобы он всегда был у вас под рукой.</translation>
 <translation id="1227507814927581609">При подключении к "<ph name="DEVICE_NAME" />" произошла ошибка аутентификации.</translation>
+<translation id="1230807973377071856">Системное меню</translation>
 <translation id="1232569758102978740">Без имени</translation>
 <translation id="1233721473400465416">Региональные настройки</translation>
 <translation id="1234808891666923653">Service Workers</translation>
@@ -1080,7 +1081,6 @@
 <translation id="2581475589551312226">Автоматическое резервное копирование и восстановление данных приложений Google Play через Google Диск. <ph name="BEGIN_LINK1" />Подробнее…<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">Переименование папки</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">Это расширение могло быть установлено без вашего ведома.</translation>
 <translation id="2585300050980572691">Настройки поиска по умолчанию</translation>
 <translation id="2587203970400270934">Код оператора:</translation>
 <translation id="2587922270115112871">Создание контролируемого профиля не означает создание аккаунта Google.
@@ -1543,6 +1543,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="32279126412636473">Обновить (⌘ + R)</translation>
 <translation id="3228679360002431295">Подключение и проверка<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">Воспроизведение/пауза</translation>
 <translation id="3232318083971127729">Значение:</translation>
 <translation id="3236289833370040187">Право собственности будет передано домену <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3237784613213365159">Создан контролируемый профиль: <ph name="NEW_PROFILE_NAME" /></translation>
@@ -1856,6 +1857,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="367645871420407123">оставьте пустым, чтобы установить значение тестового изображения по умолчанию в качестве пароля суперпользователя</translation>
 <translation id="3678156199662914018">Расширение: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Благодарим за отзыв. Отчет будет отправлен, когда вы подключитесь к Интернету.</translation>
+<translation id="3683023058278427253">Для вашего домена найдено несколько типов лицензий. Выберите один из них, чтобы продолжить.</translation>
 <translation id="3683524264665795342">Запрос доступа к экрану от <ph name="APP_NAME" /></translation>
 <translation id="3685122418104378273">Синхронизация Google Диска по мобильной сети отключена по умолчанию.</translation>
 <translation id="368789413795732264">Произошла ошибка при записи файла: <ph name="ERROR_TEXT" />.</translation>
@@ -2092,6 +2094,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4012550234655138030">Настройка принтеров с помощью технологии <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="4014432863917027322">Восстановить "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="4018133169783460046">Отображать <ph name="PRODUCT_NAME" /> на этом языке</translation>
+<translation id="4020106588733303597">Не удалось загрузить доступные лицензии.</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">Добавить в словарь</translation>
 <translation id="4023146161712577481">Определение конфигурации устройства.</translation>
@@ -2316,6 +2319,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4389091756366370506">Пользователь <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">Отключить</translation>
 <translation id="4400367121200150367">Здесь появятся сайты, которые никогда не сохраняют пароли</translation>
+<translation id="4400632832271803360">Чтобы сменить функции клавиш верхнего ряда, удерживайте клавишу Launcher</translation>
 <translation id="4408599188496843485">&amp;Справка</translation>
 <translation id="4409697491990005945">Поля</translation>
 <translation id="4411578466613447185">Сертификат кода</translation>
@@ -2676,6 +2680,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="494660967831069720">Неполные данные</translation>
 <translation id="4950138595962845479">Параметры…</translation>
 <translation id="4953808748584563296">Аватар по умолчанию (оранжевый)</translation>
+<translation id="4955814292505481804">Годовая</translation>
 <translation id="495931528404527476">В Chrome</translation>
 <translation id="496226124210045887">Выбранный каталог содержит конфиденциальные файлы. Предоставить пользователю "$1" постоянный доступ на чтение данных в этом каталоге?</translation>
 <translation id="4964455510556214366">Расположение</translation>
@@ -3158,6 +3163,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5658415415603568799">В целях безопасности через 20 часов вам потребуется ввести пароль.</translation>
 <translation id="5659593005791499971">Электронная почта</translation>
 <translation id="5661272705528507004">Эта SIM-карта заблокирована и не может быть использована. Обратитесь к своему поставщику услуг, чтобы заменить ее.</translation>
+<translation id="5662477687021125631">Бессрочная</translation>
 <translation id="5669267381087807207">Активация</translation>
 <translation id="5669691691057771421">Введите новый PIN-код</translation>
 <translation id="5677503058916217575">Язык страницы:</translation>
@@ -3884,6 +3890,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6746392203843147041">увеличить громкость</translation>
 <translation id="6748140994595080445">Настройка языка интерфейса <ph name="APP_NAME" /> и выбор языков для проверки правописания.</translation>
 <translation id="6748465660675848252">Если вы продолжите сейчас, восстановлены будут только синхронизированные, но не локальные данные.</translation>
+<translation id="6748775883310276718">Киоск для одного приложения</translation>
 <translation id="6751256176799620176">1 папка выбрана</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (инкогнито)</translation>
 <translation id="6757101664402245801">URL скопирован</translation>
@@ -4710,6 +4717,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8025789898011765392">Задачи</translation>
 <translation id="8026334261755873520">Очистить историю</translation>
 <translation id="8028060951694135607">Восстановление ключей Microsoft</translation>
+<translation id="8028134359912645720">Нажмите Control, Alt, Shift или Launcher, чтобы просмотреть список быстрых клавиш.</translation>
 <translation id="8028993641010258682">Размер</translation>
 <translation id="8030169304546394654">Отключено</translation>
 <translation id="8030656706657716245">Добавить принтер</translation>
@@ -4764,6 +4772,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8107015733319732394">Установка Google Play Маркета на устройство <ph name="DEVICE_TYPE" /> (может занять несколько минут)…</translation>
 <translation id="8109930990200908494">Чтобы получить сертификат пользователя, необходимо войти в систему.</translation>
 <translation id="8111155949205007504">Поделитесь паролем с iPhone</translation>
+<translation id="8113043281354018522">Выберите тип лицензии</translation>
 <translation id="8116190140324504026">Дополнительная информация...</translation>
 <translation id="8116483400482790018">Пользовательский словарь для проверки правописания</translation>
 <translation id="8116972784401310538">&amp;Диспетчер закладок</translation>
@@ -4910,6 +4919,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8339059274628563283">Локальные данные сайта <ph name="SITE" /></translation>
 <translation id="834205140959175756">Управляйте подключениями, обновлениями и настройками с помощью строки состояния.</translation>
 <translation id="8342318071240498787">Такой файл или каталог уже существуют.</translation>
+<translation id="8349826889576450703">Launcher</translation>
 <translation id="8351419472474436977">Это расширение контролирует настройки прокси-сервера. Это значит, что оно может отследить или изменить передаваемые вами данные, а также оборвать интернет-соединение. Если вы не знали об этом, вам следует отключить расширение.</translation>
 <translation id="8352772353338965963">Добавить аккаунт в систему множественного входа. Для доступа к аккаунтам, в которые выполнен вход, пароль не требуется, поэтому эту функцию следует использовать только для надежных аккаунтов.</translation>
 <translation id="8353683614194668312">Разрешения:</translation>
@@ -4968,6 +4978,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8446884382197647889">Подробнее...</translation>
 <translation id="8449008133205184768">Вставить с соблюдением стиля</translation>
 <translation id="8449036207308062757">Управление хранилищем</translation>
+<translation id="8451512073679317615">Ассистент</translation>
 <translation id="8452135315243592079">SIM-карта не обнаружена</translation>
 <translation id="8453482423012550001">Копирование элементов ($1)…</translation>
 <translation id="8454288007744638700">Выберите другую сеть:</translation>
@@ -5425,6 +5436,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="9123413579398459698">FTP</translation>
 <translation id="9124003689441359348">Здесь появятся сохраненные пароли</translation>
 <translation id="912419004897138677">Кодек</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (осталось <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9127762771585363996">Повернуть горизонтально</translation>
 <translation id="9128870381267983090">Подключиться к сети</translation>
 <translation id="9130015405878219958">Указан неверный режим.</translation>

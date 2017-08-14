@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">Στοιχείο ραφιού 5</translation>
 <translation id="1225404570112441414">Προσθέστε αυτόν τον ιστότοπο στο ράφι σας για να τον χρησιμοποιήσετε ανά πάσα στιγμή.</translation>
 <translation id="1227507814927581609">Ο έλεγχος ταυτότητας απέτυχε κατά τη σύνδεση στη συσκευή "<ph name="DEVICE_NAME" />".</translation>
+<translation id="1230807973377071856">μενού συστήματος</translation>
 <translation id="1232569758102978740">Χωρίς τίτλο</translation>
 <translation id="1233721473400465416">Τοπικές ρυθμίσεις</translation>
 <translation id="1234808891666923653">Service Workers</translation>
@@ -1083,7 +1084,6 @@
 <translation id="2581475589551312226">Αυτόματη δημιουργία αντιγράφων ασφαλείας και επαναφορά των δεδομένων εφαρμογής Play στο Google Drive. <ph name="BEGIN_LINK1" />Μάθετε περισσότερα<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">Μετονομασία φακέλου</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Πλατφόρμα <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">Αυτή η επέκταση ενδέχεται να έχει προστεθεί εν αγνοία σας.</translation>
 <translation id="2585300050980572691">Προεπιλεγμένες ρυθμίσεις αναζήτησης</translation>
 <translation id="2587203970400270934">Κωδικός τελεστή:</translation>
 <translation id="2587922270115112871">Η δημιουργία ενός εποπτευόμενου χρήστη δεν δημιουργεί νέο Λογαριασμό Google και οι ρυθμίσεις
@@ -1544,6 +1544,7 @@
 <translation id="3227137524299004712">Μικρόφωνο</translation>
 <translation id="32279126412636473">Επανάληψη φόρτωσης (⌘R)</translation>
 <translation id="3228679360002431295">Σύνδεση και επαλήθευση<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">αναπαραγωγή / παύση</translation>
 <translation id="3232318083971127729">Τιμή:</translation>
 <translation id="3236289833370040187">Η ιδιοκτησία θα μεταφερθεί στον τομέα <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3237784613213365159">Ο χρήστης <ph name="NEW_PROFILE_NAME" /> είναι πλέον εποπτευόμενος χρήστης</translation>
@@ -1857,6 +1858,7 @@
 <translation id="367645871420407123">αφήστε κενό εάν θέλετε να ορίσετε τον ριζικό κωδικό πρόσβασης στην προεπιλεγμένη τιμή δοκιμαστικής εικόνας</translation>
 <translation id="3678156199662914018">Επέκταση: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Σας ευχαριστούμε για τα σχόλιά σας. Βρίσκεστε εκτός σύνδεσης αυτήν τη στιγμή. Η αναφορά σας θα σταλεί αργότερα.</translation>
+<translation id="3683023058278427253">Εντοπίσαμε πολλούς τύπους αδειών για τον τομέα σας. Επιλέξτε έναν, για να συνεχίσετε.</translation>
 <translation id="3683524264665795342">Αίτημα κοινής χρήσης οθόνης από την εφαρμογή <ph name="APP_NAME" /></translation>
 <translation id="3685122418104378273">Ο συγχρονισμός του Google Drive είναι απενεργοποιημένος από προεπιλογή όταν χρησιμοποιούνται δεδομένα κινητής τηλεφωνίας.</translation>
 <translation id="368789413795732264">Παρουσιάστηκε σφάλμα κατά την απόπειρα εγγραφής στο αρχείο <ph name="ERROR_TEXT" />.</translation>
@@ -2093,6 +2095,7 @@
 <translation id="4012550234655138030">Ρύθμιση ή διαχείριση εκτυπωτών στο <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="4014432863917027322">Να γίνει επισκευή του "<ph name="EXTENSION_NAME" />";</translation>
 <translation id="4018133169783460046">Να εμφανίζεται το <ph name="PRODUCT_NAME" /> σε αυτήν τη γλώσσα</translation>
+<translation id="4020106588733303597">Δυστυχώς, το σύστημα δεν κατάφερε να φορτώσει τις διαθέσιμες άδειες.</translation>
 <translation id="4021279097213088397">–</translation>
 <translation id="4022426551683927403">&amp;Προσθήκη στο λεξικό</translation>
 <translation id="4023146161712577481">Καθορισμός διαμόρφωσης συσκευής.</translation>
@@ -2317,6 +2320,7 @@
 <translation id="4389091756366370506">Χρήστης <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">Απενεργοποίηση</translation>
 <translation id="4400367121200150367">Οι ιστότοποι που δεν αποθηκεύουν ποτέ κωδικούς πρόσβασης θα εμφανίζονται εδώ</translation>
+<translation id="4400632832271803360">Πατήστε παρατεταμένα το πλήκτρο Εφαρμογής εκκίνησης, για να αλλάξετε τη συμπεριφορά των πλήκτρων της επάνω σειράς</translation>
 <translation id="4408599188496843485">Β&amp;οήθεια</translation>
 <translation id="4409697491990005945">Περιθώρια</translation>
 <translation id="4411578466613447185">Υπηρεσία υπογραφής κώδικα</translation>
@@ -2677,6 +2681,7 @@
 <translation id="494660967831069720">Μερικά δεδομένα</translation>
 <translation id="4950138595962845479">Επιλογές...</translation>
 <translation id="4953808748584563296">Προεπιλεγμένο πορτοκαλί avatar</translation>
+<translation id="4955814292505481804">Ετήσια</translation>
 <translation id="495931528404527476">Στο Chrome</translation>
 <translation id="496226124210045887">Ο φάκελος που επιλέξατε περιέχει ευαίσθητα αρχεία. Είστε σίγουροι ότι θέλετε να παραχωρήσετε στο "$1" μόνιμη πρόσβαση ανάγνωσης σε αυτόν το φάκελο;</translation>
 <translation id="4964455510556214366">Διάταξη</translation>
@@ -3160,6 +3165,7 @@
 <translation id="5658415415603568799">Για πρόσθετη ασφάλεια, το Smart Lock θα σας ζητήσει να καταχωρίσετε τον κωδικό πρόσβασης μετά από 20 ώρες.</translation>
 <translation id="5659593005791499971">Διεύθυνση ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="5661272705528507004">Αυτή η κάρτα SIM είναι απενεργοποιημένη και δεν μπορεί να χρησιμοποιηθεί. Επικοινωνήστε με τον παροχέα υπηρεσιών σας για να την αντικαταστήσετε.</translation>
+<translation id="5662477687021125631">Οριστική</translation>
 <translation id="5669267381087807207">Ενεργοποίηση</translation>
 <translation id="5669691691057771421">Εισαγωγή νέου κωδικού PIN</translation>
 <translation id="5677503058916217575">Γλώσσα σελίδας:</translation>
@@ -3886,6 +3892,7 @@
 <translation id="6746392203843147041">αύξηση έντασης</translation>
 <translation id="6748140994595080445">Αλλάζει τον τρόπο διαχείρισης και προβολής γλωσσών από το <ph name="APP_NAME" />.</translation>
 <translation id="6748465660675848252">Μπορείτε να συνεχίσετε, αλλά μόνο τα συγχρονισμένα δεδομένα και οι ρυθμίσεις σας θα αποκατασταθούν. Όλα τα τοπικά δεδομένα θα χαθούν.</translation>
+<translation id="6748775883310276718">Kiosk μεμονωμένης εφαρμογής</translation>
 <translation id="6751256176799620176">Επιλέχθηκε 1 φάκελος</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Ανώνυμη περιήγηση)</translation>
 <translation id="6757101664402245801">Το URL αντιγράφηκε</translation>
@@ -4712,6 +4719,7 @@
 <translation id="8025789898011765392">Εργασίες</translation>
 <translation id="8026334261755873520">Διαγραφή δεδομένων περιήγησης</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
+<translation id="8028134359912645720">Κρατήστε πατημένα τα Control, Alt, Shift ή το πλήκτρο Εφαρμογής εκκίνησης, για να δείτε τις συντομεύσεις πληκτρολογίου για αυτούς τους τροποποιητές.</translation>
 <translation id="8028993641010258682">Μέγεθος</translation>
 <translation id="8030169304546394654">Σε αποσύνδεση</translation>
 <translation id="8030656706657716245">Προσθήκη εκτυπωτή</translation>
@@ -4766,6 +4774,7 @@
 <translation id="8107015733319732394">Εγκατάσταση του Google Play Store στη συσκευή σας <ph name="DEVICE_TYPE" />. Αυτό μπορεί να διαρκέσει μερικά λεπτά.</translation>
 <translation id="8109930990200908494">Απαιτείται σύνδεση για πιστοποιητικό χρήστη.</translation>
 <translation id="8111155949205007504">Κοινοποίηση αυτού του κωδικού πρόσβασης στο iPhone σας</translation>
+<translation id="8113043281354018522">Επιλογή τύπου άδειας</translation>
 <translation id="8116190140324504026">Περισσότερες πληροφορίες...</translation>
 <translation id="8116483400482790018">Προσαρμοσμένο ορθογραφικό λεξικό</translation>
 <translation id="8116972784401310538">&amp;Διαχείριση σελιδοδεικτών</translation>
@@ -4914,6 +4923,7 @@
 <translation id="8339059274628563283">Τοπικά αποθηκευμένα δεδομένα στο <ph name="SITE" /></translation>
 <translation id="834205140959175756">Διαχείριση συνδέσεων, ενημερώσεων και ρυθμίσεων από την περιοχή κατάστασης.</translation>
 <translation id="8342318071240498787">Υπάρχει ήδη αρχείο ή κατάλογος με το ίδιο όνομα.</translation>
+<translation id="8349826889576450703">εφαρμογή εκκίνησης</translation>
 <translation id="8351419472474436977">Αυτή η επέκταση ελέγχει τις ρυθμίσεις σας διακομιστή μεσολάβησης. Αυτό σημαίνει ότι μπορεί να αλλάξει, να διακόψει ή να παρακολουθήσει όλες τις ενέργειες που εκτελείτε στο διαδίκτυο. Εάν δεν είστε βέβαιοι όσον αφορά το λόγο αυτής της αλλαγής, πιθανότατα δεν την επιθυμούσατε.</translation>
 <translation id="8352772353338965963">Προσθέστε έναν λογαριασμό στη σύνδεση σε πολλούς λογαριασμούς. Όλοι οι συνδεδεμένοι λογαριασμοί μπορούν να προσπελαστούν χωρίς κωδικό πρόσβασης, επομένως αυτή η δυνατότητα πρέπει να χρησιμοποιείται μόνο με αξιόπιστους λογαριασμούς.</translation>
 <translation id="8353683614194668312">Έχει τις εξής δυνατότητες:</translation>
@@ -4972,6 +4982,7 @@
 <translation id="8446884382197647889">Μάθετε περισσότερα</translation>
 <translation id="8449008133205184768">Επικόλληση και αντιστοίχιση στυλ</translation>
 <translation id="8449036207308062757">Διαχείριση αποθηκευτικού χώρου</translation>
+<translation id="8451512073679317615">βοηθός</translation>
 <translation id="8452135315243592079">Κάρτα SIM που λείπει</translation>
 <translation id="8453482423012550001">Αντιγραφή $1 στοιχείων…</translation>
 <translation id="8454288007744638700">Εναλλακτικά, επιλέξτε ένα νέο δίκτυο:</translation>
@@ -5427,6 +5438,7 @@
 <translation id="9123413579398459698">Διακομιστής μεσολάβησης FTP</translation>
 <translation id="9124003689441359348">Οι αποθηκευμένοι κωδικοί πρόσβασής σας θα εμφανίζονται εδώ</translation>
 <translation id="912419004897138677">Κωδικοποιητής</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (απομένουν <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9127762771585363996">Οριζόντια αναστροφή εικόνας κάμερας</translation>
 <translation id="9128870381267983090">Σύνδεση σε δίκτυο</translation>
 <translation id="9130015405878219958">Έγινε ενεργοποίηση μη έγκυρης λειτουργίας.</translation>

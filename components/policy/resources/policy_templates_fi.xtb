@@ -31,6 +31,7 @@
           Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, etätuen isäntä suoritetaan käyttäjän kontekstissa, jolloin etäkäyttäjä ei voi käyttää työpöydällä olevia järjestelmänvalvojan oikeuksia edellyttäviä ikkunoita.</translation>
 <translation id="1096105751829466145">Oletushakupalvelu</translation>
 <translation id="1117535567637097036">Tämän käytännön kautta määritettyjä protokollan käsittelijöitä ei käytetä Android-tavoitteisiin.</translation>
+<translation id="1122282995569868661">Näytä <ph name="PRODUCT_NAME" /> ‑yläpalkkikuvake</translation>
 <translation id="1128903365609589950">Määrittää levyllä sijaitsevan hakemiston, johon <ph name="PRODUCT_NAME" /> tallentaa välimuistitiedostot.
 
       Jos otat tämän käytännön käyttöön, <ph name="PRODUCT_NAME" /> käyttää määritettyä hakemistoa, vaikka käyttäjä antaisi --disk-cache-dir-komennon. Älä määritä käytännön arvoksi juurihakemistoa tai muihin tarkoituksiin käytettävää hakemistoa, sillä <ph name="PRODUCT_NAME" /> hallinnoi sen sisältöä ja seurauksena voi olla tietojen katoamista tai muita odottamattomia ongelmia.
@@ -53,6 +54,7 @@
       Jos tätä käytäntöä ei aseteta, käytetään oletustiheyttä 3 tuntia.
       Pienin sallittu arvo on 60 sekuntia.</translation>
 <translation id="1221359380862872747">Lataa määritetyt osoitteet esittelykirjautumisen yhteydessä</translation>
+<translation id="123081309365616809">Salli sisällön suoratoisto laitteeseen</translation>
 <translation id="1265053460044691532">Rajoita sitä, kuinka kauan SAML-todennuksen käyttäjä voi kirjautua sisään offline-tilassa</translation>
 <translation id="1291880496936992484">Varoitus: RC4 poistetaan tuotteesta <ph name="PRODUCT_NAME" /> version 52 jälkeen (arviolta syyskuussa 2016), eikä tämä käytäntö enää toimi sen jälkeen.
 
@@ -261,6 +263,7 @@
       Jos käytäntöä ei ole asetettu, on sen oletusarvo nolla astetta, ja käyttäjä
       voi muuttaa tätä vapaasti. Tässä tapauksessa oletusarvoon ei palata
       uudelleenkäynnistyksen yhteydessä.</translation>
+<translation id="2156132677421487971">Määrittää <ph name="PRODUCT_NAME" /> ‑käytäntöjä. Ominaisuuden avulla välilehtien, sivustojen tai työpöydän sisältö voidaan lähettää selaimesta ulkoisiin näyttöihin ja äänentoistolaitteisiin.</translation>
 <translation id="2168397434410358693">Käyttämättömyysaika käytettäessä laitetta verkkovirralla</translation>
 <translation id="2170233653554726857">Ota WPAD-optimointi käyttöön</translation>
 <translation id="2176565653304920879">Kun tämä käytäntö on määritetty, aikavyöhykkeen automaattinen tunnistaminen tapahtuu jollakin seuraavista tavoista, määritetystä arvosta riippuen:
@@ -553,6 +556,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Käyttäjät eivät voi muuttaa WPAD-optimoinnin asetuksia tästä käytännöstä riippumatta.</translation>
 <translation id="3072045631333522102">Näytönsäästäjä, jota käytetään kirjautumisruudulla jälleenmyyntitilassa</translation>
 <translation id="3072847235228302527">Aseta laitteen paikallisen tilin käyttöehdot</translation>
+<translation id="3086995894968271156">Määrittää Cast‑vastaanottimen, jota <ph name="PRODUCT_NAME" /> käyttää.</translation>
 <translation id="3096595567015595053">Luettelo käytössä olevista laajennuksista</translation>
 <translation id="3101501961102569744">Valitse, miten välityspalvelimen asetukset määritetään</translation>
 <translation id="3117676313396757089">Varoitus: DHE poistetaan tuotteesta <ph name="PRODUCT_NAME" /> version 57 jälkeen (arviolta maaliskuussa 2017), eikä tämä käytäntö enää toimi sen jälkeen.
@@ -921,6 +925,9 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos tämän käytännön arvo on 0, välimuistin oletuskokoa käytetään, mutta käyttäjä ei voi muuttaa sitä.
 
       Jos tätä käytäntöä ei ole asetettu, oletuskokoa käytetään ja käyttäjä voi ohittaa sen median välimuistin kokomerkinnällä (--media-cache-size).</translation>
+<translation id="4508686775017063528">Jos tämän käytännön arvo on Tosi tai sitä ei ole määritetty, <ph name="PRODUCT_NAME" /> on käytössä, ja käyttäjät voivat käynnistää sen sovellusvalikosta, sivujen kontekstivalikoista, Cast-yhteensopivien sivustojen mediasäätimillä tai Cast-yläpalkkikuvakkeella (jos se on näkyvissä).
+
+          Jos käytännön arvo on Epätosi, <ph name="PRODUCT_NAME" /> ei ole käytössä.</translation>
 <translation id="4518251772179446575">Kysy aina, kun sivusto haluaa seurata käyttäjän fyysistä sijaintia</translation>
 <translation id="4519046672992331730">Ottaa käyttöön hakuehdotukset tuotteen <ph name="PRODUCT_NAME" /> omniboxissa ja estää käyttäjiä muuttamasta tätä asetusta.
 
@@ -1025,6 +1032,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="489803897780524242">Parametri, joka hallitsee oletushakupalvelun hakutermien sijoittelua</translation>
 <translation id="4899708173828500852">Ota selaussuoja käyttöön</translation>
 <translation id="4906194810004762807">Laitekäytännön päivitystiheys</translation>
+<translation id="494613465159630803">Cast-vastaanotin</translation>
 <translation id="4962262530309732070">Jos tämän käytännön arvoksi on määritetty tosi tai sitä ei ole määritetty, <ph name="PRODUCT_NAME" /> sallii käyttäjien hallinnan lisätä henkilöitä.
 
       Jos tämän käytännön arvoksi on määritetty epätosi, <ph name="PRODUCT_NAME" /> ei salli käyttäjien hallinnan luovan uusia profiileja.</translation>
@@ -1313,6 +1321,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6155936611791017817">Aseta suuren osoittimen oletustila kirjautumisnäytössä</translation>
 <translation id="6157537876488211233">Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo</translation>
 <translation id="6158324314836466367">Enterprise-verkkomyymälän nimi (ei enää käytössä)</translation>
+<translation id="6161405879872578475">Ota <ph name="PRODUCT_NAME" /> käyttöön</translation>
 <translation id="6167074305866468481">Varoitus: <ph name="PRODUCT_NAME" /> ei tue SSLv3:a versiosta 43 (noin heinäkuusta 2015) lähtien, ja samassa yhteydessä myös tämä käytäntö poistetaan.
 
       Jos tätä käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> käyttää oletuksena vähintään SSLv3:a versiossa <ph name="PRODUCT_NAME" /> 39 ja TLS 1.0:aa uudemmissa versioissa.
@@ -1770,6 +1779,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7953256619080733119">Hallinnoidun käyttäjän manuaalisten poikkeuksien isännät</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Tätä käytäntöä ei enää tueta. Ottaa käyttöön STUN- ja relay-palvelimet, kun muodostetaan yhteyttä etäasiakkaaseen. Jos tämä asetus on käytössä, tämä kone voi löytää etäasiakkaan ja muodostaa yhteyden, vaikka asiakkaat olisivat palomuurin takana. Jos asetus ei ole käytössä ja lähtevät UDP-yhteydet menevät palomuurin kautta, tämä kone hyväksyy vain paikallisessa verkossa olevien isäntäkoneiden yhteydet.</translation>
+<translation id="7976157349247117979"><ph name="PRODUCT_NAME" /> ‑kohteen nimi</translation>
 <translation id="7980227303582973781">Ei erikoisrajoituksia</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Kierrä näyttöä 0 astetta.</translation>

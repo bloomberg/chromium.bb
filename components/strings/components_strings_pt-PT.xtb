@@ -130,7 +130,6 @@
 <translation id="1973335181906896915">Erro de serialização</translation>
 <translation id="1974060860693918893">Avançadas</translation>
 <translation id="1978555033938440688">Versão do firmware</translation>
-<translation id="1995859865337580572">Valide o seu CVC</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{e mais 1}one{and # more}other{e mais #}}</translation>
 <translation id="2025186561304664664">O proxy está definido para configuração automática.</translation>
 <translation id="2030481566774242610">Será que quis dizer <ph name="LINK" />?</translation>
@@ -834,6 +833,7 @@
 <translation id="7752995774971033316">Não gerido</translation>
 <translation id="7755287808199759310">O teu pai/a tua mãe pode desbloquear-te</translation>
 <translation id="7758069387465995638">O software de firewall ou antivírus pode ter bloqueado a ligação.</translation>
+<translation id="7759163816903619567">Domínio de apresentação:</translation>
 <translation id="7761701407923456692">O certificado do servidor não corresponde ao URL.</translation>
 <translation id="7763386264682878361">Analisador de manifestos de pagamento</translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>

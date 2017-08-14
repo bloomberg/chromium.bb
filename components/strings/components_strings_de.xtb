@@ -130,7 +130,6 @@
 <translation id="1973335181906896915">Fehler bei der Serialisierung</translation>
 <translation id="1974060860693918893">Erweitert</translation>
 <translation id="1978555033938440688">Firmwareversion</translation>
-<translation id="1995859865337580572">Bitte geben Sie Ihren CVC ein</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{und 1 weitere}other{und # weitere}}</translation>
 <translation id="2025186561304664664">Proxy ist auf automatische Konfiguration eingestellt.</translation>
 <translation id="2030481566774242610">Meinten Sie <ph name="LINK" />?</translation>
@@ -833,6 +832,7 @@
 <translation id="7752995774971033316">Nicht verwaltet</translation>
 <translation id="7755287808199759310">Deine Eltern können die Blockierung aufheben</translation>
 <translation id="7758069387465995638">Möglicherweise wurde die Verbindung von einer Firewall oder Antivirensoftware blockiert.</translation>
+<translation id="7759163816903619567">Anzeigebereich</translation>
 <translation id="7761701407923456692">Das Serverzertifikat stimmt nicht mit der URL überein.</translation>
 <translation id="7763386264682878361">Zahlungsmanifest-Parser</translation>
 <translation id="7764225426217299476">Adresse hinzufügen</translation>

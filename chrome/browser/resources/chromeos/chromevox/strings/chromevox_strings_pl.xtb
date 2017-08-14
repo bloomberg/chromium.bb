@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Następny wiersz</translation>
 <translation id="3153024374267644603">Włącz mowę</translation>
+<translation id="3153928844647607688">Tabela <ph name="TABLENAME" />, <ph name="TABLEROWS" /> na <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Brak poprzedniego przycisku.</translation>
 <translation id="3163593631834463955">Pusty nagłówek kolumny</translation>
 <translation id="316542773973815724">Nawigacja</translation>
@@ -405,6 +406,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4597532268155981612">formularz</translation>
 <translation id="4597896406374528575">kwiecień</translation>
 <translation id="460018603901637538">Zmień styl wyświetlania na Obok siebie.</translation>
+<translation id="4601367666219428522">tab. <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Ignorowanie następnego naciśnięcia klawisza</translation>
 <translation id="461613135510474570">Zdanie</translation>
 <translation id="4647836961514597010">Selektor kolorów</translation>
@@ -782,6 +784,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="820417203470636242">Pusta komórka.</translation>
 <translation id="8215202828671303819">Wybór wielokrotny</translation>
 <translation id="8224171046658870249">Przełączono na ChromeVox Next</translation>
+<translation id="826991282343985864">w$1k$2</translation>
 <translation id="8276439074553447000">Przejdź do poprzedniego elementu, który można zaznaczyć</translation>
 <translation id="8278417001922463147">Nie ma poprzedniego artykułu.</translation>
 <translation id="8283603667300770666">Następne pole formularza</translation>

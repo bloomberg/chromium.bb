@@ -139,7 +139,6 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="4953650215774548573">Nastaviť Google Chrome ako predvolený prehliadač</translation>
 <translation id="495931528404527476">V prehliadači Chrome</translation>
 <translation id="4965682129423310439">Chrome našiel vo vašom počítači škodlivý softvér. Môže ho odstrániť a uložiť vaše nastavenia, aby prehliadač znova normálne fungoval.</translation>
-<translation id="4987308747895123092">Zatvorte všetky okná prehliadača Google Chrome (vrátane okien v režime systému Windows 8) a skúste to znova.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje. Aktualizujte prístupovú frázu synchronizácie.</translation>
 <translation id="5037239767309817516">Táto zmena sa prejaví po zavretí všetkých okien prehliadača Google Chrome a jeho opätovnom spustení.</translation>
@@ -268,7 +267,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="8547799825197623713">Spúšťač aplikácií Chrome Canary</translation>
 <translation id="8556340503434111824">K dispozícii je nová verzia prehliadača Google Chrome, ktorá je rýchlejšia ako kedykoľvek predtým.</translation>
 <translation id="8568392309447938879">Aplikácie môžete používať až po prihlásení do prehliadača Chrome. Prehliadaču Chrome tým umožníte synchronizovať vaše aplikácie, záložky, históriu, heslá a ďalšie nastavenia na všetkých zariadeniach.</translation>
-<translation id="8606668294522778825">Prehliadač Google Chrome môže na vylepšenie prehliadania používať webové služby. Tieto služby môžete podľa potreby zakázať. <ph name="BEGIN_LINK" />Viac informácií<ph name="END_LINK" /></translation>
+<translation id="8606668294522778825">Prehliadač Google Chrome môže na vylepšenie prehliadania používať webové služby. Tieto služby môžete podľa potreby zakázať. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome nereaguje. Chcete ho spustiť znova?</translation>
 <translation id="8667808506758191620">Vaše zariadenie <ph name="DEVICE_TYPE" /> je aktuálne.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
