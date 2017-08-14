@@ -1048,7 +1048,7 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   set_nav_entry_id(0);
 
   if (is_audible_)
-    GetProcess()->OnMediaStreamRemoved();
+    GetProcess()->OnAudioStreamRemoved();
 }
 
 void RenderFrameHostImpl::ReportContentSecurityPolicyViolation(
@@ -1240,9 +1240,9 @@ void RenderFrameHostImpl::OnAudibleStateChanged(bool is_audible) {
   if (is_audible_ == is_audible)
     return;
   if (is_audible)
-    GetProcess()->OnMediaStreamAdded();
+    GetProcess()->OnAudioStreamAdded();
   else
-    GetProcess()->OnMediaStreamRemoved();
+    GetProcess()->OnAudioStreamRemoved();
   is_audible_ = is_audible;
 
   GetFrameResourceCoordinator()->SetProperty(
