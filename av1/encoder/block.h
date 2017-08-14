@@ -292,10 +292,6 @@ struct macroblock {
 #endif
 #endif  // CONFIG_CB4X4
 #endif  // CONFIG_DIST_8X8
-#if CONFIG_CFL
-  // Whether luma needs to be stored during RDO.
-  int cfl_store_y;
-#endif
 };
 
 #ifdef __cplusplus

@@ -1095,7 +1095,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 // Note : *(args->skip) == mbmi->skip
 #endif
 #if CONFIG_CFL
-  if (plane == AOM_PLANE_Y && x->cfl_store_y) {
+  if (plane == AOM_PLANE_Y && xd->cfl->store_y) {
     // TODO (ltrudeau) Store sub-8x8 inter blocks when bottom right block is
     // intra predicted.
     cfl_store(xd->cfl, dst, dst_stride, blk_row, blk_col, tx_size, plane_bsize);

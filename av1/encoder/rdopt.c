@@ -2104,7 +2104,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                    OUTPUT_HAS_PREDICTED_PIXELS);
   }
 #if CONFIG_CFL
-  if (plane == AOM_PLANE_Y && x->cfl_store_y) {
+  if (plane == AOM_PLANE_Y && xd->cfl->store_y) {
     struct macroblockd_plane *const pd = &xd->plane[plane];
     const int dst_stride = pd->dst.stride;
     uint8_t *dst =
@@ -9839,15 +9839,15 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     // Don't store the luma value if no chroma is associated.
     // Don't worry, we will store this reconstructed luma in the following
     // encode dry-run the chroma plane will never know.
-    x->cfl_store_y = !x->skip_chroma_rd;
+    xd->cfl->store_y = !x->skip_chroma_rd;
 #else
-    x->cfl_store_y = 1;
+    xd->cfl->store_y = 1;
 #endif  // CONFIG_CB4X4
-    if (x->cfl_store_y) {
+    if (xd->cfl->store_y) {
       txfm_rd_in_plane(x, cpi, &this_rd_stats, INT64_MAX, AOM_PLANE_Y,
                        mbmi->sb_type, mbmi->tx_size,
                        cpi->sf.use_fast_coef_costing);
-      x->cfl_store_y = 0;
+      xd->cfl->store_y = 0;
     }
 #endif  // CONFIG_CFL
     max_uv_tx_size = uv_txsize_lookup[bsize][mbmi->tx_size][pd[1].subsampling_x]

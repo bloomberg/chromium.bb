@@ -5949,7 +5949,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 
   if (!is_inter) {
 #if CONFIG_CFL
-    x->cfl_store_y = 1;
+    xd->cfl->store_y = 1;
 #endif  // CONFIG_CFL
     int plane;
     mbmi->skip = 1;
@@ -5958,7 +5958,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
                                    mi_row, mi_col);
     }
 #if CONFIG_CFL
-    x->cfl_store_y = 0;
+    xd->cfl->store_y = 0;
 #endif  // CONFIG_CFL
     if (!dry_run) {
       sum_intra_stats(td->counts, xd, mi, xd->above_mi, xd->left_mi,

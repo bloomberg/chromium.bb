@@ -25,6 +25,7 @@ void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm) {
   cfl->subsampling_x = cm->subsampling_x;
   cfl->subsampling_y = cm->subsampling_y;
   cfl->are_parameters_computed = 0;
+  cfl->store_y = 0;
 }
 
 // Load from the CfL pixel buffer into output
