@@ -257,6 +257,9 @@ int LaunchChildTestProcessWithOptions(
     const TestLauncher::GTestProcessLaunchedCallback& launched_callback,
     bool* was_timeout) {
   TimeTicks start_time(TimeTicks::Now());
+#if defined(OS_FUCHSIA)  // TODO(scottmg): https://crbug.com/755282
+  const bool kOnBot = getenv("CHROME_HEADLESS") != nullptr;
+#endif  // OS_FUCHSIA
 
 #if defined(OS_POSIX)
   // Make sure an option we rely on is present - see LaunchChildGTestProcess.
@@ -333,6 +336,12 @@ int LaunchChildTestProcessWithOptions(
       return -1;
 
     // TODO(rvargas) crbug.com/417532: Don't store process handles.
+#if defined(OS_FUCHSIA)  // TODO(scottmg): https://crbug.com/755282
+    if (kOnBot) {
+      LOG(ERROR) << base::StringPrintf("adding %x to live process list",
+                                       process.Handle());
+    }
+#endif  // OS_FUCHSIA
     GetLiveProcesses()->insert(std::make_pair(process.Handle(), command_line));
   }
 
@@ -344,6 +353,12 @@ int LaunchChildTestProcessWithOptions(
     *was_timeout = true;
     exit_code = -1;  // Set a non-zero exit code to signal a failure.
 
+#if defined(OS_FUCHSIA)  // TODO(scottmg): https://crbug.com/755282
+    if (kOnBot) {
+      LOG(ERROR) << base::StringPrintf("about to process.Terminate() %x",
+                                       process.Handle());
+    }
+#endif  // OS_FUCHSIA
     // Ensure that the process terminates.
     process.Terminate(-1, true);
   }
@@ -360,10 +375,22 @@ int LaunchChildTestProcessWithOptions(
       // or due to it timing out, we need to clean up any child processes that
       // it might have created. On Windows, child processes are automatically
       // cleaned up using JobObjects.
+#if defined(OS_FUCHSIA)  // TODO(scottmg): https://crbug.com/755282
+      if (kOnBot) {
+        LOG(ERROR) << base::StringPrintf("going to KillProcessGroup() for %x",
+                                         process.Handle());
+      }
+#endif  // OS_FUCHSIA
       KillProcessGroup(process.Handle());
     }
 #endif
 
+#if defined(OS_FUCHSIA)  // TODO(scottmg): https://crbug.com/755282
+    if (kOnBot) {
+      LOG(ERROR) << base::StringPrintf("removing %x from live process list",
+                                       process.Handle());
+    }
+#endif  // OS_FUCHSIA
     GetLiveProcesses()->erase(process.Handle());
   }
 
