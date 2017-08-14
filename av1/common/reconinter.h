@@ -66,8 +66,24 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
   if (has_scale(xs, ys)) {
     // TODO(afergs, debargha): Use a different scale convolve function
     // that uses higher precision for subpel_x, subpel_y, xs, ys
-    av1_convolve_scale(src, src_stride, dst, dst_stride, w, h, interp_filter,
-                       subpel_x, xs, subpel_y, ys, conv_params);
+    if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
+#if CONFIG_CONVOLVE_ROUND
+      av1_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
+#if CONFIG_DUAL_FILTER
+                             interp_filter,
+#else   // CONFIG_DUAL_FILTER
+                             &interp_filter,
+#endif  // CONFIG_DUAL_FILTER
+                             subpel_x, xs, subpel_y, ys, 1, conv_params);
+      conv_params->do_post_rounding = 1;
+#else
+      assert(0);
+#endif  // CONFIG_CONVOLVE_ROUND
+    } else {
+      assert(conv_params->round == CONVOLVE_OPT_ROUND);
+      av1_convolve_scale(src, src_stride, dst, dst_stride, w, h, interp_filter,
+                         subpel_x, xs, subpel_y, ys, conv_params);
+    }
   } else {
     subpel_x >>= SCALE_EXTRA_BITS;
     subpel_y >>= SCALE_EXTRA_BITS;
@@ -85,7 +101,7 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
 #else   // CONFIG_DUAL_FILTER
                              &interp_filter,
 #endif  // CONFIG_DUAL_FILTER
-                             subpel_x, xs, subpel_y, ys, conv_params);
+                             subpel_x, xs, subpel_y, ys, 0, conv_params);
       conv_params->do_post_rounding = 1;
 #else
       assert(0);
@@ -138,10 +154,25 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
 #endif
 
   if (has_scale(xs, ys)) {
-    av1_highbd_convolve_scale(
-        src, src_stride, dst, dst_stride, w, h, interp_filter,
-        subpel_x >> SCALE_EXTRA_BITS, xs >> SCALE_EXTRA_BITS,
-        subpel_y >> SCALE_EXTRA_BITS, ys >> SCALE_EXTRA_BITS, avg, bd);
+    if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
+#if CONFIG_CONVOLVE_ROUND
+      av1_highbd_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
+#if CONFIG_DUAL_FILTER
+                                    interp_filter,
+#else  // CONFIG_DUAL_FILTER
+                                    &interp_filter,
+#endif  // CONFIG_DUAL_FILTER
+                                    subpel_x, xs, subpel_y, ys, 1, conv_params,
+                                    bd);
+      conv_params->do_post_rounding = 1;
+#else
+      assert(0);
+#endif  // CONFIG_CONVOLVE_ROUND
+    } else {
+      av1_highbd_convolve_scale(src, src_stride, dst, dst_stride, w, h,
+                                interp_filter, subpel_x, xs, subpel_y, ys, avg,
+                                bd);
+    }
   } else {
     subpel_x >>= SCALE_EXTRA_BITS;
     subpel_y >>= SCALE_EXTRA_BITS;
@@ -159,7 +190,7 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
 #else  // CONFIG_DUAL_FILTER
                                     &interp_filter,
 #endif  // CONFIG_DUAL_FILTER
-                                    subpel_x, xs, subpel_y, ys, conv_params,
+                                    subpel_x, xs, subpel_y, ys, 0, conv_params,
                                     bd);
       conv_params->do_post_rounding = 1;
 #else
