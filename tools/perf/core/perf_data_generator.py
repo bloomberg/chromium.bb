@@ -627,6 +627,10 @@ def generate_telemetry_test(swarming_dimensions, benchmark_name, browser):
   ignore_task_failure = False
   step_name = benchmark_name
   if browser == 'reference':
+    # If there are more than 5 failures, usually the whole ref build benchmark
+    # will fail & the reference browser binary need to be updated.
+    # Also see crbug.com/707236 for more context.
+    test_args.append('--max-failures=5')
     test_args.append('--output-trace-tag=_ref')
     step_name += '.reference'
     # We ignore the failures on reference builds since there is little we can do
