@@ -94,9 +94,8 @@ class PageLoadMetricsWaiter
     FIRST_PAINT = 1 << 1,
     FIRST_CONTENTFUL_PAINT = 1 << 2,
     FIRST_MEANINGFUL_PAINT = 1 << 3,
-    STYLE_UPDATE_BEFORE_FCP = 1 << 4,
-    DOCUMENT_WRITE_BLOCK_RELOAD = 1 << 5,
-    LOAD_EVENT = 1 << 6
+    DOCUMENT_WRITE_BLOCK_RELOAD = 1 << 4,
+    LOAD_EVENT = 1 << 5
   };
 
   explicit PageLoadMetricsWaiter(content::WebContents* web_contents)
@@ -237,8 +236,6 @@ class PageLoadMetricsWaiter
       matched_bits.Set(TimingField::FIRST_CONTENTFUL_PAINT);
     if (timing.paint_timing->first_meaningful_paint)
       matched_bits.Set(TimingField::FIRST_MEANINGFUL_PAINT);
-    if (timing.style_sheet_timing->update_style_duration_before_fcp)
-      matched_bits.Set(TimingField::STYLE_UPDATE_BEFORE_FCP);
     if (metadata.behavior_flags &
         blink::WebLoadingBehaviorFlag::
             kWebLoadingBehaviorDocumentWriteBlockReload)
@@ -967,12 +964,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 0);
 }
 
-// Flaky on Linux and Win7: http://crbug.com/754158.
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DISABLED_CSSTiming) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CSSTiming) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
-  waiter->AddPageExpectation(TimingField::STYLE_UPDATE_BEFORE_FCP);
+  waiter->AddPageExpectation(TimingField::FIRST_CONTENTFUL_PAINT);
 
   // Careful: Blink code clamps timestamps to 5us, so any CSS parsing we do here
   // must take >> 5us, otherwise we'll log 0 for the value and it will remain
