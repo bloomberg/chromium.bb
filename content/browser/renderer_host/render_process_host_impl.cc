@@ -3328,8 +3328,8 @@ bool RenderProcessHostImpl::IsSuitableHost(RenderProcessHost* host,
     // URL to reuse this process if the URL has the same site.
     return lock_state == ChildProcessSecurityPolicyImpl::CheckOriginLockResult::
                              HAS_EQUAL_LOCK;
-  } else if (!host->IsUnused() &&
-             SiteInstanceImpl::ShouldLockToOrigin(browser_context, site_url)) {
+  } else if (!host->IsUnused() && SiteInstanceImpl::ShouldLockToOrigin(
+                                      browser_context, host, site_url)) {
     // Otherwise, if this process has been used to host any other content, it
     // cannot be reused if the destination site indeed requires a dedicated
     // process and can be locked to just that site.
@@ -3568,6 +3568,12 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
     UnmatchedServiceWorkerProcessTracker::Register(
         browser_context, render_process_host, site_url);
   }
+
+  // Make sure the chosen process is in the correct StoragePartition for the
+  // SiteInstance.
+  CHECK(render_process_host->InSameStoragePartition(
+      BrowserContext::GetStoragePartition(browser_context, site_instance)));
+
   return render_process_host;
 }
 

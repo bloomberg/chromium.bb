@@ -435,11 +435,11 @@ bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
 
 // static
 bool SiteInstanceImpl::ShouldLockToOrigin(BrowserContext* browser_context,
+                                          RenderProcessHost* host,
                                           GURL site_url) {
   // Don't lock to origin in --single-process mode, since this mode puts
   // cross-site pages into the same process.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess))
+  if (host->run_renderer_in_process())
     return false;
 
   if (!DoesSiteRequireDedicatedProcess(browser_context, site_url))
@@ -504,16 +504,44 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
   // We can get here either when we commit a URL into a SiteInstance that does
   // not yet have a site, or when we create a process for a SiteInstance with a
   // preassigned site.
+  bool was_unused = process_->IsUnused();
   process_->SetIsUsed();
 
   // TODO(nick): When all sites are isolated, this operation provides strong
   // protection. If only some sites are isolated, we need additional logic to
   // prevent the non-isolated sites from requesting resources for isolated
   // sites. https://crbug.com/509125
-  if (ShouldLockToOrigin(GetBrowserContext(), site_)) {
+  if (ShouldLockToOrigin(GetBrowserContext(), process_, site_)) {
     ChildProcessSecurityPolicyImpl* policy =
         ChildProcessSecurityPolicyImpl::GetInstance();
-    policy->LockToOrigin(process_->GetID(), site_);
+
+    // Sanity check that this won't try to assign an origin lock to a <webview>
+    // process, which can't be locked.
+    CHECK(!process_->IsForGuestsOnly());
+
+    auto lock_state = policy->CheckOriginLock(process_->GetID(), site_);
+    switch (lock_state) {
+      case ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK: {
+        // TODO(alexmos): Turn this into a CHECK once https://crbug.com/738634
+        // is fixed.
+        DCHECK(was_unused);
+        policy->LockToOrigin(process_->GetID(), site_);
+        break;
+      }
+      case ChildProcessSecurityPolicyImpl::CheckOriginLockResult::
+          HAS_WRONG_LOCK:
+        // We should never attempt to reassign a different origin lock to a
+        // process.
+        CHECK(false);
+        break;
+      case ChildProcessSecurityPolicyImpl::CheckOriginLockResult::
+          HAS_EQUAL_LOCK:
+        // Process already has the right origin lock assigned.  This case will
+        // happen for commits to |site_| after the first one.
+        break;
+      default:
+        NOTREACHED();
+    }
   }
 }
 
