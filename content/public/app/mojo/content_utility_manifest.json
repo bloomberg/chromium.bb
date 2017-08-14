@@ -14,7 +14,7 @@
         ]
       },
       "requires": {
-        "content_browser": [ "memory_instrumentation" ],
+        "*": [ "app" ],
         "device": [
           "device:power_monitor",
           "device:time_zone_monitor"
