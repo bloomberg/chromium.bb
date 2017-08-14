@@ -227,6 +227,40 @@ function hasReceiverWithTrack(trackId) {
   returnToTest('ok-receiver-with-track-not-found');
 }
 
+function createReceiverWithSetRemoteDescription() {
+  var pc = new RTCPeerConnection();
+  var receivers = null;
+  pc.setRemoteDescription({
+    type: "offer",
+    sdp: "v=0\n" +
+      "o=- 0 1 IN IP4 0.0.0.0\n" +
+      "s=-\n" +
+      "t=0 0\n" +
+      "a=ice-ufrag:0000\n" +
+      "a=ice-pwd:0000000000000000000000\n" +
+      "a=fingerprint:sha-256 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:" +
+      "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00\n" +
+      "m=audio 9 UDP/TLS/RTP/SAVPF 0\n" +
+      "c=IN IP4 0.0.0.0\n" +
+      "a=sendonly\n" +
+      "a=rtcp-mux\n" +
+      "a=ssrc:1 cname:0\n" +
+      "a=ssrc:1 msid:stream track1\n"
+    }).then(() => {
+      receivers = pc.getReceivers();
+      if (receivers.length != 1)
+        throw failTest('getReceivers() should return 1 receiver: ' +
+                       receivers.length)
+      if (!receivers[0].track)
+        throw failTest('getReceivers()[0].track should have a value')
+      returnToTest('ok');
+    });
+  receivers = pc.getReceivers();
+  if (receivers.length != 0)
+    throw failTest('getReceivers() should return 0 receivers: ' +
+                   receivers.length)
+}
+
 /**
  * Invokes the GC and returns "ok-gc".
  */
