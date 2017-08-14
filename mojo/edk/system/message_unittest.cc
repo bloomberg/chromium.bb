@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/system/user_message_impl.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -756,6 +757,30 @@ TEST_F(MessageTest, CorrectPayloadBufferBoundaries) {
   }
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
+}
+
+TEST_F(MessageTest, CommitInvalidMessageContents) {
+  // Regression test for https://crbug.com/755127. Ensures that we don't crash
+  // if we attempt to commit the contents of an unserialized message.
+  MojoMessageHandle message;
+  void* buffer;
+  uint32_t buffer_size;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+  EXPECT_EQ(
+      MOJO_RESULT_FAILED_PRECONDITION,
+      MojoCommitSerializedMessageContents(message, 0, &buffer, &buffer_size));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoAttachSerializedMessageBuffer(
+                                message, 0, nullptr, 0, &buffer, &buffer_size));
+
+  MojoHandle a, b;
+  CreateMessagePipe(&a, &b);
+  EXPECT_EQ(MOJO_RESULT_OK, MojoExtendSerializedMessagePayload(
+                                message, 0, &a, 1, &buffer, &buffer_size));
+
+  UserMessageImpl::FailHandleSerializationForTesting(true);
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCommitSerializedMessageContents(
+                                message, 0, &buffer, &buffer_size));
+  UserMessageImpl::FailHandleSerializationForTesting(false);
 }
 
 #if !defined(OS_IOS)

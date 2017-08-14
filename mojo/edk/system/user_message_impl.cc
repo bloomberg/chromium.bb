@@ -29,6 +29,9 @@ namespace {
 // incur any reallocations as they're expanded to full size.
 const uint32_t kMinimumPayloadBufferSize = 4096;
 
+// Indicates whether handle serialization failure should be emulated in testing.
+bool g_always_fail_handle_serialization = false;
+
 #pragma pack(push, 1)
 // Header attached to every message.
 struct MessageHeader {
@@ -213,7 +216,8 @@ MojoResult CreateOrExtendSerializedEventMessage(
 
       // Fill in serialized state, ports, and platform handles. We'll cancel
       // the send if the dispatcher implementation rejects for some reason.
-      if (!d->EndSerialize(
+      if (g_always_fail_handle_serialization ||
+          !d->EndSerialize(
               static_cast<void*>(new_dispatcher_data),
               event->ports() + port_index,
               handles ? handles->data() + handle_index : nullptr)) {
@@ -232,6 +236,10 @@ MojoResult CreateOrExtendSerializedEventMessage(
       // leaking.
       if (handles)
         handles->clear();
+
+      // Leave the original message in place on failure if applicable.
+      if (original_message)
+        *out_message = std::move(original_message);
       return MOJO_RESULT_INVALID_ARGUMENT;
     }
 
@@ -367,7 +375,7 @@ size_t UserMessageImpl::user_payload_capacity() const {
       static_cast<uint8_t*>(user_payload_) -
       static_cast<const uint8_t*>(channel_message_->payload());
   const size_t message_capacity = channel_message_->capacity();
-  DCHECK(user_payload_offset < message_capacity);
+  DCHECK_LE(user_payload_offset, message_capacity);
   return message_capacity - user_payload_offset;
 }
 
@@ -591,6 +599,11 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
     return MOJO_RESULT_ABORTED;
 
   return MOJO_RESULT_OK;
+}
+
+// static
+void UserMessageImpl::FailHandleSerializationForTesting(bool fail) {
+  g_always_fail_handle_serialization = fail;
 }
 
 UserMessageImpl::UserMessageImpl(ports::UserMessageEvent* message_event)
