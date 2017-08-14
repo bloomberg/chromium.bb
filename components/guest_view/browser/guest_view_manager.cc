@@ -304,8 +304,11 @@ void GuestViewManager::ViewCreated(int embedder_process_id,
   if (guest_view_registry_.empty())
     RegisterGuestViewTypes();
   auto view_it = guest_view_registry_.find(view_type);
-  CHECK(view_it != guest_view_registry_.end())
-      << "Invalid GuestView created of type \"" << view_type << "\"";
+  if (view_it == guest_view_registry_.end()) {
+    bad_message::ReceivedBadMessage(embedder_process_id,
+                                    bad_message::GVM_INVALID_GUESTVIEW_TYPE);
+    return;
+  }
 
   // Register the cleanup callback for when this view is destroyed.
   RegisterViewDestructionCallback(embedder_process_id,

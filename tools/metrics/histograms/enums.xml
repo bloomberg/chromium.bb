@@ -2626,6 +2626,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 <!-- Generated from components/guest_view/browser/bad_message.h -->
 
   <int value="0" label="GVM_EMBEDDER_FORBIDDEN_ACCESS_TO_GUEST"/>
+  <int value="1" label="GVM_INVALID_GUESTVIEW_TYPE"/>
 </enum>
 
 <enum name="BadMessageReasonNaCl">
