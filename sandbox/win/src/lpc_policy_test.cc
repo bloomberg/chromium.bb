@@ -31,8 +31,9 @@ bool CsrssDisconnectSupported() {
 #if !defined(_WIN64)
   // Does not work on 32-bit. See crbug.com/751809.
   return false;
-#endif  // !defined(_WIN64)
+#else   // !defined(_WIN64)
   return true;
+#endif  // !defined(_WIN64)
 }
 
 }  // namespace
