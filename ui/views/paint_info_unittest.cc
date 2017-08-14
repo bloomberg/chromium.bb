@@ -135,24 +135,32 @@ class PaintInfoTest : public ::testing::Test {
 
     info_list[0].reset(new PaintInfo(context, kLayerSize));
 
-    info_list[1].reset(new PaintInfo(*info_list[0], r_1, r_0.size(),
-                                     PaintInfo::ScaleType::kScaleToFit));
+    info_list[1].reset(
+        new PaintInfo(*info_list[0], r_1, r_0.size(),
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
 
-    info_list[2].reset(new PaintInfo(*info_list[0], r_2, r_0.size(),
-                                     PaintInfo::ScaleType::kScaleToFit));
-    info_list[3].reset(new PaintInfo(*info_list[2], r_3, r_2.size(),
-                                     PaintInfo::ScaleType::kScaleToFit));
-    info_list[4].reset(new PaintInfo(*info_list[2], r_4, r_2.size(),
-                                     PaintInfo::ScaleType::kScaleToFit));
-    info_list[5].reset(new PaintInfo(*info_list[2], r_5, r_2.size(),
-                                     PaintInfo::ScaleType::kScaleToFit));
+    info_list[2].reset(
+        new PaintInfo(*info_list[0], r_2, r_0.size(),
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
+    info_list[3].reset(
+        new PaintInfo(*info_list[2], r_3, r_2.size(),
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
+    info_list[4].reset(
+        new PaintInfo(*info_list[2], r_4, r_2.size(),
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
+    info_list[5].reset(
+        new PaintInfo(*info_list[2], r_5, r_2.size(),
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
 
-    info_list[6].reset(new PaintInfo(*info_list[0], r_6, r_0.size(),
-                                     PaintInfo::ScaleType::kScaleToFit));
-    info_list[7].reset(new PaintInfo(*info_list[6], r_7, r_6.size(),
-                                     PaintInfo::ScaleType::kScaleToFit));
-    info_list[8].reset(new PaintInfo(*info_list[6], r_8, r_6.size(),
-                                     PaintInfo::ScaleType::kScaleToFit));
+    info_list[6].reset(
+        new PaintInfo(*info_list[0], r_6, r_0.size(),
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
+    info_list[7].reset(
+        new PaintInfo(*info_list[6], r_7, r_6.size(),
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
+    info_list[8].reset(
+        new PaintInfo(*info_list[6], r_8, r_6.size(),
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
 
     return info_list;
   }

@@ -21,13 +21,16 @@ namespace views {
 class VIEWS_EXPORT PaintInfo {
  public:
   enum class ScaleType {
-    // Scale the recordings by the default dsf. Use this if you don't want any
-    // form of distortion during scaling.
-    kScaleToScaleFactor = 0,
+    // Scale the recordings by the default device scale factor while maintaining
+    // the aspect ratio. Use this when a view contains an image or icon that
+    // should not get distorted due to scaling.
+    kUniformScaling = 0,
 
-    // Scale the recordings based on the effective dsf. This may lead to minor
-    // distortion during scaling due to edge snapping.
-    kScaleToFit
+    // Scale the recordings based on the device scale factor but snap to the
+    // parent's bottom or right edge whenever possible. This may lead to minor
+    // distortion and is not recommended to be used with views that contain
+    // images.
+    kScaleWithEdgeSnapping
   };
 
   // Instantiates a root PaintInfo. This should only be initialized at the Paint

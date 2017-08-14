@@ -74,10 +74,10 @@ PaintInfo::PaintInfo(const PaintInfo& parent_paint_info,
       context_(parent_paint_info.context(), offset_from_parent_),
       root_context_(nullptr) {
   if (IsPixelCanvas()) {
-    if (scale_type == ScaleType::kScaleToScaleFactor) {
+    if (scale_type == ScaleType::kUniformScaling) {
       paint_recording_scale_x_ = paint_recording_scale_y_ =
           context().device_scale_factor();
-    } else if (scale_type == ScaleType::kScaleToFit) {
+    } else if (scale_type == ScaleType::kScaleWithEdgeSnapping) {
       if (bounds.size().width() > 0) {
         paint_recording_scale_x_ =
             static_cast<float>(paint_recording_bounds_.width()) /

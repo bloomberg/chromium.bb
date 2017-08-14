@@ -125,7 +125,7 @@ void FrameCaptionButton::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 views::PaintInfo::ScaleType FrameCaptionButton::GetPaintScaleType() const {
-  return views::PaintInfo::ScaleType::kScaleToScaleFactor;
+  return views::PaintInfo::ScaleType::kUniformScaling;
 }
 
 void FrameCaptionButton::PaintButtonContents(gfx::Canvas* canvas) {

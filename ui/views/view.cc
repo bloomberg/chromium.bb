@@ -1843,7 +1843,7 @@ int View::GetVerticalDragThreshold() {
 }
 
 PaintInfo::ScaleType View::GetPaintScaleType() const {
-  return PaintInfo::ScaleType::kScaleToFit;
+  return PaintInfo::ScaleType::kScaleWithEdgeSnapping;
 }
 
 // Debugging -------------------------------------------------------------------
