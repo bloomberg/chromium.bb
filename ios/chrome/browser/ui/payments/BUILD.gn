@@ -158,6 +158,7 @@ source_set("unit_tests") {
     "contact_info_selection_mediator_unittest.mm",
     "country_selection_coordinator_unittest.mm",
     "credit_card_edit_coordinator_unittest.mm",
+    "credit_card_edit_mediator_unittest.mm",
     "full_card_requester_unittest.mm",
     "payment_items_display_coordinator_unittest.mm",
     "payment_items_display_view_controller_unittest.mm",
