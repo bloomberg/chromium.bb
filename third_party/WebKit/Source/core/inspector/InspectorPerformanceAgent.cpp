@@ -26,11 +26,13 @@ InspectorPerformanceAgent::~InspectorPerformanceAgent() = default;
 
 protocol::Response InspectorPerformanceAgent::enable() {
   enabled_ = true;
+  instrumenting_agents_->addInspectorPerformanceAgent(this);
   return Response::OK();
 }
 
 protocol::Response InspectorPerformanceAgent::disable() {
   enabled_ = false;
+  instrumenting_agents_->removeInspectorPerformanceAgent(this);
   return Response::OK();
 }
 
@@ -51,6 +53,14 @@ Response InspectorPerformanceAgent::getMetrics(
   }
   *out_result = std::move(result);
   return Response::OK();
+}
+
+void InspectorPerformanceAgent::ConsoleTimeStamp(const String& title) {
+  if (!enabled_)
+    return;
+  std::unique_ptr<protocol::Array<protocol::Performance::Metric>> metrics;
+  getMetrics(&metrics);
+  GetFrontend()->metrics(std::move(metrics), title);
 }
 
 DEFINE_TRACE(InspectorPerformanceAgent) {

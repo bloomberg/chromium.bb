@@ -26,11 +26,15 @@ class CORE_EXPORT InspectorPerformanceAgent final
   }
   ~InspectorPerformanceAgent() override;
 
+  // Performance protocol domain implementation.
   protocol::Response enable() override;
   protocol::Response disable() override;
   protocol::Response getMetrics(
       std::unique_ptr<protocol::Array<protocol::Performance::Metric>>*
           out_result) override;
+
+  // PerformanceMetrics probes implementation.
+  void ConsoleTimeStamp(const String& title);
 
  private:
   InspectorPerformanceAgent(InspectedFrames*);

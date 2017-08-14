@@ -1,0 +1,8 @@
+Test that console.timeStamp generates Performance.metrics event
+title: test1
+metrics: DocumentCount, JSEventListenerCount, NodeCount
+title: test1
+metrics: DocumentCount, JSEventListenerCount, NodeCount
+title: 
+metrics: DocumentCount, JSEventListenerCount, NodeCount
+
