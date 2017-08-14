@@ -291,7 +291,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   AddScreenHandler(
       base::MakeUnique<TermsOfServiceScreenHandler>(core_handler_));
 
-  AddScreenHandler(base::MakeUnique<ArcTermsOfServiceScreenHandler>(this));
+  AddScreenHandler(base::MakeUnique<ArcTermsOfServiceScreenHandler>());
 
   AddScreenHandler(base::MakeUnique<UserImageScreenHandler>());
 
