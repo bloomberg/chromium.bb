@@ -19,12 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/win/direct_write.h"
 
-#define SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(struct_name, member) \
-    offsetof(struct_name, member) + \
-    (sizeof static_cast<struct_name*>(0)->member)
-#define NONCLIENTMETRICS_SIZE_PRE_VISTA \
-    SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(NONCLIENTMETRICS, lfMessageFont)
-
 namespace content {
 
 namespace {
@@ -57,35 +51,25 @@ bool CheckLayoutSystemDeps() {
   if (::GetSystemMetrics(SM_CXVSCROLL) != 17)
     errors.push_back("Must use normal size fonts (96 dpi).");
 
-  // Check that we're using the default system fonts.
-  OSVERSIONINFO version_info = {0};
-  version_info.dwOSVersionInfoSize = sizeof(version_info);
-  ::GetVersionEx(&version_info);
-  bool is_vista_or_later = (version_info.dwMajorVersion >= 6);
   NONCLIENTMETRICS metrics = {0};
-  metrics.cbSize = is_vista_or_later ? sizeof(NONCLIENTMETRICS)
-                                     : NONCLIENTMETRICS_SIZE_PRE_VISTA;
+  metrics.cbSize = sizeof(NONCLIENTMETRICS);
   bool success = !!::SystemParametersInfo(
       SPI_GETNONCLIENTMETRICS, metrics.cbSize, &metrics, 0);
   CHECK(success);
   LOGFONTW* system_fonts[] =
       {&metrics.lfStatusFont, &metrics.lfMenuFont, &metrics.lfSmCaptionFont};
-  const wchar_t* required_font = is_vista_or_later ? L"Segoe UI" : L"Tahoma";
-  int required_font_size = is_vista_or_later ? -12 : -11;
+  const wchar_t required_font[] = L"Segoe UI";
+  int required_font_size = -12;
   for (size_t i = 0; i < arraysize(system_fonts); ++i) {
     if (system_fonts[i]->lfHeight != required_font_size ||
         wcscmp(required_font, system_fonts[i]->lfFaceName)) {
-      errors.push_back(is_vista_or_later
-                           ? "Must use either the Aero or Basic theme."
-                           : "Must use the default XP theme (Luna).");
+      errors.push_back("Must use either the Aero or Basic theme.");
       break;
     }
   }
 
-  for (std::list<std::string>::iterator it = errors.begin(); it != errors.end();
-       ++it) {
-    std::cerr << *it << "\n";
-  }
+  for (const auto& error : errors)
+    std::cerr << error << "\n";
   return errors.empty();
 }
 
