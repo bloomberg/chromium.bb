@@ -29,7 +29,6 @@ _template = "mac_host_bundle = \"@MAC_HOST_BUNDLE_NAME@\" "
 _template +=
     "mac_native_messaging_bundle = \"@MAC_NATIVE_MESSAGING_HOST_BUNDLE_NAME@\" "
 _template += "mac_remote_assistance_bundle = \"@MAC_REMOTE_ASSISTANCE_HOST_BUNDLE_NAME@\" "
-_template += "prefpane_bundle_name = \"@MAC_PREFPANE_BUNDLE_NAME@\" "
 _template += "host_bundle_name = \"@MAC_HOST_BUNDLE_NAME@\" "
 _template += "host_name= \"@MAC_HOST_PACKAGE_NAME@\" "
 _template += "host_service_name = \"@DAEMON_FILE_NAME@\" "
@@ -40,7 +39,6 @@ _template += "version_patch = \"@REMOTING_PATCH@\" "
 if (is_mac) {
   _template += "host_bundle_id = \"@MAC_HOST_BUNDLE_ID@\" "
   _template += "native_messaging_host_bundle_id = \"@MAC_NATIVE_MESSAGING_HOST_BUNDLE_ID@\""
-  _template += "prefpane_bundle_id = \"@MAC_PREFPANE_BUNDLE_ID@\" "
   _template += "remote_assistance_host_bundle_id = \"@MAC_REMOTE_ASSISTANCE_HOST_BUNDLE_ID@\" "
   _template += "uninstaller_bundle_id = \"@MAC_UNINSTALLER_BUNDLE_ID@\""
 }
@@ -64,7 +62,6 @@ _result = exec_script(_version_py_abspath,
                       "scope",
                       remoting_version_files)
 
-prefpane_bundle_name = _result.prefpane_bundle_name
 host_bundle_name = _result.host_bundle_name
 host_name = _result.host_name
 host_service_name = _result.host_service_name
@@ -81,7 +78,6 @@ remoting_version_full = "$remoting_version_short.$chrome_version_patch"
 if (is_mac) {
   host_bundle_id = _result.host_bundle_id
   native_messaging_host_bundle_id = _result.native_messaging_host_bundle_id
-  prefpane_bundle_id = _result.prefpane_bundle_id
   remote_assistance_host_bundle_id = _result.remote_assistance_host_bundle_id
   uninstaller_bundle_id = _result.uninstaller_bundle_id
 

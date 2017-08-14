@@ -354,12 +354,6 @@
         <message name="IDS_VERIFY_PIN_DIALOG_MESSAGE" desc="The message displayed by the PIN verification dialog.">
           Please confirm your account and PIN below to allow access by Chrome Remote Desktop.
         </message>
-        <message name="IDS_MAC_PREFPANE_BUNDLE_NAME" desc="The bundle name specified in the property list of Chrome Remote Desktop Host Preferences bundle on MacOS. The Chrome Remote Desktop host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer).">
-          Chrome Remote Desktop Host Preferences
-        </message>
-        <message name="IDS_MAC_PREFPANE_ICON_LABEL" desc="The name of Chrome Remote Desktop Host icon in Preference Pane on MacOS. The carriage return makes sure that the label is not truncated. The Chrome Remote Desktop host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer).">
-          Chrome Remote&#x0a;Desktop Host
-        </message>
         <message name="IDS_MAC_UNINSTALLER_BUNDLE_NAME" desc="The bundle name specified in the property list of Chrome Remote Desktop Host Uninstaller bundle on MacOS. The Chrome Remote Desktop host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer).">
           Chrome Remote Desktop Host Uninstaller
         </message>
@@ -458,12 +452,6 @@
         </message>
         <message name="IDS_VERIFY_PIN_DIALOG_MESSAGE" desc="The message displayed by the PIN verification dialog.">
           Please confirm your account and PIN below to allow access by Chromoting.
-        </message>
-        <message name="IDS_MAC_PREFPANE_BUNDLE_NAME" desc="The bundle name specified in the property list of Chromoting Host Preferences bundle on MacOS.">
-          Chromoting Host Preferences
-        </message>
-        <message name="IDS_MAC_PREFPANE_ICON_LABEL" desc="The name of Chromoting Host icon in Preference Pane on MacOS. The carriage return makes sure that the label is not truncated.">
-          Chromoting&#x0a;Host
         </message>
         <message name="IDS_MAC_UNINSTALLER_BUNDLE_NAME" desc="The bundle name specified in the property list of Chromoting Host Uninstaller bundle on MacOS.">
           Chromoting Host Uninstaller

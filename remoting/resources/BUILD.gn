@@ -28,7 +28,6 @@ action("verify_resources") {
     "../host/continue_window_mac.mm",
     "../host/disconnect_window_mac.mm",
     "../host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2",
-    "../host/mac/me2me_preference_pane-InfoPlist.strings.jinja2",
     "../host/win/core.rc.jinja2",
     "../host/win/host_messages.mc.jinja2",
     "../host/win/version.rc.jinja2",

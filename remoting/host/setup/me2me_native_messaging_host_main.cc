@@ -87,9 +87,7 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
 
   base::TaskScheduler::CreateAndStartWithDefaultParams("Me2Me");
 
-  // Mac OS X requires that the main thread be a UI message loop in order to
-  // receive distributed notifications from the System Preferences pane. An
-  // IO thread is needed for the pairing registry and URL context getter.
+  // An IO thread is needed for the pairing registry and URL context getter.
   base::Thread io_thread("io_thread");
   io_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));

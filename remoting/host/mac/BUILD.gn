@@ -5,10 +5,7 @@
 import("//remoting/build/config/remoting_build.gni")
 
 source_set("constants") {
-  defines = [
-    "HOST_BUNDLE_NAME=\"" + host_bundle_name + "\"",
-    "PREFPANE_BUNDLE_NAME=\"" + prefpane_bundle_name + "\"",
-  ]
+  defines = [ "HOST_BUNDLE_NAME=\"" + host_bundle_name + "\"" ]
 
   sources = [
     "constants_mac.cc",
@@ -99,25 +96,6 @@ target("mac_app_bundle", "remoting_me2me_host") {
   ]
 }
 
-create_bundle("remoting_host_prefpane.prefPane") {
-  bundle_root_dir = "$root_build_dir/$target_name/Contents"
-  bundle_resources_dir = bundle_root_dir + "/Resources"
-  bundle_executable_dir = bundle_root_dir + "/MacOS"
-
-  deps = [
-    ":remoting_host_prefpane",
-    ":remoting_host_prefpane_bundle_data",
-    ":remoting_host_prefpane_plist_bundle_data",
-    ":remoting_host_prefpane_resources",
-    ":remoting_host_prefpane_xibs",
-    "//remoting/host:remoting_infoplist_strings",
-  ]
-
-  foreach(locale, remoting_locales_with_underscores) {
-    deps += [ ":remoting_host_prefpane_strings_${locale}_bundle_data" ]
-  }
-}
-
 foreach(locale, remoting_locales_with_underscores) {
   bundle_data("remoting_host_locale_${locale}_bundle_data") {
     sources = [
@@ -130,28 +108,6 @@ foreach(locale, remoting_locales_with_underscores) {
       "//remoting/resources:copy_locales",
     ]
   }
-}
-
-bundle_data("remoting_host_prefpane_bundle_data") {
-  deps = [
-    ":remoting_host_prefpane",
-  ]
-  sources = [
-    "$root_build_dir/gen/remoting/host/remoting_host_prefpane",
-  ]
-  outputs = [
-    "{{bundle_executable_dir}}/{{source_file_part}}",
-  ]
-}
-
-bundle_data("remoting_host_prefpane_resources") {
-  sources = [
-    "//remoting/resources/chromoting128.png",
-  ]
-
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
 }
 
 # native_messaging_host-InfoPlist.strings
@@ -225,80 +181,4 @@ target("mac_app_bundle", "remoting_native_messaging_host") {
   defines =
       [ "VERSION=" + "$chrome_version_major" + "." + "$remoting_version_patch" +
         "." + "$chrome_version_build" + "." + "$chrome_version_patch" ]
-}
-
-loadable_module("remoting_host_prefpane") {
-  output_dir = "$root_out_dir/gen/remoting/host"
-  output_extension = ""
-
-  sources = [
-    "me2me_preference_pane.h",
-    "me2me_preference_pane.mm",
-    "me2me_preference_pane_confirm_pin.h",
-    "me2me_preference_pane_confirm_pin.mm",
-    "me2me_preference_pane_disable.h",
-    "me2me_preference_pane_disable.mm",
-  ]
-
-  libs = [
-    "Cocoa.framework",
-    "CoreFoundation.framework",
-    "PreferencePanes.framework",
-    "Security.framework",
-  ]
-
-  deps = [
-    ":constants",
-    "//remoting/base",
-    "//remoting/host:host",
-    "//remoting/host:remoting_infoplist_strings",
-    "//remoting/resources:copy_locales",
-    "//third_party/jsoncpp",
-  ]
-  foreach(locale, remoting_locales_with_underscores) {
-    deps += [ ":remoting_host_prefpane_strings_${locale}_bundle_data" ]
-  }
-}
-
-mac_info_plist("remoting_host_prefpane_plist") {
-  info_plist = "me2me_preference_pane-Info.plist"
-  extra_substitutions = [
-    "BUNDLE_ID=$prefpane_bundle_id",
-    "VERSION_FULL=$remoting_version_full",
-    "VERSION_SHORT=$remoting_version_short",
-    "MACOSX_DEPLOYMENT_TARGET=10.7",
-  ]
-  executable_name = "remoting_host_prefpane"
-}
-
-bundle_data("remoting_host_prefpane_plist_bundle_data") {
-  sources = get_target_outputs(":remoting_host_prefpane_plist")
-  outputs = [
-    "{{bundle_root_dir}}/Info.plist",
-  ]
-  public_deps = [
-    ":remoting_host_prefpane_plist",
-  ]
-}
-
-foreach(locale, remoting_locales_with_underscores) {
-  bundle_data("remoting_host_prefpane_strings_${locale}_bundle_data") {
-    sources = [
-      "$root_gen_dir/remoting/host/me2me_preference_pane-InfoPlist.strings/$locale.lproj/InfoPlist.strings",
-    ]
-    outputs = [
-      "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
-    ]
-    deps = [
-      "//remoting/host:remoting_infoplist_strings",
-    ]
-  }
-}
-
-mac_xib_bundle_data("remoting_host_prefpane_xibs") {
-  sources = [
-    "me2me_preference_pane.xib",
-    "me2me_preference_pane_confirm_pin.xib",
-    "me2me_preference_pane_disable.xib",
-  ]
 }
