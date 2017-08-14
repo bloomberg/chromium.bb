@@ -442,6 +442,12 @@ LayoutRect MultiColumnFragmentainerGroup::FlowThreadPortionRectAt(
                     column_set_.PageLogicalWidth());
 }
 
+// Clamp "infinite" clips to a number of pixels that can be losslessly
+// converted to and from floating point, to avoid loss of precision.
+// Note that tables have something similar, see
+// TableLayoutAlgorithm::kTableMaxWidth.
+static const int kMulticolMaxClipPixels = 1000000;
+
 LayoutRect MultiColumnFragmentainerGroup::FlowThreadPortionOverflowRectAt(
     unsigned column_index,
     ClipRectAxesSelector axes_selector) const {
@@ -478,7 +484,9 @@ LayoutRect MultiColumnFragmentainerGroup::FlowThreadPortionOverflowRectAt(
   // multicol container, in which case it should allow overflow. It will also
   // be clipped in the middle of adjacent column gaps. Care is taken here to
   // avoid rounding errors.
-  LayoutRect overflow_rect(LayoutRect::InfiniteIntRect());
+  LayoutRect overflow_rect(
+      IntRect(-kMulticolMaxClipPixels, -kMulticolMaxClipPixels,
+              2 * kMulticolMaxClipPixels, 2 * kMulticolMaxClipPixels));
   LayoutUnit column_gap = column_set_.ColumnGap();
   if (column_set_.IsHorizontalWritingMode()) {
     if (!is_first_column_in_multicol_container)
