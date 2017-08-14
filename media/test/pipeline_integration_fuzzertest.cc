@@ -17,6 +17,11 @@
 
 namespace {
 
+// Limit the amount of initial audio silence padding allowed in rendering of
+// fuzzed input.
+constexpr base::TimeDelta kMaxFirstAudioPacketTime =
+    base::TimeDelta::FromSeconds(10);
+
 void OnEncryptedMediaInitData(media::PipelineIntegrationTestBase* test,
                               media::EmeInitDataType /* type */,
                               const std::vector<uint8_t>& /* init_data */) {
@@ -26,6 +31,14 @@ void OnEncryptedMediaInitData(media::PipelineIntegrationTestBase* test,
   // To prevent the test timeout, we'll just fail the test immediately here.
   // TODO(xhwang): Support encrypted media in this fuzzer test.
   test->FailTest(media::PIPELINE_ERROR_INITIALIZATION_FAILED);
+}
+
+void OnCheckFirstAudioPacketTimestamp(media::PipelineIntegrationTestBase* test,
+                                      base::TimeDelta first_packet_timestamp) {
+  if (first_packet_timestamp != media::kNoTimestamp &&
+      first_packet_timestamp > kMaxFirstAudioPacketTime) {
+    test->FailTest(media::PIPELINE_ERROR_INITIALIZATION_FAILED);
+  }
 }
 
 }  // namespace
@@ -44,6 +57,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   test.set_encrypted_media_init_data_cb(
       base::Bind(&OnEncryptedMediaInitData, &test));
+
+  test.set_check_first_audio_packet_timestamp_cb(
+      base::BindRepeating(&OnCheckFirstAudioPacketTimestamp, &test));
 
   media::PipelineStatus pipeline_status =
       test.Start(data, size,
