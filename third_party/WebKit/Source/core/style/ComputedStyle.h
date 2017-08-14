@@ -1210,21 +1210,6 @@ class ComputedStyle : public ComputedStyleBase,
            !ColumnRuleColorInternal().Alpha();
   }
   bool ColumnRuleEquivalent(const ComputedStyle& other_style) const;
-  void InheritColumnPropertiesFrom(const ComputedStyle& parent) {
-    SetColumnGapInternal(parent.ColumnGap());
-    SetColumnWidthInternal(parent.ColumnWidth());
-    SetVisitedLinkColumnRuleColorInternal(
-        parent.VisitedLinkColumnRuleColorInternal());
-    SetColumnRuleColorInternal(parent.ColumnRuleColorInternal());
-    SetColumnCountInternal(parent.ColumnCount());
-    SetColumnRuleStyle(parent.ColumnRuleStyle());
-    SetColumnAutoCountInternal(parent.ColumnAutoCountInternal());
-    SetColumnAutoWidthInternal(parent.ColumnAutoWidthInternal());
-    SetColumnFill(parent.GetColumnFill());
-    SetColumnNormalGapInternal(parent.ColumnNormalGapInternal());
-    SetColumnRuleColorIsCurrentColor(parent.ColumnRuleColorIsCurrentColor());
-    SetColumnSpan(parent.GetColumnSpan());
-  }
 
   // Flex utility functions.
   bool IsColumnFlexDirection() const {
