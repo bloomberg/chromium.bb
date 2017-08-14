@@ -22,10 +22,25 @@ StubNotificationDisplayService::StubNotificationDisplayService(Profile* profile)
 
 StubNotificationDisplayService::~StubNotificationDisplayService() = default;
 
+std::vector<Notification>
+StubNotificationDisplayService::GetDisplayedNotificationsForType(
+    NotificationCommon::Type type) const {
+  std::vector<Notification> notifications;
+  for (const auto& pair : notifications_) {
+    if (pair.first != type)
+      continue;
+
+    notifications.push_back(pair.second);
+  }
+
+  return notifications;
+}
+
 void StubNotificationDisplayService::RemoveNotification(
     NotificationCommon::Type notification_type,
     const std::string& notification_id,
-    bool by_user) {
+    bool by_user,
+    bool silent) {
   auto iter = std::find_if(
       notifications_.begin(), notifications_.end(),
       [notification_type, notification_id](const NotificationData& data) {
@@ -36,10 +51,14 @@ void StubNotificationDisplayService::RemoveNotification(
   if (iter == notifications_.end())
     return;
 
-  NotificationHandler* handler = GetNotificationHandler(notification_type);
-  DCHECK(handler);
-  handler->OnClose(profile_, iter->second.origin_url().spec(), notification_id,
-                   by_user);
+  if (!silent) {
+    NotificationHandler* handler = GetNotificationHandler(notification_type);
+    DCHECK(handler);
+
+    handler->OnClose(profile_, iter->second.origin_url().spec(),
+                     notification_id, by_user);
+  }
+
   notifications_.erase(iter);
 }
 
@@ -66,6 +85,11 @@ void StubNotificationDisplayService::Display(
   // This mimics notification replacement behaviour; the Close() method on a
   // notification's delegate is not meant to be invoked in this situation.
   Close(notification_type, notification_id);
+
+  NotificationHandler* handler = GetNotificationHandler(notification_type);
+  DCHECK(handler);
+
+  handler->OnShow(profile_, notification_id);
 
   notifications_.emplace_back(notification_type, notification);
 }
