@@ -614,7 +614,8 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     @Override
     public void onAccountSelected(String accountName) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            String logInAnnouncement = getString(R.string.log_in_account_description, accountName);
+            String logInAnnouncement =
+                    getString(R.string.log_in_account_accessibility_description, accountName);
             mAccountSwitcher.getView().announceForAccessibility(logInAnnouncement);
         }
         mAccount = accountName;

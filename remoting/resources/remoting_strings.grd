@@ -1054,7 +1054,7 @@ After your remote device is setup, you can access it directly from this page
       </message>
       <if expr="is_android">
         <!-- Android uses a different format for placeholder -->
-        <message desc="Message that is spoken (for accessibility) whenever the user selects an account from a list displayed in the application." name="IDS_LOG_IN_ACCOUNT_DESCRIPTION" formatter_data="android_java">
+        <message desc="Message that is spoken (for accessibility) whenever the user selects an account from a list displayed in the application." name="IDS_LOG_IN_ACCOUNT_ACCESSIBILITY_DESCRIPTION" formatter_data="android_java" meaning="Spoken message">
           Signed in as <ph name="EMAIL_ADDRESS">%1$s<ex>test@gmail.com</ex></ph>.
         </message>
         <message desc="This string represents a host status line, which is shown below the host name for offline hosts.  The status line consists of 1) a host offline status (i.e. a specific 'Host failed to read the policy.' or 'Invalid host owner.' or a generic 'Host if offline.') and 2) statement when the host was last seen online (i.e. 'Last seen online 20 minutes ago.')."
@@ -1071,7 +1071,7 @@ After your remote device is setup, you can access it directly from this page
         </message>
       </if>
       <if expr="not is_android">
-        <message desc="Short message being popped up whenever the user selects an account from a list displayed in the application." name="IDS_LOG_IN_ACCOUNT_DESCRIPTION">
+        <message desc="Short message being popped up whenever the user selects an account from a list displayed in the application." name="IDS_LOG_IN_ACCOUNT_DESCRIPTION" meaning="UI element">
           Signed in as <ph name="EMAIL_ADDRESS">$1<ex>test@gmail.com</ex></ph>.
         </message>
         <message desc="Modified version of the host name shown for hosts that are not currently accessible and for which no last-online status is available." name="IDS_OFFLINE">
