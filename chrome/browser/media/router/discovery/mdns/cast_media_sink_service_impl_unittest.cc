@@ -12,14 +12,15 @@
 #include "components/cast_channel/cast_socket_service.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::WithArgs;
+using ::testing::_;
 using cast_channel::ChannelError;
 
 namespace {
@@ -71,9 +72,11 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         mock_cast_socket_service_(new cast_channel::MockCastSocketService()),
         media_sink_service_impl_(mock_sink_discovered_cb_.Get(),
-                                 mock_cast_socket_service_.get()) {}
+                                 mock_cast_socket_service_.get(),
+                                 discovery_network_monitor_.get()) {}
 
   void SetUp() override {
+    fake_network_info_.clear();
     auto mock_timer = base::MakeUnique<base::MockTimer>(
         true /*retain_user_task*/, false /*is_repeating*/);
     mock_timer_ = mock_timer.get();
@@ -81,7 +84,43 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
   }
 
  protected:
+  void ExpectOpenSocketInternal(cast_channel::CastSocket* socket) {
+    EXPECT_CALL(*mock_cast_socket_service_,
+                OpenSocketInternal(socket->ip_endpoint(), _, _, _))
+        .WillOnce(Invoke([socket](const auto& ip_endpoint, auto* net_log,
+                                  auto open_cb, auto* observer) {
+          std::move(open_cb).Run(socket);
+          return socket->id();
+        }));
+  }
+
+  cast_channel::CastSocket::Observer& observer() {
+    return static_cast<cast_channel::CastSocket::Observer&>(
+        media_sink_service_impl_);
+  }
+
+  static std::vector<DiscoveryNetworkInfo> FakeGetNetworkInfo() {
+    return fake_network_info_;
+  }
+
+  static std::vector<DiscoveryNetworkInfo> fake_network_info_;
+
+  std::vector<DiscoveryNetworkInfo> fake_ethernet_info_ = {
+      DiscoveryNetworkInfo{std::string("enp0s2"), std::string("ethernet1")}};
+  std::vector<DiscoveryNetworkInfo> fake_wifi_info_ = {
+      DiscoveryNetworkInfo{std::string("wlp3s0"), std::string("wifi1")},
+      DiscoveryNetworkInfo{std::string("wlp3s1"), std::string("wifi2")}};
+  std::vector<DiscoveryNetworkInfo> fake_unknown_info_ = {
+      DiscoveryNetworkInfo{std::string("enp0s2"), std::string()}};
+
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_ =
+      base::WrapUnique(net::NetworkChangeNotifier::CreateMock());
+
   const content::TestBrowserThreadBundle thread_bundle_;
+
+  std::unique_ptr<DiscoveryNetworkMonitor> discovery_network_monitor_ =
+      DiscoveryNetworkMonitor::CreateInstanceForTest(&FakeGetNetworkInfo);
+
   base::MockCallback<MediaSinkService::OnSinksDiscoveredCallback>
       mock_sink_discovered_cb_;
   std::unique_ptr<cast_channel::MockCastSocketService>
@@ -91,6 +130,10 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(CastMediaSinkServiceImplTest);
 };
+
+// static
+std::vector<DiscoveryNetworkInfo>
+    CastMediaSinkServiceImplTest::fake_network_info_;
 
 TEST_F(CastMediaSinkServiceImplTest, TestOnChannelOpened) {
   auto cast_sink = CreateCastSink(1);
@@ -281,11 +324,15 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnFetchCompleted) {
   net::IPEndPoint ip_endpoint3 = CreateIPEndPoint(3);
 
   // Cast sink 1, 2 from mDNS discovery
-  media_sink_service_impl_.current_sinks_by_mdns_[ip_endpoint1] = cast_sink1;
-  media_sink_service_impl_.current_sinks_by_mdns_[ip_endpoint2] = cast_sink2;
+  media_sink_service_impl_.current_sinks_by_mdns_[ip_endpoint1.address()] =
+      cast_sink1;
+  media_sink_service_impl_.current_sinks_by_mdns_[ip_endpoint2.address()] =
+      cast_sink2;
   // Cast sink 2, 3 from dial discovery
-  media_sink_service_impl_.current_sinks_by_dial_[ip_endpoint2] = cast_sink2;
-  media_sink_service_impl_.current_sinks_by_dial_[ip_endpoint3] = cast_sink3;
+  media_sink_service_impl_.current_sinks_by_dial_[ip_endpoint2.address()] =
+      cast_sink2;
+  media_sink_service_impl_.current_sinks_by_dial_[ip_endpoint3.address()] =
+      cast_sink3;
 
   // Callback returns Cast sink 1, 2, 3
   media_sink_service_impl_.OnFetchCompleted();
@@ -294,6 +341,476 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnFetchCompleted) {
   EXPECT_TRUE(base::ContainsValue(sinks, cast_sink1));
   EXPECT_TRUE(base::ContainsValue(sinks, cast_sink2));
   EXPECT_TRUE(base::ContainsValue(sinks, cast_sink3));
+}
+
+TEST_F(CastMediaSinkServiceImplTest, CacheSinksForKnownNetwork) {
+  fake_network_info_ = fake_ethernet_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  MediaSinkInternal sink1 = CreateCastSink(1);
+  MediaSinkInternal sink2 = CreateCastSink(2);
+  net::IPEndPoint ip_endpoint1 = CreateIPEndPoint(1);
+  net::IPEndPoint ip_endpoint2 = CreateIPEndPoint(2);
+  std::vector<MediaSinkInternal> sink_list1{sink1, sink2};
+
+  // Resolution will succeed for both sinks.
+  cast_channel::MockCastSocket socket1;
+  cast_channel::MockCastSocket socket2;
+  socket1.SetIPEndpoint(ip_endpoint1);
+  socket1.set_id(1);
+  socket2.SetIPEndpoint(ip_endpoint2);
+  socket2.set_id(2);
+  ExpectOpenSocketInternal(&socket1);
+  ExpectOpenSocketInternal(&socket2);
+  media_sink_service_impl_.OpenChannels(sink_list1);
+
+  // Connect to a new network with different sinks.
+  fake_network_info_.clear();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  fake_network_info_ = fake_wifi_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  content::RunAllBlockingPoolTasksUntilIdle();
+  observer().OnError(socket1, cast_channel::ChannelError::CAST_SOCKET_ERROR);
+  observer().OnError(socket2, cast_channel::ChannelError::CAST_SOCKET_ERROR);
+
+  MediaSinkInternal sink3 = CreateCastSink(3);
+  net::IPEndPoint ip_endpoint3 = CreateIPEndPoint(3);
+  std::vector<MediaSinkInternal> sink_list2{sink3};
+
+  cast_channel::MockCastSocket socket3;
+  socket3.SetIPEndpoint(ip_endpoint3);
+  socket3.set_id(3);
+  ExpectOpenSocketInternal(&socket3);
+  media_sink_service_impl_.OpenChannels(sink_list2);
+
+  // Reconnecting to the previous ethernet network should restore the same sinks
+  // from the cache and attempt to resolve them.
+  fake_network_info_.clear();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  EXPECT_CALL(*mock_cast_socket_service_,
+              OpenSocketInternal(ip_endpoint1, _, _, _));
+  EXPECT_CALL(*mock_cast_socket_service_,
+              OpenSocketInternal(ip_endpoint2, _, _, _));
+  fake_network_info_ = fake_ethernet_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  content::RunAllBlockingPoolTasksUntilIdle();
+}
+
+TEST_F(CastMediaSinkServiceImplTest, CacheContainsOnlyResolvedSinks) {
+  fake_network_info_ = fake_ethernet_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  MediaSinkInternal sink1 = CreateCastSink(1);
+  MediaSinkInternal sink2 = CreateCastSink(2);
+  net::IPEndPoint ip_endpoint1 = CreateIPEndPoint(1);
+  net::IPEndPoint ip_endpoint2 = CreateIPEndPoint(2);
+  std::vector<MediaSinkInternal> sink_list1{sink1, sink2};
+
+  // Resolution will fail for |sink2|.
+  cast_channel::MockCastSocket socket1;
+  cast_channel::MockCastSocket socket2;
+  socket1.SetIPEndpoint(ip_endpoint1);
+  socket1.set_id(1);
+  socket2.SetErrorState(cast_channel::ChannelError::CONNECT_ERROR);
+  socket2.SetIPEndpoint(ip_endpoint2);
+  socket2.set_id(2);
+  ExpectOpenSocketInternal(&socket1);
+  ExpectOpenSocketInternal(&socket2);
+  media_sink_service_impl_.OpenChannels(sink_list1);
+
+  // Connect to a new network with different sinks.
+  fake_network_info_.clear();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  fake_network_info_ = fake_wifi_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  content::RunAllBlockingPoolTasksUntilIdle();
+  observer().OnError(socket1, cast_channel::ChannelError::CAST_SOCKET_ERROR);
+
+  MediaSinkInternal sink3 = CreateCastSink(3);
+  net::IPEndPoint ip_endpoint3 = CreateIPEndPoint(3);
+  std::vector<MediaSinkInternal> sink_list2{sink3};
+
+  cast_channel::MockCastSocket socket3;
+  socket3.SetIPEndpoint(ip_endpoint3);
+  socket3.set_id(3);
+  ExpectOpenSocketInternal(&socket3);
+  media_sink_service_impl_.OpenChannels(sink_list2);
+
+  // Reconnecting to the previous ethernet network should restore only |sink1|,
+  // since |sink2| failed to resolve.
+  fake_network_info_.clear();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  EXPECT_CALL(*mock_cast_socket_service_,
+              OpenSocketInternal(ip_endpoint1, _, _, _));
+  EXPECT_CALL(*mock_cast_socket_service_,
+              OpenSocketInternal(ip_endpoint2, _, _, _))
+      .Times(0);
+  fake_network_info_ = fake_ethernet_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  content::RunAllBlockingPoolTasksUntilIdle();
+}
+
+TEST_F(CastMediaSinkServiceImplTest, CacheUpdatedOnChannelError) {
+  fake_network_info_ = fake_ethernet_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  MediaSinkInternal sink1 = CreateCastSink(1);
+  net::IPEndPoint ip_endpoint1 = CreateIPEndPoint(1);
+  std::vector<MediaSinkInternal> sink_list1{sink1};
+
+  // Resolve |sink1| but then raise a channel error.  This should remove it from
+  // the cached sinks for the ethernet network.
+  cast_channel::MockCastSocket socket1;
+  socket1.SetIPEndpoint(ip_endpoint1);
+  socket1.set_id(1);
+  ExpectOpenSocketInternal(&socket1);
+  media_sink_service_impl_.OpenChannels(sink_list1);
+  observer().OnError(socket1, cast_channel::ChannelError::CAST_SOCKET_ERROR);
+
+  // Connect to a new network with different sinks.
+  fake_network_info_.clear();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  fake_network_info_ = fake_wifi_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  MediaSinkInternal sink2 = CreateCastSink(2);
+  net::IPEndPoint ip_endpoint2 = CreateIPEndPoint(2);
+  std::vector<MediaSinkInternal> sink_list2{sink2};
+
+  cast_channel::MockCastSocket socket2;
+  socket2.SetIPEndpoint(ip_endpoint2);
+  socket2.set_id(2);
+  ExpectOpenSocketInternal(&socket2);
+  media_sink_service_impl_.OpenChannels(sink_list2);
+
+  // Reconnecting to the previous ethernet network should not restore any sinks
+  // since the only sink to resolve successfully, |sink1|, later had a channel
+  // error.
+  fake_network_info_.clear();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  EXPECT_CALL(*mock_cast_socket_service_, OpenSocketInternal(_, _, _, _))
+      .Times(0);
+  fake_network_info_ = fake_ethernet_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  content::RunAllBlockingPoolTasksUntilIdle();
+}
+
+TEST_F(CastMediaSinkServiceImplTest, UnknownNetworkNoCache) {
+  // Without any network notification here, network ID will remain __unknown__
+  // and the cache shouldn't save any of these sinks.
+  MediaSinkInternal sink1 = CreateCastSink(1);
+  MediaSinkInternal sink2 = CreateCastSink(2);
+  net::IPEndPoint ip_endpoint1 = CreateIPEndPoint(1);
+  net::IPEndPoint ip_endpoint2 = CreateIPEndPoint(2);
+  std::vector<MediaSinkInternal> sink_list1{sink1, sink2};
+
+  // Resolution will succeed for both sinks.
+  cast_channel::MockCastSocket socket1;
+  cast_channel::MockCastSocket socket2;
+  socket1.SetIPEndpoint(ip_endpoint1);
+  socket1.set_id(1);
+  socket2.SetIPEndpoint(ip_endpoint2);
+  socket2.set_id(2);
+  ExpectOpenSocketInternal(&socket1);
+  ExpectOpenSocketInternal(&socket2);
+  media_sink_service_impl_.OpenChannels(sink_list1);
+
+  // Network is reported as disconnected but discover a new device.
+  fake_network_info_.clear();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  content::RunAllBlockingPoolTasksUntilIdle();
+  observer().OnError(socket1, cast_channel::ChannelError::CAST_SOCKET_ERROR);
+  observer().OnError(socket2, cast_channel::ChannelError::CAST_SOCKET_ERROR);
+
+  MediaSinkInternal sink3 = CreateCastSink(3);
+  net::IPEndPoint ip_endpoint3 = CreateIPEndPoint(3);
+  std::vector<MediaSinkInternal> sink_list2{sink3};
+
+  cast_channel::MockCastSocket socket3;
+  socket3.SetIPEndpoint(ip_endpoint3);
+  socket3.set_id(3);
+  ExpectOpenSocketInternal(&socket3);
+  media_sink_service_impl_.OpenChannels(sink_list2);
+
+  // Connecting to a network whose ID resolves to __unknown__ shouldn't pull any
+  // cache items from another unknown network.
+  EXPECT_CALL(*mock_cast_socket_service_, OpenSocketInternal(_, _, _, _))
+      .Times(0);
+  fake_network_info_ = fake_unknown_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  // Similarly, disconnecting from the network shouldn't pull any cache items.
+  fake_network_info_.clear();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  content::RunAllBlockingPoolTasksUntilIdle();
+}
+
+TEST_F(CastMediaSinkServiceImplTest, CacheUpdatedForKnownNetwork) {
+  fake_network_info_ = fake_ethernet_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  MediaSinkInternal sink1 = CreateCastSink(1);
+  MediaSinkInternal sink2 = CreateCastSink(2);
+  net::IPEndPoint ip_endpoint1 = CreateIPEndPoint(1);
+  net::IPEndPoint ip_endpoint2 = CreateIPEndPoint(2);
+  std::vector<MediaSinkInternal> sink_list1{sink1, sink2};
+
+  // Resolution will succeed for both sinks.
+  cast_channel::MockCastSocket socket1;
+  cast_channel::MockCastSocket socket2;
+  socket1.SetIPEndpoint(ip_endpoint1);
+  socket1.set_id(1);
+  socket2.SetIPEndpoint(ip_endpoint2);
+  socket2.set_id(2);
+  ExpectOpenSocketInternal(&socket1);
+  ExpectOpenSocketInternal(&socket2);
+  media_sink_service_impl_.OpenChannels(sink_list1);
+
+  // Connect to a new network with different sinks.
+  fake_network_info_.clear();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  fake_network_info_ = fake_wifi_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  content::RunAllBlockingPoolTasksUntilIdle();
+  observer().OnError(socket1, cast_channel::ChannelError::CAST_SOCKET_ERROR);
+  observer().OnError(socket2, cast_channel::ChannelError::CAST_SOCKET_ERROR);
+
+  MediaSinkInternal sink3 = CreateCastSink(3);
+  net::IPEndPoint ip_endpoint3 = CreateIPEndPoint(3);
+  std::vector<MediaSinkInternal> sink_list2{sink3};
+
+  cast_channel::MockCastSocket socket3;
+  socket3.SetIPEndpoint(ip_endpoint3);
+  socket3.set_id(3);
+  ExpectOpenSocketInternal(&socket3);
+  media_sink_service_impl_.OpenChannels(sink_list2);
+
+  // Reconnecting to the previous ethernet network should restore the same sinks
+  // from the cache and attempt to resolve them.  |sink3| is also lost.
+  fake_network_info_.clear();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  observer().OnError(socket3, cast_channel::ChannelError::CAST_SOCKET_ERROR);
+
+  // Resolution will fail for cached sinks.
+  socket1.SetErrorState(cast_channel::ChannelError::CONNECT_ERROR);
+  socket2.SetErrorState(cast_channel::ChannelError::CONNECT_ERROR);
+  ExpectOpenSocketInternal(&socket1);
+  ExpectOpenSocketInternal(&socket2);
+  fake_network_info_ = fake_ethernet_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  // A new sink is found on the ethernet network.
+  MediaSinkInternal sink4 = CreateCastSink(4);
+  net::IPEndPoint ip_endpoint4 = CreateIPEndPoint(4);
+  std::vector<MediaSinkInternal> sink_list3{sink4};
+
+  cast_channel::MockCastSocket socket4;
+  socket4.SetIPEndpoint(ip_endpoint4);
+  socket4.set_id(4);
+  ExpectOpenSocketInternal(&socket4);
+  media_sink_service_impl_.OpenChannels(sink_list3);
+
+  // Disconnect from the network and lose sinks.
+  fake_network_info_.clear();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  content::RunAllBlockingPoolTasksUntilIdle();
+  observer().OnError(socket4, cast_channel::ChannelError::CAST_SOCKET_ERROR);
+
+  // Reconnect and expect only |sink4| to be cached.
+  EXPECT_CALL(*mock_cast_socket_service_,
+              OpenSocketInternal(ip_endpoint4, _, _, _));
+  fake_network_info_ = fake_ethernet_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  content::RunAllBlockingPoolTasksUntilIdle();
+}
+
+TEST_F(CastMediaSinkServiceImplTest, CacheDialDiscoveredSinks) {
+  fake_network_info_ = fake_ethernet_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  MediaSinkInternal sink1_cast = CreateCastSink(1);
+  MediaSinkInternal sink2_dial = CreateDialSink(2);
+  net::IPEndPoint ip_endpoint1 = CreateIPEndPoint(1);
+  net::IPEndPoint ip_endpoint2(sink2_dial.dial_data().ip_address,
+                               CastMediaSinkServiceImpl::kCastControlPort);
+  std::vector<MediaSinkInternal> sink_list1{sink1_cast};
+
+  // Resolution will succeed for both sinks.
+  cast_channel::MockCastSocket socket1;
+  cast_channel::MockCastSocket socket2;
+  socket1.SetIPEndpoint(ip_endpoint1);
+  socket1.set_id(1);
+  socket2.SetIPEndpoint(ip_endpoint2);
+  socket2.set_id(2);
+  ExpectOpenSocketInternal(&socket1);
+  ExpectOpenSocketInternal(&socket2);
+  media_sink_service_impl_.OpenChannels(sink_list1);
+  media_sink_service_impl_.OnDialSinkAdded(sink2_dial);
+
+  // Connect to a new network with different sinks.
+  fake_network_info_.clear();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  fake_network_info_ = fake_wifi_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  content::RunAllBlockingPoolTasksUntilIdle();
+  observer().OnError(socket1, cast_channel::ChannelError::CAST_SOCKET_ERROR);
+  observer().OnError(socket2, cast_channel::ChannelError::CAST_SOCKET_ERROR);
+
+  MediaSinkInternal sink3_cast = CreateCastSink(3);
+  MediaSinkInternal sink4_dial = CreateDialSink(4);
+  net::IPEndPoint ip_endpoint3 = CreateIPEndPoint(3);
+  net::IPEndPoint ip_endpoint4(sink4_dial.dial_data().ip_address,
+                               CastMediaSinkServiceImpl::kCastControlPort);
+  std::vector<MediaSinkInternal> sink_list2{sink3_cast};
+
+  cast_channel::MockCastSocket socket3;
+  cast_channel::MockCastSocket socket4;
+  socket3.SetIPEndpoint(ip_endpoint3);
+  socket3.set_id(3);
+  socket4.SetIPEndpoint(ip_endpoint4);
+  socket4.set_id(4);
+  ExpectOpenSocketInternal(&socket3);
+  ExpectOpenSocketInternal(&socket4);
+  media_sink_service_impl_.OpenChannels(sink_list2);
+  media_sink_service_impl_.OnDialSinkAdded(sink4_dial);
+
+  // Reconnecting to the previous ethernet network should restore the same sinks
+  // from the cache and attempt to resolve them.
+  fake_network_info_.clear();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  EXPECT_CALL(*mock_cast_socket_service_,
+              OpenSocketInternal(ip_endpoint1, _, _, _));
+  EXPECT_CALL(*mock_cast_socket_service_,
+              OpenSocketInternal(ip_endpoint2, _, _, _));
+  fake_network_info_ = fake_ethernet_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  content::RunAllBlockingPoolTasksUntilIdle();
+}
+
+TEST_F(CastMediaSinkServiceImplTest, DualDiscoveryDoesntDuplicateCacheItems) {
+  fake_network_info_ = fake_ethernet_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  // The same sink will be discovered via dial and mdns.
+  MediaSinkInternal sink1_cast = CreateCastSink(1);
+  MediaSinkInternal sink1_dial = CreateDialSink(1);
+  net::IPEndPoint ip_endpoint1_cast = CreateIPEndPoint(1);
+  net::IPEndPoint ip_endpoint1_dial(sink1_dial.dial_data().ip_address,
+                                    CastMediaSinkServiceImpl::kCastControlPort);
+  std::vector<MediaSinkInternal> sink_list1{sink1_cast};
+
+  // Dial discovery will succeed first.
+  cast_channel::MockCastSocket socket1_dial;
+  socket1_dial.SetIPEndpoint(ip_endpoint1_dial);
+  socket1_dial.set_id(1);
+  ExpectOpenSocketInternal(&socket1_dial);
+  media_sink_service_impl_.OnDialSinkAdded(sink1_dial);
+
+  // The same sink is then discovered via mdns.
+  cast_channel::MockCastSocket socket1_cast;
+  socket1_cast.SetIPEndpoint(ip_endpoint1_cast);
+  socket1_cast.set_id(2);
+  ExpectOpenSocketInternal(&socket1_cast);
+  media_sink_service_impl_.OpenChannels(sink_list1);
+
+  // Connect to a new network with different sinks.
+  fake_network_info_.clear();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  fake_network_info_ = fake_wifi_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  content::RunAllBlockingPoolTasksUntilIdle();
+  observer().OnError(socket1_cast,
+                     cast_channel::ChannelError::CAST_SOCKET_ERROR);
+  observer().OnError(socket1_dial,
+                     cast_channel::ChannelError::CAST_SOCKET_ERROR);
+
+  MediaSinkInternal sink2_cast = CreateCastSink(2);
+  net::IPEndPoint ip_endpoint2 = CreateIPEndPoint(2);
+  std::vector<MediaSinkInternal> sink_list2{sink2_cast};
+
+  cast_channel::MockCastSocket socket2;
+  socket2.SetIPEndpoint(ip_endpoint2);
+  socket2.set_id(3);
+  ExpectOpenSocketInternal(&socket2);
+  media_sink_service_impl_.OpenChannels(sink_list2);
+
+  // Reconnecting to the previous ethernet network should restore the same sinks
+  // from the cache and attempt to resolve them.
+  fake_network_info_.clear();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  EXPECT_CALL(*mock_cast_socket_service_,
+              OpenSocketInternal(ip_endpoint1_cast, _, _, _));
+  fake_network_info_ = fake_ethernet_info_;
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 }  // namespace media_router

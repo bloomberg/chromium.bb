@@ -17,9 +17,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
 using ::testing::Return;
 using ::testing::SaveArg;
+using ::testing::_;
 
 namespace {
 
@@ -54,8 +54,11 @@ class MockCastMediaSinkServiceImpl : public CastMediaSinkServiceImpl {
  public:
   MockCastMediaSinkServiceImpl(
       const OnSinksDiscoveredCallback& callback,
-      cast_channel::CastSocketService* cast_socket_service)
-      : CastMediaSinkServiceImpl(callback, cast_socket_service) {}
+      cast_channel::CastSocketService* cast_socket_service,
+      DiscoveryNetworkMonitor* network_monitor)
+      : CastMediaSinkServiceImpl(callback,
+                                 cast_socket_service,
+                                 network_monitor) {}
   ~MockCastMediaSinkServiceImpl() override {}
 
   MOCK_METHOD0(Start, void());
@@ -69,7 +72,8 @@ class CastMediaSinkServiceTest : public ::testing::Test {
       : mock_cast_socket_service_(new cast_channel::MockCastSocketService()),
         mock_media_sink_service_impl_(
             new MockCastMediaSinkServiceImpl(mock_sink_discovered_io_cb_.Get(),
-                                             mock_cast_socket_service_.get())),
+                                             mock_cast_socket_service_.get(),
+                                             discovery_network_monitor_)),
         media_sink_service_(new CastMediaSinkService(
             mock_sink_discovered_ui_cb_.Get(),
             std::unique_ptr<CastMediaSinkServiceImpl,
@@ -79,6 +83,12 @@ class CastMediaSinkServiceTest : public ::testing::Test {
 
  protected:
   const content::TestBrowserThreadBundle thread_bundle_;
+
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_ =
+      base::WrapUnique(net::NetworkChangeNotifier::CreateMock());
+  DiscoveryNetworkMonitor* const discovery_network_monitor_ =
+      DiscoveryNetworkMonitor::GetInstance();
+
   TestingProfile profile_;
 
   base::MockCallback<MediaSinkService::OnSinksDiscoveredCallback>
