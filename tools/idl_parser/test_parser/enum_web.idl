@@ -26,29 +26,6 @@ symatics should exist.  This is an exact match.
 */
 
 /** TREE
- *Enum(MealType1)
- *  EnumItem(rice)
- *  EnumItem(noodles)
- *  EnumItem(other)
-*/
-enum MealType1 {
-  /** BUILD EnumItem (rice) */
-  "rice",
-  /** BUILD EnumItem (noodles) */
-  "noodles",
-  /** BUILD EnumItem(other) */
-  "other"
-};
-
-/** BUILD Error(Enum missing name.) */
-/** ERROR Enum missing name. */
-enum {
-  "rice",
-  "noodles",
-  "other"
-};
-
-/** TREE
  *Enum(MealType2)
  *  EnumItem(rice)
  *  EnumItem(noodles)
