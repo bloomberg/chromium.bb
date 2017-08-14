@@ -9,6 +9,7 @@ import android.app.Application;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.internal.runner.RunnerArgs;
 import android.support.test.internal.runner.TestExecutor;
 import android.support.test.internal.runner.TestRequest;
@@ -46,8 +47,6 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
 
     private static final String TAG = "BaseJUnitRunner";
 
-    private Bundle mArguments;
-
     @Override
     public Application newApplication(ClassLoader cl, String className, Context context)
             throws ClassNotFoundException, IllegalAccessException, InstantiationException {
@@ -55,12 +54,6 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                 getContext(), getTargetContext()));
         BaseChromiumRunnerCommon.reorderDexPathElements(cl, getContext(), getTargetContext());
         return super.newApplication(cl, className, context);
-    }
-
-    @Override
-    public void onCreate(Bundle arguments) {
-        super.onCreate(arguments);
-        mArguments = arguments;
     }
 
     /**
@@ -72,10 +65,21 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
      */
     @Override
     public void onStart() {
-        if (mArguments != null && mArguments.getString(LIST_ALL_TESTS_FLAG) != null) {
-            Log.w(TAG, "Runner will list out tests info in JSON without running tests");
+        Bundle arguments = InstrumentationRegistry.getArguments();
+        if (arguments != null && arguments.getString(LIST_ALL_TESTS_FLAG) != null) {
+            Log.w(TAG,
+                    String.format("Runner will list out tests info in JSON without running tests. "
+                                    + "Arguments: %s",
+                            arguments.toString()));
             listTests(); // Intentionally not calling super.onStart() to avoid additional work.
         } else {
+            if (arguments != null && arguments.getString(ARGUMENT_LOG_ONLY) != null) {
+                Log.e(TAG,
+                        String.format("Runner will log the tests without running tests."
+                                        + " If this cause a test run to fail, please report to"
+                                        + " crbug.com/754015. Arguments: %s",
+                                arguments.toString()));
+            }
             super.onStart();
         }
     }
@@ -86,12 +90,12 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         try {
             TestExecutor.Builder executorBuilder = new TestExecutor.Builder(this);
             executorBuilder.addRunListener(listener);
-            Bundle junit3Arguments = new Bundle(mArguments);
+            Bundle junit3Arguments = new Bundle(InstrumentationRegistry.getArguments());
             junit3Arguments.putString(ARGUMENT_NOT_ANNOTATION, "org.junit.runner.RunWith");
             TestRequest listJUnit3TestRequest = createListTestRequest(junit3Arguments);
             results = executorBuilder.build().execute(listJUnit3TestRequest);
 
-            Bundle junit4Arguments = new Bundle(mArguments);
+            Bundle junit4Arguments = new Bundle(InstrumentationRegistry.getArguments());
             junit4Arguments.putString(ARGUMENT_ANNOTATION, "org.junit.runner.RunWith");
 
             // Do not use Log runner from android test support.
@@ -103,7 +107,8 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
 
             TestRequest listJUnit4TestRequest = createListTestRequest(junit4Arguments);
             results.putAll(executorBuilder.build().execute(listJUnit4TestRequest));
-            listener.saveTestsToJson(mArguments.getString(LIST_ALL_TESTS_FLAG));
+            listener.saveTestsToJson(
+                    InstrumentationRegistry.getArguments().getString(LIST_ALL_TESTS_FLAG));
         } catch (IOException | RuntimeException e) {
             String msg = "Fatal exception when running tests";
             Log.e(TAG, msg, e);

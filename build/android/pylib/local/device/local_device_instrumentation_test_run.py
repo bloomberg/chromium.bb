@@ -597,7 +597,12 @@ class LocalDeviceInstrumentationTestRun(
         extras['package'] = '.'.join(test_package.split('.')[:2])
         extras[_EXTRA_TEST_LIST] = dev_test_list_json.name
         target = '%s/%s' % (test_package, junit4_runner_class)
-        dev.StartInstrumentation(target, extras=extras)
+        test_list_run_output = dev.StartInstrumentation(
+            target, extras=extras)
+        if any(test_list_run_output):
+          logging.error('Unexpected output while listing tests:')
+          for line in test_list_run_output:
+            logging.error('  %s', line)
         with tempfile_ext.NamedTemporaryDirectory() as host_dir:
           host_file = os.path.join(host_dir, 'list_tests.json')
           dev.PullFile(dev_test_list_json.name, host_file)
