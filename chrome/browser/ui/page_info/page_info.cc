@@ -19,7 +19,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
@@ -38,6 +37,7 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
@@ -78,6 +78,10 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
+#endif
+
+#if defined(SAFE_BROWSING_DB_LOCAL)
+#include "components/safe_browsing/password_protection/password_protection_service.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -232,6 +236,13 @@ void GetSiteIdentityByMaliciousContentStatus(
       *details =
           l10n_util::GetStringUTF16(IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
       break;
+    case security_state::MALICIOUS_CONTENT_STATUS_PASSWORD_REUSE:
+#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+      *status = PageInfo::SITE_IDENTITY_STATUS_PASSWORD_REUSE;
+      *details =
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
+#endif
+      break;
   }
 }
 
@@ -275,7 +286,20 @@ PageInfo::PageInfo(PageInfoUI* ui,
           ChromeSSLHostStateDelegateFactory::GetForProfile(profile)),
       did_revoke_user_ssl_decisions_(false),
       profile_(profile),
-      security_level_(security_state::NONE) {
+      security_level_(security_state::NONE),
+#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+      password_protection_service_(nullptr),
+#endif
+      show_change_password_buttons_(false) {
+#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+  safe_browsing::SafeBrowsingService* sb_service =
+      g_browser_process->safe_browsing_service();
+  if (sb_service && sb_service->enabled_by_prefs()) {
+    password_protection_service_ =
+        sb_service->GetPasswordProtectionService(profile_);
+  }
+#endif
+
   Init(url, security_info);
 
   PresentSitePermissions();
@@ -439,6 +463,26 @@ void PageInfo::OpenSiteSettingsView() {
   RecordPageInfoAction(PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED);
 }
 
+void PageInfo::OnChangePasswordButtonPressed(
+    content::WebContents* web_contents) {
+#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+  DCHECK(password_protection_service_);
+  password_protection_service_->OnWarningDone(
+      web_contents, safe_browsing::PasswordProtectionService::PAGE_INFO,
+      safe_browsing::PasswordProtectionService::CHANGE_PASSWORD);
+#endif
+}
+
+void PageInfo::OnWhitelistPasswordReuseButtonPressed(
+    content::WebContents* web_contents) {
+#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+  DCHECK(password_protection_service_);
+  password_protection_service_->OnWarningDone(
+      web_contents, safe_browsing::PasswordProtectionService::PAGE_INFO,
+      safe_browsing::PasswordProtectionService::MARK_AS_LEGITIMATE);
+#endif
+}
+
 void PageInfo::Init(const GURL& url,
                     const security_state::SecurityInfo& security_info) {
 #if !defined(OS_ANDROID)
@@ -487,6 +531,9 @@ void PageInfo::Init(const GURL& url,
     GetSiteIdentityByMaliciousContentStatus(
         security_info.malicious_content_status, &site_identity_status_,
         &site_identity_details_);
+    show_change_password_buttons_ =
+        security_info.malicious_content_status ==
+        security_state::MALICIOUS_CONTENT_STATUS_PASSWORD_REUSE;
   } else if (certificate_ &&
              (!net::IsCertStatusError(security_info.cert_status) ||
               net::IsCertStatusMinorError(security_info.cert_status))) {
@@ -806,5 +853,12 @@ void PageInfo::PresentSiteIdentity() {
   info.identity_status_description = UTF16ToUTF8(site_identity_details_);
   info.certificate = certificate_;
   info.show_ssl_decision_revoke_button = show_ssl_decision_revoke_button_;
+  info.show_change_password_buttons = show_change_password_buttons_;
   ui_->SetIdentityInfo(info);
+#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+  if (password_protection_service_ && show_change_password_buttons_) {
+    password_protection_service_->OnWarningShown(
+        web_contents(), safe_browsing::PasswordProtectionService::PAGE_INFO);
+  }
+#endif
 }

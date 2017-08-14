@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -20,6 +21,10 @@ class WebContents;
 
 namespace net {
 class X509Certificate;
+}
+
+namespace safe_browsing {
+class PasswordProtectionService;
 }
 
 class ChromeSSLHostStateDelegate;
@@ -79,10 +84,12 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
     // is using a deprecated signature algorithm.
     SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM,
     // The website has been flagged by Safe Browsing as dangerous for
-    // containing malware, social engineering, or unwanted software.
+    // containing malware, social engineering, unwanted software, or password
+    // reuse on a low reputation site.
     SITE_IDENTITY_STATUS_MALWARE,
     SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING,
     SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE,
+    SITE_IDENTITY_STATUS_PASSWORD_REUSE,
   };
 
   // UMA statistics for PageInfo. Do not reorder or remove existing
@@ -144,6 +151,13 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
 
   // Handles opening the link to show more site settings and records the event.
   void OpenSiteSettingsView();
+
+  // This method is called when the user pressed "Change password" button.
+  void OnChangePasswordButtonPressed(content::WebContents* web_contents);
+
+  // This method is called when the user pressed "Mark as legitimate" button.
+  void OnWhitelistPasswordReuseButtonPressed(
+      content::WebContents* web_contents);
 
   // Accessors.
   SiteConnectionStatus site_connection_status() const {
@@ -239,6 +253,17 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
   Profile* profile_;
 
   security_state::SecurityLevel security_level_;
+
+#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+  // Used to handle changing password, and whitelisting site.
+  safe_browsing::PasswordProtectionService* password_protection_service_;
+#endif
+
+  // Set when the user ignored the password reuse modal warning dialog. When
+  // |show_change_password_buttons_| is true, the page identity area of the page
+  // info will include buttons to change corresponding password, and to
+  // whitelist current site.
+  bool show_change_password_buttons_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfo);
 };

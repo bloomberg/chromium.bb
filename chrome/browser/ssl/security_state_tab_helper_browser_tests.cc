@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/browser.h"
@@ -25,6 +26,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/features.h"
+#include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/security_state/content/ssl_status_input_event_data.h"
 #include "components/security_state/core/security_state.h"
 #include "components/security_state/core/switches.h"
@@ -842,6 +845,83 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(content::SSLStatus::NORMAL_CONTENT, entry->GetSSL().content_status);
+}
+
+// Tests the security level and malicious content status for password reuse
+// threat type.
+IN_PROC_BROWSER_TEST_F(
+    SecurityStateTabHelperTest,
+    VerifyPasswordReuseMaliciousContentAndSecurityLevelWhenFeatureEnabled) {
+  // Setup https server. This makes sure that the DANGEROUS security level is
+  // not caused by any certificate error rather than the password reuse SB
+  // threat type.
+  SetUpMockCertVerifierForHttpsServer(0, net::OK);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      safe_browsing::kGoogleBrandedPhishingWarning);
+
+  SecurityStyleTestObserver observer(contents);
+
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  // Update security state of the current page to match
+  // SB_THREAT_TYPE_PASSWORD_REUSE.
+  safe_browsing::PasswordProtectionService* service =
+      g_browser_process->safe_browsing_service()->GetPasswordProtectionService(
+          browser()->profile());
+  service->UpdateSecurityState(safe_browsing::SB_THREAT_TYPE_PASSWORD_REUSE,
+                               contents);
+  observer.WaitForDidChangeVisibleSecurityState();
+
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_PASSWORD_REUSE,
+            security_info.malicious_content_status);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SecurityStateTabHelperTest,
+    VerifyPasswordReuseMaliciousContentAndSecurityLevelWhenFeatureDisabled) {
+  // Setup https server. This makes sure that the DANGEROUS security level is
+  // not caused by any certificate error.
+  SetUpMockCertVerifierForHttpsServer(0, net::OK);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+
+  // safe_browsing::kGoogleBrandedPhishingWarning feature is disabled by default
+
+  SecurityStyleTestObserver observer(contents);
+
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  // Update security state of the current page to match
+  // SB_THREAT_TYPE_PASSWORD_REUSE.
+  safe_browsing::PasswordProtectionService* service =
+      g_browser_process->safe_browsing_service()->GetPasswordProtectionService(
+          browser()->profile());
+  service->UpdateSecurityState(safe_browsing::SB_THREAT_TYPE_PASSWORD_REUSE,
+                               contents);
+  observer.WaitForDidChangeVisibleSecurityState();
+
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::SECURE, security_info.security_level);
+  EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
+            security_info.malicious_content_status);
 }
 
 const char kReportURI[] = "https://report-hpkp.test";

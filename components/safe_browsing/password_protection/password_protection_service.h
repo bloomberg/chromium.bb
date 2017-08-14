@@ -201,9 +201,13 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // If we want to show softer warnings based on Finch parameters.
   static bool ShouldShowSofterWarning();
 
+  virtual void UpdateSecurityState(safe_browsing::SBThreatType threat_type,
+                                   content::WebContents* web_contents) {}
+
  protected:
   friend class PasswordProtectionRequest;
   FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest, VerifyCanSendPing);
+
   // Chrome can send password protection ping if it is allowed by Finch config
   // and if Safe Browsing can compute reputation of |main_frame_url| (e.g.
   // Safe Browsing is not able to compute reputation of a private IP or
@@ -272,9 +276,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const LoginReputationClientResponse*) = 0;
 
   void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);
-
-  virtual void UpdateSecurityState(safe_browsing::SBThreatType threat_type,
-                                   content::WebContents* web_contents) {}
 
   HostContentSettingsMap* content_settings() const { return content_settings_; }
 

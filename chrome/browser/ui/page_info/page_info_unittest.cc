@@ -344,6 +344,20 @@ TEST_F(PageInfoTest, UnwantedSoftware) {
             page_info()->site_identity_status());
 }
 
+#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+TEST_F(PageInfoTest, PasswordReuse) {
+  security_info_.security_level = security_state::DANGEROUS;
+  security_info_.malicious_content_status =
+      security_state::MALICIOUS_CONTENT_STATUS_PASSWORD_REUSE;
+  SetDefaultUIExpectations(mock_ui());
+
+  EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
+            page_info()->site_connection_status());
+  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_PASSWORD_REUSE,
+            page_info()->site_identity_status());
+}
+#endif
+
 TEST_F(PageInfoTest, HTTPConnection) {
   SetDefaultUIExpectations(mock_ui());
   EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,

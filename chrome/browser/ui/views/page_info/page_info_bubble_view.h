@@ -76,6 +76,18 @@ class PageInfoBubbleView : public content::WebContentsObserver,
     BUBBLE_INTERNAL_PAGE
   };
 
+  enum PageInfoBubbleViewID {
+    VIEW_ID_NONE = 0,
+    VIEW_ID_PAGE_INFO_BUTTON_CLOSE,
+    VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD,
+    VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE,
+    VIEW_ID_PAGE_INFO_LABEL_SECURITY_DETAILS,
+    VIEW_ID_PAGE_INFO_LABEL_RESET_CERTIFICATE_DECISIONS,
+    VIEW_ID_PAGE_INFO_LINK_COOKIE_DIALOG,
+    VIEW_ID_PAGE_INFO_LINK_SITE_SETTINGS,
+    VIEW_ID_PAGE_INFO_LINK_CERTIFICATE_VIEWER,
+  };
+
   // Creates the appropriate page info bubble for the given |url|.
   static views::BubbleDialogDelegateView* CreatePageInfoBubble(
       Browser* browser,
