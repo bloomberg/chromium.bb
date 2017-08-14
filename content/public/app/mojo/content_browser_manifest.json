@@ -4,12 +4,13 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
+        // Interfaces needed by a generic client of content browser.
+        "app": [
+          "memory_instrumentation::mojom::Coordinator"
+        ],
         "gpu": [
           "content::mojom::FieldTrialRecorder",
           "media::mojom::AndroidOverlayProvider"
-        ],
-        "memory_instrumentation": [
-          "memory_instrumentation::mojom::Coordinator"
         ],
         "plugin": [
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
@@ -54,10 +55,6 @@
         ],
         "service_manager:service_factory": [
           "service_manager::mojom::ServiceFactory"
-        ],
-        "utility": [
-          "discardable_memory::mojom::DiscardableSharedMemoryManager",
-          "memory_instrumentation::mojom::Coordinator"
         ]
       },
       "requires": {
@@ -67,7 +64,6 @@
         "content_browser": [
           "ash",
           "display",
-          "memory_instrumentation",
           "url_keyed_metrics",
           "geolocation_config"
         ],

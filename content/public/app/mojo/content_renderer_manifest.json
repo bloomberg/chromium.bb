@@ -19,7 +19,8 @@
         ]
       },
       "requires": {
-        "content_browser": [ "memory_instrumentation", "renderer" ],
+        "*": [ "app" ],
+        "content_browser": [ "renderer" ],
         "device": [
           "device:battery_monitor",
           "device:power_monitor",
