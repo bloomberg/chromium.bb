@@ -154,6 +154,7 @@ Chromoting</translation>
 <translation id="4572065712096155137">Akses</translation>
 <translation id="4573676252416618192">Hos Desktop
 Jauh Chrome</translation>
+<translation id="4592037108270173918">Caj data mungkin dikenakan apabila menyambung ke peranti melalui rangkaian mudah alih. Adakah anda mahu meneruskan?</translation>
 <translation id="4619978527973181021">Terima dan Pasang</translation>
 <translation id="4635770493235256822">Peranti jauh</translation>
 <translation id="4660011489602794167">Tunjukkan papan kekunci</translation>
@@ -180,6 +181,12 @@ Jauh Chrome</translation>
 <translation id="5156271271724754543">Sila masukkan PIN yang sama dalam kedua-dua kotak.</translation>
 <translation id="5170982930780719864">Id hos tidak sah.</translation>
 <translation id="518094545883702183">Maklumat ini hanya digunakan untuk mendiagnosis masalah yang anda laporkan, hanya tersedia kepada seseorang yang menyiasat laporan anda dan dikekalkan selama tidak lebih daripada 30 hari.</translation>
+<translation id="5196958630269420102">Akses komputer anda dengan selamat daripada peranti iOS anda.
+
+• Pada setiap komputer anda, sediakan akses jauh menggunakan apl Desktop Jauh Chrome daripada Gedung Web Chrome: https://chrome.google.com/remotedesktop
+• Pada peranti iOS anda, buka apl dan ketik mana-mana komputer yang berada dalam talian untuk menyambung.
+
+Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google  (http://goo.gl/SyrVzj) dan Dasar Privasi Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="5204575267916639804">Soalan Lazim</translation>
 <translation id="5222676887888702881">Log keluar</translation>
 <translation id="5254120496627797685">Tindakan meninggalkan halaman ini akan menamatkan sesi Desktop Jauh Chrome anda.</translation>
@@ -235,6 +242,11 @@ Jauh Chrome</translation>
 <translation id="6570205395680337606">Tetapkan semula aplikasi. Anda akan kehilangan sebarang kerja yang belum disimpan.</translation>
 <translation id="6572345186230665992">Untuk Mac (OS X Mavericks 10.9 ke atas)</translation>
 <translation id="6583902294974160967">Sokongan</translation>
+<translation id="6598484667010442494">Desktop Jauh Chrome
+Desktop Jauh
+PC Jauh
+Komputer Jauh
+Akses Jauh</translation>
 <translation id="6612717000975622067">Hantar Ctrl-Alt-Del</translation>
 <translation id="6668065415969892472">PIN anda telah dikemas kini.</translation>
 <translation id="6681800064886881394">Hak Cipta 2013 Google Inc. Hak Cipta Terpelihara.</translation>
@@ -271,6 +283,7 @@ Jauh Chrome</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7665369617277396874">Tambah akaun</translation>
 <translation id="7672203038394118626">Sambungan jauh untuk komputer ini telah dilumpuhkan.</translation>
+<translation id="7678209621226490279">Dokkan di Kiri</translation>
 <translation id="7693372326588366043">Muat semula senarai hos</translation>
 <translation id="7782471917492991422">Sila semak tetapan pengurusan kuasa komputer anda dan pastikan bahawa komputer anda tidak dikonfigurasikan untuk tidur apabila melahu.</translation>
 <translation id="7810127880729796595">Tunjukkan statistik (sambungan: <ph name="QUALITY" />)</translation>
@@ -278,6 +291,7 @@ Jauh Chrome</translation>
 <translation id="7868137160098754906">Sila masukkan PIN anda untuk komputer jauh.</translation>
 <translation id="7869445566579231750">Anda tidak mempunyai kebenaran untuk menjalankan aplikasi ini.</translation>
 <translation id="7895403300744144251">Dasar keselamatan pada komputer jauh tidak membenarkan sambungan daripada akaun anda.</translation>
+<translation id="7936528439960309876">Dokkan di Kanan</translation>
 <translation id="7948001860594368197">Pilihan skrin</translation>
 <translation id="7970576581263377361">Pengesahan gagal. Sila log masuk ke Chromium sekali lagi.</translation>
 <translation id="7981525049612125370">Sesi jauh telah tamat tempoh.</translation>

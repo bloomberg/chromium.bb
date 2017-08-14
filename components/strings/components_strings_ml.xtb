@@ -130,7 +130,6 @@
 <translation id="1973335181906896915">സീരിയലൈസേഷൻ പിശക്</translation>
 <translation id="1974060860693918893">നൂതനം</translation>
 <translation id="1978555033938440688">ഫേംവെയർ പതിപ്പ്</translation>
-<translation id="1995859865337580572">നിങ്ങളുടെ CVC പരിശോധിച്ചുറപ്പിക്കുക</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{കൂടാതെ 1 കൂടി}other{എന്നിവയും # എണ്ണവും കൂടി}}</translation>
 <translation id="2025186561304664664">പ്രോക്സി സ്വയമേവ കോൺഫിഗർ ചെയ്യാൻ സജ്ജമാക്കി.</translation>
 <translation id="2030481566774242610">നിങ്ങൾ ഉദ്ദേശിച്ചത് <ph name="LINK" /> ആണോ?</translation>
@@ -833,6 +832,7 @@
 <translation id="7752995774971033316">നിയന്ത്രിക്കാനാകാത്തത്</translation>
 <translation id="7755287808199759310">നിങ്ങൾക്ക് വേണ്ടി ഇത് അൺബ്ലോക്കുചെയ്യാൻ രക്ഷിതാവിന് കഴിയും</translation>
 <translation id="7758069387465995638">ഫയർവാളോ ആന്റി വൈറസ് സോഫ്‌റ്റ്‌വെയറോ കണക്ഷൻ ബ്ലോക്കുചെയ്‌തിട്ടുണ്ടാകാം.</translation>
+<translation id="7759163816903619567">പ്രദർശിപ്പിച്ച ഡൊമെയ്ന്‍:</translation>
 <translation id="7761701407923456692">സെര്‍വറിന്‍റെ സര്‍ട്ടിഫിക്കറ്റ് URL മായി പൊരുത്തപ്പെടുന്നില്ല.</translation>
 <translation id="7763386264682878361">പേയ്‌മെന്റ് മാനിഫെസ്‌റ്റ് പാർസർ</translation>
 <translation id="7764225426217299476">വിലാസം ചേർക്കുക</translation>

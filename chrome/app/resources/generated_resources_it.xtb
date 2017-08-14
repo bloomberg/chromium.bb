@@ -154,6 +154,7 @@
 <translation id="1225211345201532184">Elemento 5 della shelf</translation>
 <translation id="1225404570112441414">Aggiungi questo sito al tuo shelf per utilizzarlo in qualsiasi momento.</translation>
 <translation id="1227507814927581609">Autenticazione non riuscita durante la connessione a "<ph name="DEVICE_NAME" />".</translation>
+<translation id="1230807973377071856">menu di sistema</translation>
 <translation id="1232569758102978740">Senza titolo</translation>
 <translation id="1233721473400465416">Lingua</translation>
 <translation id="1234808891666923653">Service Workers</translation>
@@ -1081,7 +1082,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2581475589551312226">Effettua automaticamente il backup e il ripristino dei dati delle app Play su Google Drive. <ph name="BEGIN_LINK1" />Ulteriori informazioni<ph name="END_LINK1" /></translation>
 <translation id="2581601588594682520">Rinomina cartella</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (piattaforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2585116156172706706">Questa estensione potrebbe essere stata aggiunta a tua insaputa.</translation>
 <translation id="2585300050980572691">Impostazioni di ricerca predefinite</translation>
 <translation id="2587203970400270934">Codice operatore:</translation>
 <translation id="2587922270115112871">La creazione di un utente supervisionato non comporta la creazione di un account Google e i relativi dati e le impostazioni non saranno disponibili su altri dispositivi grazie alla Sincronizzazione Google Chrome. Un utente supervisionato viene configurato soltanto su questo dispositivo.</translation>
@@ -1541,6 +1541,7 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="3227137524299004712">Microfono</translation>
 <translation id="32279126412636473">Ricarica (⌘R)</translation>
 <translation id="3228679360002431295">Connessione e verifica in corso<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3229922550070982305">play/pausa</translation>
 <translation id="3232318083971127729">Valore:</translation>
 <translation id="3236289833370040187">La proprietà verrà trasferita a <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> ora è un utente supervisionato</translation>
@@ -1852,6 +1853,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="367645871420407123">lascia vuoto questo campo se desideri impostare la password root sul valore dell'immagine di test predefinita</translation>
 <translation id="3678156199662914018">Estensione: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Grazie per il tuo feedback. Adesso sei offline; il tuo rapporto verrà inviato in un secondo momento.</translation>
+<translation id="3683023058278427253">Abbiamo rilevato diversi tipi di licenza per il tuo dominio. Scegline uno per continuare.</translation>
 <translation id="3683524264665795342">Richiesta di condivisione dello schermo da parte di <ph name="APP_NAME" /></translation>
 <translation id="3685122418104378273">La sincronizzazione con Google Drive è disattivata per impostazione predefinita quando vengono utilizzati i dati mobili.</translation>
 <translation id="368789413795732264">Si è verificato un errore durante la scrittura del file: <ph name="ERROR_TEXT" />.</translation>
@@ -2088,6 +2090,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4012550234655138030">Imposta o gestisci le stampanti in <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="4014432863917027322">Riparare "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="4018133169783460046">Visualizza <ph name="PRODUCT_NAME" /> in questa lingua</translation>
+<translation id="4020106588733303597">Impossibile caricare le licenze disponibili.</translation>
 <translation id="4021279097213088397">-</translation>
 <translation id="4022426551683927403">&amp;Aggiungi al dizionario</translation>
 <translation id="4023146161712577481">Configurazione del dispositivo in fase di determinazione.</translation>
@@ -2312,6 +2315,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4389091756366370506">Utente <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">Disabilita</translation>
 <translation id="4400367121200150367">I siti che non salvano mai le password verranno visualizzati qui</translation>
+<translation id="4400632832271803360">Tieni premuto il tasto Avvio applicazioni per modificare la funzione dei tasti della fila superiore.</translation>
 <translation id="4408599188496843485">G&amp;uida</translation>
 <translation id="4409697491990005945">Margini</translation>
 <translation id="4411578466613447185">Certificato di firma del codice</translation>
@@ -2669,6 +2673,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="494660967831069720">Dati parziali</translation>
 <translation id="4950138595962845479">Opzioni...</translation>
 <translation id="4953808748584563296">Avatar arancione predefinito</translation>
+<translation id="4955814292505481804">Annuale</translation>
 <translation id="495931528404527476">In Chrome</translation>
 <translation id="496226124210045887">La cartella che hai selezionato contiene file delicati. Vuoi concedere a "$1" accesso di lettura permanente a questa cartella?</translation>
 <translation id="4964455510556214366">Disposizione</translation>
@@ -3150,6 +3155,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5658415415603568799">Per maggiore sicurezza, Smart Lock ti chiederà di inserire la password dopo 20 ore.</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5661272705528507004">Questa scheda SIM è disattivata e non può essere utilizzata. Contatta il fornitore di servizi per la sostituzione.</translation>
+<translation id="5662477687021125631">Perpetua</translation>
 <translation id="5669267381087807207">In fase di attivazione</translation>
 <translation id="5669691691057771421">Inserisci il nuovo PIN</translation>
 <translation id="5677503058916217575">Lingua della pagina:</translation>
@@ -3876,6 +3882,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="6746392203843147041">aumenta volume</translation>
 <translation id="6748140994595080445">Cambia la modalità di gestione e visualizzazione delle lingue in <ph name="APP_NAME" />.</translation>
 <translation id="6748465660675848252">Puoi continuare, tuttavia verranno ripristinati soltanto le impostazioni e i dati sincronizzati. Tutti i dati locali andranno persi.</translation>
+<translation id="6748775883310276718">Chiosco app singola</translation>
 <translation id="6751256176799620176">1 cartella selezionata</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (In incognito)</translation>
 <translation id="6757101664402245801">URL copiato</translation>
@@ -4693,6 +4700,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8025789898011765392">Attività</translation>
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
 <translation id="8028060951694135607">Recupero chiavi Microsoft</translation>
+<translation id="8028134359912645720">Tieni premuto CTRL, ALT, MAIUSC o Avvio applicazioni per visualizzare le scorciatoie da tastiera per questi tasti di modifica.</translation>
 <translation id="8028993641010258682">Dimensioni</translation>
 <translation id="8030169304546394654">Disconnessa</translation>
 <translation id="8030656706657716245">Aggiungi stampante</translation>
@@ -4747,6 +4755,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8107015733319732394">Installazione in corso del Google Play Store sul tuo dispositivo <ph name="DEVICE_TYPE" />. L'operazione potrebbe richiedere alcuni minuti.</translation>
 <translation id="8109930990200908494">Accesso obbligatorio per il certificato utente.</translation>
 <translation id="8111155949205007504">Condividi la password con l'iPhone</translation>
+<translation id="8113043281354018522">Scegli il tipo di licenza</translation>
 <translation id="8116190140324504026">Ulteriori informazioni...</translation>
 <translation id="8116483400482790018">Dizionario ortografico personalizzato</translation>
 <translation id="8116972784401310538">Gestione &amp;Preferiti</translation>
@@ -4893,6 +4902,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8339059274628563283">Dati memorizzati di <ph name="SITE" /></translation>
 <translation id="834205140959175756">Gestisci connessioni, aggiornamenti e impostazioni dalla barra di stato.</translation>
 <translation id="8342318071240498787">Esiste già un file o una directory con lo stesso nome.</translation>
+<translation id="8349826889576450703">Avvio applicazioni</translation>
 <translation id="8351419472474436977">Questa estensione ha assunto il controllo delle tue impostazioni proxy, il che significa che può cambiare, interrompere o spiare tutto ciò che fai online. Se non sei sicuro del motivo per cui si sia verificato questo cambiamento, è probabile che sia indesiderato.</translation>
 <translation id="8352772353338965963">Aggiungi un account per l'accesso simultaneo. Poiché gli account che hanno effettuato l'accesso sono tutti accessibili senza password, devi utilizzare questa funzione solo con gli account attendibili.</translation>
 <translation id="8353683614194668312">Può:</translation>
@@ -4951,6 +4961,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8446884382197647889">Ulteriori informazioni</translation>
 <translation id="8449008133205184768">Incolla e mantieni lo stile</translation>
 <translation id="8449036207308062757">Gestisci spazio di archiviazione</translation>
+<translation id="8451512073679317615">assistente</translation>
 <translation id="8452135315243592079">Scheda SIM mancante</translation>
 <translation id="8453482423012550001">Copia di $1 elementi...</translation>
 <translation id="8454288007744638700">In alternativa, seleziona una nuova rete:</translation>
@@ -5408,6 +5419,7 @@ Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere 
 <translation id="9123413579398459698">Proxy FTP</translation>
 <translation id="9124003689441359348">Le password salvate verranno visualizzate qui</translation>
 <translation id="912419004897138677">Codec</translation>
+<translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> rimanenti)</translation>
 <translation id="9127762771585363996">Gira l'immagine della fotocamera in orizzontale</translation>
 <translation id="9128870381267983090">Collegati alla rete</translation>
 <translation id="9130015405878219958">La modalità inserita non è valida.</translation>

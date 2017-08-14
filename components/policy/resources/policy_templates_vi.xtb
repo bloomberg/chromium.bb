@@ -896,7 +896,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       "1412.24.34": chỉ cập nhật lên phiên bản cụ thể này
 
       Cảnh báo: Không nên định cấu hình giới hạn phiên bản vì chúng có thể khiến người dùng không thể nhận được các bản cập nhật phần mềm và các bản vá bảo mật tối quan trọng. Giới hạn cập nhật ở một tiền tố phiên bản cụ thể có thể khiến người dùng gặp rủi ro.</translation>
-<translation id="4298509794364745131">Chỉ định danh sách các ứng dụng có thể được bật làm ứng dụng ghi chú trên màn hình khóa của <ph name="PRODUCT_OS_NAME" />.
+<translation id="4298509794364745131">Chỉ định danh sách các ứng dụng có thể bật làm ứng dụng ghi chú trên màn hình khóa của <ph name="PRODUCT_OS_NAME" />.
 
       Nếu bạn bật ứng dụng ghi chú ưa thích trên màn hình khóa, màn hình khóa sẽ chứa phần tử giao diện người dùng để khởi chạy ứng dụng ghi chú ưa thích.
       Khi đã khởi chạy, ứng dụng sẽ có thể tạo cửa sổ ứng dụng ở đầu màn hình khóa và tạo mục dữ liệu (ghi chú) trong ngữ cảnh màn hình khóa. Ứng dụng sẽ có thể nhập các ghi chú đã tạo vào phiên người dùng chính, khi phiên được mở khóa. Hiện tại, chỉ hỗ trợ các ứng dụng ghi chú của Chrome trên màn hình khóa.

@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Next Line</translation>
 <translation id="3153024374267644603">Speech on</translation>
+<translation id="3153928844647607688">Table <ph name="TABLENAME" />, <ph name="TABLEROWS" /> by <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">No previous button.</translation>
 <translation id="3163593631834463955">Empty column header</translation>
 <translation id="316542773973815724">Navigation</translation>
@@ -405,6 +406,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4597532268155981612">form</translation>
 <translation id="4597896406374528575">April</translation>
 <translation id="460018603901637538">Change display style to side by side.</translation>
+<translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Ignoring next key press</translation>
 <translation id="461613135510474570">Sentence</translation>
 <translation id="4647836961514597010">Colour picker</translation>
@@ -782,6 +784,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="820417203470636242">Empty cell.</translation>
 <translation id="8215202828671303819">Multi select</translation>
 <translation id="8224171046658870249">Switched to ChromeVox Next</translation>
+<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">Jump to previous focusable item</translation>
 <translation id="8278417001922463147">No previous article.</translation>
 <translation id="8283603667300770666">Next form field</translation>

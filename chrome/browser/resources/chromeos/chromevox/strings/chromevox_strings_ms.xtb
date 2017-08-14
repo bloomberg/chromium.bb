@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Baris Seterusnya</translation>
 <translation id="3153024374267644603">Pertuturan dihidupkan</translation>
+<translation id="3153928844647607688">Jadual <ph name="TABLENAME" />, <ph name="TABLEROWS" /> kali <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Tiada butang terdahulu.</translation>
 <translation id="3163593631834463955">Pengepala lajur kosong</translation>
 <translation id="316542773973815724">Navigasi</translation>
@@ -405,6 +406,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="4597532268155981612">borang</translation>
 <translation id="4597896406374528575">April</translation>
 <translation id="460018603901637538">Tukar gaya paparan kepada bersebelahan.</translation>
+<translation id="4601367666219428522">jdl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Mengabaikan tekanan kekunci seterusnya</translation>
 <translation id="461613135510474570">Ayat</translation>
 <translation id="4647836961514597010">Pemilih warna</translation>
@@ -782,6 +784,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="820417203470636242">Sel kosong.</translation>
 <translation id="8215202828671303819">Berbilang pilihan</translation>
 <translation id="8224171046658870249">Anda telah bertukar kepada ChromeVox Next</translation>
+<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">Langkau ke item boleh fokus sebelumnya</translation>
 <translation id="8278417001922463147">Tiada artikel sebelumnya.</translation>
 <translation id="8283603667300770666">Medan borang seterusnya</translation>

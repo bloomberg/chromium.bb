@@ -130,7 +130,6 @@
 <translation id="1973335181906896915">Serialisation error</translation>
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1978555033938440688">Firmware Version</translation>
-<translation id="1995859865337580572">Please verify your CVC</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{and 1 more}other{and # more}}</translation>
 <translation id="2025186561304664664">Proxy is set to auto-configured.</translation>
 <translation id="2030481566774242610">Did you mean <ph name="LINK" />?</translation>
@@ -463,6 +462,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Try disabling your extensions.</translation>
 <translation id="457875822857220463">Delivery</translation>
+<translation id="4582800630050655161">You could lose access to your Google Account or experience identity theft. Chromium recommends that you change your password now.</translation>
 <translation id="4587425331216688090">Remove address from Chrome?</translation>
 <translation id="4592951414987517459">Your connection to <ph name="DOMAIN" /> is encrypted using a modern cipher suite.</translation>
 <translation id="4594403342090139922">&amp;Undo Delete</translation>
@@ -471,6 +471,7 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">This server could not prove that it is <ph name="DOMAIN" />; its security certificate contains errors. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="4690462567478992370">Stop using an invalid certificate</translation>
+<translation id="4690954380545377795">You could lose access to your Google Account or experience identity theft. Chrome recommends that you change your password now.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Your connection was interrupted</translation>
 <translation id="471880041731876836">You don't have permission to visit this site</translation>
@@ -536,6 +537,7 @@
 <translation id="5199729219167945352">Experiments</translation>
 <translation id="5205222826937269299">Name required</translation>
 <translation id="5222812217790122047">Email (required)</translation>
+<translation id="522700295135997067">This site may have just stolen your password</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Using Chrome at work? Businesses can manage Chrome settings for their employees. Find out more</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Follow these steps to temporarily disable the software so that you can get on the web. You'll need administrator privileges.<ph name="END_PARAGRAPH" />
@@ -825,6 +827,7 @@
 <translation id="7669271284792375604">Attackers on this site might try to trick you into installing programs that harm your browsing experience (for example, by changing your homepage or showing extra ads on sites that you visit).</translation>
 <translation id="7674629440242451245">Interested in cool new Chrome features? Try our dev channel at chrome.com/dev.</translation>
 <translation id="7682287625158474539">Shipping</translation>
+<translation id="7699293099605015246">Articles aren't available at the moment.</translation>
 <translation id="7701040980221191251">None</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Proceed to <ph name="SITE" /> (unsafe)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certificate</translation>
@@ -834,6 +837,7 @@
 <translation id="7752995774971033316">Unmanaged</translation>
 <translation id="7755287808199759310">Your parent can unblock it for you</translation>
 <translation id="7758069387465995638">Firewall or antivirus software may have blocked the connection.</translation>
+<translation id="7759163816903619567">Display domain:</translation>
 <translation id="7761701407923456692">Server's certificate does not match the URL.</translation>
 <translation id="7763386264682878361">Payment Manifest Parser</translation>
 <translation id="7764225426217299476">Add address</translation>
@@ -841,6 +845,7 @@
 <translation id="7791543448312431591">Add</translation>
 <translation id="7793809570500803535">The web page at <ph name="SITE" /> might be temporarily down or it may have been moved permanently to a new web address.</translation>
 <translation id="7800304661137206267">The connection is encrypted using <ph name="CIPHER" />, with <ph name="MAC" /> for message authentication and <ph name="KX" /> as the key exchange mechanism.</translation>
+<translation id="7802523362929240268">Site is legitimate</translation>
 <translation id="780301667611848630">No, thank you</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -850,6 +855,7 @@
 <translation id="785549533363645510">However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your Internet service provider or the websites that you visit.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">Debit and prepaid cards are accepted.</translation>
+<translation id="7878562273885520351">Your password may be compromised</translation>
 <translation id="7887683347370398519">Check your CVC and try again</translation>
 <translation id="79338296614623784">Enter a valid phone number</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -977,6 +983,7 @@
 <translation id="9076283476770535406">It may have mature content</translation>
 <translation id="9078964945751709336">More information required</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> normally uses encryption to protect your information. When Chromium tried to connect to <ph name="SITE" /> this time, the website sent back unusual and incorrect credentials. This may happen when an attacker is trying to pretend to be <ph name="SITE" />, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Chromium stopped the connection before any data was exchanged.</translation>
+<translation id="910908805481542201">Help me fix this</translation>
 <translation id="9128870381267983090">Connect to network</translation>
 <translation id="9137013805542155359">Show original</translation>
 <translation id="9137248913990643158">Please start and sign in to Chrome before using this app.</translation>

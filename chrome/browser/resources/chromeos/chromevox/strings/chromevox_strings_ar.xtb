@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">السطر التالي</translation>
 <translation id="3153024374267644603">تشغيل ميزة تحويل النص إلى كلام</translation>
+<translation id="3153928844647607688">جدول <ph name="TABLENAME" />، <ph name="TABLEROWS" /> بالضرب في <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">ليس هناك زر سابق.</translation>
 <translation id="3163593631834463955">عنوان عمود فارغ</translation>
 <translation id="316542773973815724">تنقل</translation>
@@ -405,6 +406,7 @@
 <translation id="4597532268155981612">نموذج</translation>
 <translation id="4597896406374528575">نيسان (أبريل)</translation>
 <translation id="460018603901637538">تغيير نمط العرض إلى جنبًا إلى جنب.</translation>
+<translation id="4601367666219428522">‏جدول <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">تجاهل الضغط على المفتاح التالي</translation>
 <translation id="461613135510474570">جملة</translation>
 <translation id="4647836961514597010">علبة الألوان</translation>
@@ -552,7 +554,7 @@
 <translation id="5728409797179002635">لم يتم العثور على جداول.</translation>
 <translation id="5732189279857692565">‏هذا هو العنوان الثاني. واصل الانتقال؛ إما بالضغط على "Search+H" أو "Search+Shift+H"</translation>
 <translation id="5748623122140342504">عنوان المستوى الخامس السابق</translation>
-<translation id="5750633686117194034">لم يتم الضغط على أي مفتاح تعديل؛ الرجاء الضغط مع الاستمرار على مفتاح تعديل أو أكثر؛ وارفع أصابعك بعد الانتهاء من الضغط وستسمع صوت تعيين المفاتيح. انقر للخروج.</translation>
+<translation id="5750633686117194034">لم يتم الضغط على أي مفتاح تعديل؛ يُرجى الضغط مع الاستمرار على مفتاح تعديل أو أكثر؛ وارفع أصابعك بعد الانتهاء من الضغط وستسمع صوت تعيين المفاتيح. انقر للخروج.</translation>
 <translation id="5788275253279308023">نافذة تصفح متخفٍ بعلامة التبويب <ph name="TITLE" /></translation>
 <translation id="5806206155699461681">‏تحسين مواقع محددة (مثل بحث Google).</translation>
 <translation id="5819072574982403430">عنصر متفرع</translation>
@@ -782,6 +784,7 @@
 <translation id="820417203470636242">خلية فارغة.</translation>
 <translation id="8215202828671303819">تحديد متعدد</translation>
 <translation id="8224171046658870249">‏تم التبديل إلى ChromeVox Next</translation>
+<translation id="826991282343985864">ص$1ع$2</translation>
 <translation id="8276439074553447000">الانتقال إلى العنصر السابق القابل للتركيز</translation>
 <translation id="8278417001922463147">لا تتوفر مقالة سابقة.</translation>
 <translation id="8283603667300770666">حقل النموذج التالي</translation>

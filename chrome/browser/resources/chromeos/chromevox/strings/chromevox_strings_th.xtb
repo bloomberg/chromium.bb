@@ -343,7 +343,7 @@
 <translation id="4039983576244166038">ส่วนหัวของแถวว่างเปล่า</translation>
 <translation id="4042843249978639960">ไม่มีส่วนหัวระดับ 2 ถัดไป</translation>
 <translation id="4043348641337972076">ไม่มีจุดสังเกต ARIA ก่อนหน้า</translation>
-<translation id="4045764028670444336">เริ่มส่วนที่สะกดผิด</translation>
+<translation id="4045764028670444336">เริ่มคำที่สะกดผิด</translation>
 <translation id="4047216625641135770">เครื่องหมาย</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4054936709456751127">สถานะ</translation>
@@ -398,7 +398,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{เครื่องหมายทับ}other{# เครื่องหมายทับ}}</translation>
 <translation id="4547556996012970016">ส่วนหัวระดับ 5 ถัดไป</translation>
 <translation id="4562381607973973258">ส่วนหัว</translation>
-<translation id="4570424871453628777">สิ้นสุดส่วนที่สะกดผิด</translation>
+<translation id="4570424871453628777">สิ้นสุดคำที่สะกดผิด</translation>
 <translation id="4591507479202817876">, เลือกไว้</translation>
 <translation id="4597532268155981612">ฟอร์ม</translation>
 <translation id="4597896406374528575">เมษายน</translation>

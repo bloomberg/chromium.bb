@@ -227,7 +227,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1988371335297483117">Las cargas útiles de actualizaciones automáticas en <ph name="PRODUCT_OS_NAME" /> se pueden descargar a través de HTTP en lugar de HTTPS, lo que permite el almacenamiento en caché HTTP transparente de descargas HTTP.
 
 Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará descargar cargas útiles de actualizaciones automáticas a través de HTTP. Si la política se establece en False o no se configura, se utilizará HTTPS para descargar cargas útiles de actualizaciones automáticas.</translation>
-<translation id="2006530844219044261">Administración de energía</translation>
+<translation id="2006530844219044261">Gestión de la batería</translation>
 <translation id="201557587962247231">Frecuencia de subida de informes de estado del dispositivo</translation>
 <translation id="2018836497795982119">Permite especificar el periodo en milisegundos en el que se solicita información sobre políticas del usuario al servicio de administración de dispositivos.
 
@@ -682,7 +682,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Si esta política se establece en true, los retrasos de administración de energía y el límite de duración de sesión no se ejecutarán hasta que se haya detectado actividad por parte del usuario en una sesión.
 
           Si esta política se establece en false o no se establece, los retrasos de administración de energía y el límite de duración de sesión se ejecutarán inmediatamente al iniciar la sesión.</translation>
-<translation id="3478024346823118645">Eliminar los datos del usuario al cerrar sesión</translation>
+<translation id="3478024346823118645">Borrar los datos del usuario al cerrar sesión</translation>
 <translation id="348495353354674884">Habilitar teclado virtual</translation>
 <translation id="3496296378755072552">Administrador de contraseñas</translation>
 <translation id="350443680860256679">Configurar ARC</translation>

@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Baris Berikutnya</translation>
 <translation id="3153024374267644603">Fitur ucapan aktif</translation>
+<translation id="3153928844647607688">Tabel <ph name="TABLENAME" />, <ph name="TABLEROWS" /> oleh <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Tidak ada tombol sebelumnya.</translation>
 <translation id="3163593631834463955">Judul kolom kosong</translation>
 <translation id="316542773973815724">Navigasi</translation>
@@ -405,6 +406,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk menavigasi ke tombol 
 <translation id="4597532268155981612">formulir</translation>
 <translation id="4597896406374528575">April</translation>
 <translation id="460018603901637538">Mengubah gaya tampilan menjadi berdampingan.</translation>
+<translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Mengabaikan penekanan tombol berikutnya</translation>
 <translation id="461613135510474570">Kalimat</translation>
 <translation id="4647836961514597010">Pemilih warna</translation>
@@ -782,6 +784,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="820417203470636242">Sel kosong.</translation>
 <translation id="8215202828671303819">Multi-pilihan</translation>
 <translation id="8224171046658870249">Telah beralih ke ChromeVox Next</translation>
+<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">Melompat ke item yang dapat difokuskan sebelumnya</translation>
 <translation id="8278417001922463147">Tidak ada artikel sebelumnya.</translation>
 <translation id="8283603667300770666">Bidang formulir berikutnya</translation>
