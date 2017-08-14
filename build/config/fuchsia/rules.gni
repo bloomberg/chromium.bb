@@ -77,6 +77,10 @@ template("generate_runner_script") {
       target,
     ]
 
+    if (defined(invoker.use_test_server) && invoker.use_test_server) {
+      args += [ "--enable-test-server" ]
+    }
+
     args += runner_args
   }
 }
