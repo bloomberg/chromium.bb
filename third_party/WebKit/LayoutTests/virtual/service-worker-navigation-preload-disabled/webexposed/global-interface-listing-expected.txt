@@ -4432,6 +4432,7 @@ interface Navigator
     getter appCodeName
     getter appName
     getter appVersion
+    getter authentication
     getter bluetooth
     getter budget
     getter clipboard
@@ -7275,6 +7276,11 @@ interface WaveShaperNode : AudioNode
     method constructor
     setter curve
     setter oversample
+interface WebAuthentication
+    attribute @@toStringTag
+    method constructor
+    method getAssertion
+    method makeCredential
 interface WebGL2RenderingContext
     attribute @@toStringTag
     attribute ACTIVE_ATTRIBUTES
