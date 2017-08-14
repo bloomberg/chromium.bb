@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/debug/traced_value.h"
+#include "components/viz/common/traced_value.h"
 
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
 
-namespace cc {
+namespace viz {
 
 void TracedValue::AppendIDRef(const void* id,
                               base::trace_event::TracedValue* state) {
@@ -51,4 +51,4 @@ void TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
   MakeDictIntoImplicitSnapshot(dict, object_name, id);
 }
 
-}  // namespace cc
+}  // namespace viz

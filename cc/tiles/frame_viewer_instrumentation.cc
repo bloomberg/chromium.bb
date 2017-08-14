@@ -4,7 +4,7 @@
 
 #include "cc/tiles/frame_viewer_instrumentation.h"
 
-#include "cc/debug/traced_value.h"
+#include "components/viz/common/traced_value.h"
 
 namespace cc {
 namespace frame_viewer_instrumentation {
@@ -33,7 +33,7 @@ std::unique_ptr<base::trace_event::ConvertableToTraceFormat> TileDataAsValue(
     int layer_id) {
   std::unique_ptr<base::trace_event::TracedValue> res(
       new base::trace_event::TracedValue());
-  TracedValue::SetIDRef(tile_id, res.get(), kTileId);
+  viz::TracedValue::SetIDRef(tile_id, res.get(), kTileId);
   res->SetString(kTileResolution, TileResolutionToString(tile_resolution));
   res->SetInteger(kSourceFrameNumber, source_frame_number);
   res->SetInteger(kLayerId, layer_id);

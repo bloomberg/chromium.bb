@@ -77,6 +77,8 @@ viz_component("common") {
     "surfaces/surface_sequence_generator.h",
     "switches.cc",
     "switches.h",
+    "traced_value.cc",
+    "traced_value.h",
     "viz_common_export.h",
   ]
 

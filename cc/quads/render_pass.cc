@@ -14,7 +14,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
-#include "cc/debug/traced_value.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/largest_draw_quad.h"
@@ -28,6 +27,7 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/traced_value.h"
 
 namespace {
 const size_t kDefaultNumSharedQuadStatesToReserve = 32;
@@ -250,7 +250,7 @@ void RenderPass::AsValueInto(base::trace_event::TracedValue* value) const {
   }
   value->EndArray();
 
-  TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
+  viz::TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"), value, "cc::RenderPass",
       reinterpret_cast<void*>(id));
 }

@@ -10,9 +10,9 @@
 #include "cc/base/math_util.h"
 #include "cc/base/region.h"
 #include "cc/debug/debug_colors.h"
-#include "cc/debug/traced_value.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "components/viz/common/traced_value.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
@@ -239,7 +239,7 @@ gfx::Rect RasterSource::RecordedViewport() const {
 
 void RasterSource::AsValueInto(base::trace_event::TracedValue* array) const {
   if (display_list_.get())
-    TracedValue::AppendIDRef(display_list_.get(), array);
+    viz::TracedValue::AppendIDRef(display_list_.get(), array);
 }
 
 void RasterSource::DidBeginTracing() {

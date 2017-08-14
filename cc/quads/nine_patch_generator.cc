@@ -4,7 +4,6 @@
 
 #include "cc/quads/nine_patch_generator.h"
 
-#include "cc/layers/draw_properties.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"

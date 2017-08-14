@@ -23,7 +23,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/histograms.h"
-#include "cc/debug/traced_value.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/raster/playback_image_provider.h"
 #include "cc/raster/raster_buffer.h"

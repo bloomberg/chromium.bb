@@ -4,8 +4,8 @@
 
 #include "cc/tiles/prioritized_tile.h"
 
-#include "cc/debug/traced_value.h"
 #include "cc/tiles/picture_layer_tiling.h"
+#include "components/viz/common/traced_value.h"
 
 namespace cc {
 
@@ -30,7 +30,7 @@ PrioritizedTile::~PrioritizedTile() = default;
 void PrioritizedTile::AsValueInto(base::trace_event::TracedValue* value) const {
   tile_->AsValueInto(value);
 
-  TracedValue::SetIDRef(raster_source().get(), value, "picture_pile");
+  viz::TracedValue::SetIDRef(raster_source().get(), value, "picture_pile");
 
   value->BeginDictionary("combined_priority");
   priority().AsValueInto(value);

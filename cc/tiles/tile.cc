@@ -12,8 +12,8 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
-#include "cc/debug/traced_value.h"
 #include "cc/tiles/tile_manager.h"
+#include "components/viz/common/traced_value.h"
 
 namespace cc {
 
@@ -49,7 +49,7 @@ Tile::~Tile() {
 }
 
 void Tile::AsValueInto(base::trace_event::TracedValue* value) const {
-  TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
+  viz::TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), value, "cc::Tile", this);
   value->SetDouble("contents_scale", contents_scale_key());
 

@@ -17,8 +17,6 @@ cc_component("debug") {
     "rendering_stats.h",
     "rendering_stats_instrumentation.cc",
     "rendering_stats_instrumentation.h",
-    "traced_value.cc",
-    "traced_value.h",
   ]
   deps = [
     "//base",
