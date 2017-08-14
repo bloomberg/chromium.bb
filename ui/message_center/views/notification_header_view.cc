@@ -138,6 +138,12 @@ NotificationHeaderView::NotificationHeaderView(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(layout);
 
+  ink_drop_container_ = new views::InkDropContainerView();
+  ink_drop_container_->SetPaintToLayer();
+  ink_drop_container_->layer()->SetFillsBoundsOpaquely(false);
+  ink_drop_container_->SetVisible(false);
+  AddChildView(ink_drop_container_);
+
   views::View* app_info_container = new views::View();
   views::BoxLayout* app_info_layout =
       new views::BoxLayout(views::BoxLayout::kHorizontal,
@@ -306,6 +312,16 @@ NotificationHeaderView::CreateInkDropHighlight() const {
       gfx::RectF(GetLocalBounds()).CenterPoint(), GetInkDropBaseColor());
   highlight->set_visible_opacity(kInkDropHighlightVisibleOpacity);
   return highlight;
+}
+
+void NotificationHeaderView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  ink_drop_container_->AddInkDropLayer(ink_drop_layer);
+  InstallInkDropMask(ink_drop_layer);
+}
+
+void NotificationHeaderView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  ResetInkDropMask();
+  ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
 }
 
 void NotificationHeaderView::UpdateSummaryTextVisibility() {
