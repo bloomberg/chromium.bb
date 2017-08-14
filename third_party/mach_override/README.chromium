@@ -18,4 +18,4 @@ http://udis86.sourceforge.net/ and https://github.com/vmt/udis86 .
 
 Local Modifications: Sped up allocation of branch island memory via usage of
    vm_region to skip already allocated pages; add diagnostics for allocation
-   attempts.
+   attempts. Catch allocation attempts on restricted pages.
