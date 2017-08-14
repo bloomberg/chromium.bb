@@ -75,7 +75,6 @@ IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, SocketsUdpExtension) {
   std::unique_ptr<net::SpawnedTestServer> test_server(
       new net::SpawnedTestServer(
           net::SpawnedTestServer::TYPE_UDP_ECHO,
-          net::SpawnedTestServer::kLocalhost,
           base::FilePath(FILE_PATH_LITERAL("net/data"))));
   EXPECT_TRUE(test_server->Start());
 

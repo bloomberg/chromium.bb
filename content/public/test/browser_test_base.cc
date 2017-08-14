@@ -344,8 +344,7 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
 void BrowserTestBase::CreateTestServer(const base::FilePath& test_server_base) {
   CHECK(!spawned_test_server_.get());
   spawned_test_server_ = base::MakeUnique<net::SpawnedTestServer>(
-      net::SpawnedTestServer::TYPE_HTTP, net::SpawnedTestServer::kLocalhost,
-      test_server_base);
+      net::SpawnedTestServer::TYPE_HTTP, test_server_base);
   embedded_test_server()->AddDefaultHandlers(test_server_base);
 }
 

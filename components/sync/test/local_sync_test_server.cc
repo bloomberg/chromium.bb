@@ -18,14 +18,12 @@ namespace syncer {
 LocalSyncTestServer::LocalSyncTestServer()
     : LocalTestServer(
           net::SpawnedTestServer::TYPE_HTTP,  // Sync uses the HTTP scheme.
-          net::SpawnedTestServer::kLocalhost,
           base::FilePath()),
       xmpp_port_(0) {}
 
 LocalSyncTestServer::LocalSyncTestServer(uint16_t port, uint16_t xmpp_port)
     : LocalTestServer(
           net::SpawnedTestServer::TYPE_HTTP,  // Sync uses the HTTP scheme.
-          net::SpawnedTestServer::kLocalhost,
           base::FilePath()),
       xmpp_port_(xmpp_port) {
   SetPort(port);

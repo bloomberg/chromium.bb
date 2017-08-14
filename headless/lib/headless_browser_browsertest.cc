@@ -189,7 +189,6 @@ class HeadlessBrowserTestWithProxy : public HeadlessBrowserTest {
  public:
   HeadlessBrowserTestWithProxy()
       : proxy_server_(net::SpawnedTestServer::TYPE_HTTP,
-                      net::SpawnedTestServer::kLocalhost,
                       base::FilePath(FILE_PATH_LITERAL("headless/test/data"))) {
   }
 

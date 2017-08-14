@@ -16,9 +16,7 @@ namespace safe_browsing {
 
 LocalTwoPhaseTestServer::LocalTwoPhaseTestServer()
     : net::LocalTestServer(net::SpawnedTestServer::TYPE_HTTP,
-                           net::SpawnedTestServer::kLocalhost,
-                           base::FilePath()) {
-}
+                           base::FilePath()) {}
 
 LocalTwoPhaseTestServer::~LocalTwoPhaseTestServer() {}
 
