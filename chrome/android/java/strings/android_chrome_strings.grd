@@ -413,12 +413,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_MANAGE_PASSWORDS_TEXT" desc="Text for link to manage passwords on Account Central.">
         View and manage saved passwords at <ph name="BEGIN_LINK">&lt;link&gt;</ph>passwords.google.com<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
-      <message name="IDS_REDIRECT_TO_PASSWORDS_TEXT" desc="Title of password settings entry in main Chrome preferences for users who will be redirected to passwords.google.com to manage their passwords.">
-        Saved passwords
-      </message>
-      <message name="IDS_REDIRECT_TO_PASSWORDS_LINK" desc="Hostname of the site where users will go if they tap the passwords settings in main Chrome preferences.">
-        passwords.google.com
-      </message>
       <message name="IDS_SAVED_PASSWORDS_NONE_TEXT" desc="Text when there are no saved passwords/exceptions.">
         Saved passwords will appear here.
       </message>
@@ -433,9 +427,6 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_PASSWORD_ENTRY_EDITOR_PASSWORD" desc='Title preceding password on password entry editor.'>
         Password
-      </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_COPY_STORED_SITE" desc='Content description for the button that copies the stored site.'>
-        Copy site
       </message>
       <message name="IDS_PASSWORD_ENTRY_EDITOR_COPY_STORED_USERNAME" desc='Content description for the button that copies the stored username.'>
         Copy username
@@ -464,17 +455,8 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PASSWORD_ENTRY_EDITOR_SET_LOCK_SCREEN" desc='Text prompting user to set device lock in order to view/copy passwords'>
         To view or copy your password here, set screen lock on this device.
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_NOT_AVAILABLE_ON_PRE_LOLLIPOP" desc='Text that announced user that password viewing is not possible on pre-Lollipop devices'>
-        Password viewing and copying are not available on your version of Android.
-      </message>
 
       <!-- Lock Screen Fragment -->
-      <message name="IDS_LOCKSCREEN_VERIFICATION_TITLE" desc='Customized title for lock screen prompting user to unlock their phone to continue with setup.'>
-        Confirm your screen lock
-      </message>
-      <message name="IDS_LOCKSCREEN_VERIFICATION_TEXT" desc='User needs to enter lock pattern to verify that they own this phone.'>
-        For security reasons, you need to confirm your screen lock in order to access your password.
-      </message>
       <message name="IDS_LOCKSCREEN_DESCRIPTION" desc='Text on lockscreen explaining to user that they need to unlock the device to continue setup.'>
         Unlock to continue setting up your phone
       </message>
@@ -715,17 +697,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_USAGE_AND_CRASH_REPORTS_DESCRIPTION" desc="Description for 'Usage and crash reports' preference">
         Automatically send usage statistics and crash reports to Google
-      </message>
-
-      <!-- Suggestions preferences -->
-      <message name="IDS_SUGGESTIONS_FEATURE_SWITCH_TITLE" desc="Title for switch used to toggle the Content Suggestions feature on or off." translateable="false">
-        Suggestions
-      </message>
-      <message name="IDS_SUGGESTIONS_FEATURE_SWITCH_ON_SUMMARY" desc="Description for the Suggestions switch when the feature is enabled." translateable="false">
-        Use Google servers to provide browsing suggestions.
-      </message>
-      <message name="IDS_SUGGESTIONS_CAVEATS_DESCRIPTION" desc="Description text for suggestions usage caveats" translateable="false">
-        When this feature is turned on, Chrome will use Google servers to provide browsing suggestions, e.g. when you open a new tab. This include popular websites, trending articles as well as personalized suggestions.
       </message>
 
       <!-- Accessibility preferences -->
@@ -2592,9 +2563,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_READER_VIEW_TEXT" desc="Message shown on the reader mode button bar, to invite the user to tap to open a reader mode. Reader mode extracts content and removes clutter from a web page and puts the result in a panel making it easier to read.">
         Make page mobile-friendly
       </message>
-      <message name="IDS_READER_MODE_MAXIMIZED_TITLE" desc="Message shown on the reader mode button bar when it is opened to show reader mode. Reader mode extracts content and removes clutter from a web page and puts the result in a panel making it easier to read.">
-        Mobile-friendly view
-      </message>
       <message name="IDS_CONTENT_PROVIDER_SEARCH_DESCRIPTION" desc="Description for Chrome's entry in QSB's list of search suggestion providers [CHAR-LIMIT=32]">
         Bookmarks and web history
       </message>
@@ -2952,10 +2920,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <!-- Item Chooser UI strings -->
       <message name="IDS_ITEM_CHOOSER_ITEM_NAME_WITH_ID" desc="To distinguish items with the same name, the item chooser shows the item name with id.">
         <ph name="ITEM_NAME">%1$s<ex>item_name</ex></ph> (<ph name="ITEM_ID">%2$s<ex>item id</ex></ph>)
-      </message>
-
-      <message name="IDS_INSTANT_APPS_OPEN_IN_APP" desc="Button label for the user action that will open an Instant App.">
-        Open app
       </message>
 
       <!-- WebAPK related strings -->
