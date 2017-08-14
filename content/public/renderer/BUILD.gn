@@ -129,4 +129,8 @@ target(link_target_type, "renderer_sources") {
   if (enable_plugins) {
     sources += [ "plugin_instance_throttler.h" ]
   }
+
+  if (enable_webrtc) {
+    sources += [ "//third_party/webrtc_overrides" ]
+  }
 }
