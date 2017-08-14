@@ -82,8 +82,6 @@ class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   bool IsScrollableAreaActive() const override;
 
   IntPoint ConvertFromRootFrame(const IntPoint&) const override;
-  IntPoint ConvertFromRootFrameToParentView(const IntPoint&) const override;
-  IntPoint ConvertFromParentView(const IntPoint&) const override;
 
   bool IsCustomScrollbar() const override { return false; }
   ScrollbarOrientation Orientation() const override { return orientation_; }
@@ -152,7 +150,8 @@ class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
 
   ScrollbarTheme& GetTheme() const { return theme_; }
 
-  IntRect ConvertToParentView(const IntRect&) const;
+  IntRect ConvertToContainingEmbeddedContentView(const IntRect&) const;
+  IntPoint ConvertFromContainingEmbeddedContentView(const IntPoint&) const;
 
   void MoveThumb(int pos, bool dragging_document = false);
 

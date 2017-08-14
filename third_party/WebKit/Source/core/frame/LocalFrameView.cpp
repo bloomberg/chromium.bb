@@ -3650,7 +3650,8 @@ IntPoint LocalFrameView::ConvertSelfToChild(const EmbeddedContentView& child,
   return new_point;
 }
 
-IntRect LocalFrameView::ConvertToParentView(const IntRect& local_rect) const {
+IntRect LocalFrameView::ConvertToContainingEmbeddedContentView(
+    const IntRect& local_rect) const {
   if (LocalFrameView* parent = ParentFrameView()) {
     // Get our layoutObject in the parent view
     LayoutEmbeddedContentItem layout_item = frame_->OwnerLayoutItem();
@@ -3667,7 +3668,7 @@ IntRect LocalFrameView::ConvertToParentView(const IntRect& local_rect) const {
   return local_rect;
 }
 
-IntRect LocalFrameView::ConvertFromParentView(
+IntRect LocalFrameView::ConvertFromContainingEmbeddedContentView(
     const IntRect& parent_rect) const {
   if (LocalFrameView* parent = ParentFrameView()) {
     IntRect local_rect = parent_rect;
@@ -3679,7 +3680,7 @@ IntRect LocalFrameView::ConvertFromParentView(
   return parent_rect;
 }
 
-IntPoint LocalFrameView::ConvertToParentView(
+IntPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
     const IntPoint& local_point) const {
   if (LocalFrameView* parent = ParentFrameView()) {
     // Get our layoutObject in the parent view
@@ -3698,7 +3699,7 @@ IntPoint LocalFrameView::ConvertToParentView(
   return local_point;
 }
 
-IntPoint LocalFrameView::ConvertFromParentView(
+IntPoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
     const IntPoint& parent_point) const {
   if (LocalFrameView* parent = ParentFrameView()) {
     // Get our layoutObject in the parent view
@@ -4770,7 +4771,7 @@ bool LocalFrameView::ScrollbarCornerPresent() const {
 
 IntRect LocalFrameView::ConvertToRootFrame(const IntRect& local_rect) const {
   if (LocalFrameView* parent = ParentFrameView()) {
-    IntRect parent_rect = ConvertToParentView(local_rect);
+    IntRect parent_rect = ConvertToContainingEmbeddedContentView(local_rect);
     return parent->ConvertToRootFrame(parent_rect);
   }
   return local_rect;
@@ -4778,7 +4779,7 @@ IntRect LocalFrameView::ConvertToRootFrame(const IntRect& local_rect) const {
 
 IntPoint LocalFrameView::ConvertToRootFrame(const IntPoint& local_point) const {
   if (LocalFrameView* parent = ParentFrameView()) {
-    IntPoint parent_point = ConvertToParentView(local_point);
+    IntPoint parent_point = ConvertToContainingEmbeddedContentView(local_point);
     return parent->ConvertToRootFrame(parent_point);
   }
   return local_point;
@@ -4788,7 +4789,7 @@ IntRect LocalFrameView::ConvertFromRootFrame(
     const IntRect& rect_in_root_frame) const {
   if (LocalFrameView* parent = ParentFrameView()) {
     IntRect parent_rect = parent->ConvertFromRootFrame(rect_in_root_frame);
-    return ConvertFromParentView(parent_rect);
+    return ConvertFromContainingEmbeddedContentView(parent_rect);
   }
   return rect_in_root_frame;
 }
@@ -4797,7 +4798,7 @@ IntPoint LocalFrameView::ConvertFromRootFrame(
     const IntPoint& point_in_root_frame) const {
   if (LocalFrameView* parent = ParentFrameView()) {
     IntPoint parent_point = parent->ConvertFromRootFrame(point_in_root_frame);
-    return ConvertFromParentView(parent_point);
+    return ConvertFromContainingEmbeddedContentView(parent_point);
   }
   return point_in_root_frame;
 }
@@ -4824,7 +4825,7 @@ FloatPoint LocalFrameView::ConvertFromRootFrame(
   return parent_point;
 }
 
-IntPoint LocalFrameView::ConvertFromParentViewToScrollbar(
+IntPoint LocalFrameView::ConvertFromContainingEmbeddedContentViewToScrollbar(
     const Scrollbar& scrollbar,
     const IntPoint& parent_point) const {
   IntPoint new_point = parent_point;
