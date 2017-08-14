@@ -1,18 +1,18 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_IPC_SELECTION_STRUCT_TRAITS_H_
-#define CC_IPC_SELECTION_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_SELECTION_STRUCT_TRAITS_H_
+#define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_SELECTION_STRUCT_TRAITS_H_
 
 #include "cc/input/selection.h"
-#include "cc/ipc/selection.mojom-shared.h"
+#include "services/viz/public/interfaces/compositing/selection.mojom-shared.h"
 #include "ui/gfx/selection_bound.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::SelectionDataView,
+struct StructTraits<viz::mojom::SelectionDataView,
                     cc::Selection<gfx::SelectionBound>> {
   static const gfx::SelectionBound& start(
       const cc::Selection<gfx::SelectionBound>& selection) {
@@ -24,7 +24,7 @@ struct StructTraits<cc::mojom::SelectionDataView,
     return selection.end;
   }
 
-  static bool Read(cc::mojom::SelectionDataView data,
+  static bool Read(viz::mojom::SelectionDataView data,
                    cc::Selection<gfx::SelectionBound>* out) {
     return data.ReadStart(&out->start) && data.ReadEnd(&out->end);
   }
@@ -32,4 +32,4 @@ struct StructTraits<cc::mojom::SelectionDataView,
 
 }  // namespace mojo
 
-#endif  // CC_IPC_SELECTION_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_SELECTION_STRUCT_TRAITS_H_
