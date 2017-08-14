@@ -40,9 +40,14 @@ def _UninstallApk(install_dict, devices_obj, apk_package):
   devices_obj.pMap(uninstall)
 
 
-def _LaunchUrl(devices_obj, input_args, device_args_file, url, apk_package):
+def _LaunchUrl(devices_obj, input_args, device_args_file, url, apk):
   if input_args and device_args_file is None:
-    raise Exception("This apk does not support any flags.")
+    raise Exception('This apk does not support any flags.')
+  if url:
+    view_activity = apk.GetViewActivityName()
+    if not view_activity:
+      raise Exception('APK does not support launching with URLs.')
+
   def launch(device):
     # The flags are first updated with input args.
     changer = flag_changer.FlagChanger(device, device_args_file)
@@ -53,12 +58,13 @@ def _LaunchUrl(devices_obj, input_args, device_args_file, url, apk_package):
     # Then launch the apk.
     if url is None:
       # Simulate app icon click if no url is present.
-      cmd = ['monkey', '-p', apk_package, '-c',
+      cmd = ['monkey', '-p', apk.GetPackageName(), '-c',
              'android.intent.category.LAUNCHER', '1']
       device.RunShellCommand(cmd, check_return=True)
     else:
-      launch_intent = intent.Intent(
-          action='android.intent.action.VIEW', package=apk_package, data=url)
+      launch_intent = intent.Intent(action='android.intent.action.VIEW',
+                                    activity=view_activity, data=url,
+                                    package=apk.GetPackageName())
       device.StartActivity(launch_intent)
   devices_obj.pMap(launch)
 
@@ -287,11 +293,13 @@ def Run(output_directory, apk_path, incremental_install_json_path,
     _UninstallApk(install_dict, devices_obj, apk_package)
   elif command == 'launch':
     _LaunchUrl(devices_obj, args.args, command_line_flags_file,
-               args.url, apk_package)
+               args.url, apk)
   elif command == 'run':
+    logging.warning('Installing...')
     _InstallApk(apk, install_dict, devices_obj)
+    logging.warning('Sending launch intent...')
     _LaunchUrl(devices_obj, args.args, command_line_flags_file,
-               args.url, apk_package)
+               args.url, apk)
   elif command == 'stop':
     devices_obj.ForceStop(apk_package)
   elif command == 'clear-data':
@@ -318,6 +326,7 @@ def Run(output_directory, apk_path, incremental_install_json_path,
     if args.verbose_count > 0:
       flags.append('--verbose')
     logging.warning('Running: %s', ' '.join(pipes.quote(f) for f in flags))
+    logging.warning('All subsequent output is from adb_gdb script.')
     os.execv(gdb_script_path, flags)
   elif command == 'logcat':
     adb_path = adb_wrapper.AdbWrapper.GetAdbPath()
