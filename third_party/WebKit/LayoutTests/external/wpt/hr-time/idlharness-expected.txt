@@ -11,7 +11,7 @@ PASS Performance interface: operation toJSON()
 FAIL Test default toJSON operation of Performance Illegal invocation
 PASS Performance must be primary interface of window.performance 
 PASS Stringification of window.performance 
-PASS Performance interface: window.performance must inherit property "now" with the proper type (0) 
-PASS Performance interface: window.performance must inherit property "toJSON" with the proper type (1) 
+PASS Performance interface: window.performance must inherit property "now()" with the proper type 
+PASS Performance interface: window.performance must inherit property "toJSON()" with the proper type 
 Harness: the test ran to completion.
 

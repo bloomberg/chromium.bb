@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS Navigator interface: attribute mediaCapabilities 
-PASS Navigator interface: navigator must inherit property "mediaCapabilities" with the proper type (0) 
+PASS Navigator interface: navigator must inherit property "mediaCapabilities" with the proper type 
 PASS WorkerNavigator interface: existence and properties of interface object 
 PASS MediaCapabilitiesInfo interface: existence and properties of interface object 
 PASS MediaCapabilitiesInfo interface object length 

@@ -1,19 +1,19 @@
 This is a testharness.js-based test.
 PASS Element interface: operation requestPointerLock() 
-PASS Element interface: window.document.documentElement must inherit property "requestPointerLock" with the proper type (0) 
+PASS Element interface: window.document.documentElement must inherit property "requestPointerLock()" with the proper type 
 PASS Document interface: attribute onpointerlockchange 
 PASS Document interface: attribute onpointerlockerror 
 PASS Document interface: attribute pointerLockElement 
 PASS Document interface: operation exitPointerLock() 
-FAIL Document interface: window.document must inherit property "onpointerlockchange" with the proper type (0) Unrecognized type EventHandler
-FAIL Document interface: window.document must inherit property "onpointerlockerror" with the proper type (1) Unrecognized type EventHandler
-PASS Document interface: window.document must inherit property "pointerLockElement" with the proper type (2) 
-PASS Document interface: window.document must inherit property "exitPointerLock" with the proper type (3) 
+FAIL Document interface: window.document must inherit property "onpointerlockchange" with the proper type Unrecognized type EventHandler
+FAIL Document interface: window.document must inherit property "onpointerlockerror" with the proper type Unrecognized type EventHandler
+PASS Document interface: window.document must inherit property "pointerLockElement" with the proper type 
+PASS Document interface: window.document must inherit property "exitPointerLock()" with the proper type 
 PASS MouseEvent interface: attribute movementX 
 PASS MouseEvent interface: attribute movementY 
-PASS MouseEvent interface: new MouseEvent('mousemove') must inherit property "movementX" with the proper type (0) 
-PASS MouseEvent interface: new MouseEvent('mousemove') must inherit property "movementY" with the proper type (1) 
-PASS MouseEvent interface: new MouseEvent('pointerlockchange') must inherit property "movementX" with the proper type (0) 
-PASS MouseEvent interface: new MouseEvent('pointerlockchange') must inherit property "movementY" with the proper type (1) 
+PASS MouseEvent interface: new MouseEvent('mousemove') must inherit property "movementX" with the proper type 
+PASS MouseEvent interface: new MouseEvent('mousemove') must inherit property "movementY" with the proper type 
+PASS MouseEvent interface: new MouseEvent('pointerlockchange') must inherit property "movementX" with the proper type 
+PASS MouseEvent interface: new MouseEvent('pointerlockchange') must inherit property "movementY" with the proper type 
 Harness: the test ran to completion.
 

@@ -2,7 +2,7 @@ This is a testharness.js-based test.
 Found 82 tests; 61 PASS, 21 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test MediaDevices.enumerateDevices call and result. Types only. 
 PASS Navigator interface: attribute mediaDevices 
-PASS Navigator interface: operation getUserMedia(MediaStreamConstraints,NavigatorUserMediaSuccessCallback,NavigatorUserMediaErrorCallback) 
+PASS Navigator interface: operation getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback) 
 FAIL MediaStream interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
 PASS MediaStream interface object length 
 PASS MediaStream interface object name 
@@ -72,10 +72,10 @@ PASS MediaDeviceInfo interface: attribute label
 PASS MediaDeviceInfo interface: attribute groupId 
 PASS MediaDeviceInfo must be primary interface of _mediaInfo 
 PASS Stringification of _mediaInfo 
-PASS MediaDeviceInfo interface: _mediaInfo must inherit property "deviceId" with the proper type (0) 
-PASS MediaDeviceInfo interface: _mediaInfo must inherit property "kind" with the proper type (1) 
-PASS MediaDeviceInfo interface: _mediaInfo must inherit property "label" with the proper type (2) 
-PASS MediaDeviceInfo interface: _mediaInfo must inherit property "groupId" with the proper type (3) 
+PASS MediaDeviceInfo interface: _mediaInfo must inherit property "deviceId" with the proper type 
+PASS MediaDeviceInfo interface: _mediaInfo must inherit property "kind" with the proper type 
+PASS MediaDeviceInfo interface: _mediaInfo must inherit property "label" with the proper type 
+PASS MediaDeviceInfo interface: _mediaInfo must inherit property "groupId" with the proper type 
 FAIL InputDeviceInfo interface: existence and properties of interface object assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
 FAIL InputDeviceInfo interface object length assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
 FAIL InputDeviceInfo interface object name assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing

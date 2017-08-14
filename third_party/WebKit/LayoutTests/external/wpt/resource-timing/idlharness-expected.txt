@@ -2,10 +2,10 @@ This is a testharness.js-based test.
 PASS Performance interface: operation clearResourceTimings() 
 PASS Performance interface: operation setResourceTimingBufferSize(unsigned long) 
 PASS Performance interface: attribute onresourcetimingbufferfull 
-PASS Performance interface: window.performance must inherit property "clearResourceTimings" with the proper type (3) 
-PASS Performance interface: window.performance must inherit property "setResourceTimingBufferSize" with the proper type (4) 
+PASS Performance interface: window.performance must inherit property "clearResourceTimings()" with the proper type 
+PASS Performance interface: window.performance must inherit property "setResourceTimingBufferSize(unsigned long)" with the proper type 
 PASS Performance interface: calling setResourceTimingBufferSize(unsigned long) on window.performance with too few arguments must throw TypeError 
-PASS Performance interface: window.performance must inherit property "onresourcetimingbufferfull" with the proper type (5) 
+PASS Performance interface: window.performance must inherit property "onresourcetimingbufferfull" with the proper type 
 PASS PerformanceResourceTiming interface: existence and properties of interface object 
 PASS PerformanceResourceTiming interface object length 
 PASS PerformanceResourceTiming interface object name 

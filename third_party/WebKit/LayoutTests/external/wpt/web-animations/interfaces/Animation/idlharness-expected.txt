@@ -23,21 +23,21 @@ PASS Animation interface: operation pause()
 PASS Animation interface: operation reverse() 
 PASS Animation must be primary interface of new Animation() 
 PASS Stringification of new Animation() 
-PASS Animation interface: new Animation() must inherit property "id" with the proper type (0) 
-PASS Animation interface: new Animation() must inherit property "effect" with the proper type (1) 
-PASS Animation interface: new Animation() must inherit property "timeline" with the proper type (2) 
-PASS Animation interface: new Animation() must inherit property "startTime" with the proper type (3) 
-PASS Animation interface: new Animation() must inherit property "currentTime" with the proper type (4) 
-PASS Animation interface: new Animation() must inherit property "playbackRate" with the proper type (5) 
-PASS Animation interface: new Animation() must inherit property "playState" with the proper type (6) 
-PASS Animation interface: new Animation() must inherit property "ready" with the proper type (7) 
-PASS Animation interface: new Animation() must inherit property "finished" with the proper type (8) 
-PASS Animation interface: new Animation() must inherit property "onfinish" with the proper type (9) 
-PASS Animation interface: new Animation() must inherit property "oncancel" with the proper type (10) 
-PASS Animation interface: new Animation() must inherit property "cancel" with the proper type (11) 
-PASS Animation interface: new Animation() must inherit property "finish" with the proper type (12) 
-PASS Animation interface: new Animation() must inherit property "play" with the proper type (13) 
-PASS Animation interface: new Animation() must inherit property "pause" with the proper type (14) 
-PASS Animation interface: new Animation() must inherit property "reverse" with the proper type (15) 
+PASS Animation interface: new Animation() must inherit property "id" with the proper type 
+PASS Animation interface: new Animation() must inherit property "effect" with the proper type 
+PASS Animation interface: new Animation() must inherit property "timeline" with the proper type 
+PASS Animation interface: new Animation() must inherit property "startTime" with the proper type 
+PASS Animation interface: new Animation() must inherit property "currentTime" with the proper type 
+PASS Animation interface: new Animation() must inherit property "playbackRate" with the proper type 
+PASS Animation interface: new Animation() must inherit property "playState" with the proper type 
+PASS Animation interface: new Animation() must inherit property "ready" with the proper type 
+PASS Animation interface: new Animation() must inherit property "finished" with the proper type 
+PASS Animation interface: new Animation() must inherit property "onfinish" with the proper type 
+PASS Animation interface: new Animation() must inherit property "oncancel" with the proper type 
+PASS Animation interface: new Animation() must inherit property "cancel()" with the proper type 
+PASS Animation interface: new Animation() must inherit property "finish()" with the proper type 
+PASS Animation interface: new Animation() must inherit property "play()" with the proper type 
+PASS Animation interface: new Animation() must inherit property "pause()" with the proper type 
+PASS Animation interface: new Animation() must inherit property "reverse()" with the proper type 
 Harness: the test ran to completion.
 

@@ -142,17 +142,17 @@ PASS Path2D interface object length
 PASS Path2D interface object name 
 PASS Path2D interface: existence and properties of interface prototype object 
 PASS Path2D interface: existence and properties of interface prototype object's "constructor" property 
-PASS Path2D interface: operation addPath(Path2D,DOMMatrixInit) 
+PASS Path2D interface: operation addPath(Path2D, DOMMatrixInit) 
 PASS Path2D interface: operation closePath() 
-PASS Path2D interface: operation moveTo(unrestricted double,unrestricted double) 
-PASS Path2D interface: operation lineTo(unrestricted double,unrestricted double) 
-PASS Path2D interface: operation quadraticCurveTo(unrestricted double,unrestricted double,unrestricted double,unrestricted double) 
-PASS Path2D interface: operation bezierCurveTo(unrestricted double,unrestricted double,unrestricted double,unrestricted double,unrestricted double,unrestricted double) 
-PASS Path2D interface: operation arcTo(unrestricted double,unrestricted double,unrestricted double,unrestricted double,unrestricted double) 
-PASS Path2D interface: operation arcTo(unrestricted double,unrestricted double,unrestricted double,unrestricted double,unrestricted double,unrestricted double,unrestricted double) 
-PASS Path2D interface: operation rect(unrestricted double,unrestricted double,unrestricted double,unrestricted double) 
-PASS Path2D interface: operation arc(unrestricted double,unrestricted double,unrestricted double,unrestricted double,unrestricted double,boolean) 
-PASS Path2D interface: operation ellipse(unrestricted double,unrestricted double,unrestricted double,unrestricted double,unrestricted double,unrestricted double,unrestricted double,boolean) 
+PASS Path2D interface: operation moveTo(unrestricted double, unrestricted double) 
+PASS Path2D interface: operation lineTo(unrestricted double, unrestricted double) 
+PASS Path2D interface: operation quadraticCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS Path2D interface: operation bezierCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS Path2D interface: operation arcTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS Path2D interface: operation arcTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS Path2D interface: operation rect(unrestricted double, unrestricted double, unrestricted double, unrestricted double) 
+PASS Path2D interface: operation arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) 
+PASS Path2D interface: operation ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean) 
 PASS DataTransfer interface: existence and properties of interface object 
 PASS DataTransferItemList interface: existence and properties of interface object 
 PASS DataTransferItem interface: existence and properties of interface object 
@@ -199,16 +199,16 @@ PASS MessageEvent interface: attribute origin
 PASS MessageEvent interface: attribute lastEventId 
 PASS MessageEvent interface: attribute source 
 PASS MessageEvent interface: attribute ports 
-FAIL MessageEvent interface: operation initMessageEvent(DOMString,boolean,boolean,any,DOMString,DOMString,[object Object],[object Object],[object Object]) assert_equals: property has wrong .length expected 1 but got 0
+FAIL MessageEvent interface: operation initMessageEvent(DOMString, boolean, boolean, any, DOMString, DOMString, [object Object],[object Object], [object Object]) assert_equals: property has wrong .length expected 1 but got 0
 PASS MessageEvent must be primary interface of new MessageEvent("message", { data: 5 }) 
 PASS Stringification of new MessageEvent("message", { data: 5 }) 
-PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "data" with the proper type (0) 
-PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "origin" with the proper type (1) 
-PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "lastEventId" with the proper type (2) 
-PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "source" with the proper type (3) 
-FAIL MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "ports" with the proper type (4) assert_true: Value should be array expected true got false
-PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "initMessageEvent" with the proper type (5) 
-FAIL MessageEvent interface: calling initMessageEvent(DOMString,boolean,boolean,any,DOMString,DOMString,[object Object],[object Object],[object Object]) on new MessageEvent("message", { data: 5 }) with too few arguments must throw TypeError assert_throws: Called with 0 arguments function "function () {
+PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "data" with the proper type 
+PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "origin" with the proper type 
+PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "lastEventId" with the proper type 
+PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "source" with the proper type 
+FAIL MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "ports" with the proper type assert_true: Value should be array expected true got false
+PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "initMessageEvent(DOMString, boolean, boolean, any, DOMString, DOMString, [object Object],[object Object], [object Object])" with the proper type 
+FAIL MessageEvent interface: calling initMessageEvent(DOMString, boolean, boolean, any, DOMString, DOMString, [object Object],[object Object], [object Object]) on new MessageEvent("message", { data: 5 }) with too few arguments must throw TypeError assert_throws: Called with 0 arguments function "function () {
             fn.apply(obj, args);
         }" did not throw
 PASS EventSource interface: existence and properties of interface object 
@@ -250,7 +250,7 @@ PASS WebSocket interface: attribute onerror
 PASS WebSocket interface: attribute onclose 
 PASS WebSocket interface: attribute extensions 
 PASS WebSocket interface: attribute protocol 
-PASS WebSocket interface: operation close(unsigned short,USVString) 
+PASS WebSocket interface: operation close(unsigned short, USVString) 
 PASS WebSocket interface: attribute onmessage 
 PASS WebSocket interface: attribute binaryType 
 PASS WebSocket interface: operation send(USVString) 
@@ -259,29 +259,29 @@ PASS WebSocket interface: operation send(ArrayBuffer)
 PASS WebSocket interface: operation send(ArrayBufferView) 
 PASS WebSocket must be primary interface of new WebSocket("ws://foo") 
 PASS Stringification of new WebSocket("ws://foo") 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "url" with the proper type (0) 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "CONNECTING" with the proper type (1) 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "OPEN" with the proper type (2) 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "CLOSING" with the proper type (3) 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "CLOSED" with the proper type (4) 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "readyState" with the proper type (5) 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "bufferedAmount" with the proper type (6) 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "onopen" with the proper type (7) 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "onerror" with the proper type (8) 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "onclose" with the proper type (9) 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "extensions" with the proper type (10) 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "protocol" with the proper type (11) 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "close" with the proper type (12) 
-PASS WebSocket interface: calling close(unsigned short,USVString) on new WebSocket("ws://foo") with too few arguments must throw TypeError 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "onmessage" with the proper type (13) 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "binaryType" with the proper type (14) 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "send" with the proper type (15) 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "url" with the proper type 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "CONNECTING" with the proper type 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "OPEN" with the proper type 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "CLOSING" with the proper type 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "CLOSED" with the proper type 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "readyState" with the proper type 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "bufferedAmount" with the proper type 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "onopen" with the proper type 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "onerror" with the proper type 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "onclose" with the proper type 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "extensions" with the proper type 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "protocol" with the proper type 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "close(unsigned short, USVString)" with the proper type 
+PASS WebSocket interface: calling close(unsigned short, USVString) on new WebSocket("ws://foo") with too few arguments must throw TypeError 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "onmessage" with the proper type 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "binaryType" with the proper type 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "send(USVString)" with the proper type 
 PASS WebSocket interface: calling send(USVString) on new WebSocket("ws://foo") with too few arguments must throw TypeError 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "send" with the proper type (16) 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "send(Blob)" with the proper type 
 PASS WebSocket interface: calling send(Blob) on new WebSocket("ws://foo") with too few arguments must throw TypeError 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "send" with the proper type (17) 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "send(ArrayBuffer)" with the proper type 
 PASS WebSocket interface: calling send(ArrayBuffer) on new WebSocket("ws://foo") with too few arguments must throw TypeError 
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "send" with the proper type (18) 
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "send(ArrayBufferView)" with the proper type 
 PASS WebSocket interface: calling send(ArrayBufferView) on new WebSocket("ws://foo") with too few arguments must throw TypeError 
 PASS CloseEvent interface: existence and properties of interface object 
 PASS CloseEvent interface object length 
@@ -293,9 +293,9 @@ PASS CloseEvent interface: attribute code
 PASS CloseEvent interface: attribute reason 
 PASS CloseEvent must be primary interface of new CloseEvent("close") 
 PASS Stringification of new CloseEvent("close") 
-PASS CloseEvent interface: new CloseEvent("close") must inherit property "wasClean" with the proper type (0) 
-PASS CloseEvent interface: new CloseEvent("close") must inherit property "code" with the proper type (1) 
-PASS CloseEvent interface: new CloseEvent("close") must inherit property "reason" with the proper type (2) 
+PASS CloseEvent interface: new CloseEvent("close") must inherit property "wasClean" with the proper type 
+PASS CloseEvent interface: new CloseEvent("close") must inherit property "code" with the proper type 
+PASS CloseEvent interface: new CloseEvent("close") must inherit property "reason" with the proper type 
 PASS MessageChannel interface: existence and properties of interface object 
 PASS MessageChannel interface object length 
 PASS MessageChannel interface object name 
@@ -308,7 +308,7 @@ PASS MessagePort interface object length
 PASS MessagePort interface object name 
 PASS MessagePort interface: existence and properties of interface prototype object 
 PASS MessagePort interface: existence and properties of interface prototype object's "constructor" property 
-PASS MessagePort interface: operation postMessage(any,[object Object]) 
+PASS MessagePort interface: operation postMessage(any, [object Object]) 
 PASS MessagePort interface: operation start() 
 PASS MessagePort interface: operation close() 
 PASS MessagePort interface: attribute onmessage 
@@ -339,12 +339,12 @@ FAIL WorkerGlobalScope interface: attribute ononline assert_true: The prototype 
 PASS WorkerGlobalScope interface: attribute origin 
 PASS WorkerGlobalScope interface: operation btoa(DOMString) 
 PASS WorkerGlobalScope interface: operation atob(DOMString) 
-PASS WorkerGlobalScope interface: operation setTimeout(TimerHandler,long,any) 
+PASS WorkerGlobalScope interface: operation setTimeout(TimerHandler, long, any) 
 PASS WorkerGlobalScope interface: operation clearTimeout(long) 
-PASS WorkerGlobalScope interface: operation setInterval(TimerHandler,long,any) 
+PASS WorkerGlobalScope interface: operation setInterval(TimerHandler, long, any) 
 PASS WorkerGlobalScope interface: operation clearInterval(long) 
-PASS WorkerGlobalScope interface: operation createImageBitmap(ImageBitmapSource,ImageBitmapOptions) 
-PASS WorkerGlobalScope interface: operation createImageBitmap(ImageBitmapSource,long,long,long,long,ImageBitmapOptions) 
+PASS WorkerGlobalScope interface: operation createImageBitmap(ImageBitmapSource, ImageBitmapOptions) 
+PASS WorkerGlobalScope interface: operation createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions) 
 PASS DedicatedWorkerGlobalScope interface: existence and properties of interface object 
 PASS DedicatedWorkerGlobalScope interface object length 
 PASS DedicatedWorkerGlobalScope interface object name 
@@ -356,7 +356,7 @@ PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of
 PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of interface prototype object - setting to its original value via __proto__ should not throw 
 PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of interface prototype object - setting to its original value via Reflect.setPrototypeOf should return true 
 PASS DedicatedWorkerGlobalScope interface: existence and properties of interface prototype object's "constructor" property 
-PASS DedicatedWorkerGlobalScope interface: operation postMessage(any,[object Object]) 
+PASS DedicatedWorkerGlobalScope interface: operation postMessage(any, [object Object]) 
 PASS DedicatedWorkerGlobalScope interface: operation close() 
 PASS DedicatedWorkerGlobalScope interface: attribute onmessage 
 PASS DedicatedWorkerGlobalScope interface: attribute onmessageerror 
@@ -368,37 +368,37 @@ PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of
 PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of global platform object - setting to its original value via Reflect.setPrototypeOf should return true 
 PASS DedicatedWorkerGlobalScope must be primary interface of self 
 PASS Stringification of self 
-PASS DedicatedWorkerGlobalScope interface: self must inherit property "postMessage" with the proper type (0) 
-PASS DedicatedWorkerGlobalScope interface: calling postMessage(any,[object Object]) on self with too few arguments must throw TypeError 
-PASS DedicatedWorkerGlobalScope interface: self must inherit property "close" with the proper type (1) 
-PASS DedicatedWorkerGlobalScope interface: self must inherit property "onmessage" with the proper type (2) 
-PASS DedicatedWorkerGlobalScope interface: self must inherit property "onmessageerror" with the proper type (3) 
-PASS WorkerGlobalScope interface: self must inherit property "self" with the proper type (0) 
-PASS WorkerGlobalScope interface: self must inherit property "location" with the proper type (1) 
-PASS WorkerGlobalScope interface: self must inherit property "navigator" with the proper type (2) 
-PASS WorkerGlobalScope interface: self must inherit property "importScripts" with the proper type (3) 
+PASS DedicatedWorkerGlobalScope interface: self must inherit property "postMessage(any, [object Object])" with the proper type 
+PASS DedicatedWorkerGlobalScope interface: calling postMessage(any, [object Object]) on self with too few arguments must throw TypeError 
+PASS DedicatedWorkerGlobalScope interface: self must inherit property "close()" with the proper type 
+PASS DedicatedWorkerGlobalScope interface: self must inherit property "onmessage" with the proper type 
+PASS DedicatedWorkerGlobalScope interface: self must inherit property "onmessageerror" with the proper type 
+PASS WorkerGlobalScope interface: self must inherit property "self" with the proper type 
+PASS WorkerGlobalScope interface: self must inherit property "location" with the proper type 
+PASS WorkerGlobalScope interface: self must inherit property "navigator" with the proper type 
+PASS WorkerGlobalScope interface: self must inherit property "importScripts(USVString)" with the proper type 
 PASS WorkerGlobalScope interface: calling importScripts(USVString) on self with too few arguments must throw TypeError 
-PASS WorkerGlobalScope interface: self must inherit property "onerror" with the proper type (4) 
-FAIL WorkerGlobalScope interface: self must inherit property "onlanguagechange" with the proper type (5) assert_inherits: property "onlanguagechange" not found in prototype chain
-FAIL WorkerGlobalScope interface: self must inherit property "onoffline" with the proper type (6) assert_inherits: property "onoffline" not found in prototype chain
-FAIL WorkerGlobalScope interface: self must inherit property "ononline" with the proper type (7) assert_inherits: property "ononline" not found in prototype chain
-PASS WorkerGlobalScope interface: self must inherit property "origin" with the proper type (8) 
-PASS WorkerGlobalScope interface: self must inherit property "btoa" with the proper type (9) 
+PASS WorkerGlobalScope interface: self must inherit property "onerror" with the proper type 
+FAIL WorkerGlobalScope interface: self must inherit property "onlanguagechange" with the proper type assert_inherits: property "onlanguagechange" not found in prototype chain
+FAIL WorkerGlobalScope interface: self must inherit property "onoffline" with the proper type assert_inherits: property "onoffline" not found in prototype chain
+FAIL WorkerGlobalScope interface: self must inherit property "ononline" with the proper type assert_inherits: property "ononline" not found in prototype chain
+PASS WorkerGlobalScope interface: self must inherit property "origin" with the proper type 
+PASS WorkerGlobalScope interface: self must inherit property "btoa(DOMString)" with the proper type 
 PASS WorkerGlobalScope interface: calling btoa(DOMString) on self with too few arguments must throw TypeError 
-PASS WorkerGlobalScope interface: self must inherit property "atob" with the proper type (10) 
+PASS WorkerGlobalScope interface: self must inherit property "atob(DOMString)" with the proper type 
 PASS WorkerGlobalScope interface: calling atob(DOMString) on self with too few arguments must throw TypeError 
-PASS WorkerGlobalScope interface: self must inherit property "setTimeout" with the proper type (11) 
-PASS WorkerGlobalScope interface: calling setTimeout(TimerHandler,long,any) on self with too few arguments must throw TypeError 
-PASS WorkerGlobalScope interface: self must inherit property "clearTimeout" with the proper type (12) 
+PASS WorkerGlobalScope interface: self must inherit property "setTimeout(TimerHandler, long, any)" with the proper type 
+PASS WorkerGlobalScope interface: calling setTimeout(TimerHandler, long, any) on self with too few arguments must throw TypeError 
+PASS WorkerGlobalScope interface: self must inherit property "clearTimeout(long)" with the proper type 
 PASS WorkerGlobalScope interface: calling clearTimeout(long) on self with too few arguments must throw TypeError 
-PASS WorkerGlobalScope interface: self must inherit property "setInterval" with the proper type (13) 
-PASS WorkerGlobalScope interface: calling setInterval(TimerHandler,long,any) on self with too few arguments must throw TypeError 
-PASS WorkerGlobalScope interface: self must inherit property "clearInterval" with the proper type (14) 
+PASS WorkerGlobalScope interface: self must inherit property "setInterval(TimerHandler, long, any)" with the proper type 
+PASS WorkerGlobalScope interface: calling setInterval(TimerHandler, long, any) on self with too few arguments must throw TypeError 
+PASS WorkerGlobalScope interface: self must inherit property "clearInterval(long)" with the proper type 
 PASS WorkerGlobalScope interface: calling clearInterval(long) on self with too few arguments must throw TypeError 
-PASS WorkerGlobalScope interface: self must inherit property "createImageBitmap" with the proper type (15) 
-PASS WorkerGlobalScope interface: calling createImageBitmap(ImageBitmapSource,ImageBitmapOptions) on self with too few arguments must throw TypeError 
-PASS WorkerGlobalScope interface: self must inherit property "createImageBitmap" with the proper type (16) 
-PASS WorkerGlobalScope interface: calling createImageBitmap(ImageBitmapSource,long,long,long,long,ImageBitmapOptions) on self with too few arguments must throw TypeError 
+PASS WorkerGlobalScope interface: self must inherit property "createImageBitmap(ImageBitmapSource, ImageBitmapOptions)" with the proper type 
+PASS WorkerGlobalScope interface: calling createImageBitmap(ImageBitmapSource, ImageBitmapOptions) on self with too few arguments must throw TypeError 
+PASS WorkerGlobalScope interface: self must inherit property "createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions)" with the proper type 
+PASS WorkerGlobalScope interface: calling createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions) on self with too few arguments must throw TypeError 
 PASS SharedWorkerGlobalScope interface: existence and properties of interface object 
 FAIL Worker interface: existence and properties of interface object assert_own_property: self does not have own property "Worker" expected property "Worker" missing
 FAIL Worker interface object length assert_own_property: self does not have own property "Worker" expected property "Worker" missing
@@ -406,7 +406,7 @@ FAIL Worker interface object name assert_own_property: self does not have own pr
 FAIL Worker interface: existence and properties of interface prototype object assert_own_property: self does not have own property "Worker" expected property "Worker" missing
 FAIL Worker interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "Worker" expected property "Worker" missing
 FAIL Worker interface: operation terminate() assert_own_property: self does not have own property "Worker" expected property "Worker" missing
-FAIL Worker interface: operation postMessage(any,[object Object]) assert_own_property: self does not have own property "Worker" expected property "Worker" missing
+FAIL Worker interface: operation postMessage(any, [object Object]) assert_own_property: self does not have own property "Worker" expected property "Worker" missing
 FAIL Worker interface: attribute onmessage assert_own_property: self does not have own property "Worker" expected property "Worker" missing
 FAIL Worker interface: attribute onerror assert_own_property: self does not have own property "Worker" expected property "Worker" missing
 FAIL SharedWorker interface: existence and properties of interface object assert_own_property: self does not have own property "SharedWorker" expected property "SharedWorker" missing
@@ -435,18 +435,18 @@ FAIL WorkerNavigator interface: attribute languages assert_true: The prototype o
 PASS WorkerNavigator interface: attribute onLine 
 PASS WorkerNavigator must be primary interface of self.navigator 
 PASS Stringification of self.navigator 
-PASS WorkerNavigator interface: self.navigator must inherit property "appCodeName" with the proper type (0) 
-PASS WorkerNavigator interface: self.navigator must inherit property "appName" with the proper type (1) 
-PASS WorkerNavigator interface: self.navigator must inherit property "appVersion" with the proper type (2) 
-PASS WorkerNavigator interface: self.navigator must inherit property "platform" with the proper type (3) 
-PASS WorkerNavigator interface: self.navigator must inherit property "product" with the proper type (4) 
+PASS WorkerNavigator interface: self.navigator must inherit property "appCodeName" with the proper type 
+PASS WorkerNavigator interface: self.navigator must inherit property "appName" with the proper type 
+PASS WorkerNavigator interface: self.navigator must inherit property "appVersion" with the proper type 
+PASS WorkerNavigator interface: self.navigator must inherit property "platform" with the proper type 
+PASS WorkerNavigator interface: self.navigator must inherit property "product" with the proper type 
 PASS WorkerNavigatorinterface: self.navigatormust not have property "productSub" 
-PASS WorkerNavigator interface: self.navigator must inherit property "userAgent" with the proper type (6) 
+PASS WorkerNavigator interface: self.navigator must inherit property "userAgent" with the proper type 
 PASS WorkerNavigatorinterface: self.navigatormust not have property "vendor" 
 PASS WorkerNavigatorinterface: self.navigatormust not have property "vendorSub" 
-FAIL WorkerNavigator interface: self.navigator must inherit property "language" with the proper type (9) assert_inherits: property "language" not found in prototype chain
-FAIL WorkerNavigator interface: self.navigator must inherit property "languages" with the proper type (10) assert_inherits: property "languages" not found in prototype chain
-PASS WorkerNavigator interface: self.navigator must inherit property "onLine" with the proper type (11) 
+FAIL WorkerNavigator interface: self.navigator must inherit property "language" with the proper type assert_inherits: property "language" not found in prototype chain
+FAIL WorkerNavigator interface: self.navigator must inherit property "languages" with the proper type assert_inherits: property "languages" not found in prototype chain
+PASS WorkerNavigator interface: self.navigator must inherit property "onLine" with the proper type 
 PASS WorkerLocation interface: existence and properties of interface object 
 PASS WorkerLocation interface object length 
 PASS WorkerLocation interface object name 

@@ -1756,7 +1756,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-020.html [ Fail
 crbug.com/626703 external/wpt/css/css-ui-3/text-overflow-021.html [ Failure ]
 crbug.com/626703 external/wpt/encoding/eof-utf-8-three.html [ Failure ]
 crbug.com/626703 external/wpt/encoding/eof-utf-8-two.html [ Failure ]
-crbug.com/626703 external/wpt/fetch/api/abort/general.html [ Timeout ]
 crbug.com/626703 virtual/mojo-blobs/external/wpt/fetch/api/abort/general.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/abort/general.html [ Timeout ]
 crbug.com/626703 external/wpt/page-visibility/onvisibilitychange.html [ Timeout ]
@@ -2789,7 +2788,7 @@ crbug.com/724392 [ Win ] fast/css/font-family-case-insensitive.html [ Failure Pa
 crbug.com/713094 [ Win ] fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
 
 # Image decode failures due to document destruction.
-crbug.com/721435 external/wpt/image-decodes/image-decode-iframe.html [ Skip ]
+crbug.com/721435 external/wpt/html/semantics/embedded-content/the-img-element/decode/image-decode-iframe.html [ Skip ]
 
 # Sheriff failures 2017-05-22
 crbug.com/725542 [ Debug ] editing/selection/doubleclick-beside-cr-span.html [ Pass Timeout ]
@@ -3005,7 +3004,7 @@ crbug.com/746128 [ Win7 Debug ] media/controls/video-enter-exit-fullscreen-witho
 crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/controls-video-keynav.html [ Failure ]
 
-crbug.com/626703 [ Win7 ] external/wpt/image-decodes/image-decode-path-changes.html [ Pass Crash ]
+crbug.com/626703 [ Win7 ] external/wpt/html/semantics/embedded-content/the-img-element/decode/image-decode-path-changes.html [ Crash Pass ]
 
 # Sheriff failures 2017-07-20
 crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-applyConstraints.html [ Pass Crash ]
