@@ -14,7 +14,6 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace blink {
-class WebCredential;
 class WebURL;
 }
 

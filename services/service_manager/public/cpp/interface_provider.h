@@ -33,6 +33,17 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT InterfaceProvider {
       provider_->SetBinderForName(name, binder);
     }
 
+    template <typename Interface>
+    void SetBinder(
+        const base::Callback<void(mojo::InterfaceRequest<Interface>)>& binder) {
+      auto adapter =
+          [](base::Callback<void(mojo::InterfaceRequest<Interface>)> binder,
+             mojo::ScopedMessagePipeHandle handle) {
+            binder.Run(mojo::InterfaceRequest<Interface>(std::move(handle)));
+          };
+      SetBinderForName(Interface::Name_, base::Bind(adapter, binder));
+    }
+
     bool HasBinderForName(const std::string& name) {
       return provider_->HasBinderForName(name);
     }

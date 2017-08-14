@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -19,6 +20,8 @@
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
@@ -38,6 +41,14 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
   bool IsShowingAccountChooser() {
     return PasswordsModelDelegateFromWebContents(WebContents())->GetState() ==
            password_manager::ui::CREDENTIAL_REQUEST_STATE;
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // To permit using webauthentication features.
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+    command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                    features::kWebAuth.name);
   }
 
   // Similarly to PasswordManagerBrowserTestBase::NavigateToFile this is a
@@ -66,6 +77,30 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
         "});",
         &result));
     ASSERT_EQ(expect_has_results, result);
+  }
+
+  // Triggers a call to `navigator.credentials.create` to generate a
+  // publicKeyCredential, waits for rejection, and ASSERTs that
+  // |expect_has_results| is satisfied.
+  void CreatePublicKeyCredentialAndExpectNotImplemented(
+      content::WebContents* web_contents) {
+    std::string result;
+    std::string script =
+        "navigator.credentials.create({ publicKey: {"
+        "  challenge: new TextEncoder().encode('climb a mountain'),"
+        "  rp: { id: '1098237235409872', name: 'Acme' },"
+        "  user: { "
+        "    id: '1098237235409872',"
+        "    name: 'avery.a.jones@example.com',"
+        "    displayName: 'Avery A. Jones', "
+        "    icon: 'https://pics.acme.com/00/p/aBjjjpqPb.png'},"
+        "  parameters: [{ type: 'public-key', algorithm: 'ES256'}],"
+        "  timeout: 60000,"
+        "  excludeList: [] }"
+        "}).catch(c => window.domAutomationController.send(c.toString()));";
+    ASSERT_TRUE(
+        content::ExecuteScriptAndExtractString(web_contents, script, &result));
+    ASSERT_EQ("NotAllowedError: The operation is not implemented.", result);
   }
 
   // Schedules a call to be made to navigator.credentials.store() in the
@@ -635,4 +670,17 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, CredentialsAutofilled) {
   WaitForElementValue("password_field", "12345");
 }
 
+// Tests that when navigator.credentials.create() is called we got a
+// NotAllowedError as the implementation is still unfinished.
+IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
+                       CreatePublicKeyCredentialNotImplemented) {
+  const GURL a_url1 = https_test_server().GetURL("a.com", "/title1.html");
+
+  // Navigate to a mostly empty page.
+  ui_test_utils::NavigateToURL(browser(), a_url1);
+
+  // Call create(), open a mojo connection and receive a DomException.
+  ASSERT_NO_FATAL_FAILURE(
+      CreatePublicKeyCredentialAndExpectNotImplemented(WebContents()));
+}
 }  // namespace

@@ -7,7 +7,7 @@
 
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "modules/ModulesExport.h"
-#include "modules/webauth/AuthenticatorResponse.h"
+#include "modules/credentialmanager/AuthenticatorResponse.h"
 #include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {

@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "content/shell/test_runner/layout_and_paint_async_then.h"
 #include "content/shell/test_runner/layout_dump.h"
+#include "content/shell/test_runner/mock_authenticator.h"
 #include "content/shell/test_runner/mock_content_settings_client.h"
 #include "content/shell/test_runner/mock_credential_manager_client.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
@@ -268,6 +269,16 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                                         const std::string& avatar,
                                         const std::string& password);
   void ClearMockCredentialManagerResponse();
+  void SetMockAuthenticatorError(const std::string& error);
+  void SetMockAuthenticatorResponse(
+      const std::string& id,
+      const gin::ArrayBufferView& raw_id,
+      const gin::ArrayBufferView& client_data_json,
+      const gin::ArrayBufferView& attestation_object,
+      const gin::ArrayBufferView& authenticator_data,
+      const gin::ArrayBufferView& signature);
+
+  void ClearMockAuthenticatorResponse();
   bool CallShouldCloseOnWebView();
   bool DisableAutoResizeMode(int new_width, int new_height);
   bool EnableAutoResizeMode(int min_width,
@@ -377,6 +388,12 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetMockCredentialManagerResponse)
       .SetMethod("clearMockCredentialManagerResponse",
                  &TestRunnerBindings::ClearMockCredentialManagerResponse)
+      .SetMethod("setMockAuthenticatorError",
+                 &TestRunnerBindings::SetMockAuthenticatorError)
+      .SetMethod("setMockAuthenticatorResponse",
+                 &TestRunnerBindings::SetMockAuthenticatorResponse)
+      .SetMethod("clearMockAuthenticatorResponse",
+                 &TestRunnerBindings::ClearMockAuthenticatorResponse)
       .SetMethod("addMockSpeechRecognitionResult",
                  &TestRunnerBindings::AddMockSpeechRecognitionResult)
       .SetMethod("addOriginAccessWhitelistEntry",
@@ -1437,6 +1454,30 @@ void TestRunnerBindings::SetMockCredentialManagerError(
     runner_->SetMockCredentialManagerError(error);
 }
 
+void TestRunnerBindings::SetMockAuthenticatorResponse(
+    const std::string& id,
+    const gin::ArrayBufferView& raw_id,
+    const gin::ArrayBufferView& client_data_json,
+    const gin::ArrayBufferView& attestation_object,
+    const gin::ArrayBufferView& authenticator_data,
+    const gin::ArrayBufferView& signature) {
+  if (runner_) {
+    runner_->SetMockAuthenticatorResponse(id, raw_id, client_data_json,
+                                          attestation_object,
+                                          authenticator_data, signature);
+  }
+}
+
+void TestRunnerBindings::ClearMockAuthenticatorResponse() {
+  if (runner_)
+    runner_->ClearMockAuthenticatorResponse();
+}
+
+void TestRunnerBindings::SetMockAuthenticatorError(const std::string& error) {
+  if (runner_)
+    runner_->SetMockAuthenticatorError(error);
+}
+
 void TestRunnerBindings::AddWebPageOverlay() {
   if (view_runner_)
     view_runner_->AddWebPageOverlay();
@@ -1618,6 +1659,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       mock_content_settings_client_(
           new MockContentSettingsClient(&layout_test_runtime_flags_)),
       will_navigate_(false),
+      authenticator_(new MockAuthenticator),
       credential_manager_client_(new MockCredentialManagerClient),
       mock_screen_orientation_client_(new MockScreenOrientationClient),
       spellcheck_(new SpellCheckClient(this)),
@@ -2796,6 +2838,29 @@ void TestRunner::ClearMockCredentialManagerResponse() {
 
 void TestRunner::SetMockCredentialManagerError(const std::string& error) {
   credential_manager_client_->SetError(error);
+}
+
+MockAuthenticator* TestRunner::GetMockAuthenticator() {
+  return authenticator_.get();
+}
+
+void TestRunner::SetMockAuthenticatorResponse(
+    const std::string& id,
+    const gin::ArrayBufferView& raw_id,
+    const gin::ArrayBufferView& client_data_json,
+    const gin::ArrayBufferView& attestation_object,
+    const gin::ArrayBufferView& authenticator_data,
+    const gin::ArrayBufferView& signature) {
+  authenticator_->SetResponse(id, raw_id, client_data_json, attestation_object,
+                              authenticator_data, signature);
+}
+
+void TestRunner::ClearMockAuthenticatorResponse() {
+  authenticator_->ClearResponse();
+}
+
+void TestRunner::SetMockAuthenticatorError(const std::string& error) {
+  authenticator_->SetError(error);
 }
 
 void TestRunner::OnLayoutTestRuntimeFlagsChanged() {

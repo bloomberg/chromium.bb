@@ -6,8 +6,8 @@
 <script type="text/plain" id="tested">
 [SecureContext]
 interface PublicKeyCredential : Credential {
-    [SameObject] readonly attribute ArrayBuffer           rawId;
-    [SameObject] readonly attribute AuthenticatorResponse response;
+    readonly attribute ArrayBuffer           rawId;
+    readonly attribute AuthenticatorResponse response;
 };
 
 partial dictionary CredentialCreationOptions {
@@ -20,18 +20,18 @@ partial dictionary CredentialRequestOptions {
 
 [SecureContext]
 interface AuthenticatorResponse {
-    [SameObject] readonly attribute ArrayBuffer clientDataJSON;
+    readonly attribute ArrayBuffer clientDataJSON;
 };
 
 [SecureContext]
 interface AuthenticatorAttestationResponse : AuthenticatorResponse {
-    [SameObject] readonly attribute ArrayBuffer attestationObject;
+    readonly attribute ArrayBuffer attestationObject;
 };
 
 [SecureContext]
 interface AuthenticatorAssertionResponse : AuthenticatorResponse {
-    [SameObject] readonly attribute ArrayBuffer      authenticatorData;
-    [SameObject] readonly attribute ArrayBuffer      signature;
+    readonly attribute ArrayBuffer      authenticatorData;
+    readonly attribute ArrayBuffer      signature;
 };
 
 dictionary PublicKeyCredentialParameters {
@@ -47,7 +47,7 @@ dictionary MakeCredentialOptions {
     required sequence<PublicKeyCredentialParameters> parameters;
 
     unsigned long                        timeout;
-    sequence<PublicKeyCredentialDescriptor> excludeCredentials = [];
+    sequence<PublicKeyCredentialDescriptor> excludeList = [];
     AuthenticatorSelectionCriteria       authenticatorSelection;
 };
 
@@ -62,11 +62,11 @@ dictionary PublicKeyCredentialUserEntity : PublicKeyCredentialEntity {
 };
 
 dictionary AuthenticatorSelectionCriteria {
-    AuthenticatorAttachment    attachment;
+    Attachment    attachment;
     boolean       requireResidentKey = false;
 };
 
-enum AuthenticatorAttachment {
+enum Attachment {
     "platform",
     "cross-platform"
 };
@@ -75,13 +75,13 @@ dictionary PublicKeyCredentialRequestOptions {
     required BufferSource                challenge;
     unsigned long                        timeout;
     USVString                            rpId;
-    sequence<PublicKeyCredentialDescriptor> allowCredentials = [];
+    sequence<PublicKeyCredentialDescriptor> allowList = [];
 };
 
 dictionary CollectedClientData {
     required DOMString           challenge;
     required DOMString           origin;
-    required DOMString           hashAlgorithm;
+    required DOMString           hashAlg;
     DOMString                    tokenBindingId;
 };
 
@@ -101,25 +101,12 @@ enum Transport {
     "ble"
 };
 
-interface WebAuthentication {
-    Promise<AuthenticatorAttestationResponse> makeCredential (
-        MakeCredentialOptions	                publicKey
-    );
-
-    Promise<AuthenticatorAssertionResponse> getAssertion (
-        PublicKeyCredentialRequestOptions     publicKey
-    );
-};
-
 </script>
 <script>
 (function() {
     "use strict";
     var idl_array = new IdlArray();
     idl_array.add_idls(document.querySelector('#tested').textContent);
-    idl_array.add_objects({
-      WebAuthentication: ['navigator.authentication']
-    });
     idl_array.test();
 })();
 </script>

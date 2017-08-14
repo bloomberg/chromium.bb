@@ -6,12 +6,16 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "content/public/common/associated_interface_registry.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/shell/renderer/layout_test/blink_test_runner.h"
 #include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
+#include "content/shell/test_runner/mock_authenticator.h"
 #include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_test_runner.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
@@ -29,6 +33,8 @@ LayoutTestRenderFrameObserver::LayoutTestRenderFrameObserver(
       test_runner->GetWebTextCheckClient());
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
       &LayoutTestRenderFrameObserver::BindRequest, base::Unretained(this)));
+
+  SetupBinders(test_runner);
 }
 
 LayoutTestRenderFrameObserver::~LayoutTestRenderFrameObserver() = default;
@@ -67,6 +73,19 @@ void LayoutTestRenderFrameObserver::SetTestConfiguration(
 void LayoutTestRenderFrameObserver::SetupSecondaryRenderer() {
   BlinkTestRunner::Get(render_frame()->GetRenderView())
       ->OnSetupSecondaryRenderer();
+}
+
+void LayoutTestRenderFrameObserver::SetupBinders(
+    test_runner::WebTestRunner* test_runner) {
+  service_manager::InterfaceProvider* interface_provider =
+      render_frame()->GetRemoteInterfaces();
+  DCHECK(interface_provider);
+  service_manager::InterfaceProvider::TestApi interface_provider_test_api(
+      interface_provider);
+
+  interface_provider_test_api.SetBinder(
+      base::Bind(&test_runner::MockAuthenticator::BindRequest,
+                 base::Unretained(test_runner->GetMockAuthenticator())));
 }
 
 }  // namespace content

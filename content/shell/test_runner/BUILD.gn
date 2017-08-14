@@ -30,6 +30,8 @@ component("test_runner") {
     "layout_dump.h",
     "layout_test_runtime_flags.cc",
     "layout_test_runtime_flags.h",
+    "mock_authenticator.cc",
+    "mock_authenticator.h",
     "mock_color_chooser.cc",
     "mock_color_chooser.h",
     "mock_content_settings_client.cc",
