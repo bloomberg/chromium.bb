@@ -147,15 +147,12 @@ struct Element {
   Element() = default;
   constexpr Element(ExecutableType exe_type, offset_t offset, offset_t length)
       : exe_type(exe_type), offset(offset), length(length) {}
-  constexpr explicit Element(BufferRegion region)
-      : exe_type(kExeTypeNoOp),
+  constexpr explicit Element(ExecutableType exe_type, BufferRegion region)
+      : exe_type(exe_type),
         offset(base::checked_cast<offset_t>(region.offset)),
         length(base::checked_cast<offset_t>(region.size)) {}
-
-  ExecutableType exe_type;
-  offset_t offset;
-  offset_t length;
-  // TODO(huangs): Use BufferRegion.
+  constexpr explicit Element(BufferRegion region)
+      : Element(kExeTypeNoOp, region) {}
 
   // Returns the end offset of this element.
   offset_t EndOffset() const { return offset + length; }
@@ -167,14 +164,24 @@ struct Element {
   }
 
   BufferRegion region() const { return {offset, length}; }
+
+  friend bool operator==(const Element& a, const Element& b) {
+    return a.exe_type == b.exe_type && a.offset == b.offset &&
+           a.length == b.length;
+  }
+
+  ExecutableType exe_type;
+  offset_t offset;
+  offset_t length;
+  // TODO(huangs): Use BufferRegion.
 };
 
 // A matched pair of Elements.
 struct ElementMatch {
+  bool IsValid() const { return old_element.exe_type == new_element.exe_type; }
+
   Element old_element;
   Element new_element;
-
-  bool IsValid() const { return old_element.exe_type == new_element.exe_type; }
 };
 
 }  // namespace zucchini
