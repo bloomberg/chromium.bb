@@ -11,6 +11,7 @@
 #ifndef COMPONENTS_COMPONENT_UPDATER_MOCK_COMPONENT_UPDATER_SERVICE_H_
 #define COMPONENTS_COMPONENT_UPDATER_MOCK_COMPONENT_UPDATER_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -39,6 +40,7 @@ class MockComponentUpdateService : public ComponentUpdateService {
   MOCK_CONST_METHOD1(
       GetComponentForMimeType,
       std::unique_ptr<ComponentInfo>(const std::string& mime_type));
+  MOCK_CONST_METHOD0(GetComponents, std::vector<ComponentInfo>());
   MOCK_METHOD0(GetOnDemandUpdater,
       OnDemandUpdater&());
   MOCK_METHOD2(MaybeThrottle,
