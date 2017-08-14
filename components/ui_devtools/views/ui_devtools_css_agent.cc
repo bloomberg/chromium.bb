@@ -53,12 +53,12 @@ std::unique_ptr<Array<CSS::CSSProperty>> BuildCSSPropertyArray(
   return cssProperties;
 }
 
-std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(int node_id,
+std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(UIElement* ui_element,
                                              const gfx::Rect& bounds,
                                              bool visible) {
   return CSS::CSSStyle::create()
       .setRange(BuildDefaultSourceRange())
-      .setStyleSheetId(base::IntToString(node_id))
+      .setStyleSheetId(base::IntToString(ui_element->node_id()))
       .setCssProperties(BuildCSSPropertyArray(bounds, visible))
       .setShorthandEntries(Array<std::string>::create())
       .build();
@@ -121,7 +121,8 @@ ui_devtools::protocol::Response UIDevToolsCSSAgent::getMatchedStylesForNode(
     int node_id,
     ui_devtools::protocol::Maybe<ui_devtools::protocol::CSS::CSSStyle>*
         inline_style) {
-  *inline_style = GetStylesForNode(node_id);
+  UIElement* ui_element = dom_agent_->GetElementFromNodeId(node_id);
+  *inline_style = GetStylesForUIElement(ui_element);
   if (!inline_style)
     return NodeNotFoundError(node_id);
   return ui_devtools::protocol::Response::OK();
@@ -143,9 +144,10 @@ ui_devtools::protocol::Response UIDevToolsCSSAgent::setStyleTexts(
     if (!base::StringToInt(edit->getStyleSheetId(), &node_id))
       return ui_devtools::protocol::Response::Error("Invalid node id");
 
+    UIElement* ui_element = dom_agent_->GetElementFromNodeId(node_id);
     gfx::Rect updated_bounds;
     bool visible = false;
-    if (!GetPropertiesForNodeId(node_id, &updated_bounds, &visible))
+    if (!GetPropertiesForUIElement(ui_element, &updated_bounds, &visible))
       return NodeNotFoundError(node_id);
 
     ui_devtools::protocol::Response response(
@@ -153,37 +155,36 @@ ui_devtools::protocol::Response UIDevToolsCSSAgent::setStyleTexts(
     if (!response.isSuccess())
       return response;
 
-    updated_styles->addItem(BuildCSSStyle(node_id, updated_bounds, visible));
+    updated_styles->addItem(BuildCSSStyle(ui_element, updated_bounds, visible));
 
-    if (!SetPropertiesForNodeId(node_id, updated_bounds, visible))
+    if (!SetPropertiesForUIElement(ui_element, updated_bounds, visible))
       return NodeNotFoundError(node_id);
   }
   *result = std::move(updated_styles);
   return ui_devtools::protocol::Response::OK();
 }
 
-void UIDevToolsCSSAgent::OnNodeBoundsChanged(int node_id) {
-  InvalidateStyleSheet(node_id);
+void UIDevToolsCSSAgent::OnElementBoundsChanged(UIElement* ui_element) {
+  InvalidateStyleSheet(ui_element);
 }
 
 std::unique_ptr<ui_devtools::protocol::CSS::CSSStyle>
-UIDevToolsCSSAgent::GetStylesForNode(int node_id) {
+UIDevToolsCSSAgent::GetStylesForUIElement(UIElement* ui_element) {
   gfx::Rect bounds;
   bool visible = false;
-  return GetPropertiesForNodeId(node_id, &bounds, &visible)
-             ? BuildCSSStyle(node_id, bounds, visible)
+  return GetPropertiesForUIElement(ui_element, &bounds, &visible)
+             ? BuildCSSStyle(ui_element, bounds, visible)
              : nullptr;
 }
 
-void UIDevToolsCSSAgent::InvalidateStyleSheet(int node_id) {
+void UIDevToolsCSSAgent::InvalidateStyleSheet(UIElement* ui_element) {
   // The stylesheetId for each node is equivalent to its node_id (as a string).
-  frontend()->styleSheetChanged(base::IntToString(node_id));
+  frontend()->styleSheetChanged(base::IntToString(ui_element->node_id()));
 }
 
-bool UIDevToolsCSSAgent::GetPropertiesForNodeId(int node_id,
-                                                gfx::Rect* bounds,
-                                                bool* visible) {
-  UIElement* ui_element = dom_agent_->GetElementFromNodeId(node_id);
+bool UIDevToolsCSSAgent::GetPropertiesForUIElement(UIElement* ui_element,
+                                                   gfx::Rect* bounds,
+                                                   bool* visible) {
   if (ui_element) {
     ui_element->GetBounds(bounds);
     ui_element->GetVisible(visible);
@@ -192,10 +193,9 @@ bool UIDevToolsCSSAgent::GetPropertiesForNodeId(int node_id,
   return false;
 }
 
-bool UIDevToolsCSSAgent::SetPropertiesForNodeId(int node_id,
-                                                const gfx::Rect& bounds,
-                                                bool visible) {
-  UIElement* ui_element = dom_agent_->GetElementFromNodeId(node_id);
+bool UIDevToolsCSSAgent::SetPropertiesForUIElement(UIElement* ui_element,
+                                                   const gfx::Rect& bounds,
+                                                   bool visible) {
   if (ui_element) {
     ui_element->SetBounds(bounds);
     ui_element->SetVisible(visible);

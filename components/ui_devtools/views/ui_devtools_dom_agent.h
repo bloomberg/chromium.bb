@@ -23,8 +23,7 @@ class UIElement;
 
 class UIDevToolsDOMAgentObserver {
  public:
-  // TODO(thanhph): Use UIElement* as input argument instead.
-  virtual void OnNodeBoundsChanged(int node_id) = 0;
+  virtual void OnElementBoundsChanged(UIElement* ui_element) = 0;
 };
 
 class UIDevToolsDOMAgent : public ui_devtools::UiDevToolsBaseAgent<
@@ -75,7 +74,7 @@ class UIDevToolsDOMAgent : public ui_devtools::UiDevToolsBaseAgent<
   void OnWindowInitialized(aura::Window* window) override {}
   void OnHostInitialized(aura::WindowTreeHost* host) override;
 
-  void OnNodeBoundsChanged(int node_id);
+  void OnElementBoundsChanged(UIElement* ui_element);
   std::unique_ptr<ui_devtools::protocol::DOM::Node> BuildInitialTree();
   std::unique_ptr<ui_devtools::protocol::DOM::Node> BuildTreeForUIElement(
       UIElement* ui_element);
