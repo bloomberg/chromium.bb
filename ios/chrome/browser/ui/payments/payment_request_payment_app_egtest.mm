@@ -35,7 +35,7 @@ const char kBobPayPage[] =
 // are not installed.
 - (void)testShowPaymentAppNotInstalled {
   if (!base::ios::IsRunningOnOrLater(10, 3, 0)) {
-    EARL_GREY_TEST_DISABLED(
+    EARL_GREY_TEST_SKIPPED(
         @"Disabled on iOS versions below 10.3 because DOMException is not "
         @"available.");
   }
