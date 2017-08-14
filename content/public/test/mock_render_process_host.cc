@@ -159,9 +159,9 @@ MockRenderProcessHost::GetRendererAudioOutputStreamFactoryContext() {
   return nullptr;
 }
 
-void MockRenderProcessHost::OnAudioStreamAdded() {}
+void MockRenderProcessHost::OnMediaStreamAdded() {}
 
-void MockRenderProcessHost::OnAudioStreamRemoved() {}
+void MockRenderProcessHost::OnMediaStreamRemoved() {}
 
 StoragePartition* MockRenderProcessHost::GetStoragePartition() const {
   return BrowserContext::GetDefaultStoragePartition(browser_context_);
