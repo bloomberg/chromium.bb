@@ -1596,7 +1596,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled"
+                    "name": "Enabled_1_m5",
+                    "params": {
+                        "transport_rtt_multiplier": "5"
+                    }
                 }
             ]
         }
