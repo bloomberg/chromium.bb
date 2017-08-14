@@ -34,6 +34,7 @@ import sys
 import time
 
 from chromite.lib import cros_logging as logging
+from chromite.lib import ts_mon_config
 from chromite.lib.workqueue import copy_handler
 from chromite.lib.workqueue import service
 from chromite.lib.workqueue import tasks
@@ -114,7 +115,9 @@ def main(argv):
   logging.info('  Maximum of %d concurrent tasks', options.max_tasks)
   logging.info('  Time per tick is %.3f seconds', options.interval)
   try:
-    queue.ProcessRequests(manager)
+    with ts_mon_config.SetupTsMonGlobalState(
+        'provision_workqueue', indirect=True):
+      queue.ProcessRequests(manager)
   except KeyboardInterrupt:
     pass
   finally:

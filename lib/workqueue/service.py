@@ -13,6 +13,7 @@ calls block on the server side until capacity is available.
 
 from __future__ import print_function
 
+import collections
 import errno
 import os
 import pickle
@@ -20,6 +21,7 @@ import shutil
 import time
 
 from chromite.lib import cros_logging as logging
+from chromite.lib import metrics
 
 
 class WorkQueueTimeout(Exception):
@@ -278,6 +280,56 @@ class WorkQueueServer(_BaseWorkQueue):
 
   _HEARTBEAT_INTERVAL = 10 * 60
 
+
+  # Metrics-related constants.  These are the names of the various
+  # metrics we report during `ProcessRequests()`.
+  #
+  # _METRIC_PREFIX - initial path to all workqueue server metrics
+  #   names.
+  #
+  # 'ticks' - Counter incremented once for each time through the polling
+  #   loop in `ProcessRequests()`.
+  #
+  # 'time_waiting' - Distribution of the amount of time that requests
+  #   spend waiting in the queue.
+  # 'time_running' - Distribution of the amount of time that requests
+  #   spend actively running.
+  # 'time_to_abort' - Distribution of the amount of time that an aborted
+  #   request spent in its final state (_not_ the time spent from
+  #   creation until termination).
+  #
+  # 'task_count' - Gauge for the number of requests currently in the
+  #   queue.  A 'state' field distinguishes waiting from running
+  #   requests.
+  #
+  # 'total_received' - Counter for the number of requests seen by
+  #   `_GetNewRequests()`.
+  # 'total_completed' - Counter for the number of requests that have
+  #   completed and been removed from the queue.  A 'status'
+  #   field distinguishes whether the request finished normally or was
+  #   aborted.
+
+  _METRIC_PREFIX = 'chromeos/provision_workqueue/server/'
+
+  # Because of crbug.com/755415, the metrics have to be constructed
+  # at run time, after calling ts_mon_config.SetupTsMonGlobalState().
+  # So, just record what we'll construct, and leave the actual
+  # construction till later.
+  _METRICS_CONSTRUCTORS = [
+      ('ticks', metrics.Counter),
+      ('time_waiting', (
+          lambda name: metrics.SecondsDistribution(name, scale=0.01))),
+      ('time_running', (
+          lambda name: metrics.SecondsDistribution(name, scale=0.01))),
+      ('time_to_abort', (
+          lambda name: metrics.SecondsDistribution(name, scale=0.01))),
+      ('task_count', metrics.Gauge),
+      ('total_received', metrics.Counter),
+      ('total_completed', metrics.Counter),
+  ]
+  _MetricsSet = collections.namedtuple(
+      '_MetricsSet', [name for name, _ in _METRICS_CONSTRUCTORS])
+
   def _CreateSpool(self):
     """Create and populate the spool directory in the file system."""
     spool_dir = os.path.dirname(self._spool_state_dirs[self._REQUESTED])
@@ -377,36 +429,64 @@ class WorkQueueServer(_BaseWorkQueue):
                 responsible for starting and tracking running tasks.
     """
     self._CreateSpool()
+    metrics_set = self._MetricsSet(
+        *(constructor(self._METRIC_PREFIX + name)
+          for name, constructor in self._METRICS_CONSTRUCTORS))
     pending_requests = []
+    timestamps = {}
     tick_count = 0
     next_heartbeat = time.time()
     num_running = 0
     while True:
       tick_count += 1
-      if next_heartbeat <= time.time():
+      if time.time() >= next_heartbeat:
         next_heartbeat = time.time() + self._HEARTBEAT_INTERVAL
         logging.debug('Starting tick number %d', tick_count)
       manager.StartTick()
+
       num_completed = 0
       for request_id, result in manager.Reap():
         num_completed += 1
+        metrics_set.total_completed.increment(fields={'status': 'normal'})
+        time_running = time.time() - timestamps.pop(request_id)
+        metrics_set.time_running.add(time_running)
         self._CompleteRequest(request_id, result)
-      num_running -= num_completed
-      num_pending = len(pending_requests)
-      pending_requests.extend(self._GetNewRequests())
-      num_added = len(pending_requests) - num_pending
+
+      num_added = 0
+      for request_id in self._GetNewRequests():
+        num_added += 1
+        metrics_set.total_received.increment()
+        timestamps[request_id] = time.time()
+        pending_requests.append(request_id)
+
       num_aborted = 0
       for abort_id in self._GetAbortRequests():
         num_aborted += 1
+        metrics_set.total_completed.increment(fields={'status': 'abort'})
+        if abort_id in timestamps:
+          time_to_abort = time.time() - timestamps.pop(abort_id)
+          metrics_set.time_to_abort.add(time_to_abort)
         self._ProcessAbort(abort_id, pending_requests, manager)
+
       num_started = 0
       while pending_requests and manager.HasCapacity():
         num_started += 1
-        self._StartRequest(pending_requests.pop(0), manager)
-      num_running += num_started
+        request_id = pending_requests.pop(0)
+        time_now = time.time()
+        time_waiting = time_now - timestamps[request_id]
+        metrics_set.time_waiting.add(time_waiting)
+        timestamps[request_id] = time_now
+        self._StartRequest(request_id, manager)
+
+      num_running += num_started - num_completed
       if num_completed or num_added or num_aborted or num_started:
         logging.info('new: %d, started: %d, aborted: %d, completed: %d',
                      num_added, num_started, num_aborted, num_completed)
-        logging.info('pending: %d, running %d',
-                     len(pending_requests), num_running)
+        num_pending = len(pending_requests)
+        logging.info('pending: %d, running %d', num_pending, num_running)
+        metrics_set.task_count.set(num_pending,
+                                   fields={'state': 'pending'})
+        metrics_set.task_count.set(num_running,
+                                   fields={'state': 'running'})
+      metrics_set.ticks.increment()
       time.sleep(manager.sample_interval)
