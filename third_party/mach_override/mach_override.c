@@ -443,7 +443,7 @@ allocateBranchIsland(
 			err = vm_allocate( task_self, &page, PAGE_SIZE, 0 );
 			if( err == err_none )
 				allocated = 1;
-			else if( err == KERN_NO_SPACE ) {
+			else if( err == KERN_NO_SPACE || err == KERN_INVALID_ADDRESS) {
 #if defined(__x86_64__)
 				// This memory region is not suitable, skip it:
 				vm_size_t region_size;
