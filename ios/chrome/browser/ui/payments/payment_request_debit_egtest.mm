@@ -192,7 +192,7 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
 
   // Type in the CVC.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"CVC_textField")]
-      performAction:grey_typeText(@"123")];
+      performAction:grey_replaceText(@"123")];
 
   // Tap the Confirm button.
   [[EarlGrey

@@ -78,7 +78,7 @@ const char kRequestEmailPage[] =
 
   // Type in the CVC.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"CVC_textField")]
-      performAction:grey_typeText(@"123")];
+      performAction:grey_replaceText(@"123")];
 
   // Tap the confirm button.
   [[EarlGrey
@@ -145,7 +145,7 @@ const char kRequestEmailPage[] =
 
   // Type in the CVC.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"CVC_textField")]
-      performAction:grey_typeText(@"123")];
+      performAction:grey_replaceText(@"123")];
 
   // Tap the confirm button.
   [[EarlGrey
@@ -198,7 +198,7 @@ const char kRequestEmailPage[] =
 
   // Type in the CVC.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"CVC_textField")]
-      performAction:grey_typeText(@"123")];
+      performAction:grey_replaceText(@"123")];
 
   // Tap the confirm button.
   [[EarlGrey
@@ -232,7 +232,7 @@ const char kRequestEmailPage[] =
 
   // Type in the CVC.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"CVC_textField")]
-      performAction:grey_typeText(@"123")];
+      performAction:grey_replaceText(@"123")];
 
   // Tap the confirm button.
   [[EarlGrey
