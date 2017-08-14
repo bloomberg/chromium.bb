@@ -288,11 +288,11 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
     EARL_GREY_TEST_DISABLED(@"Disabled on iOS 9.");
   }
 
-  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
-  // interact with the share menu.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-  }
+  // Clear generalPasteboard before and after the test.
+  [UIPasteboard generalPasteboard].string = @"";
+  [self setTearDownHandler:^{
+    [UIPasteboard generalPasteboard].string = @"";
+  }];
 
   std::map<GURL, std::string> responses;
   const GURL URL = web::test::HttpServer::MakeUrl("http://testPage");
@@ -303,11 +303,25 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxText(URL.GetContent())];
 
-  [ChromeEarlGreyUI openShareMenu];
-
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
-                                   @"Copy")] performAction:grey_tap()];
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    // Can't access share menu from xctest on iOS 11+, so use the text field
+    // callout bar instead.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+        performAction:grey_longPress()];
+    [[[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Select All")]
+        inRoot:grey_kindOfClass(NSClassFromString(@"UICalloutBarButton"))]
+        performAction:grey_tap()];
+    [[[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Copy")]
+        inRoot:grey_kindOfClass(NSClassFromString(@"UICalloutBarButton"))]
+        performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
+        performAction:grey_tap()];
+  } else {
+    [ChromeEarlGreyUI openShareMenu];
+    [[EarlGrey
+        selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
+                                     @"Copy")] performAction:grey_tap()];
+  }
 
   [ChromeEarlGrey loadURL:secondURL];
 
