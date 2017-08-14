@@ -33,6 +33,8 @@
 #include <algorithm>
 #include <memory>
 #include <set>
+#include <utility>
+
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/Nullable.h"
@@ -212,7 +214,7 @@ class WebRTCCertificateObserver : public WebRTCCertificateCallback {
   ~WebRTCCertificateObserver() override {}
 
  private:
-  WebRTCCertificateObserver(ScriptPromiseResolver* resolver)
+  explicit WebRTCCertificateObserver(ScriptPromiseResolver* resolver)
       : resolver_(resolver) {}
 
   void OnSuccess(std::unique_ptr<WebRTCCertificate> certificate) override {
@@ -397,7 +399,7 @@ class WebRTCStatsReportCallbackResolver : public WebRTCStatsReportCallback {
   }
 
  private:
-  WebRTCStatsReportCallbackResolver(ScriptPromiseResolver* resolver)
+  explicit WebRTCStatsReportCallbackResolver(ScriptPromiseResolver* resolver)
       : resolver_(resolver) {}
 
   void OnStatsDelivered(std::unique_ptr<WebRTCStatsReport> report) override {
@@ -1201,21 +1203,27 @@ HeapVector<Member<RTCRtpSender>> RTCPeerConnection::getSenders() {
 HeapVector<Member<RTCRtpReceiver>> RTCPeerConnection::getReceivers() {
   WebVector<std::unique_ptr<WebRTCRtpReceiver>> web_rtp_receivers =
       peer_handler_->GetReceivers();
-  HeapVector<Member<RTCRtpReceiver>> rtp_receivers(web_rtp_receivers.size());
-  for (size_t i = 0; i < web_rtp_receivers.size(); ++i) {
-    uintptr_t id = web_rtp_receivers[i]->Id();
+  HeapVector<Member<RTCRtpReceiver>> rtp_receivers;
+  for (auto& web_rtp_receiver : web_rtp_receivers) {
+    uintptr_t id = web_rtp_receiver->Id();
     const auto it = rtp_receivers_.find(id);
     if (it != rtp_receivers_.end()) {
-      rtp_receivers[i] = it->value;
+      rtp_receivers.push_back(it->value);
     } else {
-      // There does not exist a |RTCRtpReceiver| for this |WebRTCRtpReceiver|
+      MediaStreamTrack* track = GetTrack(web_rtp_receiver->Track());
+      // If the |track| is null, it means that the set of tracks in the WebRTC
+      // library differs from |track_|.
+      // TODO(hbos): Make sure that |tracks_| always reflects the set of tracks
+      // in the WebRTC library. http://crbug.com/755166
+      if (!track)
+        continue;
+
+      // There does not exist a |RTCRtpReceiver| for |web_rtp_receivers[i]|
       // yet, create it.
-      MediaStreamTrack* track = GetTrack(web_rtp_receivers[i]->Track());
-      DCHECK(track);
       RTCRtpReceiver* rtp_receiver =
-          new RTCRtpReceiver(std::move(web_rtp_receivers[i]), track);
+          new RTCRtpReceiver(std::move(web_rtp_receiver), track);
       rtp_receivers_.insert(id, rtp_receiver);
-      rtp_receivers[i] = rtp_receiver;
+      rtp_receivers.push_back(rtp_receiver);
     }
   }
   return rtp_receivers;
