@@ -2553,7 +2553,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('elm',            None,             'hana'),          # oak (MTK8173)
     ('kevin',          None,             'bob'),           # gru (RK3399)
     ('reef',           None,             None),            # reef (APL)
-    ('reef-uni',       None,             None),            # reef (APL)
     (None,             None,             None),            # poppy (KBL)
   ])
 
