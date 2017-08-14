@@ -39,6 +39,7 @@ class SadTabTabHelperTest : public PlatformTest {
 // Tests that SadTab is not presented for not shown web states.
 TEST_F(SadTabTabHelperTest, NotPresented) {
   OCMStub([application_ applicationState]).andReturn(UIApplicationStateActive);
+  web_state_.WasHidden();
 
   // WebState should not have presented a transient content view.
   EXPECT_FALSE(web_state_.GetTransientContentView());
