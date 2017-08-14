@@ -32,10 +32,7 @@
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/background_generator.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_toolbar_controller.h"
@@ -2741,19 +2738,6 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 - (void)closeAllIncognitoTabs {
   DCHECK([self isCurrentSetIncognito]);
   [self removeAllCardsFromSet:_activeCardSet];
-}
-
-- (IBAction)chromeExecuteCommand:(id)sender {
-  int command = [sender tag];
-
-  switch (command) {
-    case IDC_TOGGLE_TAB_SWITCHER:
-      [self dismissWithSelectedTabAnimation];
-      break;
-    default:
-      [super chromeExecuteCommand:sender];
-      break;
-  }
 }
 
 #pragma mark Notification Handlers

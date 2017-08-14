@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/image_util.h"
@@ -69,6 +70,10 @@ const CGFloat kBackgroundViewColorAlpha = 0.95;
 
     [_stackViewToolbar addSubview:_openNewTabButton];
     [self.view addSubview:_stackViewToolbar];
+
+    [[self stackButton] addTarget:_dispatcher
+                           action:@selector(dismissTabSwitcher)
+                 forControlEvents:UIControlEventTouchUpInside];
   }
   return self;
 }
