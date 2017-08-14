@@ -61,6 +61,7 @@
 #include "components/browser_watcher/stability_paths.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
+#include "components/metrics/component_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/field_trials_provider.h"
 #include "components/metrics/file_metrics_provider.h"
@@ -592,6 +593,10 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
           new translate::TranslateRankerMetricsProvider()));
+
+  metrics_service_->RegisterMetricsProvider(
+      base::MakeUnique<metrics::ComponentMetricsProvider>(
+          g_browser_process->component_updater()));
 
 #if defined(OS_ANDROID)
   metrics_service_->RegisterMetricsProvider(

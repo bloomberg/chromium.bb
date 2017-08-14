@@ -899,4 +899,44 @@ message SystemProfileProto {
     optional AntiVirusState product_state = 5;
   }
   repeated AntiVirusProduct antivirus_product = 23;
+
+  enum ComponentId {
+    // Represents any component that is not one of the below.
+    UNKNOWN = 1;
+
+    // All the following are various components.
+    FILE_TYPE_POLICIES = 2;
+    ORIGIN_TRIALS = 3;
+    PEPPER_FLASH = 4;
+    PEPPER_FLASH_CHROMEOS = 5;
+    PNACL = 6;
+    RECOVERY = 7;
+    SSL_ERROR_ASSISTANT = 8;
+    STH_SET = 9;
+    CRL_SET = 10;
+    SUBRESOURCE_FILTER = 11;
+    SW_REPORTER = 12;
+    WIDEVINE_CDM = 13;
+    EPSON_INKJET_PRINTER_ESCPR = 14;
+  }
+
+  // Information about what Chrome components are registered and at which
+  // version.
+  // Next Tag: 4
+  message ChromeComponent {
+    // Which component this information is for.
+    optional ComponentId component_id = 1 [default = UNKNOWN];
+
+    // Human-readable dotted-quad representation of the currently-installed
+    // version of the component, e.g. "1.2.3.4".
+    optional string version = 2;
+
+    // The first 32 bits of the Omaha-style fingerprint of the installed
+    // component, discarding any bits that describe the fingerprint format. In
+    // practice this is the first 32 bits of the SHA256 hash of the package that
+    // was installed as the component. It is a stronger version number that can
+    // vary across platform, architecture, or branches of an A/B component test.
+    optional fixed32 omaha_fingerprint = 3;
+  }
+  repeated ChromeComponent chrome_component = 24;
 }

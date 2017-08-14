@@ -3,6 +3,7 @@
 include_rules = [
   "-components",
   "+components/browser_watcher",
+  "+components/component_updater",
   "+components/compression",
   "+components/metrics",
   "+components/prefs",
