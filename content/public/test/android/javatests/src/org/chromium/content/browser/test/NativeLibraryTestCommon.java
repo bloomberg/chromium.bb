@@ -9,6 +9,7 @@ import android.app.Instrumentation;
 import org.junit.Assert;
 
 import org.chromium.base.PathUtils;
+import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -41,6 +42,11 @@ class NativeLibraryTestCommon {
     void nativeInitialization(boolean initBrowserProcess) {
         if (initBrowserProcess) {
             try {
+                // Extract compressed resource paks.
+                ResourceExtractor resourceExtractor = ResourceExtractor.get();
+                resourceExtractor.startExtractingResources();
+                resourceExtractor.waitForCompletion();
+
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .startBrowserProcessesSync(false);
             } catch (ProcessInitException e) {
