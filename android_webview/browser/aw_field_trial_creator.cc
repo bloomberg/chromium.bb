@@ -32,7 +32,7 @@ CreateLowEntropyProvider() {
           // Synchronous read of the client id is permitted as it is fast
           // enough to have minimal impact on startup time, and is behind the
           // webview-enable-finch flag.
-          android_webview::AwMetricsServiceClient::GetOrCreateClientId()));
+          android_webview::AwMetricsServiceClient::GetClientId()));
 }
 
 // Synchronous read of variations data is permitted as it is fast
@@ -77,6 +77,8 @@ std::unique_ptr<PrefService> AwFieldTrialCreator::CreateLocalState() {
 void AwFieldTrialCreator::SetUpFieldTrials() {
   if (!AwMetricsServiceClient::CheckSDKVersionForMetrics())
     return;
+
+  AwMetricsServiceClient::LoadOrCreateClientId();
 
   DCHECK(!field_trial_list_);
   // Set the FieldTrialList singleton.
