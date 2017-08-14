@@ -1461,6 +1461,11 @@ TEST(SafeNumerics, CastTests) {
   EXPECT_EQ(1, checked_cast<int>(StrictNumeric<int>(1)));
   EXPECT_EQ(1, saturated_cast<int>(StrictNumeric<int>(1)));
   EXPECT_EQ(1, strict_cast<int>(StrictNumeric<int>(1)));
+
+  enum class EnumTest { kOne = 1 };
+  EXPECT_EQ(1, checked_cast<int>(EnumTest::kOne));
+  EXPECT_EQ(1, saturated_cast<int>(EnumTest::kOne));
+  EXPECT_EQ(1, strict_cast<int>(EnumTest::kOne));
 }
 
 TEST(SafeNumerics, IsValueInRangeForNumericType) {
