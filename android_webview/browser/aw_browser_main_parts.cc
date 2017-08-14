@@ -150,7 +150,7 @@ int AwBrowserMainParts::PreCreateThreads() {
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableWebViewVariations)) {
-    AwMetricsServiceClient::GetOrCreateGUID();
+    aw_field_trial_creator_.SetUpFieldTrials();
   }
 
   return content::RESULT_CODE_NORMAL_EXIT;
