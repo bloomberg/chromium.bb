@@ -6,7 +6,6 @@
 
 #include "base/format_macros.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller_private.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"

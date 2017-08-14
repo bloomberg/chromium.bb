@@ -191,6 +191,10 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 // Returns the share button's view. Used to position the share menu.
 - (UIView*)shareButtonView;
 
+// Returns the stackButton (a.k.a. tabSwitcherButton). Used by subclasses to
+// set display or dismiss target-actions.
+- (UIButton*)stackButton;
+
 // Sets the background to a particular alpha value. Intended for use by
 // subcleasses that need to set the opacity of the entire toolbar.
 - (void)setBackgroundAlpha:(CGFloat)alpha;

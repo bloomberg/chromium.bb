@@ -8,8 +8,6 @@
 
 #import "ios/chrome/app/main_controller_private.h"
 #include "ios/chrome/browser/chrome_switches.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/ui_util.h"
@@ -37,6 +35,10 @@ using web::test::HttpServer;
 
 namespace {
 
+// Returns the GREYMatcher for the button that opens the tab switcher.
+id<GREYMatcher> TabSwitcherOpenButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER);
+}
 // Returns the GREYMatcher for the button that closes the tab switcher.
 id<GREYMatcher> TabSwitcherCloseButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_TAB_STRIP_LEAVE_TAB_SWITCHER);
@@ -93,9 +95,8 @@ void OpenNewIncognitoTabUsingUI() {
 // Triggers the opening of the tab switcher by launching a command. Should be
 // called only when the tab switcher is not presented.
 void EnterTabSwitcherWithCommand() {
-  GenericChromeCommand* command =
-      [[GenericChromeCommand alloc] initWithTag:IDC_TOGGLE_TAB_SWITCHER];
-  chrome_test_util::RunCommandWithActiveViewController(command);
+  [[EarlGrey selectElementWithMatcher:TabSwitcherOpenButton()]
+      performAction:grey_tap()];
 }
 
 }  // namespace

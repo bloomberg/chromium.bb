@@ -19,7 +19,6 @@
 #define IDC_FIND_PREVIOUS                              37002
 #define IDC_SHOW_BOOKMARK_MANAGER                      40011
 #define IDC_HELP_PAGE_VIA_MENU                         40020
-#define IDC_TOGGLE_TAB_SWITCHER                        40901
 #define IDC_SHOW_SIGNIN_IOS                            40905
 #define IDC_FIND_CLOSE                                 40907
 #define IDC_FIND_UPDATE                                40908

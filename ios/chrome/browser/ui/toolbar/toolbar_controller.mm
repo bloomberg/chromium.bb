@@ -16,15 +16,13 @@
 #include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/animation_util.h"
 #include "ios/chrome/browser/ui/bubble/bubble_util.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/image_util.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller_private.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/tools_menu_button_observer_bridge.h"
@@ -363,7 +361,6 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
     if (idiom == IPHONE_IDIOM) {
       stackButton_ =
           [[ToolbarCenteredButton alloc] initWithFrame:stackButtonFrame];
-      [stackButton_ setTag:IDC_TOGGLE_TAB_SWITCHER];
       [[stackButton_ titleLabel]
           setFont:[self fontForSize:kFontSizeFewerThanTenTabs]];
       [stackButton_
@@ -568,12 +565,6 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
   [button addTarget:self
                 action:@selector(recordUserMetrics:)
       forControlEvents:UIControlEventTouchUpInside];
-  // Only register buttons with defined tags for -chromeExecuteCommand:.
-  if (button.tag) {
-    [button addTarget:button
-                  action:@selector(chromeExecuteCommand:)
-        forControlEvents:UIControlEventTouchUpInside];
-  }
 }
 
 - (CGRect)shareButtonAnchorRect {

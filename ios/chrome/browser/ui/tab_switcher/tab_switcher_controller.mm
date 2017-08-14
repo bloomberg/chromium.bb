@@ -22,11 +22,8 @@
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
@@ -422,18 +419,6 @@ enum class SnapshotViewOption {
                            atIndex:NSNotFound
                         transition:ui::PAGE_TRANSITION_TYPED
                           tabModel:model];
-}
-
-- (IBAction)chromeExecuteCommand:(id)sender {
-  int command = [sender tag];
-  switch (command) {
-    case IDC_TOGGLE_TAB_SWITCHER:
-      [self tabSwitcherDismissWithCurrentSelectedModel];
-      break;
-    default:
-      [super chromeExecuteCommand:sender];
-      break;
-  }
 }
 
 #pragma mark - Private
