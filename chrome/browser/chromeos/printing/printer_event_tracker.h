@@ -5,6 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PRINTING_PRINTER_EVENT_TRACKER_H_
 #define CHROME_BROWSER_CHROMEOS_PRINTING_PRINTER_EVENT_TRACKER_H_
 
+#include <stdint.h>
+
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -35,6 +40,8 @@ struct UsbPrinter {
 class PrinterEventTracker : public KeyedService {
  public:
   enum SetupMode {
+    // Catch-all for unrecognized mode strings.
+    kUnknownMode,
     // Device configured by the user.
     kUser,
     // Configuration detected by the system.
