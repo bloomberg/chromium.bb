@@ -122,8 +122,8 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsDefault) {
   // Block plugins.
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile());
-  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                CONTENT_SETTING_BLOCK);
+  map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                     std::string(), CONTENT_SETTING_BLOCK);
 
   EXPECT_FALSE(IsPluginAvailable(
       url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
@@ -134,8 +134,8 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsDefault) {
       ChromePluginServiceFilter::kEngagementSettingBlockedHistogram, 0, 1);
 
   // Allow plugins.
-  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                CONTENT_SETTING_ALLOW);
+  map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                     std::string(), CONTENT_SETTING_ALLOW);
 
   EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
                                 profile()->GetResourceContext(), flash_plugin));
@@ -148,8 +148,9 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsDefault) {
       ChromePluginServiceFilter::kEngagementSettingBlockedHistogram, 0, 1);
 
   // Detect important content should block on 0 engagement.
-  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+  map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                     std::string(),
+                                     CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
   EXPECT_FALSE(IsPluginAvailable(
       url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
@@ -169,23 +170,23 @@ TEST_F(ChromePluginServiceFilterTest,
       base::ASCIIToUTF16("1"), base::ASCIIToUTF16("The Flash plugin."));
   base::HistogramTester histograms;
 
-  // Allow plugins by default.
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile());
-  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                CONTENT_SETTING_ALLOW);
-
-  // This should respect the content setting and be allowed.
   GURL url("http://www.google.com");
   url::Origin main_frame_origin(url);
+
+  // Allow plugins.
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                     std::string(), CONTENT_SETTING_ALLOW);
   EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
                                 profile()->GetResourceContext(), flash_plugin));
 
   histograms.ExpectBucketCount(
       ChromePluginServiceFilter::kEngagementSettingAllowedHistogram, 0, 1);
 
-  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+  map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                     std::string(),
+                                     CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
   // This should be blocked due to 0 engagement and a detect content setting.
   EXPECT_FALSE(IsPluginAvailable(
@@ -215,8 +216,8 @@ TEST_F(ChromePluginServiceFilterTest,
       ChromePluginServiceFilter::kEngagementNoSettingHistogram, 30, 1);
 
   // Blocked content setting should override engagement
-  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                CONTENT_SETTING_BLOCK);
+  map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                     std::string(), CONTENT_SETTING_BLOCK);
   EXPECT_FALSE(IsPluginAvailable(
       url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
 

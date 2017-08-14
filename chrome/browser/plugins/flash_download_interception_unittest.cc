@@ -19,15 +19,25 @@ using content::NavigationThrottle;
 
 class FlashDownloadInterceptionTest : public ChromeRenderViewHostTestHarness {
  public:
+  FlashDownloadInterceptionTest() : source_url_("https://source-url.com") {}
+
   HostContentSettingsMap* host_content_settings_map() {
     return HostContentSettingsMapFactory::GetForProfile(profile());
   }
 
   bool ShouldStopFlashDownloadAction(const std::string& target_url) {
     return FlashDownloadInterception::ShouldStopFlashDownloadAction(
-        host_content_settings_map(), GURL("https://source-url.com/"),
-        GURL(target_url), true);
+        host_content_settings_map(), source_url_, GURL(target_url), true);
   }
+
+  void SetFlashContentSetting(ContentSetting setting) {
+    host_content_settings_map()->SetContentSettingDefaultScope(
+        source_url_, source_url_, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+        setting);
+  }
+
+ private:
+  const GURL source_url_;
 };
 
 TEST_F(FlashDownloadInterceptionTest, PreferHtmlOverPluginsOff) {
@@ -111,20 +121,15 @@ TEST_F(FlashDownloadInterceptionTest, OnlyInterceptOnDetectContentSetting) {
       ShouldStopFlashDownloadAction("https://get.adobe.com/flashplayer/"));
 
   // No intercept on ALLOW.
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile());
-  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                CONTENT_SETTING_ALLOW);
+  SetFlashContentSetting(CONTENT_SETTING_ALLOW);
   EXPECT_FALSE(
       ShouldStopFlashDownloadAction("https://get.adobe.com/flashplayer/"));
 
   // Intercept on both explicit DETECT and BLOCK.
-  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                CONTENT_SETTING_BLOCK);
+  SetFlashContentSetting(CONTENT_SETTING_BLOCK);
   EXPECT_TRUE(
       ShouldStopFlashDownloadAction("https://get.adobe.com/flashplayer/"));
-  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+  SetFlashContentSetting(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
   EXPECT_TRUE(
       ShouldStopFlashDownloadAction("https://get.adobe.com/flashplayer/"));
 }

@@ -264,6 +264,14 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
             base::FilePath(FILE_PATH_LITERAL("plugin_power_saver")),
             base::FilePath()));
     ASSERT_TRUE(embedded_test_server()->Start());
+
+    // Plugin throttling only operates once Flash is ALLOW-ed on a site.
+    GURL server_root = embedded_test_server()->GetURL("/");
+    HostContentSettingsMap* content_settings_map =
+        HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+    content_settings_map->SetContentSettingDefaultScope(
+        server_root, server_root, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+        CONTENT_SETTING_ALLOW);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -276,11 +284,6 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
     // The pixel tests run more reliably in software mode.
     if (PixelTestsEnabled())
       command_line->AppendSwitch(switches::kDisableGpu);
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    // Disable HTML5 By Default feature to test Plugin Power Saver specifically.
-    feature_list.InitAndDisableFeature(features::kPreferHtmlOverPlugins);
   }
 
  protected:
@@ -432,23 +435,6 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, MAYBE_SmallCrossOrigin) {
   SimulateClickAndAwaitMarkedEssential("plugin_poster", gfx::Point(50, 150));
 }
 
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ContentSettings) {
-  HostContentSettingsMap* content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
-
-  // Throttle on DETECT.
-  content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
-  LoadPeripheralPlugin();
-  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
-
-  // Don't throttle on ALLOW.
-  content_settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                                 CONTENT_SETTING_ALLOW);
-  LoadPeripheralPlugin();
-  VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin");
-}
-
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallerThanPlayIcon) {
   LoadHTML("/smaller_than_play_icon.html");
 
@@ -595,29 +581,4 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingTinyPlugins) {
 
   VerifyPluginIsThrottled(GetActiveWebContents(), "expand_to_peripheral");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "expand_to_essential");
-}
-
-// Separate test case with HTML By Default feature flag on.
-class PluginPowerSaverPreferHtmlBrowserTest
-    : public PluginPowerSaverBrowserTest {
- public:
-  void SetUpInProcessBrowserTestFixture() override {
-    // Although this is redundant with the Field Trial testing configuration,
-    // the official builders don't read that.
-    feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list;
-};
-
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverPreferHtmlBrowserTest,
-                       ThrottlePluginsOnAllowContentSetting) {
-  HostContentSettingsMap* content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
-
-  content_settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                                 CONTENT_SETTING_ALLOW);
-  LoadPeripheralPlugin();
-  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
 }

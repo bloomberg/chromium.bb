@@ -351,6 +351,11 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectCrossOrigin) {
 #if BUILDFLAG(ENABLE_PLUGINS)
 class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
  protected:
+  void SetUpOnMainThread() override {
+    ContentSettingsTest::SetUpOnMainThread();
+    ASSERT_TRUE(https_server_.Start());
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ASSERT_TRUE(ppapi::RegisterFlashTestPlugin(command_line));
 
@@ -384,11 +389,7 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
     base::string16 expected_title(base::ASCIIToUTF16(expected_result));
     content::TitleWatcher title_watcher(web_contents, expected_title);
 
-    // GetTestUrl assumes paths, so we must append query parameters to result.
-    GURL file_url = ui_test_utils::GetTestUrl(
-        base::FilePath(),
-        base::FilePath().AppendASCII("load_pepper_plugin.html"));
-    GURL url(file_url.spec() +
+    GURL url(https_server_.GetURL("/load_pepper_plugin.html").spec() +
              base::StringPrintf("?mimetype=%s", mime_type));
     ui_test_utils::NavigateToURL(browser(), url);
 
@@ -398,7 +399,7 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
                   IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
   }
 
-  void RunJavaScriptBlockedTest(const char* html_file,
+  void RunJavaScriptBlockedTest(const char* path,
                                 bool expect_is_javascript_content_blocked) {
     // Because JavaScript is blocked, <title> will be the only title set.
     // Checking for it ensures that the page loaded, though that is not always
@@ -428,9 +429,7 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
                                    base::Unretained(tab_settings),
                                    CONTENT_SETTINGS_TYPE_JAVASCRIPT));
 
-    GURL url = ui_test_utils::GetTestUrl(
-        base::FilePath(), base::FilePath().AppendASCII(html_file));
-    ui_test_utils::NavigateToURL(browser(), url);
+    ui_test_utils::NavigateToURL(browser(), https_server_.GetURL(path));
 
     // Always wait for the page to load.
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
@@ -471,21 +470,25 @@ class PepperContentSettingsSpecialCasesJavaScriptBlockedTest
  public:
   void SetUpOnMainThread() override {
     PepperContentSettingsSpecialCasesTest::SetUpOnMainThread();
-    HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-        ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                   CONTENT_SETTING_ALLOW);
-    HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-        ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-                                   CONTENT_SETTING_BLOCK);
+    GURL server_root = https_server_.GetURL("/");
+    HostContentSettingsMap* content_settings_map =
+        HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+    content_settings_map->SetContentSettingDefaultScope(
+        server_root, server_root, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+        CONTENT_SETTING_ALLOW);
+    content_settings_map->SetDefaultContentSetting(
+        CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
   }
 };
 
 // A sanity check to verify that the plugin that is used as a baseline below
 // can be loaded.
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesTest, Flash) {
+  GURL server_root = https_server_.GetURL("/");
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                 CONTENT_SETTING_ALLOW);
+      ->SetContentSettingDefaultScope(server_root, server_root,
+                                      CONTENT_SETTINGS_TYPE_PLUGINS,
+                                      std::string(), CONTENT_SETTING_ALLOW);
 
   RunLoadPepperPluginTest(content::kFlashPluginSwfMimeType, true);
 }
@@ -520,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
 // Flash is not blocked when JavaScript is blocked.
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
                        Flash) {
-  RunJavaScriptBlockedTest("load_flash_no_js.html", false);
+  RunJavaScriptBlockedTest("/load_flash_no_js.html", false);
 }
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
@@ -531,14 +534,14 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
       GetPepperCdmPath(kWidevineCdmBaseDirectory, kWidevineCdmAdapterFileName);
   EXPECT_TRUE(base::PathExists(adapter_path)) << adapter_path.MaybeAsASCII();
   EXPECT_TRUE(IsPepperCdmRegistered(kWidevineCdmPluginMimeType));
-  RunJavaScriptBlockedTest("load_widevine_no_js.html", true);
+  RunJavaScriptBlockedTest("/load_widevine_no_js.html", true);
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
 
 #if !defined(DISABLE_NACL)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
                        NaCl) {
-  RunJavaScriptBlockedTest("load_nacl_no_js.html", true);
+  RunJavaScriptBlockedTest("/load_nacl_no_js.html", true);
 }
 #endif  // !defined(DISABLE_NACL)
 
