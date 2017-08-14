@@ -74,8 +74,7 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
         gfx::BufferFormat::YVU_420,   gfx::BufferFormat::YUV_420_BIPLANAR};
     const gfx::BufferUsage kGPUReadWriteUsages[] = {
         gfx::BufferUsage::GPU_READ, gfx::BufferUsage::SCANOUT,
-        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-        gfx::BufferUsage::SCANOUT_VDA_WRITE};
+        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE};
     for (auto format : kGPUReadWriteFormats) {
       for (auto usage : kGPUReadWriteUsages) {
         if (IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
