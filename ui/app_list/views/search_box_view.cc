@@ -497,8 +497,7 @@ void SearchBoxView::SetSearchBoxActive(bool active) {
 
   is_search_box_active_ = active;
   UpdateSearchIcon();
-  UpdateBackgroundColor(active ? kSearchBoxBackgroundDefault
-                               : background_color_);
+  UpdateBackgroundColor(background_color_);
   search_box_->set_placeholder_text_draw_flags(
       active ? gfx::Canvas::TEXT_ALIGN_LEFT : gfx::Canvas::TEXT_ALIGN_CENTER);
   search_box_->set_placeholder_text_color(active ? kZeroQuerySearchboxColor
@@ -902,6 +901,7 @@ void SearchBoxView::GetWallpaperProminentColors(std::vector<SkColor>* colors) {
   view_delegate_->GetWallpaperProminentColors(colors);
 }
 
+// TODO(crbug.com/755219): Unify this with UpdateBackgroundColor.
 void SearchBoxView::SetBackgroundColor(SkColor light_vibrant) {
   DCHECK(is_fullscreen_app_list_enabled_);
   const SkColor light_vibrant_mixed = color_utils::AlphaBlend(
@@ -916,7 +916,10 @@ void SearchBoxView::SetSearchBoxColor(SkColor color) {
       SK_ColorTRANSPARENT == color ? kDefaultSearchboxColor : color;
 }
 
+// TODO(crbug.com/755219): Unify this with SetBackgroundColor.
 void SearchBoxView::UpdateBackgroundColor(SkColor color) {
+  if (is_search_box_active_)
+    color = kSearchBoxBackgroundDefault;
   GetSearchBoxBackground()->set_color(color);
   search_box_->SetBackgroundColor(color);
 }
