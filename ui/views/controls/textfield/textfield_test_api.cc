@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/textfield/textfield_test_api.h"
 
+#include "ui/gfx/geometry/rect.h"
+
 namespace views {
 
 TextfieldTestApi::TextfieldTestApi(Textfield* textfield)
@@ -25,6 +27,10 @@ void TextfieldTestApi::CreateTouchSelectionControllerAndNotifyIt() {
 
 void TextfieldTestApi::ResetTouchSelectionController() {
   textfield_->touch_selection_controller_.reset();
+}
+
+void TextfieldTestApi::SetCursorViewRect(gfx::Rect bounds) {
+  textfield_->cursor_view_.SetBoundsRect(bounds);
 }
 
 }  // namespace views
