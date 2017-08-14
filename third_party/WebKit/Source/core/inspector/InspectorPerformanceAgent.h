@@ -41,7 +41,8 @@ class CORE_EXPORT InspectorPerformanceAgent final
 
   Member<PerformanceMonitor> performance_monitor_;
   bool enabled_ = false;
-  static const char* metric_names_[];
+  static const char* page_metric_names_[];
+  static const char* instance_metric_names_[];
 };
 
 }  // namespace blink

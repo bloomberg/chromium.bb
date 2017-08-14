@@ -1,0 +1,6 @@
+Test that page performance metrics are retrieved.
+[]
+["PageDocumentCount","AudioHandlerCount","DocumentCount","FrameCount","JSEventListenerCount","LayoutObjectCount","MediaKeySessionCount","MediaKeysCount","NodeCount","ResourceCount","ScriptPromiseCount","SuspendableObjectCount","V8PerContextDataCount","WorkerGlobalScopeCount"]
+["PageDocumentCount","AudioHandlerCount","DocumentCount","FrameCount","JSEventListenerCount","LayoutObjectCount","MediaKeySessionCount","MediaKeysCount","NodeCount","ResourceCount","ScriptPromiseCount","SuspendableObjectCount","V8PerContextDataCount","WorkerGlobalScopeCount"]
+[]
+

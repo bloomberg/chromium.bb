@@ -6,17 +6,20 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectedFrames.h"
+#include "platform/InstanceCounters.h"
 #include "platform/wtf/dtoa/utils.h"
 
 namespace blink {
 
 using protocol::Response;
 
-const char* InspectorPerformanceAgent::metric_names_[] = {
-#define DEFINE_PERF_METRIC_NAME(name) #name,
-    PERF_METRICS_LIST(DEFINE_PERF_METRIC_NAME)
+#define DEFINE_PERF_METRIC_NAME(name) #name "Count",
+const char* InspectorPerformanceAgent::page_metric_names_[] = {
+    PERF_METRICS_LIST(DEFINE_PERF_METRIC_NAME)};
+
+const char* InspectorPerformanceAgent::instance_metric_names_[] = {
+    INSTANCE_COUNTERS_LIST(DEFINE_PERF_METRIC_NAME)};
 #undef DEFINE_PERF_METRIC_NAME
-};
 
 InspectorPerformanceAgent::InspectorPerformanceAgent(
     InspectedFrames* inspected_frames)
@@ -39,17 +42,27 @@ protocol::Response InspectorPerformanceAgent::disable() {
 Response InspectorPerformanceAgent::getMetrics(
     std::unique_ptr<protocol::Array<protocol::Performance::Metric>>*
         out_result) {
+  if (!enabled_) {
+    *out_result = protocol::Array<protocol::Performance::Metric>::create();
+    return Response::OK();
+  }
   std::unique_ptr<protocol::Array<protocol::Performance::Metric>> result =
       protocol::Array<protocol::Performance::Metric>::create();
-  if (enabled_) {
-    for (size_t i = 0; i < ARRAY_SIZE(metric_names_); ++i) {
-      double value = performance_monitor_->PerfMetricValue(
-          static_cast<PerformanceMonitor::MetricsType>(i));
-      result->addItem(protocol::Performance::Metric::create()
-                          .setName(metric_names_[i])
-                          .setValue(value)
-                          .build());
-    }
+  for (size_t i = 0; i < ARRAY_SIZE(page_metric_names_); ++i) {
+    double value = performance_monitor_->PerfMetricValue(
+        static_cast<PerformanceMonitor::MetricsType>(i));
+    result->addItem(protocol::Performance::Metric::create()
+                        .setName(page_metric_names_[i])
+                        .setValue(value)
+                        .build());
+  }
+  for (size_t i = 0; i < InstanceCounters::kCounterTypeLength; ++i) {
+    int value = InstanceCounters::CounterValue(
+        static_cast<InstanceCounters::CounterType>(i));
+    result->addItem(protocol::Performance::Metric::create()
+                        .setName(instance_metric_names_[i])
+                        .setValue(value)
+                        .build());
   }
   *out_result = std::move(result);
   return Response::OK();
