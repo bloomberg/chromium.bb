@@ -12,6 +12,7 @@
 #include "ui/app_list/vector_icons/vector_icons.h"
 #include "ui/app_list/views/search_result_container_view.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -117,6 +118,13 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
       title()->SetFontList(base_font.DeriveWithSizeDelta(1));
       title()->SetEnabledColor(kGridTitleColorFullscreen);
     } else if (item_->display_type() == SearchResult::DISPLAY_TILE) {
+      // Set solid color background to avoid broken text. See crbug.com/746563.
+      rating_->SetBackground(
+          views::CreateSolidBackground(kCardBackgroundColorFullscreen));
+      price_->SetBackground(
+          views::CreateSolidBackground(kCardBackgroundColorFullscreen));
+      title()->SetBackground(
+          views::CreateSolidBackground(kCardBackgroundColorFullscreen));
       title()->SetFontList(base_font.DeriveWithSizeDelta(1));
       title()->SetEnabledColor(kSearchTitleColor);
     }
@@ -264,7 +272,7 @@ void SearchResultTileItemView::Layout() {
     if (rating_) {
       gfx::Rect rating_rect(rect);
       rating_rect.Inset(0, title()->GetPreferredSize().height(), 0, 0);
-      rating_rect.set_height(rating_->GetPreferredSize().height());
+      rating_rect.set_size(rating_->GetPreferredSize());
       rating_->SetBoundsRect(rating_rect);
     }
 
@@ -275,15 +283,15 @@ void SearchResultTileItemView::Layout() {
                              title()->GetPreferredSize().height() +
                                  kSearchRatingStarVerticalSpacing,
                              0, 0);
-      rating_star_rect.set_height(rating_star_->GetPreferredSize().height());
-      rating_star_rect.set_width(rating_star_->GetPreferredSize().width());
+      rating_star_rect.set_size(rating_star_->GetPreferredSize());
       rating_star_->SetBoundsRect(rating_star_rect);
     }
 
     if (price_) {
       gfx::Rect price_rect(rect);
-      price_rect.Inset(0, title()->GetPreferredSize().height(), 0, 0);
-      price_rect.set_height(price_->GetPreferredSize().height());
+      price_rect.Inset(rect.width() - price_->GetPreferredSize().width(),
+                       title()->GetPreferredSize().height(), 0, 0);
+      price_rect.set_size(price_->GetPreferredSize());
       price_->SetBoundsRect(price_rect);
     }
   } else {

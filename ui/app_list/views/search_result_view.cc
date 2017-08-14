@@ -331,6 +331,27 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
   if (!is_fullscreen_app_list_enabled_)
     canvas->FillRect(content_rect, kCardBackgroundColor);
 
+  gfx::Rect text_bounds(rect);
+  text_bounds.set_x(GetIconViewWidth());
+  if (actions_view_->visible()) {
+    text_bounds.set_width(
+        rect.width() - GetIconViewWidth() - kTextTrailPadding -
+        actions_view_->bounds().width() -
+        (actions_view_->has_children() ? kActionButtonRightMargin : 0));
+  } else {
+    text_bounds.set_width(rect.width() - GetIconViewWidth() -
+                          kTextTrailPadding - progress_bar_->bounds().width() -
+                          kActionButtonRightMargin);
+  }
+  text_bounds.set_x(
+      GetMirroredXWithWidthInView(text_bounds.x(), text_bounds.width()));
+
+  if (is_fullscreen_app_list_enabled_) {
+    // Set solid color background to avoid broken text. See crbug.com/746563.
+    // This should be drawn before selected color which is semi-transparent.
+    canvas->FillRect(text_bounds, kCardBackgroundColorFullscreen);
+  }
+
   // Possibly call FillRect a second time (these colours are partially
   // transparent, so the previous FillRect is not redundant).
   if (selected) {
@@ -351,21 +372,6 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
 
   gfx::Rect border_bottom = gfx::SubtractRects(rect, content_rect);
   canvas->FillRect(border_bottom, kResultBorderColor);
-
-  gfx::Rect text_bounds(rect);
-  text_bounds.set_x(GetIconViewWidth());
-  if (actions_view_->visible()) {
-    text_bounds.set_width(
-        rect.width() - GetIconViewWidth() - kTextTrailPadding -
-        actions_view_->bounds().width() -
-        (actions_view_->has_children() ? kActionButtonRightMargin : 0));
-  } else {
-    text_bounds.set_width(rect.width() - GetIconViewWidth() -
-                          kTextTrailPadding - progress_bar_->bounds().width() -
-                          kActionButtonRightMargin);
-  }
-  text_bounds.set_x(
-      GetMirroredXWithWidthInView(text_bounds.x(), text_bounds.width()));
 
   if (title_text_ && details_text_) {
     gfx::Size title_size(text_bounds.width(),
