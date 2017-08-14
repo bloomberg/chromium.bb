@@ -435,12 +435,6 @@
     </style>
 
     <!-- Bookmarks -->
-    <style name="BookmarkTitleBarButton">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:background">@null</item>
-        <item name="android:padding">15dp</item>
-    </style>
     <style name="BookmarkMenuStyle" parent="Widget.AppCompat.ListPopupWindow">
         <item name="android:popupBackground">@drawable/menu_bg</item>
     </style>
@@ -570,14 +564,6 @@
         <item name="android:paddingStart">16dp</item>
         <item name="android:paddingEnd">16dp</item>
         <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
-    </style>
-    <style name="NumberRollTextViewStyle">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_gravity">center_vertical</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:textSize">20sp</item>
     </style>
     <style name="BottomSheetContentTitle" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
         <item name="android:textSize">20sp</item>
@@ -740,12 +726,6 @@
 
     <style name="PhotoPickerDialogAnimation">
         <item name="android:windowEnterAnimation">@anim/design_bottom_sheet_slide_in</item>
-        <item name="android:windowExitAnimation">@null</item>
-    </style>
-
-    <!-- VR animations -->
-    <style name="VrEntryAnimation">
-        <item name="android:windowEnterAnimation">@anim/stay_hidden</item>
         <item name="android:windowExitAnimation">@null</item>
     </style>
 </resources>

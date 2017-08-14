@@ -7,6 +7,9 @@ import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//third_party/icu/config.gni")
 
+content_shell_manifest =
+    "$target_gen_dir/content_shell_manifest/AndroidManifest.xml"
+
 generate_jni("content_shell_jni_headers") {
   jni_package = "content/shell"
   sources = [
@@ -60,6 +63,7 @@ android_library("content_shell_java") {
   testonly = true
   deps = [
     ":content_shell_java_resources",
+    ":content_shell_manifest",
     "//base:base_java",
     "//base:base_java_test_support",
     "//content/public/android:content_java",
@@ -76,10 +80,10 @@ android_library("content_shell_java") {
     "java/src/org/chromium/content_shell/ShellManager.java",
     "java/src/org/chromium/content_shell/ShellViewAndroidDelegate.java",
   ]
-}
 
-content_shell_manifest =
-    "$target_gen_dir/content_shell_manifest/AndroidManifest.xml"
+  # Manifest used for linting (determining unused resources).
+  android_manifest = content_shell_manifest
+}
 
 jinja_template("content_shell_manifest") {
   testonly = true
