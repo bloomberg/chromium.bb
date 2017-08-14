@@ -3231,7 +3231,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
         url, ReadingListModelFactory::GetForBrowserState(_browserState));
   }
 
-  return host == kChromeUINewTabHost || host == kChromeUIBookmarksHost;
+  if (host == kChromeUIBookmarksHost) {
+    // Only allow bookmark URL on iPad.
+    return IsIPadIdiom();
+  }
+
+  return host == kChromeUINewTabHost;
 }
 
 - (id<CRWNativeContent>)controllerForURL:(const GURL&)url
