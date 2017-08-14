@@ -147,6 +147,7 @@ class SnackbarView {
             mParent.getLocationInWindow(mTempLocation);
             int keyboardHeight =
                     mParent.getHeight() + mTempLocation[1] - mCurrentVisibleRect.bottom;
+            keyboardHeight = Math.max(0, keyboardHeight);
             FrameLayout.LayoutParams lp = getLayoutParams();
 
             int prevBottomMargin = lp.bottomMargin;

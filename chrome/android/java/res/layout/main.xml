@@ -43,7 +43,7 @@
                     android:scrollbars="none"
                     android:visibility="gone" />
 
-                </org.chromium.chrome.browser.snackbar.BottomContainer>
+            </org.chromium.chrome.browser.snackbar.BottomContainer>
 
             <ViewStub
                 android:id="@+id/bottombar_stub"
@@ -95,7 +95,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start|bottom"
-                android:layout_marginTop="@dimen/bottom_nav_height_inverse" />
+                android:layout_marginBottom="@dimen/bottom_nav_height" />
 
             <ViewStub
                 android:id="@+id/empty_container_stub"
