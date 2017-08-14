@@ -81,7 +81,7 @@ bool AwMetricsServiceClient::CheckSDKVersionForMetrics() {
          base::android::SDK_VERSION_NOUGAT;
 }
 
-std::string AwMetricsServiceClient::GetOrCreateClientId() {
+void AwMetricsServiceClient::LoadOrCreateClientId() {
   // This function should only be called once at start up.
   DCHECK_NE(g_client_id.Get().length(), GUID_SIZE);
 
@@ -94,7 +94,7 @@ std::string AwMetricsServiceClient::GetOrCreateClientId() {
 
     // Generate a 1-time GUID so metrics can still be collected
     g_client_id.Get() = base::GenerateGUID();
-    return g_client_id.Get();
+    return;
   }
 
   const base::FilePath guid_file_path =
@@ -104,7 +104,7 @@ std::string AwMetricsServiceClient::GetOrCreateClientId() {
   if (base::ReadFileToStringWithMaxSize(guid_file_path, &g_client_id.Get(),
                                         GUID_SIZE)) {
     if (base::IsValidGUID(g_client_id.Get()))
-      return g_client_id.Get();
+      return;
     LOG(ERROR) << "Overwriting invalid GUID";
   }
 
@@ -116,6 +116,12 @@ std::string AwMetricsServiceClient::GetOrCreateClientId() {
     // to the next run, but we can still collect metrics with this 1-time GUID.
     LOG(ERROR) << "Failed to write new GUID";
   }
+}
+
+std::string AwMetricsServiceClient::GetClientId() {
+  // This function should only be called if LoadOrCreateClientId() was
+  // previously called.
+  DCHECK_EQ(g_client_id.Get().length(), GUID_SIZE);
 
   return g_client_id.Get();
 }
@@ -139,8 +145,7 @@ void AwMetricsServiceClient::Initialize(
   } else {
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(
-            base::IgnoreResult(&AwMetricsServiceClient::GetOrCreateClientId)),
+        base::Bind(&AwMetricsServiceClient::LoadOrCreateClientId),
         base::Bind(&AwMetricsServiceClient::InitializeWithClientId,
                    base::Unretained(this)));
   }
