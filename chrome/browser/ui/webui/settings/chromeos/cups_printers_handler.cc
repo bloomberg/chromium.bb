@@ -50,13 +50,29 @@ namespace settings {
 
 namespace {
 
-const char kIppScheme[] = "ipp";
-const char kIppsScheme[] = "ipps";
+constexpr char kIppScheme[] = "ipp";
+constexpr char kIppsScheme[] = "ipps";
 
-const int kIppPort = 631;
+constexpr int kIppPort = 631;
 // IPPS commonly uses the HTTPS port despite the spec saying it should use the
 // IPP port.
-const int kIppsPort = 443;
+constexpr int kIppsPort = 443;
+
+// Values for SetupMethod @enum as defined in cups_printers_browser_proxy.js.
+// Please keep them in sync.
+constexpr char kAutomaticSetup[] = "automatic";
+constexpr char kManualSetup[] = "manual";
+
+// Field name of CupsUsbInfo for the CupsPrinterInfo @typedef which is defined
+// in cups_printers_browser_proxy.js. Please keep them in sync.
+constexpr char kPrinterUsbInfo[] = "printerUsbInfo";
+
+// Members of the CupsUsbInfo @typedef which is defined in
+// cups_printers_browser_proxy.js.  Please keep them in sync.
+constexpr char kUsbVendorId[] = "usbVendorId";
+constexpr char kUsbProductId[] = "usbProductId";
+constexpr char kUsbVendorName[] = "usbVendorName";
+constexpr char kUsbProductName[] = "usbProductName";
 
 // These values are written to logs.  New enum values can be added, but existing
 // enums must never be renumbered or deleted and reused.
@@ -136,6 +152,24 @@ std::unique_ptr<base::DictionaryValue> GetPrinterInfo(const Printer& printer) {
   return printer_info;
 }
 
+// Returns a JSON representation of |detected_printer| as a CupsPrinterInfo.
+std::unique_ptr<base::DictionaryValue> GetDetectedPrinterInfo(
+    const PrinterDetector::DetectedPrinter& detected_printer) {
+  std::unique_ptr<base::DictionaryValue> usb_info =
+      base::MakeUnique<base::DictionaryValue>();
+  usb_info->SetInteger(kUsbVendorId,
+                       detected_printer.ppd_search_data.usb_vendor_id);
+  usb_info->SetInteger(kUsbProductId,
+                       detected_printer.ppd_search_data.usb_product_id);
+  usb_info->SetString(kUsbVendorName, detected_printer.printer.manufacturer());
+  usb_info->SetString(kUsbProductName, detected_printer.printer.model());
+
+  std::unique_ptr<base::DictionaryValue> printer_info =
+      GetPrinterInfo(detected_printer.printer);
+  printer_info->Set(kPrinterUsbInfo, std::move(usb_info));
+  return printer_info;
+}
+
 // Extracts a sanitized value of printerQueeu from |printer_dict|.  Returns an
 // empty string if the value was not present in the dictionary.
 std::string GetPrinterQueue(const base::DictionaryValue& printer_dict) {
@@ -151,6 +185,31 @@ std::string GetPrinterQueue(const base::DictionaryValue& printer_dict) {
   }
 
   return queue;
+}
+
+PrinterEventTracker::SetupMode ToEventType(base::StringPiece event_string) {
+  if (event_string == kAutomaticSetup) {
+    return PrinterEventTracker::kAutomatic;
+  }
+
+  if (event_string == kManualSetup) {
+    return PrinterEventTracker::kUser;
+  }
+
+  NOTREACHED();
+  return PrinterEventTracker::kUnknownMode;
+}
+
+chromeos::UsbPrinter ToUsbPrinter(const base::DictionaryValue& usb_dict,
+                                  const Printer& printer) {
+  chromeos::UsbPrinter usb_printer;
+  usb_dict.GetInteger(kUsbVendorId, &usb_printer.vendor_id);
+  usb_dict.GetInteger(kUsbProductId, &usb_printer.model_id);
+  usb_dict.GetString(kUsbVendorName, &usb_printer.manufacturer);
+  usb_dict.GetString(kUsbProductName, &usb_printer.model);
+  usb_printer.printer = printer;
+
+  return usb_printer;
 }
 
 }  // namespace
@@ -255,7 +314,7 @@ void CupsPrintersHandler::HandleRemoveCupsPrinter(const base::ListValue* args) {
     return;
 
   // Record removal before the printer is deleted.
-  chromeos::PrinterEventTrackerFactory::GetForBrowserContext(profile_)
+  PrinterEventTrackerFactory::GetForBrowserContext(profile_)
       ->RecordPrinterRemoved(*printer);
 
   Printer::PrinterProtocol protocol = printer->GetProtocol();
@@ -360,8 +419,11 @@ void CupsPrintersHandler::OnPrinterInfo(const std::string& callback_id,
 void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
   AllowJavascript();
 
+  std::string setup_method;
+  CHECK(args->GetString(0, &setup_method));
+
   const base::DictionaryValue* printer_dict = nullptr;
-  CHECK(args->GetDictionary(0, &printer_dict));
+  CHECK(args->GetDictionary(1, &printer_dict));
 
   std::string printer_id;
   std::string printer_name;
@@ -455,13 +517,48 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
         << "A configuration option must have been selected to add a printer";
   }
 
-  printer_configurer_->SetUpPrinter(
-      printer, base::Bind(&CupsPrintersHandler::OnAddedPrinter,
-                          weak_factory_.GetWeakPtr(), printer));
+  PrinterEventTracker::SetupMode mode = ToEventType(setup_method);
+  const base::DictionaryValue* usb_dict = nullptr;
+  if (printer_dict->GetDictionary(kPrinterUsbInfo, &usb_dict)) {
+    chromeos::UsbPrinter usb_printer = ToUsbPrinter(*usb_dict, printer);
+    printer_configurer_->SetUpPrinter(
+        printer, base::Bind(&CupsPrintersHandler::OnAddedUsbPrinter,
+                            weak_factory_.GetWeakPtr(), usb_printer, mode));
+  } else {
+    printer_configurer_->SetUpPrinter(
+        printer, base::Bind(&CupsPrintersHandler::OnAddedPrinter,
+                            weak_factory_.GetWeakPtr(), printer, mode));
+  }
 }
 
-void CupsPrintersHandler::OnAddedPrinter(const Printer& printer,
-                                         PrinterSetupResult result_code) {
+void CupsPrintersHandler::OnAddedPrinter(
+    const Printer& printer,
+    PrinterEventTracker::SetupMode setup_mode,
+    PrinterSetupResult result_code) {
+  auto* tracker = PrinterEventTrackerFactory::GetForBrowserContext(profile_);
+  if (result_code == kSuccess) {
+    tracker->RecordIppPrinterInstalled(printer, setup_mode);
+  } else {
+    tracker->RecordSetupAbandoned(printer);
+  }
+  CompleteAddition(printer, result_code);
+}
+
+void CupsPrintersHandler::OnAddedUsbPrinter(
+    const UsbPrinter& usb_printer,
+    PrinterEventTracker::SetupMode setup_mode,
+    PrinterSetupResult result_code) {
+  auto* tracker = PrinterEventTrackerFactory::GetForBrowserContext(profile_);
+  if (result_code == kSuccess) {
+    tracker->RecordUsbPrinterInstalled(usb_printer, setup_mode);
+  } else {
+    tracker->RecordUsbSetupAbandoned(usb_printer);
+  }
+  CompleteAddition(usb_printer.printer, result_code);
+}
+
+void CupsPrintersHandler::CompleteAddition(const Printer& printer,
+                                           PrinterSetupResult result_code) {
   UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PrinterSetupResult", result_code,
                             PrinterSetupResult::kMaxValue);
   switch (result_code) {
@@ -632,7 +729,7 @@ void CupsPrintersHandler::OnPrintersFound(
     for (const auto& detected_printer : printers) {
       if (printers_manager->GetPrinter(detected_printer.printer.id()).get() ==
           nullptr) {
-        printers_list->Append(GetPrinterInfo(detected_printer.printer));
+        printers_list->Append(GetDetectedPrinterInfo(detected_printer));
       }
     }
   } else {

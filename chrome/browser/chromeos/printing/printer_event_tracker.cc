@@ -4,9 +4,6 @@
 
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 
-#include "components/keyed_service/core/keyed_service.h"
-#include "components/metrics/proto/printer_event.pb.h"
-
 namespace chromeos {
 namespace {
 
@@ -14,6 +11,9 @@ namespace {
 void SetEventType(metrics::PrinterEventProto* event,
                   PrinterEventTracker::SetupMode mode) {
   switch (mode) {
+    case PrinterEventTracker::kUnknownMode:
+      event->set_event_type(metrics::PrinterEventProto::UNKNOWN);
+      break;
     case PrinterEventTracker::kUser:
       event->set_event_type(metrics::PrinterEventProto::SETUP_MANUAL);
       break;

@@ -37,7 +37,7 @@ Polymer({
   /** @private */
   onSaveTap_: function() {
     settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
-        this.activePrinter);
+        SetupMethod.MANUAL, this.activePrinter);
     this.$$('add-printer-dialog').close();
   },
 

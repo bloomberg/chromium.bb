@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printer_detector.h"
+#include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
@@ -29,6 +30,8 @@ namespace chromeos {
 
 class CombiningPrinterDetector;
 class PpdProvider;
+
+struct UsbPrinter;
 
 namespace settings {
 
@@ -70,7 +73,22 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                      bool ipp_everywhere);
 
   void HandleAddCupsPrinter(const base::ListValue* args);
-  void OnAddedPrinter(const Printer& printer, PrinterSetupResult result);
+
+  // Handles the result of a SetUpPrinter attempt for a network (non-USB)
+  // printer. |printer| the printer that was installed. |setup_mode| indicates
+  // the type of setup being attempted. |result_code| contains the result of the
+  // setup attempt.
+  void OnAddedPrinter(const Printer& printer,
+                      PrinterEventTracker::SetupMode setup_mode,
+                      PrinterSetupResult result_code);
+  // Handles the result of a SetUpPrinter attempt for a USB printer. |printer|
+  // the printer that was installed. |setup_mode| indicates the type of setup
+  // being attempted. |result_code| contains the result of the setup attempt.
+  void OnAddedUsbPrinter(const UsbPrinter& usb_printer,
+                         PrinterEventTracker::SetupMode setup_mode,
+                         PrinterSetupResult result_code);
+  // Stores the installed |printer| based on |result| and report back to the UI.
+  void CompleteAddition(const Printer& printer, PrinterSetupResult result);
   void OnAddPrinterError();
 
   // Get a list of all manufacturers for which we have at least one model of
