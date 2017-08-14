@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "chrome/browser/media/router/discovery/discovery_network_monitor.h"
 #include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
 #include "chrome/browser/media/router/discovery/media_sink_service_base.h"
 #include "components/cast_channel/cast_channel_enum.h"
@@ -27,14 +28,15 @@ namespace media_router {
 class CastMediaSinkServiceImpl
     : public MediaSinkServiceBase,
       public cast_channel::CastSocket::Observer,
-      public base::SupportsWeakPtr<CastMediaSinkServiceImpl> {
+      public base::SupportsWeakPtr<CastMediaSinkServiceImpl>,
+      public DiscoveryNetworkMonitor::Observer {
  public:
   // Default Cast control port to open Cast Socket from DIAL sink.
   static const int kCastControlPort;
 
-  CastMediaSinkServiceImpl(
-      const OnSinksDiscoveredCallback& callback,
-      cast_channel::CastSocketService* cast_socket_service);
+  CastMediaSinkServiceImpl(const OnSinksDiscoveredCallback& callback,
+                           cast_channel::CastSocketService* cast_socket_service,
+                           DiscoveryNetworkMonitor* network_monitor);
   ~CastMediaSinkServiceImpl() override;
 
   // MediaSinkService implementation
@@ -69,6 +71,9 @@ class CastMediaSinkServiceImpl
   void OnMessage(const cast_channel::CastSocket& socket,
                  const cast_channel::CastMessage& message) override;
 
+  // DiscoveryNetworkMonitor::Observer implementation
+  void OnNetworksChanged(const std::string& network_id) override;
+
   // Opens cast channel.
   // |ip_endpoint|: cast channel's target IP endpoint.
   // |cast_sink|: Cast sink created from mDNS service description or DIAL sink.
@@ -85,7 +90,7 @@ class CastMediaSinkServiceImpl
   // Set of mDNS service IP endpoints from current round of discovery.
   std::set<net::IPEndPoint> current_service_ip_endpoints_;
 
-  using MediaSinkInternalMap = std::map<net::IPEndPoint, MediaSinkInternal>;
+  using MediaSinkInternalMap = std::map<net::IPAddress, MediaSinkInternal>;
 
   // Map of sinks from current round of mDNS discovery keyed by IP address.
   MediaSinkInternalMap current_sinks_by_mdns_;
@@ -96,6 +101,15 @@ class CastMediaSinkServiceImpl
   // Raw pointer of leaky singleton CastSocketService, which manages adding and
   // removing Cast channels.
   cast_channel::CastSocketService* const cast_socket_service_;
+
+  // Raw pointer to DiscoveryNetworkMonitor, which is a global leaky singleton
+  // and manages network change notifications.
+  DiscoveryNetworkMonitor* network_monitor_;
+
+  std::string current_network_id_ = DiscoveryNetworkMonitor::kNetworkIdUnknown;
+
+  // Cache of known sinks by network ID.
+  std::map<std::string, std::vector<MediaSinkInternal>> sink_cache_;
 
   CastDeviceCountMetrics metrics_;
 
