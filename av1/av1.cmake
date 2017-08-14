@@ -236,11 +236,6 @@ endif ()
 if (CONFIG_CDEF)
   set(AOM_AV1_COMMON_SOURCES
       ${AOM_AV1_COMMON_SOURCES}
-      if (!CONFIG_CDEF_SINGLEPASS)
-        "${AOM_ROOT}/av1/common/clpf.c"
-        "${AOM_ROOT}/av1/common/clpf_simd.h"
-        "${AOM_ROOT}/av1/common/cdef_block_simd.h")
-      endif ()
       "${AOM_ROOT}/av1/common/cdef.c"
       "${AOM_ROOT}/av1/common/cdef.h"
       "${AOM_ROOT}/av1/common/cdef_block.c"
@@ -252,23 +247,14 @@ if (CONFIG_CDEF)
 
   set(AOM_AV1_COMMON_INTRIN_SSE2
       ${AOM_AV1_COMMON_INTRIN_SSE2}
-      if (!CONFIG_CDEF_SINGLEPASS)
-        "${AOM_ROOT}/av1/common/clpf_sse2.c"
-      endif ()
       "${AOM_ROOT}/av1/common/cdef_block_sse2.c")
 
   set(AOM_AV1_COMMON_INTRIN_SSSE3
       ${AOM_AV1_COMMON_INTRIN_SSSE3}
-      if (!CONFIG_CDEF_SINGLEPASS)
-        "${AOM_ROOT}/av1/common/clpf_ssse3.c"
-      endif ()
       "${AOM_ROOT}/av1/common/cdef_block_ssse3.c")
 
   set(AOM_AV1_COMMON_INTRIN_SSE4_1
       ${AOM_AV1_COMMON_INTRIN_SSE4_1}
-      if (!CONFIG_CDEF_SINGLEPASS)
-        "${AOM_ROOT}/av1/common/clpf_sse4.c"
-      endif ()
       "${AOM_ROOT}/av1/common/cdef_block_sse4.c")
 
   set(AOM_AV1_COMMON_INTRIN_AVX2
@@ -277,10 +263,31 @@ if (CONFIG_CDEF)
 
   set(AOM_AV1_COMMON_INTRIN_NEON
       ${AOM_AV1_COMMON_INTRIN_NEON}
-      if (!CONFIG_CDEF_SINGLEPASS)
-        "${AOM_ROOT}/av1/common/clpf_neon.c"
-      endif ()
       "${AOM_ROOT}/av1/common/cdef_block_neon.c")
+
+  if (NOT CONFIG_CDEF_SINGLEPASS)
+    set(AOM_AV1_COMMON_SOURCES
+        ${AOM_AV1_COMMON_SOURCES}
+        "${AOM_ROOT}/av1/common/clpf.c"
+        "${AOM_ROOT}/av1/common/clpf_simd.h"
+        "${AOM_ROOT}/av1/common/cdef_block_simd.h")
+
+    set(AOM_AV1_COMMON_INTRIN_SSE2
+        ${AOM_AV1_COMMON_INTRIN_SSE2}
+        "${AOM_ROOT}/av1/common/clpf_sse2.c")
+
+    set(AOM_AV1_COMMON_INTRIN_SSSE3
+        ${AOM_AV1_COMMON_INTRIN_SSSE3}
+        "${AOM_ROOT}/av1/common/clpf_ssse3.c")
+
+    set(AOM_AV1_COMMON_INTRIN_SSE4_1
+        ${AOM_AV1_COMMON_INTRIN_SSE4_1}
+        "${AOM_ROOT}/av1/common/clpf_sse4.c")
+
+    set(AOM_AV1_COMMON_INTRIN_NEON
+        ${AOM_AV1_COMMON_INTRIN_NEON}
+        "${AOM_ROOT}/av1/common/clpf_neon.c")
+  endif ()
 endif ()
 
 if (CONFIG_CONVOLVE_ROUND)
