@@ -86,11 +86,25 @@ typedef HRESULT (STDAPICALLTYPE* RegisterApplicationRestartProc)(
     const wchar_t* command_line,
     DWORD flags);
 
+// TODO(siggi): Replace this with link-time binding to the right code.
+//   See https://crbug.com/753363.
+int UnhandledExceptionFilterWrapper(EXCEPTION_POINTERS* info) {
+  return UnhandledExceptionFilter(info);
+}
+
 void InitializeWindowProcExceptions() {
-  // Get the breakpad pointer from chrome.exe
-  base::win::WinProcExceptionFilter exception_filter =
-      reinterpret_cast<base::win::WinProcExceptionFilter>(::GetProcAddress(
-          ::GetModuleHandle(chrome::kChromeElfDllName), "CrashForException"));
+  // Get the exception filter from chrome_elf.dll, if present. In tests,
+  // chrome_elf won't be present, in which case use the UnhandledExceptionFilter
+  // to ensure the process crashes.
+  HMODULE chrome_elf = ::GetModuleHandle(chrome::kChromeElfDllName);
+  base::win::WinProcExceptionFilter exception_filter = nullptr;
+  if (chrome_elf) {
+    exception_filter = reinterpret_cast<base::win::WinProcExceptionFilter>(
+        ::GetProcAddress(chrome_elf, "CrashForException"));
+  } else {
+    exception_filter = &UnhandledExceptionFilterWrapper;
+  }
+
   CHECK(exception_filter);
   exception_filter = base::win::SetWinProcExceptionFilter(exception_filter);
   DCHECK(!exception_filter);
