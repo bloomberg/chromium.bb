@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_SUGGESTIONS_SOURCE_H_
-#define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_SUGGESTIONS_SOURCE_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_SOURCE_H_
+#define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_SOURCE_H_
 
 #include <map>
 #include <memory>
@@ -14,7 +14,7 @@
 #include "base/optional.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/ntp_snippets/callbacks.h"
-#include "components/ntp_snippets/remote/contextual_suggestions_fetcher.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_fetcher.h"
 
 namespace ntp_snippets {
 
@@ -71,4 +71,4 @@ class ContextualSuggestionsSource {
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_SUGGESTIONS_SOURCE_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_SOURCE_H_

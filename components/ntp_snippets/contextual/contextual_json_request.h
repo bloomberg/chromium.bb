@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_CONTEXTUAL_JSON_REQUEST_H_
-#define COMPONENTS_NTP_SNIPPETS_REMOTE_CONTEXTUAL_JSON_REQUEST_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_JSON_REQUEST_H_
+#define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_JSON_REQUEST_H_
 
 #include <memory>
 #include <string>
@@ -112,4 +112,4 @@ class ContextualJsonRequest : public net::URLFetcherDelegate {
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_CONTEXTUAL_JSON_REQUEST_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_JSON_REQUEST_H_
