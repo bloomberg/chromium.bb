@@ -95,7 +95,7 @@ class GinJavaBridgeDispatcherHost
   bool FindObjectId(const base::android::JavaRef<jobject>& object,
                     GinJavaBoundObject::ObjectID* object_id);
   void RemoveFromRetainedObjectSetLocked(const JavaObjectWeakGlobalRef& ref);
-  JavaObjectWeakGlobalRef RemoveHolderAndAdvanceLocked(
+  JavaObjectWeakGlobalRef RemoveHolderLocked(
       int32_t holder,
       ObjectMap::iterator* iter_ptr);
 
