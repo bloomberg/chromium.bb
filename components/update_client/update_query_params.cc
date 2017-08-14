@@ -33,6 +33,8 @@ const char kOs[] =
     "cros";
 #elif defined(OS_LINUX)
     "linux";
+#elif defined(OS_FUCHSIA)
+    "fuchsia";
 #elif defined(OS_OPENBSD)
     "openbsd";
 #else
