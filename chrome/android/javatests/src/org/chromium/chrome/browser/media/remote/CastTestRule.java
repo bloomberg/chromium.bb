@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.media.remote;
 
 import android.app.Dialog;
 import android.graphics.Rect;
-import android.os.StrictMode;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.view.View;
@@ -116,8 +115,6 @@ public class CastTestRule extends ChromeActivityTestRule<ChromeActivity> {
 
     private MediaRouteController mMediaRouteController;
 
-    private StrictMode.ThreadPolicy mOldPolicy;
-
     public CastTestRule() {
         super(ChromeActivity.class);
     }
@@ -136,25 +133,11 @@ public class CastTestRule extends ChromeActivityTestRule<ChromeActivity> {
 
     private void setUp() throws Exception {
         startMainActivityOnBlankPage();
-        // Temporary until support library is updated, see http://crbug.com/576393.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mOldPolicy = StrictMode.allowThreadDiskWrites();
-            }
-        });
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
     private void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
-        // Temporary until support library is updated, see http://crbug.com/576393.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                StrictMode.setThreadPolicy(mOldPolicy);
-            }
-        });
     }
 
     /**
