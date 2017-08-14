@@ -4,6 +4,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/ui_devtools/views/ui_devtools_css_agent.h"
 #include "components/ui_devtools/views/ui_devtools_dom_agent.h"
 #include "components/ui_devtools/views/ui_devtools_overlay_agent.h"
@@ -127,8 +128,8 @@ DOM::Node* FindInRoot(aura::Window* window, DOM::Node* root) {
   return window_node;
 }
 
-int GetPropertyByName(const std::string& name,
-                      Array<CSS::CSSProperty>* properties) {
+int GetIntPropertyByName(const std::string& name,
+                         Array<CSS::CSSProperty>* properties) {
   for (size_t i = 0; i < properties->length(); i++) {
     CSS::CSSProperty* property = properties->get(i);
     if (property->getName() == name) {
@@ -139,6 +140,17 @@ int GetPropertyByName(const std::string& name,
   }
   NOTREACHED();
   return -1;
+}
+
+std::string GetStringPropertyByName(const std::string& name,
+                                    Array<CSS::CSSProperty>* properties) {
+  for (size_t i = 0; i < properties->length(); i++) {
+    CSS::CSSProperty* property = properties->get(i);
+    if (property->getName() == name)
+      return property->getValue();
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 ui::Layer* GetHighlightingLayer(aura::Window* root_window) {
@@ -296,10 +308,23 @@ class UIDevToolsTest : public views::ViewsTestBase {
     css_agent_->getMatchedStylesForNode(node->getNodeId(), &styles);
     ASSERT_TRUE(styles.isJust());
     Array<CSS::CSSProperty>* properties = styles.fromJust()->getCssProperties();
-    EXPECT_EQ(bounds.height(), GetPropertyByName("height", properties));
-    EXPECT_EQ(bounds.width(), GetPropertyByName("width", properties));
-    EXPECT_EQ(bounds.x(), GetPropertyByName("x", properties));
-    EXPECT_EQ(bounds.y(), GetPropertyByName("y", properties));
+    EXPECT_EQ(bounds.height(), GetIntPropertyByName("height", properties));
+    EXPECT_EQ(bounds.width(), GetIntPropertyByName("width", properties));
+    EXPECT_EQ(bounds.x(), GetIntPropertyByName("x", properties));
+    EXPECT_EQ(bounds.y(), GetIntPropertyByName("y", properties));
+  }
+
+  void CompareViewAtrributes(DOM::Node* node, views::View* view) {
+    Maybe<CSS::CSSStyle> styles;
+    css_agent_->getMatchedStylesForNode(node->getNodeId(), &styles);
+    ASSERT_TRUE(styles.isJust());
+    Array<CSS::CSSProperty>* properties = styles.fromJust()->getCssProperties();
+
+    base::string16 description;
+    if (view->GetTooltipText(gfx::Point(), &description)) {
+      EXPECT_EQ(base::UTF16ToUTF8(description),
+                GetStringPropertyByName("tooltip", properties));
+    }
   }
 
   void SetStyleTexts(DOM::Node* node,
@@ -854,6 +879,8 @@ TEST_F(UIDevToolsTest, WindowWidgetViewGetMatchedStylesForNode) {
   CompareNodeBounds(parent_children->get(1), window_bounds);
   CompareNodeBounds(parent_children->get(0)->getChildren(nullptr)->get(0),
                     view_bounds);
+  CompareViewAtrributes(parent_children->get(0)->getChildren(nullptr)->get(0),
+                        widget->GetRootView());
 }
 
 TEST_F(UIDevToolsTest, WindowWidgetViewStyleSheetChanged) {

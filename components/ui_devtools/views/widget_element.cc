@@ -35,6 +35,11 @@ void WidgetElement::OnWidgetBoundsChanged(views::Widget* widget,
   delegate()->OnUIElementBoundsChanged(this);
 }
 
+std::vector<std::pair<std::string, std::string>>
+WidgetElement::GetCustomAttributes() const {
+  return {};
+}
+
 void WidgetElement::GetBounds(gfx::Rect* bounds) const {
   *bounds = widget_->GetRestoredBounds();
 }

@@ -32,6 +32,8 @@ class WindowElement : public aura::WindowObserver, public UIElement {
                              const gfx::Rect& new_bounds) override;
 
   // UIElement:
+  std::vector<std::pair<std::string, std::string>> GetCustomAttributes()
+      const override;
   void GetBounds(gfx::Rect* bounds) const override;
   void SetBounds(const gfx::Rect& bounds) override;
   void GetVisible(bool* visible) const override;

@@ -4,6 +4,7 @@
 
 #include "components/ui_devtools/views/view_element.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "components/ui_devtools/views/ui_element_delegate.h"
 #include "ui/views/widget/widget.h"
 
@@ -54,6 +55,16 @@ void ViewElement::OnChildViewReordered(views::View* parent, views::View* view) {
 void ViewElement::OnViewBoundsChanged(views::View* view) {
   DCHECK_EQ(view_, view);
   delegate()->OnUIElementBoundsChanged(this);
+}
+
+std::vector<std::pair<std::string, std::string>>
+ViewElement::GetCustomAttributes() const {
+  base::string16 description;
+  if (view_->GetTooltipText(gfx::Point(), &description)) {
+    return {std::make_pair<std::string, std::string>(
+        "tooltip", base::UTF16ToUTF8(description))};
+  }
+  return {};
 }
 
 void ViewElement::GetBounds(gfx::Rect* bounds) const {

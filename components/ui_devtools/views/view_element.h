@@ -31,6 +31,8 @@ class ViewElement : public views::ViewObserver, public UIElement {
   void OnViewBoundsChanged(views::View* view) override;
 
   // UIElement:
+  std::vector<std::pair<std::string, std::string>> GetCustomAttributes()
+      const override;
   void GetBounds(gfx::Rect* bounds) const override;
   void SetBounds(const gfx::Rect& bounds) override;
   void GetVisible(bool* visible) const override;

@@ -63,6 +63,11 @@ void WindowElement::OnWindowBoundsChanged(aura::Window* window,
   delegate()->OnUIElementBoundsChanged(this);
 }
 
+std::vector<std::pair<std::string, std::string>>
+WindowElement::GetCustomAttributes() const {
+  return {};
+}
+
 void WindowElement::GetBounds(gfx::Rect* bounds) const {
   *bounds = window_->bounds();
 }
