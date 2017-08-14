@@ -9,14 +9,20 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/palette/palette_ids.h"
+#include "ash/system/palette/palette_utils.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/event.h"
 
 namespace ash {
 
 MetalayerMode::MetalayerMode(Delegate* delegate)
-    : CommonPaletteTool(delegate), weak_factory_(this) {}
+    : CommonPaletteTool(delegate), weak_factory_(this) {
+  Shell::Get()->AddPreTargetHandler(this);
+}
 
-MetalayerMode::~MetalayerMode() {}
+MetalayerMode::~MetalayerMode() {
+  Shell::Get()->RemovePreTargetHandler(this);
+}
 
 PaletteGroup MetalayerMode::GetGroup() const {
   return PaletteGroup::MODE;
@@ -58,6 +64,36 @@ views::View* MetalayerMode::CreateView() {
 
 void MetalayerMode::OnMetalayerDone() {
   delegate()->DisableTool(GetToolId());
+}
+
+void MetalayerMode::OnTouchEvent(ui::TouchEvent* event) {
+  if (enabled())
+    return;
+
+  // Shell::palette_delegate() might return null in some tests that are not
+  // concerned with palette but generate touch events.
+  if (!Shell::Get()->palette_delegate() ||
+      !Shell::Get()->palette_delegate()->IsMetalayerSupported())
+    return;
+
+  if (event->pointer_details().pointer_type !=
+      ui::EventPointerType::POINTER_TYPE_PEN)
+    return;
+
+  if (event->type() != ui::ET_TOUCH_PRESSED)
+    return;
+
+  // The stylus "barrel" button press is encoded as ui::EF_LEFT_MOUSE_BUTTON
+  if (!(event->flags() & ui::EF_LEFT_MOUSE_BUTTON))
+    return;
+
+  if (palette_utils::PaletteContainsPointInScreen(event->root_location()))
+    return;
+
+  delegate()->RecordPaletteOptionsUsage(
+      PaletteToolIdToPaletteTrayOptions(GetToolId()));
+  delegate()->EnableTool(GetToolId());
+  event->StopPropagation();
 }
 
 }  // namespace ash

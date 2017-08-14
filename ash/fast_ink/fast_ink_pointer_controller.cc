@@ -73,9 +73,14 @@ void FastInkPointerController::OnTouchEvent(ui::TouchEvent* event) {
   aura::Window* root_window =
       static_cast<aura::Window*>(event->target())->GetRootWindow();
 
-  // Start a new pointer session if the stylus is pressed but not pressed over
-  // the palette (then let the event pass through).
-  if (event->type() == ui::ET_TOUCH_PRESSED) {
+  // Start a new pointer session in one of the two cases:
+  // 1) The stylus is pressed
+  // 2) The stylus is moving, but the pointer session has not started yet
+  // (most likely because the preceding press event was consumed by another
+  // handler).
+  if ((event->type() == ui::ET_TOUCH_PRESSED) ||
+      (event->type() == ui::ET_TOUCH_MOVED && !GetPointerView())) {
+    // Ignore events over the palette.
     if (palette_utils::PaletteContainsPointInScreen(event->root_location()))
       return;
     DestroyPointerView();

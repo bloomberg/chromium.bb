@@ -33,6 +33,13 @@ class MetalayerToolTest : public AshTestBase {
     tool_ = base::MakeUnique<MetalayerMode>(palette_tool_delegate_.get());
   }
 
+  void TearDown() override {
+    // This needs to be called first to remove the event handler before the
+    // shell instance gets torn down.
+    tool_.reset();
+    AshTestBase::TearDown();
+  }
+
   TestPaletteDelegate* test_palette_delegate() {
     return static_cast<TestPaletteDelegate*>(Shell::Get()->palette_delegate());
   }
