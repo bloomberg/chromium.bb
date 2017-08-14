@@ -68,6 +68,14 @@ void OnLocalFaviconAvailable(
                                                j_favicon_bitmap, j_icon_url);
 }
 
+void OnEnsureIconIsAvailableFinished(
+    const ScopedJavaGlobalRef<jobject>& j_availability_callback,
+    bool newly_available) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_IconAvailabilityCallback_onIconAvailabilityChecked(
+      env, j_availability_callback, newly_available);
+}
+
 }  // namespace
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
@@ -157,7 +165,6 @@ void FaviconHelper::EnsureIconIsAvailable(
     const JavaParamRef<jstring>& j_page_url,
     const JavaParamRef<jstring>& j_icon_url,
     jboolean j_is_large_icon,
-    jboolean j_is_temporary,
     const JavaParamRef<jobject>& j_availability_callback) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   DCHECK(profile);
@@ -174,12 +181,26 @@ void FaviconHelper::EnsureIconIsAvailable(
   ScopedJavaGlobalRef<jobject> j_scoped_callback(env, j_availability_callback);
   favicon_base::FaviconImageCallback callback_runner = base::Bind(
       &FaviconHelper::OnFaviconImageResultAvailable, j_scoped_callback, profile,
-      web_contents, page_url, icon_url, icon_type, j_is_temporary);
+      web_contents, page_url, icon_url, icon_type);
   favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);
   favicon::GetFaviconImageForPageURL(service, page_url, icon_type,
                                      callback_runner,
                                      cancelable_task_tracker_.get());
+}
+
+void FaviconHelper::TouchOnDemandFavicon(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_profile,
+    const JavaParamRef<jstring>& j_icon_url) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  DCHECK(profile);
+  GURL icon_url(ConvertJavaStringToUTF8(env, j_icon_url));
+
+  favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
+      profile, ServiceAccessType::IMPLICIT_ACCESS);
+  service->TouchOnDemandFavicon(icon_url);
 }
 
 FaviconHelper::~FaviconHelper() {}
@@ -213,29 +234,27 @@ void FaviconHelper::OnFaviconDownloaded(
     Profile* profile,
     const GURL& page_url,
     favicon_base::IconType icon_type,
-    bool is_temporary,
     int download_request_id,
     int http_status_code,
     const GURL& image_url,
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& original_sizes) {
-  bool success = !bitmaps.empty();
-  if (success) {
-    // Only keep the largest icon available.
-    gfx::Image image = gfx::Image(gfx::ImageSkia(
-        gfx::ImageSkiaRep(bitmaps[GetLargestSizeIndex(original_sizes)], 0)));
-    favicon_base::SetFaviconColorSpace(&image);
-    favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
-        profile, ServiceAccessType::IMPLICIT_ACCESS);
-    service->SetFavicons(page_url, image_url, icon_type, image);
-
-    if (is_temporary)
-      service->SetFaviconOutOfDateForPage(page_url);
+  if (bitmaps.empty()) {
+    OnEnsureIconIsAvailableFinished(j_availability_callback,
+                                    /*newly_available=*/false);
+    return;
   }
 
-  JNIEnv* env = AttachCurrentThread();
-  Java_IconAvailabilityCallback_onIconAvailabilityChecked(
-      env, j_availability_callback, /*newly_available=*/success);
+  // Only keep the largest icon available.
+  gfx::Image image = gfx::Image(gfx::ImageSkia(
+      gfx::ImageSkiaRep(bitmaps[GetLargestSizeIndex(original_sizes)], 0)));
+  favicon_base::SetFaviconColorSpace(&image);
+  favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
+      profile, ServiceAccessType::IMPLICIT_ACCESS);
+
+  service->SetOnDemandFavicons(
+      page_url, image_url, icon_type, image,
+      base::Bind(&OnEnsureIconIsAvailableFinished, j_availability_callback));
 }
 
 void FaviconHelper::OnFaviconImageResultAvailable(
@@ -245,21 +264,19 @@ void FaviconHelper::OnFaviconImageResultAvailable(
     const GURL& page_url,
     const GURL& icon_url,
     favicon_base::IconType icon_type,
-    bool is_temporary,
     const favicon_base::FaviconImageResult& result) {
   // If there already is a favicon, return immediately.
   // Can |web_contents| be null here? crbug.com/688249
   if (!result.image.IsEmpty() || !web_contents) {
     // Either the image already exists in the FaviconService, or it doesn't and
     // we can't download it. Either way, it's not *newly* available.
-    JNIEnv* env = AttachCurrentThread();
-    Java_IconAvailabilityCallback_onIconAvailabilityChecked(
-        env, j_availability_callback, /*newly_available=*/false);
+    OnEnsureIconIsAvailableFinished(j_availability_callback,
+                                    /*newly_available=*/false);
     return;
   }
 
   web_contents->DownloadImage(
       icon_url, true, 0, false,
       base::Bind(&FaviconHelper::OnFaviconDownloaded, j_availability_callback,
-                 profile, page_url, icon_type, is_temporary));
+                 profile, page_url, icon_type));
 }
