@@ -13,9 +13,9 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
-#include <deque>
 #include <utility>
 
+#include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -119,7 +119,7 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveData) {
     WaitReadable(client_handle.get());
 
     char buf[10000] = {};
-    std::deque<PlatformHandle> received_handles;
+    base::circular_deque<PlatformHandle> received_handles;
     ssize_t result = PlatformChannelRecvmsg(client_handle.get(), buf,
                                             sizeof(buf), &received_handles);
     EXPECT_EQ(static_cast<ssize_t>(send_string.size()), result);
@@ -172,7 +172,7 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
     WaitReadable(client_handle.get());
 
     char buf[10000] = {};
-    std::deque<PlatformHandle> received_handles;
+    base::circular_deque<PlatformHandle> received_handles;
     // We assume that the |recvmsg()| actually reads all the data.
     EXPECT_EQ(static_cast<ssize_t>(sizeof(kHello)),
               PlatformChannelRecvmsg(client_handle.get(), buf, sizeof(buf),
@@ -230,7 +230,7 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
   WaitReadable(client_handle.get());
 
   // Start with an invalid handle in the deque.
-  std::deque<PlatformHandle> received_handles;
+  base::circular_deque<PlatformHandle> received_handles;
   received_handles.push_back(PlatformHandle());
 
   char buf[100] = {};

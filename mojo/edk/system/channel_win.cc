@@ -8,11 +8,11 @@
 #include <windows.h>
 
 #include <algorithm>
-#include <deque>
 #include <limits>
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -337,7 +337,7 @@ class ChannelWin : public Channel,
   bool delay_writes_ = true;
 
   bool reject_writes_ = false;
-  std::deque<MessageView> outgoing_messages_;
+  base::circular_deque<MessageView> outgoing_messages_;
 
   bool wait_for_connect_;
 

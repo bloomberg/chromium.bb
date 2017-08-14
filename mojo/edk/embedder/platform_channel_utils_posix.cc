@@ -10,6 +10,7 @@
 
 #include <utility>
 
+#include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
@@ -201,11 +202,12 @@ bool PlatformChannelSendHandles(PlatformHandle h,
   return true;
 }
 
-ssize_t PlatformChannelRecvmsg(PlatformHandle h,
-                               void* buf,
-                               size_t num_bytes,
-                               std::deque<PlatformHandle>* platform_handles,
-                               bool block) {
+ssize_t PlatformChannelRecvmsg(
+    PlatformHandle h,
+    void* buf,
+    size_t num_bytes,
+    base::circular_deque<PlatformHandle>* platform_handles,
+    bool block) {
   DCHECK(buf);
   DCHECK_GT(num_bytes, 0u);
   DCHECK(platform_handles);
