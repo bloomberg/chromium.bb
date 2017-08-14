@@ -57,20 +57,9 @@ def run(*parts):
     proc = subprocess.Popen(cmd, env=env)
     try:
         proc.wait()
-        # Temporary logging to try and diagnose hangs on the Windows bots.
-        if 'win_chromium_rel_ng' in sys.argv:
-            print 'proc.wait completed.'
     except KeyboardInterrupt:
         # We need a second wait in order to make sure the subprocess exits fully.
         # FIXME: It would be nice if we could put a timeout on this.
         proc.wait()
 
-    try:
-        # Temporary logging to try and diagnose hangs on the Windows bots.
-        if 'win_chromium_rel_ng' in sys.argv:
-            print 'sys.exit starting'
-        sys.exit(proc.returncode)
-    finally:
-        # Temporary logging to try and diagnose hangs on the Windows bots.
-        if 'win_chromium_rel_ng' in sys.argv:
-            print 'sys.exit completed'
+    sys.exit(proc.returncode)
