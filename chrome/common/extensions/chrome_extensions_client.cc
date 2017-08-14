@@ -94,7 +94,7 @@ ChromeChannelForHistogram GetChromeChannelForHistogram(
 
 }  // namespace
 
-static base::LazyInstance<ChromeExtensionsClient>::DestructorAtExit g_client =
+static base::LazyInstance<ChromeExtensionsClient>::Leaky g_client =
     LAZY_INSTANCE_INITIALIZER;
 
 ChromeExtensionsClient::ChromeExtensionsClient() {}
