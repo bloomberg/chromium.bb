@@ -19,14 +19,24 @@
       #userImageStreamCrop {
         border-top-left-radius: 2px;
         border-top-right-radius: 2px;
-        height: var(--cr-camera-image-size, 228px);
+        height: 100%;
         overflow: hidden;
         position: relative;
-        width: var(--cr-camera-image-size, 228px);
+        width: 100%;
       }
 
       #userImageStreamCrop.flip-x {
         transform: rotateY(180deg);
+      }
+
+      #userImageStreamCrop::after {
+        -webkit-mask-image: radial-gradient(transparent 140px, black 140px);
+        background-color: rgba(214, 214, 214, 0.34);
+        content: '';
+        display: block;
+        height: 100%;
+        transform: translateZ(0);
+        width: 100%;
       }
 
       paper-spinner {
@@ -62,6 +72,13 @@
         width: 32px;
       }
 
+      #cameraControls > button {
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 20px;
+        display: block;
+      }
+
       #flipPhoto {
         -webkit-margin-end: 8px;
         background-image: url(camera_flip_icon.svg);
@@ -73,8 +90,6 @@
 
       #takePhoto {
         background-image: url(camera_alt_icon.svg);
-        border-radius: 50%;
-        display: block;
       }
     </style>
     <div id="perspectiveBox">
