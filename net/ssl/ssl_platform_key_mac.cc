@@ -10,11 +10,9 @@
 #include <Security/SecIdentity.h>
 #include <Security/SecKey.h>
 #include <Security/cssm.h>
-#include <dlfcn.h>
 
 #include <memory>
 
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/availability.h"
@@ -40,13 +38,6 @@
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/nid.h"
 #include "third_party/boringssl/src/include/openssl/rsa.h"
-
-#if !defined(MAC_OS_X_VERSION_10_12) || \
-    MAC_OS_X_VERSION_MIN_ALLOWED < MAC_OS_X_VERSION_10_12
-// Redeclare typedefs that only exist in 10.12+ to suppress
-// -Wpartial-availability warnings.
-typedef CFStringRef SecKeyAlgorithm;
-#endif
 
 namespace net {
 
@@ -77,70 +68,6 @@ class ScopedCSSM_CC_HANDLE {
 
   DISALLOW_COPY_AND_ASSIGN(ScopedCSSM_CC_HANDLE);
 };
-
-// These symbols were added in the 10.12 SDK, but we currently use an older SDK,
-// so look them up with dlsym.
-//
-// TODO(davidben): After https://crbug.com/669240 is fixed, use the APIs
-// directly.
-
-struct API_AVAILABLE(macosx(10.12)) SecKeyAPIs {
-  SecKeyAPIs() { Init(); }
-
-  void Init() {
-    SecKeyCreateSignature = reinterpret_cast<SecKeyCreateSignatureFunc>(
-        dlsym(RTLD_DEFAULT, "SecKeyCreateSignature"));
-    if (!SecKeyCreateSignature) {
-      NOTREACHED();
-      return;
-    }
-
-#define LOOKUP_ALGORITHM(name)                                          \
-  do {                                                                  \
-    SecKeyAlgorithm* algorithm =                                        \
-        reinterpret_cast<SecKeyAlgorithm*>(dlsym(RTLD_DEFAULT, #name)); \
-    if (!algorithm) {                                                   \
-      NOTREACHED();                                                     \
-      return;                                                           \
-    }                                                                   \
-    name = *algorithm;                                                  \
-  } while (0)
-
-    LOOKUP_ALGORITHM(kSecKeyAlgorithmRSASignatureDigestPKCS1v15Raw);
-    LOOKUP_ALGORITHM(kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1);
-    LOOKUP_ALGORITHM(kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256);
-    LOOKUP_ALGORITHM(kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384);
-    LOOKUP_ALGORITHM(kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512);
-    LOOKUP_ALGORITHM(kSecKeyAlgorithmECDSASignatureDigestX962SHA1);
-    LOOKUP_ALGORITHM(kSecKeyAlgorithmECDSASignatureDigestX962SHA256);
-    LOOKUP_ALGORITHM(kSecKeyAlgorithmECDSASignatureDigestX962SHA384);
-    LOOKUP_ALGORITHM(kSecKeyAlgorithmECDSASignatureDigestX962SHA512);
-
-#undef LOOKUP_ALGORITHM
-
-    valid = true;
-  }
-
-  using SecKeyCreateSignatureFunc = CFDataRef (*)(SecKeyRef key,
-                                                  SecKeyAlgorithm algorithm,
-                                                  CFDataRef dataToSign,
-                                                  CFErrorRef* error);
-
-  bool valid = false;
-  SecKeyCreateSignatureFunc SecKeyCreateSignature = nullptr;
-  SecKeyAlgorithm kSecKeyAlgorithmRSASignatureDigestPKCS1v15Raw = nullptr;
-  SecKeyAlgorithm kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1 = nullptr;
-  SecKeyAlgorithm kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256 = nullptr;
-  SecKeyAlgorithm kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384 = nullptr;
-  SecKeyAlgorithm kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512 = nullptr;
-  SecKeyAlgorithm kSecKeyAlgorithmECDSASignatureDigestX962SHA1 = nullptr;
-  SecKeyAlgorithm kSecKeyAlgorithmECDSASignatureDigestX962SHA256 = nullptr;
-  SecKeyAlgorithm kSecKeyAlgorithmECDSASignatureDigestX962SHA384 = nullptr;
-  SecKeyAlgorithm kSecKeyAlgorithmECDSASignatureDigestX962SHA512 = nullptr;
-};
-
-base::LazyInstance<SecKeyAPIs>::Leaky API_AVAILABLE(macosx(10.12))
-    g_sec_key_apis = LAZY_INSTANCE_INITIALIZER;
 
 class SSLPlatformKeyCSSM : public ThreadedSSLPrivateKey::Delegate {
  public:
@@ -272,44 +199,38 @@ class API_AVAILABLE(macosx(10.12)) SSLPlatformKeySecKey
   Error SignDigest(SSLPrivateKey::Hash hash,
                    const base::StringPiece& input,
                    std::vector<uint8_t>* signature) override {
-    const SecKeyAPIs& apis = g_sec_key_apis.Get();
-    if (!apis.valid) {
-      LOG(ERROR) << "SecKey APIs not found";
-      return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
-    }
-
     SecKeyAlgorithm algorithm = nullptr;
     if (type_ == EVP_PKEY_RSA) {
       switch (hash) {
         case SSLPrivateKey::Hash::SHA512:
-          algorithm = apis.kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512;
+          algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512;
           break;
         case SSLPrivateKey::Hash::SHA384:
-          algorithm = apis.kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384;
+          algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384;
           break;
         case SSLPrivateKey::Hash::SHA256:
-          algorithm = apis.kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256;
+          algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256;
           break;
         case SSLPrivateKey::Hash::SHA1:
-          algorithm = apis.kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1;
+          algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1;
           break;
         case SSLPrivateKey::Hash::MD5_SHA1:
-          algorithm = apis.kSecKeyAlgorithmRSASignatureDigestPKCS1v15Raw;
+          algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15Raw;
           break;
       }
     } else if (type_ == EVP_PKEY_EC) {
       switch (hash) {
         case SSLPrivateKey::Hash::SHA512:
-          algorithm = apis.kSecKeyAlgorithmECDSASignatureDigestX962SHA512;
+          algorithm = kSecKeyAlgorithmECDSASignatureDigestX962SHA512;
           break;
         case SSLPrivateKey::Hash::SHA384:
-          algorithm = apis.kSecKeyAlgorithmECDSASignatureDigestX962SHA384;
+          algorithm = kSecKeyAlgorithmECDSASignatureDigestX962SHA384;
           break;
         case SSLPrivateKey::Hash::SHA256:
-          algorithm = apis.kSecKeyAlgorithmECDSASignatureDigestX962SHA256;
+          algorithm = kSecKeyAlgorithmECDSASignatureDigestX962SHA256;
           break;
         case SSLPrivateKey::Hash::SHA1:
-          algorithm = apis.kSecKeyAlgorithmECDSASignatureDigestX962SHA1;
+          algorithm = kSecKeyAlgorithmECDSASignatureDigestX962SHA1;
           break;
         case SSLPrivateKey::Hash::MD5_SHA1:
           // MD5-SHA1 is not used with ECDSA.
@@ -327,7 +248,7 @@ class API_AVAILABLE(macosx(10.12)) SSLPlatformKeySecKey
         base::checked_cast<CFIndex>(input.size()), kCFAllocatorNull));
 
     base::ScopedCFTypeRef<CFErrorRef> error;
-    base::ScopedCFTypeRef<CFDataRef> signature_ref(apis.SecKeyCreateSignature(
+    base::ScopedCFTypeRef<CFDataRef> signature_ref(SecKeyCreateSignature(
         key_, algorithm, input_ref, error.InitializeInto()));
     if (!signature_ref) {
       LOG(ERROR) << error;
