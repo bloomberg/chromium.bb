@@ -8,14 +8,22 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/passwords/password_controller.h"
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
 #import "ios/chrome/browser/ui/activity_services/appex_constants.h"
 #import "ios/chrome/browser/ui/activity_services/chrome_activity_item_source.h"
 #import "ios/chrome/browser/ui/activity_services/print_activity.h"
 #import "ios/chrome/browser/ui/activity_services/reading_list_activity.h"
+#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_password.h"
+#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
+#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
+#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_snackbar.h"
 #import "ios/chrome/browser/ui/activity_services/share_protocol.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -23,7 +31,9 @@
 
 @interface ActivityServiceController () {
   BOOL active_;
-  id<ShareToDelegate> shareToDelegate_;
+  __weak id<ActivityServicePassword> passwordProvider_;
+  __weak id<ActivityServicePresentation> presentationProvider_;
+  __weak id<ActivityServiceSnackbar> snackbarProvider_;
   UIActivityViewController* activityViewController_;
 }
 
@@ -40,7 +50,6 @@
 - (NSArray*)activityItemsForData:(ShareToData*)data;
 // Returns an array of UIActivity objects that can handle the given |data|.
 - (NSArray*)applicationActivitiesForData:(ShareToData*)data
-                              controller:(UIViewController*)controller
                               dispatcher:(id<BrowserCommands>)dispatcher;
 // Processes |extensionItems| returned from App Extension invocation returning
 // the |activityType|. Calls shareDelegate_ with the processed returned items
@@ -90,33 +99,42 @@
 }
 
 - (void)shareWithData:(ShareToData*)data
-           controller:(UIViewController*)controller
-         browserState:(ios::ChromeBrowserState*)browserState
-           dispatcher:(id<BrowserCommands>)dispatcher
-      shareToDelegate:(id<ShareToDelegate>)delegate
-             fromRect:(CGRect)fromRect
-               inView:(UIView*)inView {
-  DCHECK(controller);
+            browserState:(ios::ChromeBrowserState*)browserState
+              dispatcher:(id<BrowserCommands>)dispatcher
+        passwordProvider:(id<ActivityServicePassword>)passwordProvider
+        positionProvider:(id<ActivityServicePositioner>)positionProvider
+    presentationProvider:(id<ActivityServicePresentation>)presentationProvider
+        snackbarProvider:(id<ActivityServiceSnackbar>)snackbarProvider {
   DCHECK(data);
   DCHECK(!active_);
-  DCHECK(!shareToDelegate_);
+
+  CGRect fromRect = CGRectZero;
+  UIView* inView = nil;
   if (IsIPadIdiom()) {
+    DCHECK(positionProvider);
+    fromRect = [positionProvider shareButtonAnchorRect];
+    inView = [positionProvider shareButtonView];
     DCHECK(fromRect.size.height);
     DCHECK(fromRect.size.width);
     DCHECK(inView);
   }
 
+  DCHECK(!passwordProvider_);
+  DCHECK(!presentationProvider_);
+  DCHECK(!snackbarProvider_);
+  passwordProvider_ = passwordProvider;
+  presentationProvider_ = presentationProvider;
+  snackbarProvider_ = snackbarProvider;
+
   DCHECK(!activityViewController_);
-  shareToDelegate_ = delegate;
   activityViewController_ = [[UIActivityViewController alloc]
       initWithActivityItems:[self activityItemsForData:data]
       applicationActivities:[self applicationActivitiesForData:data
-                                                    controller:controller
                                                     dispatcher:dispatcher]];
 
   // Reading List and Print activities refer to iOS' version of these.
   // Chrome-specific implementations of these two activities are provided below
-  // in applicationActivitiesForData:controller:dispatcher:
+  // in applicationActivitiesForData:dispatcher:
   NSArray* excludedActivityTypes = @[
     UIActivityTypeAddToReadingList, UIActivityTypePrint,
     UIActivityTypeSaveToCameraRoll
@@ -137,15 +155,16 @@
   activityViewController_.modalPresentationStyle = UIModalPresentationPopover;
   activityViewController_.popoverPresentationController.sourceView = inView;
   activityViewController_.popoverPresentationController.sourceRect = fromRect;
-  [controller presentViewController:activityViewController_
-                           animated:YES
-                         completion:nil];
+  [presentationProvider_
+      presentActivityServiceViewController:activityViewController_];
 }
 
 #pragma mark - Private
 
 - (void)resetUserInterface {
-  shareToDelegate_ = nil;
+  passwordProvider_ = nil;
+  presentationProvider_ = nil;
+  snackbarProvider_ = nil;
   activityViewController_ = nil;
   active_ = NO;
 }
@@ -155,7 +174,9 @@
                         returnedItems:(NSArray*)returnedItems
                                 error:(NSError*)activityError {
   DCHECK(active_);
-  DCHECK(shareToDelegate_);
+  DCHECK(passwordProvider_);
+  DCHECK(presentationProvider_);
+  DCHECK(snackbarProvider_);
 
   BOOL shouldResetUI = YES;
   if (activityType) {
@@ -174,12 +195,11 @@
       activity_type_util::RecordMetricForActivity(type);
       NSString* completionMessage =
           activity_type_util::CompletionMessageForActivity(type);
-      [shareToDelegate_ shareDidComplete:shareResult
-                       completionMessage:completionMessage];
+      [self shareDidComplete:shareResult completionMessage:completionMessage];
     }
   } else {
-    [shareToDelegate_ shareDidComplete:ShareTo::ShareResult::SHARE_CANCEL
-                     completionMessage:nil];
+    [self shareDidComplete:ShareTo::ShareResult::SHARE_CANCEL
+         completionMessage:nil];
   }
   if (shouldResetUI)
     [self resetUserInterface];
@@ -214,7 +234,6 @@
 }
 
 - (NSArray*)applicationActivitiesForData:(ShareToData*)data
-                              controller:(UIViewController*)controller
                               dispatcher:(id<BrowserCommands>)dispatcher {
   NSMutableArray* applicationActivities = [NSMutableArray array];
   if (data.isPagePrintable) {
@@ -253,12 +272,11 @@
     }
   }
   if (!itemProvider) {
-    // ShareToDelegate callback method must still be called on incorrect
-    // |extensionItems|.
-    [shareToDelegate_ passwordAppExDidFinish:ShareTo::ShareResult::SHARE_ERROR
-                                    username:nil
-                                    password:nil
-                           completionMessage:nil];
+    // The didFinish method must still be called on incorrect |extensionItems|.
+    [self passwordAppExDidFinish:ShareTo::ShareResult::SHARE_ERROR
+                        username:nil
+                        password:nil
+               completionMessage:nil];
     return YES;
   }
 
@@ -287,10 +305,10 @@
     // code to do password filling must be re-dispatched back to main thread.
     // Completion block intentionally retains |self|.
     dispatch_async(dispatch_get_main_queue(), ^{
-      [shareToDelegate_ passwordAppExDidFinish:activityResult
-                                      username:username
-                                      password:password
-                             completionMessage:message];
+      [self passwordAppExDidFinish:activityResult
+                          username:username
+                          password:password
+                 completionMessage:message];
       // Controller state can be reset only after delegate has
       // processed the item returned from the App Extension.
       [self resetUserInterface];
@@ -302,10 +320,78 @@
   return NO;
 }
 
+- (void)passwordAppExDidFinish:(ShareTo::ShareResult)shareStatus
+                      username:(NSString*)username
+                      password:(NSString*)password
+             completionMessage:(NSString*)message {
+  switch (shareStatus) {
+    case ShareTo::SHARE_SUCCESS: {
+      PasswordController* passwordController =
+          [passwordProvider_ currentPasswordController];
+      __block BOOL shown = NO;
+      [passwordController findAndFillPasswordForms:username
+                                          password:password
+                                 completionHandler:^(BOOL completed) {
+                                   if (shown || !completed || ![message length])
+                                     return;
+                                   TriggerHapticFeedbackForNotification(
+                                       UINotificationFeedbackTypeSuccess);
+                                   [snackbarProvider_ showSnackbar:message];
+                                   shown = YES;
+                                 }];
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+- (void)shareDidComplete:(ShareTo::ShareResult)shareStatus
+       completionMessage:(NSString*)message {
+  // The shareTo dialog dismisses itself instead of through
+  // |-dismissViewControllerAnimated:completion:| so we must notify the
+  // presentation provider here so that it can clear its presenting state.
+  [presentationProvider_ activityServiceDidEndPresenting];
+
+  switch (shareStatus) {
+    case ShareTo::SHARE_SUCCESS:
+      if ([message length]) {
+        TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
+        [snackbarProvider_ showSnackbar:message];
+      }
+      break;
+    case ShareTo::SHARE_ERROR:
+      [self showErrorAlert:IDS_IOS_SHARE_TO_ERROR_ALERT_TITLE
+                   message:IDS_IOS_SHARE_TO_ERROR_ALERT];
+      break;
+    case ShareTo::SHARE_NETWORK_FAILURE:
+      [self showErrorAlert:IDS_IOS_SHARE_TO_NETWORK_ERROR_ALERT_TITLE
+                   message:IDS_IOS_SHARE_TO_NETWORK_ERROR_ALERT];
+      break;
+    case ShareTo::SHARE_SIGN_IN_FAILURE:
+      [self showErrorAlert:IDS_IOS_SHARE_TO_SIGN_IN_ERROR_ALERT_TITLE
+                   message:IDS_IOS_SHARE_TO_SIGN_IN_ERROR_ALERT];
+      break;
+    case ShareTo::SHARE_CANCEL:
+    case ShareTo::SHARE_UNKNOWN_RESULT:
+      break;
+  }
+}
+
+- (void)showErrorAlert:(int)titleMessageId message:(int)messageId {
+  NSString* title = l10n_util::GetNSString(titleMessageId);
+  NSString* message = l10n_util::GetNSString(messageId);
+  [presentationProvider_ showErrorAlertWithStringTitle:title message:message];
+}
+
 #pragma mark - For Testing
 
-- (void)setShareToDelegateForTesting:(id<ShareToDelegate>)delegate {
-  shareToDelegate_ = delegate;
+- (void)setProvidersForTesting:(id<ActivityServicePassword,
+                                   ActivityServicePresentation,
+                                   ActivityServiceSnackbar>)provider {
+  passwordProvider_ = provider;
+  presentationProvider_ = provider;
+  snackbarProvider_ = provider;
 }
 
 @end

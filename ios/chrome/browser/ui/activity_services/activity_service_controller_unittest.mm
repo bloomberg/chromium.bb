@@ -7,16 +7,24 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 
 #import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/passwords/password_controller.h"
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
 #import "ios/chrome/browser/ui/activity_services/appex_constants.h"
 #import "ios/chrome/browser/ui/activity_services/chrome_activity_item_source.h"
 #import "ios/chrome/browser/ui/activity_services/print_activity.h"
+#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_password.h"
+#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
+#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
+#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_snackbar.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
+#include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -25,14 +33,112 @@
 @interface ActivityServiceController (CrVisibleForTesting)
 - (NSArray*)activityItemsForData:(ShareToData*)data;
 - (NSArray*)applicationActivitiesForData:(ShareToData*)data
-                              controller:(UIViewController*)controller
                               dispatcher:(id<BrowserCommands>)dispatcher;
 
 - (BOOL)processItemsReturnedFromActivity:(NSString*)activityType
                                   status:(ShareTo::ShareResult)result
                                    items:(NSArray*)extensionItems;
+- (void)shareDidComplete:(ShareTo::ShareResult)shareStatus
+       completionMessage:(NSString*)message;
+
 // Setter function for mocking during testing
-- (void)setShareToDelegateForTesting:(id<ShareToDelegate>)delegate;
+- (void)setProvidersForTesting:(id<ActivityServicePassword,
+                                   ActivityServicePresentation,
+                                   ActivityServiceSnackbar>)provider;
+@end
+
+@interface FakeActivityServiceControllerTestProvider
+    : NSObject<ActivityServicePassword,
+               ActivityServicePositioner,
+               ActivityServicePresentation,
+               ActivityServiceSnackbar>
+
+@property(nonatomic, readonly, strong) UIViewController* parentViewController;
+@property(nonatomic, readonly, strong) OCMockObject* passwordControllerMock;
+
+// Tracks whether or not the associated provider methods were called.
+@property(nonatomic, readonly, assign)
+    BOOL presentActivityServiceViewControllerWasCalled;
+@property(nonatomic, readonly, assign)
+    BOOL activityServiceDidEndPresentingWasCalled;
+
+// Stores the latest values that were passed to the associated provider methods.
+@property(nonatomic, readonly, copy) NSString* latestErrorAlertTitle;
+@property(nonatomic, readonly, copy) NSString* latestErrorAlertMessage;
+@property(nonatomic, readonly, copy) NSString* latestSnackbarMessage;
+
+// Resets the values of the properties above.
+- (void)resetState;
+
+- (instancetype)init NS_UNAVAILABLE;
+
+@end
+
+@implementation FakeActivityServiceControllerTestProvider
+
+@synthesize presentActivityServiceViewControllerWasCalled =
+    _presentActivityServiceViewControllerWasCalled;
+@synthesize activityServiceDidEndPresentingWasCalled =
+    _activityServiceDidEndPresentingWasCalled;
+@synthesize latestErrorAlertTitle = _latestErrorAlertTitle;
+@synthesize latestErrorAlertMessage = _latestErrorAlertMessage;
+@synthesize latestSnackbarMessage = _latestSnackbarMessage;
+@synthesize parentViewController = _parentViewController;
+@synthesize passwordControllerMock = _passwordControllerMock;
+
+- (instancetype)initWithParentViewController:(UIViewController*)controller {
+  if ((self = [super init])) {
+    _parentViewController = controller;
+    _passwordControllerMock = OCMClassMock([PasswordController class]);
+  }
+  return self;
+}
+
+- (PasswordController*)currentPasswordController {
+  return static_cast<PasswordController*>(self.passwordControllerMock);
+}
+
+- (void)presentActivityServiceViewController:(UIViewController*)controller {
+  _presentActivityServiceViewControllerWasCalled = YES;
+  if (self.parentViewController) {
+    [self.parentViewController presentViewController:controller
+                                            animated:NO
+                                          completion:nil];
+  }
+}
+
+- (void)activityServiceDidEndPresenting {
+  _activityServiceDidEndPresentingWasCalled = YES;
+}
+
+- (void)showErrorAlertWithStringTitle:(NSString*)title
+                              message:(NSString*)message {
+  _latestErrorAlertTitle = [title copy];
+  _latestErrorAlertMessage = [message copy];
+}
+
+- (CGRect)shareButtonAnchorRect {
+  // On iPad, UIPopovers must be anchored to rectangles that have a non zero
+  // size.
+  return CGRectMake(0, 0, 1, 1);
+}
+
+- (UIView*)shareButtonView {
+  return self.parentViewController.view;
+}
+
+- (void)showSnackbar:(NSString*)message {
+  _latestSnackbarMessage = [message copy];
+}
+
+- (void)resetState {
+  _presentActivityServiceViewControllerWasCalled = NO;
+  _activityServiceDidEndPresentingWasCalled = NO;
+  _latestErrorAlertTitle = nil;
+  _latestErrorAlertMessage = nil;
+  _latestSnackbarMessage = nil;
+}
+
 @end
 
 namespace {
@@ -45,8 +151,6 @@ class ActivityServiceControllerTest : public PlatformTest {
         [[UIViewController alloc] initWithNibName:nil bundle:nil];
     [[UIApplication sharedApplication] keyWindow].rootViewController =
         parentController_;
-    shareToDelegate_ =
-        [OCMockObject mockForProtocol:@protocol(ShareToDelegate)];
     shareData_ =
         [[ShareToData alloc] initWithURL:GURL("https://chromium.org")
                                    title:@""
@@ -62,21 +166,6 @@ class ActivityServiceControllerTest : public PlatformTest {
 
   ThumbnailGeneratorBlock DummyThumbnailGeneratorBlock() {
     return ^UIImage*(CGSize const& size) { return nil; };
-  }
-
-  id<ShareToDelegate> GetShareToDelegate() {
-    return static_cast<id<ShareToDelegate>>(shareToDelegate_);
-  }
-
-  CGRect AnchorRect() {
-    // On iPad, UIPopovers must be anchored to rectangles that have a non zero
-    // size.
-    return CGRectMake(0, 0, 1, 1);
-  }
-
-  UIView* AnchorView() {
-    // On iPad, UIPopovers must be anchored to non nil views.
-    return [parentController_ view];
   }
 
   BOOL ArrayContainsImageSource(NSArray* array) {
@@ -148,45 +237,22 @@ class ActivityServiceControllerTest : public PlatformTest {
                                                BOOL expectedResetUI) {
     ActivityServiceController* activityController =
         [[ActivityServiceController alloc] init];
+    FakeActivityServiceControllerTestProvider* provider =
+        [[FakeActivityServiceControllerTestProvider alloc]
+            initWithParentViewController:nil];
+    [activityController setProvidersForTesting:provider];
 
-    // Sets up a Mock ShareToDelegate object to check that the ShareToDelegate
-    // callback function is not called.
-    OCMockObject* shareToDelegateMock =
-        [OCMockObject mockForProtocol:@protocol(ShareToDelegate)];
-    __block bool blockCalled = false;
-    void (^validationBlock)(NSInvocation*) = ^(NSInvocation* invocation) {
-      blockCalled = true;
+    // The following call to |processItemsReturnedFromActivity| should not
+    // trigger any calls to the mock PasswordController.  Use |rejectBlock| to
+    // trigger gtest failures because strict mocks throw exceptions when they
+    // receive unexpected methods, and crashing the whole test suite is bad.
+    void (^rejectBlock)(NSInvocation*) = ^(NSInvocation* invocation) {
+      FAIL() << "Methods were called unexpectedly on PasswordController";
     };
-    // OCMock does not allow "any" specification for non-object parameters.
-    // To implement something that accept any non-SHARE_SUCCESS parameter
-    // to calling this method, all the non-success values have to be
-    // enumerated.
-    [[[shareToDelegateMock stub] andDo:validationBlock]
-        passwordAppExDidFinish:ShareTo::ShareResult::SHARE_CANCEL
-                      username:OCMOCK_ANY
-                      password:OCMOCK_ANY
-             completionMessage:OCMOCK_ANY];
-    [[[shareToDelegateMock stub] andDo:validationBlock]
-        passwordAppExDidFinish:ShareTo::ShareResult::SHARE_NETWORK_FAILURE
-                      username:OCMOCK_ANY
-                      password:OCMOCK_ANY
-             completionMessage:OCMOCK_ANY];
-    [[[shareToDelegateMock stub] andDo:validationBlock]
-        passwordAppExDidFinish:ShareTo::ShareResult::SHARE_SIGN_IN_FAILURE
-                      username:OCMOCK_ANY
-                      password:OCMOCK_ANY
-             completionMessage:OCMOCK_ANY];
-    [[[shareToDelegateMock stub] andDo:validationBlock]
-        passwordAppExDidFinish:ShareTo::ShareResult::SHARE_ERROR
-                      username:OCMOCK_ANY
-                      password:OCMOCK_ANY
-             completionMessage:OCMOCK_ANY];
-    [[[shareToDelegateMock stub] andDo:validationBlock]
-        passwordAppExDidFinish:ShareTo::ShareResult::SHARE_UNKNOWN_RESULT
-                      username:OCMOCK_ANY
-                      password:OCMOCK_ANY
-             completionMessage:OCMOCK_ANY];
-    [activityController setShareToDelegateForTesting:(id)shareToDelegateMock];
+    [[[provider.passwordControllerMock stub] andDo:rejectBlock]
+        findAndFillPasswordForms:OCMOCK_ANY
+                        password:OCMOCK_ANY
+               completionHandler:OCMOCK_ANY];
 
     // Sets up the returned item from a Password Management App Extension.
     NSString* activityType = @"com.lastpass.ilastpass.LastPassExt";
@@ -196,36 +262,37 @@ class ActivityServiceControllerTest : public PlatformTest {
                                                       status:result
                                                        items:extensionItems];
     ASSERT_EQ(expectedResetUI, resetUI);
-    base::test::ios::WaitUntilCondition(^{
-      return blockCalled;
-    });
-    EXPECT_OCMOCK_VERIFY(shareToDelegateMock);
+
+    ASSERT_TRUE([provider currentPasswordController]);
+    EXPECT_OCMOCK_VERIFY(provider.passwordControllerMock);
   }
 
   web::TestWebThreadBundle thread_bundle_;
   UIViewController* parentController_;
-  OCMockObject* shareToDelegate_;
   ShareToData* shareData_;
 };
 
 TEST_F(ActivityServiceControllerTest, PresentAndDismissController) {
-  [[shareToDelegate_ expect] shareDidComplete:ShareTo::ShareResult::SHARE_CANCEL
-                            completionMessage:[OCMArg isNil]];
-
   UIViewController* parentController =
       static_cast<UIViewController*>(parentController_);
+
+  FakeActivityServiceControllerTestProvider* provider =
+      [[FakeActivityServiceControllerTestProvider alloc]
+          initWithParentViewController:parentController];
   ActivityServiceController* activityController =
       [[ActivityServiceController alloc] init];
   EXPECT_FALSE([activityController isActive]);
 
   // Test sharing.
   [activityController shareWithData:shareData_
-                         controller:parentController
                        browserState:nullptr
                          dispatcher:nil
-                    shareToDelegate:GetShareToDelegate()
-                           fromRect:AnchorRect()
-                             inView:AnchorView()];
+                   passwordProvider:provider
+                   positionProvider:provider
+               presentationProvider:provider
+                   snackbarProvider:provider];
+  EXPECT_TRUE(provider.presentActivityServiceViewControllerWasCalled);
+  EXPECT_FALSE(provider.activityServiceDidEndPresentingWasCalled);
   EXPECT_TRUE([activityController isActive]);
 
   // Cancels sharing and isActive flag should be turned off.
@@ -233,7 +300,7 @@ TEST_F(ActivityServiceControllerTest, PresentAndDismissController) {
   base::test::ios::WaitUntilCondition(^bool() {
     return ![activityController isActive];
   });
-  EXPECT_OCMOCK_VERIFY(shareToDelegate_);
+  EXPECT_TRUE(provider.activityServiceDidEndPresentingWasCalled);
 }
 
 // Verifies that an UIActivityImageSource is sent to the
@@ -352,11 +419,14 @@ TEST_F(ActivityServiceControllerTest, ProcessItemsReturnedSuccessfully) {
   ActivityServiceController* activityController =
       [[ActivityServiceController alloc] init];
 
-  // Sets up a Mock ShareToDelegate object to check that the callback function
-  // -passwordAppExDidFinish:username:password:completionMessage:
-  // is correct with the correct username and password.
-  OCMockObject* shareToDelegateMock =
-      [OCMockObject mockForProtocol:@protocol(ShareToDelegate)];
+  FakeActivityServiceControllerTestProvider* provider =
+      [[FakeActivityServiceControllerTestProvider alloc]
+          initWithParentViewController:nil];
+  ASSERT_TRUE([provider currentPasswordController]);
+  [activityController setProvidersForTesting:provider];
+
+  // Sets up expectations on the mock PasswordController to check that the
+  // callback function is called with the correct username and password.
   NSString* const kSecretUsername = @"john.doe";
   NSString* const kSecretPassword = @"super!secret";
   __block bool blockCalled = false;
@@ -364,18 +434,16 @@ TEST_F(ActivityServiceControllerTest, ProcessItemsReturnedSuccessfully) {
     __unsafe_unretained NSString* username;
     __unsafe_unretained NSString* password;
     // Skips 0 and 1 index because they are |self| and |cmd|.
-    [invocation getArgument:&username atIndex:3];
-    [invocation getArgument:&password atIndex:4];
+    [invocation getArgument:&username atIndex:2];
+    [invocation getArgument:&password atIndex:3];
     EXPECT_NSEQ(kSecretUsername, username);
     EXPECT_NSEQ(kSecretPassword, password);
     blockCalled = true;
   };
-  [[[shareToDelegateMock stub] andDo:validationBlock]
-      passwordAppExDidFinish:ShareTo::ShareResult::SHARE_SUCCESS
-                    username:OCMOCK_ANY
-                    password:OCMOCK_ANY
-           completionMessage:OCMOCK_ANY];
-  [activityController setShareToDelegateForTesting:(id)shareToDelegateMock];
+  [[[provider.passwordControllerMock stub] andDo:validationBlock]
+      findAndFillPasswordForms:OCMOCK_ANY
+                      password:OCMOCK_ANY
+             completionHandler:OCMOCK_ANY];
 
   // Sets up the returned item from a Password Management App Extension.
   NSString* activityType = @"com.software.find-login-action.extension";
@@ -394,12 +462,11 @@ TEST_F(ActivityServiceControllerTest, ProcessItemsReturnedSuccessfully) {
                                                     status:result
                                                      items:@[ extensionItem ]];
   ASSERT_FALSE(resetUI);
-  // Wait for -passwordAppExDidFinish:username:password:completionMessage:
-  // to be called.
+  // Wait for the PasswordController mock to be called.
   base::test::ios::WaitUntilCondition(^{
     return blockCalled;
   });
-  EXPECT_OCMOCK_VERIFY(shareToDelegateMock);
+  EXPECT_OCMOCK_VERIFY(provider.passwordControllerMock);
 }
 
 // Verifies that -processItemsReturnedFromActivity:status:item: fails when
@@ -443,7 +510,6 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
                     thumbnailGenerator:DummyThumbnailGeneratorBlock()];
 
   NSArray* items = [activityController applicationActivitiesForData:data
-                                                         controller:nil
                                                          dispatcher:nil];
   ASSERT_EQ(2U, [items count]);
   EXPECT_EQ([PrintActivity class], [[items objectAtIndex:0] class]);
@@ -456,7 +522,6 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
                        isPagePrintable:NO
                     thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   items = [activityController applicationActivitiesForData:data
-                                                controller:nil
                                                 dispatcher:nil];
   EXPECT_EQ(1U, [items count]);
 }
@@ -488,6 +553,63 @@ TEST_F(ActivityServiceControllerTest, FindLoginActionTypeConformsToPublicURL) {
   EXPECT_TRUE(UTTypeConformsTo(chromeFindLoginAction, kUTTypeURL));
   EXPECT_TRUE(
       UTTypeConformsTo(chromeFindLoginAction, onePasswordFindLoginAction));
+}
+
+// Verifies that the snackbar provider is invoked to show the given success
+// message on receiving a -shareDidComplete callback for a successful share.
+TEST_F(ActivityServiceControllerTest, TestShareDidCompleteWithSuccess) {
+  ActivityServiceController* controller =
+      [[ActivityServiceController alloc] init];
+  FakeActivityServiceControllerTestProvider* provider =
+      [[FakeActivityServiceControllerTestProvider alloc]
+          initWithParentViewController:nil];
+  [controller setProvidersForTesting:provider];
+
+  NSString* completion_message = @"Completion!";
+  [controller shareDidComplete:ShareTo::SHARE_SUCCESS
+             completionMessage:completion_message];
+
+  EXPECT_TRUE(provider.activityServiceDidEndPresentingWasCalled);
+  EXPECT_NSEQ(completion_message, provider.latestSnackbarMessage);
+}
+
+// Verifies that the snackbar and error alert providers are not invoked for a
+// cancelled share.
+TEST_F(ActivityServiceControllerTest, TestShareDidCompleteWithCancellation) {
+  ActivityServiceController* controller =
+      [[ActivityServiceController alloc] init];
+  FakeActivityServiceControllerTestProvider* provider =
+      [[FakeActivityServiceControllerTestProvider alloc]
+          initWithParentViewController:nil];
+  [controller setProvidersForTesting:provider];
+
+  [controller shareDidComplete:ShareTo::SHARE_CANCEL
+             completionMessage:@"dummy"];
+  EXPECT_TRUE(provider.activityServiceDidEndPresentingWasCalled);
+  EXPECT_FALSE(provider.latestErrorAlertTitle);
+  EXPECT_FALSE(provider.latestErrorAlertMessage);
+  EXPECT_FALSE(provider.latestSnackbarMessage);
+}
+
+// Verifies that the error alert provider is invoked with the proper error
+// message upon receiving a -shareDidComplete callback for a failed share.
+TEST_F(ActivityServiceControllerTest, TestShareDidCompleteWithError) {
+  ActivityServiceController* controller =
+      [[ActivityServiceController alloc] init];
+  FakeActivityServiceControllerTestProvider* provider =
+      [[FakeActivityServiceControllerTestProvider alloc]
+          initWithParentViewController:nil];
+  [controller setProvidersForTesting:provider];
+
+  [controller shareDidComplete:ShareTo::SHARE_ERROR completionMessage:@"dummy"];
+
+  NSString* error_title =
+      l10n_util::GetNSString(IDS_IOS_SHARE_TO_ERROR_ALERT_TITLE);
+  NSString* error_message =
+      l10n_util::GetNSString(IDS_IOS_SHARE_TO_ERROR_ALERT);
+  EXPECT_NSEQ(error_title, provider.latestErrorAlertTitle);
+  EXPECT_NSEQ(error_message, provider.latestErrorAlertMessage);
+  EXPECT_FALSE(provider.latestSnackbarMessage);
 }
 
 }  // namespace

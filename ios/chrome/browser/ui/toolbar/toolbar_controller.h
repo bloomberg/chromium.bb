@@ -13,6 +13,7 @@
 
 #include "base/ios/weak_nsobject.h"
 #import "base/mac/scoped_nsobject.h"
+#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
@@ -109,8 +110,9 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 // (forwarding to the delegate).
 // This is not intended to be used on its own, but to be subclassed by more
 // specific toolbars that provide more buttons in the empty space.
-@interface ToolbarController
-    : NSObject<PopupMenuDelegate, BubbleViewAnchorPointProvider>
+@interface ToolbarController : NSObject<ActivityServicePositioner,
+                                        PopupMenuDelegate,
+                                        BubbleViewAnchorPointProvider>
 
 // The top-level toolbar view. It is a |UIImageView| even though it does not
 // hold any image for testability: unlike |UIView|, a |UIImageView| that is
