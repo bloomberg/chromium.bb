@@ -7,20 +7,21 @@
 
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "modules/ModulesExport.h"
-#include "modules/credentialmanager/AuthenticatorResponse.h"
-#include "modules/credentialmanager/Credential.h"
+#include "modules/webauth/AuthenticatorResponse.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class AuthenticatorResponse;
 
-class MODULES_EXPORT PublicKeyCredential final : public Credential {
+class MODULES_EXPORT PublicKeyCredential final
+    : public GarbageCollected<PublicKeyCredential>,
+      public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PublicKeyCredential* Create(const String& id,
-                                     DOMArrayBuffer* raw_id,
+  static PublicKeyCredential* Create(DOMArrayBuffer* raw_id,
                                      AuthenticatorResponse*);
 
   DOMArrayBuffer* rawId() const { return raw_id_.Get(); }
@@ -29,9 +30,7 @@ class MODULES_EXPORT PublicKeyCredential final : public Credential {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit PublicKeyCredential(const String& id,
-                               DOMArrayBuffer* raw_id,
-                               AuthenticatorResponse*);
+  explicit PublicKeyCredential(DOMArrayBuffer* raw_id, AuthenticatorResponse*);
 
   const Member<DOMArrayBuffer> raw_id_;
   const Member<AuthenticatorResponse> response_;

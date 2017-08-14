@@ -18,7 +18,6 @@ CredentialManagerClient::CredentialManagerClient(
 CredentialManagerClient::~CredentialManagerClient() {}
 
 DEFINE_TRACE(CredentialManagerClient) {
-  visitor->Trace(authentication_client_);
   Supplement<Page>::Trace(visitor);
 }
 
@@ -81,12 +80,4 @@ void CredentialManagerClient::DispatchGet(
   client_->DispatchGet(mediation, include_passwords, federations, callbacks);
 }
 
-void CredentialManagerClient::DispatchMakeCredential(
-    LocalFrame* frame,
-    const MakeCredentialOptions& options,
-    WebAuthenticationClient::PublicKeyCallbacks* callbacks) {
-  if (!authentication_client_)
-    authentication_client_ = new WebAuthenticationClient(*frame);
-  authentication_client_->DispatchMakeCredential(options, callbacks);
-}
 }  // namespace blink
