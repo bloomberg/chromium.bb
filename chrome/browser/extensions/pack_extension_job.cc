@@ -51,17 +51,12 @@ void PackExtensionJob::Run(
     scoped_refptr<base::SequencedTaskRunner> async_reply_task_runner) {
   DCHECK_EQ(!!async_reply_task_runner, run_mode_ == RunMode::ASYNCHRONOUS)
       << "Provide task runner iff we are running in asynchronous mode.";
-  // TODO(lazyboy): Use root_directory_.AddExtension(kExtensionFileExtension).
-  auto crx_file_out = base::MakeUnique<base::FilePath>(root_directory_.value() +
-                                                       kExtensionFileExtension);
+  auto crx_file_out = base::MakeUnique<base::FilePath>(
+      root_directory_.AddExtension(kExtensionFileExtension));
 
   auto key_file_out = base::MakeUnique<base::FilePath>();
-  if (key_file_.empty()) {
-    // TODO(lazyboy): Use
-    // root_directory_.AddExtension(kExtensionKeyFileExtension).
-    *key_file_out =
-        base::FilePath(root_directory_.value() + kExtensionKeyFileExtension);
-  }
+  if (key_file_.empty())
+    *key_file_out = root_directory_.AddExtension(kExtensionKeyFileExtension);
 
   // TODO(aa): Need to internationalize the errors that ExtensionCreator
   // returns. See bug 20734.
