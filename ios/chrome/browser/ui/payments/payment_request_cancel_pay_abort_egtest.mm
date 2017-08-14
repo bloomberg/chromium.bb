@@ -109,7 +109,7 @@ const char kNoShippingPage[] =
 // rejects the Promise returned by request.show() with the appropriate error.
 - (void)testOpenAndCancel {
   if (!base::ios::IsRunningOnOrLater(10, 3, 0)) {
-    EARL_GREY_TEST_DISABLED(
+    EARL_GREY_TEST_SKIPPED(
         @"Disabled on iOS versions below 10.3 because DOMException is not "
         @"available.");
   }
@@ -141,7 +141,7 @@ const char kNoShippingPage[] =
 // and displays the Autofill Settings UI.
 - (void)testOpenAndNavigateToSettings {
   if (!base::ios::IsRunningOnOrLater(10, 3, 0)) {
-    EARL_GREY_TEST_DISABLED(
+    EARL_GREY_TEST_SKIPPED(
         @"Disabled on iOS versions below 10.3 because DOMException is not "
         @"available.");
   }
