@@ -17,18 +17,19 @@
 #include "base/android/jni_int_wrapper.h"
 
 // Step 1: forward declarations.
-namespace {
+JNI_REGISTRATION_EXPORT extern const char kClassPath_android_view_MotionEvent[];
 const char kClassPath_android_view_MotionEvent[] = "android/view/MotionEvent";
-// Leaking this jclass as we cannot use LazyInstance from some threads.
-base::subtle::AtomicWord g_android_view_MotionEvent_clazz
-    __attribute__((unused)) = 0;
 
+// Leaking this jclass as we cannot use LazyInstance from some threads.
+JNI_REGISTRATION_EXPORT base::subtle::AtomicWord
+    g_android_view_MotionEvent_clazz = 0;
+#ifndef android_view_MotionEvent_clazz_defined
+#define android_view_MotionEvent_clazz_defined
 inline jclass android_view_MotionEvent_clazz(JNIEnv* env) {
   return base::android::LazyGetClass(env, kClassPath_android_view_MotionEvent,
       &g_android_view_MotionEvent_clazz);
 }
-
-}  // namespace
+#endif
 
 namespace JNI_MotionEvent {
 
