@@ -17,25 +17,15 @@ var B_RELATIVE_URL =
     'http://www.b.com:PORT/extensions/api_test/history/b.html';
 
 /**
- * A helper function to flip the setTimeout arguments and make the code
- * more readable.
- * @param {number} seconds The number of seconds to wait.
- * @param {function} callback Closure.
- */
-function waitAFewSeconds(seconds, callback) {
-  setTimeout(callback, seconds * 1000);
-};
-
-/**
  * Object used for listening to the chrome.history.onVisited events.  The
- * global object 'itemVisited' stores the last item received.
+ * global object 'itemVisitedCallback' stores the last item received.
  */
 var itemVisitedCallback = null;
 function itemVisitedListener(visited) {
   if (null != itemVisitedCallback) {
     itemVisitedCallback(visited);
-  };
-};
+  }
+}
 
 function removeItemVisitedListener() {
   chrome.history.onVisited.removeListener(itemVisitedListener);
@@ -44,10 +34,6 @@ function removeItemVisitedListener() {
 
 function setItemVisitedListener(callback) {
   chrome.history.onVisited.addListener(itemVisitedListener);
-  itemVisitedCallback = callback;
-}
-
-function setNextItemVisitedListener(callback) {
   itemVisitedCallback = callback;
 }
 
@@ -70,10 +56,6 @@ function removeItemRemovedListener() {
 
 function setItemRemovedListener(callback) {
   chrome.history.onVisitRemoved.addListener(itemRemovedListener);
-  itemRemovedCallback = callback;
-}
-
-function setNextItemRemovedListener(callback) {
   itemRemovedCallback = callback;
 }
 
@@ -152,28 +134,24 @@ function addUrlsWithTimeline(urls, callback) {
 
   // Add the first URL now.
   chrome.history.addUrl({url: urls[0]}, function() {
-    waitAFewSeconds(1, function() {
-      chrome.history.addUrl({url: urls[1]}, function() {
-        waitAFewSeconds(1, function() {
-          // Use search to get the times of the two URLs, and compute times
-          // to pass to the callback.
-          chrome.history.search({text: ''}, function(historyItems) {
-            // Check that both URLs were added.
-            assertEq(urls.length, historyItems.length);
+    chrome.history.addUrl({url: urls[1]}, function() {
+      // Use search to get the times of the two URLs, and compute times
+      // to pass to the callback.
+      chrome.history.search({text: ''}, function(historyItems) {
+        // Check that both URLs were added.
+        assertEq(urls.length, historyItems.length);
 
-            // Don't assume anything about the order of history records in
-            // |historyItems|.
-            var firstUrlTime = Math.min(historyItems[0].lastVisitTime,
-                                        historyItems[1].lastVisitTime);
-            var secondUrlTime = Math.max(historyItems[0].lastVisitTime,
-                                         historyItems[1].lastVisitTime);
+        // Don't assume anything about the order of history records in
+        // |historyItems|.
+        var firstUrlTime = Math.min(historyItems[0].lastVisitTime,
+                                    historyItems[1].lastVisitTime);
+        var secondUrlTime = Math.max(historyItems[0].lastVisitTime,
+                                     historyItems[1].lastVisitTime);
 
-            callback({
-              before: firstUrlTime - 100.0,
-              between: (firstUrlTime + secondUrlTime) / 2.0,
-              after: secondUrlTime + 100.0
-            });
-          });
+        callback({
+          before: firstUrlTime - 100.0,
+          between: (firstUrlTime + secondUrlTime) / 2.0,
+          after: secondUrlTime + 100.0
         });
       });
     });
