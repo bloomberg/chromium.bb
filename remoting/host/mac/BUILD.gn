@@ -169,6 +169,21 @@ foreach(locale, remoting_locales_with_underscores) {
   }
 }
 
+bundle_data("remoting_native_messaging_host_resources") {
+  sources = [
+    # This image is used to badge the lock icon in the authentication dialogs,
+    # used for elevating privileges to set up the host. The exact filename is
+    # required by base::mac::GetAuthorizationRightsWithPrompt().
+    # It needs to exist as a file on disk and not just something in a
+    # resource bundle because that's the interface that Authorization Services
+    # uses. Also, Authorization Services can't deal with .icns files.
+    "//remoting/resources/product_logo_32.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
+
 target("mac_app_bundle", "remoting_native_messaging_host") {
   output_name = "native_messaging_host"
   info_plist = "../setup/native_messaging_host-Info.plist"
@@ -187,6 +202,7 @@ target("mac_app_bundle", "remoting_native_messaging_host") {
   ]
 
   deps = [
+    ":remoting_native_messaging_host_resources",
     "//base",
     "//net",
     "//remoting/base:breakpad",
