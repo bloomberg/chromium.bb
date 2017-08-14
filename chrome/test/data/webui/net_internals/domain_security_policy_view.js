@@ -79,7 +79,7 @@ CheckQueryResultTask.prototype = {
   onHSTSQueryResult: function(result) {
     // Ignore results after |this| is finished.
     if (!this.isDone()) {
-      expectEquals(this.domain_, $(HSTSView.QUERY_INPUT_ID).value);
+      expectEquals(this.domain_, $(DomainSecurityPolicyView.QUERY_INPUT_ID).value);
 
       // Each case has its own validation function because of the design of the
       // test reporting infrastructure.
@@ -104,7 +104,7 @@ CheckQueryResultTask.prototype = {
    */
   checkError_: function(result) {
     expectEquals(QueryResultType.ERROR, this.queryResultType_);
-    expectEquals(result.error, $(HSTSView.QUERY_OUTPUT_DIV_ID).innerText);
+    expectEquals(result.error, $(DomainSecurityPolicyView.QUERY_OUTPUT_DIV_ID).innerText);
   },
 
   /**
@@ -113,7 +113,7 @@ CheckQueryResultTask.prototype = {
    */
   checkNotFound_: function(result) {
     expectEquals(QueryResultType.NOT_FOUND, this.queryResultType_);
-    expectEquals('Not found', $(HSTSView.QUERY_OUTPUT_DIV_ID).innerText);
+    expectEquals('Not found', $(DomainSecurityPolicyView.QUERY_OUTPUT_DIV_ID).innerText);
   },
 
   /**
@@ -154,7 +154,7 @@ CheckQueryResultTask.prototype = {
     expectEquals(this.publicKeyHashes_, hashes.join(','));
 
     // Verify that the domain appears somewhere in the displayed text.
-    outputText = $(HSTSView.QUERY_OUTPUT_DIV_ID).innerText;
+    outputText = $(DomainSecurityPolicyView.QUERY_OUTPUT_DIV_ID).innerText;
     expectLE(0, outputText.search(this.domain_));
   }
 };
@@ -203,11 +203,11 @@ AddTask.prototype = {
    * listening for the results of the query that is automatically submitted.
    */
   start: function() {
-    $(HSTSView.ADD_INPUT_ID).value = this.domain_;
-    $(HSTSView.ADD_STS_CHECK_ID).checked = this.stsSubdomains_;
-    $(HSTSView.ADD_PKP_CHECK_ID).checked = this.requestedPkpSubdomains_;
-    $(HSTSView.ADD_PINS_ID).value = this.requestedPublicKeyHashes_;
-    $(HSTSView.ADD_SUBMIT_ID).click();
+    $(DomainSecurityPolicyView.ADD_INPUT_ID).value = this.domain_;
+    $(DomainSecurityPolicyView.ADD_STS_CHECK_ID).checked = this.stsSubdomains_;
+    $(DomainSecurityPolicyView.ADD_PKP_CHECK_ID).checked = this.requestedPkpSubdomains_;
+    $(DomainSecurityPolicyView.ADD_PINS_ID).value = this.requestedPublicKeyHashes_;
+    $(DomainSecurityPolicyView.ADD_SUBMIT_ID).click();
     CheckQueryResultTask.prototype.start.call(this);
   }
 };
@@ -234,8 +234,8 @@ QueryTask.prototype = {
    */
   start: function() {
     CheckQueryResultTask.prototype.start.call(this);
-    $(HSTSView.QUERY_INPUT_ID).value = this.domain_;
-    $(HSTSView.QUERY_SUBMIT_ID).click();
+    $(DomainSecurityPolicyView.QUERY_INPUT_ID).value = this.domain_;
+    $(DomainSecurityPolicyView.QUERY_SUBMIT_ID).click();
   }
 };
 
@@ -261,8 +261,8 @@ DeleteTask.prototype = {
    * a query.
    */
   start: function() {
-    $(HSTSView.DELETE_INPUT_ID).value = this.domain_;
-    $(HSTSView.DELETE_SUBMIT_ID).click();
+    $(DomainSecurityPolicyView.DELETE_INPUT_ID).value = this.domain_;
+    $(DomainSecurityPolicyView.DELETE_SUBMIT_ID).click();
     QueryTask.prototype.start.call(this);
   }
 };
@@ -270,7 +270,7 @@ DeleteTask.prototype = {
 /**
  * Checks that querying a domain that was never added fails.
  */
-TEST_F('NetInternalsTest', 'netInternalsHSTSViewQueryNotFound', function() {
+TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewQueryNotFound', function() {
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   var now = new Date().getTime() / 1000.0;
@@ -282,7 +282,7 @@ TEST_F('NetInternalsTest', 'netInternalsHSTSViewQueryNotFound', function() {
 /**
  * Checks that querying a domain with an invalid name returns an error.
  */
-TEST_F('NetInternalsTest', 'netInternalsHSTSViewQueryError', function() {
+TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewQueryError', function() {
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   var now = new Date().getTime() / 1000.0;
@@ -294,7 +294,7 @@ TEST_F('NetInternalsTest', 'netInternalsHSTSViewQueryError', function() {
 /**
  * Deletes a domain that was never added.
  */
-TEST_F('NetInternalsTest', 'netInternalsHSTSViewDeleteNotFound', function() {
+TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewDeleteNotFound', function() {
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
@@ -304,7 +304,7 @@ TEST_F('NetInternalsTest', 'netInternalsHSTSViewDeleteNotFound', function() {
 /**
  * Deletes a domain that returns an error on lookup.
  */
-TEST_F('NetInternalsTest', 'netInternalsHSTSViewDeleteError', function() {
+TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewDeleteError', function() {
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new DeleteTask('\u3024', QueryResultType.ERROR));
@@ -314,7 +314,7 @@ TEST_F('NetInternalsTest', 'netInternalsHSTSViewDeleteError', function() {
 /**
  * Adds a domain and then deletes it.
  */
-TEST_F('NetInternalsTest', 'netInternalsHSTSViewAddDelete', function() {
+TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddDelete', function() {
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   var now = new Date().getTime() / 1000.0;
@@ -327,7 +327,7 @@ TEST_F('NetInternalsTest', 'netInternalsHSTSViewAddDelete', function() {
 /**
  * Tries to add a domain with an invalid name.
  */
-TEST_F('NetInternalsTest', 'netInternalsHSTSViewAddFail', function() {
+TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddFail', function() {
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   var now = new Date().getTime() / 1000.0;
@@ -342,7 +342,7 @@ TEST_F('NetInternalsTest', 'netInternalsHSTSViewAddFail', function() {
  * Tries to add a domain with a name that errors out on lookup due to having
  * non-ASCII characters in it.
  */
-TEST_F('NetInternalsTest', 'netInternalsHSTSViewAddError', function() {
+TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddError', function() {
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   var now = new Date().getTime() / 1000.0;
@@ -354,7 +354,7 @@ TEST_F('NetInternalsTest', 'netInternalsHSTSViewAddError', function() {
 /**
  * Adds a domain with an invalid hash.
  */
-TEST_F('NetInternalsTest', 'netInternalsHSTSViewAddInvalidHash', function() {
+TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddInvalidHash', function() {
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   var now = new Date().getTime() / 1000.0;
@@ -367,7 +367,7 @@ TEST_F('NetInternalsTest', 'netInternalsHSTSViewAddInvalidHash', function() {
 /**
  * Adds the same domain twice in a row, modifying some values the second time.
  */
-TEST_F('NetInternalsTest', 'netInternalsHSTSViewAddOverwrite', function() {
+TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddOverwrite', function() {
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   var now = new Date().getTime() / 1000.0;
@@ -382,7 +382,7 @@ TEST_F('NetInternalsTest', 'netInternalsHSTSViewAddOverwrite', function() {
 /**
  * Adds two different domains and then deletes them.
  */
-TEST_F('NetInternalsTest', 'netInternalsHSTSViewAddTwice', function() {
+TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddTwice', function() {
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   var now = new Date().getTime() / 1000.0;

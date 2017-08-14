@@ -71,7 +71,7 @@ var NetInternalsTest = (function() {
       // False positives for unknown reason.
       this.accessibilityAuditConfig.ignoreSelectors(
           'focusableElementNotVisibleAndNotAriaHidden',
-          '#hsts-view-tab-content *');
+          '#domain-security-policy-view-tab-content *');
 
       // TODO(aboxhall): enable when this bug is fixed:
       // https://github.com/GoogleChrome/accessibility-developer-tools/issues/69
@@ -312,7 +312,7 @@ var NetInternalsTest = (function() {
       sdch: SdchView.TAB_ID,
       httpCache: HttpCacheView.TAB_ID,
       modules: ModulesView.TAB_ID,
-      hsts: HSTSView.TAB_ID,
+      hsts: DomainSecurityPolicyView.TAB_ID,
       prerender: PrerenderView.TAB_ID,
       bandwidth: BandwidthView.TAB_ID,
       chromeos: CrosView.TAB_ID
