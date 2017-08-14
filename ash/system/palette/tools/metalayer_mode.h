@@ -8,12 +8,17 @@
 #include "ash/ash_export.h"
 #include "ash/system/palette/common_palette_tool.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/events/event_handler.h"
 
 namespace ash {
 
 // A palette tool that lets the user select a screen region to be passed
 // to the voice interaction framework.
-class ASH_EXPORT MetalayerMode : public CommonPaletteTool {
+//
+// Unlike other palette tools, it can be activated not only through the stylus
+// menu, but also by the stylus button click.
+class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
+                                 public ui::EventHandler {
  public:
   explicit MetalayerMode(Delegate* delegate);
   ~MetalayerMode() override;
@@ -29,6 +34,9 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool {
 
   // CommonPaletteTool:
   const gfx::VectorIcon& GetPaletteIcon() const override;
+
+  // ui::EventHandler:
+  void OnTouchEvent(ui::TouchEvent* event) override;
 
   void OnMetalayerDone();
 
