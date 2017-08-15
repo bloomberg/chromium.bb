@@ -320,7 +320,8 @@ void WindowGrid::PrepareForOverview() {
   prepared_for_overview_ = true;
 }
 
-void WindowGrid::PositionWindows(bool animate) {
+void WindowGrid::PositionWindows(bool animate,
+                                 WindowSelectorItem* ignored_item) {
   if (window_selector_->is_shut_down() || window_list_.empty())
     return;
   DCHECK(shield_widget_.get());
@@ -432,11 +433,19 @@ void WindowGrid::PositionWindows(bool animate) {
                            std::min(kMaxHeight + 2 * kWindowMargin, height),
                            &rects, &max_bottom, &min_right, &max_right);
   }
-  // Position the windows centering the left-aligned rows vertically.
+  // Position the windows centering the left-aligned rows vertically. Do not
+  // position |ignored_item| if it is not nullptr and matches a item in
+  // |window_list_|.
   gfx::Vector2d offset(0, (total_bounds.bottom() - max_bottom) / 2);
-  for (size_t i = 0; i < window_list_.size(); ++i) {
+  for (size_t i = 0, j = 0; i < window_list_.size(); ++i, ++j) {
+    if (ignored_item != nullptr && window_list_[i].get() == ignored_item) {
+      // Decrement the |rects| index so that after repositioning there will not
+      // be a gap where the ignored item was supposed to be.
+      --j;
+      continue;
+    }
     window_list_[i]->SetBounds(
-        rects[i] + offset,
+        rects[j] + offset,
         animate
             ? OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS
             : OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
@@ -562,6 +571,13 @@ void WindowGrid::WindowClosing(WindowSelectorItem* window) {
 void WindowGrid::SetBoundsAndUpdatePositions(const gfx::Rect& bounds) {
   bounds_ = bounds;
   PositionWindows(true /* animate */);
+}
+
+void WindowGrid::SetBoundsAndUpdatePositionsIgnoringWindow(
+    const gfx::Rect& bounds,
+    WindowSelectorItem* ignored_item) {
+  bounds_ = bounds;
+  PositionWindows(true /* animate */, ignored_item);
 }
 
 void WindowGrid::OnWindowDestroying(aura::Window* window) {
