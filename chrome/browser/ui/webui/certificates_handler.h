@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CERTIFICATES_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_SETTINGS_CERTIFICATES_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CERTIFICATES_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_CERTIFICATES_HANDLER_H_
 
 #include <memory>
 #include <string>
@@ -13,28 +13,25 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/certificate_manager_model.h"
-#include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "net/cert/nss_cert_database.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
-namespace settings {
+namespace certificate_manager {
 
 class CertIdMap;
 class FileAccessProvider;
 
-class CertificatesHandler
-    : public SettingsPageUIHandler,
-      public CertificateManagerModel::Observer,
-      public ui::SelectFileDialog::Listener {
+class CertificatesHandler : public content::WebUIMessageHandler,
+                            public CertificateManagerModel::Observer,
+                            public ui::SelectFileDialog::Listener {
  public:
-  explicit CertificatesHandler(bool show_certs_in_modal_dialog);
+  CertificatesHandler();
   ~CertificatesHandler() override;
 
-  // SettingsPageUIHandler implementation.
+  // content::WebUIMessageHandler.
   void RegisterMessages() override;
-  void OnJavascriptAllowed() override {}
-  void OnJavascriptDisallowed() override {}
 
   // CertificateManagerModel::Observer implementation.
   void CertificatesRefreshed() override;
@@ -152,8 +149,8 @@ class CertificatesHandler
   void RejectCallback(const base::Value& response);
 
   // Reject the pending JS callback with a generic error.
-  void RejectCallbackWithError(
-      const std::string& title, const std::string& error);
+  void RejectCallbackWithError(const std::string& title,
+                               const std::string& error);
 
   // Reject the pending JS callback with a certificate import error.
   void RejectCallbackWithImportError(
@@ -166,9 +163,6 @@ class CertificatesHandler
 
   gfx::NativeWindow GetParentWindow() const;
 
-  // True if certificate viewer should be shown in modal instead of constrianed
-  // dialog.
-  bool show_certs_in_modal_dialog_;
   // The Certificates Manager model
   bool requested_certificate_manager_model_;
   std::unique_ptr<CertificateManagerModel> certificate_manager_model_;
@@ -198,6 +192,6 @@ class CertificatesHandler
   DISALLOW_COPY_AND_ASSIGN(CertificatesHandler);
 };
 
-}  // namespace settings
+}  // namespace certificate_manager
 
-#endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_CERTIFICATES_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CERTIFICATES_HANDLER_H_

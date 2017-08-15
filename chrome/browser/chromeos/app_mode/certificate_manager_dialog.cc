@@ -18,17 +18,9 @@
 
 namespace {
 
-// Hints for size of certificate manager dialog.
-const int kCertificateManagerDialogReasonableWidth = 712;
-const int kCertificateManagerDialogReasonableHeight = 412;
-const float kCertificateManagerDialogReasonableWidthRatio = 0.4f;
-const float kCertificateManagerDialogReasonableHeightRatio = 0.4f;
-
-int CalculateSize(int screen_size, int min_comfortable, float desired_ratio) {
-  int desired_size = static_cast<int>(desired_ratio * screen_size);
-  desired_size = std::max(min_comfortable, desired_size);
-  return std::min(screen_size, desired_size);
-}
+// The width matches the Settings UI width.
+const int kDefaultWidth = 640;
+const int kDefaultHeight = 480;
 
 }  // namespace
 
@@ -42,22 +34,16 @@ CertificateManagerDialog::CertificateManagerDialog(
                      delegate,
                      window,
                      base::string16(),
-                     GURL(chrome::kChromeUICertificateManagerDialogURL)) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+                     GURL(chrome::kChromeUICertificateManagerDialogURL)) {}
 
-  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
-  SetDialogSize(CalculateSize(screen_bounds.width(),
-                              kCertificateManagerDialogReasonableWidth,
-                              kCertificateManagerDialogReasonableWidthRatio),
-                CalculateSize(screen_bounds.height(),
-                              kCertificateManagerDialogReasonableHeight,
-                              kCertificateManagerDialogReasonableHeightRatio));
+CertificateManagerDialog::~CertificateManagerDialog() {}
 
-  SetDialogTitle(l10n_util::GetStringUTF16(IDS_CERTIFICATE_MANAGER_TITLE));
+base::string16 CertificateManagerDialog::GetDialogTitle() const {
+  return l10n_util::GetStringUTF16(IDS_CERTIFICATE_MANAGER_TITLE);
 }
 
-CertificateManagerDialog::~CertificateManagerDialog() {
+void CertificateManagerDialog::GetDialogSize(gfx::Size* size) const {
+  size->SetSize(kDefaultWidth, kDefaultHeight);
 }
-
 
 }  // namespace chromeos

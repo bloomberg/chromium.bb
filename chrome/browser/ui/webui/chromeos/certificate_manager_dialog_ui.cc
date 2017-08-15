@@ -4,159 +4,61 @@
 
 #include "chrome/browser/ui/webui/chromeos/certificate_manager_dialog_ui.h"
 
-#include <memory>
-#include <string>
-#include <utility>
-
-#include "base/macros.h"
-#include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted_memory.h"
-#include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/options/certificate_manager_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
-#include "chrome/common/chrome_constants.h"
+#include "chrome/browser/ui/webui/certificate_manager_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/certificates_handler.h"
+#include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
-#include "chromeos/chromeos_constants.h"
-#include "content/public/browser/url_data_source.h"
-#include "content/public/browser/web_contents.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/browser/web_ui_message_handler.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/base/template_expressions.h"
-#include "ui/base/webui/jstemplate_builder.h"
-#include "ui/base/webui/web_ui_util.h"
+#include "content/public/browser/web_ui_data_source.h"
 
-using content::WebContents;
-using content::WebUIMessageHandler;
+namespace chromeos {
 
 namespace {
 
-const char kLocalizedStringsFile[] = "strings.js";
-
-class CertificateManagerDialogHTMLSource : public content::URLDataSource {
- public:
-  explicit CertificateManagerDialogHTMLSource(
-      base::DictionaryValue* localized_strings);
-
-  // content::URLDataSource implementation.
-  std::string GetSource() const override;
-  void StartDataRequest(
-      const std::string& path,
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override;
-  std::string GetMimeType(const std::string&) const override {
-    return "text/html";
-  }
-  bool ShouldAddContentSecurityPolicy() const override { return false; }
-  bool AllowCaching() const override {
-    // Should not be cached to reflect dynamically-generated contents that may
-    // depend on current locale setting.
-    return false;
-  }
-
- protected:
-  ~CertificateManagerDialogHTMLSource() override {}
-
- private:
-  std::unique_ptr<base::DictionaryValue> localized_strings_;
-
-  DISALLOW_COPY_AND_ASSIGN(CertificateManagerDialogHTMLSource);
-};
-
-CertificateManagerDialogHTMLSource::CertificateManagerDialogHTMLSource(
-    base::DictionaryValue* localized_strings)
-    : localized_strings_(localized_strings) {
-}
-
-std::string CertificateManagerDialogHTMLSource::GetSource() const {
-  return chrome::kChromeUICertificateManagerHost;
-}
-
-void CertificateManagerDialogHTMLSource::StartDataRequest(
-    const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
-  scoped_refptr<base::RefCountedMemory> response_bytes;
-  const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  webui::SetLoadTimeDataDefaults(app_locale, localized_strings_.get());
-
-  if (path == kLocalizedStringsFile) {
-    // Return dynamically-generated strings from memory.
-    std::string strings_js;
-    webui::AppendJsonJS(localized_strings_.get(), &strings_js);
-    response_bytes = base::RefCountedString::TakeString(&strings_js);
-  } else {
-    // Return (and cache) the main options html page as the default.
-    response_bytes = ui::ResourceBundle::GetSharedInstance().
-        LoadDataResourceBytes(IDR_CERT_MANAGER_DIALOG_HTML);
-    // Pre-process i18n strings.
-    ui::TemplateReplacements replacements;
-    ui::TemplateReplacementsFromDictionaryValue(*localized_strings_,
-                                                &replacements);
-    std::string replaced = ui::ReplaceTemplateExpressions(
-        base::StringPiece(response_bytes->front_as<char>(),
-                          response_bytes->size()),
-        replacements);
-    response_bytes = base::RefCountedString::TakeString(&replaced);
-  }
-
-  callback.Run(response_bytes.get());
+void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
+  struct {
+    const char* name;
+    int id;
+  } localized_strings[] = {
+      {"cancel", IDS_CANCEL},
+      {"close", IDS_CLOSE},
+      {"edit", IDS_SETTINGS_EDIT},
+      {"moreActions", IDS_SETTINGS_MORE_ACTIONS},
+      {"ok", IDS_OK},
+  };
+  for (const auto& entry : localized_strings)
+    html_source->AddLocalizedString(entry.name, entry.id);
+  certificate_manager::AddLocalizedStrings(html_source);
 }
 
 }  // namespace
 
-namespace chromeos {
-
 CertificateManagerDialogUI::CertificateManagerDialogUI(content::WebUI* web_ui)
-    : ui::WebDialogUI(web_ui), initialized_handlers_(false) {
-  // |localized_strings| will be owned by CertificateManagerDialogHTMLSource.
-  base::DictionaryValue* localized_strings = new base::DictionaryValue();
+    : WebDialogUI(web_ui) {
+  content::WebUIDataSource* source =
+      content::WebUIDataSource::Create(chrome::kChromeUICertificateManagerHost);
 
-  auto core_handler = base::MakeUnique<options::CoreChromeOSOptionsHandler>();
-  core_handler_ = core_handler.get();
-  web_ui->AddMessageHandler(std::move(core_handler));
-  core_handler_->set_handlers_host(this);
-  core_handler_->GetLocalizedValues(localized_strings);
+  AddCertificateManagerStrings(source);
+  source->AddBoolean(
+      "isGuest",
+      user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
+          user_manager::UserManager::Get()->IsLoggedInAsPublicAccount());
 
-  auto cert_handler =
-      base::MakeUnique<::options::CertificateManagerHandler>(true);
-  cert_handler_ = cert_handler.get();
-  web_ui->AddMessageHandler(std::move(cert_handler));
-  cert_handler_->GetLocalizedValues(localized_strings);
+  source->SetJsonPath("strings.js");
+  source->SetDefaultResource(IDR_CERT_MANAGER_DIALOG_HTML);
+  source->DisableContentSecurityPolicy();
 
-  bool keyboard_driven_oobe =
-      system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation();
-  localized_strings->SetString("highlightStrength",
-                               keyboard_driven_oobe ? "strong" : "normal");
+  web_ui->AddMessageHandler(
+      base::MakeUnique<certificate_manager::CertificatesHandler>());
 
-  CertificateManagerDialogHTMLSource* source =
-      new CertificateManagerDialogHTMLSource(localized_strings);
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::URLDataSource::Add(profile, source);
+  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 
-CertificateManagerDialogUI::~CertificateManagerDialogUI() {
-  // Uninitialize all registered handlers. The base class owns them and it will
-  // eventually delete them.
-  core_handler_->Uninitialize();
-  cert_handler_->Uninitialize();
-}
-
-void CertificateManagerDialogUI::InitializeHandlers() {
-  // A new web page DOM has been brought up in an existing renderer, causing
-  // this method to be called twice. In that case, don't initialize the handlers
-  // again. Compare with options_ui.cc.
-  if (!initialized_handlers_) {
-    core_handler_->InitializeHandler();
-    cert_handler_->InitializeHandler();
-    initialized_handlers_ = true;
-  }
-  core_handler_->InitializePage();
-  cert_handler_->InitializePage();
-}
+CertificateManagerDialogUI::~CertificateManagerDialogUI() {}
 
 }  // namespace chromeos

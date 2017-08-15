@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/settings/certificates_handler.h"
+#include "chrome/browser/ui/webui/certificates_handler.h"
 
 #include <errno.h>
 #include <stddef.h>
@@ -138,15 +138,6 @@ bool IsPolicyInstalledWithWebTrust(const net::CertificateList& web_trust_certs,
                       CertEquals(cert)) != web_trust_certs.end();
 }
 
-#if defined(OS_CHROMEOS)
-void ShowCertificateViewerModalDialog(content::WebContents* web_contents,
-                                      gfx::NativeWindow parent,
-                                      net::X509Certificate* cert) {
-  CertificateViewerModalDialog* dialog = new CertificateViewerModalDialog(cert);
-  dialog->Show(web_contents, parent);
-}
-#endif
-
 // Determine if |data| could be a PFX Protocol Data Unit.
 // This only does the minimum parsing necessary to distinguish a PFX file from a
 // DER encoded Certificate.
@@ -187,7 +178,7 @@ bool CouldBePFX(const std::string& data) {
 
 }  // namespace
 
-namespace settings {
+namespace certificate_manager {
 
 ///////////////////////////////////////////////////////////////////////////////
 //  CertIdMap
@@ -343,9 +334,8 @@ void FileAccessProvider::DoWrite(const base::FilePath& path,
 ///////////////////////////////////////////////////////////////////////////////
 //  CertificatesHandler
 
-CertificatesHandler::CertificatesHandler(bool show_certs_in_modal_dialog)
-    : show_certs_in_modal_dialog_(show_certs_in_modal_dialog),
-      requested_certificate_manager_model_(false),
+CertificatesHandler::CertificatesHandler()
+    : requested_certificate_manager_model_(false),
       use_hardware_backed_(false),
       file_access_provider_(new FileAccessProvider()),
       cert_id_map_(new CertIdMap),
@@ -473,13 +463,6 @@ void CertificatesHandler::HandleViewCertificate(const base::ListValue* args) {
   net::X509Certificate* cert = cert_id_map_->CallbackArgsToCert(args);
   if (!cert)
     return;
-#if defined(OS_CHROMEOS)
-  if (show_certs_in_modal_dialog_) {
-    ShowCertificateViewerModalDialog(web_ui()->GetWebContents(),
-                                     GetParentWindow(), cert);
-    return;
-  }
-#endif
   ShowCertificateViewer(web_ui()->GetWebContents(), GetParentWindow(), cert);
 }
 
@@ -661,8 +644,9 @@ void CertificatesHandler::HandleImportPersonal(const base::ListValue* args) {
 void CertificatesHandler::ImportPersonalFileSelected(
     const base::FilePath& path) {
   file_access_provider_->StartRead(
-      path, base::Bind(&CertificatesHandler::ImportPersonalFileRead,
-                       base::Unretained(this)),
+      path,
+      base::Bind(&CertificatesHandler::ImportPersonalFileRead,
+                 base::Unretained(this)),
       &tracker_);
 }
 
@@ -808,8 +792,9 @@ void CertificatesHandler::HandleImportServer(const base::ListValue* args) {
 
 void CertificatesHandler::ImportServerFileSelected(const base::FilePath& path) {
   file_access_provider_->StartRead(
-      path, base::Bind(&CertificatesHandler::ImportServerFileRead,
-                       base::Unretained(this)),
+      path,
+      base::Bind(&CertificatesHandler::ImportServerFileRead,
+                 base::Unretained(this)),
       &tracker_);
 }
 
@@ -873,8 +858,9 @@ void CertificatesHandler::HandleImportCA(const base::ListValue* args) {
 
 void CertificatesHandler::ImportCAFileSelected(const base::FilePath& path) {
   file_access_provider_->StartRead(
-      path, base::Bind(&CertificatesHandler::ImportCAFileRead,
-                       base::Unretained(this)),
+      path,
+      base::Bind(&CertificatesHandler::ImportCAFileRead,
+                 base::Unretained(this)),
       &tracker_);
 }
 
@@ -1144,4 +1130,4 @@ gfx::NativeWindow CertificatesHandler::GetParentWindow() const {
   return web_ui()->GetWebContents()->GetTopLevelNativeWindow();
 }
 
-}  // namespace settings
+}  // namespace certificate_manager

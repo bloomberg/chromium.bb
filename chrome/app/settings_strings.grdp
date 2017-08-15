@@ -649,9 +649,6 @@
 
   <if expr="use_nss_certs">
     <!-- Certificate Manager Page -->
-    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER" desc="Name of the certificate manager page which allows users to modify SSL certificate settings.">
-      Certificate manager
-    </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_YOUR_CERTIFICATES" desc="Label for the your certificates tab in certificate manager.">
       Your certificates
     </message>

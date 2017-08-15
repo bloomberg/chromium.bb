@@ -6,34 +6,17 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_CERTIFICATE_MANAGER_DIALOG_UI_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/webui/options/options_ui.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
-
-namespace options {
-class CertificateManagerHandler;
-}
 
 namespace chromeos {
 
-namespace options {
-class CoreChromeOSOptionsHandler;
-}
-
-// A WebUI to host certificate manager split from the main settings page.
-class CertificateManagerDialogUI : public ui::WebDialogUI,
-                                   public ::options::OptionsPageUIHandlerHost {
+// A WebUI to host certificate manager UI.
+class CertificateManagerDialogUI : public ui::WebDialogUI {
  public:
   explicit CertificateManagerDialogUI(content::WebUI* web_ui);
   ~CertificateManagerDialogUI() override;
 
  private:
-  // Overridden from OptionsPageUIHandlerHost:
-  void InitializeHandlers() override;
-
-  bool initialized_handlers_;
-
-  ::options::CertificateManagerHandler* cert_handler_ = nullptr;
-  options::CoreChromeOSOptionsHandler* core_handler_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateManagerDialogUI);
 };
