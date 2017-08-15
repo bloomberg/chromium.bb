@@ -103,17 +103,6 @@ double ScrollbarThemeOverlay::OverlayScrollbarFadeOutDurationSeconds() const {
   return style.fade_out_duration_seconds;
 }
 
-int ScrollbarThemeOverlay::ThumbPosition(const ScrollbarThemeClient& scrollbar,
-                                         float scroll_position) {
-  if (!scrollbar.TotalSize())
-    return 0;
-
-  int track_len = TrackLength(scrollbar);
-  float proportion =
-      static_cast<float>(scroll_position) / scrollbar.TotalSize();
-  return round(proportion * track_len);
-}
-
 int ScrollbarThemeOverlay::ThumbLength(const ScrollbarThemeClient& scrollbar) {
   int track_len = TrackLength(scrollbar);
 
