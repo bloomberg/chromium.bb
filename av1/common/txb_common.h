@@ -36,16 +36,17 @@ static int base_ref_offset[BASE_CONTEXT_POSITION_NUM][2] = {
   /* clang-format on*/
 };
 
-static INLINE int get_level_count(const tran_low_t *tcoeffs, int stride,
+static INLINE int get_level_count(const tran_low_t *tcoeffs, int bwl,
                                   int height, int row, int col, int level,
                                   int (*nb_offset)[2], int nb_num) {
   int count = 0;
   for (int idx = 0; idx < nb_num; ++idx) {
     const int ref_row = row + nb_offset[idx][0];
     const int ref_col = col + nb_offset[idx][1];
-    const int pos = ref_row * stride + ref_col;
-    if (ref_row < 0 || ref_col < 0 || ref_row >= height || ref_col >= stride)
+    if (ref_row < 0 || ref_col < 0 || ref_row >= height ||
+        ref_col >= (1 << bwl))
       continue;
+    const int pos = (ref_row << bwl) + ref_col;
     tran_low_t abs_coeff = abs(tcoeffs[pos]);
     count += abs_coeff > level;
   }

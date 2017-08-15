@@ -412,19 +412,18 @@ static void gen_base_count_mag_arr(int (*base_count_arr)[MAX_TX_SQUARE],
                                    int (*base_mag_arr)[2],
                                    const tran_low_t *qcoeff, int bwl,
                                    int height, int eob, const int16_t *scan) {
-  const int stride = 1 << bwl;
   for (int c = 0; c < eob; ++c) {
     const int coeff_idx = scan[c];  // raster order
     if (!has_base(qcoeff[coeff_idx], 0)) continue;
-    const int row = coeff_idx / stride;
-    const int col = coeff_idx % stride;
+    const int row = coeff_idx >> bwl;
+    const int col = coeff_idx - (row << bwl);
     int *mag = base_mag_arr[coeff_idx];
     get_mag(mag, qcoeff, bwl, height, row, col, base_ref_offset,
             BASE_CONTEXT_POSITION_NUM);
     for (int i = 0; i < NUM_BASE_LEVELS; ++i) {
       if (!has_base(qcoeff[coeff_idx], i)) continue;
       int *count = base_count_arr[i] + coeff_idx;
-      *count = get_level_count(qcoeff, stride, height, row, col, i,
+      *count = get_level_count(qcoeff, bwl, height, row, col, i,
                                base_ref_offset, BASE_CONTEXT_POSITION_NUM);
     }
   }
@@ -484,15 +483,14 @@ static INLINE int has_br(tran_low_t qc) {
 static void gen_br_count_mag_arr(int *br_count_arr, int (*br_mag_arr)[2],
                                  const tran_low_t *qcoeff, int bwl, int height,
                                  int eob, const int16_t *scan) {
-  const int stride = 1 << bwl;
   for (int c = 0; c < eob; ++c) {
     const int coeff_idx = scan[c];  // raster order
     if (!has_br(qcoeff[coeff_idx])) continue;
-    const int row = coeff_idx / stride;
-    const int col = coeff_idx % stride;
+    const int row = coeff_idx >> bwl;
+    const int col = coeff_idx - (row << bwl);
     int *count = br_count_arr + coeff_idx;
     int *mag = br_mag_arr[coeff_idx];
-    *count = get_level_count(qcoeff, stride, height, row, col, NUM_BASE_LEVELS,
+    *count = get_level_count(qcoeff, bwl, height, row, col, NUM_BASE_LEVELS,
                              br_ref_offset, BR_CONTEXT_POSITION_NUM);
     get_mag(mag, qcoeff, bwl, height, row, col, br_ref_offset,
             BR_CONTEXT_POSITION_NUM);
