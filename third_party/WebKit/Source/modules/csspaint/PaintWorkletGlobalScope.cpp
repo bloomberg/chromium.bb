@@ -241,6 +241,10 @@ CSSPaintDefinition* PaintWorkletGlobalScope::FindDefinition(
   return paint_definitions_.at(name);
 }
 
+double PaintWorkletGlobalScope::devicePixelRatio() const {
+  return GetFrame()->DevicePixelRatio();
+}
+
 DEFINE_TRACE(PaintWorkletGlobalScope) {
   visitor->Trace(paint_definitions_);
   visitor->Trace(pending_generator_registry_);
