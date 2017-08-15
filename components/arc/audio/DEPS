@@ -1,4 +1,4 @@
 include_rules = [
-  "+ash",
+  "+ash/system/audio/tray_audio.h",
   "+chromeos/audio",
 ]
