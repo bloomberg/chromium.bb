@@ -66,9 +66,6 @@ TEST_F(DownloadServiceImplTest, TestGetStatus) {
 
 TEST_F(DownloadServiceImplTest, TestApiPassThrough) {
   DownloadParams params = test::BuildBasicDownloadParams();
-  // TODO(xingliu): Remove the limitation of upper case guid in
-  // |download_params|, see http://crbug.com/734818.
-  params.guid = base::ToUpperASCII(params.guid);
   SchedulingParams scheduling_params;
   scheduling_params.priority = SchedulingParams::Priority::UI;
 

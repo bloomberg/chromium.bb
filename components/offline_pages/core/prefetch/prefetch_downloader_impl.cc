@@ -50,9 +50,7 @@ void PrefetchDownloaderImpl::StartDownload(
   params.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(NO_TRAFFIC_ANNOTATION_YET);
   params.client = download::DownloadClient::OFFLINE_PAGE_PREFETCH;
-  // TODO(jianli): Remove the uppercase after the download service fixes
-  // this issue.
-  params.guid = base::ToUpperASCII(download_id);
+  params.guid = download_id;
   params.callback = base::Bind(&PrefetchDownloaderImpl::OnStartDownload,
                                weak_ptr_factory_.GetWeakPtr());
   params.request_params.url = PrefetchDownloadURL(download_location, channel_);

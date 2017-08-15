@@ -730,7 +730,6 @@ DownloadItem* DownloadManagerImpl::GetDownload(uint32_t download_id) {
 }
 
 DownloadItem* DownloadManagerImpl::GetDownloadByGuid(const std::string& guid) {
-  DCHECK(guid == base::ToUpperASCII(guid));
   return base::ContainsKey(downloads_by_guid_, guid) ? downloads_by_guid_[guid]
                                                      : nullptr;
 }
