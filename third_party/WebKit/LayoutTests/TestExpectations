@@ -2908,6 +2908,9 @@ crbug.com/725455 [ Linux ] nfc/watch.html [ Failure Pass Timeout ]
 # Sheriff failures 2017-05-29
 crbug.com/727252 [ Win7 ] external/wpt/media-source/mediasource-endofstream.html [ Pass Timeout ]
 
+crbug.com/754927 compositing/overflow/fixed-pos-escape-clip-and-apply-noncomposited-clip.html [ Failure ]
+crbug.com/754927 virtual/prefer_compositing_to_lcd_text/compositing/overflow/fixed-pos-escape-clip-and-apply-noncomposited-clip.html [ Failure ]
+
 # Failures when using libc++.  Rebaseline after landing https://codereview.chromium.org/2933573002/
 crbug.com/734873 [ Linux ] fast/backgrounds/size/contain-and-cover.html [ Pass Failure ]
 
