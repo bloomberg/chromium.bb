@@ -103,6 +103,8 @@ class LayoutGrid final : public LayoutBlock {
   const BaselineGroup& GetBaselineGroupForChild(const LayoutBox&,
                                                 GridAxis) const;
 
+  LayoutUnit GridGap(GridTrackSizingDirection) const;
+
  protected:
   ItemPosition SelfAlignmentNormalBehavior(
       const LayoutBox* child = nullptr) const override {
@@ -278,7 +280,6 @@ class LayoutGrid final : public LayoutBlock {
 
   LayoutUnit GridGap(GridTrackSizingDirection,
                      Optional<LayoutUnit> available_size) const;
-  LayoutUnit GridGap(GridTrackSizingDirection) const;
 
   size_t GridItemSpan(const LayoutBox&, GridTrackSizingDirection);
 
