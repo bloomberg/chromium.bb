@@ -207,6 +207,7 @@ source_set("test_support") {
     "//build/config/ios:xctest",
     "//ios/third_party/earl_grey",
     "//ios/web/public/test/fakes",
+    "//net:test_support",
   ]
 
   libs = [
