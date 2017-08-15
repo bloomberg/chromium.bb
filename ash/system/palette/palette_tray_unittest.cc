@@ -194,18 +194,19 @@ TEST_F(PaletteTrayTest, MetalayerToolActivatesHighlighter) {
   HighlighterController highlighter_controller;
   HighlighterControllerTestApi highlighter_test_api(&highlighter_controller);
   test_palette_delegate()->set_highlighter_test_api(&highlighter_test_api);
-  GetEventGenerator().EnterPenPointerMode();
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.EnterPenPointerMode();
 
   test_palette_delegate()->SetMetalayerSupported(true);
 
   // Press/drag does not activate the highlighter unless the palette tool is
   // activated.
-  GetEventGenerator().MoveTouch(gfx::Point(1, 1));
-  GetEventGenerator().PressTouch();
+  generator.MoveTouch(gfx::Point(1, 1));
+  generator.PressTouch();
   EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
-  GetEventGenerator().MoveTouch(gfx::Point(2, 2));
+  generator.MoveTouch(gfx::Point(2, 2));
   EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
-  GetEventGenerator().ReleaseTouch();
+  generator.ReleaseTouch();
 
   // Activate the palette tool, still no highlighter.
   test_api_->GetPaletteToolManager()->ActivateTool(PaletteToolId::METALAYER);
@@ -214,10 +215,10 @@ TEST_F(PaletteTrayTest, MetalayerToolActivatesHighlighter) {
   // Press over a regular (non-palette) location. This should activate the
   // highlighter.
   EXPECT_FALSE(palette_utils::PaletteContainsPointInScreen(gfx::Point(1, 1)));
-  GetEventGenerator().MoveTouch(gfx::Point(1, 1));
-  GetEventGenerator().PressTouch();
+  generator.MoveTouch(gfx::Point(1, 1));
+  generator.PressTouch();
   EXPECT_TRUE(highlighter_test_api.IsShowingHighlighter());
-  GetEventGenerator().ReleaseTouch();
+  generator.ReleaseTouch();
 
   // Disable/enable the palette tool to hide the highlighter.
   test_api_->GetPaletteToolManager()->DeactivateTool(PaletteToolId::METALAYER);
@@ -228,14 +229,14 @@ TEST_F(PaletteTrayTest, MetalayerToolActivatesHighlighter) {
   // highlighter.
   gfx::Point palette_point = palette_tray_->GetBoundsInScreen().CenterPoint();
   EXPECT_TRUE(palette_utils::PaletteContainsPointInScreen(palette_point));
-  GetEventGenerator().MoveTouch(palette_point);
-  GetEventGenerator().PressTouch();
+  generator.MoveTouch(palette_point);
+  generator.PressTouch();
   EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
   palette_point += gfx::Vector2d(1, 1);
   EXPECT_TRUE(palette_utils::PaletteContainsPointInScreen(palette_point));
-  GetEventGenerator().MoveTouch(palette_point);
+  generator.MoveTouch(palette_point);
   EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
-  GetEventGenerator().ReleaseTouch();
+  generator.ReleaseTouch();
 
   // The previous gesture should have disabled the palette tool.
   EXPECT_FALSE(test_api_->GetPaletteToolManager()->IsToolActive(
@@ -250,12 +251,107 @@ TEST_F(PaletteTrayTest, MetalayerToolActivatesHighlighter) {
 
   // With the metalayer disabled again, press/drag does not activate the
   // highlighter.
-  GetEventGenerator().MoveTouch(gfx::Point(1, 1));
-  GetEventGenerator().PressTouch();
+  generator.MoveTouch(gfx::Point(1, 1));
+  generator.PressTouch();
   EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
-  GetEventGenerator().MoveTouch(gfx::Point(2, 2));
+  generator.MoveTouch(gfx::Point(2, 2));
   EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
-  GetEventGenerator().ReleaseTouch();
+  generator.ReleaseTouch();
+
+  test_palette_delegate()->set_highlighter_test_api(nullptr);
+}
+
+TEST_F(PaletteTrayTest, StylusBarrelButtonActivatesHighlighter) {
+  HighlighterController highlighter_controller;
+  HighlighterControllerTestApi highlighter_test_api(&highlighter_controller);
+  test_palette_delegate()->set_highlighter_test_api(&highlighter_test_api);
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.EnterPenPointerMode();
+
+  // Press and drag while holding down the stylus button, no highlighter
+  // unless the metalayer support is enabled.
+  generator.set_flags(ui::EF_LEFT_MOUSE_BUTTON);
+  generator.PressTouch();
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  generator.MoveTouch(gfx::Point(2, 2));
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  generator.set_flags(ui::EF_NONE);
+  generator.MoveTouch(gfx::Point(3, 3));
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  generator.ReleaseTouch();
+
+  // Now enable the metalayer support.
+  test_palette_delegate()->SetMetalayerSupported(true);
+
+  // Press and drag with no button, still no highlighter.
+  generator.MoveTouch(gfx::Point(1, 1));
+  generator.PressTouch();
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  generator.MoveTouch(gfx::Point(2, 2));
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  generator.ReleaseTouch();
+
+  // Press/drag with while holding down the stylus button, but over the palette
+  // tray. This should activate neither the palette tool nor the highlighter.
+  gfx::Point palette_point = palette_tray_->GetBoundsInScreen().CenterPoint();
+  EXPECT_TRUE(palette_utils::PaletteContainsPointInScreen(palette_point));
+  generator.MoveTouch(palette_point);
+  generator.PressTouch();
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  palette_point += gfx::Vector2d(1, 1);
+  EXPECT_TRUE(palette_utils::PaletteContainsPointInScreen(palette_point));
+  generator.MoveTouch(palette_point);
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  generator.ReleaseTouch();
+  EXPECT_FALSE(test_api_->GetPaletteToolManager()->IsToolActive(
+      PaletteToolId::METALAYER));
+
+  // Press/drag while holding down the stylus button over a regular location.
+  // This should activate the palette tool and the highlighter.
+  EXPECT_FALSE(palette_utils::PaletteContainsPointInScreen(gfx::Point(1, 1)));
+  generator.MoveTouch(gfx::Point(1, 1));
+  generator.set_flags(ui::EF_LEFT_MOUSE_BUTTON);
+  generator.PressTouch();
+  // The press should enable the palette tool but not the highlighter.
+  EXPECT_TRUE(test_api_->GetPaletteToolManager()->IsToolActive(
+      PaletteToolId::METALAYER));
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  generator.set_flags(ui::EF_NONE);
+  // The first move should create the the highlighter.
+  generator.MoveTouch(gfx::Point(2, 2));
+  EXPECT_TRUE(highlighter_test_api.IsShowingHighlighter());
+  generator.ReleaseTouch();
+
+  // Repeat the previous step, make sure that the palette tool is not toggled
+  // this time.
+  generator.MoveTouch(gfx::Point(1, 1));
+  generator.set_flags(ui::EF_LEFT_MOUSE_BUTTON);
+  generator.PressTouch();
+  generator.set_flags(ui::EF_NONE);
+  generator.MoveTouch(gfx::Point(2, 2));
+  EXPECT_TRUE(test_api_->GetPaletteToolManager()->IsToolActive(
+      PaletteToolId::METALAYER));
+  EXPECT_TRUE(highlighter_test_api.IsShowingHighlighter());
+  generator.ReleaseTouch();
+
+  // Disable the metalayer support.
+  // This should deactivate both the palette tool and the highlighter.
+  test_palette_delegate()->SetMetalayerSupported(false);
+  EXPECT_FALSE(test_api_->GetPaletteToolManager()->IsToolActive(
+      PaletteToolId::METALAYER));
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+
+  // Press/drag with the stylus button down should activate neither the palette
+  // tool nor the highlighter.
+  generator.MoveTouch(gfx::Point(1, 1));
+  generator.set_flags(ui::EF_LEFT_MOUSE_BUTTON);
+  generator.PressTouch();
+  generator.set_flags(ui::EF_NONE);
+  generator.MoveTouch(gfx::Point(2, 2));
+  EXPECT_FALSE(test_api_->GetPaletteToolManager()->IsToolActive(
+      PaletteToolId::METALAYER));
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  generator.ReleaseTouch();
 
   test_palette_delegate()->set_highlighter_test_api(nullptr);
 }
