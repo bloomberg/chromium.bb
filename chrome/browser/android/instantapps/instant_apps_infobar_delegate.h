@@ -46,6 +46,7 @@ class InstantAppsInfoBarDelegate : public ConfirmInfoBarDelegate,
   base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
   base::android::ScopedJavaGlobalRef<jobject> data_;
   std::string url_;
+  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantAppsInfoBarDelegate);
 };
