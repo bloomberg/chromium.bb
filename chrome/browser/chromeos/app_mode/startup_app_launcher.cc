@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
+#include "base/syslog_logging.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -97,6 +98,8 @@ void StartupAppLauncher::Initialize() {
 }
 
 void StartupAppLauncher::ContinueWithNetworkReady() {
+  SYSLOG(INFO) << "ContinueWithNetworkReady"
+               << ", network_ready_handled_=" << network_ready_handled_;
   if (network_ready_handled_)
     return;
 
@@ -139,7 +142,6 @@ void StartupAppLauncher::LoadOAuthFileAsync(KioskOAuthParams* auth_params) {
   base::DictionaryValue* dict = NULL;
   if (error_code != JSONFileValueDeserializer::JSON_NO_ERROR ||
       !value.get() || !value->GetAsDictionary(&dict)) {
-    LOG(WARNING) << "Can't find auth file at " << auth_file.value();
     return;
   }
 
@@ -171,7 +173,7 @@ void StartupAppLauncher::RestartLauncher() {
           ->extension_service()
           ->pending_extension_manager()
           ->IsIdPending(app_id_)) {
-    LOG(WARNING) << "Installer still running";
+    SYSLOG(WARNING) << "Installer still running";
     return;
   }
 
@@ -187,6 +189,10 @@ void StartupAppLauncher::MaybeInitializeNetwork() {
       (!extension && !crx_cached) ||
       (extension &&
        !extensions::OfflineEnabledInfo::IsOfflineEnabled(extension));
+
+  SYSLOG(INFO) << "MaybeInitializeNetwork"
+               << ", requires_network=" << requires_network
+               << ", network_ready=" << delegate_->IsNetworkReady();
 
   if (requires_network) {
     delegate_->InitializeNetwork();
@@ -253,6 +259,7 @@ void StartupAppLauncher::OnRefreshTokensLoaded() {
 }
 
 void StartupAppLauncher::MaybeLaunchApp() {
+  SYSLOG(INFO) << "MaybeLaunchApp";
   const Extension* extension = GetPrimaryAppExtension();
   // Verify that requred apps are installed. While the apps should be
   // present at this point, crash recovery flow skips app installation steps -
@@ -285,6 +292,7 @@ void StartupAppLauncher::MaybeLaunchApp() {
 }
 
 void StartupAppLauncher::MaybeCheckExtensionUpdate() {
+  SYSLOG(INFO) << "MaybeCheckExtensionUpdate";
   extensions::ExtensionUpdater* updater =
       extensions::ExtensionSystem::Get(profile_)
           ->extension_service()
@@ -311,6 +319,7 @@ void StartupAppLauncher::MaybeCheckExtensionUpdate() {
 }
 
 void StartupAppLauncher::OnExtensionUpdateCheckFinished() {
+  SYSLOG(INFO) << "OnExtensionUpdateCheckFinished";
   if (extension_update_found_) {
     // Reload the primary app to make sure any reference to the previous version
     // of the shared module, extension, etc will be cleaned up andthe new
@@ -334,13 +343,15 @@ void StartupAppLauncher::Observe(int type,
   const std::string& id = content::Details<UpdateDetails>(details)->first;
   const base::Version& version =
       content::Details<UpdateDetails>(details)->second;
-  VLOG(1) << "Found extension update id=" << id
-          << " version=" << version.GetString();
+  SYSLOG(INFO) << "Found extension update id=" << id
+               << " version=" << version.GetString();
   extension_update_found_ = true;
 }
 
 void StartupAppLauncher::OnFinishCrxInstall(const std::string& extension_id,
                                             bool success) {
+  SYSLOG(INFO) << "OnFinishCrxInstall, id=" << extension_id
+               << ", success=" << success;
   // Wait for pending updates or dependent extensions to download.
   if (extensions::ExtensionSystem::Get(profile_)
           ->extension_service()
@@ -353,7 +364,7 @@ void StartupAppLauncher::OnFinishCrxInstall(const std::string& extension_id,
       extensions::InstallTrackerFactory::GetForBrowserContext(profile_);
   tracker->RemoveObserver(this);
   if (delegate_->IsShowingNetworkConfigScreen()) {
-    LOG(WARNING) << "Showing network config screen";
+    SYSLOG(WARNING) << "Showing network config screen";
     return;
   }
 
@@ -446,7 +457,7 @@ bool StartupAppLauncher::DidPrimaryOrSecondaryAppFailedToInstall(
     return false;
 
   if (id == app_id_) {
-    LOG(ERROR) << "Failed to install crx file of the primary app id=" << id;
+    SYSLOG(ERROR) << "Failed to install crx file of the primary app id=" << id;
     return true;
   }
 
@@ -457,12 +468,12 @@ bool StartupAppLauncher::DidPrimaryOrSecondaryAppFailedToInstall(
   extensions::KioskModeInfo* info = extensions::KioskModeInfo::Get(extension);
   for (const auto& app_id : info->secondary_app_ids) {
     if (app_id == id) {
-      LOG(ERROR) << "Failed to install a secondary app id=" << id;
+      SYSLOG(ERROR) << "Failed to install a secondary app id=" << id;
       return true;
     }
   }
 
-  LOG(WARNING) << "Failed to install crx file for an app id=" << id;
+  SYSLOG(WARNING) << "Failed to install crx file for an app id=" << id;
   return false;
 }
 
@@ -476,7 +487,7 @@ const extensions::Extension* StartupAppLauncher::GetPrimaryAppExtension()
 void StartupAppLauncher::LaunchApp() {
   if (!ready_to_launch_) {
     NOTREACHED();
-    LOG(ERROR) << "LaunchApp() called but launcher is not initialized.";
+    SYSLOG(ERROR) << "LaunchApp() called but launcher is not initialized.";
   }
 
   const Extension* extension = GetPrimaryAppExtension();
@@ -486,6 +497,8 @@ void StartupAppLauncher::LaunchApp() {
     OnLaunchFailure(KioskAppLaunchError::NOT_KIOSK_ENABLED);
     return;
   }
+
+  SYSLOG(INFO) << "Attempt to launch app.";
 
   // Always open the app in a window.
   OpenApplication(AppLaunchParams(
@@ -511,13 +524,14 @@ void StartupAppLauncher::OnLaunchSuccess() {
 }
 
 void StartupAppLauncher::OnLaunchFailure(KioskAppLaunchError::Error error) {
-  LOG(ERROR) << "App launch failed, error: " << error;
+  SYSLOG(ERROR) << "App launch failed, error: " << error;
   DCHECK_NE(KioskAppLaunchError::NONE, error);
 
   delegate_->OnLaunchFailed(error);
 }
 
 void StartupAppLauncher::BeginInstall() {
+  SYSLOG(INFO) << "BeginInstall";
   extensions::file_util::SetUseSafeInstallation(true);
   KioskAppManager::Get()->InstallFromCache(app_id_);
   if (extensions::ExtensionSystem::Get(profile_)
@@ -580,6 +594,7 @@ void StartupAppLauncher::MaybeInstallSecondaryApps() {
 }
 
 void StartupAppLauncher::OnReadyToLaunch() {
+  SYSLOG(INFO) << "Kiosk app is ready to launch.";
   ready_to_launch_ = true;
   MaybeUpdateAppData();
   delegate_->OnReadyToLaunch();
