@@ -24,7 +24,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
-#include "components/offline_pages/core/prefetch/prefetch_downloader.h"
+#include "components/offline_pages/core/prefetch/prefetch_downloader_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_app_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_impl.h"
@@ -80,7 +80,7 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
 
   auto suggested_articles_observer =
       base::MakeUnique<SuggestedArticlesObserver>();
-  auto prefetch_downloader = base::MakeUnique<PrefetchDownloader>(
+  auto prefetch_downloader = base::MakeUnique<PrefetchDownloaderImpl>(
       DownloadServiceFactory::GetForBrowserContext(context),
       chrome::GetChannel());
 

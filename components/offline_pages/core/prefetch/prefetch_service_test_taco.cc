@@ -13,6 +13,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_background_task_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
+#include "components/offline_pages/core/prefetch/prefetch_downloader_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_importer.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_impl.h"
@@ -56,7 +57,8 @@ PrefetchServiceTestTaco::PrefetchServiceTestTaco() {
   prefetch_store_sql_ =
       base::MakeUnique<PrefetchStore>(base::ThreadTaskRunnerHandle::Get());
   suggested_articles_observer_ = base::MakeUnique<SuggestedArticlesObserver>();
-  prefetch_downloader_ = base::WrapUnique(new PrefetchDownloader(kTestChannel));
+  prefetch_downloader_ =
+      base::WrapUnique(new PrefetchDownloaderImpl(kTestChannel));
   prefetch_importer_ = base::MakeUnique<TestPrefetchImporter>();
   // This sets up the testing articles as an empty vector, we can ignore the
   // result here.  This allows us to not create a ContentSuggestionsService.
