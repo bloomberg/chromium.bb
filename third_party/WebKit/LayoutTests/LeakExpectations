@@ -38,6 +38,7 @@ crbug.com/672740 http/tests/security/mixedContent/websocket/insecure-websocket-i
 crbug.com/672740 virtual/mojo-loading/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Leak Pass ]
 crbug.com/672740 http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Leak Pass ]
 crbug.com/672740 virtual/mojo-loading/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Leak Pass ]
+crbug.com/754222 external/wpt/pointerevents/pointerevent_releasepointercapture_onpointerup_mouse-manual.html [ Leak Pass ]
 
 # -----------------------------------------------------------------
 # Known as false positives
