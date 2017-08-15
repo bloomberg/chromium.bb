@@ -370,34 +370,33 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
   if (device_) {
     buffer = CreateDrmBuffer(size, drm_format, bo_usage);
     CHECK(buffer) << "Can't create drm buffer";
-    return buffer;
+  } else {
+    buffer = base::MakeUnique<Buffer>();
+
+    size_t stride = size.width() * kBytesPerPixel;
+    buffer->shared_memory.reset(new base::SharedMemory());
+    buffer->shared_memory->CreateAndMapAnonymous(stride * size.height());
+    buffer->shm_pool.reset(wl_shm_create_pool(
+        globals_.shm.get(), buffer->shared_memory->handle().GetHandle(),
+        buffer->shared_memory->requested_size()));
+
+    buffer->buffer.reset(static_cast<wl_buffer*>(
+        wl_shm_pool_create_buffer(buffer->shm_pool.get(), 0, size.width(),
+                                  size.height(), stride, kShmFormat)));
+    if (!buffer->buffer) {
+      LOG(ERROR) << "Can't create buffer";
+      return nullptr;
+    }
+
+    buffer->sk_surface = SkSurface::MakeRasterDirect(
+        SkImageInfo::Make(size.width(), size.height(), kColorType,
+                          kOpaque_SkAlphaType),
+        static_cast<uint8_t*>(buffer->shared_memory->memory()), stride);
+    DCHECK(buffer->sk_surface);
   }
-  buffer = base::MakeUnique<Buffer>();
-
-  size_t stride = size.width() * kBytesPerPixel;
-  buffer->shared_memory.reset(new base::SharedMemory());
-  buffer->shared_memory->CreateAndMapAnonymous(stride * size.height());
-  buffer->shm_pool.reset(wl_shm_create_pool(
-      globals_.shm.get(), buffer->shared_memory->handle().GetHandle(),
-      buffer->shared_memory->requested_size()));
-
-  buffer->buffer.reset(static_cast<wl_buffer*>(
-      wl_shm_pool_create_buffer(buffer->shm_pool.get(), 0, size.width(),
-                                size.height(), stride, kShmFormat)));
-  if (!buffer->buffer) {
-    LOG(ERROR) << "Can't create buffer";
-    return nullptr;
-  }
-
-  buffer->sk_surface = SkSurface::MakeRasterDirect(
-      SkImageInfo::Make(size.width(), size.height(), kColorType,
-                        kOpaque_SkAlphaType),
-      static_cast<uint8_t*>(buffer->shared_memory->memory()), stride);
-  DCHECK(buffer->sk_surface);
 
   wl_buffer_add_listener(buffer->buffer.get(), &g_buffer_listener,
                          buffer.get());
-
   return buffer;
 }
 
