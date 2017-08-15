@@ -22,6 +22,31 @@ GEN_INCLUDE([
  */
 function SettingsAccessibilityTest() {}
 
+// Default accessibility audit options. Specify in test definition to use.
+SettingsAccessibilityTest.axeOptions = {
+  'rules': {
+    // TODO(hcarmona): enable 'region' after addressing violation.
+    'region': {enabled: false},
+    // Disable 'skip-link' check since there are few tab stops before the main
+    // content.
+    'skip-link': {enabled: false},
+  }
+};
+
+// Default accessibility audit options. Specify in test definition to use.
+SettingsAccessibilityTest.violationFilter = {
+  // TODO(quacht): remove this exception once the color contrast issue is
+  // solved.
+  // http://crbug.com/748608
+  'color-contrast': function(nodeResult) {
+    return nodeResult.element.id === 'prompt';
+  },
+  // Polymer components use aria-active-attribute.
+  'aria-valid-attr': function(nodeResult) {
+    return nodeResult.element.hasAttribute('aria-active-attribute');
+  },
+};
+
 SettingsAccessibilityTest.prototype = {
   __proto__: PolymerTest.prototype,
 

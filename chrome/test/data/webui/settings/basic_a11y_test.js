@@ -18,33 +18,15 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
   /** @override */
   name: 'BASIC',
   /** @override */
-  axeOptions: {
-    'rules': {
-      // TODO(hcarmona): enable 'region' after addressing violation.
-      'region': {enabled: false},
-      // Disable 'skip-link' check since there are few tab stops before the main
-      // content.
-      'skip-link': {enabled: false},
-    }
-  },
+  axeOptions: SettingsAccessibilityTest.axeOptions,
   /** @override */
-  tests: {
-    'Accessible with No Changes': function() {}
-  },
+  tests: {'Accessible with No Changes': function() {}},
   /** @override */
-  violationFilter: {
-    // TODO(quacht): remove this exception once the color contrast issue is
-    // solved.
-    // http://crbug.com/748608
-    'color-contrast': function(nodeResult) {
-      return nodeResult.element.id == 'prompt';
-    },
-    'aria-valid-attr': function(nodeResult) {
-      return nodeResult.element.hasAttribute('aria-active-attribute');
-    },
-    'button-name': function(nodeResult) {
-      var node = nodeResult.element;
-      return node.classList.contains('icon-expand-more');
-    },
-  },
+  violationFilter:
+      Object.assign({}, SettingsAccessibilityTest.violationFilter, {
+        'button-name': function(nodeResult) {
+          var node = nodeResult.element;
+          return node.classList.contains('icon-expand-more');
+        },
+      }),
 });

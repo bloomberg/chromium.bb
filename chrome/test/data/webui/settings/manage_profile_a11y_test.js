@@ -24,24 +24,14 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
   /** @override */
   name: 'MANAGE_PROFILE',
   /** @override */
-  axeOptions: {
-    'rules': {
-      // TODO(hcarmona): enable 'region' after addressing violation.
-      'region': {enabled: false},
-      // Disable 'skip-link' check since there are few tab stops before the main
-      // content.
-      'skip-link': {enabled: false},
-    }
-  },
+  axeOptions: SettingsAccessibilityTest.axeOptions,
   /** @override */
   setup: function() {
     settings.navigateTo(settings.routes.MANAGE_PROFILE);
     Polymer.dom.flush();
   },
   /** @override */
-  tests: {
-    'Accessible with No Changes': function() {}
-  },
+  tests: {'Accessible with No Changes': function() {}},
   /** @override */
   violationFilter: {
     'aria-valid-attr': function(nodeResult) {
