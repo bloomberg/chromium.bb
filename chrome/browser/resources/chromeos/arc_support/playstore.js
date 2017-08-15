@@ -3,54 +3,65 @@
 // found in the LICENSE file.
 
 /**
+ * Analyzes current document and tries to find the link to the Play Store ToS
+ * that matches requested |language| and |countryCode|. Once found, navigate
+ * to this link and returns True. If no match was found then returns False.
+ */
+function navigateToLanguageAndCountryCode(language, countryCode) {
+  var doc = document;
+  var selectLangZoneTerms =
+      doc.getElementById('play-footer').getElementsByTagName('select')[0];
+
+  var applyTermsForLangAndZone = function(termsLang) {
+    var matchByLangZone =
+        '/intl/' + termsLang + '_' + countryCode + '/about/play-terms.html';
+    for (var i = selectLangZoneTerms.options.length - 1; i >= 0; --i) {
+      var option = selectLangZoneTerms.options[i];
+      if (option.value == matchByLangZone) {
+        window.location.href = option.value;
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // Try two versions of the language, full and short (if it exists, for
+  // example en-GB -> en). Note, terms may contain entries for both types, for
+  // example: en_ie, es-419_ar, es_as, pt-PT_pt.
+  if (applyTermsForLangAndZone(language)) {
+    return true;
+  }
+  var langSegments = language.split('-');
+  if (langSegments.length == 2 && applyTermsForLangAndZone(langSegments[0])) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Processes select tag that contains list of available terms for different
  * languages and zones. In case of initial load, tries to find terms that match
  * exactly current language and country code and automatically redirects the
  * view in case such terms are found. Leaves terms in select tag that only match
  * current language or country code or default English variant or currently
- * selected. Note that document.countryCode must be set before calling this
- * function.
+ * selected.
+ *
+ * @return {boolean} True.
  */
-function processLangZoneTerms() {
-  var doc = document;
-  var selectLangZoneTerms =
-      doc.getElementById('play-footer').getElementsByTagName('select')[0];
-
-  var initialLoad =
-      window.location.href == 'https://play.google.com/about/play-terms.html';
-  var langSegments = navigator.language.split('-');
-  if (initialLoad) {
-    var applyTermsForLangAndZone = function(termsLang) {
-      var matchByLangZone = '/intl/' + termsLang + '_' + document.countryCode +
-          '/about/play-terms.html';
-      for (var i = selectLangZoneTerms.options.length - 1; i >= 0; --i) {
-        var option = selectLangZoneTerms.options[i];
-        if (option.value == matchByLangZone) {
-          window.location.href = option.value;
-          return true;
-        }
-      }
-      return false;
-    };
-
-    // Try two versions of the language, full and short (if it exists, for
-    // example en-GB -> en). Note, terms may contain entries for both types, for
-    // example: en_ie, es-419_ar, es_as, pt-PT_pt.
-    if (applyTermsForLangAndZone(navigator.language)) {
-      return;
-    }
-    if (langSegments.length == 2 && applyTermsForLangAndZone(langSegments[0])) {
-      return;
-    }
+function processLangZoneTerms(initialLoad, language, countryCode) {
+  var langSegments = language.split('-');
+  if (initialLoad && navigateToLanguageAndCountryCode(language, countryCode)) {
+    return true;
   }
 
-  var matchByLang = '/intl/' + navigator.language + '_';
+  var matchByLang = '/intl/' + language + '_';
   var matchByLangShort = null;
   if (langSegments.length == 2) {
     matchByLangShort = '/intl/' + langSegments[0] + '_';
   }
 
-  var matchByZone = '_' + document.countryCode + '/about/play-terms.html';
+  var matchByZone = '_' + countryCode + '/about/play-terms.html';
   var matchByDefault = '/intl/en/about/play-terms.html';
 
   // We are allowed to display terms by default only in language that matches
@@ -58,6 +69,9 @@ function processLangZoneTerms() {
   var langMatch = false;
   var defaultExist = false;
 
+  var doc = document;
+  var selectLangZoneTerms =
+      doc.getElementById('play-footer').getElementsByTagName('select')[0];
   for (var i = selectLangZoneTerms.options.length - 1; i >= 0; --i) {
     var option = selectLangZoneTerms.options[i];
     if (selectLangZoneTerms.selectedIndex == i) {
@@ -69,19 +83,20 @@ function processLangZoneTerms() {
       defaultExist = true;
       continue;
     }
-    if (!option.value.startsWith(matchByLang) &&
+
+    option.hidden = !option.value.startsWith(matchByLang) &&
         !option.value.endsWith(matchByZone) &&
         !(matchByLangShort && option.value.startsWith(matchByLangShort)) &&
-        option.text != 'English') {
-      selectLangZoneTerms.removeChild(option);
-    }
+        option.text != 'English';
   }
+
   if (initialLoad && !langMatch && defaultExist) {
     window.location.href = matchByDefault;
   } else {
     // Show content once we reached target url.
     document.body.hidden = false;
   }
+  return true;
 }
 
 /**
@@ -131,5 +146,26 @@ function getPrivacyPolicyLink() {
   return 'https://www.google.com/policies/privacy/';
 }
 
-formatDocument();
-processLangZoneTerms();
+/**
+ * Processes the current document by applying required formatting and selected
+ * right PlayStore ToS.
+ * Note that document.countryCode must be set before calling this function.
+ */
+function processDocument() {
+  if (document.wasProcessed) {
+    return;
+  }
+  formatDocument();
+
+  var initialLoad =
+      window.location.href == 'https://play.google.com/about/play-terms.html';
+  var language = document.language;
+  if (!language) {
+    language = navigator.language;
+  }
+
+  processLangZoneTerms(initialLoad, language, document.countryCode);
+  document.wasProcessed = true;
+}
+
+processDocument();

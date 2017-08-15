@@ -13,6 +13,8 @@
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler_observer.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/settings/timezone_settings.h"
 
 namespace arc {
@@ -26,7 +28,9 @@ class ArcTermsOfServiceScreenHandler
     : public BaseScreenHandler,
       public ArcTermsOfServiceScreenView,
       public arc::ArcOptInPreferenceHandlerObserver,
-      public system::TimezoneSettings::Observer {
+      public OobeUI::Observer,
+      public system::TimezoneSettings::Observer,
+      public chromeos::NetworkStateHandlerObserver {
  public:
   ArcTermsOfServiceScreenHandler();
   ~ArcTermsOfServiceScreenHandler() override;
@@ -44,8 +48,15 @@ class ArcTermsOfServiceScreenHandler
   void Show() override;
   void Hide() override;
 
+  // OobeUI::Observer:
+  void OnCurrentScreenChanged(OobeScreen current_screen,
+                              OobeScreen new_screen) override;
+
   // system::TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override;
+
+  // chromeos::NetworkStateHandlerObserver:
+  void DefaultNetworkChanged(const NetworkState* network) override;
 
  private:
   // BaseScreenHandler:
@@ -55,7 +66,11 @@ class ArcTermsOfServiceScreenHandler
   void HandleSkip();
   void HandleAccept(bool enable_backup_restore,
                     bool enable_location_services);
-  void UpdateTimeZone();
+  // Loads Play Store ToS content in case default network exists. If
+  // |ignore_network_state| is set then network state is not checked.
+  void MaybeLoadPlayStoreToS(bool ignore_network_state);
+
+  void StartNetworkAndTimeZoneObserving();
 
   // arc::ArcOptInPreferenceHandlerObserver:
   void OnMetricsModeChanged(bool enabled, bool managed) override;
@@ -67,8 +82,8 @@ class ArcTermsOfServiceScreenHandler
   // Whether the screen should be shown right after initialization.
   bool show_on_init_ = false;
 
-  // To prevent redundant updates, keep last country code used for update.
-  std::string last_applied_contry_code_;
+  // Indicates that we already started network and time zone observing.
+  bool network_time_zone_observing_ = false;
 
   std::unique_ptr<arc::ArcOptInPreferenceHandler> pref_handler_;
 
