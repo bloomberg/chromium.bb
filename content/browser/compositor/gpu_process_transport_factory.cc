@@ -59,7 +59,6 @@
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/compositor_constants.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display_switches.h"
@@ -347,12 +346,6 @@ static bool ShouldCreateGpuLayerTreeFrameSink(ui::Compositor* compositor) {
 
   if (compositor->force_software_compositor())
     return false;
-
-#if defined(OS_WIN)
-  if (::GetProp(compositor->widget(), kForceSoftwareCompositor) &&
-      ::RemoveProp(compositor->widget(), kForceSoftwareCompositor))
-    return false;
-#endif
 
   return GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor();
 }
