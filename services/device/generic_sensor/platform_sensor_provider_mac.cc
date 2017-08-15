@@ -48,8 +48,8 @@ void PlatformSensorProviderMac::CreateSensorInternal(
       auto relative_orientation_euler_angles_fusion_algorithm_using_accelerometer =
           base::MakeUnique<
               RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer>();
-      // If a PlatformSensorFusion object is created successfully, the caller
-      // of this function holds the reference to the object.
+      // If this PlatformSensorFusion object is successfully initialized,
+      // |callback| will be run with a reference to this object.
       base::MakeRefCounted<PlatformSensorFusion>(
           std::move(mapping), this, callback, source_sensor_types,
           mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES,
@@ -63,8 +63,8 @@ void PlatformSensorProviderMac::CreateSensorInternal(
       auto orientation_quaternion_fusion_algorithm_using_euler_angles =
           base::MakeUnique<
               OrientationQuaternionFusionAlgorithmUsingEulerAngles>();
-      // If a PlatformSensorFusion object is created successfully, the caller
-      // of this function holds the reference to the object.
+      // If this PlatformSensorFusion object is successfully initialized,
+      // |callback| will be run with a reference to this object.
       base::MakeRefCounted<PlatformSensorFusion>(
           std::move(mapping), this, callback, source_sensor_types,
           mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION,
