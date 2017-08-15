@@ -8,13 +8,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:chrome="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    style="@style/SuggestionCardModern"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginStart="@dimen/content_suggestions_card_modern_margin"
-    android:layout_marginEnd="@dimen/content_suggestions_card_modern_margin"
-    android:layout_marginBottom="@dimen/content_suggestions_card_modern_margin"
-    android:background="@drawable/content_suggestions_card_modern_background"
-    android:foreground="@drawable/button_borderless_compat">
+    android:layout_height="wrap_content">
 
     <org.chromium.chrome.browser.widget.TintedImageView
         android:id="@+id/article_thumbnail"
@@ -24,7 +20,8 @@
         android:layout_alignParentStart="true"
         android:scaleType="centerCrop"
         android:contentDescription="@null"
-        android:src="@null" />
+        android:src="@null"
+        tools:src="@drawable/ic_snippet_thumbnail_placeholder" />
 
     <ImageView
         android:id="@+id/article_thumbnail_video_overlay"
@@ -71,25 +68,21 @@
         android:orientation="vertical">
 
         <org.chromium.ui.widget.TextViewWithLeading
+            style="@style/SuggestionCardTitleModern"
             android:id="@+id/article_headline"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:ellipsize="end"
-            android:textSize="16sp"
-            android:textColor="@color/snippets_headline_text_color"
-            chrome:leading="22sp" />
+            tools:text="Article headline" />
 
         <org.chromium.ui.widget.TextViewWithLeading
+            style="@style/SuggestionCardBodyModern"
             android:id="@+id/article_snippet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:maxLines="2"
-            android:ellipsize="end"
-            android:textSize="14sp"
-            android:textColor="@color/snippets_text_color"
-            chrome:leading="20sp" />
+            tools:text="Article snippet" />
 
         <LinearLayout
             tools:ignore="UseCompoundDrawables"
@@ -119,7 +112,8 @@
                 android:ellipsize="end"
                 android:textSize="12sp"
                 android:textColor="@color/snippets_publisher_name_color"
-                android:textDirection="locale" />
+                android:textDirection="locale"
+                tools:text="chromium.org"/>
             <TextView
                 android:id="@+id/article_age"
                 android:layout_width="wrap_content"
@@ -127,7 +121,8 @@
                 android:maxLines="1"
                 android:textSize="12sp"
                 android:textColor="@color/snippets_publisher_name_color"
-                android:textDirection="locale"/>
+                android:textDirection="locale"
+                tools:text=" - 3 hours ago" />
 
             <!-- We can't add this ImageView as a CompoundDrawable to the TextView because we want to
                  have different paddings between the favicon (which is a compound drawable on the

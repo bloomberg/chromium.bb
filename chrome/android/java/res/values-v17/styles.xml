@@ -728,4 +728,31 @@
         <item name="android:windowEnterAnimation">@anim/design_bottom_sheet_slide_in</item>
         <item name="android:windowExitAnimation">@null</item>
     </style>
+
+    <!-- Content and Site Suggestions -->
+    <style name="SuggestionCardModern">
+        <item name="android:layout_marginBottom">@dimen/content_suggestions_card_modern_margin</item>
+        <item name="android:layout_marginStart">@dimen/content_suggestions_card_modern_margin</item>
+        <item name="android:layout_marginEnd">@dimen/content_suggestions_card_modern_margin</item>
+        <item name="android:background">@drawable/content_suggestions_card_modern_background</item>
+        <item name="android:foreground">@drawable/button_borderless_compat</item>
+    </style>
+    <style name="SuggestionCardTitleModern" parent="BlackTitle1">
+        <item name="android:ellipsize">end</item>
+        <item name="leading">22dp</item>
+    </style>
+    <style name="SuggestionCardBodyModern" parent="BlackBody">
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:ellipsize">end</item>
+        <item name="leading">20dp</item>
+    </style>
+    <style name="SuggestionCardActionModern" parent="ButtonCompatBorderless">
+        <item name="android:textAppearance">@style/BlueButtonText2</item>
+        <item name="android:layout_marginTop">16dp</item>
+
+        <!-- Negative marginEnd to balance the padding from the parent (SuggestionCardModern).
+             Buttons are supposed to have 8dp margin while we have a 16dp margin at the parent
+             level. -->
+        <item name="android:layout_marginEnd">-8dp</item>
+    </style>
 </resources>
