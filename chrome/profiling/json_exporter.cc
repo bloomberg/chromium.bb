@@ -6,13 +6,39 @@
 
 #include <map>
 
+#include "base/command_line.h"
+#include "base/cpu.h"
+#include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer.h"
 
 namespace profiling {
 
 namespace {
+
+// This is the set of metadata fields that is too annoying to plumb into the
+// profiling process for now. The memory dump is useful without all this data
+// anyways. It's mostly here to make the tracing UI work well.
+const char kFakeOtherMetadata[] =
+    R"END(
+    "field-trials":[],
+    "gpu-devid":5052,
+    "gpu-driver":"367.57",
+    "gpu-gl-renderer":"Quadro K1200/PCIe/SSE2",
+    "gpu-gl-vendor":"NVIDIA Corporation",
+    "gpu-psver":"4.50",
+    "gpu-venid":4318,
+    "gpu-vsver":"4.50",
+    "network-type":"Ethernet",
+    "product-version":"Chrome/59.0.3071.115",
+    "revision":
+      "3cf8514bb1239453fd15ff1f7efee389ac9df8ba-refs/branch-heads/3071@{#820}",
+    "trace-config":"{}",
+    "user-agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36",
+    "v8-version":"5.9.211.38")END";
 
 // Maps strings to integers for the JSON string table.
 using StringTable = std::map<std::string, size_t>;
@@ -105,8 +131,17 @@ size_t AppendBacktraceStrings(const Backtrace& backtrace,
                               StringTable* string_table) {
   int parent = -1;
   for (const Address& addr : backtrace.addrs()) {
-    size_t sid =
-        AddOrGetString("pc:" + base::Uint64ToString(addr.value), string_table);
+    static constexpr char kPcPrefix[] = "pc:";
+    // std::numeric_limits<>::digits gives the number of bits in the value.
+    // Dividing by 4 gives the number of hex digits needed to store the value.
+    // Adding to sizeof(kPcPrefix) yields the buffer size needed including the
+    // null terminator.
+    static constexpr int kBufSize =
+        sizeof(kPcPrefix) +
+        (std::numeric_limits<decltype(addr.value)>::digits / 4);
+    char buf[kBufSize];
+    snprintf(buf, kBufSize, "%s%" PRIx64, kPcPrefix, addr.value);
+    size_t sid = AddOrGetString(buf, string_table);
     nodes->emplace_back(sid, parent);
     parent = nodes->size() - 1;
   }
@@ -217,6 +252,101 @@ void WriteAllocatorNodes(const UniqueAllocCount& alloc_counts,
   out << "]";
 }
 
+// Copy-pastaed from content/browser/tracing/tracing_controller_impl.cc.
+std::string GetClockString() {
+  switch (base::TimeTicks::GetClock()) {
+    case base::TimeTicks::Clock::FUCHSIA_MX_CLOCK_MONOTONIC:
+      return "FUCHSIA_MX_CLOCK_MONOTONIC";
+    case base::TimeTicks::Clock::LINUX_CLOCK_MONOTONIC:
+      return "LINUX_CLOCK_MONOTONIC";
+    case base::TimeTicks::Clock::IOS_CF_ABSOLUTE_TIME_MINUS_KERN_BOOTTIME:
+      return "IOS_CF_ABSOLUTE_TIME_MINUS_KERN_BOOTTIME";
+    case base::TimeTicks::Clock::MAC_MACH_ABSOLUTE_TIME:
+      return "MAC_MACH_ABSOLUTE_TIME";
+    case base::TimeTicks::Clock::WIN_QPC:
+      return "WIN_QPC";
+    case base::TimeTicks::Clock::WIN_ROLLOVER_PROTECTED_TIME_GET_TIME:
+      return "WIN_ROLLOVER_PROTECTED_TIME_GET_TIME";
+  }
+
+  NOTREACHED();
+  return std::string();
+}
+
+void WriteMetadata(std::ostream& out) {
+  // This is copy-pastaed from
+  // TracingControllerImpl::GenerateTracingMetadataDict().
+  //
+  // The memory dump doesn't really need most of this info. This is here to make
+  // the trace viewer and some supporting scripts happy. The main things that
+  // are useful are command_line and os-name which help the scripts know how to
+  // symbolize the dump.
+  out << "\"metadata\": {\n";
+
+// Output the OS info.
+#if defined(OS_CHROMEOS)
+  out << "\"os-name\": \"CrOS\",\n;
+      int32_t major_version;
+  int32_t minor_version;
+  int32_t bugfix_version;
+  // OperatingSystemVersion only has a POSIX implementation which returns the
+  // wrong versions for CrOS.
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
+                                               &bugfix_version);
+  out << "\"os-version\": \""
+      << base::StringPrintf("%d.%d.%d", major_version, minor_version,
+                            bugfix_version)
+      << "\",\n";
+#else
+  out << "\"os-name\": \"" << base::SysInfo::OperatingSystemName() << "\",\n";
+  out << "\"os-version\": \"" << base::SysInfo::OperatingSystemVersion()
+      << "\",\n";
+#endif
+  out << "\"os-arch\": \"" << base::SysInfo::OperatingSystemArchitecture()
+      << "\",\n";
+
+  // Output CPU info.
+  base::CPU cpu;
+  out << "\"cpu-family\": " << cpu.family() << ",\n"
+      << "\"cpu-model\": " << cpu.model() << ",\n"
+      << "\"cpu-stepping\": " << cpu.stepping() << ",\n"
+      << "\"num-cpus\": " << base::SysInfo::NumberOfProcessors() << ",\n"
+      << "\"physical-memory\": " << base::SysInfo::AmountOfPhysicalMemoryMB()
+      << ",\n";
+
+  std::string cpu_brand = cpu.cpu_brand();
+  // Workaround for crbug.com/249713.
+  // TODO(oysteine): Remove workaround when bug is fixed.
+  size_t null_pos = cpu_brand.find('\0');
+  if (null_pos != std::string::npos)
+    cpu_brand.erase(null_pos);
+  out << "\"cpu-brand\": \"" << cpu_brand << "\",\n";
+
+  // Output clock stuff.
+  out << "\"clock-domain\": \"" << GetClockString() << "\",\n"
+      << "\"highres-ticks\": "
+      << (base::TimeTicks::IsHighResolution() ? "true" : "false") << ",\n";
+
+  // Output timestamp.
+  base::Time::Exploded ctime;
+  base::Time::Now().UTCExplode(&ctime);
+  std::string time_string = base::StringPrintf(
+      "%u-%u-%u %d:%d:%d", ctime.year, ctime.month, ctime.day_of_month,
+      ctime.hour, ctime.minute, ctime.second);
+  out << "\"trace-capture-datetime\": \"" << time_string << "\",\n";
+
+  // TODO(ajwong): This is the commandline for the profiling process and not the
+  // target. This is completely the wrong thing, but for now it gets us going.
+  // https://crbug.com/755382
+  out << "\"command_line\": \""
+      << base::CommandLine::ForCurrentProcess()->GetCommandLineString()
+      << "\",\n";
+
+  out << kFakeOtherMetadata;
+
+  out << "}\n";
+}
+
 }  // namespace
 
 void ExportAllocationEventSetToJSON(
@@ -233,6 +363,9 @@ void ExportAllocationEventSetToJSON(
   out << ",\n";
 
   WriteHeapsV2Header(out);
+
+  // Output Heaps_V2 format version. Currently "1" is the only valid value.
+  out << "\"version\": 1,\n";
 
   StringTable string_table;
 
@@ -255,6 +388,7 @@ void ExportAllocationEventSetToJSON(
   // one and share the common nodes.
   std::vector<BacktraceNode> nodes;
   nodes.reserve(backtraces.size() * 10);  // Guesstimate for end size.
+  VLOG(1) << "Number of backtraces " << backtraces.size();
   for (auto& bt : backtraces)
     bt.second = AppendBacktraceStrings(*bt.first, &nodes, &string_table);
 
@@ -288,7 +422,9 @@ void ExportAllocationEventSetToJSON(
 
   WriteHeapsV2Footer(out);
   WriteDumpsFooter(out);
-  out << "]}\n";
+  out << "],";
+  WriteMetadata(out);
+  out << "}\n";
 }
 
 }  // namespace profiling

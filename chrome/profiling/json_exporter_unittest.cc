@@ -97,7 +97,7 @@ TEST(ProfilingJsonExporter, Simple) {
   std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
   ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
       << reader.GetErrorMessage();
-  ASSERT_TRUE(root.get());
+  ASSERT_TRUE(root);
 
   // The trace array contains two items, a process_name one and a
   // periodic_interval one. Find the latter.
@@ -136,7 +136,7 @@ TEST(ProfilingJsonExporterTest, MemoryMaps) {
   std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
   ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
       << reader.GetErrorMessage();
-  ASSERT_TRUE(root.get());
+  ASSERT_TRUE(root);
 
   const base::Value* periodic_interval = FindFirstPeriodicInterval(*root);
   ASSERT_TRUE(periodic_interval) << "Array contains no periodic_interval";
@@ -152,6 +152,55 @@ TEST(ProfilingJsonExporterTest, MemoryMaps) {
   ASSERT_NE(size, region->DictEnd());
   EXPECT_NE(size->second.GetString(), "");
   EXPECT_NE(size->second.GetString(), "0");
+}
+
+TEST(ProfilingJsonExporterTest, Metadata) {
+  BacktraceStorage backtrace_storage;
+
+  std::vector<Address> stack1;
+  stack1.push_back(Address(1234));
+  stack1.push_back(Address(5678));
+  const Backtrace* bt1 = backtrace_storage.Insert(std::move(stack1));
+
+  std::vector<Address> stack2;
+  stack2.push_back(Address(9012));
+  const Backtrace* bt2 = backtrace_storage.Insert(std::move(stack2));
+
+  AllocationEventSet events;
+  events.insert(AllocationEvent(Address(0x1), 16, bt1));
+  events.insert(AllocationEvent(Address(0x2), 32, bt2));
+  events.insert(AllocationEvent(Address(0x3), 16, bt1));
+
+  std::ostringstream stream;
+  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream);
+  std::string json = stream.str();
+
+  // JSON should parse.
+  base::JSONReader reader(base::JSON_PARSE_RFC);
+  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
+  ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
+      << reader.GetErrorMessage();
+  ASSERT_TRUE(root);
+
+  auto found_metadatas =
+      root->FindKeyOfType("metadata", base::Value::Type::DICTIONARY);
+  ASSERT_NE(found_metadatas, root->DictEnd()) << "Array contains no metadata";
+  base::DictionaryValue* metadata;
+  ASSERT_TRUE(found_metadatas->second.GetAsDictionary(&metadata));
+
+  // Assert existence of key fields needed for symbolize_trace.
+  ASSERT_NE(metadata->FindKeyOfType("command_line", base::Value::Type::STRING),
+            metadata->DictEnd());
+  ASSERT_NE(metadata->FindKeyOfType("os-name", base::Value::Type::STRING),
+            metadata->DictEnd());
+  ASSERT_NE(metadata->FindKeyOfType("os-version", base::Value::Type::STRING),
+            metadata->DictEnd());
+  ASSERT_NE(metadata->FindKeyOfType("trace-capture-datetime",
+                                    base::Value::Type::STRING),
+            metadata->DictEnd());
+  ASSERT_NE(
+      metadata->FindKeyOfType("physical-memory", base::Value::Type::INTEGER),
+      metadata->DictEnd());
 }
 
 }  // namespace profiling
