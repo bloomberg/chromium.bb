@@ -5,7 +5,6 @@ FAIL If the same id is provided, then use it Failed to construct 'PaymentRequest
 FAIL Use ids even if they are strange Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
 FAIL Use provided request ID Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
 FAIL If the length of the methodData sequence is zero, then throw a TypeError Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
-FAIL ignore invalid payment method URLs Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
 FAIL Modifier method data must be JSON-serializable object Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
 FAIL Rethrow any exceptions of JSON-serializing paymentMethod.data into a string Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
 FAIL If details.total.amount.value is not a valid decimal monetary value, then throw a TypeError Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
