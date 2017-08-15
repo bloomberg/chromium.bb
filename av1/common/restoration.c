@@ -19,7 +19,16 @@
 #include "av1/common/restoration.h"
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_mem/aom_mem.h"
+
 #include "aom_ports/mem.h"
+
+#define USE_SIMPLER_SGR 1
+
+#define MAX_RADIUS 3  // Only 1, 2, 3 allowed
+#define MAX_EPS 80    // Max value of eps
+#define MAX_NELEM ((2 * MAX_RADIUS + 1) * (2 * MAX_RADIUS + 1))
+#define SGRPROJ_MTABLE_BITS 20
+#define SGRPROJ_RECIP_BITS 12
 
 const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
 #if USE_HIGHPASS_IN_SGRPROJ
@@ -29,11 +38,18 @@ const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
   { -2, 3, 1, 5 }, { -2, 3, 1, 6 }, { -3, 4, 1, 3 }, { -3, 4, 1, 4 },
   { -3, 4, 1, 5 }, { -3, 4, 1, 6 }, { -3, 4, 1, 7 }, { -3, 4, 1, 8 }
 #else
-  // r1, eps1, r2, eps2
+// r1, eps1, r2, eps2
+#if USE_SIMPLER_SGR
+  { 2, 12, 1, 4 },  { 2, 15, 1, 6 },  { 2, 18, 1, 8 },  { 2, 20, 1, 9 },
+  { 2, 22, 1, 10 }, { 2, 25, 1, 11 }, { 2, 35, 1, 12 }, { 2, 45, 1, 13 },
+  { 2, 55, 1, 14 }, { 2, 65, 1, 15 }, { 2, 75, 1, 16 }, { 2, 30, 1, 2 },
+  { 2, 50, 1, 12 }, { 2, 60, 1, 13 }, { 2, 70, 1, 14 }, { 2, 80, 1, 15 },
+#else
   { 2, 12, 1, 4 },  { 2, 15, 1, 6 },  { 2, 18, 1, 8 },  { 2, 20, 1, 9 },
   { 2, 22, 1, 10 }, { 2, 25, 1, 11 }, { 2, 35, 1, 12 }, { 2, 45, 1, 13 },
   { 2, 55, 1, 14 }, { 2, 65, 1, 15 }, { 2, 75, 1, 16 }, { 3, 30, 1, 10 },
   { 3, 50, 1, 12 }, { 3, 50, 2, 25 }, { 3, 60, 2, 35 }, { 3, 70, 2, 45 },
+#endif  // USE_SIMPLER_SGR
 #endif
 };
 
@@ -75,12 +91,6 @@ void av1_free_restoration_struct(RestorationInfo *rst_info) {
   aom_free(rst_info->sgrproj_info);
   rst_info->sgrproj_info = NULL;
 }
-
-#define MAX_RADIUS 3  // Only 1, 2, 3 allowed
-#define MAX_EPS 80    // Max value of eps
-#define MAX_NELEM ((2 * MAX_RADIUS + 1) * (2 * MAX_RADIUS + 1))
-#define SGRPROJ_MTABLE_BITS 20
-#define SGRPROJ_RECIP_BITS 12
 
 // TODO(debargha): This table can be substantially reduced since only a few
 // values are actually used.
