@@ -44,7 +44,7 @@ class FilterAdapter
         labelView.setText(DownloadFilter.getStringIdForFilter(position));
         int iconId = DownloadFilter.getDrawableForFilter(position);
         Drawable iconDrawable = TintedDrawable.constructTintedDrawable(
-                mManagerUi.getActivity().getResources(), iconId, R.color.descriptive_text_color);
+                mManagerUi.getActivity().getResources(), iconId, R.color.toolbar_light_tint);
         labelView.setCompoundDrawablesWithIntrinsicBounds(iconDrawable, null, null, null);
 
         return labelView;

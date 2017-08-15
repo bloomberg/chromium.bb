@@ -107,6 +107,7 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
 
     private DownloadHistoryAdapter mHistoryAdapter;
     private View mView;
+    private View mViewContainer;
     private TextView mSpaceUsedByDownloadsTextView;
     private TextView mSpaceUsedByOtherAppsTextView;
     private TextView mSpaceFreeTextView;
@@ -115,14 +116,20 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
 
     SpaceDisplay(final ViewGroup parent, DownloadHistoryAdapter historyAdapter) {
         mHistoryAdapter = historyAdapter;
-        mView = LayoutInflater.from(ContextUtils.getApplicationContext())
-                        .inflate(R.layout.download_manager_ui_space_widget, parent, false);
+        mViewContainer = LayoutInflater.from(ContextUtils.getApplicationContext())
+                                 .inflate(R.layout.download_manager_ui_space_widget, parent, false);
+        mView = mViewContainer.findViewById(R.id.space_widget_content);
         mSpaceUsedByDownloadsTextView = (TextView) mView.findViewById(R.id.size_downloaded);
         mSpaceUsedByOtherAppsTextView = (TextView) mView.findViewById(R.id.size_other_apps);
         mSpaceFreeTextView = (TextView) mView.findViewById(R.id.size_free);
         mSpaceBar = (MaterialProgressBar) mView.findViewById(R.id.space_bar);
         mFileSystemBytesTask =
                 new StorageSizeTask(true).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /** @return The view container of space display view. */
+    public View getViewContainer() {
+        return mViewContainer;
     }
 
     /** Returns the view. */

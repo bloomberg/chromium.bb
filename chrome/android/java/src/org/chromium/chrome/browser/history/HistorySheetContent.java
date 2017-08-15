@@ -86,6 +86,6 @@ public class HistorySheetContent implements BottomSheetContent {
 
     @Override
     public boolean applyDefaultTopPadding() {
-        return true;
+        return false;
     }
 }

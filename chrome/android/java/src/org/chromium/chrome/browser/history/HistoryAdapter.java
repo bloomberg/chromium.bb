@@ -8,24 +8,23 @@ import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.SpannableString;
+import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Space;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.history.HistoryProvider.BrowsingHistoryObserver;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
-import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
 import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
-import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.components.signin.ChromeSigninController;
@@ -56,7 +55,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     private TextView mSignedInNotSyncedTextView;
     private TextView mSignedInSyncedTextView;
     private TextView mOtherFormsOfBrowsingHistoryTextView;
-    private Space mPrivacyDisclaimerBottomSpace;
+    private View mPrivacyDisclaimerBottomSpace;
     private Button mClearBrowsingDataButton;
     private HeaderItem mPrivacyDisclaimerHeaderItem;
     private HeaderItem mClearBrowsingDataButtonHeaderItem;
@@ -181,12 +180,6 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
      */
     public void removeItems() {
         mHistoryProvider.removeItems();
-
-        // TODO(twellington): this could be optimized by only setting the background for item views
-        //                    in a group that has changed.
-        for (HistoryItemView itemView : mItemViews) {
-            itemView.setBackgroundResourceForGroupPosition();
-        }
     }
 
     /**
@@ -220,7 +213,6 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         SelectableItemViewHolder<HistoryItem> viewHolder =
                 new SelectableItemViewHolder<>(v, mSelectionDelegate);
         HistoryItemView itemView = (HistoryItemView) viewHolder.itemView;
-        itemView.configureWideDisplayStyle(mHistoryManager.getSelectableListLayout().getUiConfig());
         itemView.setRemoveButtonVisible(!mSelectionDelegate.isSelectionEnabled());
         mItemViews.add(itemView);
         return viewHolder;
@@ -253,7 +245,6 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
             mClearOnNextQueryComplete = false;
         }
 
-        boolean wasInitialized = mIsInitialized;
         if (!mIsInitialized) {
             if (items.size() > 0 && !mIsSearching) setHeaders();
             mIsInitialized = true;
@@ -261,22 +252,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
 
         removeFooter();
 
-        HistoryItemView lastHistoryItemView = null;
-        if (mRecyclerView != null && wasInitialized) {
-            ViewHolder holder = mRecyclerView.findViewHolderForAdapterPosition(getItemCount() - 1);
-            if (holder instanceof SelectableItemViewHolder) {
-                lastHistoryItemView =
-                        (HistoryItemView) ((SelectableItemViewHolder<HistoryItem>) holder).itemView;
-            }
-        }
-
         loadItems(items);
-
-        if (lastHistoryItemView != null) {
-            // When loading more items, the last item's background needs to be reset since it may
-            // now be in the middle of an ItemGroup.
-            lastHistoryItemView.setBackgroundResourceForGroupPosition();
-        }
 
         mIsLoadingItems = false;
         mHasMorePotentialItems = hasMorePotentialMatches;
@@ -307,16 +283,6 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
                         .inflate(R.layout.indeterminate_progress_view, parent, false));
     }
 
-    @Override
-    protected DateViewHolder createDateViewHolder(ViewGroup parent) {
-        DateViewHolder viewHolder = super.createDateViewHolder(parent);
-        MarginResizer.createAndAttach(viewHolder.itemView,
-                mHistoryManager.getSelectableListLayout().getUiConfig(),
-                getDefaultTextMargin(parent.getResources()),
-                SelectableListLayout.getDefaultListItemLateralShadowSizePx(parent.getResources()));
-        return viewHolder;
-    }
-
     /**
      * Initialize clear browsing data and privacy disclaimer header views and generate header
      * items for them.
@@ -325,24 +291,15 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         ViewGroup privacyDisclaimers =
                 (ViewGroup) View.inflate(mHistoryManager.getSelectableListLayout().getContext(),
                         R.layout.history_privacy_disclaimer_header, null);
-        Resources resources = privacyDisclaimers.getResources();
 
         mSignedInNotSyncedTextView =
                 (TextView) privacyDisclaimers.findViewById(R.id.signed_in_not_synced);
         setPrivacyDisclaimerText(mSignedInNotSyncedTextView,
                 R.string.android_history_no_synced_results, LEARN_MORE_LINK);
-        MarginResizer.createAndAttach(mSignedInNotSyncedTextView,
-                mHistoryManager.getSelectableListLayout().getUiConfig(),
-                getDefaultTextMargin(resources),
-                SelectableListLayout.getDefaultListItemLateralShadowSizePx(resources));
 
         mSignedInSyncedTextView = (TextView) privacyDisclaimers.findViewById(R.id.signed_in_synced);
         setPrivacyDisclaimerText(mSignedInSyncedTextView,
                 R.string.android_history_has_synced_results, LEARN_MORE_LINK);
-        MarginResizer.createAndAttach(mSignedInSyncedTextView,
-                mHistoryManager.getSelectableListLayout().getUiConfig(),
-                getDefaultTextMargin(resources),
-                SelectableListLayout.getDefaultListItemLateralShadowSizePx(resources));
 
         mOtherFormsOfBrowsingHistoryTextView =
                 (TextView) privacyDisclaimers.findViewById(R.id.other_forms_of_browsing_history);
@@ -352,13 +309,9 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         String disclaimerUrl = flagEnabled ? MY_ACTIVITY_LINK : GOOGLE_HISTORY_LINK;
         setPrivacyDisclaimerText(
                 mOtherFormsOfBrowsingHistoryTextView, disclaimerTextId, disclaimerUrl);
-        MarginResizer.createAndAttach(mOtherFormsOfBrowsingHistoryTextView,
-                mHistoryManager.getSelectableListLayout().getUiConfig(),
-                getDefaultTextMargin(resources),
-                SelectableListLayout.getDefaultListItemLateralShadowSizePx(resources));
 
         mPrivacyDisclaimerBottomSpace =
-                (Space) privacyDisclaimers.findViewById(R.id.privacy_disclaimer_bottom_space);
+                privacyDisclaimers.findViewById(R.id.privacy_disclaimer_bottom_space);
 
         ViewGroup clearBrowsingDataButtonContainer =
                 (ViewGroup) View.inflate(mHistoryManager.getSelectableListLayout().getContext(),
@@ -372,9 +325,6 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
                 mHistoryManager.openClearBrowsingDataPreference();
             }
         });
-        MarginResizer.createAndAttach(clearBrowsingDataButtonContainer,
-                mHistoryManager.getSelectableListLayout().getUiConfig(),
-                SelectableListLayout.getDefaultListItemLateralMarginPx(resources), 0);
 
         mPrivacyDisclaimerHeaderItem = new HeaderItem(0, privacyDisclaimers);
         mClearBrowsingDataButtonHeaderItem = new HeaderItem(1, clearBrowsingDataButtonContainer);
@@ -392,11 +342,18 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         setHeaders(args.toArray(new HeaderItem[args.size()]));
     }
 
-    private void setPrivacyDisclaimerText(TextView view, int stringId, final  String url) {
+    private void setPrivacyDisclaimerText(final TextView view, int stringId, final String url) {
         NoUnderlineClickableSpan link = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View view) {
                 mHistoryManager.openUrl(url, null, true);
+            }
+
+            @Override
+            public void updateDrawState(TextPaint textPaint) {
+                super.updateDrawState(textPaint);
+                textPaint.setColor(ApiCompatibilityUtils.getColor(
+                        view.getResources(), R.color.google_blue_700));
             }
         };
         SpannableString spannable = SpanApplier.applySpans(

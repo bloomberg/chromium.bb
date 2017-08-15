@@ -42,7 +42,7 @@ public class DownloadFilter {
     static final int[][] FILTER_LIST = new int[][] {
             {R.drawable.ic_file_download_white_24dp, R.string.download_manager_ui_all_downloads},
             {R.drawable.ic_drive_site_white_24dp, R.string.download_manager_ui_pages},
-            {R.drawable.ic_play_arrow_white_24dp, R.string.download_manager_ui_video},
+            {R.drawable.ic_videocam_white_24dp, R.string.download_manager_ui_video},
             {R.drawable.ic_music_note_white_24dp, R.string.download_manager_ui_audio},
             {R.drawable.ic_image_white_24dp, R.string.download_manager_ui_images},
             {R.drawable.ic_drive_text_white_24dp, R.string.download_manager_ui_documents},

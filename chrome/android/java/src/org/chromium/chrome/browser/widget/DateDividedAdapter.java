@@ -175,8 +175,8 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
                 }
             }
             builder.append(DateUtils.formatDateTime(mTextView.getContext(), date.getTime(),
-                    DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_SHOW_DATE
-                    | DateUtils.FORMAT_SHOW_YEAR));
+                    DateUtils.FORMAT_ABBREV_WEEKDAY | DateUtils.FORMAT_ABBREV_MONTH
+                            | DateUtils.FORMAT_SHOW_YEAR));
             mTextView.setText(builder);
         }
     }

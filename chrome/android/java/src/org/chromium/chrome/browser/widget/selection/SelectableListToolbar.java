@@ -132,14 +132,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     private int mSearchBackgroundColor;
 
     private UiConfig mUiConfig;
-    private int mDefaultTitleMarginStartPx;
-    private int mWideDisplayLateralOffsetPx;
-    private int mWideDisplayEndOffsetPx;
-    private int mWideDisplayNavButtonOffsetPx;
-    private int mOriginalContentInsetStart;
-    private int mOriginalContentInsetEnd;
-    private int mOriginalContentInsetStartWithNavigation;
-    private int mOriginalContentInsetEndWithActions;
+    private int mWideDisplayStartOffsetPx;
 
     private boolean mIsDestroyed;
 
@@ -262,11 +255,6 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         LayoutInflater.from(getContext()).inflate(R.layout.number_roll_view, this);
         mNumberRollView = (NumberRollView) findViewById(R.id.selection_mode_number);
         mNumberRollView.setString(R.plurals.selected_items);
-
-        mOriginalContentInsetStart = getContentInsetStart();
-        mOriginalContentInsetEnd = getContentInsetEnd();
-        mOriginalContentInsetStartWithNavigation = getContentInsetStartWithNavigation();
-        mOriginalContentInsetEndWithActions = getContentInsetEndWithActions();
     }
 
     @Override
@@ -458,17 +446,11 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
      * UiConfig#WIDE_DISPLAY_STYLE_MIN_WIDTH_DP, the toolbar contents will be visually centered by
      * adding padding to both sides.
      *
-     * @param wideDisplayLateralOffsetPx The offset to use for the lateral padding when in
-     *                                   {@link HorizontalDisplayStyle#WIDE}.
      * @param uiConfig The UiConfig used to observe display style changes.
      */
-    public void configureWideDisplayStyle(int wideDisplayLateralOffsetPx, UiConfig uiConfig) {
-        mWideDisplayLateralOffsetPx = wideDisplayLateralOffsetPx;
-        mDefaultTitleMarginStartPx = getTitleMarginStart();
-        mWideDisplayNavButtonOffsetPx =
-                getResources().getDimensionPixelSize(R.dimen.toolbar_wide_display_nav_icon_offset);
-        mWideDisplayEndOffsetPx = getResources().getDimensionPixelSize(
-                R.dimen.toolbar_wide_display_end_offset);
+    public void configureWideDisplayStyle(UiConfig uiConfig) {
+        mWideDisplayStartOffsetPx =
+                getResources().getDimensionPixelSize(R.dimen.toolbar_wide_display_start_offset);
 
         mUiConfig = uiConfig;
         mUiConfig.addObserver(this);
@@ -480,40 +462,16 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         int padding =
                 SelectableListLayout.getPaddingForDisplayStyle(newDisplayStyle, getResources());
         int paddingStartOffset = 0;
-        int paddingEndOffset = 0;
-        int contentInsetStart = mOriginalContentInsetStart;
-        int contentInsetStartWithNavigation = mOriginalContentInsetStartWithNavigation;
-        int contentInsetEnd = mOriginalContentInsetEnd;
-        int contentInsetEndWithActions = mOriginalContentInsetEndWithActions;
 
-        if (newDisplayStyle.horizontal == HorizontalDisplayStyle.WIDE) {
-            paddingStartOffset = mWideDisplayLateralOffsetPx;
-
-            // The title and nav buttons are inset in the normal display style. In the wide display
-            // style they should be aligned with the starting edge of the list elements.
-            if (mIsSearching || mIsSelectionEnabled
-                    || mNavigationButton != NAVIGATION_BUTTON_NONE) {
-                paddingStartOffset += mWideDisplayNavButtonOffsetPx;
-            } else {
-                paddingStartOffset -= mDefaultTitleMarginStartPx;
-            }
-
-            // The end button is also inset in the normal display. In the wide display it should be
-            // aligned with the ending edge of the list elements.
-            paddingEndOffset = mWideDisplayLateralOffsetPx + mWideDisplayEndOffsetPx;
-
-            contentInsetStart = 0;
-            contentInsetStartWithNavigation = 0;
-            contentInsetEnd = 0;
-            contentInsetEndWithActions = 0;
+        if (newDisplayStyle.horizontal == HorizontalDisplayStyle.WIDE
+                && !(mIsSearching || mIsSelectionEnabled
+                           || mNavigationButton != NAVIGATION_BUTTON_NONE)) {
+            // The title in the wide display should be aligned with the texts of the list elements.
+            paddingStartOffset = mWideDisplayStartOffsetPx;
         }
 
-        ApiCompatibilityUtils.setPaddingRelative(this,
-                padding + paddingStartOffset, this.getPaddingTop(),
-                padding + paddingEndOffset, this.getPaddingBottom());
-        setContentInsetsRelative(contentInsetStart, contentInsetEnd);
-        setContentInsetStartWithNavigation(contentInsetStartWithNavigation);
-        setContentInsetEndWithActions(contentInsetEndWithActions);
+        ApiCompatibilityUtils.setPaddingRelative(this, padding + paddingStartOffset,
+                this.getPaddingTop(), padding, this.getPaddingBottom());
     }
 
     /**

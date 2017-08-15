@@ -21,8 +21,17 @@
         android:id="@+id/other_forms_of_browsing_history"
         style="@style/PrivacyDisclaimerText" />
 
-    <Space
+    <LinearLayout
         android:id="@+id/privacy_disclaimer_bottom_space"
         android:layout_width="match_parent"
-        android:layout_height="8dp" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="8dp" />
+
+        <View style="@style/Divider" />
+
+    </LinearLayout>
 </LinearLayout>
