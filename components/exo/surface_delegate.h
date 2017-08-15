@@ -13,6 +13,9 @@ class SurfaceDelegate {
   // Called when surface was requested to commit all double-buffered state.
   virtual void OnSurfaceCommit() = 0;
 
+  // Called when surface content size was changed.
+  virtual void OnSurfaceContentSizeChanged() = 0;
+
   // Returns true if surface is in synchronized mode. ie. commit of
   // double-buffered state should be synchronized with parent surface.
   virtual bool IsSurfaceSynchronized() const = 0;

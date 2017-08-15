@@ -125,9 +125,6 @@ class Surface : public ui::PropertyHandler {
   // This sets the alpha value that will be applied to the whole surface.
   void SetAlpha(float alpha);
 
-  // This sets the device scale factor sent in CompositorFrames.
-  void SetDeviceScaleFactor(float device_scale_factor);
-
   // Surface state (damage regions, attached buffers, etc.) is double-buffered.
   // A Commit() call atomically applies all pending state, replacing the
   // current state. Commit() is not guaranteed to be synchronous. See
@@ -287,9 +284,6 @@ class Surface : public ui::PropertyHandler {
 
   // The buffer that will become the content of surface when Commit() is called.
   BufferAttachment pending_buffer_;
-
-  // The device scale factor sent in CompositorFrames.
-  float device_scale_factor_ = 1.0f;
 
   // The damage region to schedule paint for when Commit() is called.
   SkRegion pending_damage_;

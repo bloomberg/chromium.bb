@@ -100,6 +100,8 @@ void SubSurface::OnSurfaceCommit() {
   NOTIMPLEMENTED() << "Async subsurface is not supported!";
 }
 
+void SubSurface::OnSurfaceContentSizeChanged() {}
+
 bool SubSurface::IsSurfaceSynchronized() const {
   // A sub-surface is effectively synchronized if either its parent is
   // synchronized or itself is in synchronized mode.
