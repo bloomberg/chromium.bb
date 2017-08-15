@@ -21,8 +21,6 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
   axeOptions: SettingsAccessibilityTest.axeOptions,
   /** @override */
   setup: function() {
-    console.log('the route is not undefined!');
-    assert(settings.routes.EDIT_DICTIONARY != undefined);
     settings.navigateTo(settings.routes.EDIT_DICTIONARY);
     Polymer.dom.flush();
   },
