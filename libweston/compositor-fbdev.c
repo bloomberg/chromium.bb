@@ -473,6 +473,21 @@ out_hw_surface:
 }
 
 static int
+fbdev_output_disable_handler(struct weston_output *base)
+{
+	if (!base->enabled)
+		return 0;
+
+	/* Close the frame buffer. */
+	fbdev_output_disable(base);
+
+	if (base->renderer_state != NULL)
+		pixman_renderer_output_destroy(base);
+
+	return 0;
+}
+
+static int
 fbdev_output_create(struct fbdev_backend *backend,
                     const char *device)
 {
@@ -497,7 +512,7 @@ fbdev_output_create(struct fbdev_backend *backend,
 
 	output->base.name = strdup("fbdev");
 	output->base.destroy = fbdev_output_destroy;
-	output->base.disable = NULL;
+	output->base.disable = fbdev_output_disable_handler;
 	output->base.enable = fbdev_output_enable;
 
 	weston_output_init(&output->base, backend->compositor);
@@ -539,11 +554,7 @@ fbdev_output_destroy(struct weston_output *base)
 
 	weston_log("Destroying fbdev output.\n");
 
-	/* Close the frame buffer. */
-	fbdev_output_disable(base);
-
-	if (base->renderer_state != NULL)
-		pixman_renderer_output_destroy(base);
+	fbdev_output_disable_handler(base);
 
 	/* Remove the output. */
 	weston_output_destroy(&output->base);
