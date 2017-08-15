@@ -217,6 +217,8 @@ group("gn_all") {
     ]
   } else if (is_ios) {
     deps += [ "//ios:all" ]
+  } else if (is_fuchsia) {
+    deps += [ ":d8_fuchsia" ]
   }
 
   deps += root_extra_deps
@@ -727,6 +729,14 @@ group("All") {
   deps = [
     ":gn_all",
   ]
+}
+
+if (is_fuchsia) {
+  # TODO(https://crbug.com/731217): This can't practically be in //v8 without
+  # duplicating all the Fuchsia running infrastructure there.
+  fuchsia_executable_runner("d8_fuchsia") {
+    exe_name = "d8"
+  }
 }
 
 # TODO(GYP_GONE): Figure out if we really need this target or if there's

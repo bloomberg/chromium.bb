@@ -166,11 +166,11 @@ def main():
     child_args.append('--test-launcher-filter-file=/system/test_filter_file')
 
   bootfs = BuildBootfs(args.output_directory, runtime_deps, args.exe_name,
-                       child_args, args.device, args.dry_run)
+                       child_args, args.dry_run, power_off=not args.device)
   if not bootfs:
     return 2
 
-  return RunFuchsia(bootfs, args.device, args.dry_run)
+  return RunFuchsia(bootfs, args.device, args.dry_run, interactive=False)
 
 
 if __name__ == '__main__':
