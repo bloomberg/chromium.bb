@@ -252,6 +252,7 @@ CONSOLE MESSAGE: line 147:     method getWriter
 CONSOLE MESSAGE: line 147: global object
 CONSOLE MESSAGE: line 147:     attribute Atomics
 CONSOLE MESSAGE: line 147:     attribute console
+CONSOLE MESSAGE: line 147:     getter devicePixelRatio
 CONSOLE MESSAGE: line 147:     method gc
 CONSOLE MESSAGE: line 147:     method registerPaint
 CONSOLE MESSAGE: line 147: interface ByteLengthQueuingStrategy
@@ -507,6 +508,7 @@ CONSOLE MESSAGE: line 147:     method getWriter
 CONSOLE MESSAGE: line 147: global object
 CONSOLE MESSAGE: line 147:     attribute Atomics
 CONSOLE MESSAGE: line 147:     attribute console
+CONSOLE MESSAGE: line 147:     getter devicePixelRatio
 CONSOLE MESSAGE: line 147:     method gc
 CONSOLE MESSAGE: line 147:     method registerPaint
 

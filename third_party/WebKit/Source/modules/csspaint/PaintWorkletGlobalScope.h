@@ -40,6 +40,7 @@ class MODULES_EXPORT PaintWorkletGlobalScope final
                      ExceptionState&);
 
   CSSPaintDefinition* FindDefinition(const String& name);
+  double devicePixelRatio() const;
 
   DECLARE_VIRTUAL_TRACE();
   DECLARE_TRACE_WRAPPERS();
