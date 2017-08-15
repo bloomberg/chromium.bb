@@ -476,6 +476,11 @@ bool ProfileInfoCache::ProfileIsAuthErrorAtIndex(size_t index) const {
   return value;
 }
 
+bool ProfileInfoCache::IsGAIAPictureOfProfileAtIndexLoaded(size_t index) const {
+  return cached_avatar_images_.count(
+      CacheKeyFromProfilePath(GetPathOfProfileAtIndex(index)));
+}
+
 size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
     const {
   std::string icon_url;
