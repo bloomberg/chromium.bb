@@ -260,6 +260,7 @@ component("gl") {
       "//third_party/angle:libEGL",
       "//third_party/angle:libGLESv2",
       "//third_party/mesa:osmesa",
+      "//third_party/swiftshader",
     ]
 
     deps += [ "//third_party/angle:includes" ]
