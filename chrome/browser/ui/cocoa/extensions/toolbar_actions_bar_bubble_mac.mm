@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -17,8 +16,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #import "ui/base/cocoa/hover_button.h"
-#import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/resource/resource_bundle.h"
+#import "ui/base/cocoa/window_size_constants.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -111,13 +110,7 @@ CGFloat kMinWidth = 320.0;
 }
 
 - (IBAction)showWindow:(id)sender {
-  // The capturing lambda below is safe because the block creates a strong
-  // reference to |self|. The Block_copy operator automatically retains object
-  // variables, and when the block is destroyed, the variables are automatically
-  // released.
-  delegate_->OnBubbleShown(base::BindBlock(^{
-    [self close];
-  }));
+  delegate_->OnBubbleShown();
   [super showWindow:sender];
 }
 
