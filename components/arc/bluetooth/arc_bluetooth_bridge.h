@@ -346,25 +346,10 @@ class ArcBluetoothBridge
       std::unique_ptr<device::BluetoothGattNotifySession> notify_session);
 
  private:
-  // IntentHelperObserver listens to the OnInstanceReady call on the intent
-  // helper which indicated the IntentHelperService has been brought up and the
-  // initial powered state of Bluetooth adapter can be sent to Android.
-  class IntentHelperObserver
-      : public InstanceHolder<mojom::IntentHelperInstance>::Observer {
-   public:
-    explicit IntentHelperObserver(ArcBluetoothBridge* bluetooth_bridge);
-    ~IntentHelperObserver() override;
-
-   private:
-    // InstanceHolder<mojom::IntentHelperInstance>::Observer overrides
-    void OnInstanceReady() override;
-
-    // ArcBluetoothBridge owns IntentHelperObserver, and ArcBluetoothBridge will
-    // always outlive it.
-    ArcBluetoothBridge* const bluetooth_bridge_;
-
-    DISALLOW_COPY_AND_ASSIGN(IntentHelperObserver);
-  };
+  template <typename T>
+  class InstanceObserver;
+  class AppInstanceObserver;
+  class IntentHelperInstanceObserver;
 
   // Power state change on Bluetooth adapter.
   enum class AdapterPowerState { TURN_OFF, TURN_ON };
@@ -377,8 +362,8 @@ class ArcBluetoothBridge
   bool IsPowerChangeInitiatedByLocal(
       ArcBluetoothBridge::AdapterPowerState powered) const;
 
-  // Called by IntentHelperObserver to send the initial power state.
-  void SendInitialPowerChange();
+  // Sends initial power state when all preconditions are met.
+  void MaybeSendInitialPowerChange();
 
   // Manages the powered change intents sent to Android.
   void EnqueueLocalPowerChange(AdapterPowerState powered);
@@ -526,8 +511,9 @@ class ArcBluetoothBridge
   // receive events.
   bool is_bluetooth_instance_up_;
 
-  // Observer to listen the start-up of Intent Helper.
-  IntentHelperObserver intent_helper_observer_;
+  // Observers to listen the start-up of App and Intent Helper.
+  std::unique_ptr<AppInstanceObserver> app_observer_;
+  std::unique_ptr<IntentHelperInstanceObserver> intent_helper_observer_;
   // Queue to track the powered state changes initiated by Android.
   std::queue<AdapterPowerState> remote_power_changes_;
   // Queue to track the powered state changes initiated by Chrome.
