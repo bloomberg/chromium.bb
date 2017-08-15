@@ -292,11 +292,15 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
   def __init__(
       self, builder_run, board, model, suite_config, suffix=None, **kwargs):
+
+    if suffix is None:
+      suffix = ''
+
     if board is not model:
-      if suffix is None:
-        suffix = ' [%s]' % (model)
-      else:
-        suffix = '%s [%s]' % (suffix, model)
+      suffix += ' [%s]' % (model)
+
+    if not self.TestsEnabled(builder_run):
+      suffix += ' [DISABLED]'
 
     suffix = self.UpdateSuffix(suite_config.suite, suffix)
     super(HWTestStage, self).__init__(builder_run, board,
@@ -419,6 +423,14 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
     return True
 
+  def TestsEnabled(self, builder_run):
+    """Abstract the logic to decide if tests are enabled."""
+    if (builder_run.options.remote_trybot and
+        (builder_run.options.hwtest or builder_run.config.pre_cq)):
+      return not builder_run.options.debug_forced
+    else:
+      return not builder_run.options.debug
+
   def PerformStage(self):
     if self.suite_config.suite == constants.HWTEST_AFDO_SUITE:
       arch = self._GetPortageEnvVar('ARCH', self._current_board)
@@ -451,11 +463,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
                       self.suite_config.priority)
 
     build = '/'.join([self._bot_id, self.version])
-    if (self._run.options.remote_trybot and (self._run.options.hwtest or
-                                             self._run.config.pre_cq)):
-      debug = self._run.options.debug_forced
-    else:
-      debug = self._run.options.debug
 
     # Get the subsystems set for the board to test
     per_board_dict = self._run.attrs.metadata.GetDict()['board-metadata']
@@ -486,7 +493,8 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
         minimum_duts=self.suite_config.minimum_duts,
         suite_min_duts=self.suite_config.suite_min_duts,
         offload_failures_only=self.suite_config.offload_failures_only,
-        debug=debug, subsystems=subsystems, skip_duts_check=skip_duts_check,
+        debug=not self.TestsEnabled(self._run),
+        subsystems=subsystems, skip_duts_check=skip_duts_check,
         job_keyvals=self.GetJobKeyvals())
 
     if config_lib.IsCQType(self._run.config.build_type):
