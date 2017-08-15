@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_INDEXED_RULE_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_INDEXED_RULE_H_
 
+#include <stdint.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -30,6 +31,8 @@ enum class ParseResult;
 struct IndexedRule {
   IndexedRule();
   ~IndexedRule();
+  IndexedRule(IndexedRule&& other);
+  IndexedRule& operator=(IndexedRule&& other);
 
   static ParseResult CreateIndexedRule(
       std::unique_ptr<extensions::api::declarative_net_request::Rule>

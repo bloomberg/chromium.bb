@@ -485,6 +485,7 @@ source_set("unit_tests") {
     "api/declarative/declarative_rule_unittest.cc",
     "api/declarative/deduping_factory_unittest.cc",
     "api/declarative/rules_registry_unittest.cc",
+    "api/declarative_net_request/flat_ruleset_indexer_unittest.cc",
     "api/declarative_net_request/indexed_rule_unittest.cc",
     "api/declarative_webrequest/webrequest_condition_attribute_unittest.cc",
     "api/declarative_webrequest/webrequest_condition_unittest.cc",
