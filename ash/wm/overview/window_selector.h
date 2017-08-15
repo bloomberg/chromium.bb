@@ -85,9 +85,6 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
 
   // Called to set bounds for window grids. Used for split view.
   void SetBoundsForWindowGridsInScreen(const gfx::Rect& bounds);
-  void SetBoundsForWindowGridsInScreenIgnoringWindow(
-      const gfx::Rect& bounds,
-      WindowSelectorItem* ignored_item);
 
   // Removes the window selector item from the overview window grid.
   void RemoveWindowSelectorItem(WindowSelectorItem* item);

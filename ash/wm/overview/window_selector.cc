@@ -474,13 +474,6 @@ void WindowSelector::SetBoundsForWindowGridsInScreen(const gfx::Rect& bounds) {
     grid->SetBoundsAndUpdatePositions(bounds);
 }
 
-void WindowSelector::SetBoundsForWindowGridsInScreenIgnoringWindow(
-    const gfx::Rect& bounds,
-    WindowSelectorItem* ignored_item) {
-  for (std::unique_ptr<WindowGrid>& grid : grid_list_)
-    grid->SetBoundsAndUpdatePositionsIgnoringWindow(bounds, ignored_item);
-}
-
 void WindowSelector::RemoveWindowSelectorItem(WindowSelectorItem* item) {
   if (item->GetWindow()->HasObserver(this)) {
     item->GetWindow()->RemoveObserver(this);
@@ -720,8 +713,23 @@ void WindowSelector::OnSplitViewStateChanged(
     ResetFocusRestoreWindow(false);
   }
 
-  if (state == SplitViewController::BOTH_SNAPPED ||
-      state == SplitViewController::NO_SNAP) {
+  if (state == SplitViewController::LEFT_SNAPPED) {
+    aura::Window* snapped_window =
+        Shell::Get()->split_view_controller()->left_window();
+    const gfx::Rect bounds_in_screen =
+        Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInScreen(
+            snapped_window, SplitViewController::RIGHT);
+    SetBoundsForWindowGridsInScreen(bounds_in_screen);
+  } else if (state == SplitViewController::RIGHT_SNAPPED) {
+    aura::Window* snapped_window =
+        Shell::Get()->split_view_controller()->right_window();
+    const gfx::Rect bounds_in_screen =
+        Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInScreen(
+            snapped_window, SplitViewController::LEFT);
+    SetBoundsForWindowGridsInScreen(bounds_in_screen);
+  } else {
+    DCHECK(state == SplitViewController::BOTH_SNAPPED ||
+           state == SplitViewController::NO_SNAP);
     // If two windows were snapped to both sides of the screen, end overview
     // mode. If split view mode was ended (e.g., one of the snapped window was
     // closed or minimized / fullscreened / maximized), also end overview mode
