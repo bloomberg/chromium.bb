@@ -195,17 +195,17 @@ static int sig_ref_offset[SIG_REF_OFFSET_NUM][2] = {
   { -1, 1 },  { 0, -2 }, { 0, -1 }, { 1, -2 },  { 1, -1 },
 };
 
-static INLINE int get_nz_count(const tran_low_t *tcoeffs, int stride,
-                               int height, int row, int col,
-                               const int16_t *iscan) {
+static INLINE int get_nz_count(const tran_low_t *tcoeffs, int bwl, int height,
+                               int row, int col, const int16_t *iscan) {
   int count = 0;
-  const int pos = row * stride + col;
+  const int pos = (row << bwl) + col;
   for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
     const int ref_row = row + sig_ref_offset[idx][0];
     const int ref_col = col + sig_ref_offset[idx][1];
-    if (ref_row < 0 || ref_col < 0 || ref_row >= height || ref_col >= stride)
+    if (ref_row < 0 || ref_col < 0 || ref_row >= height ||
+        ref_col >= (1 << bwl))
       continue;
-    const int nb_pos = ref_row * stride + ref_col;
+    const int nb_pos = (ref_row << bwl) + ref_col;
     if (iscan[nb_pos] < iscan[pos]) count += (tcoeffs[nb_pos] != 0);
   }
   return count;
@@ -267,10 +267,9 @@ static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs,
                                  const int coeff_idx,  // raster order
                                  const int bwl, const int height,
                                  const int16_t *iscan) {
-  int stride = 1 << bwl;
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
-  int count = get_nz_count(tcoeffs, stride, height, row, col, iscan);
+  int count = get_nz_count(tcoeffs, bwl, height, row, col, iscan);
   return get_nz_map_ctx_from_count(count, tcoeffs, coeff_idx, bwl, iscan);
 }
 

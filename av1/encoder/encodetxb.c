@@ -431,16 +431,16 @@ static void gen_base_count_mag_arr(int (*base_count_arr)[MAX_TX_SQUARE],
 }
 
 static void gen_nz_count_arr(int(*nz_count_arr), const tran_low_t *qcoeff,
-                             int stride, int height, int eob,
+                             int bwl, int height, int eob,
                              const SCAN_ORDER *scan_order) {
   const int16_t *scan = scan_order->scan;
   const int16_t *iscan = scan_order->iscan;
   for (int c = 0; c < eob; ++c) {
     const int coeff_idx = scan[c];  // raster order
-    const int row = coeff_idx / stride;
-    const int col = coeff_idx % stride;
+    const int row = coeff_idx >> bwl;
+    const int col = coeff_idx - (row << bwl);
     nz_count_arr[coeff_idx] =
-        get_nz_count(qcoeff, stride, height, row, col, iscan);
+        get_nz_count(qcoeff, bwl, height, row, col, iscan);
   }
 }
 
@@ -547,7 +547,7 @@ static INLINE int get_golomb_cost(int abs_qc) {
 // TODO(angiebird): add static once this function is called
 void gen_txb_cache(TxbCache *txb_cache, TxbInfo *txb_info) {
   const int16_t *scan = txb_info->scan_order->scan;
-  gen_nz_count_arr(txb_cache->nz_count_arr, txb_info->qcoeff, txb_info->stride,
+  gen_nz_count_arr(txb_cache->nz_count_arr, txb_info->qcoeff, txb_info->bwl,
                    txb_info->height, txb_info->eob, txb_info->scan_order);
   gen_nz_ctx_arr(txb_cache->nz_ctx_arr, txb_cache->nz_count_arr,
                  txb_info->qcoeff, txb_info->bwl, txb_info->eob,
