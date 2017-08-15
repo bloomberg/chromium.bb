@@ -19,20 +19,6 @@
 extern "C" {
 #endif
 
-#if CONFIG_DPCM_INTRA
-static INLINE int av1_use_dpcm_intra(int plane, PREDICTION_MODE mode,
-                                     TX_TYPE tx_type,
-                                     const MB_MODE_INFO *const mbmi) {
-  (void)mbmi;
-  (void)plane;
-#if CONFIG_EXT_INTRA
-  if (mbmi->sb_type >= BLOCK_8X8 && mbmi->angle_delta[plane != 0]) return 0;
-#endif  // CONFIG_EXT_INTRA
-  return (mode == V_PRED && (tx_type == IDTX || tx_type == H_DCT)) ||
-         (mode == H_PRED && (tx_type == IDTX || tx_type == V_DCT));
-}
-#endif  // CONFIG_DPCM_INTRA
-
 void av1_init_intra_predictors(void);
 void av1_predict_intra_block_facade(MACROBLOCKD *xd, int plane, int block_idx,
                                     int blk_col, int blk_row, TX_SIZE tx_size);

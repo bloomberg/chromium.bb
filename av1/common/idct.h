@@ -72,37 +72,6 @@ void av1_highbd_inv_txfm_add_8x4(const tran_low_t *input, uint8_t *dest,
 void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
                              TxfmParam *txfm_param);
 
-#if CONFIG_DPCM_INTRA
-void av1_dpcm_inv_txfm_add_4_c(const tran_low_t *input, int stride,
-                               TX_TYPE_1D tx_type, uint8_t *dest);
-void av1_dpcm_inv_txfm_add_8_c(const tran_low_t *input, int stride,
-                               TX_TYPE_1D tx_type, uint8_t *dest);
-void av1_dpcm_inv_txfm_add_16_c(const tran_low_t *input, int stride,
-                                TX_TYPE_1D tx_type, uint8_t *dest);
-void av1_dpcm_inv_txfm_add_32_c(const tran_low_t *input, int stride,
-                                TX_TYPE_1D tx_type, uint8_t *dest);
-typedef void (*dpcm_inv_txfm_add_func)(const tran_low_t *input, int stride,
-                                       TX_TYPE_1D tx_type, uint8_t *dest);
-dpcm_inv_txfm_add_func av1_get_dpcm_inv_txfm_add_func(int tx_length);
-#if CONFIG_HIGHBITDEPTH
-void av1_hbd_dpcm_inv_txfm_add_4_c(const tran_low_t *input, int stride,
-                                   TX_TYPE_1D tx_type, int bd, uint16_t *dest,
-                                   int dir);
-void av1_hbd_dpcm_inv_txfm_add_8_c(const tran_low_t *input, int stride,
-                                   TX_TYPE_1D tx_type, int bd, uint16_t *dest,
-                                   int dir);
-void av1_hbd_dpcm_inv_txfm_add_16_c(const tran_low_t *input, int stride,
-                                    TX_TYPE_1D tx_type, int bd, uint16_t *dest,
-                                    int dir);
-void av1_hbd_dpcm_inv_txfm_add_32_c(const tran_low_t *input, int stride,
-                                    TX_TYPE_1D tx_type, int bd, uint16_t *dest,
-                                    int dir);
-typedef void (*hbd_dpcm_inv_txfm_add_func)(const tran_low_t *input, int stride,
-                                           TX_TYPE_1D tx_type, int bd,
-                                           uint16_t *dest, int dir);
-hbd_dpcm_inv_txfm_add_func av1_get_hbd_dpcm_inv_txfm_add_func(int tx_length);
-#endif  // CONFIG_HIGHBITDEPTH
-#endif  // CONFIG_DPCM_INTRA
 #ifdef __cplusplus
 }  // extern "C"
 #endif

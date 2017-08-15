@@ -1235,7 +1235,7 @@ static INLINE int av1_raster_order_to_block_index(TX_SIZE tx_size,
   return (tx_size == TX_4X4) ? raster_order : (raster_order > 0) ? 2 : 0;
 }
 
-#if CONFIG_DPCM_INTRA || CONFIG_LGT
+#if CONFIG_LGT
 static INLINE PREDICTION_MODE get_prediction_mode(const MODE_INFO *mi,
                                                   int plane, TX_SIZE tx_size,
                                                   int block_idx) {
@@ -1246,7 +1246,7 @@ static INLINE PREDICTION_MODE get_prediction_mode(const MODE_INFO *mi,
   return (plane == PLANE_TYPE_Y) ? get_y_mode(mi, block_raster_idx)
                                  : get_uv_mode(mbmi->uv_mode);
 }
-#endif
+#endif  // CONFIG_LGT
 
 static INLINE TX_TYPE get_default_tx_type(PLANE_TYPE plane_type,
                                           const MACROBLOCKD *xd, int block_idx,
