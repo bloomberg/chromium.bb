@@ -95,7 +95,7 @@ class Disassembler {
 
   // Creates and returns a vector that contains all groups of references.
   // Groups must be aggregated by pool.
-  virtual std::vector<ReferenceGroup> GetReferenceGroups() const = 0;
+  virtual std::vector<ReferenceGroup> MakeReferenceGroups() const = 0;
 
   ConstBufferView GetImage() const { return image_; }
   size_t size() const { return image_.size(); }

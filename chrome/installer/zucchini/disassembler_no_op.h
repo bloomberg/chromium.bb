@@ -26,7 +26,7 @@ class DisassemblerNoOp : public Disassembler {
   // Disassembler:
   ExecutableType GetExeType() const override;
   std::string GetExeTypeString() const override;
-  std::vector<ReferenceGroup> GetReferenceGroups() const override;
+  std::vector<ReferenceGroup> MakeReferenceGroups() const override;
 
  protected:
   DisassemblerNoOp();
