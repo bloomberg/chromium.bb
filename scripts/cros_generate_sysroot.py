@@ -32,15 +32,14 @@ def ParseCommandLine(argv):
                       help=('The package to generate the sysroot for.'))
   parser.add_argument('--out-dir', type='path', required=True,
                       help='Directory to place the generated tarball.')
-  parser.add_argument('--out-file',
-                      help=('The name to give to the tarball.  Defaults to %r.'
-                            % DEFAULT_NAME))
+  parser.add_argument('--out-file', default=DEFAULT_NAME,
+                      help='The name to give to the tarball. '
+                           'Defaults to %(default)s.')
   options = parser.parse_args(argv)
 
-  if not options.out_file:
-    options.out_file = DEFAULT_NAME % {
-        'package': options.package.replace(PACKAGE_SEPARATOR, '_')
-    }
+  options.out_file %= {
+      'package': options.package.replace(PACKAGE_SEPARATOR, '_'),
+  }
 
   return options
 
