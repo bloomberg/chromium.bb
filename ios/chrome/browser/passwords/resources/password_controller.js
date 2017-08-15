@@ -298,7 +298,14 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
             filled = true;
           }
         } else {
+          // Setting input fields via .value assignment does not trigger all
+          // the events that a web site can observe. This has the effect of
+          // certain web sites rejecting an autofilled sign in form as not
+          // signed in because the user didn't actually "typed" into the field.
+          // Adding the .focus() works around this problems.
+          usernameInput.focus();
           usernameInput.value = username;
+          passwordInput.focus();
           passwordInput.value = password;
           __gCrWeb.setAutofilled(passwordInput, true);
           __gCrWeb.setAutofilled(usernameInput, true);
