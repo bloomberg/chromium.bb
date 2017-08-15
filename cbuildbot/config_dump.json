@@ -10157,26 +10157,6 @@
             "chrome_internal"
         ]
     },
-    "guado-accelerator-chrome-pfq": {
-        "_template": "chrome_pfq",
-        "boards": [
-            "guado-accelerator"
-        ],
-        "buildslave_type": "baremetal",
-        "important": false,
-        "manifest": "official.xml"
-    },
-    "guado-accelerator-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "guado-accelerator"
-        ],
-        "buildslave_type": "baremetal",
-        "important": false,
-        "useflags": [
-            "-chrome_internal"
-        ]
-    },
     "guado-accelerator-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
@@ -10186,6 +10166,7 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ]
@@ -10194,7 +10175,8 @@
         "_template": "factory",
         "boards": [
             "guado-accelerator"
-        ]
+        ],
+        "sync_chrome": false
     },
     "guado-accelerator-firmware": {
         "_template": "firmware",
@@ -10209,7 +10191,9 @@
             "guado-accelerator"
         ],
         "buildslave_type": "baremetal",
+        "chrome_sdk": false,
         "prebuilts": "public",
+        "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
         ]
@@ -10223,6 +10207,7 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ]
@@ -10233,6 +10218,7 @@
         "boards": [
             "guado-accelerator"
         ],
+        "chrome_sdk": false,
         "description": "Commit Queue (internal)",
         "important": false,
         "internal": true,
@@ -10240,6 +10226,7 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "prebuilts": "private",
+        "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ],
@@ -10260,6 +10247,7 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ]
@@ -10269,7 +10257,9 @@
         "boards": [
             "guado-accelerator"
         ],
-        "buildslave_type": "baremetal"
+        "buildslave_type": "baremetal",
+        "chrome_sdk": false,
+        "sync_chrome": false
     },
     "guado-accelerator-release-afdo": {
         "_template": "release_afdo_generate",
@@ -10283,50 +10273,42 @@
                 "boards": [
                     "guado-accelerator"
                 ],
+                "chrome_sdk": false,
                 "grouped": true,
-                "name": "guado-accelerator-release-afdo-generate"
+                "name": "guado-accelerator-release-afdo-generate",
+                "sync_chrome": false
             },
             {
                 "_template": "release_afdo_use",
                 "boards": [
                     "guado-accelerator"
                 ],
+                "chrome_sdk": false,
                 "grouped": true,
-                "name": "guado-accelerator-release-afdo-use"
+                "name": "guado-accelerator-release-afdo-use",
+                "sync_chrome": false
             }
-        ]
+        ],
+        "chrome_sdk": false,
+        "sync_chrome": false
     },
     "guado-accelerator-release-afdo-generate": {
         "_template": "release_afdo_generate",
         "boards": [
             "guado-accelerator"
         ],
-        "buildslave_type": "baremetal"
+        "buildslave_type": "baremetal",
+        "chrome_sdk": false,
+        "sync_chrome": false
     },
     "guado-accelerator-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "guado-accelerator"
         ],
-        "buildslave_type": "baremetal"
-    },
-    "guado-accelerator-tot-chrome-pfq-informational": {
-        "_template": "chrome_pfq_informational",
-        "boards": [
-            "guado-accelerator"
-        ],
         "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
-    "guado-accelerator-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "guado-accelerator"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal"
-        ]
+        "chrome_sdk": false,
+        "sync_chrome": false
     },
     "guado-accelerator-unittest-stress": {
         "_template": "unittest_stress",
@@ -10337,6 +10319,7 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ]

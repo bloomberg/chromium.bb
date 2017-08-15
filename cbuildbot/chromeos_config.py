@@ -679,6 +679,10 @@ _cheets_x86_boards = frozenset([
     'zoombini',
 ])
 
+_accelerator_boards = frozenset([
+    'guado-accelerator',
+])
+
 _beaglebone_boards = frozenset([
     'beaglebone',
     'beaglebone_servo',
@@ -1100,6 +1104,12 @@ def GeneralTemplates(site_config, ge_build_config):
       internal=True,
       overlays=constants.BOTH_OVERLAYS,
       manifest_repo_url=site_config.params['MANIFEST_INT_URL'],
+  )
+
+  site_config.AddTemplate(
+      'accelerator',
+      sync_chrome=False,
+      chrome_sdk=False,
   )
 
   site_config.AddTemplate(
@@ -1658,6 +1668,8 @@ def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
       board_config.apply(site_config.templates.loonix)
     if board in _moblab_boards:
       board_config.apply(site_config.templates.moblab)
+    if board in _accelerator_boards:
+      board_config.apply(site_config.templates.accelerator)
     if board in _termina_boards:
       board_config.apply(site_config.templates.termina)
     if board in _nofactory_boards:
