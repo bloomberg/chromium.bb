@@ -19,6 +19,7 @@
 #include "ios/web/test/test_url_constants.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "url/scheme_host_port.h"
@@ -61,6 +62,7 @@ bool AppendingUrlRewriter(GURL* url, BrowserState* browser_state) {
 class TestNavigationManagerDelegate : public NavigationManagerDelegate {
  public:
   bool reload_called() { return reload_called_; }
+  bool record_page_state_called() { return record_page_state_called_; }
   void SetSessionController(CRWSessionController* session_controller) {
     session_controller_ = session_controller;
   }
@@ -71,7 +73,13 @@ class TestNavigationManagerDelegate : public NavigationManagerDelegate {
   void GoToIndex(int index) override {
     [session_controller_ goToItemAtIndex:index discardNonCommittedItems:NO];
   }
-  void LoadURLWithParams(const NavigationManager::WebLoadParams&) override {}
+  void ClearTransientContent() override {}
+  void RecordPageStateInNavigationItem() override {
+    record_page_state_called_ = true;
+  }
+  void WillLoadCurrentItemWithParams(const NavigationManager::WebLoadParams&,
+                                     bool is_initial_navigation) override {}
+  void LoadCurrentItem() override {}
   void Reload() override { reload_called_ = true; }
   void OnNavigationItemsPruned(size_t pruned_item_count) override {}
   void OnNavigationItemChanged() override {}
@@ -82,6 +90,7 @@ class TestNavigationManagerDelegate : public NavigationManagerDelegate {
   }
 
   bool reload_called_ = false;
+  bool record_page_state_called_ = false;
   CRWSessionController* session_controller_;
   id mock_web_view_;
 };
@@ -2075,6 +2084,55 @@ TEST_P(NavigationManagerTest, VisibleItemDefaultsToLastCommittedItem) {
   ASSERT_TRUE(navigation_manager()->GetVisibleItem());
   EXPECT_EQ("http://www.url.com/0",
             navigation_manager()->GetVisibleItem()->GetURL().spec());
+}
+
+// Tests that |extra_headers| and |post_data| from WebLoadParams are added to
+// the new navigation item if they are present.
+TEST_P(NavigationManagerTest, LoadURLWithParamsWithExtraHeadersAndPostData) {
+  NavigationManager::WebLoadParams params(GURL("http://www.url.com/0"));
+  params.transition_type = ui::PAGE_TRANSITION_TYPED;
+  params.extra_headers.reset(@{@"Content-Type" : @"text/plain"});
+  params.post_data.reset([NSData data]);
+  navigation_manager()->LoadURLWithParams(params);
+
+  NavigationItem* pending_item = navigation_manager()->GetPendingItem();
+
+  ASSERT_TRUE(pending_item);
+  EXPECT_EQ("http://www.url.com/0", pending_item->GetURL().spec());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(pending_item->GetTransitionType(),
+                                           ui::PAGE_TRANSITION_TYPED));
+  EXPECT_NSEQ(pending_item->GetHttpRequestHeaders(),
+              @{@"Content-Type" : @"text/plain"});
+  EXPECT_TRUE(pending_item->HasPostData());
+}
+
+// Tests that LoadURLWithParams() calls RecordPageStateInNavigationItem() on the
+// navigation manager deleget before navigating to the new URL.
+TEST_P(NavigationManagerTest, LoadURLWithParamsSavesStateOnCurrentItem) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
+  navigation_manager()->CommitPendingItem();
+
+  NavigationManager::WebLoadParams params(GURL("http://www.url.com/1"));
+  params.transition_type = ui::PAGE_TRANSITION_TYPED;
+  navigation_manager()->LoadURLWithParams(params);
+
+  NavigationItem* last_committed_item =
+      navigation_manager()->GetLastCommittedItem();
+  ASSERT_TRUE(last_committed_item);
+  EXPECT_EQ("http://www.url.com/0", last_committed_item->GetURL().spec());
+  EXPECT_TRUE(navigation_manager_delegate().record_page_state_called());
+
+  NavigationItem* pending_item = navigation_manager()->GetPendingItem();
+  ASSERT_TRUE(pending_item);
+  EXPECT_EQ("http://www.url.com/1", pending_item->GetURL().spec());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(pending_item->GetTransitionType(),
+                                           ui::PAGE_TRANSITION_TYPED));
+  EXPECT_FALSE(pending_item->HasPostData());
 }
 
 INSTANTIATE_TEST_CASE_P(

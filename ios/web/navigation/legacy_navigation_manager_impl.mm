@@ -140,25 +140,8 @@ NavigationItem* LegacyNavigationManagerImpl::GetVisibleItem() const {
   return [session_controller_ visibleItem];
 }
 
-NavigationItem* LegacyNavigationManagerImpl::GetLastCommittedItem() const {
-  return [session_controller_ lastCommittedItem];
-}
-
-NavigationItem* LegacyNavigationManagerImpl::GetPendingItem() const {
-  return [session_controller_ pendingItem];
-}
-
-NavigationItem* LegacyNavigationManagerImpl::GetTransientItem() const {
-  return [session_controller_ transientItem];
-}
-
 void LegacyNavigationManagerImpl::DiscardNonCommittedItems() {
   [session_controller_ discardNonCommittedItems];
-}
-
-void LegacyNavigationManagerImpl::LoadURLWithParams(
-    const NavigationManager::WebLoadParams& params) {
-  delegate_->LoadURLWithParams(params);
 }
 
 int LegacyNavigationManagerImpl::GetItemCount() const {
@@ -301,6 +284,19 @@ int LegacyNavigationManagerImpl::GetIndexForOffset(int offset) const {
   }
 
   return result;
+}
+
+NavigationItemImpl* LegacyNavigationManagerImpl::GetLastCommittedItemImpl()
+    const {
+  return [session_controller_ lastCommittedItem];
+}
+
+NavigationItemImpl* LegacyNavigationManagerImpl::GetPendingItemImpl() const {
+  return [session_controller_ pendingItem];
+}
+
+NavigationItemImpl* LegacyNavigationManagerImpl::GetTransientItemImpl() const {
+  return [session_controller_ transientItem];
 }
 
 bool LegacyNavigationManagerImpl::IsRedirectItemAtIndex(int index) const {

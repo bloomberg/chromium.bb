@@ -115,7 +115,9 @@ class WebStateImpl;
 // view will be dismissed for the next navigation.
 - (void)showTransientContentView:(CRWContentView*)contentView;
 
-// Clear the transient content view, if one is shown.
+// Clear the transient content view, if one is shown. This is a delegate
+// method for WebStateImpl::ClearTransientContent(). Callers should use the
+// WebStateImpl API instead of calling this method directly.
 - (void)clearTransientContentView;
 
 // Call to stop the CRWWebController from doing stuff, in particular to
@@ -153,11 +155,13 @@ class WebStateImpl;
 // to generate an overlay placeholder view.
 - (BOOL)canUseViewForGeneratingOverlayPlaceholderView;
 
-// Start loading the URL specified in |params|, with the specified
-// settings.  Always resets the openedByScript property to NO.
-// NOTE: |params.transition_type| should never be PAGE_TRANSITION_RELOAD except
-// for transient items, if one needs to reload, call |-reload| explicitly.
-- (void)loadWithParams:(const web::NavigationManager::WebLoadParams&)params;
+// Notifies delegate that |currentNavItem| will be loaded with |params|. If this
+// is the first navigation, |isInitialNavigation| is YES.
+// TODO(crbug.com/674991): Remove this method when CRWWebDelegate is no longer
+// used.
+- (void)willLoadCurrentItemWithParams:
+            (const web::NavigationManager::WebLoadParams&)params
+                  isInitialNavigation:(BOOL)isInitialNavigation;
 
 // Loads the URL indicated by current session state.
 - (void)loadCurrentURL;

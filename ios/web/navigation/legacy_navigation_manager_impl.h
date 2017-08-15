@@ -57,11 +57,7 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
   BrowserState* GetBrowserState() const override;
   WebState* GetWebState() const override;
   NavigationItem* GetVisibleItem() const override;
-  NavigationItem* GetLastCommittedItem() const override;
-  NavigationItem* GetPendingItem() const override;
-  NavigationItem* GetTransientItem() const override;
   void DiscardNonCommittedItems() override;
-  void LoadURLWithParams(const NavigationManager::WebLoadParams&) override;
   int GetItemCount() const override;
   NavigationItem* GetItemAtIndex(size_t index) const override;
   int GetIndexOfItem(const NavigationItem* item) const override;
@@ -84,8 +80,11 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
   // NavigationManagerImpl.
   friend SessionStorageBuilder;
 
-  // NavigationManagerImpl methods used by SessionStorageBuilder.
+  // NavigationManagerImpl:
   NavigationItemImpl* GetNavigationItemImplAtIndex(size_t index) const override;
+  NavigationItemImpl* GetLastCommittedItemImpl() const override;
+  NavigationItemImpl* GetPendingItemImpl() const override;
+  NavigationItemImpl* GetTransientItemImpl() const override;
 
   // Returns true if the PageTransition for the underlying navigation item at
   // |index| has ui::PAGE_TRANSITION_IS_REDIRECT_MASK.

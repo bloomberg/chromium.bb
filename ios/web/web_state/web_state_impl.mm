@@ -409,22 +409,6 @@ void WebStateImpl::ShowWebInterstitial(WebInterstitialImpl* interstitial) {
   ShowTransientContentView(interstitial_->GetContentView());
 }
 
-void WebStateImpl::ClearTransientContentView() {
-  if (interstitial_) {
-    // Store the currently displayed interstitial in a local variable and reset
-    // |interstitial_| early.  This is to prevent an infinite loop, as
-    // |DontProceed()| internally calls |ClearTransientContentView()|.
-    web::WebInterstitial* interstitial = interstitial_;
-    interstitial_ = nullptr;
-    interstitial->DontProceed();
-    // Don't access |interstitial| after calling |DontProceed()|, as it triggers
-    // deletion.
-    for (auto& observer : observers_)
-      observer.InterstitialDismissed();
-  }
-  [web_controller_ clearTransientContentView];
-}
-
 void WebStateImpl::SendChangeLoadProgress(double progress) {
   for (auto& observer : observers_)
     observer.LoadProgressChanged(progress);
@@ -598,7 +582,7 @@ BrowserState* WebStateImpl::GetBrowserState() const {
 
 void WebStateImpl::OpenURL(const WebState::OpenURLParams& params) {
   DCHECK(Configured());
-  ClearTransientContentView();
+  ClearTransientContent();
   if (delegate_)
     delegate_->OpenURLFromWebState(this, params);
 }
@@ -748,9 +732,35 @@ void WebStateImpl::GoToIndex(int index) {
   [web_controller_ goToItemAtIndex:index];
 }
 
-void WebStateImpl::LoadURLWithParams(
-    const NavigationManager::WebLoadParams& params) {
-  [web_controller_ loadWithParams:params];
+void WebStateImpl::ClearTransientContent() {
+  if (interstitial_) {
+    // Store the currently displayed interstitial in a local variable and reset
+    // |interstitial_| early.  This is to prevent an infinite loop, as
+    // |DontProceed()| internally calls |ClearTransientContent()|.
+    web::WebInterstitial* interstitial = interstitial_;
+    interstitial_ = nullptr;
+    interstitial->DontProceed();
+    // Don't access |interstitial| after calling |DontProceed()|, as it triggers
+    // deletion.
+    for (auto& observer : observers_)
+      observer.InterstitialDismissed();
+  }
+  [web_controller_ clearTransientContentView];
+}
+
+void WebStateImpl::RecordPageStateInNavigationItem() {
+  [web_controller_ recordStateInHistory];
+}
+
+void WebStateImpl::WillLoadCurrentItemWithParams(
+    const NavigationManager::WebLoadParams& params,
+    bool is_initial_navigation) {
+  [web_controller_ willLoadCurrentItemWithParams:params
+                             isInitialNavigation:is_initial_navigation];
+}
+
+void WebStateImpl::LoadCurrentItem() {
+  [web_controller_ loadCurrentURL];
 }
 
 void WebStateImpl::Reload() {
