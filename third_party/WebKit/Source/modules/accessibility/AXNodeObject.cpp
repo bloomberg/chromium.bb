@@ -1768,7 +1768,7 @@ int AXNodeObject::PosInSet() const {
     if (HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kPosInSet, pos_in_set))
       return pos_in_set;
 
-    return AXObject::IndexInParent() + 1;
+    return AutoPosInSet();
   }
 
   return 0;
@@ -1780,13 +1780,77 @@ int AXNodeObject::SetSize() const {
     if (HasAOMPropertyOrARIAAttribute(AOMIntProperty::kSetSize, set_size))
       return set_size;
 
-    if (ParentObject()) {
-      const auto& siblings = ParentObject()->Children();
-      return siblings.size();
-    }
+    return AutoSetSize();
   }
 
   return 0;
+}
+
+int AXNodeObject::AutoPosInSet() const {
+  AXObject* parent = ParentObject();
+  if (!parent)
+    return 0;
+
+  int pos_in_set = 1;
+  auto siblings = parent->Children();
+
+  AccessibilityRole role = RoleValue();
+  int level = HierarchicalLevel();
+  int index_in_parent = IndexInParent();
+
+  for (int index = index_in_parent - 1; index >= 0; index--) {
+    const auto sibling = siblings[index];
+    AccessibilityRole sibling_role = sibling->RoleValue();
+    if (sibling_role == kSplitterRole)
+      break;  // Set stops at a separator
+    if (sibling_role != role || sibling->AccessibilityIsIgnored())
+      continue;
+
+    int sibling_level = sibling->HierarchicalLevel();
+    if (sibling_level < level)
+      break;
+
+    if (sibling_level > level)
+      continue;  // Skip subset
+
+    ++pos_in_set;
+  }
+
+  return pos_in_set;
+}
+
+int AXNodeObject::AutoSetSize() const {
+  AXObject* parent = ParentObject();
+  if (!parent)
+    return 0;
+
+  int set_size = AutoPosInSet();
+  auto siblings = parent->Children();
+
+  AccessibilityRole role = RoleValue();
+  int level = HierarchicalLevel();
+  int index_in_parent = IndexInParent();
+  int sibling_count = siblings.size();
+
+  for (int index = index_in_parent + 1; index < sibling_count; index++) {
+    const auto sibling = siblings[index];
+    AccessibilityRole sibling_role = sibling->RoleValue();
+    if (sibling_role == kSplitterRole)
+      break;  // Set stops at a separator
+    if (sibling_role != role || sibling->AccessibilityIsIgnored())
+      continue;
+
+    int sibling_level = sibling->HierarchicalLevel();
+    if (sibling_level < level)
+      break;
+
+    if (sibling_level > level)
+      continue;  // Skip subset
+
+    ++set_size;
+  }
+
+  return set_size;
 }
 
 String AXNodeObject::AriaInvalidValue() const {
