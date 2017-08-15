@@ -152,6 +152,9 @@ class SmoothnessToughCanvasCases(_Smoothness):
         self.DisableStory('http://geoapis.appspot.com/agdnZW9hcGlzchMLEgtFeGFtcGxlQ29kZRjh1wIM',
                           [story_module.expectations.ANDROID_NEXUS5],
                           'crbug.com/364248')
+        self.DisableStory('tough_canvas_cases/canvas_toBlob.html',
+                          [story_module.expectations.ANDROID_ONE],
+                          'crbug.com/755657')
     return StoryExpectations()
 
 
