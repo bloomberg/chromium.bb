@@ -533,13 +533,13 @@ bool IsValidRFC4122Ver4GUID(const std::string& guid) {
   //   => guid[14] == '4'
   //
   // * Bits 6-7 of clk_seq_hi_res should be set to 0b10
-  //   => guid[19] in {'8','9','A','B'}
+  //   => guid[19] in {'8','9','A','B','a','b'}
   //
   // * All other bits should be random or pseudo random.
   //   => http://dilbert.com/strip/2001-10-25
   return base::IsValidGUID(guid) && guid[14] == '4' &&
          (guid[19] == '8' || guid[19] == '9' || guid[19] == 'A' ||
-          guid[19] == 'B');
+          guid[19] == 'B' || guid[19] == 'a' || guid[19] == 'b');
 }
 
 TEST_F(HistoryBackendDBTest, MigrateHashHttpMethodAndGenerateGuids) {
@@ -608,7 +608,6 @@ TEST_F(HistoryBackendDBTest, MigrateHashHttpMethodAndGenerateGuids) {
         std::string guid = s.ColumnString(0);
         uint32_t id = static_cast<uint32_t>(s.ColumnInt64(1));
         EXPECT_TRUE(IsValidRFC4122Ver4GUID(guid));
-        EXPECT_EQ(guid, base::ToUpperASCII(guid));
         // Id is used as time_low in RFC 4122 to guarantee unique GUIDs
         EXPECT_EQ(guid.substr(0, 8), base::StringPrintf("%08" PRIX32, id));
         guids.insert(guid);

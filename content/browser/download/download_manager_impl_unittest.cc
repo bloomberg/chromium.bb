@@ -253,8 +253,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
   EXPECT_CALL(*result, GetId())
       .WillRepeatedly(Return(download_id));
   EXPECT_CALL(*result, GetGuid())
-      .WillRepeatedly(
-          ReturnRefOfCopy(base::ToUpperASCII(base::GenerateGUID())));
+      .WillRepeatedly(ReturnRefOfCopy(base::GenerateGUID()));
   items_[download_id] = result;
 
   // Active items are created and then immediately are called to start

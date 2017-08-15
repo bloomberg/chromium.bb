@@ -74,7 +74,6 @@ DownloadService::ServiceStatus DownloadServiceImpl::GetStatus() {
 void DownloadServiceImpl::StartDownload(const DownloadParams& download_params) {
   stats::LogServiceApiAction(download_params.client,
                              stats::ServiceApiAction::START_DOWNLOAD);
-  DCHECK_EQ(download_params.guid, base::ToUpperASCII(download_params.guid));
   stats::LogDownloadParams(download_params);
   if (startup_completed_) {
     controller_->StartDownload(download_params);
@@ -88,8 +87,6 @@ void DownloadServiceImpl::StartDownload(const DownloadParams& download_params) {
 void DownloadServiceImpl::PauseDownload(const std::string& guid) {
   stats::LogServiceApiAction(controller_->GetOwnerOfDownload(guid),
                              stats::ServiceApiAction::PAUSE_DOWNLOAD);
-  DCHECK_EQ(guid, base::ToUpperASCII(guid));
-
   if (startup_completed_) {
     controller_->PauseDownload(guid);
   } else {
@@ -101,8 +98,6 @@ void DownloadServiceImpl::PauseDownload(const std::string& guid) {
 void DownloadServiceImpl::ResumeDownload(const std::string& guid) {
   stats::LogServiceApiAction(controller_->GetOwnerOfDownload(guid),
                              stats::ServiceApiAction::RESUME_DOWNLOAD);
-  DCHECK_EQ(guid, base::ToUpperASCII(guid));
-
   if (startup_completed_) {
     controller_->ResumeDownload(guid);
   } else {
@@ -115,8 +110,6 @@ void DownloadServiceImpl::ResumeDownload(const std::string& guid) {
 void DownloadServiceImpl::CancelDownload(const std::string& guid) {
   stats::LogServiceApiAction(controller_->GetOwnerOfDownload(guid),
                              stats::ServiceApiAction::CANCEL_DOWNLOAD);
-  DCHECK_EQ(guid, base::ToUpperASCII(guid));
-
   if (startup_completed_) {
     controller_->CancelDownload(guid);
   } else {
@@ -131,8 +124,6 @@ void DownloadServiceImpl::ChangeDownloadCriteria(
     const SchedulingParams& params) {
   stats::LogServiceApiAction(controller_->GetOwnerOfDownload(guid),
                              stats::ServiceApiAction::CHANGE_CRITERIA);
-  DCHECK_EQ(guid, base::ToUpperASCII(guid));
-
   if (startup_completed_) {
     controller_->ChangeDownloadCriteria(guid, params);
   } else {

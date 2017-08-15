@@ -122,7 +122,7 @@ class DownloadsCounterTest : public InProcessBrowserTest,
       const GURL& url,
       std::string mime_type,
       bool incognito) {
-    std::string guid = base::ToUpperASCII(base::GenerateGUID());
+    std::string guid = base::GenerateGUID();
 
     std::vector<GURL> url_chain;
     url_chain.push_back(url);
