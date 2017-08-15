@@ -7,6 +7,7 @@
 #include <ostream>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/offline_pages/core/offline_time_utils.h"
 
 namespace offline_pages {
@@ -63,7 +64,10 @@ std::string PrefetchItem::ToString() const {
   s.append(base::IntToString(archive_body_length)).append(", ");
   s.append(base::Int64ToString(ToDatabaseTime(creation_time))).append(", ");
   s.append(base::Int64ToString(ToDatabaseTime(freshness_time))).append(", ");
-  s.append(base::IntToString(static_cast<int>(error_code))).append(")");
+  s.append(base::IntToString(static_cast<int>(error_code))).append(", ");
+  s.append(base::UTF16ToUTF8(title)).append(", ");
+  s.append(file_path.AsUTF8Unsafe()).append(", ");
+  s.append(base::IntToString(static_cast<int>(file_size))).append(")");
   return s;
 }
 
