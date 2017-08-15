@@ -28,7 +28,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_restrictions.h"
@@ -217,47 +216,31 @@ void CreateProfileReadme(const base::FilePath& profile_path) {
   }
 }
 
-// Helper method needed because PostTask cannot currently take a Callback
-// function with non-void return type.
-void CreateDirectoryAndSignal(const base::FilePath& path,
-                              base::WaitableEvent* done_creating,
-                              bool create_readme) {
-  // If the readme exists, the profile directory must also already exist.
-  base::FilePath readme_path = path.Append(chrome::kReadmeFilename);
-  if (base::PathExists(readme_path)) {
-    done_creating->Signal();
-    return;
-  }
-
-  DVLOG(1) << "Creating directory " << path.value();
-  if (base::CreateDirectory(path) && create_readme)
-    CreateProfileReadme(path);
-  done_creating->Signal();
-}
-
-// Task that blocks the FILE thread until CreateDirectoryAndSignal() finishes on
-// the IO task runner.
-void BlockFileThreadOnDirectoryCreate(base::WaitableEvent* done_creating) {
-  done_creating->Wait();
-}
-
-// Initiates creation of profile directory on |io_task_runner| and ensures that
-// FILE thread is blocked until that operation finishes. If |create_readme| is
-// true, the profile README will be created in the profile directory.
+// Creates the profile directory synchronously if it doesn't exist. If
+// |create_readme| is true, the profile README will be created asynchronously in
+// the profile directory.
 void CreateProfileDirectory(base::SequencedTaskRunner* io_task_runner,
                             const base::FilePath& path,
                             bool create_readme) {
-  base::WaitableEvent* done_creating =
-      new base::WaitableEvent(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-  io_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&CreateDirectoryAndSignal, path, done_creating,
-                                create_readme));
-  // Block the FILE thread until directory is created on I/O task runner to make
-  // sure that we don't attempt any operation until that part completes.
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::BindOnce(&BlockFileThreadOnDirectoryCreate,
-                                         base::Owned(done_creating)));
+  // Create the profile directory synchronously otherwise we would need to
+  // sequence every otherwise independent I/O operation inside the profile
+  // directory with this operation. base::PathExists() and
+  // base::CreateDirectory() should be lightweight I/O operations and avoiding
+  // the headache of sequencing all otherwise unrelated I/O after these
+  // justifies running them on the main thread.
+  base::ThreadRestrictions::ScopedAllowIO allow_io_to_create_directory;
+
+  // If the readme exists, the profile directory must also already exist.
+  if (base::PathExists(path.Append(chrome::kReadmeFilename)))
+    return;
+
+  DVLOG(1) << "Creating directory " << path.value();
+  if (base::CreateDirectory(path) && create_readme) {
+    base::PostTaskWithTraits(FROM_HERE,
+                             {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                              base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                             base::Bind(&CreateProfileReadme, path));
+  }
 }
 
 base::FilePath GetMediaCachePath(const base::FilePath& base) {
