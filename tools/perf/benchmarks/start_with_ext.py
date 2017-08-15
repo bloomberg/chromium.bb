@@ -31,6 +31,8 @@ class _StartWithExt(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Enabled('has tabs')
+@benchmark.Disabled('mac')  # crbug.com/563424
+@benchmark.Disabled('win', 'linux', 'reference', 'android')
 class StartWithExtCold(_StartWithExt):
   """Measure time to start Chrome cold with extensions."""
   options = {'pageset_repeat': 5}
@@ -43,12 +45,13 @@ class StartWithExtCold(_StartWithExt):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.DisableStory('blank_page.html', [story.expectations.ALL_WIN],
-                          'crbug.com/753408')
+        pass # blank_page.html not disabled.
     return StoryExpectations()
 
 
 @benchmark.Enabled('has tabs')
+@benchmark.Disabled('mac')  # crbug.com/563424
+@benchmark.Disabled('win', 'linux', 'reference', 'android')
 class StartWithExtWarm(_StartWithExt):
   """Measure time to start Chrome warm with extensions."""
   options = {'pageset_repeat': 20}
@@ -61,6 +64,5 @@ class StartWithExtWarm(_StartWithExt):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.DisableStory('blank_page.html', [story.expectations.ALL_WIN],
-                          'crbug.com/753408')
+        pass # blank_page.html not disabled.
     return StoryExpectations()
