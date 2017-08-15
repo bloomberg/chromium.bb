@@ -10,22 +10,30 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
+#include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/browser/notifications/stub_notification_display_service.h"
 #include "chrome/browser/notifications/web_notification_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/features/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "base/command_line.h"
@@ -37,7 +45,6 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/value_builder.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #endif
 
 using content::NotificationResources;
@@ -57,28 +64,32 @@ class PlatformNotificationServiceTest : public testing::Test {
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("Miguel");
-    display_service_tester_ =
-        base::MakeUnique<NotificationDisplayServiceTester>(profile_);
+
+    NotificationDisplayServiceFactory::GetInstance()->SetTestingFactory(
+        profile_, &StubNotificationDisplayService::FactoryForTests);
   }
 
   void TearDown() override {
-    display_service_tester_.reset();
     profile_manager_.reset();
-
     TestingBrowserProcess::DeleteInstance();
   }
 
  protected:
-  // Displays a simple, fake notification. The close closure may be specified if
-  // desired.
+  // Displays a simple, fake notifications.
+  void CreateSimplePageNotification() const {
+    CreateSimplePageNotificationWithCloseClosure(nullptr);
+  }
+
+  // Displays a simple, fake notification.
+  // The close closure may be specified if desired.
   void CreateSimplePageNotificationWithCloseClosure(
-      base::Closure* close_closure) {
+      base::Closure* close_closure) const {
     PlatformNotificationData notification_data;
     notification_data.title = base::ASCIIToUTF16("My Notification");
     notification_data.body = base::ASCIIToUTF16("Hello, world!");
 
     service()->DisplayNotification(
-        profile_, kNotificationId, GURL("https://chrome.com/"),
+        profile(), kNotificationId, GURL("https://chrome.com/"),
         notification_data, NotificationResources(), close_closure);
   }
 
@@ -87,26 +98,32 @@ class PlatformNotificationServiceTest : public testing::Test {
     return PlatformNotificationServiceImpl::GetInstance();
   }
 
+  // Returns the stub notification display service.
+  StubNotificationDisplayService* GetDisplayService() const {
+    return static_cast<StubNotificationDisplayService*>(
+        NotificationDisplayServiceFactory::GetForProfile(profile_));
+  }
+
+  // Returns the Profile to be used for these tests.
+  Profile* profile() const { return profile_; }
+
   size_t GetNotificationCountForType(NotificationCommon::Type type) {
-    return display_service_tester_->GetDisplayedNotificationsForType(type)
-        .size();
+    return GetDisplayService()->GetDisplayedNotificationsForType(type).size();
   }
 
   Notification GetDisplayedNotificationForType(NotificationCommon::Type type) {
     std::vector<Notification> notifications =
-        display_service_tester_->GetDisplayedNotificationsForType(type);
+        GetDisplayService()->GetDisplayedNotificationsForType(type);
     DCHECK_EQ(1u, notifications.size());
 
     return notifications[0];
   }
 
- protected:
-  content::TestBrowserThreadBundle thread_bundle_;
-
+ private:
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
-
-  std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<std::set<std::string>> displayed_notifications_;
 };
 
 
@@ -132,7 +149,7 @@ TEST_F(PlatformNotificationServiceTest, PersistentNotificationDisplay) {
   notification_data.body = base::ASCIIToUTF16("Hello, world!");
 
   service()->DisplayPersistentNotification(
-      profile_, kNotificationId, GURL() /* service_worker_scope */,
+      profile(), kNotificationId, GURL() /* service_worker_scope */,
       GURL("https://chrome.com/"), notification_data, NotificationResources());
 
   ASSERT_EQ(1u, GetNotificationCountForType(NotificationCommon::PERSISTENT));
@@ -145,7 +162,7 @@ TEST_F(PlatformNotificationServiceTest, PersistentNotificationDisplay) {
   EXPECT_EQ("Hello, world!",
       base::UTF16ToUTF8(notification.message()));
 
-  service()->ClosePersistentNotification(profile_, kNotificationId);
+  service()->ClosePersistentNotification(profile(), kNotificationId);
   EXPECT_EQ(0u, GetNotificationCountForType(NotificationCommon::PERSISTENT));
 }
 
@@ -160,7 +177,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
   notification_data.vibration_pattern = vibration_pattern;
   notification_data.silent = true;
 
-  service()->DisplayNotification(profile_, kNotificationId,
+  service()->DisplayNotification(profile(), kNotificationId,
                                  GURL("https://chrome.com/"), notification_data,
                                  NotificationResources(), nullptr);
 
@@ -203,7 +220,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentNotificationMatches) {
   notification_resources.action_icons.resize(notification_data.actions.size());
 
   service()->DisplayPersistentNotification(
-      profile_, kNotificationId, GURL() /* service_worker_scope */,
+      profile(), kNotificationId, GURL() /* service_worker_scope */,
       GURL("https://chrome.com/"), notification_data, notification_resources);
 
   ASSERT_EQ(1u, GetNotificationCountForType(NotificationCommon::PERSISTENT));
@@ -231,7 +248,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentNotificationMatches) {
 
 TEST_F(PlatformNotificationServiceTest, DisplayNameForContextMessage) {
   base::string16 display_name = service()->DisplayNameForContextMessage(
-      profile_, GURL("https://chrome.com/"));
+      profile(), GURL("https://chrome.com/"));
 
   EXPECT_TRUE(display_name.empty());
 
@@ -248,11 +265,11 @@ TEST_F(PlatformNotificationServiceTest, DisplayNameForContextMessage) {
           .Build();
 
   extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile_);
+      extensions::ExtensionRegistry::Get(profile());
   EXPECT_TRUE(registry->AddEnabled(extension));
 
   display_name = service()->DisplayNameForContextMessage(
-      profile_,
+      profile(),
       GURL("chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html"));
   EXPECT_EQ("NotificationTest", base::UTF16ToUTF8(display_name));
 }
@@ -261,7 +278,7 @@ TEST_F(PlatformNotificationServiceTest, ExtensionPermissionChecks) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   extensions::TestExtensionSystem* test_extension_system =
       static_cast<extensions::TestExtensionSystem*>(
-          extensions::ExtensionSystem::Get(profile_));
+          extensions::ExtensionSystem::Get(profile()));
 
   ExtensionService* extension_service =
       test_extension_system->CreateExtensionService(
@@ -287,7 +304,7 @@ TEST_F(PlatformNotificationServiceTest, ExtensionPermissionChecks) {
   // has been added to the extension registry successfully.
   extension_service->AddExtension(extension.get());
   extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile_);
+      extensions::ExtensionRegistry::Get(profile());
 
   ASSERT_TRUE(registry->GetExtensionById(
       extension->id(), extensions::ExtensionRegistry::ENABLED));
@@ -295,14 +312,16 @@ TEST_F(PlatformNotificationServiceTest, ExtensionPermissionChecks) {
   const int kFakeRenderProcessId = 42;
 
   // Mock that the extension is running in a fake render process id.
-  extensions::ProcessMap::Get(profile_)->Insert(
-      extension->id(), kFakeRenderProcessId, -1 /* site_instance_id */);
+  extensions::ProcessMap::Get(profile())->Insert(extension->id(),
+                                                 kFakeRenderProcessId,
+                                                 -1 /* site_instance_id */);
 
   // Verify that the service indicates that permission has been granted. We only
   // check the UI thread-method for now, as that's the one guarding the behavior
   // in the browser process.
   EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
-            service()->CheckPermissionOnUIThread(profile_, extension->url(),
+            service()->CheckPermissionOnUIThread(profile(),
+                                                 extension->url(),
                                                  kFakeRenderProcessId));
 }
 
@@ -313,9 +332,9 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
   GURL origin("https://chrome.com/");
 
   Notification notification = service()->CreateNotificationFromData(
-      profile_, GURL() /* service_worker_scope */, origin, notification_data,
+      profile(), GURL() /* service_worker_scope */, origin, notification_data,
       NotificationResources(),
-      new WebNotificationDelegate(NotificationCommon::PERSISTENT, profile_,
+      new WebNotificationDelegate(NotificationCommon::PERSISTENT, profile(),
                                   "id", origin));
   EXPECT_TRUE(notification.context_message().empty());
 
@@ -332,15 +351,15 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
           .Build();
 
   extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile_);
+      extensions::ExtensionRegistry::Get(profile());
   EXPECT_TRUE(registry->AddEnabled(extension));
 
   notification = service()->CreateNotificationFromData(
-      profile_, GURL() /* service_worker_scope */,
+      profile(), GURL() /* service_worker_scope */,
       GURL("chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html"),
       notification_data, NotificationResources(),
-      new WebNotificationDelegate(NotificationCommon::EXTENSION, profile_, "id",
-                                  origin));
+      new WebNotificationDelegate(NotificationCommon::EXTENSION, profile(),
+                                  "id", origin));
   EXPECT_EQ("NotificationTest",
             base::UTF16ToUTF8(notification.context_message()));
 }
