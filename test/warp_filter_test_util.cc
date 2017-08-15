@@ -116,12 +116,6 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
 #if CONFIG_CONVOLVE_ROUND
   int32_t *dsta = new int32_t[output_n];
   int32_t *dstb = new int32_t[output_n];
-  // Prepare two copies of the destination
-  for (j = 0; j < out_w * out_h; ++j) {
-    int32_t v = rnd_.Rand16();
-    dsta[j] = v;
-    dstb[j] = v;
-  }
 #endif
 
   // Generate an input block and extend its borders horizontally
@@ -141,6 +135,12 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
         generate_model(mat, &alpha, &beta, &gamma, &delta);
 #if CONFIG_CONVOLVE_ROUND
         if (use_no_round) {
+          // Prepare two copies of the destination
+          for (j = 0; j < out_w * out_h; ++j) {
+            int32_t v = rnd_.Rand16();
+            dsta[j] = v;
+            dstb[j] = v;
+          }
           conv_params = get_conv_params_no_round(0, 0, 0, dsta, out_w);
         } else {
           conv_params = get_conv_params(0, 0, 0);
@@ -296,12 +296,6 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
 #if CONFIG_CONVOLVE_ROUND
   int32_t *dsta = new int32_t[output_n];
   int32_t *dstb = new int32_t[output_n];
-  // Prepare two copies of the destination
-  for (j = 0; j < out_w * out_h; ++j) {
-    int32_t v = rnd_.Rand16();
-    dsta[j] = v;
-    dstb[j] = v;
-  }
 #endif
   // Generate an input block and extend its borders horizontally
   for (i = 0; i < h; ++i)
@@ -322,6 +316,12 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
         generate_model(mat, &alpha, &beta, &gamma, &delta);
 #if CONFIG_CONVOLVE_ROUND
         if (use_no_round) {
+          // Prepare two copies of the destination
+          for (j = 0; j < out_w * out_h; ++j) {
+            int32_t v = rnd_.Rand16();
+            dsta[j] = v;
+            dstb[j] = v;
+          }
           conv_params = get_conv_params_no_round(0, 0, 0, dsta, out_w);
         } else {
           conv_params = get_conv_params(0, 0, 0);
@@ -332,6 +332,8 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
                                  &conv_params, alpha, beta, gamma, delta);
 #if CONFIG_CONVOLVE_ROUND
         if (use_no_round) {
+          // TODO(angiebird): Change this to test_impl once we have SIMD
+          // implementation
           conv_params = get_conv_params_no_round(0, 0, 0, dstb, out_w);
         }
 #endif
