@@ -15,22 +15,34 @@
 #include "ui/base/resource/resource_bundle.h"
 
 // static
-void AvatarMenu::GetImageForMenuButton(const base::FilePath& profile_path,
-                                       gfx::Image* image) {
+AvatarMenu::ImageLoadStatus AvatarMenu::GetImageForMenuButton(
+    const base::FilePath& profile_path,
+    gfx::Image* image) {
   ProfileAttributesEntry* entry;
   if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
           GetProfileAttributesWithPath(profile_path, &entry)) {
     // This can happen if the user deletes the current profile.
-    return;
+    return ImageLoadStatus::PROFILE_DELETED;
   }
+
+  ImageLoadStatus status = ImageLoadStatus::LOADED;
 
   // If there is a Gaia image available, try to use that.
   if (entry->IsUsingGAIAPicture()) {
+    // TODO(chengx): The GetGAIAPicture API call will trigger an async image
+    // load from disk if it has not been loaded. This is non-obvious and
+    // dependency should be avoided. We should come with a better idea to handle
+    // this.
     const gfx::Image* gaia_image = entry->GetGAIAPicture();
+
     if (gaia_image) {
       *image = *gaia_image;
-      return;
+      return ImageLoadStatus::LOADED;
     }
+    if (entry->IsGAIAPictureLoaded())
+      status = ImageLoadStatus::MISSING;
+    else
+      status = ImageLoadStatus::LOADING;
   }
 
   // Otherwise, use the default resource, not the downloaded high-res one.
@@ -38,4 +50,6 @@ void AvatarMenu::GetImageForMenuButton(const base::FilePath& profile_path,
   const int resource_id =
       profiles::GetDefaultAvatarIconResourceIDAtIndex(icon_index);
   *image = ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
+
+  return status;
 }

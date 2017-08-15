@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -298,6 +299,11 @@ void BrowserNonClientFrameView::OnProfileAvatarChanged(
   UpdateProfileIcons();
 }
 
+void BrowserNonClientFrameView::OnProfileHighResAvatarLoaded(
+    const base::FilePath& profile_path) {
+  UpdateTaskbarDecoration();
+}
+
 const ui::ThemeProvider*
 BrowserNonClientFrameView::GetThemeProviderForProfile() const {
   // Because the frame's accessor reads the ThemeProvider from the profile and
@@ -326,11 +332,17 @@ void BrowserNonClientFrameView::UpdateTaskbarDecoration() {
   // with the default shortcut being pinned, we add the runtime badge for
   // safety. See crbug.com/313800.
   gfx::Image decoration;
-  AvatarMenu::GetImageForMenuButton(
+  AvatarMenu::ImageLoadStatus status = AvatarMenu::GetImageForMenuButton(
       browser_view()->browser()->profile()->GetPath(), &decoration);
-  // This can happen if the user deletes the current profile.
-  if (decoration.IsEmpty())
+
+  // If the user is using a Gaia picture and the picture is still being loaded,
+  // wait until the load finishes. This taskbar decoration will be triggered
+  // again upon the finish of the picture load.
+  if (status == AvatarMenu::ImageLoadStatus::LOADING ||
+      status == AvatarMenu::ImageLoadStatus::PROFILE_DELETED) {
     return;
+  }
+
   chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(), &decoration);
 #endif
 }
