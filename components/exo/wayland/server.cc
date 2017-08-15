@@ -222,11 +222,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasSecurityKey, false);
 // associated with window.
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasBlendingKey, false);
 
-// A property key containing a boolean set to true whether the current
-// OnWindowActivated invocation should be ignored. The defualt is true
-// to ignore the activation event originated by creation.
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIgnoreWindowActivated, true);
-
 // A property key containing a boolean set to true if the stylus_tool
 // object is associated with a window.
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasStylusToolKey, false);
@@ -2094,35 +2089,10 @@ void remote_surface_set_top_inset(wl_client* client,
   GetUserDataAs<ShellSurface>(resource)->SetTopInset(height);
 }
 
-// Helper class used to temporarily ignore window activation. Sets the
-// ignore window actiavated property to false when instance is destroyed.
-class ScopedIgnoreWindowActivated {
- public:
-  explicit ScopedIgnoreWindowActivated(ShellSurface* shell_surface)
-      : widget_(shell_surface->GetWidget()) {
-    if (widget_)
-      widget_->GetNativeWindow()->SetProperty(kIgnoreWindowActivated, true);
-  }
-  ~ScopedIgnoreWindowActivated() {
-    if (widget_)
-      widget_->GetNativeWindow()->SetProperty(kIgnoreWindowActivated, false);
-  }
-
- private:
-  views::Widget* const widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedIgnoreWindowActivated);
-};
-
 void remote_surface_activate(wl_client* client,
                              wl_resource* resource,
                              uint32_t serial) {
   ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
-
-  // Activation on Aura is synchronous, so activation callbacks will be called
-  // before the flag is reset.
-  ScopedIgnoreWindowActivated scoped_ignore_window_activated(shell_surface);
-
   shell_surface->Activate();
 }
 
@@ -2331,16 +2301,6 @@ class WaylandRemoteShell : public WMHelper::TabletModeObserver,
   // Overridden from WMHelper::ActivationObserver:
   void OnWindowActivated(aura::Window* gained_active,
                          aura::Window* lost_active) override {
-    // If the origin of activation is Wayland client, then assume it's been
-    // already activated on the client side, so do not notify about the
-    // activation. It means that zcr_remote_shell_v1_send_activated is used
-    // only to notify about activations originating in Aura.
-    if (gained_active && ShellSurface::GetMainSurface(gained_active) &&
-        gained_active->GetProperty(kIgnoreWindowActivated)) {
-      gained_active->SetProperty(kIgnoreWindowActivated, false);
-      return;
-    }
-
     SendActivated(gained_active, lost_active);
   }
 
