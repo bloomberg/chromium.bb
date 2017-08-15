@@ -54,7 +54,7 @@ class UsbChooserControllerTest : public ChromeRenderViewHostTestHarness {
         content::WebContentsTester::For(web_contents());
     web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
     usb_chooser_controller_.reset(new UsbChooserController(
-        main_rfh(), std::move(device_filters), callback));
+        main_rfh(), std::move(device_filters), std::move(callback)));
     mock_usb_chooser_view_.reset(new MockUsbChooserView());
     usb_chooser_controller_->set_view(mock_usb_chooser_view_.get());
   }

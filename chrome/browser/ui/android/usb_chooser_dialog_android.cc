@@ -41,12 +41,12 @@ namespace {
 
 void OnDevicePermissionRequestComplete(
     scoped_refptr<UsbDevice> device,
-    const device::mojom::UsbChooserService::GetPermissionCallback& callback,
+    device::mojom::UsbChooserService::GetPermissionCallback callback,
     bool granted) {
   device::mojom::UsbDeviceInfoPtr device_info;
   if (granted)
     device_info = device::mojom::UsbDeviceInfo::From(*device);
-  callback.Run(std::move(device_info));
+  std::move(callback).Run(std::move(device_info));
 }
 
 }  // namespace
@@ -54,9 +54,9 @@ void OnDevicePermissionRequestComplete(
 UsbChooserDialogAndroid::UsbChooserDialogAndroid(
     std::vector<device::mojom::UsbDeviceFilterPtr> filters,
     content::RenderFrameHost* render_frame_host,
-    const device::mojom::UsbChooserService::GetPermissionCallback& callback)
+    device::mojom::UsbChooserService::GetPermissionCallback callback)
     : render_frame_host_(render_frame_host),
-      callback_(callback),
+      callback_(std::move(callback)),
       usb_service_observer_(this),
       filters_(std::move(filters)),
       weak_factory_(this) {
@@ -64,8 +64,7 @@ UsbChooserDialogAndroid::UsbChooserDialogAndroid(
       content::WebContents::FromRenderFrameHost(render_frame_host_);
   if (vr::VrTabHelper::IsInVr(web_contents)) {
     DCHECK(!callback_.is_null());
-    callback_.Run(nullptr);
-    callback_.Reset();  // Reset |callback_| so that it is only run once.
+    std::move(callback_).Run(nullptr);
     return;
   }
 
@@ -103,7 +102,7 @@ UsbChooserDialogAndroid::UsbChooserDialogAndroid(
 
 UsbChooserDialogAndroid::~UsbChooserDialogAndroid() {
   if (!callback_.is_null())
-    callback_.Run(nullptr);
+    std::move(callback_).Run(nullptr);
 
   if (!java_dialog_.is_null()) {
     Java_UsbChooserDialog_closeDialog(base::android::AttachCurrentThread(),
@@ -142,9 +141,8 @@ void UsbChooserDialogAndroid::Select(const std::string& guid) {
           render_frame_host_->GetLastCommittedURL().GetOrigin(),
           embedding_origin, device->guid());
 
-      device->RequestPermission(
-          base::Bind(&OnDevicePermissionRequestComplete, device, callback_));
-      callback_.Reset();  // Reset |callback_| so that it is only run once.
+      device->RequestPermission(base::BindOnce(
+          &OnDevicePermissionRequestComplete, device, std::move(callback_)));
 
       Java_UsbChooserDialog_closeDialog(base::android::AttachCurrentThread(),
                                         java_dialog_);
@@ -159,8 +157,7 @@ void UsbChooserDialogAndroid::Select(const std::string& guid) {
 
 void UsbChooserDialogAndroid::Cancel() {
   DCHECK(!callback_.is_null());
-  callback_.Run(nullptr);
-  callback_.Reset();  // Reset |callback_| so that it is only run once.
+  std::move(callback_).Run(nullptr);
   Java_UsbChooserDialog_closeDialog(base::android::AttachCurrentThread(),
                                     java_dialog_);
 

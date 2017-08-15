@@ -22,20 +22,65 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
 
   scoped_refptr<UsbDevice> GetDevice() const override;
   MOCK_METHOD0(Close, void());
-  MOCK_METHOD2(SetConfiguration,
-               void(int configuration_value, const ResultCallback& callback));
-  MOCK_METHOD2(ClaimInterface,
-               void(int interface_number, const ResultCallback& callback));
-  MOCK_METHOD2(ReleaseInterface,
-               void(int interface_number, const ResultCallback& callback));
-  MOCK_METHOD3(SetInterfaceAlternateSetting,
+
+  // TODO(crbug.com/729950): Use MOCK_METHOD directly once GMock gets the
+  // move-only type support.
+  void SetConfiguration(int configuration_value,
+                        ResultCallback callback) override {
+    SetConfigurationInternal(configuration_value, callback);
+  }
+  MOCK_METHOD2(SetConfigurationInternal,
+               void(int configuration_value, ResultCallback& callback));
+
+  void ClaimInterface(int interface_number, ResultCallback callback) override {
+    ClaimInterfaceInternal(interface_number, callback);
+  }
+  MOCK_METHOD2(ClaimInterfaceInternal,
+               void(int interface_number, ResultCallback& callback));
+
+  void ReleaseInterface(int interface_number,
+                        ResultCallback callback) override {
+    ReleaseInterfaceInternal(interface_number, callback);
+  }
+  MOCK_METHOD2(ReleaseInterfaceInternal,
+               void(int interface_number, ResultCallback& callback));
+
+  void SetInterfaceAlternateSetting(int interface_number,
+                                    int alternate_setting,
+                                    ResultCallback callback) override {
+    SetInterfaceAlternateSettingInternal(interface_number, alternate_setting,
+                                         callback);
+  }
+  MOCK_METHOD3(SetInterfaceAlternateSettingInternal,
                void(int interface_number,
                     int alternate_setting,
-                    const ResultCallback& callback));
-  MOCK_METHOD1(ResetDevice, void(const ResultCallback& callback));
-  MOCK_METHOD2(ClearHalt,
-               void(uint8_t endpoint, const ResultCallback& callback));
-  MOCK_METHOD10(ControlTransfer,
+                    ResultCallback& callback));
+
+  void ResetDevice(ResultCallback callback) override {
+    ResetDeviceInternal(callback);
+  }
+  MOCK_METHOD1(ResetDeviceInternal, void(ResultCallback& callback));
+
+  void ClearHalt(uint8_t endpoint, ResultCallback callback) override {
+    ClearHaltInternal(endpoint, callback);
+  }
+  MOCK_METHOD2(ClearHaltInternal,
+               void(uint8_t endpoint, ResultCallback& callback));
+
+  void ControlTransfer(UsbTransferDirection direction,
+                       UsbControlTransferType request_type,
+                       UsbControlTransferRecipient recipient,
+                       uint8_t request,
+                       uint16_t value,
+                       uint16_t index,
+                       scoped_refptr<net::IOBuffer> buffer,
+                       size_t length,
+                       unsigned int timeout,
+                       TransferCallback callback) override {
+    ControlTransferInternal(direction, request_type, recipient, request, value,
+                            index, buffer, length, timeout, callback);
+  }
+  MOCK_METHOD10(ControlTransferInternal,
                 void(UsbTransferDirection direction,
                      UsbControlTransferType request_type,
                      UsbControlTransferRecipient recipient,
@@ -45,25 +90,52 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                      scoped_refptr<net::IOBuffer> buffer,
                      size_t length,
                      unsigned int timeout,
-                     const TransferCallback& callback));
-  MOCK_METHOD4(IsochronousTransferIn,
+                     TransferCallback& callback));
+
+  void IsochronousTransferIn(uint8_t endpoint,
+                             const std::vector<uint32_t>& packet_lengths,
+                             unsigned int timeout,
+                             IsochronousTransferCallback callback) override {
+    IsochronousTransferInInternal(endpoint, packet_lengths, timeout, callback);
+  }
+  MOCK_METHOD4(IsochronousTransferInInternal,
                void(uint8_t endpoint,
                     const std::vector<uint32_t>& packet_lengths,
                     unsigned int timeout,
-                    const IsochronousTransferCallback& callback));
-  MOCK_METHOD5(IsochronousTransferOut,
+                    IsochronousTransferCallback& callback));
+
+  void IsochronousTransferOut(uint8_t endpoint,
+                              scoped_refptr<net::IOBuffer> buffer,
+                              const std::vector<uint32_t>& packet_lengths,
+                              unsigned int timeout,
+                              IsochronousTransferCallback callback) override {
+    IsochronousTransferOutInternal(endpoint, buffer, packet_lengths, timeout,
+                                   callback);
+  }
+  MOCK_METHOD5(IsochronousTransferOutInternal,
                void(uint8_t endpoint,
                     scoped_refptr<net::IOBuffer> buffer,
                     const std::vector<uint32_t>& packet_lengths,
                     unsigned int timeout,
-                    const IsochronousTransferCallback& callback));
-  MOCK_METHOD6(GenericTransfer,
+                    IsochronousTransferCallback& callback));
+
+  void GenericTransfer(UsbTransferDirection direction,
+                       uint8_t endpoint,
+                       scoped_refptr<net::IOBuffer> buffer,
+                       size_t length,
+                       unsigned int timeout,
+                       TransferCallback callback) override {
+    GenericTransferInternal(direction, endpoint, buffer, length, timeout,
+                            callback);
+  }
+  MOCK_METHOD6(GenericTransferInternal,
                void(UsbTransferDirection direction,
                     uint8_t endpoint,
                     scoped_refptr<net::IOBuffer> buffer,
                     size_t length,
                     unsigned int timeout,
-                    const TransferCallback& callback));
+                    TransferCallback& callback));
+
   MOCK_METHOD1(FindInterfaceByEndpoint,
                const UsbInterfaceDescriptor*(uint8_t endpoint_address));
 

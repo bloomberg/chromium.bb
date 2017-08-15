@@ -30,13 +30,13 @@ WebUsbChooserService::~WebUsbChooserService() {
 
 void WebUsbChooserService::GetPermission(
     std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
-    const GetPermissionCallback& callback) {
+    GetPermissionCallback callback) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host_);
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   std::unique_ptr<UsbChooserController> usb_chooser_controller(
       new UsbChooserController(render_frame_host_, std::move(device_filters),
-                               callback));
+                               std::move(callback)));
   std::unique_ptr<ChooserBubbleDelegate> chooser_bubble_delegate(
       new ChooserBubbleDelegate(render_frame_host_,
                                 std::move(usb_chooser_controller)));

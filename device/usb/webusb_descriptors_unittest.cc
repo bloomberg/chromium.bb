@@ -44,7 +44,7 @@ const uint8_t kExampleUrlDescriptor1[] = {
 ACTION_P2(InvokeCallback, data, length) {
   size_t transferred_length = std::min(length, arg7);
   memcpy(arg6->data(), data, transferred_length);
-  arg9.Run(UsbTransferStatus::COMPLETED, arg6, transferred_length);
+  std::move(arg9).Run(UsbTransferStatus::COMPLETED, arg6, transferred_length);
 }
 
 void ExpectLandingPage(const GURL& landing_page) {
@@ -254,18 +254,18 @@ TEST_F(WebUsbDescriptorsTest, ReadDescriptors) {
       new MockUsbDeviceHandle(nullptr));
 
   EXPECT_CALL(*device_handle,
-              ControlTransfer(UsbTransferDirection::INBOUND,
-                              UsbControlTransferType::STANDARD,
-                              UsbControlTransferRecipient::DEVICE, 0x06, 0x0F00,
-                              0x0000, _, _, _, _))
+              ControlTransferInternal(UsbTransferDirection::INBOUND,
+                                      UsbControlTransferType::STANDARD,
+                                      UsbControlTransferRecipient::DEVICE, 0x06,
+                                      0x0F00, 0x0000, _, _, _, _))
       .Times(2)
       .WillRepeatedly(
           InvokeCallback(kExampleBosDescriptor, sizeof(kExampleBosDescriptor)));
   EXPECT_CALL(*device_handle,
-              ControlTransfer(UsbTransferDirection::INBOUND,
-                              UsbControlTransferType::VENDOR,
-                              UsbControlTransferRecipient::DEVICE, 0x42, 0x0001,
-                              0x0002, _, _, _, _))
+              ControlTransferInternal(UsbTransferDirection::INBOUND,
+                                      UsbControlTransferType::VENDOR,
+                                      UsbControlTransferRecipient::DEVICE, 0x42,
+                                      0x0001, 0x0002, _, _, _, _))
       .WillOnce(InvokeCallback(kExampleUrlDescriptor1,
                                sizeof(kExampleUrlDescriptor1)));
 

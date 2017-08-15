@@ -40,16 +40,14 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
   scoped_refptr<UsbDevice> GetDevice() const override;
   void Close() override;
   void SetConfiguration(int configuration_value,
-                        const ResultCallback& callback) override;
-  void ClaimInterface(int interface_number,
-                      const ResultCallback& callback) override;
-  void ReleaseInterface(int interface_number,
-                        const ResultCallback& callback) override;
+                        ResultCallback callback) override;
+  void ClaimInterface(int interface_number, ResultCallback callback) override;
+  void ReleaseInterface(int interface_number, ResultCallback callback) override;
   void SetInterfaceAlternateSetting(int interface_number,
                                     int alternate_setting,
-                                    const ResultCallback& callback) override;
-  void ResetDevice(const ResultCallback& callback) override;
-  void ClearHalt(uint8_t endpoint, const ResultCallback& callback) override;
+                                    ResultCallback callback) override;
+  void ResetDevice(ResultCallback callback) override;
+  void ClearHalt(uint8_t endpoint, ResultCallback callback) override;
   void ControlTransfer(UsbTransferDirection direction,
                        UsbControlTransferType request_type,
                        UsbControlTransferRecipient recipient,
@@ -59,18 +57,16 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
                        scoped_refptr<net::IOBuffer> buffer,
                        size_t length,
                        unsigned int timeout,
-                       const TransferCallback& callback) override;
-  void IsochronousTransferIn(
-      uint8_t endpoint_number,
-      const std::vector<uint32_t>& packet_lengths,
-      unsigned int timeout,
-      const IsochronousTransferCallback& callback) override;
-  void IsochronousTransferOut(
-      uint8_t endpoint_number,
-      scoped_refptr<net::IOBuffer> buffer,
-      const std::vector<uint32_t>& packet_lengths,
-      unsigned int timeout,
-      const IsochronousTransferCallback& callback) override;
+                       TransferCallback callback) override;
+  void IsochronousTransferIn(uint8_t endpoint_number,
+                             const std::vector<uint32_t>& packet_lengths,
+                             unsigned int timeout,
+                             IsochronousTransferCallback callback) override;
+  void IsochronousTransferOut(uint8_t endpoint_number,
+                              scoped_refptr<net::IOBuffer> buffer,
+                              const std::vector<uint32_t>& packet_lengths,
+                              unsigned int timeout,
+                              IsochronousTransferCallback callback) override;
   // To support DevTools this function may be called from any thread and on
   // completion |callback| will be run on that thread.
   void GenericTransfer(UsbTransferDirection direction,
@@ -78,7 +74,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
                        scoped_refptr<net::IOBuffer> buffer,
                        size_t length,
                        unsigned int timeout,
-                       const TransferCallback& callback) override;
+                       TransferCallback callback) override;
   const UsbInterfaceDescriptor* FindInterfaceByEndpoint(
       uint8_t endpoint_address) override;
 
@@ -109,29 +105,28 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
 
   void SetConfigurationComplete(int configuration_value,
                                 bool success,
-                                const ResultCallback& callback);
-  void ReleaseInterfaceComplete(int interface_number,
-                                const ResultCallback& callback);
+                                ResultCallback callback);
+  void ReleaseInterfaceComplete(int interface_number, ResultCallback callback);
   void IsochronousTransferInternal(uint8_t endpoint_address,
                                    scoped_refptr<net::IOBuffer> buffer,
                                    size_t total_length,
                                    const std::vector<uint32_t>& packet_lengths,
                                    unsigned int timeout,
-                                   const IsochronousTransferCallback& callback);
+                                   IsochronousTransferCallback callback);
   void GenericTransferInternal(
       UsbTransferDirection direction,
       uint8_t endpoint_number,
       scoped_refptr<net::IOBuffer> buffer,
       size_t length,
       unsigned int timeout,
-      const TransferCallback& callback,
+      TransferCallback callback,
       scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
   void ReapedUrbs(const std::vector<usbdevfs_urb*>& urbs);
   void TransferComplete(std::unique_ptr<Transfer> transfer);
   void RefreshEndpointInfo();
   void ReportIsochronousError(
       const std::vector<uint32_t>& packet_lengths,
-      const UsbDeviceHandle::IsochronousTransferCallback& callback,
+      UsbDeviceHandle::IsochronousTransferCallback callback,
       UsbTransferStatus status);
   void SetUpTimeoutCallback(Transfer* transfer, unsigned int timeout);
   void OnTimeout(Transfer* transfer);

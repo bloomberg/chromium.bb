@@ -32,7 +32,7 @@ class UsbChooserDialogAndroid : public device::UsbService::Observer {
   UsbChooserDialogAndroid(
       std::vector<device::mojom::UsbDeviceFilterPtr> filters,
       content::RenderFrameHost* render_frame_host,
-      const device::mojom::UsbChooserService::GetPermissionCallback& callback);
+      device::mojom::UsbChooserService::GetPermissionCallback callback);
   ~UsbChooserDialogAndroid() override;
 
   // device::UsbService::Observer:

@@ -36,7 +36,7 @@ class UsbChooserController : public ChooserController,
   UsbChooserController(
       content::RenderFrameHost* render_frame_host,
       std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
-      const device::mojom::UsbChooserService::GetPermissionCallback& callback);
+      device::mojom::UsbChooserService::GetPermissionCallback callback);
   ~UsbChooserController() override;
 
   // ChooserController:
