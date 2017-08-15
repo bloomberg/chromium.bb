@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/core/prefetch/prefetch_downloader.h"
+#include "components/offline_pages/core/prefetch/prefetch_downloader_impl.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -14,7 +14,7 @@
 
 namespace offline_pages {
 
-PrefetchDownloader::PrefetchDownloader(
+PrefetchDownloaderImpl::PrefetchDownloaderImpl(
     download::DownloadService* download_service,
     version_info::Channel channel)
     : download_service_(download_service),
@@ -25,18 +25,19 @@ PrefetchDownloader::PrefetchDownloader(
                      download::DownloadService::ServiceStatus::READY;
 }
 
-PrefetchDownloader::PrefetchDownloader(version_info::Channel channel)
-    : channel_(channel), weak_ptr_factory_(this) {}
+PrefetchDownloaderImpl::PrefetchDownloaderImpl(version_info::Channel channel)
+    : download_service_(nullptr), channel_(channel), weak_ptr_factory_(this) {}
 
-PrefetchDownloader::~PrefetchDownloader() = default;
+PrefetchDownloaderImpl::~PrefetchDownloaderImpl() = default;
 
-void PrefetchDownloader::SetCompletedCallback(
+void PrefetchDownloaderImpl::SetCompletedCallback(
     const PrefetchDownloadCompletedCallback& callback) {
   callback_ = callback;
 }
 
-void PrefetchDownloader::StartDownload(const std::string& download_id,
-                                       const std::string& download_location) {
+void PrefetchDownloaderImpl::StartDownload(
+    const std::string& download_id,
+    const std::string& download_location) {
   if (!service_started_) {
     pending_downloads_.push_back(
         std::make_pair(download_id, download_location));
@@ -52,13 +53,13 @@ void PrefetchDownloader::StartDownload(const std::string& download_id,
   // TODO(jianli): Remove the uppercase after the download service fixes
   // this issue.
   params.guid = base::ToUpperASCII(download_id);
-  params.callback = base::Bind(&PrefetchDownloader::OnStartDownload,
+  params.callback = base::Bind(&PrefetchDownloaderImpl::OnStartDownload,
                                weak_ptr_factory_.GetWeakPtr());
   params.request_params.url = PrefetchDownloadURL(download_location, channel_);
   download_service_->StartDownload(params);
 }
 
-void PrefetchDownloader::CancelDownload(const std::string& download_id) {
+void PrefetchDownloaderImpl::CancelDownload(const std::string& download_id) {
   if (service_started_) {
     download_service_->CancelDownload(download_id);
     return;
@@ -73,7 +74,7 @@ void PrefetchDownloader::CancelDownload(const std::string& download_id) {
   pending_cancellations_.push_back(download_id);
 }
 
-void PrefetchDownloader::OnDownloadServiceReady() {
+void PrefetchDownloaderImpl::OnDownloadServiceReady() {
   DCHECK_EQ(download::DownloadService::ServiceStatus::READY,
             download_service_->GetStatus());
   service_started_ = true;
@@ -87,13 +88,14 @@ void PrefetchDownloader::OnDownloadServiceReady() {
   pending_cancellations_.clear();
 }
 
-void PrefetchDownloader::OnDownloadServiceShutdown() {
+void PrefetchDownloaderImpl::OnDownloadServiceShutdown() {
   service_started_ = false;
 }
 
-void PrefetchDownloader::OnDownloadSucceeded(const std::string& download_id,
-                                             const base::FilePath& file_path,
-                                             uint64_t file_size) {
+void PrefetchDownloaderImpl::OnDownloadSucceeded(
+    const std::string& download_id,
+    const base::FilePath& file_path,
+    uint64_t file_size) {
   // The file is not likely to be that big. Treat it as error if so.
   if (file_size > static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
     OnDownloadFailed(download_id);
@@ -106,7 +108,7 @@ void PrefetchDownloader::OnDownloadSucceeded(const std::string& download_id,
   }
 }
 
-void PrefetchDownloader::OnDownloadFailed(const std::string& download_id) {
+void PrefetchDownloaderImpl::OnDownloadFailed(const std::string& download_id) {
   if (callback_) {
     PrefetchDownloadResult result;
     result.download_id = download_id;
@@ -114,7 +116,7 @@ void PrefetchDownloader::OnDownloadFailed(const std::string& download_id) {
   }
 }
 
-void PrefetchDownloader::OnStartDownload(
+void PrefetchDownloaderImpl::OnStartDownload(
     const std::string& download_id,
     download::DownloadParams::StartResult result) {
   if (result != download::DownloadParams::StartResult::ACCEPTED)

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/core/prefetch/prefetch_downloader.h"
+#include "components/offline_pages/core/prefetch/prefetch_downloader_impl.h"
 
 #include <list>
 #include <utility>
@@ -99,7 +99,7 @@ class TestDownloadService : public DownloadService {
 
   void set_ready(bool ready) { ready_ = ready; }
   void set_prefetch_downloader(
-      offline_pages::PrefetchDownloader* prefetch_downloader) {
+      offline_pages::PrefetchDownloaderImpl* prefetch_downloader) {
     prefetch_downloader_ = prefetch_downloader;
   }
 
@@ -128,7 +128,7 @@ class TestDownloadService : public DownloadService {
   }
 
   bool ready_ = false;
-  offline_pages::PrefetchDownloader* prefetch_downloader_ = nullptr;
+  offline_pages::PrefetchDownloaderImpl* prefetch_downloader_ = nullptr;
   TestServiceConfig service_config_;
   std::list<DownloadParams> downloads_;
 
@@ -147,8 +147,8 @@ class PrefetchDownloaderTest : public testing::Test {
   void SetUp() override {
     prefetch_service_taco_.reset(new PrefetchServiceTestTaco);
 
-    auto downloader =
-        base::MakeUnique<PrefetchDownloader>(&download_service_, kTestChannel);
+    auto downloader = base::MakeUnique<PrefetchDownloaderImpl>(
+        &download_service_, kTestChannel);
     download_service_.set_prefetch_downloader(downloader.get());
     prefetch_service_taco_->SetPrefetchDownloader(std::move(downloader));
 
