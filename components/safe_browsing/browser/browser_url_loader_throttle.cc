@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "components/safe_browsing/browser/safe_browsing_url_checker_impl.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
+#include "components/safe_browsing/common/utils.h"
 #include "content/public/common/resource_request.h"
 #include "net/url_request/redirect_info.h"
 
@@ -71,8 +72,15 @@ void BrowserURLLoaderThrottle::WillProcessResponse(bool* defer) {
   // shouldn't be such a notification.
   DCHECK(!blocked_);
 
-  if (pending_checks_ > 0)
-    *defer = true;
+  if (pending_checks_ == 0) {
+    LogDelay(base::TimeDelta());
+    return;
+  }
+
+  DCHECK(!deferred_);
+  deferred_ = true;
+  defer_start_time_ = base::TimeTicks::Now();
+  *defer = true;
 }
 
 void BrowserURLLoaderThrottle::OnCheckUrlResult(bool proceed,
@@ -84,9 +92,9 @@ void BrowserURLLoaderThrottle::OnCheckUrlResult(bool proceed,
   pending_checks_--;
 
   if (proceed) {
-    if (pending_checks_ == 0) {
-      // The resource load is not necessarily deferred, in that case Resume() is
-      // a no-op.
+    if (pending_checks_ == 0 && deferred_) {
+      LogDelay(base::TimeTicks::Now() - defer_start_time_);
+      deferred_ = false;
       delegate_->Resume();
     }
   } else {

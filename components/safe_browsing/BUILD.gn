@@ -33,6 +33,7 @@ source_set("safe_browsing") {
     ":features",
     "//base:base",
     "//base:i18n",
+    "//components/safe_browsing/common:common",
     "//components/safe_browsing/common:safe_browsing_prefs",
     "//components/safe_browsing/web_ui:constants",
     "//components/safe_browsing_db:database_manager",

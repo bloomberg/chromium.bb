@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/time/time.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 
 class GURL;
@@ -47,12 +46,6 @@ class BaseUIManager
   // in the chain, and |original_url| is the first one (the root of the
   // chain). Otherwise, |original_url| = |url|.
   virtual void DisplayBlockingPage(const UnsafeResource& resource);
-
-  // Log the user perceived delay caused by SafeBrowsing. This delay is the time
-  // delta starting from when we would have started reading data from the
-  // network, and ending when the SafeBrowsing check completes indicating that
-  // the current page is 'safe'.
-  virtual void LogPauseDelay(base::TimeDelta time);
 
   // This is a no-op in the base class, but should be overridden to send threat
   // details. Called on the IO thread by the ThreatDetails with the serialized
