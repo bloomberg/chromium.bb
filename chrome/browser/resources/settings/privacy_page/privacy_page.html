@@ -31,7 +31,7 @@
 <link rel="import" href="../site_settings_page/site_settings_page.html">
 
 <if expr="use_nss_certs">
-<link rel="import" href="../certificate_manager_page/certificate_manager_page.html">
+  <link rel="import" href="chrome://resources/cr_components/certificate_manager/certificate_manager.html">
 </if>
 <link rel="import" href="privacy_page_browser_proxy.html">
 
@@ -220,8 +220,7 @@
         <settings-subpage
             associated-control="[[$$('#manageCertificates')]]"
             page-title="$i18n{manageCertificates}">
-          <settings-certificate-manager-page>
-          </settings-certificate-manager-page>
+          <certificate-manager></certificate-manager>
         </settings-subpage>
       </template>
 </if>

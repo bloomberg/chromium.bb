@@ -82,7 +82,7 @@ var CertificateType = {
  */
 var CertificatesImportError;
 
-cr.define('settings', function() {
+cr.define('certificate_manager', function() {
   /** @interface */
   class CertificatesBrowserProxy {
     /**
@@ -182,7 +182,7 @@ cr.define('settings', function() {
   }
 
   /**
-   * @implements {settings.CertificatesBrowserProxy}
+   * @implements {certificate_manager.CertificatesBrowserProxy}
    */
   class CertificatesBrowserProxyImpl {
     /** @override */

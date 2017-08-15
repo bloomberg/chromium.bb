@@ -36,3 +36,9 @@ var CertificateAction = {
   EXPORT_PERSONAL: 2,
   IMPORT: 3,
 };
+
+/**
+ * The name of the event fired when a certificate action is selected from the
+ * dropdown menu. CertificateActionEventDetail is passed as the event detail.
+ */
+var CertificateActionEvent = 'certificate-action';

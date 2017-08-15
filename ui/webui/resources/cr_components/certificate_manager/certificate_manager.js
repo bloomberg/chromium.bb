@@ -3,13 +3,12 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'settings-certificate-manager-page' is the settings page
- * containing SSL certificate settings.
+ * @fileoverview The 'certificate-manager' component manages SSL certificates.
  */
 Polymer({
-  is: 'settings-certificate-manager-page',
+  is: 'certificate-manager',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
     /** @type {number} */
@@ -102,7 +101,8 @@ Polymer({
   /** @override */
   attached: function() {
     this.addWebUIListener('certificates-changed', this.set.bind(this));
-    settings.CertificatesBrowserProxyImpl.getInstance().refreshCertificates();
+    certificate_manager.CertificatesBrowserProxyImpl.getInstance()
+        .refreshCertificates();
   },
 
   /**
@@ -117,32 +117,32 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.addEventListener(settings.CertificateActionEvent, event => {
+    this.addEventListener(CertificateActionEvent, event => {
       this.dialogModel_ = event.detail.subnode;
       this.dialogModelCertificateType_ = event.detail.certificateType;
 
       if (event.detail.action == CertificateAction.IMPORT) {
         if (event.detail.certificateType == CertificateType.PERSONAL) {
           this.openDialog_(
-              'settings-certificate-password-decryption-dialog',
+              'certificate-password-decryption-dialog',
               'showPasswordDecryptionDialog_', event.detail.anchor);
         } else if (event.detail.certificateType == CertificateType.CA) {
           this.openDialog_(
-              'settings-ca-trust-edit-dialog', 'showCaTrustEditDialog_',
+              'ca-trust-edit-dialog', 'showCaTrustEditDialog_',
               event.detail.anchor);
         }
       } else {
         if (event.detail.action == CertificateAction.EDIT) {
           this.openDialog_(
-              'settings-ca-trust-edit-dialog', 'showCaTrustEditDialog_',
+              'ca-trust-edit-dialog', 'showCaTrustEditDialog_',
               event.detail.anchor);
         } else if (event.detail.action == CertificateAction.DELETE) {
           this.openDialog_(
-              'settings-certificate-delete-confirmation-dialog',
+              'certificate-delete-confirmation-dialog',
               'showDeleteConfirmationDialog_', event.detail.anchor);
         } else if (event.detail.action == CertificateAction.EXPORT_PERSONAL) {
           this.openDialog_(
-              'settings-certificate-password-encryption-dialog',
+              'certificate-password-encryption-dialog',
               'showPasswordEncryptionDialog_', event.detail.anchor);
         }
       }
@@ -154,8 +154,7 @@ Polymer({
       var detail = /** @type {!CertificatesErrorEventDetail} */ (event.detail);
       this.errorDialogModel_ = detail.error;
       this.openDialog_(
-          'settings-certificates-error-dialog', 'showErrorDialog_',
-          detail.anchor);
+          'certificates-error-dialog', 'showErrorDialog_', detail.anchor);
       event.stopPropagation();
     });
   },
@@ -170,9 +169,9 @@ Polymer({
    *     corresponding to the dialog.
    * @param {?HTMLElement} anchor The element to focus when the dialog is
    *     closed. If null, the previous anchor element should be reused. This
-   *     happens when a 'settings-certificates-error-dialog' is opened,
-   *     which when closed should focus the anchor of the previous dialog (the
-   *     one that generated the error).
+   *     happens when a 'certificates-error-dialog' is opened, which when closed
+   *     should focus the anchor of the previous dialog (the one that generated
+   *     the error).
    * @private
    */
   openDialog_: function(dialogTagName, domIfBooleanName, anchor) {

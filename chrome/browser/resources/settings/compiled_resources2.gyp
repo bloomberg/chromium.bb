@@ -78,7 +78,6 @@
         'appearance_page/compiled_resources2.gyp:*',
         'basic_page/compiled_resources2.gyp:*',
         'bluetooth_page/compiled_resources2.gyp:*',
-        'certificate_manager_page/compiled_resources2.gyp:*',
         'chrome_cleanup_page/compiled_resources2.gyp:*',
         'clear_browsing_data_dialog/compiled_resources2.gyp:*',
         'controls/compiled_resources2.gyp:*',

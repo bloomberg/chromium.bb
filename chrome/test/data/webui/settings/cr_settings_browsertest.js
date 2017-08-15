@@ -726,7 +726,8 @@ TEST_F('CrSettingsSearchEnginesTest', 'All', function() {
 
 GEN('#if defined(USE_NSS_CERTS)');
 /**
- * Test fixture for chrome/browser/resources/settings/certificate_manager_page/.
+ * Test fixture for chrome://settings/certificates. This tests the
+ * certificate-manager component in the context of the Settings privacy page.
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
@@ -735,15 +736,17 @@ function CrSettingsCertificateManagerTest() {}
 CrSettingsCertificateManagerTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
-  /** @override */
-  browsePreload: 'chrome://settings/certificate_manager_page/' +
-      'certificate_manager_page.html',
+  /**
+   * The certificate-manager subpage is embeded in privacy_page.html.
+   * @override
+   */
+  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     'test_util.js',
     '../test_browser_proxy.js',
-    'certificate_manager_page_test.js',
+    'certificate_manager_test.js',
   ]),
 };
 

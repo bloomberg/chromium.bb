@@ -7,7 +7,9 @@
  * before it is exported to disk.
  */
 Polymer({
-  is: 'settings-certificate-password-encryption-dialog',
+  is: 'certificate-password-encryption-dialog',
+
+  behaviors: [I18nBehavior],
 
   properties: {
     /** @type {!CertificateSubnode} */
@@ -26,12 +28,13 @@ Polymer({
     },
   },
 
-  /** @private {?settings.CertificatesBrowserProxy} */
+  /** @private {?certificate_manager.CertificatesBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   ready: function() {
-    this.browserProxy_ = settings.CertificatesBrowserProxyImpl.getInstance();
+    this.browserProxy_ =
+        certificate_manager.CertificatesBrowserProxyImpl.getInstance();
   },
 
   /** @override */

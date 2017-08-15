@@ -6,7 +6,9 @@
  * @fileoverview An element that represents an SSL certificate entry.
  */
 Polymer({
-  is: 'settings-certificate-entry',
+  is: 'certificate-entry',
+
+  behaviors: [I18nBehavior],
 
   properties: {
     /** @type {!Certificate} */

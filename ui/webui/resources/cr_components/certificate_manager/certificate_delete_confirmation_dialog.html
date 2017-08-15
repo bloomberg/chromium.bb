@@ -1,15 +1,15 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="../i18n_setup.html">
-<link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="certificate_shared_css.html">
 <link rel="import" href="certificates_browser_proxy.html">
 
-<dom-module id="settings-certificate-delete-confirmation-dialog">
+<dom-module id="certificate-delete-confirmation-dialog">
   <template>
-    <style include="settings-shared"></style>
-    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
+    <style include="certificate-shared"></style>
+    <dialog is="cr-dialog" id="dialog" close-text="[[i18n('close')]]">
       <div slot="title">
         [[getTitleText_(model, certificateType)]]
       </div>
@@ -18,10 +18,10 @@
       </div>
       <div slot="button-container">
         <paper-button class="cancel-button" on-tap="onCancelTap_">
-          $i18n{cancel}
+          [[i18n('cancel')]]
         </paper-button>
         <paper-button id="ok" class="action-button" on-tap="onOkTap_">
-          $i18n{ok}
+          [[i18n('ok')]]
         </paper-button>
       </div>
     </dialog>

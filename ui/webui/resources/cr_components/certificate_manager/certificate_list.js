@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'settings-certificate-list' is an element that displays a list
- * of certificates.
+ * @fileoverview 'certificate-list' is an element that displays a list of
+ * certificates.
  */
 Polymer({
-  is: 'settings-certificate-list',
+  is: 'certificate-list',
 
   properties: {
     /** @type {!Array<!Certificate>} */
@@ -21,15 +21,16 @@ Polymer({
     /** @type {!CertificateType} */
     certificateType: String,
 
-    // <if expr="chromeos">
+    // 'if expr="chromeos"' here is breaking vulcanize. TODO(stevenjb/dpapad):
+    // Restore after migrating to polymer-bundler, crbug.com/731881.
     /** @private */
     isGuest_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('isGuest');
-      }
+        return loadTimeData.valueExists('isGuest') &&
+            loadTimeData.getBoolean('isGuest');
+      },
     },
-    // </if>
   },
 
   behaviors: [I18nBehavior],
@@ -100,7 +101,7 @@ Polymer({
    */
   dispatchImportActionEvent_: function(subnode, anchor) {
     this.fire(
-        settings.CertificateActionEvent,
+        CertificateActionEvent,
         /** @type {!CertificateActionEventDetail} */ ({
           action: CertificateAction.IMPORT,
           subnode: subnode,
@@ -135,7 +136,8 @@ Polymer({
    * @private
    */
   handleImport_: function(useHardwareBacked, anchor) {
-    var browserProxy = settings.CertificatesBrowserProxyImpl.getInstance();
+    var browserProxy =
+        certificate_manager.CertificatesBrowserProxyImpl.getInstance();
     if (this.certificateType == CertificateType.PERSONAL) {
       browserProxy.importPersonalCertificate(useHardwareBacked)
           .then(showPasswordPrompt => {
