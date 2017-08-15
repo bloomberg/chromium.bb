@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.test.crash;
 
+import android.support.test.filters.SmallTest;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,6 +30,7 @@ public class IntentionalCrashTest {
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     @DisabledTest
+    @SmallTest
     @Test
     public void testRendererCrash() {
         try {
@@ -38,6 +41,7 @@ public class IntentionalCrashTest {
     }
 
     @DisabledTest
+    @SmallTest
     @Test
     public void testBrowserCrash() {
         try {
@@ -48,6 +52,7 @@ public class IntentionalCrashTest {
     }
 
     @DisabledTest
+    @SmallTest
     @Test
     public void testJavaCrash() {
         try {
@@ -58,6 +63,7 @@ public class IntentionalCrashTest {
     }
 
     @DisabledTest
+    @SmallTest
     @Test
     public void testGpuCrash() {
         try {
