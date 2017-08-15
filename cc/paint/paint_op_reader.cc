@@ -34,6 +34,8 @@ bool IsValidPaintShaderScalingBehavior(PaintShader::ScalingBehavior behavior) {
 
 template <typename T>
 void PaintOpReader::ReadSimple(T* val) {
+  static_assert(base::is_trivially_copyable<T>::value,
+                "Not trivially copyable");
   if (!AlignMemory(alignof(T)))
     valid_ = false;
   if (remaining_bytes_ < sizeof(T))
@@ -41,7 +43,11 @@ void PaintOpReader::ReadSimple(T* val) {
   if (!valid_)
     return;
 
-  *val = reinterpret_cast<const T*>(memory_)[0];
+  // Most of the time this is used for primitives, but this function is also
+  // used for SkRect/SkIRect/SkMatrix whose implicit operator= can't use a
+  // volatile.  TOCTOU violations don't matter for these simple types so
+  // use assignment.
+  *val = *reinterpret_cast<const T*>(const_cast<const char*>(memory_));
 
   memory_ += sizeof(T);
   remaining_bytes_ -= sizeof(T);
@@ -60,8 +66,11 @@ void PaintOpReader::ReadFlattenable(sk_sp<T>* val) {
   if (bytes == 0)
     return;
 
+  // This is assumed safe from TOCTOU violations as the flattenable
+  // deserializing function uses an SkReadBuffer which reads each piece of
+  // memory once much like PaintOpReader does.
   val->reset(static_cast<T*>(SkValidatingDeserializeFlattenable(
-      memory_, bytes, T::GetFlattenableType())));
+      const_cast<const char*>(memory_), bytes, T::GetFlattenableType())));
   if (!val)
     valid_ = false;
 
@@ -77,7 +86,7 @@ void PaintOpReader::ReadData(size_t bytes, void* data) {
   if (bytes == 0)
     return;
 
-  memcpy(data, memory_, bytes);
+  memcpy(data, const_cast<const char*>(memory_), bytes);
   memory_ += bytes;
   remaining_bytes_ -= bytes;
 }
@@ -94,7 +103,7 @@ void PaintOpReader::ReadArray(size_t count, SkPoint* array) {
   if (count == 0)
     return;
 
-  memcpy(array, memory_, bytes);
+  memcpy(array, const_cast<const char*>(memory_), bytes);
   memory_ += bytes;
   remaining_bytes_ -= bytes;
 }
@@ -127,8 +136,12 @@ void PaintOpReader::Read(SkPath* path) {
   if (!valid_)
     return;
 
-  // TODO(enne): Should the writer write how many bytes it expects as well?
-  size_t read_bytes = path->readFromMemory(memory_, remaining_bytes_);
+  // This is assumed safe from TOCTOU violations as the SkPath deserializing
+  // function uses an SkRBuffer which reads each piece of memory once much
+  // like PaintOpReader does.  Additionally, paths are later validated in
+  // PaintOpBuffer.
+  size_t read_bytes =
+      path->readFromMemory(const_cast<const char*>(memory_), remaining_bytes_);
   if (!read_bytes)
     valid_ = false;
 
@@ -177,7 +190,9 @@ void PaintOpReader::Read(sk_sp<SkData>* data) {
       *data = SkData::MakeEmpty();
     return;
   }
-  *data = SkData::MakeWithCopy(memory_, bytes);
+
+  // This is safe to cast away the volatile as it is just a memcpy internally.
+  *data = SkData::MakeWithCopy(const_cast<const char*>(memory_), bytes);
 
   memory_ += bytes;
   remaining_bytes_ -= bytes;
