@@ -456,7 +456,7 @@ static void set_first_pass_params(AV1_COMP *cpi) {
   cpi->rc.frames_to_key = INT_MAX;
 }
 
-#if CONFIG_FLEX_REFS
+#if CONFIG_EXT_REFS
 static double raw_motion_error_stdev(int *raw_motion_err_list,
                                      int raw_motion_err_counts) {
   int64_t sum_raw_err = 0;
@@ -479,7 +479,7 @@ static double raw_motion_error_stdev(int *raw_motion_err_list,
   raw_err_stdev = sqrt(raw_err_stdev / raw_motion_err_counts);
   return raw_err_stdev;
 }
-#endif  // CONFIG_FLEX_REFS
+#endif  // CONFIG_EXT_REFS
 
 #define UL_INTRA_THRESH 50
 #define INVALID_ROW -1
@@ -531,13 +531,13 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   od_adapt_ctx pvq_context;
 #endif
 
-#if CONFIG_FLEX_REFS
+#if CONFIG_EXT_REFS
   int *raw_motion_err_list;
   int raw_motion_err_counts = 0;
   CHECK_MEM_ERROR(
       cm, raw_motion_err_list,
       aom_calloc(cm->mb_rows * cm->mb_cols, sizeof(*raw_motion_err_list)));
-#endif  // CONFIG_FLEX_REFS
+#endif  // CONFIG_EXT_REFS
   // First pass code requires valid last and new frame buffers.
   assert(new_yv12 != NULL);
   assert(frame_is_intra_only(cm) || (lst_yv12 != NULL));
@@ -1000,9 +1000,9 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
             }
           }
         }
-#if CONFIG_FLEX_REFS
+#if CONFIG_EXT_REFS
         raw_motion_err_list[raw_motion_err_counts++] = raw_motion_error;
-#endif  // CONFIG_FLEX_REFS
+#endif  // CONFIG_EXT_REFS
       } else {
         sr_coded_error += (int64_t)this_error;
       }
@@ -1025,10 +1025,12 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 
     aom_clear_system_state();
   }
-#if CONFIG_FLEX_REFS
+#if CONFIG_EXT_REFS
   const double raw_err_stdev =
       raw_motion_error_stdev(raw_motion_err_list, raw_motion_err_counts);
-#endif  // CONFIG_FLEX_REFS
+  aom_free(raw_motion_err_list);
+#endif  // CONFIG_EXT_REFS
+
 #if CONFIG_PVQ
 #if !CONFIG_ANS
   od_ec_enc_clear(&x->daala_enc.w.ec);
@@ -1082,9 +1084,9 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
     fps.intra_skip_pct = (double)intra_skip_count / num_mbs;
     fps.inactive_zone_rows = (double)image_data_start_row;
     fps.inactive_zone_cols = (double)0;  // TODO(paulwilkins): fix
-#if CONFIG_FLEX_REFS
+#if CONFIG_EXT_REFS
     fps.raw_error_stdev = raw_err_stdev;
-#endif  // CONFIG_FLEX_REFS
+#endif  // CONFIG_EXT_REFS
 
     if (mvcount > 0) {
       fps.MVr = (double)sum_mvr / mvcount;
@@ -1692,10 +1694,8 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
   // (3) The bi-predictive group interval is strictly smaller than the
   //     golden group interval.
   const int is_bipred_enabled =
-#if CONFIG_FLEX_REFS
-      cpi->bwd_ref_allowed &&
-#endif
-      rc->source_alt_ref_pending && rc->bipred_group_interval &&
+      cpi->bwd_ref_allowed && rc->source_alt_ref_pending &&
+      rc->bipred_group_interval &&
       rc->bipred_group_interval <=
           (rc->baseline_gf_interval - rc->source_alt_ref_pending);
   int bipred_group_end = 0;
@@ -2086,10 +2086,10 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   const int is_key_frame = frame_is_intra_only(cm);
   const int arf_active_or_kf = is_key_frame || rc->source_alt_ref_active;
 
-#if CONFIG_FLEX_REFS
+#if CONFIG_EXT_REFS
   cpi->extra_arf_allowed = 1;
   cpi->bwd_ref_allowed = 1;
-#endif
+#endif  // CONFIG_EXT_REFS
 
   // Reset the GF group data structures unless this is a key
   // frame in which case it will already have been done.
@@ -2151,11 +2151,11 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     }
   }
 
-#if CONFIG_FLEX_REFS
+#if CONFIG_EXT_REFS
   double avg_sr_coded_error = 0;
   double avg_raw_err_stdev = 0;
   int non_zero_stdev_count = 0;
-#endif  // CONFIG_FLEX_REFS
+#endif  // CONFIG_EXT_REFS
 
   i = 0;
   while (i < rc->static_scene_max_gf_interval && i < rc->frames_to_key) {
@@ -2180,14 +2180,14 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     accumulate_frame_motion_stats(
         &next_frame, &this_frame_mv_in_out, &mv_in_out_accumulator,
         &abs_mv_in_out_accumulator, &mv_ratio_accumulator);
-#if CONFIG_FLEX_REFS
+#if CONFIG_EXT_REFS
     // sum up the metric values of current gf group
     avg_sr_coded_error += next_frame.sr_coded_error;
-    if (next_frame.raw_error_stdev) {
+    if (fabs(next_frame.raw_error_stdev) > 0.000001) {
       non_zero_stdev_count++;
       avg_raw_err_stdev += next_frame.raw_error_stdev;
     }
-#endif  // CONFIG_FLEX_REFS
+#endif  // CONFIG_EXT_REFS
 
     // Accumulate the effect of prediction quality decay.
     if (!flash_detected) {
@@ -2227,8 +2227,18 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
              (abs_mv_in_out_accumulator > 3.0) ||
              (mv_in_out_accumulator < -2.0) ||
              ((boost_score - old_boost_score) < BOOST_BREAKOUT)))) {
-      boost_score = old_boost_score;
-      break;
+#if CONFIG_EXT_REFS
+      // If GF group interval is < 12, we force it to be 8. Otherwise,
+      // if it is >= 12, we keep it as is.
+      // NOTE: 'i' is 1 more than the GF group interval candidate that is being
+      //       checked.
+      if (i == (8 + 1) || i >= (12 + 1)) {
+#endif  // CONFIG_EXT_REFS
+        boost_score = old_boost_score;
+        break;
+#if CONFIG_EXT_REFS
+      }
+#endif  // CONFIG_EXT_REFS
     }
 
     *this_frame = next_frame;
@@ -2261,19 +2271,16 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // Set the interval until the next gf.
   rc->baseline_gf_interval = i - (is_key_frame || rc->source_alt_ref_pending);
 #if CONFIG_EXT_REFS
-#if CONFIG_FLEX_REFS
   const int num_mbs = (cpi->oxcf.resize_mode != RESIZE_NONE) ? cpi->initial_mbs
                                                              : cpi->common.MBs;
   if (i) avg_sr_coded_error /= i;
   if (non_zero_stdev_count) avg_raw_err_stdev /= non_zero_stdev_count;
 
-  // Disable extra alter refs and backward ref for "still" gf group
-  // zero_motion_accumulator indicates the minimum percentage of (0, 0) motion
-  // in gf group
-  // avg_sr_coded_error indicates the average of the sse per pixel of each frame
-  // in gf group
-  // avg_raw_err_stdev indicates the average of the standard deviation of (0, 0)
-  // motion error per block of each frame in gf group
+  // Disable extra altrefs and backward refs for "still" gf group:
+  //   zero_motion_accumulator: minimum percentage of (0,0) motion;
+  //   avg_sr_coded_error:      average of the SSE per pixel of each frame;
+  //   avg_raw_err_stdev:       average of the standard deviation of (0,0)
+  //                            motion error per block of each frame.
   assert(num_mbs > 0);
   const int disable_bwd_extarf =
       (zero_motion_accumulator > MIN_ZERO_MOTION &&
@@ -2282,13 +2289,13 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 
   if (disable_bwd_extarf) cpi->extra_arf_allowed = cpi->bwd_ref_allowed = 0;
 
-  if (!cpi->extra_arf_allowed)
+  if (!cpi->extra_arf_allowed) {
     cpi->num_extra_arfs = 0;
-  else
-#endif  // CONFIG_FLEX_REFS
+  } else {
     // Compute how many extra alt_refs we can have
     cpi->num_extra_arfs = get_number_of_extra_arfs(rc->baseline_gf_interval,
                                                    rc->source_alt_ref_pending);
+  }
   // Currently at maximum two extra ARFs' are allowed
   assert(cpi->num_extra_arfs <= MAX_EXT_ARFS);
 #endif  // CONFIG_EXT_REFS

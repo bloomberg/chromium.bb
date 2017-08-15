@@ -602,10 +602,10 @@ typedef struct AV1_COMP {
   int sb_scanning_pass_idx;
 #endif  // CONFIG_SPEED_REFS
 
-#if CONFIG_FLEX_REFS
+#if CONFIG_EXT_REFS
   int extra_arf_allowed;
   int bwd_ref_allowed;
-#endif  // CONFIG_FLEX_REFS
+#endif  // CONFIG_EXT_REFS
 } AV1_COMP;
 
 void av1_initialize_enc(void);

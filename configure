@@ -268,7 +268,6 @@ EXPERIMENT_LIST="
     altref2
     speed_refs
     gf_groups
-    flex_refs
     global_motion
     new_quant
     supertx
@@ -561,7 +560,6 @@ post_process_cmdline() {
     enabled ext_comp_refs && enable_feature ext_refs
     enabled ext_comp_refs && enable_feature one_sided_compound
     enabled altref2 && enable_feature ext_refs
-    enabled altref2 && enable_feature flex_refs
     enabled rect_tx_ext && enable_feature rect_tx
     enabled cfl && enable_feature smooth_hv
     enabled cdef_singlepass && enable_feature cdef
