@@ -17,6 +17,11 @@
   <div role="option"></div>
 </div>
 
+<div id="radiogroup" role="radiogroup">
+  <hr>
+  <div id="radio1" role="radio">Radio 1</div>
+</div>
+
 <p id="description"></p>
 <div id="console"></div>
 
@@ -42,6 +47,11 @@ if (window.accessibilityController) {
     shouldBe("listbox.childAtIndex(1).posInSet", "2");
     shouldBe("listbox.childAtIndex(2).posInSet", "3");
     shouldBe("listbox.childAtIndex(3).posInSet", "4");
+
+    var radio1 = accessibilityController.accessibleElementById("radio1");
+
+    shouldBe("radio1.setSize", "1");
+    shouldBe("radio1.posInSet", "1");
 }
 </script>
 

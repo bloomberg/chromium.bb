@@ -4,7 +4,7 @@
 
 <ul id="manual-props" role="tree">
   <li role="none">
-    <span id="manual-item" role="treeitem" 
+    <span id="manual-item" role="treeitem"
           aria-level="2" aria-setsize="5" aria-posinset="3">
       Oranges
     </span>
@@ -24,6 +24,9 @@
           <li role="treeitem">
             Green
           </li>
+          <li role="treeitem" aria-hidden="true">
+            Hidden
+          </li>
           <li id="auto-item" role="treeitem">
             Vidalia
           </li>
@@ -33,6 +36,30 @@
         </ul>
       </li>
     </ul>
+  </li>
+</ul>
+
+<ul id="auto-set-props-flat" role="tree">
+  <li role="treeitem" aria-level="1">
+    Cats
+  </li>
+  <li role="treeitem" aria-level="2">
+    Hypoallegenic
+  </li>
+  <li role="treeitem" aria-level="3">
+    Siberian
+  </li>
+  <li role="treeitem" aria-level="3">
+    Sphynx
+  </li>
+  <li role="treeitem" aria-level="2">
+    Siamese
+  </li>
+  <li role="treeitem" id="flat-auto-item" aria-level="2">
+    Calico
+  </li>
+  <li role="treeitem" aria-level="1">
+    Fish
   </li>
 </ul>
 
@@ -70,4 +97,15 @@ test(function(t) {
     var autoItem = axElementById("auto-item");
     assert_equals(autoItem.setSize, 3);
 }, "An auto tree item computes its setsize property");
+
+test(function(t) {
+    var flatAutoItem = axElementById("flat-auto-item");
+    assert_equals(flatAutoItem.setSize, 3);
+}, "A flatauto tree item with levels computes its setsize property");
+
+test(function(t) {
+    var flatAutoItem = axElementById("flat-auto-item");
+    assert_equals(flatAutoItem.posInSet, 3);
+}, "A flat auto tree item with levels computes its posinset property");
+
 </script>
