@@ -18,7 +18,7 @@ import time
 
 MOTOPHO_THREAD_TIMEOUT = 15
 MOTOPHO_THREAD_TERMINATION_TIMEOUT = 2
-MOTOPHO_THREAD_RETRIES = 2
+MOTOPHO_THREAD_RETRIES = 4
 DEFAULT_URLS = [
     # TODO(bsheedy): See about having versioned copies of the flicker app
     # instead of using personal github.
