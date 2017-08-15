@@ -2156,12 +2156,11 @@ bool PDFiumEngine::OnKeyUp(const pp::KeyboardInputEvent& event) {
     return false;
 
   // Check if form text selection needs to be updated.
-  if (in_form_text_area_) {
-    SetFormSelectedText(form_, pages_[last_page_mouse_down_]->GetPage());
-  }
+  FPDF_PAGE page = pages_[last_page_mouse_down_]->GetPage();
+  if (in_form_text_area_)
+    SetFormSelectedText(form_, page);
 
-  return !!FORM_OnKeyUp(form_, pages_[last_page_mouse_down_]->GetPage(),
-                        event.GetKeyCode(), event.GetModifiers());
+  return !!FORM_OnKeyUp(form_, page, event.GetKeyCode(), event.GetModifiers());
 }
 
 bool PDFiumEngine::OnChar(const pp::KeyboardInputEvent& event) {
@@ -3681,9 +3680,10 @@ void PDFiumEngine::DrawPageShadow(const pp::Rect& page_rc,
   depth = static_cast<uint32_t>(depth * 1.5) + 1;
 
   // We need to check depth only to verify our copy of shadow matrix is correct.
-  if (!page_shadow_.get() || page_shadow_->depth() != depth)
-    page_shadow_.reset(
-        new ShadowMatrix(depth, factor, client_->GetBackgroundColor()));
+  if (!page_shadow_.get() || page_shadow_->depth() != depth) {
+    page_shadow_ = base::MakeUnique<ShadowMatrix>(
+        depth, factor, client_->GetBackgroundColor());
+  }
 
   DCHECK(!image_data->is_null());
   DrawShadow(image_data, shadow_rect, page_rect, clip_rect, *page_shadow_);
