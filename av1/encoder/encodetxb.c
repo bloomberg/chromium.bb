@@ -408,108 +408,8 @@ static INLINE int has_base(tran_low_t qc, int base_idx) {
   return abs(qc) >= level;
 }
 
-static void gen_base_count_mag_arr(int (*base_count_arr)[MAX_TX_SQUARE],
-                                   int (*base_mag_arr)[2],
-                                   const tran_low_t *qcoeff, int bwl,
-                                   int height, int eob, const int16_t *scan) {
-  for (int c = 0; c < eob; ++c) {
-    const int coeff_idx = scan[c];  // raster order
-    if (!has_base(qcoeff[coeff_idx], 0)) continue;
-    const int row = coeff_idx >> bwl;
-    const int col = coeff_idx - (row << bwl);
-    int *mag = base_mag_arr[coeff_idx];
-    get_mag(mag, qcoeff, bwl, height, row, col, base_ref_offset,
-            BASE_CONTEXT_POSITION_NUM);
-    for (int i = 0; i < NUM_BASE_LEVELS; ++i) {
-      if (!has_base(qcoeff[coeff_idx], i)) continue;
-      int *count = base_count_arr[i] + coeff_idx;
-      *count = get_level_count(qcoeff, bwl, height, row, col, i,
-                               base_ref_offset, BASE_CONTEXT_POSITION_NUM);
-    }
-  }
-}
-
-static void gen_nz_count_arr(int(*nz_count_arr), const tran_low_t *qcoeff,
-                             int bwl, int height, int eob,
-                             const SCAN_ORDER *scan_order) {
-  const int16_t *scan = scan_order->scan;
-  const int16_t *iscan = scan_order->iscan;
-  for (int c = 0; c < eob; ++c) {
-    const int coeff_idx = scan[c];  // raster order
-    const int row = coeff_idx >> bwl;
-    const int col = coeff_idx - (row << bwl);
-    nz_count_arr[coeff_idx] =
-        get_nz_count(qcoeff, bwl, height, row, col, iscan);
-  }
-}
-
-static void gen_nz_ctx_arr(int *nz_ctx_arr, int *nz_count_arr,
-                           const tran_low_t *qcoeff, int bwl, int eob,
-                           const SCAN_ORDER *scan_order) {
-  const int16_t *scan = scan_order->scan;
-  const int16_t *iscan = scan_order->iscan;
-  for (int c = 0; c < eob; ++c) {
-    const int coeff_idx = scan[c];  // raster order
-    const int count = nz_count_arr[coeff_idx];
-    nz_ctx_arr[coeff_idx] =
-        get_nz_map_ctx_from_count(count, qcoeff, coeff_idx, bwl, iscan);
-  }
-}
-
-static void gen_base_ctx_arr(int (*base_ctx_arr)[MAX_TX_SQUARE],
-                             int (*base_count_arr)[MAX_TX_SQUARE],
-                             int (*base_mag_arr)[2], const tran_low_t *qcoeff,
-                             int stride, int eob, const int16_t *scan) {
-  (void)qcoeff;
-  for (int i = 0; i < NUM_BASE_LEVELS; ++i) {
-    for (int c = 0; c < eob; ++c) {
-      const int coeff_idx = scan[c];  // raster order
-      if (!has_base(qcoeff[coeff_idx], i)) continue;
-      const int row = coeff_idx / stride;
-      const int col = coeff_idx % stride;
-      const int count = base_count_arr[i][coeff_idx];
-      const int *mag = base_mag_arr[coeff_idx];
-      const int level = i + 1;
-      base_ctx_arr[i][coeff_idx] =
-          get_base_ctx_from_count_mag(row, col, count, mag[0], level);
-    }
-  }
-}
-
 static INLINE int has_br(tran_low_t qc) {
   return abs(qc) >= 1 + NUM_BASE_LEVELS;
-}
-
-static void gen_br_count_mag_arr(int *br_count_arr, int (*br_mag_arr)[2],
-                                 const tran_low_t *qcoeff, int bwl, int height,
-                                 int eob, const int16_t *scan) {
-  for (int c = 0; c < eob; ++c) {
-    const int coeff_idx = scan[c];  // raster order
-    if (!has_br(qcoeff[coeff_idx])) continue;
-    const int row = coeff_idx >> bwl;
-    const int col = coeff_idx - (row << bwl);
-    int *count = br_count_arr + coeff_idx;
-    int *mag = br_mag_arr[coeff_idx];
-    *count = get_level_count(qcoeff, bwl, height, row, col, NUM_BASE_LEVELS,
-                             br_ref_offset, BR_CONTEXT_POSITION_NUM);
-    get_mag(mag, qcoeff, bwl, height, row, col, br_ref_offset,
-            BR_CONTEXT_POSITION_NUM);
-  }
-}
-
-static void gen_br_ctx_arr(int *br_ctx_arr, const int *br_count_arr,
-                           int (*br_mag_arr)[2], const tran_low_t *qcoeff,
-                           int stride, int eob, const int16_t *scan) {
-  (void)qcoeff;
-  for (int c = 0; c < eob; ++c) {
-    const int coeff_idx = scan[c];  // raster order
-    if (!has_br(qcoeff[coeff_idx])) continue;
-    const int row = coeff_idx / stride;
-    const int col = coeff_idx % stride;
-    const int count = br_count_arr[coeff_idx];
-    const int *mag = br_mag_arr[coeff_idx];
-    br_ctx_arr[coeff_idx] = get_br_ctx_from_count_mag(row, col, count, mag[0]);
-  }
 }
 
 static INLINE int get_sign_bit_cost(tran_low_t qc, int coeff_idx,
@@ -541,26 +441,50 @@ static INLINE int get_golomb_cost(int abs_qc) {
   }
 }
 
-// TODO(angiebird): add static once this function is called
 void gen_txb_cache(TxbCache *txb_cache, TxbInfo *txb_info) {
+  // gen_nz_count_arr
   const int16_t *scan = txb_info->scan_order->scan;
-  gen_nz_count_arr(txb_cache->nz_count_arr, txb_info->qcoeff, txb_info->bwl,
-                   txb_info->height, txb_info->eob, txb_info->scan_order);
-  gen_nz_ctx_arr(txb_cache->nz_ctx_arr, txb_cache->nz_count_arr,
-                 txb_info->qcoeff, txb_info->bwl, txb_info->eob,
-                 txb_info->scan_order);
-  gen_base_count_mag_arr(txb_cache->base_count_arr, txb_cache->base_mag_arr,
-                         txb_info->qcoeff, txb_info->bwl, txb_info->height,
-                         txb_info->eob, scan);
-  gen_base_ctx_arr(txb_cache->base_ctx_arr, txb_cache->base_count_arr,
-                   txb_cache->base_mag_arr, txb_info->qcoeff, txb_info->stride,
-                   txb_info->eob, scan);
-  gen_br_count_mag_arr(txb_cache->br_count_arr, txb_cache->br_mag_arr,
-                       txb_info->qcoeff, txb_info->bwl, txb_info->height,
-                       txb_info->eob, scan);
-  gen_br_ctx_arr(txb_cache->br_ctx_arr, txb_cache->br_count_arr,
-                 txb_cache->br_mag_arr, txb_info->qcoeff, txb_info->stride,
-                 txb_info->eob, scan);
+  const int16_t *iscan = txb_info->scan_order->iscan;
+  const int bwl = txb_info->bwl;
+  const int height = txb_info->height;
+  tran_low_t *qcoeff = txb_info->qcoeff;
+  for (int c = 0; c < txb_info->eob; ++c) {
+    const int coeff_idx = scan[c];  // raster order
+    const int row = coeff_idx >> bwl;
+    const int col = coeff_idx - (row << bwl);
+    txb_cache->nz_count_arr[coeff_idx] =
+        get_nz_count(qcoeff, bwl, height, row, col, iscan);
+    const int nz_count = txb_cache->nz_count_arr[coeff_idx];
+    txb_cache->nz_ctx_arr[coeff_idx] =
+        get_nz_map_ctx_from_count(nz_count, qcoeff, coeff_idx, bwl, iscan);
+
+    // gen_base_count_mag_arr
+    if (!has_base(qcoeff[coeff_idx], 0)) continue;
+    int *base_mag = txb_cache->base_mag_arr[coeff_idx];
+    get_mag(base_mag, qcoeff, bwl, height, row, col, base_ref_offset,
+            BASE_CONTEXT_POSITION_NUM);
+
+    for (int i = 0; i < NUM_BASE_LEVELS; ++i) {
+      if (!has_base(qcoeff[coeff_idx], i)) continue;
+      int *base_count = txb_cache->base_count_arr[i] + coeff_idx;
+      *base_count = get_level_count(qcoeff, bwl, height, row, col, i,
+                                    base_ref_offset, BASE_CONTEXT_POSITION_NUM);
+      const int level = i + 1;
+      txb_cache->base_ctx_arr[i][coeff_idx] = get_base_ctx_from_count_mag(
+          row, col, *base_count, base_mag[0], level);
+    }
+
+    // gen_br_count_mag_arr
+    if (!has_br(qcoeff[coeff_idx])) continue;
+    int *br_count = txb_cache->br_count_arr + coeff_idx;
+    int *br_mag = txb_cache->br_mag_arr[coeff_idx];
+    *br_count = get_level_count(qcoeff, bwl, height, row, col, NUM_BASE_LEVELS,
+                                br_ref_offset, BR_CONTEXT_POSITION_NUM);
+    get_mag(br_mag, qcoeff, bwl, height, row, col, br_ref_offset,
+            BR_CONTEXT_POSITION_NUM);
+    txb_cache->br_ctx_arr[coeff_idx] =
+        get_br_ctx_from_count_mag(row, col, *br_count, br_mag[0]);
+  }
 }
 
 static INLINE const int *get_level_prob(int level, int coeff_idx,
