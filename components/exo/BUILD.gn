@@ -129,6 +129,7 @@ source_set("unit_tests") {
 
   sources = [
     "buffer_unittest.cc",
+    "data_offer_unittest.cc",
     "display_unittest.cc",
     "keyboard_unittest.cc",
     "pointer_unittest.cc",
