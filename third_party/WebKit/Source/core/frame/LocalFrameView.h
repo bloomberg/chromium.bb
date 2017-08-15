@@ -288,6 +288,10 @@ class CORE_EXPORT LocalFrameView final
 
   Color DocumentBackgroundColor() const;
 
+  // Called when this view is going to be removed from its owning
+  // LocalFrame.
+  void WillBeRemovedFromFrame();
+
   // Run all needed lifecycle stages. After calling this method, all frames will
   // be in the lifecycle state PaintClean.  If lifecycle throttling is allowed
   // (see DocumentLifecycle::AllowThrottlingScope), some frames may skip the
