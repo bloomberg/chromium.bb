@@ -30,6 +30,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "third_party/leveldatabase/chromium_logger.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -804,6 +805,7 @@ Status ChromiumEnv::LockFile(const std::string& fname, FileLock** lock) {
     return result;
   }
 
+#if !defined(OS_FUCHSIA)
   Retrier lock_retrier(kLockFile, this);
   do {
     error_code = file.Lock();
@@ -817,6 +819,7 @@ Status ChromiumEnv::LockFile(const std::string& fname, FileLock** lock) {
     RecordOSError(kLockFile, error_code);
     return result;
   }
+#endif  // !defined(OS_FUCHSIA)
 
   *lock = new ChromiumFileLock(std::move(file), fname);
   return result;
@@ -825,14 +828,17 @@ Status ChromiumEnv::LockFile(const std::string& fname, FileLock** lock) {
 Status ChromiumEnv::UnlockFile(FileLock* lock) {
   std::unique_ptr<ChromiumFileLock> my_lock(
       reinterpret_cast<ChromiumFileLock*>(lock));
-  Status result;
+  Status result = Status::OK();
 
+#if !defined(OS_FUCHSIA)
   base::File::Error error_code = my_lock->file_.Unlock();
   if (error_code != base::File::FILE_OK) {
     result =
         MakeIOError(my_lock->name_, "Could not unlock lock file.", kUnlockFile);
     RecordOSError(kUnlockFile, error_code);
   }
+#endif  // !defined(OS_FUCHSIA)
+
   bool removed = locks_.Remove(my_lock->name_);
   DCHECK(removed);
   return result;
