@@ -28,9 +28,6 @@ const size_t kDriveLetterLen = 3;
 constexpr wchar_t kNTDotPrefix[] = L"\\\\.\\";
 const size_t kNTDotPrefixLen = arraysize(kNTDotPrefix) - 1;
 
-constexpr wchar_t kWIN32Prefix[] = L"\\\\?\\";
-const size_t kWIN32PrefixLen = arraysize(kWIN32Prefix) - 1;
-
 // Holds the information about a known registry key.
 struct KnownReservedKey {
   const wchar_t* name;
@@ -53,12 +50,6 @@ const KnownReservedKey kKnownKey[] = {
 // These functions perform case independent path comparisons.
 bool EqualPath(const base::string16& first, const base::string16& second) {
   return _wcsicmp(first.c_str(), second.c_str()) == 0;
-}
-
-bool EqualPath(const base::string16& first,
-               const base::string16& second,
-               size_t len) {
-  return _wcsnicmp(first.c_str(), second.c_str(), len) == 0;
 }
 
 bool EqualPath(const base::string16& first, size_t first_offset,
@@ -148,76 +139,6 @@ bool StartsWithDriveLetter(const base::string16& path) {
 void RemoveImpliedDevice(base::string16* path) {
   if (EqualPath(*path, kNTDotPrefix, kNTDotPrefixLen))
     *path = path->substr(kNTDotPrefixLen);
-}
-
-// Get drive letter from a Win32 path (if it's there).
-// - Returns 'false' if no drive letter is found.
-bool GetDriveLetter(const base::string16& win32_path,
-                    base::string16* drive_letter) {
-  base::string16 temp = win32_path;
-
-  if (win32_path.size() >= kWIN32PrefixLen &&
-      EqualPath(win32_path, kWIN32Prefix, kWIN32PrefixLen)) {
-    // Bypass Win32 file prefix ("\\?\") if it's there.
-    temp = win32_path.substr(kWIN32PrefixLen);
-  } else if (win32_path.size() >= kNTDotPrefixLen &&
-             EqualPath(win32_path, kNTDotPrefix, kNTDotPrefixLen)) {
-    // Bypass Win32 device prefix ("\\.\") if it's there.
-    temp = win32_path.substr(kNTDotPrefixLen);
-  } else if (win32_path.size() >= sandbox::kNTPrefixLen &&
-             EqualPath(win32_path, sandbox::kNTPrefix, sandbox::kNTPrefixLen)) {
-    // Bypass object manager prefix ("\??\") if it's there.
-    temp = win32_path.substr(sandbox::kNTPrefixLen);
-  }
-
-  if (!StartsWithDriveLetter(temp)) {
-    drive_letter->clear();
-    return false;
-  }
-
-  drive_letter->assign(temp, 0, kDriveLetterLen);
-  return true;
-}
-
-// Get the path to the process.
-// - Pass 'true' for native format, or 'false' for win32.
-// - Returns the full name of the exe image for |process|.
-bool GetProcessPath(HANDLE process, base::string16* path, bool native) {
-  wchar_t process_name[MAX_PATH];
-  DWORD size = MAX_PATH;
-  DWORD flags = (native) ? PROCESS_NAME_NATIVE : 0;
-  if (::QueryFullProcessImageNameW(process, flags, process_name, &size)) {
-    *path = process_name;
-    return true;
-  }
-  // Process name is potentially greater than MAX_PATH, try larger max size.
-  std::vector<wchar_t> process_name_buffer(SHRT_MAX);
-  size = SHRT_MAX;
-  if (::QueryFullProcessImageNameW(process, flags, &process_name_buffer[0],
-                                   &size)) {
-    *path = &process_name_buffer[0];
-    return true;
-  }
-  return false;
-}
-
-// Get the native path for a mapped file.
-bool GetImageFilePath(HANDLE process,
-                      void* base_address,
-                      base::string16* path) {
-  wchar_t mapped_path[MAX_PATH];
-  if (::GetMappedFileNameW(process, base_address, mapped_path, MAX_PATH)) {
-    *path = mapped_path;
-    return true;
-  }
-  // Image name is potentially greater than MAX_PATH, try larger max size.
-  std::vector<wchar_t> mapped_path_buffer(SHRT_MAX);
-  if (::GetMappedFileNameW(process, base_address, &mapped_path_buffer[0],
-                           SHRT_MAX)) {
-    *path = &mapped_path_buffer[0];
-    return true;
-  }
-  return false;
 }
 
 }  // namespace
@@ -553,66 +474,40 @@ DWORD GetLastErrorFromNtStatus(NTSTATUS status) {
   return NtStatusToDosError(status);
 }
 
-// This function walks the virtual memory map using VirtualQueryEx to find
-// the main executable's image section. We attempt to find the first image
-// section which matches the path returned for the process.  This shouldn't
-// be a major performance problem because a new process has a very limited
-// amount of memory allocated so the majority of the valid range should be
-// skipped immediately. However if it turns out to be the case it could be
-// optimized in the specific case of the process being the same as the
-// current process, which due to ASLR rules the image load address will almost
-// always match the current process's load address.
+// This function uses the undocumented PEB ImageBaseAddress field to extract
+// the base address of the new process.
 void* GetProcessBaseAddress(HANDLE process) {
-  MEMORY_BASIC_INFORMATION mem_info = {};
-  // Start 64KiB above zero page.
-  void* current = reinterpret_cast<void*>(0x10000);
-  base::string16 process_path;
-
-  // First, get the win32 process path.
-  if (!GetProcessPath(process, &process_path, false))
+  NtQueryInformationProcessFunction query_information_process = NULL;
+  ResolveNTFunctionPtr("NtQueryInformationProcess", &query_information_process);
+  if (!query_information_process)
+    return nullptr;
+  PROCESS_BASIC_INFORMATION process_basic_info = {};
+  NTSTATUS status = query_information_process(
+      process, ProcessBasicInformation, &process_basic_info,
+      sizeof(process_basic_info), nullptr);
+  if (STATUS_SUCCESS != status)
     return nullptr;
 
-  // Next, get the drive letter from the win32 path. (May not be one.)
-  base::string16 drive;
-  GetDriveLetter(process_path, &drive);
-
-  // Now get the native process path.
-  // (Currently assuming QueryFullProcessImageName returns long format.)
-  if (!GetProcessPath(process, &process_path, true))
+  PEB peb = {};
+  SIZE_T bytes_read = 0;
+  if (!::ReadProcessMemory(process, process_basic_info.PebBaseAddress, &peb,
+                           sizeof(peb), &bytes_read) ||
+      (sizeof(peb) != bytes_read)) {
     return nullptr;
-
-  // Walk the virtual memory mappings trying to find image sections.
-  // VirtualQueryEx will return false if it encounters a location outside of
-  // the user memory range.
-  while (::VirtualQueryEx(process, current, &mem_info, sizeof(mem_info))) {
-    base::string16 image_path;
-    if (mem_info.Type == MEM_IMAGE &&
-        GetImageFilePath(process, mem_info.BaseAddress, &image_path)) {
-      // Compare HarddiskVolume before doing any more work.
-      size_t offset = PassHarddiskVolume(process_path);
-      if (offset != base::string16::npos &&
-          EqualPath(process_path, image_path, offset + 1)) {
-        // Native file paths returned from GetImageFilePath can be in short/8.3
-        // form, depending on filesystem.
-        ConvertToLongPath(&image_path, &drive);
-        // Compare the rest of the two paths.
-        if (EqualPath(process_path, offset + 1, image_path, offset + 1)) {
-          return mem_info.BaseAddress;
-        }
-      }
-    }
-    // VirtualQueryEx should fail before overflow, but just in case we'll check
-    // to prevent an infinite loop.
-    base::CheckedNumeric<uintptr_t> next_base =
-        reinterpret_cast<uintptr_t>(mem_info.BaseAddress);
-    next_base += mem_info.RegionSize;
-    if (!next_base.IsValid())
-      return nullptr;
-    current =
-        reinterpret_cast<void*>(static_cast<uintptr_t>(next_base.ValueOrDie()));
   }
 
-  return nullptr;
+  void* base_address = peb.ImageBaseAddress;
+  char magic[2] = {};
+  if (!::ReadProcessMemory(process, base_address, magic, sizeof(magic),
+                           &bytes_read) ||
+      (sizeof(magic) != bytes_read)) {
+    return nullptr;
+  }
+
+  if (magic[0] != 'M' || magic[1] != 'Z')
+    return nullptr;
+
+  return base_address;
 }
 
 };  // namespace sandbox
