@@ -181,6 +181,10 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   if (!translate_prefs->IsEnabled()) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_PREFS);
+    std::string target_lang = GetTargetLanguage(translate_prefs.get());
+    std::string language_code =
+        TranslateDownloadManager::GetLanguageCode(page_lang);
+    InitTranslateEvent(language_code, target_lang, *translate_prefs);
     RecordTranslateEvent(metrics::TranslateEventProto::DISABLED_BY_PREF);
     const std::string& locale =
         TranslateDownloadManager::GetInstance()->application_locale();
@@ -209,14 +213,14 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   std::string language_code =
       TranslateDownloadManager::GetLanguageCode(page_lang);
 
-  InitTranslateEvent(language_code, target_lang, *translate_prefs);
-
   // Don't translate similar languages (ex: en-US to en).
   if (language_code == target_lang) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_SIMILAR_LANGUAGES);
     return;
   }
+
+  InitTranslateEvent(language_code, target_lang, *translate_prefs);
 
   // Querying the ranker now, but not exiting immediately so that we may log
   // other potential suppression reasons.
