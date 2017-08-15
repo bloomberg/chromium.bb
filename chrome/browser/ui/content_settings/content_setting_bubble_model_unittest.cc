@@ -17,6 +17,7 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -944,6 +945,35 @@ TEST_F(ContentSettingBubbleModelTest, SubresourceFilter) {
   EXPECT_EQ(bubble_content.manage_text,
             l10n_util::GetStringUTF16(IDS_ALLOW_ADS));
   EXPECT_EQ(0U, bubble_content.media_menus.size());
+}
+
+TEST_F(ContentSettingBubbleModelTest, PopupBubbleModelListItems) {
+  WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com"));
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS);
+
+  PopupBlockerTabHelper::CreateForWebContents(web_contents());
+  std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+          nullptr, web_contents(), profile(), CONTENT_SETTINGS_TYPE_POPUPS));
+  const auto& list_items =
+      content_setting_bubble_model->bubble_content().list_items;
+  EXPECT_EQ(0U, list_items.size());
+
+  PopupBlockerTabHelper* popup_blocker =
+      PopupBlockerTabHelper::FromWebContents(web_contents());
+  EXPECT_NE(nullptr, popup_blocker);
+
+  BlockedWindowParams params(GURL("about:blank"), content::Referrer(),
+                             std::string(), WindowOpenDisposition::NEW_POPUP,
+                             blink::mojom::WindowFeatures(), false, true);
+  constexpr size_t kItemCount = 3;
+  for (size_t i = 1; i <= kItemCount; i++) {
+    popup_blocker->AddBlockedPopup(params);
+    EXPECT_EQ(i, list_items.size());
+  }
 }
 
 TEST_F(ContentSettingBubbleModelTest, ValidUrl) {

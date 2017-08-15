@@ -100,8 +100,8 @@
   if (!manageCheckbox_)
     return;
 
-  NSString* label = base::SysUTF16ToNSString(
-      contentSettingBubbleModel_->bubble_content().manage_text);
+  NSString* label =
+      base::SysUTF16ToNSString([super model]->bubble_content().manage_text);
   [manageCheckbox_ setTitle:label];
 
   CGFloat deltaY =
@@ -117,13 +117,13 @@
 // Callback for "manage" checkbox button.
 - (void)manageCheckboxChecked:(id)sender {
   bool isChecked = [sender state] == NSOnState;
-  contentSettingBubbleModel_->OnManageCheckboxChecked(isChecked);
+  [super model]->OnManageCheckboxChecked(isChecked);
   [self layoutView];
 }
 
 // Callback for clicking on the "Learn more" link.
 - (void)learnMoreLinkClicked:(id)sender {
-  contentSettingBubbleModel_->OnCustomLinkClicked();
+  [super model]->OnCustomLinkClicked();
   [self close];
 }
 
