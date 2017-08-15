@@ -33,7 +33,8 @@ class GPUTracer;
 
 struct MappedBuffer {
   GLsizeiptr size;
-  GLbitfield access;
+  GLbitfield original_access;
+  GLbitfield filtered_access;
   uint8_t* map_ptr;
   int32_t data_shm_id;
   uint32_t data_shm_offset;
@@ -287,6 +288,13 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
                                                       GLenum pname,
                                                       GLsizei length,
                                                       GLint* params);
+
+  template <typename T>
+  error::Error PatchGetBufferResults(GLenum target,
+                                     GLenum pname,
+                                     GLsizei bufsize,
+                                     GLsizei* length,
+                                     T* params);
 
   void InsertError(GLenum error, const std::string& message);
   GLenum PopError();
