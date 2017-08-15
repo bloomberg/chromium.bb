@@ -39,7 +39,9 @@ void TestPrefetchDispatcher::StopBackgroundTask() {}
 
 void TestPrefetchDispatcher::SetService(PrefetchService* service) {}
 
-void TestPrefetchDispatcher::SchedulePipelineProcessing() {}
+void TestPrefetchDispatcher::SchedulePipelineProcessing() {
+  processing_schedule_count++;
+}
 
 void TestPrefetchDispatcher::GCMOperationCompletedMessageReceived(
     const std::string& operation_name) {

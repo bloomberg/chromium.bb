@@ -21,6 +21,7 @@
 #include "components/offline_pages/core/prefetch/import_archives_task.h"
 #include "components/offline_pages/core/prefetch/import_completed_task.h"
 #include "components/offline_pages/core/prefetch/mark_operation_done_task.h"
+#include "components/offline_pages/core/prefetch/page_bundle_update_task.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_importer.h"
@@ -89,6 +90,7 @@ void PrefetchDispatcherImpl::BeginBackgroundTask(
     std::unique_ptr<ScopedBackgroundTask> background_task) {
   if (!IsPrefetchingOfflinePagesEnabled())
     return;
+  service_->GetLogger()->RecordActivity("Beginning Background Task.");
 
   background_task_ = std::move(background_task);
 
@@ -165,6 +167,9 @@ void PrefetchDispatcherImpl::DidGenerateBundleRequest(
     PrefetchRequestStatus status,
     const std::string& operation_name,
     const std::vector<RenderPageInfo>& pages) {
+  PrefetchStore* prefetch_store = service_->GetPrefetchStore();
+  task_queue_.AddTask(base::MakeUnique<PageBundleUpdateTask>(
+      prefetch_store, this, operation_name, pages));
   LogRequestResult("GeneratePageBundleRequest", status, operation_name, pages);
 }
 
@@ -172,6 +177,9 @@ void PrefetchDispatcherImpl::DidGetOperationRequest(
     PrefetchRequestStatus status,
     const std::string& operation_name,
     const std::vector<RenderPageInfo>& pages) {
+  PrefetchStore* prefetch_store = service_->GetPrefetchStore();
+  task_queue_.AddTask(base::MakeUnique<PageBundleUpdateTask>(
+      prefetch_store, this, operation_name, pages));
   LogRequestResult("GetOperationRequest", status, operation_name, pages);
 }
 
