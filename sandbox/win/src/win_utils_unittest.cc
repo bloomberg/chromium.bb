@@ -176,41 +176,24 @@ TEST(WinUtils, GetProcessBaseAddress) {
   start_info.cb = sizeof(start_info);
   start_info.dwFlags = STARTF_USESHOWWINDOW;
   start_info.wShowWindow = SW_HIDE;
-  EXPECT_TRUE(::CreateProcessW(nullptr, command_line, nullptr, nullptr, FALSE,
+  ASSERT_TRUE(::CreateProcessW(nullptr, command_line, nullptr, nullptr, FALSE,
                                CREATE_SUSPENDED, nullptr, nullptr, &start_info,
                                &proc_info));
   base::win::ScopedProcessInformation scoped_proc_info(proc_info);
   ScopedTerminateProcess process_terminate(scoped_proc_info.process_handle());
   void* base_address = GetProcessBaseAddress(scoped_proc_info.process_handle());
-  EXPECT_NE(nullptr, base_address);
-  EXPECT_NE(static_cast<DWORD>(-1),
+  ASSERT_NE(nullptr, base_address);
+  ASSERT_NE(static_cast<DWORD>(-1),
             ::ResumeThread(scoped_proc_info.thread_handle()));
   ::WaitForInputIdle(scoped_proc_info.process_handle(), 1000);
-  EXPECT_NE(static_cast<DWORD>(-1),
+  ASSERT_NE(static_cast<DWORD>(-1),
             ::SuspendThread(scoped_proc_info.thread_handle()));
-  // Check again, the process will have done some more memory initialization.
-  EXPECT_EQ(base_address,
-            GetProcessBaseAddress(scoped_proc_info.process_handle()));
 
   std::vector<HMODULE> modules;
   // Compare against the loader's module list (which should now be initialized).
-  // GetModuleList could fail if the target process hasn't fully initialized.
-  // If so skip this check and log it as a warning.
-  if (GetModuleList(scoped_proc_info.process_handle(), &modules) &&
-      modules.size() > 0) {
-    // First module should be the main executable.
-    EXPECT_EQ(base_address, modules[0]);
-  } else {
-    LOG(WARNING) << "Couldn't test base address against module list";
-  }
-  // Fill in some of the virtual memory with 10MiB chunks and try again.
-  for (int count = 0; count < 100; ++count) {
-    EXPECT_NE(nullptr,
-              ::VirtualAllocEx(scoped_proc_info.process_handle(), nullptr,
-                               10 * 1024 * 1024, MEM_RESERVE, PAGE_NOACCESS));
-  }
-  EXPECT_EQ(base_address,
-            GetProcessBaseAddress(scoped_proc_info.process_handle()));
+  ASSERT_TRUE(GetModuleList(scoped_proc_info.process_handle(), &modules));
+  ASSERT_GT(modules.size(), 0U);
+  EXPECT_EQ(base_address, modules[0]);
 }
 
 // This test requires an elevated prompt to setup.
