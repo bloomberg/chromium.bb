@@ -164,6 +164,14 @@ TEST_F(
           .run();
     });
 
+TEST_F(
+    'CrExtensionsDetailViewTest', 'IndicatorTest',
+    function() {
+      mocha
+          .grep(assert(extension_detail_view_tests.TestNames.Indicator))
+          .run();
+    });
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Item List Tests
 
