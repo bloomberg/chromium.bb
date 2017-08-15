@@ -224,6 +224,11 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_RP_BLENDS
 #endif
 
+// Transition from Gaussian filtering for small sigma to linear filtering
+#ifndef SK_SUPPORT_LEGACY_USE_GAUSS_FOR_SMALL_RADII
+#define SK_SUPPORT_LEGACY_USE_GAUSS_FOR_SMALL_RADII
+#endif
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
