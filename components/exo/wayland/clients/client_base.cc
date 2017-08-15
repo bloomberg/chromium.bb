@@ -133,7 +133,11 @@ wl_buffer_listener g_buffer_listener = {BufferRelease};
 ////////////////////////////////////////////////////////////////////////////////
 // ClientBase::InitParams, public:
 
-ClientBase::InitParams::InitParams() {}
+ClientBase::InitParams::InitParams() {
+#if defined(OZONE_PLATFORM_GBM)
+  drm_format = DRM_FORMAT_ABGR8888;
+#endif
+}
 
 ClientBase::InitParams::~InitParams() {}
 
@@ -291,7 +295,7 @@ bool ClientBase::Init(const InitParams& params) {
   }
 #endif
   for (size_t i = 0; i < params.num_buffers; ++i) {
-    auto buffer = CreateBuffer(size_);
+    auto buffer = CreateBuffer(size_, params.drm_format);
     if (!buffer) {
       LOG(ERROR) << "Failed to create buffer";
       return false;
@@ -358,10 +362,14 @@ ClientBase::~ClientBase() {}
 // ClientBase, private:
 
 std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
-    const gfx::Size& size) {
-  std::unique_ptr<Buffer> buffer = CreateDRMBuffer(size, DRM_FORMAT_ABGR8888);
-  if (buffer)
+    const gfx::Size& size,
+    int32_t drm_format) {
+  std::unique_ptr<Buffer> buffer;
+  if (device_) {
+    buffer = CreateDrmBuffer(size, drm_format);
+    CHECK(buffer) << "Can't create drm buffer";
     return buffer;
+  }
 
   buffer = base::MakeUnique<Buffer>();
 
@@ -391,16 +399,16 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
   return buffer;
 }
 
-std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDRMBuffer(
+std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
     const gfx::Size& size,
     int32_t drm_format) {
   std::unique_ptr<Buffer> buffer;
 #if defined(OZONE_PLATFORM_GBM)
   if (device_) {
     buffer = base::MakeUnique<Buffer>();
-    buffer->bo.reset(gbm_bo_create(device_.get(), size.width(), size.height(),
-                                   drm_format,
-                                   GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING));
+    buffer->bo.reset(gbm_bo_create(
+        device_.get(), size.width(), size.height(), drm_format,
+        GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING | GBM_BO_USE_TEXTURING));
     if (!buffer->bo) {
       LOG(ERROR) << "Can't create gbm buffer";
       return nullptr;

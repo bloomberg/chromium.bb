@@ -59,7 +59,8 @@ void SubSurfaceClient::Run(const ClientBase::InitParams& params) {
 
   constexpr int32_t kSubsurfaceWidth = 128;
   constexpr int32_t kSubsurfaceHeight = 128;
-  auto subbuffer = CreateBuffer(gfx::Size(kSubsurfaceWidth, kSubsurfaceHeight));
+  auto subbuffer = CreateBuffer(gfx::Size(kSubsurfaceWidth, kSubsurfaceHeight),
+                                params.drm_format);
   if (!subbuffer) {
     LOG(ERROR) << "Failed to create subbuffer";
     return;
