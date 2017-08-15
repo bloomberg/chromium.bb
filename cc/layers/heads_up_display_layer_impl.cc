@@ -166,39 +166,25 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     return;
 
   if (context_provider) {
-    gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
-    DCHECK(gl);
     ScopedGpuRaster gpu_raster(context_provider);
-    bool using_worker_context = false;
-    ResourceProvider::ScopedWriteLockGL lock(
-        resource_provider, resources_.back()->id(), using_worker_context);
 
-    TRACE_EVENT_BEGIN0("cc", "CreateHudCanvas");
-    bool use_distance_field_text = false;
-    bool can_use_lcd_text = false;
-    int msaa_sample_count = 0;
-    ResourceProvider::ScopedSkSurfaceProvider scoped_surface(
-        context_provider, &lock, using_worker_context, use_distance_field_text,
-        can_use_lcd_text, msaa_sample_count);
-    if (!scoped_surface.sk_surface()) {
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider,
+                                             resources_.back()->id());
+
+    ResourceProvider::ScopedSkSurface scoped_surface(
+        context_provider->GrContext(), lock.GetTexture(), lock.target(),
+        lock.size(), lock.format(), false /* use_distance_field_text */,
+        false /* can_use_lcd_text */, 0 /* msaa_sample_count */);
+
+    SkSurface* surface = scoped_surface.surface();
+    if (!surface) {
       EvictHudQuad(list);
       return;
     }
-    SkCanvas* gpu_raster_canvas = scoped_surface.sk_surface()->getCanvas();
-    TRACE_EVENT_END0("cc", "CreateHudCanvas");
 
     UpdateHudContents();
 
-    DrawHudContents(gpu_raster_canvas);
-
-    TRACE_EVENT_BEGIN0("cc", "UploadHudTexture");
-    const uint64_t fence = gl->InsertFenceSyncCHROMIUM();
-    gl->OrderingBarrierCHROMIUM();
-    gpu::SyncToken sync_token;
-    gl->GenSyncTokenCHROMIUM(fence, sync_token.GetData());
-    lock.set_sync_token(sync_token);
-    lock.set_synchronized(true);
-    TRACE_EVENT_END0("cc", "UploadHudTexture");
+    DrawHudContents(surface->getCanvas());
   } else {
     SkISize canvas_size;
     if (hud_surface_)

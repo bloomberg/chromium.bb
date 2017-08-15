@@ -37,6 +37,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
+using testing::InSequence;
 using testing::Mock;
 using testing::NiceMock;
 using testing::Return;
@@ -407,7 +408,7 @@ void GetResourcePixels(ResourceProvider* resource_provider,
                        const gfx::Size& size,
                        viz::ResourceFormat format,
                        uint8_t* pixels) {
-  resource_provider->WaitSyncTokenIfNeeded(id);
+  resource_provider->WaitSyncToken(id);
   switch (resource_provider->default_resource_type()) {
     case ResourceProvider::RESOURCE_TYPE_GPU_MEMORY_BUFFER:
     case ResourceProvider::RESOURCE_TYPE_GL_TEXTURE: {
@@ -638,9 +639,9 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   uint8_t data2[4] = { 5, 5, 5, 5 };
   child_resource_provider_->CopyToResource(id2, data2, size);
 
-  viz::ResourceId id3 = child_resource_provider_->CreateResource(
+  viz::ResourceId id3 = child_resource_provider_->CreateGpuMemoryBufferResource(
       size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
-      gfx::ColorSpace());
+      gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gfx::ColorSpace());
   {
     ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
         child_resource_provider_.get(), id3);
@@ -707,7 +708,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     EXPECT_NE(list[0].mailbox_holder.sync_token,
               context3d_->last_waited_sync_token());
     {
-      resource_provider_->WaitSyncTokenIfNeeded(list[0].id);
+      resource_provider_->WaitSyncToken(list[0].id);
       ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                               list[0].id);
     }
@@ -753,12 +754,12 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   EXPECT_FALSE(resource_provider_->IsOverlayCandidate(mapped_id4));
 
   {
-    resource_provider_->WaitSyncTokenIfNeeded(mapped_id1);
+    resource_provider_->WaitSyncToken(mapped_id1);
     ResourceProvider::ScopedReadLockGL lock1(resource_provider_.get(),
                                              mapped_id1);
     EXPECT_TRUE(lock1.color_space() == color_space1);
 
-    resource_provider_->WaitSyncTokenIfNeeded(mapped_id4);
+    resource_provider_->WaitSyncToken(mapped_id4);
     ResourceProvider::ScopedReadLockGL lock4(resource_provider_.get(),
                                              mapped_id4);
     EXPECT_TRUE(lock4.color_space() == color_space4);
@@ -819,7 +820,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   EXPECT_FALSE(child_resource_provider_->InUseByConsumer(id4));
 
   {
-    child_resource_provider_->WaitSyncTokenIfNeeded(id1);
+    child_resource_provider_->WaitSyncToken(id1);
     ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
                                             id1);
     ASSERT_NE(0U, lock.texture_id());
@@ -830,7 +831,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   // Ensure copying to resource doesn't fail.
   child_resource_provider_->CopyToResource(id2, data2, size);
   {
-    child_resource_provider_->WaitSyncTokenIfNeeded(id3);
+    child_resource_provider_->WaitSyncToken(id3);
     ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
                                             id3);
     ASSERT_NE(0U, lock.texture_id());
@@ -946,7 +947,7 @@ TEST_P(ResourceProviderTest, OverlayPromotionHint) {
     ASSERT_EQ(2u, list.size());
     resource_provider_->ReceiveFromChild(child_id, list);
     {
-      resource_provider_->WaitSyncTokenIfNeeded(list[0].id);
+      resource_provider_->WaitSyncToken(list[0].id);
       ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                               list[0].id);
     }
@@ -1011,9 +1012,9 @@ TEST_P(ResourceProviderTestNoSyncToken, TransferGLResources) {
   uint8_t data1[4] = {1, 2, 3, 4};
   child_resource_provider_->CopyToResource(id1, data1, size);
 
-  viz::ResourceId id2 = child_resource_provider_->CreateResource(
+  viz::ResourceId id2 = child_resource_provider_->CreateGpuMemoryBufferResource(
       size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
-      gfx::ColorSpace());
+      gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gfx::ColorSpace());
   {
     // Ensure locking the memory buffer doesn't create an unnecessary sync
     // point.
@@ -1139,7 +1140,7 @@ TEST_P(ResourceProviderTest, SetBatchPreventsReturn) {
 
   std::vector<std::unique_ptr<ResourceProvider::ScopedReadLockGL>> read_locks;
   for (auto& parent_resource : list) {
-    resource_provider_->WaitSyncTokenIfNeeded(parent_resource.id);
+    resource_provider_->WaitSyncToken(parent_resource.id);
     read_locks.push_back(base::MakeUnique<ResourceProvider::ScopedReadLockGL>(
         resource_provider_.get(), parent_resource.id));
   }
@@ -1193,7 +1194,7 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
 
     resource_provider_->ReceiveFromChild(child_id, list);
 
-    resource_provider_->WaitSyncTokenIfNeeded(list[0].id);
+    resource_provider_->WaitSyncToken(list[0].id);
     ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                             list[0].id);
 
@@ -1206,7 +1207,7 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
 
   {
-    child_resource_provider_->WaitSyncTokenIfNeeded(id1);
+    child_resource_provider_->WaitSyncToken(id1);
     ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
                                             id1);
     child_resource_provider_->DeleteResource(id1);
@@ -1265,7 +1266,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
   resource_provider_->SetReadLockFence(fence.get());
   {
     unsigned parent_id = list.front().id;
-    resource_provider_->WaitSyncTokenIfNeeded(parent_id);
+    resource_provider_->WaitSyncToken(parent_id);
     ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                             parent_id);
   }
@@ -1328,7 +1329,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
   {
     for (size_t i = 0; i < list.size(); i++) {
       unsigned parent_id = list[i].id;
-      resource_provider_->WaitSyncTokenIfNeeded(parent_id);
+      resource_provider_->WaitSyncToken(parent_id);
       ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                               parent_id);
     }
@@ -1393,7 +1394,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
   {
     for (size_t i = 0; i < list.size(); i++) {
       unsigned parent_id = list[i].id;
-      resource_provider_->WaitSyncTokenIfNeeded(parent_id);
+      resource_provider_->WaitSyncToken(parent_id);
       ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                               parent_id);
     }
@@ -1989,7 +1990,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
 
       parent_resource_provider->ReceiveFromChild(child_id, list);
       {
-        parent_resource_provider->WaitSyncTokenIfNeeded(list[0].id);
+        parent_resource_provider->WaitSyncToken(list[0].id);
         ResourceProvider::ScopedReadLockGL lock(parent_resource_provider.get(),
                                                 list[0].id);
       }
@@ -2712,7 +2713,7 @@ class ResourceProviderTestTextureMailboxGLFilters
     {
       // Mailbox sync point WaitSyncToken before using the texture.
       EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(sync_token)));
-      resource_provider->WaitSyncTokenIfNeeded(id);
+      resource_provider->WaitSyncToken(id);
       Mock::VerifyAndClearExpectations(context);
 
       EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(target, _))
@@ -2848,7 +2849,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
   {
     // Mailbox sync point WaitSyncToken before using the texture.
     EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(sync_token)));
-    resource_provider->WaitSyncTokenIfNeeded(id);
+    resource_provider->WaitSyncToken(id);
     Mock::VerifyAndClearExpectations(context);
 
     unsigned texture_id = 1;
@@ -2915,14 +2916,14 @@ TEST_P(ResourceProviderTest,
   Mock::VerifyAndClearExpectations(context);
 
   {
-    // First call to WaitSyncTokenIfNeeded should call waitSyncToken.
+    // First call to WaitSyncToken should call waitSyncToken.
     EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(sync_token)));
-    resource_provider->WaitSyncTokenIfNeeded(id);
+    resource_provider->WaitSyncToken(id);
     Mock::VerifyAndClearExpectations(context);
 
-    // Subsequent calls to WaitSyncTokenIfNeeded shouldn't call waitSyncToken.
+    // Subsequent calls to WaitSyncToken shouldn't call waitSyncToken.
     EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
-    resource_provider->WaitSyncTokenIfNeeded(id);
+    resource_provider->WaitSyncToken(id);
     Mock::VerifyAndClearExpectations(context);
   }
 }
@@ -2969,9 +2970,9 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncTokenIfNeeded_NoSyncToken) {
   Mock::VerifyAndClearExpectations(context);
 
   {
-    // WaitSyncTokenIfNeeded with empty sync_token shouldn't call waitSyncToken.
+    // WaitSyncToken with empty sync_token shouldn't call waitSyncToken.
     EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
-    resource_provider->WaitSyncTokenIfNeeded(id);
+    resource_provider->WaitSyncToken(id);
     Mock::VerifyAndClearExpectations(context);
   }
 }
@@ -3019,11 +3020,10 @@ TEST_P(ResourceProviderTest, TextureMailbox_PrepareSendToParent_NoSyncToken) {
   Mock::VerifyAndClearExpectations(context);
 }
 
-class AllocationTrackingContext3D : public TestWebGraphicsContext3D {
+class AllocationTrackingContext3D : public TextureStateTrackingContext {
  public:
   MOCK_METHOD0(NextTextureId, GLuint());
   MOCK_METHOD1(RetireTextureId, void(GLuint id));
-  MOCK_METHOD2(bindTexture, void(GLenum target, GLuint texture));
   MOCK_METHOD5(texStorage2DEXT,
                void(GLenum target,
                     GLint levels,
@@ -3089,7 +3089,7 @@ class AllocationTrackingContext3D : public TestWebGraphicsContext3D {
   // We're mocking bindTexture, so we override
   // TestWebGraphicsContext3D::texParameteri to avoid assertions related to the
   // currently bound texture.
-  virtual void texParameteri(GLenum target, GLenum pname, GLint param) {}
+  void texParameteri(GLenum target, GLenum pname, GLint param) override {}
 };
 
 TEST_P(ResourceProviderTest, TextureAllocation) {
@@ -3267,9 +3267,7 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
 
   const int kWidth = 2;
   const int kHeight = 2;
-  gfx::Size size(kWidth, kHeight);
   viz::ResourceFormat format = viz::RGBA_8888;
-  viz::ResourceId id = 0;
   const unsigned kTextureId = 123u;
   const unsigned kImageId = 234u;
 
@@ -3280,63 +3278,57 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
           CreateResourceSettings()));
 
-  id = resource_provider->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
-      gfx::ColorSpace());
+  viz::ResourceId id = resource_provider->CreateGpuMemoryBufferResource(
+      gfx::Size(kWidth, kHeight), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gfx::ColorSpace());
 
-  EXPECT_CALL(*context, NextTextureId())
-      .WillOnce(Return(kTextureId))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId))
-      .Times(3)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*context, createImageCHROMIUM(_, kWidth, kHeight, GL_RGBA))
-      .WillOnce(Return(kImageId))
-      .RetiresOnSaturation();
-  {
-    ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
-        resource_provider.get(), id);
-    EXPECT_TRUE(lock.GetGpuMemoryBuffer());
-  }
-
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId))
-      .Times(1)
-      .RetiresOnSaturation();
-  {
-    ResourceProvider::ScopedSamplerGL lock_gl(
-        resource_provider.get(), id, GL_TEXTURE_2D, GL_LINEAR);
-    EXPECT_EQ(kTextureId, lock_gl.texture_id());
-  }
+  InSequence sequence;
 
   {
     ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
         resource_provider.get(), id);
     EXPECT_TRUE(lock.GetGpuMemoryBuffer());
+    // Create texture and image upon releasing the lock.
+    EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(kTextureId));
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId));
+    EXPECT_CALL(*context, createImageCHROMIUM(_, kWidth, kHeight, GL_RGBA))
+        .WillOnce(Return(kImageId));
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId));
+    EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId));
   }
+  // The image is created in the lock's destructor.
+  Mock::VerifyAndClearExpectations(context);
 
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId)).Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*context, releaseTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*context, RetireTextureId(kTextureId))
-      .Times(1)
-      .RetiresOnSaturation();
   {
-    ResourceProvider::ScopedSamplerGL lock_gl(
-        resource_provider.get(), id, GL_TEXTURE_2D, GL_LINEAR);
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId));
+    ResourceProvider::ScopedSamplerGL lock_gl(resource_provider.get(), id,
+                                              GL_TEXTURE_2D, GL_LINEAR);
     EXPECT_EQ(kTextureId, lock_gl.texture_id());
+    Mock::VerifyAndClearExpectations(context);
   }
 
-  EXPECT_CALL(*context, destroyImageCHROMIUM(kImageId))
-      .Times(1)
-      .RetiresOnSaturation();
+  {
+    ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
+        resource_provider.get(), id);
+    EXPECT_TRUE(lock.GetGpuMemoryBuffer());
+    // Upload to GPU again since image is dirty after the write lock.
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId));
+    EXPECT_CALL(*context, releaseTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId));
+    EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId));
+  }
+  // The image is updated in the lock's destructor.
+  Mock::VerifyAndClearExpectations(context);
+
+  {
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId));
+    ResourceProvider::ScopedSamplerGL lock_gl(resource_provider.get(), id,
+                                              GL_TEXTURE_2D, GL_LINEAR);
+    EXPECT_EQ(kTextureId, lock_gl.texture_id());
+    Mock::VerifyAndClearExpectations(context);
+  }
+
+  EXPECT_CALL(*context, destroyImageCHROMIUM(kImageId));
+  EXPECT_CALL(*context, RetireTextureId(kTextureId));
 }
 
 TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
@@ -3364,7 +3356,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
       gfx::ColorSpace());
   EXPECT_NE(0u, id);
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(1);
   resource_provider->AllocateForTesting(id);
 
   EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
@@ -3397,7 +3389,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Upload) {
       gfx::ColorSpace());
   EXPECT_NE(0u, id);
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(3);
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
   EXPECT_CALL(*context,
               compressedTexImage2D(
                   _, 0, _, size.width(), size.height(), _, _, _)).Times(1);
@@ -3491,8 +3483,7 @@ TEST_P(ResourceProviderTest, GetSyncTokenForResources) {
         gfx::ColorSpace());
     array.push_back(id);
 
-    ResourceProvider::ScopedWriteLockGL lock(resource_provider_.get(), id,
-                                             false);
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider_.get(), id);
     gpu::SyncToken token;
     token.Set(gpu::CommandBufferNamespace::INVALID, 0, gpu::CommandBufferId(),
               release_counts[i]);
@@ -3502,6 +3493,279 @@ TEST_P(ResourceProviderTest, GetSyncTokenForResources) {
   gpu::SyncToken last_token =
       resource_provider_->GetSyncTokenForResources(array);
   EXPECT_EQ(last_token.release_count(), 10u);
+}
+
+TEST_P(ResourceProviderTest, ScopedWriteLockGL) {
+  if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
+    return;
+  std::unique_ptr<AllocationTrackingContext3D> context_owned(
+      new StrictMock<AllocationTrackingContext3D>);
+  AllocationTrackingContext3D* context = context_owned.get();
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
+
+  const int kWidth = 2;
+  const int kHeight = 2;
+  const viz::ResourceFormat format = viz::RGBA_8888;
+  const unsigned kTextureId = 123u;
+
+  std::unique_ptr<ResourceProvider> resource_provider(
+      base::MakeUnique<ResourceProvider>(
+          context_provider.get(), shared_bitmap_manager_.get(),
+          gpu_memory_buffer_manager_.get(), nullptr,
+          kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
+          CreateResourceSettings()));
+
+  viz::ResourceId id = resource_provider->CreateResource(
+      gfx::Size(kWidth, kHeight), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      format, gfx::ColorSpace());
+
+  InSequence sequence;
+
+  // First use will allocate lazily when accessing the texture.
+  {
+    EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(kTextureId));
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId)).Times(2);
+    EXPECT_CALL(*context, texImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(format),
+                                     kWidth, kHeight, 0, GLDataFormat(format),
+                                     GLDataType(format), nullptr));
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider.get(), id);
+    EXPECT_EQ(lock.GetTexture(), kTextureId);
+    Mock::VerifyAndClearExpectations(context);
+  }
+
+  // Subsequent uses will not allocate.
+  {
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider.get(), id);
+    EXPECT_EQ(lock.GetTexture(), kTextureId);
+  }
+
+  EXPECT_CALL(*context, RetireTextureId(kTextureId));
+  resource_provider->DeleteResource(id);
+}
+
+TEST_P(ResourceProviderTest, ScopedWriteLockGL_GpuMemoryBuffer) {
+  if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
+    return;
+  std::unique_ptr<AllocationTrackingContext3D> context_owned(
+      new StrictMock<AllocationTrackingContext3D>);
+  AllocationTrackingContext3D* context = context_owned.get();
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
+
+  const int kWidth = 2;
+  const int kHeight = 2;
+  const viz::ResourceFormat format = viz::RGBA_8888;
+  const unsigned kTextureId = 123u;
+  const unsigned kImageId = 234u;
+
+  std::unique_ptr<ResourceProvider> resource_provider(
+      base::MakeUnique<ResourceProvider>(
+          context_provider.get(), shared_bitmap_manager_.get(),
+          gpu_memory_buffer_manager_.get(), nullptr,
+          kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
+          CreateResourceSettings()));
+
+  viz::ResourceId id = resource_provider->CreateGpuMemoryBufferResource(
+      gfx::Size(kWidth, kHeight), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gfx::ColorSpace());
+
+  InSequence sequence;
+
+  // First use will allocate lazily on accessing the texture.
+  {
+    EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(kTextureId));
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId));
+    EXPECT_CALL(*context, createImageCHROMIUM(_, kWidth, kHeight,
+                                              GLInternalFormat(format)))
+        .WillOnce(Return(kImageId));
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId));
+    EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId));
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider.get(), id);
+    EXPECT_EQ(lock.GetTexture(), kTextureId);
+    Mock::VerifyAndClearExpectations(context);
+  }
+
+  // Subsequent uses will not allocate.
+  {
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider.get(), id);
+    EXPECT_EQ(lock.GetTexture(), kTextureId);
+  }
+
+  EXPECT_CALL(*context, destroyImageCHROMIUM(kImageId));
+  EXPECT_CALL(*context, RetireTextureId(kTextureId));
+  resource_provider->DeleteResource(id);
+}
+
+TEST_P(ResourceProviderTest, ScopedWriteLockGL_Mailbox) {
+  if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
+    return;
+  std::unique_ptr<AllocationTrackingContext3D> context_owned(
+      new StrictMock<AllocationTrackingContext3D>);
+  AllocationTrackingContext3D* context = context_owned.get();
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
+
+  const int kWidth = 2;
+  const int kHeight = 2;
+  const viz::ResourceFormat format = viz::RGBA_8888;
+  const unsigned kTextureId = 123u;
+  const unsigned kWorkerTextureId = 234u;
+
+  std::unique_ptr<ResourceProvider> resource_provider(
+      base::MakeUnique<ResourceProvider>(
+          context_provider.get(), shared_bitmap_manager_.get(),
+          gpu_memory_buffer_manager_.get(), nullptr,
+          kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
+          CreateResourceSettings()));
+
+  viz::ResourceId id = resource_provider->CreateResource(
+      gfx::Size(kWidth, kHeight), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      format, gfx::ColorSpace());
+
+  InSequence sequence;
+  gpu::SyncToken sync_token;
+
+  // First use will create mailbox when lock is created and allocate lazily in
+  // ConsumeTexture.
+  {
+    EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(kTextureId));
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId));
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider.get(), id);
+    Mock::VerifyAndClearExpectations(context);
+
+    EXPECT_CALL(*context,
+                produceTextureDirectCHROMIUM(kTextureId, GL_TEXTURE_2D, _));
+    lock.CreateMailbox();
+    Mock::VerifyAndClearExpectations(context);
+
+    EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, _))
+        .WillOnce(Return(kWorkerTextureId));
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kWorkerTextureId));
+    EXPECT_CALL(*context, texImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(format),
+                                     kWidth, kHeight, 0, GLDataFormat(format),
+                                     GLDataType(format), nullptr));
+    EXPECT_EQ(kWorkerTextureId,
+              lock.ConsumeTexture(context_provider->ContextGL()));
+    Mock::VerifyAndClearExpectations(context);
+
+    EXPECT_CALL(*context, RetireTextureId(kWorkerTextureId));
+    context_provider->ContextGL()->DeleteTextures(1, &kWorkerTextureId);
+    Mock::VerifyAndClearExpectations(context);
+  }
+
+  // Subsequent uses will not create mailbox or allocate.
+  {
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider.get(), id);
+    lock.CreateMailbox();
+    Mock::VerifyAndClearExpectations(context);
+
+    EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, _))
+        .WillOnce(Return(kWorkerTextureId));
+    EXPECT_EQ(kWorkerTextureId,
+              lock.ConsumeTexture(context_provider->ContextGL()));
+    Mock::VerifyAndClearExpectations(context);
+
+    EXPECT_CALL(*context, RetireTextureId(kWorkerTextureId));
+    context_provider->ContextGL()->DeleteTextures(1, &kWorkerTextureId);
+
+    sync_token = ResourceProvider::GenerateSyncTokenHelper(
+        context_provider->ContextGL());
+    lock.set_sync_token(sync_token);
+    Mock::VerifyAndClearExpectations(context);
+  }
+
+  // Wait for worker context sync token before deleting texture.
+  EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(sync_token)));
+  EXPECT_CALL(*context, RetireTextureId(kTextureId));
+  resource_provider->DeleteResource(id);
+}
+
+TEST_P(ResourceProviderTest, ScopedWriteLockGL_GpuMemoryBuffer_Mailbox) {
+  if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
+    return;
+  std::unique_ptr<AllocationTrackingContext3D> context_owned(
+      new StrictMock<AllocationTrackingContext3D>);
+  AllocationTrackingContext3D* context = context_owned.get();
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
+
+  const int kWidth = 2;
+  const int kHeight = 2;
+  const viz::ResourceFormat format = viz::RGBA_8888;
+  const unsigned kTextureId = 123u;
+  const unsigned kWorkerTextureId = 234u;
+  const unsigned kImageId = 345u;
+
+  std::unique_ptr<ResourceProvider> resource_provider(
+      base::MakeUnique<ResourceProvider>(
+          context_provider.get(), shared_bitmap_manager_.get(),
+          gpu_memory_buffer_manager_.get(), nullptr,
+          kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
+          CreateResourceSettings()));
+
+  viz::ResourceId id = resource_provider->CreateGpuMemoryBufferResource(
+      gfx::Size(kWidth, kHeight), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gfx::ColorSpace());
+
+  InSequence sequence;
+  gpu::SyncToken sync_token;
+
+  // First use will create mailbox when lock is created and allocate lazily in
+  // ConsumeTexture.
+  {
+    EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(kTextureId));
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId));
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider.get(), id);
+    Mock::VerifyAndClearExpectations(context);
+
+    EXPECT_CALL(*context,
+                produceTextureDirectCHROMIUM(kTextureId, GL_TEXTURE_2D, _));
+    lock.CreateMailbox();
+    Mock::VerifyAndClearExpectations(context);
+
+    EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, _))
+        .WillOnce(Return(kWorkerTextureId));
+    EXPECT_CALL(*context, createImageCHROMIUM(_, kWidth, kHeight,
+                                              GLInternalFormat(format)))
+        .WillOnce(Return(kImageId));
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kWorkerTextureId));
+    EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId));
+    EXPECT_EQ(kWorkerTextureId,
+              lock.ConsumeTexture(context_provider->ContextGL()));
+    Mock::VerifyAndClearExpectations(context);
+
+    EXPECT_CALL(*context, RetireTextureId(kWorkerTextureId));
+    context_provider->ContextGL()->DeleteTextures(1, &kWorkerTextureId);
+    Mock::VerifyAndClearExpectations(context);
+  }
+
+  // Subsequent uses will not create mailbox or allocate.
+  {
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider.get(), id);
+    lock.CreateMailbox();
+    Mock::VerifyAndClearExpectations(context);
+
+    EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, _))
+        .WillOnce(Return(kWorkerTextureId));
+    EXPECT_EQ(kWorkerTextureId,
+              lock.ConsumeTexture(context_provider->ContextGL()));
+    Mock::VerifyAndClearExpectations(context);
+
+    sync_token = ResourceProvider::GenerateSyncTokenHelper(
+        context_provider->ContextGL());
+    lock.set_sync_token(sync_token);
+
+    EXPECT_CALL(*context, RetireTextureId(kWorkerTextureId));
+    context_provider->ContextGL()->DeleteTextures(1, &kWorkerTextureId);
+    Mock::VerifyAndClearExpectations(context);
+  }
+
+  // Wait for worker context sync token before deleting texture.
+  EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(sync_token)));
+  EXPECT_CALL(*context, destroyImageCHROMIUM(kImageId));
+  EXPECT_CALL(*context, RetireTextureId(kTextureId));
+  resource_provider->DeleteResource(id);
 }
 
 }  // namespace

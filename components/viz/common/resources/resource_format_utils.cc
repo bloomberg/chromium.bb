@@ -151,6 +151,23 @@ gfx::BufferFormat BufferFormat(ResourceFormat format) {
   return gfx::BufferFormat::RGBA_8888;
 }
 
+GrPixelConfig ToGrPixelConfig(ResourceFormat format) {
+  switch (format) {
+    case RGBA_8888:
+      return kRGBA_8888_GrPixelConfig;
+    case BGRA_8888:
+      return kBGRA_8888_GrPixelConfig;
+    case RGBA_4444:
+      return kRGBA_4444_GrPixelConfig;
+    case RGBA_F16:
+      return kRGBA_half_GrPixelConfig;
+    default:
+      break;
+  }
+  DCHECK(false) << "Unsupported resource format.";
+  return kSkia8888_GrPixelConfig;
+}
+
 bool IsResourceFormatCompressed(ResourceFormat format) {
   return format == ETC1;
 }

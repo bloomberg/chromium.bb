@@ -37,54 +37,62 @@ static void RasterizeSource(
     const RasterSource::PlaybackSettings& playback_settings,
     viz::ContextProvider* context_provider,
     ResourceProvider::ScopedWriteLockGL* resource_lock,
-    bool async_worker_context_enabled,
     bool use_distance_field_text,
     int msaa_sample_count) {
   ScopedGpuRaster gpu_raster(context_provider);
 
-  ResourceProvider::ScopedSkSurfaceProvider scoped_surface(
-      context_provider, resource_lock, async_worker_context_enabled,
-      use_distance_field_text, playback_settings.use_lcd_text,
-      msaa_sample_count);
-  SkSurface* sk_surface = scoped_surface.sk_surface();
-  // Allocating an SkSurface will fail after a lost context.  Pretend we
-  // rasterized, as the contents of the resource don't matter anymore.
-  if (!sk_surface) {
-    DLOG(ERROR) << "Failed to allocate raster surface";
-    return;
+  gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
+  GLuint texture_id = resource_lock->ConsumeTexture(gl);
+
+  {
+    ResourceProvider::ScopedSkSurface scoped_surface(
+        context_provider->GrContext(), texture_id, resource_lock->target(),
+        resource_lock->size(), resource_lock->format(), use_distance_field_text,
+        playback_settings.use_lcd_text, msaa_sample_count);
+
+    SkSurface* surface = scoped_surface.surface();
+
+    // Allocating an SkSurface will fail after a lost context.  Pretend we
+    // rasterized, as the contents of the resource don't matter anymore.
+    if (!surface) {
+      DLOG(ERROR) << "Failed to allocate raster surface";
+      return;
+    }
+
+    // Playback
+    gfx::Rect playback_rect = raster_full_rect;
+    if (resource_has_previous_content) {
+      playback_rect.Intersect(raster_dirty_rect);
+    }
+    DCHECK(!playback_rect.IsEmpty())
+        << "Why are we rastering a tile that's not dirty?";
+
+    // Log a histogram of the percentage of pixels that were saved due to
+    // partial raster.
+    const char* client_name = GetClientNameForMetrics();
+    float full_rect_size = raster_full_rect.size().GetArea();
+    if (full_rect_size > 0 && client_name) {
+      float fraction_partial_rastered =
+          static_cast<float>(playback_rect.size().GetArea()) / full_rect_size;
+      float fraction_saved = 1.0f - fraction_partial_rastered;
+      UMA_HISTOGRAM_PERCENTAGE(
+          base::StringPrintf("Renderer4.%s.PartialRasterPercentageSaved.Gpu",
+                             client_name),
+          100.0f * fraction_saved);
+    }
+
+    SkCanvas* canvas = surface->getCanvas();
+
+    // As an optimization, inform Skia to discard when not doing partial raster.
+    if (raster_full_rect == playback_rect)
+      canvas->discard();
+
+    raster_source->PlaybackToCanvas(
+        canvas, resource_lock->color_space_for_raster(), raster_full_rect,
+        playback_rect, transform, playback_settings);
   }
 
-  // Playback
-  gfx::Rect playback_rect = raster_full_rect;
-  if (resource_has_previous_content) {
-    playback_rect.Intersect(raster_dirty_rect);
-  }
-  DCHECK(!playback_rect.IsEmpty())
-      << "Why are we rastering a tile that's not dirty?";
-
-  // Log a histogram of the percentage of pixels that were saved due to
-  // partial raster.
-  const char* client_name = GetClientNameForMetrics();
-  float full_rect_size = raster_full_rect.size().GetArea();
-  if (full_rect_size > 0 && client_name) {
-    float fraction_partial_rastered =
-        static_cast<float>(playback_rect.size().GetArea()) / full_rect_size;
-    float fraction_saved = 1.0f - fraction_partial_rastered;
-    UMA_HISTOGRAM_PERCENTAGE(
-        base::StringPrintf("Renderer4.%s.PartialRasterPercentageSaved.Gpu",
-                           client_name),
-        100.0f * fraction_saved);
-  }
-
-  SkCanvas* canvas = sk_surface->getCanvas();
-
-  // As an optimization, inform Skia to discard when not doing partial raster.
-  if (raster_full_rect == playback_rect)
-    canvas->discard();
-
-  raster_source->PlaybackToCanvas(
-      canvas, resource_lock->color_space_for_raster(), raster_full_rect,
-      playback_rect, transform, playback_settings);
+  gl->DeleteTextures(1, &texture_id);
 }
 
 }  // namespace
@@ -93,12 +101,12 @@ GpuRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
     GpuRasterBufferProvider* client,
     ResourceProvider* resource_provider,
     viz::ResourceId resource_id,
-    bool async_worker_context_enabled,
     bool resource_has_previous_content)
     : client_(client),
-      lock_(resource_provider, resource_id, async_worker_context_enabled),
+      lock_(resource_provider, resource_id),
       resource_has_previous_content_(resource_has_previous_content) {
   client_->pending_raster_buffers_.insert(this);
+  lock_.CreateMailbox();
 }
 
 GpuRasterBufferProvider::RasterBufferImpl::~RasterBufferImpl() {
@@ -149,8 +157,7 @@ std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
   bool resource_has_previous_content =
       resource_content_id && resource_content_id == previous_content_id;
   return base::MakeUnique<RasterBufferImpl>(
-      this, resource_provider_, resource->id(), async_worker_context_enabled_,
-      resource_has_previous_content);
+      this, resource_provider_, resource->id(), resource_has_previous_content);
 }
 
 void GpuRasterBufferProvider::ReleaseBufferForRaster(
@@ -163,15 +170,7 @@ void GpuRasterBufferProvider::OrderingBarrier() {
 
   gpu::gles2::GLES2Interface* gl = compositor_context_provider_->ContextGL();
   if (async_worker_context_enabled_) {
-    GLuint64 fence = gl->InsertFenceSyncCHROMIUM();
-    gl->OrderingBarrierCHROMIUM();
-
-    gpu::SyncToken sync_token;
-    gl->GenUnverifiedSyncTokenCHROMIUM(fence, sync_token.GetData());
-
-    DCHECK(sync_token.HasData() ||
-           gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
-
+    gpu::SyncToken sync_token = ResourceProvider::GenerateSyncTokenHelper(gl);
     for (RasterBufferImpl* buffer : pending_raster_buffers_)
       buffer->set_sync_token(sync_token);
   } else {
@@ -274,31 +273,21 @@ void GpuRasterBufferProvider::PlaybackOnWorkerThread(
   gpu::gles2::GLES2Interface* gl = scoped_context.ContextGL();
   DCHECK(gl);
 
-  if (async_worker_context_enabled_) {
-    // Early out if sync token is invalid. This happens if the compositor
-    // context was lost before ScheduleTasks was called.
-    if (!sync_token.HasData())
-      return;
-    // Synchronize with compositor.
-    gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
-  }
+  // Synchronize with compositor. Nop if sync token is empty.
+  gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
 
   RasterizeSource(raster_source, resource_has_previous_content,
                   resource_lock->size(), raster_full_rect, raster_dirty_rect,
                   transform, playback_settings, worker_context_provider_,
-                  resource_lock, async_worker_context_enabled_,
-                  use_distance_field_text_, msaa_sample_count_);
+                  resource_lock, use_distance_field_text_, msaa_sample_count_);
 
-  const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
+  // Generate sync token for cross context synchronization.
+  resource_lock->set_sync_token(ResourceProvider::GenerateSyncTokenHelper(gl));
 
-  // Barrier to sync worker context output to cc context.
-  gl->OrderingBarrierCHROMIUM();
-
-  // Generate sync token after the barrier for cross context synchronization.
-  gpu::SyncToken resource_sync_token;
-  gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, resource_sync_token.GetData());
-  resource_lock->set_sync_token(resource_sync_token);
-  resource_lock->set_synchronized(!async_worker_context_enabled_);
+  // Mark resource as synchronized when worker and compositor are in same stream
+  // to prevent extra wait sync token calls.
+  if (!async_worker_context_enabled_)
+    resource_lock->set_synchronized();
 }
 
 }  // namespace cc

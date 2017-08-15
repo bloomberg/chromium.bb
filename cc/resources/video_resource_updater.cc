@@ -276,10 +276,9 @@ VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
     gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
 
     gl->GenMailboxCHROMIUM(mailbox.name);
-    ResourceProvider::ScopedWriteLockGL lock(resource_provider_, resource_id,
-                                             false);
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider_, resource_id);
     gl->ProduceTextureDirectCHROMIUM(
-        lock.texture_id(),
+        lock.GetTexture(),
         resource_provider_->GetResourceTextureTarget(resource_id),
         mailbox.name);
   }
@@ -616,7 +615,7 @@ void VideoResourceUpdater::CopyPlaneTexture(
   resource->add_ref();
 
   ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
-                                           resource->resource_id(), false);
+                                           resource->resource_id());
   DCHECK_EQ(
       resource_provider_->GetResourceTextureTarget(resource->resource_id()),
       (GLenum)GL_TEXTURE_2D);
@@ -627,7 +626,7 @@ void VideoResourceUpdater::CopyPlaneTexture(
   uint32_t src_texture_id = gl->CreateAndConsumeTextureCHROMIUM(
       mailbox_holder.texture_target, mailbox_holder.mailbox.name);
   gl->CopySubTextureCHROMIUM(
-      src_texture_id, 0, GL_TEXTURE_2D, lock.texture_id(), 0, 0, 0, 0, 0,
+      src_texture_id, 0, GL_TEXTURE_2D, lock.GetTexture(), 0, 0, 0, 0, 0,
       output_plane_resource_size.width(), output_plane_resource_size.height(),
       false, false, false);
   gl->DeleteTextures(1, &src_texture_id);
