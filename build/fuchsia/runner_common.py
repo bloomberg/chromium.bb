@@ -125,7 +125,8 @@ def _StripBinaries(dry_run, file_mapping):
   dictionary, suitable to pass to _WriteManifest()"""
   new_mapping = file_mapping.copy()
   for target, source in file_mapping.iteritems():
-    file_tag = open(source, 'rb').read(4)
+    with open(source, 'rb') as f:
+      file_tag = f.read(4)
     if file_tag == '\x7fELF':
       new_mapping[target] = _StripBinary(dry_run, source)
   return new_mapping
