@@ -229,5 +229,9 @@ class MediaSourceExtensions(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.DisableStory(
+            'startup_test.html?testType=A&doNotWaitForBodyOnLoad=true',
+            [story.expectations.ANDROID_WEBVIEW],
+            'crbug.com/755639')
+
     return StoryExpectations()
