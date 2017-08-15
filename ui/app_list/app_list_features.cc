@@ -56,18 +56,6 @@ bool IsPlayStoreAppSearchEnabled() {
   return base::FeatureList::IsEnabled(kEnablePlayStoreAppSearch);
 }
 
-int AnswerCardMaxWidth() {
-  static const int max_width = base::GetFieldTrialParamByFeatureAsInt(
-      kEnableAnswerCard, "CardMaxWidth", 608);
-  return max_width;
-}
-
-int AnswerCardMaxHeight() {
-  static const int max_height = base::GetFieldTrialParamByFeatureAsInt(
-      kEnableAnswerCard, "CardMaxHeight", 266);
-  return max_height;
-}
-
 std::string AnswerServerUrl() {
   return base::GetFieldTrialParamValueByFeature(kEnableAnswerCard, "ServerUrl");
 }

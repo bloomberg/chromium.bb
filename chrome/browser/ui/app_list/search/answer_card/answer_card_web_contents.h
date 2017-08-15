@@ -30,7 +30,6 @@ class AnswerCardWebContents : public AnswerCardContents,
 
   // AnswerCardContents overrides:
   void LoadURL(const GURL& url) override;
-  bool IsLoading() const override;
   views::View* GetView() override;
 
   // content::WebContentsDelegate overrides:

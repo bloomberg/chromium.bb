@@ -140,10 +140,6 @@ void AnswerCardWebContents::LoadURL(const GURL& url) {
   web_contents_->GetRenderViewHost()->EnablePreferredSizeMode();
 }
 
-bool AnswerCardWebContents::IsLoading() const {
-  return web_contents_->IsLoading();
-}
-
 views::View* AnswerCardWebContents::GetView() {
   return web_view_.get();
 }
@@ -151,7 +147,7 @@ views::View* AnswerCardWebContents::GetView() {
 void AnswerCardWebContents::UpdatePreferredSize(
     content::WebContents* web_contents,
     const gfx::Size& pref_size) {
-  delegate()->UpdatePreferredSize(pref_size);
+  delegate()->UpdatePreferredSize(this);
   web_view_->SetPreferredSize(pref_size);
 }
 
@@ -208,12 +204,12 @@ void AnswerCardWebContents::DidFinishNavigation(
                          &has_answer_card, &result_title, &issued_query);
   }
 
-  delegate()->DidFinishNavigation(navigation_handle->GetURL(), has_error,
+  delegate()->DidFinishNavigation(this, navigation_handle->GetURL(), has_error,
                                   has_answer_card, result_title, issued_query);
 }
 
 void AnswerCardWebContents::DidStopLoading() {
-  delegate()->DidStopLoading();
+  delegate()->DidStopLoading(this);
 }
 
 void AnswerCardWebContents::DidGetUserInteraction(

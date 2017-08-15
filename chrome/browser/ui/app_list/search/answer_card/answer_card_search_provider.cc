@@ -41,46 +41,54 @@ void RecordRequestResult(SearchAnswerRequestResult request_result) {
 
 }  // namespace
 
+AnswerCardSearchProvider::NavigationContext::NavigationContext() {}
+
+AnswerCardSearchProvider::NavigationContext::~NavigationContext() {}
+
+void AnswerCardSearchProvider::NavigationContext::StartServerRequest(
+    const GURL& url) {
+  contents->LoadURL(url);
+  state = RequestState::NO_RESULT;
+}
+
+void AnswerCardSearchProvider::NavigationContext::Clear() {
+  result_url.clear();
+  result_title.clear();
+  state = RequestState::NO_RESULT;
+  // We are not clearing |preferred_size| since the |contents| remains
+  // unchanged, and |preferred_size| always corresponds to the contents's size.
+}
+
 AnswerCardSearchProvider::AnswerCardSearchProvider(
     Profile* profile,
     app_list::AppListModel* model,
     AppListControllerDelegate* list_controller,
-    std::unique_ptr<AnswerCardContents> contents)
+    std::unique_ptr<AnswerCardContents> contents0,
+    std::unique_ptr<AnswerCardContents> contents1)
     : profile_(profile),
       model_(model),
       list_controller_(list_controller),
-      contents_(std::move(contents)),
       answer_server_url_(features::AnswerServerUrl()),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)) {
-  contents_->SetDelegate(this);
+  navigation_contexts_[0].contents = std::move(contents0);
+  navigation_contexts_[1].contents = std::move(contents1);
+  navigation_contexts_[0].contents->SetDelegate(this);
+  navigation_contexts_[1].contents->SetDelegate(this);
 }
 
 AnswerCardSearchProvider::~AnswerCardSearchProvider() {
-  RecordReceivedAnswerFinalResult();
 }
 
 void AnswerCardSearchProvider::Start(bool is_voice_query,
                                      const base::string16& query) {
-  RecordReceivedAnswerFinalResult();
   // Reset the state.
-  received_answer_ = false;
-  OnResultAvailable(false);
   current_request_url_ = GURL();
-  result_url_.clear();
-  result_title_.clear();
   server_request_start_time_ = answer_loaded_time_ = base::TimeTicks();
 
-  if (is_voice_query) {
-    // No need to send a server request and show a card because launcher
-    // automatically closes upon voice queries.
+  if (query.empty() || is_voice_query || !model_->search_engine_is_google()) {
+    DeleteCurrentResult();
     return;
   }
-
-  if (!model_->search_engine_is_google())
-    return;
-
-  if (query.empty())
-    return;
 
   // Start a request to the answer server.
 
@@ -92,15 +100,20 @@ void AnswerCardSearchProvider::Start(bool is_voice_query,
   GURL::Replacements replacements;
   replacements.SetQueryStr(prefixed_query);
   current_request_url_ = answer_server_url_.ReplaceComponents(replacements);
-  contents_->LoadURL(current_request_url_);
+  GetNavigationContextForLoading().StartServerRequest(current_request_url_);
 
   server_request_start_time_ = base::TimeTicks::Now();
 }
 
-void AnswerCardSearchProvider::UpdatePreferredSize(const gfx::Size& pref_size) {
-  preferred_size_ = pref_size;
-  OnResultAvailable(received_answer_ && IsCardSizeOk() &&
-                    !contents_->IsLoading());
+void AnswerCardSearchProvider::UpdatePreferredSize(
+    const AnswerCardContents* source) {
+  if (source != GetCurrentNavigationContext().contents.get())
+    return;
+
+  // Contents' size changed for the current card. Updating the result to cause
+  // relayout.
+  UpdateResult();
+
   if (!answer_loaded_time_.is_null()) {
     UMA_HISTOGRAM_TIMES("SearchAnswer.ResizeAfterLoadTime",
                         base::TimeTicks::Now() - answer_loaded_time_);
@@ -108,11 +121,15 @@ void AnswerCardSearchProvider::UpdatePreferredSize(const gfx::Size& pref_size) {
 }
 
 void AnswerCardSearchProvider::DidFinishNavigation(
+    const AnswerCardContents* source,
     const GURL& url,
     bool has_error,
     bool has_answer_card,
     const std::string& result_title,
     const std::string& issued_query) {
+  NavigationContext& context_for_loading = GetNavigationContextForLoading();
+  DCHECK_EQ(source, context_for_loading.contents.get());
+
   if (url != current_request_url_) {
     // TODO(vadimt): Remove this and similar logging once testing is complete if
     // we think this is not useful after release or happens too frequently.
@@ -126,84 +143,84 @@ void AnswerCardSearchProvider::DidFinishNavigation(
   if (has_error) {
     RecordRequestResult(
         SearchAnswerRequestResult::REQUEST_RESULT_REQUEST_FAILED);
+    // Loading new card has failed. This invalidates the currently shown result.
+    DeleteCurrentResult();
     return;
   }
 
   if (!features::IsAnswerCardDarkRunEnabled()) {
     if (!has_answer_card) {
       RecordRequestResult(SearchAnswerRequestResult::REQUEST_RESULT_NO_ANSWER);
+      // No answer card in the server response. This invalidates the currently
+      // shown result.
+      DeleteCurrentResult();
       return;
     }
     DCHECK(!result_title.empty());
     DCHECK(!issued_query.empty());
-    result_title_ = result_title;
-    result_url_ = GetResultUrl(base::UTF8ToUTF16(issued_query));
+    context_for_loading.result_title = result_title;
+    context_for_loading.result_url =
+        GetResultUrl(base::UTF8ToUTF16(issued_query));
+    RecordRequestResult(
+        SearchAnswerRequestResult::REQUEST_RESULT_RECEIVED_ANSWER);
   } else {
     // In the dark run mode, every other "server response" contains a card.
     dark_run_received_answer_ = !dark_run_received_answer_;
     if (!dark_run_received_answer_)
       return;
     // SearchResult requires a non-empty id. This "url" will never be opened.
-    result_url_ = "https://www.google.com/?q=something";
+    context_for_loading.result_url = "https://www.google.com/?q=something";
   }
 
-  received_answer_ = true;
+  context_for_loading.state = RequestState::HAVE_RESULT_LOADING;
   UMA_HISTOGRAM_TIMES("SearchAnswer.NavigationTime",
                       base::TimeTicks::Now() - server_request_start_time_);
 }
 
-void AnswerCardSearchProvider::DidStopLoading() {
-  if (!received_answer_)
-    return;
+void AnswerCardSearchProvider::DidStopLoading(
+    const AnswerCardContents* source) {
+  NavigationContext& context_for_loading = GetNavigationContextForLoading();
+  DCHECK_EQ(source, context_for_loading.contents.get());
 
-  if (IsCardSizeOk())
-    OnResultAvailable(true);
+  if (context_for_loading.state != RequestState::HAVE_RESULT_LOADING) {
+    // This stop-loading event is either for a navigation that was intercepted
+    // by another navigation, or for a failed navigation. In both cases, there
+    // is nothing we need to do about it.
+    return;
+  }
+
+  context_for_loading.state = RequestState::HAVE_RESULT_LOADED;
+
+  // Prepare for loading card into the other contents. Loading will start when
+  // the user modifies the query string.
+  GetCurrentNavigationContext().Clear();
+  current_navigation_context_ = 1 - current_navigation_context_;
+
+  // Show the result.
+  UpdateResult();
+
   answer_loaded_time_ = base::TimeTicks::Now();
   UMA_HISTOGRAM_TIMES("SearchAnswer.LoadingTime",
                       answer_loaded_time_ - server_request_start_time_);
   base::RecordAction(base::UserMetricsAction("SearchAnswer_StoppedLoading"));
 }
 
-bool AnswerCardSearchProvider::IsCardSizeOk() const {
-  if (features::IsAnswerCardDarkRunEnabled())
-    return true;
-
-  if (preferred_size_.width() <= features::AnswerCardMaxWidth() &&
-      preferred_size_.height() <= features::AnswerCardMaxHeight()) {
-    return true;
-  }
-
-  LOG(ERROR) << "Card is too large: width=" << preferred_size_.width()
-             << ", height=" << preferred_size_.height();
-  return false;
-}
-
-void AnswerCardSearchProvider::RecordReceivedAnswerFinalResult() {
-  // Recording whether a server response with an answer contains a card of a
-  // fitting size, or a too large one. Cannot do this in DidStopLoading() or
-  // UpdatePreferredSize() because this may be followed by a resizing with
-  // different dimensions, so this method gets called when card's life ends.
-  if (!received_answer_)
-    return;
-
-  RecordRequestResult(
-      IsCardSizeOk() ? SearchAnswerRequestResult::REQUEST_RESULT_RECEIVED_ANSWER
-                     : SearchAnswerRequestResult::
-                           REQUEST_RESULT_RECEIVED_ANSWER_TOO_LARGE);
-}
-
-void AnswerCardSearchProvider::OnResultAvailable(bool is_available) {
+void AnswerCardSearchProvider::UpdateResult() {
   SearchProvider::Results results;
-  if (is_available) {
+
+  const NavigationContext& current_context = GetCurrentNavigationContext();
+  if (current_context.state == RequestState::HAVE_RESULT_LOADED) {
     results.reserve(1);
 
     const GURL stripped_result_url = AutocompleteMatch::GURLToStrippedGURL(
-        GURL(result_url_), AutocompleteInput(), template_url_service_,
-        base::string16() /* keyword */);
+        GURL(current_context.result_url), AutocompleteInput(),
+        template_url_service_, base::string16() /* keyword */);
 
     results.emplace_back(base::MakeUnique<AnswerCardResult>(
-        profile_, list_controller_, result_url_, stripped_result_url.spec(),
-        base::UTF8ToUTF16(result_title_), contents_.get()));
+        profile_, list_controller_, current_context.result_url,
+        stripped_result_url.spec(),
+        base::UTF8ToUTF16(current_context.result_title),
+        current_context.contents.get()));
   }
   SwapResults(&results);
 }
@@ -214,6 +231,21 @@ std::string AnswerCardSearchProvider::GetResultUrl(
       ->url_ref()
       .ReplaceSearchTerms(TemplateURLRef::SearchTermsArgs(query),
                           template_url_service_->search_terms_data());
+}
+
+void AnswerCardSearchProvider::DeleteCurrentResult() {
+  GetCurrentNavigationContext().Clear();
+  UpdateResult();
+}
+
+AnswerCardSearchProvider::NavigationContext&
+AnswerCardSearchProvider::GetCurrentNavigationContext() {
+  return navigation_contexts_[current_navigation_context_];
+}
+
+AnswerCardSearchProvider::NavigationContext&
+AnswerCardSearchProvider::GetNavigationContextForLoading() {
+  return navigation_contexts_[1 - current_navigation_context_];
 }
 
 }  // namespace app_list

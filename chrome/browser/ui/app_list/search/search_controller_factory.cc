@@ -109,6 +109,7 @@ std::unique_ptr<SearchController> CreateSearchController(
         answer_card_group_id,
         base::MakeUnique<AnswerCardSearchProvider>(
             profile, model, list_controller,
+            base::MakeUnique<AnswerCardWebContents>(profile),
             base::MakeUnique<AnswerCardWebContents>(profile)));
   }
   if (IsSuggestionsSearchProviderEnabled()) {
