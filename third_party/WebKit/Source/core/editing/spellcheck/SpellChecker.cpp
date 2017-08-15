@@ -1129,9 +1129,6 @@ void SpellChecker::RemoveMarkers(const EphemeralRange& range,
   GetFrame().GetDocument()->Markers().RemoveMarkersInRange(range, marker_types);
 }
 
-// TODO(xiaochengh): This function is only used by unit tests. We should move it
-// to IdleSpellCheckCallback and modify unit tests to cope with idle time spell
-// checker.
 void SpellChecker::CancelCheck() {
   spell_check_requester_->CancelCheck();
 }

@@ -11,7 +11,6 @@
 
 namespace blink {
 
-// TODO(xiaochengh): Use a new testing base class.
 class TextTest : public EditingTestBase {};
 
 TEST_F(TextTest, SetDataToChangeFirstLetterTextNode) {

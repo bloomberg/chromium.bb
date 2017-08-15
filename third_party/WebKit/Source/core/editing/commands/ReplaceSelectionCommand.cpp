@@ -794,7 +794,7 @@ void ReplaceSelectionCommand::RemoveUnrenderedTextNodesAtEnds(
 
 VisiblePosition ReplaceSelectionCommand::PositionAtEndOfInsertedContent()
     const {
-  // TODO(xiaochengh): Hoist the call and change it into a DCHECK.
+  // TODO(editing-dev): Hoist the call and change it into a DCHECK.
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   // TODO(yosin): We should set |m_endOfInsertedContent| not in SELECT
   // element, since contents of SELECT elements, e.g. OPTION, OPTGROUP, are
@@ -810,7 +810,7 @@ VisiblePosition ReplaceSelectionCommand::PositionAtEndOfInsertedContent()
 
 VisiblePosition ReplaceSelectionCommand::PositionAtStartOfInsertedContent()
     const {
-  // TODO(xiaochengh): Hoist the call and change it into a DCHECK.
+  // TODO(editing-dev): Hoist the call and change it into a DCHECK.
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (start_of_inserted_content_.IsOrphan())
     return VisiblePosition();
@@ -913,7 +913,8 @@ void ReplaceSelectionCommand::MergeEndIfNeeded(EditingState* editing_state) {
   VisiblePosition destination = merge_forward
                                     ? NextPositionOf(end_of_inserted_content)
                                     : end_of_inserted_content;
-  // TODO(xiaochengh): Stop storing VisiblePositions through mutations.
+  // TODO(editing-dev): Stop storing VisiblePositions through mutations.
+  // See crbug.com/648949 for details.
   VisiblePosition start_of_paragraph_to_move =
       merge_forward ? StartOfParagraph(end_of_inserted_content)
                     : NextPositionOf(end_of_inserted_content);

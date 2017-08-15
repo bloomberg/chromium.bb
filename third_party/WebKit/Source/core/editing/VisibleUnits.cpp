@@ -354,9 +354,6 @@ static PositionTemplate<Strategy> PreviousBoundaryAlgorithm(
       int run_offset = 0;
       do {
         run_offset += it.CopyTextTo(&string, run_offset, string.Capacity());
-        // TODO(xiaochengh): The following line takes O(string.size()) time,
-        // which makes quadratic overall running time in the worst case.
-        // Should improve it in some way.
         next = search_function(string.Data(), string.Size(),
                                string.Size() - suffix_length,
                                kMayHaveMoreContext, need_more_context);
@@ -377,7 +374,6 @@ static PositionTemplate<Strategy> PreviousBoundaryAlgorithm(
     // The last search returned the beginning of the buffer and asked for
     // more context, but there is no earlier text. Force a search with
     // what's available.
-    // TODO(xiaochengh): Do we have to search the whole string?
     next = search_function(string.Data(), string.Size(),
                            string.Size() - suffix_length, kDontHaveMoreContext,
                            need_more_context);
@@ -481,7 +477,6 @@ static PositionTemplate<Strategy> NextBoundaryAlgorithm(
     // The last search returned the end of the buffer and asked for more
     // context, but there is no further text. Force a search with what's
     // available.
-    // TODO(xiaochengh): Do we still have to search the whole string?
     next = search_function(string.Data(), string.Size(), prefix_length,
                            kDontHaveMoreContext, need_more_context);
     DCHECK(!need_more_context);
@@ -1189,7 +1184,6 @@ bool RendersInDifferentPosition(const Position& position1,
 static bool IsVisuallyEmpty(const LayoutObject* layout) {
   for (LayoutObject* child = layout->SlowFirstChild(); child;
        child = child->NextSibling()) {
-    // TODO(xiaochengh): Replace type-based conditioning by virtual function.
     if (child->IsBox()) {
       if (!ToLayoutBox(child)->Size().IsEmpty())
         return false;

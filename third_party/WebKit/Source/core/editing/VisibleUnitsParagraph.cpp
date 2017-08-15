@@ -389,7 +389,7 @@ EphemeralRange ExpandToParagraphBoundary(const EphemeralRange& range) {
   const Position& paragraph_end = EndOfParagraph(end).DeepEquivalent();
   DCHECK(paragraph_end.IsNotNull()) << range.EndPosition();
 
-  // TODO(xiaochengh): There are some cases (crbug.com/640112) where we get
+  // TODO(editing-dev): There are some cases (crbug.com/640112) where we get
   // |paragraphStart > paragraphEnd|, which is the reason we cannot directly
   // return |EphemeralRange(paragraphStart, paragraphEnd)|. This is not
   // desired, though. We should do more investigation to ensure that why

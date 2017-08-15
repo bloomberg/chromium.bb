@@ -282,7 +282,7 @@ void ApplyStyleCommand::ApplyBlockStyle(EditingStyle* style,
       NextPositionOf(EndOfParagraph(paragraph_start)));
   Position beyond_end =
       NextPositionOf(EndOfParagraph(visible_end)).DeepEquivalent();
-  // TODO(xiaochengh): Use a saner approach (e.g., temporary Ranges) to keep
+  // TODO(editing-dev): Use a saner approach (e.g., temporary Ranges) to keep
   // these positions in document instead of iteratively performing orphan checks
   // and recalculating them when they become orphans.
   while (paragraph_start.IsNotNull() &&
@@ -323,8 +323,9 @@ void ApplyStyleCommand::ApplyBlockStyle(EditingStyle* style,
       GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
       // Make the VisiblePositions valid again after style changes.
-      // TODO(xiaochengh): We shouldn't store VisiblePositions and inspect their
-      // properties after they have been invalidated by mutations.
+      // TODO(editing-dev): We shouldn't store VisiblePositions and inspect
+      // their properties after they have been invalidated by mutations. See
+      // crbug.com/648949 for details.
       DCHECK(!paragraph_start.IsOrphan()) << paragraph_start;
       paragraph_start =
           CreateVisiblePosition(paragraph_start.ToPositionWithAffinity());
