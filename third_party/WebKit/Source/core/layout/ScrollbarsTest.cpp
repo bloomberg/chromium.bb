@@ -241,10 +241,6 @@ class StubWebThemeEngine : public WebThemeEngine {
         return WebSize();
     }
   }
-  void GetOverlayScrollbarStyle(ScrollbarStyle* style) override {
-    style->thumb_thickness = 3;
-    style->scrollbar_margin = 0;
-  }
   static constexpr int kMinimumHorizontalLength = 51;
   static constexpr int kMinimumVerticalLength = 52;
 };
@@ -288,38 +284,6 @@ TEST_P(ScrollbarAppearanceTest, ThemeEngineDefinesMinimumThumbLength) {
             theme.ThumbLength(*scrollable_area->HorizontalScrollbar()));
   EXPECT_EQ(StubWebThemeEngine::kMinimumVerticalLength,
             theme.ThumbLength(*scrollable_area->VerticalScrollbar()));
-}
-
-// Ensure thumb position is correctly calculated even at ridiculously large
-// scales.
-TEST_P(ScrollbarAppearanceTest, HugeScrollingThumbPosition) {
-  ScopedTestingPlatformSupport<ScrollbarTestingPlatformSupport> platform;
-
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  WebView().Resize(WebSize(1000, 1000));
-  SimRequest request("https://example.com/test.html", "text/html");
-  LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<style> body { margin: 0px; height: 10000000px; } </style>");
-  ScrollableArea* scrollable_area =
-      GetDocument().View()->LayoutViewportScrollableArea();
-
-  Compositor().BeginFrame();
-
-  scrollable_area->SetScrollOffset(ScrollOffset(0, 10000000),
-                                   kProgrammaticScroll);
-
-  int scroll_y = scrollable_area->GetScrollOffset().Height();
-  ASSERT_EQ(9999000, scroll_y);
-
-  Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
-  ASSERT_TRUE(scrollbar);
-
-  int maximumThumbPosition =
-      WebView().Size().height - StubWebThemeEngine::kMinimumVerticalLength;
-
-  EXPECT_EQ(maximumThumbPosition,
-            scrollbar->GetTheme().ThumbPosition(*scrollbar));
 }
 #endif
 
