@@ -1,53 +1,53 @@
 This is a testharness.js-based test.
 FAIL Don't crash if there is an abusive number of payment methods in the methodData sequence assert_true: failed smoke test: TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
     at Test.test (https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:82:5)
-    at Test.step (https://web-platform.test:8444/resources/testharness.js:1441:25)
-    at test (https://web-platform.test:8444/resources/testharness.js:501:18)
+    at Test.step (https://web-platform.test:8444/resources/testharness.js:1451:25)
+    at test (https://web-platform.test:8444/resources/testharness.js:511:18)
     at https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:78:1 expected true got false
 FAIL Don't crash if PaymentMethodData.supportedMethods is an abusive length assert_true: failed smoke test: TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
     at Test.test (https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:103:5)
-    at Test.step (https://web-platform.test:8444/resources/testharness.js:1441:25)
-    at test (https://web-platform.test:8444/resources/testharness.js:501:18)
+    at Test.step (https://web-platform.test:8444/resources/testharness.js:1451:25)
+    at test (https://web-platform.test:8444/resources/testharness.js:511:18)
     at https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:99:1 expected true got false
 FAIL Don't crash if the request id has an abusive length assert_true: failed smoke test: TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
     at Test.test (https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:124:5)
-    at Test.step (https://web-platform.test:8444/resources/testharness.js:1441:25)
-    at test (https://web-platform.test:8444/resources/testharness.js:501:18)
+    at Test.step (https://web-platform.test:8444/resources/testharness.js:1451:25)
+    at test (https://web-platform.test:8444/resources/testharness.js:511:18)
     at https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:120:1 expected true got false
 FAIL Don't crash if PaymentDetailsInit.total.label is an abusive length assert_true: failed smoke test: TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
     at Test.test (https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:148:5)
-    at Test.step (https://web-platform.test:8444/resources/testharness.js:1441:25)
-    at test (https://web-platform.test:8444/resources/testharness.js:501:18)
+    at Test.step (https://web-platform.test:8444/resources/testharness.js:1451:25)
+    at test (https://web-platform.test:8444/resources/testharness.js:511:18)
     at https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:144:1 expected true got false
 FAIL Don't crash if total.amount.value is an abusive length assert_true: failed smoke test: TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
     at Test.test (https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:169:5)
-    at Test.step (https://web-platform.test:8444/resources/testharness.js:1441:25)
-    at test (https://web-platform.test:8444/resources/testharness.js:501:18)
+    at Test.step (https://web-platform.test:8444/resources/testharness.js:1451:25)
+    at test (https://web-platform.test:8444/resources/testharness.js:511:18)
     at https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:165:1 expected true got false
 FAIL Don't crash if details.displayItems has an abusive number of items assert_true: failed smoke test: TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
     at Test.test (https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:192:7)
-    at Test.step (https://web-platform.test:8444/resources/testharness.js:1441:25)
-    at test (https://web-platform.test:8444/resources/testharness.js:501:18)
+    at Test.step (https://web-platform.test:8444/resources/testharness.js:1451:25)
+    at test (https://web-platform.test:8444/resources/testharness.js:511:18)
     at https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:187:3 expected true got false
 FAIL Don't crash if details.shippingOptions has an abusive number of items assert_true: failed smoke test: TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
     at Test.test (https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:192:7)
-    at Test.step (https://web-platform.test:8444/resources/testharness.js:1441:25)
-    at test (https://web-platform.test:8444/resources/testharness.js:501:18)
+    at Test.step (https://web-platform.test:8444/resources/testharness.js:1451:25)
+    at test (https://web-platform.test:8444/resources/testharness.js:511:18)
     at https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:187:3 expected true got false
 FAIL Don't crash if PaymentShippingOptions.label is an abusive length assert_true: failed smoke test: TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
     at Test.test (https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:215:5)
-    at Test.step (https://web-platform.test:8444/resources/testharness.js:1441:25)
-    at test (https://web-platform.test:8444/resources/testharness.js:501:18)
+    at Test.step (https://web-platform.test:8444/resources/testharness.js:1451:25)
+    at test (https://web-platform.test:8444/resources/testharness.js:511:18)
     at https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:209:1 expected true got false
 FAIL Don't crash if the PaymentShippingOptions.amount.value is an abusive length assert_true: failed smoke test: TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
     at Test.test (https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:235:5)
-    at Test.step (https://web-platform.test:8444/resources/testharness.js:1441:25)
-    at test (https://web-platform.test:8444/resources/testharness.js:501:18)
+    at Test.step (https://web-platform.test:8444/resources/testharness.js:1451:25)
+    at test (https://web-platform.test:8444/resources/testharness.js:511:18)
     at https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:229:1 expected true got false
 FAIL Don't crash if PaymentItem.label is an abusive length assert_true: failed smoke test: TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
     at Test.test (https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:255:5)
-    at Test.step (https://web-platform.test:8444/resources/testharness.js:1441:25)
-    at test (https://web-platform.test:8444/resources/testharness.js:501:18)
+    at Test.step (https://web-platform.test:8444/resources/testharness.js:1451:25)
+    at test (https://web-platform.test:8444/resources/testharness.js:511:18)
     at https://web-platform.test:8444/payment-request/payment-request-constructor-crash.https.html:249:1 expected true got false
 Harness: the test ran to completion.
 
