@@ -1,0 +1,33 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "extensions/shell/browser/api/feedback_private/shell_feedback_private_delegate.h"
+
+#include <string>
+
+#include "base/logging.h"
+#include "base/values.h"
+#include "components/feedback/system_logs/system_logs_fetcher.h"
+#include "content/public/browser/browser_context.h"
+#include "extensions/shell/browser/system_logs/shell_system_logs_fetcher.h"
+
+namespace extensions {
+
+ShellFeedbackPrivateDelegate::ShellFeedbackPrivateDelegate() = default;
+ShellFeedbackPrivateDelegate::~ShellFeedbackPrivateDelegate() = default;
+
+std::unique_ptr<base::DictionaryValue> ShellFeedbackPrivateDelegate::GetStrings(
+    content::BrowserContext* browser_context,
+    bool from_crash) const {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+system_logs::SystemLogsFetcher*
+ShellFeedbackPrivateDelegate::CreateSystemLogsFetcher(
+    content::BrowserContext* context) const {
+  return system_logs::BuildShellSystemLogsFetcher(context);
+}
+
+}  // namespace extensions

@@ -30,7 +30,7 @@ using SysLogsFetcherCallback =
 // EXAMPLE:
 // class Example {
 //  public:
-//   void ProcessLogs(SystemLogsResponse* response) {
+//   void ProcessLogs(std::unique_ptr<SystemLogsResponse> response) {
 //      // do something with the logs
 //   }
 //   void GetLogs() {
