@@ -97,6 +97,13 @@ const char kDeveloperEmpty[] = "developer-empty";
 const char kInterpreterResourceUnavailable[] =
     "interpreter-resource-unavailable";
 
+constexpr char kIppScheme[] = "ipp";
+constexpr char kIppsScheme[] = "ipps";
+
+// Timeout for establishing a HTTP connection in milliseconds.  Anecdotally,
+// some print servers are slow and can use the extra time.
+constexpr int kHttpConnectTimeoutMs = 1000;
+
 constexpr std::array<const char* const, 3> kPrinterAttributes{
     {kPrinterState, kPrinterStateReasons, kPrinterStateMessage}};
 
@@ -308,7 +315,6 @@ bool ParsePrinterInfo(ipp_t* response, PrinterInfo* printer_info) {
   for (ipp_attribute_t* attr = ippFirstAttribute(response); attr != nullptr;
        attr = ippNextAttribute(response)) {
     base::StringPiece name = ippGetName(attr);
-
     if (name == base::StringPiece(kPrinterMakeAndModel)) {
       DCHECK_EQ(IPP_TAG_TEXT, ippGetValueTag(attr));
       printer_info->make_and_model = ippGetString(attr, 0, nullptr);
@@ -388,9 +394,11 @@ ScopedIppPtr GetPrinterAttributes(http_t* http,
                        : "/" + resource_path;
 
   auto request = WrapIpp(ippNewRequest(IPP_OP_GET_PRINTER_ATTRIBUTES));
+  // We support IPP up to 2.2 but are compatible down to v1.1.
+  ippSetVersion(request.get(), 1, 1);
 
   ippAddString(request.get(), IPP_TAG_OPERATION, IPP_TAG_URI, kPrinterUri,
-               nullptr, printer_uri.data());
+               nullptr, printer_uri.c_str());
 
   ippAddStrings(request.get(), IPP_TAG_OPERATION, IPP_TAG_KEYWORD,
                 kRequestedAttributes, num_attributes, nullptr, attributes);
@@ -434,18 +442,22 @@ bool GetPrinterInfo(const std::string& address,
   base::ThreadRestrictions::AssertIOAllowed();
 
   ScopedHttpPtr http = ScopedHttpPtr(httpConnect2(
-      address.data(), port, nullptr, AF_INET,
+      address.c_str(), port, nullptr, AF_INET,
       encrypted ? HTTP_ENCRYPTION_REQUIRED : HTTP_ENCRYPTION_IF_REQUESTED, 0,
-      200, nullptr));
+      kHttpConnectTimeoutMs, nullptr));
   if (!http) {
     LOG(WARNING) << "Could not connect to host";
     return false;
   }
 
+  std::string printer_uri =
+      base::StringPrintf("%s://%s:%d/%s", encrypted ? kIppsScheme : kIppScheme,
+                         address.c_str(), port, resource.c_str());
+
   ipp_status_t status;
   ScopedIppPtr response =
-      GetPrinterAttributes(http.get(), resource, resource, kPrinterInfo.size(),
-                           kPrinterInfo.data(), &status);
+      GetPrinterAttributes(http.get(), printer_uri, resource,
+                           kPrinterInfo.size(), kPrinterInfo.data(), &status);
   if (status != IPP_STATUS_OK || response.get() == nullptr) {
     LOG(WARNING) << "Get attributes failure: " << status;
     return false;
@@ -485,7 +497,7 @@ bool GetCupsJobs(http_t* http,
   auto request = WrapIpp(ippNewRequest(IPP_OP_GET_JOBS));
   const std::string printer_uri = PrinterUriFromName(printer_id);
   ippAddString(request.get(), IPP_TAG_OPERATION, IPP_TAG_URI, kPrinterUri,
-               nullptr, printer_uri.data());
+               nullptr, printer_uri.c_str());
   ippAddInteger(request.get(), IPP_TAG_OPERATION, IPP_TAG_INTEGER, kLimit,
                 limit);
 
