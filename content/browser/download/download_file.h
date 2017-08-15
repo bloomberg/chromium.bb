@@ -69,6 +69,10 @@ class CONTENT_EXPORT DownloadFile {
       int64_t offset,
       int64_t length) = 0;
 
+  // Called when the response for the stream starting at |offset| is completed,
+  virtual void OnResponseCompleted(int64_t offset,
+                                   DownloadInterruptReason status) = 0;
+
   // Rename the download file to |full_path|.  If that file exists
   // |full_path| will be uniquified by suffixing " (<number>)" to the
   // file name before the extension.

@@ -47,6 +47,8 @@ class MockDownloadFile : public DownloadFile {
                void(ByteStreamReader* stream_reader,
                     int64_t offset,
                     int64_t length));
+  MOCK_METHOD2(OnResponseCompleted, void(int64_t offset,
+                                   DownloadInterruptReason status));
   MOCK_METHOD2(AppendDataToFile, DownloadInterruptReason(
       const char* data, size_t data_len));
   MOCK_METHOD1(Rename, DownloadInterruptReason(

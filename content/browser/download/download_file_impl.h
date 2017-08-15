@@ -68,6 +68,8 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   void AddDataPipeConsumerHandle(mojo::ScopedDataPipeConsumerHandle handle,
                                  int64_t offset,
                                  int64_t length) override;
+  void OnResponseCompleted(int64_t offset,
+                           DownloadInterruptReason status) override;
   void RenameAndUniquify(const base::FilePath& full_path,
                          const RenameCompletionCallback& callback) override;
   void RenameAndAnnotate(const base::FilePath& full_path,
@@ -120,6 +122,8 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
                  mojo::ScopedDataPipeConsumerHandle consumer_handle);
     ~SourceStream();
 
+    void OnResponseCompleted(DownloadInterruptReason status);
+
     // Called after successfully writing a buffer to disk.
     void OnWriteBytesToDisk(int64_t bytes_write);
 
@@ -142,15 +146,20 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     // DownloadManager pass the status code to DownloadItem or DownloadFile.
     // However, a DownloadFile can have multiple SourceStreams, so we have to
     // maintain a map between data pipe and DownloadItem/DownloadFile somewhere.
-    DownloadInterruptReason GetStatus();
+    DownloadInterruptReason GetCompletionStatus();
+
+    using CompletionCallback = base::OnceCallback<void(SourceStream*)>;
+    // Register an callback to be called when download completes.
+    void RegisterCompletionCallback(CompletionCallback callback);
 
     // Results for reading the SourceStream.
-    enum ReadResult {
+    enum StreamState {
       EMPTY = 0,
       HAS_DATA,
+      WAIT_FOR_COMPLETION,
       COMPLETE,
     };
-    ReadResult Read(scoped_refptr<net::IOBuffer>* data, size_t* length);
+    StreamState Read(scoped_refptr<net::IOBuffer>* data, size_t* length);
 
     int64_t offset() const { return offset_; }
     int64_t length() const { return length_; }
@@ -183,7 +192,14 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     // The stream through which data comes.
     std::unique_ptr<ByteStreamReader> stream_reader_;
 
-    // Objects for reading from a mojo data pipe.
+    // Status when the response completes, used by data pipe.
+    DownloadInterruptReason completion_status_;
+
+    // Whether the producer has completed handling the response.
+    bool is_response_completed_;
+
+    CompletionCallback completion_callback_;
+
     mojo::ScopedDataPipeConsumerHandle consumer_handle_;
     std::unique_ptr<mojo::SimpleWatcher> handle_watcher_;
 
@@ -250,6 +266,15 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
   // Register callback and start to read data from the stream.
   void RegisterAndActivateStream(SourceStream* source_stream);
+
+  // Called when a stream completes.
+  void OnStreamCompleted(SourceStream* source_stream);
+
+  // Notify |observer_| about the download status.
+  void NotifyObserver(SourceStream* source_stream,
+                      DownloadInterruptReason reason,
+                      SourceStream::StreamState stream_state,
+                      bool should_terminate);
 
   // Adds a new slice to |received_slices_| and update the existing entries in
   // |source_streams_| as their lengths will change.
