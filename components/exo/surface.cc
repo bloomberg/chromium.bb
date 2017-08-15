@@ -411,8 +411,21 @@ void Surface::CommitSurfaceHierarchy(
     std::list<PresentationCallback>* presentation_callbacks) {
   bool needs_commit =
       frame_type == FRAME_TYPE_COMMIT && needs_commit_surface_hierarchy_;
+  bool needs_full_damage = frame_type == FRAME_TYPE_RECREATED_RESOURCES;
+
   if (needs_commit) {
     needs_commit_surface_hierarchy_ = false;
+
+    if (pending_state_.opaque_region != state_.opaque_region ||
+        pending_state_.buffer_scale != state_.buffer_scale ||
+        pending_state_.viewport != state_.viewport ||
+        pending_state_.crop != state_.crop ||
+        pending_state_.only_visible_on_secure_output !=
+            state_.only_visible_on_secure_output ||
+        pending_state_.blend_mode != state_.blend_mode ||
+        pending_state_.alpha != state_.alpha) {
+      needs_full_damage = true;
+    }
 
     state_ = pending_state_;
     pending_state_.only_visible_on_secure_output = false;
@@ -470,7 +483,7 @@ void Surface::CommitSurfaceHierarchy(
         frame_sink_holder, frame, frame_callbacks, presentation_callbacks);
   }
 
-  AppendContentsToFrame(origin, frame_type, frame);
+  AppendContentsToFrame(origin, frame, needs_full_damage);
 
   // Reset damage.
   if (needs_commit)
@@ -639,23 +652,20 @@ void Surface::UpdateResource(LayerTreeFrameSinkHolder* frame_sink_holder,
 }
 
 void Surface::AppendContentsToFrame(const gfx::Point& origin,
-                                    FrameType frame_type,
-                                    cc::CompositorFrame* frame) {
+                                    cc::CompositorFrame* frame,
+                                    bool needs_full_damage) {
   const std::unique_ptr<cc::RenderPass>& render_pass =
       frame->render_pass_list.back();
   gfx::Rect output_rect = gfx::Rect(origin, content_size_);
   gfx::Rect quad_rect = output_rect;
   gfx::Rect damage_rect;
-  switch (frame_type) {
-    case FRAME_TYPE_COMMIT:
-      // pending_damage_ is in Surface coordinates.
-      damage_rect = gfx::SkIRectToRect(pending_damage_.getBounds());
-      damage_rect.set_origin(origin);
-      damage_rect.Intersect(output_rect);
-      break;
-    case FRAME_TYPE_RECREATED_RESOURCES:
-      damage_rect = output_rect;
-      break;
+  if (needs_full_damage) {
+    damage_rect = output_rect;
+  } else {
+    // pending_damage_ is in Surface coordinates.
+    damage_rect = gfx::SkIRectToRect(pending_damage_.getBounds());
+    damage_rect.set_origin(origin);
+    damage_rect.Intersect(output_rect);
   }
 
   render_pass->damage_rect.Union(damage_rect);
