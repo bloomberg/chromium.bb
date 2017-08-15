@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "services/service_manager/public/cpp/interface_provider_spec.h"
 #include "services/service_manager/public/interfaces/interface_provider_spec.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,8 +35,8 @@ class EntryTest : public testing::Test {
   std::unique_ptr<base::Value> ReadManifest(const std::string& manifest) {
     base::FilePath manifest_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &manifest_path);
-    manifest_path = manifest_path.AppendASCII(
-        "services/catalog/data/" + manifest);
+    manifest_path =
+        manifest_path.AppendASCII("services/catalog/test_data/" + manifest);
 
     JSONFileValueDeserializer deserializer(manifest_path);
     int error = 0;
@@ -93,6 +94,12 @@ TEST_F(EntryTest, RequiredFiles) {
   iter = required_files.find("windows_only");
   ASSERT_NE(required_files.end(), iter);
   EXPECT_EQ(base::FilePath(L"/windows/only"), iter->second);
+  checked_platform_specific_file = true;
+#elif defined(OS_FUCHSIA)
+  EXPECT_EQ(base::FilePath("/all/platforms/fuchsia"), iter->second);
+  iter = required_files.find("fuchsia_only");
+  ASSERT_NE(required_files.end(), iter);
+  EXPECT_EQ(base::FilePath("/fuchsia/only"), iter->second);
   checked_platform_specific_file = true;
 #elif defined(OS_LINUX)
   EXPECT_EQ(base::FilePath("/all/platforms/linux"), iter->second);
