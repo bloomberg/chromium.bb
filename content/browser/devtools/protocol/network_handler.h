@@ -60,17 +60,19 @@ class NetworkHandler : public DevToolsDomainHandler,
   void DeleteCookie(const std::string& cookie_name,
                     const std::string& url,
                     std::unique_ptr<DeleteCookieCallback> callback) override;
-  void SetCookie(
-      const std::string& url,
-      const std::string& name,
-      const std::string& value,
-      Maybe<std::string> domain,
-      Maybe<std::string> path,
-      Maybe<bool> secure,
-      Maybe<bool> http_only,
-      Maybe<std::string> same_site,
-      Maybe<double> expires,
-      std::unique_ptr<SetCookieCallback> callback) override;
+  void SetCookie(const std::string& name,
+                 const std::string& value,
+                 Maybe<std::string> url,
+                 Maybe<std::string> domain,
+                 Maybe<std::string> path,
+                 Maybe<bool> secure,
+                 Maybe<bool> http_only,
+                 Maybe<std::string> same_site,
+                 Maybe<double> expires,
+                 std::unique_ptr<SetCookieCallback> callback) override;
+  void SetCookies(
+      std::unique_ptr<protocol::Array<Network::CookieParam>> cookies,
+      std::unique_ptr<SetCookiesCallback> callback) override;
 
   Response SetUserAgentOverride(const std::string& user_agent) override;
   Response CanEmulateNetworkConditions(bool* result) override;

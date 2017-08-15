@@ -6,17 +6,20 @@
     testRunner.log('Logging Cookies');
     if (success !== undefined)
       testRunner.log('Success: ' + success);
-    var data = (await dp.Network.getCookies()).result;
+    var data = (await dp.Network.getAllCookies()).result;
     testRunner.log('Num of cookies ' + data.cookies.length);
+    data.cookies.sort((a, b) => a.name.localeCompare(b.name));
     for (var cookie of data.cookies) {
-      testRunner.log('  Cookie: ');
-      testRunner.log('    Domain: '  + cookie.domain);
-      testRunner.log('    Name: '  + cookie.name);
-      testRunner.log('    Value: '  + cookie.value);
-      testRunner.log('    Path: '  + cookie.path);
-      testRunner.log('    HttpOnly: '  + cookie.httpOnly);
-      testRunner.log('    Secure: '  + cookie.secure);
-      testRunner.log('    Session: '  + cookie.session);
+      var suffix = ''
+      if (cookie.secure)
+        suffix += `, secure`;
+      if (cookie.httpOnly)
+        suffix += `, httpOnly`;
+      if (cookie.session)
+        suffix += `, session`;
+      if (cookie.sameSite)
+        suffix += `, ${cookie.sameSite}`;
+      testRunner.log(`name: ${cookie.name}, value: ${cookie.value}, domain: ${cookie.domain}, path: ${cookie.path}${suffix}`);
     }
   }
 
@@ -32,16 +35,20 @@
     await logCookies();
   }
 
+  async function setCookies(cookies) {
+    testRunner.log('Adding multiple cookies');
+    var response = await dp.Network.setCookies({cookies});
+    await logCookies();
+  }
+
   async function deleteAllCookies() {
-    testRunner.log('Removing All Cookies');
-    var data = (await dp.Network.getCookies()).result;
+    var data = (await dp.Network.getAllCookies()).result;
     var promises = [];
     for (var cookie of data.cookies) {
       var url = 'http://' + cookie.domain + '/' + cookie.path;
       promises.push(dp.Network.deleteCookie({url, cookieName: cookie.name}));
     }
     await Promise.all(promises);
-    await logCookies();
   }
 
   testRunner.log('Test started');
@@ -68,19 +75,19 @@
     deleteAllCookies,
 
     async function sessionCookieAdd() {
-      await setCookie({url: 'http://127.0.0.1', name: 'foo', value: 'bar4', expirationDate: undefined});
+      await setCookie({url: 'http://127.0.0.1', name: 'foo', value: 'bar4', expires: undefined});
     },
 
     deleteAllCookies,
 
     async function nonSessionCookieZeroAdd() {
-      await setCookie({url: 'http://127.0.0.1', name: 'foo', value: 'bar5', expirationDate: 0});
+      await setCookie({url: 'http://127.0.0.1', name: 'foo', value: 'bar5', expires: 0});
     },
 
     deleteAllCookies,
 
     async function nonSessionCookieAdd() {
-      await setCookie({url: 'http://127.0.0.1', name: 'foo', value: 'bar6', expirationDate: new Date().getTime() + 1000000});
+      await setCookie({url: 'http://127.0.0.1', name: 'foo', value: 'bar6', expires: Date.now() + 1000000});
     },
 
     deleteAllCookies,
@@ -90,9 +97,13 @@
       await setCookie({url: 'http://example.com', name: 'foo', value: 'bar7'});
     },
 
+    deleteAllCookies,
+
     async function invalidCookieAddDomain() {
       await setCookie({url: 'ht2tp://127.0.0.1', name: 'foo', value: 'bar8'});
     },
+
+    deleteAllCookies,
 
     async function invalidCookieAddName() {
       await setCookie({url: 'http://127.0.0.1', name: 'foo\0\r\na', value: 'bar9'});
@@ -121,6 +132,21 @@
 
     async function cookieAddSameSiteLax() {
       await setCookie({url: 'http://127.0.0.1', sameSite: 'Strict', name: 'foo', value: 'bar'});
-    }
+    },
+
+    deleteAllCookies,
+
+    async function setCookiesBasic() {
+      await setCookies([{name: 'foo1', value: 'bar1', domain: '127.0.0.1', path: '/', },
+                        {name: 'foo2', value: 'bar2', domain: '127.0.0.1', path: '/', httpOnly: true },
+                        {name: 'foo3', value: 'bar3', domain: '127.0.0.1', path: '/', secure: true },
+                        {name: 'foo4', value: 'bar4', domain: '127.0.0.1', path: '/', sameSite: 'Lax' },
+                        {name: 'foo5', value: 'bar5', domain: '127.0.0.1', path: '/' },
+                        {name: 'foo6', value: 'bar6', domain: '.chromium.org', path: '/path', expires: Date.now() + 1000 },
+                        {name: 'foo7', value: 'bar7', url: 'https://www.chromium.org/foo', expires: Date.now() + 1000 }]);
+    },
+
+    deleteAllCookies,
+
   ]);
 })

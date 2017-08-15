@@ -473,6 +473,7 @@ Status WebViewImpl::AddCookie(const std::string& name,
   params.SetBoolean("secure", secure);
   params.SetBoolean("httpOnly", httpOnly);
   params.SetDouble("expirationDate", expiry);
+  params.SetDouble("expires", expiry);
   return client_->SendCommand("Network.setCookie", params);
 }
 

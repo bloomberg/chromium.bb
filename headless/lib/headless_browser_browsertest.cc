@@ -610,7 +610,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, SetCookiesWithDevTools) {
             .SetSecure(true)
             .SetHttpOnly(true)
             .SetSameSite(network::CookieSameSite::EXACT)
-            .SetExpirationDate(0)
+            .SetExpires(0)
             .Build();
     CookieSetter cookie_setter(this, web_contents,
                                std::move(set_cookie_params));
