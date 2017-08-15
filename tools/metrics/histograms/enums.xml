@@ -4111,11 +4111,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="0" label="Success"/>
   <int value="1" label="NotSupportedError"/>
   <int value="2" label="InvalidStateError"/>
-  <int value="3" label="InvalidAccessError"/>
+  <int value="3" label="TypeError"/>
   <int value="4" label="QuotaExceededError"/>
-  <int value="5" label="UnknownError"/>
-  <int value="6" label="ClientError"/>
-  <int value="7" label="OutputError"/>
+  <int value="5" label="UnknownError (deprecated)"/>
+  <int value="6" label="ClientError (deprecated)"/>
+  <int value="7" label="OutputError (deprecated)"/>
 </enum>
 
 <enum name="CertificateChainPosition">

@@ -105,7 +105,7 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
   // If connection error has happened, fail immediately.
   if (remote_cdm_.encountered_error()) {
     LOG(ERROR) << "Remote CDM encountered error.";
-    promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+    promise->reject(CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "Mojo CDM creation failed.");
     return;
   }
@@ -132,7 +132,7 @@ void MojoCdm::OnConnectionError(uint32_t custom_reason,
   // Handle initial connection error.
   if (pending_init_promise_) {
     DCHECK(!cdm_session_tracker_.HasRemainingSessions());
-    pending_init_promise_->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+    pending_init_promise_->reject(CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                                   "Mojo CDM creation failed.");
     // Dropping the promise could cause |this| to be destructed.
     pending_init_promise_.reset();
@@ -151,7 +151,7 @@ void MojoCdm::SetServerCertificate(const std::vector<uint8_t>& certificate,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!remote_cdm_) {
-    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "CDM connection lost.");
     return;
   }
@@ -168,7 +168,7 @@ void MojoCdm::GetStatusForPolicy(HdcpVersion min_hdcp_version,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!remote_cdm_) {
-    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "CDM connection lost.");
     return;
   }
@@ -188,7 +188,7 @@ void MojoCdm::CreateSessionAndGenerateRequest(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!remote_cdm_) {
-    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "CDM connection lost.");
     return;
   }
@@ -207,7 +207,7 @@ void MojoCdm::LoadSession(CdmSessionType session_type,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!remote_cdm_) {
-    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "CDM connection lost.");
     return;
   }
@@ -225,7 +225,7 @@ void MojoCdm::UpdateSession(const std::string& session_id,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!remote_cdm_) {
-    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "CDM connection lost.");
     return;
   }
@@ -242,7 +242,7 @@ void MojoCdm::CloseSession(const std::string& session_id,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!remote_cdm_) {
-    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "CDM connection lost.");
     return;
   }
@@ -259,7 +259,7 @@ void MojoCdm::RemoveSession(const std::string& session_id,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!remote_cdm_) {
-    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "CDM connection lost.");
     return;
   }

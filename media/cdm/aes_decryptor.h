@@ -18,6 +18,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_key_information.h"
+#include "media/base/cdm_promise.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_export.h"
@@ -108,6 +109,7 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   bool UpdateSessionWithJWK(const std::string& session_id,
                             const std::string& json_web_key_set,
                             bool* key_added,
+                            CdmPromise::Exception* exception,
                             std::string* error_message);
 
   // Performs the final steps of UpdateSession (notify any listeners for keys

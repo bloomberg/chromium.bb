@@ -420,7 +420,7 @@ bool ConvertProtoToCdmPromise(const pb::CdmPromise& promise_message,
     return true;
   }
 
-  CdmPromise::Exception exception = CdmPromise::UNKNOWN_ERROR;
+  CdmPromise::Exception exception = CdmPromise::Exception::NOT_SUPPORTED_ERROR;
   uint32_t system_code = 0;
   std::string error_message;
 
@@ -452,7 +452,7 @@ bool ConvertProtoToCdmPromiseWithCdmIdSessionId(const pb::RpcMessage& message,
 
 //==============================================================================
 CdmPromiseResult::CdmPromiseResult()
-    : CdmPromiseResult(CdmPromise::UNKNOWN_ERROR, 0, "") {}
+    : CdmPromiseResult(CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0, "") {}
 
 CdmPromiseResult::CdmPromiseResult(CdmPromise::Exception exception,
                                    uint32_t system_code,

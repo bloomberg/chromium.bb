@@ -289,7 +289,7 @@ PP_CdmExceptionCode CdmExceptionTypeToPpCdmExceptionType(
     case cdm::Exception::kExceptionInvalidStateError:
       return PP_CDMEXCEPTIONCODE_INVALIDSTATEERROR;
     case cdm::Exception::kExceptionTypeError:
-      return PP_CDMEXCEPTIONCODE_INVALIDACCESSERROR;
+      return PP_CDMEXCEPTIONCODE_TYPEERROR;
     case cdm::Exception::kExceptionQuotaExceededError:
       return PP_CDMEXCEPTIONCODE_QUOTAEXCEEDEDERROR;
   }
@@ -308,6 +308,9 @@ cdm::Exception CdmErrorTypeToCdmExceptionType(cdm::Error error) {
       return cdm::Exception::kExceptionTypeError;
     case cdm::kQuotaExceededError:
       return cdm::Exception::kExceptionQuotaExceededError;
+
+    // TODO(jrummell): Remove these once CDM_8 is no longer supported.
+    // https://crbug.com/737296.
     case cdm::kUnknownError:
     case cdm::kClientError:
     case cdm::kOutputError:

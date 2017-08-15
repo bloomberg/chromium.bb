@@ -334,22 +334,16 @@ CdmPromise::Exception PpExceptionTypeToCdmPromiseException(
     PP_CdmExceptionCode exception_code) {
   switch (exception_code) {
     case PP_CDMEXCEPTIONCODE_NOTSUPPORTEDERROR:
-      return CdmPromise::NOT_SUPPORTED_ERROR;
+      return CdmPromise::Exception::NOT_SUPPORTED_ERROR;
     case PP_CDMEXCEPTIONCODE_INVALIDSTATEERROR:
-      return CdmPromise::INVALID_STATE_ERROR;
-    case PP_CDMEXCEPTIONCODE_INVALIDACCESSERROR:
-      return CdmPromise::INVALID_ACCESS_ERROR;
+      return CdmPromise::Exception::INVALID_STATE_ERROR;
+    case PP_CDMEXCEPTIONCODE_TYPEERROR:
+      return CdmPromise::Exception::TYPE_ERROR;
     case PP_CDMEXCEPTIONCODE_QUOTAEXCEEDEDERROR:
-      return CdmPromise::QUOTA_EXCEEDED_ERROR;
-    case PP_CDMEXCEPTIONCODE_UNKNOWNERROR:
-      return CdmPromise::UNKNOWN_ERROR;
-    case PP_CDMEXCEPTIONCODE_CLIENTERROR:
-      return CdmPromise::CLIENT_ERROR;
-    case PP_CDMEXCEPTIONCODE_OUTPUTERROR:
-      return CdmPromise::OUTPUT_ERROR;
+      return CdmPromise::Exception::QUOTA_EXCEEDED_ERROR;
     default:
       NOTREACHED();
-      return CdmPromise::UNKNOWN_ERROR;
+      return CdmPromise::Exception::NOT_SUPPORTED_ERROR;
   }
 }
 
@@ -458,7 +452,7 @@ void ContentDecryptorDelegate::SetServerCertificate(
     std::unique_ptr<media::SimpleCdmPromise> promise) {
   if (certificate.size() < media::limits::kMinCertificateLength ||
       certificate.size() > media::limits::kMaxCertificateLength) {
-    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
+    promise->reject(CdmPromise::Exception::TYPE_ERROR, 0,
                     "Incorrect certificate.");
     return;
   }
@@ -521,7 +515,7 @@ void ContentDecryptorDelegate::CloseSession(
     const std::string& session_id,
     std::unique_ptr<SimpleCdmPromise> promise) {
   if (session_id.length() > media::limits::kMaxSessionIdLength) {
-    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0, "Incorrect session.");
+    promise->reject(CdmPromise::Exception::TYPE_ERROR, 0, "Incorrect session.");
     return;
   }
 
@@ -534,7 +528,7 @@ void ContentDecryptorDelegate::RemoveSession(
     const std::string& session_id,
     std::unique_ptr<SimpleCdmPromise> promise) {
   if (session_id.length() > media::limits::kMaxSessionIdLength) {
-    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0, "Incorrect session.");
+    promise->reject(CdmPromise::Exception::TYPE_ERROR, 0, "Incorrect session.");
     return;
   }
 

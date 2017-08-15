@@ -16,7 +16,7 @@ ContentDecryptionModule::~ContentDecryptionModule() {}
 void ContentDecryptionModule::GetStatusForPolicy(
     HdcpVersion min_hdcp_version,
     std::unique_ptr<KeyStatusCdmPromise> promise) {
-  promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+  promise->reject(CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0,
                   "GetStatusForPolicy() is not supported.");
 }
 
