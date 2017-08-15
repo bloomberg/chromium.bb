@@ -271,7 +271,7 @@ DaemonController::UsageStatsConsent
 DaemonControllerDelegateMac::GetUsageStatsConsent() {
   DaemonController::UsageStatsConsent consent;
   consent.supported = true;
-  consent.allowed = false;
+  consent.allowed = true;
   // set_by_policy is not yet supported.
   consent.set_by_policy = false;
 
