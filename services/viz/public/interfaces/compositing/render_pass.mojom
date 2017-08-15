@@ -5,7 +5,7 @@
 module viz.mojom;
 
 import "cc/ipc/filter_operations.mojom";
-import "cc/ipc/quads.mojom";
+import "services/viz/public/interfaces/compositing/quads.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 import "ui/gfx/mojo/transform.mojom";
@@ -22,5 +22,5 @@ struct RenderPass {
   bool has_transparent_background;
   bool cache_render_pass = false;
   bool has_damage_from_contributing_content = false;
-  array<cc.mojom.DrawQuad> quad_list;
+  array<DrawQuad> quad_list;
 };

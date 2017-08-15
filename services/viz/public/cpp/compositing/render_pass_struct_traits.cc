@@ -35,14 +35,14 @@ bool StructTraits<viz::mojom::RenderPassDataView,
   (*out)->has_damage_from_contributing_content =
       data.has_damage_from_contributing_content();
 
-  mojo::ArrayDataView<cc::mojom::DrawQuadDataView> quads;
+  mojo::ArrayDataView<viz::mojom::DrawQuadDataView> quads;
   data.GetQuadListDataView(&quads);
   cc::SharedQuadState* last_sqs = nullptr;
   cc::DrawQuad* last_draw_quad = nullptr;
   for (size_t i = 0; i < quads.size(); ++i) {
-    cc::mojom::DrawQuadDataView quad_data_view;
+    viz::mojom::DrawQuadDataView quad_data_view;
     quads.GetDataView(i, &quad_data_view);
-    cc::mojom::DrawQuadStateDataView quad_state_data_view;
+    viz::mojom::DrawQuadStateDataView quad_state_data_view;
     quad_data_view.GetDrawQuadStateDataView(&quad_state_data_view);
 
     cc::DrawQuad* quad =

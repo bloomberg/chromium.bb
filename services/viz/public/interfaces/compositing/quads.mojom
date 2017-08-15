@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module cc.mojom;
+module viz.mojom;
 
-import "cc/ipc/filter_operations.mojom";
 import "cc/ipc/shared_quad_state.mojom";
 import "cc/ipc/surface_id.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -59,7 +58,7 @@ enum SurfaceDrawQuadType {
 };
 
 struct SurfaceQuadState {
-  SurfaceId surface;
+  cc.mojom.SurfaceId surface;
   SurfaceDrawQuadType surface_draw_quad_type;
 };
 
@@ -137,7 +136,7 @@ struct DrawQuad {
 
   // Optionally holds a SharedQuadState (transforms etc) shared by multiple
   // quads.
-  SharedQuadState? sqs;
+  cc.mojom.SharedQuadState? sqs;
 
   DrawQuadState draw_quad_state;
 };
