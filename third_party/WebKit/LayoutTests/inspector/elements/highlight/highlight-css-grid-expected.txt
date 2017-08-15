@@ -1,0 +1,229 @@
+c1
+c2
+c3
+c1
+c2
+c3
+This test verifies the position and size of the highlight rectangles overlayed on an inspected CSS grid div.
+
+inspectedGrid{
+  "paths": [
+    {
+      "path": [
+        "M",
+        0,
+        0,
+        "L",
+        1000,
+        0,
+        "L",
+        1000,
+        50,
+        "L",
+        0,
+        50,
+        "Z"
+      ],
+      "fillColor": "rgba(255, 0, 0, 0)",
+      "outlineColor": "rgba(128, 0, 0, 0)",
+      "name": "content"
+    },
+    {
+      "path": [
+        "M",
+        0,
+        0,
+        "L",
+        1000,
+        0,
+        "L",
+        1000,
+        50,
+        "L",
+        0,
+        50,
+        "Z"
+      ],
+      "fillColor": "rgba(0, 255, 0, 0)",
+      "name": "padding"
+    },
+    {
+      "path": [
+        "M",
+        0,
+        0,
+        "L",
+        1000,
+        0,
+        "L",
+        1000,
+        50,
+        "L",
+        0,
+        50,
+        "Z"
+      ],
+      "fillColor": "rgba(0, 0, 255, 0)",
+      "name": "border"
+    },
+    {
+      "path": [
+        "M",
+        0,
+        0,
+        "L",
+        1000,
+        0,
+        "L",
+        1000,
+        50,
+        "L",
+        0,
+        50,
+        "Z"
+      ],
+      "fillColor": "rgba(255, 255, 255, 0)",
+      "name": "margin"
+    }
+  ],
+  "showRulers": true,
+  "showExtensionLines": true,
+  "elementInfo": {
+    "tagName": "div",
+    "idValue": "inspectedGrid",
+    "className": ".grid",
+    "nodeWidth": "1000",
+    "nodeHeight": "50"
+  },
+  "displayAsMaterial": false,
+  "gridInfo": {
+    "rows": {
+      "origin": 0,
+      "gap": 0,
+      "spans": [
+        25,
+        25
+      ]
+    },
+    "columns": {
+      "origin": 0,
+      "gap": 0,
+      "spans": [
+        50,
+        200
+      ]
+    },
+    "color": "rgba(128, 128, 128, 0)"
+  }
+}
+paddedGrid{
+  "paths": [
+    {
+      "path": [
+        "M",
+        60,
+        50,
+        "L",
+        1060,
+        50,
+        "L",
+        1060,
+        100,
+        "L",
+        60,
+        100,
+        "Z"
+      ],
+      "fillColor": "rgba(255, 0, 0, 0)",
+      "outlineColor": "rgba(128, 0, 0, 0)",
+      "name": "content"
+    },
+    {
+      "path": [
+        "M",
+        0,
+        0,
+        "L",
+        1120,
+        0,
+        "L",
+        1120,
+        150,
+        "L",
+        0,
+        150,
+        "Z"
+      ],
+      "fillColor": "rgba(0, 255, 0, 0)",
+      "name": "padding"
+    },
+    {
+      "path": [
+        "M",
+        0,
+        0,
+        "L",
+        1120,
+        0,
+        "L",
+        1120,
+        150,
+        "L",
+        0,
+        150,
+        "Z"
+      ],
+      "fillColor": "rgba(0, 0, 255, 0)",
+      "name": "border"
+    },
+    {
+      "path": [
+        "M",
+        0,
+        0,
+        "L",
+        1120,
+        0,
+        "L",
+        1120,
+        150,
+        "L",
+        0,
+        150,
+        "Z"
+      ],
+      "fillColor": "rgba(255, 255, 255, 0)",
+      "name": "margin"
+    }
+  ],
+  "showRulers": true,
+  "showExtensionLines": true,
+  "elementInfo": {
+    "tagName": "div",
+    "idValue": "paddedGrid",
+    "className": ".grid.padded",
+    "nodeWidth": "1120",
+    "nodeHeight": "150"
+  },
+  "displayAsMaterial": false,
+  "gridInfo": {
+    "rows": {
+      "origin": 50,
+      "gap": 0,
+      "spans": [
+        25,
+        25
+      ]
+    },
+    "columns": {
+      "origin": 60,
+      "gap": 0,
+      "spans": [
+        50,
+        200
+      ]
+    },
+    "color": "rgba(128, 128, 128, 0)"
+  }
+}
+
