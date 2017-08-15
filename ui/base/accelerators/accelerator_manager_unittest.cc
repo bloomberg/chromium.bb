@@ -20,8 +20,8 @@ namespace {
 
 class TestTarget : public AcceleratorTarget {
  public:
-  TestTarget() : accelerator_pressed_count_(0) {}
-  ~TestTarget() override {}
+  TestTarget() = default;
+  ~TestTarget() override = default;
 
   int accelerator_pressed_count() const {
     return accelerator_pressed_count_;
@@ -31,12 +31,18 @@ class TestTarget : public AcceleratorTarget {
     accelerator_pressed_count_ = accelerator_pressed_count;
   }
 
+  void set_accelerator_id(int id) {
+    accelerator_id_ = id;
+  }
+
   // Overridden from AcceleratorTarget:
   bool AcceleratorPressed(const Accelerator& accelerator) override;
   bool CanHandleAccelerators() const override;
+  int GetAcceleratorId(const Accelerator& accelerator) const override;
 
  private:
-  int accelerator_pressed_count_;
+  int accelerator_pressed_count_ = 0;
+  int accelerator_id_ = kUnknownAcceleratorId;
 
   DISALLOW_COPY_AND_ASSIGN(TestTarget);
 };
@@ -48,6 +54,10 @@ bool TestTarget::AcceleratorPressed(const Accelerator& accelerator) {
 
 bool TestTarget::CanHandleAccelerators() const {
   return true;
+}
+
+int TestTarget::GetAcceleratorId(const Accelerator& accelerator) const {
+  return accelerator_id_;
 }
 
 Accelerator GetAccelerator(KeyboardCode code, int mask) {
@@ -287,6 +297,31 @@ TEST_F(AcceleratorManagerTest, Reregister) {
   manager_.Register({accelerator_a}, AcceleratorManager::kNormalPriority,
                     &target);
   EXPECT_EQ("Register a", delegate_.GetAndClearCommands());
+}
+
+TEST_F(AcceleratorManagerTest, GetAcceleratorId) {
+  const Accelerator accelerator(VKEY_A, EF_NONE);
+  TestTarget target_a;
+  TestTarget target_b;
+
+  manager_.Register({accelerator},
+                    AcceleratorManager::kNormalPriority,
+                    &target_b);
+  manager_.Register({accelerator},
+                    AcceleratorManager::kNormalPriority,
+                    &target_a);
+
+  EXPECT_EQ(AcceleratorTarget::kUnknownAcceleratorId,
+            manager_.GetAcceleratorId(accelerator));
+
+  target_a.set_accelerator_id(1);
+  EXPECT_EQ(1, manager_.GetAcceleratorId(accelerator));
+
+  target_b.set_accelerator_id(2);
+  EXPECT_EQ(1, manager_.GetAcceleratorId(accelerator));
+
+  target_a.set_accelerator_id(AcceleratorTarget::kUnknownAcceleratorId);
+  EXPECT_EQ(2, manager_.GetAcceleratorId(accelerator));
 }
 
 }  // namespace test

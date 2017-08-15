@@ -88,22 +88,41 @@ bool AcceleratorManager::IsRegistered(const Accelerator& accelerator) const {
 }
 
 bool AcceleratorManager::Process(const Accelerator& accelerator) {
-  bool result = false;
   AcceleratorMap::iterator map_iter = accelerators_.find(accelerator);
-  if (map_iter != accelerators_.end()) {
-    // We have to copy the target list here, because an AcceleratorPressed
-    // event handler may modify the list.
-    AcceleratorTargetList targets(map_iter->second.second);
-    for (AcceleratorTargetList::iterator iter = targets.begin();
-         iter != targets.end(); ++iter) {
-      if ((*iter)->CanHandleAccelerators() &&
-          (*iter)->AcceleratorPressed(accelerator)) {
-        result = true;
-        break;
-      }
+  if (map_iter == accelerators_.end())
+    return false;
+
+  // We have to copy the target list here, because an AcceleratorPressed
+  // event handler may modify the list.
+  AcceleratorTargetList targets(map_iter->second.second);
+  for (AcceleratorTargetList::iterator iter = targets.begin();
+       iter != targets.end(); ++iter) {
+    if ((*iter)->CanHandleAccelerators() &&
+        (*iter)->AcceleratorPressed(accelerator)) {
+      return true;
     }
   }
-  return result;
+
+  return false;
+}
+
+int AcceleratorManager::GetAcceleratorId(const Accelerator& accelerator) const {
+  AcceleratorMap::const_iterator map_iter = accelerators_.find(accelerator);
+  if (map_iter == accelerators_.end())
+    return AcceleratorTarget::kUnknownAcceleratorId;
+
+  const AcceleratorTargetList& targets = map_iter->second.second;
+  for (AcceleratorTargetList::const_iterator iter = targets.begin();
+       iter != targets.end();
+       iter++) {
+    if ((*iter)->CanHandleAccelerators()) {
+      const int accelerator_id = (*iter)->GetAcceleratorId(accelerator);
+      if (accelerator_id != AcceleratorTarget::kUnknownAcceleratorId)
+        return accelerator_id;
+    }
+  }
+
+  return AcceleratorTarget::kUnknownAcceleratorId;
 }
 
 bool AcceleratorManager::HasPriorityHandler(

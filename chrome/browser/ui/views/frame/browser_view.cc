@@ -2023,18 +2023,26 @@ void BrowserView::OnThemeChanged() {
 // BrowserView, ui::AcceleratorTarget overrides:
 
 bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  std::map<ui::Accelerator, int>::const_iterator iter =
-      accelerator_table_.find(accelerator);
-  DCHECK(iter != accelerator_table_.end());
-  int command_id = iter->second;
-
-  if (accelerator.IsRepeat() && !IsCommandRepeatable(command_id))
+  const int command_id = GetAcceleratorId(accelerator);
+  if (command_id == kUnknownAcceleratorId)
     return false;
 
   chrome::BrowserCommandController* controller = browser_->command_controller();
   if (!controller->block_command_execution())
     UpdateAcceleratorMetrics(accelerator, command_id);
   return chrome::ExecuteCommand(browser_.get(), command_id);
+}
+
+int BrowserView::GetAcceleratorId(const ui::Accelerator& accelerator) const {
+  std::map<ui::Accelerator, int>::const_iterator iter =
+      accelerator_table_.find(accelerator);
+  DCHECK(iter != accelerator_table_.end());
+
+  const int command_id = iter->second;
+  if (accelerator.IsRepeat() && !IsCommandRepeatable(command_id))
+    return kUnknownAcceleratorId;
+
+  return command_id;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
