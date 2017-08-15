@@ -216,6 +216,12 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
 #pragma mark - Keyboard Notifications
 
 - (void)keyboardWillShow:(NSNotification*)notification {
+  // The soft keyboard can be triggered by the PhysicalKeyboardDetector, in this
+  // case we don't need to change the keyboard size.
+  if (!_clientKeyboard.isFirstResponder) {
+    return;
+  }
+
   if (_blocksKeyboard) {
     // This is to make sure the keyboard is removed from the responder chain.
     [_clientKeyboard removeFromSuperview];
@@ -233,6 +239,10 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
 }
 
 - (void)keyboardWillHide:(NSNotification*)notification {
+  if (!_clientKeyboard.isFirstResponder) {
+    return;
+  }
+
   [self setKeyboardSize:CGSizeZero needsLayout:YES];
 }
 
