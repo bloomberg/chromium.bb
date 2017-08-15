@@ -4876,7 +4876,9 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
       if (rd_stats->rate == INT_MAX) return;
 
+#if !CONFIG_PVQ
       av1_set_txb_context(x, plane, 0, quarter_txsize, pta, ptl);
+#endif  // !CONFIG_PVQ
       coeff_ctx = get_entropy_context(quarter_txsize, pta + blk_col_offset,
                                       ptl + blk_row_offset);
       zero_blk_rate =
@@ -5100,12 +5102,14 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     }
 #endif
 
+#if !CONFIG_PVQ
     av1_set_txb_context(x, plane, block, tx_size_selected, pta, ptl);
 #if CONFIG_RECT_TX_EXT
     if (is_qttx_picked)
       av1_set_txb_context(x, plane, block_offset_qttx, tx_size_selected,
                           pta + blk_col_offset, ptl + blk_row_offset);
-#endif
+#endif  // CONFIG_RECT_TX_EXT
+#endif  // !CONFIG_PVQ
 
     txfm_partition_update(tx_above + blk_col, tx_left + blk_row, tx_size,
                           tx_size);
@@ -5397,7 +5401,9 @@ static void tx_block_rd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     ENTROPY_CONTEXT *tl = left_ctx + blk_row;
     av1_tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, plane, block,
                       plane_bsize, ta, tl, rd_stats);
+#if !CONFIG_PVQ
     av1_set_txb_context(x, plane, block, tx_size, ta, tl);
+#endif  // !CONFIG_PVQ
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsl = tx_size_wide_unit[sub_txs];

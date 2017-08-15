@@ -459,7 +459,7 @@ static AV1_QUANT_FACADE
     };
 #endif  // !CONFIG_PVQ
 
-#if !CONFIG_TXMG
+#if !CONFIG_TXMG && !CONFIG_PVQ
 typedef void (*fwdTxfmFunc)(const int16_t *diff, tran_low_t *coeff, int stride,
                             TxfmParam *txfm_param);
 static const fwdTxfmFunc fwd_txfm_func[2] = { av1_fwd_txfm,
