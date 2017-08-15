@@ -55,7 +55,6 @@ PASS Supported label: iso_8859-3
 PASS Supported label: koi8_r 
 PASS Supported label: windows-31j 
 PASS Supported label: iso_8859-4:1988 
-FAIL Supported label: gb2312-1980 assert_true: gb2312-1980 should only be supported if it is specified expected true got false
 PASS Supported label: iso88597 
 PASS Supported label: shift-jis 
 PASS Supported label: iso-ir-148 
@@ -67,7 +66,6 @@ FAIL Supported label: windows-1251-html assert_true: windows-1251-html should on
 PASS Supported label: iso-2022-cn 
 FAIL Supported label: windows-1257-html assert_true: windows-1257-html should only be supported if it is specified expected true got false
 PASS Supported label: windows-1257 
-PASS Supported label: windows-1252 
 PASS Supported label: arabic 
 PASS Supported label: windows-1251 
 PASS Supported label: csisolatincyrillic 
@@ -80,7 +78,7 @@ PASS Supported label: iso-2022-kr
 PASS Supported label: x-mac-ukrainian 
 PASS Supported label: logical 
 PASS Supported label: koi8-r 
-FAIL Supported label: windows-54936 assert_true: windows-54936 should only be supported if it is specified expected true got false
+PASS Supported label: windows-1252 
 PASS Supported label: csiso2022jp 
 PASS Supported label: elot_928 
 PASS Supported label: koi8 
@@ -116,8 +114,8 @@ PASS Supported label: mac
 FAIL Supported label: windows-1258-html assert_true: windows-1258-html should only be supported if it is specified expected true got false
 PASS Supported label: iso_8859-1 
 PASS Supported label: x-cp1254 
+PASS Supported label: iso8859-2 
 PASS Supported label: iso8859-11 
-FAIL Supported label: windows-936 assert_true: windows-936 should only be supported if it is specified expected true got false
 PASS Supported label: big5 
 FAIL Supported label: iso-8859-4-html assert_true: iso-8859-4-html should only be supported if it is specified expected true got false
 PASS Supported label: iso-8859-1 
@@ -126,7 +124,6 @@ FAIL Supported label: iso-8859-16-html assert_true: iso-8859-16-html should only
 PASS Supported label: csisolatin2 
 PASS Supported label: iso-8859-7 
 PASS Supported label: iso-8859-8-i 
-FAIL Supported label: cp936 assert_true: cp936 should only be supported if it is specified expected true got false
 PASS Supported label: iso88591 
 PASS Supported label: windows-1258 
 PASS Supported label: iso_8859-8:1988 
@@ -138,7 +135,6 @@ FAIL Supported label: iso-8859-7-html assert_true: iso-8859-7-html should only b
 FAIL Supported label: koi8-r-html assert_true: koi8-r-html should only be supported if it is specified expected true got false
 PASS Supported label: iso-8859-4 
 FAIL Supported label: windows-1252-html assert_true: windows-1252-html should only be supported if it is specified expected true got false
-FAIL Supported label: ibm-1392 assert_true: ibm-1392 should only be supported if it is specified expected true got false
 PASS Supported label: iso-ir-144 
 PASS Supported label: iso-ir-109 
 PASS Supported label: csiso88596i 
@@ -147,7 +143,6 @@ PASS Supported label: iso-8859-14
 PASS Supported label: iso885914 
 PASS Supported label: l6 
 PASS Supported label: iso_8859-5 
-FAIL Supported label: ms936 assert_true: ms936 should only be supported if it is specified expected true got false
 PASS Supported label: gbk 
 PASS Supported label: l5 
 PASS Supported label: iso-ir-100 
@@ -178,7 +173,6 @@ PASS Supported label: macintosh
 PASS Supported label: iso-2022-jp 
 PASS Supported label: l9 
 PASS Supported label: iso-8859-5 
-PASS Supported label: cseuckr 
 PASS Supported label: iso-ir-101 
 PASS Supported label: iso-ir-127 
 PASS Supported label: iso8859-4 
@@ -203,7 +197,7 @@ PASS Supported label: utf-16
 PASS Supported label: iso885915 
 PASS Supported label: cp1252 
 PASS Supported label: iso8859-6 
-PASS Supported label: iso8859-2 
+PASS Supported label: cseuckr 
 PASS Supported label: x-cp1253 
 PASS Supported label: iso88593 
 PASS Supported label: csisolatin3 
@@ -263,7 +257,6 @@ PASS Supported label: csbig5
 PASS Supported label: cp1257 
 PASS Supported label: x-mac-cyrillic 
 FAIL Supported label: windows-1250-html assert_true: windows-1250-html should only be supported if it is specified expected true got false
-FAIL Supported label: euc-cn assert_true: euc-cn should only be supported if it is specified expected true got false
 PASS Supported label: iso8859-1 
 PASS Supported label: gb18030 
 Harness: the test ran to completion.
