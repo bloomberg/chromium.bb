@@ -555,8 +555,7 @@ post_process_cmdline() {
     enabled ncobmc_adapt_weight && enable_feature motion_var
     enabled bgsprite && enable_feature global_motion
     enabled ext_comp_refs && enable_feature ext_refs
-    enabled ext_comp_refs && enable_feature var_refs
-    enabled ext_comp_refs && disable_feature one_sided_compound
+    enabled ext_comp_refs && enable_feature one_sided_compound
     enabled altref2 && enable_feature ext_refs
     enabled altref2 && enable_feature flex_refs
     enabled rect_tx_ext && enable_feature rect_tx

@@ -10811,7 +10811,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     // This is only used in motion vector unit test.
     if (cpi->oxcf.motion_vector_unit_test && ref_frame == INTRA_FRAME) continue;
 
-#if CONFIG_ONE_SIDED_COMPOUND  // Changes LL bitstream
+#if CONFIG_ONE_SIDED_COMPOUND && !CONFIG_EXT_COMP_REFS  // Changes LL bitstream
 #if CONFIG_EXT_REFS
     if (cpi->oxcf.pass == 0) {
       // Complexity-compression trade-offs
@@ -10820,8 +10820,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       if (second_ref_frame == ALTREF_FRAME) continue;
       // if (second_ref_frame == BWDREF_FRAME) continue;
     }
-#endif
-#endif
+#endif  // CONFIG_EXT_REFS
+#endif  // CONFIG_ONE_SIDED_COMPOUND && !CONFIG_EXT_COMP_REFS
     comp_pred = second_ref_frame > INTRA_FRAME;
     if (comp_pred) {
       if (!cpi->allow_comp_inter_inter) continue;

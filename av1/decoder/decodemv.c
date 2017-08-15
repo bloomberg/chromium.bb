@@ -1459,15 +1459,15 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif  // CONFIG_EXT_COMP_REFS
 
 // Normative in decoder (for low delay)
-#if CONFIG_ONE_SIDED_COMPOUND || CONFIG_EXT_COMP_REFS
+#if CONFIG_ONE_SIDED_COMPOUND
       const int idx = 1;
-#else  // !(CONFIG_ONE_SIDED_COMPOUND || CONFIG_EXT_COMP_REFS)
+#else  // !CONFIG_ONE_SIDED_COMPOUND
 #if CONFIG_EXT_REFS
       const int idx = cm->ref_frame_sign_bias[cm->comp_bwd_ref[0]];
 #else   // !CONFIG_EXT_REFS
       const int idx = cm->ref_frame_sign_bias[cm->comp_fixed_ref];
 #endif  // CONFIG_EXT_REFS
-#endif  // CONFIG_ONE_SIDED_COMPOUND || CONFIG_EXT_COMP_REFS
+#endif  // CONFIG_ONE_SIDED_COMPOUND
 
       const int ctx = av1_get_pred_context_comp_ref_p(cm, xd);
 #if CONFIG_VAR_REFS
