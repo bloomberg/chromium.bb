@@ -4,14 +4,10 @@
 
 #include "chrome/browser/extensions/api/feedback_private/log_source_access_manager.h"
 
-#include "base/macros.h"
-#include "base/memory/ptr_util.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/api/feedback_private/log_source_resource.h"
-#include "chrome/browser/extensions/api/feedback_private/single_log_source_factory.h"
-#include "chrome/browser/extensions/extension_api_unittest.h"
-#include "extensions/browser/api/api_resource_manager.h"
+#include "chrome/browser/extensions/api/feedback_private/feedback_private_api_unittest_base_chromeos.h"
 
 namespace extensions {
 
@@ -19,95 +15,22 @@ namespace {
 
 using api::feedback_private::LOG_SOURCE_MESSAGES;
 using api::feedback_private::LOG_SOURCE_UILATEST;
-using api::feedback_private::LogSource;
 using api::feedback_private::ReadLogSourceResult;
 using api::feedback_private::ReadLogSourceParams;
-using system_logs::SystemLogsSource;
-
-std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
-    content::BrowserContext* context) {
-  return base::MakeUnique<ApiResourceManager<LogSourceResource>>(context);
-}
-
-// Dummy function used as a callback for FetchFromSource().
-void OnFetchedFromSource(const ReadLogSourceResult& result) {}
-
-// A dummy SystemLogsSource that does not require real system logs to be
-// available during testing. Always returns an empty result.
-class EmptySingleLogSource : public system_logs::SystemLogsSource {
- public:
-  explicit EmptySingleLogSource(LogSource type)
-      : SystemLogsSource(api::feedback_private::ToString(type)) {}
-
-  ~EmptySingleLogSource() override = default;
-
-  void Fetch(const system_logs::SysLogsSourceCallback& callback) override {
-    system_logs::SystemLogsResponse* result_map =
-        new system_logs::SystemLogsResponse;
-    result_map->emplace("", "");
-
-    // Do not directly pass the result to the callback, because that's not how
-    // log sources actually work. Instead, simulate the asynchronous operation
-    // of a SystemLogsSource by invoking the callback separately.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, base::Owned(result_map)));
-  }
-
-  // Instantiates a new instance of this class. Does not retain ownership. Used
-  // to create a Callback that can be used to override the default behavior of
-  // SingleLogSourceFactory.
-  static std::unique_ptr<SystemLogsSource> Create(LogSource type) {
-    return base::MakeUnique<EmptySingleLogSource>(type);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EmptySingleLogSource);
-};
 
 }  // namespace
 
-class LogSourceAccessManagerTest : public ExtensionApiUnittest {
- public:
-  LogSourceAccessManagerTest()
-      : create_callback_(base::Bind(&EmptySingleLogSource::Create)) {}
-  ~LogSourceAccessManagerTest() override {}
-
-  void SetUp() override {
-    ExtensionApiUnittest::SetUp();
-
-    // The ApiResourceManager used for LogSourceResource is destroyed every time
-    // a unit test finishes, during TearDown(). There is no way to re-create it
-    // normally. The below code forces it to be re-created during SetUp(), so
-    // that there is always a valid ApiResourceManager<LogSourceResource> when
-    // subsequent unit tests are running.
-    ApiResourceManager<LogSourceResource>::GetFactoryInstance()
-        ->SetTestingFactoryAndUse(profile(), ApiResourceManagerTestFactory);
-
-    SingleLogSourceFactory::SetForTesting(&create_callback_);
-  }
-
-  void TearDown() override {
-    SingleLogSourceFactory::SetForTesting(nullptr);
-    LogSourceAccessManager::SetRateLimitingTimeoutForTesting(nullptr);
-
-    ExtensionApiUnittest::TearDown();
-  }
-
- private:
-  // Passed to SingleLogSourceFactory so that the API can create an instance of
-  // TestSingleLogSource for testing.
-  SingleLogSourceFactory::CreateCallback create_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(LogSourceAccessManagerTest);
-};
+using LogSourceAccessManagerTest = FeedbackPrivateApiUnittestBase;
 
 TEST_F(LogSourceAccessManagerTest, MaxNumberOfOpenLogSources) {
   const base::TimeDelta timeout(base::TimeDelta::FromMilliseconds(0));
   LogSourceAccessManager::SetRateLimitingTimeoutForTesting(&timeout);
 
   LogSourceAccessManager manager(profile());
+
+  // Create a dummy callback to pass to FetchFromSource().
   LogSourceAccessManager::ReadLogSourceCallback callback =
-      base::Bind(&OnFetchedFromSource);
+      base::Bind([](const ReadLogSourceResult&) {});
 
   int count = 0;
 
