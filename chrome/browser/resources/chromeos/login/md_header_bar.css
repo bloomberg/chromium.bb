@@ -3,7 +3,6 @@
  * found in the LICENSE file. */
 
 #login-header-bar {
-  -webkit-padding-start: 15px;
   bottom: 0;
   left: 0;
   min-height: 34px;  /* Should be consistent with .header-bar-item's height. */
@@ -125,7 +124,7 @@ html[dir=rtl] #login-header-bar #unlock-user-button-text {
 #login-header-bar #add-user-button,
 #login-header-bar #guest-user-button,
 #login-header-bar #cancel-multiple-sign-in-button {
-  padding: 0 14px;
+  padding: 0 12px;
 }
 
 #login-header-bar #more-settings-button {
