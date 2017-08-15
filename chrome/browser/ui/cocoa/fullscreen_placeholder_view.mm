@@ -37,10 +37,16 @@ NSImage* BlurImageWithRadius(CGImageRef image, NSNumber* radius) {
 
 - (id)initWithFrame:(NSRect)frameRect image:(CGImageRef)screenshot {
   if (self = [super initWithFrame:frameRect]) {
-    NSImageView* screenshotView =
-        [[[NSImageView alloc] initWithFrame:self.bounds] autorelease];
+    NSView* screenshotView =
+        [[[NSView alloc] initWithFrame:self.bounds] autorelease];
+    screenshotView.layer = [[[CALayer alloc] init] autorelease];
+    screenshotView.wantsLayer = YES;
+    screenshotView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+    [self addSubview:screenshotView];
     NSImage* screenshotImage = BlurImageWithRadius(screenshot, @15.0);
-    [screenshotView setImage:screenshotImage];
+    screenshotView.layer.contentsGravity = kCAGravityResizeAspectFill;
+    screenshotView.layer.contents = [screenshotImage
+        layerContentsForContentsScale:[screenshotView.layer contentsScale]];
 
     textView_ = [[[NSTextField alloc] initWithFrame:frameRect] autorelease];
     [textView_ setStringValue:@" Click to exit fullscreen "];
@@ -56,13 +62,7 @@ NSImage* BlurImageWithRadius(CGImageRef image, NSNumber* radius) {
     NSColor* color = [NSColor colorWithCalibratedWhite:0.3 alpha:0.5];
     [textView_.layer setBackgroundColor:color.CGColor];
     [textView_.layer setCornerRadius:12];
-    [screenshotView addSubview:textView_];
-
-    [screenshotView setImageScaling:NSImageScaleAxesIndependently];
-    [screenshotView setAutoresizingMask:NSViewMinYMargin | NSViewMaxXMargin |
-                                        NSViewWidthSizable |
-                                        NSViewHeightSizable];
-    [self addSubview:screenshotView];
+    [self addSubview:textView_];
   }
   return self;
 }
