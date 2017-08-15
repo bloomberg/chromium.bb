@@ -26,7 +26,7 @@ void MockIMEInputContextHandler::UpdateCompositionText(
     uint32_t cursor_pos,
     bool visible) {
   ++update_preedit_text_call_count_;
-  last_update_composition_arg_.composition_text.CopyFrom(text);
+  last_update_composition_arg_.composition_text = text;
   last_update_composition_arg_.cursor_pos = cursor_pos;
   last_update_composition_arg_.is_visible = visible;
 }

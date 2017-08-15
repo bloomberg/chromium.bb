@@ -35,10 +35,6 @@ struct UI_BASE_IME_EXPORT CompositionText {
     return !(*this == rhs);
   }
 
-  void Clear();
-
-  void CopyFrom(const CompositionText& obj);
-
   // Content of the composition text.
   base::string16 text;
 

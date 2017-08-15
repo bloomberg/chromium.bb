@@ -289,7 +289,7 @@ void InputMethodChromeOS::ResetContext() {
   if (!IsNonPasswordInputFieldFocused() || !GetTextInputClient())
     return;
 
-  composition_.Clear();
+  composition_ = CompositionText();
   result_text_.clear();
   composing_text_ = false;
   composition_changed_ = false;
@@ -534,7 +534,7 @@ void InputMethodChromeOS::UpdateCompositionText(const CompositionText& text,
       GetTextInputClient()->SetCompositionText(composition_);
     SendFakeProcessKeyEvent(false);
     composition_changed_ = false;
-    composition_.Clear();
+    composition_ = CompositionText();
   }
 }
 
@@ -544,7 +544,7 @@ void InputMethodChromeOS::HidePreeditText() {
 
   // Intentionally leaves |composing_text_| unchanged.
   composition_changed_ = true;
-  composition_.Clear();
+  composition_ = CompositionText();
 
   if (!handling_key_event_) {
     TextInputClient* client = GetTextInputClient();
@@ -588,7 +588,7 @@ void InputMethodChromeOS::ExtractCompositionText(
     const CompositionText& text,
     uint32_t cursor_position,
     CompositionText* out_composition) const {
-  out_composition->Clear();
+  *out_composition = CompositionText();
   out_composition->text = text.text;
 
   if (out_composition->text.empty())
