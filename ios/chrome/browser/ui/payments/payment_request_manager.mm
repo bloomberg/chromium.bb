@@ -819,11 +819,11 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 
   coordinator.paymentRequest->journey_logger().SetEventOccurred(
       payments::JourneyLogger::EVENT_PAY_CLICKED);
-  coordinator.paymentRequest->journey_logger().SetSelectedPaymentMethod(
+  coordinator.paymentRequest->journey_logger().SetEventOccurred(
       coordinator.paymentRequest->selected_payment_method()->type() ==
               payments::PaymentInstrument::Type::AUTOFILL
-          ? payments::JourneyLogger::SELECTED_PAYMENT_METHOD_CREDIT_CARD
-          : payments::JourneyLogger::SELECTED_PAYMENT_METHOD_OTHER_PAYMENT_APP);
+          ? payments::JourneyLogger::EVENT_SELECTED_CREDIT_CARD
+          : payments::JourneyLogger::EVENT_SELECTED_OTHER);
 
   coordinator.paymentRequest->InvokePaymentApp(self);
 }

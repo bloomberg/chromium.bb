@@ -43,16 +43,6 @@ class JourneyLogger {
     SECTION_MAX,
   };
 
-  // The payment method that was used by the user to complete the transaction.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
-  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SelectedPaymentMethod
-  enum SelectedPaymentMethod {
-    SELECTED_PAYMENT_METHOD_CREDIT_CARD = 0,
-    SELECTED_PAYMENT_METHOD_ANDROID_PAY = 1,
-    SELECTED_PAYMENT_METHOD_OTHER_PAYMENT_APP = 2,
-    SELECTED_PAYMENT_METHOD_MAX = 3,
-  };
-
   // Used to log different parameters' effect on whether the transaction was
   // completed.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
@@ -106,7 +96,13 @@ class JourneyLogger {
     EVENT_REQUEST_METHOD_GOOGLE = 1 << 16,
     // The merchant requested a non-Google, non-basic-card payment method.
     EVENT_REQUEST_METHOD_OTHER = 1 << 17,
-    EVENT_ENUM_MAX = 262144,
+    // The user initiated the transaction using a saved credit card, a Google
+    // payment app (e.g., Android Pay), or another payment instrument,
+    // respectively.
+    EVENT_SELECTED_CREDIT_CARD = 1 << 18,
+    EVENT_SELECTED_GOOGLE = 1 << 19,
+    EVENT_SELECTED_OTHER = 1 << 20,
+    EVENT_ENUM_MAX = 2097152,
   };
 
   // The reason why the Payment Request was aborted.
@@ -163,9 +159,6 @@ class JourneyLogger {
 
   // Records that an event occurred.
   void SetEventOccurred(Event event);
-
-  // Records the payment method that was used to complete the Payment Request.
-  void SetSelectedPaymentMethod(SelectedPaymentMethod payment_method);
 
   // Records the user information requested by the merchant.
   void SetRequestedInformation(bool requested_shipping,
@@ -228,9 +221,6 @@ class JourneyLogger {
   // either been completed or aborted.
   void RecordJourneyStatsHistograms(CompletionStatus completion_status);
 
-  // Records the metric about the selected payment method.
-  void RecordPaymentMethodMetric();
-
   // Records the histograms for all the sections that were requested by the
   // merchant.
   void RecordSectionSpecificStats(CompletionStatus completion_status);
@@ -251,9 +241,6 @@ class JourneyLogger {
 
   // Accumulates the many events that have happened during the Payment Request.
   int events_;
-
-  // To keep track of the selected payment method.
-  SelectedPaymentMethod payment_method_ = SELECTED_PAYMENT_METHOD_MAX;
 
   const GURL url_;
 

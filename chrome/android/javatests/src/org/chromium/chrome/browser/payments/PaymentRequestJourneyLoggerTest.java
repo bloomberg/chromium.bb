@@ -1045,7 +1045,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         int expectedSample = Event.SHOWN | Event.COMPLETED | Event.REQUEST_SHIPPING
                 | Event.REQUEST_METHOD_BASIC_CARD | Event.HAD_INITIAL_FORM_OF_PAYMENT
                 | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.RECEIVED_INSTRUMENT_DETAILS
-                | Event.PAY_CLICKED;
+                | Event.PAY_CLICKED | Event.SELECTED_CREDIT_CARD;
         Assert.assertEquals(2,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));

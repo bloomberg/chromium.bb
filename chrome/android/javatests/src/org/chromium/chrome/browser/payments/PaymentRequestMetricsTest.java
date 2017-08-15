@@ -91,7 +91,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         int expectedSample = Event.SHOWN | Event.PAY_CLICKED | Event.RECEIVED_INSTRUMENT_DETAILS
                 | Event.COMPLETED | Event.HAD_INITIAL_FORM_OF_PAYMENT
                 | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.REQUEST_SHIPPING
-                | Event.REQUEST_METHOD_BASIC_CARD;
+                | Event.REQUEST_METHOD_BASIC_CARD | Event.SELECTED_CREDIT_CARD;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));
@@ -318,8 +318,8 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
     }
 
     /**
-     * Expect only the SELECTED_METHOD_CREDIT_CARD enum value to be logged for the
-     * "SelectedPaymentMethod" histogram when completing a Payment Request with a credit card.
+     * Expect only the Event.SELECTED_CREDIT_CARD enum value to be logged for the events histogram
+     * when completing a Payment Request with a credit card.
      */
     @Test
     @MediumTest
@@ -336,12 +336,19 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
                 DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
 
-        assertOnlySpecificSelectedPaymentMethodMetricLogged(SelectedPaymentMethod.CREDIT_CARD);
+        // Make sure the events were logged correctly.
+        int expectedSample = Event.SHOWN | Event.PAY_CLICKED | Event.RECEIVED_INSTRUMENT_DETAILS
+                | Event.COMPLETED | Event.HAD_INITIAL_FORM_OF_PAYMENT
+                | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.REQUEST_SHIPPING
+                | Event.REQUEST_METHOD_BASIC_CARD | Event.SELECTED_CREDIT_CARD;
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.Events", expectedSample));
     }
 
     /**
-     * Expect only the SELECTED_METHOD_ANDROID_PAY enum value to be logged for the
-     * "SelectedPaymentMethod" histogram when completing a Payment Request with Android Pay.
+     * Expect only the Event.SELECTED_GOOGLE enum value to be logged for the events histogram
+     * when completing a Payment Request with Android Pay.
      */
     @Test
     @MediumTest
@@ -357,7 +364,14 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getDismissed());
 
-        assertOnlySpecificSelectedPaymentMethodMetricLogged(SelectedPaymentMethod.ANDROID_PAY);
+        // Make sure the events were logged correctly.
+        int expectedSample = Event.SHOWN | Event.PAY_CLICKED | Event.RECEIVED_INSTRUMENT_DETAILS
+                | Event.COMPLETED | Event.HAD_INITIAL_FORM_OF_PAYMENT
+                | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.REQUEST_METHOD_GOOGLE
+                | Event.SELECTED_GOOGLE | Event.REQUEST_SHIPPING;
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.Events", expectedSample));
     }
 
     /**
@@ -376,13 +390,11 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.triggerUIAndWait(
                 "androidPaySkipUiBuy", mPaymentRequestTestRule.getResultReady());
 
-        assertOnlySpecificSelectedPaymentMethodMetricLogged(SelectedPaymentMethod.ANDROID_PAY);
-
         // Make sure the events were logged correctly.
         int expectedSample = Event.SKIPPED_SHOW | Event.PAY_CLICKED
                 | Event.RECEIVED_INSTRUMENT_DETAILS | Event.COMPLETED
                 | Event.HAD_INITIAL_FORM_OF_PAYMENT | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS
-                | Event.REQUEST_METHOD_GOOGLE;
+                | Event.REQUEST_METHOD_GOOGLE | Event.SELECTED_GOOGLE;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));
@@ -449,23 +461,10 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
-                | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.REQUEST_METHOD_BASIC_CARD;
+                | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.REQUEST_METHOD_BASIC_CARD
+                | Event.SELECTED_CREDIT_CARD;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));
-    }
-
-    /**
-     * Asserts that only the specified selected payment method is logged.
-     *
-     * @param paymentMethod The only bucket in the selected payment method histogram that should
-     *                      have a record.
-     */
-    private void assertOnlySpecificSelectedPaymentMethodMetricLogged(int paymentMethod) {
-        for (int i = 0; i < SelectedPaymentMethod.MAX; ++i) {
-            Assert.assertEquals((i == paymentMethod ? 1 : 0),
-                    RecordHistogram.getHistogramValueCountForTesting(
-                            "PaymentRequest.SelectedPaymentMethod", i));
-        }
     }
 }

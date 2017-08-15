@@ -311,8 +311,7 @@ void PaymentRequest::OnConnectionTerminated() {
 
 void PaymentRequest::Pay() {
   journey_logger_.SetEventOccurred(JourneyLogger::EVENT_PAY_CLICKED);
-  journey_logger_.SetSelectedPaymentMethod(
-      JourneyLogger::SELECTED_PAYMENT_METHOD_CREDIT_CARD);
+  journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SELECTED_CREDIT_CARD);
   state_->GeneratePaymentResponse();
 }
 

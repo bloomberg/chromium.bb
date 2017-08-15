@@ -130,17 +130,6 @@ public class JourneyLogger {
     }
 
     /**
-     * Records the payment method that was selected by the user.
-     *
-     * @param paymentMethod The payment method that was selected.
-     */
-    public void setSelectedPaymentMethod(int paymentMethod) {
-        assert paymentMethod >= 0;
-        assert paymentMethod < SelectedPaymentMethod.MAX;
-        nativeSetSelectedPaymentMethod(mJourneyLoggerAndroid, paymentMethod);
-    }
-
-    /**
      * Records that the Payment Request was completed sucessfully. Also starts the logging of
      * all the journey logger metrics.
      */
@@ -198,8 +187,6 @@ public class JourneyLogger {
     private native void nativeSetCanMakePaymentValue(
             long nativeJourneyLoggerAndroid, boolean value);
     private native void nativeSetEventOccurred(long nativeJourneyLoggerAndroid, int event);
-    private native void nativeSetSelectedPaymentMethod(
-            long nativeJourneyLoggerAndroid, int paymentMethod);
     private native void nativeSetRequestedInformation(long nativeJourneyLoggerAndroid,
             boolean requestShipping, boolean requestEmail, boolean requestPhone,
             boolean requestName);
