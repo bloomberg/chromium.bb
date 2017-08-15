@@ -87,6 +87,7 @@ crbug.com/549742 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-drawImage-video-im
 crbug.com/726075 [ Win ] compositing/3d-cube.html [ Failure ]
 crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/2d.fillText.gradient.html [ Failure ]
 crbug.com/726075 [ Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/dom_override_remove_cue_while_paused.html [ Failure ]
+crbug.com/726075 [ Win Debug ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Failure ]
 
 # SwiftShader WebGL2 related crashes
 crbug.com/726075 [ Win ] external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.getcontext.html [ Crash ]
