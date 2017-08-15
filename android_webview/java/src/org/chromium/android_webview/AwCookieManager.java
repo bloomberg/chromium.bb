@@ -197,12 +197,7 @@ public final class AwCookieManager {
         }
 
         public void onReceiveValue(final T t) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mCallback.onReceiveValue(t);
-                }
-            });
+            mHandler.post(() -> mCallback.onReceiveValue(t));
         }
     }
 

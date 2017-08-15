@@ -13,8 +13,6 @@ import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
@@ -26,8 +24,6 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
@@ -213,64 +209,52 @@ public class AwShellActivity extends Activity {
 
     private void initializeUrlField() {
         mUrlTextView = (EditText) findViewById(R.id.url);
-        mUrlTextView.setOnEditorActionListener(new OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if ((actionId != EditorInfo.IME_ACTION_GO) && (event == null
-                        || event.getKeyCode() != KeyEvent.KEYCODE_ENTER
-                        || event.getAction() != KeyEvent.ACTION_DOWN)) {
-                    return false;
-                }
-
-                String url = mUrlTextView.getText().toString();
-                try {
-                    URI uri = new URI(url);
-                    if (uri.getScheme() == null) {
-                        url = "http://" + uri.toString();
-                    } else {
-                        url = uri.toString();
-                    }
-                } catch (URISyntaxException e) {
-                    // Ignore syntax errors.
-                }
-                mAwTestContainerView.getAwContents().loadUrl(url);
-                mUrlTextView.clearFocus();
-                setKeyboardVisibilityForUrl(false);
-                mAwTestContainerView.requestFocus();
-                return true;
+        mUrlTextView.setOnEditorActionListener((v, actionId, event) -> {
+            if ((actionId != EditorInfo.IME_ACTION_GO) && (event == null
+                    || event.getKeyCode() != KeyEvent.KEYCODE_ENTER
+                    || event.getAction() != KeyEvent.ACTION_DOWN)) {
+                return false;
             }
-        });
-        mUrlTextView.setOnFocusChangeListener(new OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                setKeyboardVisibilityForUrl(hasFocus);
-                mNextButton.setVisibility(hasFocus ? View.GONE : View.VISIBLE);
-                mPrevButton.setVisibility(hasFocus ? View.GONE : View.VISIBLE);
-                if (!hasFocus) {
-                    mUrlTextView.setText(mWebContents.getVisibleUrl());
+
+            String url = mUrlTextView.getText().toString();
+            try {
+                URI uri = new URI(url);
+                if (uri.getScheme() == null) {
+                    url = "http://" + uri.toString();
+                } else {
+                    url = uri.toString();
                 }
+            } catch (URISyntaxException e) {
+                // Ignore syntax errors.
+            }
+            mAwTestContainerView.getAwContents().loadUrl(url);
+            mUrlTextView.clearFocus();
+            setKeyboardVisibilityForUrl(false);
+            mAwTestContainerView.requestFocus();
+            return true;
+        });
+        mUrlTextView.setOnFocusChangeListener((v, hasFocus) -> {
+            setKeyboardVisibilityForUrl(hasFocus);
+            mNextButton.setVisibility(hasFocus ? View.GONE : View.VISIBLE);
+            mPrevButton.setVisibility(hasFocus ? View.GONE : View.VISIBLE);
+            if (!hasFocus) {
+                mUrlTextView.setText(mWebContents.getVisibleUrl());
             }
         });
     }
 
     private void initializeNavigationButtons() {
         mPrevButton = (ImageButton) findViewById(R.id.prev);
-        mPrevButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mNavigationController.canGoBack()) {
-                    mNavigationController.goBack();
-                }
+        mPrevButton.setOnClickListener(v -> {
+            if (mNavigationController.canGoBack()) {
+                mNavigationController.goBack();
             }
         });
 
         mNextButton = (ImageButton) findViewById(R.id.next);
-        mNextButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mNavigationController.canGoForward()) {
-                    mNavigationController.goForward();
-                }
+        mNextButton.setOnClickListener(v -> {
+            if (mNavigationController.canGoForward()) {
+                mNavigationController.goForward();
             }
         });
     }

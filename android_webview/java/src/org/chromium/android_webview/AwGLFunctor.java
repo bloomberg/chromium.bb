@@ -55,12 +55,7 @@ public class AwGLFunctor {
                 new DestroyRunnable(mNativeAwGLFunctor, mNativeDrawGLFunctor.getDestroyRunnable()));
         mContainerView = containerView;
         if (mNativeDrawGLFunctor.supportsDrawGLFunctorReleasedCallback()) {
-            mFunctorReleasedCallback = new Runnable() {
-                @Override
-                public void run() {
-                    removeReference();
-                }
-            };
+            mFunctorReleasedCallback = () -> removeReference();
         } else {
             mFunctorReleasedCallback = null;
         }

@@ -6,7 +6,6 @@ package org.chromium.android_webview.crash;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
-import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.PlatformServiceBridge;
 import org.chromium.android_webview.command_line.CommandLineUtil;
@@ -77,12 +76,10 @@ public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
 
     @Override
     public void prepareToUploadMinidumps(final Runnable startUploads) {
-        PlatformServiceBridge.getInstance().queryMetricsSetting(new ValueCallback<Boolean>() {
-            public void onReceiveValue(Boolean enabled) {
-                ThreadUtils.assertOnUiThread();
-                mPermittedByUser = enabled;
-                startUploads.run();
-            }
+        PlatformServiceBridge.getInstance().queryMetricsSetting(enabled -> {
+            ThreadUtils.assertOnUiThread();
+            mPermittedByUser = enabled;
+            startUploads.run();
         });
     }
 
