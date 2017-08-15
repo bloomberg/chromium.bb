@@ -1,7 +1,7 @@
 CONSOLE WARNING: line 13: An AudioContext in a cross origin iframe must be created or resumed from a user gesture to enable audio output.
 CONSOLE WARNING: line 23: An AudioContext in a cross origin iframe must be created or resumed from a user gesture to enable audio output.
 CONSOLE WARNING: line 36: An AudioContext in a cross origin iframe must be created or resumed from a user gesture to enable audio output.
-CONSOLE ERROR: line 2569: Uncaught Error: assert_equals: stateAfterClick expected "running" but got "suspended"
+CONSOLE ERROR: line 2579: Uncaught Error: assert_equals: stateAfterClick expected "running" but got "suspended"
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = Uncaught Error: assert_equals: stateAfterClick expected "running" but got "suspended"
 PASS Verify that autoplaying Web Audio from a cross origin iframe is blocked by mediaPlaybackRequiresUserGesture 
