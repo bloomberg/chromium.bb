@@ -288,6 +288,12 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
     EARL_GREY_TEST_DISABLED(@"Disabled on iOS 9.");
   }
 
+  // TODO(crbug.com/755782): Re-enable this test.  It is failing on some iOS 11
+  // configurations.
+  if (base::ios::IsRunningOnIOS10OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   // Clear generalPasteboard before and after the test.
   [UIPasteboard generalPasteboard].string = @"";
   [self setTearDownHandler:^{
