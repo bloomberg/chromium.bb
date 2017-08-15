@@ -83,6 +83,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
+  void OnSurfaceContentSizeChanged() override;
   bool IsSurfaceSynchronized() const override;
 
   // Overridden from aura::WindowObserver:

@@ -114,9 +114,7 @@ class CustomWindowDelegate : public aura::WindowDelegate {
   bool CanFocus() override { return true; }
   void OnCaptureLost() override {}
   void OnPaint(const ui::PaintContext& context) override {}
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {
-    surface_->SetDeviceScaleFactor(device_scale_factor);
-  }
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
   void OnWindowDestroying(aura::Window* window) override {}
   void OnWindowDestroyed(aura::Window* window) override { delete this; }
   void OnWindowTargetVisibilityChanged(bool visible) override {}
@@ -394,10 +392,6 @@ void Surface::SetAlpha(float alpha) {
   TRACE_EVENT1("exo", "Surface::SetAlpha", "alpha", alpha);
 
   pending_state_.alpha = alpha;
-}
-
-void Surface::SetDeviceScaleFactor(float device_scale_factor) {
-  device_scale_factor_ = device_scale_factor;
 }
 
 void Surface::Commit() {
@@ -721,27 +715,34 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
 }
 
 void Surface::UpdateContentSize() {
+  gfx::Size content_size;
   gfx::Size buffer_size = current_resource_.size;
   gfx::SizeF scaled_buffer_size(
       gfx::ScaleSize(gfx::SizeF(buffer_size), 1.0f / state_.buffer_scale));
   if (!state_.viewport.IsEmpty()) {
-    content_size_ = state_.viewport;
+    content_size = state_.viewport;
   } else if (!state_.crop.IsEmpty()) {
     DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(state_.crop.width()) ||
                          !gfx::IsExpressibleAsInt(state_.crop.height()))
         << "Crop rectangle size (" << state_.crop.size().ToString()
         << ") most be expressible using integers when viewport is not set";
-    content_size_ = gfx::ToCeiledSize(state_.crop.size());
+    content_size = gfx::ToCeiledSize(state_.crop.size());
   } else {
-    content_size_ = gfx::ToCeiledSize(scaled_buffer_size);
+    content_size = gfx::ToCeiledSize(scaled_buffer_size);
   }
-  window_->SetBounds(gfx::Rect(window_->bounds().origin(), content_size_));
 
   // Enable/disable sub-surface based on if it has contents.
   if (has_contents())
     window_->Show();
   else
     window_->Hide();
+
+  if (content_size_ != content_size) {
+    content_size_ = content_size;
+    window_->SetBounds(gfx::Rect(window_->bounds().origin(), content_size_));
+    if (delegate_)
+      delegate_->OnSurfaceContentSizeChanged();
+  }
 }
 
 }  // namespace exo
