@@ -55,7 +55,7 @@ public class StripLayoutHelperTest {
     private StripLayoutHelper mStripLayoutHelper;
     private boolean mIncognito;
     private static final String[] TEST_TAB_TITLES = {"Tab 1", "Tab 2", "Tab 3", "", null};
-    private static final String CLOSE_TAB = "Close tab test string";
+    private static final String CLOSE_TAB = "Close %1$s tab";
     private static final String NEW_TAB = "New tab test string";
     private static final String NEW_INCOGNITO_TAB = "New incognito tab test string";
     private static final String IDENTIFIER = "Tab";
@@ -178,7 +178,8 @@ public class StripLayoutHelperTest {
         // Tab titles
         for (int i = 0; i < expectedNumberOfViews - 1; i++) {
             final String expectedDescription = i % 2 == 0
-                    ? expectedAccessibilityDescriptions[i / 2] : CLOSE_TAB;
+                    ? expectedAccessibilityDescriptions[i / 2]
+                    : String.format(CLOSE_TAB, TEST_TAB_TITLES[i / 2]);
             assertEquals(expectedDescription, views.get(i).getAccessibilityDescription());
         }
 

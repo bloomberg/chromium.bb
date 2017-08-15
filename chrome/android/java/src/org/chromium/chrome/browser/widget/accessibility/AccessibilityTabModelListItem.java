@@ -283,6 +283,8 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
         if (!accessibilityString.equals(getContentDescription())) {
             setContentDescription(getContext().getString(R.string.accessibility_tabstrip_tab,
                     title));
+            mCloseButton.setContentDescription(
+                    getContext().getString(R.string.accessibility_tabstrip_btn_close_tab, title));
         }
     }
 
