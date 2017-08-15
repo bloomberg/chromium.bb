@@ -8,6 +8,7 @@
       'type': 'none',
       'dependencies': [
         'chromeos/compiled_resources2.gyp:*',
+        'certificate_manager/compiled_resources2.gyp:*',
       ],
     },
   ]

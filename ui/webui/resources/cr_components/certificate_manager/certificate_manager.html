@@ -2,9 +2,10 @@
 
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
 <link rel="import" href="ca_trust_edit_dialog.html">
 <link rel="import" href="certificate_delete_confirmation_dialog.html">
 <link rel="import" href="certificate_list.html">
@@ -14,7 +15,7 @@
 <link rel="import" href="certificates_browser_proxy.html">
 <link rel="import" href="certificates_error_dialog.html">
 
-<dom-module id="settings-certificate-manager-page">
+<dom-module id="certificate-manager">
   <template>
     <style>
       :host {
@@ -39,67 +40,67 @@
     </style>
 
     <template is="dom-if" if="[[showCaTrustEditDialog_]]" restamp>
-      <settings-ca-trust-edit-dialog model="[[dialogModel_]]">
-      </settings-ca-trust-edit-dialog>
+      <ca-trust-edit-dialog model="[[dialogModel_]]">
+      </ca-trust-edit-dialog>
     </template>
     <template is="dom-if" if="[[showDeleteConfirmationDialog_]]" restamp>
-      <settings-certificate-delete-confirmation-dialog
+      <certificate-delete-confirmation-dialog
           model="[[dialogModel_]]"
           certificate-type="[[dialogModelCertificateType_]]">
-      </settings-certificate-delete-confirmation-dialog>
+      </certificate-delete-confirmation-dialog>
     </template>
     <template is="dom-if" if="[[showPasswordEncryptionDialog_]]" restamp>
-      <settings-certificate-password-encryption-dialog
+      <certificate-password-encryption-dialog
           model="[[dialogModel_]]">
-      </settings-certificate-password-encryption-dialog>
+      </certificate-password-encryption-dialog>
     </template>
     <template is="dom-if" if="[[showPasswordDecryptionDialog_]]" restamp>
-      <settings-certificate-password-decryption-dialog>
-      </settings-certificate-password-decryption-dialog>
+      <certificate-password-decryption-dialog>
+      </certificate-password-decryption-dialog>
     </template>
     <template is="dom-if" if="[[showErrorDialog_]]" restamp>
-      <settings-certificates-error-dialog model="[[errorDialogModel_]]">
-      </settings-certificates-error-dialog>
+      <certificates-error-dialog model="[[errorDialogModel_]]">
+      </certificates-error-dialog>
     </template>
 
     <paper-tabs noink selected="{{selected}}">
-      <paper-tab>$i18n{certificateManagerYourCertificates}</paper-tab>
-      <paper-tab>$i18n{certificateManagerServers}</paper-tab>
-      <paper-tab>$i18n{certificateManagerAuthorities}</paper-tab>
-      <paper-tab>$i18n{certificateManagerOthers}</paper-tab>
+      <paper-tab>[[i18n('certificateManagerYourCertificates')]]</paper-tab>
+      <paper-tab>[[i18n('certificateManagerServers')]]</paper-tab>
+      <paper-tab>[[i18n('certificateManagerAuthorities')]]</paper-tab>
+      <paper-tab>[[i18n('certificateManagerOthers')]]</paper-tab>
     </paper-tabs>
     <iron-pages selected="[[selected]]">
       <div>
-        <settings-certificate-list id="personalCerts"
+        <certificate-list id="personalCerts"
             certificates="[[personalCerts]]"
             certificate-type="[[certificateTypeEnum_.PERSONAL]]">
-        </settings-certificate-list>
+        </certificate-list>
       </div>
       <div>
         <template is="dom-if" if="[[isTabSelected_(selected, 1)]]">
-          <settings-certificate-list id="serverCerts"
+          <certificate-list id="serverCerts"
               certificates="[[serverCerts]]"
               certificate-type="[[certificateTypeEnum_.SERVER]]">
-          </settings-certificate-list>
+          </certificate-list>
         </template>
       </div>
       <div>
         <template is="dom-if" if="[[isTabSelected_(selected, 2)]]">
-          <settings-certificate-list id="caCerts"
+          <certificate-list id="caCerts"
               certificates="[[caCerts]]"
               certificate-type="[[certificateTypeEnum_.CA]]">
-          </settings-certificate-list>
+          </certificate-list>
         </template>
       </div>
       <div>
         <template is="dom-if" if="[[isTabSelected_(selected, 3)]]">
-          <settings-certificate-list id="otherCerts"
+          <certificate-list id="otherCerts"
               certificates="[[otherCerts]]"
               certificate-type="[[certificateTypeEnum_.OTHER]]">
-          </settings-certificate-list>
+          </certificate-list>
         </template>
       </div>
     </iron-pages>
   </template>
-  <script src="certificate_manager_page.js"></script>
+  <script src="certificate_manager.js"></script>
 </dom-module>

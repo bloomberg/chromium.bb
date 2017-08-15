@@ -7,7 +7,9 @@
  * of certificates.
  */
 Polymer({
-  is: 'settings-certificate-delete-confirmation-dialog',
+  is: 'certificate-delete-confirmation-dialog',
+
+  behaviors: [I18nBehavior],
 
   properties: {
     /** @type {!CertificateSubnode} */
@@ -17,12 +19,13 @@ Polymer({
     certificateType: String,
   },
 
-  /** @private {?settings.CertificatesBrowserProxy} */
+  /** @private {?certificate_manager.CertificatesBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   ready: function() {
-    this.browserProxy_ = settings.CertificatesBrowserProxyImpl.getInstance();
+    this.browserProxy_ =
+        certificate_manager.CertificatesBrowserProxyImpl.getInstance();
   },
 
   /** @override */

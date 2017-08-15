@@ -7,7 +7,9 @@
  * The user can only close the dialog, there is no other possible interaction.
  */
 Polymer({
-  is: 'settings-certificates-error-dialog',
+  is: 'certificates-error-dialog',
+
+  behaviors: [I18nBehavior],
 
   properties: {
     /** @type {!CertificatesError|!CertificatesImportError} */

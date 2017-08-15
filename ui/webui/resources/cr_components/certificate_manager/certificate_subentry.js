@@ -3,24 +3,13 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview settings-certificate-subentry represents an SSL certificate
- * sub-entry.
+ * @fileoverview certificate-subentry represents an SSL certificate sub-entry.
  */
 
-cr.define('settings', function() {
-  /**
-   * The name of the event that is fired when a menu item is tapped.
-   * @type {string}
-   */
-  var CertificateActionEvent = 'certificate-action';
-
-  return {
-    CertificateActionEvent: CertificateActionEvent,
-  };
-});
-
 Polymer({
-  is: 'settings-certificate-subentry',
+  is: 'certificate-subentry',
+
+  behaviors: [I18nBehavior],
 
   properties: {
     /** @type {!CertificateSubnode} */
@@ -30,12 +19,13 @@ Polymer({
     certificateType: String,
   },
 
-  /** @private {settings.CertificatesBrowserProxy} */
+  /** @private {certificate_manager.CertificatesBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   created: function() {
-    this.browserProxy_ = settings.CertificatesBrowserProxyImpl.getInstance();
+    this.browserProxy_ =
+        certificate_manager.CertificatesBrowserProxyImpl.getInstance();
   },
 
   /**
@@ -46,7 +36,7 @@ Polymer({
    */
   dispatchCertificateActionEvent_: function(action) {
     this.fire(
-        settings.CertificateActionEvent,
+        CertificateActionEvent,
         /** @type {!CertificateActionEventDetail} */ ({
           action: action,
           subnode: this.model,

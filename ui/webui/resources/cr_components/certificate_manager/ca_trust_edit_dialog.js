@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'settings-ca-trust-edit-dialog' allows the user to
+ * @fileoverview 'ca-trust-edit-dialog' allows the user to:
  *  - specify the trust level of a certificate authority that is being
  *    imported.
  *  - edit the trust level of an already existing certificate authority.
  */
 Polymer({
-  is: 'settings-ca-trust-edit-dialog',
+  is: 'ca-trust-edit-dialog',
+
+  behaviors: [I18nBehavior],
 
   properties: {
     /** @type {!CertificateSubnode|!NewCertificateSubNode} */
@@ -22,12 +24,13 @@ Polymer({
     explanationText_: String,
   },
 
-  /** @private {?settings.CertificatesBrowserProxy} */
+  /** @private {?certificate_manager.CertificatesBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   ready: function() {
-    this.browserProxy_ = settings.CertificatesBrowserProxyImpl.getInstance();
+    this.browserProxy_ =
+        certificate_manager.CertificatesBrowserProxyImpl.getInstance();
   },
 
   /** @override */

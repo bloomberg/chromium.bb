@@ -7,7 +7,9 @@
  * a previously exported personal certificate can be imported.
  */
 Polymer({
-  is: 'settings-certificate-password-decryption-dialog',
+  is: 'certificate-password-decryption-dialog',
+
+  behaviors: [I18nBehavior],
 
   properties: {
     /** @private */
@@ -17,12 +19,13 @@ Polymer({
     },
   },
 
-  /** @private {?settings.CertificatesBrowserProxy} */
+  /** @private {?certificate_manager.CertificatesBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   ready: function() {
-    this.browserProxy_ = settings.CertificatesBrowserProxyImpl.getInstance();
+    this.browserProxy_ =
+        certificate_manager.CertificatesBrowserProxyImpl.getInstance();
   },
 
   /** @override */
