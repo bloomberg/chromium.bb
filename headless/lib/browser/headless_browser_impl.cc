@@ -30,6 +30,10 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/gfx/geometry/size.h"
 
+#if defined(USE_NSS_CERTS)
+#include "net/cert_net/nss_ocsp.h"
+#endif
+
 namespace content {
 class DevToolsAgentHost;
 }
@@ -131,6 +135,11 @@ void HeadlessBrowserImpl::set_browser_main_parts(
 }
 
 void HeadlessBrowserImpl::RunOnStartCallback() {
+#if defined(USE_NSS_CERTS)
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&net::SetMessageLoopForNSSHttpIO));
+#endif
   // We don't support the tethering domain on this agent host.
   agent_host_ = content::DevToolsAgentHost::CreateForBrowser(
       nullptr, content::DevToolsAgentHost::CreateServerSocketCallback());
