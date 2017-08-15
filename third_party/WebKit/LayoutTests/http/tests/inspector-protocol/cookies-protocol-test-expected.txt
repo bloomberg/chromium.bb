@@ -7,87 +7,39 @@ Setting Cookie
 Logging Cookies
 Success: true
 Num of cookies 1
-  Cookie: 
-    Domain: 127.0.0.1
-    Name: foo
-    Value: bar1
-    Path: /
-    HttpOnly: false
-    Secure: false
-    Session: true
+name: foo, value: bar1, domain: 127.0.0.1, path: /, session
 
 Running test: simpleCookieChange
 Setting Cookie
 Logging Cookies
 Success: true
 Num of cookies 1
-  Cookie: 
-    Domain: 127.0.0.1
-    Name: foo
-    Value: second bar2
-    Path: /
-    HttpOnly: false
-    Secure: false
-    Session: true
+name: foo, value: second bar2, domain: 127.0.0.1, path: /, session
 
 Running test: anotherSimpleCookieAdd
 Setting Cookie
 Logging Cookies
 Success: true
 Num of cookies 2
-  Cookie: 
-    Domain: 127.0.0.1
-    Name: foo2
-    Value: bar1
-    Path: /
-    HttpOnly: false
-    Secure: false
-    Session: true
-  Cookie: 
-    Domain: 127.0.0.1
-    Name: foo
-    Value: second bar2
-    Path: /
-    HttpOnly: false
-    Secure: false
-    Session: true
+name: foo, value: second bar2, domain: 127.0.0.1, path: /, session
+name: foo2, value: bar1, domain: 127.0.0.1, path: /, session
 
 Running test: simpleCookieDelete
 Deleting Cookie
 Logging Cookies
 Num of cookies 1
-  Cookie: 
-    Domain: 127.0.0.1
-    Name: foo2
-    Value: bar1
-    Path: /
-    HttpOnly: false
-    Secure: false
-    Session: true
+name: foo2, value: bar1, domain: 127.0.0.1, path: /, session
 
 Running test: deleteAllCookies
-Removing All Cookies
-Logging Cookies
-Num of cookies 0
 
 Running test: sessionCookieAdd
 Setting Cookie
 Logging Cookies
 Success: true
 Num of cookies 1
-  Cookie: 
-    Domain: 127.0.0.1
-    Name: foo
-    Value: bar4
-    Path: /
-    HttpOnly: false
-    Secure: false
-    Session: true
+name: foo, value: bar4, domain: 127.0.0.1, path: /, session
 
 Running test: deleteAllCookies
-Removing All Cookies
-Logging Cookies
-Num of cookies 0
 
 Running test: nonSessionCookieZeroAdd
 Setting Cookie
@@ -96,40 +48,32 @@ Success: true
 Num of cookies 0
 
 Running test: deleteAllCookies
-Removing All Cookies
-Logging Cookies
-Num of cookies 0
 
 Running test: nonSessionCookieAdd
 Setting Cookie
 Logging Cookies
 Success: true
 Num of cookies 1
-  Cookie: 
-    Domain: 127.0.0.1
-    Name: foo
-    Value: bar6
-    Path: /
-    HttpOnly: false
-    Secure: false
-    Session: false
+name: foo, value: bar6, domain: 127.0.0.1, path: /
 
 Running test: deleteAllCookies
-Removing All Cookies
-Logging Cookies
-Num of cookies 0
 
 Running test: differentOriginCookieAdd
 Setting Cookie
 Logging Cookies
 Success: true
-Num of cookies 0
+Num of cookies 1
+name: foo, value: bar7, domain: example.com, path: /, session
+
+Running test: deleteAllCookies
 
 Running test: invalidCookieAddDomain
 Setting Cookie
 Logging Cookies
 Success: false
 Num of cookies 0
+
+Running test: deleteAllCookies
 
 Running test: invalidCookieAddName
 Setting Cookie
@@ -138,9 +82,6 @@ Success: false
 Num of cookies 0
 
 Running test: deleteAllCookies
-Removing All Cookies
-Logging Cookies
-Num of cookies 0
 
 Running test: secureCookieAdd
 Setting Cookie
@@ -149,59 +90,45 @@ Success: false
 Num of cookies 0
 
 Running test: deleteAllCookies
-Removing All Cookies
-Logging Cookies
-Num of cookies 0
 
 Running test: cookieAddHttpOnly
 Setting Cookie
 Logging Cookies
 Success: true
 Num of cookies 1
-  Cookie: 
-    Domain: 127.0.0.1
-    Name: foo
-    Value: bar
-    Path: /
-    HttpOnly: true
-    Secure: false
-    Session: true
+name: foo, value: bar, domain: 127.0.0.1, path: /, httpOnly, session
 
 Running test: deleteAllCookies
-Removing All Cookies
-Logging Cookies
-Num of cookies 0
 
 Running test: cookieAddSameSiteLax
 Setting Cookie
 Logging Cookies
 Success: true
 Num of cookies 1
-  Cookie: 
-    Domain: 127.0.0.1
-    Name: foo
-    Value: bar
-    Path: /
-    HttpOnly: false
-    Secure: false
-    Session: true
+name: foo, value: bar, domain: 127.0.0.1, path: /, session, Lax
 
 Running test: deleteAllCookies
-Removing All Cookies
-Logging Cookies
-Num of cookies 0
 
 Running test: cookieAddSameSiteLax
 Setting Cookie
 Logging Cookies
 Success: true
 Num of cookies 1
-  Cookie: 
-    Domain: 127.0.0.1
-    Name: foo
-    Value: bar
-    Path: /
-    HttpOnly: false
-    Secure: false
-    Session: true
+name: foo, value: bar, domain: 127.0.0.1, path: /, session, Strict
+
+Running test: deleteAllCookies
+
+Running test: setCookiesBasic
+Adding multiple cookies
+Logging Cookies
+Num of cookies 7
+name: foo1, value: bar1, domain: 127.0.0.1, path: /, session
+name: foo2, value: bar2, domain: 127.0.0.1, path: /, httpOnly, session
+name: foo3, value: bar3, domain: 127.0.0.1, path: /, secure, session
+name: foo4, value: bar4, domain: 127.0.0.1, path: /, session, Lax
+name: foo5, value: bar5, domain: 127.0.0.1, path: /, session
+name: foo6, value: bar6, domain: .chromium.org, path: /path
+name: foo7, value: bar7, domain: www.chromium.org, path: /, secure
+
+Running test: deleteAllCookies
 
