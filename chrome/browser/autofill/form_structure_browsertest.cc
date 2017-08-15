@@ -6,12 +6,14 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -20,6 +22,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/data_driven_test.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -98,11 +101,14 @@ class FormStructureBrowserTest
       const std::vector<std::unique_ptr<FormStructure>>& forms);
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   DISALLOW_COPY_AND_ASSIGN(FormStructureBrowserTest);
 };
 
 FormStructureBrowserTest::FormStructureBrowserTest()
     : DataDrivenTest(GetTestDataDir()) {
+  feature_list_.InitAndEnableFeature(
+      autofill::kAutofillRationalizeFieldTypePredictions);
 }
 
 FormStructureBrowserTest::~FormStructureBrowserTest() {

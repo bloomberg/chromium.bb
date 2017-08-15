@@ -252,6 +252,11 @@ class FormStructure {
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadTest, QueryAndUploadTest);
   FRIEND_TEST_ALL_PREFIXES(FormStructureTest, FindLongestCommonPrefix);
 
+  // A helper function to avoid suggesting field types in cases where they are
+  // highly unlikely. For example: lone credit card fields in an otherwise
+  // non-credit-card related form.
+  void RationalizeFieldTypePredictions();
+
   // Encodes information about this form and its fields into |query_form|.
   void EncodeFormForQuery(
       autofill::AutofillQueryContents::Form* query_form) const;

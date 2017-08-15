@@ -59,6 +59,10 @@ class AutofillField : public FormFieldData {
     parseable_name_ = parseable_name;
   }
 
+  // Set the heuristic or server type, depending on whichever is currently
+  // assigned, to |type|.
+  void SetTypeTo(ServerFieldType type);
+
   // This function automatically chooses between server and heuristic autofill
   // type, depending on the data available.
   AutofillType Type() const;

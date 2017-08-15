@@ -23,6 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_candidates.h"
@@ -393,6 +394,9 @@ void FormStructure::DetermineHeuristicTypes(ukm::UkmRecorder* ukm_recorder) {
     AutofillMetrics::LogDeveloperEngagementUkm(ukm_recorder, source_url(),
                                                developer_engagement_metrics);
 
+  if (base::FeatureList::IsEnabled(kAutofillRationalizeFieldTypePredictions))
+    RationalizeFieldTypePredictions();
+
   AutofillMetrics::LogDetermineHeuristicTypesTiming(
       base::TimeTicks::Now() - determine_heuristic_types_start_time);
 }
@@ -519,6 +523,9 @@ void FormStructure::ParseQueryResponse(
 
     form->UpdateAutofillCount();
     form->IdentifySections(false);
+
+    if (base::FeatureList::IsEnabled(kAutofillRationalizeFieldTypePredictions))
+      form->RationalizeFieldTypePredictions();
   }
 
   AutofillMetrics::ServerQueryMetric metric;
@@ -1042,6 +1049,148 @@ bool FormStructure::operator==(const FormData& form) const {
 
 bool FormStructure::operator!=(const FormData& form) const {
   return !operator==(form);
+}
+
+void FormStructure::RationalizeFieldTypePredictions() {
+  bool cc_first_name_found = false;
+  bool cc_last_name_found = false;
+  bool cc_num_found = false;
+  bool cc_month_found = false;
+  bool cc_year_found = false;
+  bool cc_type_found = false;
+  bool cc_cvc_found = false;
+  size_t num_months_found = 0;
+  size_t num_other_fields_found = 0;
+  for (const auto& field : fields_) {
+    ServerFieldType current_field_type = field->Type().GetStorableType();
+    switch (current_field_type) {
+      case CREDIT_CARD_NAME_FIRST:
+        cc_first_name_found = true;
+        break;
+      case CREDIT_CARD_NAME_LAST:
+        cc_last_name_found = true;
+        break;
+      case CREDIT_CARD_NAME_FULL:
+        cc_first_name_found = true;
+        cc_last_name_found = true;
+        break;
+      case CREDIT_CARD_NUMBER:
+        cc_num_found = true;
+        break;
+      case CREDIT_CARD_EXP_MONTH:
+        cc_month_found = true;
+        ++num_months_found;
+        break;
+      case CREDIT_CARD_EXP_2_DIGIT_YEAR:
+      case CREDIT_CARD_EXP_4_DIGIT_YEAR:
+        cc_year_found = true;
+        break;
+      case CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR:
+      case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR:
+        cc_month_found = true;
+        cc_year_found = true;
+        ++num_months_found;
+        break;
+      case CREDIT_CARD_TYPE:
+        cc_type_found = true;
+        break;
+      case CREDIT_CARD_VERIFICATION_CODE:
+        cc_cvc_found = true;
+        break;
+      case ADDRESS_HOME_ZIP:
+      case ADDRESS_BILLING_ZIP:
+        // Zip/Postal code often appears as part of a Credit Card form. Do
+        // not count it as a non-cc-related field.
+        break;
+      default:
+        ++num_other_fields_found;
+    }
+  }
+
+  // A partial CC name is unlikely. Prefer to consider these profile names
+  // when partial.
+  bool cc_name_found = cc_first_name_found && cc_last_name_found;
+
+  // A partial CC expiry date should not be filled. These are often confused
+  // with quantity/height fields and/or generic year fields.
+  bool cc_date_found = cc_month_found && cc_year_found;
+
+  // Count the credit card related fields in the form.
+  size_t num_cc_fields_found =
+      static_cast<int>(cc_name_found) + static_cast<int>(cc_num_found) +
+      static_cast<int>(cc_date_found) + static_cast<int>(cc_type_found) +
+      static_cast<int>(cc_cvc_found);
+
+  // Retain credit card related fields if the form has multiple fields or has
+  // no unrelated fields (useful for single cc-field forms). Credit card number
+  // is permitted to be alone in an otherwise unrelated form because some
+  // dynamic forms reveal the remainder of the fields only after the credit
+  // card number is entered and identified as a credit card by the site.
+  bool keep_cc_fields =
+      cc_num_found || num_cc_fields_found >= 3 || num_other_fields_found == 0;
+
+  // Do an update pass over the fields to rewrite the types if credit card
+  // fields are not to be retained. Some special handling is given to expiry
+  // dates if the full date is not found or multiple expiry date fields are
+  // found. See comments inline below.
+  for (auto it = fields_.begin(); it != fields_.end(); ++it) {
+    auto& field = *it;
+    ServerFieldType current_field_type = field->Type().GetStorableType();
+    switch (current_field_type) {
+      case CREDIT_CARD_NAME_FIRST:
+        if (!keep_cc_fields)
+          field->SetTypeTo(NAME_FIRST);
+        break;
+      case CREDIT_CARD_NAME_LAST:
+        if (!keep_cc_fields)
+          field->SetTypeTo(NAME_LAST);
+        break;
+      case CREDIT_CARD_NAME_FULL:
+        if (!keep_cc_fields)
+          field->SetTypeTo(NAME_FULL);
+        break;
+      case CREDIT_CARD_NUMBER:
+      case CREDIT_CARD_TYPE:
+      case CREDIT_CARD_VERIFICATION_CODE:
+      case CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR:
+      case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR:
+        if (!keep_cc_fields)
+          field->SetTypeTo(UNKNOWN_TYPE);
+        break;
+      case CREDIT_CARD_EXP_MONTH:
+        // Do not preserve an expiry month prediction if any of the following
+        // are true:
+        //   (1) the form is determined to be be non-cc related, so all cc
+        //       field predictions are to be discarded
+        //   (2) the expiry month was found without a corresponding year
+        //   (3) multiple month fields were found in a form having a full
+        //       expiry date. This usually means the form is a checkout form
+        //       that also has one or more quantity fields. Suppress the expiry
+        //       month field(s) not immediately preceding an expiry year field.
+        if (!keep_cc_fields || !cc_date_found) {
+          field->SetTypeTo(UNKNOWN_TYPE);
+        } else if (num_months_found > 1) {
+          auto it2 = it + 1;
+          if (it2 == fields_.end()) {
+            field->SetTypeTo(UNKNOWN_TYPE);
+          } else {
+            ServerFieldType next_field_type = (*it2)->Type().GetStorableType();
+            if (next_field_type != CREDIT_CARD_EXP_2_DIGIT_YEAR &&
+                next_field_type != CREDIT_CARD_EXP_4_DIGIT_YEAR) {
+              field->SetTypeTo(UNKNOWN_TYPE);
+            }
+          }
+        }
+        break;
+      case CREDIT_CARD_EXP_2_DIGIT_YEAR:
+      case CREDIT_CARD_EXP_4_DIGIT_YEAR:
+        if (!keep_cc_fields || !cc_date_found)
+          field->SetTypeTo(UNKNOWN_TYPE);
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 void FormStructure::EncodeFormForQuery(
