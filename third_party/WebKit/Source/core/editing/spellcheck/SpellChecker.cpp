@@ -282,7 +282,7 @@ void SpellChecker::AdvanceToNextMisspelling(bool start_before_selection) {
     VisiblePosition one_before_start =
         PreviousPositionOf(CreateVisiblePosition(spelling_search_start));
     if (one_before_start.IsNotNull() &&
-        RootEditableElementOf(one_before_start) ==
+        RootEditableElementOf(one_before_start.DeepEquivalent()) ==
             RootEditableElementOf(spelling_search_start))
       spelling_search_start =
           EndOfWord(one_before_start).ToParentAnchoredPosition();
