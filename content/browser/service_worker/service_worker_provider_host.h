@@ -398,11 +398,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   bool IsReadyToSendMessages() const;
   void Send(IPC::Message* message) const;
 
-  // Notifies the information about the controller and associated registration
-  // to the provider on the renderer. This is for cross site transfer and
-  // browser side navigation which need to decide which process will handle the
-  // request later.
-  void NotifyControllerToAssociatedProvider();
+  // Sends information about the controller to the providers of the worker
+  // clients in the renderer.  If |notify_controllerchange| is true,
+  // instructs the renderer to dispatch a 'controllerchange' event.
+  void SendSetControllerServiceWorker(ServiceWorkerVersion* version,
+                                      bool notify_controllerchange);
 
   // Clears the information of the ServiceWorkerWorkerClient of dedicated (or
   // shared) worker, when the connection to the worker is disconnected.
@@ -444,6 +444,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   scoped_refptr<ServiceWorkerVersion> controlling_version_;
   std::unique_ptr<BrowserSideServiceWorkerEventDispatcher>
       controlling_version_event_dispatcher_;
+
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerDispatcherHost* dispatcher_host_;
