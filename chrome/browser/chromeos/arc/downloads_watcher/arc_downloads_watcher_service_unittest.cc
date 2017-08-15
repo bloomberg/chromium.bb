@@ -4,10 +4,24 @@
 
 #include "chrome/browser/chromeos/arc/downloads_watcher/arc_downloads_watcher_service.h"
 
+#include <string.h>
+
+#include <algorithm>
+
 #include "base/files/file_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
+
+TEST(ArcDownloadsWatcherServiceTest, AndroidSupportedMediaExtensionsSorted) {
+  const auto less_comparator = [](const char* a, const char* b) {
+    return strcmp(a, b) < 0;
+  };
+  EXPECT_TRUE(std::is_sorted(
+      kAndroidSupportedMediaExtensions,
+      kAndroidSupportedMediaExtensions + kAndroidSupportedMediaExtensionsSize,
+      less_comparator));
+}
 
 TEST(ArcDownloadsWatcherServiceTest, HasAndroidSupportedMediaExtension) {
   EXPECT_TRUE(HasAndroidSupportedMediaExtension(
@@ -18,6 +32,8 @@ TEST(ArcDownloadsWatcherServiceTest, HasAndroidSupportedMediaExtension) {
       base::FilePath(FILE_PATH_LITERAL("/tmp/kitten.png"))));
   EXPECT_TRUE(HasAndroidSupportedMediaExtension(
       base::FilePath(FILE_PATH_LITERAL("/tmp/kitten.xmf"))));
+  EXPECT_TRUE(HasAndroidSupportedMediaExtension(
+      base::FilePath(FILE_PATH_LITERAL("/tmp/kitten.nef"))));
 
   EXPECT_TRUE(HasAndroidSupportedMediaExtension(
       base::FilePath(FILE_PATH_LITERAL("/tmp/kitten.JPEG"))));

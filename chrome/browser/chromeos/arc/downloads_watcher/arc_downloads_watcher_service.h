@@ -32,6 +32,10 @@ class ArcBridgeService;
 // Returns true if the file path has a media extension supported by Android.
 bool HasAndroidSupportedMediaExtension(const base::FilePath& path);
 
+// Exposed only for testing.
+extern const char* kAndroidSupportedMediaExtensions[];
+extern const int kAndroidSupportedMediaExtensionsSize;
+
 // Watches Downloads directory and registers newly created media files to
 // Android MediaProvider.
 class ArcDownloadsWatcherService
