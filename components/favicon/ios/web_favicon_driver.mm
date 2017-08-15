@@ -48,9 +48,10 @@ void WebFaviconDriver::CreateForWebState(
                                             history_service, bookmark_model)));
 }
 
-void WebFaviconDriver::FetchFavicon(const GURL& url) {
-  fetch_favicon_url_ = url;
-  FaviconDriverImpl::FetchFavicon(url);
+void WebFaviconDriver::FetchFavicon(const GURL& page_url,
+                                    bool is_same_document) {
+  fetch_favicon_url_ = page_url;
+  FaviconDriverImpl::FetchFavicon(page_url, is_same_document);
 }
 
 gfx::Image WebFaviconDriver::GetFavicon() const {

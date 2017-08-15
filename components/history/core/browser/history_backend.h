@@ -309,7 +309,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
 
   void UpdateFaviconMappingsAndFetch(
-      const GURL& page_url,
+      const std::set<GURL>& page_urls,
       const GURL& icon_url,
       favicon_base::IconType icon_type,
       const std::vector<int>& desired_sizes,
@@ -693,11 +693,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                        FaviconBitmapType type);
 
   // Used by both UpdateFaviconMappingsAndFetch() and GetFavicon().
-  // If |page_url| is non-null and there is a favicon stored in the database
-  // for |icon_url|, a mapping is added to the database from |page_url| (and all
-  // redirects) to |icon_url|.
+  // If there is a favicon stored in the database for |icon_url|, a mapping is
+  // added to the database from each element in |page_urls| (and all redirects)
+  // to |icon_url|.
   void UpdateFaviconMappingsAndFetchImpl(
-      const GURL* page_url,
+      const std::set<GURL>& page_urls,
       const GURL& icon_url,
       favicon_base::IconType icon_type,
       const std::vector<int>& desired_sizes,

@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <set>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -142,8 +143,10 @@ class FaviconHandler {
                  FaviconDriverObserver::NotificationIconType handler_type);
   ~FaviconHandler();
 
-  // Initiates loading the favicon for the specified url.
-  void FetchFavicon(const GURL& url);
+  // Initiates loading the favicon for the specified url. |is_same_document| is
+  // true for fragment navigations and history pushState/replaceState, see
+  // NavigationHandle::IsSameDocument().
+  void FetchFavicon(const GURL& page_url, bool is_same_document);
 
   // Collects the candidate favicons as listed in the HTML head, as well as
   // the WebManifest URL if available (or empty URL otherwise).
@@ -250,7 +253,7 @@ class FaviconHandler {
       const std::vector<SkBitmap>& bitmaps,
       const std::vector<gfx::Size>& original_bitmap_sizes);
 
-  bool ShouldSaveFavicon();
+  bool ShouldSaveFavicon(const GURL& page_url) const;
 
   // Updates |best_favicon_| and returns true if it was considered a satisfying
   // image (e.g. exact size match).
@@ -296,8 +299,11 @@ class FaviconHandler {
 
   const FaviconDriverObserver::NotificationIconType handler_type_;
 
-  // URL of the page we're requesting the favicon for.
-  GURL url_;
+  // URL of the page(s) we're requesting the favicon for. They can be multiple
+  // in case of in-page navigations (e.g. fragment navigations).
+  std::set<GURL> page_urls_;
+  // The last page URL reported via FetchFavicon().
+  GURL last_page_url_;
 
   // Whether we got data back for the initial request to the FaviconService.
   bool got_favicon_from_history_;
@@ -327,6 +333,10 @@ class FaviconHandler {
 
   // Whether the largest icon should be downloaded.
   const bool download_largest_icon_;
+
+  // Whether candidates have been received (OnUpdateCandidates() has been
+  // called, regardless of whether the provided list was empty).
+  bool candidates_received_;
 
   // The manifest URL from the renderer (or empty URL if none).
   GURL manifest_url_;

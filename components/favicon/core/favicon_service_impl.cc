@@ -175,14 +175,14 @@ base::CancelableTaskTracker::TaskId FaviconServiceImpl::GetFaviconForPageURL(
 
 base::CancelableTaskTracker::TaskId
 FaviconServiceImpl::UpdateFaviconMappingsAndFetch(
-    const GURL& page_url,
+    const std::set<GURL>& page_urls,
     const GURL& icon_url,
     favicon_base::IconType icon_type,
     int desired_size_in_dip,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   return history_service_->UpdateFaviconMappingsAndFetch(
-      page_url, icon_url, icon_type,
+      page_urls, icon_url, icon_type,
       GetPixelSizesForFaviconScales(desired_size_in_dip), callback, tracker);
 }
 

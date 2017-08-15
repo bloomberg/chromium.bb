@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/callback.h"
@@ -113,14 +114,14 @@ class FaviconService : public KeyedService {
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker) = 0;
 
-  // Maps |page_url| to the favicon at |icon_url| if there is an entry in the
+  // Maps |page_urls| to the favicon at |icon_url| if there is an entry in the
   // database for |icon_url| and |icon_type|. This occurs when there is a
   // mapping from a different page URL to |icon_url|. The favicon bitmaps whose
   // edge sizes most closely match |desired_size_in_dip| from the favicons which
-  // were just mapped to |page_url| are returned. If |desired_size_in_dip| has a
-  // '0' entry, the largest favicon bitmap is returned.
+  // were just mapped to |page_urls| are returned. If |desired_size_in_dip| has
+  // a '0' entry, the largest favicon bitmap is returned.
   virtual base::CancelableTaskTracker::TaskId UpdateFaviconMappingsAndFetch(
-      const GURL& page_url,
+      const std::set<GURL>& page_urls,
       const GURL& icon_url,
       favicon_base::IconType icon_type,
       int desired_size_in_dip,

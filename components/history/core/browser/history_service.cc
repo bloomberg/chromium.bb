@@ -574,7 +574,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconForID(
 
 base::CancelableTaskTracker::TaskId
 HistoryService::UpdateFaviconMappingsAndFetch(
-    const GURL& page_url,
+    const std::set<GURL>& page_urls,
     const GURL& icon_url,
     favicon_base::IconType icon_type,
     const std::vector<int>& desired_sizes,
@@ -588,8 +588,8 @@ HistoryService::UpdateFaviconMappingsAndFetch(
   return tracker->PostTaskAndReply(
       backend_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::UpdateFaviconMappingsAndFetch,
-                 history_backend_, page_url, icon_url, icon_type, desired_sizes,
-                 results),
+                 history_backend_, page_urls, icon_url, icon_type,
+                 desired_sizes, results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
 

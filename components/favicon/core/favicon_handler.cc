@@ -189,6 +189,7 @@ FaviconHandler::FaviconHandler(
       download_largest_icon_(
           handler_type == FaviconDriverObserver::NON_TOUCH_LARGEST ||
           handler_type == FaviconDriverObserver::TOUCH_LARGEST),
+      candidates_received_(false),
       notification_icon_type_(favicon_base::INVALID_ICON),
       service_(service),
       delegate_(delegate),
@@ -214,17 +215,27 @@ int FaviconHandler::GetIconTypesFromHandlerType(
   return 0;
 }
 
-void FaviconHandler::FetchFavicon(const GURL& url) {
+void FaviconHandler::FetchFavicon(const GURL& page_url, bool is_same_document) {
   cancelable_task_tracker_for_page_url_.TryCancelAll();
   cancelable_task_tracker_for_candidates_.TryCancelAll();
 
-  url_ = url;
+  // We generally clear |page_urls_| and start clean unless there are obvious
+  // reasons to think URLs share favicons: the navigation must be within the
+  // same document (e.g. fragment navigation) AND it happened so early that no
+  // candidates were received for the previous URL(s) (e.g. redirect-like
+  // history.replaceState() during page load).
+  if (!is_same_document || candidates_received_) {
+    page_urls_.clear();
+  }
+  page_urls_.insert(page_url);
+  last_page_url_ = page_url;
 
   initial_history_result_expired_or_incomplete_ = false;
   redownload_icons_ = false;
   got_favicon_from_history_ = false;
   manifest_download_request_.Cancel();
   image_download_request_.Cancel();
+  candidates_received_ = false;
   manifest_url_ = GURL();
   non_manifest_original_candidates_.clear();
   candidates_.clear();
@@ -236,9 +247,12 @@ void FaviconHandler::FetchFavicon(const GURL& url) {
 
   // Request the favicon from the history service. In parallel to this the
   // renderer is going to notify us (well WebContents) when the favicon url is
-  // available.
+  // available. We use |last_page_url_| specifically (regardless of other
+  // possible values in |page_urls_|) because we want to use the most
+  // up-to-date / latest URL for DB lookups, which is the page URL for which
+  // we get <link rel="icon"> candidates (FaviconHandler::OnUpdateCandidates()).
   service_->GetFaviconForPageURL(
-      url_, icon_types_, preferred_icon_size(),
+      last_page_url_, icon_types_, preferred_icon_size(),
       base::Bind(&FaviconHandler::OnFaviconDataForInitialURLFromFaviconService,
                  base::Unretained(this)),
       &cancelable_task_tracker_for_page_url_);
@@ -272,8 +286,13 @@ bool FaviconHandler::UpdateFaviconCandidate(
 void FaviconHandler::SetFavicon(const GURL& icon_url,
                                 const gfx::Image& image,
                                 favicon_base::IconType icon_type) {
-  if (ShouldSaveFavicon())
-    service_->SetFavicons(url_, icon_url, icon_type, image);
+  // Associate the icon to all URLs in |page_urls_|, which contains page URLs
+  // within the same site/document that have been considered to reliably share
+  // the same icon candidates.
+  for (const GURL& page_url : page_urls_) {
+    if (ShouldSaveFavicon(page_url))
+      service_->SetFavicons(page_url, icon_url, icon_type, image);
+  }
 
   NotifyFaviconUpdated(icon_url, icon_type, image);
 }
@@ -304,7 +323,7 @@ void FaviconHandler::NotifyFaviconUpdated(const GURL& icon_url,
   gfx::Image image_with_adjusted_colorspace = image;
   favicon_base::SetFaviconColorSpace(&image_with_adjusted_colorspace);
 
-  delegate_->OnFaviconUpdated(url_, handler_type_, icon_url,
+  delegate_->OnFaviconUpdated(last_page_url_, handler_type_, icon_url,
                               icon_url != notification_icon_url_,
                               image_with_adjusted_colorspace);
 
@@ -316,7 +335,7 @@ void FaviconHandler::OnUpdateCandidates(
     const GURL& page_url,
     const std::vector<FaviconURL>& candidates,
     const GURL& manifest_url) {
-  if (page_url != url_)
+  if (last_page_url_ != page_url)
     return;
 
   bool manifests_feature_enabled =
@@ -325,13 +344,14 @@ void FaviconHandler::OnUpdateCandidates(
   // |candidates| or |manifest_url| could have been modified via Javascript. If
   // neither changed, ignore the call.
   if ((!manifests_feature_enabled || manifest_url_ == manifest_url) &&
-      non_manifest_original_candidates_.size() == candidates.size() &&
-      std::equal(candidates.begin(), candidates.end(),
-                 non_manifest_original_candidates_.begin(),
-                 &FaviconURLEquals)) {
+      (non_manifest_original_candidates_.size() == candidates.size() &&
+       std::equal(candidates.begin(), candidates.end(),
+                  non_manifest_original_candidates_.begin(),
+                  &FaviconURLEquals))) {
     return;
   }
 
+  candidates_received_ = true;
   non_manifest_original_candidates_ = candidates;
   cancelable_task_tracker_for_candidates_.TryCancelAll();
   manifest_download_request_.Cancel();
@@ -561,12 +581,12 @@ bool FaviconHandler::HasPendingTasksForTest() {
          cancelable_task_tracker_for_candidates_.HasTrackedTasks();
 }
 
-bool FaviconHandler::ShouldSaveFavicon() {
+bool FaviconHandler::ShouldSaveFavicon(const GURL& page_url) const {
   if (!delegate_->IsOffTheRecord())
     return true;
 
   // Always save favicon if the page is bookmarked.
-  return delegate_->IsBookmarked(url_);
+  return delegate_->IsBookmarked(page_url);
 }
 
 void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
@@ -587,6 +607,12 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
     // url) we'll fetch later on. This way the user doesn't see a flash of the
     // default favicon.
     NotifyFaviconUpdated(favicon_bitmap_results);
+
+    // For strict correctness, we should also set the database icon mappings for
+    // other URLs in |page_urls_| (same-document navigations like fragment
+    // navigations) because there is no guarantee that there is a mapping for
+    // the other page URLs (e.g. |last_page_url_| has a mapping because it's
+    // bookmarked but the rest don't).
   }
 
   if (current_candidate())
@@ -626,7 +652,7 @@ void FaviconHandler::GetFaviconAndUpdateMappingsUnlessIncognito(
     //    include the mapping between the page url and the favicon url.
     // This is asynchronous. The history service will call back when done.
     service_->UpdateFaviconMappingsAndFetch(
-        url_, icon_url, icon_type, preferred_icon_size(), callback,
+        page_urls_, icon_url, icon_type, preferred_icon_size(), callback,
         &cancelable_task_tracker_for_candidates_);
   }
 }

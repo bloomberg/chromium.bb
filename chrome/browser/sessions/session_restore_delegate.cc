@@ -76,7 +76,8 @@ void SessionRestoreDelegate::RestoreTabs(
     // Restore the favicon for deferred tabs.
     favicon::ContentFaviconDriver* favicon_driver =
         favicon::ContentFaviconDriver::FromWebContents(restored_tab.contents());
-    favicon_driver->FetchFavicon(favicon_driver->GetActiveURL());
+    favicon_driver->FetchFavicon(favicon_driver->GetActiveURL(),
+                                 /*is_same_document=*/false);
   }
 
   TabLoader::RestoreTabs(tabs, restore_started);
