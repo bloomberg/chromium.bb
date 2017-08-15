@@ -40,6 +40,10 @@ android_aar_prebuilt("gvr_common_java") {
     "*google/common/logging/nano/Vr\$VREvent\$Cyclops*.class",
     "*google/common/logging/nano/Vr\$VREvent\$AudioStats.class",
   ]
+
+  deps = [
+    "//third_party/android_protobuf:protobuf_nano_javalib",
+  ]
 }
 
 android_aar_prebuilt("gvr_controller_java") {

@@ -52,7 +52,10 @@ android_java_prebuilt("emma_device_java") {
 
 android_aar_prebuilt("android_support_design_java") {
   deps = [
+    ":android_support_transition_java",
+    ":android_support_v4_java",
     ":android_support_v7_appcompat_java",
+    ":android_support_v7_recyclerview_java",
   ]
   _lib_name = "design"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
@@ -60,7 +63,7 @@ android_aar_prebuilt("android_support_design_java") {
 
 android_aar_prebuilt("android_support_transition_java") {
   deps = [
-    ":android_support_v7_appcompat_java",
+    ":android_support_v4_java",
   ]
   _lib_name = "transition"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
@@ -86,27 +89,45 @@ java_group("android_support_v4_java") {
 }
 
 android_aar_prebuilt("android_support_compat_java") {
+  deps = [
+    ":android_support_annotations_java",
+  ]
   _lib_name = "support-compat"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
   ignore_aidl = true  # We don't appear to need these currently.
 }
 
 android_aar_prebuilt("android_support_core_ui_java") {
+  deps = [
+    ":android_support_compat_java",
+  ]
   _lib_name = "support-core-ui"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
 }
 
 android_aar_prebuilt("android_support_core_utils_java") {
+  deps = [
+    ":android_support_compat_java",
+  ]
   _lib_name = "support-core-utils"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
 }
 
 android_aar_prebuilt("android_support_fragment_java") {
+  deps = [
+    ":android_support_compat_java",
+    ":android_support_core_ui_java",
+    ":android_support_core_utils_java",
+    ":android_support_media_compat_java",
+  ]
   _lib_name = "support-fragment"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
 }
 
 android_aar_prebuilt("android_support_media_compat_java") {
+  deps = [
+    ":android_support_compat_java",
+  ]
   _lib_name = "support-media-compat"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
   ignore_aidl = true  # We don't appear to need these currently.
@@ -114,7 +135,6 @@ android_aar_prebuilt("android_support_media_compat_java") {
 
 android_aar_prebuilt("android_support_v13_java") {
   deps = [
-    ":android_support_annotations_java",
     ":android_support_v4_java",
   ]
   _lib_name = "support-v13"
@@ -122,11 +142,17 @@ android_aar_prebuilt("android_support_v13_java") {
 }
 
 android_aar_prebuilt("android_support_vector_drawable_java") {
+  deps = [
+    ":android_support_compat_java",
+  ]
   _lib_name = "support-vector-drawable"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
 }
 
 android_aar_prebuilt("android_support_v7_appcompat_java_internal") {
+  deps = [
+    ":android_support_v4_java",
+  ]
   _lib_name = "appcompat-v7"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
 }
@@ -141,7 +167,8 @@ java_group("android_support_v7_appcompat_java") {
 
 android_aar_prebuilt("android_support_v7_gridlayout_java") {
   deps = [
-    ":android_support_v7_appcompat_java",
+    ":android_support_compat_java",
+    ":android_support_core_ui_java",
   ]
   _lib_name = "gridlayout-v7"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
@@ -150,6 +177,7 @@ android_aar_prebuilt("android_support_v7_gridlayout_java") {
 android_aar_prebuilt("android_support_v7_mediarouter_java") {
   deps = [
     ":android_support_v7_appcompat_java",
+    ":android_support_v7_palette_java",
   ]
   _lib_name = "mediarouter-v7"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
@@ -157,15 +185,28 @@ android_aar_prebuilt("android_support_v7_mediarouter_java") {
 
 android_aar_prebuilt("android_support_v7_recyclerview_java") {
   deps = [
-    ":android_support_v7_appcompat_java",
+    ":android_support_annotations_java",
+    ":android_support_compat_java",
+    ":android_support_core_ui_java",
   ]
   _lib_name = "recyclerview-v7"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
 }
 
+android_aar_prebuilt("android_support_v7_palette_java") {
+  deps = [
+    ":android_support_compat_java",
+    ":android_support_core_utils_java",
+  ]
+  _lib_name = "palette-v7"
+  aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+}
+
 android_aar_prebuilt("android_support_v7_preference_java") {
   deps = [
+    ":android_support_v4_java",
     ":android_support_v7_appcompat_java",
+    ":android_support_v7_recyclerview_java",
   ]
   _lib_name = "preference-v7"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
@@ -173,7 +214,10 @@ android_aar_prebuilt("android_support_v7_preference_java") {
 
 android_aar_prebuilt("android_support_v14_preference_java") {
   deps = [
+    ":android_support_v4_java",
+    ":android_support_v7_appcompat_java",
     ":android_support_v7_preference_java",
+    ":android_support_v7_recyclerview_java",
   ]
   _lib_name = "preference-v14"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
@@ -251,6 +295,7 @@ android_aar_prebuilt("google_play_services_tasks_java") {
 
 android_aar_prebuilt("google_play_services_base_java") {
   deps = [
+    ":android_support_v4_java",
     ":google_play_services_basement_java",
     ":google_play_services_tasks_java",
   ]
