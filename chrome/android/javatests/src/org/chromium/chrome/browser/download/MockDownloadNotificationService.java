@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.download;
 
 import android.app.Notification;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 
@@ -23,6 +25,7 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     private boolean mPaused = false;
     private Context mContext;
     private int mLastNotificationId;
+    private List<String> mResumedDownloads = new ArrayList<>();
 
     void setContext(Context context) {
         mContext = context;
@@ -123,6 +126,19 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     public void notifyDownloadCanceled(final ContentId id) {
         ThreadUtils.runOnUiThreadBlocking(
                 () -> MockDownloadNotificationService.super.notifyDownloadCanceled(id));
+    }
+
+    @Override
+    void resumeDownload(Intent intent) {
+        mResumedDownloads.add(IntentUtils.safeGetStringExtra(intent, EXTRA_DOWNLOAD_CONTENTID_ID));
+    }
+
+    List<String> getResumedDownloads() {
+        return mResumedDownloads;
+    }
+
+    void clearResumedDownloads() {
+        mResumedDownloads.clear();
     }
 }
 

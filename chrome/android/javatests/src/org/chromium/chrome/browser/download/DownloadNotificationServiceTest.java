@@ -23,9 +23,7 @@ import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -34,33 +32,6 @@ import java.util.UUID;
  */
 public class DownloadNotificationServiceTest extends
         ServiceTestCase<MockDownloadNotificationService> {
-    /**
-     * Implementation of DownloadBroadcastManager that skips loading the native to just propagate
-     * interactions through for testing purposes.
-     */
-    private static class MockDownloadBroadcastManager extends DownloadBroadcastManager {
-        @Override
-        void loadNativeAndPropagateInteraction(Context context, Intent intent) {
-            // Skip loading the native and just propagate interaction.
-            propagateInteraction(intent);
-        }
-    }
-
-    private static class MockDownloadManagerService extends DownloadManagerService {
-        final List<DownloadItem> mDownloads = new ArrayList<DownloadItem>();
-
-        public MockDownloadManagerService(Context context) {
-            super(context, null, getTestHandler(), 1000);
-        }
-
-        @Override
-        protected void init() {}
-
-        @Override
-        public void resumeDownload(ContentId id, DownloadItem item, boolean hasUserGesture) {
-            mDownloads.add(item);
-        }
-    }
 
     private static class MockDownloadResumptionScheduler extends DownloadResumptionScheduler {
         boolean mScheduled;
@@ -358,21 +329,19 @@ public class DownloadNotificationServiceTest extends
         DownloadNotificationService service = bindNotificationService();
         DownloadManagerService.disableNetworkListenerForTest();
 
-        final MockDownloadManagerService manager =
-                new MockDownloadManagerService(getSystemContext().getApplicationContext());
-        ThreadUtils.runOnUiThreadBlocking(
-                (Runnable) () -> DownloadManagerService.setDownloadManagerService(manager));
         DownloadManagerService.setIsNetworkMeteredForTest(true);
-        service.setDownloadBroadcastManager(new MockDownloadBroadcastManager());
         resumeAllDownloads(service);
-        assertEquals(1, manager.mDownloads.size());
-        assertEquals(manager.mDownloads.get(0).getDownloadInfo().getDownloadGuid(), guid2);
+        assertEquals(1, getService().getResumedDownloads().size());
+        assertEquals(getService().getResumedDownloads().get(0), guid2);
 
-        manager.mDownloads.clear();
+        // TODO(jming): Right now, assuming all downloads are resumed because of the way downloads
+        // in progress are tracked internally. Change when this is updated. http://crbug.com/755588
+        getService().clearResumedDownloads();
         DownloadManagerService.setIsNetworkMeteredForTest(false);
         resumeAllDownloads(service);
-        assertEquals(1, manager.mDownloads.size());
-        assertEquals(manager.mDownloads.get(0).getDownloadInfo().getDownloadGuid(), guid1);
+        assertEquals(2, getService().getResumedDownloads().size());
+        assertEquals(getService().getResumedDownloads().get(0), guid2);
+        assertEquals(getService().getResumedDownloads().get(1), guid1);
     }
 
     /**
