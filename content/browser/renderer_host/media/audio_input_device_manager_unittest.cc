@@ -303,7 +303,7 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, AccessInvalidSession) {
 class AudioInputDeviceManagerNoDevicesTest
     : public MAYBE_AudioInputDeviceManagerTest {
  public:
-  AudioInputDeviceManagerNoDevicesTest(){};
+  AudioInputDeviceManagerNoDevicesTest() {}
 
  protected:
   void Initialize() override {
@@ -341,12 +341,8 @@ TEST_F(AudioInputDeviceManagerNoDevicesTest,
     // Expects that device parameters stored by the manager are valid.
     const StreamDeviceInfo* device_info =
         manager_->GetOpenedDeviceInfoById(session_id);
-    EXPECT_TRUE(
-        media::AudioParameters(media::AudioParameters::AUDIO_FAKE,
-                               device_info->device.input.channel_layout(),
-                               device_info->device.input.sample_rate(), 16,
-                               device_info->device.input.frames_per_buffer())
-            .IsValid());
+    EXPECT_TRUE(device_info->device.input.IsValid());
+    EXPECT_TRUE(device_info->device.matched_output.IsValid());
 
     manager_->Close(session_id);
     EXPECT_CALL(*audio_input_listener_,
