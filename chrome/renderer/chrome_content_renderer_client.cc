@@ -1371,7 +1371,9 @@ bool ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
 
 std::unique_ptr<blink::WebSocketHandshakeThrottle>
 ChromeContentRendererClient::CreateWebSocketHandshakeThrottle() {
-  return nullptr;
+  InitSafeBrowsingIfNecessary();
+  return base::MakeUnique<safe_browsing::WebSocketSBHandshakeThrottle>(
+      safe_browsing_.get());
 }
 
 std::unique_ptr<blink::WebSpeechSynthesizer>

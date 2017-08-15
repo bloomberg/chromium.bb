@@ -13,7 +13,9 @@
 #include <string>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -24,10 +26,12 @@
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/sha1.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/thread_test_helper.h"
 #include "base/time/time.h"
@@ -77,6 +81,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/websockets/websocket_handshake_constants.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -113,9 +118,11 @@ const char kMalwareDelayedLoadsPage[] =
 const char kMalwareIFrame[] = "/safe_browsing/malware_iframe.html";
 const char kMalwareImg[] = "/safe_browsing/malware_image.png";
 const char kMalwareWebSocketPage[] = "/safe_browsing/malware_websocket.html";
+const char kMalwareWebSocketPath[] = "/safe_browsing/malware-ws";
 const char kNeverCompletesPath[] = "/never_completes";
 const char kPrefetchMalwarePage[] = "/safe_browsing/prefetch_malware.html";
 
+// TODO(ricea): Use net::test_server::HungResponse instead.
 class NeverCompletingHttpResponse : public net::test_server::HttpResponse {
  public:
   ~NeverCompletingHttpResponse() override {}
@@ -130,9 +137,83 @@ class NeverCompletingHttpResponse : public net::test_server::HttpResponse {
 std::unique_ptr<net::test_server::HttpResponse> HandleNeverCompletingRequests(
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, kNeverCompletesPath,
-                          base::CompareCase::SENSITIVE))
+                        base::CompareCase::SENSITIVE))
     return nullptr;
   return base::MakeUnique<NeverCompletingHttpResponse>();
+}
+
+// This is not a proper WebSocket server. It does the minimum necessary to make
+// the browser think the handshake succeeded.
+// TODO(ricea): This could probably go in //net somewhere.
+class QuasiWebSocketHttpResponse : public net::test_server::HttpResponse {
+ public:
+  explicit QuasiWebSocketHttpResponse(
+      const net::test_server::HttpRequest& request) {
+    const auto it = request.headers.find("Sec-WebSocket-Key");
+    const std::string key =
+        it == request.headers.end() ? std::string() : it->second;
+    base::Base64Encode(
+        base::SHA1HashString(key + net::websockets::kWebSocketGuid),
+        &accept_hash_);
+  }
+  ~QuasiWebSocketHttpResponse() override {}
+
+  void SendResponse(
+      const net::test_server::SendBytesCallback& send,
+      const net::test_server::SendCompleteCallback& done) override {
+    const auto response_headers = base::StringPrintf(
+        "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
+        "Upgrade: WebSocket\r\n"
+        "Connection: Upgrade\r\n"
+        "Sec-WebSocket-Accept: %s\r\n"
+        "\r\n",
+        accept_hash_.c_str());
+    send.Run(response_headers, base::Bind(&base::DoNothing));
+    // Never call done(). The connection should stay open.
+  }
+
+ private:
+  std::string accept_hash_;
+};
+
+std::unique_ptr<net::test_server::HttpResponse> HandleWebSocketRequests(
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url != kMalwareWebSocketPath)
+    return nullptr;
+
+  return base::MakeUnique<QuasiWebSocketHttpResponse>(request);
+}
+
+// Return a new URL with ?type=<param> appended.
+GURL AddTypeParam(const GURL& base_url, const std::string& param) {
+  GURL::Replacements add_query;
+  std::string query = "type=" + param;
+  add_query.SetQueryStr(query);
+  return base_url.ReplaceComponents(add_query);
+}
+
+// Given the URL of the malware_websocket.html page, calculate the URL of the
+// WebSocket it will fetch.
+GURL ConstructWebSocketURL(const GURL& main_url) {
+  // This constructs the URL with the same logic as malware_websocket.html.
+  GURL resolved = main_url.Resolve(kMalwareWebSocketPath);
+  GURL::Replacements replace_scheme;
+  replace_scheme.SetSchemeStr("ws");
+  return resolved.ReplaceComponents(replace_scheme);
+}
+
+// Navigate |browser| to |url| and wait for the title to change to "NOT BLOCKED"
+// or "ERROR". This is specific to the tests using malware_websocket.html.
+// Returns the new title.
+std::string WebSocketNavigateAndWaitForTitle(Browser* browser,
+                                             const GURL& url) {
+  auto expected_title = base::ASCIIToUTF16("ERROR");
+  content::TitleWatcher title_watcher(
+      browser->tab_strip_model()->GetActiveWebContents(), expected_title);
+  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("NOT BLOCKED"));
+
+  ui_test_utils::NavigateToURL(browser, url);
+  return base::UTF16ToUTF8(title_watcher.WaitAndGetTitle());
 }
 
 void InvokeFullHashCallback(
@@ -255,8 +336,8 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
       const std::vector<SBPrefix>& prefixes,
       std::vector<SBPrefix>* prefix_hits) override {
     prefix_hits->clear();
-    return ContainsUrlPrefixes(RESOURCEBLACKLIST, RESOURCEBLACKLIST,
-                               prefixes, prefix_hits);
+    return ContainsUrlPrefixes(RESOURCEBLACKLIST, RESOURCEBLACKLIST, prefixes,
+                               prefix_hits);
   }
   bool UpdateStarted(std::vector<SBListChunkRanges>* lists) override {
     ADD_FAILURE() << "Not implemented.";
@@ -563,6 +644,8 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&HandleNeverCompletingRequests));
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&HandleWebSocketRequests));
     embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
     ASSERT_TRUE(embedded_test_server()->Start());
   }
@@ -1487,26 +1570,24 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
 // scopes.
 class SafeBrowsingServiceWebSocketTest
     : public ::testing::WithParamInterface<std::string>,
-      public SafeBrowsingServiceTest {};
+      public SafeBrowsingServiceTest {
+ public:
+  void MarkAsMalware(const GURL& url) {
+    SBFullHashResult uws_full_hash;
+    GenUrlFullHashResult(url, MALWARE, &uws_full_hash);
+    SetupResponseForUrl(url, uws_full_hash);
+  }
+};
 
-IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketTest,
-                       DISABLED_MalwareWebSocketBlocked) {
-  GURL main_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
-  // This constructs the URL with the same logic as malware_websocket.html.
-  GURL resolved = main_url.Resolve("/safe_browsing/malware-ws");
-  GURL::Replacements replace_scheme;
-  replace_scheme.SetScheme("ws", url::Component(0, strlen("ws")));
-  GURL websocket_url = resolved.ReplaceComponents(replace_scheme);
+using SafeBrowsingServiceWebSocketInterstitialTest =
+    SafeBrowsingServiceWebSocketTest;
 
-  GURL::Replacements add_query;
-  std::string query = "type=" + GetParam();
-  add_query.SetQueryStr(query);
-  GURL main_url_with_query = main_url.ReplaceComponents(add_query);
+IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketInterstitialTest,
+                       MalwareWebSocketBlocked) {
+  GURL base_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
+  GURL websocket_url = ConstructWebSocketURL(base_url);
 
-  // Add the WebSocket url as malware.
-  SBFullHashResult uws_full_hash;
-  GenUrlFullHashResult(websocket_url, MALWARE, &uws_full_hash);
-  SetupResponseForUrl(websocket_url, uws_full_hash);
+  MarkAsMalware(websocket_url);
 
   // Brute force method for waiting for the interstitial to be displayed.
   content::WindowedNotificationObserver load_stop_observer(
@@ -1520,7 +1601,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketTest,
           base::Unretained(this)));
 
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(websocket_url)));
-  ui_test_utils::NavigateToURL(browser(), main_url_with_query);
+  ui_test_utils::NavigateToURL(browser(), AddTypeParam(base_url, GetParam()));
 
   // If the interstitial fails to be displayed, the test will hang here.
   load_stop_observer.Wait();
@@ -1531,25 +1612,52 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketTest,
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
-    SafeBrowsingServiceWebSocketTest,
+    SafeBrowsingServiceWebSocketInterstitialTest,
     ::testing::Values("window", "worker"));
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, UnknownWebSocketNotBlocked) {
-  GURL main_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
+using SafeBrowsingServiceWebSocketNoInterstitialTest =
+    SafeBrowsingServiceWebSocketTest;
 
-  auto expected_title = base::ASCIIToUTF16("COMPLETED");
-  content::TitleWatcher title_watcher(
-      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketNoInterstitialTest,
+                       MalwareWebSocketBlocked) {
+  GURL base_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
+  GURL websocket_url = ConstructWebSocketURL(base_url);
 
-  // Load the parent page without marking the WebSocket as malware.
-  ui_test_utils::NavigateToURL(browser(), main_url);
+  MarkAsMalware(websocket_url);
+
+  auto new_title = WebSocketNavigateAndWaitForTitle(
+      browser(), AddTypeParam(base_url, GetParam()));
+
+  EXPECT_EQ("ERROR", new_title);
+  EXPECT_FALSE(ShowingInterstitialPage());
+
+  // got_hit_report() is only set when an interstitial is shown.
+  EXPECT_FALSE(got_hit_report());
+}
+
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    SafeBrowsingServiceWebSocketNoInterstitialTest,
+    ::testing::Values("shared-worker", "service-worker"));
+
+using SafeBrowsingServiceWebSocketSafeTest = SafeBrowsingServiceWebSocketTest;
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketSafeTest,
+                       UnknownWebSocketNotBlocked) {
+  GURL base_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
 
   // Wait for the WebSocket connection attempt to complete.
-  auto new_title = title_watcher.WaitAndGetTitle();
-  EXPECT_EQ(expected_title, new_title);
+  auto new_title = WebSocketNavigateAndWaitForTitle(
+      browser(), AddTypeParam(base_url, GetParam()));
+  EXPECT_EQ("NOT BLOCKED", new_title);
   EXPECT_FALSE(ShowingInterstitialPage());
   EXPECT_FALSE(got_hit_report());
 }
+
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    SafeBrowsingServiceWebSocketSafeTest,
+    ::testing::Values("window", "worker", "shared-worker", "service-worker"));
 
 class SafeBrowsingServiceShutdownTest : public SafeBrowsingServiceTest {
  public:
@@ -2265,22 +2373,17 @@ class V4SafeBrowsingServiceWebSocketTest
     : public ::testing::WithParamInterface<std::string>,
       public V4SafeBrowsingServiceTest {};
 
+using V4SafeBrowsingServiceWebSocketInterstitialTest =
+    V4SafeBrowsingServiceWebSocketTest;
+
 // This is almost identical to
 // SafeBrowsingServiceWebSocketTest.MalwareWebSocketBlocked. That test will be
 // deleted when the old database backend is removed.
-IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketTest,
-                       DISABLED_MalwareWebSocketBlocked) {
-  GURL main_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
-  // This constructs the URL with the same logic as malware_websocket.html.
-  GURL resolved = main_url.Resolve("/safe_browsing/malware-ws");
-  GURL::Replacements replace_scheme;
-  replace_scheme.SetScheme("ws", url::Component(0, strlen("ws")));
-  GURL websocket_url = resolved.ReplaceComponents(replace_scheme);
-
-  GURL::Replacements add_query;
-  std::string query = "type=" + GetParam();
-  add_query.SetQueryStr(query);
-  GURL main_url_with_query = main_url.ReplaceComponents(add_query);
+IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketInterstitialTest,
+                       MalwareWebSocketBlocked) {
+  GURL base_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
+  GURL websocket_url = ConstructWebSocketURL(base_url);
+  GURL page_url = AddTypeParam(base_url, GetParam());
 
   MarkUrlForMalwareUnexpired(websocket_url);
 
@@ -2296,7 +2399,7 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketTest,
           base::Unretained(this)));
 
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(websocket_url)));
-  ui_test_utils::NavigateToURL(browser(), main_url_with_query);
+  ui_test_utils::NavigateToURL(browser(), page_url);
 
   // If the interstitial fails to be displayed, the test will hang here.
   load_stop_observer.Wait();
@@ -2304,33 +2407,58 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketTest,
   EXPECT_TRUE(ShowingInterstitialPage());
   EXPECT_TRUE(got_hit_report());
   EXPECT_EQ(websocket_url, hit_report().malicious_url);
-  EXPECT_EQ(main_url_with_query, hit_report().page_url);
+  EXPECT_EQ(page_url, hit_report().page_url);
   EXPECT_TRUE(hit_report().is_subresource);
 }
 
-// TODO(ricea): Test SharedWorker and ServiceWorker scopes as well.
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        V4SafeBrowsingServiceWebSocketTest,
+                        V4SafeBrowsingServiceWebSocketInterstitialTest,
                         ::testing::Values("window", "worker"));
 
-// Identical to SafeBrowsingServiceTest.UnknownWebSocketNotBlocked. Uses the
-// V4 database backend.
-IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, UnknownWebSocketNotBlocked) {
-  GURL main_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
+using V4SafeBrowsingServiceWebSocketNoInterstitialTest =
+    V4SafeBrowsingServiceWebSocketTest;
 
-  auto expected_title = base::ASCIIToUTF16("COMPLETED");
-  content::TitleWatcher title_watcher(
-      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketNoInterstitialTest,
+                       MalwareWebSocketBlocked) {
+  GURL base_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
+
+  MarkUrlForMalwareUnexpired(ConstructWebSocketURL(base_url));
 
   // Load the parent page without marking the WebSocket as malware.
-  ui_test_utils::NavigateToURL(browser(), main_url);
+  auto new_title = WebSocketNavigateAndWaitForTitle(
+      browser(), AddTypeParam(base_url, GetParam()));
 
-  // Wait for the WebSocket connection attempt to complete.
-  auto new_title = title_watcher.WaitAndGetTitle();
-  EXPECT_EQ(expected_title, new_title);
+  EXPECT_EQ("ERROR", new_title);
+  EXPECT_FALSE(ShowingInterstitialPage());
+
+  // got_hit_report() is only set when an interstitial is shown.
+  EXPECT_FALSE(got_hit_report());
+}
+
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        V4SafeBrowsingServiceWebSocketNoInterstitialTest,
+                        ::testing::Values("shared-worker", "service-worker"));
+
+using V4SafeBrowsingServiceWebSocketSafeTest =
+    V4SafeBrowsingServiceWebSocketTest;
+
+IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketSafeTest,
+                       UnknownWebSocketNotBlocked) {
+  GURL base_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
+
+  // Load the parent page without marking the WebSocket as malware.
+  auto new_title = WebSocketNavigateAndWaitForTitle(
+      browser(), AddTypeParam(base_url, GetParam()));
+
+  EXPECT_EQ("NOT BLOCKED", new_title);
   EXPECT_FALSE(ShowingInterstitialPage());
   EXPECT_FALSE(got_hit_report());
 }
+
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    V4SafeBrowsingServiceWebSocketSafeTest,
+    ::testing::Values("window", "worker", "shared-worker", "service-worker"));
 
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
   GURL original_url = embedded_test_server()->GetURL(kEmptyPage);
