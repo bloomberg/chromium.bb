@@ -34,7 +34,7 @@ namespace service_manager {
 
 // TODO(jrg): Find out if setproctitle or equivalent is available on Android.
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_SOLARIS) && \
-    !defined(OS_ANDROID)
+    !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 void SetProcessTitleFromCommandLine(const char** main_argv) {
   // Build a single string which consists of all the arguments separated

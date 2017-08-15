@@ -106,7 +106,7 @@ class ServiceProcessLauncherDelegateImpl
   DISALLOW_COPY_AND_ASSIGN(ServiceProcessLauncherDelegateImpl);
 };
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 // Setup signal-handling state: resanitize most signals, ignore SIGPIPE.
 void SetupSignalHandlers() {
@@ -157,7 +157,7 @@ void PopulateFDsFromCommandLine() {
   }
 }
 
-#endif  // defined(OS_POSIX) && !defined(OS_ANDROID)
+#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 void CommonSubprocessInit() {
 #if defined(OS_WIN)
@@ -363,7 +363,7 @@ int Main(const MainParams& params) {
 
   base::CommandLine::Init(argc, argv);
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
   PopulateFDsFromCommandLine();
 #endif
 
@@ -374,7 +374,7 @@ int Main(const MainParams& params) {
 
 // On Android setlocale() is not supported, and we don't override the signal
 // handlers so we can get a stack trace when crashing.
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   // Set C library locale to make sure CommandLine can parse argument values in
   // the correct encoding.
   setlocale(LC_ALL, "");
