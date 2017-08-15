@@ -145,7 +145,7 @@ public class ProcessInitializationHandler {
      * Performs the shared class initialization.
      */
     protected void handlePreNativeInitialization() {
-        ChromeApplication application = (ChromeApplication) ContextUtils.getApplicationContext();
+        Context application = ContextUtils.getApplicationContext();
 
         UiUtils.setKeyboardShowingDelegate(new UiUtils.KeyboardShowingDelegate() {
             @Override

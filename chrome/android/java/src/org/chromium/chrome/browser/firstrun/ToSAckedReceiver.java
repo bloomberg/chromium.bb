@@ -12,6 +12,8 @@ import android.os.Build;
 import android.os.Bundle;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.components.signin.AccountManagerFacade;
 
 import java.util.HashSet;
@@ -23,8 +25,8 @@ import java.util.Set;
  * the Chrome ToS so that we don't show the ToS string during our first run.
  */
 public class ToSAckedReceiver extends BroadcastReceiver {
-    private static final String TOS_ACKED_ACCOUNTS = "ToS acknowledged accounts";
-    private static final String EXTRA_ACCOUNT_NAME = "TosAckedReceiver.account";
+    static final String TOS_ACKED_ACCOUNTS = "ToS acknowledged accounts";
+    static final String EXTRA_ACCOUNT_NAME = "TosAckedReceiver.account";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -56,6 +58,12 @@ public class ToSAckedReceiver extends BroadcastReceiver {
                 ContextUtils.getAppSharedPreferences().getStringSet(
                         TOS_ACKED_ACCOUNTS, null);
         if (toSAckedAccounts == null || toSAckedAccounts.isEmpty()) return false;
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ProcessInitializationHandler.getInstance().initializePreNative();
+            }
+        });
         AccountManagerFacade accountHelper = AccountManagerFacade.get();
         List<String> accountNames = accountHelper.tryGetGoogleAccountNames();
         if (accountNames.isEmpty()) return false;

@@ -1763,6 +1763,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorNotificationBridgeUiTest.java",
   "junit/src/org/chromium/chrome/browser/externalauth/ExternalAuthUtilsTest.java",
   "junit/src/org/chromium/chrome/browser/firstrun/FirstRunFlowSequencerTest.java",
+  "junit/src/org/chromium/chrome/browser/firstrun/ToSAckedReceiverTest.java",
   "junit/src/org/chromium/chrome/browser/fullscreen/BrowserStateBrowserControlsVisibilityDelegateTest.java",
   "junit/src/org/chromium/chrome/browser/gcore/GoogleApiClientHelperTest.java",
   "junit/src/org/chromium/chrome/browser/init/AsyncInitTaskRunnerTest.java",
