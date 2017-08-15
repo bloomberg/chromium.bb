@@ -639,15 +639,6 @@ class PrebuiltUploader(object):
         if upload_board_tarball:
           tar_process.join()
           assert tar_process.exitcode == 0
-          # TODO(zbehan): This should be done cleaner.
-          if target.board == constants.CHROOT_BUILDER_BOARD:
-            sdk_conf = os.path.join(self._binhost_conf_dir,
-                                    'host/sdk_version.conf')
-            sdk_settings = {
-                'SDK_LATEST_VERSION': version_str,
-                'TC_PATH': toolchain_upload_path,
-            }
-            RevGitFile(sdk_conf, sdk_settings, dryrun=self._dryrun)
 
       # Record URL where prebuilts were uploaded.
       url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),

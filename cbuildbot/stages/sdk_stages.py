@@ -11,14 +11,16 @@ import json
 import os
 
 from chromite.cbuildbot import commands
-from chromite.lib import constants
+from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot.stages import generic_stages
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import perf_uploader
 from chromite.lib import portage_util
 from chromite.lib import toolchain
+from chromite.scripts import upload_prebuilts
 
 
 # Version of the Manifest file being generated for SDK artifacts. Should be
@@ -307,3 +309,28 @@ class SDKTestStage(generic_stages.BuilderStage):
                      usepkg=False, chrome_binhost_only=False,
                      extra_env=self._portage_extra_env,
                      chroot_args=new_chroot_args)
+
+
+class SDKUprevStage(generic_stages.BuilderStage):
+  """Stage that uprevs SDK version."""
+
+  def __init__(self, builder_run, version=None, **kwargs):
+    super(SDKUprevStage, self).__init__(builder_run, **kwargs)
+    self._version = version
+
+  def PerformStage(self):
+    if self._run.config.prebuilts == constants.PUBLIC:
+      binhost_conf_dir = prebuilts.PUBLIC_BINHOST_CONF_DIR
+    else:
+      binhost_conf_dir = prebuilts.PRIVATE_BINHOST_CONF_DIR
+    sdk_conf = os.path.join(
+        self._build_root, binhost_conf_dir, 'host', 'sdk_version.conf')
+
+    tc_path = prebuilts.GetToolchainSdkUploadFormat(
+        self._version, prebuilts.GetToolchainSdkPaths(self._build_root)[0][1])
+    sdk_settings = {
+        'SDK_LATEST_VERSION': self._version,
+        'TC_PATH': tc_path,
+    }
+    upload_prebuilts.RevGitFile(
+        sdk_conf, sdk_settings, dryrun=self._run.options.debug)
