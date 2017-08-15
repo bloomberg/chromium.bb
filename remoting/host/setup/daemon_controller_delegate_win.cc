@@ -422,7 +422,7 @@ DaemonController::UsageStatsConsent
 DaemonControllerDelegateWin::GetUsageStatsConsent() {
   DaemonController::UsageStatsConsent consent;
   consent.supported = true;
-  consent.allowed = false;
+  consent.allowed = true;
   consent.set_by_policy = false;
 
   // Get the recorded user's consent.
