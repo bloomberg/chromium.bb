@@ -597,7 +597,9 @@ bool TabAndroid::Print(JNIEnv* env,
   if (!print_view_manager)
     return false;
 
-  print_view_manager->PrintNow(rfh);
+  if (!print_view_manager->PrintNow(rfh))
+    return false;
+
   return true;
 }
 
