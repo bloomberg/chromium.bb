@@ -486,7 +486,7 @@ TEST_F(ProcessUtilTest, InheritSpecifiedHandles) {
   base::WaitableEvent event(base::win::ScopedHandle(
       CreateEvent(&security_attributes, true, false, NULL)));
   base::LaunchOptions options;
-  options.handles_to_inherit.push_back(event.handle());
+  options.handles_to_inherit.emplace_back(event.handle());
 
   base::CommandLine cmd_line = MakeCmdLine("TriggerEventChildProcess");
   cmd_line.AppendSwitchASCII(
@@ -624,7 +624,7 @@ int ProcessUtilTest::CountOpenFDsInChild() {
     NOTREACHED();
 
   base::LaunchOptions options;
-  options.fds_to_remap.push_back(std::pair<int, int>(fds[1], kChildPipe));
+  options.fds_to_remap.emplace_back(fds[1], kChildPipe);
   base::SpawnChildResult spawn_child =
       SpawnChildWithOptions("ProcessUtilsLeakFDChildProcess", options);
   CHECK(spawn_child.process.IsValid());
@@ -710,7 +710,7 @@ TEST_F(ProcessUtilTest, FDRemappingIncludesStdio) {
 
   // Launch the test process, which should inherit our pipe stdio.
   base::LaunchOptions options;
-  options.fds_to_remap.push_back(std::pair<int, int>(dev_null, dev_null));
+  options.fds_to_remap.emplace_back(dev_null, dev_null);
   base::SpawnChildResult spawn_child =
       SpawnChildWithOptions("ProcessUtilsVerifyStdio", options);
   ASSERT_TRUE(spawn_child.process.IsValid());
@@ -771,8 +771,8 @@ TEST_F(ProcessUtilTest, LaunchWithHandleTransfer) {
 
   // Launch the test process, and pass it one end of the pipe.
   base::LaunchOptions options;
-  options.handles_to_transfer.push_back(
-      {PA_HND(PA_USER0, kStartupHandleId), handles[0]});
+  options.handles_to_transfer.emplace_back(PA_HND(PA_USER0, kStartupHandleId),
+                                           handles[0]);
   base::SpawnChildResult spawn_child =
       SpawnChildWithOptions("ProcessUtilsVerifyHandle", options);
   ASSERT_TRUE(spawn_child.process.IsValid());
@@ -813,7 +813,7 @@ std::string TestLaunchProcess(const std::vector<std::string>& args,
   options.wait = true;
   options.environ = env_changes;
   options.clear_environ = clear_environ;
-  options.fds_to_remap.push_back(std::make_pair(fds[1], 1));
+  options.fds_to_remap.emplace_back(fds[1], 1);
 #if defined(OS_LINUX)
   options.clone_flags = clone_flags;
 #else
@@ -844,12 +844,12 @@ const char kLargeString[] =
 TEST_F(ProcessUtilTest, LaunchProcess) {
   base::EnvironmentMap env_changes;
   std::vector<std::string> echo_base_test;
-  echo_base_test.push_back(kShellPath);
-  echo_base_test.push_back("-c");
-  echo_base_test.push_back("echo $BASE_TEST");
+  echo_base_test.emplace_back(kShellPath);
+  echo_base_test.emplace_back("-c");
+  echo_base_test.emplace_back("echo $BASE_TEST");
 
   std::vector<std::string> print_env;
-  print_env.push_back("/usr/bin/env");
+  print_env.emplace_back("/usr/bin/env");
   const int no_clone_flags = 0;
   const bool no_clear_environ = false;
 
@@ -916,15 +916,15 @@ TEST_F(ProcessUtilTest, GetAppOutput) {
   std::vector<std::string> argv;
 #if defined(OS_FUCHSIA)
   // There's no sh in PATH on Fuchsia by default, so provide a full path to sh.
-  argv.push_back("/boot/bin/sh");
+  argv.emplace_back("/boot/bin/sh");
 #elif defined(OS_ANDROID)
-  argv.push_back("sh");  // Instead of /bin/sh, force path search to find it.
+  argv.emplace_back("sh");  // Instead of /bin/sh, force path search to find it.
 #else
 #error Port.
 #endif
-  argv.push_back("-c");
+  argv.emplace_back("-c");
 
-  argv.push_back("exit 0");
+  argv.emplace_back("exit 0");
   EXPECT_TRUE(base::GetAppOutput(base::CommandLine(argv), &output));
   EXPECT_STREQ("", output.c_str());
 
@@ -944,9 +944,9 @@ TEST_F(ProcessUtilTest, GetAppOutput) {
                                   &output));
 
   std::vector<std::string> argv;
-  argv.push_back("/bin/echo");
-  argv.push_back("-n");
-  argv.push_back("foobar42");
+  argv.emplace_back("/bin/echo");
+  argv.emplace_back("-n");
+  argv.emplace_back("foobar42");
   EXPECT_TRUE(base::GetAppOutput(base::CommandLine(argv), &output));
   EXPECT_STREQ("foobar42", output.c_str());
 #endif  // defined(OS_ANDROID)
@@ -957,9 +957,9 @@ TEST_F(ProcessUtilTest, GetAppOutputWithExitCode) {
   std::vector<std::string> argv;
   std::string output;
   int exit_code;
-  argv.push_back(std::string(kShellPath));  // argv[0]
-  argv.push_back("-c");  // argv[1]
-  argv.push_back("echo foo");  // argv[2];
+  argv.emplace_back(kShellPath);  // argv[0]
+  argv.emplace_back("-c");        // argv[1]
+  argv.emplace_back("echo foo");  // argv[2];
   EXPECT_TRUE(base::GetAppOutputWithExitCode(base::CommandLine(argv), &output,
                                              &exit_code));
   EXPECT_STREQ("foo\n", output.c_str());
@@ -1067,7 +1067,7 @@ TEST_F(ProcessUtilTest, PreExecHook) {
 
   ReadFromPipeDelegate read_from_pipe_delegate(read_fd.get());
   base::LaunchOptions options;
-  options.fds_to_remap.push_back(std::make_pair(read_fd.get(), read_fd.get()));
+  options.fds_to_remap.emplace_back(read_fd.get(), read_fd.get());
   options.pre_exec_delegate = &read_from_pipe_delegate;
   base::SpawnChildResult spawn_child =
       SpawnChildWithOptions("SimpleChildProcess", options);
