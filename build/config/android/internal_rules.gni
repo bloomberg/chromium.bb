@@ -1174,6 +1174,12 @@ if (enable_java_templates) {
     _input_jar_path = invoker.input_jar_path
     _output_jar_path = invoker.output_jar_path
 
+    _enable_assert =
+        defined(invoker.supports_android) && invoker.supports_android &&
+        (is_java_debug || dcheck_always_on)
+
+    _desugar = defined(invoker.supports_android) && invoker.supports_android
+
     _jar_excluded_patterns = []
     if (defined(invoker.jar_excluded_patterns)) {
       _jar_excluded_patterns = invoker.jar_excluded_patterns
@@ -1182,52 +1188,8 @@ if (enable_java_templates) {
                               invoker.strip_resource_classes
     _filter_jar = _jar_excluded_patterns != [] || _strip_resource_classes
 
-    _enable_assert =
-        defined(invoker.supports_android) && invoker.supports_android &&
-        (is_java_debug || dcheck_always_on)
-
-    _desugar = defined(invoker.supports_android) && invoker.supports_android
-
     _deps = []
     _previous_output_jar = _input_jar_path
-
-    if (_filter_jar) {
-      _filter_target = "${target_name}__filter"
-      _filter_input_jar = _previous_output_jar
-      _filter_output_jar = "$target_out_dir/$target_name-filtered.jar"
-
-      action(_filter_target) {
-        script = "//build/android/gyp/jar.py"
-        deps = _deps
-        if (defined(invoker.deps)) {
-          deps += invoker.deps
-        }
-        if (defined(invoker.public_deps)) {
-          public_deps = invoker.public_deps
-        }
-        inputs = [
-          _build_config,
-          _filter_input_jar,
-        ]
-        outputs = [
-          _filter_output_jar,
-        ]
-        args = [
-          "--input-jar",
-          rebase_path(_filter_input_jar, root_build_dir),
-          "--jar-path",
-          rebase_path(_filter_output_jar, root_build_dir),
-          "--excluded-classes=$_jar_excluded_patterns",
-        ]
-        if (_strip_resource_classes) {
-          args += [ "--strip-resource-classes-for=@FileArg($_rebased_build_config:javac:resource_packages)" ]
-        }
-      }
-
-      _deps = []
-      _deps = [ ":$_filter_target" ]
-      _previous_output_jar = _filter_output_jar
-    }
 
     if (_enable_assert) {
       _assert_target = "${target_name}__assert"
@@ -1301,7 +1263,7 @@ if (enable_java_templates) {
           rebase_path(_desugar_input_jar, root_build_dir),
           "--output-jar",
           rebase_path(_desugar_output_jar, root_build_dir),
-          "--classpath=@FileArg($_rebased_build_config:javac:classpath)",
+          "--classpath=@FileArg($_rebased_build_config:deps_info:java:full_classpath)",
           "--bootclasspath-entry",
           rebase_path(_android_sdk_ijar, root_build_dir),
         ]
@@ -1310,6 +1272,44 @@ if (enable_java_templates) {
       _deps = []
       _deps = [ ":$_desugar_target" ]
       _previous_output_jar = _desugar_output_jar
+    }
+    
+    if (_filter_jar) {
+      _filter_target = "${target_name}__filter"
+      _filter_input_jar = _previous_output_jar
+      _filter_output_jar = "$target_out_dir/$target_name-filtered.jar"
+
+      action(_filter_target) {
+        script = "//build/android/gyp/jar.py"
+        deps = _deps
+        if (defined(invoker.deps)) {
+          deps += invoker.deps
+        }
+        if (defined(invoker.public_deps)) {
+          public_deps = invoker.public_deps
+        }
+        inputs = [
+          _build_config,
+          _filter_input_jar,
+        ]
+        outputs = [
+          _filter_output_jar,
+        ]
+        args = [
+          "--input-jar",
+          rebase_path(_filter_input_jar, root_build_dir),
+          "--jar-path",
+          rebase_path(_filter_output_jar, root_build_dir),
+          "--excluded-classes=$_jar_excluded_patterns",
+        ]
+        if (_strip_resource_classes) {
+          args += [ "--strip-resource-classes-for=@FileArg($_rebased_build_config:javac:resource_packages)" ]
+        }
+      }
+
+      _deps = []
+      _deps = [ ":$_filter_target" ]
+      _previous_output_jar = _filter_output_jar
     }
 
     _output_jar_target = "${target_name}__copy"
