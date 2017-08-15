@@ -61,7 +61,7 @@ source_set("unittests") {
     "entry_unittest.cc",
   ]
   data = [
-    "//services/catalog/data/",
+    "//services/catalog/test_data/",
   ]
   deps = [
     ":lib",
