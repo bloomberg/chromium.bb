@@ -115,7 +115,7 @@ def _StripBinary(dry_run, bin_path):
   path to the stripped copy."""
   strip_path = tempfile.mktemp()
   _RunAndCheck(dry_run, ['/usr/bin/strip', bin_path, '-o', strip_path])
-  if not os.path.exists(strip_path):
+  if not dry_run and not os.path.exists(strip_path):
     raise Exception('strip did not create output file')
   return strip_path
 
