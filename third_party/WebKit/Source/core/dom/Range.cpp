@@ -1633,17 +1633,16 @@ void Range::GetBorderAndTextQuads(Vector<FloatQuad>& quads) const {
   for (Node* node = FirstNode(); node != stop_node;
        node = NodeTraversal::Next(*node)) {
     if (node->IsElementNode()) {
-      // TODO(xiaochengh): Apply early continue style to reduce indentation.
-      if (selected_elements.Contains(node) &&
-          !selected_elements.Contains(node->parentNode())) {
-        if (LayoutObject* layout_object = ToElement(node)->GetLayoutObject()) {
-          Vector<FloatQuad> element_quads;
-          layout_object->AbsoluteQuads(element_quads);
-          owner_document_->AdjustFloatQuadsForScrollAndAbsoluteZoom(
-              element_quads, *layout_object);
+      if (!selected_elements.Contains(node) ||
+          selected_elements.Contains(node->parentNode()))
+        continue;
+      if (LayoutObject* layout_object = ToElement(node)->GetLayoutObject()) {
+        Vector<FloatQuad> element_quads;
+        layout_object->AbsoluteQuads(element_quads);
+        owner_document_->AdjustFloatQuadsForScrollAndAbsoluteZoom(
+            element_quads, *layout_object);
 
-          quads.AppendVector(element_quads);
-        }
+        quads.AppendVector(element_quads);
       }
     } else if (node->IsTextNode()) {
       if (LayoutText* layout_text = ToText(node)->GetLayoutObject()) {
