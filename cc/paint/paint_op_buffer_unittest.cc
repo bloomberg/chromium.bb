@@ -32,6 +32,14 @@ namespace {
 // unit test.  This can also be used for deserialized op size safely in this
 // unit test suite as generally deserialized ops are smaller.
 static constexpr size_t kBufferBytesPerOp = 1000 + sizeof(LargestPaintOp);
+
+template <typename T>
+void ValidateOps(PaintOpBuffer* buffer) {
+  // Make sure all test data is valid before serializing it.
+  for (auto* op : PaintOpBuffer::Iterator(buffer))
+    EXPECT_TRUE(static_cast<T*>(op)->IsValid());
+}
+
 }  // namespace
 
 class PaintOpSerializationTestUtils {
@@ -1616,6 +1624,7 @@ void PushAnnotateOps(PaintOpBuffer* buffer) {
                            test_rects[1], nullptr);
   buffer->push<AnnotateOp>(PaintCanvas::AnnotationType::NAMED_DESTINATION,
                            test_rects[2], SkData::MakeEmpty());
+  ValidateOps<AnnotateOp>(buffer);
 }
 
 void PushClipDeviceRectOps(PaintOpBuffer* buffer) {
@@ -1623,6 +1632,7 @@ void PushClipDeviceRectOps(PaintOpBuffer* buffer) {
     SkClipOp op = i % 3 ? SkClipOp::kDifference : SkClipOp::kIntersect;
     buffer->push<ClipDeviceRectOp>(test_irects[i - 1], test_irects[0], op);
   }
+  ValidateOps<ClipDeviceRectOp>(buffer);
 }
 
 void PushClipPathOps(PaintOpBuffer* buffer) {
@@ -1630,6 +1640,7 @@ void PushClipPathOps(PaintOpBuffer* buffer) {
     SkClipOp op = i % 3 ? SkClipOp::kDifference : SkClipOp::kIntersect;
     buffer->push<ClipPathOp>(test_paths[i], op, !!(i % 2));
   }
+  ValidateOps<ClipPathOp>(buffer);
 }
 
 void PushClipRectOps(PaintOpBuffer* buffer) {
@@ -1638,6 +1649,7 @@ void PushClipRectOps(PaintOpBuffer* buffer) {
     bool antialias = !!(i % 3);
     buffer->push<ClipRectOp>(test_rects[i], op, antialias);
   }
+  ValidateOps<ClipRectOp>(buffer);
 }
 
 void PushClipRRectOps(PaintOpBuffer* buffer) {
@@ -1646,11 +1658,13 @@ void PushClipRRectOps(PaintOpBuffer* buffer) {
     bool antialias = !!(i % 3);
     buffer->push<ClipRRectOp>(test_rrects[i], op, antialias);
   }
+  ValidateOps<ClipRRectOp>(buffer);
 }
 
 void PushConcatOps(PaintOpBuffer* buffer) {
   for (size_t i = 0; i < test_matrices.size(); ++i)
     buffer->push<ConcatOp>(test_matrices[i]);
+  ValidateOps<ConcatOp>(buffer);
 }
 
 void PushDrawArcOps(PaintOpBuffer* buffer) {
@@ -1661,12 +1675,14 @@ void PushDrawArcOps(PaintOpBuffer* buffer) {
     buffer->push<DrawArcOp>(test_rects[i], test_floats[i], test_floats[i + 1],
                             use_center, test_flags[i]);
   }
+  ValidateOps<DrawArcOp>(buffer);
 }
 
 void PushDrawColorOps(PaintOpBuffer* buffer) {
   for (size_t i = 0; i < test_colors.size(); ++i) {
     buffer->push<DrawColorOp>(test_colors[i], static_cast<SkBlendMode>(i));
   }
+  ValidateOps<DrawColorOp>(buffer);
 }
 
 void PushDrawDRRectOps(PaintOpBuffer* buffer) {
@@ -1675,6 +1691,7 @@ void PushDrawDRRectOps(PaintOpBuffer* buffer) {
     buffer->push<DrawDRRectOp>(test_rrects[i], test_rrects[i + 1],
                                test_flags[i]);
   }
+  ValidateOps<DrawDRRectOp>(buffer);
 }
 
 void PushDrawImageOps(PaintOpBuffer* buffer) {
@@ -1689,6 +1706,7 @@ void PushDrawImageOps(PaintOpBuffer* buffer) {
   // TODO(enne): maybe all these optional ops should not be optional.
   buffer->push<DrawImageOp>(test_images[0], test_floats[0], test_floats[1],
                             nullptr);
+  ValidateOps<DrawImageOp>(buffer);
 }
 
 void PushDrawImageRectOps(PaintOpBuffer* buffer) {
@@ -1707,12 +1725,14 @@ void PushDrawImageRectOps(PaintOpBuffer* buffer) {
   buffer->push<DrawImageRectOp>(test_images[0], test_rects[0], test_rects[1],
                                 nullptr,
                                 PaintCanvas::kStrict_SrcRectConstraint);
+  ValidateOps<DrawImageRectOp>(buffer);
 }
 
 void PushDrawIRectOps(PaintOpBuffer* buffer) {
   size_t len = std::min(test_irects.size(), test_flags.size());
   for (size_t i = 0; i < len; ++i)
     buffer->push<DrawIRectOp>(test_irects[i], test_flags[i]);
+  ValidateOps<DrawIRectOp>(buffer);
 }
 
 void PushDrawLineOps(PaintOpBuffer* buffer) {
@@ -1722,30 +1742,35 @@ void PushDrawLineOps(PaintOpBuffer* buffer) {
                              test_floats[i + 2], test_floats[i + 3],
                              test_flags[i]);
   }
+  ValidateOps<DrawLineOp>(buffer);
 }
 
 void PushDrawOvalOps(PaintOpBuffer* buffer) {
   size_t len = std::min(test_paths.size(), test_flags.size());
   for (size_t i = 0; i < len; ++i)
     buffer->push<DrawOvalOp>(test_rects[i], test_flags[i]);
+  ValidateOps<DrawOvalOp>(buffer);
 }
 
 void PushDrawPathOps(PaintOpBuffer* buffer) {
   size_t len = std::min(test_paths.size(), test_flags.size());
   for (size_t i = 0; i < len; ++i)
     buffer->push<DrawPathOp>(test_paths[i], test_flags[i]);
+  ValidateOps<DrawPathOp>(buffer);
 }
 
 void PushDrawRectOps(PaintOpBuffer* buffer) {
   size_t len = std::min(test_rects.size(), test_flags.size());
   for (size_t i = 0; i < len; ++i)
     buffer->push<DrawRectOp>(test_rects[i], test_flags[i]);
+  ValidateOps<DrawRectOp>(buffer);
 }
 
 void PushDrawRRectOps(PaintOpBuffer* buffer) {
   size_t len = std::min(test_rrects.size(), test_flags.size());
   for (size_t i = 0; i < len; ++i)
     buffer->push<DrawRRectOp>(test_rrects[i], test_flags[i]);
+  ValidateOps<DrawRRectOp>(buffer);
 }
 
 void PushDrawTextBlobOps(PaintOpBuffer* buffer) {
@@ -1755,6 +1780,7 @@ void PushDrawTextBlobOps(PaintOpBuffer* buffer) {
     buffer->push<DrawTextBlobOp>(test_blobs[i], test_floats[i],
                                  test_floats[i + 1], test_flags[i]);
   }
+  ValidateOps<DrawTextBlobOp>(buffer);
 }
 
 void PushNoopOps(PaintOpBuffer* buffer) {
@@ -1762,6 +1788,7 @@ void PushNoopOps(PaintOpBuffer* buffer) {
   buffer->push<NoopOp>();
   buffer->push<NoopOp>();
   buffer->push<NoopOp>();
+  ValidateOps<NoopOp>(buffer);
 }
 
 void PushRestoreOps(PaintOpBuffer* buffer) {
@@ -1769,11 +1796,13 @@ void PushRestoreOps(PaintOpBuffer* buffer) {
   buffer->push<RestoreOp>();
   buffer->push<RestoreOp>();
   buffer->push<RestoreOp>();
+  ValidateOps<RestoreOp>(buffer);
 }
 
 void PushRotateOps(PaintOpBuffer* buffer) {
   for (size_t i = 0; i < test_floats.size(); ++i)
     buffer->push<RotateOp>(test_floats[i]);
+  ValidateOps<RotateOp>(buffer);
 }
 
 void PushSaveOps(PaintOpBuffer* buffer) {
@@ -1781,6 +1810,7 @@ void PushSaveOps(PaintOpBuffer* buffer) {
   buffer->push<SaveOp>();
   buffer->push<SaveOp>();
   buffer->push<SaveOp>();
+  ValidateOps<SaveOp>(buffer);
 }
 
 void PushSaveLayerOps(PaintOpBuffer* buffer) {
@@ -1792,6 +1822,7 @@ void PushSaveLayerOps(PaintOpBuffer* buffer) {
   buffer->push<SaveLayerOp>(nullptr, &test_flags[0]);
   buffer->push<SaveLayerOp>(&test_rects[0], nullptr);
   buffer->push<SaveLayerOp>(nullptr, nullptr);
+  ValidateOps<SaveLayerOp>(buffer);
 }
 
 void PushSaveLayerAlphaOps(PaintOpBuffer* buffer) {
@@ -1801,21 +1832,25 @@ void PushSaveLayerAlphaOps(PaintOpBuffer* buffer) {
 
   // Test optional args.
   buffer->push<SaveLayerAlphaOp>(nullptr, test_uint8s[0], false);
+  ValidateOps<SaveLayerAlphaOp>(buffer);
 }
 
 void PushScaleOps(PaintOpBuffer* buffer) {
   for (size_t i = 0; i < test_floats.size(); i += 2)
     buffer->push<ScaleOp>(test_floats[i], test_floats[i + 1]);
+  ValidateOps<ScaleOp>(buffer);
 }
 
 void PushSetMatrixOps(PaintOpBuffer* buffer) {
   for (size_t i = 0; i < test_matrices.size(); ++i)
     buffer->push<SetMatrixOp>(test_matrices[i]);
+  ValidateOps<SetMatrixOp>(buffer);
 }
 
 void PushTranslateOps(PaintOpBuffer* buffer) {
   for (size_t i = 0; i < test_floats.size(); i += 2)
     buffer->push<TranslateOp>(test_floats[i], test_floats[i + 1]);
+  ValidateOps<TranslateOp>(buffer);
 }
 
 void CompareFlags(const PaintFlags& original, const PaintFlags& written) {
@@ -2071,14 +2106,6 @@ void CompareTranslateOp(const TranslateOp* original,
 
 class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
  public:
-  PaintOpSerializationTest() {
-    // Verify test data.
-    for (size_t i = 0; i < test_rrects.size(); ++i)
-      EXPECT_TRUE(test_rrects[i].isValid());
-    for (size_t i = 0; i < test_rects.size(); ++i)
-      EXPECT_TRUE(test_rects[i].isFinite());
-  }
-
   PaintOpType GetParamType() const {
     return static_cast<PaintOpType>(GetParam());
   }
