@@ -1043,20 +1043,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         json_failing_test_results = host.filesystem.read_text_file('/tmp/json_failing_results.json')
         self.assertEqual(json.loads(json_failing_test_results), details.summarized_failing_results)
 
-    def test_buildbot_results_are_printed_on_early_exit(self):
-        stdout = StringIO.StringIO()
-        stderr = StringIO.StringIO()
-        res = run_webkit_tests.main(['--platform', 'test', '--exit-after-n-failures', '1',
-                                     '--order', 'natural',
-                                     'failures/unexpected/missing_text.html',
-                                     'failures/unexpected/missing_image.html'],
-                                    stdout, stderr)
-        self.assertEqual(res, exit_codes.EARLY_EXIT_STATUS)
-        self.assertEqual(stdout.getvalue(),
-                         ('\n'
-                          'Regressions: Unexpected missing results (1)\n'
-                          '  failures/unexpected/missing_image.html [ Missing ]\n\n'))
-
     def test_image_first_flag_initialized_from_file(self):
         host = MockHost()
         image_first_tests_filename = test.LAYOUT_TEST_DIR + '/ImageFirstTests'
