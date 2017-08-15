@@ -362,7 +362,6 @@ void ArcSessionImpl::OnInstanceStarted(bool instance_is_for_login_screen,
                                        base::ScopedFD socket_fd) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(state_, State::STARTING_INSTANCE);
-  DCHECK(socket_fd.is_valid());  // either a socket or a dummy fd.
 
   bool resumed = false;
   if (!container_instance_id_.empty()) {
@@ -422,6 +421,9 @@ void ArcSessionImpl::OnInstanceStarted(bool instance_is_for_login_screen,
     return;
   }
 
+  // For production, |socket_fd| passed from session_manager is either a valid
+  // socket or a valid file descriptor (/dev/null). For testing, |socket_fd|
+  // might be invalid.
   mojo::edk::PlatformHandle raw_handle(socket_fd.release());
   raw_handle.needs_connection = true;
 

@@ -236,12 +236,10 @@ void ArcSessionRunner::EmitLoginPromptVisibleCalled() {
   // safe place to start the container for login screen.
   DCHECK(!arc_session_);
   DCHECK_EQ(state_, State::STOPPED);
-
-  // TODO(yusukes): Once Chrome OS side is ready, uncomment the following:
-  // arc_session_ = factory_.Run();
-  // arc_session_->AddObserver(this);
-  // state_ = State::STARTING_FOR_LOGIN_SCREEN;
-  // arc_session_->StartForLoginScreen();
+  arc_session_ = factory_.Run();
+  arc_session_->AddObserver(this);
+  state_ = State::STARTING_FOR_LOGIN_SCREEN;
+  arc_session_->StartForLoginScreen();
 }
 
 }  // namespace arc
