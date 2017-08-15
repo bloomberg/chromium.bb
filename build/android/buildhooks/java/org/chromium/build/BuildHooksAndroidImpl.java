@@ -5,6 +5,6 @@
 package org.chromium.build;
 
 /**
- * Callback interface.
+ * Instantiatable version of {@link BuildHooksAndroid}, don't add anything to this class!
  */
-public interface Callback<T> { void run(T arg); }
+public class BuildHooksAndroidImpl extends BuildHooksAndroid {}

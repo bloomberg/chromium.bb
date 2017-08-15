@@ -1268,7 +1268,7 @@ if (enable_java_templates) {
       _deps = [ ":$_desugar_target" ]
       _previous_output_jar = _desugar_output_jar
     }
-    
+
     if (_filter_jar) {
       _filter_target = "${target_name}__filter"
       _filter_input_jar = _previous_output_jar
@@ -2456,11 +2456,15 @@ if (enable_java_templates) {
 
     _enable_build_hooks =
         _supports_android &&
-        (!defined(invoker.no_build_hooks) ||
-         (defined(invoker.no_build_hooks) && !invoker.no_build_hooks))
-
+        (!defined(invoker.no_build_hooks) || !invoker.no_build_hooks)
     if (_enable_build_hooks) {
-      _accumulated_deps += [ "//build/android:build_hooks_java" ]
+      _accumulated_deps += [ "//build/android/buildhooks:build_hooks_java" ]
+    }
+
+    _enable_build_hooks_android = _enable_build_hooks && _requires_android
+    if (_enable_build_hooks_android) {
+      _accumulated_deps +=
+          [ "//build/android/buildhooks:build_hooks_android_java" ]
     }
 
     if (defined(invoker.run_findbugs_override)) {
@@ -2545,7 +2549,12 @@ if (enable_java_templates) {
         if (defined(invoker.deps)) {
           possible_config_deps = invoker.deps
           if (_enable_build_hooks) {
-            possible_config_deps += [ "//build/android:build_hooks_java" ]
+            possible_config_deps +=
+                [ "//build/android/buildhooks:build_hooks_java" ]
+          }
+          if (_enable_build_hooks_android) {
+            possible_config_deps +=
+                [ "//build/android/buildhooks:build_hooks_android_java" ]
           }
         }
         supports_android = _supports_android
