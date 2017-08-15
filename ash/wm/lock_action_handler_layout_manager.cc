@@ -8,7 +8,6 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/wm/lock_window_state.h"
@@ -22,12 +21,9 @@ namespace ash {
 LockActionHandlerLayoutManager::LockActionHandlerLayoutManager(
     aura::Window* window,
     Shelf* shelf)
-    : LockLayoutManager(window),
-      shelf_observer_(this),
-      tray_action_observer_(this) {
+    : LockLayoutManager(window, shelf), tray_action_observer_(this) {
   TrayAction* tray_action = Shell::Get()->tray_action();
   tray_action_observer_.Add(tray_action);
-  shelf_observer_.Add(shelf);
 }
 
 LockActionHandlerLayoutManager::~LockActionHandlerLayoutManager() = default;
@@ -49,16 +45,6 @@ void LockActionHandlerLayoutManager::OnChildWindowVisibilityChanged(
   // Windows should be shown only in active state.
   if (visible && !Shell::Get()->tray_action()->IsLockScreenNoteActive())
     child->Hide();
-}
-
-void LockActionHandlerLayoutManager::WillChangeVisibilityState(
-    ShelfVisibilityState visibility) {
-  // Unlike LockLayoutManager, LockActionHandlerLayoutManager windows' bounds
-  // depend on the user work area bounds defined by shelf layout (see
-  // ScreenUtil::GetDisplayWorkAreaBoundsInParentForLockScreen) - when shelf
-  // bounds change, the windows in this layout manager should be updated, too.
-  const wm::WMEvent event(wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
-  AdjustWindowsForWorkAreaChange(&event);
 }
 
 void LockActionHandlerLayoutManager::OnLockScreenNoteStateChanged(

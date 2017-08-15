@@ -221,6 +221,11 @@ ShelfVisibilityState Shelf::GetVisibilityState() const {
                                : SHELF_HIDDEN;
 }
 
+int Shelf::GetAccessibilityPanelHeight() const {
+  return shelf_layout_manager_ ? shelf_layout_manager_->chromevox_panel_height()
+                               : 0;
+}
+
 gfx::Rect Shelf::GetIdealBounds() {
   return shelf_layout_manager_->GetIdealBounds();
 }

@@ -114,6 +114,8 @@ class ASH_EXPORT ShelfLayoutManager
   }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
 
+  int chromevox_panel_height() const { return chromevox_panel_height_; }
+
   ShelfWidget* shelf_widget() { return shelf_widget_; }
 
   // Sets whether any windows overlap the shelf. If a window overlaps the shelf
