@@ -117,7 +117,6 @@ bool ExtraDataSource::Initialize(BufferSource* source) {
 }
 
 base::Optional<ConstBufferView> ExtraDataSource::GetNext(offset_t size) {
-  DCHECK_GT(size, offset_t(0));
   ConstBufferView buffer;
   if (!extra_data_.GetRegion(size, &buffer))
     return base::nullopt;
