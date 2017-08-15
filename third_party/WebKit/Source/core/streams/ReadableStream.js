@@ -98,6 +98,12 @@
   const errCannotPipeLockedStream = 'Cannot pipe a locked stream';
   const errCannotPipeToALockedStream = 'Cannot pipe to a locked stream';
   const errDestinationStreamClosed = 'Destination stream closed';
+  const errPipeThroughUndefinedWritable =
+        'Failed to execute \'pipeThrough\' on \'ReadableStream\': parameter ' +
+        '1\'s \'writable\' property is undefined.';
+  const errPipeThroughUndefinedReadable =
+        'Failed to execute \'pipeThrough\' on \'ReadableStream\': parameter ' +
+        '1\'s \'readable\' property is undefined.';
 
   class ReadableStream {
     constructor() {
@@ -178,6 +184,12 @@
     }
 
     pipeThrough({writable, readable}, options) {
+      if (writable === undefined) {
+        throw new TypeError(errPipeThroughUndefinedWritable);
+      }
+      if (readable === undefined) {
+        throw new TypeError(errPipeThroughUndefinedReadable);
+      }
       const promise = this.pipeTo(writable, options);
       if (v8.isPromise(promise)) {
         markPromiseAsHandled(promise);
