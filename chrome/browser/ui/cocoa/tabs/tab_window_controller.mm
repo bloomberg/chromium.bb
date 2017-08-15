@@ -247,7 +247,7 @@
     // view is set. It needs to be positioned below the avatar button to ensure
     // that its overlay will not overlap it.
     [[window contentView] addSubview:originalContentView_
-                          positioned:NSWindowBelow
+                          positioned:NSWindowAbove
                           relativeTo:nil];
     originalContentView_.frame = [[window contentView] bounds];
     [[window contentView] addSubview:[self tabStripView]
