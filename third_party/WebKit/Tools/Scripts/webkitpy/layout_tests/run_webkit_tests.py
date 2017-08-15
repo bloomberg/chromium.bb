@@ -38,7 +38,6 @@ from webkitpy.common.host import Host
 from webkitpy.layout_tests.controllers.manager import Manager
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port.factory import configuration_options, platform_options
-from webkitpy.layout_tests.views import buildbot_results
 from webkitpy.layout_tests.views import printing
 
 _log = logging.getLogger(__name__)
@@ -591,14 +590,6 @@ def run(port, options, args, logging_stream, stdout):
     try:
         run_details = _run_tests(port, options, args, printer)
         printer.flush()
-
-        if (not options.dry_run and
-                (run_details.exit_code not in exit_codes.ERROR_CODES or
-                 run_details.exit_code == exit_codes.EARLY_EXIT_STATUS) and
-                not run_details.initial_results.keyboard_interrupted):
-            bot_printer = buildbot_results.BuildBotPrinter(stdout, options.debug_rwt_logging)
-            bot_printer.print_results(run_details)
-            stdout.flush()
 
         _log.debug('')
         _log.debug('Testing completed. Exit status: %d', run_details.exit_code)
