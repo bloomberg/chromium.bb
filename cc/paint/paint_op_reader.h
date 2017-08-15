@@ -18,8 +18,8 @@ class PaintShader;
 // read functions.
 class CC_PAINT_EXPORT PaintOpReader {
  public:
-  PaintOpReader(const void* memory, size_t size)
-      : memory_(static_cast<const char*>(memory) +
+  PaintOpReader(const volatile void* memory, size_t size)
+      : memory_(static_cast<const volatile char*>(memory) +
                 PaintOpWriter::HeaderBytes()),
         remaining_bytes_(size - PaintOpWriter::HeaderBytes()) {
     if (size < PaintOpWriter::HeaderBytes())
@@ -77,7 +77,7 @@ class CC_PAINT_EXPORT PaintOpReader {
   // is unsufficient bytes remaining to do this padding.
   bool AlignMemory(size_t alignment);
 
-  const char* memory_ = nullptr;
+  const volatile char* memory_ = nullptr;
   size_t remaining_bytes_ = 0u;
   bool valid_ = true;
 };

@@ -49,10 +49,10 @@ class CC_PAINT_EXPORT ThreadsafePath : public SkPath {
 // See PaintOp::Serialize/Deserialize for comments.  Derived Serialize types
 // don't write the 4 byte type/skip header because they don't know how much
 // data they will need to write.  PaintOp::Serialize itself must update it.
-#define HAS_SERIALIZATION_FUNCTIONS()                                   \
-  static size_t Serialize(const PaintOp* op, void* memory, size_t size, \
-                          const SerializeOptions& options);             \
-  static PaintOp* Deserialize(const void* input, size_t input_size,     \
+#define HAS_SERIALIZATION_FUNCTIONS()                                        \
+  static size_t Serialize(const PaintOp* op, void* memory, size_t size,      \
+                          const SerializeOptions& options);                  \
+  static PaintOp* Deserialize(const volatile void* input, size_t input_size, \
                               void* output, size_t output_size);
 
 enum class PaintOpType : uint8_t {
@@ -128,7 +128,7 @@ class CC_PAINT_EXPORT PaintOp {
   // if valid.  nullptr is returned if the deserialization fails.
   // |output_size| must be at least LargestPaintOp + serialized->skip,
   // to fit all ops.  The caller is responsible for destroying these ops.
-  static PaintOp* Deserialize(const void* input,
+  static PaintOp* Deserialize(const volatile void* input,
                               size_t input_size,
                               void* output,
                               size_t output_size);
