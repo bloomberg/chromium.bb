@@ -1005,8 +1005,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accValue(VARIANT var_id, BSTR* value) {
   //
   // Links (Use AX_ATTR_URL)
   //
-  if (target->GetData().role == ui::AX_ROLE_LINK ||
-      target->GetData().role == ui::AX_ROLE_IMAGE_MAP_LINK) {
+  if (target->GetData().role == ui::AX_ROLE_LINK) {
     result = target->GetString16Attribute(ui::AX_ATTR_URL);
     *value = SysAllocString(result.c_str());
     DCHECK(*value);
@@ -2378,9 +2377,6 @@ int AXPlatformNodeWin::MSAARole() {
     case ui::AX_ROLE_BANNER:
       return ROLE_SYSTEM_GROUPING;
 
-    case ui::AX_ROLE_BUSY_INDICATOR:
-      return ROLE_SYSTEM_ANIMATION;
-
     case ui::AX_ROLE_BUTTON:
       return ROLE_SYSTEM_PUSHBUTTON;
 
@@ -2475,9 +2471,6 @@ int AXPlatformNodeWin::MSAARole() {
     case ui::AX_ROLE_IMAGE:
       return ROLE_SYSTEM_GRAPHIC;
 
-    case ui::AX_ROLE_IMAGE_MAP_LINK:
-      return ROLE_SYSTEM_LINK;
-
     case ui::AX_ROLE_INPUT_TIME:
       return ROLE_SYSTEM_GROUPING;
 
@@ -2543,9 +2536,6 @@ int AXPlatformNodeWin::MSAARole() {
     case ui::AX_ROLE_NOTE:
       return ROLE_SYSTEM_GROUPING;
 
-    case ui::AX_ROLE_OUTLINE:
-      return ROLE_SYSTEM_OUTLINE;
-
     case ui::AX_ROLE_POP_UP_BUTTON: {
       std::string html_tag = GetData().GetStringAttribute(ui::AX_ATTR_HTML_TAG);
       if (html_tag == "select")
@@ -2582,12 +2572,6 @@ int AXPlatformNodeWin::MSAARole() {
 
     case ui::AX_ROLE_RUBY:
       return ROLE_SYSTEM_TEXT;
-
-    case ui::AX_ROLE_RULER:
-      return ROLE_SYSTEM_CLIENT;
-
-    case ui::AX_ROLE_SCROLL_AREA:
-      return ROLE_SYSTEM_CLIENT;
 
     case ui::AX_ROLE_SCROLL_BAR:
       return ROLE_SYSTEM_SCROLLBAR;
@@ -2694,10 +2678,8 @@ int AXPlatformNodeWin::MSAARole() {
     case AX_ROLE_PANE:
     case AX_ROLE_PARAGRAPH:
     case AX_ROLE_PRESENTATIONAL:
-    case AX_ROLE_SEAMLESS_WEB_AREA:
     case AX_ROLE_SLIDER_THUMB:
     case AX_ROLE_SWITCH:
-    case AX_ROLE_TAB_GROUP:
     case AX_ROLE_TITLE_BAR:
     case AX_ROLE_UNKNOWN:
     case AX_ROLE_WEB_VIEW:
@@ -2813,9 +2795,6 @@ int32_t AXPlatformNodeWin::ComputeIA2State() {
       ia2_state &= ~(IA2_STATE_EDITABLE);
       break;
     case ui::AX_ROLE_MENU_LIST_OPTION:
-      ia2_state &= ~(IA2_STATE_EDITABLE);
-      break;
-    case ui::AX_ROLE_SCROLL_AREA:
       ia2_state &= ~(IA2_STATE_EDITABLE);
       break;
     case ui::AX_ROLE_TEXT_FIELD:
@@ -2942,12 +2921,6 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
     } break;
     case ui::AX_ROLE_RUBY:
       ia2_role = IA2_ROLE_TEXT_FRAME;
-      break;
-    case ui::AX_ROLE_RULER:
-      ia2_role = IA2_ROLE_RULER;
-      break;
-    case ui::AX_ROLE_SCROLL_AREA:
-      ia2_role = IA2_ROLE_SCROLL_PANE;
       break;
     case ui::AX_ROLE_SEARCH:
       ia2_role = IA2_ROLE_SECTION;
@@ -3185,7 +3158,6 @@ bool AXPlatformNodeWin::ShouldNodeHaveReadonlyStateByDefault(
     const AXNodeData& data) const {
   switch (data.role) {
     case ui::AX_ROLE_ARTICLE:
-    case ui::AX_ROLE_BUSY_INDICATOR:
     case ui::AX_ROLE_DEFINITION:
     case ui::AX_ROLE_DESCRIPTION_LIST:
     case ui::AX_ROLE_DESCRIPTION_LIST_TERM:
@@ -3193,13 +3165,10 @@ bool AXPlatformNodeWin::ShouldNodeHaveReadonlyStateByDefault(
     case ui::AX_ROLE_IFRAME:
     case ui::AX_ROLE_IMAGE:
     case ui::AX_ROLE_IMAGE_MAP:
-    case ui::AX_ROLE_IMAGE_MAP_LINK:
     case ui::AX_ROLE_LIST:
     case ui::AX_ROLE_LIST_ITEM:
     case ui::AX_ROLE_PROGRESS_INDICATOR:
     case ui::AX_ROLE_ROOT_WEB_AREA:
-    case ui::AX_ROLE_RULER:
-    case ui::AX_ROLE_SCROLL_AREA:
     case ui::AX_ROLE_TERM:
     case ui::AX_ROLE_TIMER:
     case ui::AX_ROLE_TOOLBAR:
@@ -3372,10 +3341,8 @@ int AXPlatformNodeWin::MSAAState() {
   }
 
   // Handle STATE_SYSTEM_LINKED
-  if (GetData().role == ui::AX_ROLE_IMAGE_MAP_LINK ||
-      GetData().role == ui::AX_ROLE_LINK) {
+  if (GetData().role == ui::AX_ROLE_LINK)
     msaa_state |= STATE_SYSTEM_LINKED;
-  }
 
   return msaa_state;
 }

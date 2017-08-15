@@ -12,7 +12,6 @@ bool IsRoleClickable(AXRole role) {
     case AX_ROLE_CHECK_BOX:
     case AX_ROLE_COLOR_WELL:
     case AX_ROLE_DISCLOSURE_TRIANGLE:
-    case AX_ROLE_IMAGE_MAP_LINK:
     case AX_ROLE_LINK:
     case AX_ROLE_LIST_BOX_OPTION:
     case AX_ROLE_MENU_BUTTON:
