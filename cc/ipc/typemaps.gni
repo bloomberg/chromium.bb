@@ -13,5 +13,4 @@ typemaps = [
   "//cc/ipc/shared_quad_state.typemap",
   "//cc/ipc/surface_id.typemap",
   "//cc/ipc/texture_mailbox.typemap",
-  "//cc/ipc/transferable_resource.typemap",
 ]

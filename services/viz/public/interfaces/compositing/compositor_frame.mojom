@@ -4,13 +4,13 @@
 
 module viz.mojom;
 
-import "cc/ipc/transferable_resource.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame_metadata.mojom";
 import "services/viz/public/interfaces/compositing/render_pass.mojom";
+import "services/viz/public/interfaces/compositing/transferable_resource.mojom";
 
 // See src/cc/output/compositor_frame.h.
 struct CompositorFrame {
   CompositorFrameMetadata metadata;
-  array<cc.mojom.TransferableResource> resources;
+  array<TransferableResource> resources;
   array<RenderPass> passes;
 };

@@ -2,25 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_IPC_TRANSFERABLE_RESOURCE_STRUCT_TRAITS_H_
-#define CC_IPC_TRANSFERABLE_RESOURCE_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_TRANSFERABLE_RESOURCE_STRUCT_TRAITS_H_
+#define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_TRANSFERABLE_RESOURCE_STRUCT_TRAITS_H_
 
-#include "cc/ipc/transferable_resource.mojom-shared.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "services/viz/public/interfaces/compositing/transferable_resource.mojom-shared.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::TransferableResourceDataView,
+struct StructTraits<viz::mojom::TransferableResourceDataView,
                     viz::TransferableResource> {
   static uint32_t id(const viz::TransferableResource& resource) {
     return resource.id;
   }
 
-  static cc::mojom::ResourceFormat format(
+  static viz::mojom::ResourceFormat format(
       const viz::TransferableResource& resource) {
-    return static_cast<cc::mojom::ResourceFormat>(resource.format);
+    return static_cast<viz::mojom::ResourceFormat>(resource.format);
   }
 
   static gfx::mojom::BufferFormat buffer_format(
@@ -85,10 +86,10 @@ struct StructTraits<cc::mojom::TransferableResourceDataView,
     return resource.color_space;
   }
 
-  static bool Read(cc::mojom::TransferableResourceDataView data,
+  static bool Read(viz::mojom::TransferableResourceDataView data,
                    viz::TransferableResource* out);
 };
 
 }  // namespace mojo
 
-#endif  // CC_IPC_TRANSFERABLE_RESOURCE_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_TRANSFERABLE_RESOURCE_STRUCT_TRAITS_H_
