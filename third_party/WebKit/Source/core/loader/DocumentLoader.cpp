@@ -76,7 +76,6 @@
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/mhtml/ArchiveResource.h"
-#include "platform/mhtml/MHTMLArchive.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/NetworkUtils.h"
@@ -155,6 +154,7 @@ DEFINE_TRACE(DocumentLoader) {
   visitor->Trace(fetcher_);
   visitor->Trace(main_resource_);
   visitor->Trace(history_item_);
+  visitor->Trace(writer_);
   visitor->Trace(subresource_filter_);
   visitor->Trace(document_load_timing_);
   visitor->Trace(application_cache_host_);
@@ -443,8 +443,9 @@ void DocumentLoader::FinishedLoading(double finish_time) {
   GetTiming().SetResponseEnd(response_end_time);
   if (!MaybeCreateArchive()) {
     // If this is an empty document, it will not have actually been created yet.
-    // Force a commit so that the Document actually gets created.
-    if (state_ == kProvisional)
+    // Commit dummy data so that DocumentWriter::begin() gets called and creates
+    // the Document.
+    if (!writer_)
       CommitData(0, 0);
   }
 
@@ -452,7 +453,7 @@ void DocumentLoader::FinishedLoading(double finish_time) {
     return;
 
   application_cache_host_->FinishedLoadingMainResource();
-  frame_->GetDocument()->Parser()->Finish();
+  EndWriting();
   ClearMainResourceHandle();
 }
 
@@ -635,9 +636,9 @@ void DocumentLoader::ResponseReceived(
     frame_->Owner()->RenderFallbackContent();
 }
 
-void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
-                                      const KURL& overriding_url) {
-  if (state_ != kProvisional)
+void DocumentLoader::EnsureWriter(const AtomicString& mime_type,
+                                  const KURL& overriding_url) {
+  if (writer_)
     return;
 
   // Set history state before commitProvisionalLoad() so that we still have
@@ -679,14 +680,14 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
   InstallNewDocument(Url(), owner_document, should_reuse_default_view,
                      mime_type, encoding, InstallNewDocumentReason::kNavigation,
                      parsing_policy, overriding_url);
-  frame_->GetDocument()->Parser()->SetDocumentWasLoadedAsPartOfNavigation();
+  writer_->SetDocumentWasLoadedAsPartOfNavigation();
   frame_->GetDocument()->MaybeHandleHttpRefresh(
       response_.HttpHeaderField(HTTPNames::Refresh),
       Document::kHttpRefreshFromHeader);
 }
 
 void DocumentLoader::CommitData(const char* bytes, size_t length) {
-  CommitNavigation(response_.MimeType());
+  EnsureWriter(response_.MimeType());
   DCHECK_GE(state_, kCommitted);
 
   // This can happen if document.close() is called by an event handler while
@@ -696,7 +697,8 @@ void DocumentLoader::CommitData(const char* bytes, size_t length) {
 
   if (length)
     data_received_ = true;
-  frame_->GetDocument()->Parser()->AppendBytes(bytes, length);
+
+  writer_->AddData(bytes, length);
 }
 
 void DocumentLoader::DataReceived(Resource* resource,
@@ -801,7 +803,7 @@ bool DocumentLoader::MaybeCreateArchive() {
     return false;
   // The origin is the MHTML file, we need to set the base URL to the document
   // encoded in the MHTML so relative URLs are resolved properly.
-  CommitNavigation(main_resource->MimeType(), main_resource->Url());
+  EnsureWriter(main_resource->MimeType(), main_resource->Url());
   if (!frame_)
     return false;
 
@@ -821,6 +823,10 @@ bool DocumentLoader::MaybeCreateArchive() {
         return true;
       });
   return true;
+}
+
+const AtomicString& DocumentLoader::ResponseMIMEType() const {
+  return response_.MimeType();
 }
 
 const KURL& DocumentLoader::UnreachableURL() const {
@@ -887,7 +893,13 @@ void DocumentLoader::StartLoading() {
   main_resource_->AddClient(this);
 }
 
-void DocumentLoader::DidInstallNewDocument(Document* document) {
+void DocumentLoader::EndWriting() {
+  writer_->end();
+  writer_.Clear();
+}
+
+void DocumentLoader::DidInstallNewDocument(Document* document,
+                                           InstallNewDocumentReason reason) {
   document->SetReadyState(Document::kLoading);
   if (content_security_policy_) {
     document->InitContentSecurityPolicy(content_security_policy_.Release());
@@ -1111,14 +1123,15 @@ void DocumentLoader::InstallNewDocument(
   frame_->GetPage()->GetChromeClient().InstallSupplements(*frame_);
   if (!overriding_url.IsEmpty())
     document->SetBaseURLOverride(overriding_url);
-  DidInstallNewDocument(document);
+  DidInstallNewDocument(document, reason);
 
-  // This must be called before the document is opened, otherwise HTML parser
+  // This must be called before DocumentWriter is created, otherwise HTML parser
   // will use stale values from HTMLParserOption.
   if (reason == InstallNewDocumentReason::kNavigation)
     DidCommitNavigation();
 
-  document->OpenForNavigation(parsing_policy, mime_type, encoding);
+  writer_ =
+      DocumentWriter::Create(document, parsing_policy, mime_type, encoding);
 
   // FeaturePolicy is reset in the browser process on commit, so this needs to
   // be initialized and replicated to the browser process after commit messages
@@ -1136,8 +1149,8 @@ void DocumentLoader::InstallNewDocument(
 }
 
 const AtomicString& DocumentLoader::MimeType() const {
-  if (fetcher_->Archive())
-    return fetcher_->Archive()->MainResource()->MimeType();
+  if (writer_)
+    return writer_->MimeType();
   return response_.MimeType();
 }
 
@@ -1149,18 +1162,12 @@ void DocumentLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
     bool should_reuse_default_view,
     const String& source) {
   InstallNewDocument(url, owner_document, should_reuse_default_view, MimeType(),
-                     response_.TextEncodingName(),
+                     writer_ ? writer_->Encoding() : g_empty_atom,
                      InstallNewDocumentReason::kJavascriptURL,
                      kForceSynchronousParsing, NullURL());
-
-  if (!source.IsNull()) {
-    frame_->GetDocument()->SetCompatibilityMode(Document::kNoQuirksMode);
-    frame_->GetDocument()->Parser()->Append(source);
-  }
-
-  // Append() might lead to a detach.
-  if (frame_->GetDocument()->Parser())
-    frame_->GetDocument()->Parser()->Finish();
+  if (!source.IsNull())
+    writer_->AppendReplacingData(source);
+  EndWriting();
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader);

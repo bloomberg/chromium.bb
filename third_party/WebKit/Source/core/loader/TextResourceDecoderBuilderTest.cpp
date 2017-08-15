@@ -17,8 +17,8 @@ static const WTF::TextEncoding DefaultEncodingForUrlAndContentType(
       DummyPageHolder::Create(IntSize(0, 0));
   Document& document = page_holder->GetDocument();
   document.SetURL(KURL(NullURL(), url));
-  return BuildTextResourceDecoderFor(&document, content_type, g_null_atom)
-      ->Encoding();
+  TextResourceDecoderBuilder decoder_builder(content_type, g_null_atom);
+  return decoder_builder.BuildFor(&document)->Encoding();
 }
 
 static const WTF::TextEncoding DefaultEncodingForURL(const char* url) {

@@ -579,9 +579,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void open(Document* entered_document, ExceptionState&);
   // This is used internally and does not handle exceptions.
   void open();
-  void OpenForNavigation(ParserSynchronizationPolicy,
-                         const AtomicString& mime_type,
-                         const AtomicString& encoding);
   DocumentParser* ImplicitOpen(ParserSynchronizationPolicy);
 
   // This is the DOM API document.close()
