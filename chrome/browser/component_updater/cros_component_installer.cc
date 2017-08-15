@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_installer_errors.h"
@@ -18,6 +20,8 @@
 #include "chromeos/dbus/image_loader_client.h"
 #endif  // defined(OS_CHROMEOS)
 
+// ConfigMap list-initialization expression for all downloadable
+// Chrome OS components.
 #define CONFIG_MAP_CONTENT                                                   \
   {{"epson-inkjet-printer-escpr",                                            \
     {{"env_version", "2.1"},                                                 \
@@ -37,6 +41,8 @@ using content::BrowserThread;
 namespace component_updater {
 
 #if defined(OS_CHROMEOS)
+using ConfigMap = std::map<std::string, std::map<std::string, std::string>>;
+
 void LogRegistrationResult(const std::string& name,
                            chromeos::DBusMethodCallStatus call_status,
                            bool result) {
@@ -208,6 +214,7 @@ void CrOSComponent::RegisterResult(
 static void RegisterComponent(ComponentUpdateService* cus,
                               const ComponentConfig& config,
                               const base::Closure& register_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::unique_ptr<ComponentInstallerTraits> traits(
       new CrOSComponentInstallerTraits(config));
   // |cus| will take ownership of |installer| during
@@ -248,6 +255,36 @@ void CrOSComponent::LoadComponent(
   } else {
     // A compatible component is intalled, load it directly.
     LoadComponentInternal(name, load_callback);
+  }
+}
+
+std::vector<ComponentConfig> CrOSComponent::GetInstalledComponents() {
+  std::vector<ComponentConfig> configs;
+  base::FilePath root;
+  if (!PathService::Get(DIR_COMPONENT_USER, &root))
+    return configs;
+
+  const ConfigMap components = CONFIG_MAP_CONTENT;
+  for (auto it : components) {
+    const std::string& name = it.first;
+    const std::map<std::string, std::string>& props = it.second;
+    base::FilePath component_path = root.Append(name);
+    if (base::PathExists(component_path)) {
+      ComponentConfig config(name, props.find("env_version")->second,
+                             props.find("sha2hashstr")->second);
+      configs.push_back(config);
+    }
+  }
+  return configs;
+}
+
+void CrOSComponent::RegisterComponents(
+    const std::vector<ComponentConfig>& configs) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  component_updater::ComponentUpdateService* updater =
+      g_browser_process->component_updater();
+  for (const auto& config : configs) {
+    RegisterComponent(updater, config, base::Closure());
   }
 }
 
