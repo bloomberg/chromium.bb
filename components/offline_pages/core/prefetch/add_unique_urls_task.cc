@@ -52,9 +52,9 @@ bool CreatePrefetchItemSync(sql::Connection* db,
   static const char kSql[] =
       "INSERT INTO prefetch_items"
       " (offline_id, requested_url, client_namespace, client_id, creation_time,"
-      " freshness_time)"
+      " freshness_time, title)"
       " VALUES"
-      " (?, ?, ?, ?, ?, ?)";
+      " (?, ?, ?, ?, ?, ?, ?)";
 
   int64_t now_db_time = ToDatabaseTime(base::Time::Now());
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -64,6 +64,7 @@ bool CreatePrefetchItemSync(sql::Connection* db,
   statement.BindString(3, prefetch_url.id);
   statement.BindInt64(4, now_db_time);
   statement.BindInt64(5, now_db_time);
+  statement.BindString16(6, prefetch_url.title);
 
   return statement.Run();
 }

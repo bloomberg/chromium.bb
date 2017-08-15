@@ -92,8 +92,9 @@ void PrefetchDispatcherTest::SetUp() {
   taco_->CreatePrefetchService();
 
   ASSERT_TRUE(test_urls_.empty());
-  test_urls_.push_back({"1", GURL("http://testurl.com/foo")});
-  test_urls_.push_back({"2", GURL("https://testurl.com/bar")});
+  test_urls_.push_back({"1", GURL("http://testurl.com/foo"), base::string16()});
+  test_urls_.push_back(
+      {"2", GURL("https://testurl.com/bar"), base::string16()});
 }
 
 void PrefetchDispatcherTest::TearDown() {
@@ -131,7 +132,8 @@ TEST_F(PrefetchDispatcherTest, DispatcherDoesNothingIfFeatureNotEnabled) {
   disabled_feature_list.InitAndDisableFeature(kPrefetchingOfflinePagesFeature);
 
   // Don't add a task for new prefetch URLs.
-  PrefetchURL prefetch_url("id", GURL("https://www.chromium.org"));
+  PrefetchURL prefetch_url("id", GURL("https://www.chromium.org"),
+                           base::string16());
   prefetch_dispatcher()->AddCandidatePrefetchURLs(
       kTestNamespace, std::vector<PrefetchURL>(1, prefetch_url));
   EXPECT_FALSE(dispatcher_task_queue()->HasRunningTask());

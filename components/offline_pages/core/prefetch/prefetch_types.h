@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/client_id.h"
 #include "url/gurl.h"
@@ -129,7 +130,10 @@ using PrefetchRequestFinishedCallback =
 
 // Holds information about a suggested URL to be prefetched.
 struct PrefetchURL {
-  PrefetchURL(const std::string& id, const GURL& url) : id(id), url(url) {}
+  PrefetchURL(const std::string& id,
+              const GURL& url,
+              const base::string16& title)
+      : id(id), url(url), title(title) {}
 
   // Client provided ID to allow the matching of provided URLs to the respective
   // work item in the prefetching system within that client's assigned
@@ -139,6 +143,9 @@ struct PrefetchURL {
 
   // This URL will be prefetched by the service.
   GURL url;
+
+  // The title of the page.
+  base::string16 title;
 };
 
 // Result of a completed download.
