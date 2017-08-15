@@ -177,7 +177,8 @@ AppListView::AppListView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
       display_observer_(this),
-      animation_observer_(new HideViewAnimationObserver()) {
+      animation_observer_(new HideViewAnimationObserver()),
+      app_list_animation_duration_ms_(kAppListAnimationDurationMs) {
   CHECK(delegate);
   delegate_->GetSpeechUI()->AddObserver(this);
 
@@ -988,7 +989,7 @@ void AppListView::StartAnimationForState(AppListState target_state) {
   std::unique_ptr<ui::LayerAnimationElement> bounds_animation_element =
       ui::LayerAnimationElement::CreateBoundsElement(
           target_bounds,
-          base::TimeDelta::FromMilliseconds(kAppListAnimationDurationMs));
+          base::TimeDelta::FromMilliseconds(app_list_animation_duration_ms_));
 
   bounds_animation_element->set_tween_type(gfx::Tween::EASE_OUT);
 

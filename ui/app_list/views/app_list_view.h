@@ -188,6 +188,11 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
 
   int work_area_bottom() const { return work_area_bottom_; }
 
+  void set_app_list_animation_duration_ms_for_testing(
+      int app_list_animation_duration_ms) {
+    app_list_animation_duration_ms_ = app_list_animation_duration_ms;
+  }
+
  private:
   // A widget observer that is responsible for keeping the AppListView state up
   // to date on closing.
@@ -320,6 +325,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
 
   // For UMA and testing. If non-null, triggered when the app list is painted.
   base::Closure next_paint_callback_;
+
+  // Animation duration in milliseconds.
+  int app_list_animation_duration_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };
