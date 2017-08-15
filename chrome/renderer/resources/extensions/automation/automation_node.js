@@ -284,7 +284,6 @@ var GetLineThrough = natives.GetLineThrough;
  */
 var GetCustomActions = natives.GetCustomActions;
 
-var lastError = require('lastError');
 var logging = requireNative('logging');
 var utils = require('utils');
 
