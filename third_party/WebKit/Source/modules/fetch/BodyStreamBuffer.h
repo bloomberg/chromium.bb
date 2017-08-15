@@ -83,6 +83,7 @@ class MODULES_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   Member<FetchDataLoader> loader_;
   bool stream_needs_more_ = false;
   bool made_from_readable_stream_;
+  bool in_process_data_ = false;
 };
 
 }  // namespace blink

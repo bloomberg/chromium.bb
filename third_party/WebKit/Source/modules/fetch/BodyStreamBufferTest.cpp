@@ -487,6 +487,35 @@ TEST_F(BodyStreamBufferTest, SourceShouldBeCanceledWhenCanceled) {
   EXPECT_TRUE(consumer->IsCancelled());
 }
 
+TEST_F(BodyStreamBufferTest, NestedPull) {
+  V8TestingScope scope;
+  ReplayingBytesConsumer* src =
+      new ReplayingBytesConsumer(&scope.GetDocument());
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello"));
+  src->Add(BytesConsumerCommand(BytesConsumerCommand::kError));
+  Persistent<BodyStreamBuffer> buffer =
+      new BodyStreamBuffer(scope.GetScriptState(), src);
+
+  auto result =
+      scope.GetScriptState()->GetContext()->Global()->CreateDataProperty(
+          scope.GetScriptState()->GetContext(),
+          V8String(scope.GetIsolate(), "stream"), buffer->Stream().V8Value());
+
+  ASSERT_TRUE(result.IsJust());
+  ASSERT_TRUE(result.FromJust());
+
+  ScriptValue stream = EvalWithPrintingError(scope.GetScriptState(),
+                                             "reader = stream.getReader();");
+  ASSERT_FALSE(stream.IsEmpty());
+
+  EvalWithPrintingError(scope.GetScriptState(), "reader.read();");
+  EvalWithPrintingError(scope.GetScriptState(), "reader.read();");
+
+  testing::RunPendingTasks();
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
+}
+
 }  // namespace
 
 }  // namespace blink
