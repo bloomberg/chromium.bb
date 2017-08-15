@@ -52,8 +52,10 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
     gfx::BufferUsage usages[] = {
-        gfx::BufferUsage::GPU_READ, gfx::BufferUsage::SCANOUT,
+        gfx::BufferUsage::GPU_READ,
+        gfx::BufferUsage::SCANOUT,
         gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VDA_WRITE,
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
     for (auto usage : usages) {
