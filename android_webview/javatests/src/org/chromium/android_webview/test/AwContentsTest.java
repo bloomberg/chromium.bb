@@ -635,7 +635,7 @@ public class AwContentsTest {
                     } catch (InterruptedException e) {
                     }
                 }
-                Assert.assertTrue(mForegroundState.size() != 0);
+                Assert.assertNotEquals(mForegroundState.size(), 0);
                 Assert.assertEquals(inForeground, mForegroundState.get(0));
                 mForegroundState.remove(0);
                 return;

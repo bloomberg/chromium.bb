@@ -846,7 +846,7 @@ public class AwSettingsTest extends AwTestBase {
             if (value == ENABLED) {
                 loadUrlSync(AwSettingsTest.this.createContentUrl(mTarget));
                 String title = getTitleOnUiThread();
-                assertTrue(title != null);
+                assertNotNull(title);
                 assertTrue("[" + mTarget + "] Actual title: \"" + title + "\"",
                         title.contains(mTarget));
                 AwSettingsTest.this.ensureResourceRequestCountInContentProvider(mTarget, 1);

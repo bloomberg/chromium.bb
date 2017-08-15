@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import static org.junit.Assert.assertNotEquals;
+
 import android.support.test.filters.SmallTest;
 
 import org.chromium.android_webview.AwDebug;
@@ -33,7 +35,7 @@ public class AwDebugTest extends AwTestBase {
         try {
             assertTrue(AwDebug.dumpWithoutCrashing(f));
             assertTrue(f.canRead());
-            assertTrue(f.length() != 0);
+            assertNotEquals(f.length(), 0);
         } finally {
             assertTrue(f.delete());
         }

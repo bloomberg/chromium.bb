@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import static org.junit.Assert.assertNotEquals;
+
 import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 import android.view.View;
@@ -359,8 +361,8 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         assertTrue(delegate.setMeasuredDimensionCalled);
         int measuredWidth = delegate.measuredWidth & View.MEASURED_SIZE_MASK;
         int measuredHeight = delegate.measuredHeight & View.MEASURED_SIZE_MASK;
-        assertFalse((int) Math.ceil(measuredWidth / dipScale) == contentWidth);
-        assertFalse((int) Math.ceil(measuredHeight / dipScale) == contentHeight);
+        assertNotEquals((int) Math.ceil(measuredWidth / dipScale), contentWidth);
+        assertNotEquals((int) Math.ceil(measuredHeight / dipScale), contentHeight);
 
         layoutSizer.onSizeChanged(measuredWidth, measuredHeight, 0, 0);
     }

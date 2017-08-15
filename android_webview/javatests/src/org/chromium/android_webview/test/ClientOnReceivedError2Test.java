@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import static org.junit.Assert.assertNotEquals;
+
 import android.support.test.filters.SmallTest;
 import android.webkit.WebSettings;
 
@@ -108,7 +110,7 @@ public class ClientOnReceivedError2Test extends AwTestBase {
         AwWebResourceError error = onReceivedError2Helper.getError();
         // The particular error code that is returned depends on the configuration of the device
         // (such as existence of a proxy) so we don't test for it.
-        assertFalse(ErrorCodeConversionHelper.ERROR_UNKNOWN == error.errorCode);
+        assertNotEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
         assertNotNull(error.description);
     }
 
@@ -141,7 +143,7 @@ public class ClientOnReceivedError2Test extends AwTestBase {
         AwWebResourceError error = onReceivedError2Helper.getError();
         // The particular error code that is returned depends on the configuration of the device
         // (such as existence of a proxy) so we don't test for it.
-        assertFalse(ErrorCodeConversionHelper.ERROR_UNKNOWN == error.errorCode);
+        assertNotEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
         assertNotNull(error.description);
     }
 
@@ -167,7 +169,7 @@ public class ClientOnReceivedError2Test extends AwTestBase {
         AwWebResourceError error = onReceivedError2Helper.getError();
         // The particular error code that is returned depends on the configuration of the device
         // (such as existence of a proxy) so we don't test for it.
-        assertFalse(ErrorCodeConversionHelper.ERROR_UNKNOWN == error.errorCode);
+        assertNotEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
         assertNotNull(error.description);
     }
 
@@ -204,7 +206,7 @@ public class ClientOnReceivedError2Test extends AwTestBase {
         AwWebResourceError error = onReceivedError2Helper.getError();
         // The particular error code that is returned depends on the configuration of the device
         // (such as existence of a proxy) so we don't test for it.
-        assertFalse(ErrorCodeConversionHelper.ERROR_UNKNOWN == error.errorCode);
+        assertNotEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
         assertNotNull(error.description);
     }
 
@@ -231,7 +233,7 @@ public class ClientOnReceivedError2Test extends AwTestBase {
         AwWebResourceError error = onReceivedError2Helper.getError();
         // The particular error code that is returned depends on the configuration of the device
         // (such as existence of a proxy) so we don't test for it.
-        assertFalse(ErrorCodeConversionHelper.ERROR_UNKNOWN == error.errorCode);
+        assertNotEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
         assertNotNull(error.description);
     }
 

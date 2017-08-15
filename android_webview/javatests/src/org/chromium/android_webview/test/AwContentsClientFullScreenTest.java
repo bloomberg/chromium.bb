@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import static org.junit.Assert.assertNotEquals;
+
 import android.support.test.filters.MediumTest;
 import android.view.KeyEvent;
 import android.view.View;
@@ -382,8 +384,8 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     private void assertKeepScreenOnActive(final View view, final boolean expected)
             throws Exception {
-        assertTrue(getKeepScreenOnOnInstrumentationThread(view) == expected
-                && DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID) != expected);
+        assertEquals(expected, getKeepScreenOnOnInstrumentationThread(view));
+        assertNotEquals(expected, DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID));
     }
 
     private boolean getKeepScreenOnOnInstrumentationThread(final View view) {

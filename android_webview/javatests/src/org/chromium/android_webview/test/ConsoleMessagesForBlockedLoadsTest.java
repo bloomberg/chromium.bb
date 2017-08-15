@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import static org.junit.Assert.assertNotEquals;
+
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
 import android.webkit.ConsoleMessage;
@@ -75,7 +77,7 @@ public class ConsoleMessagesForBlockedLoadsTest extends AwTestBase {
         mOnConsoleMessageHelper.clearMessages();
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
         ConsoleMessage errorMessage = getSingleErrorMessage();
-        assertTrue(errorMessage.message().indexOf(iframeUrl) != -1);
+        assertNotEquals(errorMessage.message().indexOf(iframeUrl), -1);
     }
 
     @SmallTest
@@ -95,8 +97,8 @@ public class ConsoleMessagesForBlockedLoadsTest extends AwTestBase {
             mOnConsoleMessageHelper.clearMessages();
             loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), secureUrl);
             ConsoleMessage errorMessage = getSingleErrorMessage();
-            assertTrue(errorMessage.message().indexOf(imageUrl) != -1);
-            assertTrue(errorMessage.message().indexOf(secureUrl) != -1);
+            assertNotEquals(errorMessage.message().indexOf(imageUrl), -1);
+            assertNotEquals(errorMessage.message().indexOf(secureUrl), -1);
         } finally {
             if (httpsServer != null) {
                 httpsServer.shutdown();
@@ -129,7 +131,7 @@ public class ConsoleMessagesForBlockedLoadsTest extends AwTestBase {
         mOnConsoleMessageHelper.clearMessages();
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
         ConsoleMessage errorMessage = getSingleErrorMessage();
-        assertTrue(errorMessage.message().indexOf(iframeXslUrl) != -1);
-        assertTrue(errorMessage.message().indexOf(iframeXmlUrl) != -1);
+        assertNotEquals(errorMessage.message().indexOf(iframeXslUrl), -1);
+        assertNotEquals(errorMessage.message().indexOf(iframeXmlUrl), -1);
     }
 }
