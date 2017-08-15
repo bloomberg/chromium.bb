@@ -10,6 +10,11 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/common/extensions/api/feedback_private.h"
+
+namespace system_logs {
+class SystemLogsSource;
+}  // namespace system_logs
 
 namespace extensions {
 
@@ -24,6 +29,13 @@ class ChromeFeedbackPrivateDelegate : public FeedbackPrivateDelegate {
       bool from_crash) const override;
   system_logs::SystemLogsFetcher* CreateSystemLogsFetcher(
       content::BrowserContext* context) const override;
+
+#if defined(OS_CHROMEOS)
+  // TODO(michaelpg): Move declaration to FeedbackPrivateDelegate once the
+  // feedbackPrivate API header lives in //extensions.
+  virtual std::unique_ptr<system_logs::SystemLogsSource> CreateSingleLogSource(
+      api::feedback_private::LogSource source_type) const;
+#endif  // defined(OS_CHROMEOS)
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeFeedbackPrivateDelegate);

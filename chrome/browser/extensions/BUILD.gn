@@ -940,8 +940,6 @@ static_library("extensions") {
       "api/feedback_private/log_source_access_manager.h",
       "api/feedback_private/log_source_resource.cc",
       "api/feedback_private/log_source_resource.h",
-      "api/feedback_private/single_log_source_factory.cc",
-      "api/feedback_private/single_log_source_factory.h",
       "api/file_system/consent_provider.cc",
       "api/file_system/consent_provider.h",
       "api/file_system/request_file_system_notification.cc",

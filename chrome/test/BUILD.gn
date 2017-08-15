@@ -2941,6 +2941,7 @@ group("telemetry_perf_unittests") {
     "//testing/scripts/common.py",
     "//testing/xvfb.py",
     "//testing/scripts/run_telemetry_as_googletest.py",
+
     # For smoke testing run_telemetry_benchmark_as_googletest
     "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
   ]
@@ -3975,6 +3976,8 @@ test("unit_tests") {
       "../browser/extensions/api/extension_action/browser_action_unittest.cc",
       "../browser/extensions/api/extension_action/extension_action_prefs_unittest.cc",
       "../browser/extensions/api/feedback_private/feedback_private_api_chromeos_unittest.cc",
+      "../browser/extensions/api/feedback_private/feedback_private_api_unittest_base_chromeos.cc",
+      "../browser/extensions/api/feedback_private/feedback_private_api_unittest_base_chromeos.h",
       "../browser/extensions/api/feedback_private/log_source_access_manager_chromeos_unittest.cc",
       "../browser/extensions/api/file_system/file_system_api_unittest.cc",
       "../browser/extensions/api/identity/extension_token_key_unittest.cc",
