@@ -453,7 +453,6 @@ class BlinkPerfLayout(_BlinkPerfBenchmark):
 
 
 @benchmark.Owner(emails=['dmurph@chromium.org'])
-@benchmark.Disabled('all')
 class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
   tag = 'owp_storage'
   subdir = 'OWPStorage'
