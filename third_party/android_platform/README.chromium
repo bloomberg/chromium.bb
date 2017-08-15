@@ -11,13 +11,9 @@ Security Critical: no
 Description:
 Android Platform engineering tools, specifically:
 1. stack symbolization scripts
-2. jars containing the AOSP framework to compile the Android WebView glue layer
-   against. The AOSP framework is built from the Android release tag
-   after which it is named, and the jar can be built by invoking make on the
-   android_system_stubs target.
-3. A ported copy of the Android relocation packing tool source, along with the
+2. A ported copy of the Android relocation packing tool source, along with the
    files required to build it in the chromium tree.
-4. IntelliJ formatting settings.
+3. IntelliJ formatting settings.
    Taken from commit: 622d3d4c5b3bee50fd335f3282d9e9d64ae0f5f7
 
 Local Modifications:
