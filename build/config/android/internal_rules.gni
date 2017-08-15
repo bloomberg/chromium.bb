@@ -409,6 +409,9 @@ template("copy_ex") {
     outputs = [
       _stamp_file,
     ]
+    if (defined(invoker.outputs)) {
+      outputs += invoker.outputs
+    }
 
     args = [
       "--depfile",
@@ -1308,7 +1311,7 @@ if (enable_java_templates) {
     }
 
     _output_jar_target = "${target_name}__copy"
-    copy(_output_jar_target) {
+    copy_ex(_output_jar_target) {
       deps = _deps
       if (defined(invoker.deps)) {
         deps += invoker.deps
@@ -1316,6 +1319,7 @@ if (enable_java_templates) {
       if (defined(invoker.public_deps)) {
         public_deps = invoker.public_deps
       }
+      dest = _output_jar_path
       sources = [
         _previous_output_jar,
       ]
