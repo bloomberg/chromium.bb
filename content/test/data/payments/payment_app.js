@@ -58,7 +58,7 @@ self.addEventListener('paymentrequest', e => {
     let window_ready = false;
 
     let maybeSendPaymentRequest = function() {
-      if (payment_app_window && window_ready)
+      if (window_ready)
         payment_app_window.postMessage('payment_app_request');
     };
 
@@ -83,6 +83,10 @@ self.addEventListener('paymentrequest', e => {
     e.openWindow(payment_app_web_page)
       .then(window_client => {
         payment_app_window = window_client;
+        if(payment_app_window == null) {
+          reject('failed to openWindow');
+          return;
+        }
         maybeSendPaymentRequest();
       })
       .catch(error => {
