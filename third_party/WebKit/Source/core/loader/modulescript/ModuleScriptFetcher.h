@@ -44,12 +44,13 @@ class CORE_EXPORT ModuleScriptFetcher
   void NotifyFinished(Resource*) final;
   String DebugName() const final { return "ModuleScriptFetcher"; }
 
+  KURL GetRequestUrl() const { return fetch_params_.Url(); }
+  bool HasValidContext() const { return modulator_->HasValidContext(); }
+
   DECLARE_TRACE();
 
  protected:
   virtual void Finalize(const WTF::Optional<ModuleScriptCreationParams>&);
-
-  KURL GetRequestUrl() const { return fetch_params_.Url(); }
 
  private:
   FetchParameters fetch_params_;

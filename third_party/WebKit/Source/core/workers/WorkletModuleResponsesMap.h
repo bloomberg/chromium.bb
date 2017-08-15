@@ -49,10 +49,17 @@ class CORE_EXPORT WorkletModuleResponsesMap
   // Marks an entry as "failed" state and calls OnFailed() for waiting clients.
   void InvalidateEntry(const KURL&);
 
+  // Called when the associated document is destroyed. Aborts all waiting
+  // clients and clears the map. Following read and write requests to the map
+  // are simply ignored.
+  void Dispose();
+
   DECLARE_TRACE();
 
  private:
   class Entry;
+
+  bool is_available_ = true;
 
   // TODO(nhiroki): Keep the insertion order of top-level modules to replay
   // addModule() calls for a newly created global scope.

@@ -76,7 +76,7 @@ class WorkletModuleResponsesMap::Entry
 void WorkletModuleResponsesMap::ReadOrCreateEntry(const KURL& url,
                                                   Client* client) {
   DCHECK(IsMainThread());
-  if (!IsValidURL(url)) {
+  if (!is_available_ || !IsValidURL(url)) {
     client->OnFailed();
     return;
   }
@@ -122,6 +122,9 @@ void WorkletModuleResponsesMap::UpdateEntry(
     const ModuleScriptCreationParams& params) {
   DCHECK(IsMainThread());
   DCHECK(IsValidURL(url));
+  if (!is_available_)
+    return;
+
   DCHECK(entries_.Contains(url));
   Entry* entry = entries_.find(url)->value;
 
@@ -135,9 +138,27 @@ void WorkletModuleResponsesMap::UpdateEntry(
 void WorkletModuleResponsesMap::InvalidateEntry(const KURL& url) {
   DCHECK(IsMainThread());
   DCHECK(IsValidURL(url));
+  if (!is_available_)
+    return;
+
   DCHECK(entries_.Contains(url));
   Entry* entry = entries_.find(url)->value;
   entry->NotifyFailure();
+}
+
+void WorkletModuleResponsesMap::Dispose() {
+  is_available_ = false;
+  for (auto it : entries_) {
+    switch (it.value->GetState()) {
+      case Entry::State::kFetching:
+        it.value->NotifyFailure();
+        break;
+      case Entry::State::kFetched:
+      case Entry::State::kFailed:
+        break;
+    }
+  }
+  entries_.clear();
 }
 
 DEFINE_TRACE(WorkletModuleResponsesMap) {

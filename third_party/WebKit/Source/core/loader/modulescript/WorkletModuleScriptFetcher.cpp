@@ -28,10 +28,27 @@ void WorkletModuleScriptFetcher::Fetch() {
 
 void WorkletModuleScriptFetcher::OnRead(
     const ModuleScriptCreationParams& params) {
+  // The context can be destroyed during cross-thread read operation.
+  if (!HasValidContext()) {
+    Finalize(WTF::nullopt);
+    return;
+  }
   Finalize(params);
 }
 
 void WorkletModuleScriptFetcher::OnFetchNeeded() {
+  // The context can be destroyed during cross-thread read operation.
+  if (!HasValidContext()) {
+    // This invalidates sibling worklet contexts that are waiting for module
+    // fetch on WorkletModuleResponsesMap.
+    // TODO(nhiroki): This could be a problem when we want to dynamically reduce
+    // the number of worklet contexts, for example, to reduce memory
+    // consumption.
+    module_responses_map_proxy_->InvalidateEntry(GetRequestUrl());
+    Finalize(WTF::nullopt);
+    return;
+  }
+
   // A target module hasn't been fetched yet. Fallback to the regular module
   // loading path. The module will be cached in NotifyFinished().
   was_fetched_via_network_ = true;
