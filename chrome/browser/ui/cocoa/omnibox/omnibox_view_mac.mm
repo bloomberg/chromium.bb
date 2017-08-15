@@ -530,6 +530,8 @@ void OmniboxViewMac::ApplyTextStyle(
   [paragraph_style setAlignment:cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
                                     ? NSRightTextAlignment
                                     : NSLeftTextAlignment];
+  if (@available(macOS 10.11, *))
+    [paragraph_style setAllowsDefaultTighteningForTruncation:NO];
   // If this is a URL, set the top-level paragraph direction to LTR (avoids RTL
   // characters from making the URL render from right to left, as per RFC 3987
   // Section 4.1).
