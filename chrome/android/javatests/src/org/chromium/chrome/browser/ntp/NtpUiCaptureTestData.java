@@ -75,31 +75,6 @@ public class NtpUiCaptureTestData {
                     "http://example.com", getTimestamp(2017, Calendar.MARCH, 30), 0.0f, 0L, false),
     };
 
-    public static void registerArticleSamples(FakeSuggestionsSource suggestionsSource) {
-        ContentSuggestionsTestUtils.registerCategory(suggestionsSource, KnownCategories.ARTICLES);
-        suggestionsSource.setSuggestionsForCategory(
-                KnownCategories.ARTICLES, Arrays.asList(FAKE_ARTICLE_SUGGESTIONS));
-        final Bitmap favicon = BitmapFactory.decodeFile(
-                UrlUtils.getTestFilePath("/android/UiCapture/favicon.ico"));
-        Assert.assertNotNull(favicon);
-        suggestionsSource.setFaviconForId("suggestion0", favicon);
-        suggestionsSource.setThumbnailForId("suggestion0",
-                BitmapFactory.decodeFile(
-                        UrlUtils.getTestFilePath("/android/UiCapture/conductor.jpg")));
-        suggestionsSource.setThumbnailForId("suggestion1",
-                BitmapFactory.decodeFile(UrlUtils.getTestFilePath("/android/UiCapture/goat.jpg")));
-        suggestionsSource.setThumbnailForId("suggestion2",
-                BitmapFactory.decodeFile(UrlUtils.getTestFilePath("/android/UiCapture/gig.jpg")));
-    }
-
-    public static void registerBookmarkSamples(FakeSuggestionsSource suggestionsSource) {
-        ContentSuggestionsTestUtils.registerCategory(suggestionsSource, KnownCategories.BOOKMARKS);
-        suggestionsSource.setSuggestionsForCategory(
-                KnownCategories.BOOKMARKS, Arrays.asList(FAKE_BOOKMARK_SUGGESTIONS));
-        suggestionsSource.setThumbnailForId("bookmark1",
-                BitmapFactory.decodeFile(UrlUtils.getTestFilePath("/android/UiCapture/fire.jpg")));
-    }
-
     private static long getTimestamp(int year, int month, int day) {
         Calendar c = Calendar.getInstance();
         c.set(year, month, day);
@@ -108,8 +83,27 @@ public class NtpUiCaptureTestData {
 
     private static SuggestionsSource createSuggestionsSource() {
         FakeSuggestionsSource fakeSuggestionsSource = new FakeSuggestionsSource();
-        registerArticleSamples(fakeSuggestionsSource);
-        registerBookmarkSamples(fakeSuggestionsSource);
+        ContentSuggestionsTestUtils.registerCategory(
+                fakeSuggestionsSource, KnownCategories.ARTICLES, 2);
+        ContentSuggestionsTestUtils.registerCategory(
+                fakeSuggestionsSource, KnownCategories.BOOKMARKS, 2);
+        fakeSuggestionsSource.setSuggestionsForCategory(
+                KnownCategories.ARTICLES, Arrays.asList(FAKE_ARTICLE_SUGGESTIONS));
+        fakeSuggestionsSource.setSuggestionsForCategory(
+                KnownCategories.BOOKMARKS, Arrays.asList(FAKE_BOOKMARK_SUGGESTIONS));
+        final Bitmap favicon = BitmapFactory.decodeFile(
+                UrlUtils.getTestFilePath("/android/UiCapture/favicon.ico"));
+        Assert.assertNotNull(favicon);
+        fakeSuggestionsSource.setFaviconForId("suggestion0", favicon);
+        fakeSuggestionsSource.setThumbnailForId("suggestion0",
+                BitmapFactory.decodeFile(
+                        UrlUtils.getTestFilePath("/android/UiCapture/conductor.jpg")));
+        fakeSuggestionsSource.setThumbnailForId("suggestion1",
+                BitmapFactory.decodeFile(UrlUtils.getTestFilePath("/android/UiCapture/goat.jpg")));
+        fakeSuggestionsSource.setThumbnailForId("suggestion2",
+                BitmapFactory.decodeFile(UrlUtils.getTestFilePath("/android/UiCapture/gig.jpg")));
+        fakeSuggestionsSource.setThumbnailForId("bookmark1",
+                BitmapFactory.decodeFile(UrlUtils.getTestFilePath("/android/UiCapture/fire.jpg")));
         return fakeSuggestionsSource;
     }
 
