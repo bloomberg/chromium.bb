@@ -258,8 +258,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           'back', this.onBackButtonClicked_.bind(this, null));
 
       $('signin-back-button')
-          .addEventListener(
-              'click', this.onBackButtonClicked_.bind(this, true));
+          .addEventListener('tap', this.onBackButtonClicked_.bind(this, true));
       $('offline-gaia')
           .addEventListener('offline-gaia-cancel', this.cancel.bind(this));
 
@@ -568,10 +567,26 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       Oobe.getInstance().headerHidden = false;
 
       // Re-enable navigation in case it was disabled before refresh.
-      this.navigation_.disabled = false;
+      this.navigationDisabled_ = false;
 
       this.lastBackMessageValue_ = false;
       this.updateControlsState();
+    },
+
+    get navigationDisabled_() {
+      return this.navigation_.disabled;
+    },
+
+    set navigationDisabled_(value) {
+      this.navigation_.disabled = value;
+
+      if (value)
+        $('navigation-buttons').setAttribute('disabled', null);
+      else
+        $('navigation-buttons').removeAttribute('disabled');
+
+      if ($('signin-back-button'))
+        $('signin-back-button').disabled = value;
     },
 
     getSigninFrame_: function() {
@@ -806,7 +821,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     onDialogShown_: function() {
-      this.navigation_.disabled = true;
+      this.navigationDisabled_ = true;
     },
 
     /**
@@ -814,7 +829,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     onDialogHidden_: function() {
-      this.navigation_.disabled = false;
+      this.navigationDisabled_ = false;
     },
 
     /**
