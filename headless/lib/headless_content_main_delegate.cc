@@ -269,11 +269,6 @@ HeadlessContentMainDelegate* HeadlessContentMainDelegate::GetInstance() {
 
 // static
 void HeadlessContentMainDelegate::InitializeResourceBundle() {
-  base::FilePath dir_module;
-  base::FilePath pak_file;
-  bool result = PathService::Get(base::DIR_MODULE, &dir_module);
-  DCHECK(result);
-
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   const std::string locale = command_line->GetSwitchValueASCII(switches::kLang);
   ui::ResourceBundle::InitSharedInstanceWithLocale(
@@ -285,21 +280,51 @@ void HeadlessContentMainDelegate::InitializeResourceBundle() {
           reinterpret_cast<const char*>(kHeadlessResourcePak.contents),
           kHeadlessResourcePak.length),
       ui::SCALE_FACTOR_NONE);
+
 #else
+
+  base::FilePath dir_module;
+  bool result = PathService::Get(base::DIR_MODULE, &dir_module);
+  DCHECK(result);
+
   // Try loading the headless library pak file first. If it doesn't exist (i.e.,
   // when we're running with the --headless switch), fall back to the browser's
   // resource pak.
-  pak_file = dir_module.Append(FILE_PATH_LITERAL("headless_lib.pak"));
-  if (!base::PathExists(pak_file))
-    pak_file = dir_module.Append(FILE_PATH_LITERAL("resources.pak"));
+  base::FilePath headless_pak =
+      dir_module.Append(FILE_PATH_LITERAL("headless_lib.pak"));
+  if (base::PathExists(headless_pak)) {
+    ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+        headless_pak, ui::SCALE_FACTOR_NONE);
+    return;
+  }
+
+  // Otherwise, load resources.pak, chrome_100 and chrome_200.
+  base::FilePath resources_pak =
+      dir_module.Append(FILE_PATH_LITERAL("resources.pak"));
+  base::FilePath chrome_100_pak =
+      dir_module.Append(FILE_PATH_LITERAL("chrome_100_percent.pak"));
+  base::FilePath chrome_200_pak =
+      dir_module.Append(FILE_PATH_LITERAL("chrome_200_percent.pak"));
+
 #if defined(OS_MACOSX) && !defined(COMPONENT_BUILD)
   // In non component builds, check if fall back in Resources/ folder is
   // available.
-  if (!base::PathExists(pak_file))
-    pak_file = dir_module.Append(FILE_PATH_LITERAL("Resources/resources.pak"));
+  if (!base::PathExists(resources_pak)) {
+    resources_pak =
+        dir_module.Append(FILE_PATH_LITERAL("Resources/resources.pak"));
+    chrome_100_pak = dir_module.Append(
+        FILE_PATH_LITERAL("Resources/chrome_100_percent.pak"));
+    chrome_200_pak = dir_module.Append(
+        FILE_PATH_LITERAL("Resources/chrome_200_percent.pak"));
+  }
 #endif
+
   ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      pak_file, ui::SCALE_FACTOR_NONE);
+      resources_pak, ui::SCALE_FACTOR_NONE);
+  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      chrome_100_pak, ui::SCALE_FACTOR_100P);
+  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      chrome_200_pak, ui::SCALE_FACTOR_200P);
 #endif
 }
 
