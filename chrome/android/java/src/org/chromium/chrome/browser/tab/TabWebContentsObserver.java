@@ -163,6 +163,8 @@ public class TabWebContentsObserver extends WebContentsObserver {
     }
 
     private void recordErrorInPolicyAuditor(String failingUrl, String description, int errorCode) {
+        assert description != null;
+
         PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
         auditor.notifyAuditEvent(mTab.getApplicationContext(), AuditEvent.OPEN_URL_FAILURE,
                 failingUrl, description);

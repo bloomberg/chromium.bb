@@ -158,7 +158,8 @@ void WebContentsObserverProxy::DidFinishNavigation(
   }
 
   // TODO(shaktisahu): Provide appropriate error description (crbug/690784).
-  ScopedJavaLocalRef<jstring> jerror_description;
+  ScopedJavaLocalRef<jstring> jerror_description =
+      ConvertUTF8ToJavaString(env, "");
 
   Java_WebContentsObserverProxy_didFinishNavigation(
       env, obj, jstring_url, navigation_handle->IsInMainFrame(),
