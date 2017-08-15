@@ -59,5 +59,28 @@ TEST_F(DisplaySynchronizerTest, AddingDisplayNotifies) {
             test_window_manager_client->last_internal_display_id());
 }
 
+TEST_F(DisplaySynchronizerTest,
+       FrameDecorationsInstalledBeforeDisplayConfiguration) {
+  aura::TestWindowManagerClient* test_window_manager_client =
+      ash_test_helper()
+          ->window_tree_client_setup()
+          ->test_window_manager_client();
+  ASSERT_NE(
+      0u, test_window_manager_client->GetChangeCountForType(
+              aura::WindowManagerClientChangeType::SET_DISPLAY_CONFIGURATION));
+  ASSERT_NE(0u,
+            test_window_manager_client->GetChangeCountForType(
+                aura::WindowManagerClientChangeType::SET_FRAME_DECORATIONS));
+  const size_t frame_decoration_change_index =
+      test_window_manager_client->IndexOfFirstChangeOfType(
+          aura::WindowManagerClientChangeType::SET_FRAME_DECORATIONS);
+  const size_t display_config_change_index =
+      test_window_manager_client->IndexOfFirstChangeOfType(
+          aura::WindowManagerClientChangeType::SET_DISPLAY_CONFIGURATION);
+  // Frame decorations must be installed before the display configuration is
+  // set, otherwise clients are notified of bogus window manager frame values.
+  EXPECT_LT(frame_decoration_change_index, display_config_change_index);
+}
+
 }  // namespace mus
 }  // namespace ash

@@ -18,6 +18,7 @@ namespace aura {
 enum class WindowManagerClientChangeType {
   ADD_ACTIVATION_PARENT,
   SET_DISPLAY_CONFIGURATION,
+  SET_FRAME_DECORATIONS,
 };
 
 // WindowManagerClient implementation for tests.
@@ -28,6 +29,7 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
 
   size_t GetChangeCountForType(WindowManagerClientChangeType type);
   int64_t last_internal_display_id() const { return last_internal_display_id_; }
+  size_t IndexOfFirstChangeOfType(WindowManagerClientChangeType type) const;
 
  private:
   // ui::mojom::WindowManagerClient:

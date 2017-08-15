@@ -4,6 +4,8 @@
 
 #include "ui/aura/test/mus/test_window_manager_client.h"
 
+#include <algorithm>
+
 namespace aura {
 
 TestWindowManagerClient::TestWindowManagerClient() {}
@@ -18,6 +20,13 @@ size_t TestWindowManagerClient::GetChangeCountForType(
       ++count;
   }
   return count;
+}
+
+size_t TestWindowManagerClient::IndexOfFirstChangeOfType(
+    WindowManagerClientChangeType type) const {
+  auto iter = std::find(changes_.begin(), changes_.end(), type);
+  return iter == changes_.end() ? static_cast<size_t>(-1)
+                                : iter - changes_.begin();
 }
 
 void TestWindowManagerClient::AddActivationParent(Id transport_window_id) {
@@ -75,7 +84,9 @@ void TestWindowManagerClient::WmSetBoundsResponse(uint32_t change_id) {}
 void TestWindowManagerClient::WmRequestClose(Id transport_window_id) {}
 
 void TestWindowManagerClient::WmSetFrameDecorationValues(
-    ui::mojom::FrameDecorationValuesPtr values) {}
+    ui::mojom::FrameDecorationValuesPtr values) {
+  changes_.push_back(WindowManagerClientChangeType::SET_FRAME_DECORATIONS);
+}
 
 void TestWindowManagerClient::WmSetNonClientCursor(uint32_t window_id,
                                                    ui::CursorData cursor_data) {
