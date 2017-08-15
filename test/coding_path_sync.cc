@@ -112,7 +112,7 @@ class Decoder {
   explicit Decoder(int allowLowbitdepth) {
     aom_codec_iface_t *algo = &aom_codec_av1_dx_algo;
 
-    aom_codec_dec_cfg cfg = { 0 };
+    aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
     cfg.allow_lowbitdepth = allowLowbitdepth;
 
     aom_codec_dec_init(&dec_, algo, &cfg, 0);
