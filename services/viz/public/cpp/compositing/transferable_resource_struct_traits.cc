@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/ipc/transferable_resource_struct_traits.h"
+#include "services/viz/public/cpp/compositing/transferable_resource_struct_traits.h"
+
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/common/mailbox_holder_struct_traits.h"
 #include "gpu/ipc/common/mailbox_struct_traits.h"
@@ -12,9 +13,9 @@
 namespace mojo {
 
 // static
-bool StructTraits<cc::mojom::TransferableResourceDataView,
+bool StructTraits<viz::mojom::TransferableResourceDataView,
                   viz::TransferableResource>::
-    Read(cc::mojom::TransferableResourceDataView data,
+    Read(viz::mojom::TransferableResourceDataView data,
          viz::TransferableResource* out) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                "StructTraits::TransferableResource::Read");

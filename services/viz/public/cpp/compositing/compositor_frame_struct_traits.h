@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "cc/output/compositor_frame.h"
+#include "services/viz/public/cpp/compositing/transferable_resource_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame.mojom-shared.h"
 
 namespace mojo {

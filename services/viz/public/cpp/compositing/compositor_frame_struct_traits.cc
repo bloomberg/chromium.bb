@@ -5,9 +5,9 @@
 #include "services/viz/public/cpp/compositing/compositor_frame_struct_traits.h"
 
 #include "base/trace_event/trace_event.h"
-#include "cc/ipc/transferable_resource_struct_traits.h"
 #include "services/viz/public/cpp/compositing/compositor_frame_metadata_struct_traits.h"
 #include "services/viz/public/cpp/compositing/render_pass_struct_traits.h"
+#include "services/viz/public/cpp/compositing/transferable_resource_struct_traits.h"
 
 namespace mojo {
 

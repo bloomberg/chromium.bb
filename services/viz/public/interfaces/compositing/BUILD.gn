@@ -17,6 +17,7 @@ mojom("compositing") {
     "shared_bitmap_allocation_notifier.mojom",
     "surface_info.mojom",
     "surface_sequence.mojom",
+    "transferable_resource.mojom",
   ]
 
   public_deps = [

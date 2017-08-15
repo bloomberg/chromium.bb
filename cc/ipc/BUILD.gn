@@ -50,7 +50,6 @@ mojom("interfaces") {
     "surface_id.mojom",
     "texture_mailbox.mojom",
     "texture_mailbox_releaser.mojom",
-    "transferable_resource.mojom",
   ]
 
   public_deps = [

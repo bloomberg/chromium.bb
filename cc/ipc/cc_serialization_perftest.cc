@@ -10,7 +10,6 @@
 #include "cc/ipc/cc_param_traits.h"
 #include "cc/ipc/shared_quad_state_struct_traits.h"
 #include "cc/ipc/surface_id_struct_traits.h"
-#include "cc/ipc/transferable_resource_struct_traits.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/picture_draw_quad.h"
 #include "gpu/ipc/common/mailbox_holder_struct_traits.h"

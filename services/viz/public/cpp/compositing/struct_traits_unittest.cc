@@ -15,7 +15,6 @@
 #include "cc/ipc/shared_quad_state_struct_traits.h"
 #include "cc/ipc/surface_id_struct_traits.h"
 #include "cc/ipc/texture_mailbox_struct_traits.h"
-#include "cc/ipc/transferable_resource_struct_traits.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
@@ -41,10 +40,12 @@
 #include "services/viz/public/cpp/compositing/selection_struct_traits.h"
 #include "services/viz/public/cpp/compositing/surface_info_struct_traits.h"
 #include "services/viz/public/cpp/compositing/surface_sequence_struct_traits.h"
+#include "services/viz/public/cpp/compositing/transferable_resource_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame.mojom.h"
 #include "services/viz/public/interfaces/compositing/returned_resource.mojom.h"
 #include "services/viz/public/interfaces/compositing/surface_info.mojom.h"
 #include "services/viz/public/interfaces/compositing/surface_sequence.mojom.h"
+#include "services/viz/public/interfaces/compositing/transferable_resource.mojom.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "skia/public/interfaces/blur_image_filter_tile_mode_struct_traits.h"
 #include "skia/public/interfaces/image_filter_struct_traits.h"
@@ -719,6 +720,59 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(resource_size_in_pixels,
             out_stream_video_draw_quad->resource_size_in_pixels());
   EXPECT_EQ(matrix, out_stream_video_draw_quad->matrix);
+}
+
+TEST_F(StructTraitsTest, TransferableResource) {
+  const uint32_t id = 1337;
+  const ResourceFormat format = ALPHA_8;
+  const uint32_t filter = 1234;
+  const gfx::Size size(1234, 5678);
+  const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
+      0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2};
+  const gpu::CommandBufferNamespace command_buffer_namespace = gpu::IN_PROCESS;
+  const int32_t extra_data_field = 0xbeefbeef;
+  const gpu::CommandBufferId command_buffer_id(
+      gpu::CommandBufferId::FromUnsafeValue(0xdeadbeef));
+  const uint64_t release_count = 0xdeadbeefdeadL;
+  const uint32_t texture_target = 1337;
+  const bool read_lock_fences_enabled = true;
+  const bool is_software = false;
+  const uint32_t shared_bitmap_sequence_number = 123456;
+  const bool is_overlay_candidate = true;
+
+  gpu::MailboxHolder mailbox_holder;
+  mailbox_holder.mailbox.SetName(mailbox_name);
+  mailbox_holder.sync_token =
+      gpu::SyncToken(command_buffer_namespace, extra_data_field,
+                     command_buffer_id, release_count);
+  mailbox_holder.texture_target = texture_target;
+  TransferableResource input;
+  input.id = id;
+  input.format = format;
+  input.filter = filter;
+  input.size = size;
+  input.mailbox_holder = mailbox_holder;
+  input.read_lock_fences_enabled = read_lock_fences_enabled;
+  input.is_software = is_software;
+  input.shared_bitmap_sequence_number = shared_bitmap_sequence_number;
+  input.is_overlay_candidate = is_overlay_candidate;
+
+  TransferableResource output;
+  SerializeAndDeserialize<mojom::TransferableResource>(input, &output);
+
+  EXPECT_EQ(id, output.id);
+  EXPECT_EQ(format, output.format);
+  EXPECT_EQ(filter, output.filter);
+  EXPECT_EQ(size, output.size);
+  EXPECT_EQ(mailbox_holder.mailbox, output.mailbox_holder.mailbox);
+  EXPECT_EQ(mailbox_holder.sync_token, output.mailbox_holder.sync_token);
+  EXPECT_EQ(mailbox_holder.texture_target,
+            output.mailbox_holder.texture_target);
+  EXPECT_EQ(read_lock_fences_enabled, output.read_lock_fences_enabled);
+  EXPECT_EQ(is_software, output.is_software);
+  EXPECT_EQ(shared_bitmap_sequence_number,
+            output.shared_bitmap_sequence_number);
+  EXPECT_EQ(is_overlay_candidate, output.is_overlay_candidate);
 }
 
 TEST_F(StructTraitsTest, YUVDrawQuad) {

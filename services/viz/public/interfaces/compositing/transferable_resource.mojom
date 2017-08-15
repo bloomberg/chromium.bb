@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module cc.mojom;
+module viz.mojom;
 
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";

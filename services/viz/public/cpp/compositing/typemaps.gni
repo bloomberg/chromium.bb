@@ -11,4 +11,5 @@ typemaps = [
   "//services/viz/public/cpp/compositing/selection.typemap",
   "//services/viz/public/cpp/compositing/surface_sequence.typemap",
   "//services/viz/public/cpp/compositing/surface_info.typemap",
+  "//services/viz/public/cpp/compositing/transferable_resource.typemap",
 ]

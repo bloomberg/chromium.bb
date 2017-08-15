@@ -86,12 +86,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     std::move(callback).Run(t);
   }
 
-  void EchoTransferableResource(
-      const viz::TransferableResource& t,
-      EchoTransferableResourceCallback callback) override {
-    std::move(callback).Run(t);
-  }
-
   mojo::BindingSet<TraitsTestService> traits_test_bindings_;
   DISALLOW_COPY_AND_ASSIGN(StructTraitsTest);
 };
@@ -480,58 +474,6 @@ TEST_F(StructTraitsTest, TextureMailbox) {
             output.is_backed_by_surface_texture());
   EXPECT_EQ(wants_promotion_hint, output.wants_promotion_hint());
 #endif
-}
-
-TEST_F(StructTraitsTest, TransferableResource) {
-  const uint32_t id = 1337;
-  const viz::ResourceFormat format = viz::ALPHA_8;
-  const uint32_t filter = 1234;
-  const gfx::Size size(1234, 5678);
-  const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
-      0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2};
-  const gpu::CommandBufferNamespace command_buffer_namespace = gpu::IN_PROCESS;
-  const int32_t extra_data_field = 0xbeefbeef;
-  const gpu::CommandBufferId command_buffer_id(
-      gpu::CommandBufferId::FromUnsafeValue(0xdeadbeef));
-  const uint64_t release_count = 0xdeadbeefdeadL;
-  const uint32_t texture_target = 1337;
-  const bool read_lock_fences_enabled = true;
-  const bool is_software = false;
-  const uint32_t shared_bitmap_sequence_number = 123456;
-  const bool is_overlay_candidate = true;
-
-  gpu::MailboxHolder mailbox_holder;
-  mailbox_holder.mailbox.SetName(mailbox_name);
-  mailbox_holder.sync_token =
-      gpu::SyncToken(command_buffer_namespace, extra_data_field,
-                     command_buffer_id, release_count);
-  mailbox_holder.texture_target = texture_target;
-  viz::TransferableResource input;
-  input.id = id;
-  input.format = format;
-  input.filter = filter;
-  input.size = size;
-  input.mailbox_holder = mailbox_holder;
-  input.read_lock_fences_enabled = read_lock_fences_enabled;
-  input.is_software = is_software;
-  input.shared_bitmap_sequence_number = shared_bitmap_sequence_number;
-  input.is_overlay_candidate = is_overlay_candidate;
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  viz::TransferableResource output;
-  proxy->EchoTransferableResource(input, &output);
-  EXPECT_EQ(id, output.id);
-  EXPECT_EQ(format, output.format);
-  EXPECT_EQ(filter, output.filter);
-  EXPECT_EQ(size, output.size);
-  EXPECT_EQ(mailbox_holder.mailbox, output.mailbox_holder.mailbox);
-  EXPECT_EQ(mailbox_holder.sync_token, output.mailbox_holder.sync_token);
-  EXPECT_EQ(mailbox_holder.texture_target,
-            output.mailbox_holder.texture_target);
-  EXPECT_EQ(read_lock_fences_enabled, output.read_lock_fences_enabled);
-  EXPECT_EQ(is_software, output.is_software);
-  EXPECT_EQ(shared_bitmap_sequence_number,
-            output.shared_bitmap_sequence_number);
-  EXPECT_EQ(is_overlay_candidate, output.is_overlay_candidate);
 }
 
 }  // namespace cc
