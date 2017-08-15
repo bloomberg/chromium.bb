@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/ipc/begin_frame_args_struct_traits.h"
+#include "services/viz/public/cpp/compositing/begin_frame_args_struct_traits.h"
+
 #include "ipc/ipc_message_utils.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
 
 namespace mojo {
 
 // static
-bool StructTraits<cc::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs>::Read(
-    cc::mojom::BeginFrameArgsDataView data,
-    viz::BeginFrameArgs* out) {
+bool StructTraits<viz::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs>::
+    Read(viz::mojom::BeginFrameArgsDataView data, viz::BeginFrameArgs* out) {
   if (!data.ReadFrameTime(&out->frame_time) ||
       !data.ReadDeadline(&out->deadline) ||
       !data.ReadInterval(&out->interval)) {
@@ -26,8 +26,8 @@ bool StructTraits<cc::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs>::Read(
 }
 
 // static
-bool StructTraits<cc::mojom::BeginFrameAckDataView, viz::BeginFrameAck>::Read(
-    cc::mojom::BeginFrameAckDataView data,
+bool StructTraits<viz::mojom::BeginFrameAckDataView, viz::BeginFrameAck>::Read(
+    viz::mojom::BeginFrameAckDataView data,
     viz::BeginFrameAck* out) {
   if (data.sequence_number() < viz::BeginFrameArgs::kStartingFrameNumber)
     return false;

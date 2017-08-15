@@ -6,7 +6,6 @@
 
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "cc/ipc/begin_frame_args_struct_traits.h"
 #include "cc/ipc/cc_param_traits.h"
 #include "cc/ipc/shared_quad_state_struct_traits.h"
 #include "cc/ipc/surface_id_struct_traits.h"

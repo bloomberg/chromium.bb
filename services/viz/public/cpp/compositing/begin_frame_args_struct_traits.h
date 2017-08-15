@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_IPC_BEGIN_FRAME_ARGS_STRUCT_TRAITS_H_
-#define CC_IPC_BEGIN_FRAME_ARGS_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_BEGIN_FRAME_ARGS_STRUCT_TRAITS_H_
+#define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_BEGIN_FRAME_ARGS_STRUCT_TRAITS_H_
 
-#include "cc/ipc/begin_frame_args.mojom-shared.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "services/viz/public/interfaces/compositing/begin_frame_args.mojom-shared.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs> {
+struct StructTraits<viz::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs> {
   static base::TimeTicks frame_time(const viz::BeginFrameArgs& args) {
     return args.frame_time;
   }
@@ -32,20 +32,20 @@ struct StructTraits<cc::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs> {
     return args.source_id;
   }
 
-  static cc::mojom::BeginFrameArgsType type(const viz::BeginFrameArgs& args) {
-    return static_cast<cc::mojom::BeginFrameArgsType>(args.type);
+  static viz::mojom::BeginFrameArgsType type(const viz::BeginFrameArgs& args) {
+    return static_cast<viz::mojom::BeginFrameArgsType>(args.type);
   }
 
   static bool on_critical_path(const viz::BeginFrameArgs& args) {
     return args.on_critical_path;
   }
 
-  static bool Read(cc::mojom::BeginFrameArgsDataView data,
+  static bool Read(viz::mojom::BeginFrameArgsDataView data,
                    viz::BeginFrameArgs* out);
 };
 
 template <>
-struct StructTraits<cc::mojom::BeginFrameAckDataView, viz::BeginFrameAck> {
+struct StructTraits<viz::mojom::BeginFrameAckDataView, viz::BeginFrameAck> {
   static uint64_t sequence_number(const viz::BeginFrameAck& ack) {
     return ack.sequence_number;
   }
@@ -54,10 +54,10 @@ struct StructTraits<cc::mojom::BeginFrameAckDataView, viz::BeginFrameAck> {
     return ack.source_id;
   }
 
-  static bool Read(cc::mojom::BeginFrameAckDataView data,
+  static bool Read(viz::mojom::BeginFrameAckDataView data,
                    viz::BeginFrameAck* out);
 };
 
 }  // namespace mojo
 
-#endif  // CC_IPC_BEGIN_FRAME_ARGS_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_BEGIN_FRAME_ARGS_STRUCT_TRAITS_H_

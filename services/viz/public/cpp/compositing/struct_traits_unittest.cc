@@ -5,7 +5,6 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
-#include "cc/ipc/begin_frame_args_struct_traits.h"
 #include "cc/ipc/copy_output_request_struct_traits.h"
 #include "cc/ipc/copy_output_result_struct_traits.h"
 #include "cc/ipc/filter_operation_struct_traits.h"
@@ -32,6 +31,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/viz/public/cpp/compositing/begin_frame_args_struct_traits.h"
 #include "services/viz/public/cpp/compositing/compositor_frame_metadata_struct_traits.h"
 #include "services/viz/public/cpp/compositing/compositor_frame_struct_traits.h"
 #include "services/viz/public/cpp/compositing/render_pass_struct_traits.h"
@@ -41,6 +41,7 @@
 #include "services/viz/public/cpp/compositing/surface_info_struct_traits.h"
 #include "services/viz/public/cpp/compositing/surface_sequence_struct_traits.h"
 #include "services/viz/public/cpp/compositing/transferable_resource_struct_traits.h"
+#include "services/viz/public/interfaces/compositing/begin_frame_args.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame.mojom.h"
 #include "services/viz/public/interfaces/compositing/returned_resource.mojom.h"
 #include "services/viz/public/interfaces/compositing/surface_info.mojom.h"
@@ -78,6 +79,53 @@ void SerializeAndDeserialize(Type&& input, Type* output) {
 }
 
 }  // namespace
+
+TEST_F(StructTraitsTest, BeginFrameArgs) {
+  const base::TimeTicks frame_time = base::TimeTicks::Now();
+  const base::TimeTicks deadline = base::TimeTicks::Now();
+  const base::TimeDelta interval = base::TimeDelta::FromMilliseconds(1337);
+  const BeginFrameArgs::BeginFrameArgsType type = BeginFrameArgs::NORMAL;
+  const bool on_critical_path = true;
+  const uint32_t source_id = 5;
+  const uint64_t sequence_number = 10;
+  BeginFrameArgs input;
+  input.source_id = source_id;
+  input.sequence_number = sequence_number;
+  input.frame_time = frame_time;
+  input.deadline = deadline;
+  input.interval = interval;
+  input.type = type;
+  input.on_critical_path = on_critical_path;
+
+  BeginFrameArgs output;
+  SerializeAndDeserialize<mojom::BeginFrameArgs>(input, &output);
+
+  EXPECT_EQ(source_id, output.source_id);
+  EXPECT_EQ(sequence_number, output.sequence_number);
+  EXPECT_EQ(frame_time, output.frame_time);
+  EXPECT_EQ(deadline, output.deadline);
+  EXPECT_EQ(interval, output.interval);
+  EXPECT_EQ(type, output.type);
+  EXPECT_EQ(on_critical_path, output.on_critical_path);
+}
+
+TEST_F(StructTraitsTest, BeginFrameAck) {
+  const uint32_t source_id = 5;
+  const uint64_t sequence_number = 10;
+  const bool has_damage = true;
+  BeginFrameAck input;
+  input.source_id = source_id;
+  input.sequence_number = sequence_number;
+  input.has_damage = has_damage;
+
+  BeginFrameAck output;
+  SerializeAndDeserialize<mojom::BeginFrameAck>(input, &output);
+
+  EXPECT_EQ(source_id, output.source_id);
+  EXPECT_EQ(sequence_number, output.sequence_number);
+  // |has_damage| is not transmitted.
+  EXPECT_FALSE(output.has_damage);
+}
 
 TEST_F(StructTraitsTest, ResourceSettings) {
   constexpr size_t kArbitrarySize = 32;
