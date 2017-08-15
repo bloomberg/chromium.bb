@@ -17,6 +17,8 @@ blink_core_sources("loader") {
     "DocumentThreadableLoader.cpp",
     "DocumentThreadableLoader.h",
     "DocumentThreadableLoaderClient.h",
+    "DocumentWriter.cpp",
+    "DocumentWriter.h",
     "EmptyClients.cpp",
     "EmptyClients.h",
     "FormSubmission.cpp",

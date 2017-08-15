@@ -37,8 +37,8 @@
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/frame/FrameTypes.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/html/parser/ParserSynchronizationPolicy.h"
 #include "core/loader/DocumentLoadTiming.h"
+#include "core/loader/DocumentWriter.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/LinkLoader.h"
 #include "core/loader/NavigationPolicy.h"
@@ -119,6 +119,8 @@ class CORE_EXPORT DocumentLoader
   const KURL& Url() const;
   const KURL& UnreachableURL() const;
   const KURL& UrlForHistory() const;
+
+  const AtomicString& ResponseMIMEType() const;
 
   void DidChangePerformanceTiming();
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag);
@@ -230,7 +232,7 @@ class CORE_EXPORT DocumentLoader
 
  private:
   // installNewDocument() does the work of creating a Document and
-  // DocumentParser, as well as creating a new LocalDOMWindow if needed. It also
+  // DocumentWriter, as well as creating a new LocalDOMWindow if needed. It also
   // initalizes a bunch of state on the Document (e.g., the state based on
   // response headers).
   enum class InstallNewDocumentReason { kNavigation, kJavascriptURL };
@@ -242,12 +244,13 @@ class CORE_EXPORT DocumentLoader
                           InstallNewDocumentReason,
                           ParserSynchronizationPolicy,
                           const KURL& overriding_url);
-  void DidInstallNewDocument(Document*);
+  void DidInstallNewDocument(Document*, InstallNewDocumentReason);
   void WillCommitNavigation();
   void DidCommitNavigation();
 
-  void CommitNavigation(const AtomicString& mime_type,
-                        const KURL& overriding_url = KURL());
+  void EnsureWriter(const AtomicString& mime_type,
+                    const KURL& overriding_url = KURL());
+  void EndWriting();
 
   // Use these method only where it's guaranteed that |m_frame| hasn't been
   // cleared.
@@ -297,6 +300,8 @@ class CORE_EXPORT DocumentLoader
 
   Member<RawResource> main_resource_;
   Member<HistoryItem> history_item_;
+
+  Member<DocumentWriter> writer_;
 
   Member<SubresourceFilter> subresource_filter_;
 
