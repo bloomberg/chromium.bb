@@ -23,27 +23,9 @@
 
 namespace {
 
-// Hints for size of proxy settings dialog.
-const int kProxySettingsDialogReasonableWidth = 626;
-const int kProxySettingsDialogReasonableHeight = 525;
-const float kProxySettingsDialogReasonableWidthRatio = 0.4f;
-const float kProxySettingsDialogReasonableHeightRatio = 0.4f;
-
-const char kProxySettingsURLParam[] = "?network=%s";
-
-int CalculateSize(int screen_size, int min_comfortable, float desired_ratio) {
-  int desired_size = static_cast<int>(desired_ratio * screen_size);
-  desired_size = std::max(min_comfortable, desired_size);
-  return std::min(screen_size, desired_size);
-}
-
-GURL GetURLForProxySettings(const std::string& guid) {
-  std::string url(chrome::kChromeUIProxySettingsURL);
-  url += base::StringPrintf(
-      kProxySettingsURLParam,
-      net::EscapeUrlEncodedData(guid, true).c_str());
-  return GURL(url);
-}
+// Width matches the Settings UI, height is sized to match the content.
+const int kProxySettingsDialogWidth = 640;
+const int kProxySettingsDialogHeight = 480;
 
 }  // namespace
 
@@ -61,31 +43,27 @@ ProxySettingsDialog::ProxySettingsDialog(
                      delegate,
                      window,
                      base::string16(),
-                     GetURLForProxySettings(network.guid())) {
+                     GURL(chrome::kChromeUIProxySettingsURL)),
+      guid_(network.guid()) {
+  name_ = network.Matches(NetworkTypePattern::Ethernet())
+              ? l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_ETHERNET)
+              : base::UTF8ToUTF16(network.name());
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ++instance_count_;
-
-  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
-  SetDialogSize(CalculateSize(screen_bounds.width(),
-                              kProxySettingsDialogReasonableWidth,
-                              kProxySettingsDialogReasonableWidthRatio),
-                CalculateSize(screen_bounds.height(),
-                              kProxySettingsDialogReasonableHeight,
-                              kProxySettingsDialogReasonableHeightRatio));
-
-  std::string network_name = network.name();
-  if (network_name.empty() && network.Matches(NetworkTypePattern::Ethernet())) {
-    network_name =
-        l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-  }
-
-  SetDialogTitle(l10n_util::GetStringFUTF16(IDS_PROXY_PAGE_TITLE_FORMAT,
-                                            base::ASCIIToUTF16(network_name)));
+  SetDialogSize(kProxySettingsDialogWidth, kProxySettingsDialogHeight);
 }
 
 ProxySettingsDialog::~ProxySettingsDialog() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   --instance_count_;
+}
+
+base::string16 ProxySettingsDialog::GetDialogTitle() const {
+  return name_;
+}
+
+std::string ProxySettingsDialog::GetDialogArgs() const {
+  return guid_;
 }
 
 void ProxySettingsDialog::OnDialogClosed(const std::string& json_retval) {

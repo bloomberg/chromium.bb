@@ -226,12 +226,12 @@ Polymer({
 
     Polymer.dom.flush();
 
-    if (this.didSetFocus_) {
+    if (!this.didSetFocus_) {
       // Focus a button once the initial state is set.
       this.didSetFocus_ = true;
-      var button = this.$$('#buttonDiv .primary-button:not([hidden])');
+      var button = this.$$('#titleDiv .primary-button:not([hidden])');
       if (!button)
-        button = this.$$('#buttonDiv .secondary-button:not([hidden])');
+        button = this.$$('#titleDiv paper-button:not([hidden])');
       assert(button);  // At least one button will always be visible.
       button.focus();
     }

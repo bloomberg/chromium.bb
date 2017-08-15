@@ -4069,9 +4069,6 @@ Battery full
   <message name="IDS_VERSION_FIELD_PREFIX" desc="Display the OS version to the user.">
     version
   </message>
-  <message name="IDS_PROXY_PAGE_TITLE_FORMAT" desc="The title of the proxy page for a specific network.">
-    Network proxy for <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>
-  </message>
   <message name="IDS_PROXY_CONFIG_TITLE" desc="The title of the basic proxy config.">
     Proxy Configuration
   </message>
