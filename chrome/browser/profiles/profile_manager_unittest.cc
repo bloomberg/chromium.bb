@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -61,7 +62,6 @@
 #endif  // defined(OS_CHROMEOS)
 
 using base::ASCIIToUTF16;
-using content::BrowserThread;
 
 namespace {
 
@@ -85,9 +85,10 @@ class UnittestProfileManager : public ::ProfileManagerWithoutInit {
 
   Profile* CreateProfileAsyncHelper(const base::FilePath& path,
                                     Delegate* delegate) override {
-    // This is safe while all file operations are done on the FILE thread.
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
+    // ThreadTaskRunnerHandle::Get() is TestingProfile's "async" IOTaskRunner
+    // (ref. TestingProfile::GetIOTaskRunner()).
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
         base::BindOnce(base::IgnoreResult(&base::CreateDirectory), path));
 
     return new TestingProfile(path, this);
