@@ -7,15 +7,15 @@ suite('CrPolicyIndicator', function() {
   /** @type {!CrPolicyIndicatorElement|undefined} */
   var indicator;
 
-  /** @type {!PaperTooltipElement|undefined} */
-  var tooltip;
+  /** @type {!CrTooltipIconElement|undefined} */
+  var icon;
 
   setup(function() {
     PolymerTest.clearBody();
 
     indicator = document.createElement('cr-policy-indicator');
     document.body.appendChild(indicator);
-    tooltip = indicator.$$('paper-tooltip');
+    icon = indicator.$$('cr-tooltip-icon');
   });
 
   teardown(function() {
@@ -23,22 +23,22 @@ suite('CrPolicyIndicator', function() {
   });
 
   test('none', function() {
-    assertTrue(indicator.$.indicator.hidden);
+    assertTrue(icon.hidden);
   });
 
   test('indicator', function() {
     indicator.indicatorType = CrPolicyIndicatorType.USER_POLICY;
 
-    assertFalse(indicator.$.indicator.hidden);
-    assertEquals('cr20:domain', indicator.$.indicator.icon);
-    assertEquals('policy', tooltip.textContent.trim());
+    assertFalse(icon.hidden);
+    assertEquals('cr20:domain', icon.iconClass);
+    assertEquals('policy', icon.tooltipText);
 
     if (cr.isChromeOS) {
       indicator.indicatorType = CrPolicyIndicatorType.OWNER;
       indicator.indicatorSourceName = 'foo@example.com';
 
-      assertEquals('cr:person', indicator.$.indicator.icon);
-      assertEquals('owner: foo@example.com', tooltip.textContent.trim());
+      assertEquals('cr:person', icon.iconClass);
+      assertEquals('owner: foo@example.com', icon.tooltipText);
     }
   });
 });

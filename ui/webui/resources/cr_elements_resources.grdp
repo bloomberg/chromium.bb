@@ -145,8 +145,11 @@
   <structure name="IDR_CR_ELEMENTS_CR_POLICY_PREF_INDICATOR_HTML"
              file="../../webui/resources/cr_elements/policy/cr_policy_pref_indicator.html"
              type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_CR_POLICY_VARS_CSS_HTML"
-             file="../../webui/resources/cr_elements/policy/cr_policy_vars_css.html"
+  <structure name="IDR_CR_ELEMENTS_CR_TOOLTIP_ICON_HTML"
+             file="../../webui/resources/cr_elements/policy/cr_tooltip_icon.html"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_TOOLTIP_ICON_JS"
+             file="../../webui/resources/cr_elements/policy/cr_tooltip_icon.js"
              type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_PROFILE_AVATAR_SELECTOR_HTML"
              file="../../webui/resources/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector.html"
