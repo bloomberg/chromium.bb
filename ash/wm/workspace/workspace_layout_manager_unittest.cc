@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/accessibility_delegate.h"
+#include "ash/app_list/test_app_list_view_presenter_impl.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/config.h"
@@ -28,6 +29,7 @@
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -36,9 +38,12 @@
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "chromeos/audio/chromeos_sounds.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
@@ -975,15 +980,24 @@ class WorkspaceLayoutManagerBackdropTest : public AshTestBase {
   }
 
   // Turn the top window back drop on / off.
-  void ShowTopWindowBackdrop(bool show) {
+  void ShowTopWindowBackdropForContainer(aura::Window* container, bool show) {
     std::unique_ptr<BackdropDelegate> backdrop;
     if (show) {
       backdrop = base::MakeUnique<TabletModeBackdropDelegateImpl>();
     }
-    GetWorkspaceLayoutManager(default_container_)
-        ->SetBackdropDelegate(std::move(backdrop));
+    GetWorkspaceLayoutManager(container)->SetBackdropDelegate(
+        std::move(backdrop));
     // Closing and / or opening can be a delayed operation.
     base::RunLoop().RunUntilIdle();
+  }
+
+  aura::Window* CreateTestWindowInParent(aura::Window* root_window) {
+    aura::Window* window = new aura::Window(nullptr);
+    window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+    window->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    window->Init(ui::LAYER_TEXTURED);
+    aura::client::ParentWindowWithContext(window, root_window, gfx::Rect());
+    return window;
   }
 
   // Return the default container.
@@ -1030,13 +1044,13 @@ constexpr int kNoSoundKey = -1;
 // Check that creating the BackDrop without destroying it does not lead into
 // a crash.
 TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropCrashTest) {
-  ShowTopWindowBackdrop(true);
+  ShowTopWindowBackdropForContainer(default_container(), true);
 }
 
 // Verify basic assumptions about the backdrop.
 TEST_F(WorkspaceLayoutManagerBackdropTest, BasicBackdropTests) {
   // The background widget will be created when there is a window.
-  ShowTopWindowBackdrop(true);
+  ShowTopWindowBackdropForContainer(default_container(), true);
   ASSERT_EQ(0u, default_container()->children().size());
 
   {
@@ -1057,7 +1071,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BasicBackdropTests) {
   EXPECT_FALSE(default_container()->children()[0]->IsVisible());
 
   // Destroying the Backdrop should empty the container.
-  ShowTopWindowBackdrop(false);
+  ShowTopWindowBackdropForContainer(default_container(), false);
   ASSERT_EQ(0U, default_container()->children().size());
 }
 
@@ -1087,7 +1101,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, VerifyBackdropAndItsStacking) {
 
   // Turn on the backdrop mode and check that the window shows up where it
   // should be (second highest number).
-  ShowTopWindowBackdrop(true);
+  ShowTopWindowBackdropForContainer(default_container(), true);
   backdrop = default_container()->children()[2];
   EXPECT_EQ("C,X,B,A", GetWindowOrderAsString(backdrop, window1.get(),
                                               window2.get(), window3.get()));
@@ -1109,7 +1123,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, VerifyBackdropAndItsStacking) {
   window3.reset();
   EXPECT_EQ("b,x", GetWindowOrderAsString(backdrop, window1.get(),
                                           window2.get(), window3.get()));
-  ShowTopWindowBackdrop(false);
+  ShowTopWindowBackdropForContainer(default_container(), false);
   EXPECT_EQ("b", GetWindowOrderAsString(nullptr, window1.get(), window2.get(),
                                         window3.get()));
 }
@@ -1119,7 +1133,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
        ShelfVisibilityDoesNotChangesBounds) {
   Shelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* shelf_layout_manager = shelf->shelf_layout_manager();
-  ShowTopWindowBackdrop(true);
+  ShowTopWindowBackdropForContainer(default_container(), true);
   RunAllPendingInMessageLoop();
   const gfx::Size fullscreen_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().size();
@@ -1236,7 +1250,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
 
   // Enabling the backdrop delegate for tablet mode will put the
   // backdrop on the top most window.
-  ShowTopWindowBackdrop(true);
+  ShowTopWindowBackdropForContainer(default_container(), true);
   {
     aura::Window::Windows children = window1->parent()->children();
     EXPECT_EQ(children[0], window1.get());
@@ -1261,7 +1275,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
   }
 
   // Removing the delegate will move the backdrop back to window1.
-  ShowTopWindowBackdrop(false);
+  ShowTopWindowBackdropForContainer(default_container(), false);
   {
     aura::Window::Windows children = window1->parent()->children();
     EXPECT_EQ(children[0], backdrop);
@@ -1328,6 +1342,119 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
   generator.MoveMouseTo(70, 70);
   generator.ClickLeftButton();
   EXPECT_EQ(kNoSoundKey, accessibility_delegate->GetPlayedEarconAndReset());
+}
+
+TEST_F(WorkspaceLayoutManagerBackdropTest,
+       DualDisplayShowAppListWithBackdropState) {
+  // Create two displays.
+  UpdateDisplay("0+0-200x200,+200+0-100x100");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ(root_windows.size(), 2u);
+
+  // Create a window in each display and show them in maximized state.
+  aura::Window* window_1 = CreateTestWindowInParent(root_windows[0]);
+  window_1->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window_1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  window_1->Show();
+  aura::Window* window_2 = CreateTestWindowInParent(root_windows[1]);
+  window_2->SetBounds(gfx::Rect(201, 0, 100, 100));
+  window_2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  window_2->Show();
+
+  RootWindowController* primary_controller =
+      Shell::GetPrimaryRootWindowController();
+  WorkspaceController* primary_wc = primary_controller->workspace_controller();
+  Shell::RootWindowControllerList controllers =
+      Shell::GetAllRootWindowControllers();
+  WorkspaceController* secondary_wc = nullptr;
+  RootWindowController* secondary_controller = nullptr;
+  EXPECT_EQ(controllers.size(), 2u);
+  for (size_t i = 0; i < controllers.size(); ++i) {
+    if (controllers[i] != primary_controller) {
+      secondary_controller = controllers[i];
+      secondary_wc = secondary_controller->workspace_controller();
+    }
+  }
+
+  // Turn on top window backdrop for two displays.
+  WorkspaceControllerTestApi primary_test_helper(primary_wc);
+  WorkspaceControllerTestApi secondary_test_helper(secondary_wc);
+  ShowTopWindowBackdropForContainer(default_container(), true);
+  EXPECT_TRUE(primary_test_helper.GetBackdropWindow());
+  ShowTopWindowBackdropForContainer(
+      secondary_controller->GetContainer(kShellWindowId_DefaultContainer),
+      true);
+  EXPECT_TRUE(secondary_test_helper.GetBackdropWindow());
+
+  // Enable tablet mode and fullscreen app list.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      app_list::features::kEnableFullscreenAppList);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
+  EXPECT_TRUE(Shell::Get()
+                  ->tablet_mode_controller()
+                  ->IsTabletModeWindowManagerEnabled());
+
+  // Show app list in primary display will not hide the backdrop in secondary
+  // display.
+  EXPECT_TRUE(primary_test_helper.GetBackdropWindow());
+  EXPECT_TRUE(secondary_test_helper.GetBackdropWindow());
+  TestAppListViewPresenterImpl app_list_presenter_impl_;
+  app_list_presenter_impl_.Show(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  EXPECT_FALSE(primary_test_helper.GetBackdropWindow());
+  EXPECT_TRUE(secondary_test_helper.GetBackdropWindow());
+}
+
+// Fullscreen app list changes to visible should hide the backdrop, otherwise,
+// should show the backdrop.
+TEST_F(WorkspaceLayoutManagerBackdropTest,
+       UpdateBackdropOnAppListVisibilityNotification) {
+  WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+  WorkspaceControllerTestApi test_helper(wc);
+
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_FALSE(test_helper.GetBackdropWindow());
+
+  // Turn the top window backdrop on.
+  ShowTopWindowBackdropForContainer(default_container(), true);
+  EXPECT_TRUE(test_helper.GetBackdropWindow());
+  EXPECT_FALSE(app_list::features::IsFullscreenAppListEnabled());
+
+  // Show the non-fullscreen app list should have no effect for the backdrop.
+  TestAppListViewPresenterImpl app_list_presenter_impl_;
+  app_list_presenter_impl_.Show(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  EXPECT_TRUE(test_helper.GetBackdropWindow());
+
+  // Tap shelf should dismiss the app list.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  gfx::Rect work_area =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  gfx::Point shelf_point(work_area.CenterPoint().x(), work_area.bottom() + 5);
+  generator.GestureTapAt(shelf_point);
+  EXPECT_TRUE(test_helper.GetBackdropWindow());
+
+  // Enable tablet mode and fullscreen app list.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      app_list::features::kEnableFullscreenAppList);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_TRUE(test_helper.GetBackdropWindow());
+  EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
+  EXPECT_TRUE(Shell::Get()
+                  ->tablet_mode_controller()
+                  ->IsTabletModeWindowManagerEnabled());
+  // Show the fullscreen app list should hide the backdrop.
+  app_list_presenter_impl_.Show(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  EXPECT_FALSE(test_helper.GetBackdropWindow());
+  // Tap at shelf should dismiss the app list and backdrop should be shown
+  // again.
+  generator.GestureTapAt(shelf_point);
+  EXPECT_TRUE(test_helper.GetBackdropWindow());
 }
 
 TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackForArc) {
