@@ -15,7 +15,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/system/devicetype_utils.h"
+#include "ui/chromeos/devicetype_utils.h"
 #endif
 
 using proximity_auth::ScreenlockState;
@@ -361,7 +361,7 @@ void EasyUnlockScreenlockStateHandler::UpdateTooltipOptions(
 
 base::string16 EasyUnlockScreenlockStateHandler::GetDeviceName() {
 #if defined(OS_CHROMEOS)
-  return ash::GetChromeOSDeviceName();
+  return ui::GetChromeOSDeviceName();
 #else
   // TODO(tbarzic): Figure out the name for non Chrome OS case.
   return base::ASCIIToUTF16("Chrome");

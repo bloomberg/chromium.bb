@@ -119,8 +119,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/accessibility_types.h"  // nogncheck
-#include "ash/shell.h"  // nogncheck
-#include "ash/system/devicetype_utils.h"  // nogncheck
+#include "ash/shell.h"                // nogncheck
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -142,6 +141,7 @@
 #include "components/arc/arc_util.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/chromeos/devicetype_utils.h"  // nogncheck
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -242,7 +242,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   DCHECK(values);
 
 #if defined(OS_CHROMEOS)
-  const int device_type_resource_id = ash::GetChromeOSDeviceTypeResourceId();
+  const int device_type_resource_id = ui::GetChromeOSDeviceTypeResourceId();
   const int enable_logging_resource_id =
       IDS_OPTIONS_ENABLE_LOGGING_DIAGNOSTIC_AND_USAGE_DATA;
 #else

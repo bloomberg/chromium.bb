@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 
-#include "ash/system/devicetype_utils.h"
 #include "ash/system/power/power_status.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -21,6 +20,7 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
@@ -86,7 +86,7 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
 
   const base::string16 message =
       is_low_battery
-          ? ash::SubstituteChromeOSDeviceType(
+          ? ui::SubstituteChromeOSDeviceType(
                 IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_LOW_BATTERY_MESSAGE)
           : l10n_util::GetStringUTF16(
                 IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_MESSAGE);

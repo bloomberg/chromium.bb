@@ -11,6 +11,8 @@ component("chromeos") {
   sources = [
     "accelerometer/accelerometer_util.cc",
     "accelerometer/accelerometer_util.h",
+    "devicetype_utils.cc",
+    "devicetype_utils.h",
     "ime/candidate_view.cc",
     "ime/candidate_view.h",
     "ime/candidate_window_constants.h",

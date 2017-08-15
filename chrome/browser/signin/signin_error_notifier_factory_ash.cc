@@ -4,7 +4,6 @@
 
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
 
-#include "ash/shell.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -35,11 +34,7 @@ SigninErrorNotifierFactory* SigninErrorNotifierFactory::GetInstance() {
 
 KeyedService* SigninErrorNotifierFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (!ash::Shell::HasInstance())
-    return NULL;
-
   Profile* profile = static_cast<Profile*>(context);
-
   return new SigninErrorNotifier(
       SigninErrorControllerFactory::GetForProfile(profile), profile);
 }

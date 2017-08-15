@@ -52,10 +52,10 @@
 #include "ui/gfx/range/range.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/system/devicetype_utils.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/chromeos/devicetype_utils.h"
 #endif
 
 using proximity_auth::ScreenlockState;
@@ -139,7 +139,7 @@ ExtensionFunction::ResponseAction EasyUnlockPrivateGetStringsFunction::Run() {
   std::unique_ptr<base::DictionaryValue> strings(new base::DictionaryValue);
 
 #if defined(OS_CHROMEOS)
-  const base::string16 device_type = ash::GetChromeOSDeviceName();
+  const base::string16 device_type = ui::GetChromeOSDeviceName();
 #else
   // TODO(isherman): Set an appropriate device name for non-ChromeOS devices.
   const base::string16 device_type = base::ASCIIToUTF16("Chromeschnozzle");

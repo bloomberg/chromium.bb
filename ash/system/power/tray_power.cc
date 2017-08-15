@@ -11,7 +11,6 @@
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/date/date_view.h"
-#include "ash/system/devicetype_utils.h"
 #include "ash/system/power/battery_notification.h"
 #include "ash/system/power/dual_role_notification.h"
 #include "ash/system/system_notifier.h"
@@ -25,6 +24,7 @@
 #include "base/time/time.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
@@ -224,7 +224,7 @@ bool TrayPower::MaybeShowUsbChargerNotification() {
     std::unique_ptr<Notification> notification(new Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, kUsbNotificationId,
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE),
-        ash::SubstituteChromeOSDeviceType(
+        ui::SubstituteChromeOSDeviceType(
             IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT),
         rb.GetImageNamed(IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER),
         base::string16(), GURL(),

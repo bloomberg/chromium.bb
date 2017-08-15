@@ -7,10 +7,10 @@
 #include "ash/display/display_util.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/devicetype_utils.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -77,7 +77,7 @@ TEST_F(DisplayErrorObserverTest, CallWithDifferentState) {
   observer()->OnDisplayModeChangeFailed(
       display::DisplayConfigurator::DisplayStateList(),
       display::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
-  EXPECT_EQ(ash::SubstituteChromeOSDeviceType(
+  EXPECT_EQ(ui::SubstituteChromeOSDeviceType(
                 IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING),
             GetMessageContents());
 }

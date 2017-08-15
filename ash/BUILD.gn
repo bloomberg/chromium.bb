@@ -363,8 +363,6 @@ component("ash") {
     "system/date/system_info_default_view.h",
     "system/date/tray_system_info.cc",
     "system/date/tray_system_info.h",
-    "system/devicetype_utils.cc",
-    "system/devicetype_utils.h",
     "system/display_scale/scale_detailed_view.cc",
     "system/display_scale/scale_detailed_view.h",
     "system/display_scale/scale_view.cc",

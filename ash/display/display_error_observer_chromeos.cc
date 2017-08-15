@@ -6,9 +6,9 @@
 
 #include "ash/display/display_util.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/devicetype_utils.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/display/types/display_snapshot.h"
 
 namespace ash {
@@ -31,7 +31,7 @@ void DisplayErrorObserver::OnDisplayModeChangeFailed(
   base::string16 message =
       (new_state == display::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR)
           ? l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING)
-          : ash::SubstituteChromeOSDeviceType(
+          : ui::SubstituteChromeOSDeviceType(
                 IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING);
   ShowDisplayErrorNotification(message, true);
 }

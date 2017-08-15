@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/system/devicetype_utils.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
@@ -20,6 +19,7 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification.h"
@@ -115,7 +115,7 @@ void ArcAuthNotification::Show(Profile* profile) {
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kFirstRunNotificationId,
           l10n_util::GetStringFUTF16(IDS_ARC_NOTIFICATION_TITLE,
-                                     ash::GetChromeOSDeviceName()),
+                                     ui::GetChromeOSDeviceName()),
           l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_MESSAGE),
           resource_bundle.GetImageNamed(IDR_ARC_PLAY_STORE_NOTIFICATION),
           base::UTF8ToUTF16(kDisplaySource), GURL(), notifier_id, data,

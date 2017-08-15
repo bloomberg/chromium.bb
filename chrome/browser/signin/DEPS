@@ -1,7 +1,0 @@
-include_rules = [
-  # TODO(mash): Remove. http://crbug.com/724143
-  "+ash/shell.h",
-  "+ash/system/devicetype_utils.h",
-  "+ash/system/system_notifier.h",
-  "+ash/test/ash_test_base.h",
-]

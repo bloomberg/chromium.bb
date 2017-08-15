@@ -4,7 +4,6 @@
 
 #include "chrome/browser/signin/easy_unlock_notification_controller_chromeos.h"
 
-#include "ash/system/devicetype_utils.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -14,6 +13,7 @@
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_types.h"
 
@@ -76,7 +76,7 @@ void EasyUnlockNotificationControllerChromeOS::
           IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_MESSAGE,
-          ash::GetChromeOSDeviceName()),
+          ui::GetChromeOSDeviceName()),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_NOTIFICATION_EASYUNLOCK_ENABLED),
       rich_notification_data,
@@ -99,7 +99,7 @@ void EasyUnlockNotificationControllerChromeOS::ShowPairingChangeNotification() {
           IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_MESSAGE,
-          ash::GetChromeOSDeviceName()),
+          ui::GetChromeOSDeviceName()),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_NOTIFICATION_EASYUNLOCK_ENABLED),
       rich_notification_data,
@@ -124,7 +124,7 @@ void EasyUnlockNotificationControllerChromeOS::
           IDS_EASY_UNLOCK_PAIRING_CHANGE_APPLIED_NOTIFICATION_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_EASY_UNLOCK_PAIRING_CHANGE_APPLIED_NOTIFICATION_MESSAGE,
-          base::UTF8ToUTF16(phone_name), ash::GetChromeOSDeviceName()),
+          base::UTF8ToUTF16(phone_name), ui::GetChromeOSDeviceName()),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_NOTIFICATION_EASYUNLOCK_ENABLED),
       rich_notification_data,
@@ -141,9 +141,9 @@ void EasyUnlockNotificationControllerChromeOS::ShowPromotionNotification() {
   ShowNotification(CreateNotification(
       kEasyUnlockPromotionNotifierId,
       l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_NOTIFICATION_TITLE,
-                                 ash::GetChromeOSDeviceName()),
+                                 ui::GetChromeOSDeviceName()),
       l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_NOTIFICATION_MESSAGE,
-                                 ash::GetChromeOSDeviceName()),
+                                 ui::GetChromeOSDeviceName()),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_NOTIFICATION_EASYUNLOCK_PROMO),
       rich_notification_data,
