@@ -91,24 +91,51 @@ def _MakeTargetImageName(common_prefix, output_directory, location):
   return loc
 
 
-def _AddToManifest(manifest_file, target_name, source, mapper):
-  """Appends |source| to the given |manifest_file| (a file object) in a format
-  suitable for consumption by mkbootfs.
-
-  If |source| is a file it's directly added. If |source| is a directory, its
-  contents are recursively added.
-
-  |source| must exist on disk at the time this function is called.
+def _ExpandDirectories(file_mapping, mapper):
+  """Walks directories listed in |file_mapping| and adds their contents to
+  |file_mapping|, using |mapper| to determine the target filename.
   """
-  if os.path.isdir(source):
-    files = [os.path.join(dp, f) for dp, dn, fn in os.walk(source) for f in fn]
-    for f in files:
-      # We pass None as the mapper because this should never recurse a 2nd time.
-      _AddToManifest(manifest_file, mapper(f), f, None)
-  elif os.path.exists(source):
-    manifest_file.write('%s=%s\n' % (target_name, source))
-  else:
-    raise Exception('%s does not exist' % source)
+  expanded = {}
+  for target, source in file_mapping.items():
+    if os.path.isdir(source):
+      files = [os.path.join(dir_path, filename)
+               for dir_path, dir_names, file_names in os.walk(source)
+               for filename in file_names]
+      for f in files:
+        expanded[mapper(f)] = f
+    elif os.path.exists(source):
+      expanded[target] = source
+    else:
+      raise Exception('%s does not exist' % source)
+  return expanded
+
+
+def _StripBinary(dry_run, bin_path):
+  """Creates a stripped copy of the executable at |bin_path| and returns the
+  path to the stripped copy."""
+  strip_path = tempfile.mktemp()
+  _RunAndCheck(dry_run, ['/usr/bin/strip', bin_path, '-o', strip_path])
+  if not os.path.exists(strip_path):
+    raise Exception('strip did not create output file')
+  return strip_path
+
+
+def _StripBinaries(dry_run, file_mapping):
+  """Strips all executables in |file_mapping|, and returns a new mapping
+  dictionary, suitable to pass to _WriteManifest()"""
+  new_mapping = file_mapping.copy()
+  for target, source in file_mapping.iteritems():
+    file_tag = open(source, 'rb').read(4)
+    if file_tag == '\x7fELF':
+      new_mapping[target] = _StripBinary(dry_run, source)
+  return new_mapping
+
+
+def _WriteManifest(manifest_file, file_mapping):
+  """Writes |file_mapping| to the given |manifest_file| (a file object) in a
+  form suitable for consumption by mkbootfs."""
+  for target, source in file_mapping.viewitems():
+    manifest_file.write('%s=%s\n' % (target, source))
 
 
 def ReadRuntimeDeps(deps_path, output_directory):
@@ -120,24 +147,11 @@ def ReadRuntimeDeps(deps_path, output_directory):
     result.append((target_path, abs_path))
   return result
 
-def _StripBinary(dry_run, bin_path):
-  strip_path = bin_path + '_stripped';
-  shutil.copyfile(bin_path, strip_path)
-  _RunAndCheck(dry_run, ['/usr/bin/strip', strip_path])
-  return strip_path
-
-
 def BuildBootfs(output_directory, runtime_deps, bin_name, child_args,
                 device, dry_run):
-  target_source_pairs = runtime_deps
-
-  # Stage the stripped binary in the boot image, keeping the original binary's
-  # name for symbolization purposes.
-  bin_path = os.path.abspath(os.path.join(output_directory, bin_name))
-  stripped_bin_path = _StripBinary(dry_run, bin_path)
-  target_source_pairs.append(
-      (_MakeTargetImageName(DIR_SOURCE_ROOT, output_directory, bin_name),
-       stripped_bin_path))
+  # |runtime_deps| already contains (target, source) pairs for the runtime deps,
+  # so we can initialize |file_mapping| from it directly.
+  file_mapping = dict(runtime_deps)
 
   # Generate a script that runs the binaries and shuts down QEMU (if used).
   autorun_file = tempfile.NamedTemporaryFile()
@@ -163,20 +177,28 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args,
   autorun_file.flush()
   os.chmod(autorun_file.name, 0750)
   _DumpFile(dry_run, autorun_file.name, 'autorun')
-  target_source_pairs.append(('autorun', autorun_file.name))
 
+  # Add the autorun file and target binary to |file_mapping|.
+  file_mapping['autorun'] = autorun_file.name
+  file_mapping[os.path.basename(bin_name)] = bin_name
+
+  # Find the full list of files to add to the bootfs.
+  file_mapping = _ExpandDirectories(
+      file_mapping,
+      lambda x: _MakeTargetImageName(DIR_SOURCE_ROOT, output_directory, x))
+
+  # Strip any binaries in the file list, and generate a manifest mapping.
+  manifest_mapping = _StripBinaries(dry_run, file_mapping)
+
+  # Write the target, source mappings to a file suitable for bootfs.
   manifest_file = tempfile.NamedTemporaryFile()
-  bootfs_name = bin_name + '.bootfs'
-
-  for target, source in target_source_pairs:
-    _AddToManifest(manifest_file.file, target, source,
-                   lambda x: _MakeTargetImageName(
-                                 DIR_SOURCE_ROOT, output_directory, x))
-
-  mkbootfs_path = os.path.join(SDK_ROOT, 'tools', 'mkbootfs')
-
+  _WriteManifest(manifest_file.file, manifest_mapping)
   manifest_file.flush()
   _DumpFile(dry_run, manifest_file.name, 'manifest')
+
+  # Run mkbootfs with the manifest to copy the necessary files into the bootfs.
+  mkbootfs_path = os.path.join(SDK_ROOT, 'tools', 'mkbootfs')
+  bootfs_name = bin_name + '.bootfs'
   if _RunAndCheck(
       dry_run,
       [mkbootfs_path, '-o', bootfs_name,
@@ -184,23 +206,62 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args,
        '--target=system', manifest_file.name]) != 0:
     return None
 
-  return bootfs_name
+  # Return both the name of the bootfs file, and the filename mapping.
+  return (bootfs_name, file_mapping)
 
 
 def _SymbolizeEntry(entry):
-  addr2line_output = subprocess.check_output(
-      ['addr2line', '-Cipf', '--exe=' + entry[1], entry[2]])
-  prefix = '#%s: ' % entry[0]
-  # addr2line outputs a second line for inlining information, offset
-  # that to align it properly after the frame index.
-  addr2line_filtered = addr2line_output.strip().replace(
-      '(inlined', ' ' * len(prefix) + '(inlined')
-  if '??' in addr2line_filtered:
-    addr2line_filtered = "%s+%s" % (os.path.basename(entry[1]), entry[2])
+  raw, frame_id = entry['raw'], entry['frame_id']
+  prefix = '#%s: ' % frame_id
+  if entry.has_key('debug_binary') and entry.has_key('pc_offset'):
+    # Invoke addr2line on the host-side binary to resolve the symbol.
+    addr2line_output = subprocess.check_output(
+        ['addr2line', '-s', '-Cipf', '--exe=' + entry['debug_binary'],
+         entry['pc_offset']])
+
+    # addr2line outputs a second line for inlining information, offset
+    # that to align it properly after the frame index.
+    addr2line_filtered = addr2line_output.strip().replace(
+        '(inlined', ' ' * len(prefix) + '(inlined')
+
+    # If symbolization files just output the raw backtrace.
+    if '??' in addr2line_filtered:
+      addr2line_filtered = raw
+  else:
+    addr2line_filtered = raw
+
   return '%s%s' % (prefix, addr2line_filtered)
 
 
-def _ParallelSymbolizeBacktrace(backtrace):
+def _FindDebugBinary(entry, file_mapping):
+  """Looks up the binary listed in |entry| in the |file_mapping|, and returns
+  the corresponding host-side binary's filename, or None."""
+  binary = entry['binary']
+  if not binary:
+    return None
+
+  app_prefix = 'app:'
+  if binary.startswith(app_prefix):
+    binary = binary[len(app_prefix):]
+
+  # Names in |file_mapping| are all relative to "/system/".
+  path_prefix = '/system/'
+  if not binary.startswith(path_prefix):
+    return None
+  binary = binary[len(path_prefix):]
+
+  if binary in file_mapping:
+    return file_mapping[binary]
+
+  # |binary| may be truncated by the crashlogger, so if there is a unique
+  # match for the truncated name in |file_mapping|, use that instead.
+  matches = filter(lambda x: x.startswith(binary), file_mapping.keys())
+  if len(matches) == 1:
+    return file_mapping[matches[0]]
+
+  return None
+
+def _ParallelSymbolizeBacktrace(backtrace, file_mapping):
   # Disable handling of SIGINT during sub-process creation, to prevent
   # sub-processes from consuming Ctrl-C signals, rather than the parent
   # process doing so.
@@ -209,6 +270,12 @@ def _ParallelSymbolizeBacktrace(backtrace):
 
   # Restore the signal handler for the parent process.
   signal.signal(signal.SIGINT, saved_sigint_handler)
+
+  # Resolve the |binary| name in each entry to a host-accessible filename.
+  for entry in backtrace:
+    debug_binary = _FindDebugBinary(entry, file_mapping)
+    if debug_binary:
+      entry['debug_binary'] = debug_binary
 
   symbolized = []
   try:
@@ -224,7 +291,8 @@ def _ParallelSymbolizeBacktrace(backtrace):
   return symbolized
 
 
-def RunFuchsia(bootfs, exe_name, use_device, dry_run):
+def RunFuchsia(bootfs_and_manifest, use_device, dry_run):
+  bootfs, bootfs_manifest = bootfs_and_manifest
   kernel_path = os.path.join(SDK_ROOT, 'kernel', 'magenta.bin')
 
   if use_device:
@@ -269,27 +337,30 @@ def RunFuchsia(bootfs, exe_name, use_device, dry_run):
     return 0
 
   # Set up backtrace-parsing regexps.
-  prefix = r'^.*> '
-  bt_end_re = re.compile(prefix + '(bt)?#(\d+):? end')
-  bt_with_offset_re = re.compile(
-      prefix + 'bt#(\d+): pc 0x[0-9a-f]+ sp (0x[0-9a-f]+) ' +
-               '\((\S+),(0x[0-9a-f]+)\)$')
-  in_process_re = re.compile(prefix +
-                             '#(\d+) 0x[0-9a-f]+ \S+\+(0x[0-9a-f]+)$')
+  qemu_prefix = re.compile(r'^.*> ')
+  backtrace_prefix = re.compile(r'bt#(?P<frame_id>\d+): ')
+
+  # Back-trace line matcher/parser assumes that 'pc' is always present, and
+  # expects that 'sp' and ('binary','pc_offset') may also be provided.
+  backtrace_entry = re.compile(
+      r'pc 0(?:x[0-9a-f]+)? ' +
+      r'(?:sp 0x[0-9a-f]+ )?' +
+      r'(?:\((?P<binary>\S+),(?P<pc_offset>0x[0-9a-f]+)\))?$')
 
   # We pass a separate stdin stream to qemu. Sharing stdin across processes
   # leads to flakiness due to the OS prematurely killing the stream and the
   # Python script panicking and aborting.
   # The precise root cause is still nebulous, but this fix works.
-  # See crbug.com/741194 .
+  # See crbug.com/741194.
   qemu_popen = subprocess.Popen(
       qemu_command, stdout=subprocess.PIPE, stdin=open(os.devnull))
 
-  # A buffer of backtrace entries awaiting symbolization, stored as tuples.
-  # Element #0: backtrace frame number (starting at 0).
-  # Element #1: path to executable code corresponding to the current frame.
-  # Element #2: memory offset within the executable.
-  bt_entries = []
+  # A buffer of backtrace entries awaiting symbolization, stored as dicts:
+  # raw: The original back-trace line that followed the prefix.
+  # frame_id: backtrace frame number (starting at 0).
+  # binary: path to executable code corresponding to the current frame.
+  # pc_offset: memory offset within the executable.
+  backtrace_entries = []
 
   success = False
   while True:
@@ -299,34 +370,43 @@ def RunFuchsia(bootfs, exe_name, use_device, dry_run):
     if 'SUCCESS: all tests passed.' in line:
       success = True
 
-    # Check for an end-of-backtrace marker.
-    if bt_end_re.match(line):
-      if bt_entries:
-        print '----- start symbolized stack'
-        for processed in _ParallelSymbolizeBacktrace(bt_entries):
+    # If the line is not from QEMU then don't try to process it.
+    matched = qemu_prefix.match(line)
+    if not matched:
+      print line
+      continue
+    guest_line = line[matched.end():]
+
+    # Look for the back-trace prefix, otherwise just print the line.
+    matched = backtrace_prefix.match(guest_line)
+    if not matched:
+      print line
+      continue
+    backtrace_line = guest_line[matched.end():]
+
+    # If this was the end of a back-trace then symbolize and print it.
+    frame_id = matched.group('frame_id')
+    if backtrace_line == 'end':
+      if backtrace_entries:
+        for processed in _ParallelSymbolizeBacktrace(backtrace_entries,
+                                                     bootfs_manifest):
           print processed
-        print '----- end symbolized stack'
-      bt_entries = []
+      backtrace_entries = []
       continue
 
-    # Try to parse this as a Fuchsia system backtrace.
-    m = bt_with_offset_re.match(line)
-    if m:
-      bt_entries.append((m.group(1), exe_name, m.group(4)))
-      continue
-
-    # Try to parse the line as an in-process backtrace entry.
-    m = in_process_re.match(line)
-    if m:
-      bt_entries.append((m.group(1), exe_name, m.group(2)))
-      continue
-
-    # Some other line, so print it. Back-traces should not be interleaved with
-    # other output, so while this may re-order lines we see, it should actually
-    # make things more readable.
-    print line
+    # Otherwise, parse the program-counter offset, etc into |backtrace_entries|.
+    matched = backtrace_entry.match(backtrace_line)
+    if matched:
+      # |binary| and |pc_offset| will be None if not present.
+      backtrace_entries.append(
+          {'raw': backtrace_line, 'frame_id': frame_id,
+           'binary': matched.group('binary'),
+           'pc_offset': matched.group('pc_offset')})
+    else:
+      backtrace_entries.append(
+          {'raw': backtrace_line, 'frame_id': frame_id,
+           'binary': None, 'pc_offset': None})
 
   qemu_popen.wait()
 
   return 0 if success else 1
-

@@ -172,14 +172,14 @@ void StackTrace::Print() const {
   OutputToStream(&std::cerr);
 }
 
-// Sample stack trace output:
-// #00 0x1527a058aa00 app:/system/base_unittests+0x18bda00
-// #01 0x1527a0254b5c app:/system/base_unittests+0x1587b5c
-// #02 0x15279f446ece app:/system/base_unittests+0x779ece
+// Sample stack trace output is designed to be similar to Fuchsia's crashlogger:
+// bt#00: pc 0x1527a058aa00 (app:/system/base_unittests,0x18bda00)
+// bt#01: pc 0x1527a0254b5c (app:/system/base_unittests,0x1587b5c)
+// bt#02: pc 0x15279f446ece (app:/system/base_unittests,0x779ece)
 // ...
-// #21 0x1527a05b51b4 app:/system/base_unittests+0x18e81b4
-// #22 0x54fdbf3593de libc.so+0x1c3de
-// #23 end
+// bt#21: pc 0x1527a05b51b4 (app:/system/base_unittests,0x18e81b4)
+// bt#22: pc 0x54fdbf3593de (libc.so,0x1c3de)
+// bt#23: end
 void StackTrace::OutputToStream(std::ostream* os) const {
   SymbolMap map;
 
@@ -189,19 +189,19 @@ void StackTrace::OutputToStream(std::ostream* os) const {
     if (entry) {
       size_t offset = reinterpret_cast<uintptr_t>(trace_[i]) -
                       reinterpret_cast<uintptr_t>(entry->addr);
-      *os << "#" << std::setw(2) << std::setfill('0') << i << std::setw(0)
-          << " " << trace_[i] << " " << entry->name << "+0x" << std::hex
-          << offset << std::dec << std::setw(0) << "\n";
+      *os << "bt#" << std::setw(2) << std::setfill('0') << i << std::setw(0)
+          << ": pc " << trace_[i] << " (" << entry->name << ",0x" << std::hex
+          << offset << std::dec << std::setw(0) << ")\n";
     } else {
       // Fallback if the DSO map isn't available.
       // Logged PC values are absolute memory addresses, and the shared object
       // name is not emitted.
-      *os << "#" << std::setw(2) << std::setfill('0') << i << std::setw(0)
-          << trace_[i] << "\n";
+      *os << "bt#" << std::setw(2) << std::setfill('0') << i << std::setw(0)
+          << ": pc " << trace_[i] << "\n";
     }
   }
 
-  (*os) << "#" << std::setw(2) << i << " end\n";
+  (*os) << "bt#" << std::setw(2) << i << ": end\n";
 }
 
 }  // namespace debug
