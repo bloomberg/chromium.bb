@@ -68,6 +68,8 @@ class ClientNativePixmapFactoryDmabuf : public ClientNativePixmapFactory {
                format == gfx::BufferFormat::BGRA_8888 ||
                format == gfx::BufferFormat::RGBX_8888 ||
                format == gfx::BufferFormat::RGBA_8888;
+      case gfx::BufferUsage::SCANOUT_VDA_WRITE:
+        return false;
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT: {
 #if defined(OS_CHROMEOS)
@@ -104,6 +106,7 @@ class ClientNativePixmapFactoryDmabuf : public ClientNativePixmapFactory {
 #endif
       case gfx::BufferUsage::GPU_READ:
       case gfx::BufferUsage::SCANOUT:
+      case gfx::BufferUsage::SCANOUT_VDA_WRITE:
         // Close all the fds.
         for (const auto& fd : handle.fds)
           base::ScopedFD scoped_fd(fd.fd);

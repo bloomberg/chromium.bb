@@ -42,6 +42,8 @@ bool IsNativeGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
              format == gfx::BufferFormat::RGBA_F16 ||
              format == gfx::BufferFormat::UYVY_422 ||
              format == gfx::BufferFormat::YUV_420_BIPLANAR;
+    case gfx::BufferUsage::SCANOUT_VDA_WRITE:
+      return false;
   }
   NOTREACHED();
   return false;
