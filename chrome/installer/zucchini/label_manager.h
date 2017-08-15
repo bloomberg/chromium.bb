@@ -32,10 +32,6 @@ namespace zucchini {
 //   affects reference parsing, where we reject all references whose offsets
 //   happen to be marked.
 
-// Constant as placeholder for non-existing offset for an index.
-constexpr offset_t kUnusedIndex = offset_t(-1);
-static_assert(IsMarked(kUnusedIndex), "kUnusedIndex must be marked");
-
 // Base class for OrderedLabelManager and UnorderedLabelManager.
 class BaseLabelManager {
  public:

@@ -114,6 +114,7 @@ test("zucchini_unittests") {
     "test_reference_reader.cc",
     "test_reference_reader.h",
     "typed_value_unittest.cc",
+    "zucchini_gen_unittest.cc",
   ]
 
   deps = [

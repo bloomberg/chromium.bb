@@ -53,6 +53,11 @@ class ImageIndex {
 
   PoolTag GetPoolTag(TypeTag type) const { return GetTraits(type).pool_tag; }
 
+  const std::vector<TypeTag>& GetTypeTags(PoolTag pool) const {
+    DCHECK_LT(pool.value(), pools_.size());
+    return pools_[pool.value()].types;
+  }
+
   // Returns true if |raw_image_[location]| is either:
   // - A raw value.
   // - The first byte of a reference.
@@ -87,6 +92,9 @@ class ImageIndex {
     DCHECK_LT(type.value(), types_.size());
     return types_[type.value()].references;
   }
+
+  // Creates and returns a vector of all targets in |pool|.
+  std::vector<offset_t> GetTargets(PoolTag pool) const;
 
   // Returns the size of the image.
   size_t size() const { return raw_image_.size(); }

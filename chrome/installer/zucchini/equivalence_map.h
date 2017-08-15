@@ -66,6 +66,9 @@ class EquivalenceMap {
   using const_iterator = std::vector<EquivalenceCandidate>::const_iterator;
 
   EquivalenceMap();
+  // Initializes the object with |equivalences|.
+  explicit EquivalenceMap(
+      const std::vector<EquivalenceCandidate>& equivalences);
   ~EquivalenceMap();
 
   // Finds relevant equivalences between |old_image| and |new_image|, using
