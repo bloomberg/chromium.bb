@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/manager/chromeos/mojo/touch_device_transform_struct_traits.h"
+#include "ui/events/devices/mojo/touch_device_transform_struct_traits.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/manager/chromeos/mojo/touch_device_transform.mojom.h"
-#include "ui/display/manager/chromeos/touch_device_transform.h"
+#include "ui/events/devices/mojo/touch_device_transform.mojom.h"
+#include "ui/events/devices/touch_device_transform.h"
 
-namespace display {
+namespace ui {
 
 TEST(TouchDeviceTransformStructTraitsTest, SerializeAndDeserialize) {
   TouchDeviceTransform touch_device_transform;
@@ -25,4 +25,4 @@ TEST(TouchDeviceTransformStructTraitsTest, SerializeAndDeserialize) {
   EXPECT_EQ(touch_device_transform.transform, deserialized.transform);
 }
 
-}  // namespace display
+}  // namespace ui

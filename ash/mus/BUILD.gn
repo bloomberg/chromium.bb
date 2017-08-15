@@ -82,7 +82,7 @@ source_set("lib") {
     "//ui/app_list/presenter:mojom",
     "//ui/chromeos",
     "//ui/display/manager",
-    "//ui/display/manager/chromeos/mojo:interfaces",
+    "//ui/events/devices/mojo",
     "//ui/keyboard",
     "//ui/keyboard:mojom",
     "//ui/message_center",

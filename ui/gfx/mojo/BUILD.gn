@@ -29,15 +29,3 @@ mojom("test_interfaces") {
     ":mojo",
   ]
 }
-
-source_set("struct_traits") {
-  sources = [
-    "selection_bound_struct_traits.h",
-    "transform_struct_traits.h",
-  ]
-  public_deps = [
-    ":mojo_shared_cpp_sources",
-    "//mojo/public/cpp/bindings",
-    "//ui/gfx",
-  ]
-}

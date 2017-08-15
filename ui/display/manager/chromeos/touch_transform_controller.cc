@@ -10,7 +10,6 @@
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
-#include "ui/display/manager/chromeos/touch_device_transform.h"
 #include "ui/display/manager/chromeos/touch_transform_setter.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -18,6 +17,7 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/touch_device_transform.h"
 
 namespace display {
 
@@ -311,7 +311,7 @@ void TouchTransformController::UpdateTouchTransform(
     const ManagedDisplayInfo& touch_display,
     const ManagedDisplayInfo& target_display,
     UpdateData* update_data) const {
-  TouchDeviceTransform touch_device_transform;
+  ui::TouchDeviceTransform touch_device_transform;
   touch_device_transform.display_id = target_display_id;
   for (const auto& device_id : touch_display.input_devices()) {
     touch_device_transform.device_id = device_id;

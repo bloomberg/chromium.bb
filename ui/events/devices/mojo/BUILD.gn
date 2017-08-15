@@ -7,10 +7,12 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojo") {
   sources = [
     "input_devices.mojom",
+    "touch_device_transform.mojom",
   ]
 
   public_deps = [
     "//ui/gfx/geometry/mojo",
+    "//ui/gfx/mojo",
   ]
 }
 

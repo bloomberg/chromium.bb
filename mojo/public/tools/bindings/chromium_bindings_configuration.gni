@@ -52,8 +52,7 @@ _typemap_imports = [
 
 _typemap_imports_mac = [ "//content/common/typemaps_mac.gni" ]
 
-_typemap_imports_chromeos =
-    [ "//ui/display/manager/chromeos/mojo/typemaps.gni" ]
+_typemap_imports_chromeos = []
 
 _typemaps = []
 foreach(typemap_import, _typemap_imports) {

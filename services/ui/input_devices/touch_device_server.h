@@ -33,7 +33,7 @@ class TouchDeviceServer : public mojom::TouchDeviceServer {
   // mojom::TouchDeviceServer:
   void ConfigureTouchDevices(
       const std::unordered_map<int32_t, double>& transport_scales,
-      const std::vector<display::TouchDeviceTransform>& transforms) override;
+      const std::vector<ui::TouchDeviceTransform>& transforms) override;
 
  private:
   void BindTouchDeviceServerRequest(

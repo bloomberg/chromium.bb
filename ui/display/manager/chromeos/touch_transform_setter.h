@@ -11,9 +11,11 @@
 #include "base/macros.h"
 #include "ui/display/manager/display_manager_export.h"
 
-namespace display {
-
+namespace ui {
 struct TouchDeviceTransform;
+}
+
+namespace display {
 
 // TouchTransformSetter is used by TouchTransformController to apply the actual
 // settings.
@@ -25,7 +27,7 @@ class DISPLAY_MANAGER_EXPORT TouchTransformSetter {
   // |transforms| contains the transform for each device and display pair.
   virtual void ConfigureTouchDevices(
       const std::map<int32_t, double>& scales,
-      const std::vector<TouchDeviceTransform>& transforms) = 0;
+      const std::vector<ui::TouchDeviceTransform>& transforms) = 0;
 };
 
 }  // namespace display

@@ -21,8 +21,6 @@ component("manager") {
     "chromeos/display_util.h",
     "chromeos/query_content_protection_task.cc",
     "chromeos/query_content_protection_task.h",
-    "chromeos/touch_device_transform.cc",
-    "chromeos/touch_device_transform.h",
     "chromeos/touch_transform_controller.cc",
     "chromeos/touch_transform_controller.h",
     "chromeos/touch_transform_setter.h",

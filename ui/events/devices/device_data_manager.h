@@ -26,6 +26,7 @@ class DeviceDataManagerTestAPI;
 }  // namespace test
 
 class InputDeviceEventObserver;
+struct TouchDeviceTransform;
 
 // Keeps track of device mappings and event transformations.
 class EVENTS_DEVICES_EXPORT DeviceDataManager
@@ -40,10 +41,13 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   static DeviceDataManager* GetInstance();
   static bool HasInstance();
 
-  void ClearTouchDeviceAssociations();
-  void UpdateTouchInfoForDisplay(int64_t target_display_id,
-                                 int touch_device_id,
-                                 const gfx::Transform& touch_transformer);
+  // Configures the touch devices. |scales| maps from the touch device id to
+  // the touch radius scale and |transforms| contains the transform for each
+  // device and display pair.
+  void ConfigureTouchDevices(
+      const std::map<int32_t, double>& scales,
+      const std::vector<ui::TouchDeviceTransform>& transforms);
+
   void ApplyTouchTransformer(int touch_device_id, float* x, float* y);
 
   // Gets the display that touches from |touch_device_id| should be sent to.
@@ -97,8 +101,10 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
 
   friend class test::DeviceDataManagerTestAPI;
 
-  static DeviceDataManager* instance_;
-
+  void ClearTouchDeviceAssociations();
+  void UpdateTouchInfoForDisplay(int64_t target_display_id,
+                                 int touch_device_id,
+                                 const gfx::Transform& touch_transformer);
   bool IsTouchDeviceIdValid(int touch_device_id) const;
 
   void NotifyObserversTouchscreenDeviceConfigurationChanged();
@@ -107,6 +113,8 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   void NotifyObserversTouchpadDeviceConfigurationChanged();
   void NotifyObserversDeviceListsComplete();
   void NotifyObserversStylusStateChanged(StylusState stylus_state);
+
+  static DeviceDataManager* instance_;
 
   std::vector<TouchscreenDevice> touchscreen_devices_;
   std::vector<InputDevice> keyboard_devices_;

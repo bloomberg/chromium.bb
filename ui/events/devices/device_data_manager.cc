@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/devices/input_device_event_observer.h"
+#include "ui/events/devices/touch_device_transform.h"
 #include "ui/gfx/geometry/point3_f.h"
 
 // This macro provides the implementation for the observer notification methods.
@@ -90,24 +91,45 @@ bool DeviceDataManager::HasInstance() {
   return instance_ != nullptr;
 }
 
+void DeviceDataManager::ConfigureTouchDevices(
+    const std::map<int32_t, double>& scales,
+    const std::vector<ui::TouchDeviceTransform>& transforms) {
+  ClearTouchDeviceAssociations();
+  for (auto& device_scale_pair : scales)
+    UpdateTouchRadiusScale(device_scale_pair.first, device_scale_pair.second);
+  for (const TouchDeviceTransform& transform : transforms) {
+    UpdateTouchInfoForDisplay(transform.display_id, transform.device_id,
+                              transform.transform);
+  }
+}
+
 void DeviceDataManager::ClearTouchDeviceAssociations() {
   for (auto& touch_info : touch_map_)
     touch_info.Reset();
-}
-
-bool DeviceDataManager::IsTouchDeviceIdValid(
-    int touch_device_id) const {
-  return (touch_device_id > 0 && touch_device_id < kMaxDeviceNum);
+  for (TouchscreenDevice& touchscreen_device : touchscreen_devices_)
+    touchscreen_device.target_display_id = display::kInvalidDisplayId;
 }
 
 void DeviceDataManager::UpdateTouchInfoForDisplay(
     int64_t target_display_id,
     int touch_device_id,
     const gfx::Transform& touch_transformer) {
-  if (IsTouchDeviceIdValid(touch_device_id)) {
-    touch_map_[touch_device_id].target_display = target_display_id;
-    touch_map_[touch_device_id].device_transform = touch_transformer;
+  if (!IsTouchDeviceIdValid(touch_device_id))
+    return;
+
+  touch_map_[touch_device_id].target_display = target_display_id;
+  touch_map_[touch_device_id].device_transform = touch_transformer;
+
+  for (TouchscreenDevice& touchscreen_device : touchscreen_devices_) {
+    if (touchscreen_device.id == touch_device_id) {
+      touchscreen_device.target_display_id = target_display_id;
+      return;
+    }
   }
+}
+
+bool DeviceDataManager::IsTouchDeviceIdValid(int touch_device_id) const {
+  return (touch_device_id > 0 && touch_device_id < kMaxDeviceNum);
 }
 
 void DeviceDataManager::UpdateTouchRadiusScale(int touch_device_id,
@@ -172,6 +194,10 @@ void DeviceDataManager::OnTouchscreenDevicesUpdated(
     return;
   }
   touchscreen_devices_ = devices;
+  for (TouchscreenDevice& touchscreen_device : touchscreen_devices_) {
+    touchscreen_device.target_display_id =
+        GetTargetDisplayForTouchDevice(touchscreen_device.id);
+  }
   NotifyObserversTouchscreenDeviceConfigurationChanged();
 }
 
