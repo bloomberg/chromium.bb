@@ -136,6 +136,7 @@ wl_buffer_listener g_buffer_listener = {BufferRelease};
 ClientBase::InitParams::InitParams() {
 #if defined(OZONE_PLATFORM_GBM)
   drm_format = DRM_FORMAT_ABGR8888;
+  bo_usage = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING | GBM_BO_USE_TEXTURING;
 #endif
 }
 
@@ -295,7 +296,7 @@ bool ClientBase::Init(const InitParams& params) {
   }
 #endif
   for (size_t i = 0; i < params.num_buffers; ++i) {
-    auto buffer = CreateBuffer(size_, params.drm_format);
+    auto buffer = CreateBuffer(size_, params.drm_format, params.bo_usage);
     if (!buffer) {
       LOG(ERROR) << "Failed to create buffer";
       return false;
@@ -363,14 +364,14 @@ ClientBase::~ClientBase() {}
 
 std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
     const gfx::Size& size,
-    int32_t drm_format) {
+    int32_t drm_format,
+    int32_t bo_usage) {
   std::unique_ptr<Buffer> buffer;
   if (device_) {
-    buffer = CreateDrmBuffer(size, drm_format);
+    buffer = CreateDrmBuffer(size, drm_format, bo_usage);
     CHECK(buffer) << "Can't create drm buffer";
     return buffer;
   }
-
   buffer = base::MakeUnique<Buffer>();
 
   size_t stride = size.width() * kBytesPerPixel;
@@ -388,27 +389,28 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
     return nullptr;
   }
 
-  wl_buffer_add_listener(buffer->buffer.get(), &g_buffer_listener,
-                         buffer.get());
-
   buffer->sk_surface = SkSurface::MakeRasterDirect(
       SkImageInfo::Make(size.width(), size.height(), kColorType,
                         kOpaque_SkAlphaType),
       static_cast<uint8_t*>(buffer->shared_memory->memory()), stride);
   DCHECK(buffer->sk_surface);
+
+  wl_buffer_add_listener(buffer->buffer.get(), &g_buffer_listener,
+                         buffer.get());
+
   return buffer;
 }
 
 std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
     const gfx::Size& size,
-    int32_t drm_format) {
+    int32_t drm_format,
+    int32_t bo_usage) {
   std::unique_ptr<Buffer> buffer;
 #if defined(OZONE_PLATFORM_GBM)
   if (device_) {
     buffer = base::MakeUnique<Buffer>();
-    buffer->bo.reset(gbm_bo_create(
-        device_.get(), size.width(), size.height(), drm_format,
-        GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING | GBM_BO_USE_TEXTURING));
+    buffer->bo.reset(gbm_bo_create(device_.get(), size.width(), size.height(),
+                                   drm_format, bo_usage));
     if (!buffer->bo) {
       LOG(ERROR) << "Can't create gbm buffer";
       return nullptr;
