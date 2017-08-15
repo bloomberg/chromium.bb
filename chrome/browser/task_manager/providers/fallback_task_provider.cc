@@ -85,8 +85,11 @@ void FallbackTaskProvider::ShowTask(Task* task) {
 }
 
 void FallbackTaskProvider::HideTask(Task* task) {
-  base::Erase(shown_tasks_, task);
-  NotifyObserverTaskRemoved(task);
+  auto it = std::remove(shown_tasks_.begin(), shown_tasks_.end(), task);
+  if (it != shown_tasks_.end()) {
+    shown_tasks_.erase(it, shown_tasks_.end());
+    NotifyObserverTaskRemoved(task);
+  }
 }
 
 void FallbackTaskProvider::OnTaskAddedBySource(Task* task,
@@ -127,8 +130,7 @@ void FallbackTaskProvider::OnTaskRemovedBySource(Task* task,
       }
     }
   }
-  if (base::ContainsValue(shown_tasks_, task))
-    HideTask(task);
+  HideTask(task);
 }
 
 void FallbackTaskProvider::OnTaskUnresponsive(Task* task) {
