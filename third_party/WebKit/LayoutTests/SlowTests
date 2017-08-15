@@ -427,6 +427,7 @@ crbug.com/726075 [ Win Debug ] virtual/gpu/fast/canvas/canvas-blending-image-ove
 crbug.com/726075 [ Win Debug ] virtual/gpu/fast/canvas/canvas-blending-image-over-image.html [ Slow ]
 crbug.com/726075 [ Win Debug ] virtual/gpu/fast/canvas/canvas-blending-image-over-pattern.html [ Slow ]
 crbug.com/726075 [ Win Debug ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-color.html [ Slow ]
+crbug.com/726075 [ Win Debug ] virtual/gpu/fast/canvas/canvas-blending-shadow.html [ Slow ]
 crbug.com/726075 [ Win Debug ] virtual/gpu/fast/canvas/canvas-blending-text.html [ Slow ]
 crbug.com/726075 [ Win Debug ] virtual/gpu/fast/canvas/canvas-blending-transforms.html [ Slow ]
 crbug.com/726075 [ Win Debug ] virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ Slow ]
