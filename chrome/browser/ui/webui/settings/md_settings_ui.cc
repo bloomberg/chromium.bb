@@ -89,7 +89,7 @@
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_NSS_CERTS)
-#include "chrome/browser/ui/webui/settings/certificates_handler.h"
+#include "chrome/browser/ui/webui/certificates_handler.h"
 #elif defined(OS_WIN) || defined(OS_MACOSX)
 #include "chrome/browser/ui/webui/settings/native_certificates_handler.h"
 #endif  // defined(USE_NSS_CERTS)
@@ -117,7 +117,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(base::MakeUnique<AppearanceHandler>(web_ui));
 
 #if defined(USE_NSS_CERTS)
-  AddSettingsPageUIHandler(base::MakeUnique<CertificatesHandler>(false));
+  AddSettingsPageUIHandler(
+      base::MakeUnique<certificate_manager::CertificatesHandler>());
 #elif defined(OS_WIN) || defined(OS_MACOSX)
   AddSettingsPageUIHandler(base::MakeUnique<NativeCertificatesHandler>());
 #endif  // defined(USE_NSS_CERTS)
@@ -294,9 +295,8 @@ MdSettingsUI::~MdSettingsUI() {
 }
 
 void MdSettingsUI::AddSettingsPageUIHandler(
-    std::unique_ptr<SettingsPageUIHandler> handler) {
+    std::unique_ptr<content::WebUIMessageHandler> handler) {
   DCHECK(handler);
-  handlers_.insert(handler.get());
   web_ui()->AddMessageHandler(std::move(handler));
 }
 

@@ -2257,8 +2257,10 @@ split_static_library("ui") {
       "crypto_module_delegate_nss.h",
       "crypto_module_password_dialog_nss.cc",
       "crypto_module_password_dialog_nss.h",
-      "webui/settings/certificates_handler.cc",
-      "webui/settings/certificates_handler.h",
+      "webui/certificate_manager_localized_strings_provider.cc",
+      "webui/certificate_manager_localized_strings_provider.h",
+      "webui/certificates_handler.cc",
+      "webui/certificates_handler.h",
     ]
     if (is_chromeos) {
       sources += [
