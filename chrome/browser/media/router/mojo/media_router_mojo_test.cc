@@ -342,7 +342,9 @@ void MediaRouterMojoTest::TestProvideSinks() {
   std::vector<MediaSinkInternal> sinks;
   MediaSink sink(kSinkId, kSinkName, SinkIconType::CAST);
   CastSinkExtraData extra_data;
-  EXPECT_TRUE(extra_data.ip_address.AssignFromIPLiteral("192.168.1.3"));
+  net::IPAddress ip_address;
+  EXPECT_TRUE(ip_address.AssignFromIPLiteral("192.168.1.3"));
+  extra_data.ip_endpoint = net::IPEndPoint(ip_address, 0);
   extra_data.capabilities = 2;
   extra_data.cast_channel_id = 3;
   MediaSinkInternal expected_sink(sink, extra_data);

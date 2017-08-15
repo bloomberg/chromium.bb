@@ -40,7 +40,7 @@ media_router::MediaSinkInternal CreateCastSink(int num) {
   media_router::MediaSink sink(unique_id, friendly_name,
                                media_router::SinkIconType::CAST);
   media_router::CastSinkExtraData extra_data;
-  extra_data.ip_address = ip_endpoint.address();
+  extra_data.ip_endpoint = ip_endpoint;
   extra_data.port = ip_endpoint.port();
   extra_data.model_name = base::StringPrintf("model name %d", num);
   extra_data.cast_channel_id = num;
