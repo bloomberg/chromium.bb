@@ -4391,6 +4391,8 @@ static_library("test_support") {
     "net/dns_probe_test_util.h",
     "net/url_request_mock_util.cc",
     "net/url_request_mock_util.h",
+    "notifications/notification_display_service_tester.cc",
+    "notifications/notification_display_service_tester.h",
     "notifications/notification_test_util.cc",
     "notifications/notification_test_util.h",
     "notifications/stub_notification_display_service.cc",
