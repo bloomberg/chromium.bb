@@ -47,8 +47,6 @@ struct ComponentConfig {
   ~ComponentConfig();
 };
 
-using ConfigMap = std::map<std::string, std::map<std::string, std::string>>;
-
 class CrOSComponentInstallerTraits : public ComponentInstallerTraits {
  public:
   explicit CrOSComponentInstallerTraits(const ComponentConfig& config);
@@ -93,14 +91,13 @@ class CrOSComponent {
       const std::string& name,
       const base::Callback<void(const std::string&)>& load_callback);
 
+  // Returns all installed components.
+  static std::vector<ComponentConfig> GetInstalledComponents();
+
+  // Registers component |configs| to be updated.
+  static void RegisterComponents(const std::vector<ComponentConfig>& configs);
+
  private:
-  FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest,
-                           RegisterComponentSuccessEscpr);
-  FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest,
-                           RegisterComponentSuccessStarCupsDriver);
-  FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest,
-                           RegisterComponentSuccessTermina);
-  FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest, RegisterComponentFail);
   CrOSComponent() {}
   static void RegisterResult(ComponentUpdateService* cus,
                              const std::string& id,
