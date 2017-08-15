@@ -555,6 +555,7 @@ bool Histogram::ValidateHistogramContents(bool crash_if_invalid,
     kHistogramNameField,
     kFlagsField,
     kLoggedBucketRangesField,
+    kDummyField,
   };
 
   uint32_t bad_fields = 0;
@@ -572,6 +573,8 @@ bool Histogram::ValidateHistogramContents(bool crash_if_invalid,
     bad_fields |= 1 << kHistogramNameField;
   if (flags() == 0)
     bad_fields |= 1 << kFlagsField;
+  if (dummy_ != kDummyValue)
+    bad_fields |= 1 << kDummyField;
 
   const bool is_valid = (bad_fields & ~(1 << kFlagsField)) == 0;
   if (is_valid || !crash_if_invalid)
@@ -585,7 +588,7 @@ bool Histogram::ValidateHistogramContents(bool crash_if_invalid,
   // Temporary for https://crbug.com/736675.
   base::debug::ScopedCrashKey crash_key("bad_histogram", debug_string);
 #endif
-  // CHECK(false) << debug_string;
+  CHECK(false) << debug_string;
   debug::Alias(&bad_fields);
   return false;
 }
