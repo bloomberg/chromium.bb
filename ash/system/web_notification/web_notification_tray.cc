@@ -533,7 +533,7 @@ void WebNotificationTray::UpdateTrayContent() {
       message_center_tray_->message_center();
   size_t visible_small_icon_count = 0;
   for (const auto* notification : message_center->GetVisibleNotifications()) {
-    gfx::Image image = notification->small_image();
+    gfx::Image image = notification->GenerateMaskedSmallIcon(kTrayIconColor);
     if (image.IsEmpty())
       continue;
 

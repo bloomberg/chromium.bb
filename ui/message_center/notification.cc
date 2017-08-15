@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/message_center/message_center.h"
@@ -20,6 +22,15 @@ namespace message_center {
 namespace {
 
 unsigned g_next_serial_number_ = 0;
+
+const gfx::ImageSkia CreateSolidColorImage(int width,
+                                           int height,
+                                           SkColor color) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(width, height);
+  bitmap.eraseColor(color);
+  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+}
 
 }  // namespace
 
@@ -171,6 +182,18 @@ bool Notification::UseOriginAsContextMessage() const {
          origin_url_.SchemeIsHTTPOrHTTPS();
 }
 
+gfx::Image Notification::GenerateMaskedSmallIcon(SkColor color) const {
+  if (!vector_small_image().is_empty())
+    return gfx::Image(gfx::CreateVectorIcon(vector_small_image(), color));
+
+  if (small_image().IsEmpty())
+    return small_image();
+
+  gfx::ImageSkia image = small_image().AsImageSkia();
+  return gfx::Image(gfx::ImageSkiaOperations::CreateMaskedImage(
+      CreateSolidColorImage(image.width(), image.height(), color), image));
+}
+
 // static
 std::unique_ptr<Notification> Notification::CreateSystemNotification(
     const std::string& notification_id,
@@ -230,6 +253,8 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
       small_image.is_empty()
           ? gfx::Image()
           : gfx::Image(gfx::CreateVectorIcon(small_image, color)));
+  if (!small_image.is_empty())
+    notification->set_vector_small_image(small_image);
   return notification;
 }
 
