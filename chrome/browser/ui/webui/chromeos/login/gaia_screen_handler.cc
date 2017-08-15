@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 
-#include "ash/system/devicetype_utils.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
@@ -54,6 +53,7 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 using content::BrowserThread;
 namespace em = enterprise_management;
@@ -437,7 +437,7 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_FATAL_ERROR_TRY_AGAIN_BUTTON);
 
   builder->AddF("loginWelcomeMessage", IDS_LOGIN_WELCOME_MESSAGE,
-                ash::GetChromeOSDeviceTypeResourceId());
+                ui::GetChromeOSDeviceTypeResourceId());
   builder->Add("offlineLoginEmail", IDS_OFFLINE_LOGIN_EMAIL);
   builder->Add("offlineLoginPassword", IDS_OFFLINE_LOGIN_PASSWORD);
   builder->Add("offlineLoginInvalidEmail", IDS_OFFLINE_LOGIN_INVALID_EMAIL);

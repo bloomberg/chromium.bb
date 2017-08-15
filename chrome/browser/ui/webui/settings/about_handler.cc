@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "ash/system/devicetype_utils.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -72,6 +71,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/chromeos/devicetype_utils.h"
 #endif
 
 using base::ListValue;

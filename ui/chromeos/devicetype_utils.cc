@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/devicetype_utils.h"
+#include "ui/chromeos/devicetype_utils.h"
 
-#include "ash/strings/grit/ash_strings.h"
+#include "base/logging.h"
 #include "chromeos/system/devicetype.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 
-namespace ash {
+namespace ui {
 
 base::string16 SubstituteChromeOSDeviceType(int resource_id) {
   return l10n_util::GetStringFUTF16(resource_id, GetChromeOSDeviceName());
@@ -21,17 +22,19 @@ base::string16 GetChromeOSDeviceName() {
 int GetChromeOSDeviceTypeResourceId() {
   switch (chromeos::GetDeviceType()) {
     case chromeos::DeviceType::kChromebase:
-      return IDS_ASH_CHROMEBASE;
+      return IDS_CHROMEBASE_DEVICE_NAME;
     case chromeos::DeviceType::kChromebook:
-      return IDS_ASH_CHROMEBOOK;
+      return IDS_CHROMEBOOK_DEVICE_NAME;
     case chromeos::DeviceType::kChromebox:
-      return IDS_ASH_CHROMEBOX;
+      return IDS_CHROMEBOX_DEVICE_NAME;
     case chromeos::DeviceType::kChromebit:
-      return IDS_ASH_CHROMEBIT;
+      return IDS_CHROMEBIT_DEVICE_NAME;
     case chromeos::DeviceType::kUnknown:
-    default:
-      return IDS_ASH_CHROMEDEVICE;
+      return IDS_GENERIC_CHROMEOS_DEVICE_NAME;
   }
+
+  NOTREACHED();
+  return IDS_GENERIC_CHROMEOS_DEVICE_NAME;
 }
 
-}  // namespace ash
+}  // namespace ui

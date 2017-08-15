@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/system/devicetype_utils.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +19,7 @@
 #include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
@@ -60,7 +60,7 @@ void DelegateImpl::ShowManagedProvisionNotification() {
               IDS_ARC_MANAGED_PROVISION_NOTIFICATION_TITLE),
           l10n_util::GetStringFUTF16(
               IDS_ARC_MANAGED_PROVISION_NOTIFICATION_MESSAGE,
-              ash::GetChromeOSDeviceName()),
+              ui::GetChromeOSDeviceName()),
           gfx::Image(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
               IDR_ARC_PLAY_STORE_OPTIN_IN_PROGRESS_NOTIFICATION)),
           base::UTF8ToUTF16(kManagedProvisionDisplaySource), GURL(),

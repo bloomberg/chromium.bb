@@ -30,7 +30,7 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/system/devicetype_utils.h"
+#include "ui/chromeos/devicetype_utils.h"
 #endif
 
 namespace extensions {
@@ -348,7 +348,7 @@ ExtensionFunction::ResponseAction HotwordPrivateStopTrainingFunction::Run() {
 ExtensionFunction::ResponseAction
 HotwordPrivateGetLocalizedStringsFunction::Run() {
 #if defined(OS_CHROMEOS)
-  base::string16 device_type = ash::GetChromeOSDeviceName();
+  base::string16 device_type = ui::GetChromeOSDeviceName();
 #else
   base::string16 product_name =
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);

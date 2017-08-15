@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/system/devicetype_utils.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
@@ -35,6 +34,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace chromeos {
 namespace {
@@ -204,7 +204,7 @@ void EnrollmentScreenHandler::ShowEnrollmentSpinnerScreen() {
 
 void EnrollmentScreenHandler::ShowAttestationBasedEnrollmentSuccessScreen(
     const std::string& enterprise_domain) {
-  CallJS("showAttestationBasedEnrollmentSuccess", ash::GetChromeOSDeviceName(),
+  CallJS("showAttestationBasedEnrollmentSuccess", ui::GetChromeOSDeviceName(),
          enterprise_domain);
 }
 
@@ -393,7 +393,7 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   builder->Add("oauthEnrollNextBtn", IDS_OFFLINE_LOGIN_NEXT_BUTTON_TEXT);
   builder->Add("oauthEnrollSkip", IDS_ENTERPRISE_ENROLLMENT_SKIP);
   builder->AddF("oauthEnrollSuccess", IDS_ENTERPRISE_ENROLLMENT_SUCCESS,
-                ash::GetChromeOSDeviceName());
+                ui::GetChromeOSDeviceName());
   builder->Add("oauthEnrollDeviceInformation",
                IDS_ENTERPRISE_ENROLLMENT_DEVICE_INFORMATION);
   builder->Add("oauthEnrollExplainAttributeLink",
@@ -659,7 +659,7 @@ void EnrollmentScreenHandler::ShowError(int message_id, bool retry) {
 
 void EnrollmentScreenHandler::ShowErrorForDevice(int message_id, bool retry) {
   ShowErrorMessage(
-      l10n_util::GetStringFUTF8(message_id, ash::GetChromeOSDeviceName()),
+      l10n_util::GetStringFUTF8(message_id, ui::GetChromeOSDeviceName()),
       retry);
 }
 

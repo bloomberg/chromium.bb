@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_DEVICETYPE_UTILS_H_
-#define ASH_SYSTEM_DEVICETYPE_UTILS_H_
+#ifndef UI_CHROMEOS_DEVICETYPE_UTILS_H_
+#define UI_CHROMEOS_DEVICETYPE_UTILS_H_
 
-#include "ash/ash_export.h"
 #include "base/strings/string16.h"
+#include "ui/chromeos/ui_chromeos_export.h"
 
-namespace ash {
+namespace ui {
 
 // Assuming the given localization resources takes a device type parameter, this
 // will substitute the appropriate device in (e.g. Chromebook, Chromebox).
-ASH_EXPORT base::string16 SubstituteChromeOSDeviceType(int resource_id);
+UI_CHROMEOS_EXPORT base::string16 SubstituteChromeOSDeviceType(int resource_id);
 
 // Returns the name of the Chrome device type (e.g. Chromebook, Chromebox).
-ASH_EXPORT base::string16 GetChromeOSDeviceName();
+UI_CHROMEOS_EXPORT base::string16 GetChromeOSDeviceName();
 
 // Returns the resource ID for the current Chrome device type (e.g. Chromebook,
 // Chromebox).
-ASH_EXPORT int GetChromeOSDeviceTypeResourceId();
+UI_CHROMEOS_EXPORT int GetChromeOSDeviceTypeResourceId();
 
-}  // namespace ash
+}  // namespace ui
 
-#endif  // ASH_SYSTEM_DEVICETYPE_UTILS_H_
+#endif  // UI_CHROMEOS_DEVICETYPE_UTILS_H_

@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/system/devicetype_utils.h"
 #include "base/bind.h"
 #include "base/i18n/timezone.h"
 #include "base/json/json_reader.h"
@@ -28,6 +27,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/display/screen.h"
 
 namespace {

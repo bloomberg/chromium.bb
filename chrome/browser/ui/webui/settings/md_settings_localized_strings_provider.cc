@@ -35,7 +35,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/devicetype_utils.h"
 #include "ash/system/night_light/night_light_controller.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -47,6 +46,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_util.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
 #include "ui/display/display_switches.h"
 #else
@@ -293,7 +293,7 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "aboutUpgradeUpToDate",
 #if defined(OS_CHROMEOS)
-      ash::SubstituteChromeOSDeviceType(IDS_SETTINGS_UPGRADE_UP_TO_DATE));
+      ui::SubstituteChromeOSDeviceType(IDS_SETTINGS_UPGRADE_UP_TO_DATE));
 #else
       l10n_util::GetStringUTF16(IDS_SETTINGS_UPGRADE_UP_TO_DATE));
 #endif
@@ -815,7 +815,7 @@ void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
                           arraysize(localized_strings));
 
   base::string16 device_name =
-      l10n_util::GetStringUTF16(ash::GetChromeOSDeviceTypeResourceId());
+      l10n_util::GetStringUTF16(ui::GetChromeOSDeviceTypeResourceId());
   html_source->AddString(
       "easyUnlockSetupIntro",
       l10n_util::GetStringFUTF16(IDS_SETTINGS_EASY_UNLOCK_SETUP_INTRO,

@@ -432,6 +432,23 @@
       <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_33">
       </message>
 
+      <!-- Generic device type names -->
+      <message name="IDS_CHROMEBASE_DEVICE_NAME" desc="The device name for a Chromebase (versus say Chromebox)">
+        Chromebase
+      </message>
+      <message name="IDS_CHROMEBIT_DEVICE_NAME" desc="The device name for a Chromebit (versus say Chromebox)">
+        Chromebit
+      </message>
+      <message name="IDS_CHROMEBOOK_DEVICE_NAME" desc="The device name for a Chromebook (versus say Chromebox)">
+        Chromebook
+      </message>
+      <message name="IDS_CHROMEBOX_DEVICE_NAME" desc="The device name for a Chromebox (versus say Chromebook)">
+        Chromebox
+      </message>
+      <message name="IDS_GENERIC_CHROMEOS_DEVICE_NAME" desc="The device name for a generic Chrome device">
+        Chrome device
+      </message>
+
       <!-- Input method strings. -->
       <message name="IDS_CHROMEOS_IME_INFOLIST_WINDOW_TITLE" desc="The title of the infolist window where the meanings and the usages of words are displayed.">
         Information
