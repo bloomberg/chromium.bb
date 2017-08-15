@@ -62,8 +62,7 @@ below it the dashboard shows graphs of all the alerts checked in that table.
   and press the triage button.
     * If one of the alerts already has a bug id, click "existing bug" and use
       that bug id.
-    * Otherwise click "new bug". Be sure to cc the
-      [test owner](http://go/perf-owners) on the bug.
+    * Otherwise click "new bug".
 5. **Look at the revision range** for the regression. You can see it in the
    tooltip on the graph. If you see any likely culprits, cc the authors on the
    bug.
