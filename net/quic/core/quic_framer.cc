@@ -121,9 +121,27 @@ QuicPacketNumber ClosestTo(QuicPacketNumber target,
 }
 
 QuicPacketNumberLength ReadSequenceNumberLength(uint8_t flags) {
-  switch (flags & PACKET_FLAGS_6BYTE_PACKET) {
-    case PACKET_FLAGS_6BYTE_PACKET:
+  switch (flags & PACKET_FLAGS_8BYTE_PACKET) {
+    case PACKET_FLAGS_8BYTE_PACKET:
       return PACKET_6BYTE_PACKET_NUMBER;
+    case PACKET_FLAGS_4BYTE_PACKET:
+      return PACKET_4BYTE_PACKET_NUMBER;
+    case PACKET_FLAGS_2BYTE_PACKET:
+      return PACKET_2BYTE_PACKET_NUMBER;
+    case PACKET_FLAGS_1BYTE_PACKET:
+      return PACKET_1BYTE_PACKET_NUMBER;
+    default:
+      QUIC_BUG << "Unreachable case statement.";
+      return PACKET_6BYTE_PACKET_NUMBER;
+  }
+}
+
+QuicPacketNumberLength ReadAckPacketNumberLength(QuicVersion version,
+                                                 uint8_t flags) {
+  switch (flags & PACKET_FLAGS_8BYTE_PACKET) {
+    case PACKET_FLAGS_8BYTE_PACKET:
+      return version <= QUIC_VERSION_39 ? PACKET_6BYTE_PACKET_NUMBER
+                                        : PACKET_8BYTE_PACKET_NUMBER;
     case PACKET_FLAGS_4BYTE_PACKET:
       return PACKET_4BYTE_PACKET_NUMBER;
     case PACKET_FLAGS_2BYTE_PACKET:
@@ -876,6 +894,7 @@ bool QuicFramer::ProcessPublicHeader(QuicDataReader* reader,
 
 // static
 QuicPacketNumberLength QuicFramer::GetMinPacketNumberLength(
+    QuicVersion version,
     QuicPacketNumber packet_number) {
   if (packet_number < 1 << (PACKET_1BYTE_PACKET_NUMBER * 8)) {
     return PACKET_1BYTE_PACKET_NUMBER;
@@ -884,7 +903,8 @@ QuicPacketNumberLength QuicFramer::GetMinPacketNumberLength(
   } else if (packet_number < UINT64_C(1) << (PACKET_4BYTE_PACKET_NUMBER * 8)) {
     return PACKET_4BYTE_PACKET_NUMBER;
   } else {
-    return PACKET_6BYTE_PACKET_NUMBER;
+    return version <= QUIC_VERSION_39 ? PACKET_6BYTE_PACKET_NUMBER
+                                      : PACKET_8BYTE_PACKET_NUMBER;
   }
 }
 
@@ -899,10 +919,11 @@ uint8_t QuicFramer::GetPacketNumberFlags(
     case PACKET_4BYTE_PACKET_NUMBER:
       return PACKET_FLAGS_4BYTE_PACKET;
     case PACKET_6BYTE_PACKET_NUMBER:
-      return PACKET_FLAGS_6BYTE_PACKET;
+    case PACKET_8BYTE_PACKET_NUMBER:
+      return PACKET_FLAGS_8BYTE_PACKET;
     default:
       QUIC_BUG << "Unreachable case statement.";
-      return PACKET_FLAGS_6BYTE_PACKET;
+      return PACKET_FLAGS_8BYTE_PACKET;
   }
 }
 
@@ -1272,18 +1293,31 @@ bool QuicFramer::ProcessStreamFrame(QuicDataReader* reader,
 bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
                                  uint8_t frame_type,
                                  QuicAckFrame* ack_frame) {
-  // Determine the two lengths from the frame type: largest acked length,
-  // ack block length.
-  const QuicPacketNumberLength ack_block_length =
-      ReadSequenceNumberLength(ExtractBits(
-          frame_type, kQuicSequenceNumberLengthNumBits, kActBlockLengthOffset));
-  const QuicPacketNumberLength largest_acked_length =
-      ReadSequenceNumberLength(ExtractBits(
-          frame_type, kQuicSequenceNumberLengthNumBits, kLargestAckedOffset));
   bool has_ack_blocks = !!ExtractBits(
       frame_type, kBooleanNumBits,
       quic_version_ < QUIC_VERSION_40 ? kQuicHasMultipleAckBlocksOffset_Pre40
                                       : kQuicHasMultipleAckBlocksOffset);
+  uint8_t num_ack_blocks = 0;
+  uint8_t num_received_packets = 0;
+  if (quic_version_ > QUIC_VERSION_39) {
+    if (has_ack_blocks && !reader->ReadUInt8(&num_ack_blocks)) {
+      set_detailed_error("Unable to read num of ack blocks.");
+      return false;
+    }
+    if (!reader->ReadUInt8(&num_received_packets)) {
+      set_detailed_error("Unable to read num received packets.");
+      return false;
+    }
+  }
+
+  // Determine the two lengths from the frame type: largest acked length,
+  // ack block length.
+  const QuicPacketNumberLength ack_block_length = ReadAckPacketNumberLength(
+      quic_version_, ExtractBits(frame_type, kQuicSequenceNumberLengthNumBits,
+                                 kActBlockLengthOffset));
+  const QuicPacketNumberLength largest_acked_length = ReadAckPacketNumberLength(
+      quic_version_, ExtractBits(frame_type, kQuicSequenceNumberLengthNumBits,
+                                 kLargestAckedOffset));
 
   if (!reader->ReadBytesToUInt64(largest_acked_length,
                                  &ack_frame->largest_observed)) {
@@ -1304,9 +1338,9 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
         QuicTime::Delta::FromMicroseconds(ack_delay_time_us);
   }
 
-  uint8_t num_ack_blocks = 0;
   if (has_ack_blocks) {
-    if (!reader->ReadUInt8(&num_ack_blocks)) {
+    if (quic_version_ <= QUIC_VERSION_39 &&
+        !reader->ReadUInt8(&num_ack_blocks)) {
       set_detailed_error("Unable to read num of ack blocks.");
       return false;
     }
@@ -1341,21 +1375,22 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
     }
   }
 
-  if (!ProcessTimestampsInAckFrame(reader, ack_frame)) {
+  if (quic_version_ <= QUIC_VERSION_39 &&
+      !reader->ReadUInt8(&num_received_packets)) {
+    set_detailed_error("Unable to read num received packets.");
+    return false;
+  }
+
+  if (!ProcessTimestampsInAckFrame(num_received_packets, reader, ack_frame)) {
     return false;
   }
 
   return true;
 }
 
-bool QuicFramer::ProcessTimestampsInAckFrame(QuicDataReader* reader,
+bool QuicFramer::ProcessTimestampsInAckFrame(uint8_t num_received_packets,
+                                             QuicDataReader* reader,
                                              QuicAckFrame* ack_frame) {
-  uint8_t num_received_packets;
-  if (!reader->ReadUInt8(&num_received_packets)) {
-    set_detailed_error("Unable to read num received packets.");
-    return false;
-  }
-
   if (num_received_packets > 0) {
     uint8_t delta_from_largest_observed;
     if (!reader->ReadUInt8(&delta_from_largest_observed)) {
@@ -1746,9 +1781,9 @@ size_t QuicFramer::GetAckFrameSize(
 
   AckFrameInfo ack_info = GetAckFrameInfo(ack);
   QuicPacketNumberLength largest_acked_length =
-      GetMinPacketNumberLength(ack.largest_observed);
+      GetMinPacketNumberLength(quic_version_, ack.largest_observed);
   QuicPacketNumberLength ack_block_length =
-      GetMinPacketNumberLength(ack_info.max_block_length);
+      GetMinPacketNumberLength(quic_version_, ack_info.max_block_length);
 
   ack_size = GetMinAckFrameSize(quic_version_, largest_acked_length);
   // First ack block length.
@@ -1896,7 +1931,7 @@ bool QuicFramer::AppendPacketNumber(QuicPacketNumberLength packet_number_length,
                                     QuicPacketNumber packet_number,
                                     QuicDataWriter* writer) {
   size_t length = packet_number_length;
-  if (length != 1 && length != 2 && length != 4 && length != 6) {
+  if (length != 1 && length != 2 && length != 4 && length != 6 && length != 8) {
     QUIC_BUG << "Invalid packet_number_length: " << length;
     return false;
   }
@@ -1993,9 +2028,9 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
   const AckFrameInfo new_ack_info = GetAckFrameInfo(frame);
   QuicPacketNumber largest_acked = frame.largest_observed;
   QuicPacketNumberLength largest_acked_length =
-      GetMinPacketNumberLength(largest_acked);
+      GetMinPacketNumberLength(quic_version_, largest_acked);
   QuicPacketNumberLength ack_block_length =
-      GetMinPacketNumberLength(new_ack_info.max_block_length);
+      GetMinPacketNumberLength(quic_version_, new_ack_info.max_block_length);
   // Calculate available bytes for timestamps and ack blocks.
   int32_t available_timestamp_and_ack_block_bytes =
       writer->capacity() - writer->length() - ack_block_length -
@@ -2028,6 +2063,31 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
     return false;
   }
 
+  size_t num_timestamps_offset = 0;
+  size_t max_num_ack_blocks = available_timestamp_and_ack_block_bytes /
+                              (ack_block_length + PACKET_1BYTE_PACKET_NUMBER);
+
+  // Number of ack blocks.
+  size_t num_ack_blocks =
+      std::min(new_ack_info.num_ack_blocks, max_num_ack_blocks);
+  if (num_ack_blocks > std::numeric_limits<uint8_t>::max()) {
+    num_ack_blocks = std::numeric_limits<uint8_t>::max();
+  }
+
+  if (quic_version_ > QUIC_VERSION_39) {
+    if (num_ack_blocks > 0 && !writer->WriteBytes(&num_ack_blocks, 1)) {
+      return false;
+    }
+
+    // Write a placeholder for the number of timestamps which will be
+    // overwritten after the ack blocks have been written.
+    num_timestamps_offset = writer->length();
+    uint8_t num_timestamps = 0;
+    if (!writer->WriteUInt8(num_timestamps)) {
+      return false;
+    }
+  }
+
   // Largest acked.
   if (!AppendPacketNumber(largest_acked_length, largest_acked, writer)) {
     return false;
@@ -2043,19 +2103,11 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
     return false;
   }
 
-  size_t max_num_ack_blocks = available_timestamp_and_ack_block_bytes /
-                              (ack_block_length + PACKET_1BYTE_PACKET_NUMBER);
-
-  // Number of ack blocks.
-  size_t num_ack_blocks =
-      std::min(new_ack_info.num_ack_blocks, max_num_ack_blocks);
-  if (num_ack_blocks > std::numeric_limits<uint8_t>::max()) {
-    num_ack_blocks = std::numeric_limits<uint8_t>::max();
-  }
-
-  if (num_ack_blocks > 0) {
-    if (!writer->WriteBytes(&num_ack_blocks, 1)) {
-      return false;
+  if (quic_version_ <= QUIC_VERSION_39) {
+    if (num_ack_blocks > 0) {
+      if (!writer->WriteBytes(&num_ack_blocks, 1)) {
+        return false;
+      }
     }
   }
 
@@ -2126,7 +2178,7 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
   // append any of them.
   if (writer->capacity() - writer->length() >=
       GetAckFrameTimeStampSize(frame)) {
-    if (!AppendTimestampToAckFrame(frame, writer)) {
+    if (!AppendTimestampsToAckFrame(frame, num_timestamps_offset, writer)) {
       return false;
     }
   } else {
@@ -2139,8 +2191,9 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
   return true;
 }
 
-bool QuicFramer::AppendTimestampToAckFrame(const QuicAckFrame& frame,
-                                           QuicDataWriter* writer) {
+bool QuicFramer::AppendTimestampsToAckFrame(const QuicAckFrame& frame,
+                                            size_t num_timestamps_offset,
+                                            QuicDataWriter* writer) {
   DCHECK_GE(std::numeric_limits<uint8_t>::max(),
             frame.received_packet_times.size());
   // num_received_packets is only 1 byte.
@@ -2150,8 +2203,15 @@ bool QuicFramer::AppendTimestampToAckFrame(const QuicAckFrame& frame,
   }
 
   uint8_t num_received_packets = frame.received_packet_times.size();
-  if (!writer->WriteBytes(&num_received_packets, 1)) {
-    return false;
+  if (quic_version_ <= QUIC_VERSION_39) {
+    if (!writer->WriteBytes(&num_received_packets, 1)) {
+      return false;
+    }
+  } else {
+    if (!writer->WriteUInt8AtOffset(num_received_packets,
+                                    num_timestamps_offset)) {
+      return false;
+    }
   }
   if (num_received_packets == 0) {
     return true;

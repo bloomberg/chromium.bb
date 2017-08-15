@@ -4,9 +4,14 @@
 
 #include "net/quic/core/frames/quic_ack_frame.h"
 
+#include <algorithm>
+
 #include "net/quic/core/quic_constants.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_flag_utils.h"
+
+using std::max;
+using std::min;
 
 namespace net {
 
@@ -67,9 +72,9 @@ std::ostream& operator<<(std::ostream& os, const QuicAckFrame& ack_frame) {
   return os;
 }
 PacketNumberQueue::PacketNumberQueue()
-    : use_deque_(FLAGS_quic_reloadable_flag_quic_frames_deque) {
+    : use_deque_(FLAGS_quic_reloadable_flag_quic_frames_deque2) {
   if (use_deque_) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_frames_deque);
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_frames_deque2);
   }
 }
 
@@ -122,23 +127,21 @@ void PacketNumberQueue::Add(QuicPacketNumber packet_number) {
     // to find a proper place for the packet
     while (i >= 0) {
       Interval<QuicPacketNumber> packet_interval = packet_number_deque_[i];
+      DCHECK(packet_interval.min() < packet_interval.max());
       // Check if the packet is contained in an interval already
-      if (packet_interval.max() > packet_number &&
-          packet_interval.min() <= packet_number) {
+      if (packet_interval.Contains(packet_number)) {
         return;
       }
 
-      // Check if the packet can extend an interval
-      // and merges two intervals if needed
+      // Check if the packet can extend an interval.
       if (packet_interval.max() == packet_number) {
         packet_number_deque_[i].SetMax(packet_number + 1);
-        if (static_cast<size_t>(i) < packet_number_deque_.size() - 1 &&
-            packet_number + 1 == packet_number_deque_[i + 1].min()) {
-          packet_number_deque_[i].SetMax(packet_number_deque_[i + 1].max());
-          packet_number_deque_.erase(packet_number_deque_.begin() + i + 1);
-        }
         return;
       }
+      // Check if the packet can extend an interval
+      // and merge two intervals if needed.
+      // There is no need to merge an interval in the previous
+      // if statement, as all merges will happen here.
       if (packet_interval.min() == packet_number + 1) {
         packet_number_deque_[i].SetMin(packet_number);
         if (i > 0 && packet_number == packet_number_deque_[i - 1].max()) {
@@ -189,7 +192,7 @@ void PacketNumberQueue::AddRange(QuicPacketNumber lower,
     Interval<QuicPacketNumber> front = packet_number_deque_.front();
     // Check if the packets are being added in reverse order
     if (front.min() == higher) {
-      packet_number_deque_.front().SetMax(lower);
+      packet_number_deque_.front().SetMin(lower);
     } else if (front.min() > higher) {
       packet_number_deque_.push_front(
           Interval<QuicPacketNumber>(lower, higher));
@@ -204,11 +207,11 @@ void PacketNumberQueue::AddRange(QuicPacketNumber lower,
       // extended, which would reduce the compexity of the following for loop.
       if (higher >= back.max()) {
         packet_number_deque_.back().SetMax(higher);
-        higher = back.min();
+        higher = max(lower, back.min());
       }
       if (lower < front.min()) {
         packet_number_deque_.front().SetMin(lower);
-        lower = front.max() - 1;
+        lower = min(higher, front.max());
       }
 
       for (size_t i = lower; i < higher; i++) {

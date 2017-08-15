@@ -51,7 +51,7 @@ struct TestParams {
         framer_has_data_producer(framer_has_data_producer) {}
 
   friend std::ostream& operator<<(std::ostream& os, const TestParams& p) {
-    os << "{ client_version: " << QuicVersionToString(p.version)
+    os << "{ version: " << QuicVersionToString(p.version)
        << " connection id length: " << p.connection_id_length
        << " include version: " << p.version_serialization
        << " framer_has_data_producer: " << p.framer_has_data_producer << " }";
@@ -735,8 +735,13 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
   QuicPacketCreatorPeer::SetPacketNumber(&creator_,
                                          UINT64_C(64) * 256 * 256 * 256 * 256);
   creator_.UpdatePacketNumberLength(2, 10000 / kDefaultMaxPacketSize);
-  EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
-            QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
+  if (GetParam().version <= QUIC_VERSION_39) {
+    EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
+              QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
+  } else {
+    EXPECT_EQ(PACKET_8BYTE_PACKET_NUMBER,
+              QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
+  }
 }
 
 TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthCwnd) {
@@ -758,8 +763,13 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthCwnd) {
 
   creator_.UpdatePacketNumberLength(
       1, UINT64_C(1000) * 256 * 256 * 256 * 256 / kDefaultMaxPacketSize);
-  EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
-            QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
+  if (GetParam().version <= QUIC_VERSION_39) {
+    EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
+              QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
+  } else {
+    EXPECT_EQ(PACKET_8BYTE_PACKET_NUMBER,
+              QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
+  }
 }
 
 TEST_P(QuicPacketCreatorTest, SerializeFrame) {

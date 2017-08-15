@@ -9,6 +9,8 @@
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_flag_utils.h"
+#include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 
 namespace net {
@@ -131,6 +133,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
   }
 
   if (run_fast_path) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_consuming_data_faster);
     return ConsumeDataFastPath(id, iov, offset, state != NO_FIN,
                                total_bytes_consumed, std::move(ack_listener));
   }

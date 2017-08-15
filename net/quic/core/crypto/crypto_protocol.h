@@ -90,7 +90,6 @@ const QuicTag kRENO = TAG('R', 'E', 'N', 'O');   // Reno Congestion Control
 const QuicTag kTPCC = TAG('P', 'C', 'C', '\0');  // Performance-Oriented
                                                  // Congestion Control
 const QuicTag kBYTE = TAG('B', 'Y', 'T', 'E');   // TCP cubic or reno in bytes
-const QuicTag kRATE = TAG('R', 'A', 'T', 'E');   // TCP cubic rate based sending
 const QuicTag kIW03 = TAG('I', 'W', '0', '3');   // Force ICWND to 3
 const QuicTag kIW10 = TAG('I', 'W', '1', '0');   // Force ICWND to 10
 const QuicTag kIW20 = TAG('I', 'W', '2', '0');   // Force ICWND to 20

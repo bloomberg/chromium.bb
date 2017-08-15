@@ -116,7 +116,7 @@ void QuicPacketCreator::UpdatePacketNumberLength(
       packet_.packet_number + 1 - least_packet_awaited_by_peer;
   const uint64_t delta = std::max(current_delta, max_packets_in_flight);
   packet_.packet_number_length =
-      QuicFramer::GetMinPacketNumberLength(delta * 4);
+      QuicFramer::GetMinPacketNumberLength(framer_->version(), delta * 4);
 }
 
 bool QuicPacketCreator::ConsumeData(QuicStreamId id,

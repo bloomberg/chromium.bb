@@ -224,7 +224,7 @@ TEST_F(QuicFramesTest, AddInterval) {
 
   EXPECT_EQ(expected_intervals, actual_intervals);
 
-  if (FLAGS_quic_reloadable_flag_quic_frames_deque) {
+  if (FLAGS_quic_reloadable_flag_quic_frames_deque2) {
     EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(20, 30), "");
   } else {
     ack_frame1.packets.AddRange(20, 30);
@@ -241,7 +241,7 @@ TEST_F(QuicFramesTest, AddInterval) {
   EXPECT_EQ(3u, ack_frame1.packets.NumIntervals());
   EXPECT_EQ(expected_intervals2, actual_intervals2);
 
-  if (FLAGS_quic_reloadable_flag_quic_frames_deque) {
+  if (FLAGS_quic_reloadable_flag_quic_frames_deque2) {
     EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(15, 20), "");
     EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(30, 35), "");
   } else {
@@ -259,7 +259,7 @@ TEST_F(QuicFramesTest, AddInterval) {
 
   EXPECT_EQ(expected_intervals3, actual_intervals3);
 
-  if (FLAGS_quic_reloadable_flag_quic_frames_deque) {
+  if (FLAGS_quic_reloadable_flag_quic_frames_deque2) {
     EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(20, 35), "");
   } else {
     ack_frame1.packets.AddRange(20, 35);
@@ -269,7 +269,7 @@ TEST_F(QuicFramesTest, AddInterval) {
       ack_frame1.packets.begin(), ack_frame1.packets.end());
 
   EXPECT_EQ(expected_intervals3, actual_intervals4);
-  if (FLAGS_quic_reloadable_flag_quic_frames_deque) {
+  if (FLAGS_quic_reloadable_flag_quic_frames_deque2) {
     EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(12, 20), "");
     EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(30, 38), "");
   } else {
@@ -286,7 +286,7 @@ TEST_F(QuicFramesTest, AddInterval) {
   expected_intervals5.push_back(Interval<QuicPacketNumber>(50, 100));
 
   EXPECT_EQ(expected_intervals5, actual_intervals5);
-  if (FLAGS_quic_reloadable_flag_quic_frames_deque) {
+  if (FLAGS_quic_reloadable_flag_quic_frames_deque2) {
     EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(8, 55), "");
   } else {
     ack_frame1.packets.AddRange(8, 55);
@@ -300,7 +300,7 @@ TEST_F(QuicFramesTest, AddInterval) {
 
   EXPECT_EQ(expected_intervals6, actual_intervals6);
 
-  if (FLAGS_quic_reloadable_flag_quic_frames_deque) {
+  if (FLAGS_quic_reloadable_flag_quic_frames_deque2) {
     EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(0, 200), "");
   } else {
     ack_frame1.packets.AddRange(0, 200);
@@ -334,11 +334,57 @@ TEST_F(QuicFramesTest, AddInterval) {
   EXPECT_EQ(expected_intervals8, actual_intervals8);
 }
 
+TEST_F(QuicFramesTest, AddAdjacentReverse) {
+  QuicAckFrame ack_frame1;
+  ack_frame1.packets.AddRange(70, 100);
+  ack_frame1.packets.AddRange(60, 70);
+  ack_frame1.packets.AddRange(50, 60);
+  ack_frame1.packets.Add(49);
+
+  std::vector<Interval<QuicPacketNumber>> expected_intervals;
+  expected_intervals.push_back(Interval<QuicPacketNumber>(49, 100));
+
+  const std::vector<Interval<QuicPacketNumber>> actual_intervals(
+      ack_frame1.packets.begin(), ack_frame1.packets.end());
+
+  EXPECT_EQ(expected_intervals, actual_intervals);
+}
+
+TEST_F(QuicFramesTest, AddMerges) {
+  QuicAckFrame ack_frame1;
+  ack_frame1.packets.AddRange(110, 112);
+  ack_frame1.packets.AddRange(106, 108);
+  ack_frame1.packets.AddRange(102, 104);
+  ack_frame1.packets.AddRange(1, 2);
+  ack_frame1.packets.AddRange(4, 7);
+  ack_frame1.packets.AddRange(10, 20);
+  ack_frame1.packets.AddRange(21, 30);
+  ack_frame1.packets.Add(20);
+  ack_frame1.packets.AddRange(40, 50);
+  ack_frame1.packets.AddRange(30, 35);
+  ack_frame1.packets.AddRange(35, 40);
+  ack_frame1.packets.AddRange(108, 110);
+  if (FLAGS_quic_reloadable_flag_quic_frames_deque2) {
+    EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(50, 106), "");
+  } else {
+    ack_frame1.packets.AddRange(50, 106);
+  }
+  ack_frame1.packets.AddRange(2, 4);
+  ack_frame1.packets.AddRange(7, 11);
+  std::vector<Interval<QuicPacketNumber>> expected_intervals;
+  expected_intervals.push_back(Interval<QuicPacketNumber>(1, 112));
+
+  const std::vector<Interval<QuicPacketNumber>> actual_intervals(
+      ack_frame1.packets.begin(), ack_frame1.packets.end());
+
+  EXPECT_EQ(expected_intervals, actual_intervals);
+}
+
 TEST_F(QuicFramesTest, AddIntervalBig) {
   QuicAckFrame ack_frame1;
   ack_frame1.packets.AddRange(20, 30);
   ack_frame1.packets.AddRange(70, 100);
-  if (FLAGS_quic_reloadable_flag_quic_frames_deque) {
+  if (FLAGS_quic_reloadable_flag_quic_frames_deque2) {
     EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(56, 58), "");
     EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(65, 69), "");
     EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(59, 64), "");
@@ -362,7 +408,7 @@ TEST_F(QuicFramesTest, AddIntervalBig) {
       ack_frame1.packets.begin(), ack_frame1.packets.end());
 
   EXPECT_EQ(expected_intervals, actual_intervals);
-  if (FLAGS_quic_reloadable_flag_quic_frames_deque) {
+  if (FLAGS_quic_reloadable_flag_quic_frames_deque2) {
     EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(10, 60), "");
   } else {
     ack_frame1.packets.AddRange(10, 60);
@@ -378,7 +424,7 @@ TEST_F(QuicFramesTest, AddIntervalBig) {
 
   EXPECT_EQ(expected_intervals2, actual_intervals2);
 
-  if (FLAGS_quic_reloadable_flag_quic_frames_deque) {
+  if (FLAGS_quic_reloadable_flag_quic_frames_deque2) {
     EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(68, 1000), "");
   } else {
     ack_frame1.packets.AddRange(68, 1000);
@@ -392,7 +438,7 @@ TEST_F(QuicFramesTest, AddIntervalBig) {
       ack_frame1.packets.begin(), ack_frame1.packets.end());
 
   EXPECT_EQ(expected_intervals3, actual_intervals3);
-  if (FLAGS_quic_reloadable_flag_quic_frames_deque) {
+  if (FLAGS_quic_reloadable_flag_quic_frames_deque2) {
     EXPECT_QUIC_BUG(ack_frame1.packets.AddRange(0, 10000), "");
   } else {
     ack_frame1.packets.AddRange(0, 10000);

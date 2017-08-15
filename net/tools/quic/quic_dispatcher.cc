@@ -115,7 +115,7 @@ class StatelessConnectionTerminator {
                  helper->GetStreamFrameBufferAllocator(),
                  &collector_),
         time_wait_list_manager_(time_wait_list_manager) {
-    if (FLAGS_quic_reloadable_flag_quic_save_data_before_consumption) {
+    if (FLAGS_quic_reloadable_flag_quic_save_data_before_consumption2) {
       framer_->set_data_producer(&collector_);
     }
   }
@@ -156,6 +156,8 @@ class StatelessConnectionTerminator {
     QuicIOVector iov(&iovec, 1, iovec.iov_len);
     QuicStreamOffset offset = 0;
     if (framer_->HasDataProducer()) {
+      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_save_data_before_consumption2,
+                        4, 4);
       collector_.SaveStatelessRejectFrameData(iov, 0, reject.length());
     }
     while (offset < iovec.iov_len) {
@@ -973,6 +975,11 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
   current_server_address_ = current_server_address;
   current_packet_ = current_packet.get();
   current_connection_id_ = rejector->connection_id();
+  if (FLAGS_quic_reloadable_flag_quic_set_version_on_async_get_proof_returns) {
+    QUIC_FLAG_COUNT(
+        quic_reloadable_flag_quic_set_version_on_async_get_proof_returns);
+    framer_.set_version(first_version);
+  }
 
   ProcessStatelessRejectorState(std::move(rejector), first_version);
 }
