@@ -94,6 +94,12 @@ class PaintArtifactCompositorTestWithPropertyTrees
         *paint_artifact_compositor_->GetWebLayer());
   }
 
+  void TearDown() override {
+    // Make sure we remove all child layers to satisfy destructor
+    // child layer element id DCHECK.
+    WillBeRemovedFromFrame();
+  }
+
   const cc::PropertyTrees& GetPropertyTrees() {
     return *web_layer_tree_view_->GetLayerTreeHost()->property_trees();
   }
@@ -134,6 +140,10 @@ class PaintArtifactCompositorTestWithPropertyTrees
               CompositorElementIdSet& element_ids) {
     paint_artifact_compositor_->Update(artifact, element_ids);
     web_layer_tree_view_->GetLayerTreeHost()->LayoutAndUpdateLayers();
+  }
+
+  void WillBeRemovedFromFrame() {
+    paint_artifact_compositor_->WillBeRemovedFromFrame();
   }
 
   cc::Layer* RootLayer() { return paint_artifact_compositor_->RootLayer(); }
@@ -2799,4 +2809,22 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   ASSERT_EQ(mask_isolation_2_id, mask_effect_2.parent_id);
   EXPECT_EQ(SkBlendMode::kDstIn, mask_effect_2.blend_mode);
 }
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, WillBeRemovedFromFrame) {
+  RefPtr<EffectPaintPropertyNode> effect =
+      CreateSampleEffectNodeWithElementId();
+  TestPaintArtifact artifact;
+  artifact
+      .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
+             effect.Get())
+      .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
+  Update(artifact.Build());
+
+  ASSERT_EQ(1u, ContentLayerCount());
+  WillBeRemovedFromFrame();
+  // We would need a fake or mock LayerTreeHost to validate that we
+  // unregister all element ids, so just check layer count for now.
+  EXPECT_EQ(0u, ContentLayerCount());
+}
+
 }  // namespace blink

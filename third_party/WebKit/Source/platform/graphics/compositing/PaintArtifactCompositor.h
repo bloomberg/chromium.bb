@@ -78,12 +78,16 @@ class PLATFORM_EXPORT PaintArtifactCompositor
     Vector<scoped_refptr<cc::Layer>> content_layers;
     Vector<scoped_refptr<cc::Layer>> synthesized_clip_layers;
   };
-  void EnableExtraDataForTesting() { extra_data_for_testing_enabled_ = true; }
+  void EnableExtraDataForTesting();
   ExtraDataForTesting* GetExtraDataForTesting() const {
     return extra_data_for_testing_.get();
   }
 
   void SetTracksRasterInvalidations(bool);
+
+  // Called when the local frame view that owns this compositor is
+  // going to be removed from its frame.
+  void WillBeRemovedFromFrame();
 
   std::unique_ptr<JSONObject> LayersAsJSON(LayerTreeFlags) const;
 
@@ -118,6 +122,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor
   };
 
   PaintArtifactCompositor();
+
+  void RemoveChildLayers();
 
   // Collects the PaintChunks into groups which will end up in the same
   // cc layer. This is the entry point of the layerization algorithm.
