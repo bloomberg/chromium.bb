@@ -52,7 +52,8 @@ void NewSessionCdmResultPromise::resolve(const std::string& session_id) {
   new_session_created_cb_.Run(session_id, &status);
 
   if (status == SessionInitStatus::UNKNOWN_STATUS) {
-    reject(INVALID_STATE_ERROR, 0, "Cannot finish session initialization");
+    reject(Exception::INVALID_STATE_ERROR, 0,
+           "Cannot finish session initialization");
     return;
   }
 

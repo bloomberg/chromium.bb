@@ -293,7 +293,7 @@ AesDecryptor::~AesDecryptor() {
 void AesDecryptor::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
     std::unique_ptr<SimpleCdmPromise> promise) {
-  promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+  promise->reject(CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0,
                   "SetServerCertificate() is not supported.");
 }
 
@@ -313,7 +313,8 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
       // |init_data| is simply the key needed.
       if (init_data.size() < limits::kMinKeyIdLength ||
           init_data.size() > limits::kMaxKeyIdLength) {
-        promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0, "Incorrect length");
+        promise->reject(CdmPromise::Exception::TYPE_ERROR, 0,
+                        "Incorrect length");
         return;
       }
       keys.push_back(init_data);
@@ -322,13 +323,13 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
       // |init_data| is a set of 0 or more concatenated 'pssh' boxes.
       if (!GetKeyIdsForCommonSystemId(init_data, &keys)) {
-        promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+        promise->reject(CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0,
                         "No supported PSSH box found.");
         return;
       }
       break;
 #else
-      promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+      promise->reject(CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0,
                       "Initialization data type CENC is not supported.");
       return;
 #endif
@@ -337,14 +338,14 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
       std::string error_message;
       if (!ExtractKeyIdsFromKeyIdsInitData(init_data_string, &keys,
                                            &error_message)) {
-        promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0, error_message);
+        promise->reject(CdmPromise::Exception::TYPE_ERROR, 0, error_message);
         return;
       }
       break;
     }
     default:
       NOTREACHED();
-      promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+      promise->reject(CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0,
                       "init_data_type not supported.");
       return;
   }
@@ -362,7 +363,7 @@ void AesDecryptor::LoadSession(CdmSessionType session_type,
   // the session state. Should not be called as blink should not allow
   // persistent sessions for ClearKey.
   NOTREACHED();
-  promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+  promise->reject(CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0,
                   "LoadSession() is not supported.");
 }
 
@@ -376,17 +377,18 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
   // could get called on a closed session.
   // https://github.com/w3c/encrypted-media/issues/365
   if (open_sessions_.find(session_id) == open_sessions_.end()) {
-    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
+    promise->reject(CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "Session does not exist.");
     return;
   }
 
   bool key_added = false;
+  CdmPromise::Exception exception;
   std::string error_message;
   if (!UpdateSessionWithJWK(session_id,
                             std::string(response.begin(), response.end()),
-                            &key_added, &error_message)) {
-    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0, error_message);
+                            &key_added, &exception, &error_message)) {
+    promise->reject(exception, 0, error_message);
     return;
   }
 
@@ -396,6 +398,7 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
 bool AesDecryptor::UpdateSessionWithJWK(const std::string& session_id,
                                         const std::string& json_web_key_set,
                                         bool* key_added,
+                                        CdmPromise::Exception* exception,
                                         std::string* error_message) {
   auto open_session = open_sessions_.find(session_id);
   DCHECK(open_session != open_sessions_.end());
@@ -403,12 +406,14 @@ bool AesDecryptor::UpdateSessionWithJWK(const std::string& session_id,
 
   KeyIdAndKeyPairs keys;
   if (!ExtractKeysFromJWKSet(json_web_key_set, &keys, &session_type)) {
+    *exception = CdmPromise::Exception::TYPE_ERROR;
     error_message->assign("Invalid JSON Web Key Set.");
     return false;
   }
 
   // Make sure that at least one key was extracted.
   if (keys.empty()) {
+    *exception = CdmPromise::Exception::TYPE_ERROR;
     error_message->assign("JSON Web Key Set does not contain any keys.");
     return false;
   }
@@ -418,6 +423,7 @@ bool AesDecryptor::UpdateSessionWithJWK(const std::string& session_id,
     if (it->second.length() !=
         static_cast<size_t>(DecryptConfig::kDecryptionKeySize)) {
       DVLOG(1) << "Invalid key length: " << it->second.length();
+      *exception = CdmPromise::Exception::TYPE_ERROR;
       error_message->assign("Invalid key length.");
       return false;
     }
@@ -428,6 +434,7 @@ bool AesDecryptor::UpdateSessionWithJWK(const std::string& session_id,
       local_key_added = true;
 
     if (!AddDecryptionKey(session_id, it->first, it->second)) {
+      *exception = CdmPromise::Exception::INVALID_STATE_ERROR;
       error_message->assign("Unable to add key.");
       return false;
     }
@@ -495,7 +502,7 @@ void AesDecryptor::RemoveSession(const std::string& session_id,
   if (it == open_sessions_.end()) {
     // Session doesn't exist. Since this should only be called if the session
     // existed at one time, this must mean the session has been closed.
-    promise->reject(CdmPromise::INVALID_STATE_ERROR, 0,
+    promise->reject(CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "The session is already closed.");
     return;
   }

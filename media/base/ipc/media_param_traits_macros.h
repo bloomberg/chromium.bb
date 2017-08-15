@@ -48,7 +48,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::CdmMessageType,
                           media::CdmMessageType::MESSAGE_TYPE_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmPromise::Exception,
-                          media::CdmPromise::EXCEPTION_MAX)
+                          media::CdmPromise::Exception::EXCEPTION_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmSessionType,
                           media::CdmSessionType::SESSION_TYPE_MAX)

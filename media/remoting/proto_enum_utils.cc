@@ -470,31 +470,33 @@ base::Optional<pb::CdmKeyInformation::KeyStatus> ToProtoCdmKeyInformation(
 base::Optional<CdmPromise::Exception> ToCdmPromiseException(
     pb::CdmException value) {
   using OriginType = pb::CdmException;
-  using OtherType = CdmPromise;
+  using OtherType = CdmPromise::Exception;
   switch (value) {
     CASE_RETURN_OTHER(NOT_SUPPORTED_ERROR);
     CASE_RETURN_OTHER(INVALID_STATE_ERROR);
-    CASE_RETURN_OTHER(INVALID_ACCESS_ERROR);
     CASE_RETURN_OTHER(QUOTA_EXCEEDED_ERROR);
-    CASE_RETURN_OTHER(UNKNOWN_ERROR);
-    CASE_RETURN_OTHER(CLIENT_ERROR);
-    CASE_RETURN_OTHER(OUTPUT_ERROR);
+    CASE_RETURN_OTHER(TYPE_ERROR);
+
+    // The following were generated with previous versions of the CDM and are
+    // no longer used by CdmPromise.
+    case OriginType::INVALID_ACCESS_ERROR:
+    case OriginType::UNKNOWN_ERROR:
+    case OriginType::CLIENT_ERROR:
+    case OriginType::OUTPUT_ERROR:
+      return OtherType::NOT_SUPPORTED_ERROR;
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
 base::Optional<pb::CdmException> ToProtoCdmException(
     CdmPromise::Exception value) {
-  using OriginType = CdmPromise;
+  using OriginType = CdmPromise::Exception;
   using OtherType = pb::CdmException;
   switch (value) {
     CASE_RETURN_OTHER(NOT_SUPPORTED_ERROR);
     CASE_RETURN_OTHER(INVALID_STATE_ERROR);
-    CASE_RETURN_OTHER(INVALID_ACCESS_ERROR);
     CASE_RETURN_OTHER(QUOTA_EXCEEDED_ERROR);
-    CASE_RETURN_OTHER(UNKNOWN_ERROR);
-    CASE_RETURN_OTHER(CLIENT_ERROR);
-    CASE_RETURN_OTHER(OUTPUT_ERROR);
+    CASE_RETURN_OTHER(TYPE_ERROR);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }

@@ -293,7 +293,7 @@ class MojoCdmTest : public ::testing::Test {
         break;
 
       case FAILURE:
-        promise->reject(media::CdmPromise::UNKNOWN_ERROR, 0,
+        promise->reject(media::CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0,
                         "Promise rejected");
         break;
 
@@ -329,7 +329,7 @@ class MojoCdmTest : public ::testing::Test {
         break;
 
       case FAILURE:
-        promise->reject(media::CdmPromise::UNKNOWN_ERROR, 0,
+        promise->reject(media::CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0,
                         "Promise rejected");
         break;
 

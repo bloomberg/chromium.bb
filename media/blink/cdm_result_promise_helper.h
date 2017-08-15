@@ -18,17 +18,17 @@ namespace media {
 // A superset of media::ContentDecryptionModule::Exception for UMA reporting.
 // These values should never be changed as it will affect existing reporting,
 // and must match the values for CdmPromiseResult in
-// tools/metrics/histograms/histograms.xml.
+// tools/metrics/histograms/enums.xml. Deprecated values should never be reused.
 enum CdmResultForUMA {
   SUCCESS = 0,
   NOT_SUPPORTED_ERROR = 1,
   INVALID_STATE_ERROR = 2,
-  INVALID_ACCESS_ERROR = 3,
+  TYPE_ERROR = 3,
   QUOTA_EXCEEDED_ERROR = 4,
-  UNKNOWN_ERROR = 5,
-  CLIENT_ERROR = 6,
-  OUTPUT_ERROR = 7,
-  NUM_RESULT_CODES
+  // UNKNOWN_ERROR = 5,  // Deprecated.
+  // CLIENT_ERROR = 6,   // Deprecated.
+  // OUTPUT_ERROR = 7,   // Deprecated.
+  NUM_RESULT_CODES  // Must be last.
 };
 
 MEDIA_BLINK_EXPORT CdmResultForUMA

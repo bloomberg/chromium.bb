@@ -114,7 +114,7 @@ void PpapiDecryptor::SetServerCertificate(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "CDM has failed.");
     return;
   }
@@ -129,7 +129,7 @@ void PpapiDecryptor::GetStatusForPolicy(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "CDM has failed.");
     return;
   }
@@ -146,7 +146,7 @@ void PpapiDecryptor::CreateSessionAndGenerateRequest(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "CDM has failed.");
     return;
   }
@@ -163,7 +163,7 @@ void PpapiDecryptor::LoadSession(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "CDM has failed.");
     return;
   }
@@ -178,7 +178,7 @@ void PpapiDecryptor::UpdateSession(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "CDM has failed.");
     return;
   }
@@ -192,7 +192,7 @@ void PpapiDecryptor::CloseSession(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "CDM has failed.");
     return;
   }
@@ -207,7 +207,7 @@ void PpapiDecryptor::RemoveSession(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(media::CdmPromise::INVALID_STATE_ERROR, 0,
+    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "CDM has failed.");
     return;
   }

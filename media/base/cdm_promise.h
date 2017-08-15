@@ -32,17 +32,12 @@ namespace media {
 // the pepper interface.
 class MEDIA_EXPORT CdmPromise {
  public:
-  // TODO(jrummell): Remove deprecated errors. See
-  // http://crbug.com/570216
-  enum Exception {
+  enum class Exception {
     NOT_SUPPORTED_ERROR,
     INVALID_STATE_ERROR,
-    INVALID_ACCESS_ERROR,
     QUOTA_EXCEEDED_ERROR,
-    UNKNOWN_ERROR,
-    CLIENT_ERROR,
-    OUTPUT_ERROR,
-    EXCEPTION_MAX = OUTPUT_ERROR
+    TYPE_ERROR,
+    EXCEPTION_MAX = TYPE_ERROR
   };
 
   enum ResolveParameterType {
@@ -130,7 +125,7 @@ class CdmPromiseTemplate : public CdmPromise {
     std::string message =
         "Unfulfilled promise rejected automatically during destruction.";
     DVLOG(1) << message;
-    reject(INVALID_STATE_ERROR, 0, message);
+    reject(Exception::INVALID_STATE_ERROR, 0, message);
     DCHECK(is_settled_);
   }
 

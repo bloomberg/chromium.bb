@@ -96,17 +96,17 @@ cdm::InitDataType ToCdmInitDataType(EmeInitDataType init_data_type) {
 CdmPromise::Exception ToMediaExceptionType(cdm::Exception exception) {
   switch (exception) {
     case cdm::kExceptionTypeError:
-      return CdmPromise::INVALID_ACCESS_ERROR;
+      return CdmPromise::Exception::TYPE_ERROR;
     case cdm::kExceptionNotSupportedError:
-      return CdmPromise::NOT_SUPPORTED_ERROR;
+      return CdmPromise::Exception::NOT_SUPPORTED_ERROR;
     case cdm::kExceptionInvalidStateError:
-      return CdmPromise::INVALID_STATE_ERROR;
+      return CdmPromise::Exception::INVALID_STATE_ERROR;
     case cdm::kExceptionQuotaExceededError:
-      return CdmPromise::QUOTA_EXCEEDED_ERROR;
+      return CdmPromise::Exception::QUOTA_EXCEEDED_ERROR;
   }
 
   NOTREACHED() << "Unexpected cdm::Exception " << exception;
-  return CdmPromise::INVALID_STATE_ERROR;
+  return CdmPromise::Exception::INVALID_STATE_ERROR;
 }
 
 cdm::Exception ToCdmExceptionType(cdm::Error error) {
@@ -114,15 +114,18 @@ cdm::Exception ToCdmExceptionType(cdm::Error error) {
     case cdm::kNotSupportedError:
       return cdm::kExceptionNotSupportedError;
     case cdm::kInvalidStateError:
-      return cdm::kExceptionTypeError;
-    case cdm::kInvalidAccessError:
       return cdm::kExceptionInvalidStateError;
+    case cdm::kInvalidAccessError:
+      return cdm::kExceptionTypeError;
     case cdm::kQuotaExceededError:
       return cdm::kExceptionQuotaExceededError;
+
+    // TODO(jrummell): Remove these once CDM_8 is no longer supported.
+    // https://crbug.com/737296.
     case cdm::kUnknownError:
     case cdm::kClientError:
     case cdm::kOutputError:
-      break;
+      return cdm::kExceptionNotSupportedError;
   }
 
   NOTREACHED() << "Unexpected cdm::Error " << error;
@@ -453,7 +456,7 @@ CdmWrapper* CdmAdapter::CreateCdmInstance(const std::string& key_system) {
 void CdmAdapter::Initialize(std::unique_ptr<media::SimpleCdmPromise> promise) {
   cdm_.reset(CreateCdmInstance(key_system_));
   if (!cdm_) {
-    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
+    promise->reject(CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "Unable to create CDM.");
     return;
   }
@@ -470,7 +473,7 @@ void CdmAdapter::SetServerCertificate(
 
   if (certificate.size() < limits::kMinCertificateLength ||
       certificate.size() > limits::kMaxCertificateLength) {
-    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
+    promise->reject(CdmPromise::Exception::TYPE_ERROR, 0,
                     "Incorrect certificate.");
     return;
   }
@@ -487,9 +490,9 @@ void CdmAdapter::GetStatusForPolicy(
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   if (!cdm_->GetStatusForPolicy(promise_id,
                                 ToCdmHdcpVersion(min_hdcp_version))) {
-    cdm_promise_adapter_.RejectPromise(promise_id,
-                                       CdmPromise::NOT_SUPPORTED_ERROR, 0,
-                                       "GetStatusForPolicy not supported.");
+    cdm_promise_adapter_.RejectPromise(
+        promise_id, CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0,
+        "GetStatusForPolicy not supported.");
   }
 }
 

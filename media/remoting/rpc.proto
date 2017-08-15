@@ -280,11 +280,12 @@ message CdmKeyInformation {
 enum CdmException {
   NOT_SUPPORTED_ERROR = 0;
   INVALID_STATE_ERROR = 1;
-  INVALID_ACCESS_ERROR = 2;
+  INVALID_ACCESS_ERROR = 2 [deprecated = true];
   QUOTA_EXCEEDED_ERROR = 3;
-  UNKNOWN_ERROR = 4;
-  CLIENT_ERROR = 5;
-  OUTPUT_ERROR = 6;
+  UNKNOWN_ERROR = 4 [deprecated = true];
+  CLIENT_ERROR = 5 [deprecated = true];
+  OUTPUT_ERROR = 6 [deprecated = true];
+  TYPE_ERROR = 7;
 }
 
 // Proto version of media::CdmMessageType.

@@ -445,7 +445,7 @@ void MediaDrmBridge::SetServerCertificate(
                                                j_certificate)) {
     promise->resolve();
   } else {
-    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
+    promise->reject(CdmPromise::Exception::TYPE_ERROR, 0,
                     "Set server certificate failed.");
   }
 }
@@ -472,7 +472,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
       if (!delegate->OnCreateSession(init_data_type, init_data,
                                      &init_data_from_delegate,
                                      &optional_parameters_from_delegate)) {
-        promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
+        promise->reject(CdmPromise::Exception::TYPE_ERROR, 0,
                         "Invalid init data.");
         return;
       }
@@ -514,7 +514,7 @@ void MediaDrmBridge::LoadSession(
 
   if (session_type != CdmSessionType::PERSISTENT_LICENSE_SESSION) {
     promise->reject(
-        CdmPromise::NOT_SUPPORTED_ERROR, 0,
+        CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0,
         "LoadSession() is only supported for 'persistent-license'.");
     return;
   }
@@ -636,8 +636,8 @@ void MediaDrmBridge::ResolvePromiseWithSession(uint32_t promise_id,
 void MediaDrmBridge::RejectPromise(uint32_t promise_id,
                                    const std::string& error_message) {
   DVLOG(2) << __func__;
-  cdm_promise_adapter_.RejectPromise(promise_id, CdmPromise::UNKNOWN_ERROR, 0,
-                                     error_message);
+  cdm_promise_adapter_.RejectPromise(
+      promise_id, CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0, error_message);
 }
 
 void MediaDrmBridge::SetMediaCryptoReadyCB(
