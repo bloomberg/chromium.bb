@@ -255,10 +255,6 @@ const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
     "SendBeaconThrowForBlobWithNonSimpleType",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Navigation preload feature of service workers.
-const base::Feature kServiceWorkerNavigationPreload{
-    "ServiceWorkerNavigationPreload", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Streaming installed scripts on starting service workers.
 const base::Feature kServiceWorkerScriptStreaming{
     "ServiceWorkerScriptStreaming", base::FEATURE_DISABLED_BY_DEFAULT};

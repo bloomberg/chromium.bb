@@ -950,10 +950,6 @@
       status: "experimental",
     },
     {
-      name: "ServiceWorkerNavigationPreload",
-      status: "stable",
-    },
-    {
       name: "ServiceWorkerScriptStreaming",
     },
     {

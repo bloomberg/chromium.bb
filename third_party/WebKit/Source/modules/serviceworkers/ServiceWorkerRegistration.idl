@@ -11,7 +11,7 @@
     readonly attribute ServiceWorker? installing;
     readonly attribute ServiceWorker? waiting;
     readonly attribute ServiceWorker? active;
-    [RuntimeEnabled=ServiceWorkerNavigationPreload] readonly attribute NavigationPreloadManager navigationPreload;
+    readonly attribute NavigationPreloadManager navigationPreload;
 
     readonly attribute USVString scope;
 

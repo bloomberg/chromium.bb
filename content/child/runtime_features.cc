@@ -321,9 +321,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnablePaymentRequest(
       base::FeatureList::IsEnabled(features::kWebPayments));
 
-  WebRuntimeFeatures::EnableServiceWorkerNavigationPreload(
-      base::FeatureList::IsEnabled(features::kServiceWorkerNavigationPreload));
-
   WebRuntimeFeatures::EnableServiceWorkerScriptStreaming(
       base::FeatureList::IsEnabled(features::kServiceWorkerScriptStreaming));
 

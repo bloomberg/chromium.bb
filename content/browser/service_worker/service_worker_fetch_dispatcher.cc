@@ -597,9 +597,6 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   if (!request_->blob_uuid.empty())
     return false;
 
-  if (!base::FeatureList::IsEnabled(features::kServiceWorkerNavigationPreload))
-    return false;
-
   ResourceRequestInfoImpl* original_info =
       ResourceRequestInfoImpl::ForRequest(original_request);
   ResourceRequesterInfo* requester_info = original_info->requester_info();
