@@ -14,6 +14,8 @@ static_library("core") {
     "controller_client.h",
     "metrics_helper.cc",
     "metrics_helper.h",
+    "mitm_software_ui.cc",
+    "mitm_software_ui.h",
     "safe_browsing_loud_error_ui.cc",
     "safe_browsing_loud_error_ui.h",
     "safe_browsing_quiet_error_ui.cc",
@@ -25,6 +27,13 @@ static_library("core") {
     "urls.cc",
     "urls.h",
   ]
+
+  if (is_ios) {
+    sources -= [
+      "mitm_software_ui.cc",
+      "mitm_software_ui.h",
+    ]
+  }
 
   deps = [
     "//base",
