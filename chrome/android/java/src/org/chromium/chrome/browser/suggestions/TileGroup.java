@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.suggestions;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -14,7 +13,6 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
-import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
@@ -210,23 +208,21 @@ public class TileGroup implements MostVisitedSites.Observer {
     };
 
     /**
-     * @param context Used for initialisation and resolving resources.
+     * @param tileRenderer Used to render icons.
      * @param uiDelegate Delegate used to interact with the rest of the system.
      * @param contextMenuManager Used to handle context menu invocations on the tiles.
      * @param tileGroupDelegate Used for interactions with the Most Visited backend.
      * @param observer Will be notified of changes to the tile data.
-     * @param titleLines The number of text lines to use for each tile title.
-     * @param tileStyle The style to use when building the tiles. See {@link TileView.Style}.
+     * @param offlinePageBridge Used to update the offline badge of the tiles.
      */
-    public TileGroup(Context context, SuggestionsUiDelegate uiDelegate,
+    public TileGroup(TileRenderer tileRenderer, SuggestionsUiDelegate uiDelegate,
             ContextMenuManager contextMenuManager, Delegate tileGroupDelegate, Observer observer,
-            OfflinePageBridge offlinePageBridge, int titleLines, @TileView.Style int tileStyle) {
+            OfflinePageBridge offlinePageBridge) {
         mUiDelegate = uiDelegate;
         mContextMenuManager = contextMenuManager;
         mTileGroupDelegate = tileGroupDelegate;
         mObserver = observer;
-        mTileRenderer =
-                new TileRenderer(context, tileStyle, titleLines, uiDelegate.getImageFetcher());
+        mTileRenderer = tileRenderer;
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME)) {
             mOfflineModelObserver = new OfflineModelObserver(offlinePageBridge);
@@ -286,30 +282,30 @@ public class TileGroup implements MostVisitedSites.Observer {
     }
 
     /**
-     * Renders tile views in the given {@link TileGridLayout}.
-     * @param parent The layout to render the tile views into.
+     * Method to be called when a tile render has been triggered, to let the {@link TileGroup}
+     * update its internal task tracking status.
+     * @see Delegate#onLoadingComplete(List)
      */
-    public void renderTiles(ViewGroup parent) {
-        // TODO(dgn, galinap): Support extra sections in the UI.
-        assert mTileSections.size() == 1;
-        assert mTileSections.keyAt(0) == TileSectionType.PERSONALIZED;
-
-        for (int i = 0; i < mTileSections.size(); ++i) {
-            mTileRenderer.renderTileSection(mTileSections.valueAt(i), parent, mTileSetupDelegate);
-        }
+    public void notifyTilesRendered() {
         // Icon fetch scheduling was done when building the tile views.
         if (isLoadTracked()) removeTask(TileTask.SCHEDULE_ICON_FETCH);
     }
 
-    /** @return All the tiles currently loaded in the group. */
-    public List<Tile> getAllTiles() {
-        List<Tile> tiles = new ArrayList<>();
-        for (int i = 0; i < mTileSections.size(); ++i) tiles.addAll(mTileSections.valueAt(i));
-        return tiles;
+    /** @return the sites currently loaded in the group, grouped by vertical. */
+    public SparseArray<List<Tile>> getTiles() {
+        return mTileSections;
     }
 
     public boolean hasReceivedData() {
         return mHasReceivedData;
+    }
+
+    /** @return Whether the group has no sites to display. */
+    public boolean isEmpty() {
+        for (int i = 0; i < mTileSections.size(); i++) {
+            if (!mTileSections.valueAt(i).isEmpty()) return false;
+        }
+        return true;
     }
 
     /**
@@ -447,11 +443,6 @@ public class TileGroup implements MostVisitedSites.Observer {
     }
 
     @VisibleForTesting
-    TileRenderer getTileRenderer() {
-        return mTileRenderer;
-    }
-
-    @VisibleForTesting
     TileSetupDelegate getTileSetupDelegate() {
         return mTileSetupDelegate;
     }
@@ -463,7 +454,7 @@ public class TileGroup implements MostVisitedSites.Observer {
         // Have an empty list for now that can be rendered as-is without causing issues or too much
         // state checking. We will have to decide if we want empty lists or no section at all for
         // the others.
-        newTileData.put(TileSectionType.PERSONALIZED, new ArrayList<Tile>());
+        newTileData.put(TileSectionType.PERSONALIZED, new ArrayList<>());
 
         return newTileData;
     }
@@ -581,7 +572,9 @@ public class TileGroup implements MostVisitedSites.Observer {
 
         @Override
         public Iterable<Tile> getOfflinableSuggestions() {
-            return getAllTiles();
+            List<Tile> tiles = new ArrayList<>();
+            for (int i = 0; i < mTileSections.size(); ++i) tiles.addAll(mTileSections.valueAt(i));
+            return tiles;
         }
     }
 }
