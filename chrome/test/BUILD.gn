@@ -2672,6 +2672,9 @@ test("browser_tests") {
           "../browser/extensions/api/display_source/display_source_wifi_display_apitest.cc",
         ]
       }
+      if (!is_chromeos) {
+        sources += [ "../browser/ui/views/message_center/web_notification_tray_browsertest.cc" ]
+      }
     }
 
     if (is_chromeos || (is_linux && use_dbus)) {
