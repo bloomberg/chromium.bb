@@ -48,6 +48,10 @@
 #include "chrome/browser/ssl/captive_portal_blocking_page.h"
 #endif
 
+#if !defined(OS_IOS)
+#include "chrome/browser/ssl/mitm_software_blocking_page.h"
+#endif
+
 namespace {
 
 #if !defined(OS_IOS)
@@ -531,16 +535,10 @@ void SSLErrorHandlerDelegateImpl::ShowCaptivePortalInterstitial(
 
 void SSLErrorHandlerDelegateImpl::ShowMITMSoftwareInterstitial() {
 #if !defined(OS_IOS)
-  // TODO(sperigo): Update this code to render the MITM software blocking
-  // page. For the first MITM software interstitial CL, I am not checking
-  // in any of the UI code. Therefore ShowMITMSoftwareInterstitial()
-  // currently renders the generic SSL interstitial.
-  (SSLBlockingPage::Create(
-       web_contents_, cert_error_, ssl_info_, request_url_, options_mask_,
-       base::Time::NowFromSystemTime(), std::move(ssl_cert_reporter_),
-       base::FeatureList::IsEnabled(kSuperfishInterstitial) &&
-           IsSuperfish(ssl_info_.cert),
-       callback_))
+  // Show MITM software blocking page. The interstitial owns the blocking page.
+  (new MITMSoftwareBlockingPage(web_contents_, cert_error_, request_url_,
+                                std::move(ssl_cert_reporter_), ssl_info_,
+                                callback_))
       ->Show();
 #else
   NOTREACHED();

@@ -1325,6 +1325,8 @@ split_static_library("browser") {
     "ssl/insecure_sensitive_input_driver.h",
     "ssl/insecure_sensitive_input_driver_factory.cc",
     "ssl/insecure_sensitive_input_driver_factory.h",
+    "ssl/mitm_software_blocking_page.cc",
+    "ssl/mitm_software_blocking_page.h",
     "ssl/security_state_tab_helper.cc",
     "ssl/security_state_tab_helper.h",
     "ssl/ssl_blocking_page.cc",
@@ -1469,6 +1471,13 @@ split_static_library("browser") {
     "win/titlebar_config.cc",
     "win/titlebar_config.h",
   ]
+
+  if (is_ios) {
+    sources -= [
+      "ssl/mitm_software_blocking_page.cc",
+      "ssl/mitm_software_blocking_page.h",
+    ]
+  }
 
   configs += [
     "//build/config/compiler:wexit_time_destructors",
