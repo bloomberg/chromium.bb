@@ -201,6 +201,11 @@ void LayoutSVGText::UpdateLayout() {
   // update them before updating the layout attributes.
   if (needs_text_metrics_update_) {
     UpdateFontAndMetrics(*this);
+    // Font changes may change the size of the "em" unit, so we need to
+    // update positions that might depend on the font size. This is a big
+    // hammer but we have no simple way to determine if the positions of
+    // children depend on the font size.
+    needs_positioning_values_update_ = true;
     needs_text_metrics_update_ = false;
     update_parent_boundaries = true;
   }
