@@ -70,24 +70,11 @@ const char* GetAsString(MouseEventType type) {
 const char* GetAsString(TouchEventType type) {
   switch (type) {
     case kTouchStart:
-      return "touchStart";
+      return "touchstart";
     case kTouchEnd:
-      return "touchEnd";
+      return "touchend";
     case kTouchMove:
-      return "touchMove";
-    default:
-      return "";
-  }
-}
-
-const char* GetPointStateString(TouchEventType type) {
-  switch (type) {
-    case kTouchStart:
-      return "touchPressed";
-    case kTouchEnd:
-      return "touchReleased";
-    case kTouchMove:
-      return "touchMoved";
+      return "touchmove";
     default:
       return "";
   }
@@ -387,16 +374,12 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
 }
 
 Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event) {
-  base::DictionaryValue params;
-  params.SetString("type", GetAsString(event.type));
-  auto point = base::MakeUnique<base::DictionaryValue>();
-  point->SetString("state", GetPointStateString(event.type));
-  point->SetInteger("x", event.x);
-  point->SetInteger("y", event.y);
-  auto point_list = base::MakeUnique<base::ListValue>();
-  point_list->Append(std::move(point));
-  params.Set("touchPoints", std::move(point_list));
-  return client_->SendCommand("Input.dispatchTouchEvent", params);
+  base::ListValue args;
+  args.Append(base::MakeUnique<base::Value>(event.x));
+  args.Append(base::MakeUnique<base::Value>(event.y));
+  args.Append(base::MakeUnique<base::Value>(GetAsString(event.type)));
+  std::unique_ptr<base::Value> unused;
+  return CallFunction(std::string(), kDispatchTouchEventScript, args, &unused);
 }
 
 Status WebViewImpl::DispatchTouchEvents(const std::list<TouchEvent>& events) {

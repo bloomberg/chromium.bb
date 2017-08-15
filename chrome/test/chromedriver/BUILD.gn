@@ -10,6 +10,7 @@ action("embed_js_in_cpp") {
 
   js_files = [
     "js/call_function.js",
+    "js/dispatch_touch_event.js",
     "js/execute_async_script.js",
     "js/focus.js",
     "js/get_element_region.js",
