@@ -4,6 +4,8 @@ file://media/OWNERS
 emircan@chromium.org
 guidou@chromium.org
 tommi@chromium.org
+olka@chromium.org
+maxmorin@chromium.org
 
 per-file *video*=mcasas@chromium.org
 per-file *video*=chfremer@chromium.org
