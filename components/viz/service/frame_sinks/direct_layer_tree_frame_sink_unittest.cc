@@ -69,6 +69,7 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
         task_runner_(new cc::OrderedSimpleTaskRunner(now_src_.get(), true)),
         display_size_(1920, 1080),
         display_rect_(display_size_),
+        frame_sink_manager_(nullptr, SurfaceManager::LifetimeType::REFERENCES),
         support_manager_(&frame_sink_manager_),
         context_provider_(cc::TestContextProvider::Create()) {
     auto display_output_surface = cc::FakeOutputSurface::Create3d();
