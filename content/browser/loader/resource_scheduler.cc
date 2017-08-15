@@ -291,9 +291,8 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
       if (start_mode == START_ASYNC) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
-            base::Bind(&ScheduledResourceRequest::Start,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       START_SYNC));
+            base::BindOnce(&ScheduledResourceRequest::Start,
+                           weak_ptr_factory_.GetWeakPtr(), START_SYNC));
         return;
       }
       deferred_ = false;
@@ -717,8 +716,8 @@ class ResourceScheduler::Client {
       // this now instead of when we first yield so that if there is a pause
       // between requests the counter is reset.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&Client::ResumeIfYielded, weak_ptr_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&Client::ResumeIfYielded,
+                                    weak_ptr_factory_.GetWeakPtr()));
     }
 
     // Only log on requests that were blocked by the ResourceScheduler.
@@ -866,9 +865,8 @@ class ResourceScheduler::Client {
     if (num_skipped_scans_due_to_scheduled_start_ == 0) {
       TRACE_EVENT0("loading", "ScheduleLoadAnyStartablePendingRequests");
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&Client::LoadAnyStartablePendingRequests,
-                     weak_ptr_factory_.GetWeakPtr(), trigger));
+          FROM_HERE, base::BindOnce(&Client::LoadAnyStartablePendingRequests,
+                                    weak_ptr_factory_.GetWeakPtr(), trigger));
     }
     num_skipped_scans_due_to_scheduled_start_ += 1;
   }

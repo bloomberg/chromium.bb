@@ -30,9 +30,9 @@ void LoaderIOThreadNotifier::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&NotifyRenderFrameDeletedOnIO,
-                 static_cast<RenderFrameHostImpl*>(render_frame_host)
-                     ->GetGlobalFrameRoutingId()));
+      base::BindOnce(&NotifyRenderFrameDeletedOnIO,
+                     static_cast<RenderFrameHostImpl*>(render_frame_host)
+                         ->GetGlobalFrameRoutingId()));
 }
 
 }  // namespace content

@@ -61,10 +61,10 @@ class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,
     base::FilePath path = GetTestFilePath("", "");
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&net::URLRequestMockHTTPJob::AddUrlHandlers, path));
+        base::BindOnce(&net::URLRequestMockHTTPJob::AddUrlHandlers, path));
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&net::URLRequestFailedJob::AddUrlHandler));
+        base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
   }
 
   void OnDownloadCreated(DownloadManager* manager,
@@ -254,11 +254,10 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
     return nullptr;
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&ResourceDispatcherHostImpl::CancelRequestsForProcess,
-                 base::Unretained(ResourceDispatcherHostImpl::Get()),
-                 child_id));
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ResourceDispatcherHostImpl::CancelRequestsForProcess,
+                     base::Unretained(ResourceDispatcherHostImpl::Get()),
+                     child_id));
 
   return base::MakeUnique<net::test_server::HungResponse>();
 }
@@ -707,27 +706,27 @@ class PreviewsStateResourceDispatcherHostBrowserTest
         embedded_test_server()->GetURL("/title1.html")));
 
     content::BrowserThread::PostTask(
-           content::BrowserThread::IO,
-           FROM_HERE,
-           base::Bind(&PreviewsStateResourceDispatcherHostDelegate::SetDelegate,
-                      base::Unretained(delegate_.get())));
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(
+            &PreviewsStateResourceDispatcherHostDelegate::SetDelegate,
+            base::Unretained(delegate_.get())));
   }
 
   void Reset(PreviewsState previews_state) {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&PreviewsStateResourceDispatcherHostDelegate::Reset,
-                   base::Unretained(delegate_.get()), previews_state));
+        base::BindOnce(&PreviewsStateResourceDispatcherHostDelegate::Reset,
+                       base::Unretained(delegate_.get()), previews_state));
   }
 
   void CheckResourcesRequested(
       bool should_get_previews_state_called) {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&PreviewsStateResourceDispatcherHostDelegate::
-                       CheckResourcesRequested,
-                   base::Unretained(delegate_.get()),
-                   should_get_previews_state_called));
+        base::BindOnce(&PreviewsStateResourceDispatcherHostDelegate::
+                           CheckResourcesRequested,
+                       base::Unretained(delegate_.get()),
+                       should_get_previews_state_called));
   }
 
  private:
@@ -868,8 +867,8 @@ class RequestDataResourceDispatcherHostBrowserTest : public ContentBrowserTest {
 
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&RequestDataResourceDispatcherHostDelegate::SetDelegate,
-                   base::Unretained(delegate_.get())));
+        base::BindOnce(&RequestDataResourceDispatcherHostDelegate::SetDelegate,
+                       base::Unretained(delegate_.get())));
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 

@@ -184,7 +184,7 @@ class MockFileStream : public net::FileStream {
     if (result.completion_mode == CompletionMode::SYNC)
       return result.result;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, result.result));
+        FROM_HERE, base::BindOnce(callback, result.result));
     return net::ERR_IO_PENDING;
   }
 

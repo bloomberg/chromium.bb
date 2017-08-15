@@ -76,9 +76,10 @@ class TestResourceDispatcherHostDelegate
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&TestResourceDispatcherHostDelegate::SetTrackedURLOnIOThread,
-                   base::Unretained(this), tracked_url, run_on_start,
-                   run_loop_->QuitClosure()));
+        base::BindOnce(
+            &TestResourceDispatcherHostDelegate::SetTrackedURLOnIOThread,
+            base::Unretained(this), tracked_url, run_on_start,
+            run_loop_->QuitClosure()));
   }
 
   // Waits until the tracked URL has been requested, and the request for it has
@@ -113,7 +114,7 @@ class TestResourceDispatcherHostDelegate
                                 weak_factory_.GetWeakPtr()));
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(run_on_start_, resume_request_on_io_thread));
+          base::BindOnce(run_on_start_, resume_request_on_io_thread));
     }
 
     ~CallbackRunningResourceThrottle() override {
@@ -191,7 +192,7 @@ class CrossSiteResourceHandlerTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &CrossSiteResourceHandlerTest::InjectResourceDispatcherHostDelegate,
             base::Unretained(this)));
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -202,9 +203,9 @@ class CrossSiteResourceHandlerTest : public ContentBrowserTest {
   void TearDownOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&CrossSiteResourceHandlerTest::
-                       RestoreResourceDispatcherHostDelegate,
-                   base::Unretained(this)));
+        base::BindOnce(&CrossSiteResourceHandlerTest::
+                           RestoreResourceDispatcherHostDelegate,
+                       base::Unretained(this)));
   }
 
  protected:
