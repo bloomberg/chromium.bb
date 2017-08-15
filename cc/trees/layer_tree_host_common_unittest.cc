@@ -230,7 +230,7 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     gfx::Size device_viewport_size =
         gfx::Size(root_layer->bounds().width() * device_scale_factor,
                   root_layer->bounds().height() * device_scale_factor);
-    update_layer_list_impl_.reset(new LayerImplList);
+    update_layer_impl_list_.reset(new LayerImplList);
     root_layer->layer_tree_impl()->BuildLayerListForTesting();
     PropertyTrees* property_trees =
         root_layer->layer_tree_impl()->property_trees();
@@ -243,9 +243,9 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         root_layer, property_trees, can_adjust_raster_scales);
     draw_property_utils::FindLayersThatNeedUpdates(
         root_layer->layer_tree_impl(), property_trees,
-        update_layer_list_impl_.get());
+        update_layer_impl_list_.get());
     draw_property_utils::ComputeDrawPropertiesOfVisibleLayers(
-        update_layer_list_impl(), property_trees);
+        update_layer_impl_list(), property_trees);
   }
 
   void ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(
@@ -262,8 +262,8 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   }
 
-  bool UpdateLayerListImplContains(int id) const {
-    for (auto* layer : *update_layer_list_impl_) {
+  bool UpdateLayerImplListContains(int id) const {
+    for (auto* layer : *update_layer_impl_list_) {
       if (layer->id() == id)
         return true;
     }
@@ -281,8 +281,8 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
   const RenderSurfaceList* render_surface_list_impl() const {
     return render_surface_list_impl_.get();
   }
-  const LayerImplList* update_layer_list_impl() const {
-    return update_layer_list_impl_.get();
+  const LayerImplList* update_layer_impl_list() const {
+    return update_layer_impl_list_.get();
   }
   const LayerList& update_layer_list() const { return update_layer_list_; }
 
@@ -295,7 +295,7 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
  private:
   std::unique_ptr<RenderSurfaceList> render_surface_list_impl_;
   LayerList update_layer_list_;
-  std::unique_ptr<LayerImplList> update_layer_list_impl_;
+  std::unique_ptr<LayerImplList> update_layer_impl_list_;
 };
 
 class LayerTreeHostCommonTest : public LayerTreeHostCommonTestBase,
@@ -3750,10 +3750,10 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
   EXPECT_EQ(GetRenderSurface(back_facing_child_of_back_facing_surface),
             GetRenderSurface(back_facing_surface));
 
-  EXPECT_EQ(3u, update_layer_list_impl()->size());
-  EXPECT_TRUE(UpdateLayerListImplContains(front_facing_child->id()));
-  EXPECT_TRUE(UpdateLayerListImplContains(front_facing_surface->id()));
-  EXPECT_TRUE(UpdateLayerListImplContains(
+  EXPECT_EQ(3u, update_layer_impl_list()->size());
+  EXPECT_TRUE(UpdateLayerImplListContains(front_facing_child->id()));
+  EXPECT_TRUE(UpdateLayerImplListContains(front_facing_surface->id()));
+  EXPECT_TRUE(UpdateLayerImplListContains(
       front_facing_child_of_front_facing_surface->id()));
 }
 
@@ -3865,11 +3865,11 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
   EXPECT_EQ(GetRenderSurface(back_facing_child_of_back_facing_surface),
             GetRenderSurface(back_facing_surface));
 
-  EXPECT_EQ(3u, update_layer_list_impl()->size());
+  EXPECT_EQ(3u, update_layer_impl_list()->size());
 
-  EXPECT_TRUE(UpdateLayerListImplContains(front_facing_child->id()));
-  EXPECT_TRUE(UpdateLayerListImplContains(front_facing_surface->id()));
-  EXPECT_TRUE(UpdateLayerListImplContains(
+  EXPECT_TRUE(UpdateLayerImplListContains(front_facing_child->id()));
+  EXPECT_TRUE(UpdateLayerImplListContains(front_facing_surface->id()));
+  EXPECT_TRUE(UpdateLayerImplListContains(
       front_facing_child_of_front_facing_surface->id()));
 }
 
@@ -3936,11 +3936,11 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
   EXPECT_EQ(GetRenderSurface(animating_child), GetRenderSurface(root));
   EXPECT_EQ(GetRenderSurface(child2), GetRenderSurface(root));
 
-  EXPECT_EQ(1u, update_layer_list_impl()->size());
+  EXPECT_EQ(1u, update_layer_impl_list()->size());
 
   // The back facing layers are culled from the layer list, and have an empty
   // visible rect.
-  EXPECT_TRUE(UpdateLayerListImplContains(child2->id()));
+  EXPECT_TRUE(UpdateLayerImplListContains(child2->id()));
   EXPECT_TRUE(child->visible_layer_rect().IsEmpty());
   EXPECT_TRUE(animating_surface->visible_layer_rect().IsEmpty());
   EXPECT_TRUE(child_of_animating_surface->visible_layer_rect().IsEmpty());
@@ -3997,9 +3997,9 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(GetRenderSurface(child1), GetRenderSurface(front_facing_surface));
   EXPECT_EQ(GetRenderSurface(child2), GetRenderSurface(back_facing_surface));
 
-  EXPECT_EQ(2u, update_layer_list_impl()->size());
-  EXPECT_TRUE(UpdateLayerListImplContains(front_facing_surface->id()));
-  EXPECT_TRUE(UpdateLayerListImplContains(child1->id()));
+  EXPECT_EQ(2u, update_layer_impl_list()->size());
+  EXPECT_TRUE(UpdateLayerImplListContains(front_facing_surface->id()));
+  EXPECT_TRUE(UpdateLayerImplListContains(child1->id()));
 }
 
 TEST_F(LayerTreeHostCommonScalingTest, LayerTransformsInHighDPI) {
