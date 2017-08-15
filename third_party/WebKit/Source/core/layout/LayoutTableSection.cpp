@@ -771,7 +771,7 @@ void LayoutTableSection::DistributeRowSpanHeightToRows(
 }
 
 bool LayoutTableSection::RowHasVisibilityCollapse(unsigned row) const {
-  return (RuntimeEnabledFeatures::VisibilityCollapseEnabled() &&
+  return (RuntimeEnabledFeatures::VisibilityCollapseRowEnabled() &&
           ((grid_[row].row &&
             grid_[row].row->Style()->Visibility() == EVisibility::kCollapse) ||
            Style()->Visibility() == EVisibility::kCollapse));
