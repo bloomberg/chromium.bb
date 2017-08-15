@@ -149,7 +149,7 @@ def ReadRuntimeDeps(deps_path, output_directory):
   return result
 
 def BuildBootfs(output_directory, runtime_deps, bin_name, child_args,
-                device, dry_run):
+                dry_run, power_off):
   # |runtime_deps| already contains (target, source) pairs for the runtime deps,
   # so we can initialize |file_mapping| from it directly.
   file_mapping = dict(runtime_deps)
@@ -167,7 +167,7 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args,
   autorun_file.write('\n')
   autorun_file.write('echo Process terminated.\n')
 
-  if not device:
+  if power_off:
     # If shutdown of QEMU happens too soon after the program finishes, log
     # statements from the end of the run will be lost, so sleep for a bit before
     # shutting down. When running on device don't power off so the output and
@@ -292,7 +292,7 @@ def _ParallelSymbolizeBacktrace(backtrace, file_mapping):
   return symbolized
 
 
-def RunFuchsia(bootfs_and_manifest, use_device, dry_run):
+def RunFuchsia(bootfs_and_manifest, use_device, dry_run, interactive):
   bootfs, bootfs_manifest = bootfs_and_manifest
   kernel_path = os.path.join(SDK_ROOT, 'kernel', 'magenta.bin')
 
@@ -318,7 +318,16 @@ def RunFuchsia(bootfs_and_manifest, use_device, dry_run):
       '-netdev', 'user,id=net0,net=192.168.3.0/24,dhcpstart=192.168.3.9,' +
                  'host=192.168.3.2',
       '-device', 'e1000,netdev=net0',
+      ]
 
+  if interactive:
+    # TERM is passed through to make locally entered commands echo. With
+    # TERM=dumb what's typed isn't visible.
+    qemu_command.extend([
+      '-append', 'TERM=%s kernel.halt_on_panic=true' % os.environ.get('TERM'),
+    ])
+  else:
+    qemu_command.extend([
       # Use stdio for the guest OS only; don't attach the QEMU interactive
       # monitor.
       '-serial', 'stdio',
@@ -326,7 +335,8 @@ def RunFuchsia(bootfs_and_manifest, use_device, dry_run):
 
       # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
       # noisy ANSI spew from the user's terminal emulator.
-      '-append', 'TERM=dumb kernel.halt_on_panic=true']
+      '-append', 'TERM=dumb kernel.halt_on_panic=true',
+    ])
 
   if int(os.environ.get('CHROME_HEADLESS', 0)) == 0:
     qemu_command += ['-enable-kvm', '-cpu', 'host,migratable=no']
@@ -335,6 +345,10 @@ def RunFuchsia(bootfs_and_manifest, use_device, dry_run):
 
   if dry_run:
     print 'Run:', ' '.join(qemu_command)
+    return 0
+
+  if interactive:
+    subprocess.check_call(qemu_command)
     return 0
 
   # Set up backtrace-parsing regexps.

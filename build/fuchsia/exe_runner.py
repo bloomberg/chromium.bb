@@ -36,11 +36,11 @@ def main():
   bootfs = BuildBootfs(
       args.output_directory,
       ReadRuntimeDeps(args.runtime_deps_path, args.output_directory),
-      args.exe_name, child_args, args.device, args.dry_run)
+      args.exe_name, child_args, args.dry_run, power_off=False)
   if not bootfs:
     return 2
 
-  return RunFuchsia(bootfs, args.device, args.dry_run)
+  return RunFuchsia(bootfs, args.device, args.dry_run, interactive=True)
 
 
 if __name__ == '__main__':
