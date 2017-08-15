@@ -62,6 +62,7 @@ TEST_F(PrefetchStoreTest, WriteAndLoadOneItem) {
   item1.creation_time = FromDatabaseTime(1000L);
   item1.freshness_time = FromDatabaseTime(2000L);
   item1.error_code = PrefetchItemErrorCode::EXPIRED;
+  item1.file_size = item1.archive_body_length + 1;
 
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item1));
   std::set<PrefetchItem> all_items;

@@ -27,6 +27,8 @@ class MockPrefetchItemGenerator {
   static const std::string kFinalUrlPrefix;
   static const std::string kOperationNamePrefix;
   static const std::string kArchiveBodyNamePrefix;
+  static const std::string kTitlePrefix;
+  static const std::string kFilePathPrefix;
 
   MockPrefetchItemGenerator();
   ~MockPrefetchItemGenerator();
@@ -57,6 +59,12 @@ class MockPrefetchItemGenerator {
   void set_archive_body_name_prefix(std::string archive_body_name_prefix) {
     archive_body_name_prefix_ = archive_body_name_prefix;
   }
+  void set_title_prefix(std::string title_prefix) {
+    title_prefix_ = title_prefix;
+  }
+  void set_file_path_prefix(std::string file_path_prefix) {
+    file_path_prefix_ = file_path_prefix;
+  }
 
  private:
   // These namespace name and prefixes must always be set.
@@ -69,6 +77,8 @@ class MockPrefetchItemGenerator {
   std::string final_url_prefix_ = kFinalUrlPrefix;
   std::string operation_name_prefix_ = kOperationNamePrefix;
   std::string archive_body_name_prefix_ = kArchiveBodyNamePrefix;
+  std::string title_prefix_ = kTitlePrefix;
+  std::string file_path_prefix_ = kFilePathPrefix;
 
   // Test offline IDs start at an arbitrary, non-zero value to ease recognizing
   // generated ID values among other integer values while debugging.
