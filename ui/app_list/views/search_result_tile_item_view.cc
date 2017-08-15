@@ -119,10 +119,14 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
       title()->SetEnabledColor(kGridTitleColorFullscreen);
     } else if (item_->display_type() == SearchResult::DISPLAY_TILE) {
       // Set solid color background to avoid broken text. See crbug.com/746563.
-      rating_->SetBackground(
-          views::CreateSolidBackground(kCardBackgroundColorFullscreen));
-      price_->SetBackground(
-          views::CreateSolidBackground(kCardBackgroundColorFullscreen));
+      if (rating_) {
+        rating_->SetBackground(
+            views::CreateSolidBackground(kCardBackgroundColorFullscreen));
+      }
+      if (price_) {
+        price_->SetBackground(
+            views::CreateSolidBackground(kCardBackgroundColorFullscreen));
+      }
       title()->SetBackground(
           views::CreateSolidBackground(kCardBackgroundColorFullscreen));
       title()->SetFontList(base_font.DeriveWithSizeDelta(1));
