@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
-Should not crash when selection start is unrooted (caused by reattachment of render objects).
-<span id="elem" contenteditable="true">
-  <b><img></b>
-  <br>
-</span>
-<div id="log"></div>
+<script src="../../assert_selection.js"></script>
 <script>
-test(function () {
-    window.getSelection().setBaseAndExtent(elem, 0, elem, 4);
-    document.execCommand('JustifyCenter');
-});
+test(() => assert_selection(
+  '<span contenteditable>^<b><img></b><br>|</span>',
+  'justifyCenter',
+  [
+    '<span contenteditable>',
+      '<div style="text-align: center;">',
+        '<b>^<img>|</b>',
+      '</div>',
+     '</span>',
+  ]),
+  'justifyCenter should not crash');
 </script>
