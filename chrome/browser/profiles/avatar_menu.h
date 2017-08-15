@@ -87,6 +87,20 @@ class AvatarMenu :
     base::FilePath profile_path;
   };
 
+  // The load status of an avatar image.
+  enum class ImageLoadStatus {
+    // If there is a Gaia image used by the user, it is loaded. Otherwise, a
+    // default avatar image is loaded.
+    LOADED = 0,
+    // There is a Gaia image used by the user, and it's still being loaded.
+    LOADING,
+    // There is a Gaia image used by the user, but it cannot be found. A
+    // default avatar image is loaded instead.
+    MISSING,
+    // Nothing is loaded as the profile has been deleted.
+    PROFILE_DELETED
+  };
+
   // Constructor. |observer| can be NULL. |browser| can be NULL and a new one
   // will be created if an action requires it.
   AvatarMenu(ProfileAttributesStorage* profile_storage,
@@ -98,9 +112,11 @@ class AvatarMenu :
   static bool ShouldShowAvatarMenu();
 
   // Sets |image| to the avatar corresponding to the profile at |profile_path|.
-  // For built-in profile avatars, returns the non-high res version.
-  static void GetImageForMenuButton(const base::FilePath& profile_path,
-                                    gfx::Image* image);
+  // For built-in profile avatars, returns the non-high res version. Returns the
+  // image load status.
+  static ImageLoadStatus GetImageForMenuButton(
+      const base::FilePath& profile_path,
+      gfx::Image* image);
 
   // Opens a Browser with the specified profile in response to the user
   // selecting an item. If |always_create| is true then a new window is created

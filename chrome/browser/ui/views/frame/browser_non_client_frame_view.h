@@ -115,6 +115,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   void OnProfileWasRemoved(const base::FilePath& profile_path,
                            const base::string16& profile_name) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
+  void OnProfileHighResAvatarLoaded(
+      const base::FilePath& profile_path) override;
 
   // Gets a theme provider that should be non-null even before we're added to a
   // view hierarchy.

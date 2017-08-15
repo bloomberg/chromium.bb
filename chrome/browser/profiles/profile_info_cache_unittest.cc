@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile_avatar_downloader.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -774,6 +775,50 @@ TEST_F(ProfileInfoCacheTest, MigrateLegacyProfileNamesWithNewAvatarMenu) {
       GetCache()->GetIndexOfProfileWithPath(path_4)));
   EXPECT_EQ(name_5, GetCache()->GetNameOfProfileAtIndex(
       GetCache()->GetIndexOfProfileWithPath(path_5)));
+}
+
+TEST_F(ProfileInfoCacheTest, GetGaiaImageForAvatarMenu) {
+  // The TestingProfileManager's ProfileInfoCache doesn't download avatars.
+  ProfileInfoCache profile_info_cache(
+      g_browser_process->local_state(),
+      testing_profile_manager_.profile_manager()->user_data_dir());
+
+  base::FilePath profile_path = GetProfilePath("path_1");
+
+  GetCache()->AddProfileToCache(profile_path, ASCIIToUTF16("name_1"),
+                                std::string(), base::string16(), 0,
+                                std::string());
+
+  gfx::Image gaia_image(gfx::test::CreateImage());
+  GetCache()->SetGAIAPictureOfProfileAtIndex(0, &gaia_image);
+
+  // Make sure everything has completed, and the file has been written to disk.
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  // Make sure this profile is using GAIA picture.
+  EXPECT_TRUE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(0));
+
+  ResetCache();
+
+  // We need to explicitly set the GAIA usage flag after resetting the cache.
+  GetCache()->SetIsUsingGAIAPictureOfProfileAtIndex(0, true);
+  EXPECT_TRUE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(0));
+
+  gfx::Image image_loaded;
+
+  // Try to get the GAIA image. For the first time, it triggers an async image
+  // load from disk. The load status indicates the image is still being loaded.
+  EXPECT_EQ(AvatarMenu::ImageLoadStatus::LOADING,
+            AvatarMenu::GetImageForMenuButton(profile_path, &image_loaded));
+  EXPECT_FALSE(gfx::test::AreImagesEqual(gaia_image, image_loaded));
+
+  // Wait until the async image load finishes.
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  // Since the GAIA image is loaded now, we can get it this time.
+  EXPECT_EQ(AvatarMenu::ImageLoadStatus::LOADED,
+            AvatarMenu::GetImageForMenuButton(profile_path, &image_loaded));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(gaia_image, image_loaded));
 }
 #endif
 
