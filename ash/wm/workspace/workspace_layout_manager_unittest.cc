@@ -29,7 +29,6 @@
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -1386,15 +1385,11 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
       true);
   EXPECT_TRUE(secondary_test_helper.GetBackdropWindow());
 
-  // Enable tablet mode and fullscreen app list.
+  // Enable fullscreen app list.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       app_list::features::kEnableFullscreenAppList);
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
-  EXPECT_TRUE(Shell::Get()
-                  ->tablet_mode_controller()
-                  ->IsTabletModeWindowManagerEnabled());
 
   // Show app list in primary display will not hide the backdrop in secondary
   // display.
@@ -1437,16 +1432,12 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   generator.GestureTapAt(shelf_point);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 
-  // Enable tablet mode and fullscreen app list.
+  // Enable fullscreen app list.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       app_list::features::kEnableFullscreenAppList);
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
   EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
-  EXPECT_TRUE(Shell::Get()
-                  ->tablet_mode_controller()
-                  ->IsTabletModeWindowManagerEnabled());
   // Show the fullscreen app list should hide the backdrop.
   app_list_presenter_impl_.Show(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
