@@ -64,7 +64,8 @@ class FakeFrameSinkManagerClient : public FrameSinkManagerClient {
 
 class FrameSinkManagerTest : public testing::Test {
  public:
-  FrameSinkManagerTest() = default;
+  FrameSinkManagerTest()
+      : manager_(nullptr, SurfaceManager::LifetimeType::REFERENCES) {}
 
   ~FrameSinkManagerTest() override = default;
 

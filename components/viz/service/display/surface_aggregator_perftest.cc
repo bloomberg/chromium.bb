@@ -30,7 +30,8 @@ const base::UnguessableToken kArbitraryToken = base::UnguessableToken::Create();
 
 class SurfaceAggregatorPerfTest : public testing::Test {
  public:
-  SurfaceAggregatorPerfTest() {
+  SurfaceAggregatorPerfTest()
+      : manager_(nullptr, SurfaceManager::LifetimeType::REFERENCES) {
     context_provider_ = cc::TestContextProvider::Create();
     context_provider_->BindToCurrentThread();
     shared_bitmap_manager_ = base::MakeUnique<cc::TestSharedBitmapManager>();

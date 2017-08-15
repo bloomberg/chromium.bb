@@ -90,12 +90,13 @@ class TestDisplayScheduler : public DisplayScheduler {
 class DisplayTest : public testing::Test {
  public:
   DisplayTest()
-      : support_(CompositorFrameSinkSupport::Create(
-            nullptr,
-            &manager_,
-            kArbitraryFrameSinkId,
-            true /* is_root */,
-            true /* needs_sync_points */)),
+      : manager_(nullptr, SurfaceManager::LifetimeType::REFERENCES),
+        support_(
+            CompositorFrameSinkSupport::Create(nullptr,
+                                               &manager_,
+                                               kArbitraryFrameSinkId,
+                                               true /* is_root */,
+                                               true /* needs_sync_points */)),
         task_runner_(new base::NullTaskRunner) {}
 
   ~DisplayTest() override { support_->EvictCurrentSurface(); }

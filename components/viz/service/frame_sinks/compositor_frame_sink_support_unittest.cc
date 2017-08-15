@@ -19,6 +19,7 @@
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "components/viz/test/fake_surface_observer.h"
 #include "components/viz/test/mock_compositor_frame_sink_support_client.h"
+#include "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,13 +33,11 @@ using testing::Eq;
 namespace viz {
 namespace {
 
-constexpr bool kIsRoot = true;
-constexpr bool kIsChildRoot = false;
+constexpr bool kIsRoot = false;
 constexpr bool kNeedsSyncPoints = true;
 
 constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 constexpr FrameSinkId kAnotherArbitraryFrameSinkId(2, 2);
-constexpr FrameSinkId kYetAnotherArbitraryFrameSinkId(3, 3);
 
 const base::UnguessableToken kArbitraryToken = base::UnguessableToken::Create();
 const base::UnguessableToken kArbitrarySourceId1 =
@@ -52,6 +51,50 @@ gpu::SyncToken GenTestSyncToken(int id) {
             gpu::CommandBufferId::FromUnsafeValue(id), 1);
   return token;
 }
+
+// A test mojom::FrameSinkManagerClient that by default drops temporary
+// references unless SetTemporaryReferenceToAssign() is used.
+class FakeFrameSinkManagerClient : public mojom::FrameSinkManagerClient {
+ public:
+  explicit FakeFrameSinkManagerClient(mojom::FrameSinkManager* manager)
+      : manager_(manager) {}
+  ~FakeFrameSinkManagerClient() override = default;
+
+  // Sets owner for |surface_id| when OnFirstSurfaceActivation() is called. If
+  // not set the temporary reference will be dropped.
+  void SetTemporaryReferenceToAssign(const SurfaceId& surface_id,
+                                     const FrameSinkId& frame_sink_id) {
+    temporary_references_to_assign_[surface_id] = frame_sink_id;
+  }
+
+  // mojom::FrameSinkManagerClient:
+  void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override {
+    auto iter = temporary_references_to_assign_.find(surface_info.id());
+    if (iter == temporary_references_to_assign_.end()) {
+      manager_->DropTemporaryReference(surface_info.id());
+      return;
+    }
+
+    manager_->AssignTemporaryReference(surface_info.id(), iter->second);
+    temporary_references_to_assign_.erase(iter);
+  }
+  void OnClientConnectionClosed(const FrameSinkId& frame_sink_id) override {}
+  void OnAggregatedHitTestRegionListUpdated(
+      const FrameSinkId& frame_sink_id,
+      mojo::ScopedSharedBufferHandle active_handle,
+      uint32_t active_handle_size,
+      mojo::ScopedSharedBufferHandle idle_handle,
+      uint32_t idle_handle_sizes) override {}
+  void SwitchActiveAggregatedHitTestRegionList(
+      const FrameSinkId& frame_sink_id,
+      uint8_t active_handle_index) override {}
+
+ private:
+  mojom::FrameSinkManager* const manager_;
+  base::flat_map<SurfaceId, FrameSinkId> temporary_references_to_assign_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeFrameSinkManagerClient);
+};
 
 class FakeCompositorFrameSinkSupportClient
     : public CompositorFrameSinkSupportClient {
@@ -95,10 +138,13 @@ class FakeCompositorFrameSinkSupportClient
 class CompositorFrameSinkSupportTest : public testing::Test {
  public:
   CompositorFrameSinkSupportTest()
-      : begin_frame_source_(0.f, false),
+      : manager_(nullptr, SurfaceManager::LifetimeType::REFERENCES),
+        frame_sink_manager_client_(&manager_),
+        begin_frame_source_(0.f, false),
         local_surface_id_(3, kArbitraryToken),
         frame_sync_token_(GenTestSyncToken(4)),
         consumer_sync_token_(GenTestSyncToken(5)) {
+    manager_.SetLocalClient(&frame_sink_manager_client_);
     manager_.surface_manager()->AddObserver(&surface_observer_);
     manager_.RegisterFrameSinkId(kArbitraryFrameSinkId);
     support_ = CompositorFrameSinkSupport::Create(
@@ -169,6 +215,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
 
  protected:
   FrameSinkManagerImpl manager_;
+  FakeFrameSinkManagerClient frame_sink_manager_client_;
   FakeCompositorFrameSinkSupportClient fake_support_client_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
   FakeExternalBeginFrameSource begin_frame_source_;
@@ -533,194 +580,31 @@ TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
   manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
 }
 
-// Tests doing an EvictCurrentSurface which has unregistered dependency.
-TEST_F(CompositorFrameSinkSupportTest,
-       EvictCurrentSurfaceDependencyUnRegistered) {
-  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
-  test::MockCompositorFrameSinkSupportClient mock_client;
-  auto support = CompositorFrameSinkSupport::Create(
-      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
-      kNeedsSyncPoints);
-  LocalSurfaceId local_surface_id(7, kArbitraryToken);
+// Verify that a temporary reference blocks surface eviction and that when the
+// temporary reference is removed due to frame sink invalidation the surface
+// is deleted.
+TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceWithTemporaryReference) {
+  constexpr FrameSinkId parent_frame_sink_id(1234, 5678);
+  manager_.RegisterFrameSinkId(parent_frame_sink_id);
 
-  TransferableResource resource;
-  resource.id = 1;
-  resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
-  auto frame = test::MakeCompositorFrame();
-  frame.resource_list.push_back(resource);
-  support->SubmitCompositorFrame(local_surface_id, std::move(frame));
-  EXPECT_EQ(surface_observer_.last_created_surface_id().local_surface_id(),
-            local_surface_id);
-  local_surface_id_ = LocalSurfaceId();
+  const LocalSurfaceId local_surface_id(5, kArbitraryToken);
+  const SurfaceId surface_id(support_->frame_sink_id(), local_surface_id);
 
-  SurfaceId surface_id(kAnotherArbitraryFrameSinkId, local_surface_id);
-  Surface* surface = GetSurfaceForId(surface_id);
-  surface->AddDestructionDependency(
-      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
-
-  std::vector<ReturnedResource> returned_resource = {
-      resource.ToReturnedResource()};
-
-  EXPECT_TRUE(GetSurfaceForId(surface_id));
-  EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(returned_resource))
-      .Times(1);
-  support->EvictCurrentSurface();
-  EXPECT_FALSE(GetSurfaceForId(surface_id));
-  manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
-}
-
-// Tests doing an EvictCurrentSurface which has registered dependency.
-TEST_F(CompositorFrameSinkSupportTest,
-       EvictCurrentSurfaceDependencyRegistered) {
-  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
-  test::MockCompositorFrameSinkSupportClient mock_client;
-  auto support = CompositorFrameSinkSupport::Create(
-      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
-      kNeedsSyncPoints);
-  LocalSurfaceId local_surface_id(7, kArbitraryToken);
-
-  TransferableResource resource;
-  resource.id = 1;
-  resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
-  auto frame = test::MakeCompositorFrame();
-  frame.resource_list.push_back(resource);
-  uint32_t execute_count = 0;
-  support->SubmitCompositorFrame(local_surface_id, std::move(frame));
-  EXPECT_EQ(surface_observer_.last_created_surface_id().local_surface_id(),
-            local_surface_id);
-  local_surface_id_ = LocalSurfaceId();
-
-  manager_.surface_manager()->RegisterFrameSinkId(
-      kYetAnotherArbitraryFrameSinkId);
-
-  SurfaceId surface_id(kAnotherArbitraryFrameSinkId, local_surface_id);
-  Surface* surface = GetSurfaceForId(surface_id);
-  surface->AddDestructionDependency(
-      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
-
-  std::vector<ReturnedResource> returned_resources;
-  EXPECT_TRUE(GetSurfaceForId(surface_id));
-  support->EvictCurrentSurface();
-  EXPECT_TRUE(GetSurfaceForId(surface_id));
-  EXPECT_EQ(0u, execute_count);
-
-  returned_resources.push_back(resource.ToReturnedResource());
-  EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(returned_resources))
-      .Times(1);
-  manager_.surface_manager()->SatisfySequence(
-      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
-  EXPECT_FALSE(GetSurfaceForId(surface_id));
-  manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
-}
-
-TEST_F(CompositorFrameSinkSupportTest, DestroySequence) {
-  manager_.RegisterFrameSinkId(kYetAnotherArbitraryFrameSinkId);
-  LocalSurfaceId local_surface_id2(5, kArbitraryToken);
-  auto support2 = CompositorFrameSinkSupport::Create(
-      &fake_support_client_, &manager_, kYetAnotherArbitraryFrameSinkId,
-      kIsChildRoot, kNeedsSyncPoints);
-  SurfaceId id2(kYetAnotherArbitraryFrameSinkId, local_surface_id2);
-  support2->SubmitCompositorFrame(local_surface_id2,
-                                  test::MakeCompositorFrame());
-
-  // Check that waiting before the sequence is satisfied works.
-  GetSurfaceForId(id2)->AddDestructionDependency(
-      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
-  support2->EvictCurrentSurface();
-
-  DCHECK(GetSurfaceForId(id2));
-  manager_.surface_manager()->SatisfySequence(
-      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
-  manager_.surface_manager()->SatisfySequence(
-      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 6));
-  DCHECK(!GetSurfaceForId(id2));
-
-  // Check that waiting after the sequence is satisfied works.
-  support2->SubmitCompositorFrame(local_surface_id2,
-                                  test::MakeCompositorFrame());
-  DCHECK(GetSurfaceForId(id2));
-  GetSurfaceForId(id2)->AddDestructionDependency(
-      SurfaceSequence(kAnotherArbitraryFrameSinkId, 6));
-  support2->EvictCurrentSurface();
-  DCHECK(!GetSurfaceForId(id2));
-  manager_.InvalidateFrameSinkId(kYetAnotherArbitraryFrameSinkId);
-}
-
-// Tests that SurfaceId namespace invalidation correctly allows
-// Sequences to be ignored.
-TEST_F(CompositorFrameSinkSupportTest, InvalidFrameSinkId) {
-  FrameSinkId frame_sink_id(1234, 5678);
-
-  LocalSurfaceId local_surface_id(5, kArbitraryToken);
-  SurfaceId id(support_->frame_sink_id(), local_surface_id);
+  // When CompositorFrame is submitted, a temporary refrence will be created and
+  // |parent_frame_sink_id| will be assigned as the owner.
+  frame_sink_manager_client_.SetTemporaryReferenceToAssign(
+      surface_id, parent_frame_sink_id);
   support_->SubmitCompositorFrame(local_surface_id,
                                   test::MakeCompositorFrame());
 
-  manager_.surface_manager()->RegisterFrameSinkId(frame_sink_id);
-  GetSurfaceForId(id)->AddDestructionDependency(
-      SurfaceSequence(frame_sink_id, 4));
-
+  // Verify the temporary reference has prevented the surface from getting
+  // destroyed.
   support_->EvictCurrentSurface();
+  EXPECT_TRUE(GetSurfaceForId(surface_id));
 
-  // Verify the dependency has prevented the surface from getting destroyed.
-  EXPECT_TRUE(GetSurfaceForId(id));
-
-  manager_.InvalidateFrameSinkId(frame_sink_id);
-
-  // Verify that the invalidated namespace caused the unsatisfied sequence
-  // to be ignored.
-  EXPECT_FALSE(GetSurfaceForId(id));
-}
-
-TEST_F(CompositorFrameSinkSupportTest, DestroyCycle) {
-  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
-  LocalSurfaceId local_surface_id2(5, kArbitraryToken);
-  SurfaceId id2(kYetAnotherArbitraryFrameSinkId, local_surface_id2);
-  auto support2 = CompositorFrameSinkSupport::Create(
-      &fake_support_client_, &manager_, kYetAnotherArbitraryFrameSinkId,
-      kIsChildRoot, kNeedsSyncPoints);
-  // Give local_surface_id_ an initial frame so another client can refer to
-  // that surface.
-  {
-    auto frame = test::MakeCompositorFrame();
-    support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
-  }
-  // Give id2 a frame that references local_surface_id_.
-  {
-    auto frame = test::MakeCompositorFrame();
-    frame.metadata.referenced_surfaces.push_back(
-        SurfaceId(support_->frame_sink_id(), local_surface_id_));
-    support2->SubmitCompositorFrame(local_surface_id2, std::move(frame));
-    EXPECT_EQ(surface_observer_.last_created_surface_id().local_surface_id(),
-              local_surface_id2);
-  }
-  GetSurfaceForId(id2)->AddDestructionDependency(
-      SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
-  support2->EvictCurrentSurface();
-  // Give local_surface_id_ a frame that references id2.
-  {
-    auto frame = test::MakeCompositorFrame();
-    frame.metadata.referenced_surfaces.push_back(id2);
-    support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
-  }
-  support_->EvictCurrentSurface();
-  EXPECT_TRUE(GetSurfaceForId(id2));
-  // local_surface_id_ should be retained by reference from id2.
-  EXPECT_TRUE(
-      GetSurfaceForId(SurfaceId(support_->frame_sink_id(), local_surface_id_)));
-
-  // Satisfy last destruction dependency for id2.
-  manager_.surface_manager()->SatisfySequence(
-      SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
-
-  // id2 and local_surface_id_ are in a reference cycle that has no surface
-  // sequences holding on to it, so they should be destroyed.
-  EXPECT_TRUE(!GetSurfaceForId(id2));
-  EXPECT_TRUE(!GetSurfaceForId(
-      SurfaceId(support_->frame_sink_id(), local_surface_id_)));
-
-  local_surface_id_ = LocalSurfaceId();
-  manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
+  // Verify the temporary reference is removed when the parent is invalidated.
+  manager_.InvalidateFrameSinkId(parent_frame_sink_id);
+  EXPECT_FALSE(GetSurfaceForId(surface_id));
 }
 
 void CopyRequestTestCallback(bool* called,
