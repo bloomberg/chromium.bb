@@ -36,6 +36,10 @@ class OmniboxResult : public SearchResult {
 
   void UpdateTitleAndDetails();
 
+  // Returns true if |match_| indicates a url search result with non-empty
+  // description.
+  bool IsUrlResultWithDescription() const;
+
   Profile* profile_;
   AppListControllerDelegate* list_controller_;
   AutocompleteController* autocomplete_controller_;

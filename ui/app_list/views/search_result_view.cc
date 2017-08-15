@@ -187,38 +187,46 @@ void SearchResultView::CreateTitleRenderText() {
   DCHECK(is_fullscreen_app_list_enabled_);
   std::unique_ptr<gfx::RenderText> render_text(
       gfx::RenderText::CreateInstance());
-  // When result title is url, set title text using details.
-  render_text->SetText(result_->is_url() ? result_->details()
-                                         : result_->title());
+  render_text->SetText(result_->title());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   render_text->SetFontList(
       rb.GetFontList(ui::ResourceBundle::BaseFont).DeriveWithSizeDelta(2));
-  // Empty details indicate omnibox non-url search type. When true, the matched
-  // tag indicates proposed query. When false, the matched tag indicates typed
-  // search query.
-  const bool is_omnibox_search = result_->details().empty();
-  render_text->SetColor(is_omnibox_search ? kDefaultTextColor
-                                          : kMatchedTextColor);
-  const SearchResult::Tags& tags =
-      result_->is_url() ? result_->details_tags() : result_->title_tags();
+  // When result is an omnibox non-url search, the matched tag indicates
+  // proposed query. For all other cases, the matched tag indicates typed search
+  // query.
+  render_text->SetColor(result_->is_omnibox_search() ? kDefaultTextColor
+                                                     : kMatchedTextColor);
+  const SearchResult::Tags& tags = result_->title_tags();
   for (const auto& tag : tags) {
-    if (tag.styles & SearchResult::Tag::MATCH)
+    if (tag.styles & SearchResult::Tag::URL) {
+      render_text->ApplyColor(kUrlColor, tag.range);
+    } else if (tag.styles & SearchResult::Tag::MATCH) {
       render_text->ApplyColor(
-          is_omnibox_search ? kMatchedTextColor : kDefaultTextColor, tag.range);
+          result_->is_omnibox_search() ? kMatchedTextColor : kDefaultTextColor,
+          tag.range);
+    }
   }
   title_text_ = std::move(render_text);
 }
 
 void SearchResultView::CreateDetailsRenderText() {
   DCHECK(is_fullscreen_app_list_enabled_);
+  // Ensures single line row for omnibox non-url search result.
+  if (result_->is_omnibox_search()) {
+    details_text_.reset();
+    return;
+  }
   std::unique_ptr<gfx::RenderText> render_text(
       gfx::RenderText::CreateInstance());
-  // When result title is url, set it to details text.
-  render_text->SetText(result_->is_url() ? result_->title()
-                                         : result_->details());
+  render_text->SetText(result_->details());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   render_text->SetFontList(rb.GetFontList(ui::ResourceBundle::BaseFont));
-  render_text->SetColor(result_->is_url() ? kUrlColor : kDefaultTextColor);
+  render_text->SetColor(kDefaultTextColor);
+  const SearchResult::Tags& tags = result_->details_tags();
+  for (const auto& tag : tags) {
+    if (tag.styles & SearchResult::Tag::URL)
+      render_text->ApplyColor(kUrlColor, tag.range);
+  }
   details_text_ = std::move(render_text);
 }
 
