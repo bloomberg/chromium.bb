@@ -5,6 +5,7 @@
 #include "components/exo/data_offer.h"
 
 #include "components/exo/data_offer_delegate.h"
+#include "components/exo/data_offer_observer.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 
@@ -14,6 +15,17 @@ DataOffer::DataOffer(DataOfferDelegate* delegate) : delegate_(delegate) {}
 
 DataOffer::~DataOffer() {
   delegate_->OnDataOfferDestroying(this);
+  for (DataOfferObserver& observer : observers_) {
+    observer.OnDataOfferDestroying(this);
+  }
+}
+
+void DataOffer::AddObserver(DataOfferObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DataOffer::RemoveObserver(DataOfferObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void DataOffer::Accept(const std::string& mime_type) {
