@@ -244,7 +244,7 @@ void ContentFaviconDriver::DidFinishNavigation(
     bypass_cache_page_url_ = GURL();
 
   // Get the favicon, either from history or request it from the net.
-  FetchFavicon(url);
+  FetchFavicon(url, navigation_handle->IsSameDocument());
 }
 
 }  // namespace favicon

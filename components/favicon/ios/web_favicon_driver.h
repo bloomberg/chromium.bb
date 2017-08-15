@@ -32,7 +32,7 @@ class WebFaviconDriver : public web::WebStateObserver,
                                 bookmarks::BookmarkModel* bookmark_model);
 
   // FaviconDriver implementation.
-  void FetchFavicon(const GURL& url) override;
+  void FetchFavicon(const GURL& page_url, bool is_same_document) override;
   gfx::Image GetFavicon() const override;
   bool FaviconIsValid() const override;
   GURL GetActiveURL() override;

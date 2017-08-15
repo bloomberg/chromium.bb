@@ -1453,8 +1453,8 @@ void HistoryBackend::GetFavicon(
     favicon_base::IconType icon_type,
     const std::vector<int>& desired_sizes,
     std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results) {
-  UpdateFaviconMappingsAndFetchImpl(nullptr, icon_url, icon_type, desired_sizes,
-                                    bitmap_results);
+  UpdateFaviconMappingsAndFetchImpl(std::set<GURL>(), icon_url, icon_type,
+                                    desired_sizes, bitmap_results);
 }
 
 void HistoryBackend::GetLargestFaviconForURL(
@@ -1585,12 +1585,12 @@ void HistoryBackend::GetFaviconForID(
 }
 
 void HistoryBackend::UpdateFaviconMappingsAndFetch(
-    const GURL& page_url,
+    const std::set<GURL>& page_urls,
     const GURL& icon_url,
     favicon_base::IconType icon_type,
     const std::vector<int>& desired_sizes,
     std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results) {
-  UpdateFaviconMappingsAndFetchImpl(&page_url, icon_url, icon_type,
+  UpdateFaviconMappingsAndFetchImpl(page_urls, icon_url, icon_type,
                                     desired_sizes, bitmap_results);
 }
 
@@ -1906,7 +1906,7 @@ bool HistoryBackend::SetFaviconsImpl(const GURL& page_url,
 }
 
 void HistoryBackend::UpdateFaviconMappingsAndFetchImpl(
-    const GURL* page_url,
+    const std::set<GURL>& page_urls,
     const GURL& icon_url,
     favicon_base::IconType icon_type,
     const std::vector<int>& desired_sizes,
@@ -1924,12 +1924,14 @@ void HistoryBackend::UpdateFaviconMappingsAndFetchImpl(
   if (favicon_id)
     favicon_ids.push_back(favicon_id);
 
-  if (page_url && !favicon_ids.empty()) {
-    bool mappings_updated = SetFaviconMappingsForPageAndRedirects(
-        *page_url, icon_type, favicon_ids);
-    if (mappings_updated) {
-      SendFaviconChangedNotificationForPageAndRedirects(*page_url);
-      ScheduleCommit();
+  if (!favicon_ids.empty()) {
+    for (const GURL& page_url : page_urls) {
+      bool mappings_updated = SetFaviconMappingsForPageAndRedirects(
+          page_url, icon_type, favicon_ids);
+      if (mappings_updated) {
+        SendFaviconChangedNotificationForPageAndRedirects(page_url);
+        ScheduleCommit();
+      }
     }
   }
 

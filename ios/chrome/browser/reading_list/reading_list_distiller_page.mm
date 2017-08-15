@@ -108,7 +108,7 @@ void ReadingListDistillerPage::FetchFavicon(const GURL& page_url) {
   favicon::WebFaviconDriver* favicon_driver =
       favicon::WebFaviconDriver::FromWebState(CurrentWebState());
   DCHECK(favicon_driver);
-  favicon_driver->FetchFavicon(page_url);
+  favicon_driver->FetchFavicon(page_url, /*is_same_document=*/false);
 }
 
 void ReadingListDistillerPage::OnDistillationDone(const GURL& page_url,

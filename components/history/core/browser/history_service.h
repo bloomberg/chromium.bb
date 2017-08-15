@@ -700,14 +700,14 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker);
 
-  // Maps |page_url| to the favicon at |icon_url| if there is an entry in the
+  // Maps |page_urls| to the favicon at |icon_url| if there is an entry in the
   // database for |icon_url| and |icon_type|. This occurs when there is a
   // mapping from a different page URL to |icon_url|. The favicon bitmaps whose
   // edge sizes most closely match |desired_sizes| from the favicons which were
-  // just mapped to |page_url| are returned. If |desired_sizes| has a '0' entry,
-  // the largest favicon bitmap is returned.
+  // just mapped to |page_urls| are returned. If |desired_sizes| has a '0'
+  // entry, the largest favicon bitmap is returned.
   base::CancelableTaskTracker::TaskId UpdateFaviconMappingsAndFetch(
-      const GURL& page_url,
+      const std::set<GURL>& page_urls,
       const GURL& icon_url,
       favicon_base::IconType icon_type,
       const std::vector<int>& desired_sizes,

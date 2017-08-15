@@ -70,9 +70,10 @@ FaviconDriverImpl::FaviconDriverImpl(FaviconService* favicon_service,
 FaviconDriverImpl::~FaviconDriverImpl() {
 }
 
-void FaviconDriverImpl::FetchFavicon(const GURL& url) {
+void FaviconDriverImpl::FetchFavicon(const GURL& page_url,
+                                     bool is_same_document) {
   for (const std::unique_ptr<FaviconHandler>& handler : handlers_)
-    handler->FetchFavicon(url);
+    handler->FetchFavicon(page_url, is_same_document);
 }
 
 bool FaviconDriverImpl::IsBookmarked(const GURL& url) {

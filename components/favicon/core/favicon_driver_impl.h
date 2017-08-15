@@ -38,7 +38,7 @@ class FaviconDriverImpl : public FaviconDriver,
                           public FaviconHandler::Delegate {
  public:
   // FaviconDriver implementation.
-  void FetchFavicon(const GURL& url) override;
+  void FetchFavicon(const GURL& page_url, bool is_same_document) override;
 
   // FaviconHandler::Delegate implementation.
   bool IsBookmarked(const GURL& url) override;
