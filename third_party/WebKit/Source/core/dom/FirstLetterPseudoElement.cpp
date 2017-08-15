@@ -353,7 +353,13 @@ void FirstLetterPseudoElement::DidRecalcStyle() {
   ComputedStyle* pseudo_style =
       StyleForFirstLetter(remaining_text_layout_object_->Parent());
   DCHECK(pseudo_style);
-  layout_object->SetStyle(pseudo_style);
+  // TODO(kojii): While setting to GetLayoutObject() looks correct all the time,
+  // as we do so in AttachFirstLetterTextLayoutObjects(), it is required only
+  // when inline box has text children, and can break layout tree when changing
+  // :first-letter to floats. The check in Element::UpdatePseudoElement() does
+  // not catch all such cases.
+  if (!pseudo_style->IsDisplayBlockContainer())
+    layout_object->SetStyle(pseudo_style);
 
   // The layoutObjects inside pseudo elements are anonymous so they don't get
   // notified of recalcStyle and must have
