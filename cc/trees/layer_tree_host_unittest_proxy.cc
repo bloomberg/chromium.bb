@@ -335,7 +335,9 @@ class LayerTreeHostProxyTestCommitWaitsForActivationMFBA
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void ReadyToCommitOnThread(LayerTreeHostImpl* impl) override {
-    switch (impl->sync_tree()->source_frame_number()) {
+    LayerTreeImpl* sync_tree =
+        impl->pending_tree() ? impl->pending_tree() : impl->active_tree();
+    switch (sync_tree->source_frame_number()) {
       case -1:
         // Block the activation of the initial commit until the second main
         // frame is ready.

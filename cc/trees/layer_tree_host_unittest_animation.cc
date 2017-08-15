@@ -304,7 +304,7 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
       return;
 
     // Wait for the commit with the animation to happen.
-    if (host_impl->sync_tree()->source_frame_number() != 0)
+    if (host_impl->active_tree()->source_frame_number() != 0)
       return;
 
     scoped_refptr<AnimationTimeline> timeline_impl =

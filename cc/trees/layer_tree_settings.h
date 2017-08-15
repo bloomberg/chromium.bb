@@ -121,6 +121,13 @@ class CC_EXPORT LayerTreeSettings {
   // completed the current BeginFrame before triggering their own BeginFrame
   // deadlines.
   bool wait_for_all_pipeline_stages_before_draw = false;
+
+  // Whether layer tree commits should be made directly to the active
+  // tree on the impl thread. If |false| LayerTreeHostImpl creates a
+  // pending layer tree and produces that as the 'sync tree' with
+  // which LayerTreeHost synchronizes. If |true| LayerTreeHostImpl
+  // produces the active tree as its 'sync tree'.
+  bool commit_to_active_tree = true;
 };
 
 }  // namespace cc

@@ -71,7 +71,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
       CompositorDependencies* compositor_deps,
       float device_scale_factor,
       bool is_for_subframe,
-      const ScreenInfo& screen_info);
+      const ScreenInfo& screen_info,
+      bool is_threaded);
   static std::unique_ptr<cc::LayerTreeHost> CreateLayerTreeHost(
       cc::LayerTreeHostClient* client,
       cc::LayerTreeHostSingleThreadClient* single_thread_client,
