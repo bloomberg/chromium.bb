@@ -16,9 +16,6 @@
     <style include="settings-shared"></style>
     <settings-animated-pages id="pages" section="printing"
         focus-config="[[focusConfig_]]">
-      <array-selector id="arraySelector" items="{{cupsPrinters}}"
-          selected="{{detailPrinter_}}">
-      </array-selector>
       <neon-animatable route-path="default">
 <if expr="chromeos">
         <div id="cupsPrinters" class="settings-box first"
@@ -43,8 +40,7 @@
             page-title="$i18n{cupsPrintersTitle}"
             search-label="$i18n{searchLabel}"
             search-term="{{searchTerm}}">
-          <settings-cups-printers printers="{{cupsPrinters}}"
-              search-term="{{searchTerm}}">
+          <settings-cups-printers search-term="{{searchTerm}}">
           </settings-cups-printers>
         </settings-subpage>
       </template>
