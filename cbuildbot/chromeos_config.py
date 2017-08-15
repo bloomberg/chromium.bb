@@ -1901,7 +1901,6 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
                   'if supported.',
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Pre-CQ',
-      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com'],
       health_threshold=3,
   )
 
@@ -1946,8 +1945,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       manifest_version=False,
       # Every Pre-CQ launch failure should send out an alert.
       health_threshold=1,
-      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
-                               'tree'],
+      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com'],
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Pre-CQ',
   )
@@ -2402,8 +2400,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       # TODO(mtennant): Fix this.  There should be some amount of auto-
       # configuration in the board_config.py code.
       health_threshold=3,
-      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
-                               'tree'],
+      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com'],
       sanity_check_slaves=['wolf-tot-paladin'],
       trybot_list=False,
       auto_reboot=False,
@@ -2978,7 +2975,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       afdo_update_ebuild=True,
       chrome_sdk=False,
       health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
-                               'tree',
                                'chrome'],
   )
 
@@ -3153,7 +3149,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       slave_configs=[],
       sync_chrome=False,
       chrome_sdk=False,
-      health_alert_recipients=['tree'],
       afdo_use=False,
       branch_util_test=True,
   )

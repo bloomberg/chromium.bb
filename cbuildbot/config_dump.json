@@ -370,9 +370,6 @@
             "debug_symbols": false,
             "description": "Verifies compilation only",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
-            "health_alert_recipients": [
-                "chromeos-infra-eng@grotations.appspotmail.com"
-            ],
             "health_threshold": 3,
             "hw_tests_override": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -741,9 +738,6 @@
             "debug_symbols": false,
             "description": "Verifies compilation, building an image, and unit tests if supported.",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
-            "health_alert_recipients": [
-                "chromeos-infra-eng@grotations.appspotmail.com"
-            ],
             "health_threshold": 3,
             "hw_tests_override": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -842,9 +836,6 @@
             "debug_symbols": false,
             "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
-            "health_alert_recipients": [
-                "chromeos-infra-eng@grotations.appspotmail.com"
-            ],
             "health_threshold": 3,
             "hw_tests_override": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -1192,9 +1183,6 @@
             "debug_symbols": false,
             "description": "WiFi tests acting as pre-cq for WiFi related changes",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
-            "health_alert_recipients": [
-                "chromeos-infra-eng@grotations.appspotmail.com"
-            ],
             "health_threshold": 3,
             "hw_tests": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"wificell-pre-cq\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": false,\n    \"suite\": \"wificell-pre-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
@@ -4024,9 +4012,6 @@
         "debug_symbols": false,
         "description": "Bluestreak tests as pre-cq for CFM related changes",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
-        "health_alert_recipients": [
-            "chromeos-infra-eng@grotations.appspotmail.com"
-        ],
         "health_threshold": 3,
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bluestreak-pre-cq\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": false,\n    \"suite\": \"bluestreak-pre-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
@@ -15178,7 +15163,6 @@
         "chrome_sdk": false,
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com",
-            "tree",
             "chrome"
         ],
         "master": true,
@@ -15236,8 +15220,7 @@
         "buildslave_type": "gce_wimpy",
         "description": "Commit Queue master (all others are slaves)",
         "health_alert_recipients": [
-            "chromeos-infra-eng@grotations.appspotmail.com",
-            "tree"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
         "internal": true,
@@ -15347,9 +15330,6 @@
         "branch_util_test": true,
         "buildslave_type": "baremetal",
         "chrome_sdk": false,
-        "health_alert_recipients": [
-            "tree"
-        ],
         "master": true,
         "slave_configs": [
             "amd64-generic-cheets-release",
@@ -19727,8 +19707,7 @@
         "description": "Launcher for Pre-CQ builders",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
-            "chromeos-infra-eng@grotations.appspotmail.com",
-            "tree"
+            "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 1,
         "hw_tests_override": [],
