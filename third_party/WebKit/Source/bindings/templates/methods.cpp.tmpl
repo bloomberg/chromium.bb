@@ -2,10 +2,11 @@
 
 {##############################################################################}
 {% macro runtime_timer_scope(counter) %}
-{% if counter -%}
-RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(),
-                         RuntimeCallStats::CounterId::{{counter}});
-{%- endif %}
+RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(), RuntimeCallStats::CounterId::{{counter}});
+{% endmacro %}
+
+{% macro runtime_timer_scope_disabled_by_default(counter) %}
+RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "{{counter}}");
 {% endmacro %}
 
 {% macro generate_method(method, world_suffix) %}
@@ -493,7 +494,11 @@ static void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, 
 {##############################################################################}
 {% macro method_callback(method, world_suffix) %}
 void {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  {{runtime_timer_scope(method.rcs_counter) | indent(2)}}
+  {% if method.extended_attribute_defined %}
+  {{ runtime_timer_scope(method.runtime_call_stats.method_counter) | indent(2) }}
+  {% else %}
+  {{ runtime_timer_scope_disabled_by_default(method.runtime_call_stats.method_counter) }}
+  {% endif %}
   {% if not method.overloads %}{# Overloaded methods are measured in overload_resolution_method() #}
   {% if method.measure_as %}
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{method.measure_as('Method')}});
@@ -565,6 +570,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
 
 {% macro origin_safe_method_getter_callback(method, world_suffix) %}
 void {{v8_class_or_partial}}::{{method.name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  {{ runtime_timer_scope_disabled_by_default(method.runtime_call_stats.origin_safe_method_getter_counter) }}
   {{cpp_class}}V8Internal::{{method.name}}OriginSafeMethodGetter{{world_suffix}}(info);
 }
 {% endmacro %}
@@ -576,6 +582,7 @@ void {{v8_class_or_partial}}::{{method.name}}OriginSafeMethodGetterCallback{{wor
               if constructor.is_named_constructor else
               'constructor%s' % (constructor.overload_index or '') %}
 static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  {{ runtime_timer_scope_disabled_by_default(constructor.rcs_counter) }}
   {% set function_call = func_call_with_prep_of_args(constructor) %}
 
   {% if constructor.is_named_constructor %}

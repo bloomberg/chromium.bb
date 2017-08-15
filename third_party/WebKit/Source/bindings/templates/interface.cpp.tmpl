@@ -1,5 +1,7 @@
 {% extends 'interface_base.cpp.tmpl' %}
 
+{% from 'methods.cpp.tmpl' import runtime_timer_scope, runtime_timer_scope_disabled_by_default %}
+
 {##############################################################################}
 {% block indexed_property_getter %}
 {% if indexed_property_getter and not indexed_property_getter.is_custom %}
@@ -40,6 +42,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
 {% if indexed_property_getter or named_property_getter %}
 {% set getter = indexed_property_getter or named_property_getter %}
 void {{v8_class_or_partial}}::indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.indexed_property_getter_counter) }}
   {% if indexed_property_getter %}
 
   {% if getter.is_custom %}
@@ -345,6 +348,7 @@ static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCall
 {% if named_property_getter %}
 {% set getter = named_property_getter %}
 void {{v8_class_or_partial}}::namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.named_property_getter_counter) }}
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
@@ -412,6 +416,7 @@ static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v
 {% if named_property_setter %}
 {% set setter = named_property_setter %}
 void {{v8_class_or_partial}}::namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.named_property_setter_counter) }}
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
@@ -532,6 +537,7 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
 {% if named_property_getter and named_property_getter.is_enumerable %}
 {% set getter = named_property_getter %}
 void {{v8_class_or_partial}}::namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+  {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.named_property_query_counter) }}
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
@@ -674,6 +680,7 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate
 void {{v8_class}}Constructor::NamedConstructorAttributeGetter(
     v8::Local<v8::Name> propertyName,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
+  {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.named_constructor_attribute_getter_counter) }}
   v8::Local<v8::Context> creationContext = info.Holder()->CreationContext();
   V8PerContextData* perContextData = V8PerContextData::From(creationContext);
   if (!perContextData) {
@@ -748,6 +755,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 {% block constructor_callback %}
 {% if constructors or has_custom_constructor or has_html_constructor %}
 void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.constructor_counter) }}
   {% if measure_as %}
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{measure_as('Constructor')}});
   {% endif %}

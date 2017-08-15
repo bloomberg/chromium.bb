@@ -18,6 +18,7 @@
 #include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8Node.h"
 #include "core/dom/ExecutionContext.h"
+#include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
@@ -139,20 +140,28 @@ static void indexedPropertyDescriptor(uint32_t index, const v8::PropertyCallback
 } // namespace TestIntegerIndexedPrimaryGlobalV8Internal
 
 void V8TestIntegerIndexedPrimaryGlobal::lengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexedPrimaryGlobal_length_Getter");
+
   TestIntegerIndexedPrimaryGlobalV8Internal::lengthAttributeGetter(info);
 }
 
 void V8TestIntegerIndexedPrimaryGlobal::lengthAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexedPrimaryGlobal_length_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestIntegerIndexedPrimaryGlobalV8Internal::lengthAttributeSetter(v8Value, info);
 }
 
 void V8TestIntegerIndexedPrimaryGlobal::voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexedPrimaryGlobal_voidMethodDocument");
+
   TestIntegerIndexedPrimaryGlobalV8Internal::voidMethodDocumentMethod(info);
 }
 
 void V8TestIntegerIndexedPrimaryGlobal::namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexedPrimaryGlobal_NamedPropertyGetter");
+
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
@@ -161,6 +170,8 @@ void V8TestIntegerIndexedPrimaryGlobal::namedPropertyGetterCallback(v8::Local<v8
 }
 
 void V8TestIntegerIndexedPrimaryGlobal::namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexedPrimaryGlobal_NamedPropertySetter");
+
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
@@ -177,6 +188,8 @@ void V8TestIntegerIndexedPrimaryGlobal::namedPropertyDeleterCallback(v8::Local<v
 }
 
 void V8TestIntegerIndexedPrimaryGlobal::namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexedPrimaryGlobal_NamedPropertyQuery");
+
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
@@ -189,6 +202,8 @@ void V8TestIntegerIndexedPrimaryGlobal::namedPropertyEnumeratorCallback(const v8
 }
 
 void V8TestIntegerIndexedPrimaryGlobal::indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexedPrimaryGlobal_IndexedPropertyGetter");
+
   V8TestIntegerIndexedPrimaryGlobal::indexedPropertyGetterCustom(index, info);
 }
 

@@ -9582,642 +9582,902 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
 } // namespace TestObjectV8Internal
 
 void V8TestObject::stringifierAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringifierAttribute_Getter");
+
   TestObjectV8Internal::stringifierAttributeAttributeGetter(info);
 }
 
 void V8TestObject::stringifierAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringifierAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::stringifierAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::readonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_readonlyStringAttribute_Getter");
+
   TestObjectV8Internal::readonlyStringAttributeAttributeGetter(info);
 }
 
 void V8TestObject::readonlyTestInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_readonlyTestInterfaceEmptyAttribute_Getter");
+
   TestObjectV8Internal::readonlyTestInterfaceEmptyAttributeAttributeGetter(info);
 }
 
 void V8TestObject::readonlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_readonlyLongAttribute_Getter");
+
   TestObjectV8Internal::readonlyLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::dateAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_dateAttribute_Getter");
+
   TestObjectV8Internal::dateAttributeAttributeGetter(info);
 }
 
 void V8TestObject::dateAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_dateAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::dateAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::stringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringAttribute_Getter");
+
   TestObjectV8Internal::stringAttributeAttributeGetter(info);
 }
 
 void V8TestObject::stringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::stringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::byteStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_byteStringAttribute_Getter");
+
   TestObjectV8Internal::byteStringAttributeAttributeGetter(info);
 }
 
 void V8TestObject::byteStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_byteStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::byteStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::usvStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_usvStringAttribute_Getter");
+
   TestObjectV8Internal::usvStringAttributeAttributeGetter(info);
 }
 
 void V8TestObject::usvStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_usvStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::usvStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::domTimeStampAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_domTimeStampAttribute_Getter");
+
   TestObjectV8Internal::domTimeStampAttributeAttributeGetter(info);
 }
 
 void V8TestObject::domTimeStampAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_domTimeStampAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::domTimeStampAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::booleanAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_booleanAttribute_Getter");
+
   TestObjectV8Internal::booleanAttributeAttributeGetter(info);
 }
 
 void V8TestObject::booleanAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_booleanAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::booleanAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::byteAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_byteAttribute_Getter");
+
   TestObjectV8Internal::byteAttributeAttributeGetter(info);
 }
 
 void V8TestObject::byteAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_byteAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::byteAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::doubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_doubleAttribute_Getter");
+
   TestObjectV8Internal::doubleAttributeAttributeGetter(info);
 }
 
 void V8TestObject::doubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_doubleAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::doubleAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::floatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_floatAttribute_Getter");
+
   TestObjectV8Internal::floatAttributeAttributeGetter(info);
 }
 
 void V8TestObject::floatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_floatAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::floatAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::longAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_longAttribute_Getter");
+
   TestObjectV8Internal::longAttributeAttributeGetter(info);
 }
 
 void V8TestObject::longAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_longAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::longAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::longLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_longLongAttribute_Getter");
+
   TestObjectV8Internal::longLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::longLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_longLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::longLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::octetAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_octetAttribute_Getter");
+
   TestObjectV8Internal::octetAttributeAttributeGetter(info);
 }
 
 void V8TestObject::octetAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_octetAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::octetAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::shortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_shortAttribute_Getter");
+
   TestObjectV8Internal::shortAttributeAttributeGetter(info);
 }
 
 void V8TestObject::shortAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_shortAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::shortAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::unrestrictedDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unrestrictedDoubleAttribute_Getter");
+
   TestObjectV8Internal::unrestrictedDoubleAttributeAttributeGetter(info);
 }
 
 void V8TestObject::unrestrictedDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unrestrictedDoubleAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::unrestrictedDoubleAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::unrestrictedFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unrestrictedFloatAttribute_Getter");
+
   TestObjectV8Internal::unrestrictedFloatAttributeAttributeGetter(info);
 }
 
 void V8TestObject::unrestrictedFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unrestrictedFloatAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::unrestrictedFloatAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::unsignedLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unsignedLongAttribute_Getter");
+
   TestObjectV8Internal::unsignedLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::unsignedLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unsignedLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::unsignedLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::unsignedLongLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unsignedLongLongAttribute_Getter");
+
   TestObjectV8Internal::unsignedLongLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::unsignedLongLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unsignedLongLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::unsignedLongLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::unsignedShortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unsignedShortAttribute_Getter");
+
   TestObjectV8Internal::unsignedShortAttributeAttributeGetter(info);
 }
 
 void V8TestObject::unsignedShortAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unsignedShortAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::unsignedShortAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::testInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceEmptyAttribute_Getter");
+
   TestObjectV8Internal::testInterfaceEmptyAttributeAttributeGetter(info);
 }
 
 void V8TestObject::testInterfaceEmptyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceEmptyAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::testInterfaceEmptyAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::testObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testObjectAttribute_Getter");
+
   TestObjectV8Internal::testObjectAttributeAttributeGetter(info);
 }
 
 void V8TestObject::testObjectAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testObjectAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::testObjectAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::cssAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_cssAttribute_Getter");
+
   TestObjectV8Internal::cssAttributeAttributeGetter(info);
 }
 
 void V8TestObject::cssAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_cssAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::cssAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::imeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_imeAttribute_Getter");
+
   TestObjectV8Internal::imeAttributeAttributeGetter(info);
 }
 
 void V8TestObject::imeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_imeAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::imeAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::svgAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_svgAttribute_Getter");
+
   TestObjectV8Internal::svgAttributeAttributeGetter(info);
 }
 
 void V8TestObject::svgAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_svgAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::svgAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::xmlAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_xmlAttribute_Getter");
+
   TestObjectV8Internal::xmlAttributeAttributeGetter(info);
 }
 
 void V8TestObject::xmlAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_xmlAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::xmlAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::nodeFilterAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_nodeFilterAttribute_Getter");
+
   TestObjectV8Internal::nodeFilterAttributeAttributeGetter(info);
 }
 
 void V8TestObject::nodeFilterAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_nodeFilterAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::nodeFilterAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::serializedScriptValueAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_serializedScriptValueAttribute_Getter");
+
   TestObjectV8Internal::serializedScriptValueAttributeAttributeGetter(info);
 }
 
 void V8TestObject::serializedScriptValueAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_serializedScriptValueAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::serializedScriptValueAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::anyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_anyAttribute_Getter");
+
   TestObjectV8Internal::anyAttributeAttributeGetter(info);
 }
 
 void V8TestObject::anyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_anyAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::anyAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::promiseAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_promiseAttribute_Getter");
+
   TestObjectV8Internal::promiseAttributeAttributeGetter(info);
 }
 
 void V8TestObject::promiseAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_promiseAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::promiseAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::windowAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_windowAttribute_Getter");
+
   TestObjectV8Internal::windowAttributeAttributeGetter(info);
 }
 
 void V8TestObject::windowAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_windowAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::windowAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::documentAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_documentAttribute_Getter");
+
   TestObjectV8Internal::documentAttributeAttributeGetter(info);
 }
 
 void V8TestObject::documentAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_documentAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::documentAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::documentFragmentAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_documentFragmentAttribute_Getter");
+
   TestObjectV8Internal::documentFragmentAttributeAttributeGetter(info);
 }
 
 void V8TestObject::documentFragmentAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_documentFragmentAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::documentFragmentAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::documentTypeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_documentTypeAttribute_Getter");
+
   TestObjectV8Internal::documentTypeAttributeAttributeGetter(info);
 }
 
 void V8TestObject::documentTypeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_documentTypeAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::documentTypeAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::elementAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_elementAttribute_Getter");
+
   TestObjectV8Internal::elementAttributeAttributeGetter(info);
 }
 
 void V8TestObject::elementAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_elementAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::elementAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::nodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_nodeAttribute_Getter");
+
   TestObjectV8Internal::nodeAttributeAttributeGetter(info);
 }
 
 void V8TestObject::nodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_nodeAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::nodeAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::shadowRootAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_shadowRootAttribute_Getter");
+
   TestObjectV8Internal::shadowRootAttributeAttributeGetter(info);
 }
 
 void V8TestObject::shadowRootAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_shadowRootAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::shadowRootAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::arrayBufferAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_arrayBufferAttribute_Getter");
+
   TestObjectV8Internal::arrayBufferAttributeAttributeGetter(info);
 }
 
 void V8TestObject::arrayBufferAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_arrayBufferAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::arrayBufferAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::float32ArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_float32ArrayAttribute_Getter");
+
   TestObjectV8Internal::float32ArrayAttributeAttributeGetter(info);
 }
 
 void V8TestObject::float32ArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_float32ArrayAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::float32ArrayAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::uint8ArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_uint8ArrayAttribute_Getter");
+
   TestObjectV8Internal::uint8ArrayAttributeAttributeGetter(info);
 }
 
 void V8TestObject::uint8ArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_uint8ArrayAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::uint8ArrayAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::selfAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_self_Getter");
+
   TestObjectV8Internal::selfAttributeGetter(info);
 }
 
 void V8TestObject::readonlyEventTargetAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_readonlyEventTargetAttribute_Getter");
+
   TestObjectV8Internal::readonlyEventTargetAttributeAttributeGetter(info);
 }
 
 void V8TestObject::readonlyEventTargetOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_readonlyEventTargetOrNullAttribute_Getter");
+
   TestObjectV8Internal::readonlyEventTargetOrNullAttributeAttributeGetter(info);
 }
 
 void V8TestObject::readonlyWindowAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_readonlyWindowAttribute_Getter");
+
   TestObjectV8Internal::readonlyWindowAttributeAttributeGetter(info);
 }
 
 void V8TestObject::htmlCollectionAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_htmlCollectionAttribute_Getter");
+
   TestObjectV8Internal::htmlCollectionAttributeAttributeGetter(info);
 }
 
 void V8TestObject::htmlElementAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_htmlElementAttribute_Getter");
+
   TestObjectV8Internal::htmlElementAttributeAttributeGetter(info);
 }
 
 void V8TestObject::stringArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringArrayAttribute_Getter");
+
   TestObjectV8Internal::stringArrayAttributeAttributeGetter(info);
 }
 
 void V8TestObject::stringArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringArrayAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::stringArrayAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::testInterfaceEmptyArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceEmptyArrayAttribute_Getter");
+
   TestObjectV8Internal::testInterfaceEmptyArrayAttributeAttributeGetter(info);
 }
 
 void V8TestObject::testInterfaceEmptyArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceEmptyArrayAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::testInterfaceEmptyArrayAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::floatArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_floatArrayAttribute_Getter");
+
   TestObjectV8Internal::floatArrayAttributeAttributeGetter(info);
 }
 
 void V8TestObject::floatArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_floatArrayAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::floatArrayAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::stringFrozenArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringFrozenArrayAttribute_Getter");
+
   TestObjectV8Internal::stringFrozenArrayAttributeAttributeGetter(info);
 }
 
 void V8TestObject::stringFrozenArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringFrozenArrayAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::stringFrozenArrayAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::testInterfaceEmptyFrozenArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceEmptyFrozenArrayAttribute_Getter");
+
   TestObjectV8Internal::testInterfaceEmptyFrozenArrayAttributeAttributeGetter(info);
 }
 
 void V8TestObject::testInterfaceEmptyFrozenArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceEmptyFrozenArrayAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::testInterfaceEmptyFrozenArrayAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::booleanOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_booleanOrNullAttribute_Getter");
+
   TestObjectV8Internal::booleanOrNullAttributeAttributeGetter(info);
 }
 
 void V8TestObject::booleanOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_booleanOrNullAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::booleanOrNullAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::stringOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringOrNullAttribute_Getter");
+
   TestObjectV8Internal::stringOrNullAttributeAttributeGetter(info);
 }
 
 void V8TestObject::stringOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringOrNullAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::stringOrNullAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::longOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_longOrNullAttribute_Getter");
+
   TestObjectV8Internal::longOrNullAttributeAttributeGetter(info);
 }
 
 void V8TestObject::longOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_longOrNullAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::longOrNullAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::testInterfaceOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceOrNullAttribute_Getter");
+
   TestObjectV8Internal::testInterfaceOrNullAttributeAttributeGetter(info);
 }
 
 void V8TestObject::testInterfaceOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceOrNullAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::testInterfaceOrNullAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::testEnumAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testEnumAttribute_Getter");
+
   TestObjectV8Internal::testEnumAttributeAttributeGetter(info);
 }
 
 void V8TestObject::testEnumAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testEnumAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::testEnumAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::testEnumOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testEnumOrNullAttribute_Getter");
+
   TestObjectV8Internal::testEnumOrNullAttributeAttributeGetter(info);
 }
 
 void V8TestObject::testEnumOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testEnumOrNullAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::testEnumOrNullAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::staticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_staticStringAttribute_Getter");
+
   TestObjectV8Internal::staticStringAttributeAttributeGetter(info);
 }
 
 void V8TestObject::staticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_staticStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::staticStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::staticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_staticLongAttribute_Getter");
+
   TestObjectV8Internal::staticLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::staticLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_staticLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::staticLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::eventHandlerAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_eventHandlerAttribute_Getter");
+
   TestObjectV8Internal::eventHandlerAttributeAttributeGetter(info);
 }
 
 void V8TestObject::eventHandlerAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_eventHandlerAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::eventHandlerAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::doubleOrStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_doubleOrStringAttribute_Getter");
+
   TestObjectV8Internal::doubleOrStringAttributeAttributeGetter(info);
 }
 
 void V8TestObject::doubleOrStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_doubleOrStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::doubleOrStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::doubleOrStringOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_doubleOrStringOrNullAttribute_Getter");
+
   TestObjectV8Internal::doubleOrStringOrNullAttributeAttributeGetter(info);
 }
 
 void V8TestObject::doubleOrStringOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_doubleOrStringOrNullAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::doubleOrStringOrNullAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::doubleOrNullStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_doubleOrNullStringAttribute_Getter");
+
   TestObjectV8Internal::doubleOrNullStringAttributeAttributeGetter(info);
 }
 
 void V8TestObject::doubleOrNullStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_doubleOrNullStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::doubleOrNullStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::stringOrStringSequenceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringOrStringSequenceAttribute_Getter");
+
   TestObjectV8Internal::stringOrStringSequenceAttributeAttributeGetter(info);
 }
 
 void V8TestObject::stringOrStringSequenceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringOrStringSequenceAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::stringOrStringSequenceAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::testEnumOrDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testEnumOrDoubleAttribute_Getter");
+
   TestObjectV8Internal::testEnumOrDoubleAttributeAttributeGetter(info);
 }
 
 void V8TestObject::testEnumOrDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testEnumOrDoubleAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::testEnumOrDoubleAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::unrestrictedDoubleOrStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unrestrictedDoubleOrStringAttribute_Getter");
+
   TestObjectV8Internal::unrestrictedDoubleOrStringAttributeAttributeGetter(info);
 }
 
 void V8TestObject::unrestrictedDoubleOrStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unrestrictedDoubleOrStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::unrestrictedDoubleOrStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::nestedUnionAtributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_nestedUnionAtribute_Getter");
+
   TestObjectV8Internal::nestedUnionAtributeAttributeGetter(info);
 }
 
 void V8TestObject::nestedUnionAtributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_nestedUnionAtribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::nestedUnionAtributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::activityLoggingAccessForAllWorldsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingAccessForAllWorldsLongAttribute_Getter");
+
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
@@ -10228,6 +10488,8 @@ void V8TestObject::activityLoggingAccessForAllWorldsLongAttributeAttributeGetter
 }
 
 void V8TestObject::activityLoggingAccessForAllWorldsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingAccessForAllWorldsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
@@ -10240,6 +10502,8 @@ void V8TestObject::activityLoggingAccessForAllWorldsLongAttributeAttributeSetter
 }
 
 void V8TestObject::activityLoggingGetterForAllWorldsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingGetterForAllWorldsLongAttribute_Getter");
+
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
@@ -10250,16 +10514,22 @@ void V8TestObject::activityLoggingGetterForAllWorldsLongAttributeAttributeGetter
 }
 
 void V8TestObject::activityLoggingGetterForAllWorldsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingGetterForAllWorldsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::activityLoggingGetterForAllWorldsLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::activityLoggingSetterForAllWorldsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingSetterForAllWorldsLongAttribute_Getter");
+
   TestObjectV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::activityLoggingSetterForAllWorldsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingSetterForAllWorldsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
@@ -10272,122 +10542,170 @@ void V8TestObject::activityLoggingSetterForAllWorldsLongAttributeAttributeSetter
 }
 
 void V8TestObject::cachedAttributeAnyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_cachedAttributeAnyAttribute_Getter");
+
   TestObjectV8Internal::cachedAttributeAnyAttributeAttributeGetter(info);
 }
 
 void V8TestObject::cachedAttributeAnyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_cachedAttributeAnyAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::cachedAttributeAnyAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::cachedArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_cachedArrayAttribute_Getter");
+
   TestObjectV8Internal::cachedArrayAttributeAttributeGetter(info);
 }
 
 void V8TestObject::cachedArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_cachedArrayAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::cachedArrayAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::cachedStringOrNoneAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_cachedStringOrNoneAttribute_Getter");
+
   TestObjectV8Internal::cachedStringOrNoneAttributeAttributeGetter(info);
 }
 
 void V8TestObject::cachedStringOrNoneAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_cachedStringOrNoneAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::cachedStringOrNoneAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::callWithExecutionContextAnyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithExecutionContextAnyAttribute_Getter");
+
   TestObjectV8Internal::callWithExecutionContextAnyAttributeAttributeGetter(info);
 }
 
 void V8TestObject::callWithExecutionContextAnyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithExecutionContextAnyAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::callWithExecutionContextAnyAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::callWithScriptStateAnyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithScriptStateAnyAttribute_Getter");
+
   TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeGetter(info);
 }
 
 void V8TestObject::callWithScriptStateAnyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithScriptStateAnyAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::callWithExecutionContextAndScriptStateAnyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithExecutionContextAndScriptStateAnyAttribute_Getter");
+
   TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeGetter(info);
 }
 
 void V8TestObject::callWithExecutionContextAndScriptStateAnyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithExecutionContextAndScriptStateAnyAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::checkSecurityForNodeReadonlyDocumentAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_checkSecurityForNodeReadonlyDocumentAttribute_Getter");
+
   TestObjectV8Internal::checkSecurityForNodeReadonlyDocumentAttributeAttributeGetter(info);
 }
 
 void V8TestObject::testInterfaceEmptyConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceEmptyConstructorAttribute_ConstructorGetterCallback");
+
   Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kdeprecatedTestInterfaceEmptyConstructorAttribute);
 
   V8ConstructorAttributeGetter(property, info);
 }
 
 void V8TestObject::measureAsFeatureNameTestInterfaceEmptyConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measureAsFeatureNameTestInterfaceEmptyConstructorAttribute_ConstructorGetterCallback");
+
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kFeatureName);
 
   V8ConstructorAttributeGetter(property, info);
 }
 
 void V8TestObject::customObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customObjectAttribute_Getter");
+
   V8TestObject::customObjectAttributeAttributeGetterCustom(info);
 }
 
 void V8TestObject::customObjectAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customObjectAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V8TestObject::customObjectAttributeAttributeSetterCustom(v8Value, info);
 }
 
 void V8TestObject::customGetterLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customGetterLongAttribute_Getter");
+
   V8TestObject::customGetterLongAttributeAttributeGetterCustom(info);
 }
 
 void V8TestObject::customGetterLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customGetterLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::customGetterLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::customGetterReadonlyObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customGetterReadonlyObjectAttribute_Getter");
+
   V8TestObject::customGetterReadonlyObjectAttributeAttributeGetterCustom(info);
 }
 
 void V8TestObject::customSetterLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customSetterLongAttribute_Getter");
+
   TestObjectV8Internal::customSetterLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::customSetterLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customSetterLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V8TestObject::customSetterLongAttributeAttributeSetterCustom(v8Value, info);
 }
 
 void V8TestObject::deprecatedLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_deprecatedLongAttribute_Getter");
+
   Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kLongAttribute);
 
   TestObjectV8Internal::deprecatedLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::deprecatedLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_deprecatedLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kLongAttribute);
@@ -10396,62 +10714,86 @@ void V8TestObject::deprecatedLongAttributeAttributeSetterCallback(const v8::Func
 }
 
 void V8TestObject::enforceRangeLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_enforceRangeLongAttribute_Getter");
+
   TestObjectV8Internal::enforceRangeLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::enforceRangeLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_enforceRangeLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::enforceRangeLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::implementedAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_implementedAsLongAttribute_Getter");
+
   TestObjectV8Internal::implementedAsLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::implementedAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_implementedAsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::implementedAsLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::customImplementedAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customImplementedAsLongAttribute_Getter");
+
   V8TestObject::customImplementedAsLongAttributeAttributeGetterCustom(info);
 }
 
 void V8TestObject::customImplementedAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customImplementedAsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V8TestObject::customImplementedAsLongAttributeAttributeSetterCustom(v8Value, info);
 }
 
 void V8TestObject::customGetterImplementedAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customGetterImplementedAsLongAttribute_Getter");
+
   V8TestObject::customGetterImplementedAsLongAttributeAttributeGetterCustom(info);
 }
 
 void V8TestObject::customGetterImplementedAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customGetterImplementedAsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::customGetterImplementedAsLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::customSetterImplementedAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customSetterImplementedAsLongAttribute_Getter");
+
   TestObjectV8Internal::customSetterImplementedAsLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::customSetterImplementedAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customSetterImplementedAsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V8TestObject::customSetterImplementedAsLongAttributeAttributeSetterCustom(v8Value, info);
 }
 
 void V8TestObject::measureAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measureAsLongAttribute_Getter");
+
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
 
   TestObjectV8Internal::measureAsLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::measureAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measureAsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
@@ -10460,34 +10802,48 @@ void V8TestObject::measureAsLongAttributeAttributeSetterCallback(const v8::Funct
 }
 
 void V8TestObject::notEnumerableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_notEnumerableLongAttribute_Getter");
+
   TestObjectV8Internal::notEnumerableLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::notEnumerableLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_notEnumerableLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::notEnumerableLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::originTrialEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_originTrialEnabledLongAttribute_Getter");
+
   TestObjectV8Internal::originTrialEnabledLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::originTrialEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_originTrialEnabledLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::originTrialEnabledLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_perWorldBindingsReadonlyTestInterfaceEmptyAttribute_Getter");
+
   TestObjectV8Internal::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(info);
 }
 
 void V8TestObject::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_perWorldBindingsReadonlyTestInterfaceEmptyAttribute_Getter");
+
   TestObjectV8Internal::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterForMainWorld(info);
 }
 
 void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingAccessPerWorldBindingsLongAttribute_Getter");
+
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
@@ -10498,6 +10854,8 @@ void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeGe
 }
 
 void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingAccessPerWorldBindingsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
@@ -10510,6 +10868,8 @@ void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeSe
 }
 
 void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingAccessPerWorldBindingsLongAttribute_Getter");
+
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
@@ -10520,6 +10880,8 @@ void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeGe
 }
 
 void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingAccessPerWorldBindingsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
@@ -10532,6 +10894,8 @@ void V8TestObject::activityLoggingAccessPerWorldBindingsLongAttributeAttributeSe
 }
 
 void V8TestObject::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute_Getter");
+
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
@@ -10542,6 +10906,8 @@ void V8TestObject::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAtt
 }
 
 void V8TestObject::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
@@ -10554,16 +10920,22 @@ void V8TestObject::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAtt
 }
 
 void V8TestObject::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute_Getter");
+
   TestObjectV8Internal::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterForMainWorld(info);
 }
 
 void V8TestObject::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterForMainWorld(v8Value, info);
 }
 
 void V8TestObject::activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingGetterPerWorldBindingsLongAttribute_Getter");
+
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
@@ -10574,12 +10946,16 @@ void V8TestObject::activityLoggingGetterPerWorldBindingsLongAttributeAttributeGe
 }
 
 void V8TestObject::activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingGetterPerWorldBindingsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingGetterPerWorldBindingsLongAttribute_Getter");
+
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
@@ -10590,12 +10966,16 @@ void V8TestObject::activityLoggingGetterPerWorldBindingsLongAttributeAttributeGe
 }
 
 void V8TestObject::activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingGetterPerWorldBindingsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterForMainWorld(v8Value, info);
 }
 
 void V8TestObject::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute_Getter");
+
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
@@ -10606,156 +10986,218 @@ void V8TestObject::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAtt
 }
 
 void V8TestObject::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute_Getter");
+
   TestObjectV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterForMainWorld(info);
 }
 
 void V8TestObject::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterForMainWorld(v8Value, info);
 }
 
 void V8TestObject::locationAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_location_Getter");
+
   TestObjectV8Internal::locationAttributeGetter(info);
 }
 
 void V8TestObject::locationAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_location_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::locationAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::locationWithExceptionAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationWithException_Getter");
+
   TestObjectV8Internal::locationWithExceptionAttributeGetter(info);
 }
 
 void V8TestObject::locationWithExceptionAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationWithException_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::locationWithExceptionAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::locationWithCallWithAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationWithCallWith_Getter");
+
   TestObjectV8Internal::locationWithCallWithAttributeGetter(info);
 }
 
 void V8TestObject::locationWithCallWithAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationWithCallWith_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::locationWithCallWithAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::locationByteStringAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationByteString_Getter");
+
   TestObjectV8Internal::locationByteStringAttributeGetter(info);
 }
 
 void V8TestObject::locationByteStringAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationByteString_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::locationByteStringAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::locationWithPerWorldBindingsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationWithPerWorldBindings_Getter");
+
   TestObjectV8Internal::locationWithPerWorldBindingsAttributeGetter(info);
 }
 
 void V8TestObject::locationWithPerWorldBindingsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationWithPerWorldBindings_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::locationWithPerWorldBindingsAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::locationWithPerWorldBindingsAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationWithPerWorldBindings_Getter");
+
   TestObjectV8Internal::locationWithPerWorldBindingsAttributeGetterForMainWorld(info);
 }
 
 void V8TestObject::locationWithPerWorldBindingsAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationWithPerWorldBindings_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::locationWithPerWorldBindingsAttributeSetterForMainWorld(v8Value, info);
 }
 
 void V8TestObject::locationLegacyInterfaceTypeCheckingAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationLegacyInterfaceTypeChecking_Getter");
+
   TestObjectV8Internal::locationLegacyInterfaceTypeCheckingAttributeGetter(info);
 }
 
 void V8TestObject::locationLegacyInterfaceTypeCheckingAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationLegacyInterfaceTypeChecking_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::locationLegacyInterfaceTypeCheckingAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::locationGarbageCollectedAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationGarbageCollected_Getter");
+
   TestObjectV8Internal::locationGarbageCollectedAttributeGetter(info);
 }
 
 void V8TestObject::locationGarbageCollectedAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationGarbageCollected_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::locationGarbageCollectedAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::raisesExceptionLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_raisesExceptionLongAttribute_Getter");
+
   TestObjectV8Internal::raisesExceptionLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::raisesExceptionLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_raisesExceptionLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::raisesExceptionLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::raisesExceptionGetterLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_raisesExceptionGetterLongAttribute_Getter");
+
   TestObjectV8Internal::raisesExceptionGetterLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::raisesExceptionGetterLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_raisesExceptionGetterLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::raisesExceptionGetterLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::setterRaisesExceptionLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_setterRaisesExceptionLongAttribute_Getter");
+
   TestObjectV8Internal::setterRaisesExceptionLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::setterRaisesExceptionLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_setterRaisesExceptionLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::setterRaisesExceptionLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::raisesExceptionTestInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_raisesExceptionTestInterfaceEmptyAttribute_Getter");
+
   TestObjectV8Internal::raisesExceptionTestInterfaceEmptyAttributeAttributeGetter(info);
 }
 
 void V8TestObject::raisesExceptionTestInterfaceEmptyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_raisesExceptionTestInterfaceEmptyAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::raisesExceptionTestInterfaceEmptyAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_cachedAttributeRaisesExceptionGetterAnyAttribute_Getter");
+
   TestObjectV8Internal::cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(info);
 }
 
 void V8TestObject::cachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_cachedAttributeRaisesExceptionGetterAnyAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::cachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::reflectTestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectTestInterfaceAttribute_Getter");
+
   TestObjectV8Internal::reflectTestInterfaceAttributeAttributeGetter(info);
 }
 
 void V8TestObject::reflectTestInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectTestInterfaceAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10764,10 +11206,14 @@ void V8TestObject::reflectTestInterfaceAttributeAttributeSetterCallback(const v8
 }
 
 void V8TestObject::reflectReflectedNameAttributeTestAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectReflectedNameAttributeTestAttribute_Getter");
+
   TestObjectV8Internal::reflectReflectedNameAttributeTestAttributeAttributeGetter(info);
 }
 
 void V8TestObject::reflectReflectedNameAttributeTestAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectReflectedNameAttributeTestAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10776,10 +11222,14 @@ void V8TestObject::reflectReflectedNameAttributeTestAttributeAttributeSetterCall
 }
 
 void V8TestObject::reflectBooleanAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectBooleanAttribute_Getter");
+
   TestObjectV8Internal::reflectBooleanAttributeAttributeGetter(info);
 }
 
 void V8TestObject::reflectBooleanAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectBooleanAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10788,10 +11238,14 @@ void V8TestObject::reflectBooleanAttributeAttributeSetterCallback(const v8::Func
 }
 
 void V8TestObject::reflectLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectLongAttribute_Getter");
+
   TestObjectV8Internal::reflectLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::reflectLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10800,10 +11254,14 @@ void V8TestObject::reflectLongAttributeAttributeSetterCallback(const v8::Functio
 }
 
 void V8TestObject::reflectUnsignedShortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectUnsignedShortAttribute_Getter");
+
   TestObjectV8Internal::reflectUnsignedShortAttributeAttributeGetter(info);
 }
 
 void V8TestObject::reflectUnsignedShortAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectUnsignedShortAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10812,10 +11270,14 @@ void V8TestObject::reflectUnsignedShortAttributeAttributeSetterCallback(const v8
 }
 
 void V8TestObject::reflectUnsignedLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectUnsignedLongAttribute_Getter");
+
   TestObjectV8Internal::reflectUnsignedLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::reflectUnsignedLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectUnsignedLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10824,10 +11286,14 @@ void V8TestObject::reflectUnsignedLongAttributeAttributeSetterCallback(const v8:
 }
 
 void V8TestObject::idAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_id_Getter");
+
   TestObjectV8Internal::idAttributeGetter(info);
 }
 
 void V8TestObject::idAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_id_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10836,10 +11302,14 @@ void V8TestObject::idAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::
 }
 
 void V8TestObject::nameAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_name_Getter");
+
   TestObjectV8Internal::nameAttributeGetter(info);
 }
 
 void V8TestObject::nameAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_name_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10848,10 +11318,14 @@ void V8TestObject::nameAttributeSetterCallback(const v8::FunctionCallbackInfo<v8
 }
 
 void V8TestObject::classAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_class_Getter");
+
   TestObjectV8Internal::classAttributeGetter(info);
 }
 
 void V8TestObject::classAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_class_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10860,10 +11334,14 @@ void V8TestObject::classAttributeSetterCallback(const v8::FunctionCallbackInfo<v
 }
 
 void V8TestObject::reflectedIdAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectedId_Getter");
+
   TestObjectV8Internal::reflectedIdAttributeGetter(info);
 }
 
 void V8TestObject::reflectedIdAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectedId_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10872,10 +11350,14 @@ void V8TestObject::reflectedIdAttributeSetterCallback(const v8::FunctionCallback
 }
 
 void V8TestObject::reflectedNameAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectedName_Getter");
+
   TestObjectV8Internal::reflectedNameAttributeGetter(info);
 }
 
 void V8TestObject::reflectedNameAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectedName_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10884,10 +11366,14 @@ void V8TestObject::reflectedNameAttributeSetterCallback(const v8::FunctionCallba
 }
 
 void V8TestObject::reflectedClassAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectedClass_Getter");
+
   TestObjectV8Internal::reflectedClassAttributeGetter(info);
 }
 
 void V8TestObject::reflectedClassAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectedClass_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10896,10 +11382,14 @@ void V8TestObject::reflectedClassAttributeSetterCallback(const v8::FunctionCallb
 }
 
 void V8TestObject::limitedToOnlyOneAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_limitedToOnlyOneAttribute_Getter");
+
   TestObjectV8Internal::limitedToOnlyOneAttributeAttributeGetter(info);
 }
 
 void V8TestObject::limitedToOnlyOneAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_limitedToOnlyOneAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10908,10 +11398,14 @@ void V8TestObject::limitedToOnlyOneAttributeAttributeSetterCallback(const v8::Fu
 }
 
 void V8TestObject::limitedToOnlyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_limitedToOnlyAttribute_Getter");
+
   TestObjectV8Internal::limitedToOnlyAttributeAttributeGetter(info);
 }
 
 void V8TestObject::limitedToOnlyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_limitedToOnlyAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10920,10 +11414,14 @@ void V8TestObject::limitedToOnlyAttributeAttributeSetterCallback(const v8::Funct
 }
 
 void V8TestObject::limitedToOnlyOtherAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_limitedToOnlyOtherAttribute_Getter");
+
   TestObjectV8Internal::limitedToOnlyOtherAttributeAttributeGetter(info);
 }
 
 void V8TestObject::limitedToOnlyOtherAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_limitedToOnlyOtherAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10932,10 +11430,14 @@ void V8TestObject::limitedToOnlyOtherAttributeAttributeSetterCallback(const v8::
 }
 
 void V8TestObject::limitedWithMissingDefaultAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_limitedWithMissingDefaultAttribute_Getter");
+
   TestObjectV8Internal::limitedWithMissingDefaultAttributeAttributeGetter(info);
 }
 
 void V8TestObject::limitedWithMissingDefaultAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_limitedWithMissingDefaultAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10944,10 +11446,14 @@ void V8TestObject::limitedWithMissingDefaultAttributeAttributeSetterCallback(con
 }
 
 void V8TestObject::limitedWithInvalidMissingDefaultAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_limitedWithInvalidMissingDefaultAttribute_Getter");
+
   TestObjectV8Internal::limitedWithInvalidMissingDefaultAttributeAttributeGetter(info);
 }
 
 void V8TestObject::limitedWithInvalidMissingDefaultAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_limitedWithInvalidMissingDefaultAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -10956,23 +11462,25 @@ void V8TestObject::limitedWithInvalidMissingDefaultAttributeAttributeSetterCallb
 }
 
 void V8TestObject::corsSettingAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_corsSettingAttribute_Getter");
+
   TestObjectV8Internal::corsSettingAttributeAttributeGetter(info);
 }
 
 void V8TestObject::limitedWithEmptyMissingInvalidAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_limitedWithEmptyMissingInvalidAttribute_Getter");
+
   TestObjectV8Internal::limitedWithEmptyMissingInvalidAttributeAttributeGetter(info);
 }
 
 void V8TestObject::RuntimeCallStatsCounterAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(),
-                           RuntimeCallStats::CounterId::kRuntimeCallStatsCounterAttribute_Getter);
+  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(), RuntimeCallStats::CounterId::kRuntimeCallStatsCounterAttribute_Getter);
 
   TestObjectV8Internal::RuntimeCallStatsCounterAttributeAttributeGetter(info);
 }
 
 void V8TestObject::RuntimeCallStatsCounterAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(),
-                           RuntimeCallStats::CounterId::kRuntimeCallStatsCounterAttribute_Setter);
+  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(), RuntimeCallStats::CounterId::kRuntimeCallStatsCounterAttribute_Setter);
 
   v8::Local<v8::Value> v8Value = info[0];
 
@@ -10980,117 +11488,160 @@ void V8TestObject::RuntimeCallStatsCounterAttributeAttributeSetterCallback(const
 }
 
 void V8TestObject::RuntimeCallStatsCounterReadOnlyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(),
-                           RuntimeCallStats::CounterId::kRuntimeCallStatsCounterReadOnlyAttribute_Getter);
+  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(), RuntimeCallStats::CounterId::kRuntimeCallStatsCounterReadOnlyAttribute_Getter);
 
   TestObjectV8Internal::RuntimeCallStatsCounterReadOnlyAttributeAttributeGetter(info);
 }
 
 void V8TestObject::replaceableReadonlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_replaceableReadonlyLongAttribute_Getter");
+
   TestObjectV8Internal::replaceableReadonlyLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::replaceableReadonlyLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_replaceableReadonlyLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::replaceableReadonlyLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::locationPutForwardsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationPutForwards_Getter");
+
   TestObjectV8Internal::locationPutForwardsAttributeGetter(info);
 }
 
 void V8TestObject::locationPutForwardsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_locationPutForwards_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::locationPutForwardsAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::runtimeEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_runtimeEnabledLongAttribute_Getter");
+
   TestObjectV8Internal::runtimeEnabledLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::runtimeEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_runtimeEnabledLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::runtimeEnabledLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_setterCallWithCurrentWindowAndEnteredWindowStringAttribute_Getter");
+
   TestObjectV8Internal::setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeGetter(info);
 }
 
 void V8TestObject::setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_setterCallWithCurrentWindowAndEnteredWindowStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::setterCallWithExecutionContextStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_setterCallWithExecutionContextStringAttribute_Getter");
+
   TestObjectV8Internal::setterCallWithExecutionContextStringAttributeAttributeGetter(info);
 }
 
 void V8TestObject::setterCallWithExecutionContextStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_setterCallWithExecutionContextStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::setterCallWithExecutionContextStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::treatNullAsEmptyStringStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_treatNullAsEmptyStringStringAttribute_Getter");
+
   TestObjectV8Internal::treatNullAsEmptyStringStringAttributeAttributeGetter(info);
 }
 
 void V8TestObject::treatNullAsEmptyStringStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_treatNullAsEmptyStringStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::treatNullAsEmptyStringStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::treatNullAsNullStringStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_treatNullAsNullStringStringAttribute_Getter");
+
   TestObjectV8Internal::treatNullAsNullStringStringAttributeAttributeGetter(info);
 }
 
 void V8TestObject::treatNullAsNullStringStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_treatNullAsNullStringStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::treatNullAsNullStringStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::legacyInterfaceTypeCheckingFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_legacyInterfaceTypeCheckingFloatAttribute_Getter");
+
   TestObjectV8Internal::legacyInterfaceTypeCheckingFloatAttributeAttributeGetter(info);
 }
 
 void V8TestObject::legacyInterfaceTypeCheckingFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_legacyInterfaceTypeCheckingFloatAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::legacyInterfaceTypeCheckingFloatAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_legacyInterfaceTypeCheckingTestInterfaceAttribute_Getter");
+
   TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeGetter(info);
 }
 
 void V8TestObject::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_legacyInterfaceTypeCheckingTestInterfaceAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_legacyInterfaceTypeCheckingTestInterfaceOrNullAttribute_Getter");
+
   TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeGetter(info);
 }
 
 void V8TestObject::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_legacyInterfaceTypeCheckingTestInterfaceOrNullAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::urlStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_urlStringAttribute_Getter");
+
   TestObjectV8Internal::urlStringAttributeAttributeGetter(info);
 }
 
 void V8TestObject::urlStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_urlStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -11099,10 +11650,14 @@ void V8TestObject::urlStringAttributeAttributeSetterCallback(const v8::FunctionC
 }
 
 void V8TestObject::urlStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_urlStringAttribute_Getter");
+
   TestObjectV8Internal::urlStringAttributeAttributeGetter(info);
 }
 
 void V8TestObject::urlStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_urlStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -11111,22 +11666,30 @@ void V8TestObject::urlStringAttributeAttributeSetterCallback(const v8::FunctionC
 }
 
 void V8TestObject::unforgeableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unforgeableLongAttribute_Getter");
+
   TestObjectV8Internal::unforgeableLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::unforgeableLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unforgeableLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::unforgeableLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::measuredLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measuredLongAttribute_Getter");
+
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestObject_MeasuredLongAttribute_AttributeGetter);
 
   TestObjectV8Internal::measuredLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::measuredLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measuredLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestObject_MeasuredLongAttribute_AttributeSetter);
@@ -11135,790 +11698,1178 @@ void V8TestObject::measuredLongAttributeAttributeSetterCallback(const v8::Functi
 }
 
 void V8TestObject::sameObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_sameObjectAttribute_Getter");
+
   TestObjectV8Internal::sameObjectAttributeAttributeGetter(info);
 }
 
 void V8TestObject::saveSameObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_saveSameObjectAttribute_Getter");
+
   TestObjectV8Internal::saveSameObjectAttributeAttributeGetter(info);
 }
 
 void V8TestObject::staticSaveSameObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_staticSaveSameObjectAttribute_Getter");
+
   TestObjectV8Internal::staticSaveSameObjectAttributeAttributeGetter(info);
 }
 
 void V8TestObject::unscopableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unscopableLongAttribute_Getter");
+
   TestObjectV8Internal::unscopableLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::unscopableLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unscopableLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::unscopableLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::unscopableOriginTrialEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unscopableOriginTrialEnabledLongAttribute_Getter");
+
   TestObjectV8Internal::unscopableOriginTrialEnabledLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::unscopableOriginTrialEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unscopableOriginTrialEnabledLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::unscopableOriginTrialEnabledLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::unscopableRuntimeEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unscopableRuntimeEnabledLongAttribute_Getter");
+
   TestObjectV8Internal::unscopableRuntimeEnabledLongAttributeAttributeGetter(info);
 }
 
 void V8TestObject::unscopableRuntimeEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unscopableRuntimeEnabledLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::unscopableRuntimeEnabledLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::testInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceAttribute_Getter");
+
   TestObjectV8Internal::testInterfaceAttributeAttributeGetter(info);
 }
 
 void V8TestObject::testInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::testInterfaceAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::testInterfaceGarbageCollectedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceGarbageCollectedAttribute_Getter");
+
   TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeGetter(info);
 }
 
 void V8TestObject::testInterfaceGarbageCollectedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceGarbageCollectedAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::testInterfaceGarbageCollectedOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceGarbageCollectedOrNullAttribute_Getter");
+
   TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeGetter(info);
 }
 
 void V8TestObject::testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceGarbageCollectedOrNullAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::sizeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_size_Getter");
+
   TestObjectV8Internal::sizeAttributeGetter(info);
 }
 
 void V8TestObject::unscopableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unscopableVoidMethod");
+
   TestObjectV8Internal::unscopableVoidMethodMethod(info);
 }
 
 void V8TestObject::unscopableRuntimeEnabledVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unscopableRuntimeEnabledVoidMethod");
+
   TestObjectV8Internal::unscopableRuntimeEnabledVoidMethodMethod(info);
 }
 
 void V8TestObject::voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethod");
+
   TestObjectV8Internal::voidMethodMethod(info);
 }
 
 void V8TestObject::staticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_staticVoidMethod");
+
   TestObjectV8Internal::staticVoidMethodMethod(info);
 }
 
 void V8TestObject::dateMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_dateMethod");
+
   TestObjectV8Internal::dateMethodMethod(info);
 }
 
 void V8TestObject::stringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringMethod");
+
   TestObjectV8Internal::stringMethodMethod(info);
 }
 
 void V8TestObject::byteStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_byteStringMethod");
+
   TestObjectV8Internal::byteStringMethodMethod(info);
 }
 
 void V8TestObject::usvStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_usvStringMethod");
+
   TestObjectV8Internal::usvStringMethodMethod(info);
 }
 
 void V8TestObject::readonlyDOMTimeStampMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_readonlyDOMTimeStampMethod");
+
   TestObjectV8Internal::readonlyDOMTimeStampMethodMethod(info);
 }
 
 void V8TestObject::booleanMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_booleanMethod");
+
   TestObjectV8Internal::booleanMethodMethod(info);
 }
 
 void V8TestObject::byteMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_byteMethod");
+
   TestObjectV8Internal::byteMethodMethod(info);
 }
 
 void V8TestObject::doubleMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_doubleMethod");
+
   TestObjectV8Internal::doubleMethodMethod(info);
 }
 
 void V8TestObject::floatMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_floatMethod");
+
   TestObjectV8Internal::floatMethodMethod(info);
 }
 
 void V8TestObject::longMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_longMethod");
+
   TestObjectV8Internal::longMethodMethod(info);
 }
 
 void V8TestObject::longLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_longLongMethod");
+
   TestObjectV8Internal::longLongMethodMethod(info);
 }
 
 void V8TestObject::octetMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_octetMethod");
+
   TestObjectV8Internal::octetMethodMethod(info);
 }
 
 void V8TestObject::shortMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_shortMethod");
+
   TestObjectV8Internal::shortMethodMethod(info);
 }
 
 void V8TestObject::unsignedLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unsignedLongMethod");
+
   TestObjectV8Internal::unsignedLongMethodMethod(info);
 }
 
 void V8TestObject::unsignedLongLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unsignedLongLongMethod");
+
   TestObjectV8Internal::unsignedLongLongMethodMethod(info);
 }
 
 void V8TestObject::unsignedShortMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unsignedShortMethod");
+
   TestObjectV8Internal::unsignedShortMethodMethod(info);
 }
 
 void V8TestObject::voidMethodDateArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDateArg");
+
   TestObjectV8Internal::voidMethodDateArgMethod(info);
 }
 
 void V8TestObject::voidMethodStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodStringArg");
+
   TestObjectV8Internal::voidMethodStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodByteStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodByteStringArg");
+
   TestObjectV8Internal::voidMethodByteStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodUSVStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodUSVStringArg");
+
   TestObjectV8Internal::voidMethodUSVStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodDOMTimeStampArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDOMTimeStampArg");
+
   TestObjectV8Internal::voidMethodDOMTimeStampArgMethod(info);
 }
 
 void V8TestObject::voidMethodBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodBooleanArg");
+
   TestObjectV8Internal::voidMethodBooleanArgMethod(info);
 }
 
 void V8TestObject::voidMethodByteArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodByteArg");
+
   TestObjectV8Internal::voidMethodByteArgMethod(info);
 }
 
 void V8TestObject::voidMethodDoubleArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDoubleArg");
+
   TestObjectV8Internal::voidMethodDoubleArgMethod(info);
 }
 
 void V8TestObject::voidMethodFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodFloatArg");
+
   TestObjectV8Internal::voidMethodFloatArgMethod(info);
 }
 
 void V8TestObject::voidMethodLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodLongArg");
+
   TestObjectV8Internal::voidMethodLongArgMethod(info);
 }
 
 void V8TestObject::voidMethodLongLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodLongLongArg");
+
   TestObjectV8Internal::voidMethodLongLongArgMethod(info);
 }
 
 void V8TestObject::voidMethodOctetArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodOctetArg");
+
   TestObjectV8Internal::voidMethodOctetArgMethod(info);
 }
 
 void V8TestObject::voidMethodShortArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodShortArg");
+
   TestObjectV8Internal::voidMethodShortArgMethod(info);
 }
 
 void V8TestObject::voidMethodUnsignedLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodUnsignedLongArg");
+
   TestObjectV8Internal::voidMethodUnsignedLongArgMethod(info);
 }
 
 void V8TestObject::voidMethodUnsignedLongLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodUnsignedLongLongArg");
+
   TestObjectV8Internal::voidMethodUnsignedLongLongArgMethod(info);
 }
 
 void V8TestObject::voidMethodUnsignedShortArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodUnsignedShortArg");
+
   TestObjectV8Internal::voidMethodUnsignedShortArgMethod(info);
 }
 
 void V8TestObject::testInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceEmptyMethod");
+
   TestObjectV8Internal::testInterfaceEmptyMethodMethod(info);
 }
 
 void V8TestObject::voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodTestInterfaceEmptyArg");
+
   TestObjectV8Internal::voidMethodTestInterfaceEmptyArgMethod(info);
 }
 
 void V8TestObject::voidMethodLongArgTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodLongArgTestInterfaceEmptyArg");
+
   TestObjectV8Internal::voidMethodLongArgTestInterfaceEmptyArgMethod(info);
 }
 
 void V8TestObject::anyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_anyMethod");
+
   TestObjectV8Internal::anyMethodMethod(info);
 }
 
 void V8TestObject::voidMethodEventTargetArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodEventTargetArg");
+
   TestObjectV8Internal::voidMethodEventTargetArgMethod(info);
 }
 
 void V8TestObject::voidMethodAnyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodAnyArg");
+
   TestObjectV8Internal::voidMethodAnyArgMethod(info);
 }
 
 void V8TestObject::voidMethodAttrArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodAttrArg");
+
   TestObjectV8Internal::voidMethodAttrArgMethod(info);
 }
 
 void V8TestObject::voidMethodDocumentArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDocumentArg");
+
   TestObjectV8Internal::voidMethodDocumentArgMethod(info);
 }
 
 void V8TestObject::voidMethodDocumentTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDocumentTypeArg");
+
   TestObjectV8Internal::voidMethodDocumentTypeArgMethod(info);
 }
 
 void V8TestObject::voidMethodElementArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodElementArg");
+
   TestObjectV8Internal::voidMethodElementArgMethod(info);
 }
 
 void V8TestObject::voidMethodNodeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodNodeArg");
+
   TestObjectV8Internal::voidMethodNodeArgMethod(info);
 }
 
 void V8TestObject::arrayBufferMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_arrayBufferMethod");
+
   TestObjectV8Internal::arrayBufferMethodMethod(info);
 }
 
 void V8TestObject::arrayBufferViewMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_arrayBufferViewMethod");
+
   TestObjectV8Internal::arrayBufferViewMethodMethod(info);
 }
 
 void V8TestObject::arrayBufferViewMethodRaisesExceptionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_arrayBufferViewMethodRaisesException");
+
   TestObjectV8Internal::arrayBufferViewMethodRaisesExceptionMethod(info);
 }
 
 void V8TestObject::float32ArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_float32ArrayMethod");
+
   TestObjectV8Internal::float32ArrayMethodMethod(info);
 }
 
 void V8TestObject::int32ArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_int32ArrayMethod");
+
   TestObjectV8Internal::int32ArrayMethodMethod(info);
 }
 
 void V8TestObject::uint8ArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_uint8ArrayMethod");
+
   TestObjectV8Internal::uint8ArrayMethodMethod(info);
 }
 
 void V8TestObject::voidMethodArrayBufferArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodArrayBufferArg");
+
   TestObjectV8Internal::voidMethodArrayBufferArgMethod(info);
 }
 
 void V8TestObject::voidMethodArrayBufferOrNullArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodArrayBufferOrNullArg");
+
   TestObjectV8Internal::voidMethodArrayBufferOrNullArgMethod(info);
 }
 
 void V8TestObject::voidMethodArrayBufferViewArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodArrayBufferViewArg");
+
   TestObjectV8Internal::voidMethodArrayBufferViewArgMethod(info);
 }
 
 void V8TestObject::voidMethodFlexibleArrayBufferViewArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodFlexibleArrayBufferViewArg");
+
   TestObjectV8Internal::voidMethodFlexibleArrayBufferViewArgMethod(info);
 }
 
 void V8TestObject::voidMethodFlexibleArrayBufferViewTypedArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodFlexibleArrayBufferViewTypedArg");
+
   TestObjectV8Internal::voidMethodFlexibleArrayBufferViewTypedArgMethod(info);
 }
 
 void V8TestObject::voidMethodFloat32ArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodFloat32ArrayArg");
+
   TestObjectV8Internal::voidMethodFloat32ArrayArgMethod(info);
 }
 
 void V8TestObject::voidMethodInt32ArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodInt32ArrayArg");
+
   TestObjectV8Internal::voidMethodInt32ArrayArgMethod(info);
 }
 
 void V8TestObject::voidMethodUint8ArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodUint8ArrayArg");
+
   TestObjectV8Internal::voidMethodUint8ArrayArgMethod(info);
 }
 
 void V8TestObject::voidMethodAllowSharedArrayBufferViewArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodAllowSharedArrayBufferViewArg");
+
   TestObjectV8Internal::voidMethodAllowSharedArrayBufferViewArgMethod(info);
 }
 
 void V8TestObject::voidMethodAllowSharedUint8ArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodAllowSharedUint8ArrayArg");
+
   TestObjectV8Internal::voidMethodAllowSharedUint8ArrayArgMethod(info);
 }
 
 void V8TestObject::longArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_longArrayMethod");
+
   TestObjectV8Internal::longArrayMethodMethod(info);
 }
 
 void V8TestObject::stringArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringArrayMethod");
+
   TestObjectV8Internal::stringArrayMethodMethod(info);
 }
 
 void V8TestObject::testInterfaceEmptyArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceEmptyArrayMethod");
+
   TestObjectV8Internal::testInterfaceEmptyArrayMethodMethod(info);
 }
 
 void V8TestObject::voidMethodArrayLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodArrayLongArg");
+
   TestObjectV8Internal::voidMethodArrayLongArgMethod(info);
 }
 
 void V8TestObject::voidMethodArrayStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodArrayStringArg");
+
   TestObjectV8Internal::voidMethodArrayStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodArrayTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodArrayTestInterfaceEmptyArg");
+
   TestObjectV8Internal::voidMethodArrayTestInterfaceEmptyArgMethod(info);
 }
 
 void V8TestObject::voidMethodNullableArrayLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodNullableArrayLongArg");
+
   TestObjectV8Internal::voidMethodNullableArrayLongArgMethod(info);
 }
 
 void V8TestObject::longSequenceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_longSequenceMethod");
+
   TestObjectV8Internal::longSequenceMethodMethod(info);
 }
 
 void V8TestObject::stringSequenceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringSequenceMethod");
+
   TestObjectV8Internal::stringSequenceMethodMethod(info);
 }
 
 void V8TestObject::testInterfaceEmptySequenceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceEmptySequenceMethod");
+
   TestObjectV8Internal::testInterfaceEmptySequenceMethodMethod(info);
 }
 
 void V8TestObject::voidMethodSequenceLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodSequenceLongArg");
+
   TestObjectV8Internal::voidMethodSequenceLongArgMethod(info);
 }
 
 void V8TestObject::voidMethodSequenceStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodSequenceStringArg");
+
   TestObjectV8Internal::voidMethodSequenceStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodSequenceTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodSequenceTestInterfaceEmptyArg");
+
   TestObjectV8Internal::voidMethodSequenceTestInterfaceEmptyArgMethod(info);
 }
 
 void V8TestObject::voidMethodSequenceSequenceDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodSequenceSequenceDOMStringArg");
+
   TestObjectV8Internal::voidMethodSequenceSequenceDOMStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodNullableSequenceLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodNullableSequenceLongArg");
+
   TestObjectV8Internal::voidMethodNullableSequenceLongArgMethod(info);
 }
 
 void V8TestObject::longFrozenArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_longFrozenArrayMethod");
+
   TestObjectV8Internal::longFrozenArrayMethodMethod(info);
 }
 
 void V8TestObject::voidMethodStringFrozenArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodStringFrozenArrayMethod");
+
   TestObjectV8Internal::voidMethodStringFrozenArrayMethodMethod(info);
 }
 
 void V8TestObject::voidMethodTestInterfaceEmptyFrozenArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodTestInterfaceEmptyFrozenArrayMethod");
+
   TestObjectV8Internal::voidMethodTestInterfaceEmptyFrozenArrayMethodMethod(info);
 }
 
 void V8TestObject::nullableLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_nullableLongMethod");
+
   TestObjectV8Internal::nullableLongMethodMethod(info);
 }
 
 void V8TestObject::nullableStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_nullableStringMethod");
+
   TestObjectV8Internal::nullableStringMethodMethod(info);
 }
 
 void V8TestObject::nullableTestInterfaceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_nullableTestInterfaceMethod");
+
   TestObjectV8Internal::nullableTestInterfaceMethodMethod(info);
 }
 
 void V8TestObject::nullableLongSequenceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_nullableLongSequenceMethod");
+
   TestObjectV8Internal::nullableLongSequenceMethodMethod(info);
 }
 
 void V8TestObject::testInterfaceGarbageCollectedOrDOMStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceGarbageCollectedOrDOMStringMethod");
+
   TestObjectV8Internal::testInterfaceGarbageCollectedOrDOMStringMethodMethod(info);
 }
 
 void V8TestObject::booleanOrDOMStringOrUnrestrictedDoubleMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_booleanOrDOMStringOrUnrestrictedDoubleMethod");
+
   TestObjectV8Internal::booleanOrDOMStringOrUnrestrictedDoubleMethodMethod(info);
 }
 
 void V8TestObject::testInterfaceOrLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceOrLongMethod");
+
   TestObjectV8Internal::testInterfaceOrLongMethodMethod(info);
 }
 
 void V8TestObject::staticTestInterfaceGarbageCollectedOrDOMStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_staticTestInterfaceGarbageCollectedOrDOMStringMethod");
+
   TestObjectV8Internal::staticTestInterfaceGarbageCollectedOrDOMStringMethodMethod(info);
 }
 
 void V8TestObject::voidMethodDoubleOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDoubleOrDOMStringArg");
+
   TestObjectV8Internal::voidMethodDoubleOrDOMStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodDoubleOrDOMStringOrNullArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDoubleOrDOMStringOrNullArg");
+
   TestObjectV8Internal::voidMethodDoubleOrDOMStringOrNullArgMethod(info);
 }
 
 void V8TestObject::voidMethodDoubleOrNullOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDoubleOrNullOrDOMStringArg");
+
   TestObjectV8Internal::voidMethodDoubleOrNullOrDOMStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDOMStringOrArrayBufferOrArrayBufferViewArg");
+
   TestObjectV8Internal::voidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethod(info);
 }
 
 void V8TestObject::voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg");
+
   TestObjectV8Internal::voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethod(info);
 }
 
 void V8TestObject::voidMethodBooleanOrElementSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodBooleanOrElementSequenceArg");
+
   TestObjectV8Internal::voidMethodBooleanOrElementSequenceArgMethod(info);
 }
 
 void V8TestObject::voidMethodDoubleOrLongOrBooleanSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDoubleOrLongOrBooleanSequenceArg");
+
   TestObjectV8Internal::voidMethodDoubleOrLongOrBooleanSequenceArgMethod(info);
 }
 
 void V8TestObject::voidMethodElementSequenceOrByteStringDoubleOrStringRecordMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodElementSequenceOrByteStringDoubleOrStringRecord");
+
   TestObjectV8Internal::voidMethodElementSequenceOrByteStringDoubleOrStringRecordMethod(info);
 }
 
 void V8TestObject::voidMethodArrayOfDoubleOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodArrayOfDoubleOrDOMStringArg");
+
   TestObjectV8Internal::voidMethodArrayOfDoubleOrDOMStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodTestInterfaceEmptyOrNullArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodTestInterfaceEmptyOrNullArg");
+
   TestObjectV8Internal::voidMethodTestInterfaceEmptyOrNullArgMethod(info);
 }
 
 void V8TestObject::voidMethodTestCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodTestCallbackInterfaceArg");
+
   TestObjectV8Internal::voidMethodTestCallbackInterfaceArgMethod(info);
 }
 
 void V8TestObject::voidMethodOptionalTestCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodOptionalTestCallbackInterfaceArg");
+
   TestObjectV8Internal::voidMethodOptionalTestCallbackInterfaceArgMethod(info);
 }
 
 void V8TestObject::voidMethodTestCallbackInterfaceOrNullArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodTestCallbackInterfaceOrNullArg");
+
   TestObjectV8Internal::voidMethodTestCallbackInterfaceOrNullArgMethod(info);
 }
 
 void V8TestObject::testEnumMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testEnumMethod");
+
   TestObjectV8Internal::testEnumMethodMethod(info);
 }
 
 void V8TestObject::voidMethodTestEnumArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodTestEnumArg");
+
   TestObjectV8Internal::voidMethodTestEnumArgMethod(info);
 }
 
 void V8TestObject::voidMethodTestMultipleEnumArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodTestMultipleEnumArg");
+
   TestObjectV8Internal::voidMethodTestMultipleEnumArgMethod(info);
 }
 
 void V8TestObject::dictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_dictionaryMethod");
+
   TestObjectV8Internal::dictionaryMethodMethod(info);
 }
 
 void V8TestObject::testDictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testDictionaryMethod");
+
   TestObjectV8Internal::testDictionaryMethodMethod(info);
 }
 
 void V8TestObject::nullableTestDictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_nullableTestDictionaryMethod");
+
   TestObjectV8Internal::nullableTestDictionaryMethodMethod(info);
 }
 
 void V8TestObject::staticTestDictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_staticTestDictionaryMethod");
+
   TestObjectV8Internal::staticTestDictionaryMethodMethod(info);
 }
 
 void V8TestObject::staticNullableTestDictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_staticNullableTestDictionaryMethod");
+
   TestObjectV8Internal::staticNullableTestDictionaryMethodMethod(info);
 }
 
 void V8TestObject::passPermissiveDictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_passPermissiveDictionaryMethod");
+
   TestObjectV8Internal::passPermissiveDictionaryMethodMethod(info);
 }
 
 void V8TestObject::nodeFilterMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_nodeFilterMethod");
+
   TestObjectV8Internal::nodeFilterMethodMethod(info);
 }
 
 void V8TestObject::promiseMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_promiseMethod");
+
   TestObjectV8Internal::promiseMethodMethod(info);
 }
 
 void V8TestObject::promiseMethodWithoutExceptionStateMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_promiseMethodWithoutExceptionState");
+
   TestObjectV8Internal::promiseMethodWithoutExceptionStateMethod(info);
 }
 
 void V8TestObject::serializedScriptValueMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_serializedScriptValueMethod");
+
   TestObjectV8Internal::serializedScriptValueMethodMethod(info);
 }
 
 void V8TestObject::xPathNSResolverMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_xPathNSResolverMethod");
+
   TestObjectV8Internal::xPathNSResolverMethodMethod(info);
 }
 
 void V8TestObject::voidMethodDictionaryArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDictionaryArg");
+
   TestObjectV8Internal::voidMethodDictionaryArgMethod(info);
 }
 
 void V8TestObject::voidMethodNodeFilterArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodNodeFilterArg");
+
   TestObjectV8Internal::voidMethodNodeFilterArgMethod(info);
 }
 
 void V8TestObject::voidMethodPromiseArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodPromiseArg");
+
   TestObjectV8Internal::voidMethodPromiseArgMethod(info);
 }
 
 void V8TestObject::voidMethodSerializedScriptValueArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodSerializedScriptValueArg");
+
   TestObjectV8Internal::voidMethodSerializedScriptValueArgMethod(info);
 }
 
 void V8TestObject::voidMethodXPathNSResolverArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodXPathNSResolverArg");
+
   TestObjectV8Internal::voidMethodXPathNSResolverArgMethod(info);
 }
 
 void V8TestObject::voidMethodDictionarySequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDictionarySequenceArg");
+
   TestObjectV8Internal::voidMethodDictionarySequenceArgMethod(info);
 }
 
 void V8TestObject::voidMethodStringArgLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodStringArgLongArg");
+
   TestObjectV8Internal::voidMethodStringArgLongArgMethod(info);
 }
 
 void V8TestObject::voidMethodOptionalStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodOptionalStringArg");
+
   TestObjectV8Internal::voidMethodOptionalStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodOptionalTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodOptionalTestInterfaceEmptyArg");
+
   TestObjectV8Internal::voidMethodOptionalTestInterfaceEmptyArgMethod(info);
 }
 
 void V8TestObject::voidMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodOptionalLongArg");
+
   TestObjectV8Internal::voidMethodOptionalLongArgMethod(info);
 }
 
 void V8TestObject::stringMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringMethodOptionalLongArg");
+
   TestObjectV8Internal::stringMethodOptionalLongArgMethod(info);
 }
 
 void V8TestObject::testInterfaceEmptyMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceEmptyMethodOptionalLongArg");
+
   TestObjectV8Internal::testInterfaceEmptyMethodOptionalLongArgMethod(info);
 }
 
 void V8TestObject::longMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_longMethodOptionalLongArg");
+
   TestObjectV8Internal::longMethodOptionalLongArgMethod(info);
 }
 
 void V8TestObject::voidMethodLongArgOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodLongArgOptionalLongArg");
+
   TestObjectV8Internal::voidMethodLongArgOptionalLongArgMethod(info);
 }
 
 void V8TestObject::voidMethodLongArgOptionalLongArgOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodLongArgOptionalLongArgOptionalLongArg");
+
   TestObjectV8Internal::voidMethodLongArgOptionalLongArgOptionalLongArgMethod(info);
 }
 
 void V8TestObject::voidMethodLongArgOptionalTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodLongArgOptionalTestInterfaceEmptyArg");
+
   TestObjectV8Internal::voidMethodLongArgOptionalTestInterfaceEmptyArgMethod(info);
 }
 
 void V8TestObject::voidMethodTestInterfaceEmptyArgOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodTestInterfaceEmptyArgOptionalLongArg");
+
   TestObjectV8Internal::voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(info);
 }
 
 void V8TestObject::voidMethodOptionalDictionaryArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodOptionalDictionaryArg");
+
   TestObjectV8Internal::voidMethodOptionalDictionaryArgMethod(info);
 }
 
 void V8TestObject::voidMethodDefaultByteStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDefaultByteStringArg");
+
   TestObjectV8Internal::voidMethodDefaultByteStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodDefaultStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDefaultStringArg");
+
   TestObjectV8Internal::voidMethodDefaultStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodDefaultIntegerArgsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDefaultIntegerArgs");
+
   TestObjectV8Internal::voidMethodDefaultIntegerArgsMethod(info);
 }
 
 void V8TestObject::voidMethodDefaultDoubleArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDefaultDoubleArg");
+
   TestObjectV8Internal::voidMethodDefaultDoubleArgMethod(info);
 }
 
 void V8TestObject::voidMethodDefaultTrueBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDefaultTrueBooleanArg");
+
   TestObjectV8Internal::voidMethodDefaultTrueBooleanArgMethod(info);
 }
 
 void V8TestObject::voidMethodDefaultFalseBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDefaultFalseBooleanArg");
+
   TestObjectV8Internal::voidMethodDefaultFalseBooleanArgMethod(info);
 }
 
 void V8TestObject::voidMethodDefaultNullableByteStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDefaultNullableByteStringArg");
+
   TestObjectV8Internal::voidMethodDefaultNullableByteStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodDefaultNullableStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDefaultNullableStringArg");
+
   TestObjectV8Internal::voidMethodDefaultNullableStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodDefaultNullableTestInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDefaultNullableTestInterfaceArg");
+
   TestObjectV8Internal::voidMethodDefaultNullableTestInterfaceArgMethod(info);
 }
 
 void V8TestObject::voidMethodDefaultDoubleOrStringArgsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDefaultDoubleOrStringArgs");
+
   TestObjectV8Internal::voidMethodDefaultDoubleOrStringArgsMethod(info);
 }
 
 void V8TestObject::voidMethodDefaultStringSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDefaultStringSequenceArg");
+
   TestObjectV8Internal::voidMethodDefaultStringSequenceArgMethod(info);
 }
 
 void V8TestObject::voidMethodVariadicStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodVariadicStringArg");
+
   TestObjectV8Internal::voidMethodVariadicStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodStringArgVariadicStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodStringArgVariadicStringArg");
+
   TestObjectV8Internal::voidMethodStringArgVariadicStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodVariadicTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodVariadicTestInterfaceEmptyArg");
+
   TestObjectV8Internal::voidMethodVariadicTestInterfaceEmptyArgMethod(info);
 }
 
 void V8TestObject::voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg");
+
   TestObjectV8Internal::voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethod(info);
 }
 
 void V8TestObject::voidMethodVariadicTestInterfaceGarbageCollectedArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodVariadicTestInterfaceGarbageCollectedArg");
+
   TestObjectV8Internal::voidMethodVariadicTestInterfaceGarbageCollectedArgMethod(info);
 }
 
 void V8TestObject::overloadedMethodAMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedMethodA");
+
   TestObjectV8Internal::overloadedMethodAMethod(info);
 }
 
 void V8TestObject::overloadedMethodBMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedMethodB");
+
   TestObjectV8Internal::overloadedMethodBMethod(info);
 }
 
 void V8TestObject::overloadedMethodCMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedMethodC");
+
   TestObjectV8Internal::overloadedMethodCMethod(info);
 }
 
 void V8TestObject::overloadedMethodDMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedMethodD");
+
   TestObjectV8Internal::overloadedMethodDMethod(info);
 }
 
 void V8TestObject::overloadedMethodEMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedMethodE");
+
   TestObjectV8Internal::overloadedMethodEMethod(info);
 }
 
 void V8TestObject::overloadedMethodFMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedMethodF");
+
   TestObjectV8Internal::overloadedMethodFMethod(info);
 }
 
 void V8TestObject::overloadedMethodGMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedMethodG");
+
   TestObjectV8Internal::overloadedMethodGMethod(info);
 }
 
 void V8TestObject::overloadedMethodHMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedMethodH");
+
   TestObjectV8Internal::overloadedMethodHMethod(info);
 }
 
 void V8TestObject::overloadedMethodIMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedMethodI");
+
   TestObjectV8Internal::overloadedMethodIMethod(info);
 }
 
 void V8TestObject::overloadedMethodJMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedMethodJ");
+
   TestObjectV8Internal::overloadedMethodJMethod(info);
 }
 
 void V8TestObject::overloadedMethodKMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedMethodK");
+
   TestObjectV8Internal::overloadedMethodKMethod(info);
 }
 
 void V8TestObject::overloadedMethodLMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedMethodL");
+
   TestObjectV8Internal::overloadedMethodLMethod(info);
 }
 
 void V8TestObject::overloadedMethodNMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedMethodN");
+
   TestObjectV8Internal::overloadedMethodNMethod(info);
 }
 
 void V8TestObject::promiseOverloadMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_promiseOverloadMethod");
+
   TestObjectV8Internal::promiseOverloadMethodMethod(info);
 }
 
 void V8TestObject::overloadedPerWorldBindingsMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedPerWorldBindingsMethod");
+
   TestObjectV8Internal::overloadedPerWorldBindingsMethodMethod(info);
 }
 
 void V8TestObject::overloadedPerWorldBindingsMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedPerWorldBindingsMethod");
+
   TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodForMainWorld(info);
 }
 
 void V8TestObject::overloadedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedStaticMethod");
+
   TestObjectV8Internal::overloadedStaticMethodMethod(info);
 }
 
 void V8TestObject::itemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_item");
+
   TestObjectV8Internal::itemMethod(info);
 }
 
 void V8TestObject::setItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_setItem");
+
   TestObjectV8Internal::setItemMethod(info);
 }
 
 void V8TestObject::voidMethodClampUnsignedShortArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodClampUnsignedShortArg");
+
   TestObjectV8Internal::voidMethodClampUnsignedShortArgMethod(info);
 }
 
 void V8TestObject::voidMethodClampUnsignedLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodClampUnsignedLongArg");
+
   TestObjectV8Internal::voidMethodClampUnsignedLongArgMethod(info);
 }
 
 void V8TestObject::voidMethodDefaultUndefinedTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDefaultUndefinedTestInterfaceEmptyArg");
+
   TestObjectV8Internal::voidMethodDefaultUndefinedTestInterfaceEmptyArgMethod(info);
 }
 
 void V8TestObject::voidMethodDefaultUndefinedLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDefaultUndefinedLongArg");
+
   TestObjectV8Internal::voidMethodDefaultUndefinedLongArgMethod(info);
 }
 
 void V8TestObject::voidMethodDefaultUndefinedStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodDefaultUndefinedStringArg");
+
   TestObjectV8Internal::voidMethodDefaultUndefinedStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodEnforceRangeLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodEnforceRangeLongArg");
+
   TestObjectV8Internal::voidMethodEnforceRangeLongArgMethod(info);
 }
 
 void V8TestObject::voidMethodTreatNullAsEmptyStringStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodTreatNullAsEmptyStringStringArg");
+
   TestObjectV8Internal::voidMethodTreatNullAsEmptyStringStringArgMethod(info);
 }
 
 void V8TestObject::voidMethodTreatNullAsNullStringStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodTreatNullAsNullStringStringArg");
+
   TestObjectV8Internal::voidMethodTreatNullAsNullStringStringArgMethod(info);
 }
 
 void V8TestObject::activityLoggingAccessForAllWorldsMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingAccessForAllWorldsMethod");
+
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
@@ -11930,145 +12881,215 @@ void V8TestObject::activityLoggingAccessForAllWorldsMethodMethodCallback(const v
 }
 
 void V8TestObject::callWithExecutionContextVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithExecutionContextVoidMethod");
+
   TestObjectV8Internal::callWithExecutionContextVoidMethodMethod(info);
 }
 
 void V8TestObject::callWithScriptStateVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithScriptStateVoidMethod");
+
   TestObjectV8Internal::callWithScriptStateVoidMethodMethod(info);
 }
 
 void V8TestObject::callWithScriptStateLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithScriptStateLongMethod");
+
   TestObjectV8Internal::callWithScriptStateLongMethodMethod(info);
 }
 
 void V8TestObject::callWithScriptStateExecutionContextVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithScriptStateExecutionContextVoidMethod");
+
   TestObjectV8Internal::callWithScriptStateExecutionContextVoidMethodMethod(info);
 }
 
 void V8TestObject::callWithScriptStateScriptArgumentsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithScriptStateScriptArgumentsVoidMethod");
+
   TestObjectV8Internal::callWithScriptStateScriptArgumentsVoidMethodMethod(info);
 }
 
 void V8TestObject::callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg");
+
   TestObjectV8Internal::callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod(info);
 }
 
 void V8TestObject::callWithCurrentWindowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithCurrentWindow");
+
   TestObjectV8Internal::callWithCurrentWindowMethod(info);
 }
 
 void V8TestObject::callWithCurrentWindowScriptWindowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithCurrentWindowScriptWindow");
+
   TestObjectV8Internal::callWithCurrentWindowScriptWindowMethod(info);
 }
 
 void V8TestObject::callWithThisValueMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithThisValue");
+
   TestObjectV8Internal::callWithThisValueMethod(info);
 }
 
 void V8TestObject::checkSecurityForNodeVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_checkSecurityForNodeVoidMethod");
+
   TestObjectV8Internal::checkSecurityForNodeVoidMethodMethod(info);
 }
 
 void V8TestObject::customVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customVoidMethod");
+
   V8TestObject::customVoidMethodMethodCustom(info);
 }
 
 void V8TestObject::customCallPrologueVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customCallPrologueVoidMethod");
+
   TestObjectV8Internal::customCallPrologueVoidMethodMethod(info);
 }
 
 void V8TestObject::customCallEpilogueVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customCallEpilogueVoidMethod");
+
   TestObjectV8Internal::customCallEpilogueVoidMethodMethod(info);
 }
 
 void V8TestObject::deprecatedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_deprecatedVoidMethod");
+
   Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kvoidMethod);
   TestObjectV8Internal::deprecatedVoidMethodMethod(info);
 }
 
 void V8TestObject::implementedAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_implementedAsVoidMethod");
+
   TestObjectV8Internal::implementedAsVoidMethodMethod(info);
 }
 
 void V8TestObject::measureAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measureAsVoidMethod");
+
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kTestFeature);
   TestObjectV8Internal::measureAsVoidMethodMethod(info);
 }
 
 void V8TestObject::measureMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measureMethod");
+
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestObject_MeasureMethod_Method);
   TestObjectV8Internal::measureMethodMethod(info);
 }
 
 void V8TestObject::measureOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measureOverloadedMethod");
+
   TestObjectV8Internal::measureOverloadedMethodMethod(info);
 }
 
 void V8TestObject::DeprecateAsOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_DeprecateAsOverloadedMethod");
+
   TestObjectV8Internal::DeprecateAsOverloadedMethodMethod(info);
 }
 
 void V8TestObject::DeprecateAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_DeprecateAsSameValueOverloadedMethod");
+
   TestObjectV8Internal::DeprecateAsSameValueOverloadedMethodMethod(info);
 }
 
 void V8TestObject::measureAsOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measureAsOverloadedMethod");
+
   TestObjectV8Internal::measureAsOverloadedMethodMethod(info);
 }
 
 void V8TestObject::measureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_measureAsSameValueOverloadedMethod");
+
   TestObjectV8Internal::measureAsSameValueOverloadedMethodMethod(info);
 }
 
 void V8TestObject::deprecateAsMeasureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_deprecateAsMeasureAsSameValueOverloadedMethod");
+
   TestObjectV8Internal::deprecateAsMeasureAsSameValueOverloadedMethodMethod(info);
 }
 
 void V8TestObject::deprecateAsSameValueMeasureAsOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_deprecateAsSameValueMeasureAsOverloadedMethod");
+
   TestObjectV8Internal::deprecateAsSameValueMeasureAsOverloadedMethodMethod(info);
 }
 
 void V8TestObject::deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_deprecateAsSameValueMeasureAsSameValueOverloadedMethod");
+
   TestObjectV8Internal::deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethod(info);
 }
 
 void V8TestObject::notEnumerableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_notEnumerableVoidMethod");
+
   TestObjectV8Internal::notEnumerableVoidMethodMethod(info);
 }
 
 void V8TestObject::originTrialEnabledVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_originTrialEnabledVoidMethod");
+
   TestObjectV8Internal::originTrialEnabledVoidMethodMethod(info);
 }
 
 void V8TestObject::perWorldBindingsOriginTrialEnabledVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_perWorldBindingsOriginTrialEnabledVoidMethod");
+
   TestObjectV8Internal::perWorldBindingsOriginTrialEnabledVoidMethodMethod(info);
 }
 
 void V8TestObject::perWorldBindingsOriginTrialEnabledVoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_perWorldBindingsOriginTrialEnabledVoidMethod");
+
   TestObjectV8Internal::perWorldBindingsOriginTrialEnabledVoidMethodMethodForMainWorld(info);
 }
 
 void V8TestObject::perWorldBindingsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_perWorldBindingsVoidMethod");
+
   TestObjectV8Internal::perWorldBindingsVoidMethodMethod(info);
 }
 
 void V8TestObject::perWorldBindingsVoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_perWorldBindingsVoidMethod");
+
   TestObjectV8Internal::perWorldBindingsVoidMethodMethodForMainWorld(info);
 }
 
 void V8TestObject::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_perWorldBindingsVoidMethodTestInterfaceEmptyArg");
+
   TestObjectV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethod(info);
 }
 
 void V8TestObject::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_perWorldBindingsVoidMethodTestInterfaceEmptyArg");
+
   TestObjectV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodForMainWorld(info);
 }
 
 void V8TestObject::postMessageMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_postMessage");
+
   TestObjectV8Internal::postMessageImpl("TestObject", V8TestObject::toImpl(info.Holder()), info);
 }
 
 void V8TestObject::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingForAllWorldsPerWorldBindingsVoidMethod");
+
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
@@ -12080,6 +13101,8 @@ void V8TestObject::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCa
 }
 
 void V8TestObject::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingForAllWorldsPerWorldBindingsVoidMethod");
+
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
@@ -12091,6 +13114,8 @@ void V8TestObject::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCa
 }
 
 void V8TestObject::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod");
+
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
@@ -12102,152 +13127,224 @@ void V8TestObject::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMet
 }
 
 void V8TestObject::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod");
+
   TestObjectV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodForMainWorld(info);
 }
 
 void V8TestObject::raisesExceptionVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_raisesExceptionVoidMethod");
+
   TestObjectV8Internal::raisesExceptionVoidMethodMethod(info);
 }
 
 void V8TestObject::raisesExceptionStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_raisesExceptionStringMethod");
+
   TestObjectV8Internal::raisesExceptionStringMethodMethod(info);
 }
 
 void V8TestObject::raisesExceptionVoidMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_raisesExceptionVoidMethodOptionalLongArg");
+
   TestObjectV8Internal::raisesExceptionVoidMethodOptionalLongArgMethod(info);
 }
 
 void V8TestObject::raisesExceptionVoidMethodTestCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_raisesExceptionVoidMethodTestCallbackInterfaceArg");
+
   TestObjectV8Internal::raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(info);
 }
 
 void V8TestObject::raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg");
+
   TestObjectV8Internal::raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(info);
 }
 
 void V8TestObject::raisesExceptionTestInterfaceEmptyVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_raisesExceptionTestInterfaceEmptyVoidMethod");
+
   TestObjectV8Internal::raisesExceptionTestInterfaceEmptyVoidMethodMethod(info);
 }
 
 void V8TestObject::raisesExceptionXPathNSResolverVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_raisesExceptionXPathNSResolverVoidMethod");
+
   TestObjectV8Internal::raisesExceptionXPathNSResolverVoidMethodMethod(info);
 }
 
 void V8TestObject::callWithExecutionContextRaisesExceptionVoidMethodLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_callWithExecutionContextRaisesExceptionVoidMethodLongArg");
+
   TestObjectV8Internal::callWithExecutionContextRaisesExceptionVoidMethodLongArgMethod(info);
 }
 
 void V8TestObject::runtimeEnabledVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_runtimeEnabledVoidMethod");
+
   TestObjectV8Internal::runtimeEnabledVoidMethodMethod(info);
 }
 
 void V8TestObject::perWorldBindingsRuntimeEnabledVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_perWorldBindingsRuntimeEnabledVoidMethod");
+
   TestObjectV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethod(info);
 }
 
 void V8TestObject::perWorldBindingsRuntimeEnabledVoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_perWorldBindingsRuntimeEnabledVoidMethod");
+
   TestObjectV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodForMainWorld(info);
 }
 
 void V8TestObject::runtimeEnabledOverloadedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_runtimeEnabledOverloadedVoidMethod");
+
   TestObjectV8Internal::runtimeEnabledOverloadedVoidMethodMethod(info);
 }
 
 void V8TestObject::partiallyRuntimeEnabledOverloadedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_partiallyRuntimeEnabledOverloadedVoidMethod");
+
   TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethod(info);
 }
 
 void V8TestObject::legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArg");
+
   TestObjectV8Internal::legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArgMethod(info);
 }
 
 void V8TestObject::legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArg");
+
   TestObjectV8Internal::legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArgMethod(info);
 }
 
 void V8TestObject::useToImpl4ArgumentsCheckingIfPossibleWithOptionalArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg");
+
   TestObjectV8Internal::useToImpl4ArgumentsCheckingIfPossibleWithOptionalArgMethod(info);
 }
 
 void V8TestObject::useToImpl4ArgumentsCheckingIfPossibleWithNullableArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_useToImpl4ArgumentsCheckingIfPossibleWithNullableArg");
+
   TestObjectV8Internal::useToImpl4ArgumentsCheckingIfPossibleWithNullableArgMethod(info);
 }
 
 void V8TestObject::useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg");
+
   TestObjectV8Internal::useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArgMethod(info);
 }
 
 void V8TestObject::unforgeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_unforgeableVoidMethod");
+
   TestObjectV8Internal::unforgeableVoidMethodMethod(info);
 }
 
 void V8TestObject::voidMethodTestInterfaceGarbageCollectedSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodTestInterfaceGarbageCollectedSequenceArg");
+
   TestObjectV8Internal::voidMethodTestInterfaceGarbageCollectedSequenceArgMethod(info);
 }
 
 void V8TestObject::voidMethodTestInterfaceGarbageCollectedArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodTestInterfaceGarbageCollectedArrayArg");
+
   TestObjectV8Internal::voidMethodTestInterfaceGarbageCollectedArrayArgMethod(info);
 }
 
 void V8TestObject::newObjectTestInterfaceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_newObjectTestInterfaceMethod");
+
   TestObjectV8Internal::newObjectTestInterfaceMethodMethod(info);
 }
 
 void V8TestObject::RuntimeCallStatsCounterMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(),
-                           RuntimeCallStats::CounterId::kRuntimeCallStatsCounterMethod);
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "kRuntimeCallStatsCounterMethod");
+
   TestObjectV8Internal::RuntimeCallStatsCounterMethodMethod(info);
 }
 
 void V8TestObject::serializerMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_serializerMethod");
+
   TestObjectV8Internal::serializerMethodMethod(info);
 }
 
 void V8TestObject::clearMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_clear");
+
   TestObjectV8Internal::clearMethod(info);
 }
 
 void V8TestObject::keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_keys");
+
   TestObjectV8Internal::keysMethod(info);
 }
 
 void V8TestObject::valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_values");
+
   TestObjectV8Internal::valuesMethod(info);
 }
 
 void V8TestObject::forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_forEach");
+
   TestObjectV8Internal::forEachMethod(info);
 }
 
 void V8TestObject::hasMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_has");
+
   TestObjectV8Internal::hasMethod(info);
 }
 
 void V8TestObject::getMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_get");
+
   TestObjectV8Internal::getMethod(info);
 }
 
 void V8TestObject::deleteMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_delete");
+
   TestObjectV8Internal::deleteMethod(info);
 }
 
 void V8TestObject::setMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_set");
+
   TestObjectV8Internal::setMethod(info);
 }
 
 void V8TestObject::toJSONMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_toJSON");
+
   TestObjectV8Internal::toJSONMethod(info);
 }
 
 void V8TestObject::toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_toString");
+
   TestObjectV8Internal::toStringMethod(info);
 }
 
 void V8TestObject::iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_iterator");
+
   TestObjectV8Internal::iteratorMethod(info);
 }
 
 void V8TestObject::namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_NamedPropertyGetter");
+
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
@@ -12256,6 +13353,8 @@ void V8TestObject::namedPropertyGetterCallback(v8::Local<v8::Name> name, const v
 }
 
 void V8TestObject::namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_NamedPropertySetter");
+
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
@@ -12272,6 +13371,8 @@ void V8TestObject::namedPropertyDeleterCallback(v8::Local<v8::Name> name, const 
 }
 
 void V8TestObject::namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_NamedPropertyQuery");
+
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
@@ -12284,6 +13385,8 @@ void V8TestObject::namedPropertyEnumeratorCallback(const v8::PropertyCallbackInf
 }
 
 void V8TestObject::indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_IndexedPropertyGetter");
+
   TestObjectV8Internal::indexedPropertyGetter(index, info);
 }
 

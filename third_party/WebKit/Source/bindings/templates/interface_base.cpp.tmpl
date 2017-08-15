@@ -266,6 +266,7 @@ bool {{v8_class_or_partial}}::securityCheck(v8::Local<v8::Context> accessingCont
 
 {% if has_cross_origin_named_getter %}
 void {{v8_class_or_partial}}::crossOriginNamedGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.cross_origin_named_getter_counter) }}
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
@@ -294,6 +295,7 @@ void {{v8_class_or_partial}}::crossOriginNamedGetter(v8::Local<v8::Name> name, c
 
 {% if has_cross_origin_named_setter %}
 void {{v8_class_or_partial}}::crossOriginNamedSetter(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.cross_origin_named_setter_counter) }}
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());

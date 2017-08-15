@@ -34,6 +34,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
@@ -2192,12 +2193,16 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
 } // namespace TestInterfaceImplementationV8Internal
 
 void V8TestInterface::testInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_testInterfaceAttribute_Getter");
+
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestInterface_TestInterfaceAttribute_AttributeGetter);
 
   TestInterfaceImplementationV8Internal::testInterfaceAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::testInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_testInterfaceAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kV8TestInterface_TestInterfaceAttribute_AttributeSetter);
@@ -2206,680 +2211,976 @@ void V8TestInterface::testInterfaceAttributeAttributeSetterCallback(const v8::Fu
 }
 
 void V8TestInterface::doubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_doubleAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::doubleAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::doubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_doubleAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::doubleAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::floatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_floatAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::floatAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::floatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_floatAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::floatAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::unrestrictedDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_unrestrictedDoubleAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::unrestrictedDoubleAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::unrestrictedDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_unrestrictedDoubleAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::unrestrictedDoubleAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::unrestrictedFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_unrestrictedFloatAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::unrestrictedFloatAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::unrestrictedFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_unrestrictedFloatAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::unrestrictedFloatAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::testEnumAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_testEnumAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::testEnumAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::testEnumAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_testEnumAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::testEnumAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::stringOrDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_stringOrDoubleAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::stringOrDoubleAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::stringOrDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_stringOrDoubleAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::stringOrDoubleAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::conditionalLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_conditionalLongAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::conditionalLongAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::conditionalLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_conditionalLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::conditionalLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::conditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_conditionalReadOnlyLongAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::conditionalReadOnlyLongAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::staticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_staticStringAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::staticStringAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::staticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_staticStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::staticStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::staticReturnDOMWrapperAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_staticReturnDOMWrapperAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::staticReturnDOMWrapperAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::staticReturnDOMWrapperAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_staticReturnDOMWrapperAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::staticReturnDOMWrapperAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::staticReadOnlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_staticReadOnlyStringAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::staticReadOnlyStringAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::staticReadOnlyReturnDOMWrapperAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_staticReadOnlyReturnDOMWrapperAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::staticConditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_staticConditionalReadOnlyLongAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::staticConditionalReadOnlyLongAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::legacyInterfaceTypeCheckingAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_legacyInterfaceTypeCheckingAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::legacyInterfaceTypeCheckingAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::legacyInterfaceTypeCheckingAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_legacyInterfaceTypeCheckingAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::legacyInterfaceTypeCheckingAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::alwaysExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_alwaysExposedAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::alwaysExposedAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::alwaysExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_alwaysExposedAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::alwaysExposedAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::workerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_workerExposedAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::workerExposedAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::workerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_workerExposedAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::workerExposedAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::windowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_windowExposedAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::windowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_windowExposedAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::lenientThisAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_lenientThisAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::lenientThisAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::lenientThisAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_lenientThisAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::lenientThisAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::secureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::secureContextAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::secureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::secureContextAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::secureContextRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextRuntimeEnabledAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::secureContextRuntimeEnabledAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::secureContextRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextRuntimeEnabledAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::secureContextRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::secureContextWindowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextWindowExposedAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::secureContextWindowExposedAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::secureContextWindowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextWindowExposedAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::secureContextWindowExposedAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::secureContextWorkerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextWorkerExposedAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::secureContextWorkerExposedAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::secureContextWorkerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextWorkerExposedAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::secureContextWorkerExposedAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::secureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextWindowExposedRuntimeEnabledAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::secureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::secureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextWindowExposedRuntimeEnabledAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextWorkerExposedRuntimeEnabledAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextWorkerExposedRuntimeEnabledAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::implementsStaticReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsStaticReadOnlyLongAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::implementsStaticReadOnlyLongAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::implementsStaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsStaticStringAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::implementsStaticStringAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::implementsStaticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsStaticStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implementsStaticStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::implementsReadonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsReadonlyStringAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::implementsReadonlyStringAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::implementsStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsStringAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::implementsStringAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::implementsStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implementsStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::implementsNodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsNodeAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::implementsNodeAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::implementsNodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsNodeAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implementsNodeAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::implementsEventHandlerAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsEventHandlerAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::implementsEventHandlerAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::implementsEventHandlerAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsEventHandlerAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implementsEventHandlerAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::implementsRuntimeEnabledNodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsRuntimeEnabledNodeAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::implementsRuntimeEnabledNodeAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::implementsRuntimeEnabledNodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsRuntimeEnabledNodeAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implementsRuntimeEnabledNodeAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::implements2StaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implements2StaticStringAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::implements2StaticStringAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::implements2StaticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implements2StaticStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implements2StaticStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::implements2StringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implements2StringAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::implements2StringAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::implements2StringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implements2StringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implements2StringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::implements3StringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implements3StringAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::implements3StringAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::implements3StringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implements3StringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implements3StringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::implements3StaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implements3StaticStringAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::implements3StaticStringAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::implements3StaticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implements3StaticStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implements3StaticStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::partialLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialLongAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::partialLongAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::partialLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::partialStaticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialStaticLongAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::partialStaticLongAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::partialStaticLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialStaticLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialStaticLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::partialCallWithExecutionContextLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialCallWithExecutionContextLongAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::partialCallWithExecutionContextLongAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::partialCallWithExecutionContextLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialCallWithExecutionContextLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialCallWithExecutionContextLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::partialPartialEnumTypeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialPartialEnumTypeAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::partialPartialEnumTypeAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::partialPartialEnumTypeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialPartialEnumTypeAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialPartialEnumTypeAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::partialSecureContextLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextLongAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::partialSecureContextLongAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::partialSecureContextLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialSecureContextLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::partial2LongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2LongAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::partial2LongAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::partial2LongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2LongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partial2LongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::partial2StaticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2StaticLongAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::partial2StaticLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2StaticLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::partial2SecureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2SecureContextAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::partial2SecureContextAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::partial2SecureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2SecureContextAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partial2SecureContextAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::partialSecureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::partialSecureContextAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::partialSecureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialSecureContextAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::partialSecureContextRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextRuntimeEnabledAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::partialSecureContextRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextRuntimeEnabledAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::partialSecureContextWindowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextWindowExposedAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::partialSecureContextWindowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextWindowExposedAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::partialSecureContextWorkerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextWorkerExposedAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::partialSecureContextWorkerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextWorkerExposedAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextWindowExposedRuntimeEnabledAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextWindowExposedRuntimeEnabledAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextWorkerExposedRuntimeEnabledAttribute_Getter");
+
   TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(info);
 }
 
 void V8TestInterface::partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextWorkerExposedRuntimeEnabledAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterface::voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_voidMethodTestInterfaceEmptyArg");
+
   TestInterfaceImplementationV8Internal::voidMethodTestInterfaceEmptyArgMethod(info);
 }
 
 void V8TestInterface::voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_voidMethodDoubleArgFloatArg");
+
   TestInterfaceImplementationV8Internal::voidMethodDoubleArgFloatArgMethod(info);
 }
 
 void V8TestInterface::voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg");
+
   TestInterfaceImplementationV8Internal::voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(info);
 }
 
 void V8TestInterface::voidMethodTestEnumArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_voidMethodTestEnumArg");
+
   TestInterfaceImplementationV8Internal::voidMethodTestEnumArgMethod(info);
 }
 
 void V8TestInterface::voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_voidMethod");
+
   TestInterfaceImplementationV8Internal::voidMethodMethod(info);
 }
 
 void V8TestInterface::voidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_voidMethod");
+
   TestInterfaceImplementationV8Internal::voidMethodMethodForMainWorld(info);
 }
 
 void V8TestInterface::alwaysExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_alwaysExposedMethod");
+
   TestInterfaceImplementationV8Internal::alwaysExposedMethodMethod(info);
 }
 
 void V8TestInterface::workerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_workerExposedMethod");
+
   TestInterfaceImplementationV8Internal::workerExposedMethodMethod(info);
 }
 
 void V8TestInterface::windowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_windowExposedMethod");
+
   TestInterfaceImplementationV8Internal::windowExposedMethodMethod(info);
 }
 
 void V8TestInterface::alwaysExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_alwaysExposedStaticMethod");
+
   TestInterfaceImplementationV8Internal::alwaysExposedStaticMethodMethod(info);
 }
 
 void V8TestInterface::workerExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_workerExposedStaticMethod");
+
   TestInterfaceImplementationV8Internal::workerExposedStaticMethodMethod(info);
 }
 
 void V8TestInterface::windowExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_windowExposedStaticMethod");
+
   TestInterfaceImplementationV8Internal::windowExposedStaticMethodMethod(info);
 }
 
 void V8TestInterface::staticReturnDOMWrapperMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_staticReturnDOMWrapperMethod");
+
   TestInterfaceImplementationV8Internal::staticReturnDOMWrapperMethodMethod(info);
 }
 
 void V8TestInterface::methodWithExposedAndRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_methodWithExposedAndRuntimeEnabledFlag");
+
   TestInterfaceImplementationV8Internal::methodWithExposedAndRuntimeEnabledFlagMethod(info);
 }
 
 void V8TestInterface::overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_overloadMethodWithExposedAndRuntimeEnabledFlag");
+
   TestInterfaceImplementationV8Internal::overloadMethodWithExposedAndRuntimeEnabledFlagMethod(info);
 }
 
 void V8TestInterface::methodWithExposedHavingRuntimeEnabldFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_methodWithExposedHavingRuntimeEnabldFlag");
+
   TestInterfaceImplementationV8Internal::methodWithExposedHavingRuntimeEnabldFlagMethod(info);
 }
 
 void V8TestInterface::windowAndServiceWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_windowAndServiceWorkerExposedMethod");
+
   TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethod(info);
 }
 
 void V8TestInterface::legacyInterfaceTypeCheckingMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_legacyInterfaceTypeCheckingMethod");
+
   TestInterfaceImplementationV8Internal::legacyInterfaceTypeCheckingMethodMethod(info);
 }
 
 void V8TestInterface::secureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextMethod");
+
   TestInterfaceImplementationV8Internal::secureContextMethodMethod(info);
 }
 
 void V8TestInterface::secureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextRuntimeEnabledMethod");
+
   TestInterfaceImplementationV8Internal::secureContextRuntimeEnabledMethodMethod(info);
 }
 
 void V8TestInterface::secureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextWindowExposedMethod");
+
   TestInterfaceImplementationV8Internal::secureContextWindowExposedMethodMethod(info);
 }
 
 void V8TestInterface::secureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextWorkerExposedMethod");
+
   TestInterfaceImplementationV8Internal::secureContextWorkerExposedMethodMethod(info);
 }
 
 void V8TestInterface::secureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextWindowExposedRuntimeEnabledMethod");
+
   TestInterfaceImplementationV8Internal::secureContextWindowExposedRuntimeEnabledMethodMethod(info);
 }
 
 void V8TestInterface::secureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_secureContextWorkerExposedRuntimeEnabledMethod");
+
   TestInterfaceImplementationV8Internal::secureContextWorkerExposedRuntimeEnabledMethodMethod(info);
 }
 
 void V8TestInterface::implementsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsVoidMethod");
+
   TestInterfaceImplementationV8Internal::implementsVoidMethodMethod(info);
 }
 
 void V8TestInterface::implementsComplexMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsComplexMethod");
+
   TestInterfaceImplementationV8Internal::implementsComplexMethodMethod(info);
 }
 
 void V8TestInterface::implementsCustomVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsCustomVoidMethod");
+
   V8TestInterface::implementsCustomVoidMethodMethodCustom(info);
 }
 
 void V8TestInterface::implementsStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsStaticVoidMethod");
+
   TestInterfaceImplementationV8Internal::implementsStaticVoidMethodMethod(info);
 }
 
 void V8TestInterface::implements2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implements2VoidMethod");
+
   TestInterfaceImplementationV8Internal::implements2VoidMethodMethod(info);
 }
 
 void V8TestInterface::implements3VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implements3VoidMethod");
+
   TestInterfaceImplementationV8Internal::implements3VoidMethodMethod(info);
 }
 
 void V8TestInterface::implements3StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implements3StaticVoidMethod");
+
   TestInterfaceImplementationV8Internal::implements3StaticVoidMethodMethod(info);
 }
 
 void V8TestInterface::partialVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialVoidMethod");
+
   TestInterfaceImplementationV8Internal::partialVoidMethodMethod(info);
 }
 
 void V8TestInterface::partialStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialStaticVoidMethod");
+
   TestInterfaceImplementationV8Internal::partialStaticVoidMethodMethod(info);
 }
 
 void V8TestInterface::partialVoidMethodLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialVoidMethodLongArg");
+
   TestInterfaceImplementationV8Internal::partialVoidMethodLongArgMethod(info);
 }
 
 void V8TestInterface::partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialCallWithExecutionContextRaisesExceptionVoidMethod");
+
   TestInterfaceImplementationV8Internal::partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(info);
 }
 
 void V8TestInterface::partialVoidMethodPartialCallbackTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialVoidMethodPartialCallbackTypeArg");
+
   TestInterfaceImplementationV8Internal::partialVoidMethodPartialCallbackTypeArgMethod(info);
 }
 
 void V8TestInterface::partial2SecureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2SecureContextMethod");
+
   TestInterfaceImplementationV8Internal::partial2SecureContextMethodMethod(info);
 }
 
 void V8TestInterface::partialSecureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextMethod");
+
   TestInterfaceImplementationV8Internal::partialSecureContextMethodMethod(info);
 }
 
 void V8TestInterface::partialSecureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextRuntimeEnabledMethod");
+
   TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledMethodMethod(info);
 }
 
 void V8TestInterface::partialSecureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextWindowExposedMethod");
+
   TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedMethodMethod(info);
 }
 
 void V8TestInterface::partialSecureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextWorkerExposedMethod");
+
   TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedMethodMethod(info);
 }
 
 void V8TestInterface::partialSecureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextWindowExposedRuntimeEnabledMethod");
+
   TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledMethodMethod(info);
 }
 
 void V8TestInterface::partialSecureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partialSecureContextWorkerExposedRuntimeEnabledMethod");
+
   TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledMethodMethod(info);
 }
 
 void V8TestInterface::voidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_voidMethodPartialOverload");
+
   TestInterfaceImplementationV8Internal::voidMethodPartialOverloadMethod(info);
 }
 
 void V8TestInterface::staticVoidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_staticVoidMethodPartialOverload");
+
   TestInterfaceImplementationV8Internal::staticVoidMethodPartialOverloadMethod(info);
 }
 
 void V8TestInterface::promiseMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_promiseMethodPartialOverload");
+
   TestInterfaceImplementationV8Internal::promiseMethodPartialOverloadMethod(info);
 }
 
 void V8TestInterface::staticPromiseMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_staticPromiseMethodPartialOverload");
+
   TestInterfaceImplementationV8Internal::staticPromiseMethodPartialOverloadMethod(info);
 }
 
 void V8TestInterface::partial2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2VoidMethod");
+
   TestInterfaceImplementationV8Internal::partial2VoidMethodMethod(info);
 }
 
 void V8TestInterface::partial2StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial2StaticVoidMethod");
+
   TestInterfaceImplementationV8Internal::partial2StaticVoidMethodMethod(info);
 }
 
 void V8TestInterface::keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_keys");
+
   TestInterfaceImplementationV8Internal::keysMethod(info);
 }
 
 void V8TestInterface::valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_values");
+
   TestInterfaceImplementationV8Internal::valuesMethod(info);
 }
 
 void V8TestInterface::forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_forEach");
+
   TestInterfaceImplementationV8Internal::forEachMethod(info);
 }
 
 void V8TestInterface::toJSONMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_toJSON");
+
   TestInterfaceImplementationV8Internal::toJSONMethod(info);
 }
 
 void V8TestInterface::toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_toString");
+
   TestInterfaceImplementationV8Internal::toStringMethod(info);
 }
 
 void V8TestInterface::iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_iterator");
+
   TestInterfaceImplementationV8Internal::iteratorMethod(info);
 }
 
 void V8TestInterface::namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_NamedPropertyGetter");
+
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
@@ -2888,6 +3189,8 @@ void V8TestInterface::namedPropertyGetterCallback(v8::Local<v8::Name> name, cons
 }
 
 void V8TestInterface::namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_NamedPropertySetter");
+
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
@@ -2904,6 +3207,8 @@ void V8TestInterface::namedPropertyDeleterCallback(v8::Local<v8::Name> name, con
 }
 
 void V8TestInterface::namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_NamedPropertyQuery");
+
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
@@ -2916,6 +3221,8 @@ void V8TestInterface::namedPropertyEnumeratorCallback(const v8::PropertyCallback
 }
 
 void V8TestInterface::indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_IndexedPropertyGetter");
+
   TestInterfaceImplementationV8Internal::indexedPropertyGetter(index, info);
 }
 

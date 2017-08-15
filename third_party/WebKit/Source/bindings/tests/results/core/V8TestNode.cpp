@@ -17,6 +17,7 @@
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
@@ -173,6 +174,8 @@ static void hrefByteStringAttributeSetter(v8::Local<v8::Value> v8Value, const v8
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_ConstructorCallback");
+
   TestNode* impl = TestNode::Create();
   v8::Local<v8::Object> wrapper = info.Holder();
   wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestNode::wrapperTypeInfo, wrapper);
@@ -182,40 +185,56 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 } // namespace TestNodeV8Internal
 
 void V8TestNode::hrefAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_href_Getter");
+
   TestNodeV8Internal::hrefAttributeGetter(info);
 }
 
 void V8TestNode::hrefAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_href_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestNodeV8Internal::hrefAttributeSetter(v8Value, info);
 }
 
 void V8TestNode::hrefThrowsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_hrefThrows_Getter");
+
   TestNodeV8Internal::hrefThrowsAttributeGetter(info);
 }
 
 void V8TestNode::hrefThrowsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_hrefThrows_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestNodeV8Internal::hrefThrowsAttributeSetter(v8Value, info);
 }
 
 void V8TestNode::hrefCallWithAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_hrefCallWith_Getter");
+
   TestNodeV8Internal::hrefCallWithAttributeGetter(info);
 }
 
 void V8TestNode::hrefCallWithAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_hrefCallWith_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestNodeV8Internal::hrefCallWithAttributeSetter(v8Value, info);
 }
 
 void V8TestNode::hrefByteStringAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_hrefByteString_Getter");
+
   TestNodeV8Internal::hrefByteStringAttributeGetter(info);
 }
 
 void V8TestNode::hrefByteStringAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_hrefByteString_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestNodeV8Internal::hrefByteStringAttributeSetter(v8Value, info);
@@ -232,6 +251,8 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestNodeAccessors[] = {
 };
 
 void V8TestNode::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestNode_Constructor");
+
   if (!info.IsConstructCall()) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("TestNode"));
     return;

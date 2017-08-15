@@ -50,6 +50,8 @@ v8::MaybeLocal<v8::Object> V8ObjectConstructor::NewInstance(
 
 void V8ObjectConstructor::IsValidConstructorMode(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(),
+                                               "Blink_IsValidConstructorMode");
   if (ConstructorMode::Current(info.GetIsolate()) ==
       ConstructorMode::kCreateNewObject) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), "Illegal constructor");

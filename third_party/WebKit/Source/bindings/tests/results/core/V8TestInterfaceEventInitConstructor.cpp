@@ -18,6 +18,7 @@
 #include "bindings/core/v8/V8TestInterfaceEventInit.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
@@ -84,6 +85,8 @@ static void isTrustedAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceEventInitConstructor_ConstructorCallback");
+
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceEventInitConstructor");
 
   if (UNLIKELY(info.Length() < 2)) {
@@ -115,10 +118,14 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 } // namespace TestInterfaceEventInitConstructorV8Internal
 
 void V8TestInterfaceEventInitConstructor::readonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceEventInitConstructor_readonlyStringAttribute_Getter");
+
   TestInterfaceEventInitConstructorV8Internal::readonlyStringAttributeAttributeGetter(info);
 }
 
 void V8TestInterfaceEventInitConstructor::isTrustedAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceEventInitConstructor_isTrusted_Getter");
+
   TestInterfaceEventInitConstructorV8Internal::isTrustedAttributeGetter(info);
 }
 
@@ -129,6 +136,8 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceEventInitC
 };
 
 void V8TestInterfaceEventInitConstructor::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceEventInitConstructor_Constructor");
+
   if (!info.IsConstructCall()) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("TestInterfaceEventInitConstructor"));
     return;

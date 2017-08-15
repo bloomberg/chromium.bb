@@ -67,6 +67,8 @@ static_assert(
 namespace TestInterfaceConstructor3V8Internal {
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceConstructor3_ConstructorCallback");
+
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToConstruct("TestInterfaceConstructor3", ExceptionMessages::NotEnoughArguments(1, info.Length())));
     return;
@@ -86,6 +88,8 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 } // namespace TestInterfaceConstructor3V8Internal
 
 void V8TestInterfaceConstructor3::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceConstructor3_Constructor");
+
   if (!info.IsConstructCall()) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("TestInterfaceConstructor3"));
     return;
