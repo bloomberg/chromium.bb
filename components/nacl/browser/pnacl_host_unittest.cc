@@ -19,6 +19,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/test_completion_callback.h"
+#include "net/disk_cache/disk_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -52,6 +53,7 @@ class PnaclHostTest : public testing::Test {
     // Give the host a chance to de-init the backend, and then delete it.
     host_->RendererClosing(0);
     content::RunAllBlockingPoolTasksUntilIdle();
+    disk_cache::FlushCacheThreadForTesting();
     EXPECT_EQ(PnaclHost::CacheUninitialized, host_->cache_state_);
   }
   int GetCacheSize() { return host_->disk_cache_->Size(); }
@@ -458,7 +460,12 @@ TEST_F(PnaclHostTestDisk, DeInitWhileInitializing) {
   // the first one runs. We can just shortcut and call DeInitIfSafe while the
   // cache is still initializing.
   DeInit();
+
+  // Now let it finish initializing. (Other tests don't need this since they
+  // use in-memory storage).
+  disk_cache::FlushCacheThreadForTesting();
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(CacheIsInitialized());
 }
 
 }  // namespace pnacl
