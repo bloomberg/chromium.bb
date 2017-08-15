@@ -10,8 +10,6 @@ import android.view.ViewGroup;
 import org.chromium.android_webview.test.AwTestBase;
 import org.chromium.content.browser.ContentVideoView;
 
-import java.util.concurrent.Callable;
-
 /**
  * Utils for testing SurfaceViews (SurfaceViews that display video).
  */
@@ -32,12 +30,8 @@ public class VideoSurfaceViewUtils {
     private static int containsNumChildrenOfType(final AwTestBase test,
             final View view,
             final Class<? extends View> childType) throws Exception {
-        return test.runTestOnUiThreadAndGetResult(new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return containsNumChildrenOfTypeOnUiThread(view, childType);
-            }
-        });
+        return test.runTestOnUiThreadAndGetResult(
+                () -> containsNumChildrenOfTypeOnUiThread(view, childType));
     }
 
     private static int containsNumChildrenOfTypeOnUiThread(final View view,

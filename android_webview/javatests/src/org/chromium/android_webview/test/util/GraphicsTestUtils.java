@@ -13,8 +13,6 @@ import org.chromium.android_webview.test.AwTestBase;
 import org.chromium.android_webview.test.AwTestContainerView;
 import org.chromium.base.ThreadUtils;
 
-import java.util.concurrent.Callable;
-
 /**
  * Graphics-related test utils.
  */
@@ -32,12 +30,8 @@ public class GraphicsTestUtils {
 
     public static Bitmap drawAwContentsOnUiThread(
             final AwContents awContents, final int width, final int height) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Bitmap>() {
-            @Override
-            public Bitmap call() {
-                return drawAwContents(awContents, width, height);
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> drawAwContents(awContents, width, height));
     }
 
     /**
@@ -71,35 +65,23 @@ public class GraphicsTestUtils {
 
     public static int sampleBackgroundColorOnUiThread(final AwContents awContents)
             throws Exception {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return drawAwContents(awContents, 10, 10, 0, 0).getPixel(0, 0);
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> drawAwContents(awContents, 10, 10, 0, 0).getPixel(0, 0));
     }
 
     // Gets the pixel color at the center of AwContents.
     public static int getPixelColorAtCenterOfView(
             final AwContents awContents, final AwTestContainerView testContainerView) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return drawAwContents(awContents, 2, 2, -(float) testContainerView.getWidth() / 2,
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> drawAwContents(awContents, 2, 2, -(float) testContainerView.getWidth() / 2,
                         -(float) testContainerView.getHeight() / 2)
-                        .getPixel(0, 0);
-            }
-        });
+                        .getPixel(0, 0));
     }
 
     public static void pollForBackgroundColor(final AwContents awContents, final int c)
             throws Throwable {
-        AwTestBase.pollInstrumentationThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return sampleBackgroundColorOnUiThread(awContents) == c;
-            }
-        });
+        AwTestBase.pollInstrumentationThread(
+                () -> sampleBackgroundColorOnUiThread(awContents) == c);
     }
 
     private static Bitmap doDrawAwContents(

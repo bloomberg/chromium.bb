@@ -112,21 +112,18 @@ public class AwWebContentsObserver extends WebContentsObserver {
         // Only invoke the onPageCommitVisible callback when navigating to a different document,
         // but not when navigating to a different fragment within the same document.
         if (!isSameDocument) {
-            ThreadUtils.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    AwContents awContents = mAwContents.get();
-                    if (awContents != null) {
-                        awContents.insertVisualStateCallbackIfNotDestroyed(
-                                0, new VisualStateCallback() {
-                                    @Override
-                                    public void onComplete(long requestId) {
-                                        AwContentsClient client = mAwContentsClient.get();
-                                        if (client == null) return;
-                                        client.onPageCommitVisible(url);
-                                    }
-                                });
-                    }
+            ThreadUtils.postOnUiThread(() -> {
+                AwContents awContents = mAwContents.get();
+                if (awContents != null) {
+                    awContents.insertVisualStateCallbackIfNotDestroyed(
+                            0, new VisualStateCallback() {
+                                @Override
+                                public void onComplete(long requestId) {
+                                    AwContentsClient client1 = mAwContentsClient.get();
+                                    if (client1 == null) return;
+                                    client1.onPageCommitVisible(url);
+                                }
+                            });
                 }
             });
         }

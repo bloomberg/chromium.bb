@@ -297,12 +297,9 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
         if (fullscreenView == null) {
             return;
         }
-        WebChromeClient.CustomViewCallback cb = new WebChromeClient.CustomViewCallback() {
-            @Override
-            public void onCustomViewHidden() {
-                if (mCustomView != null) {
-                    mAwContents.requestExitFullscreen();
-                }
+        WebChromeClient.CustomViewCallback cb = () -> {
+            if (mCustomView != null) {
+                mAwContents.requestExitFullscreen();
             }
         };
         mCustomView = new FrameLayout(mContext);

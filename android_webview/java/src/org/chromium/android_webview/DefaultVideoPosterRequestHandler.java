@@ -33,29 +33,23 @@ public class DefaultVideoPosterRequestHandler {
         // Send the request to UI thread to callback to the client, and if it provides a
         // valid bitmap bounce on to the worker thread pool to compress it into the piped
         // input/output stream.
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                final Bitmap defaultVideoPoster = contentClient.getDefaultVideoPoster();
-                if (defaultVideoPoster == null) {
-                    closeOutputStream(outputStream);
-                    return;
-                }
-                AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            defaultVideoPoster.compress(Bitmap.CompressFormat.PNG, 100,
-                                    outputStream);
-                            outputStream.flush();
-                        } catch (IOException e) {
-                            Log.e(TAG, null, e);
-                        } finally {
-                            closeOutputStream(outputStream);
-                        }
-                    }
-                });
+        ThreadUtils.runOnUiThread(() -> {
+            final Bitmap defaultVideoPoster = contentClient.getDefaultVideoPoster();
+            if (defaultVideoPoster == null) {
+                closeOutputStream(outputStream);
+                return;
             }
+            AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
+                try {
+                    defaultVideoPoster.compress(Bitmap.CompressFormat.PNG, 100,
+                            outputStream);
+                    outputStream.flush();
+                } catch (IOException e) {
+                    Log.e(TAG, null, e);
+                } finally {
+                    closeOutputStream(outputStream);
+                }
+            });
         });
         return inputStream;
     }

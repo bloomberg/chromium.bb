@@ -73,15 +73,12 @@ public class AwPrintDocumentAdapter extends PrintDocumentAdapter {
         }
 
         mPdfExporter.exportToPdf(destination, mAttributes,
-                normalizeRanges(pages), new AwPdfExporter.AwPdfExporterCallback() {
-                    @Override
-                    public void pdfWritingDone(int pageCount) {
-                        if (pageCount > 0) {
-                            callback.onWriteFinished(validatePageRanges(pages, pageCount));
-                        } else {
-                            // TODO(sgurun) provide a localized error message
-                            callback.onWriteFailed(null);
-                        }
+                normalizeRanges(pages), pageCount -> {
+                    if (pageCount > 0) {
+                        callback.onWriteFinished(validatePageRanges(pages, pageCount));
+                    } else {
+                        // TODO(sgurun) provide a localized error message
+                        callback.onWriteFailed(null);
                     }
                 }, cancellationSignal);
     }

@@ -26,14 +26,11 @@ public class VideoTestUtil {
         TestAwContentsClient client = new TestAwContentsClient();
         final AwContents awContents =
                 testCase.createAwTestContainerViewOnMainSync(client).getAwContents();
-        testCase.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                AwSettings awSettings = awContents.getSettings();
-                awSettings.setJavaScriptEnabled(true);
-                awSettings.setMediaPlaybackRequiresUserGesture(requiredUserGesture);
-                observer.register(awContents.getContentViewCore(), "javaObserver");
-            }
+        testCase.getInstrumentation().runOnMainSync(() -> {
+            AwSettings awSettings = awContents.getSettings();
+            awSettings.setJavaScriptEnabled(true);
+            awSettings.setMediaPlaybackRequiresUserGesture(requiredUserGesture);
+            observer.register(awContents.getContentViewCore(), "javaObserver");
         });
         VideoTestWebServer webServer = new VideoTestWebServer();
         try {

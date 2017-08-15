@@ -4,13 +4,9 @@
 
 package org.chromium.android_webview.test.util;
 
-import android.webkit.ValueCallback;
-
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.test.AwTestBase;
 import org.chromium.base.test.util.CallbackHelper;
-
-import java.util.concurrent.Callable;
 
 /**
  * This class provides common methods for AwQuotaManagerBridge related tests
@@ -19,12 +15,7 @@ public class AwQuotaManagerBridgeTestUtil {
 
     public static AwQuotaManagerBridge getQuotaManagerBridge(AwTestBase awTestBase)
             throws Exception {
-        return awTestBase.runTestOnUiThreadAndGetResult(new Callable<AwQuotaManagerBridge>() {
-            @Override
-            public AwQuotaManagerBridge call() throws Exception {
-                return AwQuotaManagerBridge.getInstance();
-            }
-        });
+        return awTestBase.runTestOnUiThreadAndGetResult(() -> AwQuotaManagerBridge.getInstance());
     }
 
     private static class GetOriginsCallbackHelper extends CallbackHelper {
@@ -47,18 +38,8 @@ public class AwQuotaManagerBridgeTestUtil {
         final AwQuotaManagerBridge bridge = getQuotaManagerBridge(awTestBase);
 
         int callCount = callbackHelper.getCallCount();
-        awTestBase.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                bridge.getOrigins(
-                        new ValueCallback<AwQuotaManagerBridge.Origins>() {
-                            @Override
-                            public void onReceiveValue(AwQuotaManagerBridge.Origins origins) {
-                                callbackHelper.notifyCalled(origins);
-                            }
-                        });
-            }
-        });
+        awTestBase.getInstrumentation().runOnMainSync(() -> bridge.getOrigins(
+                origins -> callbackHelper.notifyCalled(origins)));
         callbackHelper.waitForCallback(callCount);
 
         return callbackHelper.getOrigins();

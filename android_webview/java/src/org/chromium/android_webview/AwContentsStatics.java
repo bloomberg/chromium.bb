@@ -106,9 +106,7 @@ public class AwContentsStatics {
             List<String> urls, ValueCallback<Boolean> callback) {
         String[] urlArray = urls.toArray(new String[urls.size()]);
         if (callback == null) {
-            callback = new ValueCallback<Boolean>() {
-                @Override
-                public void onReceiveValue(Boolean b) {}
+            callback = b -> {
             };
         }
         nativeSetSafeBrowsingWhitelist(urlArray, callback);
@@ -119,17 +117,9 @@ public class AwContentsStatics {
     public static void initSafeBrowsing(Context context, final ValueCallback<Boolean> callback) {
         // Wrap the callback to make sure we always invoke it on the UI thread, as guaranteed by the
         // API.
-        ValueCallback<Boolean> wrapperCallback = new ValueCallback<Boolean>() {
-            @Override
-            public void onReceiveValue(Boolean b) {
-                if (callback != null) {
-                    ThreadUtils.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            callback.onReceiveValue(b);
-                        }
-                    });
-                }
+        ValueCallback<Boolean> wrapperCallback = b -> {
+            if (callback != null) {
+                ThreadUtils.runOnUiThread(() -> callback.onReceiveValue(b));
             }
         };
 
