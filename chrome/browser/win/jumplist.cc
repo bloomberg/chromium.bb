@@ -73,7 +73,7 @@ constexpr int kUpdatesToSkipUnderHeavyLoad = 10;
 constexpr base::TimeDelta kLongDelayForUpdate =
     base::TimeDelta::FromMilliseconds(2000);
 
-// The delay before updating the JumpList for users who haven used it in a
+// The delay before updating the JumpList for users who have used it in a
 // session. A delay of 500 ms is used to not only make the update happen almost
 // immediately, but also prevent update storms when tabs are closed rapidly via
 // Ctrl-W.
