@@ -30,7 +30,6 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
-#include "crypto/symmetric_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/url_request/url_request_context.h"
@@ -66,7 +65,7 @@ std::unique_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
 class DelayableBackend : public disk_cache::Backend {
  public:
   explicit DelayableBackend(std::unique_ptr<disk_cache::Backend> backend)
-      : backend_(std::move(backend)), delay_open_entry_(false) {}
+      : backend_(std::move(backend)), delay_doom_(false) {}
 
   // disk_cache::Backend overrides
   net::CacheType GetCacheType() const override {
@@ -76,12 +75,6 @@ class DelayableBackend : public disk_cache::Backend {
   int OpenEntry(const std::string& key,
                 disk_cache::Entry** entry,
                 const CompletionCallback& callback) override {
-    if (delay_open_entry_ && open_entry_callback_.is_null()) {
-      open_entry_callback_ = base::BindOnce(
-          &DelayableBackend::OpenEntryDelayedImpl, base::Unretained(this), key,
-          base::Unretained(entry), callback);
-      return net::ERR_IO_PENDING;
-    }
     return backend_->OpenEntry(key, entry, callback);
   }
 
@@ -92,6 +85,13 @@ class DelayableBackend : public disk_cache::Backend {
   }
   int DoomEntry(const std::string& key,
                 const CompletionCallback& callback) override {
+    if (delay_doom_) {
+      doom_entry_callback_ =
+          base::BindOnce(&DelayableBackend::DoomEntryDelayedImpl,
+                         base::Unretained(this), key, callback);
+      return net::ERR_IO_PENDING;
+    }
+
     return backend_->DoomEntry(key, callback);
   }
   int DoomAllEntries(const CompletionCallback& callback) override {
@@ -127,28 +127,25 @@ class DelayableBackend : public disk_cache::Backend {
     return 0u;
   }
 
-  // Call to continue a delayed call to OpenEntry.
-  bool OpenEntryContinue() {
-    if (open_entry_callback_.is_null())
-      return false;
-    std::move(open_entry_callback_).Run();
-    return true;
+  // Call to continue a delayed doom.
+  void DoomEntryContinue() {
+    EXPECT_FALSE(doom_entry_callback_.is_null());
+    std::move(doom_entry_callback_).Run();
   }
 
-  void set_delay_open_entry(bool value) { delay_open_entry_ = value; }
+  void set_delay_doom(bool value) { delay_doom_ = value; }
 
  private:
-  void OpenEntryDelayedImpl(const std::string& key,
-                            disk_cache::Entry** entry,
+  void DoomEntryDelayedImpl(const std::string& key,
                             const CompletionCallback& callback) {
-    int rv = backend_->OpenEntry(key, entry, callback);
+    int rv = backend_->DoomEntry(key, callback);
     if (rv != net::ERR_IO_PENDING)
       callback.Run(rv);
   }
 
   std::unique_ptr<disk_cache::Backend> backend_;
-  bool delay_open_entry_;
-  base::OnceClosure open_entry_callback_;
+  bool delay_doom_;
+  base::OnceClosure doom_entry_callback_;
 };
 
 void CopyBody(const storage::BlobDataHandle& blob_handle, std::string* output) {
@@ -275,11 +272,6 @@ ServiceWorkerResponse SetCacheName(const ServiceWorkerResponse& original) {
   return result;
 }
 
-std::unique_ptr<crypto::SymmetricKey> CreateTestPaddingKey() {
-  return crypto::SymmetricKey::Import(crypto::SymmetricKey::HMAC_SHA1,
-                                      "abc123");
-}
-
 }  // namespace
 
 // A CacheStorageCache that can optionally delay during backend creation.
@@ -300,9 +292,7 @@ class TestCacheStorageCache : public CacheStorageCache {
                           request_context_getter,
                           quota_manager_proxy,
                           blob_context,
-                          0 /* cache_size */,
-                          0 /* cache_padding */,
-                          CreateTestPaddingKey()),
+                          0 /* cache_size */),
         delay_backend_creation_(false) {}
 
   void CreateBackend(ErrorCallback callback) override {
@@ -1610,123 +1600,6 @@ TEST_P(CacheStorageCacheTestP, Size) {
   EXPECT_EQ(0, Size());
 }
 
-TEST_F(CacheStorageCacheTest, VerifyOpaqueSizePadding) {
-  base::Time response_time(base::Time::Now());
-
-  ServiceWorkerFetchRequest non_opaque_request(body_request_);
-  non_opaque_request.url = GURL("http://example.com/no-pad.html");
-  ServiceWorkerResponse non_opaque_response(body_response_);
-  non_opaque_response.response_time = response_time;
-  EXPECT_EQ(0, CacheStorageCache::CalculateResponsePadding(
-                   non_opaque_response, CreateTestPaddingKey().get(),
-                   0 /* side_data_size */));
-  EXPECT_TRUE(Put(non_opaque_request, non_opaque_response));
-  int64_t unpadded_no_data_cache_size = Size();
-
-  // Now write some side data to that cache.
-  const std::string expected_side_data = "TheSideData";
-  scoped_refptr<net::IOBuffer> side_data_buffer(
-      new net::StringIOBuffer(expected_side_data));
-  EXPECT_TRUE(WriteSideData(non_opaque_request.url, response_time,
-                            side_data_buffer, expected_side_data.length()));
-  int64_t unpadded_total_resource_size = Size();
-  int64_t unpadded_side_data_size =
-      unpadded_total_resource_size - unpadded_no_data_cache_size;
-  EXPECT_EQ(expected_side_data.size(),
-            static_cast<size_t>(unpadded_side_data_size));
-  EXPECT_EQ(0, CacheStorageCache::CalculateResponsePadding(
-                   non_opaque_response, CreateTestPaddingKey().get(),
-                   unpadded_side_data_size));
-
-  // Now write an identically sized opaque response.
-  ServiceWorkerFetchRequest opaque_request(non_opaque_request);
-  opaque_request.url = GURL("http://example.com/opaque.html");
-  // Same URL length means same cache sizes (ignoring padding).
-  EXPECT_EQ(opaque_request.url.spec().length(),
-            non_opaque_request.url.spec().length());
-  ServiceWorkerResponse opaque_response(non_opaque_response);
-  opaque_response.response_type = network::mojom::FetchResponseType::kOpaque;
-  opaque_response.response_time = response_time;
-
-  EXPECT_TRUE(Put(opaque_request, opaque_response));
-  // This test is fragile. Right now it deterministically adds non-zero padding.
-  // But if the url, padding key, or padding algorithm change it might become
-  // zero.
-  int64_t size_after_opaque_put = Size();
-  int64_t opaque_padding = size_after_opaque_put -
-                           2 * unpadded_no_data_cache_size -
-                           unpadded_side_data_size;
-  ASSERT_GT(opaque_padding, 0);
-
-  // Now write side data and expect to see the padding change.
-  EXPECT_TRUE(WriteSideData(opaque_request.url, response_time, side_data_buffer,
-                            expected_side_data.length()));
-  int64_t current_padding = Size() - 2 * unpadded_total_resource_size;
-  EXPECT_NE(opaque_padding, current_padding);
-
-  // Now reset opaque side data back to zero.
-  const std::string expected_side_data2 = "";
-  scoped_refptr<net::IOBuffer> buffer2(
-      new net::StringIOBuffer(expected_side_data2));
-  EXPECT_TRUE(WriteSideData(opaque_request.url, response_time, buffer2,
-                            expected_side_data2.length()));
-  EXPECT_EQ(size_after_opaque_put, Size());
-
-  // And delete the opaque response entirely.
-  EXPECT_TRUE(Delete(opaque_request));
-  EXPECT_EQ(unpadded_total_resource_size, Size());
-}
-
-TEST_F(CacheStorageCacheTest, TestDifferentOpaqueSideDataSizes) {
-  ServiceWorkerFetchRequest request(body_request_);
-
-  ServiceWorkerResponse response(body_response_);
-  response.response_type = network::mojom::FetchResponseType::kOpaque;
-  base::Time response_time(base::Time::Now());
-  response.response_time = response_time;
-  EXPECT_TRUE(Put(request, response));
-  int64_t opaque_cache_size_no_side_data = Size();
-
-  const std::string small_side_data = "SmallSideData";
-  scoped_refptr<net::IOBuffer> buffer1(
-      new net::StringIOBuffer(small_side_data));
-  EXPECT_TRUE(WriteSideData(request.url, response_time, buffer1,
-                            small_side_data.length()));
-  int64_t opaque_cache_size_with_side_data = Size();
-  EXPECT_NE(opaque_cache_size_with_side_data, opaque_cache_size_no_side_data);
-
-  // Write side data of a different size. The size should not affect the padding
-  // at all.
-  const std::string large_side_data = "LargerSideDataString";
-  EXPECT_NE(large_side_data.length(), small_side_data.length());
-  scoped_refptr<net::IOBuffer> buffer2(
-      new net::StringIOBuffer(large_side_data));
-  EXPECT_TRUE(WriteSideData(request.url, response_time, buffer2,
-                            large_side_data.length()));
-  int side_data_delta = large_side_data.length() - small_side_data.length();
-  EXPECT_EQ(opaque_cache_size_with_side_data + side_data_delta, Size());
-}
-
-TEST_F(CacheStorageCacheTest, TestDoubleOpaquePut) {
-  ServiceWorkerFetchRequest request(body_request_);
-
-  base::Time response_time(base::Time::Now());
-
-  ServiceWorkerResponse response(body_response_);
-  response.response_type = network::mojom::FetchResponseType::kOpaque;
-  response.response_time = response_time;
-  EXPECT_TRUE(Put(request, response));
-  int64_t size_after_first_put = Size();
-
-  ServiceWorkerFetchRequest request2(body_request_);
-  ServiceWorkerResponse response2(body_response_);
-  response2.response_type = network::mojom::FetchResponseType::kOpaque;
-  response2.response_time = response_time;
-  EXPECT_TRUE(Put(request2, response2));
-
-  EXPECT_EQ(size_after_first_put, Size());
-}
-
 TEST_P(CacheStorageCacheTestP, GetSizeThenClose) {
   EXPECT_TRUE(Put(body_request_, body_response_));
   int64_t cache_size = Size();
@@ -1746,7 +1619,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   // second should wait for the first.
   EXPECT_TRUE(Keys());  // Opens the backend.
   DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
-  delayable_backend->set_delay_open_entry(true);
+  delayable_backend->set_delay_doom(true);
 
   int sequence_out = -1;
 
@@ -1770,7 +1643,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   operation2.request = body_request_;
   operation2.response = body_response_;
 
-  delayable_backend->set_delay_open_entry(false);
+  delayable_backend->set_delay_doom(false);
   std::unique_ptr<base::RunLoop> close_loop2(new base::RunLoop());
   cache_->BatchOperation(
       std::vector<CacheStorageBatchOperation>(1, operation2),
@@ -1782,7 +1655,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(callback_response_);
 
-  EXPECT_TRUE(delayable_backend->OpenEntryContinue());
+  delayable_backend->DoomEntryContinue();
   close_loop1->Run();
   EXPECT_EQ(1, sequence_out);
   close_loop2->Run();
