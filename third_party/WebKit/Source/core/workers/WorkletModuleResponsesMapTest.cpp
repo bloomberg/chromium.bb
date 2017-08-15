@@ -180,4 +180,43 @@ TEST(WorkletModuleResponsesMapTest, InvalidURL) {
   EXPECT_FALSE(client3->GetParams().has_value());
 }
 
+TEST(WorkletModuleResponsesMapTest, Dispose) {
+  WorkletModuleResponsesMap* map = new WorkletModuleResponsesMap;
+  const KURL kUrl1(kParsedURLString, "https://example.com/foo.js");
+  const KURL kUrl2(kParsedURLString, "https://example.com/bar.js");
+
+  // An initial read call for |kUrl1| creates a placeholder entry and asks the
+  // client to fetch a module script.
+  ClientImpl* client1 = new ClientImpl;
+  map->ReadOrCreateEntry(kUrl1, client1);
+  EXPECT_EQ(ClientImpl::Result::kNeedsFetching, client1->GetResult());
+  EXPECT_FALSE(client1->GetParams().has_value());
+
+  // The entry is now being fetched. Following read calls for |kUrl1| should
+  // wait for the completion.
+  ClientImpl* client2 = new ClientImpl;
+  map->ReadOrCreateEntry(kUrl1, client2);
+  EXPECT_EQ(ClientImpl::Result::kInitial, client2->GetResult());
+
+  // An initial read call for |kUrl2| also creates a placeholder entry and asks
+  // the client to fetch a module script.
+  ClientImpl* client3 = new ClientImpl;
+  map->ReadOrCreateEntry(kUrl2, client3);
+  EXPECT_EQ(ClientImpl::Result::kNeedsFetching, client3->GetResult());
+  EXPECT_FALSE(client3->GetParams().has_value());
+
+  // The entry is now being fetched. Following read calls for |kUrl2| should
+  // wait for the completion.
+  ClientImpl* client4 = new ClientImpl;
+  map->ReadOrCreateEntry(kUrl2, client4);
+  EXPECT_EQ(ClientImpl::Result::kInitial, client4->GetResult());
+
+  // Dispose() should notify to all waiting clients.
+  map->Dispose();
+  EXPECT_EQ(ClientImpl::Result::kFailed, client2->GetResult());
+  EXPECT_FALSE(client2->GetParams().has_value());
+  EXPECT_EQ(ClientImpl::Result::kFailed, client4->GetResult());
+  EXPECT_FALSE(client4->GetParams().has_value());
+}
+
 }  // namespace blink
