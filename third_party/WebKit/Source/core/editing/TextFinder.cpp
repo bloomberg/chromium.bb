@@ -419,6 +419,7 @@ void TextFinder::ScopeStringMatches(int identifier,
   int match_count = 0;
   bool timed_out = false;
   double start_time = CurrentTime();
+  PositionInFlatTree next_scoping_start;
   do {
     // Find next occurrence of the search string.
     // FIXME: (http://crbug.com/6818) This WebKit operation may run for longer
@@ -488,11 +489,16 @@ void TextFinder::ScopeStringMatches(int identifier,
     // text nodes.
     search_start = result.EndPosition();
 
-    resume_scoping_from_range_ = Range::Create(
-        result.GetDocument(), ToPositionInDOMTree(result.EndPosition()),
-        ToPositionInDOMTree(result.EndPosition()));
+    next_scoping_start = search_start;
     timed_out = (CurrentTime() - start_time) >= kMaxScopingDuration;
   } while (!timed_out);
+
+  if (next_scoping_start.IsNotNull()) {
+    resume_scoping_from_range_ =
+        Range::Create(*next_scoping_start.GetDocument(),
+                      ToPositionInDOMTree(next_scoping_start),
+                      ToPositionInDOMTree(next_scoping_start));
+  }
 
   // Remember what we search for last time, so we can skip searching if more
   // letters are added to the search string (and last outcome was 0).
