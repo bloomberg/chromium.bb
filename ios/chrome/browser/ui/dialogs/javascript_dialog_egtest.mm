@@ -560,11 +560,6 @@ void TapSuppressDialogsButton() {
                           @"correctly.");
 #endif
 
-  // TODO(crbug.com/747439): re-enable this test on iOS 11.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-  }
-
   // Load the test page with a link to kOnLoadAlertURL and long tap on the link.
   [self loadPageWithLink];
 
