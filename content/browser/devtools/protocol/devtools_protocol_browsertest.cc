@@ -33,6 +33,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -74,6 +75,34 @@ namespace {
 const char kIdParam[] = "id";
 const char kMethodParam[] = "method";
 const char kParamsParam[] = "params";
+
+// If |params| contains an explanation with a non-empty certificate list,
+// returns true and points |certificate| to the certificate list of the first
+// explanation that contains a nonempty certificate list. Otherwise returns
+// false. |params| is expected to be the parameters of a securityStateChanged
+// notification.
+bool GetCertificateFromNotificationParams(base::DictionaryValue* params,
+                                          const base::ListValue** certificate) {
+  const base::ListValue* explanations;
+  if (!params->GetList("explanations", &explanations)) {
+    return false;
+  }
+  for (const auto& explanation : *explanations) {
+    const base::DictionaryValue* explanation_dict;
+    if (explanation.GetAsDictionary(&explanation_dict) &&
+        explanation_dict->GetList("certificate", certificate) &&
+        (*certificate)->GetSize() > 0u) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool SecurityStateChangedHasCertificateExplanation(
+    base::DictionaryValue* params) {
+  const base::ListValue* unused;
+  return GetCertificateFromNotificationParams(params, &unused);
+}
 
 class TestJavaScriptDialogManager : public JavaScriptDialogManager,
                                     public WebContentsDelegate {
@@ -142,6 +171,8 @@ class DevToolsProtocolTest : public ContentBrowserTest,
                              public DevToolsAgentHostClient,
                              public WebContentsDelegate {
  public:
+  typedef base::Callback<bool(base::DictionaryValue*)> NotificationMatcher;
+
   DevToolsProtocolTest()
       : last_sent_id_(0),
         waiting_for_command_result_id_(0),
@@ -149,15 +180,11 @@ class DevToolsProtocolTest : public ContentBrowserTest,
         agent_host_can_close_(false) {}
 
   void SetUpOnMainThread() override {
-    ok_cert_ =
-        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
-    expired_cert_ = net::ImportCertFromFile(net::GetTestCertsDirectory(),
-                                            "expired_cert.pem");
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
  protected:
-  // WebContentsDelegate method:
+  // WebContentsDelegate methods:
   bool DidAddMessageToConsole(WebContents* source,
                               int32_t level,
                               const base::string16& message,
@@ -165,6 +192,17 @@ class DevToolsProtocolTest : public ContentBrowserTest,
                               const base::string16& source_id) override {
     console_messages_.push_back(base::UTF16ToUTF8(message));
     return true;
+  }
+
+  blink::WebSecurityStyle GetSecurityStyle(
+      content::WebContents* web_contents,
+      content::SecurityStyleExplanations* security_style_explanations)
+      override {
+    security_style_explanations->secure_explanations.push_back(
+        SecurityStyleExplanation(
+            "an explanation", "an explanation description", cert_,
+            blink::WebMixedContentContextType::kNotMixedContent));
+    return blink::kWebSecurityStyleNeutral;
   }
 
   base::DictionaryValue* SendCommand(
@@ -266,6 +304,28 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     return std::move(waiting_for_notification_params_);
   }
 
+  // Waits for a notification whose params, when passed to |matcher|, returns
+  // true. Existing notifications are allowed.
+  std::unique_ptr<base::DictionaryValue> WaitForMatchingNotification(
+      const std::string& notification,
+      const NotificationMatcher& matcher) {
+    for (size_t i = 0; i < notifications_.size(); i++) {
+      if (notifications_[i] == notification &&
+          matcher.Run(notification_params_[i].get())) {
+        std::unique_ptr<base::DictionaryValue> result =
+            std::move(notification_params_[i]);
+        notifications_.erase(notifications_.begin() + i);
+        notification_params_.erase(notification_params_.begin() + i);
+        return result;
+      }
+    }
+
+    waiting_for_notification_ = notification;
+    waiting_for_notification_matcher_ = matcher;
+    RunMessageLoop();
+    return std::move(waiting_for_notification_params_);
+  }
+
   void ClearNotifications() {
     notifications_.clear();
     notification_params_.clear();
@@ -347,13 +407,12 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     return urls;
   }
 
-  const scoped_refptr<net::X509Certificate>& ok_cert() { return ok_cert_; }
-
-  const scoped_refptr<net::X509Certificate>& expired_cert() {
-    return expired_cert_;
-  }
-
   void set_agent_host_can_close() { agent_host_can_close_ = true; }
+
+  void SetSecurityExplanationCert(
+      const scoped_refptr<net::X509Certificate>& cert) {
+    cert_ = cert;
+  }
 
   std::unique_ptr<base::DictionaryValue> result_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
@@ -391,8 +450,12 @@ class DevToolsProtocolTest : public ContentBrowserTest,
         notification_params_.push_back(
             base::WrapUnique(new base::DictionaryValue()));
       }
-      if (waiting_for_notification_ == notification) {
+      if (waiting_for_notification_ == notification &&
+          (waiting_for_notification_matcher_.is_null() ||
+           waiting_for_notification_matcher_.Run(
+               notification_params_[notification_params_.size() - 1].get()))) {
         waiting_for_notification_ = std::string();
+        waiting_for_notification_matcher_ = NotificationMatcher();
         waiting_for_notification_params_ = base::WrapUnique(
             notification_params_[notification_params_.size() - 1]->DeepCopy());
         base::RunLoop::QuitCurrentDeprecated();
@@ -406,12 +469,12 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   }
 
   std::string waiting_for_notification_;
+  NotificationMatcher waiting_for_notification_matcher_;
   std::unique_ptr<base::DictionaryValue> waiting_for_notification_params_;
   int waiting_for_command_result_id_;
   bool in_dispatch_;
-  scoped_refptr<net::X509Certificate> ok_cert_;
-  scoped_refptr<net::X509Certificate> expired_cert_;
   bool agent_host_can_close_;
+  scoped_refptr<net::X509Certificate> cert_;
 };
 
 class TestInterstitialDelegate : public InterstitialPageDelegate {
@@ -1978,6 +2041,65 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTouchTest, EnableTouch) {
       shell()->web_contents(),
       "domAutomationController.send(checkProtos(false))", &result));
   EXPECT_TRUE(result);
+}
+
+// Tests that when a security explanation contains a certificate, it is properly
+// serialized into the protocol message.
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CertificateExplanations) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  shell()->LoadURL(GURL("about:blank"));
+  WaitForLoadStop(shell()->web_contents());
+
+  // Navigate to a page on the server in order to retrieve its certificate
+  // chain.
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), https_server.GetURL("/title1.html"), 1);
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  NavigationEntry* entry = wc->GetController().GetLastCommittedEntry();
+  ASSERT_TRUE(entry);
+  scoped_refptr<net::X509Certificate> cert = entry->GetSSL().certificate;
+
+  // Provide |cert| as the certificate on the security style explanations. When
+  // the security handler is enabled, DidChangeVisibleSecurityState() is called
+  // and the explanations with |cert| are sent to DevTools.
+  SetSecurityExplanationCert(cert);
+  Attach();
+  SendCommand("Security.enable", nullptr, false);
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  params = WaitForMatchingNotification(
+      "Security.securityStateChanged",
+      base::Bind(&SecurityStateChangedHasCertificateExplanation));
+
+  // There should be one explanation containing the server's certificate chain.
+  net::SHA256HashValue cert_chain_fingerprint =
+      net::X509Certificate::CalculateChainFingerprint256(
+          cert->os_cert_handle(), cert->GetIntermediateCertificates());
+
+  // Read the certificate out of the first explanation.
+  const base::ListValue* certificate;
+  ASSERT_TRUE(GetCertificateFromNotificationParams(params.get(), &certificate));
+  std::vector<std::string> der_certs;
+  for (const auto& cert : *certificate) {
+    std::string decoded;
+    ASSERT_TRUE(base::Base64Decode(cert.GetString(), &decoded));
+    der_certs.push_back(decoded);
+  }
+  std::vector<base::StringPiece> cert_string_piece;
+  for (const auto& str : der_certs)
+    cert_string_piece.push_back(str);
+
+  // Check that the explanation certificate is correct.
+  scoped_refptr<net::X509Certificate> explanation_cert =
+      net::X509Certificate::CreateFromDERCertChain(cert_string_piece);
+  ASSERT_TRUE(explanation_cert);
+  EXPECT_EQ(cert_chain_fingerprint,
+            net::X509Certificate::CalculateChainFingerprint256(
+                explanation_cert->os_cert_handle(),
+                explanation_cert->GetIntermediateCertificates()));
 }
 
 }  // namespace content
