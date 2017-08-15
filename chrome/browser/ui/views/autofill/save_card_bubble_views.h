@@ -61,6 +61,8 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   // views::WidgetDelegate:
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
+  gfx::ImageSkia GetWindowIcon() override;
+  bool ShouldShowWindowIcon() const override;
   void WindowClosing() override;
 
   // views::LinkListener:

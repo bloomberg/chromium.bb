@@ -415,7 +415,7 @@ class HomePrefNotificationBridge {
   NSImage* image;
   if (isGoogle) {
     image = NSImageFromImageSkiaWithColorSpace(
-        gfx::CreateVectorIcon(kGoogleSearchMacTouchbarIcon, kTouchBarIconSize,
+        gfx::CreateVectorIcon(kGoogleGLogoIcon, kTouchBarIconSize,
                               gfx::kPlaceholderColor),
         base::mac::GetSRGBColorSpace());
   } else {

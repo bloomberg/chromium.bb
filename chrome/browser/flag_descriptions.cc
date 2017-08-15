@@ -255,6 +255,12 @@ const char kEnableAutofillCreditCardUploadCvcPromptDescription[] =
     "If enabled, requests missing CVC when offering to upload credit cards to "
     "Google Payments.";
 
+const char kEnableAutofillCreditCardUploadGoogleLogoName[] =
+    "Show Google Logo for Autofill credit card upload";
+const char kEnableAutofillCreditCardUploadGoogleLogoDescription[] =
+    "If enabled, displays the Google logo in the save prompt when offering to "
+    "upload credit cards to Google Payments.";
+
 const char kEnableAutofillCreditCardUploadNewUiName[] =
     "Enable updated UI for Autofill credit card upload";
 const char kEnableAutofillCreditCardUploadNewUiDescription[] =
