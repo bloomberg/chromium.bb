@@ -3243,10 +3243,10 @@ void LocalFrameView::EnqueueScrollAnchoringAdjustment(
 
 void LocalFrameView::PerformScrollAnchoringAdjustments() {
   for (WeakMember<ScrollableArea>& scroller : anchoring_adjustment_queue_) {
-    if (scroller) {
-      DCHECK(scroller->GetScrollAnchor());
+    // TODO(bokan): GetScrollAnchor() should never return nullptr but this is a
+    // speculative fix to see if it stops crashes seen in crbug.com/745686.
+    if (scroller && scroller->GetScrollAnchor())
       scroller->GetScrollAnchor()->Adjust();
-    }
   }
   anchoring_adjustment_queue_.clear();
 }
