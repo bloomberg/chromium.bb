@@ -42,14 +42,7 @@ ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
 ToolbarActionsBarBubbleViews::~ToolbarActionsBarBubbleViews() {}
 
 void ToolbarActionsBarBubbleViews::Show() {
-  // Passing the Widget pointer (via GetWidget()) below in the lambda is safe
-  // because the controller, which eventually invokes the callback passed to
-  // OnBubbleShown, will never outlive the bubble view. This is because the
-  // ToolbarActionsBarBubbleView owns the ToolbarActionsBarBubbleDelegate.
-  // The ToolbarActionsBarBubbleDelegate is an ExtensionMessageBubbleBridge,
-  // which owns the ExtensionMessageBubbleController.
-  delegate_->OnBubbleShown(
-      base::Bind([](views::Widget* widget) { widget->Close(); }, GetWidget()));
+  delegate_->OnBubbleShown();
   GetWidget()->Show();
 }
 

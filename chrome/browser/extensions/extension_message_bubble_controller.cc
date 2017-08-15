@@ -105,9 +105,7 @@ ExtensionMessageBubbleController::ExtensionMessageBubbleController(
       initialized_(false),
       is_highlighting_(false),
       is_active_bubble_(false),
-      extension_registry_observer_(this),
       browser_list_observer_(this) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_->profile()));
   browser_list_observer_.Add(BrowserList::GetInstance());
 }
 
@@ -203,21 +201,12 @@ void ExtensionMessageBubbleController::HighlightExtensionsIfNecessary() {
   }
 }
 
-void ExtensionMessageBubbleController::OnShown(
-    const base::Closure& close_bubble_callback) {
-  close_bubble_callback_ = close_bubble_callback;
+void ExtensionMessageBubbleController::OnShown() {
   DCHECK(is_active_bubble_);
   GetProfileSet()->insert(profile()->GetOriginalProfile());
 }
 
 void ExtensionMessageBubbleController::OnBubbleAction() {
-  // In addition to closing the bubble, OnBubbleAction() may result in a removal
-  // or disabling of the extension. To prevent triggering OnExtensionUnloaded(),
-  // which will also try to close the bubble, the controller's extension
-  // registry observer is removed. Note, we do not remove the extension registry
-  // observer in the cases of OnBubbleDismiss() and OnLinkedClicked() since they
-  // do not result in extensions being unloaded.
-  extension_registry_observer_.RemoveAll();
   DCHECK_EQ(ACTION_BOUNDARY, user_action_);
   user_action_ = ACTION_EXECUTE;
 
@@ -278,19 +267,6 @@ void ExtensionMessageBubbleController::ClearProfileListForTesting() {
 void ExtensionMessageBubbleController::set_should_ignore_learn_more_for_testing(
     bool should_ignore) {
   g_should_ignore_learn_more_for_testing = should_ignore;
-}
-
-void ExtensionMessageBubbleController::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const Extension* extension,
-    UnloadedExtensionReason reason) {
-  UpdateExtensionIdList();
-  // If the callback is set, then that means that OnShown() was called, and the
-  // bubble is displayed.
-  if (close_bubble_callback_ && GetExtensionIdList().empty()) {
-    base::ResetAndReturn(&close_bubble_callback_).Run();
-  }
-  // If the bubble refers to multiple extensions, we do not close the bubble.
 }
 
 void ExtensionMessageBubbleController::OnBrowserRemoved(Browser* browser) {

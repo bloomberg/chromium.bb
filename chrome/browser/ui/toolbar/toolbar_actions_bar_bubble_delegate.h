@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/strings/string16.h"
 
 namespace gfx {
@@ -82,9 +81,8 @@ class ToolbarActionsBarBubbleDelegate {
   // bubble should point to the center of the actions container.
   virtual std::string GetAnchorActionId() = 0;
 
-  // Called when the bubble is shown. Accepts a callback from platform-specifc
-  // ui code to close the bubble.
-  virtual void OnBubbleShown(const base::Closure& close_bubble_callback) = 0;
+  // Called when the bubble is shown.
+  virtual void OnBubbleShown() = 0;
 
   // Called when the bubble is closed with the type of action the user took.
   virtual void OnBubbleClosed(CloseAction action) = 0;
