@@ -15,7 +15,7 @@
 namespace content {
 
 class CONTENT_EXPORT WebServiceWorkerInstalledScriptsManagerImpl final
-    : NON_EXPORTED_BASE(public blink::WebServiceWorkerInstalledScriptsManager) {
+    : public blink::WebServiceWorkerInstalledScriptsManager {
  public:
   // Called on the main thread.
   static std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager> Create(

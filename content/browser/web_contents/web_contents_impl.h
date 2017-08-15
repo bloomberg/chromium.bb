@@ -119,15 +119,14 @@ WebContentsView* CreateWebContentsView(
     WebContentsViewDelegate* delegate,
     RenderViewHostDelegateView** render_view_host_delegate_view);
 
-class CONTENT_EXPORT WebContentsImpl
-    : public NON_EXPORTED_BASE(WebContents),
-      public NON_EXPORTED_BASE(RenderFrameHostDelegate),
-      public RenderViewHostDelegate,
-      public RenderWidgetHostDelegate,
-      public RenderFrameHostManager::Delegate,
-      public NotificationObserver,
-      public NON_EXPORTED_BASE(NavigationControllerDelegate),
-      public NON_EXPORTED_BASE(NavigatorDelegate) {
+class CONTENT_EXPORT WebContentsImpl : public WebContents,
+                                       public RenderFrameHostDelegate,
+                                       public RenderViewHostDelegate,
+                                       public RenderWidgetHostDelegate,
+                                       public RenderFrameHostManager::Delegate,
+                                       public NotificationObserver,
+                                       public NavigationControllerDelegate,
+                                       public NavigatorDelegate {
  public:
   class FriendWrapper;
 

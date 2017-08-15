@@ -37,10 +37,10 @@ class LocalStorageContextMojo;
 
 // This is owned by Storage Partition and encapsulates all its dom storage
 // state.
-class CONTENT_EXPORT DOMStorageContextWrapper :
-    NON_EXPORTED_BASE(public DOMStorageContext),
-    public base::RefCountedThreadSafe<DOMStorageContextWrapper>,
-    public base::MemoryCoordinatorClient {
+class CONTENT_EXPORT DOMStorageContextWrapper
+    : public DOMStorageContext,
+      public base::RefCountedThreadSafe<DOMStorageContextWrapper>,
+      public base::MemoryCoordinatorClient {
  public:
   // If |data_path| is empty, nothing will be saved to disk.
   DOMStorageContextWrapper(

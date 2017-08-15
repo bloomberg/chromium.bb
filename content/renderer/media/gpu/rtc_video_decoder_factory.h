@@ -23,7 +23,7 @@ namespace content {
 
 // TODO(wuchengli): add unittest.
 class CONTENT_EXPORT RTCVideoDecoderFactory
-    : NON_EXPORTED_BASE(public cricket::WebRtcVideoDecoderFactory) {
+    : public cricket::WebRtcVideoDecoderFactory {
  public:
   explicit RTCVideoDecoderFactory(
       media::GpuVideoAcceleratorFactories* gpu_factories);

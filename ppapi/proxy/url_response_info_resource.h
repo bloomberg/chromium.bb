@@ -18,7 +18,7 @@ namespace proxy {
 
 class PPAPI_PROXY_EXPORT URLResponseInfoResource
     : public PluginResource,
-      public NON_EXPORTED_BASE(thunk::PPB_URLResponseInfo_API) {
+      public thunk::PPB_URLResponseInfo_API {
  public:
   // The file_ref_resource should be the body_as_file_ref host resource in the
   // |data| converted to a resource valid in the current process (if we're

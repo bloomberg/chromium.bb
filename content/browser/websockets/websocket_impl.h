@@ -32,8 +32,7 @@ class WebSocketChannel;
 namespace content {
 
 // Host of net::WebSocketChannel.
-class CONTENT_EXPORT WebSocketImpl
-    : NON_EXPORTED_BASE(public blink::mojom::WebSocket) {
+class CONTENT_EXPORT WebSocketImpl : public blink::mojom::WebSocket {
  public:
   class Delegate {
    public:

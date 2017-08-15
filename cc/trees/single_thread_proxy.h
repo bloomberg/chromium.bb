@@ -28,7 +28,7 @@ class LayerTreeHost;
 class LayerTreeHostSingleThreadClient;
 
 class CC_EXPORT SingleThreadProxy : public Proxy,
-                                    NON_EXPORTED_BASE(LayerTreeHostImplClient),
+                                    LayerTreeHostImplClient,
                                     public SchedulerClient {
  public:
   static std::unique_ptr<Proxy> Create(

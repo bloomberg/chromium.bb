@@ -79,9 +79,9 @@ class WebContents;
 // disconnection of the Mojo's pipe from the renderer side regardless of what
 // the provider is for.
 class CONTENT_EXPORT ServiceWorkerProviderHost
-    : public NON_EXPORTED_BASE(ServiceWorkerRegistration::Listener),
+    : public ServiceWorkerRegistration::Listener,
       public base::SupportsWeakPtr<ServiceWorkerProviderHost>,
-      public NON_EXPORTED_BASE(mojom::ServiceWorkerProviderHost) {
+      public mojom::ServiceWorkerProviderHost {
  public:
   using GetRegistrationForReadyCallback =
       base::Callback<void(ServiceWorkerRegistration* reigstration)>;

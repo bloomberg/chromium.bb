@@ -21,7 +21,7 @@ class WebRange;
 class WebString;
 
 class CORE_EXPORT WebInputMethodControllerImpl
-    : public NON_EXPORTED_BASE(WebInputMethodController) {
+    : public WebInputMethodController {
   WTF_MAKE_NONCOPYABLE(WebInputMethodControllerImpl);
   DISALLOW_NEW();
 

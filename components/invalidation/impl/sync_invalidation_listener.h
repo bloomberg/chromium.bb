@@ -33,7 +33,7 @@ class RegistrationManager;
 // SyncInvalidationListener is not thread-safe and lives on the sync
 // thread.
 class INVALIDATION_EXPORT SyncInvalidationListener
-    : public NON_EXPORTED_BASE(invalidation::InvalidationListener),
+    : public invalidation::InvalidationListener,
       public StateWriter,
       public SyncNetworkChannel::Observer,
       public AckHandler {

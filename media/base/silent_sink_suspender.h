@@ -32,7 +32,7 @@ namespace media {
 // physical hardwasre usage. Note: The transition from real to fake audio output
 // and vice versa may result in some irregular Render() callbacks.
 class MEDIA_EXPORT SilentSinkSuspender
-    : NON_EXPORTED_BASE(public AudioRendererSink::RenderCallback) {
+    : public AudioRendererSink::RenderCallback {
  public:
   // |callback| is the true producer of audio data, |params| are the parameters
   // used to initialize |sink|, |sink| is the sink to monitor for idle, and

@@ -46,7 +46,7 @@ class IndexedDBTransaction;
 struct IndexedDBValue;
 
 class CONTENT_EXPORT IndexedDBDatabase
-    : NON_EXPORTED_BASE(public base::RefCounted<IndexedDBDatabase>) {
+    : public base::RefCounted<IndexedDBDatabase> {
  public:
   // Identifier is pair of (origin, database name).
   using Identifier = std::pair<url::Origin, base::string16>;

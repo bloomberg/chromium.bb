@@ -26,8 +26,7 @@ class UI_BASE_EXPORT ButtonMenuItemModel {
     TYPE_BUTTON_LABEL
   };
 
-  class UI_BASE_EXPORT Delegate
-      : NON_EXPORTED_BASE(public AcceleratorProvider) {
+  class UI_BASE_EXPORT Delegate : public AcceleratorProvider {
    public:
     // Some command ids have labels that change over time.
     virtual bool IsItemForCommandIdDynamic(int command_id) const;

@@ -34,8 +34,8 @@ namespace content {
 // and notifies it via SyncSocket followed by incrementing the |buffer_index_|.
 // WebSpeechRecognizer increments the shared buffer index to synchronize.
 class CONTENT_EXPORT SpeechRecognitionAudioSink
-    : NON_EXPORTED_BASE(public media::AudioConverter::InputCallback),
-      NON_EXPORTED_BASE(public MediaStreamAudioSink) {
+    : public media::AudioConverter::InputCallback,
+      public MediaStreamAudioSink {
  public:
   typedef base::Callback<void()> OnStoppedCB;
 

@@ -44,7 +44,7 @@ namespace media {
 // ready for rendering.
 class MEDIA_EXPORT VideoRendererImpl
     : public VideoRenderer,
-      public NON_EXPORTED_BASE(VideoRendererSink::RenderCallback) {
+      public VideoRendererSink::RenderCallback {
  public:
   // |decoders| contains the VideoDecoders to use when initializing.
   //

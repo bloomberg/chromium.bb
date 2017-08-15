@@ -20,8 +20,7 @@
 namespace media {
 
 // This class provides the ability to read and write a file using cdm::FileIO.
-class MEDIA_EXPORT CdmFileAdapter
-    : NON_EXPORTED_BASE(public cdm::FileIOClient) {
+class MEDIA_EXPORT CdmFileAdapter : public cdm::FileIOClient {
  public:
   enum class Status { kSuccess, kInUse, kError };
   using FileOpenedCB = base::OnceCallback<void(Status status)>;

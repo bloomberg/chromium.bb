@@ -48,9 +48,8 @@ struct ResourceResponse;
 // TODO(yhirano): Send cached metadata.
 //
 // This class can be inherited only for tests.
-class CONTENT_EXPORT MojoAsyncResourceHandler
-    : public ResourceHandler,
-      public NON_EXPORTED_BASE(mojom::URLLoader) {
+class CONTENT_EXPORT MojoAsyncResourceHandler : public ResourceHandler,
+                                                public mojom::URLLoader {
  public:
   MojoAsyncResourceHandler(net::URLRequest* request,
                            ResourceDispatcherHostImpl* rdh,

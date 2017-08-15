@@ -29,8 +29,7 @@ class PeerConnectionDependencyFactory;
 // added to an RTCPeerConnection object
 // Instances of this class is owned by the RTCPeerConnectionHandler object that
 // created it.
-class CONTENT_EXPORT WebRtcMediaStreamAdapter
-    : NON_EXPORTED_BASE(public MediaStreamObserver) {
+class CONTENT_EXPORT WebRtcMediaStreamAdapter : public MediaStreamObserver {
  public:
   WebRtcMediaStreamAdapter(
       PeerConnectionDependencyFactory* factory,

@@ -41,8 +41,8 @@ namespace content {
 // Blink. It forwards the calls to the Mojo PresentationService.
 class CONTENT_EXPORT PresentationDispatcher
     : public RenderFrameObserver,
-      public NON_EXPORTED_BASE(blink::WebPresentationClient),
-      public NON_EXPORTED_BASE(blink::mojom::PresentationServiceClient) {
+      public blink::WebPresentationClient,
+      public blink::mojom::PresentationServiceClient {
  public:
   explicit PresentationDispatcher(RenderFrame* render_frame);
   ~PresentationDispatcher() override;

@@ -105,9 +105,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public InputRouterClient,
       public InputDispositionHandler,
       public TouchEmulatorClient,
-      public NON_EXPORTED_BASE(SyntheticGestureController::Delegate),
-      public NON_EXPORTED_BASE(viz::mojom::CompositorFrameSink),
-      public NON_EXPORTED_BASE(viz::SharedBitmapAllocationObserver),
+      public SyntheticGestureController::Delegate,
+      public viz::mojom::CompositorFrameSink,
+      public viz::SharedBitmapAllocationObserver,
       public IPC::Listener {
  public:
   // |routing_id| must not be MSG_ROUTING_NONE.

@@ -44,7 +44,7 @@ class APP_LIST_EXPORT SearchResultView
       public views::ButtonListener,
       public views::ContextMenuController,
       public SearchResultObserver,
-      NON_EXPORTED_BASE(public SearchResultActionsViewDelegate) {
+      public SearchResultActionsViewDelegate {
  public:
   // Internal class name.
   static const char kViewClassName[];

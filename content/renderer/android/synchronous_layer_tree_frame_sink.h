@@ -64,7 +64,7 @@ class SynchronousLayerTreeFrameSinkClient {
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when BindToClient is called.
 class SynchronousLayerTreeFrameSink
-    : NON_EXPORTED_BASE(public cc::LayerTreeFrameSink),
+    : public cc::LayerTreeFrameSink,
       public viz::CompositorFrameSinkSupportClient {
  public:
   SynchronousLayerTreeFrameSink(

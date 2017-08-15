@@ -61,9 +61,8 @@ void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
 
 // Subclass the RenderViewHost's view so that we can call Show(), etc.,
 // without having side-effects.
-class TestRenderWidgetHostView
-    : public RenderWidgetHostViewBase,
-      public NON_EXPORTED_BASE(viz::HostFrameSinkClient) {
+class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
+                                 public viz::HostFrameSinkClient {
  public:
   explicit TestRenderWidgetHostView(RenderWidgetHost* rwh);
   ~TestRenderWidgetHostView() override;

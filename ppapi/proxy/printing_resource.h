@@ -17,9 +17,8 @@
 namespace ppapi {
 namespace proxy {
 
-class PPAPI_PROXY_EXPORT PrintingResource
-    : public PluginResource,
-      public NON_EXPORTED_BASE(thunk::PPB_Printing_API) {
+class PPAPI_PROXY_EXPORT PrintingResource : public PluginResource,
+                                            public thunk::PPB_Printing_API {
  public:
   PrintingResource(Connection connection,
                    PP_Instance instance);

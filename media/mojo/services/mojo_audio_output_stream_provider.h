@@ -19,7 +19,7 @@ namespace media {
 
 // Provides a single AudioOutput, given the audio parameters to use.
 class MEDIA_MOJO_EXPORT MojoAudioOutputStreamProvider
-    : NON_EXPORTED_BASE(public mojom::AudioOutputStreamProvider) {
+    : public mojom::AudioOutputStreamProvider {
  public:
   using CreateDelegateCallback =
       base::OnceCallback<std::unique_ptr<AudioOutputDelegate>(

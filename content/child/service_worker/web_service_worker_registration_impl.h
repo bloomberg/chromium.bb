@@ -33,7 +33,7 @@ class WebServiceWorkerImpl;
 // corresponding ServiceWorkerRegistrationHandle doesn't go away in the browser
 // process while the ServiceWorkerRegistration object is alive.
 class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
-    : NON_EXPORTED_BASE(public blink::WebServiceWorkerRegistration),
+    : public blink::WebServiceWorkerRegistration,
       public base::RefCounted<WebServiceWorkerRegistrationImpl> {
  public:
   explicit WebServiceWorkerRegistrationImpl(

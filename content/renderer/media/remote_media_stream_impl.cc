@@ -51,7 +51,7 @@ RemoteMediaStreamImpl::AdapterRefMap GetAdapterRefMapFromWebRtcStream(
 }  // namespace
 
 class RemoteMediaStreamImpl::Observer
-    : NON_EXPORTED_BASE(public webrtc::ObserverInterface),
+    : public webrtc::ObserverInterface,
       public base::RefCountedThreadSafe<Observer> {
  public:
   Observer(

@@ -28,7 +28,7 @@ class CONTENT_EXPORT ChildMemoryCoordinatorDelegate {
 // to its clients.
 class CONTENT_EXPORT ChildMemoryCoordinatorImpl
     : base::MemoryCoordinator,
-      NON_EXPORTED_BASE(public mojom::ChildMemoryCoordinator) {
+      public mojom::ChildMemoryCoordinator {
  public:
   // Returns the instance of ChildMemoryCoordinatorImpl. Could be nullptr.
   static ChildMemoryCoordinatorImpl* GetInstance();

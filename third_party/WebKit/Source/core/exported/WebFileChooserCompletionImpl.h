@@ -41,7 +41,7 @@
 namespace blink {
 
 class CORE_EXPORT WebFileChooserCompletionImpl final
-    : public NON_EXPORTED_BASE(WebFileChooserCompletion) {
+    : public WebFileChooserCompletion {
  public:
   explicit WebFileChooserCompletionImpl(RefPtr<FileChooser>);
   ~WebFileChooserCompletionImpl() override;

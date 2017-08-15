@@ -22,7 +22,7 @@ namespace content {
 class BackgroundSyncContext;
 
 class CONTENT_EXPORT BackgroundSyncServiceImpl
-    : public NON_EXPORTED_BASE(blink::mojom::BackgroundSyncService) {
+    : public blink::mojom::BackgroundSyncService {
  public:
   BackgroundSyncServiceImpl(
       BackgroundSyncContext* background_sync_context,

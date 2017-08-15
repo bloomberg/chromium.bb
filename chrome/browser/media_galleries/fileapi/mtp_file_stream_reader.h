@@ -20,8 +20,7 @@ namespace storage {
 class FileSystemContext;
 }
 
-class MTPFileStreamReader
-    : public NON_EXPORTED_BASE(storage::FileStreamReader) {
+class MTPFileStreamReader : public storage::FileStreamReader {
  public:
   MTPFileStreamReader(storage::FileSystemContext* file_system_context,
                       const storage::FileSystemURL& url,

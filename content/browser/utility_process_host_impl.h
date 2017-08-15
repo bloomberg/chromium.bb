@@ -29,7 +29,7 @@ typedef base::Thread* (*UtilityMainThreadFactoryFunction)(
     const InProcessChildThreadParams&);
 
 class CONTENT_EXPORT UtilityProcessHostImpl
-    : public NON_EXPORTED_BASE(UtilityProcessHost),
+    : public UtilityProcessHost,
       public BrowserChildProcessHostDelegate {
  public:
   static void RegisterUtilityMainThreadFactory(

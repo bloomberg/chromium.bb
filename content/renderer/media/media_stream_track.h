@@ -20,7 +20,7 @@ namespace content {
 // It is owned by blink::WebMediaStreamTrack as
 // blink::WebMediaStreamTrack::ExtraData.
 class CONTENT_EXPORT MediaStreamTrack
-    : NON_EXPORTED_BASE(public blink::WebMediaStreamTrack::TrackData) {
+    : public blink::WebMediaStreamTrack::TrackData {
  public:
   explicit MediaStreamTrack(bool is_local_track);
   ~MediaStreamTrack() override;

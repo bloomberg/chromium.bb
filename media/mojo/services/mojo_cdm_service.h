@@ -28,8 +28,7 @@ class CdmFactory;
 
 // A mojom::ContentDecryptionModule implementation backed by a
 // media::ContentDecryptionModule.
-class MEDIA_MOJO_EXPORT MojoCdmService
-    : NON_EXPORTED_BASE(public mojom::ContentDecryptionModule) {
+class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
  public:
   // Get the CDM associated with |cdm_id|, which is unique per process.
   // Can be called on any thread. The returned CDM is not guaranteed to be

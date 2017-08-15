@@ -49,9 +49,9 @@ namespace content {
 //
 // All calls are protected by a lock.
 class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
-    :  NON_EXPORTED_BASE(public blink::WebAudioSourceProvider),
-       NON_EXPORTED_BASE(public media::AudioConverter::InputCallback),
-       NON_EXPORTED_BASE(public MediaStreamAudioSink) {
+    : public blink::WebAudioSourceProvider,
+      public media::AudioConverter::InputCallback,
+      public MediaStreamAudioSink {
  public:
   static const size_t kWebAudioRenderBufferSize;
 

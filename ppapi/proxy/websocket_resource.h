@@ -24,9 +24,8 @@ namespace proxy {
 
 // This class contains protocol checks which doesn't affect security when it
 // run with untrusted code.
-class PPAPI_PROXY_EXPORT WebSocketResource
-    : public PluginResource,
-      public NON_EXPORTED_BASE(thunk::PPB_WebSocket_API) {
+class PPAPI_PROXY_EXPORT WebSocketResource : public PluginResource,
+                                             public thunk::PPB_WebSocket_API {
  public:
   WebSocketResource(Connection connection, PP_Instance instance);
   ~WebSocketResource() override;

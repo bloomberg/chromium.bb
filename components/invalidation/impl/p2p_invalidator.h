@@ -86,9 +86,8 @@ class INVALIDATION_EXPORT P2PNotificationData {
   ObjectIdInvalidationMap invalidation_map_;
 };
 
-class INVALIDATION_EXPORT P2PInvalidator
-    : public Invalidator,
-      public NON_EXPORTED_BASE(notifier::PushClientObserver) {
+class INVALIDATION_EXPORT P2PInvalidator : public Invalidator,
+                                           public notifier::PushClientObserver {
  public:
   // The |send_notification_target| parameter was added to allow us to send
   // self-notifications in some cases, but not others.  The value should be

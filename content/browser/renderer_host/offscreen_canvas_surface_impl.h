@@ -21,7 +21,7 @@ namespace content {
 // connections to both the renderer and frame sink manager.
 class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
     : public blink::mojom::OffscreenCanvasSurface,
-      public NON_EXPORTED_BASE(viz::HostFrameSinkClient) {
+      public viz::HostFrameSinkClient {
  public:
   using DestroyCallback = base::OnceCallback<void()>;
 

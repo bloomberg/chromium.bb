@@ -53,9 +53,9 @@ namespace internal {
 // NOTE: CloseMessagePipe() or PassMessagePipe() MUST be called on |runner|'s
 // sequence before this object is destroyed.
 class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
-    : NON_EXPORTED_BASE(public MessageReceiver),
+    : public MessageReceiver,
       public AssociatedGroupController,
-      NON_EXPORTED_BASE(public PipeControlMessageHandlerDelegate) {
+      public PipeControlMessageHandlerDelegate {
  public:
   enum Config {
     // There is only the master interface running on this router. Please note

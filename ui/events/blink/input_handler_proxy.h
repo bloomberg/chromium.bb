@@ -48,10 +48,9 @@ struct DidOverscrollParams;
 // the compositor's input handling logic. InputHandlerProxy instances live
 // entirely on the compositor thread. Each InputHandler instance handles input
 // events intended for a specific WebWidget.
-class InputHandlerProxy
-    : public cc::InputHandlerClient,
-      public SynchronousInputHandlerProxy,
-      public NON_EXPORTED_BASE(blink::WebGestureCurveTarget) {
+class InputHandlerProxy : public cc::InputHandlerClient,
+                          public SynchronousInputHandlerProxy,
+                          public blink::WebGestureCurveTarget {
  public:
   InputHandlerProxy(cc::InputHandler* input_handler,
                     InputHandlerProxyClient* client,

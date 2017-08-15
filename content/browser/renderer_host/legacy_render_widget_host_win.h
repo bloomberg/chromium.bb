@@ -56,14 +56,15 @@ class RenderWidgetHostViewAura;
 // HWND instead of the DesktopWindowTreeHostWin.
 class CONTENT_EXPORT LegacyRenderWidgetHostHWND
     : public ATL::CWindowImpl<LegacyRenderWidgetHostHWND,
-                              NON_EXPORTED_BASE(ATL::CWindow),
-                              ATL::CWinTraits<WS_CHILD> > {
+                              ATL::CWindow,
+                              ATL::CWinTraits<WS_CHILD>> {
  public:
   DECLARE_WND_CLASS_EX(L"Chrome_RenderWidgetHostHWND", CS_DBLCLKS, 0);
 
   typedef ATL::CWindowImpl<LegacyRenderWidgetHostHWND,
-                           NON_EXPORTED_BASE(ATL::CWindow),
-                           ATL::CWinTraits<WS_CHILD> > Base;
+                           ATL::CWindow,
+                           ATL::CWinTraits<WS_CHILD>>
+      Base;
 
   // Creates and returns an instance of the LegacyRenderWidgetHostHWND class on
   // successful creation of a child window parented to the parent window passed

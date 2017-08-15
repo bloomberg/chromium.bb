@@ -24,7 +24,7 @@ namespace media {
 // which is funneled into a single shared AudioRendererSink; saving a bundle
 // on renderer side resources.
 class MEDIA_EXPORT AudioRendererMixer
-    : NON_EXPORTED_BASE(public AudioRendererSink::RenderCallback) {
+    : public AudioRendererSink::RenderCallback {
  public:
   typedef base::Callback<void(int)> UmaLogCallback;
 

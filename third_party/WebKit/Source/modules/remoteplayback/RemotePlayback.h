@@ -39,9 +39,9 @@ struct WebPresentationInfo;
 class MODULES_EXPORT RemotePlayback final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<RemotePlayback>,
-      NON_EXPORTED_BASE(public WebRemotePlaybackClient),
+      public WebRemotePlaybackClient,
       public WebPresentationAvailabilityObserver,
-      public NON_EXPORTED_BASE(WebPresentationConnection) {
+      public WebPresentationConnection {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
 

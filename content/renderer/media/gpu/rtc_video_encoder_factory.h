@@ -23,7 +23,7 @@ namespace content {
 // This class creates RTCVideoEncoder instances (each wrapping a
 // media::VideoEncodeAccelerator) on behalf of the WebRTC stack.
 class CONTENT_EXPORT RTCVideoEncoderFactory
-    : NON_EXPORTED_BASE(public cricket::WebRtcVideoEncoderFactory) {
+    : public cricket::WebRtcVideoEncoderFactory {
  public:
   explicit RTCVideoEncoderFactory(
       media::GpuVideoAcceleratorFactories* gpu_factories);

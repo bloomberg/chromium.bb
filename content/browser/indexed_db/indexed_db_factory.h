@@ -35,7 +35,7 @@ struct IndexedDBPendingConnection;
 struct IndexedDBDataLossInfo;
 
 class CONTENT_EXPORT IndexedDBFactory
-    : NON_EXPORTED_BASE(public base::RefCountedThreadSafe<IndexedDBFactory>) {
+    : public base::RefCountedThreadSafe<IndexedDBFactory> {
  public:
   typedef std::multimap<url::Origin, IndexedDBDatabase*> OriginDBMap;
   typedef OriginDBMap::const_iterator OriginDBMapIterator;

@@ -49,13 +49,13 @@ class WallpaperControllerObserver;
 //     hide the user desktop and move it to unlocked container when session
 //     state is ACTIVE;
 class ASH_EXPORT WallpaperController
-    : public NON_EXPORTED_BASE(mojom::WallpaperController),
+    : public mojom::WallpaperController,
       public WindowTreeHostManager::Observer,
       public ShellObserver,
       public wallpaper::WallpaperResizerObserver,
       public wallpaper::WallpaperColorCalculatorObserver,
       public SessionObserver,
-      public NON_EXPORTED_BASE(ui::CompositorLockClient) {
+      public ui::CompositorLockClient {
  public:
   enum WallpaperMode { WALLPAPER_NONE, WALLPAPER_IMAGE };
 

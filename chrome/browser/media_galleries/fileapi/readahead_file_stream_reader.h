@@ -15,8 +15,7 @@
 #include "storage/browser/fileapi/file_stream_reader.h"
 
 // Wraps a source FileStreamReader with a readahead buffer.
-class ReadaheadFileStreamReader
-    : public NON_EXPORTED_BASE(storage::FileStreamReader) {
+class ReadaheadFileStreamReader : public storage::FileStreamReader {
  public:
   // Takes ownership of |source|.
   explicit ReadaheadFileStreamReader(storage::FileStreamReader* source);

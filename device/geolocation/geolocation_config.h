@@ -19,7 +19,7 @@ namespace device {
 
 // Implements the GeolocationConfig Mojo interface.
 class DEVICE_GEOLOCATION_EXPORT GeolocationConfig
-    : public NON_EXPORTED_BASE(mojom::GeolocationConfig) {
+    : public mojom::GeolocationConfig {
  public:
   GeolocationConfig();
   ~GeolocationConfig() override;

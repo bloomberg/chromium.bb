@@ -56,7 +56,7 @@ struct ServiceWorkerProviderContextDeleter;
 class CONTENT_EXPORT ServiceWorkerProviderContext
     : public base::RefCountedThreadSafe<ServiceWorkerProviderContext,
                                         ServiceWorkerProviderContextDeleter>,
-      NON_EXPORTED_BASE(public mojom::ServiceWorkerProvider) {
+      public mojom::ServiceWorkerProvider {
  public:
   // |provider_id| specifies which host will receive the message from this
   // provider. |provider_type| changes the behavior of this provider

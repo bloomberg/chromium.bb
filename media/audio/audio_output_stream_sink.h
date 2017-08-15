@@ -27,7 +27,7 @@ namespace media {
 // TODO(dalecurtis): Delete this class once we have a proper mojo audio service;
 // tracked by http://crbug.com/425368
 class MEDIA_EXPORT AudioOutputStreamSink
-    : NON_EXPORTED_BASE(public RestartableAudioRendererSink),
+    : public RestartableAudioRendererSink,
       public AudioOutputStream::AudioSourceCallback {
  public:
   AudioOutputStreamSink();

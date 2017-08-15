@@ -25,12 +25,11 @@ class CompositorFrameSinkSupport;
 class Display;
 class FrameSinkManagerImpl;
 
-class RootCompositorFrameSinkImpl
-    : public NON_EXPORTED_BASE(CompositorFrameSinkSupportClient),
-      public NON_EXPORTED_BASE(mojom::CompositorFrameSink),
-      public NON_EXPORTED_BASE(mojom::DisplayPrivate),
-      public NON_EXPORTED_BASE(DisplayClient),
-      public HitTestAggregatorDelegate {
+class RootCompositorFrameSinkImpl : public CompositorFrameSinkSupportClient,
+                                    public mojom::CompositorFrameSink,
+                                    public mojom::DisplayPrivate,
+                                    public DisplayClient,
+                                    public HitTestAggregatorDelegate {
  public:
   RootCompositorFrameSinkImpl(
       FrameSinkManagerImpl* frame_sink_manager,

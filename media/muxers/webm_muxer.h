@@ -42,7 +42,7 @@ class AudioParameters;
 // WebmMuxer is designed for use on a single thread.
 // [1] http://www.webmproject.org/docs/container/
 // [2] http://www.matroska.org/technical/specs/index.html
-class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
+class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
  public:
   // Callback to be called when WebmMuxer is ready to write a chunk of data,
   // either any file header or a SingleBlock.

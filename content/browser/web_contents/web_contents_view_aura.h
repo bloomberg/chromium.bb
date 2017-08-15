@@ -42,7 +42,7 @@ class WebContentsImpl;
 class WebDragDestDelegate;
 
 class CONTENT_EXPORT WebContentsViewAura
-    : NON_EXPORTED_BASE(public WebContentsView),
+    : public WebContentsView,
       public RenderViewHostDelegateView,
       public OverscrollControllerDelegate,
       public aura::WindowDelegate,

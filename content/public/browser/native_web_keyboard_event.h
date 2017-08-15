@@ -25,8 +25,7 @@ namespace content {
 
 // Owns a platform specific event; used to pass own and pass event through
 // platform independent code.
-struct CONTENT_EXPORT NativeWebKeyboardEvent :
-  NON_EXPORTED_BASE(public blink::WebKeyboardEvent) {
+struct CONTENT_EXPORT NativeWebKeyboardEvent : public blink::WebKeyboardEvent {
   NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
                          int modifiers,
                          base::TimeTicks timestamp);

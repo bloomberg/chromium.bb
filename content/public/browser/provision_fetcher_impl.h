@@ -23,7 +23,7 @@ namespace content {
 // A media::mojom::ProvisionFetcher implementation based on
 // media::ProvisionFetcher.
 class CONTENT_EXPORT ProvisionFetcherImpl
-    : NON_EXPORTED_BASE(public media::mojom::ProvisionFetcher) {
+    : public media::mojom::ProvisionFetcher {
  public:
   static void Create(net::URLRequestContextGetter* context_getter,
                      media::mojom::ProvisionFetcherRequest request);

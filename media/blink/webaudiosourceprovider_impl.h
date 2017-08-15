@@ -41,8 +41,8 @@ class MediaLog;
 //
 // All calls are protected by a lock.
 class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
-    : NON_EXPORTED_BASE(public blink::WebAudioSourceProvider),
-      NON_EXPORTED_BASE(public SwitchableAudioRendererSink) {
+    : public blink::WebAudioSourceProvider,
+      public SwitchableAudioRendererSink {
  public:
   using CopyAudioCB = base::Callback<void(std::unique_ptr<AudioBus>,
                                           uint32_t frames_delayed,

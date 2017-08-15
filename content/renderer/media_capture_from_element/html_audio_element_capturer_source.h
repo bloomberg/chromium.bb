@@ -27,7 +27,7 @@ namespace content {
 // intended for rendering. This copied data is received on OnAudioBus() and sent
 // to all the registered Tracks.
 class CONTENT_EXPORT HtmlAudioElementCapturerSource final
-    : NON_EXPORTED_BASE(public MediaStreamAudioSource) {
+    : public MediaStreamAudioSource {
  public:
   static HtmlAudioElementCapturerSource*
   CreateFromWebMediaPlayerImpl(blink::WebMediaPlayer* player);

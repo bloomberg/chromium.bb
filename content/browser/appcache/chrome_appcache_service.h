@@ -41,8 +41,8 @@ struct ChromeAppCacheServiceDeleter;
 class CONTENT_EXPORT ChromeAppCacheService
     : public base::RefCountedThreadSafe<ChromeAppCacheService,
                                         ChromeAppCacheServiceDeleter>,
-      NON_EXPORTED_BASE(public AppCacheServiceImpl),
-      NON_EXPORTED_BASE(public AppCachePolicy) {
+      public AppCacheServiceImpl,
+      public AppCachePolicy {
  public:
   explicit ChromeAppCacheService(storage::QuotaManagerProxy* proxy);
 

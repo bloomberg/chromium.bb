@@ -17,7 +17,7 @@ class RenderWidgetHostViewAura;
 // DelegatedFrameHostClient implementation for aura, not used in mus.
 class CONTENT_EXPORT DelegatedFrameHostClientAura
     : public DelegatedFrameHostClient,
-      NON_EXPORTED_BASE(public CompositorResizeLockClient) {
+      public CompositorResizeLockClient {
  public:
   explicit DelegatedFrameHostClientAura(
       RenderWidgetHostViewAura* render_widget_host_view);

@@ -30,8 +30,8 @@ struct ServiceWorkerRegistrationInfo;
 // to this class. This is refcounted via ServiceWorkerRegistrationHandle to
 // facilitate multiple controllees being associated with the same registration.
 class CONTENT_EXPORT ServiceWorkerRegistration
-    : public NON_EXPORTED_BASE(base::RefCounted<ServiceWorkerRegistration>),
-      public NON_EXPORTED_BASE(ServiceWorkerVersion::Listener) {
+    : public base::RefCounted<ServiceWorkerRegistration>,
+      public ServiceWorkerVersion::Listener {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
 

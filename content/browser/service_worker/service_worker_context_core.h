@@ -58,7 +58,7 @@ class URLLoaderFactoryGetter;
 // is the root of the containment hierarchy for service worker data
 // associated with a particular partition.
 class CONTENT_EXPORT ServiceWorkerContextCore
-    : NON_EXPORTED_BASE(public ServiceWorkerVersion::Listener) {
+    : public ServiceWorkerVersion::Listener {
  public:
   using BoolCallback = base::Callback<void(bool)>;
   using StatusCallback = base::Callback<void(ServiceWorkerStatusCode status)>;

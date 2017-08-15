@@ -21,8 +21,7 @@ class ContentDecryptionModule;
 class MojoCdmServiceContext;
 class MojoDecoderBufferReader;
 
-class MEDIA_MOJO_EXPORT MojoAudioDecoderService
-    : NON_EXPORTED_BASE(public mojom::AudioDecoder) {
+class MEDIA_MOJO_EXPORT MojoAudioDecoderService : public mojom::AudioDecoder {
  public:
   MojoAudioDecoderService(
       base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,

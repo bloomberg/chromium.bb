@@ -19,8 +19,7 @@ namespace content {
 // Chromium's WebRTCCertificate implementation; wraps a rtc::scoped_refptr to an
 // rtc::RTCCertificate. This abstraction layer is necessary because blink does
 // not have direct access to WebRTC.
-class CONTENT_EXPORT RTCCertificate
-    : public NON_EXPORTED_BASE(blink::WebRTCCertificate) {
+class CONTENT_EXPORT RTCCertificate : public blink::WebRTCCertificate {
  public:
   RTCCertificate(const rtc::scoped_refptr<rtc::RTCCertificate>& certificate);
   ~RTCCertificate() override;

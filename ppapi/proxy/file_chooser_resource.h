@@ -26,7 +26,7 @@ namespace proxy {
 
 class PPAPI_PROXY_EXPORT FileChooserResource
     : public PluginResource,
-      public NON_EXPORTED_BASE(thunk::PPB_FileChooser_API) {
+      public thunk::PPB_FileChooser_API {
  public:
   FileChooserResource(Connection connection,
                       PP_Instance instance,

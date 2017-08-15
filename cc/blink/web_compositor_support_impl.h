@@ -15,7 +15,7 @@
 namespace cc_blink {
 
 class CC_BLINK_EXPORT WebCompositorSupportImpl
-    : public NON_EXPORTED_BASE(blink::WebCompositorSupport) {
+    : public blink::WebCompositorSupport {
  public:
   WebCompositorSupportImpl();
   ~WebCompositorSupportImpl() override;

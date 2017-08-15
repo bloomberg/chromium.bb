@@ -50,7 +50,7 @@ class ServiceWorkerContextCore;
 //
 // Owned by ServiceWorkerVersion. Lives on the IO thread.
 class CONTENT_EXPORT EmbeddedWorkerInstance
-    : NON_EXPORTED_BASE(public mojom::EmbeddedWorkerInstanceHost) {
+    : public mojom::EmbeddedWorkerInstanceHost {
  public:
   class DevToolsProxy;
   typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;

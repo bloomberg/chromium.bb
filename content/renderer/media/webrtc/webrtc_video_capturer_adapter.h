@@ -30,7 +30,7 @@ namespace content {
 // webrtc::VideoTrackSourceInterface guarantees that this object is not deleted
 // while it is still used in libJingle.
 class CONTENT_EXPORT WebRtcVideoCapturerAdapter
-    : NON_EXPORTED_BASE(public cricket::VideoCapturer) {
+    : public cricket::VideoCapturer {
  public:
   WebRtcVideoCapturerAdapter(
       bool is_screencast,

@@ -42,8 +42,7 @@ typedef ScopedHandleBase<SharedBufferHandle> ScopedSharedBufferHandle;
 
 // A strongly-typed representation of a |MojoHandle| referring to a shared
 // buffer.
-class MOJO_CPP_SYSTEM_EXPORT SharedBufferHandle
-    : NON_EXPORTED_BASE(public Handle) {
+class MOJO_CPP_SYSTEM_EXPORT SharedBufferHandle : public Handle {
  public:
   enum class AccessMode {
     READ_WRITE,

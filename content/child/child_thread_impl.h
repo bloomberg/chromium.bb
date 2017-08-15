@@ -69,8 +69,8 @@ class CONTENT_EXPORT ChildThreadImpl
     : public IPC::Listener,
       virtual public ChildThread,
       private base::FieldTrialList::Observer,
-      NON_EXPORTED_BASE(public mojom::RouteProvider),
-      NON_EXPORTED_BASE(public mojom::AssociatedInterfaceProvider) {
+      public mojom::RouteProvider,
+      public mojom::AssociatedInterfaceProvider {
  public:
   struct CONTENT_EXPORT Options;
 

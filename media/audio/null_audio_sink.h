@@ -20,8 +20,7 @@ class AudioBus;
 class AudioHash;
 class FakeAudioWorker;
 
-class MEDIA_EXPORT NullAudioSink
-    : NON_EXPORTED_BASE(public SwitchableAudioRendererSink) {
+class MEDIA_EXPORT NullAudioSink : public SwitchableAudioRendererSink {
  public:
   NullAudioSink(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 

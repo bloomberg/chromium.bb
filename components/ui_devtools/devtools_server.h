@@ -20,8 +20,7 @@
 
 namespace ui_devtools {
 
-class UI_DEVTOOLS_EXPORT UiDevToolsServer
-    : public NON_EXPORTED_BASE(net::HttpServer::Delegate) {
+class UI_DEVTOOLS_EXPORT UiDevToolsServer : public net::HttpServer::Delegate {
  public:
   ~UiDevToolsServer() override;
 

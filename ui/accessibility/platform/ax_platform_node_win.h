@@ -248,17 +248,16 @@ class AXPlatformNodeRelationWin : public CComObjectRootEx<CComMultiThreadModel>,
 };
 
 class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
-    AXPlatformNodeWin
-    : public NON_EXPORTED_BASE(CComObjectRootEx<CComMultiThreadModel>),
-      public IDispatchImpl<IAccessible2_2,
-                           &IID_IAccessible2,
-                           &LIBID_IAccessible2Lib>,
-      public IAccessibleText,
-      public IAccessibleTable,
-      public IAccessibleTable2,
-      public IAccessibleTableCell,
-      public IServiceProvider,
-      public AXPlatformNodeBase {
+    AXPlatformNodeWin : public CComObjectRootEx<CComMultiThreadModel>,
+                        public IDispatchImpl<IAccessible2_2,
+                                             &IID_IAccessible2,
+                                             &LIBID_IAccessible2Lib>,
+                        public IAccessibleText,
+                        public IAccessibleTable,
+                        public IAccessibleTable2,
+                        public IAccessibleTableCell,
+                        public IServiceProvider,
+                        public AXPlatformNodeBase {
  public:
   BEGIN_COM_MAP(AXPlatformNodeWin)
     COM_INTERFACE_ENTRY2(IDispatch, IAccessible2_2)

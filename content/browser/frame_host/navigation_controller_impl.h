@@ -32,8 +32,7 @@ class NavigationEntryScreenshotManager;
 class SiteInstance;
 struct LoadCommittedDetails;
 
-class CONTENT_EXPORT NavigationControllerImpl
-    : public NON_EXPORTED_BASE(NavigationController) {
+class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
  public:
   NavigationControllerImpl(
       NavigationControllerDelegate* delegate,

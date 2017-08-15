@@ -51,7 +51,7 @@ class ServiceWorkerContextWrapper;
 // the sync registrations are removed. This class must be run on the IO
 // thread. The asynchronous methods are executed sequentially.
 class CONTENT_EXPORT BackgroundSyncManager
-    : NON_EXPORTED_BASE(public ServiceWorkerContextCoreObserver) {
+    : public ServiceWorkerContextCoreObserver {
  public:
   using BoolCallback = base::OnceCallback<void(bool)>;
   using StatusAndRegistrationCallback =

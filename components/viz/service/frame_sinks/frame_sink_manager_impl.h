@@ -40,9 +40,8 @@ class FrameSinkManagerClient;
 
 // FrameSinkManagerImpl manages BeginFrame hierarchy. This is the implementation
 // detail for FrameSinkManagerImpl.
-class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
-    : public SurfaceObserver,
-      public NON_EXPORTED_BASE(mojom::FrameSinkManager) {
+class VIZ_SERVICE_EXPORT FrameSinkManagerImpl : public SurfaceObserver,
+                                                public mojom::FrameSinkManager {
  public:
   FrameSinkManagerImpl(DisplayProvider* display_provider = nullptr,
                        SurfaceManager::LifetimeType lifetime_type =

@@ -17,12 +17,12 @@
 namespace content {
 
 class CONTENT_EXPORT WebDataConsumerHandleImpl final
-    : public NON_EXPORTED_BASE(blink::WebDataConsumerHandle) {
+    : public blink::WebDataConsumerHandle {
   typedef mojo::ScopedDataPipeConsumerHandle Handle;
   class Context;
 
  public:
-  class CONTENT_EXPORT ReaderImpl final : public NON_EXPORTED_BASE(Reader) {
+  class CONTENT_EXPORT ReaderImpl final : public Reader {
    public:
     ReaderImpl(scoped_refptr<Context> context, Client* client);
     ~ReaderImpl() override;

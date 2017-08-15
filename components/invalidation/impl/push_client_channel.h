@@ -26,7 +26,7 @@ namespace syncer {
 // routes messages through a PushClient.
 class INVALIDATION_EXPORT PushClientChannel
     : public SyncNetworkChannel,
-      public NON_EXPORTED_BASE(notifier::PushClientObserver) {
+      public notifier::PushClientObserver {
  public:
   // |push_client| is guaranteed to be destroyed only when this object
   // is destroyed.

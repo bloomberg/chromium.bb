@@ -41,7 +41,7 @@ class WebColorChooser;
 
 class CORE_EXPORT ColorChooserUIController
     : public GarbageCollectedFinalized<ColorChooserUIController>,
-      NON_EXPORTED_BASE(public WebColorChooserClient),
+      public WebColorChooserClient,
       public ColorChooser {
   USING_GARBAGE_COLLECTED_MIXIN(ColorChooserUIController);
 

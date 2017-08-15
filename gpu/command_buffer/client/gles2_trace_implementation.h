@@ -13,8 +13,7 @@ namespace gpu {
 namespace gles2 {
 
 // GLES2TraceImplementation is calls TRACE for every GL call.
-class GLES2_IMPL_EXPORT GLES2TraceImplementation
-    : NON_EXPORTED_BASE(public GLES2Interface) {
+class GLES2_IMPL_EXPORT GLES2TraceImplementation : public GLES2Interface {
  public:
   explicit GLES2TraceImplementation(GLES2Interface* gl);
   ~GLES2TraceImplementation() override;

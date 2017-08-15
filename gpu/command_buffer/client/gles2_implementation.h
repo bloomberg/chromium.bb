@@ -120,10 +120,10 @@ class QueryTracker;
 // GLES2CmdHelper but that entails changing your code to use and deal with
 // shared memory and synchronization issues.
 class GLES2_IMPL_EXPORT GLES2Implementation
-    : NON_EXPORTED_BASE(public GLES2Interface),
-      NON_EXPORTED_BASE(public ContextSupport),
-      NON_EXPORTED_BASE(public GpuControlClient),
-      NON_EXPORTED_BASE(public base::trace_event::MemoryDumpProvider) {
+    : public GLES2Interface,
+      public ContextSupport,
+      public GpuControlClient,
+      public base::trace_event::MemoryDumpProvider {
  public:
   // Stores GL state that never changes.
   struct GLES2_IMPL_EXPORT GLStaticState {

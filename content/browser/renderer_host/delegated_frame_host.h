@@ -81,8 +81,8 @@ class CONTENT_EXPORT DelegatedFrameHost
       public ui::CompositorVSyncManager::Observer,
       public ui::ContextFactoryObserver,
       public viz::FrameEvictorClient,
-      public NON_EXPORTED_BASE(viz::CompositorFrameSinkSupportClient),
-      public NON_EXPORTED_BASE(viz::HostFrameSinkClient),
+      public viz::CompositorFrameSinkSupportClient,
+      public viz::HostFrameSinkClient,
       public base::SupportsWeakPtr<DelegatedFrameHost> {
  public:
   DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,

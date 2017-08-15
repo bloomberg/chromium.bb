@@ -36,7 +36,7 @@ class ScriptState;
 
 class MODULES_EXPORT PaymentRequest final
     : public EventTargetWithInlineData,
-      NON_EXPORTED_BASE(public payments::mojom::blink::PaymentRequestClient),
+      public payments::mojom::blink::PaymentRequestClient,
       public PaymentCompleter,
       public PaymentUpdater,
       public ContextLifecycleObserver,

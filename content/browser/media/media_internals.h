@@ -32,9 +32,8 @@ struct MediaLogEvent;
 namespace content {
 
 // This class stores information about currently active media.
-class CONTENT_EXPORT MediaInternals
-    : NON_EXPORTED_BASE(public media::AudioLogFactory),
-      public NotificationObserver {
+class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
+                                      public NotificationObserver {
  public:
   // Called with the update string.
   typedef base::Callback<void(const base::string16&)> UpdateCallback;

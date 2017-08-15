@@ -15,8 +15,7 @@
 namespace media {
 
 // A ProvisionFetcher that proxies to a mojom::ProvisionFetcherPtr.
-class MEDIA_MOJO_EXPORT MojoProvisionFetcher
-    : NON_EXPORTED_BASE(public ProvisionFetcher) {
+class MEDIA_MOJO_EXPORT MojoProvisionFetcher : public ProvisionFetcher {
  public:
   explicit MojoProvisionFetcher(
       mojom::ProvisionFetcherPtr provision_fetcher_ptr);

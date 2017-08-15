@@ -25,9 +25,8 @@ namespace content {
 
 // A data source that can help with implementing the common operations
 // needed by the chrome WEBUI settings/history/downloads pages.
-class CONTENT_EXPORT WebUIDataSourceImpl
-    : public NON_EXPORTED_BASE(URLDataSourceImpl),
-      public NON_EXPORTED_BASE(WebUIDataSource) {
+class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
+                                           public WebUIDataSource {
  public:
   // WebUIDataSource implementation:
   void AddString(const std::string& name, const base::string16& value) override;

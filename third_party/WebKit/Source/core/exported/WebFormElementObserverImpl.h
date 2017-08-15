@@ -19,7 +19,7 @@ class WebFormElementObserverCallback;
 
 class CORE_EXPORT WebFormElementObserverImpl final
     : public GarbageCollectedFinalized<WebFormElementObserverImpl>,
-      NON_EXPORTED_BASE(public WebFormElementObserver) {
+      public WebFormElementObserver {
   WTF_MAKE_NONCOPYABLE(WebFormElementObserverImpl);
 
  public:

@@ -14,7 +14,7 @@ namespace blink {
 
 class MODULES_EXPORT AudioOutputDeviceClientImpl
     : public GarbageCollectedFinalized<AudioOutputDeviceClientImpl>,
-      public NON_EXPORTED_BASE(AudioOutputDeviceClient) {
+      public AudioOutputDeviceClient {
   USING_GARBAGE_COLLECTED_MIXIN(AudioOutputDeviceClientImpl);
   WTF_MAKE_NONCOPYABLE(AudioOutputDeviceClientImpl);
 

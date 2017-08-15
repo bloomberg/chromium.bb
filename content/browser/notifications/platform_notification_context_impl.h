@@ -42,8 +42,8 @@ class ServiceWorkerContextWrapper;
 // defined in this interface must only be called on the IO thread unless
 // otherwise specified.
 class CONTENT_EXPORT PlatformNotificationContextImpl
-    : NON_EXPORTED_BASE(public PlatformNotificationContext),
-      NON_EXPORTED_BASE(public ServiceWorkerContextCoreObserver) {
+    : public PlatformNotificationContext,
+      public ServiceWorkerContextCoreObserver {
  public:
   // Constructs a new platform notification context. If |path| is non-empty, the
   // database will be initialized in the "Platform Notifications" subdirectory

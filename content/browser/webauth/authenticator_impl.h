@@ -20,8 +20,7 @@ namespace content {
 class RenderFrameHost;
 
 // Implementation of the public Authenticator interface.
-class CONTENT_EXPORT AuthenticatorImpl
-    : public NON_EXPORTED_BASE(webauth::mojom::Authenticator) {
+class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
  public:
   static void Create(RenderFrameHost* render_frame_host,
                      webauth::mojom::AuthenticatorRequest request);

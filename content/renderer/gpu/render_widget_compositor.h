@@ -51,9 +51,9 @@ class RenderWidgetCompositorDelegate;
 struct ScreenInfo;
 
 class CONTENT_EXPORT RenderWidgetCompositor
-    : NON_EXPORTED_BASE(public blink::WebLayerTreeView),
-      NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
-      NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient) {
+    : public blink::WebLayerTreeView,
+      public cc::LayerTreeHostClient,
+      public cc::LayerTreeHostSingleThreadClient {
   using ReportTimeCallback =
       base::Callback<void(blink::WebLayerTreeView::SwapResult, double)>;
 

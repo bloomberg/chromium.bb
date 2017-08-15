@@ -17,8 +17,7 @@ enum class ShutdownReason;
 
 // Handles actual device shutdown by making requests to powerd over D-Bus.
 // Caches the DeviceRebootOnShutdown device policy sent from Chrome over mojo.
-class ASH_EXPORT ShutdownController
-    : NON_EXPORTED_BASE(public mojom::ShutdownController) {
+class ASH_EXPORT ShutdownController : public mojom::ShutdownController {
  public:
   ShutdownController();
   ~ShutdownController() override;

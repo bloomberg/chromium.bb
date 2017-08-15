@@ -27,7 +27,7 @@ class SingleThreadTaskRunner;
 namespace device {
 
 class DEVICE_GEOLOCATION_EXPORT GeolocationProviderImpl
-    : public NON_EXPORTED_BASE(GeolocationProvider),
+    : public GeolocationProvider,
       public base::Thread {
  public:
   // GeolocationProvider implementation:

@@ -59,7 +59,7 @@ class CONTENT_EXPORT DeviceSensorMojoClientMixin : public Base {
 
 template <typename ListenerType>
 class CONTENT_EXPORT DeviceSensorEventPump
-    : NON_EXPORTED_BASE(public PlatformEventObserver<ListenerType>) {
+    : public PlatformEventObserver<ListenerType> {
  public:
   // Default rate for firing events.
   static const int kDefaultPumpFrequencyHz = 60;

@@ -30,8 +30,7 @@ class UrlData;
 // A multibuffer for loading media resources which knows
 // how to create MultiBufferDataProviders to load data
 // into the cache.
-class MEDIA_BLINK_EXPORT ResourceMultiBuffer
-    : NON_EXPORTED_BASE(public MultiBuffer) {
+class MEDIA_BLINK_EXPORT ResourceMultiBuffer : public MultiBuffer {
  public:
   ResourceMultiBuffer(UrlData* url_data_, int block_shift);
   ~ResourceMultiBuffer() override;

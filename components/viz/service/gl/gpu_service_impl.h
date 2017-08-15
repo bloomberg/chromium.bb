@@ -44,9 +44,8 @@ namespace viz {
 // This runs in the GPU process, and communicates with the gpu host (which is
 // the window server) over the mojom APIs. This is responsible for setting up
 // the connection to clients, allocating/free'ing gpu memory etc.
-class VIZ_SERVICE_EXPORT GpuServiceImpl
-    : NON_EXPORTED_BASE(public gpu::GpuChannelManagerDelegate),
-      NON_EXPORTED_BASE(public mojom::GpuService) {
+class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
+                                          public mojom::GpuService {
  public:
   GpuServiceImpl(const gpu::GPUInfo& gpu_info,
                  std::unique_ptr<gpu::GpuWatchdogThread> watchdog,

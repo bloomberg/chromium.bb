@@ -21,7 +21,7 @@ namespace content {
 // at the moment.
 // Kept alive while the connection is held in the renderer.
 class CONTENT_EXPORT SharedWorkerContentSettingsProxyImpl
-    : NON_EXPORTED_BASE(public blink::mojom::WorkerContentSettingsProxy) {
+    : public blink::mojom::WorkerContentSettingsProxy {
  public:
   ~SharedWorkerContentSettingsProxyImpl() override;
 

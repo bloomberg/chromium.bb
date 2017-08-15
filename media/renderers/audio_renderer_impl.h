@@ -54,7 +54,7 @@ class MEDIA_EXPORT AudioRendererImpl
     : public AudioRenderer,
       public TimeSource,
       public base::PowerObserver,
-      NON_EXPORTED_BASE(public AudioRendererSink::RenderCallback) {
+      public AudioRendererSink::RenderCallback {
  public:
   // |task_runner| is the thread on which AudioRendererImpl will execute.
   //

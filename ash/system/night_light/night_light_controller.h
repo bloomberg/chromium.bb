@@ -24,9 +24,8 @@ namespace ash {
 
 // Controls the NightLight feature that adjusts the color temperature of the
 // screen.
-class ASH_EXPORT NightLightController
-    : public NON_EXPORTED_BASE(mojom::NightLightController),
-      public ShellObserver {
+class ASH_EXPORT NightLightController : public mojom::NightLightController,
+                                        public ShellObserver {
  public:
   using ScheduleType = mojom::NightLightController::ScheduleType;
 

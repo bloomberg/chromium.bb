@@ -24,7 +24,7 @@ class TrayActionObserver;
 // Currently, only single action is supported - creating new note on the lock
 // screen - Chrome handles this action by launching an app (if any) that is
 // registered as a lock screen enabled action handler for the new note action.
-class ASH_EXPORT TrayAction : public NON_EXPORTED_BASE(mojom::TrayAction) {
+class ASH_EXPORT TrayAction : public mojom::TrayAction {
  public:
   TrayAction();
   ~TrayAction() override;

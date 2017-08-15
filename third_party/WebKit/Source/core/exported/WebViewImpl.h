@@ -98,9 +98,9 @@ class WebSettingsImpl;
 class WebViewScheduler;
 
 class CORE_EXPORT WebViewImpl final
-    : NON_EXPORTED_BASE(public WebView),
+    : public WebView,
       public RefCounted<WebViewImpl>,
-      NON_EXPORTED_BASE(public WebGestureCurveTarget),
+      public WebGestureCurveTarget,
       public PageWidgetEventHandler,
       public WebScheduler::InterventionReporter,
       public WebViewScheduler::WebViewSchedulerDelegate {

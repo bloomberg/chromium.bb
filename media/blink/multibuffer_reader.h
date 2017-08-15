@@ -20,8 +20,7 @@ namespace media {
 
 // Wrapper for MultiBuffer that offers a simple byte-reading
 // interface with prefetch.
-class MEDIA_BLINK_EXPORT MultiBufferReader
-    : NON_EXPORTED_BASE(public MultiBuffer::Reader) {
+class MEDIA_BLINK_EXPORT MultiBufferReader : public MultiBuffer::Reader {
  public:
   // Note that |progress_callback| is guaranteed to be called if
   // a redirect happens and the url_data is updated. Otherwise

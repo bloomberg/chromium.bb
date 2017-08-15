@@ -66,7 +66,7 @@ class MEDIA_EXPORT AudioOutputController
     : public base::RefCountedThreadSafe<AudioOutputController>,
       public AudioOutputStream::AudioSourceCallback,
       public AudioSourceDiverter,
-      NON_EXPORTED_BASE(public AudioManager::AudioDeviceListener)  {
+      public AudioManager::AudioDeviceListener {
  public:
   // An event handler that receives events from the AudioOutputController. The
   // following methods are called on the audio manager thread.

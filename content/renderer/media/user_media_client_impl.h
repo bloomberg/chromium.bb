@@ -51,7 +51,7 @@ class VideoCaptureSettings;
 // render thread.
 class CONTENT_EXPORT UserMediaClientImpl
     : public RenderFrameObserver,
-      NON_EXPORTED_BASE(public blink::WebUserMediaClient),
+      public blink::WebUserMediaClient,
       public MediaStreamDispatcherEventHandler {
  public:
   // |render_frame| and |dependency_factory| must outlive this instance.

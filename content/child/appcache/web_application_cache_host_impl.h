@@ -16,8 +16,7 @@
 
 namespace content {
 
-class WebApplicationCacheHostImpl
-    : NON_EXPORTED_BASE(public blink::WebApplicationCacheHost) {
+class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
  public:
   // Returns the host having given id or NULL if there is no such host.
   static WebApplicationCacheHostImpl* FromId(int id);

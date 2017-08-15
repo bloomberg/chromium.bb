@@ -32,7 +32,7 @@ class AudioRendererMixerPool;
 class AudioRendererMixer;
 
 class MEDIA_EXPORT AudioRendererMixerInput
-    : NON_EXPORTED_BASE(public SwitchableAudioRendererSink),
+    : public SwitchableAudioRendererSink,
       public AudioConverter::InputCallback {
  public:
   AudioRendererMixerInput(AudioRendererMixerPool* mixer_pool,

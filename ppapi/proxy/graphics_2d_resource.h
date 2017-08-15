@@ -19,9 +19,8 @@ class TrackedCallback;
 
 namespace proxy {
 
-class PPAPI_PROXY_EXPORT Graphics2DResource
-      : public PluginResource,
-        public NON_EXPORTED_BASE(thunk::PPB_Graphics2D_API) {
+class PPAPI_PROXY_EXPORT Graphics2DResource : public PluginResource,
+                                              public thunk::PPB_Graphics2D_API {
  public:
   Graphics2DResource(Connection connection,
                      PP_Instance instance,

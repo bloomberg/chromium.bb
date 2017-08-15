@@ -29,9 +29,9 @@ class RenderFrame;
 // which handles screen lock. It sends lock (or unlock) requests to the browser
 // process and listens for responses and let Blink know about the result of the
 // request via WebLockOrientationCallback.
-class CONTENT_EXPORT ScreenOrientationDispatcher :
-    public RenderFrameObserver,
-    NON_EXPORTED_BASE(public blink::WebScreenOrientationClient) {
+class CONTENT_EXPORT ScreenOrientationDispatcher
+    : public RenderFrameObserver,
+      public blink::WebScreenOrientationClient {
  public:
   explicit ScreenOrientationDispatcher(RenderFrame* render_frame);
   ~ScreenOrientationDispatcher() override;

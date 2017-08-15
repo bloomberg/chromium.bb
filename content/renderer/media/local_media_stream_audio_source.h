@@ -16,8 +16,8 @@ namespace content {
 // first track is connected. Audio data is transported directly to the tracks
 // (i.e., there is no audio processing).
 class CONTENT_EXPORT LocalMediaStreamAudioSource
-    : NON_EXPORTED_BASE(public MediaStreamAudioSource),
-      NON_EXPORTED_BASE(public media::AudioCapturerSource::CaptureCallback) {
+    : public MediaStreamAudioSource,
+      public media::AudioCapturerSource::CaptureCallback {
  public:
   // |consumer_render_frame_id| references the RenderFrame that will consume the
   // audio data. Audio parameters and (optionally) a pre-existing audio session

@@ -37,7 +37,7 @@ class FileSystemContext;
 // on FileSystemOperation::GetSnapshotFile() which may force downloading
 // the entire contents for remote files.
 class STORAGE_EXPORT FileSystemFileStreamReader
-    : public NON_EXPORTED_BASE(storage::FileStreamReader) {
+    : public storage::FileStreamReader {
  public:
   ~FileSystemFileStreamReader() override;
 

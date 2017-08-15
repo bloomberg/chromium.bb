@@ -25,8 +25,7 @@ class ThreadSafeSender;
 
 // This class corresponds to one ServiceWorkerContainer interface in
 // JS context (i.e. navigator.serviceWorker).
-class WebServiceWorkerProviderImpl
-    : NON_EXPORTED_BASE(public blink::WebServiceWorkerProvider) {
+class WebServiceWorkerProviderImpl : public blink::WebServiceWorkerProvider {
  public:
   WebServiceWorkerProviderImpl(ThreadSafeSender* thread_safe_sender,
                                ServiceWorkerProviderContext* context);

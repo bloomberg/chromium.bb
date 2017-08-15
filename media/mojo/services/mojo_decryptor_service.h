@@ -26,8 +26,7 @@ class MojoDecoderBufferWriter;
 
 // A mojom::Decryptor implementation. This object is owned by the creator,
 // and uses a weak binding across the mojo interface.
-class MEDIA_MOJO_EXPORT MojoDecryptorService
-    : NON_EXPORTED_BASE(public mojom::Decryptor) {
+class MEDIA_MOJO_EXPORT MojoDecryptorService : public mojom::Decryptor {
  public:
   using StreamType = media::Decryptor::StreamType;
   using Status = media::Decryptor::Status;

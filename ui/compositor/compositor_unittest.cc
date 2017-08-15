@@ -115,8 +115,7 @@ class CompositorObserverForLocks : public CompositorObserver {
   bool locked_ = false;
 };
 
-class MockCompositorLockClient
-    : NON_EXPORTED_BASE(public ui::CompositorLockClient) {
+class MockCompositorLockClient : public ui::CompositorLockClient {
  public:
   MOCK_METHOD0(CompositorLockTimedOut, void());
 };

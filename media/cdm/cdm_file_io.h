@@ -14,7 +14,7 @@ namespace media {
 
 // Implements a version of cdm::FileIO with a public destructor so it can be
 // used with std::unique_ptr.
-class MEDIA_EXPORT CdmFileIO : NON_EXPORTED_BASE(public cdm::FileIO) {
+class MEDIA_EXPORT CdmFileIO : public cdm::FileIO {
  public:
   ~CdmFileIO() override;
 

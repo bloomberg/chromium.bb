@@ -21,7 +21,7 @@ struct ServiceWorkerRegistrationObjectInfo;
 struct ServiceWorkerVersionAttributes;
 
 class CONTENT_EXPORT ServiceWorkerMessageFilter
-    : public NON_EXPORTED_BASE(WorkerThreadMessageFilter) {
+    : public WorkerThreadMessageFilter {
  public:
   explicit ServiceWorkerMessageFilter(ThreadSafeSender* thread_safe_sender);
 

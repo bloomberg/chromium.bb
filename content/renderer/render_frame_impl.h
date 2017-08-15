@@ -176,14 +176,14 @@ class CreateFrameWidgetParams;
 
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
-      NON_EXPORTED_BASE(blink::mojom::EngagementClient),
-      NON_EXPORTED_BASE(blink::mojom::MediaEngagementClient),
-      NON_EXPORTED_BASE(mojom::Frame),
-      NON_EXPORTED_BASE(mojom::HostZoom),
-      NON_EXPORTED_BASE(mojom::FrameBindingsControl),
-      NON_EXPORTED_BASE(public blink::WebFrameClient),
-      NON_EXPORTED_BASE(public blink::WebFrameSerializerClient),
-      NON_EXPORTED_BASE(service_manager::mojom::InterfaceProvider) {
+      blink::mojom::EngagementClient,
+      blink::mojom::MediaEngagementClient,
+      mojom::Frame,
+      mojom::HostZoom,
+      mojom::FrameBindingsControl,
+      public blink::WebFrameClient,
+      public blink::WebFrameSerializerClient,
+      service_manager::mojom::InterfaceProvider {
  public:
   // Creates a new RenderFrame as the main frame of |render_view|.
   static RenderFrameImpl* CreateMainFrame(

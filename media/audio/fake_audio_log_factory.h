@@ -13,8 +13,7 @@
 namespace media {
 
 // Creates stub AudioLog instances, for testing, which do nothing.
-class MEDIA_EXPORT FakeAudioLogFactory
-    : NON_EXPORTED_BASE(public AudioLogFactory) {
+class MEDIA_EXPORT FakeAudioLogFactory : public AudioLogFactory {
  public:
   FakeAudioLogFactory();
   ~FakeAudioLogFactory() override;

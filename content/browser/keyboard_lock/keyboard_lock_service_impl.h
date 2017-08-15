@@ -12,7 +12,7 @@
 namespace content {
 
 class CONTENT_EXPORT KeyboardLockServiceImpl
-    : public NON_EXPORTED_BASE(blink::mojom::KeyboardLockService) {
+    : public blink::mojom::KeyboardLockService {
  public:
   KeyboardLockServiceImpl();
   ~KeyboardLockServiceImpl() override;

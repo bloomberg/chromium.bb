@@ -27,8 +27,8 @@ class WebAssociatedURLLoader;
 namespace media {
 
 class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
-    : NON_EXPORTED_BASE(public MultiBuffer::DataProvider),
-      NON_EXPORTED_BASE(public blink::WebAssociatedURLLoaderClient) {
+    : public MultiBuffer::DataProvider,
+      public blink::WebAssociatedURLLoaderClient {
  public:
   // NUmber of times we'll retry if the connection fails.
   enum { kMaxRetries = 30 };

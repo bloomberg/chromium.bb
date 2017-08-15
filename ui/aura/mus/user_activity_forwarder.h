@@ -24,7 +24,7 @@ namespace aura {
 // downstream of ui::UserActivityDetector) instead observe UserActivityMonitor
 // directly: http://crbug.com/626899
 class AURA_EXPORT UserActivityForwarder
-    : NON_EXPORTED_BASE(public ui::mojom::UserActivityObserver) {
+    : public ui::mojom::UserActivityObserver {
  public:
   UserActivityForwarder(ui::mojom::UserActivityMonitorPtr monitor,
                         ui::UserActivityDetector* detector);

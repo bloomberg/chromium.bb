@@ -42,7 +42,7 @@ namespace ui {
 class TestClipboard;
 class ScopedClipboardWriter;
 
-class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
+class UI_BASE_EXPORT Clipboard : public base::ThreadChecker {
  public:
   // MIME type constants.
   static const char kMimeTypeText[];

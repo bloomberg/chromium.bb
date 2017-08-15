@@ -61,8 +61,8 @@ class WebLocalFrameImpl;
 class WebTouchEvent;
 
 class CORE_EXPORT InspectorOverlayAgent final
-    : public NON_EXPORTED_BASE(InspectorBaseAgent<protocol::Overlay::Metainfo>),
-      public NON_EXPORTED_BASE(InspectorOverlayHost::Listener) {
+    : public InspectorBaseAgent<protocol::Overlay::Metainfo>,
+      public InspectorOverlayHost::Listener {
   WTF_MAKE_NONCOPYABLE(InspectorOverlayAgent);
   USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayAgent);
 

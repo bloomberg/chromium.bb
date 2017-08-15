@@ -23,7 +23,7 @@ class WebRTCInternals;
 // It delegates all its work to WebRTCInternalsProxy on the IO thread.
 class CONTENT_EXPORT WebRTCInternalsMessageHandler
     : public WebUIMessageHandler,
-      public NON_EXPORTED_BASE(WebRTCInternalsUIObserver) {
+      public WebRTCInternalsUIObserver {
  public:
   WebRTCInternalsMessageHandler();
   ~WebRTCInternalsMessageHandler() override;

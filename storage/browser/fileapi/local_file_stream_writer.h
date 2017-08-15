@@ -30,8 +30,7 @@ class FileStream;
 namespace storage {
 
 // This class is a thin wrapper around net::FileStream for writing local files.
-class STORAGE_EXPORT LocalFileStreamWriter
-    : public NON_EXPORTED_BASE(FileStreamWriter) {
+class STORAGE_EXPORT LocalFileStreamWriter : public FileStreamWriter {
  public:
   ~LocalFileStreamWriter() override;
 

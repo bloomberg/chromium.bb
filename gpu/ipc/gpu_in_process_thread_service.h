@@ -17,7 +17,7 @@ namespace gpu {
 // Default Service class when no service is specified. GpuInProcessThreadService
 // is used by Mus and unit tests.
 class GPU_EXPORT GpuInProcessThreadService
-    : public NON_EXPORTED_BASE(gpu::InProcessCommandBuffer::Service),
+    : public gpu::InProcessCommandBuffer::Service,
       public base::RefCountedThreadSafe<GpuInProcessThreadService> {
  public:
   GpuInProcessThreadService(

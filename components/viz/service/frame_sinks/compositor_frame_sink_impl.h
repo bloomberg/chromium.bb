@@ -20,9 +20,8 @@
 namespace viz {
 
 // Server side representation of a WindowSurface.
-class CompositorFrameSinkImpl
-    : public NON_EXPORTED_BASE(CompositorFrameSinkSupportClient),
-      public NON_EXPORTED_BASE(mojom::CompositorFrameSink) {
+class CompositorFrameSinkImpl : public CompositorFrameSinkSupportClient,
+                                public mojom::CompositorFrameSink {
  public:
   CompositorFrameSinkImpl(FrameSinkManagerImpl* frame_sink_manager,
                           const FrameSinkId& frame_sink_id,

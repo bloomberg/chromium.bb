@@ -14,7 +14,7 @@
 namespace gin {
 
 // A v8::Platform implementation to use with gin.
-class GIN_EXPORT V8Platform : public NON_EXPORTED_BASE(v8::Platform) {
+class GIN_EXPORT V8Platform : public v8::Platform {
  public:
   static V8Platform* Get();
 

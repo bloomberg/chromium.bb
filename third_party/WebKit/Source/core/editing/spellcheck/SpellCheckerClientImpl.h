@@ -38,8 +38,7 @@ namespace blink {
 
 class WebViewImpl;
 
-class CORE_EXPORT SpellCheckerClientImpl final
-    : public NON_EXPORTED_BASE(SpellCheckerClient) {
+class CORE_EXPORT SpellCheckerClientImpl final : public SpellCheckerClient {
  public:
   explicit SpellCheckerClientImpl(WebViewImpl*);
   ~SpellCheckerClientImpl() override;

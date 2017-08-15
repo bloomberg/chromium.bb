@@ -27,9 +27,8 @@ namespace content {
 // corresponding DevToolsAgent object.
 // TODO(yurys): now the client is almost empty later it will delegate calls to
 // code in glue
-class CONTENT_EXPORT DevToolsClient
-    : public RenderFrameObserver,
-      NON_EXPORTED_BASE(public blink::WebDevToolsFrontendClient) {
+class CONTENT_EXPORT DevToolsClient : public RenderFrameObserver,
+                                      public blink::WebDevToolsFrontendClient {
  public:
   DevToolsClient(RenderFrame* render_frame, const std::string& api_script);
   ~DevToolsClient() override;

@@ -42,7 +42,7 @@ namespace internal {
 // be called on any thread. All |Delegate| functions will be called on the IO
 // thread.
 //
-class IPC_EXPORT MessagePipeReader : public NON_EXPORTED_BASE(mojom::Channel) {
+class IPC_EXPORT MessagePipeReader : public mojom::Channel {
  public:
   class Delegate {
    public:

@@ -47,8 +47,7 @@ struct CC_ANIMATION_EXPORT AnimationEvent {
   std::unique_ptr<AnimationCurve> curve;
 };
 
-class CC_ANIMATION_EXPORT AnimationEvents
-    : public NON_EXPORTED_BASE(MutatorEvents) {
+class CC_ANIMATION_EXPORT AnimationEvents : public MutatorEvents {
  public:
   AnimationEvents();
 

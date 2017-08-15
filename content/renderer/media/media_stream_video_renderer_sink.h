@@ -40,8 +40,8 @@ namespace content {
 // http://src.chromium.org/viewvc/chrome/trunk/src/content/renderer/media/rtc_vi
 // deo_decoder_unittest.cc?revision=180591&view=markup
 class CONTENT_EXPORT MediaStreamVideoRendererSink
-    : NON_EXPORTED_BASE(public MediaStreamVideoRenderer),
-      NON_EXPORTED_BASE(public MediaStreamVideoSink) {
+    : public MediaStreamVideoRenderer,
+      public MediaStreamVideoSink {
  public:
   MediaStreamVideoRendererSink(
       const blink::WebMediaStreamTrack& video_track,

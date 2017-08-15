@@ -27,8 +27,8 @@ class FileSystemContext;
 namespace content {
 
 // An UploadElementReader implementation for filesystem file.
-class CONTENT_EXPORT UploadFileSystemFileElementReader :
-    NON_EXPORTED_BASE(public net::UploadElementReader) {
+class CONTENT_EXPORT UploadFileSystemFileElementReader
+    : public net::UploadElementReader {
  public:
   UploadFileSystemFileElementReader(
       storage::FileSystemContext* file_system_context,
