@@ -212,12 +212,13 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args,
 
 
 def _SymbolizeEntry(entry):
+  filename_re = re.compile(r'at ([-._a-zA-Z0-9/+]+):(\d+)')
   raw, frame_id = entry['raw'], entry['frame_id']
   prefix = '#%s: ' % frame_id
   if entry.has_key('debug_binary') and entry.has_key('pc_offset'):
     # Invoke addr2line on the host-side binary to resolve the symbol.
     addr2line_output = subprocess.check_output(
-        ['addr2line', '-s', '-Cipf', '--exe=' + entry['debug_binary'],
+        ['addr2line', '-Cipf', '--exe=' + entry['debug_binary'],
          entry['pc_offset']])
 
     # addr2line outputs a second line for inlining information, offset
@@ -225,7 +226,13 @@ def _SymbolizeEntry(entry):
     addr2line_filtered = addr2line_output.strip().replace(
         '(inlined', ' ' * len(prefix) + '(inlined')
 
-    # If symbolization files just output the raw backtrace.
+    # Relativize path to DIR_SOURCE_ROOT if we see a filename.
+    def RelativizePath(m):
+      relpath = os.path.relpath(os.path.normpath(m.group(1)), DIR_SOURCE_ROOT)
+      return 'at ' + relpath + ':' + m.group(2)
+    addr2line_filtered = filename_re.sub(RelativizePath, addr2line_filtered)
+
+    # If symbolization fails just output the raw backtrace.
     if '??' in addr2line_filtered:
       addr2line_filtered = raw
   else:
