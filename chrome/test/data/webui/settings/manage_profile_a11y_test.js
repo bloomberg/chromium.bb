@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Define accessibility tests for the EDIT_DICTIONARY route.
+ * @fileoverview Define accessibility tests for the MANAGE_PROFILE route.
  */
 
-// Disable since the EDIT_DICTIONARY route does not exist on Mac.
-GEN('#if !defined(OS_MACOSX)');
+
+// The MANAGE_PROFILE route is non-Chrome OS only.
+GEN('#if !defined(OS_CHROMEOS)');
 
 /** @const {string} Path to root from chrome/test/data/webui/settings/. */
 var ROOT_PATH = '../../../../../';
@@ -17,9 +18,11 @@ GEN_INCLUDE([
   ROOT_PATH + 'chrome/test/data/webui/settings/accessibility_browsertest.js',
 ]);
 
+// TODO(quacht): refactor to provide a default set of axeOptions and violation
+// filters for settings accessibility tests.
 AccessibilityTest.define('SettingsAccessibilityTest', {
   /** @override */
-  name: 'EDIT_DICTIONARY',
+  name: 'MANAGE_PROFILE',
   /** @override */
   axeOptions: {
     'rules': {
@@ -32,9 +35,7 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
   },
   /** @override */
   setup: function() {
-    console.log('the route is not undefined!');
-    assert(settings.routes.EDIT_DICTIONARY != undefined);
-    settings.navigateTo(settings.routes.EDIT_DICTIONARY);
+    settings.navigateTo(settings.routes.MANAGE_PROFILE);
     Polymer.dom.flush();
   },
   /** @override */
@@ -43,12 +44,6 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
   },
   /** @override */
   violationFilter: {
-    // TODO(quacht): remove this exception once the color contrast issue is
-    // solved.
-    // http://crbug.com/748608
-    'color-contrast': function(nodeResult) {
-      return nodeResult.element.id === 'prompt';
-    },
     'aria-valid-attr': function(nodeResult) {
       return nodeResult.element.hasAttribute('aria-active-attribute');
     },
@@ -64,4 +59,4 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
   },
 });
 
-GEN('#endif // !defined(OS_MACOSX)');
+GEN('#endif  // !defined(OS_CHROMEOS)');
