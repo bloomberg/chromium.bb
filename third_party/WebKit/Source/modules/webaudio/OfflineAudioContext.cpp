@@ -136,10 +136,7 @@ OfflineAudioContext::OfflineAudioContext(Document* document,
                                          size_t number_of_frames,
                                          float sample_rate,
                                          ExceptionState& exception_state)
-    : BaseAudioContext(document,
-                       number_of_channels,
-                       number_of_frames,
-                       sample_rate),
+    : BaseAudioContext(document, kOfflineContext),
       is_rendering_started_(false),
       total_render_frames_(number_of_frames) {
   destination_node_ = OfflineAudioDestinationNode::Create(
