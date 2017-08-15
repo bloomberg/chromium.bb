@@ -278,6 +278,47 @@ class UtilsTest(TestCase):
       if tmpoutdir:
         file_path.rmtree(tmpoutdir)
 
+  def test_fetch_stream_verifier_success(self):
+    def teststream():
+      yield 'abc'
+      yield '123'
+    d = hashlib.sha1('abc123').hexdigest()
+    verifier = isolateserver.FetchStreamVerifier(teststream(),
+                                                 hashlib.sha1, d, 6)
+    for _ in verifier.run():
+      pass
+
+  def test_fetch_stream_verifier_bad_size(self):
+    def teststream():
+      yield 'abc'
+      yield '123'
+    d = hashlib.sha1('abc123').hexdigest()
+    verifier = isolateserver.FetchStreamVerifier(teststream(),
+                                                 hashlib.sha1, d, 7)
+    failed = False
+    try:
+      for _ in verifier.run():
+        pass
+    except IOError:
+      failed = True
+    self.assertEqual(True, failed)
+
+  def test_fetch_stream_verifier_bad_digest(self):
+    def teststream():
+      yield 'abc'
+      yield '123'
+    d = hashlib.sha1('def456').hexdigest()
+    verifier = isolateserver.FetchStreamVerifier(teststream(),
+                                                 hashlib.sha1, d, 6)
+    failed = False
+    try:
+      for _ in verifier.run():
+        pass
+    except IOError:
+      failed = True
+    # TODO(aludwin): assert that we *did* fail once we enable the exception.
+    self.assertEqual(False, failed)
+
 
 class StorageTest(TestCase):
   """Tests for Storage methods."""
@@ -937,6 +978,8 @@ class IsolateServerDownloadTest(TestCase):
       actual[key] = ''.join(generator)
     self.mock(isolateserver, 'file_write', out)
     server = 'http://example.com'
+    coucou_sha1 = hashlib.sha1('Coucou').hexdigest()
+    byebye_sha1 = hashlib.sha1('Bye Bye').hexdigest()
     requests = [
       (
         server + '/api/isolateservice/v1/retrieve',
@@ -953,15 +996,15 @@ class IsolateServerDownloadTest(TestCase):
             'read_timeout': 60,
         },
         {'content': base64.b64encode(zlib.compress(v))},
-      ) for h, v in [('sha-1', 'Coucou'), ('sha-2', 'Bye Bye')]
+      ) for h, v in [(coucou_sha1, 'Coucou'), (byebye_sha1, 'Bye Bye')]
     ]
     self.expected_requests(requests)
     cmd = [
       'download',
       '--isolate-server', server,
       '--target', net_utils.ROOT_DIR,
-      '--file', 'sha-1', 'path/to/a',
-      '--file', 'sha-2', 'path/to/b',
+      '--file', coucou_sha1, 'path/to/a',
+      '--file', byebye_sha1, 'path/to/b',
     ]
     self.assertEqual(0, isolateserver.main(cmd))
     expected = {

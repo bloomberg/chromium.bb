@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.8.0'
+__version__ = '0.8.1'
 
 import errno
 import functools
@@ -658,7 +658,7 @@ class Storage(object):
         if self._use_zip:
           stream = zip_decompress(stream, isolated_format.DISK_FILE_CHUNK)
         # Run |stream| through verifier that will assert its size.
-        verifier = FetchStreamVerifier(stream, size)
+        verifier = FetchStreamVerifier(stream, self._hash_algo, digest, size)
         # Verified stream goes to |sink|.
         sink(verifier.run())
       except Exception as err:
@@ -838,11 +838,25 @@ class FetchQueue(object):
 class FetchStreamVerifier(object):
   """Verifies that fetched file is valid before passing it to the LocalCache."""
 
-  def __init__(self, stream, expected_size):
+  def __init__(self, stream, hasher, expected_digest, expected_size):
+    """Initializes the verifier.
+
+    Arguments:
+    * stream: an iterable yielding chunks of content
+    * hasher: an object from hashlib that supports update() and hexdigest()
+      (eg, hashlib.sha1).
+    * expected_digest: if the entire stream is piped through hasher and then
+      summarized via hexdigest(), this should be the result. That is, it
+      should be a hex string like 'abc123'.
+    * expected_size: either the expected size of the stream, or
+      UNKNOWN_FILE_SIZE.
+    """
     assert stream is not None
     self.stream = stream
+    self.expected_digest = expected_digest
     self.expected_size = expected_size
     self.current_size = 0
+    self.rolling_hash = hasher()
 
   def run(self):
     """Generator that yields same items as |stream|.
@@ -877,11 +891,27 @@ class FetchStreamVerifier(object):
   def _inspect_chunk(self, chunk, is_last):
     """Called for each fetched chunk before passing it to consumer."""
     self.current_size += len(chunk)
-    if (is_last and
-        (self.expected_size != UNKNOWN_FILE_SIZE) and
+    self.rolling_hash.update(chunk)
+    if not is_last:
+      return
+
+    if ((self.expected_size != UNKNOWN_FILE_SIZE) and
         (self.expected_size != self.current_size)):
-      raise IOError('Incorrect file size: expected %d, got %d' % (
-          self.expected_size, self.current_size))
+      msg = 'Incorrect file size: want %d, got %d' % (
+          self.expected_size, self.current_size)
+      logging.error('%s; last chunk:\n%s', msg, chunk)
+      raise IOError(msg)
+
+    actual_digest = self.rolling_hash.hexdigest()
+    if self.expected_digest != actual_digest:
+      msg = 'Incorrect digest: want %s, got %s' % (
+          self.expected_digest, actual_digest)
+      logging.error('%s; last chunk:\n%s', msg, chunk)
+      # TODO(aludwin): actually raise an error. In the short term, we'll
+      # continue to let this through to verify that we see the logs when we
+      # expect to; if we just return IOError, the download will be retried and
+      # the error will be masked.
+      # raise IOError(msg)
 
 
 class CacheMiss(Exception):
