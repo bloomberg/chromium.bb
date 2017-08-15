@@ -84,6 +84,13 @@ bool IsGlobal(const LayoutBox& box) {
                               .GlobalRootScroller();
 }
 
+bool IsEffective(const PaintLayer& layer) {
+  if (!layer.GetLayoutBox())
+    return false;
+
+  return IsEffective(*layer.GetLayoutBox());
+}
+
 bool IsGlobal(const PaintLayer& layer) {
   if (!layer.GetLayoutBox())
     return false;
