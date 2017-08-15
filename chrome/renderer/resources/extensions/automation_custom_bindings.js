@@ -8,10 +8,7 @@ var AutomationRootNode = require('automationNode').AutomationRootNode;
 var automation = require('binding').Binding.create('automation');
 var automationInternal =
     require('binding').Binding.create('automationInternal').generate();
-var eventBindings = require('event_bindings');
-var Event = eventBindings.Event;
 var exceptionHandler = require('uncaught_exception_handler');
-var forEach = require('utils').forEach;
 var lastError = require('lastError');
 var logging = requireNative('logging');
 var nativeAutomationInternal = requireNative('automationInternal');
