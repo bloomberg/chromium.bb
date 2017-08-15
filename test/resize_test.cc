@@ -388,7 +388,7 @@ class ResizeInternalTest : public ResizeTest {
 #endif
 };
 
-TEST_P(ResizeInternalTest, TestInternalResizeWorks) {
+TEST_P(ResizeInternalTest, DISABLED_TestInternalResizeWorks) {
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 10);
   init_flags_ = AOM_CODEC_USE_PSNR;
@@ -417,7 +417,7 @@ TEST_P(ResizeInternalTest, TestInternalResizeWorks) {
   }
 }
 
-TEST_P(ResizeInternalTest, TestInternalResizeChangeConfig) {
+TEST_P(ResizeInternalTest, DISABLED_TestInternalResizeChangeConfig) {
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 10);
   cfg_.g_w = 352;
@@ -493,7 +493,7 @@ class ResizeRealtimeTest
   int mismatch_nframes_;
 };
 
-TEST_P(ResizeRealtimeTest, TestExternalResizeWorks) {
+TEST_P(ResizeRealtimeTest, DISABLED_TestExternalResizeWorks) {
   ResizingVideoSource video;
   video.flag_codec_ = 1;
   DefaultConfig();
@@ -520,7 +520,7 @@ TEST_P(ResizeRealtimeTest, TestExternalResizeWorks) {
 // Verify the dynamic resizer behavior for real time, 1 pass CBR mode.
 // Run at low bitrate, with resize_allowed = 1, and verify that we get
 // one resize down event.
-TEST_P(ResizeRealtimeTest, TestInternalResizeDown) {
+TEST_P(ResizeRealtimeTest, DISABLED_TestInternalResizeDown) {
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 299);
   DefaultConfig();
@@ -558,7 +558,7 @@ TEST_P(ResizeRealtimeTest, TestInternalResizeDown) {
 // Verify the dynamic resizer behavior for real time, 1 pass CBR mode.
 // Start at low target bitrate, raise the bitrate in the middle of the clip,
 // scaling-up should occur after bitrate changed.
-TEST_P(ResizeRealtimeTest, TestInternalResizeDownUpChangeBitRate) {
+TEST_P(ResizeRealtimeTest, DISABLED_TestInternalResizeDownUpChangeBitRate) {
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 359);
   DefaultConfig();
@@ -704,7 +704,7 @@ TEST_P(ResizeCspTest, TestResizeCspWorks) {
 AV1_INSTANTIATE_TEST_CASE(ResizeTest,
                           ::testing::Values(::libaom_test::kRealTime));
 AV1_INSTANTIATE_TEST_CASE(ResizeInternalTest,
-                          ::testing::Values(::libaom_test::kOnePassBest));
+                          ::testing::Values(::libaom_test::kOnePassGood));
 AV1_INSTANTIATE_TEST_CASE(ResizeRealtimeTest,
                           ::testing::Values(::libaom_test::kRealTime),
                           ::testing::Range(5, 9));

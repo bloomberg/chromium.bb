@@ -36,7 +36,7 @@ LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += encode_api_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += error_resilience_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += i420_video_source.h
 #LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += realtime_test.cc
-#LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += resize_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += resize_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += y4m_video_source.h
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += yuv_video_source.h
 
