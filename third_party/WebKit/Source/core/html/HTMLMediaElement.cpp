@@ -2209,7 +2209,10 @@ WebMediaPlayer::Preload HTMLMediaElement::PreloadType() const {
     return WebMediaPlayer::kPreloadMetaData;
   }
 
-  if (DeprecatedEqualIgnoringCase(preload, "auto")) {
+  // Per HTML spec, "The empty string ... maps to the Automatic state."
+  // https://html.spec.whatwg.org/#attr-media-preload
+  if (DeprecatedEqualIgnoringCase(preload, "auto") ||
+      DeprecatedEqualIgnoringCase(preload, "")) {
     UseCounter::Count(GetDocument(), WebFeature::kHTMLMediaElementPreloadAuto);
     return WebMediaPlayer::kPreloadAuto;
   }
