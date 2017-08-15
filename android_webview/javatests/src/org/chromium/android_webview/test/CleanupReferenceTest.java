@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import static org.junit.Assert.assertNotEquals;
+
 import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 
@@ -66,7 +68,7 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
 
         instance = null;
         // Ensure compiler / instrumentation does not strip out the assignment.
-        assertTrue(instance == null);
+        assertNull(instance);
         collectGarbage();
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
@@ -92,10 +94,10 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
 
         instances = null;
         // Ensure compiler / instrumentation does not strip out the assignment.
-        assertTrue(instances == null);
+        assertNull(instances);
         // Calling sObjectCount.get() before collectGarbage() seems to be required for the objects
         // to be GC'ed only when building using GN.
-        assertTrue(sObjectCount.get() != -1);
+        assertNotEquals(sObjectCount.get(), -1);
         collectGarbage();
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override

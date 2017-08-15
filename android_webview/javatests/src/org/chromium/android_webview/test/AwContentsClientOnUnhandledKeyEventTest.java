@@ -144,11 +144,11 @@ public class AwContentsClientOnUnhandledKeyEventTest extends AwTestBase {
 
     private void assertUnhandledDownAndUp(final int code) throws Throwable {
         List<KeyEvent> list = mHelper.getUnhandledKeyEventList();
-        assertTrue("KeyEvent list: " + Arrays.deepToString(list.toArray()), list.size() == 2
-                        && list.get(0).getAction() == KeyEvent.ACTION_DOWN
-                        && list.get(0).getKeyCode() == code
-                        && list.get(1).getAction() == KeyEvent.ACTION_UP
-                        && list.get(1).getKeyCode() == code);
+        assertEquals("KeyEvent list: " + Arrays.deepToString(list.toArray()), 2, list.size());
+        assertEquals(KeyEvent.ACTION_DOWN, list.get(0).getAction());
+        assertEquals(code, list.get(0).getKeyCode());
+        assertEquals(KeyEvent.ACTION_UP, list.get(1).getAction());
+        assertEquals(code, list.get(1).getKeyCode());
 
         mHelper.clearUnhandledKeyEventList();
     }

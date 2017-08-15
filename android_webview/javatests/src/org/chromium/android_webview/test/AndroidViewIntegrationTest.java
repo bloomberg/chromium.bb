@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import static org.junit.Assert.assertNotEquals;
+
 import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -233,7 +235,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
             }
             // This means that we hit the max number of iterations but the expected contents size
             // wasn't reached.
-            assertTrue(i != maxSizeChangeNotificationsToWaitFor);
+            assertNotEquals(i, maxSizeChangeNotificationsToWaitFor);
         }
     }
 

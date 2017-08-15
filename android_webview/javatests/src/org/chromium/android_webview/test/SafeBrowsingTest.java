@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import static org.junit.Assert.assertNotEquals;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -410,17 +412,13 @@ public class SafeBrowsingTest extends AwTestBase {
     }
 
     private void assertGreenPageNotShowing() throws Exception {
-        assertTrue("Original page should not be showing",
-                GREEN_PAGE_BACKGROUND_COLOR
-                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
-                                   mAwContents, mContainerView));
+        assertNotEquals("Original page should not be showing", GREEN_PAGE_BACKGROUND_COLOR,
+                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
     }
 
     private void assertTargetPageNotShowing(int pageColor) throws Exception {
-        assertTrue("Target page should not be showing",
-                pageColor
-                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
-                                   mAwContents, mContainerView));
+        assertNotEquals("Target page should not be showing", pageColor,
+                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
     }
 
     @SmallTest
