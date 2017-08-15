@@ -154,6 +154,12 @@ void GraphicsLayer::SetScrollBoundaryBehavior(
   layer_->Layer()->SetScrollBoundaryBehavior(behavior);
 }
 
+void GraphicsLayer::SetIsResizedByBrowserControls(
+    bool is_resized_by_browser_controls) {
+  PlatformLayer()->SetIsResizedByBrowserControls(
+      is_resized_by_browser_controls);
+}
+
 void GraphicsLayer::SetParent(GraphicsLayer* layer) {
 #if DCHECK_IS_ON()
   DCHECK(!layer || !layer->HasAncestor(this));

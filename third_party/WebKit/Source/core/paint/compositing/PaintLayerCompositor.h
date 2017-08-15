@@ -254,6 +254,8 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   VisualViewport& GetVisualViewport() const;
   GraphicsLayer* ParentForContentLayers() const;
 
+  bool IsRootScrollerAncestor() const;
+
   LayoutView& layout_view_;
 
   CompositingReasonFinder compositing_reason_finder_;

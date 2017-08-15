@@ -45,6 +45,7 @@
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebSettingsImpl.h"
 #include "core/exported/WebViewImpl.h"
+#include "core/frame/BrowserControls.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -811,6 +812,11 @@ void ChromeClientImpl::SetBrowserControlsState(float top_height,
 
   web_view_->ResizeWithBrowserControls(size, top_height, bottom_height,
                                        shrinks_layout);
+}
+
+void ChromeClientImpl::SetBrowserControlsShownRatio(float ratio) {
+  web_view_->GetBrowserControls().SetShownRatio(ratio);
+  web_view_->DidUpdateBrowserControls();
 }
 
 bool ChromeClientImpl::ShouldOpenModalDialogDuringPageDismissal(

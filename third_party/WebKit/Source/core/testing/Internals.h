@@ -111,6 +111,7 @@ class Internals final : public GarbageCollected<Internals>,
   void setBrowserControlsState(float top_height,
                                float bottom_height,
                                bool shrinks_layout);
+  void setBrowserControlsShownRatio(float);
 
   ShadowRoot* createUserAgentShadowRoot(Element* host);
 

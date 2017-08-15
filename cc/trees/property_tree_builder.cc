@@ -377,7 +377,7 @@ bool AddTransformNodeIfNeeded(
 
   if (IsContainerForFixedPositionLayers(layer) || is_root) {
     data_for_children->affected_by_outer_viewport_bounds_delta =
-        layer == data_from_ancestor.outer_viewport_scroll_layer;
+        layer->IsResizedByBrowserControls();
     if (is_scrollable) {
       DCHECK(Transform(layer).IsIdentity());
       data_for_children->transform_fixed_parent = Parent(layer);

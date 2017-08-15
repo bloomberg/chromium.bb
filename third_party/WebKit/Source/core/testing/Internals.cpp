@@ -741,6 +741,10 @@ void Internals::setBrowserControlsState(float top_height,
       top_height, bottom_height, shrinks_layout);
 }
 
+void Internals::setBrowserControlsShownRatio(float ratio) {
+  document_->GetPage()->GetChromeClient().SetBrowserControlsShownRatio(ratio);
+}
+
 ShadowRoot* Internals::shadowRoot(Element* host) {
   // FIXME: Internals::shadowRoot() in tests should be converted to
   // youngestShadowRoot() or oldestShadowRoot().

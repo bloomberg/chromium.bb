@@ -115,6 +115,7 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
           cc::TouchAction) const override;
   void SetIsContainerForFixedPositionLayers(bool is_container) override;
   bool IsContainerForFixedPositionLayers() const override;
+  void SetIsResizedByBrowserControls(bool) override;
   void SetPositionConstraint(
       const blink::WebLayerPositionConstraint& constraint) override;
   blink::WebLayerPositionConstraint PositionConstraint() const override;

@@ -195,6 +195,8 @@ class WebLayer {
   virtual void SetIsContainerForFixedPositionLayers(bool) = 0;
   virtual bool IsContainerForFixedPositionLayers() const = 0;
 
+  virtual void SetIsResizedByBrowserControls(bool) = 0;
+
   // This function sets layer position constraint. The constraint will be used
   // to adjust layer position during threaded scrolling.
   virtual void SetPositionConstraint(const WebLayerPositionConstraint&) = 0;

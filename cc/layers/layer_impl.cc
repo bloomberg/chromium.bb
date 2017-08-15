@@ -65,6 +65,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       draws_content_(false),
       contributes_to_drawn_render_surface_(false),
       should_hit_test_(false),
+      is_resized_by_browser_controls_(false),
       viewport_layer_type_(NOT_VIEWPORT_LAYER),
       background_color_(0),
       safe_opaque_background_color_(0),
@@ -362,6 +363,14 @@ bool LayerImpl::IsAffectedByPageScale() const {
   TransformTree& transform_tree = GetTransformTree();
   return transform_tree.Node(transform_tree_index())
       ->in_subtree_of_page_scale_layer;
+}
+
+bool LayerImpl::IsResizedByBrowserControls() const {
+  return is_resized_by_browser_controls_;
+}
+
+void LayerImpl::SetIsResizedByBrowserControls(bool resized) {
+  is_resized_by_browser_controls_ = resized;
 }
 
 std::unique_ptr<base::DictionaryValue> LayerImpl::LayerTreeAsJson() {

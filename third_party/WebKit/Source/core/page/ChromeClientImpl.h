@@ -186,6 +186,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void SetBrowserControlsState(float top_height,
                                float bottom_height,
                                bool shrinks_layout) override;
+  void SetBrowserControlsShownRatio(float) override;
 
   bool ShouldOpenModalDialogDuringPageDismissal(
       LocalFrame&,
