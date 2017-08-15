@@ -5,6 +5,7 @@
 #include "ash/wm/lock_layout_manager.h"
 
 #include "ash/keyboard/keyboard_observer_register.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_window_state.h"
 #include "ash/wm/window_state.h"
@@ -15,15 +16,17 @@
 
 namespace ash {
 
-LockLayoutManager::LockLayoutManager(aura::Window* window)
+LockLayoutManager::LockLayoutManager(aura::Window* window, Shelf* shelf)
     : wm::WmSnapToPixelLayoutManager(),
       window_(window),
       root_window_(window->GetRootWindow()),
+      shelf_observer_(this),
       keyboard_observer_(this) {
   Shell::Get()->AddShellObserver(this);
   root_window_->AddObserver(this);
   if (keyboard::KeyboardController::GetInstance())
     keyboard_observer_.Add(keyboard::KeyboardController::GetInstance());
+  shelf_observer_.Add(shelf);
 }
 
 LockLayoutManager::~LockLayoutManager() {
@@ -86,6 +89,20 @@ void LockLayoutManager::OnVirtualKeyboardStateChanged(
     aura::Window* root_window) {
   UpdateKeyboardObserverFromStateChanged(activated, root_window, root_window_,
                                          &keyboard_observer_);
+}
+
+void LockLayoutManager::WillChangeVisibilityState(
+    ShelfVisibilityState visibility) {
+  // This will be called when shelf work area changes.
+  //  * LockLayoutManager windows depend on changes to the accessibility panel
+  //    height.
+  //  * LockActionHandlerLayoutManager windows bounds depend on the work area
+  //    bound defined by the shelf layout (see
+  //    ScreenUtil::GetDisplayWorkAreaBoundsInParentForLockScreen).
+  // In short, when shelf bounds change, the windows in this layout manager
+  // should be updated, too.
+  const wm::WMEvent event(wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
+  AdjustWindowsForWorkAreaChange(&event);
 }
 
 void LockLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {

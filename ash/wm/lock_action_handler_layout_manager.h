@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/shelf/shelf_observer.h"
 #include "ash/tray_action/tray_action_observer.h"
 #include "ash/wm/lock_layout_manager.h"
 #include "base/macros.h"
@@ -15,8 +14,8 @@
 
 namespace ash {
 
-class TrayAction;
 class Shelf;
+class TrayAction;
 
 // Window layout manager for windows intended to handle lock tray actions.
 // Since "new note" is currently the only supported action, the layout
@@ -36,7 +35,6 @@ class Shelf;
 // Unlike lock layout manager, when maximizing windows, this layout manager will
 // ensure that the windows do not obscure the system shelf.
 class ASH_EXPORT LockActionHandlerLayoutManager : public LockLayoutManager,
-                                                  public ShelfObserver,
                                                   public TrayActionObserver {
  public:
   LockActionHandlerLayoutManager(aura::Window* window, Shelf* shelf);
@@ -47,14 +45,10 @@ class ASH_EXPORT LockActionHandlerLayoutManager : public LockLayoutManager,
   void OnChildWindowVisibilityChanged(aura::Window* child,
                                       bool visibile) override;
 
-  // ShelfObserver:
-  void WillChangeVisibilityState(ShelfVisibilityState visibility) override;
-
   // TrayActionObserver:
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
 
  private:
-  ScopedObserver<Shelf, ShelfObserver> shelf_observer_;
   ScopedObserver<TrayAction, TrayActionObserver> tray_action_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LockActionHandlerLayoutManager);
