@@ -299,7 +299,7 @@ function ensureStatsGraphTopContainer(peerConnectionElement, report) {
     container.firstChild.firstChild.className =
         STATS_GRAPH_CONTAINER_HEADING_CLASS;
     container.firstChild.firstChild.textContent =
-        'Stats graphs for ' + report.id;
+        'Stats graphs for ' + report.id + ' (' + report.type + ')';
     var statsType = getSsrcReportType(report);
     if (statsType != '')
       container.firstChild.firstChild.textContent += ' (' + statsType + ')';
