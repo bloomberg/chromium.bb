@@ -5,6 +5,7 @@
 #include "chrome/browser/page_load_metrics/observers/session_restore_page_load_metrics_observer.h"
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -20,19 +21,19 @@
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/sessions/session_restore.h"
-#include "chrome/browser/sessions/tab_loader.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/referrer.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
-using RestoredTab = SessionRestoreDelegate::RestoredTab;
 using WebContents = content::WebContents;
 
 class SessionRestorePageLoadMetricsObserverTest
@@ -86,11 +87,7 @@ class SessionRestorePageLoadMetricsObserverTest
             base::BindRepeating(
                 &SessionRestorePageLoadMetricsObserverTest::RegisterObservers));
     testers_[contents] = std::move(tester);
-    restored_tabs_.emplace_back(contents, false /* is_active */,
-                                false /* is_app */, false /* is_pinned */);
-    NavigateAndCommit(contents, GetTestURL());
     contents->WasShown();
-    StopLoading(contents);
     return contents;
   }
 
@@ -111,8 +108,26 @@ class SessionRestorePageLoadMetricsObserverTest
         expected_total_count);
   }
 
-  void RestoreTabs() {
-    TabLoader::RestoreTabs(restored_tabs_, base::TimeTicks());
+  void RestoreTab(WebContents* contents) {
+    SessionRestore::OnWillRestoreTab(contents);
+
+    // Create a restored navigation entry.
+    std::vector<std::unique_ptr<content::NavigationEntry>> entries;
+    std::unique_ptr<content::NavigationEntry> entry(
+        content::NavigationController::CreateNavigationEntry(
+            GetTestURL(), content::Referrer(), ui::PAGE_TRANSITION_RELOAD,
+            false, std::string(), browser_context()));
+    entries.emplace_back(std::move(entry));
+
+    content::NavigationController& controller = contents->GetController();
+    controller.Restore(0, content::RestoreType::LAST_SESSION_EXITED_CLEANLY,
+                       &entries);
+    ASSERT_EQ(0u, entries.size());
+    ASSERT_EQ(1, controller.GetEntryCount());
+
+    EXPECT_TRUE(controller.NeedsReload());
+    controller.LoadIfNecessary();
+    content::WebContentsTester::For(contents)->CommitPendingNavigation();
   }
 
   void SimulateTimingUpdateForTab(WebContents* contents) {
@@ -120,29 +135,12 @@ class SessionRestorePageLoadMetricsObserverTest
     testers_[contents]->SimulateTimingUpdate(timing_);
   }
 
-  void StopLoading(WebContents* contents) const {
-    contents->Stop();
-    content::WebContentsTester::For(contents)->TestSetIsLoading(false);
-  }
-
-  void NavigateAndCommit(WebContents* contents, const GURL& url) const {
-    content::NavigationSimulator::NavigateAndCommitFromDocument(
-        GetTestURL(), contents->GetMainFrame());
-  }
-
   GURL GetTestURL() const { return GURL("https://google.com"); }
-
-  const page_load_metrics::mojom::PageLoadTiming& timing() const {
-    return timing_;
-  }
-
-  std::vector<RestoredTab>& restored_tabs() { return restored_tabs_; }
 
  private:
   base::HistogramTester histogram_tester_;
 
   page_load_metrics::mojom::PageLoadTiming timing_;
-  std::vector<RestoredTab> restored_tabs_;
   std::vector<std::unique_ptr<WebContents>> tabs_;
   std::unordered_map<
       WebContents*,
@@ -158,35 +156,27 @@ TEST_F(SessionRestorePageLoadMetricsObserverTest, NoMetrics) {
 
 TEST_F(SessionRestorePageLoadMetricsObserverTest,
        FirstPaintsOutOfSessionRestore) {
-  NavigateAndCommit(web_contents(), GetTestURL());
+  content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GetTestURL(), web_contents()->GetMainFrame());
   ASSERT_NO_FATAL_FAILURE(SimulateTimingUpdateForTab(web_contents()));
   ExpectFirstPaintMetricsTotalCount(0);
 }
 
 TEST_F(SessionRestorePageLoadMetricsObserverTest, RestoreSingleForegroundTab) {
   // Restore one tab which finishes loading in foreground.
-  SessionRestore::OnWillRestoreTab(web_contents());
-  RestoreTabs();
-  NavigateAndCommit(web_contents(), GetTestURL());
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(web_contents()));
   ASSERT_NO_FATAL_FAILURE(SimulateTimingUpdateForTab(web_contents()));
   ExpectFirstPaintMetricsTotalCount(1);
 }
 
 TEST_F(SessionRestorePageLoadMetricsObserverTest,
        RestoreMultipleForegroundTabs) {
-  WebContents* second_contents = AddForegroundTabWithTester();
-  // Restore each tab separately.
-  std::vector<std::vector<RestoredTab>> restored_tabs_list{
-      std::vector<RestoredTab>{
-          RestoredTab(web_contents(), false, false, false)},
-      std::vector<RestoredTab>{
-          RestoredTab(second_contents, false, false, false)}};
+  AddForegroundTabWithTester();
 
+  // Restore each tab separately.
   for (size_t i = 0; i < tabs().size(); ++i) {
     WebContents* contents = tabs()[i].get();
-    SessionRestore::OnWillRestoreTab(contents);
-    TabLoader::RestoreTabs(restored_tabs_list[i], base::TimeTicks());
-    NavigateAndCommit(contents, GetTestURL());
+    ASSERT_NO_FATAL_FAILURE(RestoreTab(contents));
     ASSERT_NO_FATAL_FAILURE(SimulateTimingUpdateForTab(contents));
     ExpectFirstPaintMetricsTotalCount(i + 1);
   }
@@ -197,9 +187,7 @@ TEST_F(SessionRestorePageLoadMetricsObserverTest, RestoreBackgroundTab) {
   web_contents()->WasHidden();
 
   // Load the restored tab in background.
-  SessionRestore::OnWillRestoreTab(web_contents());
-  RestoreTabs();
-  NavigateAndCommit(web_contents(), GetTestURL());
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(web_contents()));
   ASSERT_NO_FATAL_FAILURE(SimulateTimingUpdateForTab(web_contents()));
 
   // No paint timings recorded for tabs restored in background.
@@ -208,15 +196,13 @@ TEST_F(SessionRestorePageLoadMetricsObserverTest, RestoreBackgroundTab) {
 
 TEST_F(SessionRestorePageLoadMetricsObserverTest, HideTabBeforeFirstPaints) {
   // Start loading the tab.
-  SessionRestore::OnWillRestoreTab(web_contents());
-  RestoreTabs();
-  NavigateAndCommit(web_contents(), GetTestURL());
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(web_contents()));
 
   // Hide the tab before any paints.
   web_contents()->WasHidden();
-  ASSERT_NO_FATAL_FAILURE(SimulateTimingUpdateForTab(web_contents()));
 
   // No paint timings recorded because tab was hidden before the first paints.
+  ASSERT_NO_FATAL_FAILURE(SimulateTimingUpdateForTab(web_contents()));
   ExpectFirstPaintMetricsTotalCount(0);
 }
 
@@ -224,40 +210,31 @@ TEST_F(SessionRestorePageLoadMetricsObserverTest,
        SwitchInitialRestoredForegroundTab) {
   // Create 2 tabs: tab 0 is foreground, tab 1 is background.
   AddForegroundTabWithTester();
-  restored_tabs()[0].contents()->WasShown();
-  restored_tabs()[1].contents()->WasHidden();
+  tabs()[0]->WasShown();
+  tabs()[1]->WasHidden();
 
   // Restore both tabs.
   for (size_t i = 0; i < tabs().size(); ++i)
-    SessionRestore::OnWillRestoreTab(tabs()[i].get());
-  TabLoader::RestoreTabs(restored_tabs(), base::TimeTicks());
-
-  for (size_t i = 0; i < tabs().size(); ++i)
-    NavigateAndCommit(tabs()[i].get(), GetTestURL());
+    ASSERT_NO_FATAL_FAILURE(RestoreTab(tabs()[i].get()));
 
   // Switch to tab 1 before any paint events occur.
-  restored_tabs()[0].contents()->WasHidden();
-  restored_tabs()[1].contents()->WasShown();
-  ASSERT_NO_FATAL_FAILURE(SimulateTimingUpdateForTab(web_contents()));
+  tabs()[0]->WasHidden();
+  tabs()[1]->WasShown();
 
   // No paint timings recorded because the initial foreground tab was hidden.
+  ASSERT_NO_FATAL_FAILURE(SimulateTimingUpdateForTab(web_contents()));
   ExpectFirstPaintMetricsTotalCount(0);
 }
 
 TEST_F(SessionRestorePageLoadMetricsObserverTest, MultipleSessionRestores) {
   size_t number_of_session_restores = 3;
   for (size_t i = 1; i <= number_of_session_restores; ++i) {
-    // Restore session.
-    SessionRestore::OnWillRestoreTab(web_contents());
-    RestoreTabs();
-    NavigateAndCommit(web_contents(), GetTestURL());
-    ASSERT_NO_FATAL_FAILURE(SimulateTimingUpdateForTab(web_contents()));
+    // NavigationController needs to be unused to restore.
+    WebContents* contents = AddForegroundTabWithTester();
+    ASSERT_NO_FATAL_FAILURE(RestoreTab(contents));
+    ASSERT_NO_FATAL_FAILURE(SimulateTimingUpdateForTab(contents));
 
     // Number of paint timings should match the number of session restores.
     ExpectFirstPaintMetricsTotalCount(i);
-
-    // Clear committed URL for the next restore starts from an empty URL.
-    NavigateAndCommit(web_contents(), GURL());
-    StopLoading(web_contents());
   }
 }
