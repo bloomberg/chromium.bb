@@ -38,7 +38,7 @@ class LaserPointerView : public FastInkView {
   void UpdateTime();
 
   // FastInkView:
-  void OnRedraw(gfx::Canvas& canvas, const gfx::Vector2d& offset) override;
+  void OnRedraw(gfx::Canvas& canvas) override;
 
   FastInkPoints laser_points_;
   FastInkPoints predicted_laser_points_;

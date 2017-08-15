@@ -50,7 +50,7 @@ class HighlighterView : public FastInkView {
  private:
   friend class HighlighterControllerTestApi;
 
-  void OnRedraw(gfx::Canvas& canvas, const gfx::Vector2d& offset) override;
+  void OnRedraw(gfx::Canvas& canvas) override;
 
   void FadeOut(const gfx::PointF& pivot,
                AnimationMode animation_mode,

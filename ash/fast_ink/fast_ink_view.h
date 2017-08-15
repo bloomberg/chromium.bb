@@ -50,7 +50,7 @@ class FastInkView : public views::View {
   void RequestRedraw();
 
   // Draw the contents of the view in the provided canvas.
-  virtual void OnRedraw(gfx::Canvas& canvas, const gfx::Vector2d& offset) = 0;
+  virtual void OnRedraw(gfx::Canvas& canvas) = 0;
 
  private:
   friend class FastInkLayerTreeFrameSinkHolder;
@@ -66,7 +66,7 @@ class FastInkView : public views::View {
   void OnDidDrawSurface();
 
   std::unique_ptr<views::Widget> widget_;
-  float scale_factor_ = 1.0f;
+  gfx::Transform screen_to_buffer_transform_;
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
   gfx::Rect buffer_damage_rect_;
   bool pending_update_buffer_ = false;
