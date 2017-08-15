@@ -1484,6 +1484,24 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         return null;
     }
 
+    @Override
+    public void setRendererPriorityPolicy(
+            int rendererRequestedPriority, boolean waivedWhenNotVisible) {
+        // TODO(paulmiller): Unfork O APIs
+    }
+
+    @Override
+    public int getRendererRequestedPriority() {
+        // TODO(paulmiller): Unfork O APIs
+        return 0;
+    }
+
+    @Override
+    public boolean getRendererPriorityWaivedWhenNotVisible() {
+        // TODO(paulmiller): Unfork O APIs
+        return false;
+    }
+
     // WebViewProvider glue methods ---------------------------------------------------------------
 
     @Override
