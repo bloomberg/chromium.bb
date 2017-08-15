@@ -17,12 +17,10 @@ testEncode("UTF-8", "0xDC00", "%EF%BF%BD"); // U+FFFD (REPLACEMENT CHARACTER)
 testEncode('GBK', 'U+00A5', '%A3%A4');
 testEncode('gb2312', 'U+00A5', '%A3%A4');
 testEncode('GB_2312-80', 'U+00A5', '%A3%A4');
-testEncode('EUC-CN', 'U+00A5', '%A3%A4');
 //Euro symbol in gbk
 testEncode('GBK', 'U+20AC', '%80');
 testEncode('gb2312', 'U+20AC', '%80');
 testEncode('GB_2312-80', 'U+20AC', '%80');
-testEncode('EUC-CN', 'U+20AC', '%80');
 //Align GBK with gb18030
 // See https://www.w3.org/Bugs/Public/show_bug.cgi?id=28740#c3
 testEncode('GBK', 'U+01F9', '%A8%BF');
