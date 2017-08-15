@@ -364,11 +364,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                GetAttr(iframe, ui::AX_ATTR_HTML_TAG).c_str());
   ASSERT_EQ(1, iframe->child_count());
 
-  const ui::AXNode* scroll_area = iframe->ChildAtIndex(0);
-  EXPECT_EQ(ui::AX_ROLE_SCROLL_AREA, scroll_area->data().role);
-  ASSERT_EQ(1, scroll_area->child_count());
-
-  const ui::AXNode* sub_document = scroll_area->ChildAtIndex(0);
+  const ui::AXNode* sub_document = iframe->ChildAtIndex(0);
   EXPECT_EQ(ui::AX_ROLE_WEB_AREA, sub_document->data().role);
   ASSERT_EQ(1, sub_document->child_count());
 

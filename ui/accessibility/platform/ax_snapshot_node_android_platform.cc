@@ -240,7 +240,7 @@ AX_EXPORT std::unique_ptr<AXSnapshotNodeAndroid> AXSnapshotNodeAndroid::Create(
 
 // static
 AX_EXPORT bool AXSnapshotNodeAndroid::AXRoleIsLink(AXRole role) {
-  return role == ui::AX_ROLE_LINK || role == ui::AX_ROLE_IMAGE_MAP_LINK;
+  return role == ui::AX_ROLE_LINK;
 }
 
 // static

@@ -21,7 +21,6 @@ enum AccessibilityRole {
   kAudioRole,  // No mapping to ARIA role.
   kBannerRole,
   kBlockquoteRole,     // No mapping to ARIA role.
-  kBusyIndicatorRole,  // No mapping to ARIA role.
   kButtonRole,
   kCanvasRole,   // No mapping to ARIA role.
   kCaptionRole,  // No mapping to ARIA role.
@@ -57,7 +56,6 @@ enum AccessibilityRole {
   kIframePresentationalRole,  // No mapping to ARIA role.
   kIframeRole,                // No mapping to ARIA role.
   kIgnoredRole,               // No mapping to ARIA role.
-  kImageMapLinkRole,          // No mapping to ARIA role.
   kImageMapRole,              // No mapping to ARIA role.
   kImageRole,
   kInlineTextBoxRole,  // No mapping to ARIA role.
@@ -88,7 +86,6 @@ enum AccessibilityRole {
   kNavigationRole,
   kNoneRole,  // ARIA role of "none"
   kNoteRole,
-  kOutlineRole,    // No mapping to ARIA role.
   kParagraphRole,  // No mapping to ARIA role.
   kPopUpButtonRole,
   kPreRole,  // No mapping to ARIA role.
@@ -97,15 +94,11 @@ enum AccessibilityRole {
   kRadioButtonRole,
   kRadioGroupRole,
   kRegionRole,
-  kRootWebAreaRole,  // No mapping to ARIA role.
   kRowHeaderRole,
   kRowRole,
   kRubyRole,        // No mapping to ARIA role.
-  kRulerRole,       // No mapping to ARIA role.
   kSVGRootRole,     // No mapping to ARIA role.
-  kScrollAreaRole,  // No mapping to ARIA role.
   kScrollBarRole,
-  kSeamlessWebAreaRole,  // No mapping to ARIA role.
   kSearchRole,
   kSearchBoxRole,
   kSliderRole,
@@ -116,7 +109,6 @@ enum AccessibilityRole {
   kStaticTextRole,  // No mapping to ARIA role.
   kStatusRole,
   kSwitchRole,
-  kTabGroupRole,  // No mapping to ARIA role.
   kTabListRole,
   kTabPanelRole,
   kTabRole,
@@ -134,7 +126,6 @@ enum AccessibilityRole {
   kUserInterfaceTooltipRole,
   kVideoRole,    // No mapping to ARIA role.
   kWebAreaRole,  // No mapping to ARIA role.
-  kWindowRole,   // No mapping to ARIA role.
   kNumRoles
 };
 

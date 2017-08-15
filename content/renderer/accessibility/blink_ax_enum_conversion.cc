@@ -97,8 +97,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_BANNER;
     case blink::kWebAXRoleBlockquote:
       return ui::AX_ROLE_BLOCKQUOTE;
-    case blink::kWebAXRoleBusyIndicator:
-      return ui::AX_ROLE_BUSY_INDICATOR;
     case blink::kWebAXRoleButton:
       return ui::AX_ROLE_BUTTON;
     case blink::kWebAXRoleCanvas:
@@ -173,8 +171,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_IMAGE;
     case blink::kWebAXRoleImageMap:
       return ui::AX_ROLE_IMAGE_MAP;
-    case blink::kWebAXRoleImageMapLink:
-      return ui::AX_ROLE_IMAGE_MAP_LINK;
     case blink::kWebAXRoleInlineTextBox:
       return ui::AX_ROLE_INLINE_TEXT_BOX;
     case blink::kWebAXRoleInputTime:
@@ -229,8 +225,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_NONE;
     case blink::kWebAXRoleNote:
       return ui::AX_ROLE_NOTE;
-    case blink::kWebAXRoleOutline:
-      return ui::AX_ROLE_OUTLINE;
     case blink::kWebAXRoleParagraph:
       return ui::AX_ROLE_PARAGRAPH;
     case blink::kWebAXRolePopUpButton:
@@ -247,24 +241,16 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_RADIO_GROUP;
     case blink::kWebAXRoleRegion:
       return ui::AX_ROLE_REGION;
-    case blink::kWebAXRoleRootWebArea:
-      return ui::AX_ROLE_ROOT_WEB_AREA;
     case blink::kWebAXRoleRow:
       return ui::AX_ROLE_ROW;
     case blink::kWebAXRoleRuby:
       return ui::AX_ROLE_RUBY;
     case blink::kWebAXRoleRowHeader:
       return ui::AX_ROLE_ROW_HEADER;
-    case blink::kWebAXRoleRuler:
-      return ui::AX_ROLE_RULER;
     case blink::kWebAXRoleSVGRoot:
       return ui::AX_ROLE_SVG_ROOT;
-    case blink::kWebAXRoleScrollArea:
-      return ui::AX_ROLE_SCROLL_AREA;
     case blink::kWebAXRoleScrollBar:
       return ui::AX_ROLE_SCROLL_BAR;
-    case blink::kWebAXRoleSeamlessWebArea:
-      return ui::AX_ROLE_SEAMLESS_WEB_AREA;
     case blink::kWebAXRoleSearch:
       return ui::AX_ROLE_SEARCH;
     case blink::kWebAXRoleSearchBox:
@@ -287,8 +273,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_SWITCH;
     case blink::kWebAXRoleTab:
       return ui::AX_ROLE_TAB;
-    case blink::kWebAXRoleTabGroup:
-      return ui::AX_ROLE_TAB_GROUP;
     case blink::kWebAXRoleTabList:
       return ui::AX_ROLE_TAB_LIST;
     case blink::kWebAXRoleTabPanel:
@@ -325,13 +309,7 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_ROOT_WEB_AREA;
     case blink::kWebAXRoleLineBreak:
       return ui::AX_ROLE_LINE_BREAK;
-    case blink::kWebAXRoleWindow:
-      return ui::AX_ROLE_WINDOW;
     default:
-      // We can't add an assertion here, that prevents us
-      // from adding new role enums in Blink.
-      LOG(WARNING) << "Warning: Blink WebAXRole " << role
-                   << " not handled by Chromium yet.";
       return ui::AX_ROLE_UNKNOWN;
   }
 }

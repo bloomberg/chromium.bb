@@ -36,7 +36,6 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_AUDIO, NSAccessibilityGroupRole},
       {ui::AX_ROLE_BANNER, NSAccessibilityGroupRole},
       {ui::AX_ROLE_BLOCKQUOTE, NSAccessibilityGroupRole},
-      {ui::AX_ROLE_BUSY_INDICATOR, NSAccessibilityBusyIndicatorRole},
       {ui::AX_ROLE_BUTTON, NSAccessibilityButtonRole},
       {ui::AX_ROLE_CANVAS, NSAccessibilityImageRole},
       {ui::AX_ROLE_CAPTION, NSAccessibilityGroupRole},
@@ -79,7 +78,6 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_IGNORED, NSAccessibilityUnknownRole},
       {ui::AX_ROLE_IMAGE, NSAccessibilityImageRole},
       {ui::AX_ROLE_IMAGE_MAP, NSAccessibilityGroupRole},
-      {ui::AX_ROLE_IMAGE_MAP_LINK, NSAccessibilityLinkRole},
       {ui::AX_ROLE_INPUT_TIME, @"AXTimeField"},
       {ui::AX_ROLE_LABEL_TEXT, NSAccessibilityGroupRole},
       {ui::AX_ROLE_LEGEND, NSAccessibilityGroupRole},
@@ -106,7 +104,6 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_NAVIGATION, NSAccessibilityGroupRole},
       {ui::AX_ROLE_NONE, NSAccessibilityGroupRole},
       {ui::AX_ROLE_NOTE, NSAccessibilityGroupRole},
-      {ui::AX_ROLE_OUTLINE, NSAccessibilityOutlineRole},
       {ui::AX_ROLE_PARAGRAPH, NSAccessibilityGroupRole},
       {ui::AX_ROLE_POP_UP_BUTTON, NSAccessibilityPopUpButtonRole},
       {ui::AX_ROLE_PRE, NSAccessibilityGroupRole},
@@ -118,7 +115,6 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_ROOT_WEB_AREA, @"AXWebArea"},
       {ui::AX_ROLE_ROW, NSAccessibilityRowRole},
       {ui::AX_ROLE_ROW_HEADER, @"AXCell"},
-      {ui::AX_ROLE_RULER, NSAccessibilityRulerRole},
       {ui::AX_ROLE_SCROLL_BAR, NSAccessibilityScrollBarRole},
       {ui::AX_ROLE_SEARCH, NSAccessibilityGroupRole},
       {ui::AX_ROLE_SEARCH_BOX, NSAccessibilityTextFieldRole},
@@ -148,10 +144,6 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_VIDEO, NSAccessibilityGroupRole},
       {ui::AX_ROLE_WEB_AREA, @"AXWebArea"},
       {ui::AX_ROLE_WINDOW, NSAccessibilityWindowRole},
-
-      // TODO(dtseng): we don't correctly support the attributes for these
-      // roles.
-      // { ui::AX_ROLE_SCROLL_AREA, NSAccessibilityScrollAreaRole },
   };
 
   return RoleMap(begin(roles), end(roles));

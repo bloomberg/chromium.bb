@@ -175,7 +175,7 @@ void PopulateAXRole(arc::mojom::AccessibilityNodeInfoData* node,
   }
   MAP_ROLE(ui::kAXListViewClassname, ui::AX_ROLE_LIST);
   MAP_ROLE(ui::kAXMenuItemClassname, ui::AX_ROLE_MENU_ITEM);
-  MAP_ROLE(ui::kAXPagerClassname, ui::AX_ROLE_SCROLL_AREA);
+  MAP_ROLE(ui::kAXPagerClassname, ui::AX_ROLE_GROUP);
   MAP_ROLE(ui::kAXProgressBarClassname, ui::AX_ROLE_PROGRESS_INDICATOR);
   MAP_ROLE(ui::kAXRadioButtonClassname, ui::AX_ROLE_RADIO_BUTTON);
   MAP_ROLE(ui::kAXSeekBarClassname, ui::AX_ROLE_SLIDER);
