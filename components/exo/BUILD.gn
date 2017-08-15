@@ -16,6 +16,7 @@ source_set("exo") {
     "data_offer.cc",
     "data_offer.h",
     "data_offer_delegate.h",
+    "data_offer_observer.h",
     "data_source.cc",
     "data_source.h",
     "data_source_delegate.h",

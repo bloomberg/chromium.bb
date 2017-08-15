@@ -11,6 +11,7 @@
 #include "base/containers/flat_set.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "ui/base/class_property.h"
 
 namespace ui {
@@ -20,6 +21,7 @@ class OSExchangeData;
 namespace exo {
 
 class DataOfferDelegate;
+class DataOfferObserver;
 enum class DndAction;
 
 // Object representing transferred data offered to a client.
@@ -27,6 +29,9 @@ class DataOffer : public ui::PropertyHandler {
  public:
   explicit DataOffer(DataOfferDelegate* delegate);
   ~DataOffer();
+
+  void AddObserver(DataOfferObserver* observer);
+  void RemoveObserver(DataOfferObserver* observer);
 
   // Accepts one of the offered mime types.
   void Accept(const std::string& mime_type);
@@ -48,11 +53,14 @@ class DataOffer : public ui::PropertyHandler {
   // Sets source actions.
   void SetSourceActions(const base::flat_set<DndAction>& source_actions);
 
+  DndAction dnd_action() { return dnd_action_; }
+
  private:
   DataOfferDelegate* const delegate_;
   base::flat_set<std::string> mime_types_;
   base::flat_set<DndAction> source_actions_;
   DndAction dnd_action_;
+  base::ObserverList<DataOfferObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DataOffer);
 };
