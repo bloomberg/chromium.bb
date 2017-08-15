@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("compositing") {
   sources = [
+    "begin_frame_args.mojom",
     "compositor_frame.mojom",
     "compositor_frame_metadata.mojom",
     "compositor_frame_sink.mojom",
@@ -23,6 +24,7 @@ mojom("compositing") {
   public_deps = [
     "//cc/ipc:interfaces",
     "//gpu/ipc/common:interfaces",
+    "//mojo/common:common_custom_types",
     "//services/viz/public/interfaces/hit_test",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 typemaps = [
+  "//services/viz/public/cpp/compositing/begin_frame_args.typemap",
   "//services/viz/public/cpp/compositing/compositor_frame.typemap",
   "//services/viz/public/cpp/compositing/compositor_frame_metadata.typemap",
   "//services/viz/public/cpp/compositing/render_pass.typemap",

@@ -4,8 +4,8 @@
 
 module viz.mojom;
 
-import "cc/ipc/begin_frame_args.mojom";
 import "cc/ipc/surface_id.mojom";
+import "services/viz/public/interfaces/compositing/begin_frame_args.mojom";
 import "services/viz/public/interfaces/compositing/selection.mojom";
 import "ui/latency/mojo/latency_info.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -34,6 +34,6 @@ struct CompositorFrameMetadata {
   array<cc.mojom.SurfaceId> activation_dependencies;
   bool can_activate_before_dependencies;
   uint32 content_source_id;
-  cc.mojom.BeginFrameAck begin_frame_ack;
+  BeginFrameAck begin_frame_ack;
   uint32 frame_token;
 };

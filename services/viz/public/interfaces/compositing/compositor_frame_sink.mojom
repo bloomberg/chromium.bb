@@ -4,14 +4,14 @@
 
 module viz.mojom;
 
-import "cc/ipc/begin_frame_args.mojom";
 import "cc/ipc/copy_output_request.mojom";
 import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_surface_id.mojom";
 import "cc/ipc/surface_id.mojom";
-import "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom";
+import "services/viz/public/interfaces/compositing/begin_frame_args.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame.mojom";
 import "services/viz/public/interfaces/compositing/returned_resource.mojom";
+import "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // A CompositorFrameSink is an interface for receiving CompositorFrame
@@ -37,13 +37,13 @@ interface CompositorFrameSink {
   // DidReceiveCompositorFrameAck() asynchronously when the frame has been
   // processed in order to unthrottle the next frame.
   SubmitCompositorFrame(cc.mojom.LocalSurfaceId local_surface_id,
-                        viz.mojom.CompositorFrame frame,
-                        viz.mojom.HitTestRegionList? hit_test_region_list,
+                        CompositorFrame frame,
+                        HitTestRegionList? hit_test_region_list,
                         uint64 submit_time);
 
   // Notifies the frame sink that a BeginFrame was completed, but that no
   // CompositorFrame was produced as a result of it.
-  DidNotProduceFrame(cc.mojom.BeginFrameAck ack);
+  DidNotProduceFrame(BeginFrameAck ack);
 };
 
 interface CompositorFrameSinkClient {
@@ -57,7 +57,7 @@ interface CompositorFrameSinkClient {
   DidReceiveCompositorFrameAck(array<ReturnedResource> resources);
 
   // Notification for the client to generate a CompositorFrame.
-  OnBeginFrame(cc.mojom.BeginFrameArgs args);
+  OnBeginFrame(BeginFrameArgs args);
 
   // Inform the client that OnBeginFrame may not be called for some time.
   OnBeginFramePausedChanged(bool paused);
