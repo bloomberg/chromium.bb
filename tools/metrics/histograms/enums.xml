@@ -2627,6 +2627,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 
   <int value="0" label="GVM_EMBEDDER_FORBIDDEN_ACCESS_TO_GUEST"/>
   <int value="1" label="GVM_INVALID_GUESTVIEW_TYPE"/>
+  <int value="2" label="GVMF_UNEXPECTED_MESSAGE_BEFORE_GVM_CREATION"/>
 </enum>
 
 <enum name="BadMessageReasonNaCl">
