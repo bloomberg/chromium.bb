@@ -3535,8 +3535,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
       displayState.scroll_state().set_offset_y(
           [self.nativeController scrollOffset].y);
     }
-  } else {
-    // TODO(crbug.com/546146): Handle native views.
   }
   return displayState;
 }
