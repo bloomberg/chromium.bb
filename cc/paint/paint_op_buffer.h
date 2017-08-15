@@ -109,6 +109,7 @@ class CC_PAINT_EXPORT PaintOp {
   void Raster(SkCanvas* canvas, const PlaybackParams& params) const;
   bool IsDrawOp() const;
   bool IsPaintOpWithFlags() const;
+  bool IsValid() const;
 
   struct SerializeOptions {
     ImageDecodeCache* decode_cache = nullptr;
@@ -167,6 +168,10 @@ class CC_PAINT_EXPORT PaintOp {
   static bool IsValidSkClipOp(SkClipOp op) {
     return static_cast<uint32_t>(op) <=
            static_cast<uint32_t>(SkClipOp::kMax_EnumValue);
+  }
+
+  static bool IsValidPath(const SkPath& path) {
+    return path.isValid() && path.pathRefIsValid();
   }
 
   static bool IsUnsetRect(const SkRect& rect) {
@@ -268,7 +273,7 @@ class CC_PAINT_EXPORT ClipPathOp final : public PaintOp {
   static void Raster(const ClipPathOp* op,
                      SkCanvas* canvas,
                      const PlaybackParams& params);
-  bool IsValid() const { return IsValidSkClipOp(op); }
+  bool IsValid() const { return IsValidSkClipOp(op) && IsValidPath(path); }
   int CountSlowPaths() const;
   bool HasNonAAPaint() const { return !antialias; }
   HAS_SERIALIZATION_FUNCTIONS();
@@ -540,7 +545,7 @@ class CC_PAINT_EXPORT DrawPathOp final : public PaintOpWithFlags {
                               const PaintFlags* flags,
                               SkCanvas* canvas,
                               const PlaybackParams& params);
-  bool IsValid() const { return flags.IsValid(); }
+  bool IsValid() const { return flags.IsValid() && IsValidPath(path); }
   int CountSlowPaths() const;
   HAS_SERIALIZATION_FUNCTIONS();
 
