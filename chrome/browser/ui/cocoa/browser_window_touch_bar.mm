@@ -154,6 +154,9 @@ class HomePrefNotificationBridge {
 
   // Used to receive and handle notifications for the home button pref.
   std::unique_ptr<HomePrefNotificationBridge> notificationBridge_;
+
+  // The stop/reload button in the touch bar.
+  base::scoped_nsobject<NSButton> reloadStopButton_;
 }
 
 // Creates and returns a touch bar for tab fullscreen mode.
@@ -245,12 +248,8 @@ class HomePrefNotificationBridge {
                       l10n_util::GetNSString(
                           IDS_TOUCH_BAR_BACK_FORWARD_CUSTOMIZATION_LABEL)];
   } else if ([identifier hasSuffix:kReloadOrStopTouchId]) {
-    const gfx::VectorIcon& icon =
-        isPageLoading_ ? kNavigateStopIcon : vector_icons::kReloadIcon;
-    int commandId = isPageLoading_ ? IDC_STOP : IDC_RELOAD;
-    int tooltipId = isPageLoading_ ? IDS_TOOLTIP_STOP : IDS_TOOLTIP_RELOAD;
-    [touchBarItem
-        setView:CreateTouchBarButton(icon, self, commandId, tooltipId)];
+    [self updateReloadStopButton];
+    [touchBarItem setView:reloadStopButton_.get()];
     [touchBarItem setCustomizationLabel:
                       l10n_util::GetNSString(
                           IDS_TOUCH_BAR_STOP_RELOAD_CUSTOMIZATION_LABEL)];
@@ -457,6 +456,29 @@ class HomePrefNotificationBridge {
   int command = [sender tag];
   ui::LogTouchBarUMA(TouchBarActionFromCommand(command));
   commandUpdater_->ExecuteCommand(command);
+}
+
+- (void)updateReloadStopButton {
+  const gfx::VectorIcon& icon =
+      isPageLoading_ ? kNavigateStopIcon : vector_icons::kReloadIcon;
+  int commandId = isPageLoading_ ? IDC_STOP : IDC_RELOAD;
+  int tooltipId = isPageLoading_ ? IDS_TOOLTIP_STOP : IDS_TOOLTIP_RELOAD;
+
+  if (!reloadStopButton_) {
+    reloadStopButton_.reset(
+        [CreateTouchBarButton(icon, self, commandId, tooltipId) retain]);
+    return;
+  }
+
+  [reloadStopButton_
+      setImage:CreateNSImageFromIcon(icon, kTouchBarDefaultIconColor)];
+  [reloadStopButton_ setTag:commandId];
+  [reloadStopButton_ setAccessibilityLabel:l10n_util::GetNSString(tooltipId)];
+}
+
+- (void)setIsPageLoading:(BOOL)isPageLoading {
+  isPageLoading_ = isPageLoading;
+  [self updateReloadStopButton];
 }
 
 @end
