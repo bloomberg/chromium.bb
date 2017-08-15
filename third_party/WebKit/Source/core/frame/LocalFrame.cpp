@@ -123,6 +123,7 @@ inline float ParentTextZoomFactor(LocalFrame* frame) {
 
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
+// static
 LocalFrame* LocalFrame::Create(LocalFrameClient* client,
                                Page& page,
                                FrameOwner* owner,
@@ -1104,6 +1105,22 @@ void LocalFrame::SetViewportIntersectionFromParent(
     if (View())
       View()->ScheduleAnimation();
   }
+}
+
+void LocalFrame::NotifyUserActivation() {
+  bool had_gesture = HasReceivedUserGesture();
+  if (!had_gesture)
+    UpdateUserActivationInFrameTree();
+  Client()->SetHasReceivedUserGesture(had_gesture);
+}
+
+// static
+std::unique_ptr<UserGestureIndicator> LocalFrame::CreateUserGesture(
+    LocalFrame* frame,
+    UserGestureToken::Status status) {
+  if (frame)
+    frame->NotifyUserActivation();
+  return WTF::MakeUnique<UserGestureIndicator>(status);
 }
 
 }  // namespace blink

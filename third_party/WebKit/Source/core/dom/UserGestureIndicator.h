@@ -7,8 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
@@ -26,11 +24,17 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   enum Status { kNewGesture, kPossiblyExistingGesture };
   enum TimeoutPolicy { kDefault, kOutOfProcess, kHasPaused };
 
+  // Deprecated, use UserGestureIndicator(Status) instead.
+  // TODO(mustaq): Replace remaining refs and nuke this method.
+  //
   // Creates a UserGestureToken with the given status. Also if a non-null
   // Document* is provided, associates the token with the document.
   static RefPtr<UserGestureToken> Create(Document*,
                                          Status = kPossiblyExistingGesture);
+
   static RefPtr<UserGestureToken> Adopt(Document*, UserGestureToken*);
+
+  UserGestureToken(Status);
 
   ~UserGestureToken() {}
   bool HasGestures() const;
@@ -38,9 +42,6 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   bool ConsumeGesture();
   void SetTimeoutPolicy(TimeoutPolicy);
   void ResetTimestamp();
-
- protected:
-  UserGestureToken(Status);
 
  private:
   bool HasTimedOut() const;
@@ -74,9 +75,16 @@ class CORE_EXPORT UserGestureIndicator final {
   static UserGestureToken* CurrentTokenThreadSafe();
 
   explicit UserGestureIndicator(PassRefPtr<UserGestureToken>);
+
+  // Constructs a UserGestureIndicator with a new UserGestureToken of the given
+  // status.
+  explicit UserGestureIndicator(
+      UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture);
   ~UserGestureIndicator();
 
  private:
+  void UpdateRootToken();
+
   static UserGestureToken* root_token_;
 
   RefPtr<UserGestureToken> token_;
