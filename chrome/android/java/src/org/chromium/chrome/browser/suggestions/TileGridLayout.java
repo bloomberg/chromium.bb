@@ -6,12 +6,12 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.MathUtils;
 
@@ -78,24 +78,6 @@ public class TileGridLayout extends FrameLayout {
 
         // Clear the measure cache for this view and make sure it will be remeasured.
         forceLayout();
-    }
-
-    /**
-     * Sets a new icon on the child view with a matching URL.
-     * @param tile The tile that holds the data to populate the tile view.
-     */
-    public void updateIconView(Tile tile) {
-        TileView tileView = getTileView(tile.getData());
-        if (tileView != null) tileView.renderIcon(tile);
-    }
-
-    /**
-     * Updates the visibility of the offline badge on the child view with a matching URL.
-     * @param tile The tile that holds the data to populate the tile view.
-     */
-    public void updateOfflineBadge(Tile tile) {
-        TileView tileView = getTileView(tile.getData());
-        if (tileView != null) tileView.renderOfflineBadge(tile);
     }
 
     @Override
@@ -198,9 +180,8 @@ public class TileGridLayout extends FrameLayout {
         return orderedChildren;
     }
 
-    /** @return A tile view associated to the provided data, or {@code null} if none is found. */
-    @VisibleForTesting
-    TileView getTileView(SiteSuggestion suggestion) {
+    @Nullable
+    public TileView getTileView(SiteSuggestion suggestion) {
         int childCount = getChildCount();
         for (int i = 0; i < childCount; i++) {
             TileView tileView = (TileView) getChildAt(i);
