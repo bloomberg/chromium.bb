@@ -15,7 +15,6 @@
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/win/shell.h"
-#include "ui/compositor/compositor_constants.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/display/win/dpi.h"
 #include "ui/display/win/screen_win.h"
@@ -133,12 +132,7 @@ void DesktopWindowTreeHostWin::Init(aura::Window* content_window,
   gfx::Rect pixel_bounds =
       display::win::ScreenWin::DIPToScreenRect(nullptr, params.bounds);
   message_handler_->Init(parent_hwnd, pixel_bounds);
-  if (params.force_software_compositing) {
-    ::SetProp(GetAcceleratedWidget(),
-              kForceSoftwareCompositor,
-              reinterpret_cast<HANDLE>(true));
-  }
-  CreateCompositor();
+  CreateCompositor(viz::FrameSinkId(), params.force_software_compositing);
   OnAcceleratedWidgetAvailable();
   InitHost();
   window()->Show();

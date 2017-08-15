@@ -20,7 +20,6 @@ component("compositor") {
     "compositor.cc",
     "compositor.h",
     "compositor_animation_observer.h",
-    "compositor_constants.h",
     "compositor_export.h",
     "compositor_lock.cc",
     "compositor_lock.h",
