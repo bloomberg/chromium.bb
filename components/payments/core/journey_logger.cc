@@ -113,11 +113,6 @@ void JourneyLogger::SetEventOccurred(Event event) {
   events_ |= event;
 }
 
-void JourneyLogger::SetSelectedPaymentMethod(
-    SelectedPaymentMethod payment_method) {
-  payment_method_ = payment_method;
-}
-
 void JourneyLogger::SetRequestedInformation(bool requested_shipping,
                                             bool requested_email,
                                             bool requested_phone,
@@ -184,14 +179,8 @@ void JourneyLogger::RecordJourneyStatsHistograms(
   // These following metrics only make sense if the Payment Request was
   // triggered.
   if (WasPaymentRequestTriggered()) {
-    RecordPaymentMethodMetric();
     RecordSectionSpecificStats(completion_status);
   }
-}
-
-void JourneyLogger::RecordPaymentMethodMetric() {
-  base::UmaHistogramEnumeration("PaymentRequest.SelectedPaymentMethod",
-                                payment_method_, SELECTED_PAYMENT_METHOD_MAX);
 }
 
 void JourneyLogger::RecordSectionSpecificStats(

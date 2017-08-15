@@ -1350,12 +1350,17 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         // methods.
         Map<String, PaymentMethodData> methodData = new HashMap<>();
         Map<String, PaymentDetailsModifier> modifiers = new HashMap<>();
+        boolean isGooglePaymentInstrument = false;
         for (String instrumentMethodName : instrument.getInstrumentMethodNames()) {
             if (mMethodData.containsKey(instrumentMethodName)) {
                 methodData.put(instrumentMethodName, mMethodData.get(instrumentMethodName));
             }
             if (mModifiers != null && mModifiers.containsKey(instrumentMethodName)) {
                 modifiers.put(instrumentMethodName, mModifiers.get(instrumentMethodName));
+            }
+            if (instrumentMethodName.equals(ANDROID_PAY_METHOD_NAME)
+                    || instrumentMethodName.equals(PAY_WITH_GOOGLE_METHOD_NAME)) {
+                isGooglePaymentInstrument = true;
             }
         }
 
@@ -1364,7 +1369,16 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 mRawLineItems, Collections.unmodifiableMap(modifiers), this);
 
         mJourneyLogger.setEventOccurred(Event.PAY_CLICKED);
-        return !(instrument instanceof AutofillPaymentInstrument);
+        boolean isAutofillPaymentInstrument = instrument.isAutofillInstrument();
+        // Record what type of instrument was selected when "Pay" was clicked.
+        if (isAutofillPaymentInstrument) {
+            mJourneyLogger.setEventOccurred(Event.SELECTED_CREDIT_CARD);
+        } else if (isGooglePaymentInstrument) {
+            mJourneyLogger.setEventOccurred(Event.SELECTED_GOOGLE);
+        } else {
+            mJourneyLogger.setEventOccurred(Event.SELECTED_OTHER);
+        }
+        return !isAutofillPaymentInstrument;
     }
 
     @Override
@@ -1686,20 +1700,12 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (mClient == null || mPaymentResponseHelper == null) return;
 
-        // Record the payment method used to complete the transaction. If the payment method was an
-        // Autofill credit card with an identifier, record its use.
+        // If the payment method was an Autofill credit card with an identifier, record its use.
         PaymentOption selectedPaymentMethod = mPaymentMethodsSection.getSelectedItem();
-        if (selectedPaymentMethod instanceof AutofillPaymentInstrument) {
-            if (!selectedPaymentMethod.getIdentifier().isEmpty()) {
-                PersonalDataManager.getInstance().recordAndLogCreditCardUse(
-                        selectedPaymentMethod.getIdentifier());
-            }
-            mJourneyLogger.setSelectedPaymentMethod(SelectedPaymentMethod.CREDIT_CARD);
-        } else if (methodName.equals(ANDROID_PAY_METHOD_NAME)
-                || methodName.equals(PAY_WITH_GOOGLE_METHOD_NAME)) {
-            mJourneyLogger.setSelectedPaymentMethod(SelectedPaymentMethod.ANDROID_PAY);
-        } else {
-            mJourneyLogger.setSelectedPaymentMethod(SelectedPaymentMethod.OTHER_PAYMENT_APP);
+        if (selectedPaymentMethod instanceof AutofillPaymentInstrument
+                && !selectedPaymentMethod.getIdentifier().isEmpty()) {
+            PersonalDataManager.getInstance().recordAndLogCreditCardUse(
+                    selectedPaymentMethod.getIdentifier());
         }
 
         // Showing the payment request UI if we were previously skipping it so the loading
