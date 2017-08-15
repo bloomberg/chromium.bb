@@ -30,19 +30,7 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
     Polymer.dom.flush();
   },
   /** @override */
-  tests: {
-    'Accessible with No Changes': function() {}
-  },
+  tests: {'Accessible with No Changes': function() {}},
   /** @override */
-  violationFilter: {
-    // TODO(quacht): remove this exception once the color contrast issue is
-    // solved.
-    // http://crbug.com/748608
-    'color-contrast': function(nodeResult) {
-      return nodeResult.element.id === 'prompt';
-    },
-    'aria-valid-attr': function(nodeResult) {
-      return nodeResult.element.hasAttribute('aria-active-attribute');
-    },
-  }
+  violationFilter: SettingsAccessibilityTest.violationFilter,
 });

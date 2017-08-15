@@ -21,15 +21,7 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
   /** @override */
   name: 'EDIT_DICTIONARY',
   /** @override */
-  axeOptions: {
-    'rules': {
-      // TODO(hcarmona): enable 'region' after addressing violation.
-      'region': {enabled: false},
-      // Disable 'skip-link' check since there are few tab stops before the main
-      // content.
-      'skip-link': {enabled: false},
-    }
-  },
+  axeOptions: SettingsAccessibilityTest.axeOptions,
   /** @override */
   setup: function() {
     console.log('the route is not undefined!');
@@ -38,30 +30,20 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
     Polymer.dom.flush();
   },
   /** @override */
-  tests: {
-    'Accessible with No Changes': function() {}
-  },
+  tests: {'Accessible with No Changes': function() {}},
   /** @override */
-  violationFilter: {
-    // TODO(quacht): remove this exception once the color contrast issue is
-    // solved.
-    // http://crbug.com/748608
-    'color-contrast': function(nodeResult) {
-      return nodeResult.element.id === 'prompt';
-    },
-    'aria-valid-attr': function(nodeResult) {
-      return nodeResult.element.hasAttribute('aria-active-attribute');
-    },
-    // Excuse Polymer paper-input elements.
-    'aria-valid-attr-value': function(nodeResult) {
-      var describerId = nodeResult.element.getAttribute('aria-describedby');
-      return describerId === '' && nodeResult.element.id === 'input';
-    },
-    'button-name': function(nodeResult) {
-      var node = nodeResult.element;
-      return node.classList.contains('icon-expand-more');
-    },
-  },
+  violationFilter:
+      Object.assign({}, SettingsAccessibilityTest.violationFilter, {
+        // Excuse Polymer paper-input elements.
+        'aria-valid-attr-value': function(nodeResult) {
+          var describerId = nodeResult.element.getAttribute('aria-describedby');
+          return describerId === '' && nodeResult.element.id === 'input';
+        },
+        'button-name': function(nodeResult) {
+          var node = nodeResult.element;
+          return node.classList.contains('icon-expand-more');
+        },
+      })
 });
 
 GEN('#endif // !defined(OS_MACOSX)');

@@ -107,20 +107,12 @@ AccessibilityTest.define('SettingsA11yManagePasswords', {
       assertEquals(10, this.passwordsSection.savedPasswords.length);
     },
   },
-  violationFilter: {
-    // TODO(quacht): remove this exception once the color contrast issue is
-    // solved.
-    // http://crbug.com/748608
-    'color-contrast': function(nodeResult) {
-      return nodeResult.element.id == 'prompt';
-    },
-    // Ignore errors caused by polymer aria-* attributes.
-    'aria-valid-attr': function(nodeResult) {
-      return nodeResult.element.hasAttribute('aria-active-attribute');
-    },
-    'button-name': function(nodeResult) {
-      var node = nodeResult.element;
-      return node.classList.contains('icon-expand-more');
-    },
-  },
+  /** @override */
+  violationFilter:
+      Object.assign({}, SettingsAccessibilityTest.violationFilter, {
+        'button-name': function(nodeResult) {
+          var node = nodeResult.element;
+          return node.classList.contains('icon-expand-more');
+        },
+      }),
 });
