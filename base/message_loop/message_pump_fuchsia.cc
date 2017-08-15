@@ -32,17 +32,19 @@ bool MessagePumpFuchsia::MxHandleWatchController::StopWatchingMxHandle() {
     was_stopped_ = nullptr;
   }
 
-  // If the pump is gone, or we haven't begun waiting, then there is nothing
-  // to cancel.
-  if (!weak_pump_ || !has_begun_)
+  if (!has_begun_)
+    return true;
+
+  has_begun_ = false;
+
+  // If the pump is gone then there is nothing to cancel.
+  if (!weak_pump_)
     return true;
 
   int result = mx_port_cancel(weak_pump_->port_.get(), handle_, wait_key());
   DLOG_IF(ERROR, result != MX_OK)
       << "mx_port_cancel(handle=" << handle_
       << ") failed: " << mx_status_get_string(result);
-
-  has_begun_ = false;
 
   return result == MX_OK;
 }
