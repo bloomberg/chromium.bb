@@ -143,7 +143,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   virtual void DidChangeVisibilityState();
 
-  void SetDocumentHasReceivedUserGesture();
+  void UpdateUserActivationInFrameTree();
+
   bool HasReceivedUserGesture() const { return has_received_user_gesture_; }
   void ClearDocumentHasReceivedUserGesture() {
     has_received_user_gesture_ = false;

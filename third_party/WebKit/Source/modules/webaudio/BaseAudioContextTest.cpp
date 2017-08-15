@@ -625,7 +625,7 @@ TEST_P(BaseAudioContextAutoplayTest,
 // document previous received a user gesture.
 TEST_P(BaseAudioContextAutoplayTest,
        AutoplayMetrics_DocumentReceivedGesture_Child) {
-  ChildDocument().GetFrame()->SetDocumentHasReceivedUserGesture();
+  ChildDocument().GetFrame()->UpdateUserActivationInFrameTree();
 
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
@@ -661,7 +661,7 @@ TEST_P(BaseAudioContextAutoplayTest,
 // document previous received a user gesture.
 TEST_P(BaseAudioContextAutoplayTest,
        AutoplayMetrics_DocumentReceivedGesture_Main) {
-  GetDocument().GetFrame()->SetDocumentHasReceivedUserGesture();
+  GetDocument().GetFrame()->UpdateUserActivationInFrameTree();
 
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);

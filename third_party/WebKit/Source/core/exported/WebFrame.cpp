@@ -121,7 +121,7 @@ bool WebFrame::Swap(WebFrame* frame) {
   }
 
   if (parent_ && old_frame->HasReceivedUserGesture())
-    ToCoreFrame(*frame)->SetDocumentHasReceivedUserGesture();
+    ToCoreFrame(*frame)->UpdateUserActivationInFrameTree();
 
   ToCoreFrame(*frame)->GetWindowProxyManager()->SetGlobalProxies(
       global_proxies);
