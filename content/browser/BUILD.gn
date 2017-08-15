@@ -1648,6 +1648,10 @@ source_set("browser") {
     ]
   }
 
+  if (is_fuchsia) {
+    sources += [ "memory/memory_monitor_fuchsia.cc" ]
+  }
+
   if (enable_basic_printing || enable_print_preview) {
     deps += [ "//printing" ]
   }
