@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 
+#include "base/command_line.h"
 #include "base/i18n/timezone.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view_observer.h"
@@ -12,6 +13,10 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/chromeos_switches.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
@@ -32,6 +37,11 @@ ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler()
 }
 
 ArcTermsOfServiceScreenHandler::~ArcTermsOfServiceScreenHandler() {
+  OobeUI* oobe_ui = GetOobeUI();
+  if (oobe_ui)
+    oobe_ui->RemoveObserver(this);
+  chromeos::NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+      this, FROM_HERE);
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
   for (auto& observer : observer_list_)
     observer.OnViewDestroyed(this);
@@ -44,17 +54,41 @@ void ArcTermsOfServiceScreenHandler::RegisterMessages() {
               &ArcTermsOfServiceScreenHandler::HandleAccept);
 }
 
-void ArcTermsOfServiceScreenHandler::UpdateTimeZone() {
-  const std::string country_code = base::CountryCodeForCurrentTimezone();
-  if (country_code == last_applied_contry_code_)
+void ArcTermsOfServiceScreenHandler::MaybeLoadPlayStoreToS(
+    bool ignore_network_state) {
+  const chromeos::NetworkState* default_network =
+      chromeos::NetworkHandler::Get()
+          ->network_state_handler()
+          ->DefaultNetwork();
+  if (!ignore_network_state && !default_network)
     return;
-  last_applied_contry_code_ = country_code;
-  CallJS("setCountryCode", country_code);
+  const std::string country_code = base::CountryCodeForCurrentTimezone();
+  CallJS("loadPlayStoreToS", country_code);
+}
+
+void ArcTermsOfServiceScreenHandler::OnCurrentScreenChanged(
+    OobeScreen current_screen,
+    OobeScreen new_screen) {
+  if (new_screen != OobeScreen::SCREEN_GAIA_SIGNIN)
+    return;
+
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(chromeos::switches::kEnableArcOOBEOptIn))
+    return;
+
+  MaybeLoadPlayStoreToS(false);
+  StartNetworkAndTimeZoneObserving();
 }
 
 void ArcTermsOfServiceScreenHandler::TimezoneChanged(
     const icu::TimeZone& timezone) {
-  UpdateTimeZone();
+  MaybeLoadPlayStoreToS(false);
+}
+
+void ArcTermsOfServiceScreenHandler::DefaultNetworkChanged(
+    const NetworkState* network) {
+  MaybeLoadPlayStoreToS(false);
 }
 
 void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
@@ -140,9 +174,23 @@ void ArcTermsOfServiceScreenHandler::Hide() {
   pref_handler_.reset();
 }
 
-void ArcTermsOfServiceScreenHandler::Initialize() {
-  if (!show_on_init_)
+void ArcTermsOfServiceScreenHandler::StartNetworkAndTimeZoneObserving() {
+  if (network_time_zone_observing_)
     return;
+
+  chromeos::NetworkHandler::Get()->network_state_handler()->AddObserver(
+      this, FROM_HERE);
+  system::TimezoneSettings::GetInstance()->AddObserver(this);
+  network_time_zone_observing_ = true;
+}
+
+void ArcTermsOfServiceScreenHandler::Initialize() {
+  if (!show_on_init_) {
+    // Send time zone information as soon as possible to able to pre-load the
+    // Play Store ToS.
+    GetOobeUI()->AddObserver(this);
+    return;
+  }
 
   Show();
   show_on_init_ = false;
@@ -158,11 +206,11 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   // ToS then prefs::kArcEnabled is automatically reset in ArcSessionManager.
   profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
 
-  system::TimezoneSettings::GetInstance()->AddObserver(this);
-
   ShowScreen(kScreenId);
 
-  UpdateTimeZone();
+  MaybeLoadPlayStoreToS(true);
+  StartNetworkAndTimeZoneObserving();
+
   pref_handler_.reset(new arc::ArcOptInPreferenceHandler(
       this, profile->GetPrefs()));
   pref_handler_->Start();
