@@ -1184,7 +1184,7 @@ FlexItem LayoutFlexibleBox::ConstructFlexItem(LayoutBox& child,
   // min/max/preferred size, run layout on it now to make sure its logical
   // height and scroll bars are up to date.
   if (layout_type != kNeverLayout && ChildHasIntrinsicMainAxisSize(child) &&
-      child.NeedsLayout()) {
+      (child.NeedsLayout() || IsColumnFlow())) {
     child.ClearOverrideSize();
     child.ForceChildLayout();
     CacheChildMainSize(child);
