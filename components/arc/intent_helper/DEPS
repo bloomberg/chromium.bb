@@ -1,5 +1,10 @@
 include_rules = [
-  "+ash",
+  "+ash/link_handler_model.h",
+  "+ash/link_handler_model_factory.h",
+  "+ash/new_window_controller.h",
+  "+ash/shell.h",
+  "+ash/shell_delegate.h",
+  "+ash/wallpaper/wallpaper_controller.h",
   "+components/google/core/browser",
   "+ui/base",
   "+ui/gfx",
