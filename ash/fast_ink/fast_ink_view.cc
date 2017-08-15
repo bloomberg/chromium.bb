@@ -11,6 +11,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/base/math_util.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/output/layer_tree_frame_sink_client.h"
@@ -20,6 +21,7 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -110,7 +112,14 @@ FastInkView::FastInkView(aura::Window* root_window) : weak_ptr_factory_(this) {
   widget_->SetBounds(root_window->GetBoundsInScreen());
   set_owned_by_client();
 
-  scale_factor_ = ui::GetScaleFactorForNativeView(widget_->GetNativeView());
+  // Take the root transform and apply this during buffer update instead of
+  // leaving this up to the compositor. The benefit is that HW requirements
+  // for being able to take advantage of overlays and direct scanout are
+  // reduced significantly. Frames are submitted to the compositor with the
+  // inverse transform to cancel out the transformation that would otherwise
+  // be done by the compositor.
+  screen_to_buffer_transform_ =
+      widget_->GetNativeWindow()->GetHost()->GetRootTransform();
 
   frame_sink_holder_ = base::MakeUnique<FastInkLayerTreeFrameSinkHolder>(
       this, widget_->GetNativeView()->CreateLayerTreeFrameSink());
@@ -181,7 +190,11 @@ void FastInkView::UpdateBuffer() {
             ->context_factory()
             ->GetGpuMemoryBufferManager()
             ->CreateGpuMemoryBuffer(
-                gfx::ScaleToCeiledSize(screen_bounds.size(), scale_factor_),
+                gfx::ToEnclosedRect(cc::MathUtil::MapClippedRect(
+                                        screen_to_buffer_transform_,
+                                        gfx::RectF(screen_bounds.width(),
+                                                   screen_bounds.height())))
+                    .size(),
                 SK_B32_SHIFT ? gfx::BufferFormat::RGBA_8888
                              : gfx::BufferFormat::BGRA_8888,
                 gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
@@ -195,9 +208,13 @@ void FastInkView::UpdateBuffer() {
     update_rect = gfx::Rect(screen_bounds.size());
   }
 
-  // Constrain update rectangle to buffer size and early out if empty.
-  update_rect.Intersect(gfx::Rect(screen_bounds.size()));
-  if (update_rect.IsEmpty())
+  // Convert update rectangle to pixel coordinates.
+  gfx::Rect pixel_rect = cc::MathUtil::MapEnclosingClippedRect(
+      screen_to_buffer_transform_, update_rect);
+
+  // Constrain pixel rectangle to buffer size and early out if empty.
+  pixel_rect.Intersect(gfx::Rect(gpu_memory_buffer_->GetSize()));
+  if (pixel_rect.IsEmpty())
     return;
 
   // Map buffer for writing.
@@ -207,20 +224,16 @@ void FastInkView::UpdateBuffer() {
   }
 
   // Create a temporary canvas for update rectangle.
-  gfx::Canvas canvas(update_rect.size(), scale_factor_, false);
+  gfx::Canvas canvas(pixel_rect.size(), 1.0f, false);
+  canvas.Translate(-pixel_rect.OffsetFromOrigin());
+  canvas.Transform(screen_to_buffer_transform_);
 
   {
-    TRACE_EVENT1("ui", "FastInkView::UpdateBuffer::Paint", "update_rect",
-                 update_rect.ToString());
+    TRACE_EVENT1("ui", "FastInkView::UpdateBuffer::Paint", "pixel_rect",
+                 pixel_rect.ToString());
 
-    gfx::Vector2d offset =
-        widget_->GetNativeView()->GetBoundsInRootWindow().OffsetFromOrigin() +
-        update_rect.OffsetFromOrigin();
-    OnRedraw(canvas, offset);
+    OnRedraw(canvas);
   }
-
-  // Convert update rectangle to pixel coordinates.
-  gfx::Rect pixel_rect = gfx::ScaleToEnclosingRect(update_rect, scale_factor_);
 
   // Copy result to GPU memory buffer. This is effectively a memcpy and unlike
   // drawing to the buffer directly this ensures that the buffer is never in a
@@ -330,23 +343,37 @@ void FastInkView::UpdateSurface() {
       gpu::MailboxHolder(resource->mailbox, sync_token, GL_TEXTURE_2D);
   transferable_resource.is_overlay_candidate = true;
 
-  gfx::Rect quad_rect(widget_->GetNativeView()->GetBoundsInScreen().size());
+  gfx::Transform buffer_to_screen_transform;
+  bool rv = screen_to_buffer_transform_.GetInverse(&buffer_to_screen_transform);
+  DCHECK(rv);
+
+  gfx::Rect output_rect(widget_->GetNativeView()->GetBoundsInScreen().size());
+  // |quad_rect| is under normal cricumstances equal to |buffer_size| but to
+  // be more resilient to rounding errors in the compositor that might cause
+  // off-by-one problems when the transform is non-trivial we compute this rect
+  // by mapping the output rect back into buffer space and intersecting by
+  // buffer bounds. This avoids some corner cases where one row or column
+  // would end up outside the screen and we would fail to take advantage of HW
+  // overlays.
+  gfx::Rect quad_rect = gfx::ToEnclosedRect(cc::MathUtil::MapClippedRect(
+      screen_to_buffer_transform_, gfx::RectF(output_rect)));
+  quad_rect.Intersect(gfx::Rect(buffer_size));
 
   const int kRenderPassId = 1;
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-  render_pass->SetNew(kRenderPassId, quad_rect, surface_damage_rect_,
-                      gfx::Transform());
+  render_pass->SetNew(kRenderPassId, output_rect, surface_damage_rect_,
+                      buffer_to_screen_transform);
   surface_damage_rect_ = gfx::Rect();
 
   cc::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  quad_state->SetAll(
-      /*quad_to_target_transform=*/gfx::Transform(),
-      /*quad_layer_rect=*/quad_rect,
-      /*visible_quad_layer_rect=*/quad_rect,
-      /*clip_rect=*/gfx::Rect(),
-      /*is_clipped=*/false, /*opacity=*/1.f,
-      /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+  quad_state->SetAll(buffer_to_screen_transform,
+                     /*quad_layer_rect=*/output_rect,
+                     /*visible_quad_layer_rect=*/output_rect,
+                     /*clip_rect=*/gfx::Rect(),
+                     /*is_clipped=*/false, /*opacity=*/1.f,
+                     /*blend_mode=*/SkBlendMode::kSrcOver,
+                     /*sorting_context_id=*/0);
 
   cc::CompositorFrame frame;
   // TODO(eseckler): FastInkView should use BeginFrames and set the ack

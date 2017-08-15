@@ -247,8 +247,7 @@ gfx::Rect LaserPointerView::GetBoundingBox() {
   return bounding_box;
 }
 
-void LaserPointerView::OnRedraw(gfx::Canvas& canvas,
-                                const gfx::Vector2d& offset) {
+void LaserPointerView::OnRedraw(gfx::Canvas& canvas) {
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
@@ -266,11 +265,11 @@ void LaserPointerView::OnRedraw(gfx::Canvas& canvas,
     gfx::PointF current_point;
     float fadeout_factor;
     if (i < laser_points_.GetNumberOfPoints()) {
-      current_point = laser_points_.points()[i].location - offset;
+      current_point = laser_points_.points()[i].location;
       fadeout_factor = laser_points_.GetFadeoutFactor(i);
     } else {
       int index = i - laser_points_.GetNumberOfPoints();
-      current_point = predicted_laser_points_.points()[index].location - offset;
+      current_point = predicted_laser_points_.points()[index].location;
       fadeout_factor = predicted_laser_points_.GetFadeoutFactor(index);
     }
 
