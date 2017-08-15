@@ -43,16 +43,16 @@ typedef struct TxbInfo {
 
 typedef struct TxbCache {
   int nz_count_arr[MAX_TX_SQUARE];
-  int nz_ctx_arr[MAX_TX_SQUARE][2];
+  int nz_ctx_arr[MAX_TX_SQUARE];
   int base_count_arr[NUM_BASE_LEVELS][MAX_TX_SQUARE];
   int base_mag_arr[MAX_TX_SQUARE]
                   [2];  // [0]: max magnitude [1]: num of max magnitude
-  int base_ctx_arr[NUM_BASE_LEVELS][MAX_TX_SQUARE][2];  // [1]: not used
+  int base_ctx_arr[NUM_BASE_LEVELS][MAX_TX_SQUARE];
 
   int br_count_arr[MAX_TX_SQUARE];
   int br_mag_arr[MAX_TX_SQUARE]
                 [2];  // [0]: max magnitude [1]: num of max magnitude
-  int br_ctx_arr[MAX_TX_SQUARE][2];  // [1]: not used
+  int br_ctx_arr[MAX_TX_SQUARE];
 } TxbCache;
 
 typedef struct TxbProbs {
