@@ -1064,8 +1064,10 @@ bool IsTabDetachingInFullscreenEnabled() {
 - (void)setStarredState:(BOOL)isStarred {
   [toolbarController_ setStarredState:isStarred];
 
-  [touchBar_ setIsStarred:isStarred];
-  [self invalidateTouchBar];
+  if ([touchBar_ isStarred] != isStarred) {
+    [touchBar_ setIsStarred:isStarred];
+    [self invalidateTouchBar];
+  }
 }
 
 - (void)setCurrentPageIsTranslated:(BOOL)on {
@@ -1206,7 +1208,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force {
   [toolbarController_ setIsLoading:isLoading force:force];
   [touchBar_ setIsPageLoading:isLoading];
-  [self invalidateTouchBar];
 }
 
 // Make the location bar the first responder, if possible.
