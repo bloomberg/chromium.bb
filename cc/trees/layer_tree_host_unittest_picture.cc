@@ -342,7 +342,7 @@ class LayerTreeHostPictureTestRSLLMembership : public LayerTreeHostPictureTest {
     LayerImpl* gchild = impl->sync_tree()->LayerById(picture_->id());
     FakePictureLayerImpl* picture = static_cast<FakePictureLayerImpl*>(gchild);
 
-    switch (impl->sync_tree()->source_frame_number()) {
+    switch (impl->active_tree()->source_frame_number()) {
       case 0:
         // On 1st commit the layer has tilings.
         EXPECT_GT(picture->tilings()->num_tilings(), 0u);
@@ -359,7 +359,7 @@ class LayerTreeHostPictureTestRSLLMembership : public LayerTreeHostPictureTest {
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
-    LayerImpl* gchild = impl->sync_tree()->LayerById(picture_->id());
+    LayerImpl* gchild = impl->active_tree()->LayerById(picture_->id());
     FakePictureLayerImpl* picture = static_cast<FakePictureLayerImpl*>(gchild);
 
     switch (impl->active_tree()->source_frame_number()) {
@@ -400,7 +400,7 @@ class LayerTreeHostPictureTestRSLLMembership : public LayerTreeHostPictureTest {
   scoped_refptr<FakePictureLayer> picture_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostPictureTestRSLLMembership);
+SINGLE_THREAD_TEST_F(LayerTreeHostPictureTestRSLLMembership);
 
 class LayerTreeHostPictureTestRSLLMembershipWithScale
     : public LayerTreeHostPictureTest {
@@ -614,7 +614,7 @@ class LayerTreeHostPictureTestForceRecalculateScales
     FakePictureLayerImpl* normal_layer = static_cast<FakePictureLayerImpl*>(
         impl->active_tree()->LayerById(normal_layer_->id()));
 
-    switch (impl->sync_tree()->source_frame_number()) {
+    switch (impl->active_tree()->source_frame_number()) {
       case 0:
         // On first commit, both layers are at the default scale.
         ASSERT_EQ(1u, will_change_layer->tilings()->num_tilings());
@@ -682,7 +682,7 @@ class LayerTreeHostPictureTestForceRecalculateScales
   scoped_refptr<FakePictureLayer> normal_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostPictureTestForceRecalculateScales);
+SINGLE_THREAD_TEST_F(LayerTreeHostPictureTestForceRecalculateScales);
 
 }  // namespace
 }  // namespace cc

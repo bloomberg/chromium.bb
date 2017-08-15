@@ -483,10 +483,10 @@ TEST(LayerImplTest, PerspectiveTransformHasReasonableScale) {
 
 class LayerImplScrollTest : public testing::Test {
  public:
-  LayerImplScrollTest()
-      : host_impl_(settings(),
-                   &task_runner_provider_,
-                   &task_graph_runner_),
+  LayerImplScrollTest() : LayerImplScrollTest(LayerTreeSettings()) {}
+
+  LayerImplScrollTest(const LayerTreeSettings& settings)
+      : host_impl_(settings, &task_runner_provider_, &task_graph_runner_),
         root_id_(7) {
     host_impl_.active_tree()->SetRootLayerForTesting(
         LayerImpl::Create(host_impl_.active_tree(), root_id_));
@@ -520,16 +520,22 @@ class LayerImplScrollTest : public testing::Test {
 
   LayerTreeImpl* tree() { return host_impl_.active_tree(); }
 
-  LayerTreeSettings settings() {
-    LayerTreeSettings settings;
-    return settings;
-  }
-
  private:
   FakeImplTaskRunnerProvider task_runner_provider_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
   int root_id_;
+};
+
+class CommitToPendingTreeLayerImplScrollTest : public LayerImplScrollTest {
+ public:
+  CommitToPendingTreeLayerImplScrollTest() : LayerImplScrollTest(settings()) {}
+
+  LayerTreeSettings settings() {
+    LayerTreeSettings tree_settings;
+    tree_settings.commit_to_active_tree = false;
+    return tree_settings;
+  }
 };
 
 TEST_F(LayerImplScrollTest, ScrollByWithZeroOffset) {
@@ -635,7 +641,8 @@ TEST_F(LayerImplScrollTest, ScrollUserUnscrollableLayer) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(30.5f, 5), layer()->CurrentScrollOffset());
 }
 
-TEST_F(LayerImplScrollTest, PushPropertiesToMirrorsCurrentScrollOffset) {
+TEST_F(CommitToPendingTreeLayerImplScrollTest,
+       PushPropertiesToMirrorsCurrentScrollOffset) {
   gfx::ScrollOffset scroll_offset(10, 5);
   gfx::Vector2dF scroll_delta(12, 18);
 

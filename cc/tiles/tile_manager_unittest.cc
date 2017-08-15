@@ -2325,6 +2325,7 @@ class CheckerImagingTileManagerTest : public TestLayerTreeHostBase {
 
   LayerTreeSettings CreateSettings() override {
     LayerTreeSettings settings;
+    settings.commit_to_active_tree = false;
     settings.enable_checker_imaging = true;
     settings.resource_settings.buffer_to_texture_target_map =
         viz::DefaultBufferToTextureTargetMapForTesting();

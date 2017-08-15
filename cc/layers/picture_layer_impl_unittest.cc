@@ -79,6 +79,7 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
 
   LayerTreeSettings CreateSettings() override {
     LayerTreeSettings settings;
+    settings.commit_to_active_tree = false;
     settings.layer_transforms_should_scale_layer_contents = true;
     settings.create_low_res_tiling = true;
     settings.resource_settings.buffer_to_texture_target_map =
@@ -267,6 +268,15 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
   }
 
   void TestQuadsForSolidColor(bool test_for_solid, bool partial_opaque);
+};
+
+class CommitToActiveTreePictureLayerImplTest : public PictureLayerImplTest {
+ public:
+  LayerTreeSettings CreateSettings() override {
+    LayerTreeSettings settings = PictureLayerImplTest::CreateSettings();
+    settings.commit_to_active_tree = true;
+    return settings;
+  }
 };
 
 class NoLowResPictureLayerImplTest : public PictureLayerImplTest {
@@ -2404,7 +2414,8 @@ TEST_F(PictureLayerImplTest, LowResTilingWithoutGpuRasterization) {
   EXPECT_EQ(2u, active_layer()->tilings()->num_tilings());
 }
 
-TEST_F(PictureLayerImplTest, NoLowResTilingWithGpuRasterization) {
+TEST_F(CommitToActiveTreePictureLayerImplTest,
+       NoLowResTilingWithGpuRasterization) {
   gfx::Size default_tile_size(host_impl()->settings().default_tile_size);
   gfx::Size layer_bounds(default_tile_size.width() * 4,
                          default_tile_size.height() * 4);
@@ -2421,7 +2432,8 @@ TEST_F(PictureLayerImplTest, NoLowResTilingWithGpuRasterization) {
   EXPECT_EQ(1u, active_layer()->tilings()->num_tilings());
 }
 
-TEST_F(PictureLayerImplTest, RequiredTilesWithGpuRasterization) {
+TEST_F(CommitToActiveTreePictureLayerImplTest,
+       RequiredTilesWithGpuRasterization) {
   host_impl()->SetHasGpuRasterizationTrigger(true);
   host_impl()->CommitComplete();
 
