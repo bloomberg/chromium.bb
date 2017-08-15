@@ -6,33 +6,19 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_PROXY_SETTINGS_UI_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/webui/options/options_ui.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 namespace chromeos {
 
-namespace options {
-class CoreChromeOSOptionsHandler;
-class ProxyHandler;
-}
-
-// A WebUI to host proxy settings splitted from settings page for better
-// performance.
-class ProxySettingsUI : public ui::WebDialogUI,
-                        public ::options::OptionsPageUIHandlerHost {
+// A WebUI to host a subset of the network details page to allow setting of
+// proxy, IP address, and nameservers in the login screen. (Historically the
+// dialog only contained proxy settings).
+class ProxySettingsUI : public ui::WebDialogUI {
  public:
   explicit ProxySettingsUI(content::WebUI* web_ui);
   ~ProxySettingsUI() override;
 
  private:
-  // Overridden from OptionsPageUIHandlerHost:
-  void InitializeHandlers() override;
-
-  bool initialized_handlers_;
-
-  options::ProxyHandler* proxy_handler_ = nullptr;
-  options::CoreChromeOSOptionsHandler* core_handler_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(ProxySettingsUI);
 };
 

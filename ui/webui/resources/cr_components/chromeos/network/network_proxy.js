@@ -122,6 +122,15 @@ Polymer({
    */
   proxyModified_: false,
 
+  /** @override */
+  attached: function() {
+    this.reset();
+  },
+
+  /**
+   * Called any time the page is refreshed or navigated to so that the proxy
+   * is updated correctly.
+   */
   reset: function() {
     this.proxyModified_ = false;
     this.proxy_ = this.createDefaultProxySettings_();
