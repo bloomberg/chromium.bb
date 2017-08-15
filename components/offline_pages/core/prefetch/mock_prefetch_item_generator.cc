@@ -35,7 +35,6 @@ PrefetchItem MockPrefetchItemGenerator::CreateItem(PrefetchItemState state) {
 
   // Values set with non prefix based values.
   new_item.state = state;
-  new_item.guid = base::GenerateGUID();
   new_item.offline_id = GenerateTestOfflineId();
   new_item.creation_time = base::Time::Now();
   new_item.freshness_time = new_item.creation_time;
@@ -45,20 +44,51 @@ PrefetchItem MockPrefetchItemGenerator::CreateItem(PrefetchItemState state) {
       client_namespace_, client_id_prefix_ + base::IntToString(item_counter));
   new_item.url = GURL(url_prefix_ + base::IntToString(item_counter));
 
+  ++item_counter;
+  if (state == PrefetchItemState::NEW_REQUEST ||
+      state == PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE) {
+    return new_item;
+  }
+
   // Values set only if prefixes are not empty.
-  if (final_url_prefix_.length())
-    new_item.final_archived_url =
-        GURL(final_url_prefix_ + base::IntToString(item_counter));
-  if (operation_name_prefix_.length())
+  if (operation_name_prefix_.length()) {
     new_item.operation_name =
         operation_name_prefix_ + base::IntToString(item_counter);
+  }
+
+  if (state == PrefetchItemState::AWAITING_GCM ||
+      state == PrefetchItemState::RECEIVED_GCM ||
+      state == PrefetchItemState::SENT_GET_OPERATION) {
+    return new_item;
+  }
+
   if (archive_body_name_prefix_.length()) {
     new_item.archive_body_name =
         archive_body_name_prefix_ + base::IntToString(item_counter);
     new_item.archive_body_length = item_counter * 100;
   }
 
-  ++item_counter;
+  if (final_url_prefix_.length()) {
+    new_item.final_archived_url =
+        GURL(final_url_prefix_ + base::IntToString(item_counter));
+  }
+  if (state == PrefetchItemState::RECEIVED_BUNDLE)
+    return new_item;
+
+  new_item.guid = base::GenerateGUID();
+
+  if (state == PrefetchItemState::DOWNLOADING ||
+      state == PrefetchItemState::DOWNLOADED ||
+      state == PrefetchItemState::IMPORTING ||
+      state == PrefetchItemState::FINISHED ||
+      state == PrefetchItemState::ZOMBIE) {
+    return new_item;
+  }
+
+  // This code should explicitly account for all states so adding a new one will
+  // cause this to crash in debug mode.
+  NOTREACHED();
+
   return new_item;
 }
 

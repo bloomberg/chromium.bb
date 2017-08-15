@@ -33,6 +33,7 @@ void OfflineEventLogger::GetLogs(std::vector<std::string>* records) {
 }
 
 void OfflineEventLogger::RecordActivity(const std::string& activity) {
+  DVLOG(1) << activity;
   if (!is_logging_ || activity.empty())
     return;
 

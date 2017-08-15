@@ -55,7 +55,7 @@ TEST_F(PrefetchStoreTest, InitializeStore) {
 TEST_F(PrefetchStoreTest, WriteAndLoadOneItem) {
   // Create an item populated with unique, non-default values.
   PrefetchItem item1(
-      item_generator()->CreateItem(PrefetchItemState::AWAITING_GCM));
+      item_generator()->CreateItem(PrefetchItemState::DOWNLOADED));
   item1.generate_bundle_attempts = 10;
   item1.get_operation_attempts = 11;
   item1.download_initiation_attempts = 12;

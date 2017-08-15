@@ -15,7 +15,10 @@ namespace offline_pages {
 // Generator of PrefetchItem instances with all fields automatically
 // pre-populated with values that are reasonable and unique (within the
 // instance). To further customize returned items one can set custom prefixes or
-// just change the actual values of returned instances.
+// just change the actual values of returned instances.  When creating an item
+// with a particular state, only the fields applicable to that state will be
+// populated, and the rest will remain in their default state, even if prefixes
+// are set for that data member.
 class MockPrefetchItemGenerator {
  public:
   static const std::string kClientNamespace;
