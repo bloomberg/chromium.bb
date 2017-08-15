@@ -4,7 +4,8 @@
 
 // Custom binding for the developerPrivate API.
 
-var binding = require('binding').Binding.create('developerPrivate');
+var binding =
+    apiBridge || require('binding').Binding.create('developerPrivate');
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -60,4 +61,5 @@ binding.registerCustomHook(function(bindingsAPI) {
   });
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());
