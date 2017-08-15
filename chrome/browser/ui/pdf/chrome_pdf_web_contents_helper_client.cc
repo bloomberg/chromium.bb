@@ -34,8 +34,14 @@ ChromePDFWebContentsHelperClient::~ChromePDFWebContentsHelperClient() {
 void ChromePDFWebContentsHelperClient::UpdateContentRestrictions(
     content::WebContents* contents,
     int content_restrictions) {
+  // Speculative short-term-fix while we get at the root of
+  // https://crbug.com/752822 .
+  content::WebContents* web_contents_to_use = GetWebContentsToUse(contents);
+  if (!web_contents_to_use)
+    return;
+
   CoreTabHelper* core_tab_helper =
-      CoreTabHelper::FromWebContents(GetWebContentsToUse(contents));
+      CoreTabHelper::FromWebContents(web_contents_to_use);
   // |core_tab_helper| is NULL for WebViewGuest.
   if (core_tab_helper)
     core_tab_helper->UpdateContentRestrictions(content_restrictions);
