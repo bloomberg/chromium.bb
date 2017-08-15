@@ -2,7 +2,7 @@
   "comments": [
     "Runs tests on @3x, @2x, 64-bit, 32-bit, phone, tablet, iOS 10, and iOS 9."
   ],
-  "xcode version": "8.0",
+  "xcode version": "9.0",
   "gn_args": [
     "additional_target_cpus=[\"x86\"]",
     "goma_dir=\"$(goma_dir)\"",
@@ -12,8 +12,11 @@
     "target_os=\"ios\"",
     "use_goma=true"
   ],
+  "env": {
+    "MAC_TOOLCHAIN_REVISION": "9M202q-1"
+  },
   "configuration": "Debug",
-  "sdk": "iphonesimulator10.0",
+  "sdk": "iphonesimulator11.0",
   "tests": [
     {
       "include": "common_tests.json",
@@ -80,6 +83,36 @@
       "device type": "iPhone 6s",
       "os": "10.0",
       "xcode version": "8.0"
+    },
+    {
+      "include": "eg_tests.json",
+      "device type": "iPhone 6s",
+      "os": "11.0",
+      "xcode version": "9.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 6s Plus",
+      "os": "11.0",
+      "xcode version": "9.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 6s",
+      "os": "11.0",
+      "xcode version": "9.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 5",
+      "os": "11.0",
+      "xcode version": "9.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPad Air 2",
+      "os": "11.0",
+      "xcode version": "9.0"
     }
   ]
 }
