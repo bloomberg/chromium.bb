@@ -215,8 +215,8 @@
       <message name="IDS_LOGIN_DEFAULT_USER_DESC_49" desc="Description of the default user icon with a picture of ramen">
         Ramen
       </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_50" desc="Description of the default user icon with a picture of a tamagochi">
-        Tamagochi
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_50" desc="Description of the default user icon with a picture of a tamagotchi">
+        Tamagotchi
       </message>
       <message name="IDS_LOGIN_DEFAULT_USER_DESC_51" desc="Description of the default user icon with a picture of a cheese">
         Cheese
@@ -227,8 +227,8 @@
       <message name="IDS_LOGIN_DEFAULT_USER_DESC_53" desc="Description of the default user icon with a picture of a basketball">
         Basketball
       </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_54" desc="Description of the default user icon with a picture of a vinyl">
-        Vinyl
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_54" desc="Description of the default user icon with a picture of a vinyl record">
+        Vinyl record
       </message>
       <message name="IDS_LOGIN_DEFAULT_USER_DESC_55" desc="Description of the default user icon with a picture of sushi">
         Sushi
@@ -245,8 +245,8 @@
       <message name="IDS_LOGIN_DEFAULT_USER_DESC_59" desc="Description of the default user icon with a picture of a sandwich">
         Sandwich
       </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_60" desc="Description of the default user icon with a picture of a cappocino">
-        Cappocino
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_60" desc="Description of the default user icon with a picture of a cappuccino">
+        Cappuccino
       </message>
       <message name="IDS_LOGIN_DEFAULT_USER_DESC_61" desc="Description of the default user icon with a picture of an ice water">
         Ice water
