@@ -70,7 +70,7 @@
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_47" file="default_user_images/origami/avatar_butterflies.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_48" file="default_user_images/illustration/avatar_bird.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_49" file="default_user_images/illustration/avatar_ramen.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_50" file="default_user_images/illustration/avatar_tamagochi.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_50" file="default_user_images/illustration/avatar_tamagotchi.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_51" file="default_user_images/illustration/avatar_cheese.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_52" file="default_user_images/illustration/avatar_football.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_53" file="default_user_images/illustration/avatar_basketball.png" />
@@ -80,7 +80,7 @@
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_57" file="default_user_images/illustration/avatar_sunglasses.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_58" file="default_user_images/abstract/avatar_pizza.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_59" file="default_user_images/abstract/avatar_sandwich.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_60" file="default_user_images/abstract/avatar_cappucino.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_60" file="default_user_images/abstract/avatar_cappuccino.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_61" file="default_user_images/abstract/avatar_icewater.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_62" file="default_user_images/abstract/avatar_icecream.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_63" file="default_user_images/abstract/avatar_onigiri.png" />
