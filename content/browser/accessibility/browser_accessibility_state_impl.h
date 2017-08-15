@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_modes.h"
 
 namespace content {
@@ -34,7 +35,8 @@ namespace content {
 // mechanism).
 class CONTENT_EXPORT BrowserAccessibilityStateImpl
     : public base::RefCountedThreadSafe<BrowserAccessibilityStateImpl>,
-      public BrowserAccessibilityState {
+      public BrowserAccessibilityState,
+      public ui::AXModeObserver {
  public:
   BrowserAccessibilityStateImpl();
 
@@ -48,6 +50,9 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   void AddHistogramCallback(base::Closure callback) override;
 
   void UpdateHistogramsForTesting() override;
+
+  // AXModeObserver
+  void OnAXModeAdded(ui::AXMode mode) override;
 
   ui::AXMode accessibility_mode() const { return accessibility_mode_; };
 

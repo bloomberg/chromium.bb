@@ -4,6 +4,7 @@
 
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 
 #include "ui/base/win/atl_module.h"
 

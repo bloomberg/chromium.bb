@@ -5,9 +5,12 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_H_
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_H_
 
+#include "base/lazy_instance.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_mode_observer.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -30,6 +33,15 @@ class AX_EXPORT AXPlatformNode {
   static AXPlatformNode* FromNativeViewAccessible(
       gfx::NativeViewAccessible accessible);
 
+  // Register and unregister to receive notifications about AXMode changes
+  // for this node.
+  static void AddAXModeObserver(ui::AXModeObserver* observer);
+  static void RemoveAXModeObserver(ui::AXModeObserver* observer);
+
+  // Helper static function to notify all global observers about
+  // the addition of an AXMode flag.
+  static void NotifyAddAXModeFlags(ui::AXMode mode_flags);
+
   // Call Destroy rather than deleting this, because the subclass may
   // use reference counting.
   virtual void Destroy();
@@ -49,6 +61,11 @@ class AX_EXPORT AXPlatformNode {
  protected:
   AXPlatformNode();
   virtual ~AXPlatformNode();
+
+ private:
+  // Global ObserverList for AXMode changes.
+  static base::LazyInstance<base::ObserverList<AXModeObserver>>::Leaky
+      ax_mode_observers_;
 };
 
 }  // namespace ui
