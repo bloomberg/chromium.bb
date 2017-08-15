@@ -31,11 +31,11 @@ std::unique_ptr<Renderer> CourierRendererFactory::CreateRenderer(
     const RequestOverlayInfoCB& request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space) {
   DCHECK(IsRemotingActive());
-#if !defined(ENABLE_MEDIA_REMOTING_RPC)
-  return nullptr;
-#else
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
   return base::MakeUnique<CourierRenderer>(
       media_task_runner, controller_->GetWeakPtr(), video_renderer_sink);
+#else
+  return nullptr;
 #endif
 }
 

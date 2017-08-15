@@ -50,9 +50,7 @@ bool FakeRemotingDataStreamSender::ValidateFrameBuffer(size_t index,
     return false;
   }
 
-#if !BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
-  return true;
-#else
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
   const std::vector<uint8_t>& data = received_frame_list[index];
   scoped_refptr<DecoderBuffer> media_buffer =
       ByteArrayToDecoderBuffer(data.data(), data.size());
@@ -91,7 +89,9 @@ bool FakeRemotingDataStreamSender::ValidateFrameBuffer(size_t index,
     }
   }
   return return_value;
-#endif  // !defined(ENABLE_MEDIA_REMOTING_RPC)
+#else
+  return true;
+#endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
 }
 
 void FakeRemotingDataStreamSender::ConsumeDataChunk(
