@@ -1,4 +1,4 @@
-# Linux Sublime Dev
+# Using Sublime Text as your IDE
 
 Sublime Text is a fast, powerful and easily extensible code editor. Check out
 some [visual demos](http://www.sublimetext.com) for a quick demonstration.
@@ -457,7 +457,7 @@ replacing `out/Debug` with your output directory (on Windows, replace /'s with
       "name": "Build Chrome",
       "cmd": ["ninja", "-C", "out/Debug", "chrome"],
       "working_dir": "${project_path}/src",
-      "file_regex": "^[.\\\\/]*([a-z]?:?[\\w.\\\\/]+)[(:]([0-9]+)[):]([0-9]+)?:?(.*)$",
+      "file_regex": "^[.\\\\/]*([a-z]?:?[\\w.\\\\/]+)[(:]([0-9]+)[,:]?([0-9]+)?[)]?:(.*)$",
       "variants": [],
     },
   ],
@@ -471,17 +471,19 @@ If you're using goma, add the -j parameter (replace out/Debug with your out dire
     "cmd": ["ninja", "-j", "1000", "-C", "out/Debug", "chrome"],
 ```
 
-**Regex explanation:** Aims to capture these two error formats while respecting
+**Regex explanation:** Aims to capture these these error formats while respecting
 [Sublime's perl-like group matching](http://docs.sublimetext.info/en/latest/reference/build_systems/configuration.html#build-capture-error-output):
 
 1.  `d:\src\chrome\src\base\threading\sequenced_worker_pool.cc(670): error
     C2653: 'Foo': is not a class or namespace name`
+1.  `../../base/threading/sequenced_worker_pool.cc(670,26) error: use of
+    undeclared identifier 'Foo'`
 1.  `../../base/threading/sequenced_worker_pool.cc:670:26: error: use of
     undeclared identifier 'Foo'`
 
 ```
-"file_regex": "^[.\\\\/]*([a-z]?:?[\\w.\\\\/]+)[(:]([0-9]+)[):]([0-9]+)?:?(.*)$"
-                (   0   ) (   1  )(    2     ) (3 ) (  4 ) ( 5 ) (  6 )(7)(8 )
+"file_regex": "^[.\\\\/]*([a-z]?:?[\\w.\\\\/]+)[(:]([0-9]+)[,:]?([0-9]+)?[)]?:(.*)$"
+                (   0   ) (   1  )(    2     ) (3 )(  4   )( 5 )(   6   )(7 ) (8 )
 
 (0) Cut relative paths (which typically are relative to the out dir and targeting src/ which is already the "working_dir")
 (1) Match a drive letter if any
@@ -489,9 +491,9 @@ If you're using goma, add the -j parameter (replace out/Debug with your out dire
 (1)+(2) Capture the "filename group"
 (3) File name is followed by open bracket or colon before line number
 (4) Capture "line number group"
-(5) Line # is either followed by close bracket or another colon
-(6) Capture "column filename group" if any.
-(7) If (6) is non-empty there will be another colon (but can't put it inside brackets as the "column filename group" only wants digits).
+(5) If (6) is non-empty there will be a comma or colon preceding it (but can't put it inside brackets as the "column number group" only wants digits).
+(6) Capture "column number group" if any
+(7) Closing bracket of either "(line)" or "(line,column)" if bracket syntax is in effect
 (8) Everything else until EOL is the error message.
 ```
 
