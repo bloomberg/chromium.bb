@@ -122,7 +122,7 @@ static base::subtle::AtomicWord
     g_org_chromium_example_jni_1generator_SampleForTests_testMethodWithParam =
     0;
 static void Java_SampleForTests_testMethodWithParam(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj, JniIntWrapper iParam) {
+    base::android::JavaRef<jobject>& obj, JniIntWrapper iParam) {
   CHECK_CLAZZ(env, obj.obj(),
       org_chromium_example_jni_1generator_SampleForTests_clazz(env));
   jmethodID method_id =
@@ -146,7 +146,7 @@ static base::subtle::AtomicWord
     = 0;
 static base::android::ScopedJavaLocalRef<jstring>
     Java_SampleForTests_testMethodWithParamAndReturn(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj, JniIntWrapper iParam) {
+    base::android::JavaRef<jobject>& obj, JniIntWrapper iParam) {
   CHECK_CLAZZ(env, obj.obj(),
       org_chromium_example_jni_1generator_SampleForTests_clazz(env), NULL);
   jmethodID method_id =

@@ -37,9 +37,9 @@ namespace JNI_InputStream {
 
 static base::subtle::AtomicWord g_java_io_InputStream_available = 0;
 static jint Java_InputStream_available(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) __attribute__ ((unused));
+    base::android::JavaRef<jobject>& obj) __attribute__ ((unused));
 static jint Java_InputStream_available(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) {
+    base::android::JavaRef<jobject>& obj) {
   CHECK_CLAZZ(env, obj.obj(),
       java_io_InputStream_clazz(env), 0);
   jmethodID method_id =
@@ -59,9 +59,9 @@ static jint Java_InputStream_available(JNIEnv* env, const
 
 static base::subtle::AtomicWord g_java_io_InputStream_close = 0;
 static void Java_InputStream_close(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) __attribute__ ((unused));
+    base::android::JavaRef<jobject>& obj) __attribute__ ((unused));
 static void Java_InputStream_close(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) {
+    base::android::JavaRef<jobject>& obj) {
   CHECK_CLAZZ(env, obj.obj(),
       java_io_InputStream_clazz(env));
   jmethodID method_id =
@@ -79,10 +79,10 @@ static void Java_InputStream_close(JNIEnv* env, const
 
 static base::subtle::AtomicWord g_java_io_InputStream_mark = 0;
 static void Java_InputStream_mark(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj, JniIntWrapper p0) __attribute__
+    base::android::JavaRef<jobject>& obj, JniIntWrapper p0) __attribute__
     ((unused));
 static void Java_InputStream_mark(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj, JniIntWrapper p0) {
+    base::android::JavaRef<jobject>& obj, JniIntWrapper p0) {
   CHECK_CLAZZ(env, obj.obj(),
       java_io_InputStream_clazz(env));
   jmethodID method_id =
@@ -100,9 +100,9 @@ static void Java_InputStream_mark(JNIEnv* env, const
 
 static base::subtle::AtomicWord g_java_io_InputStream_markSupported = 0;
 static jboolean Java_InputStream_markSupported(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) __attribute__ ((unused));
+    base::android::JavaRef<jobject>& obj) __attribute__ ((unused));
 static jboolean Java_InputStream_markSupported(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) {
+    base::android::JavaRef<jobject>& obj) {
   CHECK_CLAZZ(env, obj.obj(),
       java_io_InputStream_clazz(env), false);
   jmethodID method_id =
@@ -122,9 +122,9 @@ static jboolean Java_InputStream_markSupported(JNIEnv* env, const
 
 static base::subtle::AtomicWord g_java_io_InputStream_readI = 0;
 static jint Java_InputStream_readI(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) __attribute__ ((unused));
+    base::android::JavaRef<jobject>& obj) __attribute__ ((unused));
 static jint Java_InputStream_readI(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) {
+    base::android::JavaRef<jobject>& obj) {
   CHECK_CLAZZ(env, obj.obj(),
       java_io_InputStream_clazz(env), 0);
   jmethodID method_id =
@@ -144,11 +144,11 @@ static jint Java_InputStream_readI(JNIEnv* env, const
 
 static base::subtle::AtomicWord g_java_io_InputStream_readI_AB = 0;
 static jint Java_InputStream_readI_AB(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj, const
-    base::android::JavaRefOrBare<jbyteArray>& p0) __attribute__ ((unused));
+    base::android::JavaRef<jobject>& obj, const
+    base::android::JavaRef<jbyteArray>& p0) __attribute__ ((unused));
 static jint Java_InputStream_readI_AB(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj, const
-    base::android::JavaRefOrBare<jbyteArray>& p0) {
+    base::android::JavaRef<jobject>& obj, const
+    base::android::JavaRef<jbyteArray>& p0) {
   CHECK_CLAZZ(env, obj.obj(),
       java_io_InputStream_clazz(env), 0);
   jmethodID method_id =
@@ -168,13 +168,13 @@ static jint Java_InputStream_readI_AB(JNIEnv* env, const
 
 static base::subtle::AtomicWord g_java_io_InputStream_readI_AB_I_I = 0;
 static jint Java_InputStream_readI_AB_I_I(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj, const
-    base::android::JavaRefOrBare<jbyteArray>& p0,
+    base::android::JavaRef<jobject>& obj, const
+    base::android::JavaRef<jbyteArray>& p0,
     JniIntWrapper p1,
     JniIntWrapper p2) __attribute__ ((unused));
 static jint Java_InputStream_readI_AB_I_I(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj, const
-    base::android::JavaRefOrBare<jbyteArray>& p0,
+    base::android::JavaRef<jobject>& obj, const
+    base::android::JavaRef<jbyteArray>& p0,
     JniIntWrapper p1,
     JniIntWrapper p2) {
   CHECK_CLAZZ(env, obj.obj(),
@@ -196,9 +196,9 @@ static jint Java_InputStream_readI_AB_I_I(JNIEnv* env, const
 
 static base::subtle::AtomicWord g_java_io_InputStream_reset = 0;
 static void Java_InputStream_reset(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) __attribute__ ((unused));
+    base::android::JavaRef<jobject>& obj) __attribute__ ((unused));
 static void Java_InputStream_reset(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) {
+    base::android::JavaRef<jobject>& obj) {
   CHECK_CLAZZ(env, obj.obj(),
       java_io_InputStream_clazz(env));
   jmethodID method_id =
@@ -216,10 +216,9 @@ static void Java_InputStream_reset(JNIEnv* env, const
 
 static base::subtle::AtomicWord g_java_io_InputStream_skip = 0;
 static jlong Java_InputStream_skip(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj, jlong p0) __attribute__
-    ((unused));
+    base::android::JavaRef<jobject>& obj, jlong p0) __attribute__ ((unused));
 static jlong Java_InputStream_skip(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj, jlong p0) {
+    base::android::JavaRef<jobject>& obj, jlong p0) {
   CHECK_CLAZZ(env, obj.obj(),
       java_io_InputStream_clazz(env), 0);
   jmethodID method_id =
