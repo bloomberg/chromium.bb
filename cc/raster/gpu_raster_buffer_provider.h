@@ -64,7 +64,6 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
     RasterBufferImpl(GpuRasterBufferProvider* client,
                      ResourceProvider* resource_provider,
                      viz::ResourceId resource_id,
-                     bool async_worker_context_enabled,
                      bool resource_has_previous_content);
     ~RasterBufferImpl() override;
 

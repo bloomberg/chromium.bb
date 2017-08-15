@@ -573,7 +573,7 @@ void GLRenderer::BeginDrawingFrame() {
   for (const auto& pass : *current_frame()->render_passes_in_draw_order) {
     for (auto* quad : pass->quad_list) {
       for (ResourceId resource_id : quad->resources)
-        resource_provider->WaitSyncTokenIfNeeded(resource_id);
+        resource_provider->WaitSyncToken(resource_id);
     }
   }
 
@@ -918,8 +918,8 @@ std::unique_ptr<cc::ScopedResource> GLRenderer::GetBackdropTexture(
       BackbufferFormat(), current_frame()->current_render_pass->color_space);
   {
     cc::ResourceProvider::ScopedWriteLockGL lock(
-        resource_provider_, device_background_texture->id(), false);
-    GetFramebufferTexture(lock.texture_id(), bounding_rect);
+        resource_provider_, device_background_texture->id());
+    GetFramebufferTexture(lock.GetTexture(), bounding_rect);
   }
   return device_background_texture;
 }
@@ -3023,9 +3023,9 @@ bool GLRenderer::BindFramebufferToTexture(const cc::ScopedResource* texture) {
   gl_->BindFramebuffer(GL_FRAMEBUFFER, offscreen_framebuffer_id_);
   current_framebuffer_lock_ =
       base::MakeUnique<cc::ResourceProvider::ScopedWriteLockGL>(
-          resource_provider_, texture->id(), false);
+          resource_provider_, texture->id());
   current_framebuffer_format_ = texture->format();
-  unsigned texture_id = current_framebuffer_lock_->texture_id();
+  GLuint texture_id = current_framebuffer_lock_->GetTexture();
   gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                             texture_id, 0);
   if (overdraw_feedback_) {
@@ -3529,13 +3529,13 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
 
   // Establish destination texture.
   cc::ResourceProvider::ScopedWriteLockGL destination(resource_provider_,
-                                                      (*resource)->id(), false);
+                                                      (*resource)->id());
   GLuint temp_fbo;
 
   gl_->GenFramebuffers(1, &temp_fbo);
   gl_->BindFramebuffer(GL_FRAMEBUFFER, temp_fbo);
   gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                            destination.target(), destination.texture_id(), 0);
+                            destination.target(), destination.GetTexture(), 0);
   DCHECK(gl_->CheckFramebufferStatus(GL_FRAMEBUFFER) ==
          GL_FRAMEBUFFER_COMPLETE);
 

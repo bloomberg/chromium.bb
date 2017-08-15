@@ -8,6 +8,7 @@
 #include "components/viz/common/quads/resource_format.h"
 #include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
 
 namespace viz {
 
@@ -21,6 +22,7 @@ VIZ_COMMON_EXPORT GLenum GLCopyTextureInternalFormat(ResourceFormat format);
 VIZ_COMMON_EXPORT gfx::BufferFormat BufferFormat(ResourceFormat format);
 VIZ_COMMON_EXPORT bool IsResourceFormatCompressed(ResourceFormat format);
 VIZ_COMMON_EXPORT bool DoesResourceFormatSupportAlpha(ResourceFormat format);
+VIZ_COMMON_EXPORT GrPixelConfig ToGrPixelConfig(ResourceFormat format);
 
 }  // namespace viz
 

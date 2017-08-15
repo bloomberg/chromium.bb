@@ -248,15 +248,16 @@ class CC_EXPORT ResourceProvider
                      viz::ResourceId resource_id);
     ~ScopedReadLockGL();
 
-    unsigned texture_id() const { return texture_id_; }
+    GLuint texture_id() const { return texture_id_; }
     GLenum target() const { return target_; }
     const gfx::Size& size() const { return size_; }
     const gfx::ColorSpace& color_space() const { return color_space_; }
 
    private:
-    ResourceProvider* resource_provider_;
-    viz::ResourceId resource_id_;
-    unsigned texture_id_;
+    ResourceProvider* const resource_provider_;
+    const viz::ResourceId resource_id_;
+
+    GLuint texture_id_;
     GLenum target_;
     gfx::Size size_;
     gfx::ColorSpace color_space_;
@@ -275,16 +276,16 @@ class CC_EXPORT ResourceProvider
                     GLenum filter);
     ~ScopedSamplerGL();
 
-    unsigned texture_id() const { return resource_lock_.texture_id(); }
+    GLuint texture_id() const { return resource_lock_.texture_id(); }
     GLenum target() const { return target_; }
     const gfx::ColorSpace& color_space() const {
       return resource_lock_.color_space();
     }
 
    private:
-    ScopedReadLockGL resource_lock_;
-    GLenum unit_;
-    GLenum target_;
+    const ScopedReadLockGL resource_lock_;
+    const GLenum unit_;
+    const GLenum target_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedSamplerGL);
   };
@@ -292,80 +293,88 @@ class CC_EXPORT ResourceProvider
   class CC_EXPORT ScopedWriteLockGL {
    public:
     ScopedWriteLockGL(ResourceProvider* resource_provider,
-                      viz::ResourceId resource_id,
-                      bool create_mailbox);
+                      viz::ResourceId resource_id);
     ~ScopedWriteLockGL();
 
-    unsigned texture_id() const { return texture_id_; }
     GLenum target() const { return target_; }
     viz::ResourceFormat format() const { return format_; }
     const gfx::Size& size() const { return size_; }
-    // Will return the invalid color space unless
+
+    // Will return an invalid color space unless
     // |enable_color_correct_rasterization| is true.
     const gfx::ColorSpace& color_space_for_raster() const {
       return color_space_;
     }
-
-    const viz::TextureMailbox& mailbox() const { return mailbox_; }
 
     void set_sync_token(const gpu::SyncToken& sync_token) {
       sync_token_ = sync_token;
       has_sync_token_ = true;
     }
 
-    void set_synchronized(bool synchronized) { synchronized_ = synchronized; }
+    void set_synchronized() { synchronized_ = true; }
+
+    // Returns texture id on compositor context, allocating if necessary.
+    GLuint GetTexture();
+
+    // Creates mailbox that can be consumed on another context.
+    void CreateMailbox();
+
+    // Creates a texture id, allocating if necessary, on the given context. The
+    // texture id must be deleted by the caller.
+    GLuint ConsumeTexture(gpu::gles2::GLES2Interface* gl);
 
    private:
-    ResourceProvider* resource_provider_;
-    viz::ResourceId resource_id_;
-    unsigned texture_id_;
-    GLenum target_;
-    viz::ResourceFormat format_;
+    void LazyAllocate(gpu::gles2::GLES2Interface* gl, GLuint texture_id);
+
+    void AllocateGpuMemoryBuffer(gpu::gles2::GLES2Interface* gl,
+                                 GLuint texture_id);
+
+    void AllocateTexture(gpu::gles2::GLES2Interface* gl, GLuint texture_id);
+
+    ResourceProvider* const resource_provider_;
+    const viz::ResourceId resource_id_;
+
+    // The following are copied from the resource.
+    ResourceProvider::ResourceType type_;
     gfx::Size size_;
-    viz::TextureMailbox mailbox_;
-    gpu::SyncToken sync_token_;
-    bool has_sync_token_;
-    bool synchronized_;
-    base::ThreadChecker thread_checker_;
+    viz::ResourceFormat format_;
+    gfx::BufferUsage usage_;
     gfx::ColorSpace color_space_;
+    GLuint texture_id_;
+    GLenum target_;
+    ResourceProvider::TextureHint hint_;
+    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
+    GLuint image_id_;
+    gpu::Mailbox mailbox_;
+    bool allocated_;
+
+    // Set by the user.
+    gpu::SyncToken sync_token_;
+    bool has_sync_token_ = false;
+    bool synchronized_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGL);
   };
 
-  class CC_EXPORT ScopedTextureProvider {
+  // TODO(sunnyps): Move to //components/viz/common/gl_helper.h ?
+  class CC_EXPORT ScopedSkSurface {
    public:
-    ScopedTextureProvider(gpu::gles2::GLES2Interface* gl,
-                          ScopedWriteLockGL* resource_lock,
-                          bool use_mailbox);
-    ~ScopedTextureProvider();
+    ScopedSkSurface(GrContext* gr_context,
+                    GLuint texture_id,
+                    GLenum texture_target,
+                    const gfx::Size& size,
+                    viz::ResourceFormat format,
+                    bool use_distance_field_text,
+                    bool can_use_lcd_text,
+                    int msaa_sample_count);
+    ~ScopedSkSurface();
 
-    unsigned texture_id() const { return texture_id_; }
+    SkSurface* surface() const { return surface_.get(); }
 
    private:
-    gpu::gles2::GLES2Interface* gl_;
-    bool use_mailbox_;
-    unsigned texture_id_;
+    sk_sp<SkSurface> surface_;
 
-    DISALLOW_COPY_AND_ASSIGN(ScopedTextureProvider);
-  };
-
-  class CC_EXPORT ScopedSkSurfaceProvider {
-   public:
-    ScopedSkSurfaceProvider(viz::ContextProvider* context_provider,
-                            ScopedWriteLockGL* resource_lock,
-                            bool use_mailbox,
-                            bool use_distance_field_text,
-                            bool can_use_lcd_text,
-                            int msaa_sample_count);
-    ~ScopedSkSurfaceProvider();
-
-    SkSurface* sk_surface() { return sk_surface_.get(); }
-
-   private:
-    ScopedTextureProvider texture_provider_;
-    sk_sp<SkSurface> sk_surface_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedSkSurfaceProvider);
+    DISALLOW_COPY_AND_ASSIGN(ScopedSkSurface);
   };
 
   class CC_EXPORT ScopedReadLockSoftware {
@@ -382,8 +391,8 @@ class CC_EXPORT ResourceProvider
     bool valid() const { return !!sk_bitmap_.getPixels(); }
 
    private:
-    ResourceProvider* resource_provider_;
-    viz::ResourceId resource_id_;
+    ResourceProvider* const resource_provider_;
+    const viz::ResourceId resource_id_;
     SkBitmap sk_bitmap_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSoftware);
@@ -400,8 +409,8 @@ class CC_EXPORT ResourceProvider
     bool valid() const { return !!sk_image_; }
 
    private:
-    ResourceProvider* resource_provider_;
-    viz::ResourceId resource_id_;
+    ResourceProvider* const resource_provider_;
+    const viz::ResourceId resource_id_;
     sk_sp<SkImage> sk_image_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSkImage);
@@ -422,11 +431,10 @@ class CC_EXPORT ResourceProvider
     }
 
    private:
-    ResourceProvider* resource_provider_;
-    viz::ResourceId resource_id_;
-    SkBitmap sk_bitmap_;
+    ResourceProvider* const resource_provider_;
+    const viz::ResourceId resource_id_;
     gfx::ColorSpace color_space_;
-    base::ThreadChecker thread_checker_;
+    SkBitmap sk_bitmap_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockSoftware);
   };
@@ -444,14 +452,14 @@ class CC_EXPORT ResourceProvider
     }
 
    private:
-    ResourceProvider* resource_provider_;
-    viz::ResourceId resource_id_;
+    ResourceProvider* const resource_provider_;
+    const viz::ResourceId resource_id_;
+
+    gfx::Size size_;
     viz::ResourceFormat format_;
     gfx::BufferUsage usage_;
-    gfx::Size size_;
-    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
     gfx::ColorSpace color_space_;
-    base::ThreadChecker thread_checker_;
+    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpuMemoryBuffer);
   };
@@ -464,7 +472,7 @@ class CC_EXPORT ResourceProvider
     ~ScopedBatchReturnResources();
 
    private:
-    ResourceProvider* resource_provider_;
+    ResourceProvider* const resource_provider_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedBatchReturnResources);
   };
@@ -541,9 +549,11 @@ class CC_EXPORT ResourceProvider
   size_t CountPromotionHintRequestsForTesting();
 #endif
 
-  void WaitSyncTokenIfNeeded(viz::ResourceId id);
+  void WaitSyncToken(viz::ResourceId id);
 
   static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);
+
+  static gpu::SyncToken GenerateSyncTokenHelper(gpu::gles2::GLES2Interface* gl);
 
   void ValidateResource(viz::ResourceId id) const;
 
@@ -591,8 +601,7 @@ class CC_EXPORT ResourceProvider
       SYNCHRONIZED,
     };
 
-    ~Resource();
-    Resource(unsigned texture_id,
+    Resource(GLuint texture_id,
              const gfx::Size& size,
              Origin origin,
              GLenum target,
@@ -610,6 +619,7 @@ class CC_EXPORT ResourceProvider
              Origin origin,
              GLenum filter);
     Resource(Resource&& other);
+    ~Resource();
 
     bool needs_sync_token() const {
       return type != RESOURCE_TYPE_BITMAP &&
@@ -627,17 +637,16 @@ class CC_EXPORT ResourceProvider
     void SetSynchronized();
     void UpdateSyncToken(const gpu::SyncToken& sync_token);
     int8_t* GetSyncTokenData();
-    void WaitSyncToken(gpu::gles2::GLES2Interface* gl);
+    void WaitSyncToken(gpu::gles2::GLES2Interface* sync_token);
 
     int child_id;
     viz::ResourceId id_in_child;
-    unsigned gl_id;
+    GLuint gl_id;
     ReleaseCallbackImpl release_callback_impl;
     uint8_t* pixels;
     int lock_for_read_count;
     int imported_count;
     int exported_count;
-    bool dirty_image : 1;
     bool locked_for_write : 1;
     bool lost : 1;
     bool marked_for_deletion : 1;
@@ -666,11 +675,9 @@ class CC_EXPORT ResourceProvider
     // TODO(skyostil): Use a separate sampler object for filter state.
     GLenum original_filter;
     GLenum filter;
-    unsigned image_id;
-    unsigned bound_image_id;
+    GLuint image_id;
     TextureHint hint;
     ResourceType type;
-
     // GpuMemoryBuffer resource allocation needs to know how the resource will
     // be used.
     gfx::BufferUsage usage;
@@ -712,14 +719,14 @@ class CC_EXPORT ResourceProvider
            resource->read_lock_fence->HasPassed();
   }
 
-  viz::ResourceId CreateGLTexture(const gfx::Size& size,
-                                  TextureHint hint,
-                                  ResourceType type,
-                                  viz::ResourceFormat format,
-                                  gfx::BufferUsage usage,
-                                  const gfx::ColorSpace& color_space);
-  viz::ResourceId CreateBitmap(const gfx::Size& size,
-                               const gfx::ColorSpace& color_space);
+  viz::ResourceId CreateGpuResource(const gfx::Size& size,
+                                    TextureHint hint,
+                                    ResourceType type,
+                                    viz::ResourceFormat format,
+                                    gfx::BufferUsage usage,
+                                    const gfx::ColorSpace& color_space);
+  viz::ResourceId CreateBitmapResource(const gfx::Size& size,
+                                       const gfx::ColorSpace& color_space);
   Resource* InsertResource(viz::ResourceId id, Resource resource);
   Resource* GetResource(viz::ResourceId id);
   const Resource* LockForRead(viz::ResourceId id);
@@ -729,9 +736,6 @@ class CC_EXPORT ResourceProvider
 
   void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
                                     const Resource* resource);
-
-  void CreateMailboxAndBindResource(gpu::gles2::GLES2Interface* gl,
-                                    Resource* resource);
 
   void TransferResource(Resource* source,
                         viz::ResourceId id,
@@ -745,11 +749,13 @@ class CC_EXPORT ResourceProvider
                                              DeleteStyle style,
                                              const ResourceIdArray& unused);
   void DestroyChildInternal(ChildMap::iterator it, DeleteStyle style);
-  void LazyCreate(Resource* resource);
-  void LazyAllocate(Resource* resource);
-  void LazyCreateImage(Resource* resource);
 
-  void BindImageForSampling(Resource* resource);
+  void CreateTexture(Resource* resource);
+
+  void CreateMailbox(Resource* resource);
+
+  void CreateAndBindImage(Resource* resource);
+
   // Binds the given GL resource to a texture target for sampling using the
   // specified filter for both minification and magnification. Returns the
   // texture target used. The resource must be locked for reading.

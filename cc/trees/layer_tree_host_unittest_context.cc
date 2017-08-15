@@ -892,12 +892,6 @@ class LayerTreeHostContextTestDontUseLostResources
   void SetupTree() override {
     gpu::gles2::GLES2Interface* gl = child_context_provider_->ContextGL();
 
-    viz::ResourceId resource = child_resource_provider_->CreateResource(
-        gfx::Size(4, 4), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-        viz::RGBA_8888, gfx::ColorSpace());
-    ResourceProvider::ScopedWriteLockGL lock(child_resource_provider_.get(),
-                                             resource, false);
-
     gpu::Mailbox mailbox;
     gl->GenMailboxCHROMIUM(mailbox.name);
 

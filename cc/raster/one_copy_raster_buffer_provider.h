@@ -68,8 +68,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
     RasterBufferImpl(OneCopyRasterBufferProvider* client,
                      ResourceProvider* resource_provider,
                      const Resource* resource,
-                     uint64_t previous_content_id,
-                     bool async_worker_context_enabled);
+                     uint64_t previous_content_id);
     ~RasterBufferImpl() override;
 
     // Overridden from RasterBuffer:
@@ -96,6 +95,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
     DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
   };
 
+  void WaitSyncToken(const gpu::SyncToken& sync_token);
   void PlaybackToStagingBuffer(
       StagingBuffer* staging_buffer,
       const Resource* resource,
@@ -109,7 +109,6 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
       uint64_t new_content_id);
   void CopyOnWorkerThread(StagingBuffer* staging_buffer,
                           ResourceProvider::ScopedWriteLockGL* resource_lock,
-                          const gpu::SyncToken& sync_token,
                           const RasterSource* raster_source,
                           const gfx::Rect& rect_to_copy);
   gfx::BufferUsage StagingBufferUsage() const;
