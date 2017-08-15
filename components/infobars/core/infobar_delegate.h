@@ -240,7 +240,7 @@ class InfoBarDelegate {
  protected:
   InfoBarDelegate();
 
-  InfoBar* infobar() const { return infobar_; }
+  InfoBar* infobar() { return infobar_; }
 
  private:
   // The InfoBar associated with us.
