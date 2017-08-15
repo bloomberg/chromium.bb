@@ -106,7 +106,8 @@ AudioContext* AudioContext::Create(Document& document,
 
 AudioContext::AudioContext(Document& document,
                            const WebAudioLatencyHint& latency_hint)
-    : BaseAudioContext(&document), context_id_(g_context_id++) {
+    : BaseAudioContext(&document, kRealtimeContext),
+      context_id_(g_context_id++) {
   destination_node_ = DefaultAudioDestinationNode::Create(this, latency_hint);
   Initialize();
 }
