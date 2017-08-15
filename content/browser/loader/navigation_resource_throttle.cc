@@ -50,7 +50,7 @@ void SendCheckResultToIOThread(UIChecksPerformedCallback callback,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(result, NavigationThrottle::DEFER);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(callback, result));
+                          base::BindOnce(callback, result));
 }
 
 // Returns the NavigationHandle to use for a navigation in the frame specified
@@ -214,14 +214,15 @@ void NavigationResourceThrottle::WillStartRequest(bool* defer) {
   DCHECK(request_->method() == "POST" || request_->method() == "GET");
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&CheckWillStartRequestOnUIThread, callback, render_process_id,
-                 render_frame_id, request_->method(), info->body(),
-                 Referrer::SanitizeForRequest(
-                     request_->url(), Referrer(GURL(request_->referrer()),
-                                               info->GetReferrerPolicy())),
-                 info->HasUserGesture(), info->GetPageTransition(),
-                 is_external_protocol, request_context_type_,
-                 mixed_content_context_type_));
+      base::BindOnce(
+          &CheckWillStartRequestOnUIThread, callback, render_process_id,
+          render_frame_id, request_->method(), info->body(),
+          Referrer::SanitizeForRequest(
+              request_->url(),
+              Referrer(GURL(request_->referrer()), info->GetReferrerPolicy())),
+          info->HasUserGesture(), info->GetPageTransition(),
+          is_external_protocol, request_context_type_,
+          mixed_content_context_type_));
   *defer = true;
 }
 
@@ -263,11 +264,11 @@ void NavigationResourceThrottle::WillRedirectRequest(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&CheckWillRedirectRequestOnUIThread, callback,
-                 render_process_id, render_frame_id, redirect_info.new_url,
-                 redirect_info.new_method, GURL(redirect_info.new_referrer),
-                 new_is_external_protocol, response_headers,
-                 request_->response_info().connection_info));
+      base::BindOnce(&CheckWillRedirectRequestOnUIThread, callback,
+                     render_process_id, render_frame_id, redirect_info.new_url,
+                     redirect_info.new_method, GURL(redirect_info.new_referrer),
+                     new_is_external_protocol, response_headers,
+                     request_->response_info().connection_info));
   *defer = true;
 }
 
@@ -316,13 +317,13 @@ void NavigationResourceThrottle::WillProcessResponse(bool* defer) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&WillProcessResponseOnUIThread, callback, render_process_id,
-                 render_frame_id, response_headers,
-                 request_->response_info().connection_info, ssl_status,
-                 info->GetGlobalRequestID(),
-                 info->should_replace_current_entry(), info->IsDownload(),
-                 info->is_stream(), transfer_callback,
-                 base::Passed(&cloned_data)));
+      base::BindOnce(&WillProcessResponseOnUIThread, callback,
+                     render_process_id, render_frame_id, response_headers,
+                     request_->response_info().connection_info, ssl_status,
+                     info->GetGlobalRequestID(),
+                     info->should_replace_current_entry(), info->IsDownload(),
+                     info->is_stream(), transfer_callback,
+                     base::Passed(&cloned_data)));
   *defer = true;
 }
 

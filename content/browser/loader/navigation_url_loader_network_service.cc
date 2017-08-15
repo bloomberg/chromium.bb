@@ -256,16 +256,16 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&NavigationURLLoaderNetworkService::OnReceiveResponse,
-                   owner_, head, ssl_info, base::Passed(&downloaded_file)));
+        base::BindOnce(&NavigationURLLoaderNetworkService::OnReceiveResponse,
+                       owner_, head, ssl_info, base::Passed(&downloaded_file)));
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& head) override {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&NavigationURLLoaderNetworkService::OnReceiveRedirect,
-                   owner_, redirect_info, head));
+        base::BindOnce(&NavigationURLLoaderNetworkService::OnReceiveRedirect,
+                       owner_, redirect_info, head));
   }
 
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override {}
@@ -282,7 +282,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       mojo::ScopedDataPipeConsumerHandle body) override {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &NavigationURLLoaderNetworkService::OnStartLoadingResponseBody,
             owner_, base::Passed(&body)));
   }
@@ -298,8 +298,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     }
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&NavigationURLLoaderNetworkService::OnComplete, owner_,
-                   completion_status));
+        base::BindOnce(&NavigationURLLoaderNetworkService::OnComplete, owner_,
+                       completion_status));
   }
 
   // Returns true if a handler wants to handle the response, i.e. return a
@@ -443,7 +443,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
       weak_factory_.GetWeakPtr());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &URLLoaderRequestController::Start,
           base::Unretained(request_controller_.get()),
           service_worker_navigation_handle
@@ -466,8 +466,8 @@ NavigationURLLoaderNetworkService::~NavigationURLLoaderNetworkService() {
 void NavigationURLLoaderNetworkService::FollowRedirect() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&URLLoaderRequestController::FollowRedirect,
-                 base::Unretained(request_controller_.get())));
+      base::BindOnce(&URLLoaderRequestController::FollowRedirect,
+                     base::Unretained(request_controller_.get())));
 }
 
 void NavigationURLLoaderNetworkService::ProceedWithResponse() {}

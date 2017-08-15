@@ -52,19 +52,20 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       appcache_handle ? appcache_handle->core() : nullptr;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&NavigationURLLoaderImplCore::Start, core_, resource_context,
-                 storage_partition->GetURLRequestContext(),
-                 base::Unretained(storage_partition->GetFileSystemContext()),
-                 service_worker_handle_core, appcache_handle_core,
-                 base::Passed(&request_info),
-                 base::Passed(&navigation_ui_data)));
+      base::BindOnce(
+          &NavigationURLLoaderImplCore::Start, core_, resource_context,
+          storage_partition->GetURLRequestContext(),
+          base::Unretained(storage_partition->GetFileSystemContext()),
+          service_worker_handle_core, appcache_handle_core,
+          base::Passed(&request_info), base::Passed(&navigation_ui_data)));
 }
 
 NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&NavigationURLLoaderImplCore::CancelRequestIfNeeded, core_));
+      base::BindOnce(&NavigationURLLoaderImplCore::CancelRequestIfNeeded,
+                     core_));
 }
 
 void NavigationURLLoaderImpl::FollowRedirect() {
@@ -72,7 +73,7 @@ void NavigationURLLoaderImpl::FollowRedirect() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&NavigationURLLoaderImplCore::FollowRedirect, core_));
+      base::BindOnce(&NavigationURLLoaderImplCore::FollowRedirect, core_));
 }
 
 void NavigationURLLoaderImpl::ProceedWithResponse() {
@@ -80,7 +81,7 @@ void NavigationURLLoaderImpl::ProceedWithResponse() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&NavigationURLLoaderImplCore::ProceedWithResponse, core_));
+      base::BindOnce(&NavigationURLLoaderImplCore::ProceedWithResponse, core_));
 }
 
 void NavigationURLLoaderImpl::NotifyRequestRedirected(

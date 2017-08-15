@@ -128,8 +128,8 @@ MojoAsyncResourceHandler::MojoAsyncResourceHandler(
   InitializeResourceBufferConstants();
   // This unretained pointer is safe, because |binding_| is owned by |this| and
   // the callback will never be called after |this| is destroyed.
-  binding_.set_connection_error_handler(
-      base::Bind(&MojoAsyncResourceHandler::Cancel, base::Unretained(this)));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &MojoAsyncResourceHandler::Cancel, base::Unretained(this)));
 
   if (IsResourceTypeFrame(resource_type)) {
     GetRequestInfo()->set_on_transfer(base::Bind(
@@ -583,8 +583,8 @@ void MojoAsyncResourceHandler::OnTransfer(
     mojom::URLLoaderClientPtr url_loader_client) {
   binding_.Unbind();
   binding_.Bind(std::move(mojo_request));
-  binding_.set_connection_error_handler(
-      base::Bind(&MojoAsyncResourceHandler::Cancel, base::Unretained(this)));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &MojoAsyncResourceHandler::Cancel, base::Unretained(this)));
   url_loader_client_ = std::move(url_loader_client);
 }
 
@@ -592,8 +592,8 @@ void MojoAsyncResourceHandler::SendUploadProgress(
     const net::UploadProgress& progress) {
   url_loader_client_->OnUploadProgress(
       progress.position(), progress.size(),
-      base::Bind(&MojoAsyncResourceHandler::OnUploadProgressACK,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&MojoAsyncResourceHandler::OnUploadProgressACK,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void MojoAsyncResourceHandler::OnUploadProgressACK() {

@@ -48,8 +48,8 @@ void NavigationURLLoaderImplCore::Start(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&NavigationURLLoaderImpl::NotifyRequestStarted, loader_,
-                 base::TimeTicks::Now()));
+      base::BindOnce(&NavigationURLLoaderImpl::NotifyRequestStarted, loader_,
+                     base::TimeTicks::Now()));
 
   // The ResourceDispatcherHostImpl can be null in unit tests.
   if (ResourceDispatcherHostImpl::Get()) {
@@ -95,8 +95,8 @@ void NavigationURLLoaderImplCore::NotifyRequestRedirected(
   // response. https://crbug.com/416050
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&NavigationURLLoaderImpl::NotifyRequestRedirected, loader_,
-                 redirect_info, response->DeepCopy()));
+      base::BindOnce(&NavigationURLLoaderImpl::NotifyRequestRedirected, loader_,
+                     redirect_info, response->DeepCopy()));
 
   // TODO(carlosk): extend this trace to support non-PlzNavigate navigations.
   // For the trace below we're using the NavigationURLLoaderImplCore as the
@@ -130,10 +130,10 @@ void NavigationURLLoaderImplCore::NotifyResponseStarted(
   // response. https://crbug.com/416050
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&NavigationURLLoaderImpl::NotifyResponseStarted, loader_,
-                 response->DeepCopy(), base::Passed(&body), ssl_status,
-                 base::Passed(&navigation_data), request_id, is_download,
-                 is_stream));
+      base::BindOnce(&NavigationURLLoaderImpl::NotifyResponseStarted, loader_,
+                     response->DeepCopy(), base::Passed(&body), ssl_status,
+                     base::Passed(&navigation_data), request_id, is_download,
+                     is_stream));
 }
 
 void NavigationURLLoaderImplCore::NotifyRequestFailed(bool in_cache,
@@ -146,8 +146,8 @@ void NavigationURLLoaderImplCore::NotifyRequestFailed(bool in_cache,
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&NavigationURLLoaderImpl::NotifyRequestFailed, loader_,
-                 in_cache, net_error));
+      base::BindOnce(&NavigationURLLoaderImpl::NotifyRequestFailed, loader_,
+                     in_cache, net_error));
 }
 
 }  // namespace content

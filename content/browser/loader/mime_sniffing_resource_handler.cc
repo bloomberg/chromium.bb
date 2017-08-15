@@ -316,8 +316,8 @@ void MimeSniffingResourceHandler::ResumeInternal() {
   // it will resume the request. Posted as a task to avoid re-entrancy into
   // the calling class.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MimeSniffingResourceHandler::AdvanceState,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&MimeSniffingResourceHandler::AdvanceState,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MimeSniffingResourceHandler::AdvanceState() {
@@ -495,8 +495,8 @@ bool MimeSniffingResourceHandler::CheckForPluginHandler(
   if (stale) {
     // Refresh the plugins asynchronously.
     plugin_service_->GetPlugins(
-        base::Bind(&MimeSniffingResourceHandler::OnPluginsLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&MimeSniffingResourceHandler::OnPluginsLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
     request()->LogBlockedBy("MimeSniffingResourceHandler");
     // Will complete asynchronously.
     return false;

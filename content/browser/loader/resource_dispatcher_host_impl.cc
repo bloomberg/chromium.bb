@@ -371,8 +371,8 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
       "We don't care about the precise value, see http://crbug.com/92889");
 
   io_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ResourceDispatcherHostImpl::OnInit, base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&ResourceDispatcherHostImpl::OnInit,
+                                base::Unretained(this)));
 
   update_load_states_timer_ = base::MakeUnique<base::RepeatingTimer>();
 
@@ -523,8 +523,8 @@ void ResourceDispatcherHostImpl::ReprioritizeRequest(
 void ResourceDispatcherHostImpl::Shutdown() {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   io_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ResourceDispatcherHostImpl::OnShutdown,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&ResourceDispatcherHostImpl::OnShutdown,
+                                base::Unretained(this)));
 }
 
 std::unique_ptr<ResourceHandler>
@@ -2571,8 +2571,8 @@ void ResourceDispatcherHostImpl::UpdateLoadInfo() {
   // requests), we must go to the UI thread and compare the requests using their
   // WebContents.
   main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(UpdateLoadStateOnUI, loader_delegate_, base::Passed(&infos)));
+      FROM_HERE, base::BindOnce(UpdateLoadStateOnUI, loader_delegate_,
+                                base::Passed(&infos)));
 }
 
 void ResourceDispatcherHostImpl::RecordOutstandingRequestsStats() {

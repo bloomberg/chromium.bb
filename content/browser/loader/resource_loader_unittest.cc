@@ -122,9 +122,10 @@ class LoaderDestroyingCertStore : public net::ClientCertStore {
       const ClientCertListCallback& cert_selected_callback) override {
     // Don't destroy |loader_| while it's on the stack.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&LoaderDestroyingCertStore::DoCallback,
-                              base::Unretained(loader_), cert_selected_callback,
-                              on_loader_deleted_callback_));
+        FROM_HERE,
+        base::BindOnce(&LoaderDestroyingCertStore::DoCallback,
+                       base::Unretained(loader_), cert_selected_callback,
+                       on_loader_deleted_callback_));
   }
 
  private:
@@ -164,9 +165,9 @@ class MockClientCertURLRequestJob : public net::URLRequestTestJob {
     cert_request_info->cert_authorities = test_authorities();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&MockClientCertURLRequestJob::NotifyCertificateRequested,
-                   weak_factory_.GetWeakPtr(),
-                   base::RetainedRef(cert_request_info)));
+        base::BindOnce(&MockClientCertURLRequestJob::NotifyCertificateRequested,
+                       weak_factory_.GetWeakPtr(),
+                       base::RetainedRef(cert_request_info)));
   }
 
   void ContinueWithCertificate(

@@ -1042,10 +1042,10 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
         new ResourceHostMsg_DataReceived_ACK(request_id));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&GenerateIPCMessage, scoped_refptr<ResourceRequesterInfo>(
-                                            filter_->requester_info_for_test()),
-                   base::Passed(&ack)));
+        FROM_HERE, base::BindOnce(&GenerateIPCMessage,
+                                  scoped_refptr<ResourceRequesterInfo>(
+                                      filter_->requester_info_for_test()),
+                                  base::Passed(&ack)));
   }
 
   void WaitForRequestComplete() {
