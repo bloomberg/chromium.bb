@@ -232,7 +232,7 @@ JNI_GENERATOR_EXPORT jint
 static base::subtle::AtomicWord
     g_org_chromium_example_jni_1generator_SampleForTests_javaMethod = 0;
 static jint Java_SampleForTests_javaMethod(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj, JniIntWrapper foo,
+    base::android::JavaRef<jobject>& obj, JniIntWrapper foo,
     JniIntWrapper bar) {
   CHECK_CLAZZ(env, obj.obj(),
       org_chromium_example_jni_1generator_SampleForTests_clazz(env), 0);
@@ -282,7 +282,7 @@ static base::subtle::AtomicWord
     g_org_chromium_example_jni_1generator_SampleForTests_packagePrivateJavaMethod
     = 0;
 static void Java_SampleForTests_packagePrivateJavaMethod(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) {
+    base::android::JavaRef<jobject>& obj) {
   CHECK_CLAZZ(env, obj.obj(),
       org_chromium_example_jni_1generator_SampleForTests_clazz(env));
   jmethodID method_id =
@@ -304,7 +304,7 @@ static base::subtle::AtomicWord
     g_org_chromium_example_jni_1generator_SampleForTests_methodThatThrowsException
     = 0;
 static void Java_SampleForTests_methodThatThrowsException(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) {
+    base::android::JavaRef<jobject>& obj) {
   CHECK_CLAZZ(env, obj.obj(),
       org_chromium_example_jni_1generator_SampleForTests_clazz(env));
   jmethodID method_id =
@@ -325,7 +325,7 @@ static base::subtle::AtomicWord
     g_org_chromium_example_jni_1generator_SampleForTests_javaMethodWithAnnotatedParam
     = 0;
 static void Java_SampleForTests_javaMethodWithAnnotatedParam(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj, JniIntWrapper foo) {
+    base::android::JavaRef<jobject>& obj, JniIntWrapper foo) {
   CHECK_CLAZZ(env, obj.obj(),
       org_chromium_example_jni_1generator_SampleForTests_clazz(env));
   jmethodID method_id =
@@ -350,7 +350,7 @@ static base::subtle::AtomicWord
 static base::android::ScopedJavaLocalRef<jobject>
     Java_InnerStructA_create(JNIEnv* env, jlong l,
     JniIntWrapper i,
-    const base::android::JavaRefOrBare<jstring>& s) {
+    const base::android::JavaRef<jstring>& s) {
   CHECK_CLAZZ(env,
       org_chromium_example_jni_1generator_SampleForTests_00024InnerStructA_clazz(env),
 org_chromium_example_jni_1generator_SampleForTests_00024InnerStructA_clazz(env),
@@ -379,8 +379,8 @@ env->CallStaticObjectMethod(org_chromium_example_jni_1generator_SampleForTests_0
 static base::subtle::AtomicWord
     g_org_chromium_example_jni_1generator_SampleForTests_addStructA = 0;
 static void Java_SampleForTests_addStructA(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj, const
-    base::android::JavaRefOrBare<jobject>& a) {
+    base::android::JavaRef<jobject>& obj, const base::android::JavaRef<jobject>&
+    a) {
   CHECK_CLAZZ(env, obj.obj(),
       org_chromium_example_jni_1generator_SampleForTests_clazz(env));
   jmethodID method_id =
@@ -403,7 +403,7 @@ static base::subtle::AtomicWord
     g_org_chromium_example_jni_1generator_SampleForTests_iterateAndDoSomething =
     0;
 static void Java_SampleForTests_iterateAndDoSomething(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) {
+    base::android::JavaRef<jobject>& obj) {
   CHECK_CLAZZ(env, obj.obj(),
       org_chromium_example_jni_1generator_SampleForTests_clazz(env));
   jmethodID method_id =
@@ -425,7 +425,7 @@ static base::subtle::AtomicWord
     g_org_chromium_example_jni_1generator_SampleForTests_00024InnerStructB_getKey
     = 0;
 static jlong Java_InnerStructB_getKey(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) {
+    base::android::JavaRef<jobject>& obj) {
   CHECK_CLAZZ(env, obj.obj(),
 org_chromium_example_jni_1generator_SampleForTests_00024InnerStructB_clazz(env),
           0);
@@ -452,7 +452,7 @@ static base::subtle::AtomicWord
     = 0;
 static base::android::ScopedJavaLocalRef<jstring>
     Java_InnerStructB_getValue(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) {
+    base::android::JavaRef<jobject>& obj) {
   CHECK_CLAZZ(env, obj.obj(),
 org_chromium_example_jni_1generator_SampleForTests_00024InnerStructB_clazz(env),
           NULL);

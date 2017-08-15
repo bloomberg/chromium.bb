@@ -36,9 +36,9 @@ namespace JNI_HashSet {
 
 static base::subtle::AtomicWord g_java_util_HashSet_dummy = 0;
 static void Java_HashSet_dummy(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) __attribute__ ((unused));
+    base::android::JavaRef<jobject>& obj) __attribute__ ((unused));
 static void Java_HashSet_dummy(JNIEnv* env, const
-    base::android::JavaRefOrBare<jobject>& obj) {
+    base::android::JavaRef<jobject>& obj) {
   CHECK_CLAZZ(env, obj.obj(),
       java_util_HashSet_clazz(env));
   jmethodID method_id =

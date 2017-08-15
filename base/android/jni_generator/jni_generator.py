@@ -169,7 +169,7 @@ def JavaDataTypeToCForCalledByNativeParam(java_type):
   else:
     c_type = JavaDataTypeToC(java_type)
     if re.match(RE_SCOPED_JNI_TYPES, c_type):
-      return 'const base::android::JavaRefOrBare<' + c_type + '>&'
+      return 'const base::android::JavaRef<' + c_type + '>&'
     else:
       return c_type
 
@@ -1089,7 +1089,7 @@ JNI_GENERATOR_EXPORT ${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS_IN_STUB}) {
       first_param_in_call = ('%s_clazz(env)' % GetBinaryClassName(java_class))
     else:
       first_param_in_declaration = (
-          ', const base::android::JavaRefOrBare<jobject>& obj')
+          ', const base::android::JavaRef<jobject>& obj')
       first_param_in_call = 'obj.obj()'
     params_in_declaration = self.GetCalledByNativeParamsInDeclaration(
         called_by_native)

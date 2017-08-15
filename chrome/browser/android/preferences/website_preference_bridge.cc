@@ -111,9 +111,9 @@ ScopedJavaLocalRef<jstring> ConvertOriginToJavaString(
 
 typedef void (*InfoListInsertionFunction)(
     JNIEnv*,
-    const base::android::JavaRefOrBare<jobject>&,
-    const base::android::JavaRefOrBare<jstring>&,
-    const base::android::JavaRefOrBare<jstring>&);
+    const base::android::JavaRef<jobject>&,
+    const base::android::JavaRef<jstring>&,
+    const base::android::JavaRef<jstring>&);
 
 void GetOrigins(JNIEnv* env,
                 ContentSettingsType content_type,
