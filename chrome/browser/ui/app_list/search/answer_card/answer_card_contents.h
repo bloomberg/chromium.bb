@@ -13,10 +13,6 @@ namespace app_list {
 class AnswerCardResult;
 }
 
-namespace gfx {
-class Size;
-}
-
 namespace views {
 class View;
 }
@@ -34,13 +30,14 @@ class AnswerCardContents {
     // Events that the delegate processes. They have same meaning as same-named
     // events in WebContentsDelegate and WebContentsObserver, however,
     // unnecessary parameters are omitted.
-    virtual void UpdatePreferredSize(const gfx::Size& pref_size) = 0;
-    virtual void DidFinishNavigation(const GURL& url,
+    virtual void UpdatePreferredSize(const AnswerCardContents* source) = 0;
+    virtual void DidFinishNavigation(const AnswerCardContents* source,
+                                     const GURL& url,
                                      bool has_error,
                                      bool has_answer_card,
                                      const std::string& result_title,
                                      const std::string& issued_query) = 0;
-    virtual void DidStopLoading() = 0;
+    virtual void DidStopLoading(const AnswerCardContents* source) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -51,8 +48,6 @@ class AnswerCardContents {
 
   // Loads contents from |url|.
   virtual void LoadURL(const GURL& url) = 0;
-  // Returns whether loading is in progress.
-  virtual bool IsLoading() const = 0;
   // Returns the view associated with the contents.
   virtual views::View* GetView() = 0;
 
