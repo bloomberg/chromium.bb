@@ -32,14 +32,10 @@ generate_jni("aw_net_jni_headers") {
 source_set("aw_java_test_native_support") {
   testonly = true
   sources = [
-    "../../../net/test/android/net_test_jni_onload.cc",
-    "../../../net/test/android/net_test_jni_onload.h",
     "../../../net/test/embedded_test_server/android/embedded_test_server_android.cc",
     "../../../net/test/embedded_test_server/android/embedded_test_server_android.h",
     "aw_embedded_test_server.cc",
     "aw_test_entry_point.cc",
-    "aw_test_jni_onload.cc",
-    "aw_test_jni_onload.h",
   ]
   deps = [
     "//net:test_support",
