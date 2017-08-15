@@ -969,25 +969,21 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
 
   for (i = p_row; i < p_row + p_height; i += 8) {
     for (j = p_col; j < p_col + p_width; j += 8) {
-      int32_t x4, y4, ix4, sx4, iy4, sy4;
-      if (subsampling_x)
-        x4 = (mat[2] * 4 * (j + 4) + mat[3] * 4 * (i + 4) + mat[0] * 2 +
-              (mat[2] + mat[3] - (1 << WARPEDMODEL_PREC_BITS))) /
-             4;
-      else
-        x4 = mat[2] * (j + 4) + mat[3] * (i + 4) + mat[0];
+      // Calculate the center of this 8x8 block,
+      // project to luma coordinates (if in a subsampled chroma plane),
+      // apply the affine transformation,
+      // then convert back to the original coordinates (if necessary)
+      const int32_t src_x = (j + 4) << subsampling_x;
+      const int32_t src_y = (i + 4) << subsampling_y;
+      const int32_t dst_x = mat[2] * src_x + mat[3] * src_y + mat[0];
+      const int32_t dst_y = mat[4] * src_x + mat[5] * src_y + mat[1];
+      const int32_t x4 = dst_x >> subsampling_x;
+      const int32_t y4 = dst_y >> subsampling_y;
 
-      if (subsampling_y)
-        y4 = (mat[4] * 4 * (j + 4) + mat[5] * 4 * (i + 4) + mat[1] * 2 +
-              (mat[4] + mat[5] - (1 << WARPEDMODEL_PREC_BITS))) /
-             4;
-      else
-        y4 = mat[4] * (j + 4) + mat[5] * (i + 4) + mat[1];
-
-      ix4 = x4 >> WARPEDMODEL_PREC_BITS;
-      sx4 = x4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
-      iy4 = y4 >> WARPEDMODEL_PREC_BITS;
-      sy4 = y4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
+      int32_t ix4 = x4 >> WARPEDMODEL_PREC_BITS;
+      int32_t sx4 = x4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
+      int32_t iy4 = y4 >> WARPEDMODEL_PREC_BITS;
+      int32_t sy4 = y4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
 
       sx4 += alpha * (-4) + beta * (-4);
       sy4 += gamma * (-4) + delta * (-4);
@@ -1311,25 +1307,21 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
 
   for (i = p_row; i < p_row + p_height; i += 8) {
     for (j = p_col; j < p_col + p_width; j += 8) {
-      int32_t x4, y4, ix4, sx4, iy4, sy4;
-      if (subsampling_x)
-        x4 = (mat[2] * 4 * (j + 4) + mat[3] * 4 * (i + 4) + mat[0] * 2 +
-              (mat[2] + mat[3] - (1 << WARPEDMODEL_PREC_BITS))) /
-             4;
-      else
-        x4 = mat[2] * (j + 4) + mat[3] * (i + 4) + mat[0];
+      // Calculate the center of this 8x8 block,
+      // project to luma coordinates (if in a subsampled chroma plane),
+      // apply the affine transformation,
+      // then convert back to the original coordinates (if necessary)
+      const int32_t src_x = (j + 4) << subsampling_x;
+      const int32_t src_y = (i + 4) << subsampling_y;
+      const int32_t dst_x = mat[2] * src_x + mat[3] * src_y + mat[0];
+      const int32_t dst_y = mat[4] * src_x + mat[5] * src_y + mat[1];
+      const int32_t x4 = dst_x >> subsampling_x;
+      const int32_t y4 = dst_y >> subsampling_y;
 
-      if (subsampling_y)
-        y4 = (mat[4] * 4 * (j + 4) + mat[5] * 4 * (i + 4) + mat[1] * 2 +
-              (mat[4] + mat[5] - (1 << WARPEDMODEL_PREC_BITS))) /
-             4;
-      else
-        y4 = mat[4] * (j + 4) + mat[5] * (i + 4) + mat[1];
-
-      ix4 = x4 >> WARPEDMODEL_PREC_BITS;
-      sx4 = x4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
-      iy4 = y4 >> WARPEDMODEL_PREC_BITS;
-      sy4 = y4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
+      int32_t ix4 = x4 >> WARPEDMODEL_PREC_BITS;
+      int32_t sx4 = x4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
+      int32_t iy4 = y4 >> WARPEDMODEL_PREC_BITS;
+      int32_t sy4 = y4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
 
       sx4 += alpha * (-4) + beta * (-4);
       sy4 += gamma * (-4) + delta * (-4);
