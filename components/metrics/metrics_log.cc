@@ -143,7 +143,7 @@ void MetricsLog::RecordUserAction(const std::string& key) {
 
   UserActionEventProto* user_action = uma_proto_.add_user_action_event();
   user_action->set_name_hash(Hash(key));
-  user_action->set_time(GetCurrentTime());
+  user_action->set_time_sec(GetCurrentTime());
 }
 
 void MetricsLog::RecordCoreSystemProfile(MetricsServiceClient* client,
