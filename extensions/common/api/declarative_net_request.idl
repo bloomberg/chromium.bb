@@ -33,6 +33,7 @@ namespace declarativeNetRequest {
 
   // Describes the kind of action to take if a given RuleCondition matches.
   enum RuleActionType {
+    // TODO(crbug.com/696822): Rename to blacklist.
     // Block the network request.
     block,
     // Redirect the network request.

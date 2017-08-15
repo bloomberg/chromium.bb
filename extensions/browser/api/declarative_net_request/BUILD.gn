@@ -5,12 +5,15 @@
 source_set("declarative_net_request") {
   sources = [
     "constants.h",
+    "flat_ruleset_indexer.cc",
+    "flat_ruleset_indexer.h",
     "indexed_rule.cc",
     "indexed_rule.h",
   ]
 
   public_deps = [
     "//components/url_pattern_index",
+    "//extensions/browser/api/declarative_net_request/flat:extension_ruleset",
   ]
 
   deps = [
