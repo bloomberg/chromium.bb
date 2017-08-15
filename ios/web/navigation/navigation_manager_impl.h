@@ -132,8 +132,12 @@ class NavigationManagerImpl : public NavigationManager {
       NavigationInitiationType initiation_type);
 
   // NavigationManager:
+  NavigationItem* GetLastCommittedItem() const final;
+  NavigationItem* GetPendingItem() const final;
+  NavigationItem* GetTransientItem() const final;
+  void LoadURLWithParams(const NavigationManager::WebLoadParams&) final;
   void AddTransientURLRewriter(BrowserURLRewriter::URLRewriter rewriter) final;
-  void Reload(ReloadType reload_type, bool check_for_reposts) override;
+  void Reload(ReloadType reload_type, bool check_for_reposts) final;
 
  protected:
   // The SessionStorageBuilder functions require access to private variables of
@@ -171,6 +175,11 @@ class NavigationManagerImpl : public NavigationManager {
   // SessionStorageBuilder to persist session state.
   virtual NavigationItemImpl* GetNavigationItemImplAtIndex(
       size_t index) const = 0;
+
+  // Implementation for corresponding NavigationManager getters.
+  virtual NavigationItemImpl* GetPendingItemImpl() const = 0;
+  virtual NavigationItemImpl* GetTransientItemImpl() const = 0;
+  virtual NavigationItemImpl* GetLastCommittedItemImpl() const = 0;
 
   // The primary delegate for this manager.
   NavigationManagerDelegate* delegate_;

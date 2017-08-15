@@ -229,29 +229,10 @@ NavigationItem* WKBasedNavigationManagerImpl::GetVisibleItem() const {
   return GetLastCommittedItem();
 }
 
-NavigationItem* WKBasedNavigationManagerImpl::GetLastCommittedItem() const {
-  int index = GetLastCommittedItemIndex();
-  return index == -1 ? nullptr : GetItemAtIndex(static_cast<size_t>(index));
-}
-
-NavigationItem* WKBasedNavigationManagerImpl::GetPendingItem() const {
-  return GetPendingItemImpl();
-}
-
-NavigationItem* WKBasedNavigationManagerImpl::GetTransientItem() const {
-  return transient_item_.get();
-}
-
 void WKBasedNavigationManagerImpl::DiscardNonCommittedItems() {
   pending_item_.reset();
   transient_item_.reset();
 }
-
-void WKBasedNavigationManagerImpl::LoadURLWithParams(
-    const NavigationManager::WebLoadParams&) {
-  DLOG(WARNING) << "Not yet implemented.";
-}
-
 
 int WKBasedNavigationManagerImpl::GetItemCount() const {
   id<CRWWebViewNavigationProxy> proxy = delegate_->GetWebViewNavigationProxy();
@@ -402,10 +383,21 @@ NavigationItemImpl* WKBasedNavigationManagerImpl::GetNavigationItemImplAtIndex(
   return GetNavigationItemFromWKItem(wk_item);
 }
 
+NavigationItemImpl* WKBasedNavigationManagerImpl::GetLastCommittedItemImpl()
+    const {
+  int index = GetLastCommittedItemIndex();
+  return index == -1 ? nullptr
+                     : GetNavigationItemImplAtIndex(static_cast<size_t>(index));
+}
+
 NavigationItemImpl* WKBasedNavigationManagerImpl::GetPendingItemImpl() const {
   return (pending_item_index_ == -1)
              ? pending_item_.get()
              : GetNavigationItemImplAtIndex(pending_item_index_);
+}
+
+NavigationItemImpl* WKBasedNavigationManagerImpl::GetTransientItemImpl() const {
+  return transient_item_.get();
 }
 
 int WKBasedNavigationManagerImpl::GetWKCurrentItemIndex() const {

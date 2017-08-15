@@ -127,6 +127,71 @@ std::unique_ptr<NavigationItemImpl> NavigationManagerImpl::CreateNavigationItem(
   return item;
 }
 
+NavigationItem* NavigationManagerImpl::GetLastCommittedItem() const {
+  return GetLastCommittedItemImpl();
+}
+
+NavigationItem* NavigationManagerImpl::GetPendingItem() const {
+  return GetPendingItemImpl();
+}
+
+NavigationItem* NavigationManagerImpl::GetTransientItem() const {
+  return GetTransientItemImpl();
+}
+
+void NavigationManagerImpl::LoadURLWithParams(
+    const NavigationManager::WebLoadParams& params) {
+  DCHECK(!(params.transition_type & ui::PAGE_TRANSITION_FORWARD_BACK));
+  delegate_->ClearTransientContent();
+  delegate_->RecordPageStateInNavigationItem();
+
+  bool is_initial_navigation = !GetItemCount();
+
+  NavigationInitiationType initiation_type =
+      params.is_renderer_initiated
+          ? NavigationInitiationType::RENDERER_INITIATED
+          : NavigationInitiationType::USER_INITIATED;
+  AddPendingItem(params.url, params.referrer, params.transition_type,
+                 initiation_type, params.user_agent_override_option);
+
+  // Mark pending item as created from hash change if necessary. This is needed
+  // because window.hashchange message may not arrive on time.
+  NavigationItemImpl* pending_item = GetPendingItemImpl();
+  if (pending_item) {
+    NavigationItem* last_committed_item = GetLastCommittedItem();
+    GURL last_committed_url = last_committed_item
+                                  ? last_committed_item->GetVirtualURL()
+                                  : GURL::EmptyGURL();
+    GURL pending_url = pending_item->GetURL();
+    if (last_committed_url != pending_url &&
+        last_committed_url.EqualsIgnoringRef(pending_url)) {
+      pending_item->SetIsCreatedFromHashChange(true);
+    }
+  }
+
+  // Add additional headers to the NavigationItem before loading it in the web
+  // view. This implementation must match CRWWebController's |currentNavItem|.
+  // However, to avoid introducing a GetCurrentItem() that is only used here,
+  // the logic in |currentNavItem| is inlined here with the small simplification
+  // since AddPendingItem() implies that any transient item would have been
+  // cleared.
+  DCHECK(!GetTransientItem());
+  NavigationItemImpl* added_item =
+      pending_item ? pending_item : GetLastCommittedItemImpl();
+  DCHECK(added_item);
+  if (params.extra_headers)
+    added_item->AddHttpRequestHeaders(params.extra_headers);
+  if (params.post_data) {
+    DCHECK([added_item->GetHttpRequestHeaders() objectForKey:@"Content-Type"])
+        << "Post data should have an associated content type";
+    added_item->SetPostData(params.post_data);
+    added_item->SetShouldSkipRepostFormConfirmation(true);
+  }
+
+  delegate_->WillLoadCurrentItemWithParams(params, is_initial_navigation);
+  delegate_->LoadCurrentItem();
+}
+
 void NavigationManagerImpl::AddTransientURLRewriter(
     BrowserURLRewriter::URLRewriter rewriter) {
   DCHECK(rewriter);

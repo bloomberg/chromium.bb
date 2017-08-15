@@ -26,8 +26,23 @@ class NavigationManagerDelegate {
   // moved to NavigationManagerImpl.
   virtual void GoToIndex(int index) = 0;
 
-  // Instructs the delegate to load the URL.
-  virtual void LoadURLWithParams(const NavigationManager::WebLoadParams&) = 0;
+  // Instructs the delegate to clear any transient content to prepare for new
+  // navigation.
+  virtual void ClearTransientContent() = 0;
+
+  // Instructs the delegate to record page states (e.g. scroll position, form
+  // values, whatever can be harvested) from the current page into the
+  // navigation item.
+  virtual void RecordPageStateInNavigationItem() = 0;
+
+  // Instructs the delegate to notify its delegates that the current navigation
+  // item will be loaded.
+  virtual void WillLoadCurrentItemWithParams(
+      const NavigationManager::WebLoadParams&,
+      bool is_initial_navigation) = 0;
+
+  // Instructs the delegate to load the current navigation item.
+  virtual void LoadCurrentItem() = 0;
 
   // Instructs the delegate to reload.
   virtual void Reload() = 0;
