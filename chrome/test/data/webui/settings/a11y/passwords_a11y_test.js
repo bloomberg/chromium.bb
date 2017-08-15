@@ -4,12 +4,9 @@
 
 /** @fileoverview Define accessibility tests for the MANAGE_PASSWORDS route. */
 
-/** @const {string} Path to root from chrome/test/data/webui/settings/. */
-var ROOT_PATH = '../../../../../';
-
 // SettingsAccessibilityTest fixture.
 GEN_INCLUDE([
-  ROOT_PATH + 'chrome/test/data/webui/settings/accessibility_browsertest.js',
+  'settings_accessibility_test.js',
 ]);
 
 /**
@@ -24,7 +21,7 @@ SettingsA11yManagePasswords.prototype = {
 
   // Include files that define the mocha tests.
   extraLibraries: SettingsAccessibilityTest.prototype.extraLibraries.concat([
-    'passwords_and_autofill_fake_data.js',
+    '../passwords_and_autofill_fake_data.js',
   ]),
 };
 

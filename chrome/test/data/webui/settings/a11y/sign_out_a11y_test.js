@@ -8,12 +8,9 @@
 // OS level, not within the Chrome Browser.
 GEN('#if !defined(OS_CHROMEOS)');
 
- /** @const {string} Path to root from chrome/test/data/webui/settings/. */
-var ROOT_PATH = '../../../../../';
-
 // SettingsAccessibilityTest fixture.
 GEN_INCLUDE([
-  ROOT_PATH + 'chrome/test/data/webui/settings/accessibility_browsertest.js',
+  'settings_accessibility_test.js',
 ]);
 
 /**
@@ -28,9 +25,8 @@ SettingsA11ySignOut.prototype = {
 
   // Include files that define the mocha tests.
   extraLibraries: SettingsAccessibilityTest.prototype.extraLibraries.concat([
-    '../test_browser_proxy.js',
-    'test_sync_browser_proxy.js',
-    'sign_out_a11y_test.js',
+    '../../test_browser_proxy.js',
+    '../test_sync_browser_proxy.js',
   ]),
 };
 
