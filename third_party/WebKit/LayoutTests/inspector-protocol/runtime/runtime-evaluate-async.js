@@ -23,12 +23,12 @@
 
     async function testPrimitiveValueInsteadOfPromise() {
       var result = await dp.Runtime.evaluate({ expression: 'true', awaitPromise: true });
-      testRunner.logObject(result.error);
+      dumpResult(result.result);
     },
 
     async function testObjectInsteadOfPromise() {
-      var result = await dp.Runtime.evaluate({ expression: '({})', awaitPromise: true });
-      testRunner.logObject(result.error);
+      var result = await dp.Runtime.evaluate({ expression: '({})', awaitPromise: true, returnByValue: true });
+      dumpResult(result.result);
     },
 
     async function testPendingPromise() {
