@@ -45,6 +45,7 @@ class ClientBase {
     bool use_drm = false;
     std::string use_drm_value;
     int32_t drm_format = 0;
+    int32_t bo_usage = 0;
   };
 
   struct Globals {
@@ -84,9 +85,11 @@ class ClientBase {
   ClientBase();
   virtual ~ClientBase();
   std::unique_ptr<Buffer> CreateBuffer(const gfx::Size& size,
-                                       int32_t drm_format);
+                                       int32_t drm_format,
+                                       int32_t bo_usage);
   std::unique_ptr<Buffer> CreateDrmBuffer(const gfx::Size& size,
-                                          int32_t drm_format);
+                                          int32_t drm_format,
+                                          int32_t bo_usage);
 
   gfx::Size size_ = gfx::Size(256, 256);
   int scale_ = 1;

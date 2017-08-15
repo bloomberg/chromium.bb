@@ -136,6 +136,8 @@ int main(int argc, char* argv[]) {
 
   // TODO(dcastagna): Support other YUV formats.
   params.drm_format = DRM_FORMAT_NV12;
+  params.bo_usage =
+      GBM_BO_USE_SCANOUT | GBM_BO_USE_LINEAR | GBM_BO_USE_TEXTURING;
 
   exo::wayland::clients::YuvClient client;
   client.Run(params);
