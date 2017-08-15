@@ -114,8 +114,12 @@ Running test: testRunScriptReturnByValue
 
 Running test: testAwaitNotPromise
 {
-    code : 0
-    message : Result of the script execution is not a promise
+    result : {
+        type : object
+        value : {
+            a : 1
+        }
+    }
 }
 
 Running test: testAwaitResolvedPromise

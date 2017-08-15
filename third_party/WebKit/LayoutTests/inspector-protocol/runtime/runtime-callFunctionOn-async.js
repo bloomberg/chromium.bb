@@ -76,10 +76,10 @@
           '({a : 1})',
           '(function() { return 239; })',
           [],
-          /* returnByValue */ false,
+          /* returnByValue */ true,
           /* generatePreview */ false,
           /* awaitPromise */ true);
-      testRunner.logObject(result.error);
+      dumpResult(result.result);
     },
 
     async function testFunctionReturnResolvedPromiseReturnByValue() {

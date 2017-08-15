@@ -33,14 +33,19 @@ Running test: testRejectedPromise
 
 Running test: testPrimitiveValueInsteadOfPromise
 {
-    code : -32000
-    message : Result of the evaluation is not a promise
+    result : {
+        type : boolean
+        value : true
+    }
 }
 
 Running test: testObjectInsteadOfPromise
 {
-    code : -32000
-    message : Result of the evaluation is not a promise
+    result : {
+        type : object
+        value : {
+        }
+    }
 }
 
 Running test: testPendingPromise

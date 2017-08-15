@@ -76,7 +76,7 @@
     async function testAwaitNotPromise() {
       await dp.Runtime.enable();
       var response = await dp.Runtime.compileScript({expression: '({a:1})', sourceURL: 'boo.js', persistScript: true});
-      dumpResult(await dp.Runtime.runScript({scriptId: response.result.scriptId, awaitPromise: true}));
+      dumpResult(await dp.Runtime.runScript({scriptId: response.result.scriptId, awaitPromise: true, returnByValue: true}));
       await dp.Runtime.disable();
     },
 
