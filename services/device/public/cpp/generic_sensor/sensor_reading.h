@@ -117,7 +117,7 @@ struct SensorReadingQuat : public SensorReadingXYZ {
 // ABSOLUTE_ORIENTATION_EULER_ANGLES:
 // orientation_euler.x: x-axis angle in degrees representing the orientation of
 // the device in 3D space. It corresponds to the beta value in the W3C
-// DeviceOrientation Event Specification. This value is in [180, 180).
+// DeviceOrientation Event Specification. This value is in [-180, 180).
 // orientation_euler.y: y-axis angle in degrees representing the orientation of
 // the device in 3D space. It corresponds to the gamma value in the W3C
 // DeviceOrientation Event Specification. This value is in [-90, 90).
@@ -140,7 +140,7 @@ struct SensorReadingQuat : public SensorReadingXYZ {
 // the geomagnetic field.)
 // orientation_euler.x: x-axis angle in degrees representing the orientation of
 // the device in 3D space. It corresponds to the beta value in the W3C
-// DeviceOrientation Event Specification. This value is in [180, 180).
+// DeviceOrientation Event Specification. This value is in [-180, 180).
 // orientation_euler.y: y-axis angle in degrees representing the orientation of
 // the device in 3D space. It corresponds to the gamma value in the W3C
 // DeviceOrientation Event Specification. This value is in [-90, 90).
