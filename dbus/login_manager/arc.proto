@@ -33,5 +33,8 @@ message StartArcInstanceRequest {
   // TODO(yusukes): Make this always enabled and then remove the field.
   optional bool create_server_socket = 5;
 
-  // Next ID to use: 6
+  // Option to enable native bridge experiment (b/63133475).
+  optional bool native_bridge_experiment = 6;
+
+  // Next ID to use: 7
 }
