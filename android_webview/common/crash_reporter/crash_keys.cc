@@ -121,12 +121,6 @@ size_t RegisterWebViewCrashKeys() {
       // Temporary for https://crbug.com/612711.
       {"aci_wrong_sp_extension_id", kSmallSize},
 
-      // Temporary for https://crbug.com/668633.
-      {"swdh_set_hosted_version_worker_pid", kSmallSize},
-      {"swdh_set_hosted_version_host_pid", kSmallSize},
-      {"swdh_set_hosted_version_is_new_process", kSmallSize},
-      {"swdh_set_hosted_version_restart_count", kSmallSize},
-
       // Temporary for https://crbug.com/685996.
       {"user-cloud-policy-manager-connect-trace", kMediumSize},
   };
