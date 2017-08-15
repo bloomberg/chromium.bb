@@ -9,11 +9,14 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
@@ -3820,6 +3823,270 @@ TEST_F(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
   // TODO(crbug.com/613666): Should be a properly defined type, and not
   // UNKNOWN_TYPE.
   EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(1)->Type().GetStorableType());
+}
+
+TEST_F(FormStructureTest, ParseQueryResponse_RationalizeLoneField) {
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("fullname");
+  field.name = ASCIIToUTF16("fullname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("height");
+  field.name = ASCIIToUTF16("height");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("email");
+  field.name = ASCIIToUTF16("email");
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_autofill_type(NAME_FULL);
+  response.add_field()->set_autofill_type(ADDRESS_HOME_LINE1);
+  response.add_field()->set_autofill_type(CREDIT_CARD_EXP_MONTH);  // Uh-oh!
+  response.add_field()->set_autofill_type(EMAIL_ADDRESS);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Test that the expiry month field is rationalized away when enabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(4U, forms[0]->field_count());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->server_type());
+    EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(1)->server_type());
+    EXPECT_EQ(NO_SERVER_DATA, forms[0]->field(2)->server_type());
+    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(3)->server_type());
+  }
+
+  // Sanity check that the enable/disabled works.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(4U, forms[0]->field_count());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->server_type());
+    EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(1)->server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_MONTH, forms[0]->field(2)->server_type());
+    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(3)->server_type());
+  }
+}
+
+TEST_F(FormStructureTest, ParseQueryResponse_RationalizeCCName) {
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("fname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("email");
+  field.name = ASCIIToUTF16("email");
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_autofill_type(CREDIT_CARD_NAME_FIRST);
+  response.add_field()->set_autofill_type(CREDIT_CARD_NAME_LAST);
+  response.add_field()->set_autofill_type(EMAIL_ADDRESS);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Test that the name fields are rationalized when enabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(3U, forms[0]->field_count());
+    EXPECT_EQ(NAME_FIRST, forms[0]->field(0)->server_type());
+    EXPECT_EQ(NAME_LAST, forms[0]->field(1)->server_type());
+    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(2)->server_type());
+  }
+
+  // Sanity check that the enable/disabled works.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(3U, forms[0]->field_count());
+    EXPECT_EQ(CREDIT_CARD_NAME_FIRST, forms[0]->field(0)->server_type());
+    EXPECT_EQ(CREDIT_CARD_NAME_LAST, forms[0]->field(1)->server_type());
+    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(2)->server_type());
+  }
+}
+
+TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_1) {
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Cardholder");
+  field.name = ASCIIToUTF16("fullname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Card Number");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Month)");
+  field.name = ASCIIToUTF16("expiry_month");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Year");
+  field.name = ASCIIToUTF16("expiry_year");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Quantity");
+  field.name = ASCIIToUTF16("quantity");
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_autofill_type(CREDIT_CARD_NAME_FULL);
+  response.add_field()->set_autofill_type(CREDIT_CARD_NUMBER);
+  response.add_field()->set_autofill_type(CREDIT_CARD_EXP_MONTH);
+  response.add_field()->set_autofill_type(CREDIT_CARD_EXP_2_DIGIT_YEAR);
+  response.add_field()->set_autofill_type(CREDIT_CARD_EXP_MONTH);  // Uh-oh!
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Test that the extra month field is rationalized away when enabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(5U, forms[0]->field_count());
+    EXPECT_EQ(CREDIT_CARD_NAME_FULL, forms[0]->field(0)->server_type());
+    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_MONTH, forms[0]->field(2)->server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_2_DIGIT_YEAR, forms[0]->field(3)->server_type());
+    EXPECT_EQ(NO_SERVER_DATA, forms[0]->field(4)->server_type());
+  }
+
+  // Sanity check that the enable/disabled works.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(5U, forms[0]->field_count());
+    EXPECT_EQ(CREDIT_CARD_NAME_FULL, forms[0]->field(0)->server_type());
+    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_MONTH, forms[0]->field(2)->server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_2_DIGIT_YEAR, forms[0]->field(3)->server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_MONTH, forms[0]->field(4)->server_type());
+  }
+}
+
+TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_2) {
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Cardholder");
+  field.name = ASCIIToUTF16("fullname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Card Number");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Expiry Date (MMYY)");
+  field.name = ASCIIToUTF16("expiry");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Quantity");
+  field.name = ASCIIToUTF16("quantity");
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_autofill_type(CREDIT_CARD_NAME_FULL);
+  response.add_field()->set_autofill_type(CREDIT_CARD_NUMBER);
+  response.add_field()->set_autofill_type(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
+  response.add_field()->set_autofill_type(CREDIT_CARD_EXP_MONTH);  // Uh-oh!
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Test that the extra month field is rationalized away when enabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(4U, forms[0]->field_count());
+    EXPECT_EQ(CREDIT_CARD_NAME_FULL, forms[0]->field(0)->server_type());
+    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
+              forms[0]->field(2)->server_type());
+    EXPECT_EQ(NO_SERVER_DATA, forms[0]->field(3)->server_type());
+  }
+
+  // Sanity check that the enable/disabled works.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        autofill::kAutofillRationalizeFieldTypePredictions);
+    FormStructure::ParseQueryResponse(response_string, forms);
+    ASSERT_EQ(1U, forms.size());
+    ASSERT_EQ(4U, forms[0]->field_count());
+    EXPECT_EQ(CREDIT_CARD_NAME_FULL, forms[0]->field(0)->server_type());
+    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
+              forms[0]->field(2)->server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_MONTH, forms[0]->field(3)->server_type());
+  }
 }
 
 TEST_F(FormStructureTest, FindLongestCommonPrefix) {

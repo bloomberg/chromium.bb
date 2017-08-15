@@ -598,6 +598,17 @@ void AutofillField::SetHtmlType(HtmlFieldType type, HtmlFieldMode mode) {
     phone_part_ = IGNORED;
 }
 
+void AutofillField::SetTypeTo(ServerFieldType type) {
+  if (type == UNKNOWN_TYPE || type == NO_SERVER_DATA) {
+    heuristic_type_ = UNKNOWN_TYPE;
+    server_type_ = NO_SERVER_DATA;
+  } else if (server_type_ == NO_SERVER_DATA) {
+    heuristic_type_ = type;
+  } else {
+    server_type_ = type;
+  }
+}
+
 AutofillType AutofillField::Type() const {
   // Use the html type specified by the website unless it is unrecognized and
   // autofill predicts a credit card type.
