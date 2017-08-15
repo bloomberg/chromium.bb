@@ -52,8 +52,9 @@ void WebSocketSBHandshakeThrottle::ThrottleHandshake(
   url_ = url;
   int render_frame_id = MSG_ROUTING_NONE;
   if (web_local_frame) {
-    render_frame_id =
-        content::RenderFrame::FromWebFrame(web_local_frame)->GetRoutingID();
+    auto* render_frame = content::RenderFrame::FromWebFrame(web_local_frame);
+    if (render_frame)
+      render_frame_id = render_frame->GetRoutingID();
   }
   int load_flags = 0;
   start_time_ = base::TimeTicks::Now();
