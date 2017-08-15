@@ -17148,10 +17148,9 @@ crbug.com/591099 webmidi/send-system-messages.html [ Failure ]
 crbug.com/591099 xmlviewer/extensions-api.html [ Failure ]
 
 # Need support for getBoundingClientRect() with LayoutNG.
-# TODO(xiaochengh): Investigate and file a new bug to replace 699017
-crbug.com/699017 accessibility/selection-affinity.html [ Failure ]
-crbug.com/699017 fast/multicol/float-truncation.html [ Failure ]
-crbug.com/699017 fast/multicol/vertical-lr/float-truncation.html [ Failure ]
+crbug.com/755750 accessibility/selection-affinity.html [ Failure ]
+crbug.com/755750 fast/multicol/float-truncation.html [ Failure ]
+crbug.com/755750 fast/multicol/vertical-lr/float-truncation.html [ Failure ]
 
 # We currently write back whitespace-collapsed strings to LayoutText, causing
 # the following failures. Once we can paint inlines directly from fragment tree,
