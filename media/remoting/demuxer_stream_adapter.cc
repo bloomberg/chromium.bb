@@ -243,7 +243,12 @@ void DemuxerStreamAdapter::ReadUntil(std::unique_ptr<pb::RpcMessage> message) {
 void DemuxerStreamAdapter::EnableBitstreamConverter() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DEMUXER_VLOG(2) << "Received RPC_DS_ENABLEBITSTREAMCONVERTER";
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   demuxer_stream_->EnableBitstreamConverter();
+#else
+  DEMUXER_VLOG(1) << "Ignoring EnableBitstreamConverter() RPC: Proprietary "
+                     "codecs not enabled in this Chromium build.";
+#endif
 }
 
 void DemuxerStreamAdapter::RequestBuffer() {
