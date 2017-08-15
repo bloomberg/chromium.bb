@@ -296,14 +296,84 @@ ArcBluetoothBridge* ArcBluetoothBridge::GetForBrowserContext(
   return ArcBluetoothBridgeFactory::GetForBrowserContext(context);
 }
 
+template <typename T>
+class ArcBluetoothBridge::InstanceObserver
+    : public InstanceHolder<T>::Observer {
+ public:
+  InstanceObserver(ArcBluetoothBridge* owner,
+                   ArcBridgeService* arc_bridge_service)
+      : owner_(owner), arc_bridge_service_(arc_bridge_service) {
+    GetHolder()->AddObserver(this);
+  }
+
+  ~InstanceObserver() override { GetHolder()->RemoveObserver(this); }
+
+ protected:
+  InstanceHolder<T>* GetHolder();
+
+  ArcBridgeService* arc_bridge_service() { return arc_bridge_service_; }
+
+ private:
+  // InstanceHolder<T>::Observer:
+  void OnInstanceReady() override { owner_->MaybeSendInitialPowerChange(); }
+
+  // Unowned pointer
+  ArcBluetoothBridge* const owner_;
+  ArcBridgeService* const arc_bridge_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(InstanceObserver);
+};
+
+template <>
+InstanceHolder<mojom::AppInstance>*
+ArcBluetoothBridge::InstanceObserver<mojom::AppInstance>::GetHolder() {
+  return arc_bridge_service()->app();
+}
+
+template <>
+InstanceHolder<mojom::IntentHelperInstance>*
+ArcBluetoothBridge::InstanceObserver<mojom::IntentHelperInstance>::GetHolder() {
+  return arc_bridge_service()->intent_helper();
+}
+
+class ArcBluetoothBridge::AppInstanceObserver
+    : public InstanceObserver<mojom::AppInstance> {
+ public:
+  AppInstanceObserver(ArcBluetoothBridge* owner,
+                      ArcBridgeService* arc_bridge_service)
+      : InstanceObserver<mojom::AppInstance>(owner, arc_bridge_service) {}
+
+  ~AppInstanceObserver() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppInstanceObserver);
+};
+
+class ArcBluetoothBridge::IntentHelperInstanceObserver
+    : public InstanceObserver<mojom::IntentHelperInstance> {
+ public:
+  IntentHelperInstanceObserver(ArcBluetoothBridge* owner,
+                               ArcBridgeService* arc_bridge_service)
+      : InstanceObserver<mojom::IntentHelperInstance>(owner,
+                                                      arc_bridge_service) {}
+
+  ~IntentHelperInstanceObserver() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IntentHelperInstanceObserver);
+};
+
 ArcBluetoothBridge::ArcBluetoothBridge(content::BrowserContext* context,
                                        ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service),
       binding_(this),
-      intent_helper_observer_(this),
       weak_factory_(this) {
   arc_bridge_service_->bluetooth()->AddObserver(this);
-  arc_bridge_service_->intent_helper()->AddObserver(&intent_helper_observer_);
+
+  app_observer_ =
+      base::MakeUnique<AppInstanceObserver>(this, arc_bridge_service_);
+  intent_helper_observer_ =
+      base::MakeUnique<IntentHelperInstanceObserver>(this, arc_bridge_service_);
 
   if (BluetoothAdapterFactory::IsBluetoothSupported()) {
     VLOG(1) << "Registering bluetooth adapter.";
@@ -320,8 +390,6 @@ ArcBluetoothBridge::~ArcBluetoothBridge() {
   if (bluetooth_adapter_)
     bluetooth_adapter_->RemoveObserver(this);
 
-  arc_bridge_service_->intent_helper()->RemoveObserver(
-      &intent_helper_observer_);
   arc_bridge_service_->bluetooth()->RemoveObserver(this);
 }
 
@@ -1965,16 +2033,6 @@ void ArcBluetoothBridge::OnForgetError(mojom::BluetoothAddressPtr addr) const {
                                          std::move(addr), bond_state);
 }
 
-ArcBluetoothBridge::IntentHelperObserver::IntentHelperObserver(
-    ArcBluetoothBridge* bluetooth_bridge)
-    : bluetooth_bridge_(bluetooth_bridge) {}
-
-ArcBluetoothBridge::IntentHelperObserver::~IntentHelperObserver() = default;
-
-void ArcBluetoothBridge::IntentHelperObserver::OnInstanceReady() {
-  bluetooth_bridge_->SendInitialPowerChange();
-}
-
 bool ArcBluetoothBridge::IsPowerChangeInitiatedByRemote(
     ArcBluetoothBridge::AdapterPowerState powered) const {
   return !remote_power_changes_.empty() &&
@@ -1987,13 +2045,25 @@ bool ArcBluetoothBridge::IsPowerChangeInitiatedByLocal(
          local_power_changes_.front() == powered;
 }
 
-void ArcBluetoothBridge::SendInitialPowerChange() {
+void ArcBluetoothBridge::MaybeSendInitialPowerChange() {
   if (!bluetooth_adapter_ || !bluetooth_adapter_->IsPowered()) {
     // The default power state of Bluetooth on Android is off, so there is no
     // need to send an intent to turn off Bluetooth if the initial power state
     // is off.
     return;
   }
+
+  // Send initial power state in case both, Intent Helper and App instances are
+  // present. Intent Helper is required to dispatch this event and App is sign
+  // that ARC is fully started. In case of initial boot, App instance is started
+  // after the Intent Helper instance. In case of next boot Intent Helper and
+  // App instances are started at almost the same time and order of start is not
+  // determined.
+  if (!arc_bridge_service_->app()->has_instance() ||
+      !arc_bridge_service_->intent_helper()->has_instance()) {
+    return;
+  }
+
   EnqueueLocalPowerChange(AdapterPowerState::TURN_ON);
 }
 
