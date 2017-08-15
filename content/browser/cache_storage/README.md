@@ -1,5 +1,5 @@
 # Architecture (as of July 29th 2016)
-This document describes the browser-process implementation of the [Cache
+This document descibes the browser-process implementation of the [Cache
 Storage specification](
 https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html).
 
@@ -152,25 +152,3 @@ operation. The idiom for this in CacheStorage/ is to wrap the operation's
 callback with a function that will run the callback as well as advance the
 scheduler. So long as the operation runs its wrapped callback the scheduler
 will advance.
-
-## Opaque Resource Size Obfuscation
-Applications can cache cross-origin resources as per
-[Cross-Origin Resources and CORS](https://www.w3.org/TR/service-workers-1/#cross-origin-resources).
-Opaque responses are also cached, but in order to prevent "leaking" the size
-of opaque responses their sizes are obfuscated. Random padding is added to the
-actual size making it difficult for an attacker to ascertain the actual resource
-size via quota APIs.
-
-When Chromium starts, a new random padding key is generated and used
-for all new caches created. This key is used by each cache to calculate padding
-for opaque resources. Each cache's key is persisted to disk in the cache index file
-
-Each cache maintains the total padding for all opaque resources within the
-cache. This padding is added to the actual resource size when reporting sizes
-to the quota manager.
-
-The padding algorithm version is also written to each cache allowing for it
-to be changed at a future date. CacheStorage will use the persisted key and
-padding from the cache's index unless the padding algorithm has been changed,
-one of values is missing, or deemed to be incorrect. In this situation the cache
-is enumerated and the padding recalculated during open.

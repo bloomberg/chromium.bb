@@ -14,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/guid.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -34,44 +33,15 @@
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/public/browser/browser_thread.h"
-#include "crypto/symmetric_key.h"
 #include "net/base/directory_lister.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 
-using base::LazyInstance;
-using crypto::SymmetricKey;
-
 namespace content {
 
 namespace {
-
-const SymmetricKey::Algorithm kPaddingKeyAlgorithm = SymmetricKey::AES;
-
-// LazyInstance needs a new-able type so this class exists solely to "own"
-// a SymmetricKey.
-class SymmetricKeyOwner {
- public:
-  std::unique_ptr<SymmetricKey> CreateDuplicate() const {
-    return SymmetricKey::Import(kPaddingKeyAlgorithm, key());
-  }
-
-  // Only for test purposes.
-  void GenerateNew() {
-    key_ = SymmetricKey::GenerateRandomKey(kPaddingKeyAlgorithm, 128);
-  }
-
-  const std::string& key() const { return key_->key(); }
-
- private:
-  std::unique_ptr<SymmetricKey> key_ =
-      SymmetricKey::GenerateRandomKey(kPaddingKeyAlgorithm, 128);
-};
-
-static LazyInstance<SymmetricKeyOwner>::Leaky s_padding_key =
-    LAZY_INSTANCE_INITIALIZER;
 
 std::string HexedHash(const std::string& value) {
   std::string value_hash = base::SHA1HashString(value);
@@ -87,10 +57,6 @@ void SizeRetrievedFromAllCaches(std::unique_ptr<int64_t> accumulator,
 }
 
 void DoNothingWithBool(bool success) {}
-
-std::unique_ptr<SymmetricKey> ImportPaddingKey(const std::string& raw_key) {
-  return SymmetricKey::Import(kPaddingKeyAlgorithm, raw_key);
-}
 
 }  // namespace
 
@@ -137,9 +103,7 @@ class CacheStorage::CacheLoader {
   // load the backend, that happens lazily when the cache is used.
   virtual std::unique_ptr<CacheStorageCache> CreateCache(
       const std::string& cache_name,
-      int64_t cache_size,
-      int64_t cache_padding,
-      std::unique_ptr<SymmetricKey> cache_padding_key) = 0;
+      int64_t cache_size) = 0;
 
   // Deletes any pre-existing cache of the same name and then loads it.
   virtual void PrepareNewCacheDestination(const std::string& cache_name,
@@ -201,22 +165,17 @@ class CacheStorage::MemoryLoader : public CacheStorage::CacheLoader {
                     cache_storage,
                     origin) {}
 
-  std::unique_ptr<CacheStorageCache> CreateCache(
-      const std::string& cache_name,
-      int64_t cache_size,
-      int64_t cache_padding,
-      std::unique_ptr<SymmetricKey> cache_padding_key) override {
+  std::unique_ptr<CacheStorageCache> CreateCache(const std::string& cache_name,
+                                                 int64_t cache_size) override {
     return CacheStorageCache::CreateMemoryCache(
         origin_, cache_name, cache_storage_, request_context_getter_,
-        quota_manager_proxy_, blob_context_,
-        s_padding_key.Get().CreateDuplicate());
+        quota_manager_proxy_, blob_context_);
   }
 
   void PrepareNewCacheDestination(const std::string& cache_name,
                                   CacheCallback callback) override {
     std::unique_ptr<CacheStorageCache> cache =
-        CreateCache(cache_name, 0 /*cache_size*/, 0 /* cache_padding */,
-                    s_padding_key.Get().CreateDuplicate());
+        CreateCache(cache_name, 0 /*cache_size*/);
     std::move(callback).Run(std::move(cache));
   }
 
@@ -274,11 +233,8 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
         origin_path_(origin_path),
         weak_ptr_factory_(this) {}
 
-  std::unique_ptr<CacheStorageCache> CreateCache(
-      const std::string& cache_name,
-      int64_t cache_size,
-      int64_t cache_padding,
-      std::unique_ptr<SymmetricKey> cache_padding_key) override {
+  std::unique_ptr<CacheStorageCache> CreateCache(const std::string& cache_name,
+                                                 int64_t cache_size) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(base::ContainsKey(cache_name_to_cache_dir_, cache_name));
 
@@ -287,7 +243,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     return CacheStorageCache::CreatePersistentCache(
         origin_, cache_name, cache_storage_, cache_path,
         request_context_getter_, quota_manager_proxy_, blob_context_,
-        cache_size, cache_padding, std::move(cache_padding_key));
+        cache_size);
   }
 
   void PrepareNewCacheDestination(const std::string& cache_name,
@@ -325,9 +281,8 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     }
 
     cache_name_to_cache_dir_[cache_name] = cache_dir;
-    std::move(callback).Run(CreateCache(cache_name, CacheStorage::kSizeUnknown,
-                                        CacheStorage::kSizeUnknown,
-                                        s_padding_key.Get().CreateDuplicate()));
+    std::move(callback).Run(
+        CreateCache(cache_name, CacheStorage::kSizeUnknown));
   }
 
   void CleanUpDeletedCache(CacheStorageCache* cache) override {
@@ -368,10 +323,6 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
         index_cache->clear_size();
       else
         index_cache->set_size(cache_metadata.size);
-      index_cache->set_padding_key(cache_metadata.padding_key);
-      index_cache->set_padding(cache_metadata.padding);
-      index_cache->set_padding_version(
-          CacheStorageCache::GetResponsePaddingVersion());
     }
 
     std::string serialized;
@@ -426,28 +377,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
       DCHECK(cache.has_cache_dir());
       int64_t cache_size =
           cache.has_size() ? cache.size() : CacheStorage::kSizeUnknown;
-      int64_t cache_padding;
-      if (cache.has_padding()) {
-        if (cache.has_padding_version() &&
-            cache.padding_version() ==
-                CacheStorageCache::GetResponsePaddingVersion()) {
-          cache_padding = cache.padding();
-        } else {
-          // The padding algorithm version changed so set to unknown to force
-          // recalculation.
-          cache_padding = CacheStorage::kSizeUnknown;
-        }
-      } else {
-        cache_padding = CacheStorage::kSizeUnknown;
-      }
-
-      std::string cache_padding_key = cache.has_padding_key()
-                                          ? cache.padding_key()
-                                          : s_padding_key.Get().key();
-
-      index->Insert(CacheStorageIndex::CacheMetadata(
-          cache.name(), cache_size, cache_padding,
-          std::move(cache_padding_key)));
+      index->Insert(CacheStorageIndex::CacheMetadata(cache.name(), cache_size));
       cache_name_to_cache_dir_[cache.name()] = cache.cache_dir();
       cache_dirs->insert(cache.cache_dir());
     }
@@ -763,13 +693,12 @@ bool CacheStorage::InitiateScheduledIndexWriteForTest(
   return false;
 }
 
-void CacheStorage::CacheSizeUpdated(const CacheStorageCache* cache) {
+void CacheStorage::CacheSizeUpdated(const CacheStorageCache* cache,
+                                    int64_t size) {
   // Should not be called for doomed caches.
   DCHECK(!base::ContainsKey(doomed_caches_,
                             const_cast<CacheStorageCache*>(cache)));
-  DCHECK_NE(cache->cache_padding(), kSizeUnknown);
-  cache_index_->SetCacheSize(cache->cache_name(), cache->cache_size());
-  cache_index_->SetCachePadding(cache->cache_name(), cache->cache_padding());
+  cache_index_->SetCacheSize(cache->cache_name(), size);
   ScheduleWriteIndex();
 }
 
@@ -779,11 +708,6 @@ void CacheStorage::StartAsyncOperationForTesting() {
 
 void CacheStorage::CompleteAsyncOperationForTesting() {
   scheduler_->CompleteOperationAndRunNext();
-}
-
-// static
-void CacheStorage::GenerateNewKeyForTesting() {
-  s_padding_key.Get().GenerateNew();
 }
 
 // Init is run lazily so that it is called on the proper MessageLoop.
@@ -867,9 +791,8 @@ void CacheStorage::CreateCacheDidCreateCache(
   CacheStorageCache* cache_ptr = cache.get();
 
   cache_map_.insert(std::make_pair(cache_name, std::move(cache)));
-  cache_index_->Insert(CacheStorageIndex::CacheMetadata(
-      cache_name, cache_ptr->cache_size(), cache_ptr->cache_padding(),
-      cache_ptr->cache_padding_key()->key()));
+  cache_index_->Insert(
+      CacheStorageIndex::CacheMetadata(cache_name, cache_ptr->cache_size()));
 
   cache_loader_->WriteIndex(
       *cache_index_,
@@ -1123,12 +1046,8 @@ std::unique_ptr<CacheStorageCacheHandle> CacheStorage::GetLoadedCache(
   CacheStorageCache* cache = map_iter->second.get();
 
   if (!cache) {
-    const CacheStorageIndex::CacheMetadata* metadata =
-        cache_index_->GetMetadata(cache_name);
-    DCHECK(metadata);
     std::unique_ptr<CacheStorageCache> new_cache = cache_loader_->CreateCache(
-        cache_name, metadata->size, metadata->padding,
-        ImportPaddingKey(metadata->padding_key));
+        cache_name, cache_index_->GetCacheSize(cache_name));
     CacheStorageCache* cache_ptr = new_cache.get();
     map_iter->second = std::move(new_cache);
 
@@ -1175,10 +1094,10 @@ void CacheStorage::SizeImpl(SizeCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(initialized_);
 
-  if (cache_index_->GetPaddedStorageSize() != kSizeUnknown) {
+  if (cache_index_->GetStorageSize() != kSizeUnknown) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  cache_index_->GetPaddedStorageSize()));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), cache_index_->GetStorageSize()));
     return;
   }
 

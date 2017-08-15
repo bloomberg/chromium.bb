@@ -14,7 +14,8 @@ class CacheStorageCache;
 class CONTENT_EXPORT CacheStorageCacheObserver {
  public:
   // The cache size has been set.
-  virtual void CacheSizeUpdated(const CacheStorageCache* cache) = 0;
+  virtual void CacheSizeUpdated(const CacheStorageCache* cache,
+                                int64_t size) = 0;
 };
 
 }  // namespace content

@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 #include <algorithm>
-#include <functional>
 #include <limits>
 #include <memory>
 #include <string>
@@ -30,8 +29,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
-#include "crypto/hmac.h"
-#include "crypto/symmetric_key.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -262,78 +259,6 @@ std::unique_ptr<ServiceWorkerResponse> CreateResponse(
           metadata.response().cors_exposed_header_names().end()));
 }
 
-// The size of opaque (non-cors) resource responses are padded in order
-// to obfuscate their actual size.
-bool ShouldPadResponseType(network::mojom::FetchResponseType response_type,
-                           bool has_urls) {
-  switch (response_type) {
-    case network::mojom::FetchResponseType::kBasic:
-    case network::mojom::FetchResponseType::kCORS:
-    case network::mojom::FetchResponseType::kDefault:
-    case network::mojom::FetchResponseType::kError:
-      return false;
-    case network::mojom::FetchResponseType::kOpaque:
-    case network::mojom::FetchResponseType::kOpaqueRedirect:
-      return has_urls;
-  }
-  NOTREACHED();
-  return false;
-}
-
-bool ShouldPadResourceSize(const content::proto::CacheResponse* response) {
-  return ShouldPadResponseType(
-      ProtoResponseTypeToFetchResponseType(response->response_type()),
-      response->url_list_size());
-}
-
-bool ShouldPadResourceSize(const ServiceWorkerResponse* response) {
-  return ShouldPadResponseType(response->response_type,
-                               !response->url_list.empty());
-}
-
-// If the way that a cache's padding is calculated changes increment this
-// version.
-//
-// History:
-//
-//   1: Uniform random 400K.
-const int32_t kCachePaddingAlgorithmVersion = 1;
-
-int64_t CalculateResponsePaddingInternal(
-    const std::string& response_url,
-    const crypto::SymmetricKey* padding_key,
-    int side_data_size) {
-  const uint64_t kPaddingRange = 400 * 1024;  // Increment version if changed.
-
-  DCHECK(!response_url.empty());
-
-  crypto::HMAC hmac(crypto::HMAC::SHA256);
-  if (!hmac.Init(padding_key))
-    LOG(FATAL) << "Failed to init HMAC.";
-
-  std::vector<uint8_t> digest(hmac.DigestLength());
-  bool success;
-  if (side_data_size)
-    success = hmac.Sign(response_url + "METADATA", &digest[0], digest.size());
-  else
-    success = hmac.Sign(response_url, &digest[0], digest.size());
-  if (!success)
-    LOG(FATAL) << "Failed to sign URL.";
-
-  DCHECK_GE(digest.size(), sizeof(uint64_t));
-  uint64_t val = *(reinterpret_cast<uint64_t*>(&digest[0]));
-  return val % kPaddingRange;
-}
-
-int64_t CalculateResponsePaddingInternal(
-    const ::content::proto::CacheResponse* response,
-    const crypto::SymmetricKey* padding_key,
-    int side_data_size) {
-  DCHECK(ShouldPadResourceSize(response));
-  const std::string& url = response->url_list(response->url_list_size() - 1);
-  return CalculateResponsePaddingInternal(url, padding_key, side_data_size);
-}
-
 }  // namespace
 
 // The state needed to pass between CacheStorageCache::Put callbacks.
@@ -371,12 +296,10 @@ struct CacheStorageCache::QueryCacheResult {
 struct CacheStorageCache::QueryCacheContext {
   QueryCacheContext(std::unique_ptr<ServiceWorkerFetchRequest> request,
                     const CacheStorageCacheQueryParams& options,
-                    QueryCacheCallback callback,
-                    QueryTypes query_types)
+                    QueryCacheCallback callback)
       : request(std::move(request)),
         options(options),
         callback(std::move(callback)),
-        query_types(query_types),
         matches(base::MakeUnique<QueryCacheResults>()) {}
 
   ~QueryCacheContext() {
@@ -393,7 +316,7 @@ struct CacheStorageCache::QueryCacheContext {
   std::unique_ptr<ServiceWorkerFetchRequest> request;
   CacheStorageCacheQueryParams options;
   QueryCacheCallback callback;
-  QueryTypes query_types = 0;
+  QueryCacheType query_type;
   size_t estimated_out_bytes = 0;
 
   // Iteration state
@@ -414,13 +337,11 @@ std::unique_ptr<CacheStorageCache> CacheStorageCache::CreateMemoryCache(
     CacheStorage* cache_storage,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-    base::WeakPtr<storage::BlobStorageContext> blob_context,
-    std::unique_ptr<crypto::SymmetricKey> cache_padding_key) {
+    base::WeakPtr<storage::BlobStorageContext> blob_context) {
   CacheStorageCache* cache = new CacheStorageCache(
       origin, cache_name, base::FilePath(), cache_storage,
       std::move(request_context_getter), std::move(quota_manager_proxy),
-      blob_context, 0 /* cache_size */, 0 /* cache_padding */,
-      std::move(cache_padding_key));
+      blob_context, 0 /* cache_size */);
   cache->SetObserver(cache_storage);
   cache->InitBackend();
   return base::WrapUnique(cache);
@@ -435,13 +356,11 @@ std::unique_ptr<CacheStorageCache> CacheStorageCache::CreatePersistentCache(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context,
-    int64_t cache_size,
-    int64_t cache_padding,
-    std::unique_ptr<crypto::SymmetricKey> cache_padding_key) {
+    int64_t cache_size) {
   CacheStorageCache* cache = new CacheStorageCache(
       origin, cache_name, path, cache_storage,
       std::move(request_context_getter), std::move(quota_manager_proxy),
-      blob_context, cache_size, cache_padding, std::move(cache_padding_key));
+      blob_context, cache_size);
   cache->SetObserver(cache_storage), cache->InitBackend();
   return base::WrapUnique(cache);
 }
@@ -687,9 +606,7 @@ CacheStorageCache::CacheStorageCache(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context,
-    int64_t cache_size,
-    int64_t cache_padding,
-    std::unique_ptr<crypto::SymmetricKey> cache_padding_key)
+    int64_t cache_size)
     : origin_(origin),
       cache_name_(cache_name),
       path_(path),
@@ -700,15 +617,12 @@ CacheStorageCache::CacheStorageCache(
       scheduler_(
           new CacheStorageScheduler(CacheStorageSchedulerClient::CLIENT_CACHE)),
       cache_size_(cache_size),
-      cache_padding_(cache_padding),
-      cache_padding_key_(std::move(cache_padding_key)),
       max_query_size_bytes_(kMaxQueryCacheResultBytes),
       cache_observer_(nullptr),
       memory_only_(path.empty()),
       weak_ptr_factory_(this) {
   DCHECK(!origin_.is_empty());
   DCHECK(quota_manager_proxy_.get());
-  DCHECK(cache_padding_key_.get());
 
   quota_manager_proxy_->NotifyOriginInUse(origin_);
 }
@@ -716,12 +630,10 @@ CacheStorageCache::CacheStorageCache(
 void CacheStorageCache::QueryCache(
     std::unique_ptr<ServiceWorkerFetchRequest> request,
     const CacheStorageCacheQueryParams& options,
-    QueryTypes query_types,
+    QueryCacheType query_type,
     QueryCacheCallback callback) {
-  DCHECK_NE(
-      QUERY_CACHE_ENTRIES | QUERY_CACHE_RESPONSES_WITH_BODIES,
-      query_types & (QUERY_CACHE_ENTRIES | QUERY_CACHE_RESPONSES_WITH_BODIES));
-  if (backend_state_ == BACKEND_CLOSED) {
+  DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
+  if (backend_state_ != BACKEND_OPEN) {
     std::move(callback).Run(CACHE_STORAGE_ERROR_STORAGE,
                             std::unique_ptr<QueryCacheResults>());
     return;
@@ -735,8 +647,9 @@ void CacheStorageCache::QueryCache(
   }
 
   ServiceWorkerFetchRequest* request_ptr = request.get();
-  std::unique_ptr<QueryCacheContext> query_cache_context(new QueryCacheContext(
-      std::move(request), options, std::move(callback), query_types));
+  std::unique_ptr<QueryCacheContext> query_cache_context(
+      new QueryCacheContext(std::move(request), options, std::move(callback)));
+  query_cache_context->query_type = query_type;
 
   if (query_cache_context->request &&
       !query_cache_context->request->url.is_empty() && !options.ignore_search) {
@@ -819,7 +732,7 @@ void CacheStorageCache::QueryCacheFilterEntry(
   disk_cache::ScopedEntryPtr entry(query_cache_context->enumerated_entry);
   query_cache_context->enumerated_entry = nullptr;
 
-  if (backend_state_ == BACKEND_CLOSED) {
+  if (backend_state_ != BACKEND_OPEN) {
     std::move(query_cache_context->callback)
         .Run(CACHE_STORAGE_ERROR_NOT_FOUND,
              std::move(query_cache_context->matches));
@@ -881,49 +794,56 @@ void CacheStorageCache::QueryCacheDidReadMetadata(
     return;
   }
 
-  if (query_cache_context->query_types & QUERY_CACHE_ENTRIES)
-    match->entry = std::move(entry);
-
-  if (query_cache_context->query_types & QUERY_CACHE_REQUESTS) {
-    query_cache_context->estimated_out_bytes +=
-        match->request->EstimatedStructSize();
-    if (query_cache_context->estimated_out_bytes > max_query_size_bytes_) {
-      std::move(query_cache_context->callback)
-          .Run(CACHE_STORAGE_ERROR_QUERY_TOO_LARGE,
-               std::unique_ptr<QueryCacheResults>());
-      return;
-    }
-  } else {
+  if (query_cache_context->query_type == QueryCacheType::CACHE_ENTRIES) {
     match->request.reset();
-  }
-
-  if (query_cache_context->query_types & QUERY_CACHE_RESPONSES_WITH_BODIES) {
-    query_cache_context->estimated_out_bytes +=
-        match->response->EstimatedStructSize();
-    if (query_cache_context->estimated_out_bytes > max_query_size_bytes_) {
-      std::move(query_cache_context->callback)
-          .Run(CACHE_STORAGE_ERROR_QUERY_TOO_LARGE,
-               std::unique_ptr<QueryCacheResults>());
-      return;
-    }
-    if (entry->GetDataSize(INDEX_RESPONSE_BODY) == 0) {
-      QueryCacheOpenNextEntry(std::move(query_cache_context));
-      return;
-    }
-
-    if (!blob_storage_context_) {
-      std::move(query_cache_context->callback)
-          .Run(CACHE_STORAGE_ERROR_STORAGE,
-               std::unique_ptr<QueryCacheResults>());
-      return;
-    }
-
-    match->blob_handle =
-        PopulateResponseBody(std::move(entry), match->response.get());
-  } else if (!(query_cache_context->query_types &
-               QUERY_CACHE_RESPONSES_NO_BODIES)) {
     match->response.reset();
+    match->entry = std::move(entry);
+    QueryCacheOpenNextEntry(std::move(query_cache_context));
+    return;
   }
+
+  query_cache_context->estimated_out_bytes +=
+      match->request->EstimatedStructSize();
+  if (query_cache_context->estimated_out_bytes > max_query_size_bytes_) {
+    std::move(query_cache_context->callback)
+        .Run(CACHE_STORAGE_ERROR_QUERY_TOO_LARGE,
+             std::unique_ptr<QueryCacheResults>());
+    return;
+  }
+
+  if (query_cache_context->query_type == QueryCacheType::REQUESTS) {
+    match->response.reset();
+    QueryCacheOpenNextEntry(std::move(query_cache_context));
+    return;
+  }
+
+  DCHECK_EQ(QueryCacheType::REQUESTS_AND_RESPONSES,
+            query_cache_context->query_type);
+
+  query_cache_context->estimated_out_bytes +=
+      match->response->EstimatedStructSize();
+  if (query_cache_context->estimated_out_bytes > max_query_size_bytes_) {
+    std::move(query_cache_context->callback)
+        .Run(CACHE_STORAGE_ERROR_QUERY_TOO_LARGE,
+             std::unique_ptr<QueryCacheResults>());
+    return;
+  }
+
+  if (entry->GetDataSize(INDEX_RESPONSE_BODY) == 0) {
+    QueryCacheOpenNextEntry(std::move(query_cache_context));
+    return;
+  }
+
+  if (!blob_storage_context_) {
+    std::move(query_cache_context->callback)
+        .Run(CACHE_STORAGE_ERROR_STORAGE,
+             base::MakeUnique<QueryCacheResults>());
+    return;
+  }
+
+  std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
+      PopulateResponseBody(std::move(entry), match->response.get());
+  match->blob_handle = std::move(blob_data_handle);
 
   QueryCacheOpenNextEntry(std::move(query_cache_context));
 }
@@ -932,22 +852,6 @@ void CacheStorageCache::QueryCacheDidReadMetadata(
 bool CacheStorageCache::QueryCacheResultCompare(const QueryCacheResult& lhs,
                                                 const QueryCacheResult& rhs) {
   return lhs.entry_time < rhs.entry_time;
-}
-
-// static
-int64_t CacheStorageCache::CalculateResponsePadding(
-    const ServiceWorkerResponse& response,
-    const crypto::SymmetricKey* padding_key,
-    int side_data_size) {
-  if (!ShouldPadResourceSize(&response))
-    return 0;
-  return CalculateResponsePaddingInternal(response.url_list.back().spec(),
-                                          padding_key, side_data_size);
-}
-
-// static
-int32_t CacheStorageCache::GetResponsePaddingVersion() {
-  return kCachePaddingAlgorithmVersion;
 }
 
 void CacheStorageCache::MatchImpl(
@@ -999,8 +903,7 @@ void CacheStorageCache::MatchAllImpl(
   }
 
   QueryCache(
-      std::move(request), options,
-      QUERY_CACHE_REQUESTS | QUERY_CACHE_RESPONSES_WITH_BODIES,
+      std::move(request), options, QueryCacheType::REQUESTS_AND_RESPONSES,
       base::BindOnce(&CacheStorageCache::MatchAllDidQueryCache,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -1113,19 +1016,11 @@ void CacheStorageCache::WriteSideDataDidReadMetaData(
   // Get a temporary copy of the entry pointer before passing it in base::Bind.
   disk_cache::Entry* temp_entry_ptr = entry.get();
 
-  std::unique_ptr<content::proto::CacheResponse> response(
-      headers->release_response());
-
-  int side_data_size_before_write = 0;
-  if (ShouldPadResourceSize(response.get()))
-    side_data_size_before_write = entry->GetDataSize(INDEX_SIDE_DATA);
-
   net::CompletionCallback write_side_data_callback =
       base::AdaptCallbackForRepeating(
           base::BindOnce(&CacheStorageCache::WriteSideDataDidWrite,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                         base::Passed(std::move(entry)), buf_len,
-                         std::move(response), side_data_size_before_write));
+                         base::Passed(std::move(entry)), buf_len));
 
   int rv = temp_entry_ptr->WriteData(
       INDEX_SIDE_DATA, 0 /* offset */, buffer.get(), buf_len,
@@ -1135,13 +1030,10 @@ void CacheStorageCache::WriteSideDataDidReadMetaData(
     write_side_data_callback.Run(rv);
 }
 
-void CacheStorageCache::WriteSideDataDidWrite(
-    ErrorCallback callback,
-    disk_cache::ScopedEntryPtr entry,
-    int expected_bytes,
-    std::unique_ptr<::content::proto::CacheResponse> response,
-    int side_data_size_before_write,
-    int rv) {
+void CacheStorageCache::WriteSideDataDidWrite(ErrorCallback callback,
+                                              disk_cache::ScopedEntryPtr entry,
+                                              int expected_bytes,
+                                              int rv) {
   if (rv != expected_bytes) {
     entry->Doom();
     UpdateCacheSize(
@@ -1151,14 +1043,6 @@ void CacheStorageCache::WriteSideDataDidWrite(
 
   if (rv > 0)
     storage::RecordBytesWritten(kRecordBytesLabel, rv);
-
-  if (ShouldPadResourceSize(response.get())) {
-    cache_padding_ -= CalculateResponsePaddingInternal(
-        response.get(), cache_padding_key_.get(), side_data_size_before_write);
-
-    cache_padding_ += CalculateResponsePaddingInternal(
-        response.get(), cache_padding_key_.get(), rv);
-  }
 
   UpdateCacheSize(base::BindOnce(std::move(callback), CACHE_STORAGE_OK));
 }
@@ -1214,36 +1098,26 @@ void CacheStorageCache::PutImpl(std::unique_ptr<PutContext> put_context) {
     return;
   }
 
-  // Explicitly delete the incumbent resource (which may not exist). This is
-  // only done so that it's padding will be decremented from the calculated
-  // cache padding.
-  // TODO(cmumford): Research alternatives to this explicit delete as it
-  // seriously impacts put performance.
-  auto delete_request = base::MakeUnique<ServiceWorkerFetchRequest>(
-      put_context->request->url, "", ServiceWorkerHeaderMap(), Referrer(),
-      false);
+  std::string key = put_context->request->url.spec();
 
-  CacheStorageCacheQueryParams query_options;
-  query_options.ignore_method = true;
-  query_options.ignore_vary = true;
-  DeleteImpl(std::move(delete_request), query_options,
-             base::BindOnce(&CacheStorageCache::PutDidDeleteEntry,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            base::Passed(std::move(put_context))));
+  net::CompletionCallback callback =
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &CacheStorageCache::PutDidDoomEntry, weak_ptr_factory_.GetWeakPtr(),
+          base::Passed(std::move(put_context))));
+
+  int rv = backend_->DoomEntry(key, callback);
+  if (rv != net::ERR_IO_PENDING)
+    callback.Run(rv);
 }
 
-void CacheStorageCache::PutDidDeleteEntry(
-    std::unique_ptr<PutContext> put_context,
-    CacheStorageError error) {
+void CacheStorageCache::PutDidDoomEntry(std::unique_ptr<PutContext> put_context,
+                                        int rv) {
   if (backend_state_ != BACKEND_OPEN) {
     std::move(put_context->callback).Run(CACHE_STORAGE_ERROR_STORAGE);
     return;
   }
 
-  if (error != CACHE_STORAGE_OK && error != CACHE_STORAGE_ERROR_NOT_FOUND) {
-    std::move(put_context->callback).Run(error);
-    return;
-  }
+  // |rv| is ignored as doom entry can fail if the entry doesn't exist.
 
   std::unique_ptr<disk_cache::Entry*> scoped_entry_ptr(
       new disk_cache::Entry*());
@@ -1257,11 +1131,11 @@ void CacheStorageCache::PutDidDeleteEntry(
           base::Passed(std::move(scoped_entry_ptr)),
           base::Passed(std::move(put_context))));
 
-  int rv = backend_ptr->CreateEntry(request_ptr->url.spec(), entry_ptr,
-                                    create_entry_callback);
+  int create_rv = backend_ptr->CreateEntry(request_ptr->url.spec(), entry_ptr,
+                                           create_entry_callback);
 
-  if (rv != net::ERR_IO_PENDING)
-    create_entry_callback.Run(rv);
+  if (create_rv != net::ERR_IO_PENDING)
+    create_entry_callback.Run(create_rv);
 }
 
 void CacheStorageCache::PutDidCreateEntry(
@@ -1348,11 +1222,6 @@ void CacheStorageCache::PutDidWriteHeaders(
 
   if (rv > 0)
     storage::RecordBytesWritten(kRecordBytesLabel, rv);
-  if (ShouldPadResourceSize(put_context->response.get())) {
-    cache_padding_ += CalculateResponsePadding(*put_context->response,
-                                               cache_padding_key_.get(),
-                                               0 /* side_data_size */);
-  }
 
   // The metadata is written, now for the response content. The data is streamed
   // from the blob into the cache entry.
@@ -1404,60 +1273,6 @@ void CacheStorageCache::PutDidWriteBlobToCache(
       base::BindOnce(std::move(put_context->callback), CACHE_STORAGE_OK));
 }
 
-void CacheStorageCache::CalculateCacheSizePadding(
-    SizePaddingCallback got_sizes_callback) {
-  net::CompletionCallback got_size_callback =
-      base::AdaptCallbackForRepeating(base::BindOnce(
-          &CacheStorageCache::CalculateCacheSizePaddingGotSize,
-          weak_ptr_factory_.GetWeakPtr(), std::move(got_sizes_callback)));
-
-  int rv = backend_->CalculateSizeOfAllEntries(got_size_callback);
-  if (rv != net::ERR_IO_PENDING)
-    got_size_callback.Run(rv);
-}
-
-void CacheStorageCache::CalculateCacheSizePaddingGotSize(
-    SizePaddingCallback callback,
-    int cache_size) {
-  // Enumerating entries is only done during cache initialization and only if
-  // necessary.
-  DCHECK_EQ(backend_state_, BACKEND_UNINITIALIZED);
-  std::unique_ptr<ServiceWorkerFetchRequest> request;
-  CacheStorageCacheQueryParams options;
-  options.ignore_search = true;
-  QueryCache(std::move(request), options, QUERY_CACHE_RESPONSES_NO_BODIES,
-             base::BindOnce(&CacheStorageCache::PaddingDidQueryCache,
-                            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                            cache_size));
-}
-
-void CacheStorageCache::PaddingDidQueryCache(
-    SizePaddingCallback callback,
-    int cache_size,
-    CacheStorageError error,
-    std::unique_ptr<QueryCacheResults> query_cache_results) {
-  int64_t cache_padding = 0;
-  if (error == CACHE_STORAGE_OK) {
-    for (const auto& result : *query_cache_results) {
-      if (ShouldPadResourceSize(result.response.get())) {
-        int32_t side_data_size =
-            result.entry ? result.entry->GetDataSize(INDEX_SIDE_DATA) : 0;
-        cache_padding += CalculateResponsePadding(
-            *result.response, cache_padding_key_.get(), side_data_size);
-      }
-    }
-  }
-
-  std::move(callback).Run(cache_size, cache_padding);
-}
-
-void CacheStorageCache::CalculateCacheSize(
-    const net::CompletionCallback& callback) {
-  int rv = backend_->CalculateSizeOfAllEntries(callback);
-  if (rv != net::ERR_IO_PENDING)
-    callback.Run(rv);
-}
-
 void CacheStorageCache::UpdateCacheSize(base::OnceClosure callback) {
   if (backend_state_ != BACKEND_OPEN)
     return;
@@ -1465,10 +1280,14 @@ void CacheStorageCache::UpdateCacheSize(base::OnceClosure callback) {
   // Note that the callback holds a cache handle to keep the cache alive during
   // the operation since this UpdateCacheSize is often run after an operation
   // completes and runs its callback.
-  CalculateCacheSize(base::AdaptCallbackForRepeating(
+  net::CompletionCallback size_callback = base::AdaptCallbackForRepeating(
       base::BindOnce(&CacheStorageCache::UpdateCacheSizeGotSize,
                      weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(CreateCacheHandle()), std::move(callback))));
+                     base::Passed(CreateCacheHandle()), std::move(callback)));
+
+  int rv = backend_->CalculateSizeOfAllEntries(size_callback);
+  if (rv != net::ERR_IO_PENDING)
+    std::move(size_callback).Run(rv);
 }
 
 void CacheStorageCache::UpdateCacheSizeGotSize(
@@ -1476,16 +1295,17 @@ void CacheStorageCache::UpdateCacheSizeGotSize(
     base::OnceClosure callback,
     int current_cache_size) {
   DCHECK_NE(current_cache_size, CacheStorage::kSizeUnknown);
+  int64_t old_cache_size = cache_size_;
   cache_size_ = current_cache_size;
-  int64_t size_delta = PaddedCacheSize() - last_reported_size_;
-  last_reported_size_ = PaddedCacheSize();
+
+  int64_t size_delta = current_cache_size - old_cache_size;
 
   quota_manager_proxy_->NotifyStorageModified(
       storage::QuotaClient::kServiceWorkerCache, origin_,
       storage::kStorageTypeTemporary, size_delta);
 
   if (cache_observer_)
-    cache_observer_->CacheSizeUpdated(this);
+    cache_observer_->CacheSizeUpdated(this, current_cache_size);
 
   std::move(callback).Run();
 }
@@ -1519,8 +1339,7 @@ void CacheStorageCache::DeleteImpl(
   }
 
   QueryCache(
-      std::move(request), match_params,
-      QUERY_CACHE_ENTRIES | QUERY_CACHE_RESPONSES_NO_BODIES,
+      std::move(request), match_params, QueryCacheType::CACHE_ENTRIES,
       base::BindOnce(&CacheStorageCache::DeleteDidQueryCache,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -1541,11 +1360,6 @@ void CacheStorageCache::DeleteDidQueryCache(
 
   for (auto& result : *query_cache_results) {
     disk_cache::ScopedEntryPtr entry = std::move(result.entry);
-    if (ShouldPadResourceSize(result.response.get())) {
-      cache_padding_ -=
-          CalculateResponsePadding(*result.response, cache_padding_key_.get(),
-                                   entry->GetDataSize(INDEX_SIDE_DATA));
-    }
     entry->Doom();
   }
 
@@ -1564,7 +1378,7 @@ void CacheStorageCache::KeysImpl(
   }
 
   QueryCache(
-      std::move(request), options, QUERY_CACHE_REQUESTS,
+      std::move(request), options, QueryCacheType::REQUESTS,
       base::BindOnce(&CacheStorageCache::KeysDidQueryCache,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -1604,14 +1418,7 @@ void CacheStorageCache::DeleteBackendCompletedIO() {
 void CacheStorageCache::SizeImpl(SizeCallback callback) {
   DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
 
-  // TODO(cmumford): Can CacheStorage::kSizeUnknown be returned instead of zero?
-  if (backend_state_ != BACKEND_OPEN) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), 0));
-    return;
-  }
-
-  int64_t size = backend_state_ == BACKEND_OPEN ? PaddedCacheSize() : 0;
+  int64_t size = backend_state_ == BACKEND_OPEN ? cache_size_ : 0;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), size));
 }
@@ -1684,14 +1491,14 @@ void CacheStorageCache::InitDidCreateBackend(
     return;
   }
 
-  auto calculate_size_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
-  int rv = backend_->CalculateSizeOfAllEntries(base::Bind(
-      &CacheStorageCache::InitGotCacheSize, weak_ptr_factory_.GetWeakPtr(),
-      calculate_size_callback, cache_create_error));
+  net::CompletionCallback size_callback =
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &CacheStorageCache::InitGotCacheSize, weak_ptr_factory_.GetWeakPtr(),
+          std::move(callback), cache_create_error));
 
+  int rv = backend_->CalculateSizeOfAllEntries(size_callback);
   if (rv != net::ERR_IO_PENDING)
-    InitGotCacheSize(calculate_size_callback, cache_create_error, rv);
+    std::move(size_callback).Run(rv);
 }
 
 void CacheStorageCache::InitGotCacheSize(base::OnceClosure callback,
@@ -1707,41 +1514,10 @@ void CacheStorageCache::InitGotCacheSize(base::OnceClosure callback,
         << " does not match size from index: " << cache_size_;
     UMA_HISTOGRAM_COUNTS_10M("ServiceWorkerCache.IndexSizeDifference",
                              std::abs(cache_size_ - cache_size));
-    if (cache_size_ != cache_size) {
-      // We assume that if the sizes match then then cached padding is still
-      // correct. If not then we recalculate the padding.
-      CalculateCacheSizePaddingGotSize(
-          base::BindOnce(&CacheStorageCache::InitGotCacheSizeAndPadding,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                         cache_create_error),
-          cache_size);
-      return;
-    }
+    // Disabled for crbug.com/681900.
+    // DCHECK_EQ(cache_size_, cache_size);
   }
-
-  if (cache_padding_ == CacheStorage::kSizeUnknown || cache_padding_ < 0) {
-    CalculateCacheSizePaddingGotSize(
-        base::BindOnce(&CacheStorageCache::InitGotCacheSizeAndPadding,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       cache_create_error),
-        cache_size);
-    return;
-  }
-
-  // If cached size matches actual size then assume cached padding is still
-  // correct.
-  InitGotCacheSizeAndPadding(std::move(callback), cache_create_error,
-                             cache_size, cache_padding_);
-}
-
-void CacheStorageCache::InitGotCacheSizeAndPadding(
-    base::OnceClosure callback,
-    CacheStorageError cache_create_error,
-    int64_t cache_size,
-    int64_t cache_padding) {
   cache_size_ = cache_size;
-  cache_padding_ = cache_padding;
-
   initializing_ = false;
   backend_state_ = (cache_create_error == CACHE_STORAGE_OK && backend_ &&
                     backend_state_ == BACKEND_UNINITIALIZED)
@@ -1752,7 +1528,7 @@ void CacheStorageCache::InitGotCacheSizeAndPadding(
                             cache_create_error, CACHE_STORAGE_ERROR_LAST + 1);
 
   if (cache_observer_)
-    cache_observer_->CacheSizeUpdated(this);
+    cache_observer_->CacheSizeUpdated(this, cache_size_);
 
   std::move(callback).Run();
 }
@@ -1788,15 +1564,6 @@ CacheStorageCache::PopulateResponseBody(disk_cache::ScopedEntryPtr entry,
 std::unique_ptr<CacheStorageCacheHandle>
 CacheStorageCache::CreateCacheHandle() {
   return cache_storage_->CreateCacheHandle(this);
-}
-
-int64_t CacheStorageCache::PaddedCacheSize() const {
-  DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
-  if (cache_size_ == CacheStorage::kSizeUnknown ||
-      cache_padding_ == CacheStorage::kSizeUnknown) {
-    return CacheStorage::kSizeUnknown;
-  }
-  return cache_size_ + cache_padding_;
 }
 
 }  // namespace content
