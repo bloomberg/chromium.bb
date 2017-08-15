@@ -57,7 +57,8 @@ std::string BlockedActionBubbleDelegate::GetAnchorActionId() {
   return extension_id_;
 }
 
-void BlockedActionBubbleDelegate::OnBubbleShown() {}
+void BlockedActionBubbleDelegate::OnBubbleShown(
+    const base::Closure& close_bubble_callback) {}
 
 void BlockedActionBubbleDelegate::OnBubbleClosed(CloseAction action) {
   base::ResetAndReturn(&callback_).Run(action);
