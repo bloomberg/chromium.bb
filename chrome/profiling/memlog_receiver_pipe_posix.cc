@@ -50,7 +50,7 @@ void MemlogReceiverPipe::SetReceiver(
 void MemlogReceiverPipe::OnFileCanReadWithoutBlocking(int fd) {
   ssize_t bytes_read = 0;
   do {
-    std::deque<mojo::edk::PlatformHandle> dummy_for_receive;
+    base::circular_deque<mojo::edk::PlatformHandle> dummy_for_receive;
     bytes_read = mojo::edk::PlatformChannelRecvmsg(
         handle_.get(), read_buffer_.get(), kReadBufferSize, &dummy_for_receive);
     if (bytes_read > 0) {
