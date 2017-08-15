@@ -442,6 +442,7 @@ class BrowserView : public BrowserWindow,
 
   // Overridden from ui::AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  int GetAcceleratorId(const ui::Accelerator& accelerator) const override;
 
   // OmniboxPopupModelObserver overrides
   void OnOmniboxPopupShownOrHidden() override;
