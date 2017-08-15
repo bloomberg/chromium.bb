@@ -174,6 +174,9 @@ OmniboxResult::OmniboxResult(Profile* profile,
   // See comments in autocomplete_provider.h.
   set_relevance(match_.relevance / 1500.0);
 
+  if (AutocompleteMatch::IsSearchType(match_.type))
+    set_is_omnibox_search(true);
+
   UpdateIcon();
   UpdateTitleAndDetails();
 
@@ -228,23 +231,39 @@ void OmniboxResult::UpdateIcon() {
 }
 
 void OmniboxResult::UpdateTitleAndDetails() {
-  set_title(match_.contents);
+  // For url result with non-empty description, swap title and details. Thus,
+  // the url description is presented as title, and url itself is presented as
+  // details.
+  const bool use_directly =
+      !is_fullscreen_app_list_enabled_ || !IsUrlResultWithDescription();
   SearchResult::Tags title_tags;
-  ACMatchClassificationsToTags(match_.contents, match_.contents_class,
-                               &title_tags);
+  if (use_directly) {
+    set_title(match_.contents);
+    ACMatchClassificationsToTags(match_.contents, match_.contents_class,
+                                 &title_tags);
+  } else {
+    set_title(match_.description);
+    ACMatchClassificationsToTags(match_.description, match_.description_class,
+                                 &title_tags);
+  }
   set_title_tags(title_tags);
 
-  // Do not set details for omnibox non-url search result. This will make
-  // SearchResultView show single line row for omnibox non-url search result.
-  if (!is_fullscreen_app_list_enabled_ ||
-      !AutocompleteMatch::IsSearchType(match_.type)) {
-    set_is_url(true);
+  SearchResult::Tags details_tags;
+  if (use_directly) {
     set_details(match_.description);
-    SearchResult::Tags details_tags;
     ACMatchClassificationsToTags(match_.description, match_.description_class,
                                  &details_tags);
-    set_details_tags(details_tags);
+  } else {
+    set_details(match_.contents);
+    ACMatchClassificationsToTags(match_.contents, match_.contents_class,
+                                 &details_tags);
   }
+  set_details_tags(details_tags);
+}
+
+bool OmniboxResult::IsUrlResultWithDescription() const {
+  return !AutocompleteMatch::IsSearchType(match_.type) &&
+         !match_.description.empty();
 }
 
 }  // namespace app_list

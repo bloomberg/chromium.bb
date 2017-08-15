@@ -168,8 +168,10 @@ class APP_LIST_EXPORT SearchResult {
   int percent_downloaded() const { return percent_downloaded_; }
   void SetPercentDownloaded(int percent_downloaded);
 
-  bool is_url() const { return is_url_; }
-  void set_is_url(bool is_url) { is_url_ = is_url; }
+  bool is_omnibox_search() const { return is_omnibox_search_; }
+  void set_is_omnibox_search(bool is_omnibox_search) {
+    is_omnibox_search_ = is_omnibox_search;
+  }
 
   // Returns the dimension at which this result's icon should be displayed.
   int GetPreferredIconDimension() const;
@@ -256,9 +258,9 @@ class APP_LIST_EXPORT SearchResult {
   bool is_installing_ = false;
   int percent_downloaded_ = 0;
 
-  // Indicates whether result is an omnibox url result. Set by OmniboxResult
-  // subclass.
-  bool is_url_ = false;
+  // Indicates whether result is an omnibox non-url search result. Set by
+  // OmniboxResult subclass.
+  bool is_omnibox_search_ = false;
 
   base::ObserverList<SearchResultObserver> observers_;
 
