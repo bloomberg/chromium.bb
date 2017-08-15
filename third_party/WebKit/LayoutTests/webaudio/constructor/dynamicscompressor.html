@@ -49,7 +49,86 @@
       });
 
       audit.define('test AudioNodeOptions', (task, should) => {
-        testAudioNodeOptions(should, context, 'DynamicsCompressorNode');
+        // Can't use testAudioNodeOptions because the constraints for this node
+        // are not supported there.
+
+        // Array of test options to be run.  Each entry is a dictionary where
+        // |testAttribute| is the name of the attribute to be tested,
+        // |testValue| is the value to be used, and |expectedErrorType| is the
+        // error type if the test is expected to throw an error.
+        // |expectedErrorType| should be set only if the test does throw.
+        let testOptions = [
+          // Test channel count
+          {
+            testAttribute: 'channelCount',
+            testValue: 1,
+          },
+          {
+            testAttribute: 'channelCount',
+            testValue: 2,
+          },
+          {
+            testAttribute: 'channelCount',
+            testValue: 0,
+            expectedErrorType: 'NotSupportedError'
+          },
+          {
+            testAttribute: 'channelCount',
+            testValue: 3,
+            expectedErrorType: 'NotSupportedError'
+          },
+          {
+            testAttribute: 'channelCount',
+            testValue: 99,
+            expectedErrorType: 'NotSupportedError'
+          },
+          // Test channel count mode
+          {
+            testAttribute: 'channelCountMode',
+            testValue: 'clamped-max',
+          },
+          {
+            testAttribute: 'channelCountMode',
+            testValue: 'explicit',
+          },
+          {
+            testAttribute: 'channelCountMode',
+            testValue: 'max',
+            expectedErrorType: 'NotSupportedError'
+          },
+          {
+            testAttribute: 'channelCountMode',
+            testValue: 'foobar',
+            expectedErrorType: 'TypeError'
+          },
+          // Test channel interpretation
+          {
+            testAttribute: 'channelInterpretation',
+            testValue: 'speakers',
+          },
+          {
+            testAttribute: 'channelInterpretation',
+            testValue: 'discrete',
+          },
+          {
+            testAttribute: 'channelInterpretation',
+            testValue: 'foobar',
+            expectedErrorType: 'TypeError'
+          }
+        ];
+
+        testOptions.forEach((option) => {
+          let nodeOptions = {};
+          nodeOptions[option.testAttribute] = option.testValue;
+
+          testNode(should, context, {
+            nodeOptions: nodeOptions,
+            testAttribute: option.testAttribute,
+            expectedValue: option.testValue,
+            expectedErrorType: option.expectedErrorType
+          });
+        });
+
         task.done();
       });
 
@@ -89,6 +168,29 @@
       });
 
       audit.run();
+
+      // Test possible options for DynamicsCompressor constructor.
+      function testNode(should, context, options) {
+        // Node to be tested
+        let node;
+
+        let createNodeFunction = () => {
+          return () => node =
+                     new DynamicsCompressorNode(context, options.nodeOptions);
+        };
+
+        let message = 'new DynamicsCompressorNode(c, ' +
+            JSON.stringify(options.nodeOptions) + ')';
+
+        if (options.expectedErrorType) {
+          should(createNodeFunction(), message)
+              .throw(options.expectedErrorType);
+        } else {
+          should(createNodeFunction(), message).notThrow();
+          should(node[options.testAttribute], 'node.' + options.testAttribute)
+              .beEqualTo(options.expectedValue);
+        }
+      }
     </script>
   </body>
 </html>
