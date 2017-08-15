@@ -298,10 +298,13 @@ void WindowManager::SetWindowManagerClient(aura::WindowManagerClient* client) {
 }
 
 void WindowManager::OnWmConnected() {
+  // InstallFrameDecorationValues() must be called before the shell is created,
+  // otherwise Mus attempts to notify clients with no frame decorations, which
+  // triggers validation errors.
+  InstallFrameDecorationValues();
   CreateShell();
   if (show_primary_host_on_connect_)
     Shell::GetPrimaryRootWindow()->GetHost()->Show();
-  InstallFrameDecorationValues();
 }
 
 void WindowManager::OnWmSetBounds(aura::Window* window,
