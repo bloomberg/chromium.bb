@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api/file_system/file_system_api.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/process_manager.h"
@@ -251,6 +252,30 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, ErrorsInCallbackTest) {
   ExtensionTestMessageListener listener("callback", false);
   ASSERT_TRUE(LoadExtension(test_dir.UnpackedPath()));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
+}
+
+// Tests that bindings are available in WebUI pages.
+IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, WebUIBindings) {
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://extensions"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  auto api_exists = [web_contents](const std::string& api_name) {
+    bool exists = false;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        web_contents,
+        base::StringPrintf("window.domAutomationController.send(!!%s);",
+                           api_name.c_str()),
+        &exists));
+    return exists;
+  };
+
+  EXPECT_TRUE(api_exists("chrome.developerPrivate"));
+  EXPECT_TRUE(api_exists("chrome.developerPrivate.getProfileConfiguration"));
+  EXPECT_TRUE(api_exists("chrome.management"));
+  EXPECT_TRUE(api_exists("chrome.management.setEnabled"));
+  EXPECT_FALSE(api_exists("chrome.networkingPrivate"));
+  EXPECT_FALSE(api_exists("chrome.sockets"));
+  EXPECT_FALSE(api_exists("chrome.browserAction"));
 }
 
 }  // namespace extensions

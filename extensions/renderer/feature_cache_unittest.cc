@@ -50,9 +50,24 @@ scoped_refptr<Extension> CreateExtension(
       .Build();
 }
 
+struct FakeContext {
+  Feature::Context context_type;
+  const Extension* extension;
+  const GURL url;
+};
+
+bool HasFeature(FeatureCache& cache,
+                const FakeContext& context,
+                const std::string& feature) {
+  return base::ContainsValue(
+      cache.GetAvailableFeatures(context.context_type, context.extension,
+                                 context.url),
+      feature);
+}
+
 }  // namespace
 
-using FeatureCacheTest = APIBindingTest;
+using FeatureCacheTest = testing::Test;
 
 TEST_F(FeatureCacheTest, Basic) {
   FeatureCache cache;
@@ -60,29 +75,14 @@ TEST_F(FeatureCacheTest, Basic) {
   scoped_refptr<const Extension> extension_b =
       CreateExtension("b", {"storage"});
 
-  v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> v8_context_a = MainContext();
-  v8::Local<v8::Context> v8_context_b = AddContext();
-
-  auto script_context_a = base::MakeUnique<ScriptContext>(
-      v8_context_a, nullptr, extension_a.get(),
-      Feature::BLESSED_EXTENSION_CONTEXT, extension_a.get(),
-      Feature::BLESSED_EXTENSION_CONTEXT);
-  auto script_context_b = base::MakeUnique<ScriptContext>(
-      v8_context_b, nullptr, extension_b.get(),
-      Feature::BLESSED_EXTENSION_CONTEXT, extension_b.get(),
-      Feature::BLESSED_EXTENSION_CONTEXT);
-
-  auto has_feature = [&cache](const std::unique_ptr<ScriptContext>& context,
-                              const std::string& feature) {
-    return base::ContainsValue(cache.GetAvailableFeatures(context.get()),
-                               feature);
-  };
-
+  FakeContext context_a = {Feature::BLESSED_EXTENSION_CONTEXT,
+                           extension_a.get(), extension_a->url()};
+  FakeContext context_b = {Feature::BLESSED_EXTENSION_CONTEXT,
+                           extension_b.get(), extension_b->url()};
   // To start, context a should not have access to storage, but context b
   // should.
-  EXPECT_FALSE(has_feature(script_context_a, "storage"));
-  EXPECT_TRUE(has_feature(script_context_b, "storage"));
+  EXPECT_FALSE(HasFeature(cache, context_a, "storage"));
+  EXPECT_TRUE(HasFeature(cache, context_b, "storage"));
 
   // Update extension b's permissions and invalidate the cache.
   extension_b->permissions_data()->SetPermissions(
@@ -90,16 +90,27 @@ TEST_F(FeatureCacheTest, Basic) {
   cache.InvalidateExtension(extension_b->id());
 
   // Now, neither context should have storage access.
-  EXPECT_FALSE(has_feature(script_context_a, "storage"));
-  EXPECT_FALSE(has_feature(script_context_b, "storage"));
-
-  script_context_a->Invalidate();
-  script_context_b->Invalidate();
+  EXPECT_FALSE(HasFeature(cache, context_a, "storage"));
+  EXPECT_FALSE(HasFeature(cache, context_b, "storage"));
 }
 
-// TODO(devlin): It'd be nice to test that the FeatureCache properly handles
-// features that are restricted to certain URLs; unfortunately, for that we'd
-// need a stubbed out web frame with a given URL, and there's no good way to do
-// that outside Blink.
+TEST_F(FeatureCacheTest, WebUIContexts) {
+  FeatureCache cache;
+  scoped_refptr<const Extension> extension = CreateExtension("a", {});
+
+  // The chrome://extensions page is whitelisted for the management API.
+  FakeContext webui_context = {Feature::WEBUI_CONTEXT, nullptr,
+                               GURL("chrome://extensions")};
+  // chrome://baz is not whitelisted, and should not have access.
+  FakeContext webui_context_without_access = {Feature::WEBUI_CONTEXT, nullptr,
+                                              GURL("chrome://baz")};
+
+  EXPECT_TRUE(HasFeature(cache, webui_context, "management"));
+  EXPECT_FALSE(HasFeature(cache, webui_context_without_access, "management"));
+  // No webui context is whitelisted for, e.g., the idle API, so neither should
+  // have access.
+  EXPECT_FALSE(HasFeature(cache, webui_context, "idle"));
+  EXPECT_FALSE(HasFeature(cache, webui_context_without_access, "idle"));
+}
 
 }  // namespace extensions
