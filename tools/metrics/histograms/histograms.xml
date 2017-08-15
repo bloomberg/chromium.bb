@@ -56032,6 +56032,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Platform.ServiceFailureHashes">
+  <owner>ddavenport@chromium.org</owner>
+  <summary>
+    The 32-bit hash of the name of the service that failed. The name of the
+    service is hashed using the same algorithm as used for the hashes in
+    Platform.KernelWarningHashes. The first instance of each service failure is
+    also collected separately via the crash reporter.
+  </summary>
+</histogram>
+
 <histogram name="Platform.SmartTransferErrors">
   <owner>gwendal@google.com</owner>
   <summary>Disk communication errors (SMART 199), sent at boot.</summary>
