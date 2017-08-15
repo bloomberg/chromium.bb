@@ -34,10 +34,14 @@ class ASH_EXPORT OverviewWindowDragController {
   WindowSelectorItem* item() { return item_; }
 
  private:
-  void UpdatePhantomWindow(const gfx::Point& location_in_screen);
+  // Updates visuals for the user while dragging items around.
+  void UpdatePhantomWindowAndWindowGrid(const gfx::Point& location_in_screen);
 
   SplitViewController::SnapPosition GetSnapPosition(
       const gfx::Point& location_in_screen) const;
+
+  // Returns the expected window grid bounds based on |snap_position|.
+  gfx::Rect GetGridBounds(SplitViewController::SnapPosition snap_position);
 
   void SnapWindow(SplitViewController::SnapPosition snap_position);
 
