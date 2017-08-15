@@ -50,52 +50,50 @@ class DeviceImpl : public mojom::UsbDevice, public device::UsbDevice::Observer {
 
   // Handles completion of an open request.
   static void OnOpen(base::WeakPtr<DeviceImpl> device,
-                     const OpenCallback& callback,
+                     OpenCallback callback,
                      scoped_refptr<device::UsbDeviceHandle> handle);
-  void OnPermissionGrantedForOpen(const OpenCallback& callback, bool granted);
+  void OnPermissionGrantedForOpen(OpenCallback callback, bool granted);
 
   // Device implementation:
-  void Open(const OpenCallback& callback) override;
-  void Close(const CloseCallback& callback) override;
+  void Open(OpenCallback callback) override;
+  void Close(CloseCallback callback) override;
   void SetConfiguration(uint8_t value,
-                        const SetConfigurationCallback& callback) override;
+                        SetConfigurationCallback callback) override;
   void ClaimInterface(uint8_t interface_number,
-                      const ClaimInterfaceCallback& callback) override;
+                      ClaimInterfaceCallback callback) override;
   void ReleaseInterface(uint8_t interface_number,
-                        const ReleaseInterfaceCallback& callback) override;
+                        ReleaseInterfaceCallback callback) override;
   void SetInterfaceAlternateSetting(
       uint8_t interface_number,
       uint8_t alternate_setting,
-      const SetInterfaceAlternateSettingCallback& callback) override;
-  void Reset(const ResetCallback& callback) override;
-  void ClearHalt(uint8_t endpoint, const ClearHaltCallback& callback) override;
+      SetInterfaceAlternateSettingCallback callback) override;
+  void Reset(ResetCallback callback) override;
+  void ClearHalt(uint8_t endpoint, ClearHaltCallback callback) override;
   void ControlTransferIn(mojom::UsbControlTransferParamsPtr params,
                          uint32_t length,
                          uint32_t timeout,
-                         const ControlTransferInCallback& callback) override;
+                         ControlTransferInCallback callback) override;
   void ControlTransferOut(mojom::UsbControlTransferParamsPtr params,
                           const std::vector<uint8_t>& data,
                           uint32_t timeout,
-                          const ControlTransferOutCallback& callback) override;
+                          ControlTransferOutCallback callback) override;
   void GenericTransferIn(uint8_t endpoint_number,
                          uint32_t length,
                          uint32_t timeout,
-                         const GenericTransferInCallback& callback) override;
+                         GenericTransferInCallback callback) override;
   void GenericTransferOut(uint8_t endpoint_number,
                           const std::vector<uint8_t>& data,
                           uint32_t timeout,
-                          const GenericTransferOutCallback& callback) override;
-  void IsochronousTransferIn(
-      uint8_t endpoint_number,
-      const std::vector<uint32_t>& packet_lengths,
-      uint32_t timeout,
-      const IsochronousTransferInCallback& callback) override;
-  void IsochronousTransferOut(
-      uint8_t endpoint_number,
-      const std::vector<uint8_t>& data,
-      const std::vector<uint32_t>& packet_lengths,
-      uint32_t timeout,
-      const IsochronousTransferOutCallback& callback) override;
+                          GenericTransferOutCallback callback) override;
+  void IsochronousTransferIn(uint8_t endpoint_number,
+                             const std::vector<uint32_t>& packet_lengths,
+                             uint32_t timeout,
+                             IsochronousTransferInCallback callback) override;
+  void IsochronousTransferOut(uint8_t endpoint_number,
+                              const std::vector<uint8_t>& data,
+                              const std::vector<uint32_t>& packet_lengths,
+                              uint32_t timeout,
+                              IsochronousTransferOutCallback callback) override;
 
   // device::UsbDevice::Observer implementation:
   void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;

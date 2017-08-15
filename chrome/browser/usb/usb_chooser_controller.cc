@@ -74,12 +74,12 @@ base::string16 GetDeviceName(scoped_refptr<UsbDevice> device) {
 UsbChooserController::UsbChooserController(
     RenderFrameHost* render_frame_host,
     std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
-    const device::mojom::UsbChooserService::GetPermissionCallback& callback)
+    device::mojom::UsbChooserService::GetPermissionCallback callback)
     : ChooserController(render_frame_host,
                         IDS_USB_DEVICE_CHOOSER_PROMPT_ORIGIN,
                         IDS_USB_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME),
       filters_(std::move(device_filters)),
-      callback_(callback),
+      callback_(std::move(callback)),
       usb_service_observer_(this),
       weak_factory_(this) {
   device::UsbService* usb_service =
@@ -103,7 +103,7 @@ UsbChooserController::UsbChooserController(
 
 UsbChooserController::~UsbChooserController() {
   if (!callback_.is_null())
-    callback_.Run(nullptr);
+    std::move(callback_).Run(nullptr);
 }
 
 base::string16 UsbChooserController::GetNoOptionsText() const {
@@ -156,8 +156,8 @@ void UsbChooserController::Select(const std::vector<size_t>& indices) {
         requesting_origin_, embedding_origin_, devices_[index].first->guid());
   }
 
-  callback_.Run(device::mojom::UsbDeviceInfo::From(*devices_[index].first));
-  callback_.Reset();  // |callback_| must only be run once.
+  std::move(callback_).Run(
+      device::mojom::UsbDeviceInfo::From(*devices_[index].first));
 
   RecordWebUsbChooserClosure(
       devices_[index].first->serial_number().empty()

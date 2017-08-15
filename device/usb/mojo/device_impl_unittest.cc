@@ -177,24 +177,25 @@ class USBDeviceImplTest : public testing::Test {
         .WillByDefault(Invoke(this, &USBDeviceImplTest::OpenMockHandle));
     ON_CALL(mock_handle(), Close())
         .WillByDefault(Invoke(this, &USBDeviceImplTest::CloseMockHandle));
-    ON_CALL(mock_handle(), SetConfiguration(_, _))
+    ON_CALL(mock_handle(), SetConfigurationInternal(_, _))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::SetConfiguration));
-    ON_CALL(mock_handle(), ClaimInterface(_, _))
+    ON_CALL(mock_handle(), ClaimInterfaceInternal(_, _))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::ClaimInterface));
-    ON_CALL(mock_handle(), ReleaseInterface(_, _))
+    ON_CALL(mock_handle(), ReleaseInterfaceInternal(_, _))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::ReleaseInterface));
-    ON_CALL(mock_handle(), SetInterfaceAlternateSetting(_, _, _))
+    ON_CALL(mock_handle(), SetInterfaceAlternateSettingInternal(_, _, _))
         .WillByDefault(
             Invoke(this, &USBDeviceImplTest::SetInterfaceAlternateSetting));
-    ON_CALL(mock_handle(), ResetDevice(_))
+    ON_CALL(mock_handle(), ResetDeviceInternal(_))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::ResetDevice));
-    ON_CALL(mock_handle(), ControlTransfer(_, _, _, _, _, _, _, _, _, _))
+    ON_CALL(mock_handle(),
+            ControlTransferInternal(_, _, _, _, _, _, _, _, _, _))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::ControlTransfer));
-    ON_CALL(mock_handle(), GenericTransfer(_, _, _, _, _, _))
+    ON_CALL(mock_handle(), GenericTransferInternal(_, _, _, _, _, _))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::GenericTransfer));
-    ON_CALL(mock_handle(), IsochronousTransferIn(_, _, _, _))
+    ON_CALL(mock_handle(), IsochronousTransferInInternal(_, _, _, _))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::IsochronousTransferIn));
-    ON_CALL(mock_handle(), IsochronousTransferOut(_, _, _, _, _))
+    ON_CALL(mock_handle(), IsochronousTransferOutInternal(_, _, _, _, _))
         .WillByDefault(
             Invoke(this, &USBDeviceImplTest::IsochronousTransferOut));
 
@@ -247,72 +248,71 @@ class USBDeviceImplTest : public testing::Test {
   }
 
   void SetConfiguration(uint8_t value,
-                        const UsbDeviceHandle::ResultCallback& callback) {
+                        UsbDeviceHandle::ResultCallback& callback) {
     if (mock_configs_.find(value) != mock_configs_.end()) {
       mock_device_->ActiveConfigurationChanged(value);
-      callback.Run(true);
+      std::move(callback).Run(true);
     } else {
-      callback.Run(false);
+      std::move(callback).Run(false);
     }
   }
 
   void ClaimInterface(uint8_t interface_number,
-                      const UsbDeviceHandle::ResultCallback& callback) {
+                      UsbDeviceHandle::ResultCallback& callback) {
     for (const auto& config : mock_configs_) {
       for (const auto& interface : config.second.interfaces) {
         if (interface.interface_number == interface_number) {
           claimed_interfaces_.insert(interface_number);
-          callback.Run(true);
+          std::move(callback).Run(true);
           return;
         }
       }
     }
-    callback.Run(false);
+    std::move(callback).Run(false);
   }
 
   void ReleaseInterface(uint8_t interface_number,
-                        const UsbDeviceHandle::ResultCallback& callback) {
+                        UsbDeviceHandle::ResultCallback& callback) {
     if (base::ContainsKey(claimed_interfaces_, interface_number)) {
       claimed_interfaces_.erase(interface_number);
-      callback.Run(true);
+      std::move(callback).Run(true);
     } else {
-      callback.Run(false);
+      std::move(callback).Run(false);
     }
   }
 
-  void SetInterfaceAlternateSetting(
-      uint8_t interface_number,
-      uint8_t alternate_setting,
-      const UsbDeviceHandle::ResultCallback& callback) {
+  void SetInterfaceAlternateSetting(uint8_t interface_number,
+                                    uint8_t alternate_setting,
+                                    UsbDeviceHandle::ResultCallback& callback) {
     for (const auto& config : mock_configs_) {
       for (const auto& interface : config.second.interfaces) {
         if (interface.interface_number == interface_number &&
             interface.alternate_setting == alternate_setting) {
-          callback.Run(true);
+          std::move(callback).Run(true);
           return;
         }
       }
     }
-    callback.Run(false);
+    std::move(callback).Run(false);
   }
 
-  void ResetDevice(const UsbDeviceHandle::ResultCallback& callback) {
-    callback.Run(allow_reset_);
+  void ResetDevice(UsbDeviceHandle::ResultCallback& callback) {
+    std::move(callback).Run(allow_reset_);
   }
 
-  void InboundTransfer(const UsbDeviceHandle::TransferCallback& callback) {
+  void InboundTransfer(UsbDeviceHandle::TransferCallback callback) {
     ASSERT_GE(mock_inbound_data_.size(), 1u);
     const std::vector<uint8_t>& bytes = mock_inbound_data_.front();
     size_t length = bytes.size();
     scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(length);
     std::copy(bytes.begin(), bytes.end(), buffer->data());
     mock_inbound_data_.pop();
-    callback.Run(UsbTransferStatus::COMPLETED, buffer, length);
+    std::move(callback).Run(UsbTransferStatus::COMPLETED, buffer, length);
   }
 
   void OutboundTransfer(scoped_refptr<net::IOBuffer> buffer,
                         size_t length,
-                        const UsbDeviceHandle::TransferCallback& callback) {
+                        UsbDeviceHandle::TransferCallback callback) {
     ASSERT_GE(mock_outbound_data_.size(), 1u);
     const std::vector<uint8_t>& bytes = mock_outbound_data_.front();
     ASSERT_EQ(bytes.size(), length);
@@ -321,7 +321,7 @@ class USBDeviceImplTest : public testing::Test {
                                              << i;
     }
     mock_outbound_data_.pop();
-    callback.Run(UsbTransferStatus::COMPLETED, buffer, length);
+    std::move(callback).Run(UsbTransferStatus::COMPLETED, buffer, length);
   }
 
   void ControlTransfer(UsbTransferDirection direction,
@@ -333,11 +333,11 @@ class USBDeviceImplTest : public testing::Test {
                        scoped_refptr<net::IOBuffer> buffer,
                        size_t length,
                        unsigned int timeout,
-                       const UsbDeviceHandle::TransferCallback& callback) {
+                       UsbDeviceHandle::TransferCallback& callback) {
     if (direction == UsbTransferDirection::INBOUND)
-      InboundTransfer(callback);
+      InboundTransfer(std::move(callback));
     else
-      OutboundTransfer(buffer, length, callback);
+      OutboundTransfer(buffer, length, std::move(callback));
   }
 
   void GenericTransfer(UsbTransferDirection direction,
@@ -345,18 +345,18 @@ class USBDeviceImplTest : public testing::Test {
                        scoped_refptr<net::IOBuffer> buffer,
                        size_t length,
                        unsigned int timeout,
-                       const UsbDeviceHandle::TransferCallback& callback) {
+                       UsbDeviceHandle::TransferCallback& callback) {
     if (direction == UsbTransferDirection::INBOUND)
-      InboundTransfer(callback);
+      InboundTransfer(std::move(callback));
     else
-      OutboundTransfer(buffer, length, callback);
+      OutboundTransfer(buffer, length, std::move(callback));
   }
 
   void IsochronousTransferIn(
       uint8_t endpoint_number,
       const std::vector<uint32_t>& packet_lengths,
       unsigned int timeout,
-      const UsbDeviceHandle::IsochronousTransferCallback& callback) {
+      UsbDeviceHandle::IsochronousTransferCallback& callback) {
     ASSERT_FALSE(mock_inbound_data_.empty());
     const std::vector<uint8_t>& bytes = mock_inbound_data_.front();
     size_t length = bytes.size();
@@ -374,7 +374,7 @@ class USBDeviceImplTest : public testing::Test {
     }
     mock_inbound_packets_.pop();
 
-    callback.Run(buffer, packets);
+    std::move(callback).Run(buffer, packets);
   }
 
   void IsochronousTransferOut(
@@ -382,7 +382,7 @@ class USBDeviceImplTest : public testing::Test {
       scoped_refptr<net::IOBuffer> buffer,
       const std::vector<uint32_t>& packet_lengths,
       unsigned int timeout,
-      const UsbDeviceHandle::IsochronousTransferCallback& callback) {
+      UsbDeviceHandle::IsochronousTransferCallback& callback) {
     ASSERT_FALSE(mock_outbound_data_.empty());
     const std::vector<uint8_t>& bytes = mock_outbound_data_.front();
     size_t length =
@@ -404,7 +404,7 @@ class USBDeviceImplTest : public testing::Test {
     }
     mock_outbound_packets_.pop();
 
-    callback.Run(buffer, packets);
+    std::move(callback).Run(buffer, packets);
   }
 
   std::unique_ptr<base::MessageLoop> message_loop_;
@@ -504,7 +504,7 @@ TEST_F(USBDeviceImplTest, SetInvalidConfiguration) {
     loop.Run();
   }
 
-  EXPECT_CALL(mock_handle(), SetConfiguration(42, _));
+  EXPECT_CALL(mock_handle(), SetConfigurationInternal(42, _));
 
   {
     // SetConfiguration should fail because 42 is not a valid mock
@@ -530,7 +530,7 @@ TEST_F(USBDeviceImplTest, SetValidConfiguration) {
     loop.Run();
   }
 
-  EXPECT_CALL(mock_handle(), SetConfiguration(42, _));
+  EXPECT_CALL(mock_handle(), SetConfigurationInternal(42, _));
 
   AddMockConfig(ConfigBuilder(42));
 
@@ -559,7 +559,7 @@ TEST_F(USBDeviceImplTest, Reset) {
     loop.Run();
   }
 
-  EXPECT_CALL(mock_handle(), ResetDevice(_));
+  EXPECT_CALL(mock_handle(), ResetDeviceInternal(_));
 
   set_allow_reset(true);
 
@@ -569,7 +569,7 @@ TEST_F(USBDeviceImplTest, Reset) {
     loop.Run();
   }
 
-  EXPECT_CALL(mock_handle(), ResetDevice(_));
+  EXPECT_CALL(mock_handle(), ResetDeviceInternal(_));
 
   set_allow_reset(false);
 
@@ -597,7 +597,7 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
   // Now add a mock interface #1.
   AddMockConfig(ConfigBuilder(1).AddInterface(1, 0, 1, 2, 3));
 
-  EXPECT_CALL(mock_handle(), SetConfiguration(1, _));
+  EXPECT_CALL(mock_handle(), SetConfigurationInternal(1, _));
 
   {
     base::RunLoop loop;
@@ -614,7 +614,7 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
     loop.Run();
   }
 
-  EXPECT_CALL(mock_handle(), ClaimInterface(1, _));
+  EXPECT_CALL(mock_handle(), ClaimInterfaceInternal(1, _));
 
   {
     base::RunLoop loop;
@@ -623,7 +623,7 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
     loop.Run();
   }
 
-  EXPECT_CALL(mock_handle(), ReleaseInterface(2, _));
+  EXPECT_CALL(mock_handle(), ReleaseInterfaceInternal(2, _));
 
   {
     // Releasing a non-existent interface should fail.
@@ -633,7 +633,7 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
     loop.Run();
   }
 
-  EXPECT_CALL(mock_handle(), ReleaseInterface(1, _));
+  EXPECT_CALL(mock_handle(), ReleaseInterfaceInternal(1, _));
 
   {
     // Now this should release the claimed interface and close the handle.
@@ -663,7 +663,7 @@ TEST_F(USBDeviceImplTest, SetInterfaceAlternateSetting) {
                     .AddInterface(1, 42, 1, 2, 3)
                     .AddInterface(2, 0, 1, 2, 3));
 
-  EXPECT_CALL(mock_handle(), SetInterfaceAlternateSetting(1, 42, _));
+  EXPECT_CALL(mock_handle(), SetInterfaceAlternateSettingInternal(1, 42, _));
 
   {
     base::RunLoop loop;
@@ -672,7 +672,7 @@ TEST_F(USBDeviceImplTest, SetInterfaceAlternateSetting) {
     loop.Run();
   }
 
-  EXPECT_CALL(mock_handle(), SetInterfaceAlternateSetting(1, 100, _));
+  EXPECT_CALL(mock_handle(), SetInterfaceAlternateSettingInternal(1, 100, _));
 
   {
     base::RunLoop loop;
@@ -698,7 +698,7 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
 
   AddMockConfig(ConfigBuilder(1).AddInterface(7, 0, 1, 2, 3));
 
-  EXPECT_CALL(mock_handle(), SetConfiguration(1, _));
+  EXPECT_CALL(mock_handle(), SetConfigurationInternal(1, _));
 
   {
     base::RunLoop loop;
@@ -715,10 +715,10 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
   AddMockInboundData(fake_data);
 
   EXPECT_CALL(mock_handle(),
-              ControlTransfer(UsbTransferDirection::INBOUND,
-                              UsbControlTransferType::STANDARD,
-                              UsbControlTransferRecipient::DEVICE, 5, 6, 7, _,
-                              _, 0, _));
+              ControlTransferInternal(UsbTransferDirection::INBOUND,
+                                      UsbControlTransferType::STANDARD,
+                                      UsbControlTransferRecipient::DEVICE, 5, 6,
+                                      7, _, _, 0, _));
 
   {
     auto params = mojom::UsbControlTransferParams::New();
@@ -739,10 +739,10 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
   AddMockOutboundData(fake_data);
 
   EXPECT_CALL(mock_handle(),
-              ControlTransfer(UsbTransferDirection::OUTBOUND,
-                              UsbControlTransferType::STANDARD,
-                              UsbControlTransferRecipient::INTERFACE, 5, 6, 7,
-                              _, _, 0, _));
+              ControlTransferInternal(UsbTransferDirection::OUTBOUND,
+                                      UsbControlTransferType::STANDARD,
+                                      UsbControlTransferRecipient::INTERFACE, 5,
+                                      6, 7, _, _, 0, _));
 
   {
     auto params = mojom::UsbControlTransferParams::New();
@@ -787,8 +787,8 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
   AddMockInboundData(fake_inbound_data);
 
   EXPECT_CALL(mock_handle(),
-              GenericTransfer(UsbTransferDirection::OUTBOUND, 0x01, _,
-                              fake_outbound_data.size(), 0, _));
+              GenericTransferInternal(UsbTransferDirection::OUTBOUND, 0x01, _,
+                                      fake_outbound_data.size(), 0, _));
 
   {
     base::RunLoop loop;
@@ -800,8 +800,8 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
   }
 
   EXPECT_CALL(mock_handle(),
-              GenericTransfer(UsbTransferDirection::INBOUND, 0x81, _,
-                              fake_inbound_data.size(), 0, _));
+              GenericTransferInternal(UsbTransferDirection::INBOUND, 0x81, _,
+                                      fake_inbound_data.size(), 0, _));
 
   {
     base::RunLoop loop;
@@ -852,8 +852,8 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
   AddMockOutboundPackets(fake_outbound_data, fake_packets);
   AddMockInboundPackets(fake_inbound_data, fake_packets);
 
-  EXPECT_CALL(mock_handle(),
-              IsochronousTransferOut(0x01, _, fake_packet_lengths, 0, _));
+  EXPECT_CALL(mock_handle(), IsochronousTransferOutInternal(
+                                 0x01, _, fake_packet_lengths, 0, _));
 
   {
     base::RunLoop loop;
@@ -865,7 +865,7 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
   }
 
   EXPECT_CALL(mock_handle(),
-              IsochronousTransferIn(0x81, fake_packet_lengths, 0, _));
+              IsochronousTransferInInternal(0x81, fake_packet_lengths, 0, _));
 
   {
     base::RunLoop loop;

@@ -65,34 +65,33 @@ void UsbInternalsPageHandler::AddDeviceForTesting(
     const std::string& name,
     const std::string& serial_number,
     const std::string& landing_page,
-    const AddDeviceForTestingCallback& callback) {
+    AddDeviceForTestingCallback callback) {
   device::UsbService* service = device::DeviceClient::Get()->GetUsbService();
   if (service) {
     GURL landing_page_url(landing_page);
     if (!landing_page_url.is_valid()) {
-      callback.Run(false, "Landing page URL is invalid.");
+      std::move(callback).Run(false, "Landing page URL is invalid.");
       return;
     }
 
     service->AddDeviceForTesting(
         new TestUsbDevice(name, serial_number, landing_page_url));
-    callback.Run(true, "Added.");
+    std::move(callback).Run(true, "Added.");
   } else {
-    callback.Run(false, "USB service unavailable.");
+    std::move(callback).Run(false, "USB service unavailable.");
   }
 }
 
 void UsbInternalsPageHandler::RemoveDeviceForTesting(
     const std::string& guid,
-    const RemoveDeviceForTestingCallback& callback) {
+    RemoveDeviceForTestingCallback callback) {
   device::UsbService* service = device::DeviceClient::Get()->GetUsbService();
   if (service)
     service->RemoveDeviceForTesting(guid);
-  callback.Run();
+  std::move(callback).Run();
 }
 
-void UsbInternalsPageHandler::GetTestDevices(
-    const GetTestDevicesCallback& callback) {
+void UsbInternalsPageHandler::GetTestDevices(GetTestDevicesCallback callback) {
   std::vector<scoped_refptr<device::UsbDevice>> devices;
   device::UsbService* service = device::DeviceClient::Get()->GetUsbService();
   if (service)
@@ -107,5 +106,5 @@ void UsbInternalsPageHandler::GetTestDevices(
     device_info->landing_page = device->webusb_landing_page();
     result.push_back(std::move(device_info));
   }
-  callback.Run(std::move(result));
+  std::move(callback).Run(std::move(result));
 }

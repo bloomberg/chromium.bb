@@ -24,33 +24,32 @@ void FakeUsbDeviceHandle::Close() {
 }
 
 void FakeUsbDeviceHandle::SetConfiguration(int configuration_value,
-                                           const ResultCallback& callback) {
+                                           ResultCallback callback) {
   NOTIMPLEMENTED();
 }
 
 void FakeUsbDeviceHandle::ClaimInterface(int interface_number,
-                                         const ResultCallback& callback) {
+                                         ResultCallback callback) {
   NOTIMPLEMENTED();
 }
 
 void FakeUsbDeviceHandle::ReleaseInterface(int interface_number,
-                                           const ResultCallback& callback) {
+                                           ResultCallback callback) {
   NOTIMPLEMENTED();
 }
 
 void FakeUsbDeviceHandle::SetInterfaceAlternateSetting(
     int interface_number,
     int alternate_setting,
-    const ResultCallback& callback) {
+    ResultCallback callback) {
   NOTIMPLEMENTED();
 }
 
-void FakeUsbDeviceHandle::ResetDevice(const ResultCallback& callback) {
+void FakeUsbDeviceHandle::ResetDevice(ResultCallback callback) {
   NOTIMPLEMENTED();
 }
 
-void FakeUsbDeviceHandle::ClearHalt(uint8_t endpoint,
-                                    const ResultCallback& callback) {
+void FakeUsbDeviceHandle::ClearHalt(uint8_t endpoint, ResultCallback callback) {
   NOTIMPLEMENTED();
 }
 
@@ -64,9 +63,9 @@ void FakeUsbDeviceHandle::ControlTransfer(
     scoped_refptr<net::IOBuffer> buffer,
     size_t length,
     unsigned int timeout,
-    const UsbDeviceHandle::TransferCallback& callback) {
+    UsbDeviceHandle::TransferCallback callback) {
   if (position_ == size_) {
-    callback.Run(UsbTransferStatus::DISCONNECT, buffer, 0);
+    std::move(callback).Run(UsbTransferStatus::DISCONNECT, buffer, 0);
     return;
   }
 
@@ -84,9 +83,10 @@ void FakeUsbDeviceHandle::ControlTransfer(
       position_ += bytes_transferred;
     }
 
-    callback.Run(UsbTransferStatus::COMPLETED, buffer, bytes_transferred);
+    std::move(callback).Run(UsbTransferStatus::COMPLETED, buffer,
+                            bytes_transferred);
   } else {
-    callback.Run(UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
+    std::move(callback).Run(UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
   }
 }
 
@@ -94,7 +94,7 @@ void FakeUsbDeviceHandle::IsochronousTransferIn(
     uint8_t endpoint_number,
     const std::vector<uint32_t>& packet_lengths,
     unsigned int timeout,
-    const IsochronousTransferCallback& callback) {
+    IsochronousTransferCallback callback) {
   NOTIMPLEMENTED();
 }
 
@@ -103,7 +103,7 @@ void FakeUsbDeviceHandle::IsochronousTransferOut(
     scoped_refptr<net::IOBuffer> buffer,
     const std::vector<uint32_t>& packet_lengths,
     unsigned int timeout,
-    const IsochronousTransferCallback& callback) {
+    IsochronousTransferCallback callback) {
   NOTIMPLEMENTED();
 }
 
@@ -112,7 +112,7 @@ void FakeUsbDeviceHandle::GenericTransfer(UsbTransferDirection direction,
                                           scoped_refptr<net::IOBuffer> buffer,
                                           size_t length,
                                           unsigned int timeout,
-                                          const TransferCallback& callback) {
+                                          TransferCallback callback) {
   NOTIMPLEMENTED();
 }
 

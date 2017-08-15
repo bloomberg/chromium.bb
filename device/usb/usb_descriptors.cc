@@ -169,8 +169,8 @@ void OnReadDeviceDescriptor(
         UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
         kConfigurationDescriptorType << 8 | i, 0, header, header->size(),
         kControlTransferTimeoutMs,
-        base::Bind(&OnReadConfigDescriptorHeader, device_handle, desc_ptr, i,
-                   closure));
+        base::BindOnce(&OnReadConfigDescriptorHeader, device_handle, desc_ptr,
+                       i, closure));
   }
 }
 

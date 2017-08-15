@@ -78,9 +78,9 @@ class FakeChooserService : public device::mojom::UsbChooserService {
   // device::mojom::UsbChooserService:
   void GetPermission(
       std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
-      const GetPermissionCallback& callback) override {
+      GetPermissionCallback callback) override {
     auto chooser_controller = base::MakeUnique<UsbChooserController>(
-        render_frame_host_, std::move(device_filters), callback);
+        render_frame_host_, std::move(device_filters), std::move(callback));
     new FakeChooserView(std::move(chooser_controller));
   }
 
