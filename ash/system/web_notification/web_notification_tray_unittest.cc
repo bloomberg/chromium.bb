@@ -213,8 +213,7 @@ TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
 
 using message_center::NotificationList;
 
-// Flakily fails. http://crbug.com/229791
-TEST_F(WebNotificationTrayTest, DISABLED_ManyMessageCenterNotifications) {
+TEST_F(WebNotificationTrayTest, ManyMessageCenterNotifications) {
   // Add the max visible notifications +1, ensure the correct visible number.
   size_t notifications_to_add =
       message_center::kMaxVisibleMessageCenterNotifications + 1;
@@ -232,8 +231,7 @@ TEST_F(WebNotificationTrayTest, DISABLED_ManyMessageCenterNotifications) {
       GetTray()->GetMessageCenterBubbleForTest()->NumMessageViewsForTest());
 }
 
-// Flakily times out. http://crbug.com/229792
-TEST_F(WebNotificationTrayTest, DISABLED_ManyPopupNotifications) {
+TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
   // Add the max visible popup notifications +1, ensure the correct num visible.
   size_t notifications_to_add =
       message_center::kMaxVisiblePopupNotifications + 1;
