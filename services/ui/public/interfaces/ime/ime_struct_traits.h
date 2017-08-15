@@ -94,7 +94,9 @@ struct StructTraits<ui::mojom::ImeTextSpanDataView, ui::ImeTextSpan> {
     return c.start_offset;
   }
   static uint32_t end_offset(const ui::ImeTextSpan& c) { return c.end_offset; }
-  static uint32_t color(const ui::ImeTextSpan& c) { return c.color; }
+  static uint32_t underline_color(const ui::ImeTextSpan& c) {
+    return c.underline_color;
+  }
   static uint32_t thick(const ui::ImeTextSpan& c) { return c.thick; }
   static uint32_t background_color(const ui::ImeTextSpan& c) {
     return c.background_color;

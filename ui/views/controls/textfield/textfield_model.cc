@@ -661,7 +661,7 @@ void TextfieldModel::SetCompositionText(
   composition_range_ = gfx::Range(cursor, cursor + composition.text.length());
   // Don't render transparent IME spans.
   if (composition.ime_text_spans.size() > 0 &&
-      composition.ime_text_spans[0].color != 0)
+      composition.ime_text_spans[0].underline_color != 0)
     render_text_->SetCompositionRange(composition_range_);
   else
     render_text_->SetCompositionRange(gfx::Range::InvalidRange());

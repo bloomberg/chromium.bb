@@ -47,7 +47,7 @@ bool StructTraits<ui::mojom::ImeTextSpanDataView, ui::ImeTextSpan>::Read(
     return false;
   out->start_offset = data.start_offset();
   out->end_offset = data.end_offset();
-  out->color = data.color();
+  out->underline_color = data.underline_color();
   out->thick = data.thick();
   out->background_color = data.background_color();
   return true;

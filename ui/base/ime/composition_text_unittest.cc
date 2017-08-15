@@ -41,7 +41,8 @@ TEST(CompositionTextTest, CopyTest) {
               text2.ime_text_spans[i].start_offset);
     EXPECT_EQ(text.ime_text_spans[i].end_offset,
               text2.ime_text_spans[i].end_offset);
-    EXPECT_EQ(text.ime_text_spans[i].color, text2.ime_text_spans[i].color);
+    EXPECT_EQ(text.ime_text_spans[i].underline_color,
+              text2.ime_text_spans[i].underline_color);
     EXPECT_EQ(text.ime_text_spans[i].thick, text2.ime_text_spans[i].thick);
     EXPECT_EQ(text.ime_text_spans[i].background_color,
               text2.ime_text_spans[i].background_color);

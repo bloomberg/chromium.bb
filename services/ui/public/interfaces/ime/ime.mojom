@@ -62,7 +62,7 @@ struct ImeTextSpan {
   uint32 start_offset;
   uint32 end_offset;
   bool thick;
-  uint32 color;
+  uint32 underline_color;
   uint32 background_color;
 };
 

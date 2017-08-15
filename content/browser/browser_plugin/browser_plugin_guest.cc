@@ -68,7 +68,7 @@ std::vector<ui::ImeTextSpan> ConvertToUiImeTextSpan(
   for (const auto& ime_text_span : ime_text_spans) {
     ui_ime_text_spans.emplace_back(
         ui::ImeTextSpan(ime_text_span.start_offset, ime_text_span.end_offset,
-                        ime_text_span.color, ime_text_span.thick,
+                        ime_text_span.underline_color, ime_text_span.thick,
                         ime_text_span.background_color));
   }
   return ui_ime_text_spans;

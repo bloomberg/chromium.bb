@@ -497,7 +497,7 @@ void InputMethodController::AddImeTextSpans(
       continue;
 
     GetDocument().Markers().AddCompositionMarker(
-        ephemeral_line_range, ime_text_span.GetColor(),
+        ephemeral_line_range, ime_text_span.UnderlineColor(),
         ime_text_span.Thick() ? StyleableMarker::Thickness::kThick
                               : StyleableMarker::Thickness::kThin,
         ime_text_span.BackgroundColor());

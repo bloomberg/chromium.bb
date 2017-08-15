@@ -214,14 +214,14 @@ bool InputMethodEngineBase::SetComposition(
 
     switch (segment->style) {
       case SEGMENT_STYLE_UNDERLINE:
-        ime_text_span.color = SK_ColorBLACK;
+        ime_text_span.underline_color = SK_ColorBLACK;
         break;
       case SEGMENT_STYLE_DOUBLE_UNDERLINE:
-        ime_text_span.color = SK_ColorBLACK;
+        ime_text_span.underline_color = SK_ColorBLACK;
         ime_text_span.thick = true;
         break;
       case SEGMENT_STYLE_NO_UNDERLINE:
-        ime_text_span.color = SK_ColorTRANSPARENT;
+        ime_text_span.underline_color = SK_ColorTRANSPARENT;
         break;
       default:
         continue;

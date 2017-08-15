@@ -19,7 +19,7 @@ std::vector<blink::WebImeTextSpan> ConvertToBlinkImeTextSpan(
   for (const auto& ime_text_span : ui_ime_text_spans) {
     ime_text_spans.emplace_back(blink::WebImeTextSpan(
         ime_text_span.start_offset, ime_text_span.end_offset,
-        ime_text_span.color, ime_text_span.thick,
+        ime_text_span.underline_color, ime_text_span.thick,
         ime_text_span.background_color));
   }
   return ime_text_spans;

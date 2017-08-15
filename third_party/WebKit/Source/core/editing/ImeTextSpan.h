@@ -40,7 +40,7 @@ class CORE_EXPORT ImeTextSpan {
  public:
   ImeTextSpan(unsigned start_offset,
               unsigned end_offset,
-              const Color&,
+              const Color& underline_color,
               bool thick,
               const Color& background_color);
 
@@ -48,14 +48,14 @@ class CORE_EXPORT ImeTextSpan {
 
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
-  const Color& GetColor() const { return color_; }
+  const Color& UnderlineColor() const { return underline_color_; }
   bool Thick() const { return thick_; }
   const Color& BackgroundColor() const { return background_color_; }
 
  private:
   unsigned start_offset_;
   unsigned end_offset_;
-  Color color_;
+  Color underline_color_;
   bool thick_;
   Color background_color_;
 };

@@ -11,10 +11,12 @@ namespace blink {
 
 ImeTextSpan::ImeTextSpan(unsigned start_offset,
                          unsigned end_offset,
-                         const Color& color,
+                         const Color& underline_color,
                          bool thick,
                          const Color& background_color)
-    : color_(color), thick_(thick), background_color_(background_color) {
+    : underline_color_(underline_color),
+      thick_(thick),
+      background_color_(background_color) {
   // Sanitize offsets by ensuring a valid range corresponding to the last
   // possible position.
   // TODO(wkorman): Consider replacing with DCHECK_LT(startOffset, endOffset).
@@ -26,7 +28,7 @@ ImeTextSpan::ImeTextSpan(unsigned start_offset,
 ImeTextSpan::ImeTextSpan(const WebImeTextSpan& ime_text_span)
     : ImeTextSpan(ime_text_span.start_offset,
                   ime_text_span.end_offset,
-                  Color(ime_text_span.color),
+                  Color(ime_text_span.underline_color),
                   ime_text_span.thick,
                   Color(ime_text_span.background_color)) {}
 
