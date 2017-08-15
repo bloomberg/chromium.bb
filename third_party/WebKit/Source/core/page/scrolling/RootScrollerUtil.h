@@ -28,6 +28,7 @@ PaintLayer* PaintLayerForRootScroller(const Node*);
 // Document. See |effective root scroller| in README.md. Note: a root scroller
 // always establishes a PaintLayer.
 bool IsEffective(const LayoutBox&);
+bool IsEffective(const PaintLayer&);
 
 bool IsGlobal(const LayoutBox&);
 bool IsGlobal(const PaintLayer&);
