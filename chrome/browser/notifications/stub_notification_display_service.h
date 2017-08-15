@@ -33,13 +33,15 @@ class StubNotificationDisplayService : public NotificationDisplayService {
   std::vector<Notification> GetDisplayedNotificationsForType(
       NotificationCommon::Type type) const;
 
-  // Removes the notification identified by |notification_id|. This can
-  // optionally be |silent|, which means the delegate events won't be invoked
-  // to imitate behaviour on operating systems that don't support such events.
+  // Simulates the notification identified by |notification_id| being closed due
+  // to external events, such as the user dismissing it when |by_user| is set.
+  // When |silent| is set, the notification handlers won't be informed of the
+  // change to immitate behaviour of operating systems that don't inform apps
+  // about removed notifications.
   void RemoveNotification(NotificationCommon::Type notification_type,
                           const std::string& notification_id,
                           bool by_user,
-                          bool silent = false);
+                          bool silent);
 
   // Removes all notifications shown by this display service.
   void RemoveAllNotifications(NotificationCommon::Type notification_type,

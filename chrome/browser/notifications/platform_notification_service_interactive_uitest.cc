@@ -21,11 +21,9 @@
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_common.h"
-#include "chrome/browser/notifications/notification_display_service.h"
-#include "chrome/browser/notifications/notification_display_service_factory.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
-#include "chrome/browser/notifications/stub_notification_display_service.h"
 #include "chrome/browser/notifications/web_notification_delegate.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -89,23 +87,23 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    NotificationDisplayServiceFactory::GetInstance()->SetTestingFactory(
-        browser()->profile(), &StubNotificationDisplayService::FactoryForTests);
+    display_service_tester_ =
+        base::MakeUnique<NotificationDisplayServiceTester>(
+            browser()->profile());
 
     SiteEngagementScore::SetParamValuesForTesting();
     NavigateToTestPage(std::string("/") + kTestFileName);
+  }
+
+  void TearDown() override {
+    display_service_tester_.reset();
+    InProcessBrowserTest::TearDown();
   }
 
  protected:
   // Returns the Platform Notification Service these unit tests are for.
   PlatformNotificationServiceImpl* service() const {
     return PlatformNotificationServiceImpl::GetInstance();
-  }
-
-  // Returns the stub notification display service.
-  StubNotificationDisplayService* GetDisplayService() const {
-    return static_cast<StubNotificationDisplayService*>(
-        NotificationDisplayServiceFactory::GetForProfile(browser()->profile()));
   }
 
   // Returns a vector with the Notification objects that are being displayed
@@ -116,7 +114,7 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
                                         ? NotificationCommon::PERSISTENT
                                         : NotificationCommon::NON_PERSISTENT;
 
-    return GetDisplayService()->GetDisplayedNotificationsForType(type);
+    return display_service_tester_->GetDisplayedNotificationsForType(type);
   }
 
   // Grants permission to display Web Notifications for origin of the test
@@ -196,6 +194,7 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
   }
 
   const base::FilePath server_root_;
+  std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;
 
  private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
@@ -672,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   ASSERT_TRUE(
       base::StartsWith(notification.id(), "p:", base::CompareCase::SENSITIVE));
 
-  GetDisplayService()->RemoveNotification(
+  display_service_tester_->RemoveNotification(
       NotificationCommon::PERSISTENT, notification.delegate_id(),
       false /* by_user */, true /* silent */);
 
