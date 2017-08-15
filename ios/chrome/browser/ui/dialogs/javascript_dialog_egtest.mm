@@ -406,6 +406,12 @@ void TapSuppressDialogsButton() {
                           @"correctly.");
 #endif
 
+  // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
+  // grey_typeText works on iOS 11.
+  if (base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
+  }
+
   // Load the blank test page and show a prompt dialog.
   [self loadBlankTestPage];
   ShowJavaScriptDialog(JavaScriptAlertType::PROMPT);
