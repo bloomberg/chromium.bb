@@ -268,3 +268,8 @@ IN_PROC_BROWSER_TEST_F(NtpBubbleBrowserTestMac,
                        TestControlledNewTabPageMessageBubble) {
   TestControlledNewTabPageBubbleShown(false);
 }
+
+IN_PROC_BROWSER_TEST_F(NtpBubbleBrowserTestMac,
+                       TestBubbleClosedAfterExtensionUninstall) {
+  TestBubbleClosedAfterExtensionUninstall();
+}

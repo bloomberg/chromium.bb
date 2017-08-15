@@ -121,10 +121,13 @@ class FakeExtensionMessageBubble {
     BUBBLE_ACTION_CLICK_DISMISS_BUTTON,
     BUBBLE_ACTION_DISMISS_DEACTIVATION,
     BUBBLE_ACTION_CLICK_LINK,
+    BUBBLE_ACTION_IGNORE,
   };
 
   FakeExtensionMessageBubble()
-      : action_(BUBBLE_ACTION_CLICK_ACTION_BUTTON), controller_(nullptr) {}
+      : is_closed_(true),
+        action_(BUBBLE_ACTION_CLICK_ACTION_BUTTON),
+        controller_(nullptr) {}
 
   void set_action_on_show(ExtensionBubbleAction action) {
     action_ = action;
@@ -133,25 +136,43 @@ class FakeExtensionMessageBubble {
     controller_ = controller;
   }
 
+  bool is_closed() { return is_closed_; }
+
   void Show() {
-    controller_->OnShown();
+    controller_->OnShown(
+        base::Bind(&FakeExtensionMessageBubble::Close, base::Unretained(this)));
+
+    // Depending on the user action, the bubble may be closed as result.
     switch (action_) {
       case BUBBLE_ACTION_CLICK_ACTION_BUTTON:
         controller_->OnBubbleAction();
+        is_closed_ = true;
         break;
       case BUBBLE_ACTION_CLICK_DISMISS_BUTTON:
         controller_->OnBubbleDismiss(false);
+        is_closed_ = true;
         break;
       case BUBBLE_ACTION_DISMISS_DEACTIVATION:
         controller_->OnBubbleDismiss(true);
+        is_closed_ = true;
         break;
       case BUBBLE_ACTION_CLICK_LINK:
         controller_->OnLinkClicked();
+        // Opening a new tab for the learn more link can cause the bubble to
+        // close.
+        is_closed_ = true;
+        break;
+      case BUBBLE_ACTION_IGNORE:
+        is_closed_ = false;
         break;
     }
   }
 
  private:
+  // Dummy close callback.
+  void Close() { is_closed_ = true; }
+
+  bool is_closed_;
   ExtensionBubbleAction action_;
   ExtensionMessageBubbleController* controller_;
 
@@ -795,6 +816,86 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
                                  base::Bind(&base::DoNothing),
                                  NULL);
   }
+}
+
+// Tests that a displayed extension bubble will be closed after its associated
+// extension is uninstalled.
+TEST_F(ExtensionMessageBubbleTest, TestBubbleClosedAfterExtensionUninstall) {
+  Init();
+  ASSERT_TRUE(LoadExtensionOverridingNtp("1", kId1, Manifest::UNPACKED));
+
+  auto controller = base::MakeUnique<TestExtensionMessageBubbleController>(
+      new NtpOverriddenBubbleDelegate(browser()->profile()), browser());
+  controller->SetIsActiveBubble();
+
+  EXPECT_TRUE(controller->ShouldShow());
+  ASSERT_EQ(1U, controller->GetExtensionList().size());
+
+  // Simulate showing the bubble and take no action.
+  FakeExtensionMessageBubble bubble;
+  EXPECT_TRUE(controller->ShouldShow());
+  bubble.set_controller(controller.get());
+  bubble.set_action_on_show(FakeExtensionMessageBubble::BUBBLE_ACTION_IGNORE);
+  bubble.Show();
+  EXPECT_FALSE(bubble.is_closed());
+
+  // Uninstall the extension.
+  service_->UninstallExtension(kId1, UNINSTALL_REASON_FOR_TESTING,
+                               base::Bind(&base::DoNothing), nullptr);
+  ASSERT_EQ(0U, controller->GetExtensionList().size());
+
+  // The bubble should be closed after the extension is uninstalled.
+  EXPECT_TRUE(bubble.is_closed());
+
+  controller.reset();
+}
+
+// Tests that a bubble associated with multiple extensions remains shown after
+// one of its associated extensions is uninstalled. Also tests that the bubble
+// closes when all of its associated extensions are uninstalled.
+TEST_F(ExtensionMessageBubbleTest, TestBubbleShownForMultipleExtensions) {
+  FeatureSwitch::ScopedOverride force_dev_mode_highlighting(
+      FeatureSwitch::force_dev_mode_highlighting(), true);
+  Init();
+  ASSERT_TRUE(LoadGenericExtension("1", kId1, Manifest::UNPACKED));
+  ASSERT_TRUE(LoadGenericExtension("2", kId2, Manifest::UNPACKED));
+  ASSERT_TRUE(LoadGenericExtension("3", kId3, Manifest::UNPACKED));
+
+  auto controller = base::MakeUnique<TestExtensionMessageBubbleController>(
+      new DevModeBubbleDelegate(browser()->profile()), browser());
+  controller->SetIsActiveBubble();
+
+  EXPECT_TRUE(controller->ShouldShow());
+  ASSERT_EQ(3U, controller->GetExtensionList().size());
+
+  // Simulate showing the bubble and take no action.
+  FakeExtensionMessageBubble bubble;
+  EXPECT_TRUE(controller->ShouldShow());
+  bubble.set_controller(controller.get());
+  bubble.set_action_on_show(FakeExtensionMessageBubble::BUBBLE_ACTION_IGNORE);
+  bubble.Show();
+  EXPECT_FALSE(bubble.is_closed());
+
+  // Uninstall one of the three extensions.
+  service_->UninstallExtension(kId1, UNINSTALL_REASON_FOR_TESTING,
+                               base::Bind(&base::DoNothing), nullptr);
+  ASSERT_EQ(2U, controller->GetExtensionList().size());
+
+  // The bubble should still be shown for the remaining installed extensions.
+  EXPECT_FALSE(bubble.is_closed());
+
+  // Uninstall the remaining two extensions.
+  service_->UninstallExtension(kId2, UNINSTALL_REASON_FOR_TESTING,
+                               base::Bind(&base::DoNothing), nullptr);
+  service_->UninstallExtension(kId3, UNINSTALL_REASON_FOR_TESTING,
+                               base::Bind(&base::DoNothing), nullptr);
+  ASSERT_EQ(0U, controller->GetExtensionList().size());
+
+  // Since all the bubble's associated extensions are uninstalled, the bubble
+  // should be closed.
+  EXPECT_TRUE(bubble.is_closed());
+
+  controller.reset();
 }
 
 // The feature this is meant to test is only enacted on Windows, but it should

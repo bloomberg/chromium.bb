@@ -92,6 +92,10 @@ class ExtensionMessageBubbleBrowserTest
   // Regression test for crbug.com/485614.
   void TestBubbleAnchoredToAppMenuWithOtherAction();
 
+  // Tests that a displayed extension bubble will be closed after its associated
+  // extension is uninstalled.
+  void TestBubbleClosedAfterExtensionUninstall();
+
   // Tests that uninstalling the extension between when the bubble is originally
   // slated to show and when it does show is handled gracefully.
   // Regression test for crbug.com/531648.

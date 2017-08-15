@@ -170,6 +170,31 @@ void ExtensionMessageBubbleBrowserTest::
   CloseBubble(second_browser);
 }
 
+void ExtensionMessageBubbleBrowserTest::
+    TestBubbleClosedAfterExtensionUninstall() {
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("api_test")
+                        .AppendASCII("override")
+                        .AppendASCII("newtab"));
+  ASSERT_TRUE(extension);
+
+  CheckBubbleIsNotPresent(browser(), false, false);
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  chrome::NewTab(browser());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  base::RunLoop().RunUntilIdle();
+  CheckBubble(browser(), ANCHOR_BROWSER_ACTION, false);
+
+  extension_service()->UninstallExtension(
+      extension->id(), extensions::UNINSTALL_REASON_FOR_TESTING,
+      base::Bind(&base::DoNothing), nullptr);
+  base::RunLoop().RunUntilIdle();
+
+  // If the only relevant extension was uninstalled, the bubble should
+  // automatically close. See crbug.com/748952.
+  CheckBubbleIsNotPresent(browser(), false, false);
+}
+
 void ExtensionMessageBubbleBrowserTest::TestUninstallDangerousExtension() {
   // Load an extension that overrides the proxy setting.
   ExtensionTestMessageListener listener("registered", false);

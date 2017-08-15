@@ -30,7 +30,7 @@ class BlockedActionBubbleDelegate : public ToolbarActionsBarBubbleDelegate {
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
   GetExtraViewInfo() override;
   std::string GetAnchorActionId() override;
-  void OnBubbleShown() override;
+  void OnBubbleShown(const base::Closure& close_bubble_callback) override;
   void OnBubbleClosed(CloseAction action) override;
 
   base::Callback<void(CloseAction)> callback_;
