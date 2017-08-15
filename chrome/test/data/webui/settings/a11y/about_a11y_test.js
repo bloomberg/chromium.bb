@@ -6,12 +6,9 @@
  * @fileoverview Define accessibility tests for the ABOUT route.
  */
 
-/** @const {string} Path to root from chrome/test/data/webui/settings/. */
-var ROOT_PATH = '../../../../../';
-
 // SettingsAccessibilityTest fixture.
 GEN_INCLUDE([
-  ROOT_PATH + 'chrome/test/data/webui/settings/accessibility_browsertest.js',
+  'settings_accessibility_test.js',
 ]);
 
 AccessibilityTest.define('SettingsAccessibilityTest', {

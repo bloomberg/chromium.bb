@@ -9,12 +9,9 @@
 // Disable since the EDIT_DICTIONARY route does not exist on Mac.
 GEN('#if !defined(OS_MACOSX)');
 
-/** @const {string} Path to root from chrome/test/data/webui/settings/. */
-var ROOT_PATH = '../../../../../';
-
 // SettingsAccessibilityTest fixture.
 GEN_INCLUDE([
-  ROOT_PATH + 'chrome/test/data/webui/settings/settings_accessiblity_test.js',
+  'settings_accessibility_test.js',
 ]);
 
 AccessibilityTest.define('SettingsAccessibilityTest', {

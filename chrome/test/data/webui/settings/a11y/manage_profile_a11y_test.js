@@ -6,16 +6,12 @@
  * @fileoverview Define accessibility tests for the MANAGE_PROFILE route.
  */
 
-
 // The MANAGE_PROFILE route is non-Chrome OS only.
 GEN('#if !defined(OS_CHROMEOS)');
 
-/** @const {string} Path to root from chrome/test/data/webui/settings/. */
-var ROOT_PATH = '../../../../../';
-
 // SettingsAccessibilityTest fixture.
 GEN_INCLUDE([
-  ROOT_PATH + 'chrome/test/data/webui/settings/accessibility_browsertest.js',
+  'settings_accessibility_test.js',
 ]);
 
 // TODO(quacht): refactor to provide a default set of axeOptions and violation
