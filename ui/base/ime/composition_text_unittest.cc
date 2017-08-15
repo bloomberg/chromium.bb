@@ -31,8 +31,7 @@ TEST(CompositionTextTest, CopyTest) {
   text.selection.set_start(30);
   text.selection.set_end(40);
 
-  CompositionText text2;
-  text2.CopyFrom(text);
+  CompositionText text2 = text;
 
   EXPECT_EQ(text.text, text2.text);
   EXPECT_EQ(text.ime_text_spans.size(), text2.ime_text_spans.size());

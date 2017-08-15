@@ -125,7 +125,7 @@ void InputMethodAuraLinux::ProcessKeyEventByEngineDone(
     base::string16* result_text,
     bool is_handled) {
   composition_changed_ = composition_changed;
-  composition_.CopyFrom(*composition);
+  composition_ = *composition;
   result_text_ = *result_text;
   ignore_result(ProcessKeyEventDone(event, filtered, is_handled));
 }
@@ -201,7 +201,7 @@ ui::EventDispatchDetails InputMethodAuraLinux::ProcessKeyEventDone(
   // Makes sure the cached composition is cleared after committing any text or
   // cleared composition.
   if (client && !client->HasCompositionText())
-    composition_.Clear();
+    composition_ = CompositionText();
 
   if (!filtered) {
     details = DispatchKeyEventPostIME(event);
@@ -317,7 +317,7 @@ void InputMethodAuraLinux::ResetContext() {
     context_->Focus();
   }
 
-  composition_.Clear();
+  composition_ = CompositionText();
   result_text_.clear();
   is_sync_mode_ = false;
   composition_changed_ = false;
@@ -349,7 +349,7 @@ void InputMethodAuraLinux::OnCommit(const base::string16& text) {
       return;
     if (!event.stopped_propagation() && !details.target_destroyed)
       GetTextInputClient()->InsertText(text);
-    composition_.Clear();
+    composition_ = CompositionText();
   }
 }
 
@@ -379,7 +379,7 @@ void InputMethodAuraLinux::OnPreeditEnd() {
 
   if (is_sync_mode_) {
     if (!composition_.text.empty()) {
-      composition_.Clear();
+      composition_ = CompositionText();
       composition_changed_ = true;
     }
   } else {
@@ -392,7 +392,7 @@ void InputMethodAuraLinux::OnPreeditEnd() {
       if (!event.stopped_propagation() && !details.target_destroyed)
         client->ClearCompositionText();
     }
-    composition_.Clear();
+    composition_ = CompositionText();
   }
 }
 

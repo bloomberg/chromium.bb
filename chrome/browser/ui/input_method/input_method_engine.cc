@@ -135,7 +135,7 @@ void InputMethodEngine::UpdateComposition(
     const ui::CompositionText& composition_text,
     uint32_t cursor_pos,
     bool is_visible) {
-  composition_.CopyFrom(composition_text);
+  composition_ = composition_text;
 
   // Use a black thin underline by default.
   if (composition_.ime_text_spans.empty()) {
@@ -150,7 +150,7 @@ void InputMethodEngine::UpdateComposition(
   // until the key event is handled.
   if (input_context && !handling_key_event_) {
     input_context->UpdateCompositionText(composition_, cursor_pos, is_visible);
-    composition_.Clear();
+    composition_ = ui::CompositionText();
   } else {
     composition_changed_ = true;
   }
