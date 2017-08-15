@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextmenu;
 
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
+import android.os.StrictMode;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -91,20 +92,26 @@ class TabularContextMenuListAdapter extends BaseAdapter {
         viewHolder.mIcon.setVisibility(icon != null ? View.VISIBLE : View.INVISIBLE);
 
         if (menuItem instanceof ShareContextMenuItem) {
-            final Pair<Drawable, CharSequence> shareInfo =
-                    ((ShareContextMenuItem) menuItem).getShareInfo();
-            if (shareInfo.first != null) {
-                viewHolder.mShareIcon.setImageDrawable(shareInfo.first);
-                viewHolder.mShareIcon.setVisibility(View.VISIBLE);
-                viewHolder.mShareIcon.setContentDescription(mActivity.getString(
-                        R.string.accessibility_menu_share_via, shareInfo.second));
-                viewHolder.mShareIcon.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        mOnDirectShare.onResult(((ShareContextMenuItem) menuItem).isShareLink());
-                    }
-                });
-                viewHolder.mRightPadding.setVisibility(View.GONE);
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+            try {
+                final Pair<Drawable, CharSequence> shareInfo =
+                        ((ShareContextMenuItem) menuItem).getShareInfo();
+                if (shareInfo.first != null) {
+                    viewHolder.mShareIcon.setImageDrawable(shareInfo.first);
+                    viewHolder.mShareIcon.setVisibility(View.VISIBLE);
+                    viewHolder.mShareIcon.setContentDescription(mActivity.getString(
+                            R.string.accessibility_menu_share_via, shareInfo.second));
+                    viewHolder.mShareIcon.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            mOnDirectShare.onResult(
+                                    ((ShareContextMenuItem) menuItem).isShareLink());
+                        }
+                    });
+                    viewHolder.mRightPadding.setVisibility(View.GONE);
+                }
+            } finally {
+                StrictMode.setThreadPolicy(oldPolicy);
             }
         } else {
             viewHolder.mShareIcon.setVisibility(View.GONE);
