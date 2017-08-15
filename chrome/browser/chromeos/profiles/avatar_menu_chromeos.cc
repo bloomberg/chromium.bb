@@ -14,12 +14,10 @@
 #include "ui/gfx/image/image.h"
 
 // static
-AvatarMenu::ImageLoadStatus AvatarMenu::GetImageForMenuButton(
-    const base::FilePath& profile_path,
-    gfx::Image* image) {
+void AvatarMenu::GetImageForMenuButton(const base::FilePath& profile_path,
+                                       gfx::Image* image) {
   // ChromeOS avatar icon is circular.
   Profile* profile =
       g_browser_process->profile_manager()->GetProfileByPath(profile_path);
   *image = gfx::Image(GetAvatarImageForContext(profile));
-  return AvatarMenu::ImageLoadStatus::LOADED;
 }
