@@ -3357,7 +3357,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled-slow2g"
+                    "name": "Enabled-3g"
                 }
             ]
         }
