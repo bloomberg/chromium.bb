@@ -10,7 +10,9 @@
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/restore_type.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/page_transition_types.h"
 
 namespace internal {
 
@@ -37,11 +39,28 @@ SessionRestorePageLoadMetricsObserver::OnStart(
   // Should not be null because this is used only on supported platforms.
   DCHECK(tab_manager);
 
-  return (started_in_foreground &&
-          tab_manager->IsTabInSessionRestore(contents) &&
-          tab_manager->IsTabRestoredInForeground(contents))
-             ? CONTINUE_OBSERVING
-             : STOP_OBSERVING;
+  if (!started_in_foreground || !tab_manager->IsTabInSessionRestore(contents) ||
+      !tab_manager->IsTabRestoredInForeground(contents))
+    return STOP_OBSERVING;
+
+  // The navigation should be from the last session.
+  DCHECK(navigation_handle->GetRestoreType() ==
+             content::RestoreType::LAST_SESSION_EXITED_CLEANLY ||
+         navigation_handle->GetRestoreType() ==
+             content::RestoreType::LAST_SESSION_CRASHED);
+
+  return CONTINUE_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+SessionRestorePageLoadMetricsObserver::OnCommit(
+    content::NavigationHandle* navigation_handle,
+    ukm::SourceId source_id) {
+  // Session restores use transition reload, so we only observe loads with a
+  // reload transition type.
+  DCHECK(ui::PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
+                                      ui::PAGE_TRANSITION_RELOAD));
+  return CONTINUE_OBSERVING;
 }
 
 void SessionRestorePageLoadMetricsObserver::OnFirstPaintInPage(
