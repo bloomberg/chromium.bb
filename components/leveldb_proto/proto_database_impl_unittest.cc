@@ -18,8 +18,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
-#include "base/trace_event/memory_dump_manager.h"
-#include "base/trace_event/process_memory_dump.h"
 #include "components/leveldb_proto/leveldb_database.h"
 #include "components/leveldb_proto/testing/proto/test.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -547,8 +545,6 @@ TEST(ProtoDatabaseImplThreadingTest, TestDBDestroy) {
 // entries. If |close_after_save| is true, the database will be closed after
 // saving and then re-opened to ensure that the data is properly persisted.
 void TestLevelDBSaveAndLoad(bool close_after_save) {
-  base::MessageLoop main_loop;
-
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -611,8 +607,6 @@ TEST(ProtoDatabaseImplLevelDBTest, TestDBInitFail) {
 }
 
 TEST(ProtoDatabaseImplLevelDBTest, TestMemoryDatabase) {
-  base::MessageLoop main_loop;
-
   std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
 
   std::vector<std::string> load_entries;
@@ -631,30 +625,6 @@ TEST(ProtoDatabaseImplLevelDBTest, TestMemoryDatabase) {
 
   ASSERT_TRUE(db->Load(&second_load_entries));
   EXPECT_EQ(1u, second_load_entries.size());
-}
-
-TEST(ProtoDatabaseImplLevelDBTest, TestOnMemoryDumpEmitsData) {
-  base::MessageLoop main_loop;
-  std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
-  std::vector<std::string> load_entries;
-  ASSERT_TRUE(db->Init(base::FilePath()));
-  KeyValueVector save_entries(1, std::make_pair("foo", "bar"));
-  KeyVector remove_keys;
-  ASSERT_TRUE(db->Save(save_entries, remove_keys));
-
-  base::trace_event::MemoryDumpArgs dump_args = {
-      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
-  std::unique_ptr<base::trace_event::ProcessMemoryDump> process_memory_dump(
-      new base::trace_event::ProcessMemoryDump(nullptr, dump_args));
-  db->OnMemoryDump(dump_args, process_memory_dump.get());
-
-  size_t leveldb_dump_count = 0;
-  for (const auto& dump : process_memory_dump->allocator_dumps()) {
-    if (dump.first.find("leveldb/leveldb_proto/") == 0) {
-      leveldb_dump_count++;
-    }
-  }
-  ASSERT_EQ(1u, leveldb_dump_count);
 }
 
 }  // namespace leveldb_proto
