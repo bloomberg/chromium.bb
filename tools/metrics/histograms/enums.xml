@@ -17941,6 +17941,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2136716957" label="fe69"/>
 </enum>
 
+<enum name="GCCount">
+  <int value="0" label="5"/>
+  <int value="1" label="10"/>
+</enum>
+
 <enum name="GCMCheckinRequestStatus">
   <int value="0" label="Success"/>
   <int value="1" label="URL fetching failed"/>

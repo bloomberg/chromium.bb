@@ -78,7 +78,6 @@ enum class EngagementLevel : int32_t;
 }
 
 class AnimationClock;
-class DocumentTimeline;
 class AXObjectCache;
 class Attr;
 class CDATASection;
@@ -97,8 +96,10 @@ class DocumentFragment;
 class DocumentLoader;
 class DocumentMarkerController;
 class DocumentNameCollection;
+class DocumentOutliveTimeReporter;
 class DocumentParser;
 class DocumentState;
+class DocumentTimeline;
 class DocumentType;
 class Element;
 class ElementDataCache;
@@ -1721,7 +1722,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool has_high_media_engagement_;
 
-  int gc_age_when_document_detached_ = 0;
+  std::unique_ptr<DocumentOutliveTimeReporter> document_outlive_time_reporter_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

@@ -14355,6 +14355,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Document.OutliveTimeAfterShutdown.GCCount" enum="GCCount">
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>keishi@chromium.org</owner>
+  <summary>
+    Records documents that survives some GCs after the document is shut down.
+  </summary>
+</histogram>
+
 <histogram name="DocumentActivity.Enabled" enum="RunningMode">
   <obsolete>
     Removed 9/2016.
