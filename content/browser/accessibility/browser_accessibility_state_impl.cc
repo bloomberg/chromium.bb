@@ -14,6 +14,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/gfx/color_utils.h"
 
 namespace content {
@@ -63,6 +64,9 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   // delete it prematurely.
   AddRef();
 
+  // Hook ourselves up to observe ax mode changes.
+  ui::AXPlatformNode::AddAXModeObserver(this);
+
 #if defined(OS_WIN)
   // The delay is necessary because assistive technology sometimes isn't
   // detected until after the user interacts in some way, so a reasonable delay
@@ -82,6 +86,8 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
 }
 
 BrowserAccessibilityStateImpl::~BrowserAccessibilityStateImpl() {
+  // Remove ourselves from the AXMode global observer list.
+  ui::AXPlatformNode::RemoveAXModeObserver(this);
 }
 
 void BrowserAccessibilityStateImpl::OnScreenReaderDetected() {
@@ -145,6 +151,10 @@ void BrowserAccessibilityStateImpl::UpdateHistograms() {
   UMA_HISTOGRAM_BOOLEAN("Accessibility.ManuallyEnabled",
                         base::CommandLine::ForCurrentProcess()->HasSwitch(
                             switches::kForceRendererAccessibility));
+}
+
+void BrowserAccessibilityStateImpl::OnAXModeAdded(ui::AXMode mode) {
+  AddAccessibilityModeFlags(mode);
 }
 
 #if !defined(OS_WIN) && !defined(OS_MACOSX)

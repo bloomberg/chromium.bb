@@ -12,12 +12,32 @@
 
 namespace ui {
 
+// static
+base::LazyInstance<base::ObserverList<AXModeObserver>>::Leaky
+    ui::AXPlatformNode::ax_mode_observers_ = LAZY_INSTANCE_INITIALIZER;
+
 AXPlatformNode::AXPlatformNode() {}
 
 AXPlatformNode::~AXPlatformNode() {
 }
 
 void AXPlatformNode::Destroy() {
+}
+
+// static
+void AXPlatformNode::AddAXModeObserver(AXModeObserver* observer) {
+  ax_mode_observers_.Get().AddObserver(observer);
+}
+
+// static
+void AXPlatformNode::RemoveAXModeObserver(AXModeObserver* observer) {
+  ax_mode_observers_.Get().RemoveObserver(observer);
+}
+
+// static
+void AXPlatformNode::NotifyAddAXModeFlags(ui::AXMode mode_flags) {
+  for (auto& observer : ax_mode_observers_.Get())
+    observer.OnAXModeAdded(mode_flags);
 }
 
 }  // namespace ui
