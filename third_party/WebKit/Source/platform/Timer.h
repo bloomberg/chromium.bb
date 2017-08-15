@@ -26,6 +26,7 @@
 #ifndef Timer_h
 #define Timer_h
 
+#include "base/time/time.h"
 #include "platform/PlatformExport.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
@@ -56,8 +57,15 @@ class PLATFORM_EXPORT TimerBase {
   void StartRepeating(double repeat_interval, const WebTraceLocation& caller) {
     Start(repeat_interval, repeat_interval, caller);
   }
+  void StartRepeating(base::TimeDelta repeat_interval,
+                      const WebTraceLocation& caller) {
+    StartRepeating(repeat_interval.InSecondsF(), caller);
+  }
   void StartOneShot(double interval, const WebTraceLocation& caller) {
     Start(interval, 0, caller);
+  }
+  void StartOneShot(base::TimeDelta interval, const WebTraceLocation& caller) {
+    StartOneShot(interval.InSecondsF(), caller);
   }
 
   // Timer cancellation is fast enough that you shouldn't have to worry
